@@ -1,19 +1,32 @@
 import { create } from "zustand";
 import { nanoid } from "nanoid";
-import type { Shape, TrackDesign } from "@/lib/types";
+import type { FieldSpec, Shape, TrackDesign } from "@/lib/types";
+
+export type EditorTool =
+  | "select"
+  | "gate"
+  | "flag"
+  | "cone"
+  | "label"
+  | "polyline";
 
 interface EditorState {
   design: TrackDesign;
   selection: string[];
-  addShape: (s: Omit<Shape, "id">) => void;
+  activeTool: EditorTool;
+  addShape: (s: Omit<Shape, "id">) => string;
   updateShape: (id: string, patch: Partial<Shape>) => void;
   removeShape: (id: string) => void;
   setSelection: (ids: string[]) => void;
+  setActiveTool: (tool: EditorTool) => void;
+  updateField: (patch: Partial<FieldSpec>) => void;
+  updateDesignMeta: (patch: Partial<Pick<TrackDesign, "title" | "description">>) => void;
+  replaceDesign: (design: TrackDesign) => void;
 }
 
 const now = () => new Date().toISOString();
 
-export const useEditor = create<EditorState>((set, get) => ({
+export const useEditor = create<EditorState>((set) => ({
   design: {
     id: nanoid(),
     title: "Untitled Track",
@@ -24,14 +37,19 @@ export const useEditor = create<EditorState>((set, get) => ({
     updatedAt: now(),
   },
   selection: [],
+  activeTool: "select",
   addShape: (s) =>
-    set((st) => ({
-      design: {
-        ...st.design,
-        updatedAt: now(),
-        shapes: [...st.design.shapes, { ...s, id: nanoid() } as Shape],
-      },
-    })),
+    {
+      const id = nanoid();
+      set((st) => ({
+        design: {
+          ...st.design,
+          updatedAt: now(),
+          shapes: [...st.design.shapes, { ...s, id } as Shape],
+        },
+      }));
+      return id;
+    },
   updateShape: (id, patch) =>
     set((st) => ({
       design: {
@@ -52,4 +70,30 @@ export const useEditor = create<EditorState>((set, get) => ({
       selection: st.selection.filter((x) => x !== id),
     })),
   setSelection: (ids) => set({ selection: ids }),
+  setActiveTool: (tool) => set({ activeTool: tool }),
+  updateField: (patch) =>
+    set((st) => ({
+      design: {
+        ...st.design,
+        updatedAt: now(),
+        field: {
+          ...st.design.field,
+          ...patch,
+        },
+      },
+    })),
+  updateDesignMeta: (patch) =>
+    set((st) => ({
+      design: {
+        ...st.design,
+        ...patch,
+        updatedAt: now(),
+      },
+    })),
+  replaceDesign: (design) =>
+    set(() => ({
+      design: { ...design, updatedAt: design.updatedAt ?? now() },
+      selection: [],
+      activeTool: "select",
+    })),
 }));

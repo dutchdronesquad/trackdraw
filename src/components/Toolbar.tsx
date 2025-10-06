@@ -1,63 +1,61 @@
 "use client";
-import { useEditor } from "@/store/editor";
+
+import { ChangeEvent, useRef } from "react";
+import { EditorTool, useEditor } from "@/store/editor";
+
+const tools: Array<{
+  id: EditorTool;
+  label: string;
+  hint: string;
+  description: string;
+}> = [
+  {
+    id: "select",
+    label: "Select",
+    hint: "V",
+    description: "Move, rotate & edit existing elements",
+  },
+  {
+    id: "gate",
+    label: "Gate",
+    hint: "G",
+    description: "Place rectangular gates (width × height)",
+  },
+  {
+    id: "flag",
+    label: "Flag",
+    hint: "F",
+    description: "Add flag markers with pole height",
+  },
+  {
+    id: "cone",
+    label: "Cone",
+    hint: "C",
+    description: "Drop an apex marker/cone",
+  },
+  {
+    id: "label",
+    label: "Label",
+    hint: "L",
+    description: "Place text labels for pilots",
+  },
+  {
+    id: "polyline",
+    label: "Path",
+    hint: "P",
+    description: "Click to sketch race line, double-click to finish",
+  },
+];
 
 export default function Toolbar() {
-  const { addShape, design } = useEditor();
-
-  const addGate = () =>
-    addShape({
-      kind: "gate",
-      x: 2,
-      y: 2,
-      rotation: 0,
-      width: 1.5,
-      height: 1.2,
-      color: "#1f2937",
-    } as any);
-  const addFlag = () =>
-    addShape({
-      kind: "flag",
-      x: 3,
-      y: 3,
-      rotation: 0,
-      radius: 0.2,
-      poleHeight: 2.2,
-      color: "#7c3aed",
-    } as any);
-  const addCone = () =>
-    addShape({
-      kind: "cone",
-      x: 4,
-      y: 4,
-      rotation: 0,
-      radius: 0.15,
-      color: "#f59e0b",
-    } as any);
-  const addLabel = () =>
-    addShape({
-      kind: "label",
-      x: 1,
-      y: 1,
-      rotation: 0,
-      text: "Start",
-      color: "#111827",
-    } as any);
-  const addPath = () =>
-    addShape({
-      kind: "polyline",
-      x: 0,
-      y: 0,
-      rotation: 0,
-      points: [
-        { x: 1, y: 1, z: 0 },
-        { x: 5, y: 1, z: 0.5 },
-        { x: 8, y: 4, z: 0.2 },
-        { x: 12, y: 7, z: 1.0 },
-      ],
-      strokeWidth: 0.15,
-      showArrows: true,
-      color: "#0ea5e9",
-    } as any);
+  const {
+    design,
+    activeTool,
+    setActiveTool,
+    setSelection,
+    replaceDesign,
+  } = useEditor();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(design, null, 2)], {
@@ -66,32 +64,95 @@ export default function Toolbar() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = design.title.trim().replaceAll(" ", "_") + ".json";
+    const safeName = design.title.trim() || "track";
+    a.download = safeName.replace(/[^a-z0-9-_]+/gi, "_") + ".json";
     a.click();
     URL.revokeObjectURL(url);
   };
 
+  const importJson = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    file.text().then((content) => {
+      try {
+        const parsed = JSON.parse(content);
+        if (!parsed || typeof parsed !== "object") throw new Error();
+        replaceDesign(parsed as any);
+      } catch (err) {
+        console.error("Failed to import design", err);
+        alert("Kon het bestand niet inladen. Controleer of het een geldig DDS Track export is.");
+      } finally {
+        event.target.value = "";
+      }
+    });
+  };
+
   return (
-    <div className="flex gap-2 p-2 border-b bg-white">
-      <button className="btn" onClick={addGate}>
-        + Gate
-      </button>
-      <button className="btn" onClick={addFlag}>
-        + Flag
-      </button>
-      <button className="btn" onClick={addCone}>
-        + Cone
-      </button>
-      <button className="btn" onClick={addLabel}>
-        + Label
-      </button>
-      <button className="btn" onClick={addPath}>
-        + Path
-      </button>
-      <div className="ml-auto" />
-      <button className="btn" onClick={exportJson}>
-        Export JSON
-      </button>
-    </div>
+    <aside className="flex w-64 min-w-[14rem] flex-col border-r border-slate-200 bg-white/90 px-4 py-5 backdrop-blur">
+      <div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Tools
+        </div>
+        <div className="mt-3 grid gap-2">
+          {tools.map((tool) => {
+            const active = tool.id === activeTool;
+            return (
+              <button
+                key={tool.id}
+                className={`flex flex-col rounded-lg border px-3 py-2 text-left transition focus:outline-none focus:ring-2 focus:ring-sky-200 ${
+                  active
+                    ? "border-sky-400 bg-sky-50 text-slate-900"
+                    : "border-transparent bg-slate-100/70 text-slate-700 hover:border-slate-300 hover:bg-white"
+                }`}
+                onClick={() => {
+                  setSelection([]);
+                  setActiveTool(tool.id);
+                }}
+              >
+                <div className="flex items-center justify-between text-sm font-medium">
+                  <span>{tool.label}</span>
+                  <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-tight text-slate-600">
+                    {tool.hint}
+                  </span>
+                </div>
+                <div className="mt-1 text-[11px] leading-tight text-slate-500">
+                  {tool.description}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-6 border-t border-slate-200 pt-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Bestand
+        </div>
+        <div className="mt-3 grid gap-2">
+          <button
+            className="rounded-lg border border-transparent bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            onClick={exportJson}
+          >
+            Exporteren (JSON)
+          </button>
+          <button
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-200"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Importeren
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={importJson}
+          />
+        </div>
+        <p className="mt-3 text-[11px] leading-snug text-slate-500">
+          Tip: gebruik de Path tool om de vlieglijn te tekenen. Dubbelklik om af te ronden, Esc om te annuleren.
+        </p>
+      </div>
+    </aside>
   );
 }
