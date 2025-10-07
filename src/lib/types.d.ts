@@ -50,6 +50,7 @@ export interface PolylineShape extends BaseShape {
   closed?: boolean;
   strokeWidth?: number; // m
   showArrows?: boolean;
+  smooth?: boolean;
 }
 
 export type Shape =

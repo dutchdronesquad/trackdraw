@@ -8,7 +8,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.3),_rgba(15,23,42,0))]" />
         <div className="relative max-w-4xl space-y-6 text-center">
           <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">
-            Drone Design Studio
+            TrackDraw Studio
           </span>
           <h1 className="text-4xl font-semibold sm:text-5xl">
             Ontwerp FPV parcours met precisie, hoogteprofielen en exports in één browser-tool.
@@ -21,7 +21,7 @@ export default function Home() {
               href="/editor"
               className="inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-slate-950 shadow-lg transition hover:bg-sky-400 hover:shadow-xl"
             >
-              Start direct met tekenen
+              Start met TrackDraw
             </Link>
             <a
               href="#features"

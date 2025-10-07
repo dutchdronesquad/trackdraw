@@ -29,7 +29,7 @@ const now = () => new Date().toISOString();
 export const useEditor = create<EditorState>((set) => ({
   design: {
     id: nanoid(),
-    title: "Untitled Track",
+    title: "TrackDraw project",
     field: { width: 30, height: 15, origin: "tl", gridStep: 1, ppm: 50 },
     shapes: [],
     version: 1,
@@ -91,9 +91,24 @@ export const useEditor = create<EditorState>((set) => ({
       },
     })),
   replaceDesign: (design) =>
-    set(() => ({
-      design: { ...design, updatedAt: design.updatedAt ?? now() },
-      selection: [],
-      activeTool: "select",
-    })),
+    set(() => {
+      const normalizedShapes: Shape[] = design.shapes.map((shape) => {
+        if (shape.kind === "polyline") {
+          return {
+            ...shape,
+            smooth: shape.smooth ?? true,
+          } as Shape;
+        }
+        return shape;
+      });
+      return {
+        design: {
+          ...design,
+          shapes: normalizedShapes,
+          updatedAt: design.updatedAt ?? now(),
+        },
+        selection: [],
+        activeTool: "select",
+      };
+    }),
 }));

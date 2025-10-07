@@ -6,7 +6,16 @@ import { useEditor } from "@/store/editor";
 import { m2px, px2m } from "@/lib/units";
 import { zToColor, zRangeForDesign } from "@/lib/alt";
 import type { EditorTool } from "@/store/editor";
-import type { PolylinePoint } from "@/lib/types";
+import type {
+  PolylinePoint,
+  PolylineShape,
+  GateShape,
+  FlagShape,
+  ConeShape,
+  LabelShape,
+  Shape,
+} from "@/lib/types";
+import { distance2D, smoothPolyline } from "@/lib/geometry";
 
 interface DraftPoint {
   x: number;
@@ -14,10 +23,18 @@ interface DraftPoint {
   z?: number;
 }
 
-const toolDefaults: Record<Exclude<EditorTool, "select" | "polyline">, Record<string, any>> = {
+type ToolDefaults = {
+  gate: Pick<GateShape, "width" | "height" | "thick" | "color">;
+  flag: Pick<FlagShape, "radius" | "poleHeight" | "color">;
+  cone: Pick<ConeShape, "radius" | "color">;
+  label: Pick<LabelShape, "text" | "fontSize" | "color">;
+};
+
+const toolDefaults: ToolDefaults = {
   gate: {
     width: 1.5,
     height: 1.2,
+    thick: 0.35,
     color: "#1f2937",
   },
   flag: {
@@ -47,6 +64,8 @@ const isTypingInInput = (target: HTMLElement | null) => {
   );
 };
 
+type KonvaStage = import("konva/lib/Stage").Stage;
+
 export default function TrackCanvas() {
   const {
     design,
@@ -58,7 +77,7 @@ export default function TrackCanvas() {
     setActiveTool,
     removeShape,
   } = useEditor();
-  const stageRef = useRef<any>(null);
+  const stageRef = useRef<KonvaStage | null>(null);
   const [vertexSel, setVertexSel] = useState<{ shapeId: string; idx: number } | null>(
     null
   );
@@ -89,29 +108,57 @@ export default function TrackCanvas() {
   );
 
   const pointerToMeters = useCallback(
-    (pointer: { x: number; y: number } | null) => {
+    (pointer: { x: number; y: number } | null, snap = true) => {
       if (!pointer) return null;
-      const snappedX = snapPx(pointer.x);
-      const snappedY = snapPx(pointer.y);
+      const px = snap ? snapPx(pointer.x) : pointer.x;
+      const py = snap ? snapPx(pointer.y) : pointer.y;
       return {
-        x: px2m(snappedX, design.field.ppm),
-        y: px2m(snappedY, design.field.ppm),
+        x: px2m(px, design.field.ppm),
+        y: px2m(py, design.field.ppm),
       };
     },
     [design.field.ppm, snapPx]
   );
 
   const createShapeForTool = useCallback(
-    (tool: EditorTool, point: { x: number; y: number }) => {
+    (tool: EditorTool, point: { x: number; y: number }): Omit<Shape, "id"> | null => {
       if (tool === "select" || tool === "polyline") return null;
-      const additions = toolDefaults[tool] ?? {};
-      return {
-        kind: tool,
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...additions,
-      } as any;
+      switch (tool) {
+        case "gate":
+          return {
+            kind: "gate",
+            x: point.x,
+            y: point.y,
+            rotation: 0,
+            ...toolDefaults.gate,
+          };
+        case "flag":
+          return {
+            kind: "flag",
+            x: point.x,
+            y: point.y,
+            rotation: 0,
+            ...toolDefaults.flag,
+          };
+        case "cone":
+          return {
+            kind: "cone",
+            x: point.x,
+            y: point.y,
+            rotation: 0,
+            ...toolDefaults.cone,
+          };
+        case "label":
+          return {
+            kind: "label",
+            x: point.x,
+            y: point.y,
+            rotation: 0,
+            ...toolDefaults.label,
+          };
+        default:
+          return null;
+      }
     },
     []
   );
@@ -134,13 +181,14 @@ export default function TrackCanvas() {
       points,
       strokeWidth: 0.18,
       showArrows: true,
+      smooth: true,
       color: "#0284c7",
-    } as any);
+    });
     setSelection([id]);
     setVertexSel(null);
     setDraftPath([]);
     setActiveTool("select");
-  }, [draftPath, addShape, setActiveTool, setSelection]);
+  }, [addShape, draftPath, setActiveTool, setSelection]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -163,13 +211,19 @@ export default function TrackCanvas() {
       }
 
       if (key === "Backspace" || key === "Delete") {
+        if (draftPath.length && activeTool === "polyline") {
+          setDraftPath((prev) => prev.slice(0, Math.max(0, prev.length - 1)));
+          return;
+        }
         if (vertexSel) {
           const s = design.shapes.find((sh) => sh.id === vertexSel.shapeId);
           if (s?.kind === "polyline") {
-            const pts = [...(s as any).points];
+            const polyline = s as PolylineShape;
+            const pts = [...polyline.points];
             if (pts.length > 2) {
               pts.splice(vertexSel.idx, 1);
-              updateShape(s.id, { points: pts } as any);
+              const patch: Partial<PolylineShape> = { points: pts };
+              updateShape(s.id, patch);
             }
           }
           setVertexSel(null);
@@ -208,6 +262,7 @@ export default function TrackCanvas() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [
+    activeTool,
     draftPath.length,
     design.shapes,
     finalizePath,
@@ -305,6 +360,21 @@ export default function TrackCanvas() {
     };
   }, [cursorMeters, design.field.ppm]);
 
+  const draftLength = useMemo(() => {
+    if (draftPath.length < 2) return 0;
+    let total = 0;
+    for (let i = 1; i < draftPath.length; i += 1) {
+      total += distance2D(draftPath[i - 1], draftPath[i]);
+    }
+    return total;
+  }, [draftPath]);
+
+  const draftLengthWithCursor = useMemo(() => {
+    if (activeTool !== "polyline" || draftPath.length === 0) return draftLength;
+    if (!cursorMeters) return draftLength;
+    return draftLength + distance2D(draftPath[draftPath.length - 1], cursorMeters);
+  }, [activeTool, cursorMeters, draftLength, draftPath]);
+
   return (
     <div
       className="relative"
@@ -314,11 +384,12 @@ export default function TrackCanvas() {
         width={widthPx}
         height={heightPx}
         ref={stageRef}
-        draggable={activeTool === "select" && draftPath.length === 0}
+        draggable={activeTool === "select" && draftPath.length === 0 && !vertexSel}
         onMouseDown={(e) => {
           const stage = stageRef.current;
           if (!stage) return;
           const pointer = stage.getRelativePointerPosition();
+          const snap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
           if (e.target === e.target.getStage()) {
             if (activeTool === "select") {
               setSelection([]);
@@ -329,15 +400,23 @@ export default function TrackCanvas() {
           if (e.evt.button !== 0) return;
 
           if (activeTool === "polyline") {
-            const meters = pointerToMeters(pointer);
+            if (e.evt.detail >= 2) {
+              finalizePath();
+              return;
+            }
+            const meters = pointerToMeters(pointer, snap);
             if (!meters) return;
-            setDraftPath((prev) => [...prev, { ...meters, z: 0 }]);
+            setDraftPath((prev) => {
+              const last = prev.at(-1);
+              if (last && distance2D(last, meters) < 0.05) return prev;
+              return [...prev, { ...meters, z: 0 }];
+            });
             setSelection([]);
             return;
           }
 
           if (activeTool !== "select") {
-            const meters = pointerToMeters(pointer);
+            const meters = pointerToMeters(pointer, snap);
             if (!meters) return;
             const shape = createShapeForTool(activeTool, meters);
             if (!shape) return;
@@ -346,8 +425,10 @@ export default function TrackCanvas() {
             return;
           }
         }}
-        onDblClick={() => {
-          if (activeTool === "polyline") finalizePath();
+        onDblClick={(evt) => {
+          if (activeTool === "polyline") {
+            evt.evt.preventDefault();
+          }
         }}
         onMouseMove={() => {
           const stage = stageRef.current;
@@ -374,7 +455,8 @@ export default function TrackCanvas() {
         </Layer>
 
         <Layer>
-          {design.shapes.map((s) => {
+          {design.shapes.map((shape) => {
+            const s = shape;
             const selected = selection.includes(s.id);
             const allowInteraction = activeTool === "select";
             const base = (
@@ -388,10 +470,11 @@ export default function TrackCanvas() {
                 onDragEnd={(e) => {
                   const { x, y } = e.target.position();
                   const ppm = design.field.ppm;
-                  const gx = snapPx(x);
-                  const gy = snapPx(y);
-                  e.target.position({ x: gx, y: gy });
-                  updateShape(s.id, { x: gx / ppm, y: gy / ppm });
+                  const shouldSnap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
+                  const pxX = shouldSnap ? snapPx(x) : x;
+                  const pxY = shouldSnap ? snapPx(y) : y;
+                  e.target.position({ x: pxX, y: pxY });
+                  updateShape(s.id, { x: px2m(pxX, ppm), y: px2m(pxY, ppm) });
                 }}
                 onClick={(e) => {
                   if (!allowInteraction) return;
@@ -405,146 +488,187 @@ export default function TrackCanvas() {
                 }}
               >
                 {s.kind === "gate" && (
-                  <>
-                    {selected && (
-                      <Rect
-                        width={m2px((s as any).width, design.field.ppm) + 10}
-                        height={m2px((s as any).height, design.field.ppm) + 10}
-                        offsetX={
-                          m2px((s as any).width, design.field.ppm) / 2 + 5
-                        }
-                        offsetY={
-                          m2px((s as any).height, design.field.ppm) / 2 + 5
-                        }
-                        stroke="#38bdf8"
-                        dash={[6, 4]}
-                        strokeWidth={1.6}
-                        listening={false}
-                      />
-                    )}
-                    <Rect
-                      width={m2px((s as any).width, design.field.ppm)}
-                      height={m2px((s as any).height, design.field.ppm)}
-                      offsetX={
-                        m2px((s as any).width, design.field.ppm) / 2
-                      }
-                      offsetY={
-                        m2px((s as any).height, design.field.ppm) / 2
-                      }
-                      stroke={s.color || "#1f2937"}
-                      strokeWidth={2}
-                      dashEnabled
-                      fillEnabled={false}
-                    />
-                  </>
+                  (() => {
+                    const gate = s as GateShape;
+                    const width = m2px(gate.width, design.field.ppm);
+                    const depth = m2px(gate.thick ?? 0.35, design.field.ppm);
+                    const color = gate.color || "#1f2937";
+                    return (
+                      <>
+                        {selected && (
+                          <Rect
+                            width={width + m2px(0.3, design.field.ppm)}
+                            height={depth + m2px(0.3, design.field.ppm)}
+                            offsetX={(width + m2px(0.3, design.field.ppm)) / 2}
+                            offsetY={(depth + m2px(0.3, design.field.ppm)) / 2}
+                            stroke="#38bdf8"
+                            dash={[6, 4]}
+                            strokeWidth={1.6}
+                            listening={false}
+                          />
+                        )}
+                        <Rect
+                          width={width}
+                          height={depth}
+                          offsetX={width / 2}
+                          offsetY={depth / 2}
+                          fill={color}
+                          opacity={0.12}
+                          strokeEnabled={false}
+                        />
+                        <Rect
+                          width={width}
+                          height={depth}
+                          offsetX={width / 2}
+                          offsetY={depth / 2}
+                          stroke={color}
+                          strokeWidth={2}
+                          cornerRadius={Math.min(12, depth / 2)}
+                          fillEnabled={false}
+                        />
+                        <Line
+                          points={[0, -depth / 2, 0, depth / 2]}
+                          stroke={color}
+                          strokeWidth={Math.max(2, depth / 3)}
+                          opacity={0.7}
+                        />
+                      </>
+                    );
+                  })()
                 )}
 
                 {s.kind === "flag" && (
-                  <>
-                    {selected && (
-                      <Circle
-                        radius={
-                          m2px((s as any).radius, design.field.ppm) +
-                          m2px(0.1, design.field.ppm)
-                        }
-                        stroke="#38bdf8"
-                        dash={[5, 4]}
-                        strokeWidth={1.4}
-                        listening={false}
-                      />
-                    )}
-                    <Circle
-                      radius={m2px((s as any).radius, design.field.ppm)}
-                      stroke={s.color || "#7c3aed"}
-                      strokeWidth={2}
-                    />
-                    <Line
-                      points={[
-                        0,
-                        0,
-                        0,
-                        -m2px((s as any).poleHeight ?? 2, design.field.ppm),
-                      ]}
-                      stroke={s.color || "#7c3aed"}
-                      strokeWidth={3}
-                    />
-                  </>
+                  (() => {
+                    const flag = s as FlagShape;
+                    const color = flag.color || "#7c3aed";
+                    const radius = m2px(flag.radius, design.field.ppm);
+                    const pole = m2px(flag.poleHeight ?? 2, design.field.ppm);
+                    return (
+                      <>
+                        {selected && (
+                          <Circle
+                            radius={radius + m2px(0.1, design.field.ppm)}
+                            stroke="#38bdf8"
+                            dash={[5, 4]}
+                            strokeWidth={1.4}
+                            listening={false}
+                          />
+                        )}
+                        <Circle radius={radius} stroke={color} strokeWidth={2} />
+                        <Line points={[0, 0, 0, -pole]} stroke={color} strokeWidth={3} />
+                      </>
+                    );
+                  })()
                 )}
 
                 {s.kind === "cone" && (
-                  <>
-                    <Circle
-                      radius={m2px((s as any).radius, design.field.ppm)}
-                      fill={s.color || "#f97316"}
-                      opacity={0.75}
-                    />
-                    {selected && (
-                      <Circle
-                        radius={
-                          m2px((s as any).radius, design.field.ppm) +
-                          m2px(0.08, design.field.ppm)
-                        }
-                        stroke="#38bdf8"
-                        dash={[4, 4]}
-                        strokeWidth={1.4}
-                        listening={false}
-                      />
-                    )}
-                  </>
+                  (() => {
+                    const cone = s as ConeShape;
+                    const radius = m2px(cone.radius, design.field.ppm);
+                    const color = cone.color || "#f97316";
+                    return (
+                      <>
+                        <Circle radius={radius} fill={color} opacity={0.75} />
+                        {selected && (
+                          <Circle
+                            radius={radius + m2px(0.08, design.field.ppm)}
+                            stroke="#38bdf8"
+                            dash={[4, 4]}
+                            strokeWidth={1.4}
+                            listening={false}
+                          />
+                        )}
+                      </>
+                    );
+                  })()
                 )}
 
                 {s.kind === "label" && (
-                  <>
-                    {selected && (
-                      <Rect
-                        x={-8}
-                        y={-24}
-                        width={(s as any).text.length * 8 + 16}
-                        height={28}
-                        stroke="#38bdf8"
-                        dash={[6, 4]}
-                        cornerRadius={6}
-                        listening={false}
-                      />
-                    )}
-                    <Text
-                      text={(s as any).text}
-                      fontSize={(s as any).fontSize ?? 18}
-                      fill={s.color || "#111827"}
-                      offsetY={8}
-                    />
-                  </>
+                  (() => {
+                    const label = s as LabelShape;
+                    const color = label.color || "#111827";
+                    const text = label.text;
+                    const fontSize = label.fontSize ?? 18;
+                    return (
+                      <>
+                        {selected && (
+                          <Rect
+                            x={-8}
+                            y={-24}
+                            width={text.length * 8 + 16}
+                            height={28}
+                            stroke="#38bdf8"
+                            dash={[6, 4]}
+                            cornerRadius={6}
+                            listening={false}
+                          />
+                        )}
+                        <Text text={text} fontSize={fontSize} fill={color} offsetY={8} />
+                      </>
+                    );
+                  })()
                 )}
 
                 {s.kind === "polyline" && (
                   <>
-                    {((s as any).points as any[])
+                    {(s as PolylineShape).points
                       .slice(0, -1)
-                      .map((p: any, i: number) => {
-                        const p2 = (s as any).points[i + 1];
+                      .map((p, i: number) => {
+                        const polyline = s as PolylineShape;
+                        const nextPoint = polyline.points[i + 1];
                         const z1 = p.z ?? 0;
-                        const z2 = p2.z ?? 0;
+                        const z2 = nextPoint.z ?? 0;
                         const color = zToColor((z1 + z2) / 2, zmin, zmax);
                         const strokePx = m2px(
-                          (s as any).strokeWidth ?? 0.15,
+                          (polyline.strokeWidth ?? 0.15),
                           design.field.ppm
                         );
-                        const showArrow = Boolean((s as any).showArrows);
+                        const baseStroke = Math.max(1, strokePx * (polyline.smooth ? 0.6 : 1));
+                        const baseOpacity = polyline.smooth ? 0.45 : 1;
+                        const showArrow = Boolean(polyline.showArrows);
                         const points = [
                           m2px(p.x, design.field.ppm),
                           m2px(p.y, design.field.ppm),
-                          m2px(p2.x, design.field.ppm),
-                          m2px(p2.y, design.field.ppm),
+                          m2px(nextPoint.x, design.field.ppm),
+                          m2px(nextPoint.y, design.field.ppm),
                         ];
                         return (
                           <Group key={`${s.id}-seg-${i}`}>
                             <Line
                               points={points}
                               stroke={color}
-                              strokeWidth={strokePx}
+                              strokeWidth={baseStroke}
                               lineCap="round"
                               lineJoin="round"
+                              opacity={baseOpacity}
                             />
+                            {allowInteraction && (
+                              <Line
+                                points={points}
+                                stroke="rgba(0,0,0,0.01)"
+                                strokeWidth={Math.max(4, strokePx)}
+                                hitStrokeWidth={Math.max(20, strokePx + 20)}
+                                onDblClick={(event) => {
+                                  if (!allowInteraction) return;
+                                  event.cancelBubble = true;
+                                  const stage = event.target.getStage();
+                                  if (!stage) return;
+                                  const pointer = stage.getRelativePointerPosition();
+                                  const useSnap =
+                                    !(event.evt.altKey || event.evt.metaKey || event.evt.shiftKey);
+                                  const meters = pointerToMeters(pointer, useSnap);
+                                  if (!meters) return;
+                                  const toInsert: PolylinePoint = {
+                                    x: meters.x,
+                                    y: meters.y,
+                                    z: (z1 + z2) / 2,
+                                  };
+                                  const updatedPoints = [...polyline.points];
+                                  updatedPoints.splice(i + 1, 0, toInsert);
+                                  updateShape(polyline.id, { points: updatedPoints });
+                                }}
+                              />
+                            )}
                             {showArrow && (
                               <Arrow
                                 points={points}
@@ -565,15 +689,13 @@ export default function TrackCanvas() {
 
                     {selected && (
                       <Line
-                        points={(
-                          (s as any).points as PolylinePoint[]
-                        ).flatMap((pt) => [
+                        points={(s as PolylineShape).points.flatMap((pt) => [
                           m2px(pt.x, design.field.ppm),
                           m2px(pt.y, design.field.ppm),
                         ])}
                         stroke="#38bdf8"
                         strokeWidth={
-                          m2px((s as any).strokeWidth ?? 0.15, design.field.ppm) +
+                          m2px(((s as PolylineShape).strokeWidth ?? 0.15), design.field.ppm) +
                           3
                         }
                         lineCap="round"
@@ -581,8 +703,23 @@ export default function TrackCanvas() {
                       />
                     )}
 
+                    {((s as PolylineShape).smooth ?? true) && (
+                      <Line
+                        points={smoothPolyline((s as PolylineShape).points).flatMap((pt) => [
+                          m2px(pt.x, design.field.ppm),
+                          m2px(pt.y, design.field.ppm),
+                        ])}
+                        stroke={(s as PolylineShape).color || "#0284c7"}
+                        strokeWidth={m2px(((s as PolylineShape).strokeWidth ?? 0.15), design.field.ppm)}
+                        opacity={0.85}
+                        lineCap="round"
+                        lineJoin="round"
+                        listening={false}
+                      />
+                    )}
+
                     {allowInteraction &&
-                      ((s as any).points as any[]).map((p: any, idx: number) => {
+                      (s as PolylineShape).points.map((p, idx: number) => {
                         const cx = m2px(p.x, design.field.ppm);
                         const cy = m2px(p.y, design.field.ppm);
                         const r = Math.max(4, m2px(0.08, design.field.ppm));
@@ -600,18 +737,20 @@ export default function TrackCanvas() {
                             stroke={active ? "#111827" : "#0ea5e9"}
                             strokeWidth={2}
                             draggable
-                            onDragMove={(e) => {
-                              const nx = snapPx(e.target.x());
-                              const ny = snapPx(e.target.y());
-                              e.target.position({ x: nx, y: ny });
-                            }}
                             onDragEnd={(e) => {
                               const ppm = design.field.ppm;
-                              const nx = px2m(snapPx(e.target.x()), ppm);
-                              const ny = px2m(snapPx(e.target.y()), ppm);
-                              const pts = [...(s as any).points];
-                              pts[idx] = { ...pts[idx], x: nx, y: ny };
-                              updateShape(s.id, { points: pts } as any);
+                              const shouldSnap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
+                              const pxX = shouldSnap ? snapPx(e.target.x()) : e.target.x();
+                              const pxY = shouldSnap ? snapPx(e.target.y()) : e.target.y();
+                              e.target.position({ x: pxX, y: pxY });
+                              const polyline = s as PolylineShape;
+                              const pts: PolylinePoint[] = polyline.points.map((pt, pointIndex) =>
+                                pointIndex === idx
+                                  ? { ...pt, x: px2m(pxX, ppm), y: px2m(pxY, ppm) }
+                                  : pt
+                              );
+                              const patch: Partial<PolylineShape> = { points: pts };
+                              updateShape(s.id, patch);
                             }}
                             onMouseDown={(e) => {
                               e.cancelBubble = true;
@@ -676,10 +815,13 @@ export default function TrackCanvas() {
         </Layer>
       </Stage>
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between gap-4 px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-slate-500">
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-slate-500">
         <span>
           Grid {design.field.gridStep.toFixed(1)} m • Scale {design.field.ppm} px/m
         </span>
+        {draftPath.length > 0 && activeTool === "polyline" && (
+          <span>Pad-lengte {draftLengthWithCursor.toFixed(1)} m</span>
+        )}
         {cursorMeters && (
           <span>
             x {cursorMeters.x.toFixed(2)} m · y {cursorMeters.y.toFixed(2)} m

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DDS Track Designer",
-  description: "Design FPV race tracks with real-world scale, altitude & exports.",
+  title: "TrackDraw",
+  description: "TrackDraw – ontwerp FPV race tracks met schaal, hoogteprofiel en exports.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -26,15 +26,21 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          // inline script om FOUC te voorkomen bij dark mode
+          dangerouslySetInnerHTML={{
+            __html: `(()=>{try{const LS_KEY='trackdraw.theme';let m=localStorage.getItem(LS_KEY);if(!m){m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}if(m==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-neutral-50 text-neutral-900`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] transition-colors`}
       >
-        <div className="min-h-screen">
+        <div className="min-h-screen flex flex-col">
           {children}
         </div>
       </body>

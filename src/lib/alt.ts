@@ -1,4 +1,4 @@
-import type { TrackDesign } from "./types";
+import type { PolylineShape, TrackDesign } from "./types";
 
 export function zToColor(z: number, zmin: number, zmax: number): string {
   const t = zmax === zmin ? 0 : (z - zmin) / (zmax - zmin);
@@ -12,7 +12,8 @@ export function zRangeForDesign(design: TrackDesign): [number, number] {
     seen = false;
   for (const s of design.shapes)
     if (s.kind === "polyline") {
-      for (const p of (s as any).points as Array<{ z?: number }>) {
+      const polyline = s as PolylineShape;
+      for (const p of polyline.points) {
         const z = p.z ?? 0;
         if (!seen) {
           zmin = z;

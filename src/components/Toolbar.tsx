@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useRef } from "react";
 import { EditorTool, useEditor } from "@/store/editor";
+import type { TrackDesign } from "@/lib/types";
 
 const tools: Array<{
   id: EditorTool;
@@ -47,7 +48,7 @@ const tools: Array<{
   },
 ];
 
-export default function Toolbar() {
+export default function Toolbar({ embedMode = false }: { embedMode?: boolean }) {
   const {
     design,
     activeTool,
@@ -77,10 +78,10 @@ export default function Toolbar() {
       try {
         const parsed = JSON.parse(content);
         if (!parsed || typeof parsed !== "object") throw new Error();
-        replaceDesign(parsed as any);
+        replaceDesign(parsed as TrackDesign);
       } catch (err) {
         console.error("Failed to import design", err);
-        alert("Kon het bestand niet inladen. Controleer of het een geldig DDS Track export is.");
+        alert("Kon het bestand niet inladen. Controleer of het een geldige TrackDraw export is.");
       } finally {
         event.target.value = "";
       }
@@ -88,8 +89,21 @@ export default function Toolbar() {
   };
 
   return (
-    <aside className="flex w-64 min-w-[14rem] flex-col border-r border-slate-200 bg-white/90 px-4 py-5 backdrop-blur">
-      <div>
+    <aside className={
+      `flex w-64 min-w-[14rem] flex-col bg-white/90 backdrop-blur ${
+        embedMode ? 'border-slate-200' : 'border-r border-slate-200'
+      }`
+    }>
+      <div className="border-b border-slate-200/70 px-4 py-5">
+        <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          TrackDraw
+        </div>
+        <div className="mt-1 text-lg font-semibold text-slate-900">Ontwerpstudio</div>
+        <p className="mt-1 text-xs text-slate-500">
+          Kies een tool en klik op het veld om gates, pylons en een vlieglijn te plaatsen.
+        </p>
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-5">
         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Tools
         </div>
@@ -122,36 +136,38 @@ export default function Toolbar() {
             );
           })}
         </div>
+        <div className="mt-6 border-t border-slate-200 pt-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Bestand
+          </div>
+          <div className="mt-3 grid gap-2">
+            <button
+              className="rounded-lg border border-transparent bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              onClick={exportJson}
+            >
+              Exporteren (JSON)
+            </button>
+            <button
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-200"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Importeren
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={importJson}
+            />
+          </div>
+          <p className="mt-3 text-[11px] leading-snug text-slate-500">
+            Tip: gebruik de Path tool om de vlieglijn te tekenen. Dubbelklik om af te ronden, Esc om te annuleren.
+          </p>
+        </div>
       </div>
-
-      <div className="mt-6 border-t border-slate-200 pt-4">
-        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Bestand
-        </div>
-        <div className="mt-3 grid gap-2">
-          <button
-            className="rounded-lg border border-transparent bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-200"
-            onClick={exportJson}
-          >
-            Exporteren (JSON)
-          </button>
-          <button
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-200"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Importeren
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={importJson}
-          />
-        </div>
-        <p className="mt-3 text-[11px] leading-snug text-slate-500">
-          Tip: gebruik de Path tool om de vlieglijn te tekenen. Dubbelklik om af te ronden, Esc om te annuleren.
-        </p>
+      <div className="px-4 pb-5 text-[11px] text-slate-400">
+        Sneltoetsen: V Select · G Gate · F Flag · C Cone · L Label · P Path
       </div>
     </aside>
   );

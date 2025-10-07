@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useEditor } from "@/store/editor";
 import { elevationSamples, totalLength2D } from "@/lib/geometry";
+import type { PolylineShape } from "@/lib/types";
 import {
   LineChart,
   Line,
@@ -15,18 +16,18 @@ import {
 
 export default function ElevationPanel() {
   const { design, selection } = useEditor();
-  const path = useMemo(() => {
+  const path = useMemo<PolylineShape | null>(() => {
     const selected = design.shapes.find(
       (s) => selection.includes(s.id) && s.kind === "polyline"
     );
-    return selected?.kind === "polyline"
-      ? (selected as any)
-      : (design.shapes.find((s) => s.kind === "polyline") as any);
+    if (selected?.kind === "polyline") return selected;
+    const fallback = design.shapes.find((s) => s.kind === "polyline");
+    return fallback?.kind === "polyline" ? fallback : null;
   }, [design, selection]);
 
   if (!path) {
     return (
-      <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-500">
+      <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-500 shrink-0">
         Geen path geselecteerd. Teken of selecteer een vlieglijn om het hoogteprofiel te bekijken.
       </div>
     );
@@ -38,7 +39,7 @@ export default function ElevationPanel() {
   const maxZ = data.reduce((acc, cur) => Math.max(acc, cur.z), Number.NEGATIVE_INFINITY);
 
   return (
-    <div className="border-t border-slate-200 bg-slate-50 px-5 py-4">
+    <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 shrink-0">
       <div className="flex items-center justify-between">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -67,8 +68,8 @@ export default function ElevationPanel() {
               stroke="#94a3b8"
             />
             <Tooltip
-              formatter={(v: any) => `${Number(v).toFixed(2)} m`}
-              labelFormatter={(v: any) => `Afstand ${Number(v).toFixed(2)} m`}
+              formatter={(value: number | string) => `${Number(value).toFixed(2)} m`}
+              labelFormatter={(value: number | string) => `Afstand ${Number(value).toFixed(2)} m`}
             />
             <Line dataKey="z" dot={false} stroke="#0ea5e9" strokeWidth={2} />
             <ReferenceLine x={0} strokeDasharray="3 3" stroke="#cbd5f5" />
