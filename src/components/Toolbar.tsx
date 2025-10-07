@@ -167,7 +167,7 @@ export default function Toolbar({ embedMode = false }: { embedMode?: boolean }) 
         </div>
       </div>
       <div className="px-4 pb-5 text-[11px] text-slate-400">
-        Sneltoetsen: V Select · G Gate · F Flag · C Cone · L Label · P Path
+        Sneltoetsen: V Select · G Gate · F Flag · C Cone · L Label · P Path · Space Pan · Shift Multiselect · Alt Free move
       </div>
     </aside>
   );

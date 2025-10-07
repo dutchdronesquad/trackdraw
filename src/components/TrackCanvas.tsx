@@ -1,7 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Stage, Layer, Rect, Circle, Line, Text, Group, Arrow } from "react-konva";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  Stage,
+  Layer,
+  Rect,
+  Circle,
+  Line,
+  Text,
+  Group,
+  Arrow,
+} from "react-konva";
+import type { Vector2d } from "konva/lib/types";
+import type { Group as KonvaGroup } from "konva/lib/Group";
+import type { Stage as KonvaStage } from "konva/lib/Stage";
 import { useEditor } from "@/store/editor";
 import { m2px, px2m } from "@/lib/units";
 import { zToColor, zRangeForDesign } from "@/lib/alt";
@@ -21,6 +39,20 @@ interface DraftPoint {
   x: number;
   y: number;
   z?: number;
+}
+
+interface CursorState {
+  rawMeters: { x: number; y: number };
+  snappedMeters: { x: number; y: number };
+  rawPx: { x: number; y: number };
+  snappedPx: { x: number; y: number };
+}
+
+interface RectLike {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 type ToolDefaults = {
@@ -64,7 +96,50 @@ const isTypingInInput = (target: HTMLElement | null) => {
   );
 };
 
-type KonvaStage = import("konva/lib/Stage").Stage;
+const MIN_MARQUEE_SIZE = 8;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
+
+const normalizeRect = (origin: Vector2d, next: Vector2d): RectLike => {
+  const width = next.x - origin.x;
+  const height = next.y - origin.y;
+  return {
+    x: width < 0 ? next.x : origin.x,
+    y: height < 0 ? next.y : origin.y,
+    width: Math.abs(width),
+    height: Math.abs(height),
+  };
+};
+
+const rectsIntersect = (a: RectLike, b: RectLike) =>
+  a.x < b.x + b.width &&
+  a.x + a.width > b.x &&
+  a.y < b.y + b.height &&
+  a.y + a.height > b.y;
+
+const mergeClientRects = (rects: RectLike[]): RectLike | null => {
+  if (!rects.length) return null;
+  let minX = rects[0].x;
+  let minY = rects[0].y;
+  let maxX = rects[0].x + rects[0].width;
+  let maxY = rects[0].y + rects[0].height;
+
+  for (let i = 1; i < rects.length; i += 1) {
+    const rect = rects[i];
+    minX = Math.min(minX, rect.x);
+    minY = Math.min(minY, rect.y);
+    maxX = Math.max(maxX, rect.x + rect.width);
+    maxY = Math.max(maxY, rect.y + rect.height);
+  }
+
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
+};
 
 export default function TrackCanvas() {
   const {
@@ -77,14 +152,23 @@ export default function TrackCanvas() {
     setActiveTool,
     removeShape,
   } = useEditor();
+
   const stageRef = useRef<KonvaStage | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const shapeRefs = useRef<Record<string, KonvaGroup | null>>({});
+  const dragSnapRef = useRef<boolean>(true);
+
   const [vertexSel, setVertexSel] = useState<{ shapeId: string; idx: number } | null>(
     null
   );
   const [draftPath, setDraftPath] = useState<DraftPoint[]>([]);
-  const [cursorMeters, setCursorMeters] = useState<{ x: number; y: number } | null>(
-    null
-  );
+  const [cursor, setCursor] = useState<CursorState | null>(null);
+  const [marqueeRect, setMarqueeRect] = useState<RectLike | null>(null);
+  const marqueeOrigin = useRef<Vector2d | null>(null);
+  const marqueeAdditive = useRef(false);
+  const [selectionFrame, setSelectionFrame] = useState<RectLike | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const [isStageDragging, setIsStageDragging] = useState(false);
 
   const widthPx = useMemo(
     () => m2px(design.field.width, design.field.ppm),
@@ -99,25 +183,32 @@ export default function TrackCanvas() {
     [design.field.gridStep, design.field.ppm]
   );
 
-  const snapPx = useCallback(
-    (value: number) => {
-      if (!isFinite(stepPx) || stepPx <= 1) return Math.round(value);
-      return Math.round(value / stepPx) * stepPx;
+  const dragBound = useCallback(
+    (pos: Vector2d): Vector2d => {
+      const clamped = {
+        x: clamp(pos.x, 0, widthPx),
+        y: clamp(pos.y, 0, heightPx),
+      };
+      if (!dragSnapRef.current) return clamped;
+      return {
+        x: Math.round(clamped.x / stepPx) * stepPx,
+        y: Math.round(clamped.y / stepPx) * stepPx,
+      };
     },
-    [stepPx]
+    [heightPx, stepPx, widthPx]
   );
 
   const pointerToMeters = useCallback(
     (pointer: { x: number; y: number } | null, snap = true) => {
       if (!pointer) return null;
-      const px = snap ? snapPx(pointer.x) : pointer.x;
-      const py = snap ? snapPx(pointer.y) : pointer.y;
+      const px = snap ? Math.round(pointer.x / stepPx) * stepPx : pointer.x;
+      const py = snap ? Math.round(pointer.y / stepPx) * stepPx : pointer.y;
       return {
         x: px2m(px, design.field.ppm),
         y: px2m(py, design.field.ppm),
       };
     },
-    [design.field.ppm, snapPx]
+    [design.field.ppm, stepPx]
   );
 
   const createShapeForTool = useCallback(
@@ -191,11 +282,18 @@ export default function TrackCanvas() {
   }, [addShape, draftPath, setActiveTool, setSelection]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       if (isTypingInInput(target)) return;
 
+      if (e.code === "Space") {
+        e.preventDefault();
+        setIsPanning(true);
+        return;
+      }
+
       const key = e.key;
+
       if (key === "Escape") {
         if (draftPath.length) {
           setDraftPath([]);
@@ -259,8 +357,18 @@ export default function TrackCanvas() {
       }
     };
 
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        setIsPanning(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown, { passive: false });
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
   }, [
     activeTool,
     draftPath.length,
@@ -286,6 +394,20 @@ export default function TrackCanvas() {
     }
   }, [activeTool]);
 
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || !selection.length) {
+      setSelectionFrame(null);
+      return;
+    }
+    const rects: RectLike[] = selection
+      .map((id) => shapeRefs.current[id])
+      .filter((node): node is KonvaGroup => Boolean(node))
+      .map((node) => node.getClientRect({ relativeTo: stage }));
+
+    setSelectionFrame(mergeClientRects(rects));
+  }, [selection, design.shapes]);
+
   const [zmin, zmax] = zRangeForDesign(design);
 
   const grid = useMemo(() => {
@@ -302,6 +424,7 @@ export default function TrackCanvas() {
           points={[x, 0, x, heightPx]}
           stroke={isCoarse ? "#cbd5f5" : "#e2e8f0"}
           strokeWidth={isCoarse ? 1.2 : 1}
+          listening={false}
         />
       );
       if (isCoarse && idx !== 0) {
@@ -314,6 +437,7 @@ export default function TrackCanvas() {
             fontSize={11}
             fill="#94a3b8"
             text={`${metersX.toFixed(0)}m`}
+            listening={false}
           />
         );
       }
@@ -327,6 +451,7 @@ export default function TrackCanvas() {
           points={[0, y, widthPx, y]}
           stroke={isCoarse ? "#cbd5f5" : "#e2e8f0"}
           strokeWidth={isCoarse ? 1.2 : 1}
+          listening={false}
         />
       );
       if (isCoarse && idx !== 0) {
@@ -339,6 +464,7 @@ export default function TrackCanvas() {
             fontSize={11}
             fill="#94a3b8"
             text={`${metersY.toFixed(0)}m`}
+            listening={false}
           />
         );
       }
@@ -352,14 +478,6 @@ export default function TrackCanvas() {
     return draftPath.flatMap((p) => [m2px(p.x, design.field.ppm), m2px(p.y, design.field.ppm)]);
   }, [design.field.ppm, draftPath]);
 
-  const cursorPx = useMemo(() => {
-    if (!cursorMeters) return null;
-    return {
-      x: m2px(cursorMeters.x, design.field.ppm),
-      y: m2px(cursorMeters.y, design.field.ppm),
-    };
-  }, [cursorMeters, design.field.ppm]);
-
   const draftLength = useMemo(() => {
     if (draftPath.length < 2) return 0;
     let total = 0;
@@ -371,33 +489,59 @@ export default function TrackCanvas() {
 
   const draftLengthWithCursor = useMemo(() => {
     if (activeTool !== "polyline" || draftPath.length === 0) return draftLength;
-    if (!cursorMeters) return draftLength;
-    return draftLength + distance2D(draftPath[draftPath.length - 1], cursorMeters);
-  }, [activeTool, cursorMeters, draftLength, draftPath]);
+    if (!cursor) return draftLength;
+    return (
+      draftLength +
+      distance2D(draftPath[draftPath.length - 1], {
+        x: cursor.snappedMeters.x,
+        y: cursor.snappedMeters.y,
+      })
+    );
+  }, [activeTool, cursor, draftLength, draftPath]);
+
+  const cursorStyle = useMemo(() => {
+    if (isStageDragging) return "grabbing";
+    if (isPanning) return "grab";
+    if (activeTool === "polyline") return "crosshair";
+    if (marqueeRect) return "crosshair";
+    return "default";
+  }, [activeTool, isPanning, isStageDragging, marqueeRect]);
+
+  const hoverCell = useMemo(() => {
+    if (!cursor) return null;
+    return {
+      x: Math.floor(cursor.rawPx.x / stepPx) * stepPx,
+      y: Math.floor(cursor.rawPx.y / stepPx) * stepPx,
+    };
+  }, [cursor, stepPx]);
+
+  const stageWidth = Math.max(widthPx, 360);
+  const stageHeight = Math.max(heightPx, 240);
 
   return (
     <div
+      ref={containerRef}
       className="relative"
-      style={{ width: Math.max(widthPx, 320), height: Math.max(heightPx, 240) }}
+      style={{ width: stageWidth, height: stageHeight, cursor: cursorStyle }}
     >
       <Stage
         width={widthPx}
         height={heightPx}
         ref={stageRef}
-        draggable={activeTool === "select" && draftPath.length === 0 && !vertexSel}
+        draggable={isPanning}
+        onDragStart={() => setIsStageDragging(true)}
+        onDragEnd={() => setIsStageDragging(false)}
         onMouseDown={(e) => {
           const stage = stageRef.current;
           if (!stage) return;
+          if (isPanning) return;
+
           const pointer = stage.getRelativePointerPosition();
-          const snap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
-          if (e.target === e.target.getStage()) {
-            if (activeTool === "select") {
-              setSelection([]);
-              setVertexSel(null);
-            }
-          }
+          if (!pointer) return;
 
           if (e.evt.button !== 0) return;
+
+          const snap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
 
           if (activeTool === "polyline") {
             if (e.evt.detail >= 2) {
@@ -424,22 +568,82 @@ export default function TrackCanvas() {
             setSelection([id]);
             return;
           }
-        }}
-        onDblClick={(evt) => {
-          if (activeTool === "polyline") {
-            evt.evt.preventDefault();
+
+          if (e.target === stage) {
+            if (!(e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey)) {
+              setSelection([]);
+            }
+            marqueeOrigin.current = pointer;
+            marqueeAdditive.current = Boolean(
+              e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey
+            );
+            setMarqueeRect({ x: pointer.x, y: pointer.y, width: 0, height: 0 });
           }
         }}
         onMouseMove={() => {
           const stage = stageRef.current;
           if (!stage) return;
           const pointer = stage.getRelativePointerPosition();
-          const meters = pointerToMeters(pointer);
-          if (meters) {
-            setCursorMeters(meters);
+          if (!pointer) return;
+
+          const rawMeters = pointerToMeters(pointer, false);
+          const snappedMeters = pointerToMeters(pointer, true);
+          if (rawMeters && snappedMeters) {
+            setCursor({
+              rawMeters,
+              snappedMeters,
+              rawPx: { x: pointer.x, y: pointer.y },
+              snappedPx: {
+                x: Math.round(pointer.x / stepPx) * stepPx,
+                y: Math.round(pointer.y / stepPx) * stepPx,
+              },
+            });
+          } else {
+            setCursor(null);
+          }
+
+          if (marqueeOrigin.current) {
+            const rect = normalizeRect(marqueeOrigin.current, pointer);
+            setMarqueeRect(rect);
           }
         }}
-        onMouseLeave={() => setCursorMeters(null)}
+        onMouseLeave={() => {
+          setCursor(null);
+          setMarqueeRect(null);
+          marqueeOrigin.current = null;
+        }}
+        onMouseUp={() => {
+          const stage = stageRef.current;
+          if (!stage) return;
+          if (!marqueeOrigin.current || !marqueeRect) {
+            marqueeOrigin.current = null;
+            setMarqueeRect(null);
+            return;
+          }
+
+          const rect = marqueeRect;
+          marqueeOrigin.current = null;
+          setMarqueeRect(null);
+
+          if (rect.width < MIN_MARQUEE_SIZE && rect.height < MIN_MARQUEE_SIZE) {
+            return;
+          }
+
+          const selectedIds = Object.entries(shapeRefs.current)
+            .filter(([, node]): node is [string, KonvaGroup] => Boolean(node))
+            .filter(([, node]) => {
+              const clientRect = node!.getClientRect({ relativeTo: stage });
+              return rectsIntersect(rect, clientRect);
+            })
+            .map(([id]) => id);
+
+          if (marqueeAdditive.current) {
+            const union = new Set([...selection, ...selectedIds]);
+            setSelection(Array.from(union));
+          } else {
+            setSelection(selectedIds);
+          }
+        }}
       >
         <Layer listening={false}>
           <Rect
@@ -452,34 +656,91 @@ export default function TrackCanvas() {
             strokeWidth={1}
           />
           {grid}
+          {hoverCell && (
+            <Rect
+              x={hoverCell.x}
+              y={hoverCell.y}
+              width={stepPx}
+              height={stepPx}
+              stroke="#38bdf8"
+              strokeWidth={1}
+              dash={[4, 4]}
+              opacity={0.4}
+            />
+          )}
+          {selectionFrame && (
+            <Rect
+              x={selectionFrame.x}
+              y={selectionFrame.y}
+              width={selectionFrame.width}
+              height={selectionFrame.height}
+              stroke="#38bdf8"
+              strokeWidth={1.2}
+              dash={[6, 4]}
+              listening={false}
+            />
+          )}
+          {marqueeRect && (
+            <Rect
+              x={marqueeRect.x}
+              y={marqueeRect.y}
+              width={marqueeRect.width}
+              height={marqueeRect.height}
+              stroke="#0ea5e9"
+              strokeWidth={1}
+              dash={[6, 4]}
+              fill="#0284c720"
+              listening={false}
+            />
+          )}
         </Layer>
 
         <Layer>
           {design.shapes.map((shape) => {
             const s = shape;
             const selected = selection.includes(s.id);
-            const allowInteraction = activeTool === "select";
-            const base = (
+            const allowInteraction = activeTool === "select" && !isPanning;
+            return (
               <Group
                 key={s.id}
+                ref={(node) => {
+                  shapeRefs.current[s.id] = node;
+                }}
                 x={m2px(s.x, design.field.ppm)}
                 y={m2px(s.y, design.field.ppm)}
                 rotation={s.rotation}
                 draggable={allowInteraction && !s.locked}
+                dragBoundFunc={dragBound}
                 listening={allowInteraction}
+                onDragStart={(e) => {
+                  dragSnapRef.current = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
+                }}
                 onDragEnd={(e) => {
                   const { x, y } = e.target.position();
                   const ppm = design.field.ppm;
-                  const shouldSnap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
-                  const pxX = shouldSnap ? snapPx(x) : x;
-                  const pxY = shouldSnap ? snapPx(y) : y;
+                  const pxX = dragSnapRef.current
+                    ? Math.round(x / stepPx) * stepPx
+                    : clamp(x, 0, widthPx);
+                  const pxY = dragSnapRef.current
+                    ? Math.round(y / stepPx) * stepPx
+                    : clamp(y, 0, heightPx);
                   e.target.position({ x: pxX, y: pxY });
                   updateShape(s.id, { x: px2m(pxX, ppm), y: px2m(pxY, ppm) });
                 }}
-                onClick={(e) => {
+                onMouseDown={(e) => {
                   if (!allowInteraction) return;
                   e.cancelBubble = true;
-                  setSelection([s.id]);
+                  if (e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey) {
+                    const current = new Set(selection);
+                    if (current.has(s.id)) {
+                      current.delete(s.id);
+                    } else {
+                      current.add(s.id);
+                    }
+                    setSelection(Array.from(current));
+                  } else {
+                    setSelection([s.id]);
+                  }
                 }}
                 onTap={(e) => {
                   if (!allowInteraction) return;
@@ -487,285 +748,245 @@ export default function TrackCanvas() {
                   setSelection([s.id]);
                 }}
               >
-                {s.kind === "gate" && (
-                  (() => {
-                    const gate = s as GateShape;
-                    const width = m2px(gate.width, design.field.ppm);
-                    const depth = m2px(gate.thick ?? 0.35, design.field.ppm);
-                    const color = gate.color || "#1f2937";
-                    return (
-                      <>
-                        {selected && (
-                          <Rect
-                            width={width + m2px(0.3, design.field.ppm)}
-                            height={depth + m2px(0.3, design.field.ppm)}
-                            offsetX={(width + m2px(0.3, design.field.ppm)) / 2}
-                            offsetY={(depth + m2px(0.3, design.field.ppm)) / 2}
-                            stroke="#38bdf8"
-                            dash={[6, 4]}
-                            strokeWidth={1.6}
-                            listening={false}
-                          />
-                        )}
+                {s.kind === "gate" && (() => {
+                  const gate = s as GateShape;
+                  const width = m2px(gate.width, design.field.ppm);
+                  const depth = m2px(gate.thick ?? 0.35, design.field.ppm);
+                  const color = gate.color || "#1f2937";
+                  return (
+                    <>
+                      {selected && (
                         <Rect
-                          width={width}
-                          height={depth}
-                          offsetX={width / 2}
-                          offsetY={depth / 2}
-                          fill={color}
-                          opacity={0.12}
-                          strokeEnabled={false}
+                          width={width + m2px(0.3, design.field.ppm)}
+                          height={depth + m2px(0.3, design.field.ppm)}
+                          offsetX={(width + m2px(0.3, design.field.ppm)) / 2}
+                          offsetY={(depth + m2px(0.3, design.field.ppm)) / 2}
+                          stroke="#38bdf8"
+                          dash={[6, 4]}
+                          strokeWidth={1.6}
+                          listening={false}
                         />
+                      )}
+                      <Rect
+                        width={width}
+                        height={depth}
+                        offsetX={width / 2}
+                        offsetY={depth / 2}
+                        fill={color}
+                        opacity={0.12}
+                        strokeEnabled={false}
+                      />
+                      <Rect
+                        width={width}
+                        height={depth}
+                        offsetX={width / 2}
+                        offsetY={depth / 2}
+                        stroke={color}
+                        strokeWidth={2}
+                        cornerRadius={Math.min(12, depth / 2)}
+                      />
+                    </>
+                  );
+                })()}
+
+                {s.kind === "flag" && (() => {
+                  const flag = s as FlagShape;
+                  const r = m2px(flag.radius, design.field.ppm);
+                  const pole = m2px(flag.poleHeight ?? 2, design.field.ppm);
+                  const color = flag.color || "#7c3aed";
+                  return (
+                    <>
+                      {selected && (
+                        <Circle
+                          radius={r + m2px(0.18, design.field.ppm)}
+                          stroke="#38bdf8"
+                          strokeWidth={1.4}
+                          dash={[6, 4]}
+                          listening={false}
+                        />
+                      )}
+                      <Line
+                        points={[0, 0, 0, -pole]}
+                        stroke={color}
+                        strokeWidth={3}
+                        lineCap="round"
+                      />
+                      <Circle radius={r} fill={color} opacity={0.12} stroke={color} strokeWidth={2} />
+                    </>
+                  );
+                })()}
+
+                {s.kind === "cone" && (() => {
+                  const cone = s as ConeShape;
+                  const r = m2px(cone.radius, design.field.ppm);
+                  const color = cone.color || "#f97316";
+                  return (
+                    <>
+                      {selected && (
+                        <Circle
+                          radius={r + m2px(0.12, design.field.ppm)}
+                          stroke="#38bdf8"
+                          strokeWidth={1.3}
+                          dash={[5, 4]}
+                          listening={false}
+                        />
+                      )}
+                      <Circle radius={r} fill={color} opacity={0.18} stroke={color} strokeWidth={2} />
+                    </>
+                  );
+                })()}
+
+                {s.kind === "label" && (() => {
+                  const label = s as LabelShape;
+                  const fontSize = label.fontSize ?? 18;
+                  const color = label.color || "#111827";
+                  const labelWidth = Math.max(label.text.length * fontSize * 0.45, 48);
+                  return (
+                    <Group offsetY={-fontSize / 2}>
+                      {selected && (
                         <Rect
-                          width={width}
-                          height={depth}
-                          offsetX={width / 2}
-                          offsetY={depth / 2}
-                          stroke={color}
-                          strokeWidth={2}
-                          cornerRadius={Math.min(12, depth / 2)}
-                          fillEnabled={false}
+                          width={labelWidth + 12}
+                          height={fontSize + 12}
+                          y={-6}
+                          offsetX={(labelWidth + 12) / 2}
+                          stroke="#38bdf8"
+                          strokeWidth={1.2}
+                          dash={[6, 4]}
+                          listening={false}
                         />
+                      )}
+                      <Text
+                        text={label.text}
+                        fontSize={fontSize}
+                        fill={color}
+                        align="center"
+                        width={labelWidth}
+                        offsetX={labelWidth / 2}
+                      />
+                    </Group>
+                  );
+                })()}
+
+                {s.kind === "polyline" && (() => {
+                  const path = s as PolylineShape;
+                  const pointsPx = path.points.flatMap((pt) => [
+                    m2px(pt.x, design.field.ppm),
+                    m2px(pt.y, design.field.ppm),
+                  ]);
+                  const strokePx = m2px(path.strokeWidth ?? 0.18, design.field.ppm);
+                  const showArrow = Boolean(path.showArrows);
+                  const smoothPoints = (path.smooth ?? true)
+                    ? smoothPolyline(path.points)
+                    : path.points;
+                  const smoothPx = smoothPoints.flatMap((pt) => [
+                    m2px(pt.x, design.field.ppm),
+                    m2px(pt.y, design.field.ppm),
+                  ]);
+                  const color = path.color || "#0284c7";
+
+                  if (!pointsPx.length) return null;
+
+                  return (
+                    <>
+                      {selected && (
                         <Line
-                          points={[0, -depth / 2, 0, depth / 2]}
-                          stroke={color}
-                          strokeWidth={Math.max(2, depth / 3)}
-                          opacity={0.7}
+                          points={pointsPx}
+                          stroke="#38bdf8"
+                          strokeWidth={strokePx + 3}
+                          lineCap="round"
+                          opacity={0.35}
+                          listening={false}
                         />
-                      </>
-                    );
-                  })()
-                )}
+                      )}
 
-                {s.kind === "flag" && (
-                  (() => {
-                    const flag = s as FlagShape;
-                    const color = flag.color || "#7c3aed";
-                    const radius = m2px(flag.radius, design.field.ppm);
-                    const pole = m2px(flag.poleHeight ?? 2, design.field.ppm);
-                    return (
-                      <>
-                        {selected && (
-                          <Circle
-                            radius={radius + m2px(0.1, design.field.ppm)}
-                            stroke="#38bdf8"
-                            dash={[5, 4]}
-                            strokeWidth={1.4}
-                            listening={false}
-                          />
-                        )}
-                        <Circle radius={radius} stroke={color} strokeWidth={2} />
-                        <Line points={[0, 0, 0, -pole]} stroke={color} strokeWidth={3} />
-                      </>
-                    );
-                  })()
-                )}
-
-                {s.kind === "cone" && (
-                  (() => {
-                    const cone = s as ConeShape;
-                    const radius = m2px(cone.radius, design.field.ppm);
-                    const color = cone.color || "#f97316";
-                    return (
-                      <>
-                        <Circle radius={radius} fill={color} opacity={0.75} />
-                        {selected && (
-                          <Circle
-                            radius={radius + m2px(0.08, design.field.ppm)}
-                            stroke="#38bdf8"
-                            dash={[4, 4]}
-                            strokeWidth={1.4}
-                            listening={false}
-                          />
-                        )}
-                      </>
-                    );
-                  })()
-                )}
-
-                {s.kind === "label" && (
-                  (() => {
-                    const label = s as LabelShape;
-                    const color = label.color || "#111827";
-                    const text = label.text;
-                    const fontSize = label.fontSize ?? 18;
-                    return (
-                      <>
-                        {selected && (
-                          <Rect
-                            x={-8}
-                            y={-24}
-                            width={text.length * 8 + 16}
-                            height={28}
-                            stroke="#38bdf8"
-                            dash={[6, 4]}
-                            cornerRadius={6}
-                            listening={false}
-                          />
-                        )}
-                        <Text text={text} fontSize={fontSize} fill={color} offsetY={8} />
-                      </>
-                    );
-                  })()
-                )}
-
-                {s.kind === "polyline" && (
-                  <>
-                    {(s as PolylineShape).points
-                      .slice(0, -1)
-                      .map((p, i: number) => {
-                        const polyline = s as PolylineShape;
-                        const nextPoint = polyline.points[i + 1];
-                        const z1 = p.z ?? 0;
-                        const z2 = nextPoint.z ?? 0;
-                        const color = zToColor((z1 + z2) / 2, zmin, zmax);
-                        const strokePx = m2px(
-                          (polyline.strokeWidth ?? 0.15),
-                          design.field.ppm
-                        );
-                        const baseStroke = Math.max(1, strokePx * (polyline.smooth ? 0.6 : 1));
-                        const baseOpacity = polyline.smooth ? 0.45 : 1;
-                        const showArrow = Boolean(polyline.showArrows);
-                        const points = [
-                          m2px(p.x, design.field.ppm),
-                          m2px(p.y, design.field.ppm),
-                          m2px(nextPoint.x, design.field.ppm),
-                          m2px(nextPoint.y, design.field.ppm),
-                        ];
-                        return (
-                          <Group key={`${s.id}-seg-${i}`}>
+                      <Group listening={false}>
+                        {path.points.map((pt, idx) => {
+                          const pct = path.points.length > 1 ? idx / (path.points.length - 1) : 0;
+                          const zColor = zToColor(pt.z ?? 0, zmin, zmax);
+                          const segment = smoothPx.slice(idx * 2, idx * 2 + 4);
+                          if (segment.length < 4) return null;
+                          const segmentColor = path.color ? color : zColor;
+                          return (
                             <Line
-                              points={points}
-                              stroke={color}
-                              strokeWidth={baseStroke}
+                              key={`${path.id}-seg-${idx}`}
+                              points={segment}
+                              stroke={segmentColor}
+                              strokeWidth={strokePx}
                               lineCap="round"
                               lineJoin="round"
-                              opacity={baseOpacity}
+                              opacity={Math.max(0.35, 1 - pct * 0.15)}
                             />
-                            {allowInteraction && (
-                              <Line
-                                points={points}
-                                stroke="rgba(0,0,0,0.01)"
-                                strokeWidth={Math.max(4, strokePx)}
-                                hitStrokeWidth={Math.max(20, strokePx + 20)}
-                                onDblClick={(event) => {
-                                  if (!allowInteraction) return;
-                                  event.cancelBubble = true;
-                                  const stage = event.target.getStage();
-                                  if (!stage) return;
-                                  const pointer = stage.getRelativePointerPosition();
-                                  const useSnap =
-                                    !(event.evt.altKey || event.evt.metaKey || event.evt.shiftKey);
-                                  const meters = pointerToMeters(pointer, useSnap);
-                                  if (!meters) return;
-                                  const toInsert: PolylinePoint = {
-                                    x: meters.x,
-                                    y: meters.y,
-                                    z: (z1 + z2) / 2,
-                                  };
-                                  const updatedPoints = [...polyline.points];
-                                  updatedPoints.splice(i + 1, 0, toInsert);
-                                  updateShape(polyline.id, { points: updatedPoints });
-                                }}
-                              />
-                            )}
-                            {showArrow && (
-                              <Arrow
-                                points={points}
-                                stroke={color}
-                                fill={color}
-                                strokeWidth={strokePx}
-                                pointerLength={Math.max(10, strokePx * 3)}
-                                pointerWidth={Math.max(8, strokePx * 2)}
-                                lineCap="round"
-                                lineJoin="round"
-                                pointerAtEnding
-                                pointerAtBeginning={i === 0}
-                              />
-                            )}
-                          </Group>
-                        );
-                      })}
-
-                    {selected && (
-                      <Line
-                        points={(s as PolylineShape).points.flatMap((pt) => [
-                          m2px(pt.x, design.field.ppm),
-                          m2px(pt.y, design.field.ppm),
-                        ])}
-                        stroke="#38bdf8"
-                        strokeWidth={
-                          m2px(((s as PolylineShape).strokeWidth ?? 0.15), design.field.ppm) +
-                          3
-                        }
-                        lineCap="round"
-                        opacity={0.35}
-                      />
-                    )}
-
-                    {((s as PolylineShape).smooth ?? true) && (
-                      <Line
-                        points={smoothPolyline((s as PolylineShape).points).flatMap((pt) => [
-                          m2px(pt.x, design.field.ppm),
-                          m2px(pt.y, design.field.ppm),
-                        ])}
-                        stroke={(s as PolylineShape).color || "#0284c7"}
-                        strokeWidth={m2px(((s as PolylineShape).strokeWidth ?? 0.15), design.field.ppm)}
-                        opacity={0.85}
-                        lineCap="round"
-                        lineJoin="round"
-                        listening={false}
-                      />
-                    )}
-
-                    {allowInteraction &&
-                      (s as PolylineShape).points.map((p, idx: number) => {
-                        const cx = m2px(p.x, design.field.ppm);
-                        const cy = m2px(p.y, design.field.ppm);
-                        const r = Math.max(4, m2px(0.08, design.field.ppm));
-                        const active =
-                          vertexSel &&
-                          vertexSel.shapeId === s.id &&
-                          vertexSel.idx === idx;
-                        return (
-                          <Circle
-                            key={`${s.id}-vh-${idx}`}
-                            x={cx}
-                            y={cy}
-                            radius={r}
-                            fill={active ? "#111827" : "#ffffff"}
-                            stroke={active ? "#111827" : "#0ea5e9"}
-                            strokeWidth={2}
-                            draggable
-                            onDragEnd={(e) => {
-                              const ppm = design.field.ppm;
-                              const shouldSnap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
-                              const pxX = shouldSnap ? snapPx(e.target.x()) : e.target.x();
-                              const pxY = shouldSnap ? snapPx(e.target.y()) : e.target.y();
-                              e.target.position({ x: pxX, y: pxY });
-                              const polyline = s as PolylineShape;
-                              const pts: PolylinePoint[] = polyline.points.map((pt, pointIndex) =>
-                                pointIndex === idx
-                                  ? { ...pt, x: px2m(pxX, ppm), y: px2m(pxY, ppm) }
-                                  : pt
-                              );
-                              const patch: Partial<PolylineShape> = { points: pts };
-                              updateShape(s.id, patch);
-                            }}
-                            onMouseDown={(e) => {
-                              e.cancelBubble = true;
-                              setSelection([s.id]);
-                              setVertexSel({ shapeId: s.id, idx });
-                            }}
+                          );
+                        })}
+                        {showArrow && path.points.length >= 2 && (
+                          <Arrow
+                            points={smoothPx}
+                            stroke={color}
+                            fill={color}
+                            strokeWidth={strokePx}
+                            pointerLength={Math.max(10, strokePx * 3)}
+                            pointerWidth={Math.max(8, strokePx * 2)}
+                            lineCap="round"
+                            lineJoin="round"
+                            pointerAtEnding
+                            pointerAtBeginning
                           />
-                        );
-                      })}
-                  </>
-                )}
+                        )}
+                      </Group>
+
+                      {allowInteraction &&
+                        path.points.map((pt, idx) => {
+                          const cx = m2px(pt.x, design.field.ppm);
+                          const cy = m2px(pt.y, design.field.ppm);
+                          const r = Math.max(4, m2px(0.08, design.field.ppm));
+                          const active =
+                            vertexSel &&
+                            vertexSel.shapeId === s.id &&
+                            vertexSel.idx === idx;
+                          return (
+                            <Circle
+                              key={`${s.id}-vh-${idx}`}
+                              x={cx}
+                              y={cy}
+                              radius={r}
+                              fill={active ? "#111827" : "#ffffff"}
+                              stroke={active ? "#111827" : "#0ea5e9"}
+                              strokeWidth={2}
+                              draggable
+                              dragBoundFunc={dragBound}
+                              onDragStart={(e) => {
+                                dragSnapRef.current = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
+                              }}
+                              onDragEnd={(e) => {
+                                const ppm = design.field.ppm;
+                                const pxX = dragSnapRef.current
+                                  ? Math.round(e.target.x() / stepPx) * stepPx
+                                  : clamp(e.target.x(), 0, widthPx);
+                                const pxY = dragSnapRef.current
+                                  ? Math.round(e.target.y() / stepPx) * stepPx
+                                  : clamp(e.target.y(), 0, heightPx);
+                                e.target.position({ x: pxX, y: pxY });
+                                const pts: PolylinePoint[] = path.points.map((point, pointIndex) =>
+                                  pointIndex === idx
+                                    ? { ...point, x: px2m(pxX, ppm), y: px2m(pxY, ppm) }
+                                    : point
+                                );
+                                const patch: Partial<PolylineShape> = { points: pts };
+                                updateShape(s.id, patch);
+                              }}
+                              onMouseDown={(e) => {
+                                e.cancelBubble = true;
+                                setSelection([s.id]);
+                                setVertexSel({ shapeId: s.id, idx });
+                              }}
+                            />
+                          );
+                        })}
+                    </>
+                  );
+                })()}
               </Group>
             );
-
-            return base;
           })}
 
           {draftPointsPx.length > 0 && (
@@ -779,13 +1000,13 @@ export default function TrackCanvas() {
             />
           )}
 
-          {draftPointsPx.length > 0 && cursorPx && (
+          {draftPointsPx.length > 0 && cursor && (
             <Line
               points={[
                 draftPointsPx[draftPointsPx.length - 2],
                 draftPointsPx[draftPointsPx.length - 1],
-                cursorPx.x,
-                cursorPx.y,
+                cursor.snappedPx.x,
+                cursor.snappedPx.y,
               ]}
               stroke="#0ea5e9"
               strokeWidth={m2px(0.18, design.field.ppm)}
@@ -796,16 +1017,26 @@ export default function TrackCanvas() {
             />
           )}
 
-          {cursorPx && (
+          {cursor && (
             <Group listening={false}>
               <Line
-                points={[cursorPx.x, cursorPx.y - 12, cursorPx.x, cursorPx.y + 12]}
+                points={[
+                  cursor.snappedPx.x,
+                  cursor.snappedPx.y - 12,
+                  cursor.snappedPx.x,
+                  cursor.snappedPx.y + 12,
+                ]}
                 stroke="#94a3b8"
                 strokeWidth={1}
                 dash={[4, 4]}
               />
               <Line
-                points={[cursorPx.x - 12, cursorPx.y, cursorPx.x + 12, cursorPx.y]}
+                points={[
+                  cursor.snappedPx.x - 12,
+                  cursor.snappedPx.y,
+                  cursor.snappedPx.x + 12,
+                  cursor.snappedPx.y,
+                ]}
                 stroke="#94a3b8"
                 strokeWidth={1}
                 dash={[4, 4]}
@@ -819,19 +1050,22 @@ export default function TrackCanvas() {
         <span>
           Grid {design.field.gridStep.toFixed(1)} m • Scale {design.field.ppm} px/m
         </span>
-        {draftPath.length > 0 && activeTool === "polyline" && (
-          <span>Pad-lengte {draftLengthWithCursor.toFixed(1)} m</span>
-        )}
-        {cursorMeters && (
+        <span>Hold Space om te pannen • Shift voor multiselect • Alt zonder snap</span>
+        {cursor && (
           <span>
-            x {cursorMeters.x.toFixed(2)} m · y {cursorMeters.y.toFixed(2)} m
+            x {cursor.snappedMeters.x.toFixed(2)} m · y {cursor.snappedMeters.y.toFixed(2)} m
           </span>
         )}
       </div>
 
       {draftPath.length > 0 && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 px-4 py-2 text-[11px] text-slate-600">
-          Klik om punten toe te voegen. Dubbelklik of druk op Enter om te voltooien, Esc om te annuleren.
+          Klik om punten toe te voegen. Dubbelklik of Enter om te voltooien, Esc om te annuleren.
+          {draftLengthWithCursor > 0 && (
+            <span className="ml-2 text-slate-500">
+              Lengte {draftLengthWithCursor.toFixed(1)} m
+            </span>
+          )}
         </div>
       )}
     </div>

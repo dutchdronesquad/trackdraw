@@ -9,17 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "konva": "^10.0.2",
     "nanoid": "^5.1.6",
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-konva": "^19.0.10",
     "recharts": "^3.2.1",
     "lucide-react": "^0.460.0",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.5.2",
     "class-variance-authority": "^0.7.0",
+    "konva": "^10.0.2",
+    "react-konva": "^19.0.10",
     "zod": "^4.1.11",
     "zustand": "^5.0.8"
   },

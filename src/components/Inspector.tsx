@@ -58,11 +58,11 @@ const Section = ({ title, description, children }: { title: string; description?
 
 export default function Inspector() {
   const { design, selection, updateShape, removeShape, addShape, setSelection } = useEditor();
-  const selectedShape = useMemo<Shape | null>(() => {
-    return design.shapes.find((s) => selection.includes(s.id)) ?? null;
-  }, [design.shapes, selection]);
+  const selectedShapes = useMemo(() => design.shapes.filter((s) => selection.includes(s.id)), [design.shapes, selection]);
+  const selectionCount = selectedShapes.length;
+  const selectedShape = selectionCount > 0 ? selectedShapes[0] : null;
 
-  if (!selectedShape)
+  if (selectionCount === 0)
     return (
       <div className="flex flex-1 flex-col gap-4 overflow-auto bg-slate-50 p-6 text-sm text-slate-600">
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-6">
@@ -102,7 +102,45 @@ export default function Inspector() {
       </div>
     );
 
+  if (selectionCount > 1) {
+    const kindCounts = selectedShapes.reduce<Record<Shape["kind"], number>>((acc, shape) => {
+      acc[shape.kind] = (acc[shape.kind] ?? 0) + 1;
+      return acc;
+    }, {
+      gate: 0,
+      flag: 0,
+      cone: 0,
+      label: 0,
+      polyline: 0,
+    });
+
+    return (
+      <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900/40 px-5 py-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+            Meervoudige selectie
+          </span>
+          <h2 className="mt-2 text-xl font-semibold text-slate-900">{selectionCount} elementen geselecteerd</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Houd Shift ingedrukt om elementen aan je selectie toe te voegen of te verwijderen. Kies één element om details en eigenschappen te wijzigen.
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-500">
+            {Object.entries(kindCounts)
+              .filter(([, count]) => count > 0)
+              .map(([kind, count]) => (
+                <div key={kind} className="rounded-xl border border-slate-200 bg-slate-100/70 px-3 py-2">
+                  <div className="font-semibold uppercase tracking-wide text-slate-500">{shapeLabel[kind as Shape["kind"]]}</div>
+                  <div className="mt-1 text-sm font-medium text-slate-900">{count}×</div>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const duplicate = () => {
+    if (!selectedShape) return;
     const clone: Shape = structuredClone(selectedShape);
     clone.x = Number((clone.x + 0.5).toFixed(2));
     clone.y = Number((clone.y + 0.5).toFixed(2));
@@ -113,16 +151,16 @@ export default function Inspector() {
         y: Number((pt.y + 0.5).toFixed(2)),
       }));
     }
-  const { id: _oldId, ...rest } = clone as Shape & { id?: string };
-  const newId = addShape(rest as Omit<Shape, "id">);
+    delete (clone as Shape & { id?: string }).id;
+    const newId = addShape(clone as Omit<Shape, "id">);
     setSelection([newId]);
   };
 
-  const gate = selectedShape.kind === "gate" ? (selectedShape as GateShape) : null;
-  const flag = selectedShape.kind === "flag" ? (selectedShape as FlagShape) : null;
-  const cone = selectedShape.kind === "cone" ? (selectedShape as ConeShape) : null;
-  const label = selectedShape.kind === "label" ? (selectedShape as LabelShape) : null;
-  const path = selectedShape.kind === "polyline" ? (selectedShape as PolylineShape) : null;
+  const gate = selectedShape?.kind === "gate" ? (selectedShape as GateShape) : null;
+  const flag = selectedShape?.kind === "flag" ? (selectedShape as FlagShape) : null;
+  const cone = selectedShape?.kind === "cone" ? (selectedShape as ConeShape) : null;
+  const label = selectedShape?.kind === "label" ? (selectedShape as LabelShape) : null;
+  const path = selectedShape?.kind === "polyline" ? (selectedShape as PolylineShape) : null;
 
   return (
   <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900/40 px-5 py-6">
