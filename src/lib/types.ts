@@ -16,9 +16,9 @@ export interface BaseShape {
 
 export interface GateShape extends BaseShape {
   kind: "gate";
-  width: number; // m (inner)
+  width: number; // m (inner opening)
   height: number; // m (clearance height)
-  thick?: number; // m
+  thick?: number; // m (post thickness)
 }
 
 export interface FlagShape extends BaseShape {
@@ -35,14 +35,14 @@ export interface ConeShape extends BaseShape {
 export interface LabelShape extends BaseShape {
   kind: "label";
   text: string;
-  fontSize?: number; // px
+  fontSize?: number; // px on canvas
 }
 
 export interface PolylinePoint {
   x: number;
   y: number;
-  z?: number;
-} // z in meters AGL
+  z?: number; // meters AGL
+}
 
 export interface PolylineShape extends BaseShape {
   kind: "polyline";
@@ -70,11 +70,13 @@ export interface FieldSpec {
 
 export interface TrackDesign {
   id: UUID;
+  version: 1;
   title: string;
   description?: string;
+  tags?: string[];
+  authorName?: string;
   field: FieldSpec;
   shapes: Shape[];
-  createdAt: string;
-  updatedAt: string;
-  version: 1;
+  createdAt: string; // ISO-8601
+  updatedAt: string; // ISO-8601
 }
