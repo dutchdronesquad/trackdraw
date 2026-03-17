@@ -1,6 +1,6 @@
 export type UUID = string;
 
-export type ShapeKind = "gate" | "flag" | "cone" | "label" | "polyline";
+export type ShapeKind = "gate" | "flag" | "cone" | "label" | "polyline" | "startfinish" | "checkpoint" | "ladder" | "divegate";
 
 export interface BaseShape {
   id: UUID;
@@ -16,9 +16,9 @@ export interface BaseShape {
 
 export interface GateShape extends BaseShape {
   kind: "gate";
-  width: number; // m (inner)
+  width: number; // m (inner opening)
   height: number; // m (clearance height)
-  thick?: number; // m
+  thick?: number; // m (post thickness)
 }
 
 export interface FlagShape extends BaseShape {
@@ -35,14 +35,40 @@ export interface ConeShape extends BaseShape {
 export interface LabelShape extends BaseShape {
   kind: "label";
   text: string;
-  fontSize?: number; // px
+  fontSize?: number; // px on canvas
+  project?: boolean; // if true: flat on ground in 3D; if false (default): billboard float
+}
+
+export interface StartFinishShape extends BaseShape {
+  kind: "startfinish";
+  width: number; // m (inner opening)
+}
+
+export interface CheckpointShape extends BaseShape {
+  kind: "checkpoint";
+  width: number; // m (inner opening)
+}
+
+export interface LadderShape extends BaseShape {
+  kind: "ladder";
+  width: number;   // m horizontal span
+  height: number;  // m gate opening height (3D) / ladder footprint depth (2D top-down)
+  rungs: number;   // count of rungs
+}
+
+export interface DiveGateShape extends BaseShape {
+  kind: "divegate";
+  size: number;       // m outer dimension (square frame)
+  thick?: number;     // m frame/panel width (default 0.20)
+  tilt?: number;      // degrees from vertical: 0=vertical wall, 90=flat/horizontal
+  elevation?: number; // m height of frame center above ground (default 3.0)
 }
 
 export interface PolylinePoint {
   x: number;
   y: number;
-  z?: number;
-} // z in meters AGL
+  z?: number; // meters AGL
+}
 
 export interface PolylineShape extends BaseShape {
   kind: "polyline";
@@ -58,7 +84,11 @@ export type Shape =
   | FlagShape
   | ConeShape
   | LabelShape
-  | PolylineShape;
+  | PolylineShape
+  | StartFinishShape
+  | CheckpointShape
+  | LadderShape
+  | DiveGateShape;
 
 export interface FieldSpec {
   width: number; // m
@@ -70,11 +100,13 @@ export interface FieldSpec {
 
 export interface TrackDesign {
   id: UUID;
+  version: 1;
   title: string;
   description?: string;
+  tags?: string[];
+  authorName?: string;
   field: FieldSpec;
   shapes: Shape[];
-  createdAt: string;
-  updatedAt: string;
-  version: 1;
+  createdAt: string; // ISO-8601
+  updatedAt: string; // ISO-8601
 }

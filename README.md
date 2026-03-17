@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/assets/brand/trackdraw-logo-color-lightbg.svg" alt="TrackDraw" width="320" />
+</p>
 
-## Getting Started
+<p align="center">
+  Design FPV drone racing tracks in your browser — true to scale, in 2D and 3D.
+</p>
 
-First, run the development server:
+---
+
+TrackDraw is a free, browser-based track designer built for FPV drone racing pilots and event organisers. Open the studio, drop your obstacles on the canvas, tweak the layout until it feels right, and share the result with your team using a single link — no account required.
+
+## What you can do
+
+- 🏁 **Place obstacles** — gates, flags, cones, dive gates, ladders, start/finish lines, labels and free-form polylines
+- 📐 **Work to scale** — the canvas maps directly to real-world dimensions; set your field size and meters-per-pixel ratio to get accurate distances
+- 🎥 **Preview in 3D** — a live Three.js render shows the track from a drone perspective as you build
+- 📈 **Check elevation** — altitude profile chart along polyline paths, useful for planning vertical sections
+- ↩️ **Undo anything** — full undo/redo history so you can experiment freely
+- 📤 **Export** — save your design as PNG, SVG or PDF to print or share offline
+- 🔗 **Share with a link** — the entire design is compressed into the URL; send it to anyone and they see the exact same track
+- 📥 **Import** — load a previously saved design file to continue editing
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The studio is at `/studio`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Pick a tool** from the toolbar (gate, cone, flag, etc.)
+2. **Click on the canvas** to place obstacles — drag to reposition, click to select and edit properties
+3. **Use the inspector panel** on the right to fine-tune size, rotation, colour and other shape properties
+4. **Toggle the 3D panel** to preview your layout from above or in perspective
+5. **Hit Share** to get a URL you can send directly to pilots or co-organisers
 
-## Learn More
+## Tech stack
 
-To learn more about Next.js, take a look at the following resources:
+| Layer | Library |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | React 19, Tailwind CSS 4, shadcn/ui v4 (`@base-ui/react`) |
+| 2D canvas | Konva 10 + react-konva |
+| 3D preview | Three.js 0.175 + @react-three/fiber + drei |
+| State | Zustand 5 + zundo 2 (temporal) + Immer |
+| Export | jsPDF, Konva stage snapshots |
+| Sharing | lz-string |
+| Icons | Lucide React |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/              # Next.js pages (/, /studio, /share)
+├── components/       # React components
+│   ├── EditorShell   # Layout orchestrator
+│   ├── TrackCanvas   # Konva 2D editor
+│   ├── Inspector     # Shape properties panel
+│   ├── TrackPreview3D
+│   ├── ElevationChart / ElevationPanel
+│   ├── Header / Toolbar / StatusBar
+│   ├── ExportDialog / ImportDialog / ShareDialog
+│   ├── landing/      # Marketing page components
+│   └── ui/           # @base-ui/react wrappers
+├── store/
+│   └── editor.ts     # Zustand store with temporal undo history
+├── hooks/            # useUndoRedo, useTheme, useShareUrl
+└── lib/
+    ├── geometry.ts   # Distance, Catmull-Rom smoothing, elevation sampling
+    ├── share.ts      # LZ-string encode/decode
+    ├── export/       # PNG / SVG / PDF export
+    └── types.ts      # Shape union types, TrackDesign, FieldSpec
+```
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev    # Development server (Turbopack)
+npm run build  # Production build
+npm run start  # Production server
+npm run lint   # ESLint
+```

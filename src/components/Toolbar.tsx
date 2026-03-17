@@ -1,174 +1,203 @@
 "use client";
 
-import { ChangeEvent, useRef } from "react";
-import { EditorTool, useEditor } from "@/store/editor";
-import type { TrackDesign } from "@/lib/types";
+import { useState } from "react";
+import { useEditor, type EditorTool } from "@/store/editor";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  MousePointer2,
+  Flag,
+  Triangle,
+  Type,
+  Spline,
+  FolderOpen,
+  Download,
+  Trophy,
+  FilePlus,
+} from "lucide-react";
 
-const tools: Array<{
-  id: EditorTool;
-  label: string;
-  hint: string;
-  description: string;
-}> = [
+function GateIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className={className}>
+      <line x1="2.5" y1="13" x2="2.5" y2="2.5" />
+      <line x1="11.5" y1="13" x2="11.5" y2="2.5" />
+      <line x1="2.5" y1="2.5" x2="11.5" y2="2.5" />
+    </svg>
+  );
+}
+
+function LadderIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polyline points="2.5,7 2.5,1.5 11.5,1.5 11.5,7" />
+      <polyline points="2.5,12.5 2.5,7 11.5,7 11.5,12.5" />
+    </svg>
+  );
+}
+
+function DiveGateIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="2" y="2" width="10" height="10" rx="0.5" />
+    </svg>
+  );
+}
+
+type ToolEntry = { id: EditorTool; label: string; shortcut: string; icon: React.ReactNode };
+type ToolGroup = { title: string; tools: ToolEntry[] };
+
+const toolGroups: ToolGroup[] = [
   {
-    id: "select",
-    label: "Select",
-    hint: "V",
-    description: "Move, rotate & edit existing elements",
+    title: "",
+    tools: [
+      { id: "select", label: "Select", shortcut: "V", icon: <MousePointer2 className="size-[14px]" /> },
+    ],
   },
   {
-    id: "gate",
-    label: "Gate",
-    hint: "G",
-    description: "Place rectangular gates (width × height)",
+    title: "Gates",
+    tools: [
+      { id: "gate",        label: "Gate",       shortcut: "G", icon: <GateIcon className="size-[14px]" /> },
+      { id: "ladder",      label: "Ladder",     shortcut: "R", icon: <LadderIcon className="size-[14px]" /> },
+      { id: "divegate",    label: "Dive Gate",  shortcut: "D", icon: <DiveGateIcon className="size-[14px]" /> },
+      { id: "startfinish", label: "Start Pads", shortcut: "S", icon: <Trophy className="size-[14px]" /> },
+    ],
   },
   {
-    id: "flag",
-    label: "Flag",
-    hint: "F",
-    description: "Add flag markers with pole height",
+    title: "Markers",
+    tools: [
+      { id: "flag",  label: "Flag",  shortcut: "F", icon: <Flag className="size-[14px]" /> },
+      { id: "cone",  label: "Cone",  shortcut: "C", icon: <Triangle className="size-[14px]" /> },
+      { id: "label", label: "Label", shortcut: "L", icon: <Type className="size-[14px]" /> },
+    ],
   },
   {
-    id: "cone",
-    label: "Cone",
-    hint: "C",
-    description: "Drop an apex marker/cone",
-  },
-  {
-    id: "label",
-    label: "Label",
-    hint: "L",
-    description: "Place text labels for pilots",
-  },
-  {
-    id: "polyline",
-    label: "Path",
-    hint: "P",
-    description: "Click to sketch race line, double-click to finish",
+    title: "Draw",
+    tools: [
+      { id: "polyline", label: "Path", shortcut: "P", icon: <Spline className="size-[14px]" /> },
+    ],
   },
 ];
 
-export default function Toolbar({ embedMode = false }: { embedMode?: boolean }) {
-  const {
-    design,
-    activeTool,
-    setActiveTool,
-    setSelection,
-    replaceDesign,
-  } = useEditor();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface ToolbarProps {
+  onImport: () => void;
+  onExport: () => void;
+}
 
-  const exportJson = () => {
-    const blob = new Blob([JSON.stringify(design, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    const safeName = design.title.trim() || "track";
-    a.download = safeName.replace(/[^a-z0-9-_]+/gi, "_") + ".json";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importJson = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    file.text().then((content) => {
-      try {
-        const parsed = JSON.parse(content);
-        if (!parsed || typeof parsed !== "object") throw new Error();
-        replaceDesign(parsed as TrackDesign);
-      } catch (err) {
-        console.error("Failed to import design", err);
-        alert("Kon het bestand niet inladen. Controleer of het een geldige TrackDraw export is.");
-      } finally {
-        event.target.value = "";
-      }
-    });
-  };
+export default function Toolbar({ onImport, onExport }: ToolbarProps) {
+  const { activeTool, setActiveTool, setSelection, newProject } = useEditor();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
-    <aside className={
-      `flex w-64 min-w-[14rem] flex-col bg-white/90 backdrop-blur ${
-        embedMode ? 'border-slate-200' : 'border-r border-slate-200'
-      }`
-    }>
-      <div className="border-b border-slate-200/70 px-4 py-5">
-        <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          TrackDraw
+    <>
+      <aside className="hidden lg:flex w-36 flex-col border-r border-border bg-sidebar shrink-0">
+        {/* Tool groups */}
+        <div className="flex-1 overflow-y-auto py-2 px-2 flex flex-col gap-1">
+          {toolGroups.map((group, gi) => (
+            <div key={gi}>
+              {gi > 0 && group.title && (
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70 px-2 pt-3 pb-1 select-none">
+                  {group.title}
+                </p>
+              )}
+              {gi > 0 && !group.title && <div className="h-1" />}
+              {group.tools.map((tool) => {
+                const active = tool.id === activeTool;
+                return (
+                  <Tooltip key={tool.id}>
+                    <TooltipTrigger
+                      onClick={() => { setSelection([]); setActiveTool(tool.id); }}
+                      aria-label={tool.label}
+                      className={cn(
+                        "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-left transition-all cursor-pointer border",
+                        active
+                          ? "bg-brand-primary/20 text-foreground border-brand-primary/40"
+                          : "text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60 hover:border-border/70"
+                      )}
+                    >
+                      <span className={cn(
+                        "shrink-0 flex items-center justify-center w-5 h-5 rounded",
+                        active ? "text-brand-primary" : "text-muted-foreground"
+                      )}>
+                        {tool.icon}
+                      </span>
+                      <span className="text-[13px] font-medium leading-none flex-1">{tool.label}</span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={8}>
+                      <span className="font-medium">{tool.label}</span>
+                      <span className="ml-2 text-[10px] font-mono opacity-70">{tool.shortcut}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          ))}
         </div>
-        <div className="mt-1 text-lg font-semibold text-slate-900">Ontwerpstudio</div>
-        <p className="mt-1 text-xs text-slate-500">
-          Kies een tool en klik op het veld om gates, pylons en een vlieglijn te plaatsen.
-        </p>
-      </div>
-      <div className="flex-1 overflow-y-auto px-4 py-5">
-        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Tools
-        </div>
-        <div className="mt-3 grid gap-2">
-          {tools.map((tool) => {
-            const active = tool.id === activeTool;
-            return (
-              <button
-                key={tool.id}
-                className={`flex flex-col rounded-lg border px-3 py-2 text-left transition focus:outline-none focus:ring-2 focus:ring-sky-200 ${
-                  active
-                    ? "border-sky-400 bg-sky-50 text-slate-900"
-                    : "border-transparent bg-slate-100/70 text-slate-700 hover:border-slate-300 hover:bg-white"
-                }`}
-                onClick={() => {
-                  setSelection([]);
-                  setActiveTool(tool.id);
-                }}
-              >
-                <div className="flex items-center justify-between text-sm font-medium">
-                  <span>{tool.label}</span>
-                  <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-tight text-slate-600">
-                    {tool.hint}
-                  </span>
-                </div>
-                <div className="mt-1 text-[11px] leading-tight text-slate-500">
-                  {tool.description}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-6 border-t border-slate-200 pt-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Bestand
-          </div>
-          <div className="mt-3 grid gap-2">
-            <button
-              className="rounded-lg border border-transparent bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-200"
-              onClick={exportJson}
+
+        {/* Bottom actions */}
+        <div className="border-t border-border/60 px-2 py-2 flex flex-col gap-1">
+          <Tooltip>
+            <TooltipTrigger
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:border-border/70 transition-all cursor-pointer"
+              onClick={() => setConfirmOpen(true)}
+              aria-label="New project"
             >
-              Exporteren (JSON)
-            </button>
-            <button
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-sky-300 hover:text-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-200"
-              onClick={() => fileInputRef.current?.click()}
+              <FilePlus className="size-[14px] shrink-0" />
+              <span className="text-[13px] font-medium">New</span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>New project</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:border-border/70 transition-all cursor-pointer"
+              onClick={() => onImport()}
+              aria-label="Open"
             >
-              Importeren
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              onChange={importJson}
-            />
-          </div>
-          <p className="mt-3 text-[11px] leading-snug text-slate-500">
-            Tip: gebruik de Path tool om de vlieglijn te tekenen. Dubbelklik om af te ronden, Esc om te annuleren.
-          </p>
+              <FolderOpen className="size-[14px] shrink-0" />
+              <span className="text-[13px] font-medium">Open</span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>Open project</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:border-border/70 transition-all cursor-pointer"
+              onClick={() => onExport()}
+              aria-label="Export"
+            >
+              <Download className="size-[14px] shrink-0" />
+              <span className="text-[13px] font-medium">Export</span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>Export track</TooltipContent>
+          </Tooltip>
         </div>
-      </div>
-      <div className="px-4 pb-5 text-[11px] text-slate-400">
-        Sneltoetsen: V Select · G Gate · F Flag · C Cone · L Label · P Path · Space Pan · Shift Multiselect · Alt Free move
-      </div>
-    </aside>
+      </aside>
+
+      {/* New project confirmation dialog */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-xs" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>New Project</DialogTitle>
+            <DialogDescription>
+              This will clear your current track. Any unsaved changes will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" className="flex-1" />}>
+              Cancel
+            </DialogClose>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => { newProject(); setConfirmOpen(false); }}
+            >
+              Start New
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
