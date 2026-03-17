@@ -12,14 +12,14 @@ TrackDraw is a free, browser-based track designer built for FPV drone racing pil
 
 ## What you can do
 
-- 🏁 **Place obstacles** — gates, flags, cones, dive gates, ladders, start/finish lines, labels and free-form polylines
-- 📐 **Work to scale** — the canvas maps directly to real-world dimensions; set your field size and meters-per-pixel ratio to get accurate distances
-- 🎥 **Preview in 3D** — a live Three.js render shows the track from a drone perspective as you build
-- 📈 **Check elevation** — altitude profile chart along polyline paths, useful for planning vertical sections
-- ↩️ **Undo anything** — full undo/redo history so you can experiment freely
-- 📤 **Export** — save your design as PNG, SVG or PDF to print or share offline
-- 🔗 **Share with a link** — the entire design is compressed into the URL; send it to anyone and they see the exact same track
-- 📥 **Import** — load a previously saved design file to continue editing
+- 🏁 **Place obstacles** - gates, flags, cones, dive gates, ladders, start/finish lines, labels and free-form polylines
+- 📐 **Work to scale** - the canvas maps directly to real-world dimensions; set your field size and meters-per-pixel ratio to get accurate distances
+- 🎥 **Preview in 3D** - a live Three.js render shows the track from a drone perspective as you build
+- 📈 **Check elevation** - altitude profile chart along polyline paths, useful for planning vertical sections
+- ↩️ **Undo anything** - full undo/redo history so you can experiment freely
+- 📤 **Export** - save your design as PNG, SVG or PDF to print or share offline
+- 🔗 **Share with a link** - the entire design is compressed into the URL; send it to anyone and they see the exact same track
+- 📥 **Import** - load a previously saved design file to continue editing
 
 ## Getting started
 
@@ -84,3 +84,7 @@ npm run build  # Production build
 npm run start  # Production server
 npm run lint   # ESLint
 ```
+
+## License
+
+Distributed under the **LGPL-3.0-or-later** License. See [`LICENSE`](LICENSE) for more information.
