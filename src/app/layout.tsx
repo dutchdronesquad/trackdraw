@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TrackDraw",
-  description: "TrackDraw – ontwerp FPV race tracks met schaal, hoogteprofiel en exports.",
+  description: "TrackDraw — design FPV drone race tracks with scale, elevation profiles, 3D preview, and instant sharing.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -23,26 +25,24 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: "#0c0c0f",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script
-          // inline script om FOUC te voorkomen bij dark mode
           dangerouslySetInnerHTML={{
-            __html: `(()=>{try{const LS_KEY='trackdraw.theme';let m=localStorage.getItem(LS_KEY);if(!m){m=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}if(m==='dark'){document.documentElement.classList.add('dark');}}catch(e){}})();`,
+            __html: `(()=>{try{const k='trackdraw.theme';const m=localStorage.getItem(k)||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',m==='dark');}catch(e){}})();`,
           }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] transition-colors`}
-      >
-        <div className="min-h-screen flex flex-col">
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+        <TooltipProvider delay={500}>
           {children}
-        </div>
+        </TooltipProvider>
+        <Toaster position="bottom-right" theme="dark" richColors />
       </body>
     </html>
   );

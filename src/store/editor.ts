@@ -12,7 +12,11 @@ export type EditorTool =
   | "flag"
   | "cone"
   | "label"
-  | "polyline";
+  | "polyline"
+  | "startfinish"
+  | "checkpoint"
+  | "ladder"
+  | "divegate";
 
 interface EditorState {
   design: TrackDesign;
@@ -20,18 +24,22 @@ interface EditorState {
   activeTool: EditorTool;
   zoom: number;
   panOffset: { x: number; y: number };
+  hoveredWaypoint: { shapeId: string; idx: number } | null;
 
   addShape: (s: Omit<Shape, "id">) => string;
   updateShape: (id: string, patch: Partial<Shape>) => void;
   removeShapes: (ids: string[]) => void;
   duplicateShapes: (ids: string[]) => void;
+  nudgeShapes: (ids: string[], dx: number, dy: number) => void;
   setSelection: (ids: string[]) => void;
   setActiveTool: (tool: EditorTool) => void;
   setZoom: (zoom: number) => void;
   setPanOffset: (offset: { x: number; y: number }) => void;
+  setHoveredWaypoint: (w: { shapeId: string; idx: number } | null) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (patch: Partial<Pick<TrackDesign, "title" | "description" | "authorName" | "tags">>) => void;
   replaceDesign: (design: TrackDesign) => void;
+  newProject: () => void;
   bringForward: (id: string) => void;
   sendBackward: (id: string) => void;
 }
@@ -61,6 +69,7 @@ export const useEditor = create<EditorState>()(
       activeTool: "select",
       zoom: 1,
       panOffset: { x: 0, y: 0 },
+      hoveredWaypoint: null,
 
       addShape: (s) => {
         const id = nanoid();
@@ -86,6 +95,18 @@ export const useEditor = create<EditorState>()(
             (sh) => !ids.includes(sh.id)
           );
           draft.selection = draft.selection.filter((x) => !ids.includes(x));
+          draft.design.updatedAt = now();
+        }),
+
+      nudgeShapes: (ids, dx, dy) =>
+        set((draft) => {
+          for (const id of ids) {
+            const idx = draft.design.shapes.findIndex((s) => s.id === id);
+            if (idx !== -1 && !draft.design.shapes[idx].locked) {
+              draft.design.shapes[idx].x += dx;
+              draft.design.shapes[idx].y += dy;
+            }
+          }
           draft.design.updatedAt = now();
         }),
 
@@ -151,6 +172,21 @@ export const useEditor = create<EditorState>()(
           };
           draft.selection = [];
           draft.activeTool = "select";
+        }),
+
+      setHoveredWaypoint: (w) =>
+        set((draft) => {
+          draft.hoveredWaypoint = w;
+        }),
+
+      newProject: () =>
+        set((draft) => {
+          draft.design = defaultDesign();
+          draft.selection = [];
+          draft.activeTool = "select";
+          draft.zoom = 1;
+          draft.panOffset = { x: 0, y: 0 };
+          draft.hoveredWaypoint = null;
         }),
 
       bringForward: (id) =>

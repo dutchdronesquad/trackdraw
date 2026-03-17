@@ -38,7 +38,7 @@ export function buildShareUrl(design: TrackDesign): string {
     typeof window !== "undefined"
       ? `${window.location.protocol}//${window.location.host}`
       : "";
-  return `${base}/share/${token}`;
+  return `${base}/share?d=${token}`;
 }
 
 export function isShareSafe(design: TrackDesign): boolean {

@@ -4,18 +4,14 @@ import { useMemo } from "react";
 import { useEditor } from "@/store/editor";
 import { elevationSamples, totalLength2D } from "@/lib/geometry";
 import type { PolylineShape } from "@/lib/types";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-} from "recharts";
+
+const W = 260;
+const H = 80;
+const PAD = { top: 8, right: 8, bottom: 20, left: 32 };
 
 export default function ElevationPanel() {
   const { design, selection } = useEditor();
+
   const path = useMemo<PolylineShape | null>(() => {
     const selected = design.shapes.find(
       (s) => selection.includes(s.id) && s.kind === "polyline"
@@ -27,55 +23,145 @@ export default function ElevationPanel() {
 
   if (!path) {
     return (
-      <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-500 shrink-0">
-        Geen path geselecteerd. Teken of selecteer een vlieglijn om het hoogteprofiel te bekijken.
+      <div className="border-t border-border bg-card/50 px-4 py-3 text-xs text-muted-foreground shrink-0">
+        No race line selected. Draw or select a race line to see the elevation profile.
       </div>
     );
   }
 
   const data = elevationSamples(path);
   const total = totalLength2D(path);
-  const minZ = data.reduce((acc, cur) => Math.min(acc, cur.z), Number.POSITIVE_INFINITY);
-  const maxZ = data.reduce((acc, cur) => Math.max(acc, cur.z), Number.NEGATIVE_INFINITY);
+  const minZ = Math.min(...data.map((d) => d.z));
+  const maxZ = Math.max(...data.map((d) => d.z));
+  const zRange = Math.max(maxZ - minZ, 0.5);
+  const dRange = Math.max(total, 1);
+
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+
+  const toX = (d: number) => PAD.left + (d / dRange) * chartW;
+  const toY = (z: number) => PAD.top + chartH - ((z - minZ) / zRange) * chartH;
+
+  const linePath =
+    data.length > 1
+      ? data
+          .map((pt, i) => `${i === 0 ? "M" : "L"} ${toX(pt.d).toFixed(1)} ${toY(pt.z).toFixed(1)}`)
+          .join(" ")
+      : "";
+
+  const areaPath =
+    data.length > 1
+      ? `${linePath} L ${toX(data[data.length - 1].d).toFixed(1)} ${(PAD.top + chartH).toFixed(1)} L ${toX(0).toFixed(1)} ${(PAD.top + chartH).toFixed(1)} Z`
+      : "";
+
+  const yTicks = [minZ, minZ + zRange / 2, minZ + zRange].map((z) => ({
+    z,
+    y: toY(z),
+    label: z.toFixed(1),
+  }));
+
+  const xTicks = [0, dRange / 2, dRange].map((d) => ({
+    d,
+    x: toX(d),
+    label: d.toFixed(1),
+  }));
 
   return (
-    <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 shrink-0">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Hoogteprofiel
-          </div>
-          <div className="text-[11px] text-slate-500">
-            Totale lengte {total.toFixed(1)} m · Hoogte {minZ.toFixed(1)} – {maxZ.toFixed(1)} m
-          </div>
-        </div>
+    <div className="border-t border-border bg-card/50 px-4 py-3 shrink-0">
+      <div className="flex items-baseline justify-between mb-2">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Elevation Profile
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          {total.toFixed(1)} m · {minZ.toFixed(1)}–{maxZ.toFixed(1)} m
+        </p>
       </div>
-      <div className="mt-3 h-48 w-full rounded border border-slate-200 bg-white">
-        <ResponsiveContainer>
-          <LineChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 16 }}>
-            <XAxis
-              dataKey="d"
-              type="number"
-              domain={[0, Math.max(1, total)]}
-              tickFormatter={(v) => (v as number).toFixed(0)}
-              stroke="#94a3b8"
-            />
-            <YAxis
-              dataKey="z"
-              type="number"
-              domain={[Math.min(0, minZ), Math.max(1, maxZ)]}
-              tickFormatter={(v) => (v as number).toFixed(1)}
-              stroke="#94a3b8"
-            />
-            <Tooltip
-              formatter={(value: number | string) => `${Number(value).toFixed(2)} m`}
-              labelFormatter={(value: number | string) => `Afstand ${Number(value).toFixed(2)} m`}
-            />
-            <Line dataKey="z" dot={false} stroke="#0ea5e9" strokeWidth={2} />
-            <ReferenceLine x={0} strokeDasharray="3 3" stroke="#cbd5f5" />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full rounded"
+        style={{ height: H }}
+        aria-label="Elevation profile chart"
+      >
+        {yTicks.map((t) => (
+          <line
+            key={t.z}
+            x1={PAD.left}
+            y1={t.y}
+            x2={PAD.left + chartW}
+            y2={t.y}
+            stroke="currentColor"
+            strokeOpacity={0.1}
+            strokeWidth={1}
+          />
+        ))}
+
+        {areaPath && (
+          <path d={areaPath} fill="var(--color-primary)" fillOpacity={0.12} />
+        )}
+
+        {linePath && (
+          <path
+            d={linePath}
+            fill="none"
+            stroke="var(--color-primary)"
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        )}
+
+        {data.map((pt, i) => (
+          <circle
+            key={i}
+            cx={toX(pt.d)}
+            cy={toY(pt.z)}
+            r={2}
+            fill="var(--color-primary)"
+            fillOpacity={0.8}
+          />
+        ))}
+
+        {yTicks.map((t) => (
+          <text
+            key={t.z}
+            x={PAD.left - 4}
+            y={t.y}
+            textAnchor="end"
+            dominantBaseline="middle"
+            fontSize={8}
+            fill="currentColor"
+            fillOpacity={0.5}
+          >
+            {t.label}
+          </text>
+        ))}
+
+        {xTicks.map((t) => (
+          <text
+            key={t.d}
+            x={t.x}
+            y={PAD.top + chartH + 12}
+            textAnchor="middle"
+            fontSize={8}
+            fill="currentColor"
+            fillOpacity={0.5}
+          >
+            {t.label}m
+          </text>
+        ))}
+
+        <line
+          x1={PAD.left} y1={PAD.top}
+          x2={PAD.left} y2={PAD.top + chartH}
+          stroke="currentColor" strokeOpacity={0.2} strokeWidth={1}
+        />
+        <line
+          x1={PAD.left} y1={PAD.top + chartH}
+          x2={PAD.left + chartW} y2={PAD.top + chartH}
+          stroke="currentColor" strokeOpacity={0.2} strokeWidth={1}
+        />
+      </svg>
     </div>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useStore } from "@/store/editor";
-import { useTemporalStore } from "zundo";
+import { useEditor } from "@/store/editor";
+import { useStore } from "zustand";
 
 export function useUndoRedo() {
-  const { undo, redo, pastStates, futureStates } = useTemporalStore(useStore);
+  const { undo, redo, pastStates, futureStates } = useStore(useEditor.temporal);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
