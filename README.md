@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/assets/brand/trackdraw-logo-color-darkbg.svg" alt="TrackDraw" width="320" />
+</p>
 
-## Getting Started
+A browser-based FPV drone racing track designer. Draw gates, flags, cones and other obstacles on a true-to-scale 2D canvas, preview the result in 3D, and share your design with a single link.
 
-First, run the development server:
+## Features
+
+- **2D canvas editor** — place and manipulate 9 shape types: gates, flags, cones, labels, polylines, start/finish lines, checkpoints, ladders and dive gates
+- **True-to-scale grid** — configurable field dimensions and pixels-per-meter ratio
+- **3D preview** — real-time Three.js render of the track from a drone perspective
+- **Elevation chart** — altitude profile visualisation along polyline paths
+- **Undo / redo** — full history via Zustand temporal middleware (zundo)
+- **Export** — download as PNG, SVG or PDF
+- **Shareable URLs** — designs are LZ-compressed and embedded in the URL; a QR code is generated automatically
+- **Import** — load a previously exported design file
+
+## Tech stack
+
+| Layer | Library |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | React 19, Tailwind CSS 4, shadcn/ui v4 (`@base-ui/react`) |
+| 2D canvas | Konva 10 + react-konva |
+| 3D preview | Three.js 0.175 + @react-three/fiber + drei |
+| State | Zustand 5 + zundo 2 (temporal) + Immer |
+| Export | jsPDF, Konva stage snapshots |
+| Sharing | lz-string |
+| Icons | Lucide React |
+| Validation | Zod |
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The landing page is at `/`, the editor at `/studio`, and shared tracks are served from `/share?d=[token]`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/              # Next.js pages (/, /studio, /share)
+├── components/       # React components
+│   ├── EditorShell   # Layout orchestrator
+│   ├── TrackCanvas   # Konva 2D editor (~1100 lines)
+│   ├── Inspector     # Shape properties panel
+│   ├── TrackPreview3D
+│   ├── ElevationChart / ElevationPanel
+│   ├── Header / Toolbar / StatusBar
+│   ├── ExportDialog / ImportDialog / ShareDialog
+│   ├── landing/      # Marketing page components
+│   └── ui/           # @base-ui/react wrappers
+├── store/
+│   └── editor.ts     # Single Zustand store with temporal history
+├── hooks/            # useUndoRedo, useTheme, useShareUrl
+└── lib/
+    ├── geometry.ts   # Distance, Catmull-Rom smoothing, elevation sampling
+    ├── share.ts      # LZ-string encode/decode
+    ├── export/       # PNG / SVG / PDF export
+    ├── types.ts      # Shape union types, TrackDesign, FieldSpec
+    └── units.ts      # Unit conversion helpers
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Available scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev    # Development server (Turbopack)
+npm run build  # Production build
+npm run start  # Start production server
+npm run lint   # ESLint
+```
