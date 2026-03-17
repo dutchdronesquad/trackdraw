@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/assets/brand/trackdraw-logo-color-darkbg.svg" alt="TrackDraw" width="320" />
+  <img src="public/assets/brand/trackdraw-logo-color-lightbg.svg" alt="TrackDraw" width="320" />
 </p>
 
 A browser-based FPV drone racing track designer. Draw gates, flags, cones and other obstacles on a true-to-scale 2D canvas, preview the result in 3D, and share your design with a single link.
