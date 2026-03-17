@@ -12,16 +12,14 @@ TrackDraw is a free, browser-based track designer built for FPV drone racing pil
 
 ## What you can do
 
-| | |
-|---|---|
-| 🏁 **Place obstacles** | Gates, flags, cones, dive gates, ladders, start/finish lines, labels and free-form polylines |
-| 📐 **Work to scale** | The canvas maps directly to real-world dimensions. Set your field size and meters-per-pixel ratio to get accurate distances |
-| 🎥 **Preview in 3D** | A live Three.js render shows the track from a drone perspective as you build |
-| 📈 **Check elevation** | Altitude profile chart along polyline paths — useful for planning vertical sections |
-| ↩️ **Undo anything** | Full undo/redo history so you can experiment freely |
-| 📤 **Export** | Save your design as PNG, SVG or PDF to print or share offline |
-| 🔗 **Share with a link** | The entire design is compressed into the URL. Send it to anyone — they see the exact same track |
-| 📥 **Import** | Load a previously saved design file to continue editing |
+- 🏁 **Place obstacles** — gates, flags, cones, dive gates, ladders, start/finish lines, labels and free-form polylines
+- 📐 **Work to scale** — the canvas maps directly to real-world dimensions; set your field size and meters-per-pixel ratio to get accurate distances
+- 🎥 **Preview in 3D** — a live Three.js render shows the track from a drone perspective as you build
+- 📈 **Check elevation** — altitude profile chart along polyline paths, useful for planning vertical sections
+- ↩️ **Undo anything** — full undo/redo history so you can experiment freely
+- 📤 **Export** — save your design as PNG, SVG or PDF to print or share offline
+- 🔗 **Share with a link** — the entire design is compressed into the URL; send it to anyone and they see the exact same track
+- 📥 **Import** — load a previously saved design file to continue editing
 
 ## Getting started
 
