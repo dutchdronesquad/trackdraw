@@ -11,7 +11,6 @@ import { useEditor } from "@/store/editor";
 import { exportSvg } from "@/lib/export/exportSvg";
 import { exportPng } from "@/lib/export/exportPng";
 import { cn } from "@/lib/utils";
-import { exportPdf } from "@/lib/export/exportPdf";
 import type { TrackCanvasHandle } from "@/components/TrackCanvas";
 import { Download, Loader2, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
@@ -231,6 +230,7 @@ export default function ExportDialog({
                   run("pdf", async () => {
                     const stage = canvasRef.current?.getStage();
                     if (!stage) throw new Error("Canvas not ready");
+                    const { exportPdf } = await import("@/lib/export/exportPdf");
                     await exportPdf(stage, design, `${safeName()}.pdf`);
                   })
                 }
