@@ -21,11 +21,17 @@ export async function exportPng(
       canvas.width = W * scale;
       canvas.height = H * scale;
       const ctx = canvas.getContext("2d");
-      if (!ctx) { reject(new Error("No 2D context")); return; }
+      if (!ctx) {
+        reject(new Error("No 2D context"));
+        return;
+      }
       ctx.drawImage(img, 0, 0, W * scale, H * scale);
       URL.revokeObjectURL(svgUrl);
       canvas.toBlob((blob) => {
-        if (!blob) { reject(new Error("PNG render failed")); return; }
+        if (!blob) {
+          reject(new Error("PNG render failed"));
+          return;
+        }
         const a = document.createElement("a");
         const pngUrl = URL.createObjectURL(blob);
         a.href = pngUrl;
@@ -35,7 +41,10 @@ export async function exportPng(
         resolve();
       }, "image/png");
     };
-    img.onerror = () => { URL.revokeObjectURL(svgUrl); reject(new Error("SVG load failed")); };
+    img.onerror = () => {
+      URL.revokeObjectURL(svgUrl);
+      reject(new Error("SVG load failed"));
+    };
     img.src = svgUrl;
   });
 }

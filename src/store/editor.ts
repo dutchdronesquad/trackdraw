@@ -8,6 +8,7 @@ import type { FieldSpec, Shape, TrackDesign } from "@/lib/types";
 
 export type EditorTool =
   | "select"
+  | "grab"
   | "gate"
   | "flag"
   | "cone"
@@ -37,7 +38,11 @@ interface EditorState {
   setPanOffset: (offset: { x: number; y: number }) => void;
   setHoveredWaypoint: (w: { shapeId: string; idx: number } | null) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
-  updateDesignMeta: (patch: Partial<Pick<TrackDesign, "title" | "description" | "authorName" | "tags">>) => void;
+  updateDesignMeta: (
+    patch: Partial<
+      Pick<TrackDesign, "title" | "description" | "authorName" | "tags">
+    >
+  ) => void;
   replaceDesign: (design: TrackDesign) => void;
   newProject: () => void;
   bringForward: (id: string) => void;

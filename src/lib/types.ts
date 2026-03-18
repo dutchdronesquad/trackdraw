@@ -1,6 +1,15 @@
 export type UUID = string;
 
-export type ShapeKind = "gate" | "flag" | "cone" | "label" | "polyline" | "startfinish" | "checkpoint" | "ladder" | "divegate";
+export type ShapeKind =
+  | "gate"
+  | "flag"
+  | "cone"
+  | "label"
+  | "polyline"
+  | "startfinish"
+  | "checkpoint"
+  | "ladder"
+  | "divegate";
 
 export interface BaseShape {
   id: UUID;
@@ -51,16 +60,16 @@ export interface CheckpointShape extends BaseShape {
 
 export interface LadderShape extends BaseShape {
   kind: "ladder";
-  width: number;   // m horizontal span
-  height: number;  // m gate opening height (3D) / ladder footprint depth (2D top-down)
-  rungs: number;   // count of rungs
+  width: number; // m horizontal span
+  height: number; // m gate opening height (3D) / ladder footprint depth (2D top-down)
+  rungs: number; // count of rungs
 }
 
 export interface DiveGateShape extends BaseShape {
   kind: "divegate";
-  size: number;       // m outer dimension (square frame)
-  thick?: number;     // m frame/panel width (default 0.20)
-  tilt?: number;      // degrees from vertical: 0=vertical wall, 90=flat/horizontal
+  size: number; // m outer dimension (square frame)
+  thick?: number; // m frame/panel width (default 0.20)
+  tilt?: number; // degrees from vertical: 0=vertical wall, 90=flat/horizontal
   elevation?: number; // m height of frame center above ground (default 3.0)
 }
 

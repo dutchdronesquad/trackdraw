@@ -1,0 +1,7 @@
+.next
+out
+build
+node_modules
+next-env.d.ts
+public
+src/components/ui

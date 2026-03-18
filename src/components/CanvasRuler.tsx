@@ -54,8 +54,13 @@ export function CanvasRuler({
     ctx.strokeStyle = isDark ? "#1a2636" : "#c8d2db";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    if (isH) { ctx.moveTo(0, ch - 0.5); ctx.lineTo(cw, ch - 0.5); }
-    else      { ctx.moveTo(cw - 0.5, 0); ctx.lineTo(cw - 0.5, ch); }
+    if (isH) {
+      ctx.moveTo(0, ch - 0.5);
+      ctx.lineTo(cw, ch - 0.5);
+    } else {
+      ctx.moveTo(cw - 0.5, 0);
+      ctx.lineTo(cw - 0.5, ch);
+    }
     ctx.stroke();
 
     // ── Adaptive major/coarse intervals ─────────────────────────
@@ -70,7 +75,7 @@ export function CanvasRuler({
 
     const offset = isH ? stX : stY;
     const iStart = Math.floor(-offset / minorScreenStep) - 2;
-    const iEnd   = Math.ceil((length - offset) / minorScreenStep) + 2;
+    const iEnd = Math.ceil((length - offset) / minorScreenStep) + 2;
 
     ctx.font = `10px ui-monospace, monospace`;
 
@@ -81,12 +86,21 @@ export function CanvasRuler({
       const metersRaw = i * minorM;
       const meters = Math.round(metersRaw * 1000) / 1000;
       const isMajor = Math.abs(meters % majorM) < majorM * 0.01;
-      const isCoarse = !isMajor && Math.abs(meters % (majorM / 2)) < majorM * 0.01;
+      const isCoarse =
+        !isMajor && Math.abs(meters % (majorM / 2)) < majorM * 0.01;
 
       const tickLen = isMajor ? 14 : isCoarse ? 9 : 5;
       ctx.strokeStyle = isDark
-        ? (isMajor ? "#4a7090" : isCoarse ? "#2a4860" : "#1e3448")
-        : (isMajor ? "#6a8aa8" : isCoarse ? "#9ab0c4" : "#bdd0dc");
+        ? isMajor
+          ? "#4a7090"
+          : isCoarse
+            ? "#2a4860"
+            : "#1e3448"
+        : isMajor
+          ? "#6a8aa8"
+          : isCoarse
+            ? "#9ab0c4"
+            : "#bdd0dc";
       ctx.lineWidth = isMajor ? 1 : 0.75;
 
       ctx.beginPath();
@@ -100,7 +114,9 @@ export function CanvasRuler({
       ctx.stroke();
 
       if (isMajor) {
-        const label = Number.isInteger(meters) ? String(meters) : meters.toFixed(1);
+        const label = Number.isInteger(meters)
+          ? String(meters)
+          : meters.toFixed(1);
         ctx.fillStyle = isDark ? "#7aa8cc" : "#4a6a88";
 
         if (isH) {
@@ -125,7 +141,7 @@ export function CanvasRuler({
   return (
     <canvas
       ref={ref}
-      className="absolute z-10 pointer-events-none"
+      className="pointer-events-none absolute z-10"
       style={{
         top: 0,
         left: 0,
