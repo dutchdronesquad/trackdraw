@@ -180,7 +180,7 @@ export function useTrackCanvasInteractions({
   );
 
   const onTouchStart = useCallback(
-    (event: { evt: TouchEvent }) => {
+    (event: { evt: TouchEvent; target: unknown }) => {
       if (disableTouchGestures) return;
       const stage = stageRef.current;
       if (!stage) return;
