@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEditor } from "@/store/editor";
 import { decodeDesign } from "@/lib/share";
 import EditorShell from "@/components/EditorShell";
 import { Eye } from "lucide-react";
 
-export default function SharePage() {
+function ShareLoader() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const replaceDesign = useEditor((s) => s.replaceDesign);
 
   useEffect(() => {
@@ -21,13 +20,19 @@ export default function SharePage() {
     }
   }, [searchParams, replaceDesign]);
 
+  return null;
+}
+
+export default function SharePage() {
+  const router = useRouter();
+
   return (
     <div className="h-screen flex flex-col">
       <div className="shrink-0 flex items-center justify-between gap-4 px-4 py-1.5 bg-primary/10 border-b border-primary/20 text-xs">
         <div className="flex items-center gap-2 text-primary">
           <Eye className="size-3.5" />
           <span className="font-medium">View-only</span>
-          <span className="text-muted-foreground">— shared track</span>
+          <span className="text-muted-foreground">- shared track</span>
         </div>
         <button
           onClick={() => router.push("/studio")}
@@ -37,6 +42,9 @@ export default function SharePage() {
         </button>
       </div>
       <div className="flex-1 min-h-0">
+        <Suspense>
+          <ShareLoader />
+        </Suspense>
         <EditorShell readOnly={true} />
       </div>
     </div>

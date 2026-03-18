@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Grid } from "@react-three/drei";
+import { OrbitControls, Grid, RoundedBox, Text } from "@react-three/drei";
 import { useEditor } from "@/store/editor";
 import { useMemo, useRef, useState, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
 import * as THREE from "three";
@@ -50,7 +50,7 @@ function useTextTexture(text: string, color: string, fontSize: number): THREE.Ca
     ctx.textBaseline = "middle";
     ctx.fillText(text, measW / 2, measH / 2);
     return new THREE.CanvasTexture(canvas);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [text, color, fontSize]);
 }
 
@@ -153,27 +153,77 @@ function Label3D({ shape }: { shape: LabelShape }) {
 }
 
 // ── Start Pads ────────────────────────────────────────────────
-// 4 flat ground pads in a row — like FPV drone racing start positions
+// 4 launch pads with a cleaner podium-like base and numbered pads
 function StartFinish3D({ shape }: { shape: StartFinishShape }) {
   const color = shape.color ?? "#f59e0b";
   const totalW = shape.width ?? 3.0;
   const spacing = totalW / 4;
-  const padW = spacing * 0.78;
-  const padD = padW * 1.2;
-  const padH = 0.06;
+  const podW = spacing * 0.72;
+  const podD = podW * 1.5;
+  const podH = 0.08;
+  const topInset = 0.08;
+  const stripeW = 0.1;
+  const gap = spacing - podW;
   const rot: [number, number, number] = [0, (-shape.rotation * Math.PI) / 180, 0];
 
   return (
     <group position={[shape.x, 0, shape.y]} rotation={rot}>
       {Array.from({ length: 4 }).map((_, i) => {
         const px = -totalW / 2 + spacing * i + spacing / 2;
+        const emissive = 0.08 + i * 0.025;
         return (
-          <mesh key={i} position={[px, padH / 2, 0]} receiveShadow castShadow>
-            <boxGeometry args={[padW, padH, padD]} />
-            <meshStandardMaterial color={color} roughness={0.6} opacity={0.6 + i * 0.1} transparent />
-          </mesh>
+          <group key={i} position={[px, 0, 0]}>
+            <RoundedBox
+              args={[podW, podH, podD]}
+              radius={0.06}
+              smoothness={4}
+              position={[0, podH / 2, 0]}
+              receiveShadow
+              castShadow
+            >
+              <meshStandardMaterial color="#111a26" roughness={0.88} metalness={0.08} />
+            </RoundedBox>
+
+            <RoundedBox
+              args={[podW - topInset, 0.018, podD - topInset]}
+              radius={0.04}
+              smoothness={4}
+              position={[0, podH + 0.012, 0]}
+              receiveShadow
+            >
+              <meshStandardMaterial color={color} emissive={color} emissiveIntensity={emissive} roughness={0.34} metalness={0.18} />
+            </RoundedBox>
+
+            <mesh position={[0, podH + 0.022, -(podD / 2) + 0.16]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[podW - topInset * 1.2, stripeW]} />
+              <meshBasicMaterial color="#ffffff" transparent opacity={0.16} />
+            </mesh>
+
+            <Text
+              position={[0, podH + 0.026, -(podD / 2) + 0.16]}
+              rotation={[-Math.PI / 2, 0, 0]}
+              fontSize={0.11}
+              color="#f8fafc"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {String(i + 1)}
+            </Text>
+
+            <mesh position={[0, 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[podW + 0.08, podD + 0.08]} />
+              <meshBasicMaterial color={color} transparent opacity={0.05} />
+            </mesh>
+          </group>
         );
       })}
+
+      {[-1, 1].map((dir) => (
+        <mesh key={`bridge-${dir}`} position={[dir * spacing, 0.01, 0]} receiveShadow>
+          <boxGeometry args={[gap + 0.02, 0.015, 0.1]} />
+          <meshStandardMaterial color="#1c2634" roughness={0.9} metalness={0.04} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -416,13 +466,16 @@ const THEME = {
 // ── Field watermark ──────────────────────────────────────────
 function FieldWatermark({ fw, fh, isDark }: { fw: number; fh: number; isDark: boolean }) {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
+  const [aspect, setAspect] = useState(799 / 200);
 
   useEffect(() => {
     const img = new Image();
     img.onload = () => {
       const scale = 3;
-      const w = 799 * scale;
-      const h = 200 * scale;
+      const sourceW = img.naturalWidth || 799;
+      const sourceH = img.naturalHeight || 200;
+      const w = sourceW * scale;
+      const h = sourceH * scale;
       const canvas = document.createElement("canvas");
       canvas.width = w;
       canvas.height = h;
@@ -431,12 +484,12 @@ function FieldWatermark({ fw, fh, isDark }: { fw: number; fh: number; isDark: bo
       ctx.globalAlpha = 0.05;
       ctx.drawImage(img, 0, 0, w, h);
       const tex = new THREE.CanvasTexture(canvas);
+      setAspect(sourceW / sourceH);
       setTexture(tex);
     };
     img.src = `/assets/brand/trackdraw-logo-mono-${isDark ? "darkbg" : "lightbg"}.svg`;
   }, [isDark]);
 
-  const aspect = 799 / 200;
   const planeW = Math.min(fw * 0.55, fh * 0.55 * aspect);
   const planeH = planeW / aspect;
 

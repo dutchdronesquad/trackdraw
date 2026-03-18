@@ -13,10 +13,10 @@ import ExportDialog from "@/components/ExportDialog";
 import ImportDialog from "@/components/ImportDialog";
 import TrackCanvas, { type TrackCanvasHandle } from "@/components/TrackCanvas";
 import type { TrackPreview3DHandle } from "@/components/TrackPreview3D";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
-  Monitor, Share2, LayoutGrid, X,
-  MousePointer2, Flag, Triangle, Type, Spline, Trophy,
+  Monitor, Share2, LayoutGrid,
+  MousePointer2, Hand, Flag, Triangle, Type, Spline, Target,
   FolderOpen, Download, FilePlus,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
@@ -58,10 +58,11 @@ function LadderIcon({ className }: { className?: string }) {
 
 const mobileTools: { id: EditorTool; icon: React.ReactNode; label: string }[] = [
   { id: "select",      icon: <MousePointer2 className="size-5" />, label: "Select" },
+  { id: "grab",        icon: <Hand className="size-5" />,          label: "Grab" },
   { id: "gate",        icon: <GateIcon className="size-5" />,      label: "Gate" },
   { id: "ladder",      icon: <LadderIcon className="size-5" />,    label: "Ladder" },
   { id: "divegate",    icon: <DiveGateIcon className="size-5" />,  label: "Dive Gate" },
-  { id: "startfinish", icon: <Trophy className="size-5" />,        label: "Start Pads" },
+  { id: "startfinish", icon: <Target className="size-5" />, label: "Start Pads" },
   { id: "flag",        icon: <Flag className="size-5" />,          label: "Flag" },
   { id: "cone",        icon: <Triangle className="size-5" />,      label: "Cone" },
   { id: "label",       icon: <Type className="size-5" />,          label: "Label" },
@@ -82,6 +83,7 @@ export default function EditorShell({ readOnly = false }: { readOnly?: boolean }
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
   const [mobileOverrideDismissed, setMobileOverrideDismissed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Load persisted design on mount
   useEffect(() => {
@@ -116,79 +118,105 @@ export default function EditorShell({ readOnly = false }: { readOnly?: boolean }
 
   return (
     <>
-      <div className="h-[100dvh] flex flex-col overflow-hidden bg-background text-foreground">
-        {/* ── Header ─────────────────────────────────────────── */}
-        <Header
-          tab={tab}
-          onTabChange={setTab}
-          onShare={() => setShareOpen(true)}
-          onExport={() => setExportOpen(true)}
-          readOnly={readOnly}
-          hideTabsOnMobile
-        />
+      <div className="relative h-[100dvh] flex overflow-hidden bg-background text-foreground">
+        <div className="pointer-events-none absolute left-0 right-0 top-0 z-30 hidden h-11 items-center justify-center lg:flex">
+          <span className="max-w-[28rem] truncate px-6 text-center text-sm text-foreground/70">
+            {design.title || "Untitled"}
+          </span>
+        </div>
 
-        {/* ── Body ───────────────────────────────────────────── */}
-        <div className="relative flex flex-1 min-h-0 overflow-hidden">
-          {/* Desktop Toolbar */}
-          {!readOnly && <Toolbar onImport={() => setImportOpen(true)} onExport={() => setExportOpen(true)} />}
+        {/* ── Sidebar (full height) ───────────────────────────── */}
+        {!readOnly && (
+          <Toolbar
+            onImport={() => setImportOpen(true)}
+            onExport={() => setExportOpen(true)}
+            collapsed={sidebarCollapsed}
+            onToggleCollapsed={() => setSidebarCollapsed(c => !c)}
+          />
+        )}
 
-          {/* Canvas area */}
-          <div className="flex-1 relative min-h-0">
-            <div className="relative h-full overflow-hidden bg-canvas">
-              {/* 2D: always mounted so export always works; hidden visually when not active */}
-              <div className="absolute inset-0" style={{ visibility: tab === "2d" ? "visible" : "hidden", pointerEvents: tab === "2d" ? "auto" : "none" }}>
-                <TrackCanvas ref={canvasRef} onCursorChange={setCursorPos} onSnapChange={setSnapActive} readOnly={readOnly} />
-              </div>
-              <div className="absolute inset-0" style={{ display: tab === "3d" ? "block" : "none" }}>
-                <TrackPreview3D ref={preview3DRef} />
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 z-20">
-                <StatusBar cursorPos={cursorPos} snapActive={snapActive} />
+        {/* ── Main column ────────────────────────────────────── */}
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          {/* Header */}
+          <Header
+            tab={tab}
+            onTabChange={setTab}
+            onShare={() => setShareOpen(true)}
+            onExport={() => setExportOpen(true)}
+            readOnly={readOnly}
+            hideTabsOnMobile
+            collapsed={sidebarCollapsed}
+            onToggleCollapsed={() => setSidebarCollapsed(c => !c)}
+          />
+
+          {/* ── Body ─────────────────────────────────────────── */}
+          <div className="relative flex flex-1 min-h-0 overflow-hidden">
+            {/* Canvas area */}
+            <div className="flex-1 relative min-h-0">
+              <div className="relative h-full overflow-hidden bg-canvas">
+                {/* 2D: always mounted so export always works; hidden visually when not active */}
+                <div className="absolute inset-0" style={{ visibility: tab === "2d" ? "visible" : "hidden", pointerEvents: tab === "2d" ? "auto" : "none" }}>
+                  <TrackCanvas ref={canvasRef} onCursorChange={setCursorPos} onSnapChange={setSnapActive} readOnly={readOnly} />
+                </div>
+                <div className="absolute inset-0" style={{ display: tab === "3d" ? "block" : "none" }}>
+                  <TrackPreview3D ref={preview3DRef} />
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 z-20">
+                  <StatusBar cursorPos={cursorPos} snapActive={snapActive} />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Desktop Inspector */}
-          {!readOnly && (
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.aside
-                key={selection.length === 0 ? "empty" : selection.length === 1 ? selection[0] : "multi"}
-                initial={{ opacity: 0, x: 8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 8 }}
-                transition={{ duration: 0.10, ease: "easeOut" }}
-                className="hidden lg:flex w-[300px] shrink-0 border-l border-border/80 flex-col min-h-0 overflow-hidden bg-card/95 backdrop-blur"
-              >
-                <Inspector />
-              </motion.aside>
-            </AnimatePresence>
-          )}
+            {/* Desktop Inspector */}
+            {!readOnly && (
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.aside
+                  key={selection.length === 0 ? "empty" : selection.length === 1 ? selection[0] : "multi"}
+                  initial={{ opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 8 }}
+                  transition={{ duration: 0.10, ease: "easeOut" }}
+                  className="hidden lg:flex w-[300px] shrink-0 border-l border-border/80 flex-col min-h-0 overflow-hidden bg-card/95 backdrop-blur"
+                >
+                  <Inspector />
+                </motion.aside>
+              </AnimatePresence>
+            )}
+          </div>
         </div>
 
         {/* ── Read-only FAB ────────────────────────────────────── */}
         {readOnly && (
-          <div className="lg:hidden absolute bottom-6 right-4 z-30">
-            <button
+          <div className="lg:hidden absolute bottom-10 right-4 z-30">
+            <motion.button
               onClick={() => setReadOnlyMenuOpen(true)}
+              initial={{ opacity: 0, y: 10, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="h-10 px-4 rounded-full bg-sidebar border border-border shadow-lg flex items-center gap-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
             >
               <span className="uppercase tracking-wide">{tab}</span>
               <LayoutGrid className="size-3.5 text-muted-foreground" />
-            </button>
+            </motion.button>
           </div>
         )}
 
         {/* ── Edit-mode FAB ────────────────────────────────────── */}
         {!readOnly && mobileOverrideDismissed && (
-          <div className="lg:hidden absolute bottom-6 right-4 z-30">
-            <button
+          <div className="lg:hidden absolute bottom-10 right-4 z-30">
+            <motion.button
               onClick={() => setMobileToolsOpen(true)}
+              initial={{ opacity: 0, y: 10, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="h-10 px-4 rounded-full bg-sidebar border border-border shadow-lg flex items-center gap-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
               aria-label="Open tools"
             >
               <span className="capitalize tracking-wide">{activeTool}</span>
               <LayoutGrid className="size-3.5 text-muted-foreground" />
-            </button>
+            </motion.button>
           </div>
         )}
       </div>
@@ -233,9 +261,14 @@ export default function EditorShell({ readOnly = false }: { readOnly?: boolean }
                 className="fixed bottom-0 left-0 right-0 z-50 lg:hidden flex flex-col bg-card border-t border-border rounded-t-2xl overflow-hidden"
                 style={{ maxHeight: "75dvh" }}
               >
-                <div className="flex items-center justify-center pt-2 pb-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setMobileInspectorOpen(false)}
+                  className="flex items-center justify-center pt-2 pb-1 shrink-0 cursor-grab active:cursor-grabbing"
+                  aria-label="Close inspector"
+                >
                   <div className="w-8 h-1 rounded-full bg-muted-foreground/30" />
-                </div>
+                </button>
                 <div className="flex-1 min-h-0 overflow-hidden">
                   <Inspector />
                 </div>
@@ -248,17 +281,21 @@ export default function EditorShell({ readOnly = false }: { readOnly?: boolean }
       {/* ── Mobile tools Sheet ───────────────────────────────── */}
       {!readOnly && (
         <Sheet open={mobileToolsOpen} onOpenChange={setMobileToolsOpen}>
-          <SheetContent side="bottom" className="lg:hidden max-h-[85dvh]">
-            <SheetHeader>
-              <SheetTitle>Tools</SheetTitle>
-              <SheetClose>
-                <button className="size-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors">
-                  <X className="size-4" />
-                </button>
-              </SheetClose>
+          <SheetContent side="bottom" showCloseButton={false} className="lg:hidden max-h-[85dvh] rounded-t-2xl px-0 gap-0">
+            {/* Drawer handle */}
+            <button
+              type="button"
+              onClick={() => setMobileToolsOpen(false)}
+              className="flex items-center justify-center pt-2.5 pb-1 shrink-0 cursor-grab active:cursor-grabbing"
+              aria-label="Close tools"
+            >
+              <div className="w-8 h-1 rounded-full bg-muted-foreground/25" />
+            </button>
+            <SheetHeader className="px-4 py-2 shrink-0">
+              <SheetTitle className="text-sm">Tools</SheetTitle>
             </SheetHeader>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
               {/* Tool grid */}
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-2">Drawing tools</p>
@@ -266,9 +303,13 @@ export default function EditorShell({ readOnly = false }: { readOnly?: boolean }
                   {mobileTools.map((tool) => {
                     const active = activeTool === tool.id;
                     return (
-                      <button
+                      <motion.button
                         key={tool.id}
                         onClick={() => { setSelection([]); setActiveTool(tool.id); setMobileToolsOpen(false); }}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileTap={{ scale: 0.97 }}
+                        transition={{ duration: 0.16, ease: "easeOut", delay: 0.015 * mobileTools.indexOf(tool) }}
                         className={cn(
                           "flex flex-col items-center gap-1.5 rounded-xl py-3 px-2 border transition-all",
                           active
@@ -278,7 +319,7 @@ export default function EditorShell({ readOnly = false }: { readOnly?: boolean }
                       >
                         {tool.icon}
                         <span className="text-[11px] font-medium leading-none">{tool.label}</span>
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
@@ -331,16 +372,19 @@ export default function EditorShell({ readOnly = false }: { readOnly?: boolean }
       {/* ── Read-only menu Sheet ─────────────────────────────── */}
       {readOnly && (
         <Sheet open={readOnlyMenuOpen} onOpenChange={setReadOnlyMenuOpen}>
-          <SheetContent side="bottom" className="lg:hidden max-h-[60dvh]">
-            <SheetHeader>
-              <SheetTitle>View</SheetTitle>
-              <SheetClose>
-                <button className="size-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors">
-                  <X className="size-4" />
-                </button>
-              </SheetClose>
+          <SheetContent side="bottom" showCloseButton={false} className="lg:hidden max-h-[60dvh] rounded-t-2xl px-0 gap-0">
+            <button
+              type="button"
+              onClick={() => setReadOnlyMenuOpen(false)}
+              className="flex items-center justify-center pt-2.5 pb-1 shrink-0 cursor-grab active:cursor-grabbing"
+              aria-label="Close menu"
+            >
+              <div className="w-8 h-1 rounded-full bg-muted-foreground/25" />
+            </button>
+            <SheetHeader className="px-4 py-2 shrink-0">
+              <SheetTitle className="text-sm">View</SheetTitle>
             </SheetHeader>
-            <div className="p-4 space-y-4">
+            <div className="px-4 pb-4 space-y-4">
               {/* 2D / 3D toggle */}
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-2">View mode</p>

@@ -1,5 +1,29 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "TrackDraw - FPV Race Track Planner",
+  description: "Design FPV drone race tracks to scale, preview in 3D, and share with your pilots in seconds. Built for race directors.",
+  keywords: ["FPV", "drone racing", "track design", "race track planner", "FPV track builder", "Dutch Drone Squad"],
+  authors: [{ name: "Dutch Drone Squad", url: "https://dutchdronesquad.nl" }],
+  openGraph: {
+    type: "website",
+    siteName: "TrackDraw",
+    title: "TrackDraw - FPV Race Track Planner",
+    description: "Design FPV drone race tracks to scale, preview in 3D, and share with your pilots in seconds.",
+    images: [{ url: "/assets/screenshots/editor-overview.png", width: 1920, height: 1080, alt: "TrackDraw editor" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TrackDraw - FPV Race Track Planner",
+    description: "Design FPV drone race tracks to scale, preview in 3D, and share with your pilots in seconds.",
+    images: ["/assets/screenshots/editor-overview.png"],
+  },
+};
 import Link from "next/link";
+import { Footer } from "@/components/landing/Footer";
+import VersionTag from "@/components/VersionTag";
+
 import {
   ArrowRight,
   Check,
@@ -42,8 +66,8 @@ function Eyebrow({ children, className = "" }: { children: React.ReactNode; clas
 const features = [
   {
     icon: Route,
-    color: "text-[#1E93DB]",
-    bg: "bg-[#1E93DB]/10",
+    color: "text-brand-primary",
+    bg: "bg-brand-primary/10",
     glow: "#1E93DB",
     title: "True-to-scale canvas",
     text: "Set field dimensions, drop elements and snap to a real-scale grid. What you design is what the crew builds.",
@@ -58,8 +82,8 @@ const features = [
   },
   {
     icon: Waves,
-    color: "text-[#F0761D]",
-    bg: "bg-[#F0761D]/10",
+    color: "text-brand-secondary",
+    bg: "bg-brand-secondary/10",
     glow: "#F0761D",
     title: "Elevation on the race line",
     text: "Assign altitude to every waypoint and catch vertical problems before you're on-site.",
@@ -74,16 +98,16 @@ const features = [
   },
   {
     icon: Spline,
-    color: "text-[#1E93DB]",
-    bg: "bg-[#1E93DB]/10",
+    color: "text-brand-primary",
+    bg: "bg-brand-primary/10",
     glow: "#1E93DB",
     title: "Smooth race-line path",
     text: "Draw the flight path with smooth curves and directional arrows. Pilots know where to fly before they see the first gate.",
   },
   {
     icon: FileText,
-    color: "text-[#F0761D]",
-    bg: "bg-[#F0761D]/10",
+    color: "text-brand-secondary",
+    bg: "bg-brand-secondary/10",
     glow: "#F0761D",
     title: "Export for any format",
     text: "Print-ready PDF, high-res PNG, vector SVG, or JSON. Every export carries the title, field size and scale.",
@@ -121,8 +145,8 @@ export default function Home() {
       {/* ── Nav ─────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/75 backdrop-blur-xl backdrop-saturate-150">
         <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-          <Link href="/">
-            <BrandLogo className="h-8 w-auto" />
+          <Link href="/" className="flex items-center">
+            <BrandLogo className="h-8 w-auto sm:h-9" />
           </Link>
           <div className="hidden items-center gap-7 text-sm text-muted-foreground sm:flex">
             <a href="#features" className="transition-colors hover:text-foreground">Features</a>
@@ -147,21 +171,24 @@ export default function Home() {
         <div className="pointer-events-none absolute -top-32 left-0 h-[600px] w-[600px] rounded-full bg-[#1E93DB] opacity-[0.06] blur-[120px]" />
 
         <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-14 sm:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
+          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.45fr] lg:gap-16">
 
             {/* Left: text */}
             <div>
               <FadeUp>
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#1E93DB]/25 bg-[#1E93DB]/8 px-3.5 py-1 text-xs font-medium text-[#1E93DB]">
-                  <span className="size-1.5 animate-pulse rounded-full bg-[#1E93DB]" />
-                  Built for FPV race directors
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-brand-primary/25 bg-brand-primary/8 px-3.5 py-1 text-xs font-medium text-brand-primary">
+                    <span className="size-1.5 animate-pulse rounded-full bg-brand-primary" />
+                    Built for FPV race directors
+                  </span>
+                  <VersionTag className="rounded-full border-amber-500/30 bg-amber-500/10 px-3.5 py-1 text-xs font-sans font-medium text-amber-500 hover:bg-amber-500/15 hover:text-amber-400" />
+                </div>
               </FadeUp>
 
               <FadeUp delay={0.07} className="mt-5">
                 <h1 className="text-[clamp(34px,4.5vw,58px)] font-semibold leading-[1.08] tracking-[-0.04em]">
                   Race day starts<br />
-                  <span className="bg-gradient-to-r from-[#1E93DB] to-sky-300 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-brand-primary to-sky-300 bg-clip-text text-transparent">
                     with a plan.
                   </span>
                 </h1>
@@ -199,8 +226,8 @@ export default function Home() {
                     "Free to use and share",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-[#1E93DB]/15">
-                        <Check className="size-2.5 text-[#1E93DB]" />
+                      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-brand-primary/15">
+                        <Check className="size-2.5 text-brand-primary" />
                       </span>
                       {item}
                     </li>
@@ -305,7 +332,7 @@ export default function Home() {
                     className="order-last lg:order-first"
                   />
                   <div className="order-first lg:order-last">
-                    <div className="inline-flex items-center gap-1.5 rounded-full border border-[#F0761D]/20 bg-[#F0761D]/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-[#F0761D]">
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-brand-secondary/20 bg-brand-secondary/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-brand-secondary">
                       <Share2 className="size-3" /> Inspector & Share
                     </div>
                     <h3 className="mt-4 text-xl font-semibold tracking-tight">
@@ -321,7 +348,7 @@ export default function Home() {
                         "PDF, PNG, SVG and JSON export",
                       ].map((b) => (
                         <li key={b} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                          <CheckCircle2 className="size-3.5 shrink-0 text-[#F0761D]" /> {b}
+                          <CheckCircle2 className="size-3.5 shrink-0 text-brand-secondary" /> {b}
                         </li>
                       ))}
                     </ul>
@@ -356,37 +383,7 @@ export default function Home() {
 
       </main>
 
-      {/* ── Footer ───────────────────────────────────────── */}
-      <footer className="border-t border-border/40">
-        <div className="mx-auto w-full max-w-6xl px-6 py-6">
-
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-            {/* Col 1: Brand */}
-            <BrandLogo mono className="h-7 w-auto" />
-
-            {/* Col 2: Navigation */}
-            <nav className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
-              <a href="#features"  className="transition-colors hover:text-foreground">Features</a>
-              <a href="#in-depth"  className="transition-colors hover:text-foreground">In depth</a>
-              <a href="#faq"       className="transition-colors hover:text-foreground">FAQ</a>
-              <Link href="/studio" className="transition-colors hover:text-foreground">Studio</Link>
-            </nav>
-
-            {/* Col 3: Credit */}
-            <p className="border-t border-border/30 pt-4 text-xs text-muted-foreground/50 sm:border-0 sm:pt-0">
-              © {new Date().getFullYear()}{" "}
-              <a
-                href="https://dutchdronesquad.nl"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-muted-foreground"
-              >
-                Dutch Drone Squad
-              </a>
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   );

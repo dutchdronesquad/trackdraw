@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TrackDraw",
-  description: "TrackDraw — design FPV drone race tracks with scale, elevation profiles, 3D preview, and instant sharing.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://trackdraw.app"),
+  title: { default: "TrackDraw", template: "%s · TrackDraw" },
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

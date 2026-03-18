@@ -23,7 +23,7 @@ export default function ImportDialog({ open, onOpenChange }: ImportDialogProps) 
 
   const reset = () => { setParsed(null); setError(null); };
 
-  const tryParse = (text: string) => {
+  const tryParse = useCallback((text: string) => {
     try {
       const data = JSON.parse(text);
       if (!data || typeof data !== "object" || !Array.isArray(data.shapes)) throw new Error();
@@ -33,23 +33,23 @@ export default function ImportDialog({ open, onOpenChange }: ImportDialogProps) 
       setError("Invalid file — this doesn't look like a TrackDraw project.");
       setParsed(null);
     }
-  };
+  }, []);
 
-  const handleFile = (file: File) => {
+  const handleFile = useCallback((file: File) => {
     if (!file.name.endsWith(".json")) {
       setError("Only .json files are supported.");
       setParsed(null);
       return;
     }
     file.text().then(tryParse);
-  };
+  }, [tryParse]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
     const file = e.dataTransfer.files[0];
     if (file) handleFile(file);
-  }, []);
+  }, [handleFile]);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

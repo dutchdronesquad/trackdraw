@@ -12,6 +12,16 @@ import ElevationChart from "@/components/ElevationChart";
 
 const fmt = (v: number) => Number(v.toFixed(2));
 
+// ── Panel header ──────────────────────────────────────────
+function PanelHeader({ title, actions }: { title: string; actions?: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between px-3 h-9 border-b border-border shrink-0">
+      <span className="text-[11px] font-medium text-foreground/70">{title}</span>
+      {actions && <div className="flex gap-0.5">{actions}</div>}
+    </div>
+  );
+}
+
 const shapeLabel: Record<Shape["kind"], string> = {
   gate: "Gate", flag: "Flag", cone: "Cone", label: "Label", polyline: "Race Line",
   startfinish: "Start / Finish", checkpoint: "Checkpoint", ladder: "Ladder", divegate: "Dive Gate",
@@ -93,14 +103,6 @@ export default function Inspector() {
   const cp    = shape?.kind === "checkpoint"  ? shape : null;
   const ld    = shape?.kind === "ladder"      ? (shape as LadderShape) : null;
   const dg    = shape?.kind === "divegate"    ? (shape as DiveGateShape) : null;
-
-  // ── Panel header ──────────────────────────────────────────
-  const PanelHeader = ({ title, actions }: { title: string; actions?: ReactNode }) => (
-    <div className="flex items-center justify-between px-3 h-9 border-b border-border shrink-0">
-      <span className="text-[11px] font-medium text-foreground/70">{title}</span>
-      {actions && <div className="flex gap-0.5">{actions}</div>}
-    </div>
-  );
 
   // ── EMPTY ─────────────────────────────────────────────────
   if (count === 0) {

@@ -8,6 +8,7 @@ import type { FieldSpec, Shape, TrackDesign } from "@/lib/types";
 
 export type EditorTool =
   | "select"
+  | "grab"
   | "gate"
   | "flag"
   | "cone"

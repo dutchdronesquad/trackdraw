@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -43,9 +44,12 @@ import type {
 import { distance2D, smoothPolyline } from "@/lib/geometry";
 import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Scan } from "lucide-react";
 
 export interface TrackCanvasHandle {
   getStage: () => KonvaStage | null;
+  fitToWindow: () => void;
 }
 
 interface TrackCanvasProps {
@@ -166,10 +170,6 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
   const lastPinchDistRef = useRef<number | null>(null);
   const lastTouchPosRef = useRef<{ x: number; y: number } | null>(null);
 
-  useImperativeHandle(ref, () => ({
-    getStage: () => stageRef.current,
-  }));
-
   const [vertexSel, setVertexSel] = useState<{ shapeId: string; idx: number } | null>(null);
   const [draftPath, setDraftPath] = useState<DraftPoint[]>([]);
   const [cursor, setCursor] = useState<CursorState | null>(null);
@@ -183,6 +183,12 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
   const [stageTransform, setStageTransform] = useState({ x: 0, y: 0, scale: 1 });
   const hasManualViewRef = useRef(false);
   const isDark = useTheme() === "dark";
+
+  const effectiveVertexSel = useMemo(
+    () => (selection.length === 0 || activeTool !== "select" ? null : vertexSel),
+    [selection.length, activeTool, vertexSel]
+  );
+  const effectiveSelectionFrame = selection.length ? selectionFrame : null;
   const middlePanRef = useRef(false);
   const middlePanLastRef = useRef({ x: 0, y: 0 });
 
@@ -235,6 +241,15 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
     setZoom(scale);
     syncTransform();
   }, [heightPx, setZoom, syncTransform, viewportSize.height, viewportSize.width, widthPx]);
+
+  const setManualView = useCallback((value: boolean) => {
+    hasManualViewRef.current = value;
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    getStage: () => stageRef.current,
+    fitToWindow: () => { setManualView(false); fitFieldToViewport(); },
+  }), [fitFieldToViewport, setManualView]);
 
   const findSnapTarget = useCallback((meters: { x: number; y: number }) => {
     let nearest: { x: number; y: number; id: string } | null = null;
@@ -320,7 +335,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
       // 0 — fit field to viewport
       if (e.key === "0" && !meta) {
         e.preventDefault();
-        hasManualViewRef.current = false;
+        setManualView(false);
         fitFieldToViewport();
         return;
       }
@@ -336,12 +351,12 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
           setDraftPath((prev) => prev.slice(0, Math.max(0, prev.length - 1)));
           return;
         }
-        if (vertexSel) {
-          const s = design.shapes.find((sh) => sh.id === vertexSel.shapeId);
+        if (effectiveVertexSel) {
+          const s = design.shapes.find((sh) => sh.id === effectiveVertexSel.shapeId);
           if (s?.kind === "polyline") {
             const polyline = s as PolylineShape;
             const pts = [...polyline.points];
-            if (pts.length > 2) { pts.splice(vertexSel.idx, 1); updateShape(s.id, { points: pts }); }
+            if (pts.length > 2) { pts.splice(effectiveVertexSel.idx, 1); updateShape(s.id, { points: pts }); }
           }
           setVertexSel(null);
           return;
@@ -352,20 +367,20 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
       const lower = key.toLowerCase();
       switch (lower) {
         case "v": setActiveTool("select"); break;
+        case "h": setActiveTool("grab"); break;
         case "g": setActiveTool("gate"); break;
         case "f": setActiveTool("flag"); break;
         case "c": if (!meta) setActiveTool("cone"); break;
         case "l": setActiveTool("label"); break;
         case "p": setActiveTool("polyline"); break;
         case "s": if (!meta) setActiveTool("startfinish"); break;
-        case "k": setActiveTool("checkpoint"); break;
         case "r": setActiveTool("ladder"); break;
         case "d": if (!meta) setActiveTool("divegate"); break;
       }
     };
     window.addEventListener("keydown", handleKeyDown, { passive: false });
     return () => { window.removeEventListener("keydown", handleKeyDown); };
-  }, [activeTool, addShape, design.field.gridStep, design.shapes, draftPath.length, duplicateShapes, finalizePath, fitFieldToViewport, nudgeShapes, removeShapes, selection, setActiveTool, setSelection, updateShape, vertexSel]);
+  }, [activeTool, addShape, design.field.gridStep, design.shapes, draftPath.length, duplicateShapes, effectiveVertexSel, finalizePath, fitFieldToViewport, nudgeShapes, removeShapes, selection, setActiveTool, setManualView, setSelection, updateShape]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -401,7 +416,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
       if (!middlePanRef.current) return;
       const stage = stageRef.current;
       if (!stage) return;
-      hasManualViewRef.current = true;
+      setManualView(true);
       const dx = e.clientX - middlePanLastRef.current.x;
       const dy = e.clientY - middlePanLastRef.current.y;
       stage.position({ x: stage.x() + dx, y: stage.y() + dy });
@@ -422,14 +437,11 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
       el.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
-  }, [syncTransform]);
+  }, [setManualView, syncTransform]);
 
-  useEffect(() => { if (!selection.length) setVertexSel(null); }, [selection.length]);
-  useEffect(() => { if (activeTool !== "select") setVertexSel(null); }, [activeTool]);
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const stage = stageRef.current;
-    if (!stage || !selection.length) { setSelectionFrame(null); return; }
+    if (!stage || !selection.length) return;
     const rects: RectLike[] = selection
       .map((id) => shapeRefs.current[id])
       .filter((node): node is KonvaGroup => Boolean(node))
@@ -519,6 +531,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
 
   const cursorStyle = useMemo(() => {
     if (isStageDragging) return "grabbing";
+    if (activeTool === "grab") return "grab";
     if (activeTool !== "select") return "crosshair";
     if (marqueeRect) return "crosshair";
     return "default";
@@ -543,19 +556,36 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
         style={{ top: RULER_SIZE + 6 }}>
         <span className="font-medium text-foreground/60">Mid-click</span> pan · <span className="font-medium text-foreground/60">Alt</span> free
       </div>
+      {!readOnly && (
+        <div className="absolute right-2 z-20" style={{ top: RULER_SIZE + 34 }}>
+          <Tooltip>
+            <TooltipTrigger
+              onClick={() => {
+                setManualView(false);
+                fitFieldToViewport();
+              }}
+              className="flex size-8 items-center justify-center rounded-md border border-border/60 bg-card/85 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-card hover:text-foreground"
+              aria-label="Fit to window"
+            >
+              <Scan className="size-3.5" />
+            </TooltipTrigger>
+            <TooltipContent side="left">Fit to window <span className="ml-1 opacity-50 font-mono text-[10px]">0</span></TooltipContent>
+          </Tooltip>
+        </div>
+      )}
       <Stage
         width={viewportSize.width}
         height={viewportSize.height}
         ref={stageRef}
-        draggable={false}
-        onDragStart={() => { setIsStageDragging(true); hasManualViewRef.current = true; }}
+        draggable={activeTool === "grab" && !readOnly}
+        onDragStart={() => { setIsStageDragging(true); setManualView(true); }}
         onDragMove={() => syncTransform()}
         onDragEnd={() => { setIsStageDragging(false); syncTransform(); }}
         onWheel={(e) => {
           e.evt.preventDefault();
           const stage = stageRef.current;
           if (!stage) return;
-          hasManualViewRef.current = true;
+          setManualView(true);
           const scaleBy = 1.08;
           const oldScale = stage.scaleX();
           const pointer = stage.getPointerPosition();
@@ -589,7 +619,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
             const t = e.evt.touches[0];
             const last = lastTouchPosRef.current;
             if (last) {
-              hasManualViewRef.current = true;
+              setManualView(true);
               stage.position({ x: stage.x() + (t.clientX - last.x), y: stage.y() + (t.clientY - last.y) });
               stage.batchDraw();
               syncTransform();
@@ -608,7 +638,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
           if (lastDist === null) { lastPinchDistRef.current = dist; return; }
           const scaleBy = dist / lastDist;
           lastPinchDistRef.current = dist;
-          hasManualViewRef.current = true;
+          setManualView(true);
           const oldScale = stage.scaleX();
           const newScale = Math.max(0.2, Math.min(5, oldScale * scaleBy));
           const midX = (t1.clientX + t2.clientX) / 2;
@@ -624,6 +654,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
         onMouseDown={(e) => {
           const stage = stageRef.current;
           if (!stage || e.evt.button !== 0) return;
+          if (activeTool === "grab") return;
           const pointer = stage.getRelativePointerPosition();
           if (!pointer) return;
           const snap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
@@ -677,7 +708,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
               onSnapChange?.(false);
             }
           }
-          if (marqueeOrigin.current) setMarqueeRect(normalizeRect(marqueeOrigin.current, pointer));
+          if (marqueeOrigin.current && activeTool === "select") setMarqueeRect(normalizeRect(marqueeOrigin.current, pointer));
         }}
         onMouseLeave={() => { setCursor(null); setSnapTarget(null); onCursorChange?.(null); onSnapChange?.(false); setMarqueeRect(null); marqueeOrigin.current = null; }}
         onMouseUp={() => {
@@ -758,10 +789,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
               stroke={isDark ? "#3b82f628" : "#2563eb22"} strokeWidth={1} />
           )}
           {/* Selection frame */}
-          {selectionFrame && (
+          {effectiveSelectionFrame && (
             <Rect
-              x={selectionFrame.x} y={selectionFrame.y}
-              width={selectionFrame.width} height={selectionFrame.height}
+              x={effectiveSelectionFrame.x} y={effectiveSelectionFrame.y}
+              width={effectiveSelectionFrame.width} height={effectiveSelectionFrame.height}
               stroke="#3b82f6" strokeWidth={1} dash={[5, 4]} listening={false} />
           )}
           {/* Marquee */}
@@ -988,7 +1019,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(function Tra
                         const cx = m2px(pt.x, design.field.ppm);
                         const cy = m2px(pt.y, design.field.ppm);
                         const r = Math.max(4, m2px(0.08, design.field.ppm));
-                        const active = vertexSel && vertexSel.shapeId === s.id && vertexSel.idx === idx;
+                        const active = effectiveVertexSel && effectiveVertexSel.shapeId === s.id && effectiveVertexSel.idx === idx;
                         const hovered = hoveredWaypoint?.shapeId === s.id && hoveredWaypoint?.idx === idx;
                         return (
                           <Circle key={`${s.id}-vh-${idx}`} x={cx} y={cy} radius={hovered ? r * 1.6 : r} fill={active ? "#3b82f6" : hovered ? "#f59e0b" : "#1e293b"} stroke={active ? "#ffffff" : hovered ? "#ffffff" : "#3b82f6"} strokeWidth={hovered ? 2.5 : 2} draggable dragBoundFunc={dragBound}

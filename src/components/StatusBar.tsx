@@ -1,9 +1,11 @@
 "use client";
 
 import { useEditor } from "@/store/editor";
+import VersionTag from "@/components/VersionTag";
 
 const toolLabel: Record<string, string> = {
   select: "Select",
+  grab: "Grab",
   gate: "Gate",
   flag: "Flag",
   cone: "Cone",
@@ -27,25 +29,29 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
 
       {/* Zoom */}
       <span>{Math.round(zoom * 100)}%</span>
-      <span className="text-muted-foreground/25">·</span>
 
-      {/* Grid step */}
-      <span>{design.field.gridStep}m</span>
-      <span className="text-muted-foreground/25">·</span>
+      {/* Grid step — desktop only */}
+      <span className="hidden lg:contents">
+        <span className="text-muted-foreground/25">·</span>
+        <span>{design.field.gridStep}m</span>
+        <span className="text-muted-foreground/25">·</span>
+      </span>
 
-      {/* Cursor position */}
-      {cursorPos ? (
-        <span>{cursorPos.x.toFixed(1)}, {cursorPos.y.toFixed(1)} m</span>
-      ) : (
-        <span className="text-muted-foreground/25">— m</span>
-      )}
+      {/* Cursor position — desktop only */}
+      <span className="hidden lg:contents">
+        {cursorPos ? (
+          <span>{cursorPos.x.toFixed(1)}, {cursorPos.y.toFixed(1)} m</span>
+        ) : (
+          <span className="text-muted-foreground/25">— m</span>
+        )}
+      </span>
 
-      {/* Snap indicator */}
+      {/* Snap indicator — desktop only */}
       {snapActive && (
-        <>
+        <span className="hidden lg:contents">
           <span className="text-muted-foreground/25">·</span>
           <span className="text-green-500/70">● snap</span>
-        </>
+        </span>
       )}
 
       <div className="flex-1" />
@@ -58,8 +64,13 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
         </>
       )}
 
-      {/* Field size */}
-      <span>{design.field.width}×{design.field.height} m</span>
+      {/* Field size — desktop only */}
+      <span className="hidden lg:contents">
+        <span>{design.field.width}×{design.field.height} m</span>
+        <span className="text-muted-foreground/25">·</span>
+      </span>
+
+      <VersionTag className="border-0 bg-transparent p-0 text-[11px] text-muted-foreground/50 hover:text-muted-foreground" />
     </div>
   );
 }

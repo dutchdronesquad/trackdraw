@@ -40,28 +40,28 @@
 }
 
 .dark {
-  /* Dark mode — Vercel-style near-pure-black */
-  --background:           oklch(0.085 0 0);
-  --foreground:           oklch(0.97 0 0);
-  --card:                 oklch(0.11 0 0);
-  --card-foreground:      oklch(0.97 0 0);
-  --popover:              oklch(0.13 0 0);
-  --popover-foreground:   oklch(0.97 0 0);
-  --primary:              oklch(0.98 0 0);
-  --primary-foreground:   oklch(0.09 0 0);
-  --secondary:            oklch(0.16 0 0);
-  --secondary-foreground: oklch(0.88 0 0);
-  --muted:                oklch(0.15 0 0);
-  --muted-foreground:     oklch(0.52 0 0);
-  --accent:               oklch(0.98 0 0);
-  --accent-foreground:    oklch(0.09 0 0);
+  /* Dark mode — VS Code / GitHub style, clear layering */
+  --background:           oklch(0.155 0.012 245);
+  --foreground:           oklch(0.96 0.004 245);
+  --card:                 oklch(0.205 0.016 245);
+  --card-foreground:      oklch(0.96 0.004 245);
+  --popover:              oklch(0.225 0.018 245);
+  --popover-foreground:   oklch(0.96 0.004 245);
+  --primary:              oklch(0.97 0 0);
+  --primary-foreground:   oklch(0.13 0.010 245);
+  --secondary:            oklch(0.28 0.020 245);
+  --secondary-foreground: oklch(0.93 0.004 245);
+  --muted:                oklch(0.24 0.018 245);
+  --muted-foreground:     oklch(0.68 0.014 245);
+  --accent:               oklch(0.97 0 0);
+  --accent-foreground:    oklch(0.13 0.010 245);
   --destructive:          oklch(0.62 0.21 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border:               oklch(0.20 0 0);
-  --input:                oklch(0.18 0 0);
-  --ring:                 oklch(0.75 0 0);
-  --sidebar:              oklch(0.068 0 0);
-  --canvas:               oklch(0.062 0 0);
+  --border:               oklch(0.30 0.022 245);
+  --input:                oklch(0.245 0.018 245);
+  --ring:                 oklch(0.72 0.008 245);
+  --sidebar:              oklch(0.118 0.010 245);
+  --canvas:               oklch(0.095 0.007 245);
   --brand-primary:        #63B8EA;
   --brand-secondary:      #F08F47;
   --brand-primary-rgb:    99 184 234;
