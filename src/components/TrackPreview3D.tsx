@@ -314,11 +314,7 @@ function StartFinish3D({
               rotation={[-Math.PI / 2, 0, 0]}
             >
               <boxGeometry args={[0.08, 0.01, 0.08]} />
-              <meshBasicMaterial
-                color="#f8fafc"
-                transparent
-                opacity={0.85}
-              />
+              <meshBasicMaterial color="#f8fafc" transparent opacity={0.85} />
             </mesh>
 
             <mesh position={[0, 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]}>
