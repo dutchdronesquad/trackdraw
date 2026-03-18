@@ -17,7 +17,6 @@ import { zToColor } from "@/lib/alt";
 import { m2px, px2m } from "@/lib/units";
 import { type RectLike } from "@/components/canvas/shared";
 import type {
-  CheckpointShape,
   ConeShape,
   DiveGateShape,
   FlagShape,
@@ -465,8 +464,6 @@ export function TrackShapeNode({
         {shape.kind === "label" && renderLabel(shape, selected)}
         {shape.kind === "startfinish" &&
           renderStartFinish(shape, selected, designPpm)}
-        {shape.kind === "checkpoint" &&
-          renderCheckpoint(shape, selected, designPpm)}
         {shape.kind === "ladder" && renderLadder(shape, selected, designPpm)}
         {shape.kind === "divegate" &&
           renderDiveGate(shape, selected, designPpm)}
@@ -609,16 +606,6 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
         y: -padDepth / 2,
         width: totalWidth,
         height: padDepth,
-      };
-    }
-    case "checkpoint": {
-      const width = m2px(shape.width ?? 2.5, ppm);
-      const depth = m2px(0.15, ppm);
-      return {
-        x: -width / 2,
-        y: -depth / 2,
-        width,
-        height: depth,
       };
     }
     case "ladder": {
@@ -875,53 +862,6 @@ function renderStartFinish(
           </Group>
         );
       })}
-    </>
-  );
-}
-
-function renderCheckpoint(
-  shape: CheckpointShape,
-  selected: boolean,
-  ppm: number
-) {
-  const width = m2px(shape.width ?? 2.5, ppm);
-  const depth = m2px(0.15, ppm);
-  const color = shape.color ?? "#22c55e";
-  return (
-    <>
-      {selected && (
-        <Rect
-          width={width + m2px(0.3, ppm)}
-          height={depth + m2px(0.3, ppm)}
-          offsetX={(width + m2px(0.3, ppm)) / 2}
-          offsetY={(depth + m2px(0.3, ppm)) / 2}
-          stroke="#60a5fa"
-          strokeWidth={1}
-          opacity={0.85}
-          cornerRadius={2}
-          listening={false}
-        />
-      )}
-      <Rect
-        width={width}
-        height={depth}
-        offsetX={width / 2}
-        offsetY={depth / 2}
-        fill={color}
-        opacity={0.18}
-        stroke={color}
-        strokeWidth={1.8}
-        dash={[8, 5]}
-        cornerRadius={2}
-      />
-      <Line
-        points={[-width / 2, 0, width / 2, 0]}
-        stroke={color}
-        strokeWidth={2}
-        dash={[6, 4]}
-        opacity={0.8}
-        listening={false}
-      />
     </>
   );
 }

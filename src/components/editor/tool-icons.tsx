@@ -86,8 +86,6 @@ function iconForTool(tool: EditorTool, className: string): ReactNode {
       return <Type className={className} />;
     case "polyline":
       return <Spline className={className} />;
-    case "checkpoint":
-      return <Target className={className} />;
   }
 }
 

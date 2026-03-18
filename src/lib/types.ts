@@ -7,7 +7,6 @@ export type ShapeKind =
   | "label"
   | "polyline"
   | "startfinish"
-  | "checkpoint"
   | "ladder"
   | "divegate";
 
@@ -53,11 +52,6 @@ export interface StartFinishShape extends BaseShape {
   width: number; // m (inner opening)
 }
 
-export interface CheckpointShape extends BaseShape {
-  kind: "checkpoint";
-  width: number; // m (inner opening)
-}
-
 export interface LadderShape extends BaseShape {
   kind: "ladder";
   width: number; // m horizontal span
@@ -95,7 +89,6 @@ export type Shape =
   | LabelShape
   | PolylineShape
   | StartFinishShape
-  | CheckpointShape
   | LadderShape
   | DiveGateShape;
 

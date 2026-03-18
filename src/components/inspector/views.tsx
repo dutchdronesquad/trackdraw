@@ -145,7 +145,6 @@ export function MultiInspectorView({
       label: 0,
       polyline: 0,
       startfinish: 0,
-      checkpoint: 0,
       ladder: 0,
       divegate: 0,
     }
@@ -400,19 +399,6 @@ export function SingleInspectorView({
 
           {shape.kind === "startfinish" && (
             <Section title="Start Pads">
-              <Row label="Width">
-                <Num
-                  value={shape.width}
-                  onChange={(value) => updateShape(shape.id, { width: value })}
-                  step={0.1}
-                  min={0.5}
-                />
-              </Row>
-            </Section>
-          )}
-
-          {shape.kind === "checkpoint" && (
-            <Section title="Checkpoint">
               <Row label="Width">
                 <Num
                   value={shape.width}
