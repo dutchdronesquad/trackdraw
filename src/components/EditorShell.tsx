@@ -52,6 +52,7 @@ export default function EditorShell({
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
   const [mobileOverrideDismissed, setMobileOverrideDismissed] = useState(false);
+  const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Load persisted design on mount
@@ -79,11 +80,8 @@ export default function EditorShell({
     }
   }, [design, readOnly]);
 
-  // Auto-open mobile inspector when selection is made on small screens
+  // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
-    if (selection.length > 0 && window.innerWidth < 1024) {
-      setMobileInspectorOpen(true);
-    }
     if (selection.length === 0) {
       setMobileInspectorOpen(false);
     }
@@ -146,6 +144,7 @@ export default function EditorShell({
                     ref={canvasRef}
                     onCursorChange={setCursorPos}
                     onSnapChange={setSnapActive}
+                    mobileRulersEnabled={mobileRulersEnabled}
                     readOnly={readOnly}
                   />
                 </div>
@@ -175,13 +174,18 @@ export default function EditorShell({
           mobileInspectorOpen={mobileInspectorOpen}
           mobileToolsOpen={mobileToolsOpen}
           mobileOverrideDismissed={mobileOverrideDismissed}
+          mobileRulersEnabled={mobileRulersEnabled}
           readOnly={readOnly}
           readOnlyMenuOpen={readOnlyMenuOpen}
+          selectedCount={selection.length}
           tab={tab}
           onCloseInspector={() => setMobileInspectorOpen(false)}
           onDismissMobileOverride={() => setMobileOverrideDismissed(true)}
+          onFitView={() => canvasRef.current?.fitToWindow()}
+          onOpenInspector={() => setMobileInspectorOpen(true)}
           onOpenReadOnlyMenu={() => setReadOnlyMenuOpen(true)}
           onOpenTools={() => setMobileToolsOpen(true)}
+          onSetMobileRulersEnabled={setMobileRulersEnabled}
           onSelectTool={(tool) => {
             setSelection([]);
             setActiveTool(tool);
