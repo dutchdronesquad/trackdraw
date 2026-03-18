@@ -35,6 +35,7 @@ interface TrackCanvasInteractionsParams {
   onSnapChange?: (active: boolean) => void;
   readOnly: boolean;
   selection: string[];
+  setActiveTool: (tool: EditorTool) => void;
   setCursor: React.Dispatch<React.SetStateAction<CursorState | null>>;
   setDraftPath: React.Dispatch<React.SetStateAction<DraftPoint[]>>;
   setIsStageDragging: React.Dispatch<React.SetStateAction<boolean>>;
@@ -72,6 +73,7 @@ export function useTrackCanvasInteractions({
   onSnapChange,
   readOnly,
   selection,
+  setActiveTool,
   setCursor,
   setDraftPath,
   setIsStageDragging,
@@ -285,15 +287,20 @@ export function useTrackCanvasInteractions({
       setManualView(true);
       const oldScale = stage.scaleX();
       const newScale = Math.max(0.2, Math.min(5, oldScale * scaleBy));
+      const centerDelta = {
+        x: center.x - lastCenter.x,
+        y: center.y - lastCenter.y,
+      };
       const pointTo = {
-        x: (lastCenter.x - stage.x()) / oldScale,
-        y: (lastCenter.y - stage.y()) / oldScale,
+        x: (center.x - stage.x()) / oldScale,
+        y: (center.y - stage.y()) / oldScale,
       };
       stage.scale({ x: newScale, y: newScale });
       stage.position({
-        x: center.x - pointTo.x * newScale,
-        y: center.y - pointTo.y * newScale,
+        x: center.x - pointTo.x * newScale + centerDelta.x,
+        y: center.y - pointTo.y * newScale + centerDelta.y,
       });
+      stage.batchDraw();
       setZoom(newScale);
       syncTransform();
       lastPinchCenterRef.current = center;
@@ -344,6 +351,9 @@ export function useTrackCanvasInteractions({
       if (!shape) return;
       const id = addShape(shape);
       setSelection([id]);
+      if (isMobile) {
+        setActiveTool("select");
+      }
       touchInteractionModeRef.current = "none";
       return;
     }
@@ -356,8 +366,10 @@ export function useTrackCanvasInteractions({
   }, [
     activeTool,
     addShape,
+    isMobile,
     pointerToMeters,
     readOnly,
+    setActiveTool,
     setDraftPath,
     setSelection,
     snapTarget,

@@ -320,6 +320,7 @@ interface TrackShapeNodeProps {
   dragSnapRef: React.MutableRefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
+  isMobile: boolean;
   isSelected: boolean;
   onShapeContextMenu?: (
     shape: Shape,
@@ -351,6 +352,7 @@ export function TrackShapeNode({
   dragSnapRef,
   effectiveVertexSel,
   hoveredWaypoint,
+  isMobile,
   isSelected,
   onShapeContextMenu,
   selection,
@@ -367,9 +369,20 @@ export function TrackShapeNode({
   zmin,
 }: TrackShapeNodeProps) {
   const selected = selection.includes(shape.id);
+  const touchBounds =
+    isMobile && shape.kind !== "polyline"
+      ? getShapeLocalBounds(shape, designPpm)
+      : null;
+  const touchTargetRect = touchBounds
+    ? {
+        x: touchBounds.x - Math.max(0, 42 - touchBounds.width) / 2,
+        y: touchBounds.y - Math.max(0, 42 - touchBounds.height) / 2,
+        width: Math.max(touchBounds.width, 42),
+        height: Math.max(touchBounds.height, 42),
+      }
+    : null;
 
   const handleDragStart = (event: KonvaEventObject<DragEvent>) => {
-    if (event.target !== event.currentTarget) return;
     dragSnapRef.current = !(
       event.evt.altKey ||
       event.evt.metaKey ||
@@ -379,8 +392,7 @@ export function TrackShapeNode({
   };
 
   const handleDragMove = (event: KonvaEventObject<DragEvent>) => {
-    if (event.target !== event.currentTarget) return;
-    const current = event.target.position();
+    const current = event.currentTarget.position();
     const resolved = resolveShapeDragPosition(current, dragSnapRef.current);
     const isSnapping =
       Math.abs(current.x - resolved.x) > 0.5 ||
@@ -389,13 +401,12 @@ export function TrackShapeNode({
   };
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
-    if (event.target !== event.currentTarget) return;
     const resolved = resolveShapeDragPosition(
-      event.target.position(),
+      event.currentTarget.position(),
       dragSnapRef.current
     );
     setDragSnapPreview(null);
-    event.target.position(resolved);
+    event.currentTarget.position(resolved);
     updateShape(shape.id, {
       x: px2m(resolved.x, designPpm),
       y: px2m(resolved.y, designPpm),
@@ -438,6 +449,16 @@ export function TrackShapeNode({
       }}
     >
       <Group opacity={shape.locked ? (selected ? 0.78 : 0.58) : 1}>
+        {touchTargetRect && (
+          <Rect
+            x={touchTargetRect.x}
+            y={touchTargetRect.y}
+            width={touchTargetRect.width}
+            height={touchTargetRect.height}
+            fill="#000000"
+            opacity={0.001}
+          />
+        )}
         {shape.kind === "gate" && renderGate(shape, selected, designPpm)}
         {shape.kind === "flag" && renderFlag(shape, selected, designPpm)}
         {shape.kind === "cone" && renderCone(shape, selected, designPpm)}
