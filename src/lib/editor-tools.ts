@@ -1,5 +1,4 @@
 import type {
-  CheckpointShape,
   ConeShape,
   DiveGateShape,
   FlagShape,
@@ -20,7 +19,6 @@ export type EditorTool =
   | "label"
   | "polyline"
   | "startfinish"
-  | "checkpoint"
   | "ladder"
   | "divegate";
 
@@ -30,7 +28,6 @@ type ToolShapeDefaults = {
   cone: Pick<ConeShape, "radius" | "color">;
   label: Pick<LabelShape, "text" | "fontSize" | "color">;
   startfinish: Pick<StartFinishShape, "width" | "color">;
-  checkpoint: Pick<CheckpointShape, "width" | "color">;
   ladder: Pick<LadderShape, "width" | "height" | "rungs" | "color">;
   divegate: Pick<
     DiveGateShape,
@@ -45,7 +42,6 @@ export const shapeKindLabels: Record<ShapeKind, string> = {
   label: "Label",
   polyline: "Race Line",
   startfinish: "Start / Finish",
-  checkpoint: "Checkpoint",
   ladder: "Ladder",
   divegate: "Dive Gate",
 };
@@ -59,7 +55,6 @@ export const toolLabels: Record<EditorTool, string> = {
   label: "Label",
   polyline: "Path",
   startfinish: "Start Pads",
-  checkpoint: "Checkpoint",
   ladder: "Ladder",
   divegate: "Dive Gate",
 };
@@ -83,7 +78,6 @@ const toolShapeDefaults: ToolShapeDefaults = {
   cone: { radius: 0.2, color: "#f97316" },
   label: { text: "Gate A", fontSize: 18, color: "#e2e8f0" },
   startfinish: { width: 3, color: "#f59e0b" },
-  checkpoint: { width: 2.5, color: "#22c55e" },
   ladder: { width: 1.5, height: 4.5, rungs: 3, color: "#14b8a6" },
   divegate: {
     size: 2.8,
@@ -138,14 +132,6 @@ export function createShapeForTool(
         y: point.y,
         rotation: 0,
         ...toolShapeDefaults.startfinish,
-      };
-    case "checkpoint":
-      return {
-        kind: "checkpoint",
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...toolShapeDefaults.checkpoint,
       };
     case "ladder":
       return {

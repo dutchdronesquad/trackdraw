@@ -6,7 +6,7 @@ import {
   useThree,
   type ThreeEvent,
 } from "@react-three/fiber";
-import { OrbitControls, Grid, RoundedBox, Text } from "@react-three/drei";
+import { OrbitControls, Grid, RoundedBox } from "@react-three/drei";
 import { useEditor } from "@/store/editor";
 import {
   useMemo,
@@ -45,7 +45,6 @@ import type {
   PolylineShape,
   Shape,
   StartFinishShape,
-  CheckpointShape,
   LadderShape,
   DiveGateShape,
 } from "@/lib/types";
@@ -310,16 +309,17 @@ function StartFinish3D({
               <meshBasicMaterial color="#ffffff" transparent opacity={0.16} />
             </mesh>
 
-            <Text
+            <mesh
               position={[0, podH + 0.026, -(podD / 2) + 0.16]}
               rotation={[-Math.PI / 2, 0, 0]}
-              fontSize={0.11}
-              color="#f8fafc"
-              anchorX="center"
-              anchorY="middle"
             >
-              {String(i + 1)}
-            </Text>
+              <boxGeometry args={[0.08, 0.01, 0.08]} />
+              <meshBasicMaterial
+                color="#f8fafc"
+                transparent
+                opacity={0.85}
+              />
+            </mesh>
 
             <mesh position={[0, 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]}>
               <planeGeometry args={[podW + 0.08, podD + 0.08]} />
@@ -343,64 +343,6 @@ function StartFinish3D({
           />
         </mesh>
       ))}
-    </group>
-  );
-}
-
-// ── Checkpoint ────────────────────────────────────────────────
-function Checkpoint3D({
-  selected = false,
-  shape,
-}: {
-  selected?: boolean;
-  shape: CheckpointShape;
-}) {
-  const color = shape.color ?? "#22c55e";
-  const w = shape.width ?? 3;
-  const h = 2.0;
-  const rot: [number, number, number] = [
-    0,
-    (-shape.rotation * Math.PI) / 180,
-    0,
-  ];
-
-  return (
-    <group position={[shape.x, 0, shape.y]} rotation={rot}>
-      {/* Thin arch-style checkpoint */}
-      <mesh position={[-(w / 2), h / 2, 0]} castShadow>
-        <cylinderGeometry args={[0.06, 0.06, h, 8]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={selected ? "#60a5fa" : color}
-          emissiveIntensity={selected ? 0.72 : 0.4}
-        />
-      </mesh>
-      <mesh position={[w / 2, h / 2, 0]} castShadow>
-        <cylinderGeometry args={[0.06, 0.06, h, 8]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={selected ? "#60a5fa" : color}
-          emissiveIntensity={selected ? 0.72 : 0.4}
-        />
-      </mesh>
-      <mesh position={[0, h, 0]} castShadow>
-        <boxGeometry args={[w + 0.12, 0.12, 0.12]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={selected ? "#60a5fa" : color}
-          emissiveIntensity={selected ? 0.72 : 0.4}
-        />
-      </mesh>
-      {/* Glowing gate plane */}
-      <mesh position={[0, h / 2, 0]} rotation={[0, 0, 0]}>
-        <planeGeometry args={[w, h]} />
-        <meshBasicMaterial
-          color={selected ? "#93c5fd" : color}
-          transparent
-          opacity={selected ? 0.18 : 0.08}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
     </group>
   );
 }
@@ -614,7 +556,6 @@ function SelectionMarker3D({ shape }: { shape: Shape }) {
     label: (shape as LabelShape).project ? 0.8 : 3.1,
     polyline: 0.95,
     startfinish: 0.55,
-    checkpoint: 2.45,
     ladder: Math.max((shape as LadderShape).height ?? 4.5, 1.8) + 0.35,
     divegate: Math.max((shape as DiveGateShape).elevation ?? 3, 1.8) + 0.55,
   };
@@ -690,16 +631,6 @@ function Shape3D({
         <group onClick={(event) => onSelect(event, shape.id)}>
           <StartFinish3D
             shape={shape as StartFinishShape}
-            selected={isSelected}
-          />
-          {isSelected && <SelectionMarker3D shape={shape} />}
-        </group>
-      );
-    case "checkpoint":
-      return (
-        <group onClick={(event) => onSelect(event, shape.id)}>
-          <Checkpoint3D
-            shape={shape as CheckpointShape}
             selected={isSelected}
           />
           {isSelected && <SelectionMarker3D shape={shape} />}

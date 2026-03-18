@@ -7,7 +7,6 @@ import type {
   LabelShape,
   PolylineShape,
   StartFinishShape,
-  CheckpointShape,
   LadderShape,
   DiveGateShape,
 } from "../types";
@@ -108,18 +107,6 @@ function startfinishToSvg(s: StartFinishShape, ppm: number): string {
   </g>`;
 }
 
-function checkpointToSvg(s: CheckpointShape, ppm: number): string {
-  const cx = m(s.x, ppm);
-  const cy = m(s.y, ppm);
-  const w = m(s.width ?? 2.5, ppm);
-  const depth = m(0.15, ppm);
-  const color = s.color ?? "#22c55e";
-  return `<g transform="rotate(${s.rotation},${cx},${cy})">
-    <rect x="${cx - w / 2}" y="${cy - depth / 2}" width="${w}" height="${depth}" stroke="${color}" stroke-width="1.5" stroke-dasharray="8,5" fill="${color}" fill-opacity="0.35"/>
-    <line x1="${cx - w / 2}" y1="${cy}" x2="${cx + w / 2}" y2="${cy}" stroke="${color}" stroke-width="2" stroke-dasharray="6,4"/>
-  </g>`;
-}
-
 function ladderToSvg(s: LadderShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
@@ -163,8 +150,6 @@ function shapeToSvg(shape: Shape, ppm: number): string {
       return polylineToSvg(shape, ppm);
     case "startfinish":
       return startfinishToSvg(shape, ppm);
-    case "checkpoint":
-      return checkpointToSvg(shape, ppm);
     case "ladder":
       return ladderToSvg(shape, ppm);
     case "divegate":

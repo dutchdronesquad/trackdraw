@@ -20,6 +20,7 @@ interface EditorState {
   hoveredWaypoint: { shapeId: string; idx: number } | null;
 
   addShape: (s: ShapeDraft) => string;
+  addShapes: (shapes: ShapeDraft[]) => string[];
   updateShape: (id: string, patch: Partial<Shape>) => void;
   removeShapes: (ids: string[]) => void;
   duplicateShapes: (ids: string[]) => void;
@@ -59,6 +60,19 @@ export const useEditor = create<EditorState>()(
           draft.design.updatedAt = nowIso();
         });
         return id;
+      },
+
+      addShapes: (shapes) => {
+        const ids = shapes.map(() => nanoid());
+        set((draft) => {
+          const nextShapes: Shape[] = shapes.map((shape, index) => ({
+            ...shape,
+            id: ids[index],
+          }));
+          draft.design.shapes.push(...nextShapes);
+          draft.design.updatedAt = nowIso();
+        });
+        return ids;
       },
 
       updateShape: (id, patch) =>
