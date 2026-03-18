@@ -1,0 +1,24 @@
+---
+name: PR Labels
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request_target:
+    types:
+      - opened
+      - labeled
+      - unlabeled
+      - synchronize
+  workflow_call:
+
+jobs:
+  validate:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏷 Verify PR has a valid label
+        uses: klaasnicolaas/action-pr-labels@v3.1.0
+        with:
+          valid-labels: >-
+            breaking-change, bugfix, documentation, enhancement, sync,
+            refactor, performance, new-feature, maintenance, ci, dependencies

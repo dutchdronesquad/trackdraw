@@ -1,0 +1,42 @@
+---
+name: Linting
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DEFAULT_NODE: 24
+
+jobs:
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v6.0.2
+      - name: 🏗 Set up Node.js ${{ env.DEFAULT_NODE }}
+        uses: actions/setup-node@v6.3.0
+        with:
+          node-version: ${{ env.DEFAULT_NODE }}
+      - name: 🏗 Install dependencies
+        run: npm ci
+      - name: 🚀 Run ESLint
+        run: npm run lint
+
+  prettier:
+    name: Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v6.0.2
+      - name: 🏗 Set up Node.js ${{ env.DEFAULT_NODE }}
+        uses: actions/setup-node@v6.3.0
+        with:
+          node-version: ${{ env.DEFAULT_NODE }}
+      - name: 🏗 Install dependencies
+        run: npm ci
+      - name: 🚀 Run Prettier
+        run: npm run format:check
