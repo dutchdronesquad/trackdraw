@@ -1,4 +1,5 @@
 import type Konva from "konva";
+import { loadJsPdf } from "@/lib/vendor/jspdf";
 import type { TrackDesign } from "../types";
 
 async function loadSvgAsPng(
@@ -26,7 +27,7 @@ export async function exportPdf(
   design: TrackDesign,
   filename = "track.pdf"
 ): Promise<void> {
-  const { jsPDF } = await import("jspdf");
+  const { jsPDF } = await loadJsPdf();
   const { width, height } = design.field;
 
   const orientation = width >= height ? "landscape" : "portrait";
