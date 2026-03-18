@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -171,6 +172,9 @@ export default function ExportDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Export</DialogTitle>
+          <DialogDescription>
+            Export the current track as a 2D file or 3D render.
+          </DialogDescription>
         </DialogHeader>
 
         {/* Filename */}

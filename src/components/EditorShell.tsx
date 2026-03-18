@@ -34,6 +34,9 @@ export default function EditorShell({
     design,
     replaceDesign,
     activeTool,
+    removeShapes,
+    duplicateShapes,
+    updateShape,
     setActiveTool,
     setSelection,
     newProject,
@@ -53,7 +56,15 @@ export default function EditorShell({
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
   const [mobileOverrideDismissed, setMobileOverrideDismissed] = useState(false);
   const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
+  const [mobileMultiSelectEnabled, setMobileMultiSelectEnabled] =
+    useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const selectionLocked =
+    selection.length > 0 &&
+    selection.every((id) => {
+      const shape = design.shapes.find((candidate) => candidate.id === id);
+      return Boolean(shape?.locked);
+    });
 
   // Load persisted design on mount
   useEffect(() => {
@@ -84,6 +95,7 @@ export default function EditorShell({
   useEffect(() => {
     if (selection.length === 0) {
       setMobileInspectorOpen(false);
+      setMobileMultiSelectEnabled(false);
     }
   }, [selection]);
 
@@ -144,7 +156,17 @@ export default function EditorShell({
                     ref={canvasRef}
                     onCursorChange={setCursorPos}
                     onSnapChange={setSnapActive}
+                    onMobileMultiSelectStart={(shapeId) => {
+                      setMobileMultiSelectEnabled(true);
+                      setActiveTool("select");
+                      setSelection(
+                        selection.includes(shapeId)
+                          ? selection
+                          : [...selection, shapeId]
+                      );
+                    }}
                     mobileRulersEnabled={mobileRulersEnabled}
+                    mobileMultiSelectEnabled={mobileMultiSelectEnabled}
                     readOnly={readOnly}
                   />
                 </div>
@@ -173,10 +195,12 @@ export default function EditorShell({
           activeTool={activeTool}
           mobileInspectorOpen={mobileInspectorOpen}
           mobileToolsOpen={mobileToolsOpen}
+          mobileMultiSelectEnabled={mobileMultiSelectEnabled}
           mobileOverrideDismissed={mobileOverrideDismissed}
           mobileRulersEnabled={mobileRulersEnabled}
           readOnly={readOnly}
           readOnlyMenuOpen={readOnlyMenuOpen}
+          selectionLocked={selectionLocked}
           selectedCount={selection.length}
           tab={tab}
           onCloseInspector={() => setMobileInspectorOpen(false)}
@@ -191,9 +215,28 @@ export default function EditorShell({
             setMobileInspectorOpen(false);
             setMobileToolsOpen(true);
           }}
+          onDeleteSelection={() => {
+            if (!selection.length) return;
+            removeShapes(selection);
+          }}
+          onDuplicateSelection={() => {
+            if (!selection.length) return;
+            duplicateShapes(selection);
+          }}
+          onToggleSelectionLock={() => {
+            if (!selection.length) return;
+            for (const id of selection) {
+              updateShape(id, { locked: !selectionLocked });
+            }
+          }}
           onSetMobileRulersEnabled={setMobileRulersEnabled}
+          onExitMobileMultiSelect={() => {
+            setMobileMultiSelectEnabled(false);
+            setSelection([]);
+          }}
           onSelectTool={(tool) => {
             setSelection([]);
+            setMobileMultiSelectEnabled(false);
             setActiveTool(tool);
             setMobileToolsOpen(false);
           }}
