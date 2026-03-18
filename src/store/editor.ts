@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
+import { shallow } from "zustand/shallow";
 import { nanoid } from "nanoid";
 import type { FieldSpec, Shape, ShapeDraft, TrackDesign } from "@/lib/types";
 import { createDefaultDesign, normalizeDesign, nowIso } from "@/lib/design";
@@ -181,6 +182,7 @@ export const useEditor = create<EditorState>()(
     })),
     {
       partialize: (state) => ({ design: state.design }),
+      equality: shallow,
       limit: 100,
     }
   )
