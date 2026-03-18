@@ -506,7 +506,10 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
     }
     case "flag": {
       const radius = m2px(shape.radius, ppm);
-      const poleVisible = Math.min(m2px(shape.poleHeight ?? 3.5, ppm), m2px(1, ppm));
+      const poleVisible = Math.min(
+        m2px(shape.poleHeight ?? 3.5, ppm),
+        m2px(1, ppm)
+      );
       const flagWidth = poleVisible * 0.42;
       const flagHeight = poleVisible * 1.5;
       return {

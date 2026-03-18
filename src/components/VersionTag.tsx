@@ -37,7 +37,7 @@ export default function VersionTag({
         )}
       >
         {showBeta && (
-          <span className="text-amber-500 inline-flex h-3 items-center font-sans text-[9px] leading-none font-semibold uppercase tracking-[0.12em]">
+          <span className="inline-flex h-3 items-center font-sans text-[9px] leading-none font-semibold tracking-[0.12em] text-amber-500 uppercase">
             Beta
           </span>
         )}

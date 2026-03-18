@@ -97,8 +97,8 @@ export default function EditorShell({
             <span className="text-foreground/70 truncate text-center text-sm">
               {design.title || "Untitled"}
             </span>
-            <span className="border-amber-500/25 bg-amber-500/10 text-amber-500 inline-flex h-5 shrink-0 items-center justify-center rounded-md border px-1.5">
-              <span className="inline-flex h-3 items-center text-[9px] leading-none font-semibold uppercase tracking-[0.12em]">
+            <span className="inline-flex h-5 shrink-0 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 px-1.5 text-amber-500">
+              <span className="inline-flex h-3 items-center text-[9px] leading-none font-semibold tracking-[0.12em] uppercase">
                 Beta
               </span>
             </span>

@@ -1,6 +1,11 @@
 "use client";
 
-import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import {
+  Canvas,
+  useFrame,
+  useThree,
+  type ThreeEvent,
+} from "@react-three/fiber";
 import { OrbitControls, Grid, RoundedBox, Text } from "@react-three/drei";
 import { useEditor } from "@/store/editor";
 import {

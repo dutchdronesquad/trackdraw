@@ -584,366 +584,372 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           className="relative h-full w-full overflow-hidden"
           style={{ cursor: cursorStyle, touchAction: "none" }}
         >
-        <div
-          className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 flex items-center gap-2 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
-          style={{ top: RULER_SIZE + 6, left: RULER_SIZE + 6 }}
-        >
-          <span>
-            {design.field.width}m × {design.field.height}m
-          </span>
-          <span className="text-border">·</span>
-          <span>Grid {design.field.gridStep}m</span>
-          <span className="text-border">·</span>
-          <span>{activeTool === "polyline" ? "Smart snap" : "Grid snap"}</span>
-        </div>
-        <div
-          className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute right-2 z-20 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
-          style={{ top: RULER_SIZE + 6 }}
-        >
-          <span className="text-foreground/60 font-medium">Mid-click</span> pan
-          · <span className="text-foreground/60 font-medium">Right-click</span>{" "}
-          menu · <span className="text-foreground/60 font-medium">Alt</span>{" "}
-          free
-        </div>
-        {!readOnly && (
           <div
-            className="absolute right-2 z-20"
-            style={{ top: RULER_SIZE + 34 }}
+            className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 flex items-center gap-2 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
+            style={{ top: RULER_SIZE + 6, left: RULER_SIZE + 6 }}
           >
-            <Tooltip>
-              <TooltipTrigger
-                onClick={() => {
-                  setManualView(false);
-                  fitFieldToViewport();
-                }}
-                className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-sm backdrop-blur transition-colors"
-                aria-label="Fit to window"
-              >
-                <Scan className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                Fit to window{" "}
-                <span className="ml-1 font-mono text-[10px] opacity-50">0</span>
-              </TooltipContent>
-            </Tooltip>
+            <span>
+              {design.field.width}m × {design.field.height}m
+            </span>
+            <span className="text-border">·</span>
+            <span>Grid {design.field.gridStep}m</span>
+            <span className="text-border">·</span>
+            <span>
+              {activeTool === "polyline" ? "Smart snap" : "Grid snap"}
+            </span>
           </div>
-        )}
-        <Stage
-          width={viewportSize.width}
-          height={viewportSize.height}
-          ref={stageRef}
-          draggable={activeTool === "grab" && !readOnly}
-          onDragStart={onStageDragStart}
-          onDragMove={onStageDragMove}
-          onDragEnd={onStageDragEnd}
-          onWheel={onWheel}
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseLeave={onMouseLeave}
-          onMouseUp={onMouseUp}
-        >
-          {/* Infinite grid + field boundary layer */}
-          <Layer listening={false}>
-            <FieldLayerContent
-              designField={design.field}
-              effectiveSelectionFrame={
-                selection.length > 1 ? effectiveSelectionFrame : null
-              }
-              grid={grid}
-              heightPx={heightPx}
-              hoverCell={hoverCell}
-              isDark={isDark}
-              marqueeRect={marqueeRect}
-              stepPx={stepPx}
-              widthPx={widthPx}
-            />
-          </Layer>
+          <div
+            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute right-2 z-20 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
+            style={{ top: RULER_SIZE + 6 }}
+          >
+            <span className="text-foreground/60 font-medium">Mid-click</span>{" "}
+            pan ·{" "}
+            <span className="text-foreground/60 font-medium">Right-click</span>{" "}
+            menu · <span className="text-foreground/60 font-medium">Alt</span>{" "}
+            free
+          </div>
+          {!readOnly && (
+            <div
+              className="absolute right-2 z-20"
+              style={{ top: RULER_SIZE + 34 }}
+            >
+              <Tooltip>
+                <TooltipTrigger
+                  onClick={() => {
+                    setManualView(false);
+                    fitFieldToViewport();
+                  }}
+                  className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-sm backdrop-blur transition-colors"
+                  aria-label="Fit to window"
+                >
+                  <Scan className="size-3.5" />
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  Fit to window{" "}
+                  <span className="ml-1 font-mono text-[10px] opacity-50">
+                    0
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          )}
+          <Stage
+            width={viewportSize.width}
+            height={viewportSize.height}
+            ref={stageRef}
+            draggable={activeTool === "grab" && !readOnly}
+            onDragStart={onStageDragStart}
+            onDragMove={onStageDragMove}
+            onDragEnd={onStageDragEnd}
+            onWheel={onWheel}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseLeave={onMouseLeave}
+            onMouseUp={onMouseUp}
+          >
+            {/* Infinite grid + field boundary layer */}
+            <Layer listening={false}>
+              <FieldLayerContent
+                designField={design.field}
+                effectiveSelectionFrame={
+                  selection.length > 1 ? effectiveSelectionFrame : null
+                }
+                grid={grid}
+                heightPx={heightPx}
+                hoverCell={hoverCell}
+                isDark={isDark}
+                marqueeRect={marqueeRect}
+                stepPx={stepPx}
+                widthPx={widthPx}
+              />
+            </Layer>
 
-          {/* Shapes layer */}
-          <Layer>
-            {design.shapes.map((shape) => {
-              const allowInteraction = activeTool === "select" && !readOnly;
-              return (
-                <TrackShapeNode
-                  key={shape.id}
-                  allowInteraction={allowInteraction}
-                  designPpm={design.field.ppm}
-                  dragBound={dragBound}
-                  dragSnapRef={dragSnapRef}
-                  effectiveVertexSel={effectiveVertexSel}
-                  heightPx={heightPx}
-                  hoveredWaypoint={hoveredWaypoint}
-                  isSelected={selection.includes(shape.id)}
-                  onShapeContextMenu={(clickedShape) => {
-                    if (activeTool !== "select" || readOnly) return;
+            {/* Shapes layer */}
+            <Layer>
+              {design.shapes.map((shape) => {
+                const allowInteraction = activeTool === "select" && !readOnly;
+                return (
+                  <TrackShapeNode
+                    key={shape.id}
+                    allowInteraction={allowInteraction}
+                    designPpm={design.field.ppm}
+                    dragBound={dragBound}
+                    dragSnapRef={dragSnapRef}
+                    effectiveVertexSel={effectiveVertexSel}
+                    heightPx={heightPx}
+                    hoveredWaypoint={hoveredWaypoint}
+                    isSelected={selection.includes(shape.id)}
+                    onShapeContextMenu={(clickedShape) => {
+                      if (activeTool !== "select" || readOnly) return;
 
-                    const nextSelection = selection.includes(clickedShape.id)
-                      ? selection
-                      : [clickedShape.id];
-                    if (!selection.includes(clickedShape.id)) {
-                      setSelection(nextSelection);
-                    }
-                    const rotatableIds = nextSelection.filter((id) => {
-                      const shape = design.shapes.find(
-                        (candidate) => candidate.id === id
-                      );
-                      return (
-                        shape && shape.kind !== "polyline" && !shape.locked
-                      );
-                    });
-
-                    setContextMenu({
-                      ids: nextSelection,
-                      label:
-                        nextSelection.length > 1
-                          ? `${nextSelection.length} items`
-                          : shapeKindLabels[clickedShape.kind],
-                      locked: nextSelection.every((id) => {
+                      const nextSelection = selection.includes(clickedShape.id)
+                        ? selection
+                        : [clickedShape.id];
+                      if (!selection.includes(clickedShape.id)) {
+                        setSelection(nextSelection);
+                      }
+                      const rotatableIds = nextSelection.filter((id) => {
                         const shape = design.shapes.find(
                           (candidate) => candidate.id === id
                         );
-                        return Boolean(shape?.locked);
-                      }),
-                      rotatableIds,
-                    });
-                  }}
-                  selection={selection}
-                  setSelection={setSelection}
-                  setVertexSel={setVertexSel}
-                  shape={shape}
-                  shapeRef={(node) => {
-                    shapeRefs.current[shape.id] = node;
-                  }}
-                  stepPx={stepPx}
-                  updateShape={updateShape}
-                  widthPx={widthPx}
-                  zmax={zmax}
-                  zmin={zmin}
-                />
-              );
-            })}
-          </Layer>
+                        return (
+                          shape && shape.kind !== "polyline" && !shape.locked
+                        );
+                      });
 
-          {!readOnly && activeTool === "select" && (
-            <Layer>
-              <RotationGuideOverlay
-                isDark={isDark}
-                onRotateStart={(event) => {
-                  if (
-                    !singleSelectedShape ||
-                    singleSelectedShape.locked ||
-                    !rotationGuide
-                  ) {
-                    return;
-                  }
-
-                  event.cancelBubble = true;
-                  const stage = stageRef.current;
-                  const pointer = stage?.getRelativePointerPosition();
-                  if (!pointer) return;
-
-                  const startAngle =
-                    (Math.atan2(
-                      pointer.y - rotationGuide.center.y,
-                      pointer.x - rotationGuide.center.x
-                    ) *
-                      180) /
-                    Math.PI;
-
-                  setRotationSession({
-                    center: rotationGuide.center,
-                    shapeId: singleSelectedShape.id,
-                    startAngle,
-                    startRotation: singleSelectedShape.rotation - 90,
-                  });
-                }}
-                rotationGuide={rotationGuide}
-                showAngleLabel={rotationSession !== null}
-              />
-            </Layer>
-          )}
-
-          <Layer>
-            {/* Snap-to-element indicator (polyline drawing mode) */}
-            {snapTarget &&
-              activeTool === "polyline" &&
-              (() => {
-                const sx = m2px(snapTarget.x, design.field.ppm);
-                const sy = m2px(snapTarget.y, design.field.ppm);
-                const r = Math.max(
-                  m2px(snapRadiusMeters * 0.55, design.field.ppm),
-                  14
-                );
-                return (
-                  <Group listening={false}>
-                    <Circle
-                      x={sx}
-                      y={sy}
-                      radius={r}
-                      stroke="#22c55e"
-                      strokeWidth={1.5}
-                      dash={[5, 4]}
-                      opacity={0.85}
-                    />
-                    <Circle
-                      x={sx}
-                      y={sy}
-                      radius={4}
-                      fill="#22c55e"
-                      opacity={0.9}
-                    />
-                  </Group>
-                );
-              })()}
-
-            {/* Draft polyline */}
-            {draftPointsPx.length > 0 && (
-              <Line
-                points={draftPointsPx}
-                stroke="#3b82f6"
-                strokeWidth={m2px(0.18, design.field.ppm)}
-                dash={[6, 6]}
-                lineCap="round"
-                lineJoin="round"
-              />
-            )}
-            {draftPointsPx.length > 0 &&
-              cursor &&
-              (() => {
-                const endX = snapTarget
-                  ? m2px(snapTarget.x, design.field.ppm)
-                  : cursor.snappedPx.x;
-                const endY = snapTarget
-                  ? m2px(snapTarget.y, design.field.ppm)
-                  : cursor.snappedPx.y;
-                return (
-                  <Line
-                    points={[
-                      draftPointsPx[draftPointsPx.length - 2],
-                      draftPointsPx[draftPointsPx.length - 1],
-                      endX,
-                      endY,
-                    ]}
-                    stroke={snapTarget ? "#22c55e" : "#60a5fa"}
-                    strokeWidth={m2px(0.18, design.field.ppm)}
-                    dash={[4, 6]}
-                    opacity={0.7}
-                    lineCap="round"
+                      setContextMenu({
+                        ids: nextSelection,
+                        label:
+                          nextSelection.length > 1
+                            ? `${nextSelection.length} items`
+                            : shapeKindLabels[clickedShape.kind],
+                        locked: nextSelection.every((id) => {
+                          const shape = design.shapes.find(
+                            (candidate) => candidate.id === id
+                          );
+                          return Boolean(shape?.locked);
+                        }),
+                        rotatableIds,
+                      });
+                    }}
+                    selection={selection}
+                    setSelection={setSelection}
+                    setVertexSel={setVertexSel}
+                    shape={shape}
+                    shapeRef={(node) => {
+                      shapeRefs.current[shape.id] = node;
+                    }}
+                    stepPx={stepPx}
+                    updateShape={updateShape}
+                    widthPx={widthPx}
+                    zmax={zmax}
+                    zmin={zmin}
                   />
                 );
-              })()}
+              })}
+            </Layer>
 
-            {/* Cursor crosshair */}
-            {cursor && (
-              <Group listening={false}>
-                <Line
-                  points={[
-                    cursor.snappedPx.x,
-                    cursor.snappedPx.y - 10,
-                    cursor.snappedPx.x,
-                    cursor.snappedPx.y + 10,
-                  ]}
-                  stroke="#4a5568"
-                  strokeWidth={1}
-                  dash={[3, 3]}
+            {!readOnly && activeTool === "select" && (
+              <Layer>
+                <RotationGuideOverlay
+                  isDark={isDark}
+                  onRotateStart={(event) => {
+                    if (
+                      !singleSelectedShape ||
+                      singleSelectedShape.locked ||
+                      !rotationGuide
+                    ) {
+                      return;
+                    }
+
+                    event.cancelBubble = true;
+                    const stage = stageRef.current;
+                    const pointer = stage?.getRelativePointerPosition();
+                    if (!pointer) return;
+
+                    const startAngle =
+                      (Math.atan2(
+                        pointer.y - rotationGuide.center.y,
+                        pointer.x - rotationGuide.center.x
+                      ) *
+                        180) /
+                      Math.PI;
+
+                    setRotationSession({
+                      center: rotationGuide.center,
+                      shapeId: singleSelectedShape.id,
+                      startAngle,
+                      startRotation: singleSelectedShape.rotation - 90,
+                    });
+                  }}
+                  rotationGuide={rotationGuide}
+                  showAngleLabel={rotationSession !== null}
                 />
-                <Line
-                  points={[
-                    cursor.snappedPx.x - 10,
-                    cursor.snappedPx.y,
-                    cursor.snappedPx.x + 10,
-                    cursor.snappedPx.y,
-                  ]}
-                  stroke="#4a5568"
-                  strokeWidth={1}
-                  dash={[3, 3]}
-                />
-              </Group>
+              </Layer>
             )}
-          </Layer>
-        </Stage>
 
-        {/* Rulers */}
-        {/* Horizontal ruler — top edge, inset by RULER_SIZE to leave room for corner */}
-        <div
-          className="pointer-events-none absolute z-10"
-          style={{ top: 0, left: RULER_SIZE }}
-        >
+            <Layer>
+              {/* Snap-to-element indicator (polyline drawing mode) */}
+              {snapTarget &&
+                activeTool === "polyline" &&
+                (() => {
+                  const sx = m2px(snapTarget.x, design.field.ppm);
+                  const sy = m2px(snapTarget.y, design.field.ppm);
+                  const r = Math.max(
+                    m2px(snapRadiusMeters * 0.55, design.field.ppm),
+                    14
+                  );
+                  return (
+                    <Group listening={false}>
+                      <Circle
+                        x={sx}
+                        y={sy}
+                        radius={r}
+                        stroke="#22c55e"
+                        strokeWidth={1.5}
+                        dash={[5, 4]}
+                        opacity={0.85}
+                      />
+                      <Circle
+                        x={sx}
+                        y={sy}
+                        radius={4}
+                        fill="#22c55e"
+                        opacity={0.9}
+                      />
+                    </Group>
+                  );
+                })()}
+
+              {/* Draft polyline */}
+              {draftPointsPx.length > 0 && (
+                <Line
+                  points={draftPointsPx}
+                  stroke="#3b82f6"
+                  strokeWidth={m2px(0.18, design.field.ppm)}
+                  dash={[6, 6]}
+                  lineCap="round"
+                  lineJoin="round"
+                />
+              )}
+              {draftPointsPx.length > 0 &&
+                cursor &&
+                (() => {
+                  const endX = snapTarget
+                    ? m2px(snapTarget.x, design.field.ppm)
+                    : cursor.snappedPx.x;
+                  const endY = snapTarget
+                    ? m2px(snapTarget.y, design.field.ppm)
+                    : cursor.snappedPx.y;
+                  return (
+                    <Line
+                      points={[
+                        draftPointsPx[draftPointsPx.length - 2],
+                        draftPointsPx[draftPointsPx.length - 1],
+                        endX,
+                        endY,
+                      ]}
+                      stroke={snapTarget ? "#22c55e" : "#60a5fa"}
+                      strokeWidth={m2px(0.18, design.field.ppm)}
+                      dash={[4, 6]}
+                      opacity={0.7}
+                      lineCap="round"
+                    />
+                  );
+                })()}
+
+              {/* Cursor crosshair */}
+              {cursor && (
+                <Group listening={false}>
+                  <Line
+                    points={[
+                      cursor.snappedPx.x,
+                      cursor.snappedPx.y - 10,
+                      cursor.snappedPx.x,
+                      cursor.snappedPx.y + 10,
+                    ]}
+                    stroke="#4a5568"
+                    strokeWidth={1}
+                    dash={[3, 3]}
+                  />
+                  <Line
+                    points={[
+                      cursor.snappedPx.x - 10,
+                      cursor.snappedPx.y,
+                      cursor.snappedPx.x + 10,
+                      cursor.snappedPx.y,
+                    ]}
+                    stroke="#4a5568"
+                    strokeWidth={1}
+                    dash={[3, 3]}
+                  />
+                </Group>
+              )}
+            </Layer>
+          </Stage>
+
+          {/* Rulers */}
+          {/* Horizontal ruler — top edge, inset by RULER_SIZE to leave room for corner */}
           <div
-            style={{
-              position: "relative",
-              width: viewportSize.width - RULER_SIZE,
-              height: RULER_SIZE,
-            }}
+            className="pointer-events-none absolute z-10"
+            style={{ top: 0, left: RULER_SIZE }}
           >
-            <CanvasRuler
-              orientation="h"
-              stageTransform={{
-                ...stageTransform,
-                x: stageTransform.x - RULER_SIZE,
+            <div
+              style={{
+                position: "relative",
+                width: viewportSize.width - RULER_SIZE,
+                height: RULER_SIZE,
               }}
-              ppm={design.field.ppm}
-              gridStep={design.field.gridStep}
-              length={viewportSize.width - RULER_SIZE}
-              isDark={isDark}
-            />
+            >
+              <CanvasRuler
+                orientation="h"
+                stageTransform={{
+                  ...stageTransform,
+                  x: stageTransform.x - RULER_SIZE,
+                }}
+                ppm={design.field.ppm}
+                gridStep={design.field.gridStep}
+                length={viewportSize.width - RULER_SIZE}
+                isDark={isDark}
+              />
+            </div>
           </div>
-        </div>
-        {/* Vertical ruler — left edge, inset by RULER_SIZE to leave room for corner */}
-        <div
-          className="pointer-events-none absolute z-10"
-          style={{ top: RULER_SIZE, left: 0 }}
-        >
+          {/* Vertical ruler — left edge, inset by RULER_SIZE to leave room for corner */}
           <div
+            className="pointer-events-none absolute z-10"
+            style={{ top: RULER_SIZE, left: 0 }}
+          >
+            <div
+              style={{
+                position: "relative",
+                width: RULER_SIZE,
+                height: viewportSize.height - RULER_SIZE,
+              }}
+            >
+              <CanvasRuler
+                orientation="v"
+                stageTransform={{
+                  ...stageTransform,
+                  y: stageTransform.y - RULER_SIZE,
+                }}
+                ppm={design.field.ppm}
+                gridStep={design.field.gridStep}
+                length={viewportSize.height - RULER_SIZE}
+                isDark={isDark}
+              />
+            </div>
+          </div>
+          {/* Corner square */}
+          <div
+            className="pointer-events-none absolute z-10"
             style={{
-              position: "relative",
+              top: 0,
+              left: 0,
               width: RULER_SIZE,
-              height: viewportSize.height - RULER_SIZE,
+              height: RULER_SIZE,
+              background: isDark ? "#070b12" : "#f2f4f7",
+              borderRight: isDark ? "1px solid #1a2636" : "1px solid #c8d2db",
+              borderBottom: isDark ? "1px solid #1a2636" : "1px solid #c8d2db",
             }}
-          >
-            <CanvasRuler
-              orientation="v"
-              stageTransform={{
-                ...stageTransform,
-                y: stageTransform.y - RULER_SIZE,
-              }}
-              ppm={design.field.ppm}
-              gridStep={design.field.gridStep}
-              length={viewportSize.height - RULER_SIZE}
-              isDark={isDark}
-            />
-          </div>
-        </div>
-        {/* Corner square */}
-        <div
-          className="pointer-events-none absolute z-10"
-          style={{
-            top: 0,
-            left: 0,
-            width: RULER_SIZE,
-            height: RULER_SIZE,
-            background: isDark ? "#070b12" : "#f2f4f7",
-            borderRight: isDark ? "1px solid #1a2636" : "1px solid #c8d2db",
-            borderBottom: isDark ? "1px solid #1a2636" : "1px solid #c8d2db",
-          }}
-        />
+          />
 
-        {/* Status overlay */}
-        {draftPath.length > 0 && (
-          <div className="text-primary/70 bg-background/80 border-border/40 pointer-events-none absolute inset-x-0 bottom-0 border-t px-3 py-2 text-[11px]">
-            Click to add points · Double-click or{" "}
-            <span className="text-foreground/60 font-medium">Enter</span> to
-            finish · <span className="text-foreground/60 font-medium">Esc</span>{" "}
-            to cancel
-            {draftLengthWithCursor > 0 && (
-              <span className="text-muted-foreground/60 ml-3">
-                {draftLengthWithCursor.toFixed(1)} m
-              </span>
-            )}
-          </div>
-        )}
+          {/* Status overlay */}
+          {draftPath.length > 0 && (
+            <div className="text-primary/70 bg-background/80 border-border/40 pointer-events-none absolute inset-x-0 bottom-0 border-t px-3 py-2 text-[11px]">
+              Click to add points · Double-click or{" "}
+              <span className="text-foreground/60 font-medium">Enter</span> to
+              finish ·{" "}
+              <span className="text-foreground/60 font-medium">Esc</span> to
+              cancel
+              {draftLengthWithCursor > 0 && (
+                <span className="text-muted-foreground/60 ml-3">
+                  {draftLengthWithCursor.toFixed(1)} m
+                </span>
+              )}
+            </div>
+          )}
         </ContextMenuTrigger>
 
         {contextMenu && (
