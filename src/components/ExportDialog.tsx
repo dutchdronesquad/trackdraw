@@ -230,7 +230,8 @@ export default function ExportDialog({
                   run("pdf", async () => {
                     const stage = canvasRef.current?.getStage();
                     if (!stage) throw new Error("Canvas not ready");
-                    const { exportPdf } = await import("@/lib/export/exportPdf");
+                    const { exportPdf } =
+                      await import("@/lib/export/exportPdf");
                     await exportPdf(stage, design, `${safeName()}.pdf`);
                   })
                 }
