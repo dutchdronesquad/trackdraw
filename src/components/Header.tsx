@@ -143,7 +143,7 @@ export default function Header({
   const mobileTabToggle = (
     <button
       onClick={() => onTabChange(tab === "2d" ? "3d" : "2d")}
-      className="border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted inline-flex h-7 min-w-10 items-center justify-center rounded-md border px-2 text-[11px] font-medium transition-colors"
+      className="border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted inline-flex h-8 min-w-11 items-center justify-center rounded-md border px-2.5 text-[11px] font-medium transition-colors"
       aria-label={`Switch to ${tab === "2d" ? "3D" : "2D"} view`}
     >
       {tab === "2d" ? "2D" : "3D"}
@@ -184,8 +184,8 @@ export default function Header({
           <Image
             src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
             alt="TrackDraw"
-            width={102}
-            height={18}
+            width={114}
+            height={20}
             priority
             unoptimized
             draggable={false}
@@ -193,7 +193,7 @@ export default function Header({
         </Link>
       </div>
 
-      <div className="ml-auto flex shrink-0 items-center gap-1">
+      <div className="ml-auto flex h-full shrink-0 items-center gap-1">
         <div className="mr-1 hidden lg:flex">{viewToggle}</div>
 
         <div className="bg-border/80 mx-1 hidden h-4 w-px lg:block" />
@@ -354,7 +354,7 @@ export default function Header({
             onClick={onExport}
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
-              "h-7 gap-1.5 px-2 text-xs sm:px-2.5"
+              "h-8 gap-1.5 px-2 text-xs sm:h-7 sm:px-2.5"
             )}
           >
             <Download className="size-3.5" />
@@ -366,14 +366,14 @@ export default function Header({
           onClick={onShare}
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
-            "h-7 gap-1.5 px-2 text-xs sm:px-2.5"
+            "h-8 gap-1.5 px-2 text-xs sm:h-7 sm:px-2.5"
           )}
         >
           <Share2 className="size-3.5" />
           <span className="hidden sm:inline">Share</span>
         </button>
 
-        <div className="bg-border/80 mx-1 h-4 w-px" />
+        <div className="bg-border/80 mx-1 h-5 w-px sm:h-4" />
         <ThemeToggle />
       </div>
     </header>

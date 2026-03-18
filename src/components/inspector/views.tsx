@@ -43,7 +43,7 @@ export function EmptyInspectorView({
     <div className="flex h-full flex-col">
       <PanelHeader title="Design" />
       <ScrollArea className="flex-1">
-        <div className="space-y-4 px-3 py-3">
+        <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
           <div>
             <p className="text-muted-foreground/50 mb-1.5 text-[10px] font-medium tracking-[0.08em] uppercase">
               Title
@@ -54,7 +54,7 @@ export function EmptyInspectorView({
                 updateDesignMeta({ title: event.target.value })
               }
               placeholder="Untitled Track"
-              className="bg-muted/40 border-border/40 h-7 text-sm"
+              className="bg-muted/40 border-border/40 h-9 text-sm lg:h-7"
             />
           </div>
 
@@ -176,8 +176,8 @@ export function MultiInspectorView({
           </>
         }
       />
-      <div className="space-y-2 p-3">
-        <div className="grid grid-cols-2 gap-1">
+      <div className="space-y-3 p-4 lg:space-y-2 lg:p-3">
+        <div className="grid grid-cols-2 gap-2 lg:gap-1">
           {Object.entries(kinds)
             .filter(([, count]) => count > 0)
             .map(([kind, count]) => (
@@ -256,7 +256,7 @@ export function SingleInspectorView({
       />
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="space-y-4 px-3 py-3">
+        <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
           <Section title="Transform">
             <Row label="X">
               <Num
@@ -281,7 +281,7 @@ export function SingleInspectorView({
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  className="border-border/40 size-6 cursor-pointer rounded border bg-transparent"
+                  className="border-border/40 size-9 cursor-pointer rounded-md border bg-transparent lg:size-6 lg:rounded"
                   value={defaultColor}
                   onChange={(event) =>
                     updateShape(shape.id, { color: event.target.value })
@@ -364,7 +364,7 @@ export function SingleInspectorView({
               <Row label="Text">
                 <textarea
                   rows={2}
-                  className="border-border/40 bg-muted/40 text-foreground placeholder:text-muted-foreground/40 focus-visible:ring-ring/30 w-full resize-none rounded border px-2 py-1 text-[11px] focus-visible:ring-1 focus-visible:outline-none"
+                  className="border-border/40 bg-muted/40 text-foreground placeholder:text-muted-foreground/40 focus-visible:ring-ring/30 w-full resize-none rounded-md border px-3 py-2 text-xs focus-visible:ring-1 focus-visible:outline-none lg:rounded lg:px-2 lg:py-1 lg:text-[11px]"
                   value={shape.text}
                   onChange={(event) =>
                     updateShape(shape.id, { text: event.target.value })
@@ -383,7 +383,7 @@ export function SingleInspectorView({
               </Row>
               <Row label="3D mode">
                 <select
-                  className="border-border/40 bg-muted/40 text-foreground w-full rounded border px-2 py-1 text-[11px] focus-visible:outline-none"
+                  className="border-border/40 bg-muted/40 text-foreground h-9 w-full rounded-md border px-3 py-1 text-xs focus-visible:outline-none lg:h-7 lg:rounded lg:px-2 lg:text-[11px]"
                   value={shape.project ? "ground" : "float"}
                   onChange={(event) =>
                     updateShape(shape.id, {
@@ -520,7 +520,7 @@ export function SingleInspectorView({
                 <label className="flex h-full cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
-                    className="accent-foreground size-3"
+                    className="accent-foreground size-4 lg:size-3"
                     checked={shape.smooth ?? true}
                     onChange={(event) =>
                       updateShape(shape.id, { smooth: event.target.checked })
@@ -533,7 +533,7 @@ export function SingleInspectorView({
                 <label className="flex h-full cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
-                    className="accent-foreground size-3"
+                    className="accent-foreground size-4 lg:size-3"
                     checked={Boolean(shape.showArrows)}
                     onChange={(event) =>
                       updateShape(shape.id, {
@@ -565,18 +565,18 @@ export function SingleInspectorView({
                   </div>
                 </div>
 
-                <div className="max-h-56 overflow-y-auto">
+                <div className="max-h-64 overflow-y-auto lg:max-h-56">
                   {shape.points.map((point, index) => (
                     <div
                       key={index}
-                      className="group/row border-border/20 relative flex items-center gap-2.5 border-b py-1 pr-2 pl-3 transition-colors last:border-b-0 hover:bg-amber-500/5"
+                      className="group/row border-border/20 relative flex items-center gap-2.5 border-b py-2 pr-3 pl-3 transition-colors last:border-b-0 hover:bg-amber-500/5 lg:py-1 lg:pr-2"
                       onMouseEnter={() =>
                         setHoveredWaypoint({ shapeId: shape.id, idx: index })
                       }
                       onMouseLeave={() => setHoveredWaypoint(null)}
                     >
                       <span className="absolute top-0 bottom-0 left-0 w-0.5 rounded-r-full bg-amber-400 opacity-0 transition-opacity group-hover/row:opacity-100" />
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full border border-amber-400/30 bg-amber-400/15 text-[10px] leading-none font-bold text-amber-400 tabular-nums">
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-amber-400/30 bg-amber-400/15 text-[10px] leading-none font-bold text-amber-400 tabular-nums lg:size-5">
                         {index}
                       </span>
                       <span className="text-foreground/60 flex-1 font-mono text-[11px] leading-none tabular-nums">
@@ -586,7 +586,7 @@ export function SingleInspectorView({
                         type="number"
                         step={0.5}
                         title="Elevation (m)"
-                        className="text-foreground/70 focus:bg-muted/40 focus:text-foreground hover:border-border/40 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:border-amber-400/50 focus:outline-none"
+                        className="text-foreground/70 focus:bg-muted/40 focus:text-foreground hover:border-border/40 h-8 w-16 rounded-md border border-transparent bg-transparent px-2 py-1 text-right font-mono text-xs transition-colors focus:border-amber-400/50 focus:outline-none lg:h-auto lg:w-14 lg:px-1.5 lg:py-0.5 lg:text-[11px]"
                         value={point.z ?? 0}
                         onChange={(event) => {
                           const nextPoints = [...shape.points];
@@ -597,11 +597,11 @@ export function SingleInspectorView({
                           updateShape(shape.id, { points: nextPoints });
                         }}
                       />
-                      <div className="flex w-[42px] shrink-0 items-center justify-end gap-0.5 opacity-0 transition-opacity group-hover/row:opacity-100">
+                      <div className="flex w-[52px] shrink-0 items-center justify-end gap-1 opacity-100 transition-opacity lg:w-[42px] lg:gap-0.5 lg:opacity-0 lg:group-hover/row:opacity-100">
                         {index < shape.points.length - 1 && (
                           <button
                             title="Insert point after"
-                            className="text-muted-foreground/50 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded transition-colors"
+                            className="text-muted-foreground/50 hover:text-primary hover:bg-primary/10 flex size-6 items-center justify-center rounded-md transition-colors lg:size-5 lg:rounded"
                             onClick={() => {
                               const current = shape.points[index];
                               const next = shape.points[index + 1];
@@ -623,7 +623,7 @@ export function SingleInspectorView({
                         )}
                         <button
                           title="Remove point"
-                          className="text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 flex size-5 items-center justify-center rounded transition-colors"
+                          className="text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 flex size-6 items-center justify-center rounded-md transition-colors lg:size-5 lg:rounded"
                           onClick={() => {
                             if (shape.points.length <= 2) return;
                             const nextPoints = shape.points.filter(
@@ -640,7 +640,7 @@ export function SingleInspectorView({
                 </div>
 
                 <button
-                  className="border-border/40 text-muted-foreground/60 hover:text-foreground hover:bg-muted/20 flex w-full items-center justify-center gap-1.5 border-t py-2 text-[11px] font-medium transition-colors"
+                  className="border-border/40 text-muted-foreground/60 hover:text-foreground hover:bg-muted/20 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors lg:h-auto lg:text-[11px]"
                   onClick={() => {
                     const points = [...shape.points];
                     const lastPoint = points[points.length - 1] ?? {

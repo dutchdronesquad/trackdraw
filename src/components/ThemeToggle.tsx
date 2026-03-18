@@ -66,7 +66,7 @@ export function ThemeToggle() {
         type="button"
         onClick={() => applyTheme(NEXT[theme])}
         aria-label={`Theme: ${LABEL[theme]}`}
-        className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-7 items-center justify-center rounded-md transition-colors"
+        className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 items-center justify-center rounded-md transition-colors sm:size-7"
       >
         {icons[theme]}
       </TooltipTrigger>
