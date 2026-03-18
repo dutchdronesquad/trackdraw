@@ -124,6 +124,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const lastPinchCenterRef = useRef<{ x: number; y: number } | null>(null);
     const lastPinchDistRef = useRef<number | null>(null);
     const lastTouchPosRef = useRef<{ x: number; y: number } | null>(null);
+    const suppressTapRef = useRef(false);
+    const touchInteractionModeRef = useRef<"none" | "pan" | "content">(
+      "none"
+    );
 
     const [vertexSel, setVertexSel] = useState<{
       shapeId: string;
@@ -135,6 +139,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       x: number;
       y: number;
       id: string;
+    } | null>(null);
+    const [dragSnapPreview, setDragSnapPreview] = useState<{
+      x: number;
+      y: number;
     } | null>(null);
     const [marqueeRect, setMarqueeRect] = useState<RectLike | null>(null);
     const marqueeOrigin = useRef<Vector2d | null>(null);
@@ -239,21 +247,76 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       () => Math.max(1, m2px(design.field.gridStep, design.field.ppm)),
       [design.field.gridStep, design.field.ppm]
     );
+    const magneticSnapRadiusPx = useMemo(
+      () => Math.min(18, Math.max(10, stepPx * 0.35)),
+      [stepPx]
+    );
+
+    const clampShapeDragPosition = useCallback(
+      (pos: Vector2d): Vector2d => ({
+        x: clamp(pos.x, -widthPx * 2, widthPx * 3),
+        y: clamp(pos.y, -heightPx * 2, heightPx * 3),
+      }),
+      [heightPx, widthPx]
+    );
+
+    const clampWaypointDragPosition = useCallback(
+      (pos: Vector2d): Vector2d => ({
+        x: clamp(pos.x, 0, widthPx),
+        y: clamp(pos.y, 0, heightPx),
+      }),
+      [heightPx, widthPx]
+    );
 
     // Generous bounds — shapes can be placed well outside the field on the infinite canvas
-    const dragBound = useCallback(
-      (pos: Vector2d): Vector2d => {
-        const bound = {
-          x: clamp(pos.x, -widthPx * 2, widthPx * 3),
-          y: clamp(pos.y, -heightPx * 2, heightPx * 3),
-        };
-        if (!dragSnapRef.current) return bound;
+    const resolveShapeDragPosition = useCallback(
+      (pos: Vector2d, snapEnabled: boolean): Vector2d => {
+        const bounded = clampShapeDragPosition(pos);
+        if (!snapEnabled) return bounded;
+        const snapX = Math.round(bounded.x / stepPx) * stepPx;
+        const snapY = Math.round(bounded.y / stepPx) * stepPx;
         return {
-          x: Math.round(bound.x / stepPx) * stepPx,
-          y: Math.round(bound.y / stepPx) * stepPx,
+          x:
+            Math.abs(bounded.x - snapX) <= magneticSnapRadiusPx
+              ? snapX
+              : bounded.x,
+          y:
+            Math.abs(bounded.y - snapY) <= magneticSnapRadiusPx
+              ? snapY
+              : bounded.y,
         };
       },
-      [heightPx, stepPx, widthPx]
+      [clampShapeDragPosition, magneticSnapRadiusPx, stepPx]
+    );
+
+    const resolveWaypointDragPosition = useCallback(
+      (pos: Vector2d, snapEnabled: boolean): Vector2d => {
+        const bounded = clampWaypointDragPosition(pos);
+        if (!snapEnabled) return bounded;
+        const snapX = Math.round(bounded.x / stepPx) * stepPx;
+        const snapY = Math.round(bounded.y / stepPx) * stepPx;
+        return {
+          x:
+            Math.abs(bounded.x - snapX) <= magneticSnapRadiusPx
+              ? snapX
+              : bounded.x,
+          y:
+            Math.abs(bounded.y - snapY) <= magneticSnapRadiusPx
+              ? snapY
+              : bounded.y,
+        };
+      },
+      [clampWaypointDragPosition, magneticSnapRadiusPx, stepPx]
+    );
+
+    const dragBound = useCallback(
+      (pos: Vector2d): Vector2d => clampShapeDragPosition(pos),
+      [clampShapeDragPosition]
+    );
+
+    const waypointDragBound = useCallback(
+      (pos: Vector2d): Vector2d => clampWaypointDragPosition(pos),
+      [clampWaypointDragPosition]
     );
 
     const fitFieldToViewport = useCallback(() => {
@@ -356,6 +419,8 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       onMouseLeave,
       onMouseMove,
       onMouseUp,
+      onTap,
+      onDblTap,
       onStageDragEnd,
       onStageDragMove,
       onStageDragStart,
@@ -370,6 +435,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       designShapes: design.shapes,
       disableTouchGestures: rotationSession !== null,
       finalizePath,
+      isMobile,
       lastPinchCenterRef,
       lastPinchDistRef,
       lastTouchPosRef,
@@ -392,7 +458,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       snapTarget,
       stageRef,
       stepPx,
+      suppressTapRef,
       syncTransform,
+      touchInteractionModeRef,
     });
 
     useLayoutEffect(() => {
@@ -688,6 +756,8 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             onWheel={onWheel}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
+            onTap={onTap}
+            onDblTap={onDblTap}
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}
             onMouseLeave={onMouseLeave}
@@ -765,6 +835,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     shapeRef={(node) => {
                       shapeRefs.current[shape.id] = node;
                     }}
+                    setDragSnapPreview={setDragSnapPreview}
+                    resolveShapeDragPosition={resolveShapeDragPosition}
+                    waypointDragBound={waypointDragBound}
+                    resolveWaypointDragPosition={resolveWaypointDragPosition}
                     stepPx={stepPx}
                     updateShape={updateShape}
                     widthPx={widthPx}
@@ -815,6 +889,35 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             )}
 
             <Layer>
+              {dragSnapPreview && (
+                <Group listening={false}>
+                  <Circle
+                    x={dragSnapPreview.x}
+                    y={dragSnapPreview.y}
+                    radius={Math.max(11, magneticSnapRadiusPx + 1)}
+                    fill={isDark ? "#7dd3fc14" : "#0ea5e910"}
+                    strokeEnabled={false}
+                    opacity={0.24}
+                  />
+                  <Circle
+                    x={dragSnapPreview.x}
+                    y={dragSnapPreview.y}
+                    radius={Math.max(7, magneticSnapRadiusPx - 2)}
+                    fill={isDark ? "#e0f2fe10" : "#ffffffa8"}
+                    stroke={isDark ? "#7dd3fc66" : "#0ea5e955"}
+                    strokeWidth={0.8}
+                    opacity={0.42}
+                  />
+                  <Circle
+                    x={dragSnapPreview.x}
+                    y={dragSnapPreview.y}
+                    radius={1.75}
+                    fill={isDark ? "#e0f2fe" : "#0284c7"}
+                    opacity={0.62}
+                  />
+                </Group>
+              )}
+
               {/* Snap-to-element indicator (polyline drawing mode) */}
               {snapTarget &&
                 activeTool === "polyline" &&
