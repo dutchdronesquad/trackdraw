@@ -790,7 +790,6 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     dragBound={dragBound}
                     dragSnapRef={dragSnapRef}
                     effectiveVertexSel={effectiveVertexSel}
-                    heightPx={heightPx}
                     hoveredWaypoint={hoveredWaypoint}
                     isSelected={selection.includes(shape.id)}
                     onShapeContextMenu={(clickedShape) => {
@@ -837,9 +836,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     resolveShapeDragPosition={resolveShapeDragPosition}
                     waypointDragBound={waypointDragBound}
                     resolveWaypointDragPosition={resolveWaypointDragPosition}
-                    stepPx={stepPx}
                     updateShape={updateShape}
-                    widthPx={widthPx}
                     zmax={zmax}
                     zmin={zmin}
                   />
