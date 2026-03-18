@@ -15,7 +15,7 @@ import type { Vector2d } from "konva/lib/types";
 import { smoothPolyline } from "@/lib/geometry";
 import { zToColor } from "@/lib/alt";
 import { m2px, px2m } from "@/lib/units";
-import { clamp, type RectLike } from "@/components/canvas/shared";
+import { type RectLike } from "@/components/canvas/shared";
 import type {
   CheckpointShape,
   ConeShape,
@@ -319,7 +319,6 @@ interface TrackShapeNodeProps {
   dragBound: (pos: Vector2d) => Vector2d;
   dragSnapRef: React.MutableRefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
-  heightPx: number;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
   isSelected: boolean;
   onShapeContextMenu?: (
@@ -328,12 +327,19 @@ interface TrackShapeNodeProps {
   ) => void;
   selection: string[];
   setSelection: (ids: string[]) => void;
+  setDragSnapPreview: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number } | null>
+  >;
   setVertexSel: (value: { shapeId: string; idx: number } | null) => void;
   shape: Shape;
   shapeRef: (node: KonvaGroup | null) => void;
-  stepPx: number;
+  resolveShapeDragPosition: (pos: Vector2d, snapEnabled: boolean) => Vector2d;
+  waypointDragBound: (pos: Vector2d) => Vector2d;
+  resolveWaypointDragPosition: (
+    pos: Vector2d,
+    snapEnabled: boolean
+  ) => Vector2d;
   updateShape: (id: string, patch: Partial<Shape>) => void;
-  widthPx: number;
   zmax: number;
   zmin: number;
 }
@@ -344,18 +350,19 @@ export function TrackShapeNode({
   dragBound,
   dragSnapRef,
   effectiveVertexSel,
-  heightPx,
   hoveredWaypoint,
   isSelected,
   onShapeContextMenu,
   selection,
   setSelection,
+  setDragSnapPreview,
   setVertexSel,
   shape,
   shapeRef,
-  stepPx,
+  resolveShapeDragPosition,
+  waypointDragBound,
+  resolveWaypointDragPosition,
   updateShape,
-  widthPx,
   zmax,
   zmin,
 }: TrackShapeNodeProps) {
@@ -368,19 +375,31 @@ export function TrackShapeNode({
       event.evt.metaKey ||
       event.evt.shiftKey
     );
+    setDragSnapPreview(null);
+  };
+
+  const handleDragMove = (event: KonvaEventObject<DragEvent>) => {
+    if (event.target !== event.currentTarget) return;
+    const current = event.target.position();
+    const resolved = resolveShapeDragPosition(current, dragSnapRef.current);
+    const isSnapping =
+      Math.abs(current.x - resolved.x) > 0.5 ||
+      Math.abs(current.y - resolved.y) > 0.5;
+    setDragSnapPreview(isSnapping ? resolved : null);
   };
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
     if (event.target !== event.currentTarget) return;
-    const { x, y } = event.target.position();
-    const pxX = dragSnapRef.current
-      ? Math.round(x / stepPx) * stepPx
-      : clamp(x, 0, widthPx);
-    const pxY = dragSnapRef.current
-      ? Math.round(y / stepPx) * stepPx
-      : clamp(y, 0, heightPx);
-    event.target.position({ x: pxX, y: pxY });
-    updateShape(shape.id, { x: px2m(pxX, designPpm), y: px2m(pxY, designPpm) });
+    const resolved = resolveShapeDragPosition(
+      event.target.position(),
+      dragSnapRef.current
+    );
+    setDragSnapPreview(null);
+    event.target.position(resolved);
+    updateShape(shape.id, {
+      x: px2m(resolved.x, designPpm),
+      y: px2m(resolved.y, designPpm),
+    });
   };
 
   return (
@@ -394,6 +413,7 @@ export function TrackShapeNode({
       dragBoundFunc={dragBound}
       listening={allowInteraction}
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
       onMouseDown={(event) => {
         if (!allowInteraction) return;
@@ -433,18 +453,17 @@ export function TrackShapeNode({
           <PolylineShapeContent
             allowInteraction={allowInteraction}
             designPpm={designPpm}
-            dragBound={dragBound}
+            dragBound={waypointDragBound}
             dragSnapRef={dragSnapRef}
             effectiveVertexSel={effectiveVertexSel}
-            heightPx={heightPx}
             hoveredWaypoint={hoveredWaypoint}
             isSelected={isSelected}
             path={shape}
+            resolveWaypointDragPosition={resolveWaypointDragPosition}
             setSelection={setSelection}
+            setDragSnapPreview={setDragSnapPreview}
             setVertexSel={setVertexSel}
-            stepPx={stepPx}
             updateShape={updateShape}
-            widthPx={widthPx}
             zmax={zmax}
             zmin={zmin}
           />
@@ -1007,15 +1026,19 @@ interface PolylineShapeContentProps {
   dragBound: (pos: Vector2d) => Vector2d;
   dragSnapRef: React.MutableRefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
-  heightPx: number;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
   isSelected: boolean;
   path: PolylineShape;
+  resolveWaypointDragPosition: (
+    pos: Vector2d,
+    snapEnabled: boolean
+  ) => Vector2d;
   setSelection: (ids: string[]) => void;
+  setDragSnapPreview: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number } | null>
+  >;
   setVertexSel: (value: { shapeId: string; idx: number } | null) => void;
-  stepPx: number;
   updateShape: (id: string, patch: Partial<Shape>) => void;
-  widthPx: number;
   zmax: number;
   zmin: number;
 }
@@ -1026,15 +1049,14 @@ function PolylineShapeContent({
   dragBound,
   dragSnapRef,
   effectiveVertexSel,
-  heightPx,
   hoveredWaypoint,
   isSelected,
   path,
+  resolveWaypointDragPosition,
   setSelection,
+  setDragSnapPreview,
   setVertexSel,
-  stepPx,
   updateShape,
-  widthPx,
   zmax,
   zmin,
 }: PolylineShapeContentProps) {
@@ -1132,23 +1154,35 @@ function PolylineShapeContent({
                   event.evt.metaKey ||
                   event.evt.shiftKey
                 );
+                setDragSnapPreview(null);
+              }}
+              onDragMove={(event) => {
+                event.cancelBubble = true;
+                const current = event.target.position();
+                const resolved = resolveWaypointDragPosition(
+                  current,
+                  dragSnapRef.current
+                );
+                const isSnapping =
+                  Math.abs(current.x - resolved.x) > 0.5 ||
+                  Math.abs(current.y - resolved.y) > 0.5;
+                setDragSnapPreview(isSnapping ? resolved : null);
               }}
               onDragEnd={(event) => {
                 event.cancelBubble = true;
-                const pxX = dragSnapRef.current
-                  ? Math.round(event.target.x() / stepPx) * stepPx
-                  : clamp(event.target.x(), 0, widthPx);
-                const pxY = dragSnapRef.current
-                  ? Math.round(event.target.y() / stepPx) * stepPx
-                  : clamp(event.target.y(), 0, heightPx);
-                event.target.position({ x: pxX, y: pxY });
+                const resolved = resolveWaypointDragPosition(
+                  event.target.position(),
+                  dragSnapRef.current
+                );
+                setDragSnapPreview(null);
+                event.target.position(resolved);
                 const points: PolylinePoint[] = path.points.map(
                   (candidate, candidateIndex) =>
                     candidateIndex === index
                       ? {
                           ...candidate,
-                          x: px2m(pxX, designPpm),
-                          y: px2m(pxY, designPpm),
+                          x: px2m(resolved.x, designPpm),
+                          y: px2m(resolved.y, designPpm),
                         }
                       : candidate
                 );

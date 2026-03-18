@@ -24,6 +24,7 @@ interface TrackCanvasInteractionsParams {
   designShapes: Shape[];
   disableTouchGestures: boolean;
   finalizePath: () => void;
+  isMobile: boolean;
   lastPinchCenterRef: React.MutableRefObject<{ x: number; y: number } | null>;
   lastPinchDistRef: React.MutableRefObject<number | null>;
   lastTouchPosRef: React.MutableRefObject<{ x: number; y: number } | null>;
@@ -48,7 +49,9 @@ interface TrackCanvasInteractionsParams {
   snapTarget: { x: number; y: number; id: string } | null;
   stageRef: React.MutableRefObject<KonvaStage | null>;
   stepPx: number;
+  suppressTapRef: React.MutableRefObject<boolean>;
   syncTransform: () => void;
+  touchInteractionModeRef: React.MutableRefObject<"none" | "pan" | "content">;
 }
 
 export function useTrackCanvasInteractions({
@@ -58,6 +61,7 @@ export function useTrackCanvasInteractions({
   designShapes,
   disableTouchGestures,
   finalizePath,
+  isMobile,
   lastPinchCenterRef,
   lastPinchDistRef,
   lastTouchPosRef,
@@ -80,7 +84,9 @@ export function useTrackCanvasInteractions({
   snapTarget,
   stageRef,
   stepPx,
+  suppressTapRef,
   syncTransform,
+  touchInteractionModeRef,
 }: TrackCanvasInteractionsParams) {
   const snapRadiusMeters = Math.max(1, designField.gridStep * 1.5);
 
@@ -174,18 +180,21 @@ export function useTrackCanvasInteractions({
   );
 
   const onTouchStart = useCallback(
-    (event: { evt: TouchEvent }) => {
+    (event: { evt: TouchEvent; target: unknown }) => {
       if (disableTouchGestures) return;
+      const stage = stageRef.current;
+      if (!stage) return;
 
       if (event.evt.touches.length === 2) {
         event.evt.preventDefault();
+        touchInteractionModeRef.current = "content";
+        suppressTapRef.current = true;
         lastTouchPosRef.current = null;
         const [touch1, touch2] = [event.evt.touches[0], event.evt.touches[1]];
         lastPinchDistRef.current = Math.hypot(
           touch2.clientX - touch1.clientX,
           touch2.clientY - touch1.clientY
         );
-        const stage = stageRef.current;
         const stageBox = stage?.container().getBoundingClientRect();
         lastPinchCenterRef.current = stageBox
           ? {
@@ -198,14 +207,24 @@ export function useTrackCanvasInteractions({
         lastTouchPosRef.current = { x: touch.clientX, y: touch.clientY };
         lastPinchDistRef.current = null;
         lastPinchCenterRef.current = null;
+        suppressTapRef.current = false;
+        touchInteractionModeRef.current =
+          event.target === stage &&
+          (activeTool === "grab" || (isMobile && activeTool === "select"))
+            ? "pan"
+            : "content";
       }
     },
     [
+      activeTool,
       disableTouchGestures,
+      isMobile,
       lastPinchCenterRef,
       lastPinchDistRef,
       lastTouchPosRef,
       stageRef,
+      suppressTapRef,
+      touchInteractionModeRef,
     ]
   );
 
@@ -217,6 +236,7 @@ export function useTrackCanvasInteractions({
       }
 
       if (event.evt.touches.length === 1) {
+        if (touchInteractionModeRef.current !== "pan") return;
         event.evt.preventDefault();
         const stage = stageRef.current;
         if (!stage) return;
@@ -224,6 +244,7 @@ export function useTrackCanvasInteractions({
         const last = lastTouchPosRef.current;
         if (last) {
           setManualView(true);
+          suppressTapRef.current = true;
           stage.position({
             x: stage.x() + (touch.clientX - last.x),
             y: stage.y() + (touch.clientY - last.y),
@@ -285,7 +306,90 @@ export function useTrackCanvasInteractions({
       setManualView,
       setZoom,
       stageRef,
+      suppressTapRef,
       syncTransform,
+      touchInteractionModeRef,
+    ]
+  );
+
+  const handleStageTap = useCallback(() => {
+    if (suppressTapRef.current) {
+      suppressTapRef.current = false;
+      touchInteractionModeRef.current = "none";
+      return;
+    }
+
+    const stage = stageRef.current;
+    if (!stage) return;
+    const pointer = stage.getRelativePointerPosition();
+    if (!pointer) return;
+
+    const meters = pointerToMeters(pointer, true);
+    if (!meters) return;
+
+    if (activeTool === "polyline" && !readOnly) {
+      const pos = snapTarget ?? meters;
+      setDraftPath((previous) => {
+        const last = previous.at(-1);
+        if (last && distance2D(last, pos) < 0.05) return previous;
+        return [...previous, { ...pos, z: 0 }];
+      });
+      setSelection([]);
+      touchInteractionModeRef.current = "none";
+      return;
+    }
+
+    if (activeTool !== "select" && activeTool !== "grab" && !readOnly) {
+      const shape = createShapeForTool(activeTool, meters);
+      if (!shape) return;
+      const id = addShape(shape);
+      setSelection([id]);
+      touchInteractionModeRef.current = "none";
+      return;
+    }
+
+    if (activeTool === "select") {
+      setSelection([]);
+    }
+
+    touchInteractionModeRef.current = "none";
+  }, [
+    activeTool,
+    addShape,
+    pointerToMeters,
+    readOnly,
+    setDraftPath,
+    setSelection,
+    snapTarget,
+    stageRef,
+    suppressTapRef,
+    touchInteractionModeRef,
+  ]);
+
+  const onTap = useCallback(
+    (event: { target: unknown }) => {
+      if (event.target !== stageRef.current) return;
+      handleStageTap();
+    },
+    [handleStageTap, stageRef]
+  );
+
+  const onDblTap = useCallback(
+    (event: { target: unknown }) => {
+      if (event.target !== stageRef.current) return;
+      suppressTapRef.current = false;
+      touchInteractionModeRef.current = "none";
+      if (activeTool === "polyline" && !readOnly) {
+        finalizePath();
+      }
+    },
+    [
+      activeTool,
+      finalizePath,
+      readOnly,
+      stageRef,
+      suppressTapRef,
+      touchInteractionModeRef,
     ]
   );
 
@@ -462,6 +566,8 @@ export function useTrackCanvasInteractions({
     onMouseLeave,
     onMouseMove,
     onMouseUp,
+    onTap,
+    onDblTap,
     onStageDragEnd,
     onStageDragMove,
     onStageDragStart,
