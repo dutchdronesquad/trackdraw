@@ -89,11 +89,13 @@ export const useEditor = create<EditorState>()(
         set((draft) => {
           let changed = false;
           for (const id of ids) {
-            const idx = draft.design.shapes.findIndex((shape) => shape.id === id);
+            const idx = draft.design.shapes.findIndex(
+              (shape) => shape.id === id
+            );
             if (idx === -1) continue;
             const shape = draft.design.shapes[idx];
             if (shape.kind === "polyline" || shape.locked) continue;
-            shape.rotation = ((shape.rotation + delta) % 360 + 360) % 360;
+            shape.rotation = (((shape.rotation + delta) % 360) + 360) % 360;
             changed = true;
           }
           if (changed) {

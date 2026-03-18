@@ -253,7 +253,7 @@ export function EditorMobilePanels({
                 <p className="text-[8px] font-medium tracking-[0.08em] text-white/52 uppercase">
                   {mobileStatusTitle}
                 </p>
-                <p className="max-w-full text-[10px] font-semibold leading-tight text-white">
+                <p className="max-w-full text-[10px] leading-tight font-semibold text-white">
                   {mobileStatusValue}
                 </p>
               </div>
@@ -298,7 +298,7 @@ export function EditorMobilePanels({
           >
             <div className="flex items-center justify-between gap-3 px-1 pb-2">
               <div className="min-w-0">
-                <p className="truncate text-[11px] font-semibold tracking-[0.08em] uppercase text-white/92">
+                <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
                   {selectedCount > 0
                     ? `${selectedCount} selected`
                     : "Multi-select"}
