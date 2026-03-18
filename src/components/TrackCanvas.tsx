@@ -560,8 +560,8 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           360;
         const normalizedRotation =
           "altKey" in event && event.altKey
-          ? Math.round(nextRotation)
-          : Math.round(nextRotation / 5) * 5;
+            ? Math.round(nextRotation)
+            : Math.round(nextRotation / 5) * 5;
 
         updateShape(rotationSession.shapeId, {
           rotation: ((normalizedRotation % 360) + 360) % 360,

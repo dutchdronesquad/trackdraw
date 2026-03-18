@@ -70,14 +70,14 @@ export function EditorMobilePanels({
     subtitle?: string,
     tone: "default" | "brand" = "default"
   ) => (
-    <div className="shrink-0 border-b border-border/50 bg-background/96 backdrop-blur-sm">
+    <div className="border-border/50 bg-background/96 shrink-0 border-b backdrop-blur-sm">
       <div className="flex items-center justify-center pt-2.5 pb-2">
         <div
           className={cn(
             "h-1 rounded-full",
             tone === "brand"
-              ? "w-10 bg-brand-primary/18"
-              : "w-8 bg-muted-foreground/18"
+              ? "bg-brand-primary/18 w-10"
+              : "bg-muted-foreground/18 w-8"
           )}
         />
       </div>
@@ -161,9 +161,7 @@ export function EditorMobilePanels({
             if (!open) onCloseInspector();
           }}
         >
-          <DrawerContent
-            className="max-h-[72dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border border-border/60 bg-background shadow-[0_-18px_40px_rgba(0,0,0,0.18)] [overscroll-behavior:contain] [&>div:first-child]:hidden lg:hidden"
-          >
+          <DrawerContent className="border-border/60 bg-background max-h-[72dvh] gap-0 overflow-hidden [overscroll-behavior:contain] rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader("Inspector", "Selection properties", "brand")}
             <div className="min-h-0 flex-1 overflow-hidden [overscroll-behavior:contain]">
               <Inspector />
@@ -179,10 +177,12 @@ export function EditorMobilePanels({
           modal
           onOpenChange={onSetMobileToolsOpen}
         >
-          <DrawerContent
-            className="max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border border-border/60 bg-background shadow-[0_-18px_40px_rgba(0,0,0,0.18)] [&>div:first-child]:hidden lg:hidden"
-          >
-            {mobileDrawerHeader("Tools", "Drawing, view and project actions", "brand")}
+          <DrawerContent className="border-border/60 bg-background max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
+            {mobileDrawerHeader(
+              "Tools",
+              "Drawing, view and project actions",
+              "brand"
+            )}
 
             <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
               <div>
@@ -217,7 +217,7 @@ export function EditorMobilePanels({
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
                   View
                 </p>
-                <div className="flex items-center gap-1.5 rounded-[1rem] border border-border/50 bg-muted/18 p-1">
+                <div className="border-border/50 bg-muted/18 flex items-center gap-1.5 rounded-[1rem] border p-1">
                   {(["2d", "3d"] as const).map((nextTab) => (
                     <button
                       key={nextTab}
@@ -260,7 +260,7 @@ export function EditorMobilePanels({
                     <button
                       key={actionItem.label}
                       onClick={actionItem.action}
-                      className="flex flex-col items-center gap-1.5 rounded-[1rem] border border-border/50 bg-muted/18 px-2 py-3 text-muted-foreground transition-all hover:bg-muted/28 hover:text-foreground"
+                      className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex flex-col items-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all"
                     >
                       {index === 0 ? <FilePlus className="size-5" /> : null}
                       {index === 1 ? <FolderOpen className="size-5" /> : null}
@@ -284,16 +284,14 @@ export function EditorMobilePanels({
           modal
           onOpenChange={onSetReadOnlyMenuOpen}
         >
-          <DrawerContent
-            className="max-h-[60dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border border-border/60 bg-background shadow-[0_-18px_40px_rgba(0,0,0,0.18)] [&>div:first-child]:hidden lg:hidden"
-          >
+          <DrawerContent className="border-border/60 bg-background max-h-[60dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader("View", "Switch mode or share this track")}
             <div className="space-y-5 px-4 pb-4">
               <div>
                 <p className="text-muted-foreground/60 mb-2 text-[10px] font-semibold tracking-widest uppercase">
                   View mode
                 </p>
-                <div className="flex items-center gap-1.5 rounded-[1rem] border border-border/50 bg-muted/18 p-1">
+                <div className="border-border/50 bg-muted/18 flex items-center gap-1.5 rounded-[1rem] border p-1">
                   {(["2d", "3d"] as const).map((nextTab) => (
                     <button
                       key={nextTab}
@@ -321,7 +319,7 @@ export function EditorMobilePanels({
                   onClick={onShare}
                   className={cn(
                     buttonVariants({ variant: "outline", size: "sm" }),
-                    "h-10 w-full gap-2 border-border/60 bg-muted/12 hover:bg-muted/24"
+                    "border-border/60 bg-muted/12 hover:bg-muted/24 h-10 w-full gap-2"
                   )}
                 >
                   <Share2 className="size-4" />
