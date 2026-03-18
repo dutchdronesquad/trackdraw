@@ -54,6 +54,9 @@ export function useTrackCanvasShortcuts({
   updateShape,
 }: TrackCanvasShortcutsParams) {
   useEffect(() => {
+    const normalizeRotation = (rotation: number) =>
+      ((rotation % 360) + 360) % 360;
+
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (isTypingInInput(target)) return;
@@ -115,6 +118,19 @@ export function useTrackCanvasShortcuts({
               ? step
               : 0;
         nudgeShapes(selection, dx, dy);
+        return;
+      }
+
+      if ((event.key === "[" || event.key === "]") && selection.length > 0) {
+        event.preventDefault();
+        const delta = event.key === "[" ? -15 : 15;
+        for (const id of selection) {
+          const shape = designShapes.find((candidate) => candidate.id === id);
+          if (!shape || shape.locked) continue;
+          updateShape(id, {
+            rotation: normalizeRotation((shape.rotation ?? 0) + delta),
+          });
+        }
         return;
       }
 

@@ -131,16 +131,15 @@ export default function Toolbar({
           <SidebarContent className="gap-0 py-2">
             {toolbarToolGroups.map((group, gi) => (
               <SidebarGroup key={gi} className="px-2 py-0">
-                {gi > 0 &&
-                  (collapsed ? (
-                    <SidebarSeparator className="my-2" />
-                  ) : group.title ? (
-                    <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[10px] tracking-widest uppercase">
-                      {group.title}
-                    </SidebarGroupLabel>
-                  ) : (
-                    <div className="h-2" />
-                  ))}
+                {collapsed && gi > 0 ? (
+                  <SidebarSeparator className="my-2" />
+                ) : !collapsed && group.title ? (
+                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[10px] tracking-widest uppercase">
+                    {group.title}
+                  </SidebarGroupLabel>
+                ) : gi > 0 ? (
+                  <div className="h-2" />
+                ) : null}
                 <SidebarMenu className="space-y-1">
                   {group.tools.map((tool) => {
                     const active = tool.id === activeTool;

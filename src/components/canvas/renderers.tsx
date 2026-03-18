@@ -197,6 +197,115 @@ export function FieldLayerContent({
   );
 }
 
+export function RotationGuideOverlay({
+  isDark,
+  onRotateStart,
+  showAngleLabel = false,
+  rotationGuide,
+}: {
+  isDark: boolean;
+  onRotateStart: (event: KonvaEventObject<MouseEvent>) => void;
+  showAngleLabel?: boolean;
+  rotationGuide: {
+    angleDeg: number;
+    center: { x: number; y: number };
+    label: string;
+    radius: number;
+  } | null;
+}) {
+  if (!rotationGuide) return null;
+
+  const angleRad = (rotationGuide.angleDeg * Math.PI) / 180;
+  const handleX =
+    rotationGuide.center.x + Math.cos(angleRad) * rotationGuide.radius;
+  const handleY =
+    rotationGuide.center.y + Math.sin(angleRad) * rotationGuide.radius;
+  const handleOuterX =
+    rotationGuide.center.x + Math.cos(angleRad) * (rotationGuide.radius + 14);
+  const handleOuterY =
+    rotationGuide.center.y + Math.sin(angleRad) * (rotationGuide.radius + 14);
+  const labelOffsetX = Math.cos(angleRad) * 32;
+  const labelOffsetY = Math.sin(angleRad) * 32;
+
+  return (
+    <>
+      <Circle
+        x={rotationGuide.center.x}
+        y={rotationGuide.center.y}
+        radius={rotationGuide.radius}
+        stroke="#60a5fa"
+        strokeWidth={4}
+        opacity={0.95}
+        listening={false}
+      />
+      <Line
+        points={[
+          handleX,
+          handleY,
+          handleOuterX,
+          handleOuterY,
+        ]}
+        stroke="#60a5fa"
+        strokeWidth={2}
+        opacity={0.85}
+        listening={false}
+      />
+      <Circle
+        x={handleOuterX}
+        y={handleOuterY}
+        radius={11}
+        fill="#60a5fa"
+        opacity={0.001}
+        onMouseDown={onRotateStart}
+      />
+      <Circle
+        x={handleOuterX}
+        y={handleOuterY}
+        radius={6}
+        fill="#60a5fa"
+        stroke={isDark ? "#08111b" : "#ffffff"}
+        strokeWidth={2}
+        opacity={0.98}
+        onMouseDown={onRotateStart}
+      />
+      {showAngleLabel && (
+        <Group x={handleOuterX + labelOffsetX} y={handleOuterY + labelOffsetY}>
+          <Rect
+            x={-24}
+            y={-13}
+            width={48}
+            height={26}
+            cornerRadius={13}
+            fill="#020617"
+            stroke="#60a5fa"
+            strokeWidth={1.5}
+            shadowColor="#000000"
+            shadowBlur={10}
+            shadowOpacity={0.18}
+            shadowOffsetY={2}
+            opacity={0.98}
+            listening={false}
+          />
+          <Text
+            text={rotationGuide.label}
+            x={-24}
+            y={-13}
+            width={48}
+            height={26}
+            verticalAlign="middle"
+            fontSize={12}
+            fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+            fontStyle="bold"
+            fill="#eff6ff"
+            align="center"
+            listening={false}
+          />
+        </Group>
+      )}
+    </>
+  );
+}
+
 interface TrackShapeNodeProps {
   allowInteraction: boolean;
   designPpm: number;

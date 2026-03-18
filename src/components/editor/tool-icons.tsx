@@ -114,7 +114,7 @@ function buildToolEntry(tool: EditorTool, iconClassName: string): ToolEntry {
 
 export const toolbarToolGroups: ToolGroup[] = [
   {
-    title: "",
+    title: "Mode",
     tools: [
       buildToolEntry("select", "size-[14px]"),
       buildToolEntry("grab", "size-[14px]"),

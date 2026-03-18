@@ -71,6 +71,7 @@ const shortcutSections = [
       { label: "Delete selected items", keys: ["Backspace/Delete"] },
       { label: "Nudge selected items", keys: ["Arrow Keys"] },
       { label: "Fine nudge", keys: ["Alt", "Arrow Keys"] },
+      { label: "Rotate selected items", keys: ["[", "]"] },
     ],
   },
   {

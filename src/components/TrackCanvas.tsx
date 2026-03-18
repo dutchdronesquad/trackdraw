@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
@@ -23,6 +24,7 @@ import {
 import { useTrackCanvasInteractions } from "@/components/canvas/useTrackCanvasInteractions";
 import {
   FieldLayerContent,
+  RotationGuideOverlay,
   TrackShapeNode,
 } from "@/components/canvas/renderers";
 import { useTrackCanvasShortcuts } from "@/components/canvas/useTrackCanvasShortcuts";
@@ -30,7 +32,7 @@ import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewpo
 import { useEditor } from "@/store/editor";
 import { m2px } from "@/lib/units";
 import { zRangeForDesign } from "@/lib/alt";
-import type { PolylinePoint } from "@/lib/types";
+import type { PolylinePoint, Shape } from "@/lib/types";
 import { distance2D } from "@/lib/geometry";
 import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
@@ -72,6 +74,59 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       hoveredWaypoint,
     } = useEditor();
 
+    const estimateRotationGuideRadiusPx = useCallback(
+      (shape: Shape) => {
+        switch (shape.kind) {
+          case "gate": {
+            const width = m2px(shape.width, design.field.ppm);
+            const depth = m2px(shape.thick ?? 0.2, design.field.ppm);
+            return Math.max(width, depth) / 2 + 18;
+          }
+          case "flag": {
+            const radius = m2px(shape.radius, design.field.ppm);
+            const poleVisible = Math.min(
+              m2px(shape.poleHeight ?? 3.5, design.field.ppm),
+              m2px(1, design.field.ppm)
+            );
+            const flagWidth = poleVisible * 0.42;
+            const flagHeight = poleVisible * 1.5;
+            return Math.max(radius * 2, flagWidth, flagHeight) / 2 + 18;
+          }
+          case "cone":
+            return m2px(shape.radius, design.field.ppm) + 18;
+          case "label": {
+            const fontSize = shape.fontSize ?? 18;
+            const labelWidth = Math.max(shape.text.length * fontSize * 0.45, 48);
+            return Math.max(labelWidth, fontSize + 12) / 2 + 18;
+          }
+          case "startfinish": {
+            const totalWidth = m2px(shape.width ?? 3, design.field.ppm);
+            const spacing = totalWidth / 4;
+            const padWidth = spacing * 0.78;
+            const padDepth = padWidth * 1.2;
+            return Math.max(totalWidth, padDepth) / 2 + 18;
+          }
+          case "checkpoint": {
+            const width = m2px(shape.width ?? 3, design.field.ppm);
+            const depth = m2px(0.12, design.field.ppm);
+            return Math.max(width, depth) / 2 + 18;
+          }
+          case "ladder": {
+            const width = m2px(shape.width ?? 1.5, design.field.ppm);
+            const depth = m2px(shape.height ?? 4.5, design.field.ppm);
+            return Math.max(width, depth) / 2 + 18;
+          }
+          case "divegate": {
+            const size = m2px(shape.size ?? 2.8, design.field.ppm);
+            return size / 2 + 18;
+          }
+          case "polyline":
+            return 0;
+        }
+      },
+      [design.field.ppm]
+    );
+
     const stageRef = useRef<KonvaStage | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const shapeRefs = useRef<Record<string, KonvaGroup | null>>({});
@@ -104,6 +159,12 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       y: 0,
       scale: 1,
     });
+    const [rotationSession, setRotationSession] = useState<{
+      center: { x: number; y: number };
+      shapeId: string;
+      startAngle: number;
+      startRotation: number;
+    } | null>(null);
     const hasManualViewRef = useRef(false);
     const isDark = useTheme() === "dark";
 
@@ -113,6 +174,30 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       [selection.length, activeTool, vertexSel]
     );
     const effectiveSelectionFrame = selection.length ? selectionFrame : null;
+    const singleSelectedShape = useMemo(
+      () =>
+        selection.length === 1
+          ? design.shapes.find((shape) => shape.id === selection[0]) ?? null
+          : null,
+      [design.shapes, selection]
+    );
+    const rotationGuide = useMemo(() => {
+      if (!singleSelectedShape || singleSelectedShape.kind === "polyline") {
+        return null;
+      }
+
+      const center = {
+        x: m2px(singleSelectedShape.x, design.field.ppm),
+        y: m2px(singleSelectedShape.y, design.field.ppm),
+      };
+
+      return {
+        angleDeg: singleSelectedShape.rotation - 90,
+        center,
+        label: `${Math.round(singleSelectedShape.rotation)}°`,
+        radius: estimateRotationGuideRadiusPx(singleSelectedShape),
+      };
+    }, [design.field.ppm, estimateRotationGuideRadiusPx, singleSelectedShape]);
 
     const syncTransform = useCallback(() => {
       const s = stageRef.current;
@@ -433,6 +518,54 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       };
     }, [cursor, stepPx, activeTool]);
 
+    useEffect(() => {
+      if (!rotationSession) return;
+
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      const handlePointerMove = (event: MouseEvent) => {
+        stage.setPointersPositions(event);
+        const pointer = stage.getRelativePointerPosition();
+        if (!pointer) return;
+
+        const currentAngle =
+          (Math.atan2(
+            pointer.y - rotationSession.center.y,
+            pointer.x - rotationSession.center.x
+          ) *
+            180) /
+          Math.PI;
+        const nextRotation =
+          ((rotationSession.startRotation +
+            currentAngle -
+            rotationSession.startAngle +
+            90) %
+            360 +
+            360) %
+          360;
+        const normalizedRotation = event.altKey
+          ? nextRotation
+          : Math.round(nextRotation / 5) * 5;
+
+        updateShape(rotationSession.shapeId, {
+          rotation: ((normalizedRotation % 360) + 360) % 360,
+        });
+      };
+
+      const handlePointerUp = () => {
+        setRotationSession(null);
+      };
+
+      window.addEventListener("mousemove", handlePointerMove);
+      window.addEventListener("mouseup", handlePointerUp);
+
+      return () => {
+        window.removeEventListener("mousemove", handlePointerMove);
+        window.removeEventListener("mouseup", handlePointerUp);
+      };
+    }, [rotationSession, updateShape]);
+
     return (
       <div
         ref={containerRef}
@@ -499,18 +632,20 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         >
           {/* Infinite grid + field boundary layer */}
           <Layer listening={false}>
-            <FieldLayerContent
-              designField={design.field}
-              effectiveSelectionFrame={effectiveSelectionFrame}
-              grid={grid}
-              heightPx={heightPx}
-              hoverCell={hoverCell}
-              isDark={isDark}
-              marqueeRect={marqueeRect}
-              stepPx={stepPx}
-              widthPx={widthPx}
-            />
-          </Layer>
+              <FieldLayerContent
+                designField={design.field}
+                effectiveSelectionFrame={
+                  selection.length > 1 ? effectiveSelectionFrame : null
+                }
+                grid={grid}
+                heightPx={heightPx}
+                hoverCell={hoverCell}
+                isDark={isDark}
+                marqueeRect={marqueeRect}
+                stepPx={stepPx}
+                widthPx={widthPx}
+              />
+            </Layer>
 
           {/* Shapes layer */}
           <Layer>
@@ -542,7 +677,48 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                 />
               );
             })}
+          </Layer>
 
+          {!readOnly && activeTool === "select" && (
+            <Layer>
+              <RotationGuideOverlay
+                isDark={isDark}
+                onRotateStart={(event) => {
+                  if (
+                    !singleSelectedShape ||
+                    singleSelectedShape.locked ||
+                    !rotationGuide
+                  ) {
+                    return;
+                  }
+
+                  event.cancelBubble = true;
+                  const stage = stageRef.current;
+                  const pointer = stage?.getRelativePointerPosition();
+                  if (!pointer) return;
+
+                  const startAngle =
+                    (Math.atan2(
+                      pointer.y - rotationGuide.center.y,
+                      pointer.x - rotationGuide.center.x
+                    ) *
+                      180) /
+                    Math.PI;
+
+                  setRotationSession({
+                    center: rotationGuide.center,
+                    shapeId: singleSelectedShape.id,
+                    startAngle,
+                    startRotation: singleSelectedShape.rotation - 90,
+                  });
+                }}
+                rotationGuide={rotationGuide}
+                showAngleLabel={rotationSession !== null}
+              />
+            </Layer>
+          )}
+
+          <Layer>
             {/* Snap-to-element indicator (polyline drawing mode) */}
             {snapTarget &&
               activeTool === "polyline" &&
