@@ -96,7 +96,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             return m2px(shape.radius, design.field.ppm) + 18;
           case "label": {
             const fontSize = shape.fontSize ?? 18;
-            const labelWidth = Math.max(shape.text.length * fontSize * 0.45, 48);
+            const labelWidth = Math.max(
+              shape.text.length * fontSize * 0.45,
+              48
+            );
             return Math.max(labelWidth, fontSize + 12) / 2 + 18;
           }
           case "startfinish": {
@@ -177,7 +180,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const singleSelectedShape = useMemo(
       () =>
         selection.length === 1
-          ? design.shapes.find((shape) => shape.id === selection[0]) ?? null
+          ? (design.shapes.find((shape) => shape.id === selection[0]) ?? null)
           : null,
       [design.shapes, selection]
     );
@@ -537,11 +540,11 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             180) /
           Math.PI;
         const nextRotation =
-          ((rotationSession.startRotation +
+          (((rotationSession.startRotation +
             currentAngle -
             rotationSession.startAngle +
             90) %
-            360 +
+            360) +
             360) %
           360;
         const normalizedRotation = event.altKey
@@ -632,20 +635,20 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         >
           {/* Infinite grid + field boundary layer */}
           <Layer listening={false}>
-              <FieldLayerContent
-                designField={design.field}
-                effectiveSelectionFrame={
-                  selection.length > 1 ? effectiveSelectionFrame : null
-                }
-                grid={grid}
-                heightPx={heightPx}
-                hoverCell={hoverCell}
-                isDark={isDark}
-                marqueeRect={marqueeRect}
-                stepPx={stepPx}
-                widthPx={widthPx}
-              />
-            </Layer>
+            <FieldLayerContent
+              designField={design.field}
+              effectiveSelectionFrame={
+                selection.length > 1 ? effectiveSelectionFrame : null
+              }
+              grid={grid}
+              heightPx={heightPx}
+              hoverCell={hoverCell}
+              isDark={isDark}
+              marqueeRect={marqueeRect}
+              stepPx={stepPx}
+              widthPx={widthPx}
+            />
+          </Layer>
 
           {/* Shapes layer */}
           <Layer>

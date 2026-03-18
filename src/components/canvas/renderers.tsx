@@ -239,12 +239,7 @@ export function RotationGuideOverlay({
         listening={false}
       />
       <Line
-        points={[
-          handleX,
-          handleY,
-          handleOuterX,
-          handleOuterY,
-        ]}
+        points={[handleX, handleY, handleOuterX, handleOuterY]}
         stroke="#60a5fa"
         strokeWidth={2}
         opacity={0.85}

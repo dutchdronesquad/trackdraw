@@ -684,14 +684,20 @@ function Shape3D({
     case "startfinish":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <StartFinish3D shape={shape as StartFinishShape} selected={isSelected} />
+          <StartFinish3D
+            shape={shape as StartFinishShape}
+            selected={isSelected}
+          />
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "checkpoint":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <Checkpoint3D shape={shape as CheckpointShape} selected={isSelected} />
+          <Checkpoint3D
+            shape={shape as CheckpointShape}
+            selected={isSelected}
+          />
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
