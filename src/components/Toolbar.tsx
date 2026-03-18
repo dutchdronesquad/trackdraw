@@ -3,7 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useEditor, type EditorTool } from "@/store/editor";
+import {
+  bottomActions,
+  toolbarToolGroups,
+} from "@/components/editor/tool-icons";
 import { useTheme } from "@/hooks/useTheme";
 import {
   Tooltip,
@@ -35,67 +38,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
-import {
-  MousePointer2,
-  Hand,
-  Flag,
-  Triangle,
-  Type,
-  Spline,
-  FolderOpen,
-  Download,
-  FilePlus,
-  Target,
-} from "lucide-react";
+import { useEditor } from "@/store/editor";
 import { useState } from "react";
-
-function GateIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      className={className}
-    >
-      <line x1="2.5" y1="13" x2="2.5" y2="2.5" />
-      <line x1="11.5" y1="13" x2="11.5" y2="2.5" />
-      <line x1="2.5" y1="2.5" x2="11.5" y2="2.5" />
-    </svg>
-  );
-}
-function LadderIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <polyline points="2.5,7 2.5,1.5 11.5,1.5 11.5,7" />
-      <polyline points="2.5,12.5 2.5,7 11.5,7 11.5,12.5" />
-    </svg>
-  );
-}
-function DiveGateIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect x="2" y="2" width="10" height="10" rx="0.5" />
-    </svg>
-  );
-}
 
 function TrackDrawIcon({ className }: { className?: string }) {
   return (
@@ -125,113 +69,6 @@ function TrackDrawIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-type ToolEntry = {
-  id: EditorTool;
-  label: string;
-  shortcut: string;
-  icon: React.ReactNode;
-};
-type ToolGroup = { title: string; tools: ToolEntry[] };
-
-const toolGroups: ToolGroup[] = [
-  {
-    title: "",
-    tools: [
-      {
-        id: "select",
-        label: "Select",
-        shortcut: "V",
-        icon: <MousePointer2 className="size-[14px]" />,
-      },
-      {
-        id: "grab",
-        label: "Grab",
-        shortcut: "H",
-        icon: <Hand className="size-[14px]" />,
-      },
-    ],
-  },
-  {
-    title: "Track",
-    tools: [
-      {
-        id: "gate",
-        label: "Gate",
-        shortcut: "G",
-        icon: <GateIcon className="size-[14px]" />,
-      },
-      {
-        id: "ladder",
-        label: "Ladder",
-        shortcut: "R",
-        icon: <LadderIcon className="size-[14px]" />,
-      },
-      {
-        id: "divegate",
-        label: "Dive Gate",
-        shortcut: "D",
-        icon: <DiveGateIcon className="size-[14px]" />,
-      },
-      {
-        id: "flag",
-        label: "Flag",
-        shortcut: "F",
-        icon: <Flag className="size-[14px]" />,
-      },
-      {
-        id: "cone",
-        label: "Cone",
-        shortcut: "C",
-        icon: <Triangle className="size-[14px]" />,
-      },
-    ],
-  },
-  {
-    title: "Extra",
-    tools: [
-      {
-        id: "startfinish",
-        label: "Start Pads",
-        shortcut: "S",
-        icon: <Target className="size-[14px]" />,
-      },
-      {
-        id: "label",
-        label: "Label",
-        shortcut: "L",
-        icon: <Type className="size-[14px]" />,
-      },
-      {
-        id: "polyline",
-        label: "Path",
-        shortcut: "P",
-        icon: <Spline className="size-[14px]" />,
-      },
-    ],
-  },
-];
-
-const bottomActions = [
-  {
-    label: "New",
-    tooltip: "New project",
-    icon: <FilePlus className="size-[14px]" />,
-    action: "new" as const,
-  },
-  {
-    label: "Open",
-    tooltip: "Open project",
-    icon: <FolderOpen className="size-[14px]" />,
-    action: "import" as const,
-  },
-  {
-    label: "Export",
-    tooltip: "Export track",
-    icon: <Download className="size-[14px]" />,
-    action: "export" as const,
-  },
-];
 
 interface ToolbarProps {
   onImport: () => void;
@@ -292,7 +129,7 @@ export default function Toolbar({
           </SidebarHeader>
 
           <SidebarContent className="gap-0 py-2">
-            {toolGroups.map((group, gi) => (
+            {toolbarToolGroups.map((group, gi) => (
               <SidebarGroup key={gi} className="px-2 py-0">
                 {gi > 0 &&
                   (collapsed ? (
@@ -309,7 +146,6 @@ export default function Toolbar({
                     const active = tool.id === activeTool;
                     const btn = (
                       <motion.div
-                        whileHover={{ y: -1 }}
                         whileTap={{ scale: 0.985 }}
                         transition={{ duration: 0.16, ease: "easeOut" }}
                       >
@@ -411,7 +247,6 @@ export default function Toolbar({
               {bottomActions.map(({ label, tooltip, icon, action }) => {
                 const btn = (
                   <motion.div
-                    whileHover={{ y: -1 }}
                     whileTap={{ scale: 0.985 }}
                     transition={{ duration: 0.16, ease: "easeOut" }}
                   >

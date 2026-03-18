@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useEditor } from "@/store/editor";
 import { elevationSamples, totalLength2D } from "@/lib/geometry";
+import { isPolylineShape } from "@/lib/shape-utils";
 import type { PolylineShape } from "@/lib/types";
 
 const VIEW_W = 400;
@@ -28,9 +29,9 @@ export default function ElevationChart() {
     const selected = design.shapes.find(
       (s) => selection.includes(s.id) && s.kind === "polyline"
     );
-    if (selected?.kind === "polyline") return selected as PolylineShape;
+    if (selected && isPolylineShape(selected)) return selected;
     const fallback = design.shapes.find((s) => s.kind === "polyline");
-    return fallback?.kind === "polyline" ? (fallback as PolylineShape) : null;
+    return fallback && isPolylineShape(fallback) ? fallback : null;
   }, [design.shapes, selection]);
 
   const chartData = useMemo(() => {

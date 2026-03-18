@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEditor, type EditorTool } from "@/store/editor";
+import { EditorMobilePanels } from "@/components/editor/EditorMobilePanels";
 import Header from "@/components/Header";
 import Toolbar from "@/components/Toolbar";
 import Inspector from "@/components/Inspector";
@@ -13,29 +13,8 @@ import ExportDialog from "@/components/ExportDialog";
 import ImportDialog from "@/components/ImportDialog";
 import TrackCanvas, { type TrackCanvasHandle } from "@/components/TrackCanvas";
 import type { TrackPreview3DHandle } from "@/components/TrackPreview3D";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Monitor,
-  Share2,
-  LayoutGrid,
-  MousePointer2,
-  Hand,
-  Flag,
-  Triangle,
-  Type,
-  Spline,
-  Target,
-  FolderOpen,
-  Download,
-  FilePlus,
-} from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { parseDesign } from "@/lib/design";
+import { useEditor } from "@/store/editor";
 
 const TrackPreview3D = dynamic(() => import("@/components/TrackPreview3D"), {
   ssr: false,
@@ -45,80 +24,6 @@ const TrackPreview3D = dynamic(() => import("@/components/TrackPreview3D"), {
     </div>
   ),
 });
-
-function GateIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      className={className}
-    >
-      <line x1="2.5" y1="13" x2="2.5" y2="2.5" />
-      <line x1="11.5" y1="13" x2="11.5" y2="2.5" />
-      <line x1="2.5" y1="2.5" x2="11.5" y2="2.5" />
-    </svg>
-  );
-}
-function DiveGateIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect x="2" y="2" width="10" height="10" rx="0.5" />
-    </svg>
-  );
-}
-function LadderIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 14 14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <polyline points="2.5,7 2.5,1.5 11.5,1.5 11.5,7" />
-      <polyline points="2.5,12.5 2.5,7 11.5,7 11.5,12.5" />
-    </svg>
-  );
-}
-
-const mobileTools: { id: EditorTool; icon: React.ReactNode; label: string }[] =
-  [
-    {
-      id: "select",
-      icon: <MousePointer2 className="size-5" />,
-      label: "Select",
-    },
-    { id: "grab", icon: <Hand className="size-5" />, label: "Grab" },
-    { id: "gate", icon: <GateIcon className="size-5" />, label: "Gate" },
-    { id: "ladder", icon: <LadderIcon className="size-5" />, label: "Ladder" },
-    {
-      id: "divegate",
-      icon: <DiveGateIcon className="size-5" />,
-      label: "Dive Gate",
-    },
-    {
-      id: "startfinish",
-      icon: <Target className="size-5" />,
-      label: "Start Pads",
-    },
-    { id: "flag", icon: <Flag className="size-5" />, label: "Flag" },
-    { id: "cone", icon: <Triangle className="size-5" />, label: "Cone" },
-    { id: "label", icon: <Type className="size-5" />, label: "Label" },
-    { id: "polyline", icon: <Spline className="size-5" />, label: "Path" },
-  ];
 
 export default function EditorShell({
   readOnly = false,
@@ -156,8 +61,8 @@ export default function EditorShell({
     try {
       const saved = localStorage.getItem("trackdraw-design");
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.shapes && parsed?.field) replaceDesign(parsed);
+        const parsed = parseDesign(JSON.parse(saved));
+        if (parsed) replaceDesign(parsed);
       }
     } catch {
       /* ignore */
@@ -274,317 +179,46 @@ export default function EditorShell({
           </div>
         </div>
 
-        {/* ── Read-only FAB ────────────────────────────────────── */}
-        {readOnly && (
-          <div className="absolute right-4 bottom-10 z-30 lg:hidden">
-            <motion.button
-              onClick={() => setReadOnlyMenuOpen(true)}
-              initial={{ opacity: 0, y: 10, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-sidebar border-border text-foreground hover:bg-muted flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-medium shadow-lg transition-colors"
-            >
-              <span className="tracking-wide uppercase">{tab}</span>
-              <LayoutGrid className="text-muted-foreground size-3.5" />
-            </motion.button>
-          </div>
-        )}
-
-        {/* ── Edit-mode FAB ────────────────────────────────────── */}
-        {!readOnly && mobileOverrideDismissed && (
-          <div className="absolute right-4 bottom-10 z-30 lg:hidden">
-            <motion.button
-              onClick={() => setMobileToolsOpen(true)}
-              initial={{ opacity: 0, y: 10, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-sidebar border-border text-foreground hover:bg-muted flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-medium shadow-lg transition-colors"
-              aria-label="Open tools"
-            >
-              <span className="tracking-wide capitalize">{activeTool}</span>
-              <LayoutGrid className="text-muted-foreground size-3.5" />
-            </motion.button>
-          </div>
-        )}
+        <EditorMobilePanels
+          activeTool={activeTool}
+          mobileInspectorOpen={mobileInspectorOpen}
+          mobileToolsOpen={mobileToolsOpen}
+          mobileOverrideDismissed={mobileOverrideDismissed}
+          readOnly={readOnly}
+          readOnlyMenuOpen={readOnlyMenuOpen}
+          tab={tab}
+          onCloseInspector={() => setMobileInspectorOpen(false)}
+          onDismissMobileOverride={() => setMobileOverrideDismissed(true)}
+          onOpenReadOnlyMenu={() => setReadOnlyMenuOpen(true)}
+          onOpenTools={() => setMobileToolsOpen(true)}
+          onSelectTool={(tool) => {
+            setSelection([]);
+            setActiveTool(tool);
+            setMobileToolsOpen(false);
+          }}
+          onSetMobileToolsOpen={setMobileToolsOpen}
+          onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
+          onShare={() => {
+            setShareOpen(true);
+            setReadOnlyMenuOpen(false);
+          }}
+          onStartNewProject={() => {
+            if (confirm("Start a new project? Unsaved changes will be lost.")) {
+              newProject();
+              setMobileToolsOpen(false);
+            }
+          }}
+          onImport={() => {
+            setImportOpen(true);
+            setMobileToolsOpen(false);
+          }}
+          onExport={() => {
+            setExportOpen(true);
+            setMobileToolsOpen(false);
+          }}
+          onTabChange={setTab}
+        />
       </div>
-
-      {/* ── Editor desktop-only overlay ──────────────────────── */}
-      {!readOnly && !mobileOverrideDismissed && (
-        <div className="bg-background fixed inset-0 z-[200] flex flex-col items-center justify-center gap-5 px-8 text-center lg:hidden">
-          <div className="border-border/60 bg-card rounded-2xl border p-5">
-            <Monitor className="text-muted-foreground/50 size-10" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold">Open on a larger screen</h2>
-            <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-              TrackDraw Studio is designed for desktop and tablet. Editing on a
-              phone is not fully supported.
-            </p>
-          </div>
-          <button
-            onClick={() => setMobileOverrideDismissed(true)}
-            className="text-muted-foreground/50 hover:text-muted-foreground mt-2 text-xs underline underline-offset-2 transition-colors"
-          >
-            Continue anyway
-          </button>
-        </div>
-      )}
-
-      {/* ── Mobile Inspector bottom sheet ────────────────────── */}
-      {!readOnly && (
-        <AnimatePresence>
-          {mobileInspectorOpen && (
-            <>
-              <motion.div
-                key="inspector-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-                onClick={() => setMobileInspectorOpen(false)}
-              />
-              <motion.div
-                key="inspector-panel"
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 30, stiffness: 350 }}
-                className="bg-card border-border fixed right-0 bottom-0 left-0 z-50 flex flex-col overflow-hidden rounded-t-2xl border-t lg:hidden"
-                style={{ maxHeight: "75dvh" }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setMobileInspectorOpen(false)}
-                  className="flex shrink-0 cursor-grab items-center justify-center pt-2 pb-1 active:cursor-grabbing"
-                  aria-label="Close inspector"
-                >
-                  <div className="bg-muted-foreground/30 h-1 w-8 rounded-full" />
-                </button>
-                <div className="min-h-0 flex-1 overflow-hidden">
-                  <Inspector />
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      )}
-
-      {/* ── Mobile tools Sheet ───────────────────────────────── */}
-      {!readOnly && (
-        <Sheet open={mobileToolsOpen} onOpenChange={setMobileToolsOpen}>
-          <SheetContent
-            side="bottom"
-            showCloseButton={false}
-            className="max-h-[85dvh] gap-0 rounded-t-2xl px-0 lg:hidden"
-          >
-            {/* Drawer handle */}
-            <button
-              type="button"
-              onClick={() => setMobileToolsOpen(false)}
-              className="flex shrink-0 cursor-grab items-center justify-center pt-2.5 pb-1 active:cursor-grabbing"
-              aria-label="Close tools"
-            >
-              <div className="bg-muted-foreground/25 h-1 w-8 rounded-full" />
-            </button>
-            <SheetHeader className="shrink-0 px-4 py-2">
-              <SheetTitle className="text-sm">Tools</SheetTitle>
-            </SheetHeader>
-
-            <div className="flex-1 space-y-4 overflow-y-auto px-4 pb-4">
-              {/* Tool grid */}
-              <div>
-                <p className="text-muted-foreground/60 mb-2 text-[10px] font-semibold tracking-widest uppercase">
-                  Drawing tools
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {mobileTools.map((tool) => {
-                    const active = activeTool === tool.id;
-                    return (
-                      <motion.button
-                        key={tool.id}
-                        onClick={() => {
-                          setSelection([]);
-                          setActiveTool(tool.id);
-                          setMobileToolsOpen(false);
-                        }}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        whileTap={{ scale: 0.97 }}
-                        transition={{
-                          duration: 0.16,
-                          ease: "easeOut",
-                          delay: 0.015 * mobileTools.indexOf(tool),
-                        }}
-                        className={cn(
-                          "flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 transition-all",
-                          active
-                            ? "bg-primary/15 border-primary/40 text-primary"
-                            : "bg-muted/30 border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                        )}
-                      >
-                        {tool.icon}
-                        <span className="text-[11px] leading-none font-medium">
-                          {tool.label}
-                        </span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 2D / 3D view switcher */}
-              <div>
-                <p className="text-muted-foreground/60 mb-2 text-[10px] font-semibold tracking-widest uppercase">
-                  View
-                </p>
-                <div className="border-border bg-muted/30 flex items-center gap-2 rounded-lg border p-0.5">
-                  {(["2d", "3d"] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => {
-                        setTab(t);
-                        setMobileToolsOpen(false);
-                      }}
-                      className={cn(
-                        "flex-1 rounded-md py-2 text-xs font-medium tracking-wide uppercase transition-colors",
-                        tab === t
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {t === "2d" ? "Canvas" : "3D Preview"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* File actions */}
-              <div>
-                <p className="text-muted-foreground/60 mb-2 text-[10px] font-semibold tracking-widest uppercase">
-                  Project
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    {
-                      icon: <FilePlus className="size-5" />,
-                      label: "New",
-                      action: () => {
-                        if (
-                          confirm(
-                            "Start a new project? Unsaved changes will be lost."
-                          )
-                        ) {
-                          newProject();
-                          setMobileToolsOpen(false);
-                        }
-                      },
-                    },
-                    {
-                      icon: <FolderOpen className="size-5" />,
-                      label: "Open",
-                      action: () => {
-                        setImportOpen(true);
-                        setMobileToolsOpen(false);
-                      },
-                    },
-                    {
-                      icon: <Download className="size-5" />,
-                      label: "Export",
-                      action: () => {
-                        setExportOpen(true);
-                        setMobileToolsOpen(false);
-                      },
-                    },
-                  ].map(({ icon, label, action }) => (
-                    <button
-                      key={label}
-                      onClick={action}
-                      className="bg-muted/30 border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/60 flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 transition-all"
-                    >
-                      {icon}
-                      <span className="text-[11px] leading-none font-medium">
-                        {label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      )}
-
-      {/* ── Read-only menu Sheet ─────────────────────────────── */}
-      {readOnly && (
-        <Sheet open={readOnlyMenuOpen} onOpenChange={setReadOnlyMenuOpen}>
-          <SheetContent
-            side="bottom"
-            showCloseButton={false}
-            className="max-h-[60dvh] gap-0 rounded-t-2xl px-0 lg:hidden"
-          >
-            <button
-              type="button"
-              onClick={() => setReadOnlyMenuOpen(false)}
-              className="flex shrink-0 cursor-grab items-center justify-center pt-2.5 pb-1 active:cursor-grabbing"
-              aria-label="Close menu"
-            >
-              <div className="bg-muted-foreground/25 h-1 w-8 rounded-full" />
-            </button>
-            <SheetHeader className="shrink-0 px-4 py-2">
-              <SheetTitle className="text-sm">View</SheetTitle>
-            </SheetHeader>
-            <div className="space-y-4 px-4 pb-4">
-              {/* 2D / 3D toggle */}
-              <div>
-                <p className="text-muted-foreground/60 mb-2 text-[10px] font-semibold tracking-widest uppercase">
-                  View mode
-                </p>
-                <div className="border-border bg-muted/30 flex items-center gap-2 rounded-lg border p-0.5">
-                  {(["2d", "3d"] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => {
-                        setTab(t);
-                        setReadOnlyMenuOpen(false);
-                      }}
-                      className={cn(
-                        "flex-1 rounded-md py-2.5 text-sm font-medium tracking-wide uppercase transition-colors",
-                        tab === t
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {t === "2d" ? "2D View" : "3D Preview"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Share */}
-              <div>
-                <p className="text-muted-foreground/60 mb-2 text-[10px] font-semibold tracking-widest uppercase">
-                  Share
-                </p>
-                <button
-                  onClick={() => {
-                    setShareOpen(true);
-                    setReadOnlyMenuOpen(false);
-                  }}
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "sm" }),
-                    "h-10 w-full gap-2"
-                  )}
-                >
-                  <Share2 className="size-4" />
-                  Share track
-                </button>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-      )}
 
       <ShareDialog open={shareOpen} onOpenChange={setShareOpen} />
       <ImportDialog open={importOpen} onOpenChange={setImportOpen} />

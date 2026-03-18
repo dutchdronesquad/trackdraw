@@ -2,7 +2,6 @@
 
 import {
   useCallback,
-  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
@@ -13,35 +12,32 @@ import {
 import {
   Stage,
   Layer,
-  Rect,
   Circle,
   Line,
-  Text,
   Group,
-  Arrow,
-  Shape as KonvaShape,
 } from "react-konva";
 import type { Vector2d } from "konva/lib/types";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
+import {
+  clamp,
+  mergeClientRects,
+  type CursorState,
+  type DraftPoint,
+  type RectLike,
+} from "@/components/canvas/shared";
+import { useTrackCanvasInteractions } from "@/components/canvas/useTrackCanvasInteractions";
+import {
+  FieldLayerContent,
+  TrackShapeNode,
+} from "@/components/canvas/renderers";
+import { useTrackCanvasShortcuts } from "@/components/canvas/useTrackCanvasShortcuts";
+import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewport";
 import { useEditor } from "@/store/editor";
-import { m2px, px2m } from "@/lib/units";
-import { zToColor, zRangeForDesign } from "@/lib/alt";
-import type { EditorTool } from "@/store/editor";
-import type {
-  PolylinePoint,
-  PolylineShape,
-  GateShape,
-  FlagShape,
-  ConeShape,
-  LabelShape,
-  StartFinishShape,
-  CheckpointShape,
-  LadderShape,
-  DiveGateShape,
-  Shape,
-} from "@/lib/types";
-import { distance2D, smoothPolyline } from "@/lib/geometry";
+import { m2px } from "@/lib/units";
+import { zRangeForDesign } from "@/lib/alt";
+import type { PolylinePoint } from "@/lib/types";
+import { distance2D } from "@/lib/geometry";
 import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -61,107 +57,6 @@ interface TrackCanvasProps {
   onSnapChange?: (active: boolean) => void;
   readOnly?: boolean;
 }
-
-interface DraftPoint {
-  x: number;
-  y: number;
-  z?: number;
-}
-
-interface CursorState {
-  rawMeters: { x: number; y: number };
-  snappedMeters: { x: number; y: number };
-  rawPx: { x: number; y: number };
-  snappedPx: { x: number; y: number };
-}
-
-interface RectLike {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-type ToolDefaults = {
-  gate: Pick<GateShape, "width" | "height" | "thick" | "color">;
-  flag: Pick<FlagShape, "radius" | "poleHeight" | "color">;
-  cone: Pick<ConeShape, "radius" | "color">;
-  label: Pick<LabelShape, "text" | "fontSize" | "color">;
-  startfinish: Pick<StartFinishShape, "width" | "color">;
-  checkpoint: Pick<CheckpointShape, "width" | "color">;
-  ladder: Pick<LadderShape, "width" | "height" | "rungs" | "color">;
-  divegate: Pick<
-    DiveGateShape,
-    "size" | "thick" | "tilt" | "elevation" | "color"
-  >;
-};
-
-const toolDefaults: ToolDefaults = {
-  gate: { width: 1.5, height: 1.5, thick: 0.2, color: "#3b82f6" },
-  flag: { radius: 0.25, poleHeight: 3.5, color: "#a855f7" },
-  cone: { radius: 0.2, color: "#f97316" },
-  label: { text: "Gate A", fontSize: 18, color: "#e2e8f0" },
-  startfinish: { width: 3.0, color: "#f59e0b" },
-  checkpoint: { width: 2.5, color: "#22c55e" },
-  ladder: { width: 1.5, height: 4.5, rungs: 3, color: "#f97316" },
-  divegate: {
-    size: 2.8,
-    thick: 0.2,
-    tilt: 0,
-    elevation: 3.0,
-    color: "#f97316",
-  },
-};
-
-const isTypingInInput = (target: HTMLElement | null) => {
-  if (!target) return false;
-  const tag = target.tagName;
-  return (
-    tag === "INPUT" ||
-    tag === "TEXTAREA" ||
-    target.isContentEditable ||
-    target.closest("[contenteditable=true]") !== null
-  );
-};
-
-// Module-level clipboard — no re-render needed on copy
-const clipboard: Shape[] = [];
-
-const MIN_MARQUEE_SIZE = 8;
-const clamp = (v: number, min: number, max: number) =>
-  Math.max(min, Math.min(max, v));
-
-const normalizeRect = (origin: Vector2d, next: Vector2d): RectLike => {
-  const w = next.x - origin.x;
-  const h = next.y - origin.y;
-  return {
-    x: w < 0 ? next.x : origin.x,
-    y: h < 0 ? next.y : origin.y,
-    width: Math.abs(w),
-    height: Math.abs(h),
-  };
-};
-
-const rectsIntersect = (a: RectLike, b: RectLike) =>
-  a.x < b.x + b.width &&
-  a.x + a.width > b.x &&
-  a.y < b.y + b.height &&
-  a.y + a.height > b.y;
-
-const mergeClientRects = (rects: RectLike[]): RectLike | null => {
-  if (!rects.length) return null;
-  let minX = rects[0].x,
-    minY = rects[0].y;
-  let maxX = rects[0].x + rects[0].width,
-    maxY = rects[0].y + rects[0].height;
-  for (let i = 1; i < rects.length; i++) {
-    minX = Math.min(minX, rects[i].x);
-    minY = Math.min(minY, rects[i].y);
-    maxX = Math.max(maxX, rects[i].x + rects[i].width);
-    maxY = Math.max(maxY, rects[i].y + rects[i].height);
-  }
-  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
-};
 
 const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
   function TrackCanvas(
@@ -224,8 +119,6 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       [selection.length, activeTool, vertexSel]
     );
     const effectiveSelectionFrame = selection.length ? selectionFrame : null;
-    const middlePanRef = useRef(false);
-    const middlePanLastRef = useRef({ x: 0, y: 0 });
 
     const syncTransform = useCallback(() => {
       const s = stageRef.current;
@@ -260,34 +153,6 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         };
       },
       [heightPx, stepPx, widthPx]
-    );
-
-    const SNAP_RADIUS_M = Math.max(1.0, design.field.gridStep * 1.5);
-
-    const pointerToMeters = useCallback(
-      (pointer: { x: number; y: number } | null, snap = true) => {
-        if (!pointer) return null;
-        const px = snap ? Math.round(pointer.x / stepPx) * stepPx : pointer.x;
-        const py = snap ? Math.round(pointer.y / stepPx) * stepPx : pointer.y;
-        const gridM = {
-          x: px2m(px, design.field.ppm),
-          y: px2m(py, design.field.ppm),
-        };
-        if (!snap) return gridM;
-        // Prefer snapping to a nearby shape center over grid
-        let nearest: { x: number; y: number } | null = null;
-        let minDist = SNAP_RADIUS_M;
-        for (const sh of design.shapes) {
-          if (sh.kind === "polyline") continue;
-          const dist = Math.sqrt((sh.x - gridM.x) ** 2 + (sh.y - gridM.y) ** 2);
-          if (dist < minDist) {
-            minDist = dist;
-            nearest = { x: sh.x, y: sh.y };
-          }
-        }
-        return nearest ?? gridM;
-      },
-      [design.field.ppm, stepPx, SNAP_RADIUS_M, design.shapes]
     );
 
     const fitFieldToViewport = useCallback(() => {
@@ -327,101 +192,6 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       [fitFieldToViewport, setManualView]
     );
 
-    const findSnapTarget = useCallback(
-      (meters: { x: number; y: number }) => {
-        let nearest: { x: number; y: number; id: string } | null = null;
-        let minDist = SNAP_RADIUS_M;
-        for (const s of design.shapes) {
-          if (s.kind === "polyline") continue;
-          const dist = Math.sqrt((s.x - meters.x) ** 2 + (s.y - meters.y) ** 2);
-          if (dist < minDist) {
-            minDist = dist;
-            nearest = { x: s.x, y: s.y, id: s.id };
-          }
-        }
-        return nearest;
-      },
-      [design.shapes, SNAP_RADIUS_M]
-    );
-
-    const createShapeForTool = useCallback(
-      (
-        tool: EditorTool,
-        point: { x: number; y: number }
-      ): Omit<Shape, "id"> | null => {
-        if (tool === "select" || tool === "polyline") return null;
-        switch (tool) {
-          case "gate":
-            return {
-              kind: "gate",
-              x: point.x,
-              y: point.y,
-              rotation: 0,
-              ...toolDefaults.gate,
-            };
-          case "flag":
-            return {
-              kind: "flag",
-              x: point.x,
-              y: point.y,
-              rotation: 0,
-              ...toolDefaults.flag,
-            };
-          case "cone":
-            return {
-              kind: "cone",
-              x: point.x,
-              y: point.y,
-              rotation: 0,
-              ...toolDefaults.cone,
-            };
-          case "label":
-            return {
-              kind: "label",
-              x: point.x,
-              y: point.y,
-              rotation: 0,
-              ...toolDefaults.label,
-            };
-          case "startfinish":
-            return {
-              kind: "startfinish",
-              x: point.x,
-              y: point.y,
-              rotation: 0,
-              ...toolDefaults.startfinish,
-            };
-          case "checkpoint":
-            return {
-              kind: "checkpoint",
-              x: point.x,
-              y: point.y,
-              rotation: 0,
-              ...toolDefaults.checkpoint,
-            };
-          case "ladder":
-            return {
-              kind: "ladder",
-              x: point.x,
-              y: point.y,
-              rotation: 0,
-              ...toolDefaults.ladder,
-            };
-          case "divegate":
-            return {
-              kind: "divegate",
-              x: point.x,
-              y: point.y,
-              rotation: 0,
-              ...toolDefaults.divegate,
-            };
-          default:
-            return null;
-        }
-      },
-      []
-    );
-
     const finalizePath = useCallback(() => {
       if (draftPath.length < 2) {
         setDraftPath([]);
@@ -442,156 +212,19 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         showArrows: true,
         smooth: true,
         color: "#3b82f6",
-      } as Omit<Shape, "id">);
+      });
       setSelection([id]);
       setVertexSel(null);
       setDraftPath([]);
       setActiveTool("select");
     }, [addShape, draftPath, setActiveTool, setSelection]);
 
-    useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        const target = e.target as HTMLElement | null;
-        if (isTypingInInput(target)) return;
-
-        const meta = e.ctrlKey || e.metaKey;
-
-        // Cmd+D — duplicate
-        if (meta && e.key === "d") {
-          e.preventDefault();
-          if (selection.length) duplicateShapes(selection);
-          return;
-        }
-
-        // Cmd+C — copy
-        if (meta && e.key === "c") {
-          e.preventDefault();
-          clipboard.splice(
-            0,
-            clipboard.length,
-            ...design.shapes.filter((s) => selection.includes(s.id))
-          );
-          return;
-        }
-
-        // Cmd+V — paste
-        if (meta && e.key === "v") {
-          e.preventDefault();
-          if (!clipboard.length) return;
-          const newIds: string[] = [];
-          clipboard.forEach((s) => {
-            const { id: _id, ...rest } = s;
-            const newId = addShape({ ...rest, x: s.x + 1, y: s.y + 1 } as Omit<
-              Shape,
-              "id"
-            >);
-            newIds.push(newId);
-          });
-          setSelection(newIds);
-          return;
-        }
-
-        // Arrow key nudge
-        if (
-          ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) &&
-          selection.length > 0 &&
-          activeTool === "select"
-        ) {
-          e.preventDefault();
-          const step = e.altKey ? 0.1 : design.field.gridStep;
-          const dx =
-            e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
-          const dy =
-            e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
-          nudgeShapes(selection, dx, dy);
-          return;
-        }
-
-        // 0 — fit field to viewport
-        if (e.key === "0" && !meta) {
-          e.preventDefault();
-          setManualView(false);
-          fitFieldToViewport();
-          return;
-        }
-
-        const key = e.key;
-        if (key === "Escape") {
-          if (draftPath.length) setDraftPath([]);
-          else {
-            setSelection([]);
-            setVertexSel(null);
-            setActiveTool("select");
-          }
-        }
-        if (key === "Enter" && draftPath.length >= 2) finalizePath();
-        if (key === "Backspace" || key === "Delete") {
-          if (draftPath.length && activeTool === "polyline") {
-            setDraftPath((prev) => prev.slice(0, Math.max(0, prev.length - 1)));
-            return;
-          }
-          if (effectiveVertexSel) {
-            const s = design.shapes.find(
-              (sh) => sh.id === effectiveVertexSel.shapeId
-            );
-            if (s?.kind === "polyline") {
-              const polyline = s as PolylineShape;
-              const pts = [...polyline.points];
-              if (pts.length > 2) {
-                pts.splice(effectiveVertexSel.idx, 1);
-                updateShape(s.id, { points: pts });
-              }
-            }
-            setVertexSel(null);
-            return;
-          }
-          if (selection.length) removeShapes(selection);
-        }
-
-        const lower = key.toLowerCase();
-        switch (lower) {
-          case "v":
-            setActiveTool("select");
-            break;
-          case "h":
-            setActiveTool("grab");
-            break;
-          case "g":
-            setActiveTool("gate");
-            break;
-          case "f":
-            setActiveTool("flag");
-            break;
-          case "c":
-            if (!meta) setActiveTool("cone");
-            break;
-          case "l":
-            setActiveTool("label");
-            break;
-          case "p":
-            setActiveTool("polyline");
-            break;
-          case "s":
-            if (!meta) setActiveTool("startfinish");
-            break;
-          case "r":
-            setActiveTool("ladder");
-            break;
-          case "d":
-            if (!meta) setActiveTool("divegate");
-            break;
-        }
-      };
-      window.addEventListener("keydown", handleKeyDown, { passive: false });
-      return () => {
-        window.removeEventListener("keydown", handleKeyDown);
-      };
-    }, [
+    useTrackCanvasShortcuts({
       activeTool,
       addShape,
-      design.field.gridStep,
-      design.shapes,
-      draftPath.length,
+      designFieldGridStep: design.field.gridStep,
+      designShapes: design.shapes,
+      draftPath,
       duplicateShapes,
       effectiveVertexSel,
       finalizePath,
@@ -602,71 +235,62 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       setActiveTool,
       setManualView,
       setSelection,
+      setDraftPath,
+      setVertexSel,
       updateShape,
-    ]);
+    });
 
-    useEffect(() => {
-      const el = containerRef.current;
-      if (!el) return;
-      const observer = new ResizeObserver((entries) => {
-        const entry = entries[0];
-        if (!entry) return;
-        const nextWidth = Math.max(1, Math.floor(entry.contentRect.width));
-        const nextHeight = Math.max(1, Math.floor(entry.contentRect.height));
-        setViewportSize({ width: nextWidth, height: nextHeight });
-      });
-      observer.observe(el);
-      return () => observer.disconnect();
-    }, []);
-
-    useEffect(() => {
-      if (hasManualViewRef.current) return;
-      fitFieldToViewport();
-    }, [
+    useTrackCanvasViewport({
+      containerRef,
       fitFieldToViewport,
-      viewportSize.width,
-      viewportSize.height,
-      widthPx,
-      heightPx,
-    ]);
+      hasManualViewRef,
+      setManualView,
+      setViewportSize,
+      stageRef,
+      syncTransform,
+    });
 
-    // Middle-mouse-button pan — bypasses React state for zero-lag dragging
-    useEffect(() => {
-      const el = containerRef.current;
-      if (!el) return;
-      const onDown = (e: MouseEvent) => {
-        if (e.button !== 1) return;
-        e.preventDefault();
-        middlePanRef.current = true;
-        middlePanLastRef.current = { x: e.clientX, y: e.clientY };
-        el.style.cursor = "grabbing";
-      };
-      const onMove = (e: MouseEvent) => {
-        if (!middlePanRef.current) return;
-        const stage = stageRef.current;
-        if (!stage) return;
-        setManualView(true);
-        const dx = e.clientX - middlePanLastRef.current.x;
-        const dy = e.clientY - middlePanLastRef.current.y;
-        stage.position({ x: stage.x() + dx, y: stage.y() + dy });
-        stage.batchDraw();
-        middlePanLastRef.current = { x: e.clientX, y: e.clientY };
-        syncTransform();
-      };
-      const onUp = (e: MouseEvent) => {
-        if (e.button !== 1) return;
-        middlePanRef.current = false;
-        el.style.cursor = "";
-      };
-      el.addEventListener("mousedown", onDown);
-      el.addEventListener("mousemove", onMove);
-      window.addEventListener("mouseup", onUp);
-      return () => {
-        el.removeEventListener("mousedown", onDown);
-        el.removeEventListener("mousemove", onMove);
-        window.removeEventListener("mouseup", onUp);
-      };
-    }, [setManualView, syncTransform]);
+    const {
+      onMouseDown,
+      onMouseLeave,
+      onMouseMove,
+      onMouseUp,
+      onStageDragEnd,
+      onStageDragMove,
+      onStageDragStart,
+      onTouchMove,
+      onTouchStart,
+      onWheel,
+      snapRadiusMeters,
+    } = useTrackCanvasInteractions({
+      activeTool,
+      addShape,
+      designField: design.field,
+      designShapes: design.shapes,
+      finalizePath,
+      lastPinchDistRef,
+      lastTouchPosRef,
+      marqueeAdditiveRef: marqueeAdditive,
+      marqueeOriginRef: marqueeOrigin,
+      marqueeRect,
+      onCursorChange,
+      onSnapChange,
+      readOnly,
+      selection,
+      setCursor,
+      setDraftPath,
+      setIsStageDragging,
+      setManualView,
+      setMarqueeRect,
+      setSelection,
+      setSnapTarget,
+      setZoom,
+      shapeRefs,
+      snapTarget,
+      stageRef,
+      stepPx,
+      syncTransform,
+    });
 
     useLayoutEffect(() => {
       const stage = stageRef.current;
@@ -868,997 +492,60 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           height={viewportSize.height}
           ref={stageRef}
           draggable={activeTool === "grab" && !readOnly}
-          onDragStart={() => {
-            setIsStageDragging(true);
-            setManualView(true);
-          }}
-          onDragMove={() => syncTransform()}
-          onDragEnd={() => {
-            setIsStageDragging(false);
-            syncTransform();
-          }}
-          onWheel={(e) => {
-            e.evt.preventDefault();
-            const stage = stageRef.current;
-            if (!stage) return;
-            setManualView(true);
-            const scaleBy = 1.08;
-            const oldScale = stage.scaleX();
-            const pointer = stage.getPointerPosition();
-            if (!pointer) return;
-            const newScale =
-              e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
-            const clamped = Math.max(0.2, Math.min(5, newScale));
-            const mousePointTo = {
-              x: (pointer.x - stage.x()) / oldScale,
-              y: (pointer.y - stage.y()) / oldScale,
-            };
-            stage.scale({ x: clamped, y: clamped });
-            stage.position({
-              x: pointer.x - mousePointTo.x * clamped,
-              y: pointer.y - mousePointTo.y * clamped,
-            });
-            setZoom(clamped);
-            syncTransform();
-          }}
-          onTouchStart={(e) => {
-            if (e.evt.touches.length === 2) {
-              e.evt.preventDefault();
-              lastTouchPosRef.current = null;
-              const t1 = e.evt.touches[0];
-              const t2 = e.evt.touches[1];
-              lastPinchDistRef.current = Math.hypot(
-                t2.clientX - t1.clientX,
-                t2.clientY - t1.clientY
-              );
-            } else if (e.evt.touches.length === 1) {
-              const t = e.evt.touches[0];
-              lastTouchPosRef.current = { x: t.clientX, y: t.clientY };
-              lastPinchDistRef.current = null;
-            }
-          }}
-          onTouchMove={(e) => {
-            if (e.evt.touches.length === 1) {
-              e.evt.preventDefault();
-              const stage = stageRef.current;
-              if (!stage) return;
-              const t = e.evt.touches[0];
-              const last = lastTouchPosRef.current;
-              if (last) {
-                setManualView(true);
-                stage.position({
-                  x: stage.x() + (t.clientX - last.x),
-                  y: stage.y() + (t.clientY - last.y),
-                });
-                stage.batchDraw();
-                syncTransform();
-              }
-              lastTouchPosRef.current = { x: t.clientX, y: t.clientY };
-              return;
-            }
-            if (e.evt.touches.length !== 2) return;
-            e.evt.preventDefault();
-            const stage = stageRef.current;
-            if (!stage) return;
-            const t1 = e.evt.touches[0];
-            const t2 = e.evt.touches[1];
-            const dist = Math.hypot(
-              t2.clientX - t1.clientX,
-              t2.clientY - t1.clientY
-            );
-            const lastDist = lastPinchDistRef.current;
-            if (lastDist === null) {
-              lastPinchDistRef.current = dist;
-              return;
-            }
-            const scaleBy = dist / lastDist;
-            lastPinchDistRef.current = dist;
-            setManualView(true);
-            const oldScale = stage.scaleX();
-            const newScale = Math.max(0.2, Math.min(5, oldScale * scaleBy));
-            const midX = (t1.clientX + t2.clientX) / 2;
-            const midY = (t1.clientY + t2.clientY) / 2;
-            const stageBox = stage.container().getBoundingClientRect();
-            const pointer = { x: midX - stageBox.left, y: midY - stageBox.top };
-            const pointTo = {
-              x: (pointer.x - stage.x()) / oldScale,
-              y: (pointer.y - stage.y()) / oldScale,
-            };
-            stage.scale({ x: newScale, y: newScale });
-            stage.position({
-              x: pointer.x - pointTo.x * newScale,
-              y: pointer.y - pointTo.y * newScale,
-            });
-            setZoom(newScale);
-            syncTransform();
-          }}
-          onMouseDown={(e) => {
-            const stage = stageRef.current;
-            if (!stage || e.evt.button !== 0) return;
-            if (activeTool === "grab") return;
-            const pointer = stage.getRelativePointerPosition();
-            if (!pointer) return;
-            const snap = !(e.evt.altKey || e.evt.metaKey || e.evt.shiftKey);
-
-            if (activeTool === "polyline" && !readOnly) {
-              if (e.evt.detail >= 2) {
-                finalizePath();
-                return;
-              }
-              const meters = pointerToMeters(pointer, snap);
-              if (!meters) return;
-              // Prefer snapping to gate/flag/cone center over grid snap
-              const pos = snapTarget ?? meters;
-              setDraftPath((prev) => {
-                const last = prev.at(-1);
-                if (last && distance2D(last, pos) < 0.05) return prev;
-                return [...prev, { ...pos, z: 0 }];
-              });
-              setSelection([]);
-              return;
-            }
-            if (activeTool !== "select" && !readOnly) {
-              const meters = pointerToMeters(pointer, snap);
-              if (!meters) return;
-              const shape = createShapeForTool(activeTool, meters);
-              if (!shape) return;
-              const id = addShape(shape);
-              setSelection([id]);
-              return;
-            }
-            if (e.target === stage) {
-              if (!(e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey))
-                setSelection([]);
-              marqueeOrigin.current = pointer;
-              marqueeAdditive.current = Boolean(
-                e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey
-              );
-              setMarqueeRect({
-                x: pointer.x,
-                y: pointer.y,
-                width: 0,
-                height: 0,
-              });
-            }
-          }}
-          onMouseMove={() => {
-            const stage = stageRef.current;
-            if (!stage) return;
-            const pointer = stage.getRelativePointerPosition();
-            if (!pointer) return;
-            const rawMeters = pointerToMeters(pointer, false);
-            const snappedMeters = pointerToMeters(pointer, true);
-            if (rawMeters && snappedMeters) {
-              setCursor({
-                rawMeters,
-                snappedMeters,
-                rawPx: { x: pointer.x, y: pointer.y },
-                snappedPx: {
-                  x: Math.round(pointer.x / stepPx) * stepPx,
-                  y: Math.round(pointer.y / stepPx) * stepPx,
-                },
-              });
-              onCursorChange?.(rawMeters);
-              if (activeTool === "polyline") {
-                const t = findSnapTarget(rawMeters);
-                setSnapTarget(t);
-                onSnapChange?.(t !== null);
-              } else if (snapTarget) {
-                setSnapTarget(null);
-                onSnapChange?.(false);
-              }
-            }
-            if (marqueeOrigin.current && activeTool === "select")
-              setMarqueeRect(normalizeRect(marqueeOrigin.current, pointer));
-          }}
-          onMouseLeave={() => {
-            setCursor(null);
-            setSnapTarget(null);
-            onCursorChange?.(null);
-            onSnapChange?.(false);
-            setMarqueeRect(null);
-            marqueeOrigin.current = null;
-          }}
-          onMouseUp={() => {
-            const stage = stageRef.current;
-            if (!stage || !marqueeOrigin.current || !marqueeRect) {
-              marqueeOrigin.current = null;
-              setMarqueeRect(null);
-              return;
-            }
-            const rect = marqueeRect;
-            marqueeOrigin.current = null;
-            setMarqueeRect(null);
-            if (rect.width < MIN_MARQUEE_SIZE && rect.height < MIN_MARQUEE_SIZE)
-              return;
-            const selectedIds = Object.entries(shapeRefs.current)
-              .filter((entry): entry is [string, KonvaGroup] =>
-                Boolean(entry[1])
-              )
-              .filter(([, node]) =>
-                rectsIntersect(rect, node.getClientRect({ relativeTo: stage }))
-              )
-              .map(([id]) => id);
-            if (marqueeAdditive.current) {
-              setSelection(Array.from(new Set([...selection, ...selectedIds])));
-            } else {
-              setSelection(selectedIds);
-            }
-          }}
+          onDragStart={onStageDragStart}
+          onDragMove={onStageDragMove}
+          onDragEnd={onStageDragEnd}
+          onWheel={onWheel}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseLeave={onMouseLeave}
+          onMouseUp={onMouseUp}
         >
           {/* Infinite grid + field boundary layer */}
           <Layer listening={false}>
-            {grid}
-            {/* Field fill — subtle lift over the surrounding infinite area */}
-            <Rect
-              x={0}
-              y={0}
-              width={widthPx}
-              height={heightPx}
-              fill={isDark ? "#0c1520" : "#ffffff"}
-              opacity={isDark ? 0.4 : 0.28}
+            <FieldLayerContent
+              designField={design.field}
+              effectiveSelectionFrame={effectiveSelectionFrame}
+              grid={grid}
+              heightPx={heightPx}
+              hoverCell={hoverCell}
+              isDark={isDark}
+              marqueeRect={marqueeRect}
+              stepPx={stepPx}
+              widthPx={widthPx}
             />
-            {/* Center axis lines — dashed, very subtle */}
-            <Line
-              points={[widthPx / 2, 0, widthPx / 2, heightPx]}
-              stroke={isDark ? "#1c3048" : "#b8cce0"}
-              strokeWidth={0.75}
-              dash={[6, 8]}
-              opacity={0.7}
-              listening={false}
-            />
-            <Line
-              points={[0, heightPx / 2, widthPx, heightPx / 2]}
-              stroke={isDark ? "#1c3048" : "#b8cce0"}
-              strokeWidth={0.75}
-              dash={[6, 8]}
-              opacity={0.7}
-              listening={false}
-            />
-            {/* Field boundary — soft outer glow */}
-            <Rect
-              x={-1.5}
-              y={-1.5}
-              width={widthPx + 3}
-              height={heightPx + 3}
-              stroke={isDark ? "#1a2d44" : "#8fa8c0"}
-              strokeWidth={4}
-              opacity={0.35}
-              listening={false}
-            />
-            {/* Field boundary — crisp inner edge */}
-            <Rect
-              x={0}
-              y={0}
-              width={widthPx}
-              height={heightPx}
-              stroke={isDark ? "#2a4060" : "#6888a8"}
-              strokeWidth={1}
-              listening={false}
-            />
-            {/* Corner L-brackets */}
-            {(
-              [
-                [0, 0, 1, 1],
-                [widthPx, 0, -1, 1],
-                [0, heightPx, 1, -1],
-                [widthPx, heightPx, -1, -1],
-              ] as [number, number, number, number][]
-            ).map(([cx, cy, sx, sy]) => (
-              <Group key={`bracket-${cx}-${cy}`} listening={false}>
-                <Line
-                  points={[cx, cy, cx + sx * 14, cy]}
-                  stroke={isDark ? "#3a5878" : "#5878a0"}
-                  strokeWidth={2}
-                  lineCap="square"
-                />
-                <Line
-                  points={[cx, cy, cx, cy + sy * 14]}
-                  stroke={isDark ? "#3a5878" : "#5878a0"}
-                  strokeWidth={2}
-                  lineCap="square"
-                />
-              </Group>
-            ))}
-            {/* Origin cross */}
-            <Line
-              points={[-7, 0, 7, 0]}
-              stroke={isDark ? "#3a5878" : "#5878a0"}
-              strokeWidth={1.5}
-              lineCap="round"
-              listening={false}
-            />
-            <Line
-              points={[0, -7, 0, 7]}
-              stroke={isDark ? "#3a5878" : "#5878a0"}
-              strokeWidth={1.5}
-              lineCap="round"
-              listening={false}
-            />
-            {/* Origin label */}
-            <Text
-              x={6}
-              y={6}
-              text="0,0"
-              fontSize={9}
-              fill={isDark ? "#3a5878" : "#6888a8"}
-              listening={false}
-            />
-            {/* Field size — bottom-right */}
-            <Text
-              x={widthPx - 6}
-              y={heightPx - 14}
-              text={`${design.field.width}×${design.field.height}m`}
-              fontSize={9}
-              fill={isDark ? "#3a5878" : "#6888a8"}
-              align="right"
-              listening={false}
-            />
-            {/* Hover cell */}
-            {hoverCell && (
-              <Rect
-                x={hoverCell.x}
-                y={hoverCell.y}
-                width={stepPx}
-                height={stepPx}
-                fill={isDark ? "#2563eb16" : "#2563eb0e"}
-                stroke={isDark ? "#3b82f628" : "#2563eb22"}
-                strokeWidth={1}
-              />
-            )}
-            {/* Selection frame */}
-            {effectiveSelectionFrame && (
-              <Rect
-                x={effectiveSelectionFrame.x}
-                y={effectiveSelectionFrame.y}
-                width={effectiveSelectionFrame.width}
-                height={effectiveSelectionFrame.height}
-                stroke="#3b82f6"
-                strokeWidth={1}
-                dash={[5, 4]}
-                listening={false}
-              />
-            )}
-            {/* Marquee */}
-            {marqueeRect && (
-              <Rect
-                x={marqueeRect.x}
-                y={marqueeRect.y}
-                width={marqueeRect.width}
-                height={marqueeRect.height}
-                stroke="#3b82f6"
-                strokeWidth={1}
-                dash={[5, 4]}
-                fill="#3b82f610"
-                listening={false}
-              />
-            )}
           </Layer>
 
           {/* Shapes layer */}
           <Layer>
             {design.shapes.map((shape) => {
-              const s = shape;
-              const selected = selection.includes(s.id);
               const allowInteraction = activeTool === "select" && !readOnly;
               return (
-                <Group
-                  key={s.id}
-                  ref={(node) => {
-                    shapeRefs.current[s.id] = node;
+                <TrackShapeNode
+                  key={shape.id}
+                  allowInteraction={allowInteraction}
+                  designPpm={design.field.ppm}
+                  dragBound={dragBound}
+                  dragSnapRef={dragSnapRef}
+                  effectiveVertexSel={effectiveVertexSel}
+                  heightPx={heightPx}
+                  hoveredWaypoint={hoveredWaypoint}
+                  isSelected={selection.includes(shape.id)}
+                  selection={selection}
+                  setSelection={setSelection}
+                  setVertexSel={setVertexSel}
+                  shape={shape}
+                  shapeRef={(node) => {
+                    shapeRefs.current[shape.id] = node;
                   }}
-                  x={m2px(s.x, design.field.ppm)}
-                  y={m2px(s.y, design.field.ppm)}
-                  rotation={s.rotation}
-                  draggable={allowInteraction && !s.locked}
-                  dragBoundFunc={dragBound}
-                  listening={allowInteraction}
-                  onDragStart={(e) => {
-                    if (e.target !== e.currentTarget) return;
-                    dragSnapRef.current = !(
-                      e.evt.altKey ||
-                      e.evt.metaKey ||
-                      e.evt.shiftKey
-                    );
-                  }}
-                  onDragEnd={(e) => {
-                    if (e.target !== e.currentTarget) return;
-                    const { x, y } = e.target.position();
-                    const ppm = design.field.ppm;
-                    const pxX = dragSnapRef.current
-                      ? Math.round(x / stepPx) * stepPx
-                      : clamp(x, 0, widthPx);
-                    const pxY = dragSnapRef.current
-                      ? Math.round(y / stepPx) * stepPx
-                      : clamp(y, 0, heightPx);
-                    e.target.position({ x: pxX, y: pxY });
-                    updateShape(s.id, { x: px2m(pxX, ppm), y: px2m(pxY, ppm) });
-                  }}
-                  onMouseDown={(e) => {
-                    if (!allowInteraction) return;
-                    e.cancelBubble = true;
-                    if (e.evt.shiftKey || e.evt.metaKey || e.evt.ctrlKey) {
-                      const current = new Set(selection);
-                      if (current.has(s.id)) current.delete(s.id);
-                      else current.add(s.id);
-                      setSelection(Array.from(current));
-                    } else {
-                      setSelection([s.id]);
-                    }
-                  }}
-                  onTap={(e) => {
-                    if (!allowInteraction) return;
-                    e.cancelBubble = true;
-                    setSelection([s.id]);
-                  }}
-                >
-                  {s.kind === "gate" &&
-                    (() => {
-                      const gate = s as GateShape;
-                      const width = m2px(gate.width, design.field.ppm);
-                      const depth = m2px(gate.thick ?? 0.2, design.field.ppm);
-                      const color = gate.color ?? "#3b82f6";
-                      return (
-                        <>
-                          {selected && (
-                            <Rect
-                              width={width + m2px(0.3, design.field.ppm)}
-                              height={depth + m2px(0.3, design.field.ppm)}
-                              offsetX={
-                                (width + m2px(0.3, design.field.ppm)) / 2
-                              }
-                              offsetY={
-                                (depth + m2px(0.3, design.field.ppm)) / 2
-                              }
-                              stroke="#60a5fa"
-                              strokeWidth={1}
-                              opacity={0.85}
-                              cornerRadius={2}
-                              listening={false}
-                            />
-                          )}
-                          <Rect
-                            width={width}
-                            height={depth}
-                            offsetX={width / 2}
-                            offsetY={depth / 2}
-                            fill={color}
-                            opacity={0.15}
-                            strokeEnabled={false}
-                          />
-                          <Rect
-                            width={width}
-                            height={depth}
-                            offsetX={width / 2}
-                            offsetY={depth / 2}
-                            stroke={color}
-                            strokeWidth={2}
-                            cornerRadius={Math.min(12, depth / 2)}
-                          />
-                        </>
-                      );
-                    })()}
-
-                  {s.kind === "flag" &&
-                    (() => {
-                      const flag = s as FlagShape;
-                      const r = m2px(flag.radius, design.field.ppm);
-                      const poleVis = Math.min(
-                        m2px(flag.poleHeight ?? 3.5, design.field.ppm),
-                        m2px(1.0, design.field.ppm)
-                      );
-                      const color = flag.color ?? "#a855f7";
-                      const fw = poleVis * 0.42;
-                      const fh = poleVis * 0.3;
-                      return (
-                        <>
-                          {selected && (
-                            <Circle
-                              radius={r + m2px(0.18, design.field.ppm)}
-                              stroke="#3b82f6"
-                              strokeWidth={1.4}
-                              dash={[6, 4]}
-                              listening={false}
-                            />
-                          )}
-                          {/* Pole */}
-                          <Line
-                            points={[0, 0, 0, -poleVis]}
-                            stroke={color}
-                            strokeWidth={2}
-                            lineCap="round"
-                          />
-                          {/* Teardrop flag fabric at top */}
-                          <KonvaShape
-                            sceneFunc={(ctx, shape) => {
-                              ctx.beginPath();
-                              ctx.moveTo(0, -poleVis);
-                              ctx.bezierCurveTo(
-                                fw,
-                                -poleVis,
-                                fw * 1.1,
-                                -poleVis + fh * 0.5,
-                                fw * 0.8,
-                                -poleVis + fh
-                              );
-                              ctx.bezierCurveTo(
-                                fw * 0.5,
-                                -poleVis + fh * 1.4,
-                                0.06,
-                                -poleVis + fh * 1.5,
-                                0,
-                                -poleVis + fh * 1.5
-                              );
-                              ctx.closePath();
-                              ctx.fillStrokeShape(shape);
-                            }}
-                            fill={color}
-                            opacity={0.8}
-                          />
-                          {/* Small base dot */}
-                          <Circle
-                            radius={Math.max(3, m2px(0.06, design.field.ppm))}
-                            fill={color}
-                          />
-                        </>
-                      );
-                    })()}
-
-                  {s.kind === "cone" &&
-                    (() => {
-                      const cone = s as ConeShape;
-                      const r = m2px(cone.radius, design.field.ppm);
-                      const color = cone.color ?? "#f97316";
-                      return (
-                        <>
-                          {selected && (
-                            <Circle
-                              radius={r + m2px(0.12, design.field.ppm)}
-                              stroke="#3b82f6"
-                              strokeWidth={1.3}
-                              dash={[5, 4]}
-                              listening={false}
-                            />
-                          )}
-                          <Circle
-                            radius={r}
-                            fill={color}
-                            opacity={0.2}
-                            stroke={color}
-                            strokeWidth={2}
-                          />
-                        </>
-                      );
-                    })()}
-
-                  {s.kind === "label" &&
-                    (() => {
-                      const label = s as LabelShape;
-                      const fontSize = label.fontSize ?? 18;
-                      const color = label.color ?? "#e2e8f0";
-                      const labelWidth = Math.max(
-                        label.text.length * fontSize * 0.45,
-                        48
-                      );
-                      return (
-                        <Group offsetY={-fontSize / 2}>
-                          {selected && (
-                            <Rect
-                              width={labelWidth + 12}
-                              height={fontSize + 12}
-                              y={-6}
-                              offsetX={(labelWidth + 12) / 2}
-                              stroke="#3b82f6"
-                              strokeWidth={1.2}
-                              dash={[6, 4]}
-                              listening={false}
-                            />
-                          )}
-                          <Text
-                            text={label.text}
-                            fontSize={fontSize}
-                            fill={color}
-                            align="center"
-                            width={labelWidth}
-                            offsetX={labelWidth / 2}
-                          />
-                        </Group>
-                      );
-                    })()}
-
-                  {s.kind === "startfinish" &&
-                    (() => {
-                      const sf = s as StartFinishShape;
-                      const totalW = m2px(sf.width ?? 3, design.field.ppm);
-                      const color = sf.color ?? "#f59e0b";
-                      const spacing = totalW / 4;
-                      const padW = spacing * 0.78;
-                      const padD = padW * 1.2;
-                      return (
-                        <>
-                          {selected && (
-                            <Rect
-                              width={totalW + m2px(0.3, design.field.ppm)}
-                              height={padD + m2px(0.3, design.field.ppm)}
-                              offsetX={
-                                (totalW + m2px(0.3, design.field.ppm)) / 2
-                              }
-                              offsetY={(padD + m2px(0.3, design.field.ppm)) / 2}
-                              stroke="#60a5fa"
-                              strokeWidth={1}
-                              opacity={0.85}
-                              cornerRadius={2}
-                              listening={false}
-                            />
-                          )}
-                          {Array.from({ length: 4 }).map((_, i) => {
-                            const px = -totalW / 2 + spacing * i + spacing / 2;
-                            return (
-                              <Group key={i} x={px}>
-                                <Rect
-                                  width={padW}
-                                  height={padD}
-                                  offsetX={padW / 2}
-                                  offsetY={padD / 2}
-                                  fill={color}
-                                  opacity={0.25}
-                                  cornerRadius={2}
-                                />
-                                <Rect
-                                  width={padW}
-                                  height={padD}
-                                  offsetX={padW / 2}
-                                  offsetY={padD / 2}
-                                  stroke={color}
-                                  strokeWidth={1.5}
-                                  cornerRadius={2}
-                                />
-                                <Text
-                                  text={String(i + 1)}
-                                  fontSize={Math.max(7, padW * 0.45)}
-                                  fill={color}
-                                  align="center"
-                                  width={padW}
-                                  offsetX={padW / 2}
-                                  offsetY={Math.max(7, padW * 0.45) / 2}
-                                  opacity={0.7}
-                                  listening={false}
-                                />
-                              </Group>
-                            );
-                          })}
-                        </>
-                      );
-                    })()}
-
-                  {s.kind === "checkpoint" &&
-                    (() => {
-                      const cp = s as CheckpointShape;
-                      const w = m2px(cp.width ?? 2.5, design.field.ppm);
-                      const depth = m2px(0.15, design.field.ppm);
-                      const color = cp.color ?? "#22c55e";
-                      return (
-                        <>
-                          {selected && (
-                            <Rect
-                              width={w + m2px(0.3, design.field.ppm)}
-                              height={depth + m2px(0.3, design.field.ppm)}
-                              offsetX={(w + m2px(0.3, design.field.ppm)) / 2}
-                              offsetY={
-                                (depth + m2px(0.3, design.field.ppm)) / 2
-                              }
-                              stroke="#60a5fa"
-                              strokeWidth={1}
-                              opacity={0.85}
-                              cornerRadius={2}
-                              listening={false}
-                            />
-                          )}
-                          <Rect
-                            width={w}
-                            height={depth}
-                            offsetX={w / 2}
-                            offsetY={depth / 2}
-                            fill={color}
-                            opacity={0.18}
-                            stroke={color}
-                            strokeWidth={1.8}
-                            dash={[8, 5]}
-                            cornerRadius={2}
-                          />
-                          <Line
-                            points={[-(w / 2), 0, w / 2, 0]}
-                            stroke={color}
-                            strokeWidth={2}
-                            dash={[6, 4]}
-                            opacity={0.8}
-                            listening={false}
-                          />
-                        </>
-                      );
-                    })()}
-
-                  {s.kind === "ladder" &&
-                    (() => {
-                      const ld = s as LadderShape;
-                      const w = m2px(ld.width ?? 1.5, design.field.ppm);
-                      const depth = m2px(0.08, design.field.ppm);
-                      const color = ld.color ?? "#f97316";
-                      return (
-                        <>
-                          {selected && (
-                            <Rect
-                              width={w + m2px(0.3, design.field.ppm)}
-                              height={depth + m2px(0.3, design.field.ppm)}
-                              offsetX={(w + m2px(0.3, design.field.ppm)) / 2}
-                              offsetY={
-                                (depth + m2px(0.3, design.field.ppm)) / 2
-                              }
-                              stroke="#60a5fa"
-                              strokeWidth={1}
-                              opacity={0.85}
-                              cornerRadius={2}
-                              listening={false}
-                            />
-                          )}
-                          <Rect
-                            width={w}
-                            height={depth}
-                            offsetX={w / 2}
-                            offsetY={depth / 2}
-                            fill={color}
-                            opacity={0.25}
-                            strokeEnabled={false}
-                          />
-                          <Rect
-                            width={w}
-                            height={depth}
-                            offsetX={w / 2}
-                            offsetY={depth / 2}
-                            stroke={color}
-                            strokeWidth={2}
-                            cornerRadius={Math.min(12, depth / 2)}
-                          />
-                        </>
-                      );
-                    })()}
-
-                  {s.kind === "divegate" &&
-                    (() => {
-                      const dg = s as DiveGateShape;
-                      const sz = m2px(dg.size ?? 2.8, design.field.ppm);
-                      const thick = m2px(dg.thick ?? 0.2, design.field.ppm);
-                      const tilt = dg.tilt ?? 0;
-                      const visibleDepth = Math.max(
-                        thick * 2 + 4,
-                        sz * Math.cos((tilt * Math.PI) / 180)
-                      );
-                      const color = dg.color ?? "#f97316";
-                      const postR = Math.max(3, thick * 0.5);
-                      return (
-                        <>
-                          {selected && (
-                            <Rect
-                              width={sz + m2px(0.3, design.field.ppm)}
-                              height={
-                                visibleDepth + m2px(0.3, design.field.ppm)
-                              }
-                              offsetX={(sz + m2px(0.3, design.field.ppm)) / 2}
-                              offsetY={
-                                (visibleDepth + m2px(0.3, design.field.ppm)) / 2
-                              }
-                              stroke="#60a5fa"
-                              strokeWidth={1}
-                              opacity={0.85}
-                              cornerRadius={2}
-                              listening={false}
-                            />
-                          )}
-                          <Rect
-                            width={sz}
-                            height={visibleDepth}
-                            offsetX={sz / 2}
-                            offsetY={visibleDepth / 2}
-                            stroke={color}
-                            strokeWidth={2.5}
-                            fill={color}
-                            opacity={0.1}
-                            cornerRadius={4}
-                          />
-                          <Rect
-                            width={sz - thick * 2}
-                            height={Math.max(4, visibleDepth - thick * 2)}
-                            offsetX={(sz - thick * 2) / 2}
-                            offsetY={Math.max(4, visibleDepth - thick * 2) / 2}
-                            stroke={color}
-                            strokeWidth={1}
-                            opacity={0.5}
-                            cornerRadius={2}
-                          />
-                          {/* Post footprints at all 4 frame corners */}
-                          <Circle
-                            x={-sz / 2}
-                            y={-visibleDepth / 2}
-                            radius={postR}
-                            fill={color}
-                          />
-                          <Circle
-                            x={sz / 2}
-                            y={-visibleDepth / 2}
-                            radius={postR}
-                            fill={color}
-                          />
-                          <Circle
-                            x={-sz / 2}
-                            y={visibleDepth / 2}
-                            radius={postR}
-                            fill={color}
-                          />
-                          <Circle
-                            x={sz / 2}
-                            y={visibleDepth / 2}
-                            radius={postR}
-                            fill={color}
-                          />
-                        </>
-                      );
-                    })()}
-
-                  {s.kind === "polyline" &&
-                    (() => {
-                      const path = s as PolylineShape;
-                      const pointsPx = path.points.flatMap((pt) => [
-                        m2px(pt.x, design.field.ppm),
-                        m2px(pt.y, design.field.ppm),
-                      ]);
-                      const strokePx = m2px(
-                        path.strokeWidth ?? 0.18,
-                        design.field.ppm
-                      );
-                      const smoothPoints =
-                        (path.smooth ?? true)
-                          ? smoothPolyline(path.points)
-                          : path.points;
-                      const smoothPx = smoothPoints.flatMap((pt) => [
-                        m2px(pt.x, design.field.ppm),
-                        m2px(pt.y, design.field.ppm),
-                      ]);
-                      const color = path.color ?? "#3b82f6";
-                      if (!pointsPx.length) return null;
-                      return (
-                        <>
-                          {selected && (
-                            <Line
-                              points={pointsPx}
-                              stroke="#3b82f6"
-                              strokeWidth={strokePx + 4}
-                              lineCap="round"
-                              opacity={0.3}
-                              listening={false}
-                            />
-                          )}
-                          <Group listening={false}>
-                            {path.points.map((pt, idx) => {
-                              const pct =
-                                path.points.length > 1
-                                  ? idx / (path.points.length - 1)
-                                  : 0;
-                              const zColor = zToColor(pt.z ?? 0, zmin, zmax);
-                              const segment = smoothPx.slice(
-                                idx * 2,
-                                idx * 2 + 4
-                              );
-                              if (segment.length < 4) return null;
-                              const segmentColor = path.color ? color : zColor;
-                              return (
-                                <Line
-                                  key={`${path.id}-seg-${idx}`}
-                                  points={segment}
-                                  stroke={segmentColor}
-                                  strokeWidth={strokePx}
-                                  lineCap="round"
-                                  lineJoin="round"
-                                  opacity={Math.max(0.4, 1 - pct * 0.15)}
-                                />
-                              );
-                            })}
-                            {path.showArrows && path.points.length >= 2 && (
-                              <Arrow
-                                points={smoothPx}
-                                stroke={color}
-                                fill={color}
-                                strokeWidth={strokePx}
-                                pointerLength={Math.max(10, strokePx * 3)}
-                                pointerWidth={Math.max(8, strokePx * 2)}
-                                lineCap="round"
-                                lineJoin="round"
-                                pointerAtEnding
-                                pointerAtBeginning
-                              />
-                            )}
-                          </Group>
-                          {allowInteraction &&
-                            path.points.map((pt, idx) => {
-                              const cx = m2px(pt.x, design.field.ppm);
-                              const cy = m2px(pt.y, design.field.ppm);
-                              const r = Math.max(
-                                4,
-                                m2px(0.08, design.field.ppm)
-                              );
-                              const active =
-                                effectiveVertexSel &&
-                                effectiveVertexSel.shapeId === s.id &&
-                                effectiveVertexSel.idx === idx;
-                              const hovered =
-                                hoveredWaypoint?.shapeId === s.id &&
-                                hoveredWaypoint?.idx === idx;
-                              return (
-                                <Circle
-                                  key={`${s.id}-vh-${idx}`}
-                                  x={cx}
-                                  y={cy}
-                                  radius={hovered ? r * 1.6 : r}
-                                  fill={
-                                    active
-                                      ? "#3b82f6"
-                                      : hovered
-                                        ? "#f59e0b"
-                                        : "#1e293b"
-                                  }
-                                  stroke={
-                                    active
-                                      ? "#ffffff"
-                                      : hovered
-                                        ? "#ffffff"
-                                        : "#3b82f6"
-                                  }
-                                  strokeWidth={hovered ? 2.5 : 2}
-                                  draggable
-                                  dragBoundFunc={dragBound}
-                                  onDragStart={(e) => {
-                                    e.cancelBubble = true;
-                                    dragSnapRef.current = !(
-                                      e.evt.altKey ||
-                                      e.evt.metaKey ||
-                                      e.evt.shiftKey
-                                    );
-                                  }}
-                                  onDragEnd={(e) => {
-                                    e.cancelBubble = true;
-                                    const ppm = design.field.ppm;
-                                    const pxX = dragSnapRef.current
-                                      ? Math.round(e.target.x() / stepPx) *
-                                        stepPx
-                                      : clamp(e.target.x(), 0, widthPx);
-                                    const pxY = dragSnapRef.current
-                                      ? Math.round(e.target.y() / stepPx) *
-                                        stepPx
-                                      : clamp(e.target.y(), 0, heightPx);
-                                    e.target.position({ x: pxX, y: pxY });
-                                    const pts: PolylinePoint[] =
-                                      path.points.map((point, i) =>
-                                        i === idx
-                                          ? {
-                                              ...point,
-                                              x: px2m(pxX, ppm),
-                                              y: px2m(pxY, ppm),
-                                            }
-                                          : point
-                                      );
-                                    updateShape(s.id, { points: pts });
-                                  }}
-                                  onMouseDown={(e) => {
-                                    e.cancelBubble = true;
-                                    setSelection([s.id]);
-                                    setVertexSel({ shapeId: s.id, idx });
-                                  }}
-                                />
-                              );
-                            })}
-                        </>
-                      );
-                    })()}
-                </Group>
+                  stepPx={stepPx}
+                  updateShape={updateShape}
+                  widthPx={widthPx}
+                  zmax={zmax}
+                  zmin={zmin}
+                />
               );
             })}
 
@@ -1869,7 +556,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                 const sx = m2px(snapTarget.x, design.field.ppm);
                 const sy = m2px(snapTarget.y, design.field.ppm);
                 const r = Math.max(
-                  m2px(SNAP_RADIUS_M * 0.55, design.field.ppm),
+                  m2px(snapRadiusMeters * 0.55, design.field.ppm),
                   14
                 );
                 return (

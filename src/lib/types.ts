@@ -99,6 +99,10 @@ export type Shape =
   | LadderShape
   | DiveGateShape;
 
+export type ShapeDraft<T extends Shape = Shape> = T extends Shape
+  ? Omit<T, "id">
+  : never;
+
 export interface FieldSpec {
   width: number; // m
   height: number; // m

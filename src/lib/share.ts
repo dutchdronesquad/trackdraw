@@ -1,23 +1,8 @@
 import LZString from "lz-string";
-import type { TrackDesign, Shape, PolylineShape } from "./types";
+import { normalizeDesign } from "@/lib/design";
+import type { TrackDesign } from "./types";
 
 const MAX_SAFE_TOKEN_LENGTH = 7500;
-
-function normalizeDesign(raw: TrackDesign): TrackDesign {
-  return {
-    ...raw,
-    version: 1 as const,
-    shapes: raw.shapes.map((shape) => {
-      if (shape.kind === "polyline") {
-        return {
-          ...shape,
-          smooth: (shape as PolylineShape).smooth ?? true,
-        } as Shape;
-      }
-      return shape;
-    }),
-  };
-}
 
 export function encodeDesign(design: TrackDesign): string {
   const json = JSON.stringify(design);
