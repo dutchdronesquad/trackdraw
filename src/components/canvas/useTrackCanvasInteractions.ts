@@ -31,6 +31,7 @@ interface TrackCanvasInteractionsParams {
   marqueeAdditiveRef: React.MutableRefObject<boolean>;
   marqueeOriginRef: React.MutableRefObject<Vector2d | null>;
   marqueeRect: RectLike | null;
+  mobileMultiSelectEnabled?: boolean;
   onCursorChange?: (pos: { x: number; y: number } | null) => void;
   onSnapChange?: (active: boolean) => void;
   readOnly: boolean;
@@ -69,6 +70,7 @@ export function useTrackCanvasInteractions({
   marqueeAdditiveRef,
   marqueeOriginRef,
   marqueeRect,
+  mobileMultiSelectEnabled: _mobileMultiSelectEnabled,
   onCursorChange,
   onSnapChange,
   readOnly,

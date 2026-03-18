@@ -3,15 +3,19 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
+  Copy,
   Download,
   FilePlus,
   FolderOpen,
   LayoutGrid,
+  Lock,
   Monitor,
   Scan,
   Share2,
   SlidersHorizontal,
   SquareMousePointer,
+  Trash2,
+  Unlock,
   X,
 } from "lucide-react";
 import Inspector from "@/components/Inspector";
@@ -19,6 +23,7 @@ import { mobileToolEntries } from "@/components/editor/tool-icons";
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
@@ -31,16 +36,22 @@ export type EditorViewportTab = "2d" | "3d";
 interface EditorMobilePanelsProps {
   activeTool: EditorTool;
   mobileInspectorOpen: boolean;
+  mobileMultiSelectEnabled: boolean;
   mobileRulersEnabled: boolean;
   mobileToolsOpen: boolean;
   mobileOverrideDismissed: boolean;
   readOnly: boolean;
   readOnlyMenuOpen: boolean;
+  selectionLocked: boolean;
   selectedCount: number;
   tab: EditorViewportTab;
   onCloseInspector: () => void;
   onDismissMobileOverride: () => void;
   onFitView: () => void;
+  onDeleteSelection: () => void;
+  onDuplicateSelection: () => void;
+  onExitMobileMultiSelect: () => void;
+  onToggleSelectionLock: () => void;
   onOpenInspector: () => void;
   onOpenReadOnlyMenu: () => void;
   onOpenTools: () => void;
@@ -58,15 +69,21 @@ interface EditorMobilePanelsProps {
 export function EditorMobilePanels({
   activeTool,
   mobileInspectorOpen,
+  mobileMultiSelectEnabled,
   mobileRulersEnabled,
   mobileToolsOpen,
   mobileOverrideDismissed,
   readOnly,
   readOnlyMenuOpen,
+  selectionLocked,
   selectedCount,
   tab,
   onCloseInspector,
   onDismissMobileOverride,
+  onDeleteSelection,
+  onDuplicateSelection,
+  onExitMobileMultiSelect,
+  onToggleSelectionLock,
   onFitView,
   onOpenInspector,
   onOpenReadOnlyMenu,
@@ -111,6 +128,12 @@ export function EditorMobilePanels({
     divegate: "Dive",
   };
 
+  const canOpenInspector = selectedCount === 1 && !mobileMultiSelectEnabled;
+  const mobileStatusTitle = mobileMultiSelectEnabled ? "Multi" : "Tool";
+  const mobileStatusValue =
+    selectedCount > 0
+      ? `${selectedCount} items`
+      : (toolDisplayName[activeTool] ?? activeTool);
   const mobileDrawerHeader = (
     title: string,
     subtitle?: string,
@@ -133,9 +156,9 @@ export function EditorMobilePanels({
             {title}
           </DrawerTitle>
           {subtitle ? (
-            <p className="text-muted-foreground/70 pt-0.5 text-[10px] leading-relaxed">
+            <DrawerDescription className="text-muted-foreground/70 pt-0.5 text-[10px] leading-relaxed">
               {subtitle}
-            </p>
+            </DrawerDescription>
           ) : null}
         </div>
       </DrawerHeader>
@@ -225,15 +248,15 @@ export function EditorMobilePanels({
               <LayoutGrid className="size-3.5" />
               <span className="landscape:sr-only">Tools</span>
             </button>
-            <div className="min-w-0 flex-[1.2] rounded-[1rem] px-2 py-2 text-center landscape:hidden">
-              <p className="truncate text-[10px] font-semibold tracking-[0.08em] text-white/92 uppercase">
-                {selectedCount > 0
-                  ? `${selectedCount} selected`
-                  : (toolDisplayName[activeTool] ?? activeTool)}
-              </p>
-              <p className="truncate text-[10px] text-white/55">
-                {selectedCount > 0 ? "Ready to edit" : "Canvas"}
-              </p>
+            <div className="min-w-0 flex-[1.1] landscape:hidden">
+              <div className="mx-auto flex max-w-[7rem] flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
+                <p className="text-[8px] font-medium tracking-[0.08em] text-white/52 uppercase">
+                  {mobileStatusTitle}
+                </p>
+                <p className="max-w-full text-[10px] font-semibold leading-tight text-white">
+                  {mobileStatusValue}
+                </p>
+              </div>
             </div>
             <button
               onClick={onFitView}
@@ -244,10 +267,10 @@ export function EditorMobilePanels({
             </button>
             <button
               onClick={onOpenInspector}
-              disabled={selectedCount === 0}
+              disabled={!canOpenInspector}
               className={cn(
                 "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
-                selectedCount > 0
+                canOpenInspector
                   ? "text-white/72 hover:bg-white/10 hover:text-white"
                   : "text-white/30"
               )}
@@ -255,6 +278,73 @@ export function EditorMobilePanels({
               <SlidersHorizontal className="size-3.5" />
               <span className="landscape:sr-only">Edit</span>
             </button>
+          </motion.div>
+        </div>
+      )}
+
+      {!readOnly && tab === "2d" && mobileMultiSelectEnabled && (
+        <div
+          className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
+          style={{
+            bottom: isLandscapeMobile
+              ? "calc(4.7rem + env(safe-area-inset-bottom))"
+              : "calc(5.15rem + env(safe-area-inset-bottom))",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="pointer-events-auto w-full max-w-sm rounded-[1.2rem] border border-white/10 bg-slate-950/88 p-2 text-white shadow-[0_16px_34px_rgba(15,23,42,0.34)] backdrop-blur"
+          >
+            <div className="flex items-center justify-between gap-3 px-1 pb-2">
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-semibold tracking-[0.08em] uppercase text-white/92">
+                  {selectedCount > 0
+                    ? `${selectedCount} selected`
+                    : "Multi-select"}
+                </p>
+                <p className="truncate text-[10px] text-white/55">
+                  Tap items to add or remove them
+                </p>
+              </div>
+              <button
+                onClick={onExitMobileMultiSelect}
+                className="rounded-full border border-white/12 px-3 py-1.5 text-[10px] font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                Done
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                onClick={onDuplicateSelection}
+                disabled={selectedCount === 0}
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+              >
+                <Copy className="size-4" />
+                <span>Duplicate</span>
+              </button>
+              <button
+                onClick={onToggleSelectionLock}
+                disabled={selectedCount === 0}
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+              >
+                {selectionLocked ? (
+                  <Unlock className="size-4" />
+                ) : (
+                  <Lock className="size-4" />
+                )}
+                <span>{selectionLocked ? "Unlock" : "Lock"}</span>
+              </button>
+              <button
+                onClick={onDeleteSelection}
+                disabled={selectedCount === 0}
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200 disabled:text-white/25"
+              >
+                <Trash2 className="size-4" />
+                <span>Delete</span>
+              </button>
+            </div>
           </motion.div>
         </div>
       )}
@@ -292,35 +382,6 @@ export function EditorMobilePanels({
             )}
 
             <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
-              <div className="border-border/50 bg-muted/18 rounded-[1rem] border px-3 py-3">
-                <p className="text-muted-foreground/70 text-[10px] font-semibold tracking-widest uppercase">
-                  Current mode
-                </p>
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-foreground truncate text-sm font-medium">
-                      {toolDisplayName[activeTool] ?? activeTool}
-                    </p>
-                    <p className="text-muted-foreground pt-0.5 text-[11px] leading-relaxed">
-                      {selectedCount > 0
-                        ? `${selectedCount} selected on canvas`
-                        : "Pick a tool, then place or adjust items on the canvas"}
-                    </p>
-                  </div>
-                  {selectedCount > 0 ? (
-                    <button
-                      onClick={() => {
-                        onSetMobileToolsOpen(false);
-                        onOpenInspector();
-                      }}
-                      className="border-border/60 bg-background/80 text-foreground hover:bg-background shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors"
-                    >
-                      Edit
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-
               <div>
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
                   Drawing tools

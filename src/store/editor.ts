@@ -22,6 +22,7 @@ interface EditorState {
   addShape: (s: ShapeDraft) => string;
   addShapes: (shapes: ShapeDraft[]) => string[];
   updateShape: (id: string, patch: Partial<Shape>) => void;
+  rotateShapes: (ids: string[], delta: number) => void;
   removeShapes: (ids: string[]) => void;
   duplicateShapes: (ids: string[]) => void;
   nudgeShapes: (ids: string[], dx: number, dy: number) => void;
@@ -80,6 +81,22 @@ export const useEditor = create<EditorState>()(
           const idx = draft.design.shapes.findIndex((sh) => sh.id === id);
           if (idx !== -1) {
             Object.assign(draft.design.shapes[idx], patch);
+            draft.design.updatedAt = nowIso();
+          }
+        }),
+
+      rotateShapes: (ids, delta) =>
+        set((draft) => {
+          let changed = false;
+          for (const id of ids) {
+            const idx = draft.design.shapes.findIndex((shape) => shape.id === id);
+            if (idx === -1) continue;
+            const shape = draft.design.shapes[idx];
+            if (shape.kind === "polyline" || shape.locked) continue;
+            shape.rotation = ((shape.rotation + delta) % 360 + 360) % 360;
+            changed = true;
+          }
+          if (changed) {
             draft.design.updatedAt = nowIso();
           }
         }),

@@ -10,7 +10,7 @@ import {
   useState,
   forwardRef,
 } from "react";
-import { Stage, Layer, Circle, Line, Group } from "react-konva";
+import { Stage, Layer, Circle, Line, Group, Rect } from "react-konva";
 import type { Vector2d } from "konva/lib/types";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
@@ -77,7 +77,9 @@ export interface TrackCanvasHandle {
 interface TrackCanvasProps {
   onCursorChange?: (pos: { x: number; y: number } | null) => void;
   onSnapChange?: (active: boolean) => void;
+  onMobileMultiSelectStart?: (shapeId: string) => void;
   mobileRulersEnabled?: boolean;
+  mobileMultiSelectEnabled?: boolean;
   readOnly?: boolean;
 }
 
@@ -86,7 +88,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     {
       onCursorChange,
       onSnapChange,
+      onMobileMultiSelectStart,
       mobileRulersEnabled = false,
+      mobileMultiSelectEnabled = false,
       readOnly = false,
     },
     ref
@@ -99,6 +103,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       addShape,
       activeTool,
       setActiveTool,
+      rotateShapes,
       removeShapes,
       duplicateShapes,
       nudgeShapes,
@@ -162,6 +167,12 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       startAngle: number;
       startRotation: number;
     } | null>(null);
+    const [groupDragPreview, setGroupDragPreview] = useState<{
+      ids: string[];
+      origin: { x: number; y: number };
+      dx: number;
+      dy: number;
+    } | null>(null);
     const [contextMenu, setContextMenu] = useState<{
       ids: string[];
       label: string;
@@ -174,30 +185,20 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const showRulers = !isMobile || mobileRulersEnabled;
     const showDesktopCanvasChrome = viewportSize.width >= 1024;
 
-    const normalizeRotation = useCallback(
-      (rotation: number) => ((rotation % 360) + 360) % 360,
-      []
-    );
-
-    const rotateShapes = useCallback(
-      (ids: string[], delta: number) => {
-        for (const id of ids) {
-          const shape = design.shapes.find((candidate) => candidate.id === id);
-          if (!shape || shape.kind === "polyline" || shape.locked) continue;
-          updateShape(id, {
-            rotation: normalizeRotation((shape.rotation ?? 0) + delta),
-          });
-        }
-      },
-      [design.shapes, normalizeRotation, updateShape]
-    );
-
     const effectiveVertexSel = useMemo(
       () =>
         selection.length === 0 || activeTool !== "select" ? null : vertexSel,
       [selection.length, activeTool, vertexSel]
     );
-    const effectiveSelectionFrame = selection.length ? selectionFrame : null;
+    const effectiveSelectionFrame = useMemo(() => {
+      if (!selection.length || !selectionFrame) return null;
+      if (!groupDragPreview) return selectionFrame;
+      return {
+        ...selectionFrame,
+        x: selectionFrame.x + groupDragPreview.dx,
+        y: selectionFrame.y + groupDragPreview.dy,
+      };
+    }, [groupDragPreview, selection.length, selectionFrame]);
     const singleSelectedShape = useMemo(
       () =>
         selection.length === 1
@@ -287,6 +288,51 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       [clampShapeDragPosition, magneticSnapRadiusPx, stepPx]
     );
 
+    const resolveGroupDragPosition = useCallback(
+      (pos: Vector2d, frame: RectLike, snapEnabled: boolean) => {
+        const bounded = clampShapeDragPosition(pos);
+        const center = {
+          x: bounded.x + frame.width / 2,
+          y: bounded.y + frame.height / 2,
+        };
+
+        if (!snapEnabled) {
+          return {
+            dragPosition: bounded,
+            finalPosition: bounded,
+            snapPoint: center,
+            snapped: false,
+          };
+        }
+
+        const snapCenterX = Math.round(center.x / stepPx) * stepPx;
+        const snapCenterY = Math.round(center.y / stepPx) * stepPx;
+        const snappedCenter = {
+          x:
+            Math.abs(center.x - snapCenterX) <= magneticSnapRadiusPx
+              ? snapCenterX
+              : center.x,
+          y:
+            Math.abs(center.y - snapCenterY) <= magneticSnapRadiusPx
+              ? snapCenterY
+              : center.y,
+        };
+
+        return {
+          dragPosition: bounded,
+          finalPosition: {
+            x: snappedCenter.x - frame.width / 2,
+            y: snappedCenter.y - frame.height / 2,
+          },
+          snapPoint: snappedCenter,
+          snapped:
+            Math.abs(center.x - snappedCenter.x) > 0.5 ||
+            Math.abs(center.y - snappedCenter.y) > 0.5,
+        };
+      },
+      [clampShapeDragPosition, magneticSnapRadiusPx, stepPx]
+    );
+
     const resolveWaypointDragPosition = useCallback(
       (pos: Vector2d, snapEnabled: boolean): Vector2d => {
         const bounded = clampWaypointDragPosition(pos);
@@ -310,6 +356,26 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const dragBound = useCallback(
       (pos: Vector2d): Vector2d => clampShapeDragPosition(pos),
       [clampShapeDragPosition]
+    );
+
+    const applyGroupDragDelta = useCallback(
+      (ids: string[], dxPx: number, dyPx: number) => {
+        if (Math.abs(dxPx) < 0.5 && Math.abs(dyPx) < 0.5) return;
+        const dxMeters = dxPx / design.field.ppm;
+        const dyMeters = dyPx / design.field.ppm;
+
+        for (const selectedId of ids) {
+          const selectedShape = design.shapes.find(
+            (candidate) => candidate.id === selectedId
+          );
+          if (!selectedShape || selectedShape.locked) continue;
+          updateShape(selectedId, {
+            x: selectedShape.x + dxMeters,
+            y: selectedShape.y + dyMeters,
+          });
+        }
+      },
+      [design.field.ppm, design.shapes, updateShape]
     );
 
     const waypointDragBound = useCallback(
@@ -442,6 +508,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       marqueeRect,
       onCursorChange,
       onSnapChange,
+      mobileMultiSelectEnabled,
       readOnly,
       selection,
       setActiveTool,
@@ -793,7 +860,18 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     effectiveVertexSel={effectiveVertexSel}
                     hoveredWaypoint={hoveredWaypoint}
                     isMobile={isMobile}
+                    mobileMultiSelectEnabled={mobileMultiSelectEnabled}
                     isSelected={selection.includes(shape.id)}
+                    groupDragOffsetPx={
+                      groupDragPreview &&
+                      groupDragPreview.ids.includes(shape.id)
+                        ? {
+                            x: groupDragPreview.dx,
+                            y: groupDragPreview.dy,
+                          }
+                        : null
+                    }
+                    onMobileMultiSelectStart={onMobileMultiSelectStart}
                     onShapeContextMenu={(clickedShape) => {
                       if (activeTool !== "select" || readOnly) return;
 
@@ -844,6 +922,86 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                   />
                 );
               })}
+              {activeTool === "select" &&
+                !readOnly &&
+                selection.length > 1 &&
+                selectionFrame && (
+                  <Rect
+                    x={selectionFrame.x + (groupDragPreview?.dx ?? 0)}
+                    y={selectionFrame.y + (groupDragPreview?.dy ?? 0)}
+                    width={selectionFrame.width}
+                    height={selectionFrame.height}
+                    fill={isDark ? "#60a5fa12" : "#3b82f610"}
+                    strokeEnabled={false}
+                    draggable
+                    dragBoundFunc={dragBound}
+                    onMouseDown={(event) => {
+                      event.cancelBubble = true;
+                    }}
+                    onTap={(event) => {
+                      event.cancelBubble = true;
+                    }}
+                    onDragStart={(event) => {
+                      event.cancelBubble = true;
+                      dragSnapRef.current = !(
+                        event.evt.altKey ||
+                        event.evt.metaKey ||
+                        event.evt.shiftKey
+                      );
+                      setDragSnapPreview(null);
+                      setGroupDragPreview({
+                        ids: [...selection],
+                        origin: { x: selectionFrame.x, y: selectionFrame.y },
+                        dx: 0,
+                        dy: 0,
+                      });
+                    }}
+                    onDragMove={(event) => {
+                      event.cancelBubble = true;
+                      const current = event.currentTarget.position();
+                      const resolved = resolveGroupDragPosition(
+                        current,
+                        selectionFrame,
+                        dragSnapRef.current
+                      );
+                      setDragSnapPreview(
+                        resolved.snapped ? resolved.snapPoint : null
+                      );
+                      event.currentTarget.position(resolved.dragPosition);
+                      setGroupDragPreview((existing) =>
+                        existing
+                          ? {
+                              ...existing,
+                              dx: resolved.dragPosition.x - existing.origin.x,
+                              dy: resolved.dragPosition.y - existing.origin.y,
+                            }
+                          : existing
+                      );
+                    }}
+                    onDragEnd={(event) => {
+                      event.cancelBubble = true;
+                      const resolved = resolveGroupDragPosition(
+                        event.currentTarget.position(),
+                        selectionFrame,
+                        dragSnapRef.current
+                      );
+                      event.currentTarget.position(resolved.finalPosition);
+                      setDragSnapPreview(null);
+                      const activePreview = groupDragPreview;
+                      setGroupDragPreview(null);
+                      const origin = activePreview?.origin ?? {
+                        x: selectionFrame.x,
+                        y: selectionFrame.y,
+                      };
+                      const ids = activePreview?.ids ?? [...selection];
+                      applyGroupDragDelta(
+                        ids,
+                        resolved.finalPosition.x - origin.x,
+                        resolved.finalPosition.y - origin.y
+                      );
+                    }}
+                  />
+                )}
             </Layer>
 
             {!readOnly && activeTool === "select" && (

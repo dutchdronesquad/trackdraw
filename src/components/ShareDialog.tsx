@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -57,6 +58,9 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Share Track</DialogTitle>
+          <DialogDescription>
+            Create a shareable link for the current track design.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">

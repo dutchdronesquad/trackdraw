@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import {
   Arrow,
   Circle,
@@ -320,7 +321,10 @@ interface TrackShapeNodeProps {
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
   isMobile: boolean;
+  mobileMultiSelectEnabled?: boolean;
   isSelected: boolean;
+  groupDragOffsetPx?: { x: number; y: number } | null;
+  onMobileMultiSelectStart?: (shapeId: string) => void;
   onShapeContextMenu?: (
     shape: Shape,
     event: KonvaEventObject<PointerEvent>
@@ -352,7 +356,10 @@ export function TrackShapeNode({
   effectiveVertexSel,
   hoveredWaypoint,
   isMobile,
+  mobileMultiSelectEnabled = false,
   isSelected,
+  groupDragOffsetPx,
+  onMobileMultiSelectStart,
   onShapeContextMenu,
   selection,
   setSelection,
@@ -367,6 +374,9 @@ export function TrackShapeNode({
   zmax,
   zmin,
 }: TrackShapeNodeProps) {
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTriggeredRef = useRef(false);
+  const dragTriggeredRef = useRef(false);
   const selected = selection.includes(shape.id);
   const touchBounds =
     isMobile && shape.kind !== "polyline"
@@ -382,6 +392,11 @@ export function TrackShapeNode({
     : null;
 
   const handleDragStart = (event: KonvaEventObject<DragEvent>) => {
+    if (longPressTimerRef.current !== null) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    dragTriggeredRef.current = false;
     dragSnapRef.current = !(
       event.evt.altKey ||
       event.evt.metaKey ||
@@ -391,6 +406,7 @@ export function TrackShapeNode({
   };
 
   const handleDragMove = (event: KonvaEventObject<DragEvent>) => {
+    dragTriggeredRef.current = true;
     const current = event.currentTarget.position();
     const resolved = resolveShapeDragPosition(current, dragSnapRef.current);
     const isSnapping =
@@ -412,14 +428,30 @@ export function TrackShapeNode({
     });
   };
 
+  const clearLongPress = () => {
+    if (longPressTimerRef.current !== null) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => clearLongPress, []);
+
   return (
     <Group
       key={shape.id}
       ref={shapeRef}
-      x={m2px(shape.x, designPpm)}
-      y={m2px(shape.y, designPpm)}
+      x={m2px(shape.x, designPpm) + (groupDragOffsetPx?.x ?? 0)}
+      y={m2px(shape.y, designPpm) + (groupDragOffsetPx?.y ?? 0)}
       rotation={shape.rotation}
-      draggable={allowInteraction && !shape.locked}
+      draggable={
+        allowInteraction &&
+        !shape.locked &&
+        !(selected && selection.length > 1) &&
+        (!isMobile ||
+          !mobileMultiSelectEnabled ||
+          (mobileMultiSelectEnabled && selected))
+      }
       dragBoundFunc={dragBound}
       listening={allowInteraction}
       onDragStart={handleDragStart}
@@ -428,11 +460,15 @@ export function TrackShapeNode({
       onMouseDown={(event) => {
         if (!allowInteraction) return;
         event.cancelBubble = true;
+        if (isMobile && mobileMultiSelectEnabled) return;
         if (event.evt.shiftKey || event.evt.metaKey || event.evt.ctrlKey) {
           const current = new Set(selection);
           if (current.has(shape.id)) current.delete(shape.id);
           else current.add(shape.id);
           setSelection(Array.from(current));
+        } else if (selection.includes(shape.id) && selection.length > 1) {
+          // Preserve an existing multiselect when starting a drag from within it.
+          return;
         } else {
           setSelection([shape.id]);
         }
@@ -440,7 +476,48 @@ export function TrackShapeNode({
       onTap={(event) => {
         if (!allowInteraction) return;
         event.cancelBubble = true;
+        if (longPressTriggeredRef.current) {
+          longPressTriggeredRef.current = false;
+          return;
+        }
+        if (dragTriggeredRef.current) {
+          dragTriggeredRef.current = false;
+          return;
+        }
+        if (isMobile && mobileMultiSelectEnabled) {
+          const current = new Set(selection);
+          if (current.has(shape.id)) {
+            current.delete(shape.id);
+          } else {
+            current.add(shape.id);
+          }
+          setSelection(Array.from(current));
+          return;
+        }
         setSelection([shape.id]);
+      }}
+      onTouchStart={() => {
+        if (
+          !allowInteraction ||
+          !isMobile ||
+          mobileMultiSelectEnabled ||
+          !onMobileMultiSelectStart
+        ) {
+          return;
+        }
+        clearLongPress();
+        longPressTriggeredRef.current = false;
+        longPressTimerRef.current = window.setTimeout(() => {
+          longPressTriggeredRef.current = true;
+          onMobileMultiSelectStart(shape.id);
+          clearLongPress();
+        }, 320);
+      }}
+      onTouchMove={() => {
+        clearLongPress();
+      }}
+      onTouchEnd={() => {
+        clearLongPress();
       }}
       onContextMenu={(event) => {
         if (!allowInteraction) return;

@@ -184,9 +184,9 @@ export default function Header({
           <Image
             src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
             alt="TrackDraw"
-            width={114}
-            height={20}
-            className="h-[20px] w-[114px]"
+            width={130}
+            height={30}
+            className="h-[30px] w-[130px]"
             priority
             unoptimized
             draggable={false}

@@ -4,6 +4,7 @@ import { useRef, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -95,6 +96,9 @@ export default function ImportDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>Open Project</DialogTitle>
+          <DialogDescription>
+            Import a TrackDraw project from a JSON file.
+          </DialogDescription>
         </DialogHeader>
 
         {!parsed ? (
