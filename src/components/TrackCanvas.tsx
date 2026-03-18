@@ -9,13 +9,7 @@ import {
   useState,
   forwardRef,
 } from "react";
-import {
-  Stage,
-  Layer,
-  Circle,
-  Line,
-  Group,
-} from "react-konva";
+import { Stage, Layer, Circle, Line, Group } from "react-konva";
 import type { Vector2d } from "konva/lib/types";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
