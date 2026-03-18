@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -115,14 +116,14 @@ export default function Toolbar({
               {collapsed ? (
                 <TrackDrawIcon className="text-foreground/80 size-6" />
               ) : (
-                <img
+                <Image
                   src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
                   alt="TrackDraw"
                   className="select-none"
-                  loading="eager"
-                  width={120}
-                  height={26}
-                  style={{ width: "auto", height: "26px" }}
+                  width={136}
+                  height={30}
+                  priority
+                  unoptimized
                   draggable={false}
                 />
               )}
