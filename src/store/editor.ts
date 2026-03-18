@@ -4,20 +4,11 @@ import { create } from "zustand";
 import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
 import { nanoid } from "nanoid";
-import type { FieldSpec, Shape, TrackDesign } from "@/lib/types";
+import type { FieldSpec, Shape, ShapeDraft, TrackDesign } from "@/lib/types";
+import { createDefaultDesign, normalizeDesign, nowIso } from "@/lib/design";
+import type { EditorTool } from "@/lib/editor-tools";
 
-export type EditorTool =
-  | "select"
-  | "grab"
-  | "gate"
-  | "flag"
-  | "cone"
-  | "label"
-  | "polyline"
-  | "startfinish"
-  | "checkpoint"
-  | "ladder"
-  | "divegate";
+export type { EditorTool } from "@/lib/editor-tools";
 
 interface EditorState {
   design: TrackDesign;
@@ -27,7 +18,7 @@ interface EditorState {
   panOffset: { x: number; y: number };
   hoveredWaypoint: { shapeId: string; idx: number } | null;
 
-  addShape: (s: Omit<Shape, "id">) => string;
+  addShape: (s: ShapeDraft) => string;
   updateShape: (id: string, patch: Partial<Shape>) => void;
   removeShapes: (ids: string[]) => void;
   duplicateShapes: (ids: string[]) => void;
@@ -49,27 +40,10 @@ interface EditorState {
   sendBackward: (id: string) => void;
 }
 
-const now = () => new Date().toISOString();
-
-function defaultDesign(): TrackDesign {
-  return {
-    id: nanoid(),
-    version: 1,
-    title: "New Track",
-    description: "",
-    tags: [],
-    authorName: "",
-    field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
-    shapes: [],
-    createdAt: now(),
-    updatedAt: now(),
-  };
-}
-
 export const useEditor = create<EditorState>()(
   temporal(
     immer<EditorState>((set) => ({
-      design: defaultDesign(),
+      design: createDefaultDesign(),
       selection: [],
       activeTool: "select",
       zoom: 1,
@@ -79,8 +53,9 @@ export const useEditor = create<EditorState>()(
       addShape: (s) => {
         const id = nanoid();
         set((draft) => {
-          draft.design.shapes.push({ ...s, id } as Shape);
-          draft.design.updatedAt = now();
+          const nextShape: Shape = { ...s, id };
+          draft.design.shapes.push(nextShape);
+          draft.design.updatedAt = nowIso();
         });
         return id;
       },
@@ -90,7 +65,7 @@ export const useEditor = create<EditorState>()(
           const idx = draft.design.shapes.findIndex((sh) => sh.id === id);
           if (idx !== -1) {
             Object.assign(draft.design.shapes[idx], patch);
-            draft.design.updatedAt = now();
+            draft.design.updatedAt = nowIso();
           }
         }),
 
@@ -100,7 +75,7 @@ export const useEditor = create<EditorState>()(
             (sh) => !ids.includes(sh.id)
           );
           draft.selection = draft.selection.filter((x) => !ids.includes(x));
-          draft.design.updatedAt = now();
+          draft.design.updatedAt = nowIso();
         }),
 
       nudgeShapes: (ids, dx, dy) =>
@@ -112,7 +87,7 @@ export const useEditor = create<EditorState>()(
               draft.design.shapes[idx].y += dy;
             }
           }
-          draft.design.updatedAt = now();
+          draft.design.updatedAt = nowIso();
         }),
 
       duplicateShapes: (ids) =>
@@ -127,9 +102,9 @@ export const useEditor = create<EditorState>()(
             y: sh.y + 1,
             name: sh.name ? `${sh.name} copy` : undefined,
           }));
-          draft.design.shapes.push(...(newShapes as Shape[]));
+          draft.design.shapes.push(...newShapes);
           draft.selection = newShapes.map((s) => s.id);
-          draft.design.updatedAt = now();
+          draft.design.updatedAt = nowIso();
         }),
 
       setSelection: (ids) =>
@@ -155,26 +130,18 @@ export const useEditor = create<EditorState>()(
       updateField: (patch) =>
         set((draft) => {
           Object.assign(draft.design.field, patch);
-          draft.design.updatedAt = now();
+          draft.design.updatedAt = nowIso();
         }),
 
       updateDesignMeta: (patch) =>
         set((draft) => {
           Object.assign(draft.design, patch);
-          draft.design.updatedAt = now();
+          draft.design.updatedAt = nowIso();
         }),
 
       replaceDesign: (design) =>
         set((draft) => {
-          draft.design = {
-            ...design,
-            shapes: design.shapes.map((shape) => {
-              if (shape.kind === "polyline") {
-                return { ...shape, smooth: shape.smooth ?? true };
-              }
-              return shape;
-            }) as Shape[],
-          };
+          draft.design = normalizeDesign(design);
           draft.selection = [];
           draft.activeTool = "select";
         }),
@@ -186,7 +153,7 @@ export const useEditor = create<EditorState>()(
 
       newProject: () =>
         set((draft) => {
-          draft.design = defaultDesign();
+          draft.design = createDefaultDesign();
           draft.selection = [];
           draft.activeTool = "select";
           draft.zoom = 1;

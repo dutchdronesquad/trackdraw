@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -168,15 +169,21 @@ export default function Header({
         </div>
       </div>
 
-      <div className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden">
-        <Image
-          src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
-          alt="TrackDraw"
-          width={102}
-          height={22}
-          className="h-[18px] w-auto opacity-90"
-          draggable={false}
-        />
+      <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden">
+        <Link
+          href="/"
+          aria-label="Go to homepage"
+          className="flex items-center rounded-sm opacity-90 transition-opacity hover:opacity-100"
+        >
+          <Image
+            src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+            alt="TrackDraw"
+            width={102}
+            height={22}
+            className="h-[18px] w-auto"
+            draggable={false}
+          />
+        </Link>
       </div>
 
       <div className="ml-auto flex shrink-0 items-center gap-1">
