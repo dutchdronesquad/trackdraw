@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Tooltip,
   TooltipContent,
@@ -12,21 +13,42 @@ function shortSha(sha?: string | null) {
   return sha.slice(0, 7);
 }
 
-export default function VersionTag({ className }: { className?: string }) {
+export default function VersionTag({
+  className,
+  showBeta = false,
+}: {
+  className?: string;
+  showBeta?: boolean;
+}) {
   const version = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
   const sha = shortSha(process.env.NEXT_PUBLIC_COMMIT_SHA);
+  const releaseHref =
+    version === "dev"
+      ? "https://github.com/dutchdronesquad/trackdraw/releases"
+      : `https://github.com/dutchdronesquad/trackdraw/releases/tag/${encodeURIComponent(version)}`;
 
   return (
     <Tooltip>
       <TooltipTrigger
+        render={<Link href={releaseHref} target="_blank" rel="noreferrer" />}
         className={cn(
-          "border-border bg-muted text-foreground/70 hover:text-foreground inline-flex cursor-default items-center rounded-md border px-1.5 py-0.5 font-mono text-[11px] font-medium transition-colors select-none",
+          "border-border bg-muted text-foreground/70 hover:text-foreground inline-flex h-5 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] font-medium transition-colors select-none",
           className
         )}
       >
-        {version}
+        {showBeta && (
+          <span className="inline-flex h-3 items-center font-sans text-[9px] leading-none font-semibold tracking-[0.12em] text-amber-500 uppercase">
+            Beta
+          </span>
+        )}
+        <span className="inline-flex h-3 items-center leading-none">
+          {version}
+        </span>
       </TooltipTrigger>
-      {sha && <TooltipContent sideOffset={4}>commit {sha}</TooltipContent>}
+      <TooltipContent sideOffset={4}>
+        {sha ? `commit ${sha} · ` : ""}
+        Open release notes on GitHub
+      </TooltipContent>
     </Tooltip>
   );
 }

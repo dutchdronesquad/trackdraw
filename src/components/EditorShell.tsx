@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useRef, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { EditorMobilePanels } from "@/components/editor/EditorMobilePanels";
 import Header from "@/components/Header";
 import Toolbar from "@/components/Toolbar";
@@ -94,9 +93,16 @@ export default function EditorShell({
     <>
       <div className="bg-background text-foreground relative flex h-[100dvh] overflow-hidden">
         <div className="pointer-events-none absolute top-0 right-0 left-0 z-30 hidden h-11 items-center justify-center lg:flex">
-          <span className="text-foreground/70 max-w-[28rem] truncate px-6 text-center text-sm">
-            {design.title || "Untitled"}
-          </span>
+          <div className="flex max-w-[28rem] items-center gap-2 px-6">
+            <span className="text-foreground/70 truncate text-center text-sm">
+              {design.title || "Untitled"}
+            </span>
+            <span className="inline-flex h-5 shrink-0 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 px-1.5 text-amber-500">
+              <span className="inline-flex h-3 items-center text-[9px] leading-none font-semibold tracking-[0.12em] uppercase">
+                Beta
+              </span>
+            </span>
+          </div>
         </div>
 
         {/* ── Sidebar (full height) ───────────────────────────── */}
@@ -157,24 +163,9 @@ export default function EditorShell({
 
             {/* Desktop Inspector */}
             {!readOnly && (
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.aside
-                  key={
-                    selection.length === 0
-                      ? "empty"
-                      : selection.length === 1
-                        ? selection[0]
-                        : "multi"
-                  }
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 8 }}
-                  transition={{ duration: 0.1, ease: "easeOut" }}
-                  className="border-border/80 bg-card/95 hidden min-h-0 w-[300px] shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex"
-                >
-                  <Inspector />
-                </motion.aside>
-              </AnimatePresence>
+              <aside className="border-border/80 bg-card/95 hidden min-h-0 w-[300px] shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex">
+                <Inspector />
+              </aside>
             )}
           </div>
         </div>

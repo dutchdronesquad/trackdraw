@@ -82,16 +82,18 @@ function BrandLogo({
         alt="TrackDraw"
         width={170}
         height={40}
-        className="block h-full w-auto dark:hidden"
+        className="block dark:hidden"
         priority
+        style={{ width: "auto", height: "100%" }}
       />
       <Image
         src={dark}
         alt="TrackDraw"
         width={170}
         height={40}
-        className="hidden h-full w-auto dark:block"
+        className="hidden dark:block"
         priority
+        style={{ width: "auto", height: "100%" }}
       />
     </span>
   );
@@ -192,6 +194,9 @@ const faq = [
 
 // ── Page ────────────────────────────────────────────────────────
 export default function Home() {
+  const heroPillClassName =
+    "inline-flex min-h-[30px] items-center rounded-full border px-3.5 py-1 text-xs font-medium";
+
   return (
     <div className="bg-background text-foreground min-h-screen">
       {/* ── Nav ─────────────────────────────────────────────── */}
@@ -240,11 +245,16 @@ export default function Home() {
             <div>
               <FadeUp>
                 <div className="flex items-center gap-3">
-                  <span className="border-brand-primary/25 bg-brand-primary/8 text-brand-primary inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-medium">
+                  <span
+                    className={`border-brand-primary/25 bg-brand-primary/8 text-brand-primary ${heroPillClassName} gap-2`}
+                  >
                     <span className="bg-brand-primary size-1.5 animate-pulse rounded-full" />
                     Built for FPV race directors
                   </span>
-                  <VersionTag className="rounded-full border-amber-500/30 bg-amber-500/10 px-3.5 py-1 font-sans text-xs font-medium text-amber-500 hover:bg-amber-500/15 hover:text-amber-400" />
+                  <VersionTag
+                    showBeta
+                    className={`${heroPillClassName} border-amber-500/30 bg-amber-500/10 font-sans text-amber-500 hover:bg-amber-500/15 hover:text-amber-400`}
+                  />
                 </div>
               </FadeUp>
 
@@ -427,12 +437,15 @@ export default function Home() {
                     <p className="text-muted-foreground mt-3 text-sm leading-7">
                       Select any element to edit its properties: dimensions,
                       rotation, colour and race-line altitude, all in one panel.
-                      When the track is ready, hit Share and copy the link.
-                      Pilots open it on their phone without an account or app.
+                      Right-click in the 2D editor for quick actions like
+                      duplicate, rotate or delete. When the track is ready, hit
+                      Share and copy the link. Pilots open it on their phone
+                      without an account or app.
                     </p>
                     <ul className="mt-5 space-y-2.5">
                       {[
                         "Live property panel for every track element",
+                        "Quick context actions directly on the canvas",
                         "Read-only share link, works on any device",
                         "PDF, PNG, SVG and JSON export",
                       ].map((b) => (

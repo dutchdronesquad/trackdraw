@@ -18,14 +18,16 @@ export function Footer() {
                   alt="TrackDraw"
                   width={140}
                   height={32}
-                  className="block h-8 w-auto dark:hidden"
+                  className="block dark:hidden"
+                  style={{ width: "auto", height: "2rem" }}
                 />
                 <Image
                   src="/assets/brand/trackdraw-logo-mono-darkbg.svg"
                   alt="TrackDraw"
                   width={140}
                   height={32}
-                  className="hidden h-8 w-auto dark:block"
+                  className="hidden dark:block"
+                  style={{ width: "auto", height: "2rem" }}
                 />
               </span>
               <VersionTag />

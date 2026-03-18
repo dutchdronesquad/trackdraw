@@ -107,7 +107,7 @@ export default function Toolbar({
           className="border-border h-full overflow-hidden border-r transition-[width] duration-200 ease-in-out"
         >
           {/* Logo header */}
-          <SidebarHeader className="border-border/60 flex items-center justify-center border-b px-3 py-2">
+          <SidebarHeader className="border-border/60 flex h-11 items-center justify-center border-b px-3 py-0">
             <Link
               href="/"
               className="flex items-center justify-center rounded-md opacity-90 transition-opacity hover:opacity-100"
@@ -119,9 +119,11 @@ export default function Toolbar({
                 <Image
                   src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
                   alt="TrackDraw"
-                  width={120}
-                  height={26}
-                  className="h-[26px] w-auto select-none"
+                  className="select-none"
+                  width={136}
+                  height={30}
+                  priority
+                  unoptimized
                   draggable={false}
                 />
               )}

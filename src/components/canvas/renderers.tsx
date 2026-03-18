@@ -197,6 +197,102 @@ export function FieldLayerContent({
   );
 }
 
+export function RotationGuideOverlay({
+  isDark,
+  onRotateStart,
+  showAngleLabel = false,
+  rotationGuide,
+}: {
+  isDark: boolean;
+  onRotateStart: (event: KonvaEventObject<MouseEvent | TouchEvent>) => void;
+  showAngleLabel?: boolean;
+  rotationGuide: {
+    angleDeg: number;
+    center: { x: number; y: number };
+    label: string;
+    radius: number;
+  } | null;
+}) {
+  if (!rotationGuide) return null;
+
+  const angleRad = (rotationGuide.angleDeg * Math.PI) / 180;
+  const handleX =
+    rotationGuide.center.x + Math.cos(angleRad) * rotationGuide.radius;
+  const handleY =
+    rotationGuide.center.y + Math.sin(angleRad) * rotationGuide.radius;
+  const handleOuterX =
+    rotationGuide.center.x + Math.cos(angleRad) * (rotationGuide.radius + 14);
+  const handleOuterY =
+    rotationGuide.center.y + Math.sin(angleRad) * (rotationGuide.radius + 14);
+  const labelOffsetX = Math.cos(angleRad) * 32;
+  const labelOffsetY = Math.sin(angleRad) * 32;
+
+  return (
+    <>
+      <Circle
+        x={rotationGuide.center.x}
+        y={rotationGuide.center.y}
+        radius={rotationGuide.radius}
+        stroke="#60a5fa"
+        strokeWidth={4}
+        opacity={0.95}
+        listening={false}
+      />
+      <Line
+        points={[handleX, handleY, handleOuterX, handleOuterY]}
+        stroke="#60a5fa"
+        strokeWidth={2}
+        opacity={0.85}
+        listening={false}
+      />
+      <Circle
+        x={handleOuterX}
+        y={handleOuterY}
+        radius={11}
+        fill="#60a5fa"
+        opacity={0.001}
+        onMouseDown={onRotateStart}
+        onTouchStart={onRotateStart}
+      />
+      <Circle
+        x={handleOuterX}
+        y={handleOuterY}
+        radius={6}
+        fill="#60a5fa"
+        opacity={0.95}
+        listening={false}
+      />
+      {showAngleLabel && (
+        <Group listening={false}>
+          <Rect
+            x={handleOuterX + labelOffsetX - 22}
+            y={handleOuterY + labelOffsetY - 10}
+            width={44}
+            height={20}
+            cornerRadius={999}
+            fill={isDark ? "#08111d" : "#eff6ff"}
+            stroke="#60a5fa"
+            strokeWidth={1}
+            opacity={0.96}
+          />
+          <Text
+            x={handleOuterX + labelOffsetX - 22}
+            y={handleOuterY + labelOffsetY - 10}
+            width={44}
+            height={20}
+            align="center"
+            verticalAlign="middle"
+            text={rotationGuide.label}
+            fontSize={9}
+            fontStyle="bold"
+            fill="#60a5fa"
+          />
+        </Group>
+      )}
+    </>
+  );
+}
+
 interface TrackShapeNodeProps {
   allowInteraction: boolean;
   designPpm: number;
@@ -206,6 +302,10 @@ interface TrackShapeNodeProps {
   heightPx: number;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
   isSelected: boolean;
+  onShapeContextMenu?: (
+    shape: Shape,
+    event: KonvaEventObject<PointerEvent>
+  ) => void;
   selection: string[];
   setSelection: (ids: string[]) => void;
   setVertexSel: (value: { shapeId: string; idx: number } | null) => void;
@@ -227,6 +327,7 @@ export function TrackShapeNode({
   heightPx,
   hoveredWaypoint,
   isSelected,
+  onShapeContextMenu,
   selection,
   setSelection,
   setVertexSel,
@@ -291,39 +392,213 @@ export function TrackShapeNode({
         event.cancelBubble = true;
         setSelection([shape.id]);
       }}
+      onContextMenu={(event) => {
+        if (!allowInteraction) return;
+        onShapeContextMenu?.(shape, event);
+      }}
     >
-      {shape.kind === "gate" && renderGate(shape, selected, designPpm)}
-      {shape.kind === "flag" && renderFlag(shape, selected, designPpm)}
-      {shape.kind === "cone" && renderCone(shape, selected, designPpm)}
-      {shape.kind === "label" && renderLabel(shape, selected)}
-      {shape.kind === "startfinish" &&
-        renderStartFinish(shape, selected, designPpm)}
-      {shape.kind === "checkpoint" &&
-        renderCheckpoint(shape, selected, designPpm)}
-      {shape.kind === "ladder" && renderLadder(shape, selected, designPpm)}
-      {shape.kind === "divegate" && renderDiveGate(shape, selected, designPpm)}
-      {shape.kind === "polyline" && (
-        <PolylineShapeContent
-          allowInteraction={allowInteraction}
-          designPpm={designPpm}
-          dragBound={dragBound}
-          dragSnapRef={dragSnapRef}
-          effectiveVertexSel={effectiveVertexSel}
-          heightPx={heightPx}
-          hoveredWaypoint={hoveredWaypoint}
-          isSelected={isSelected}
-          path={shape}
-          setSelection={setSelection}
-          setVertexSel={setVertexSel}
-          stepPx={stepPx}
-          updateShape={updateShape}
-          widthPx={widthPx}
-          zmax={zmax}
-          zmin={zmin}
-        />
-      )}
+      <Group opacity={shape.locked ? (selected ? 0.78 : 0.58) : 1}>
+        {shape.kind === "gate" && renderGate(shape, selected, designPpm)}
+        {shape.kind === "flag" && renderFlag(shape, selected, designPpm)}
+        {shape.kind === "cone" && renderCone(shape, selected, designPpm)}
+        {shape.kind === "label" && renderLabel(shape, selected)}
+        {shape.kind === "startfinish" &&
+          renderStartFinish(shape, selected, designPpm)}
+        {shape.kind === "checkpoint" &&
+          renderCheckpoint(shape, selected, designPpm)}
+        {shape.kind === "ladder" && renderLadder(shape, selected, designPpm)}
+        {shape.kind === "divegate" &&
+          renderDiveGate(shape, selected, designPpm)}
+        {shape.kind === "polyline" && (
+          <PolylineShapeContent
+            allowInteraction={allowInteraction}
+            designPpm={designPpm}
+            dragBound={dragBound}
+            dragSnapRef={dragSnapRef}
+            effectiveVertexSel={effectiveVertexSel}
+            heightPx={heightPx}
+            hoveredWaypoint={hoveredWaypoint}
+            isSelected={isSelected}
+            path={shape}
+            setSelection={setSelection}
+            setVertexSel={setVertexSel}
+            stepPx={stepPx}
+            updateShape={updateShape}
+            widthPx={widthPx}
+            zmax={zmax}
+            zmin={zmin}
+          />
+        )}
+      </Group>
+      {shape.locked && renderLockedIndicator(shape, selected, designPpm)}
     </Group>
   );
+}
+
+function renderLockedIndicator(shape: Shape, selected: boolean, ppm: number) {
+  const bounds = getShapeLocalBounds(shape, ppm);
+  if (!bounds) return null;
+
+  const pad = 6;
+  const x = bounds.x - pad;
+  const y = bounds.y - pad;
+  const width = bounds.width + pad * 2;
+  const height = bounds.height + pad * 2;
+  const corner = 8;
+  const stroke = selected ? "#fbbf24" : "#f59e0b";
+  const opacity = selected ? 0.95 : 0.65;
+
+  return (
+    <Group listening={false}>
+      <Line
+        points={[x, y + corner, x, y, x + corner, y]}
+        stroke={stroke}
+        strokeWidth={1.5}
+        opacity={opacity}
+        lineCap="round"
+        lineJoin="round"
+      />
+      <Line
+        points={[x + width - corner, y, x + width, y, x + width, y + corner]}
+        stroke={stroke}
+        strokeWidth={1.5}
+        opacity={opacity}
+        lineCap="round"
+        lineJoin="round"
+      />
+      <Line
+        points={[x, y + height - corner, x, y + height, x + corner, y + height]}
+        stroke={stroke}
+        strokeWidth={1.5}
+        opacity={opacity}
+        lineCap="round"
+        lineJoin="round"
+      />
+      <Line
+        points={[
+          x + width - corner,
+          y + height,
+          x + width,
+          y + height,
+          x + width,
+          y + height - corner,
+        ]}
+        stroke={stroke}
+        strokeWidth={1.5}
+        opacity={opacity}
+        lineCap="round"
+        lineJoin="round"
+      />
+    </Group>
+  );
+}
+
+export function getShapeLocalBounds(shape: Shape, ppm: number) {
+  switch (shape.kind) {
+    case "gate": {
+      const width = m2px(shape.width, ppm);
+      const depth = m2px(shape.thick ?? 0.2, ppm);
+      return {
+        x: -width / 2,
+        y: -depth / 2,
+        width,
+        height: depth,
+      };
+    }
+    case "flag": {
+      const radius = m2px(shape.radius, ppm);
+      const poleVisible = Math.min(
+        m2px(shape.poleHeight ?? 3.5, ppm),
+        m2px(1, ppm)
+      );
+      const flagWidth = poleVisible * 0.42;
+      const flagHeight = poleVisible * 1.5;
+      return {
+        x: -radius,
+        y: -poleVisible,
+        width: Math.max(radius * 2, flagWidth + radius),
+        height: Math.max(radius, poleVisible + flagHeight),
+      };
+    }
+    case "cone": {
+      const radius = m2px(shape.radius, ppm);
+      return {
+        x: -radius,
+        y: -radius,
+        width: radius * 2,
+        height: radius * 2,
+      };
+    }
+    case "label": {
+      const fontSize = shape.fontSize ?? 18;
+      const labelWidth = Math.max(shape.text.length * fontSize * 0.45, 48);
+      return {
+        x: -labelWidth / 2,
+        y: -fontSize,
+        width: labelWidth,
+        height: fontSize + 8,
+      };
+    }
+    case "startfinish": {
+      const totalWidth = m2px(shape.width ?? 3, ppm);
+      const spacing = totalWidth / 4;
+      const padWidth = spacing * 0.78;
+      const padDepth = padWidth * 1.2;
+      return {
+        x: -totalWidth / 2,
+        y: -padDepth / 2,
+        width: totalWidth,
+        height: padDepth,
+      };
+    }
+    case "checkpoint": {
+      const width = m2px(shape.width ?? 2.5, ppm);
+      const depth = m2px(0.15, ppm);
+      return {
+        x: -width / 2,
+        y: -depth / 2,
+        width,
+        height: depth,
+      };
+    }
+    case "ladder": {
+      const width = m2px(shape.width ?? 1.5, ppm);
+      const depth = m2px(0.18, ppm);
+      return {
+        x: -width / 2,
+        y: -depth / 2,
+        width,
+        height: depth,
+      };
+    }
+    case "divegate": {
+      const size = m2px(shape.size ?? 2.8, ppm);
+      return {
+        x: -size / 2,
+        y: -size / 2,
+        width: size,
+        height: size,
+      };
+    }
+    case "polyline": {
+      const points =
+        (shape.smooth ?? true) ? smoothPolyline(shape.points) : shape.points;
+      if (!points.length) return null;
+      const pxPoints = points.map((point) => ({
+        x: m2px(point.x, ppm),
+        y: m2px(point.y, ppm),
+      }));
+      const xs = pxPoints.map((point) => point.x);
+      const ys = pxPoints.map((point) => point.y);
+      const strokePx = m2px(shape.strokeWidth ?? 0.18, ppm);
+      return {
+        x: Math.min(...xs) - strokePx,
+        y: Math.min(...ys) - strokePx,
+        width: Math.max(...xs) - Math.min(...xs) + strokePx * 2,
+        height: Math.max(...ys) - Math.min(...ys) + strokePx * 2,
+      };
+    }
+  }
 }
 
 function renderGate(shape: GateShape, selected: boolean, ppm: number) {
@@ -593,8 +868,8 @@ function renderCheckpoint(
 
 function renderLadder(shape: LadderShape, selected: boolean, ppm: number) {
   const width = m2px(shape.width ?? 1.5, ppm);
-  const depth = m2px(0.08, ppm);
-  const color = shape.color ?? "#f97316";
+  const depth = m2px(0.18, ppm);
+  const color = shape.color ?? "#14b8a6";
   return (
     <>
       {selected && (
@@ -616,7 +891,7 @@ function renderLadder(shape: LadderShape, selected: boolean, ppm: number) {
         offsetX={width / 2}
         offsetY={depth / 2}
         fill={color}
-        opacity={0.25}
+        opacity={0.16}
         strokeEnabled={false}
       />
       <Rect
@@ -638,10 +913,11 @@ function renderDiveGate(shape: DiveGateShape, selected: boolean, ppm: number) {
   const tilt = shape.tilt ?? 0;
   const visibleDepth = Math.max(
     thick * 2 + 4,
-    size * Math.cos((tilt * Math.PI) / 180)
+    size * Math.max(0.2, Math.cos((tilt * Math.PI) / 180))
   );
   const color = shape.color ?? "#f97316";
   const postRadius = Math.max(3, thick * 0.5);
+  const inset = Math.max(postRadius * 0.85, thick * 0.75);
   return (
     <>
       {selected && (
@@ -653,7 +929,7 @@ function renderDiveGate(shape: DiveGateShape, selected: boolean, ppm: number) {
           stroke="#60a5fa"
           strokeWidth={1}
           opacity={0.85}
-          cornerRadius={2}
+          cornerRadius={4}
           listening={false}
         />
       )}
@@ -662,43 +938,42 @@ function renderDiveGate(shape: DiveGateShape, selected: boolean, ppm: number) {
         height={visibleDepth}
         offsetX={size / 2}
         offsetY={visibleDepth / 2}
-        stroke={color}
-        strokeWidth={2.5}
         fill={color}
-        opacity={0.1}
+        opacity={0.03}
+        strokeEnabled={false}
         cornerRadius={4}
       />
       <Rect
-        width={size - thick * 2}
-        height={Math.max(4, visibleDepth - thick * 2)}
-        offsetX={(size - thick * 2) / 2}
-        offsetY={Math.max(4, visibleDepth - thick * 2) / 2}
-        stroke={color}
-        strokeWidth={1}
-        opacity={0.5}
-        cornerRadius={2}
+        width={size}
+        height={visibleDepth}
+        offsetX={size / 2}
+        offsetY={visibleDepth / 2}
+        stroke={selected ? "#fb923c" : color}
+        strokeWidth={2}
+        opacity={0.95}
+        cornerRadius={4}
       />
       <Circle
-        x={-size / 2}
-        y={-visibleDepth / 2}
+        x={-size / 2 + inset}
+        y={-visibleDepth / 2 + inset}
         radius={postRadius}
         fill={color}
       />
       <Circle
-        x={size / 2}
-        y={-visibleDepth / 2}
+        x={size / 2 - inset}
+        y={-visibleDepth / 2 + inset}
         radius={postRadius}
         fill={color}
       />
       <Circle
-        x={-size / 2}
-        y={visibleDepth / 2}
+        x={-size / 2 + inset}
+        y={visibleDepth / 2 - inset}
         radius={postRadius}
         fill={color}
       />
       <Circle
-        x={size / 2}
-        y={visibleDepth / 2}
+        x={size / 2 - inset}
+        y={visibleDepth / 2 - inset}
         radius={postRadius}
         fill={color}
       />
@@ -806,6 +1081,7 @@ function PolylineShapeContent({
         )}
       </Group>
       {allowInteraction &&
+        !path.locked &&
         path.points.map((point, index) => {
           const x = m2px(point.x, designPpm);
           const y = m2px(point.y, designPpm);
