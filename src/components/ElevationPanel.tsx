@@ -23,8 +23,9 @@ export default function ElevationPanel() {
 
   if (!path) {
     return (
-      <div className="border-t border-border bg-card/50 px-4 py-3 text-xs text-muted-foreground shrink-0">
-        No race line selected. Draw or select a race line to see the elevation profile.
+      <div className="border-border bg-card/50 text-muted-foreground shrink-0 border-t px-4 py-3 text-xs">
+        No race line selected. Draw or select a race line to see the elevation
+        profile.
       </div>
     );
   }
@@ -45,7 +46,10 @@ export default function ElevationPanel() {
   const linePath =
     data.length > 1
       ? data
-          .map((pt, i) => `${i === 0 ? "M" : "L"} ${toX(pt.d).toFixed(1)} ${toY(pt.z).toFixed(1)}`)
+          .map(
+            (pt, i) =>
+              `${i === 0 ? "M" : "L"} ${toX(pt.d).toFixed(1)} ${toY(pt.z).toFixed(1)}`
+          )
           .join(" ")
       : "";
 
@@ -67,12 +71,12 @@ export default function ElevationPanel() {
   }));
 
   return (
-    <div className="border-t border-border bg-card/50 px-4 py-3 shrink-0">
-      <div className="flex items-baseline justify-between mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+    <div className="border-border bg-card/50 shrink-0 border-t px-4 py-3">
+      <div className="mb-2 flex items-baseline justify-between">
+        <p className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
           Elevation Profile
         </p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-muted-foreground text-[10px]">
           {total.toFixed(1)} m · {minZ.toFixed(1)}–{maxZ.toFixed(1)} m
         </p>
       </div>
@@ -152,14 +156,22 @@ export default function ElevationPanel() {
         ))}
 
         <line
-          x1={PAD.left} y1={PAD.top}
-          x2={PAD.left} y2={PAD.top + chartH}
-          stroke="currentColor" strokeOpacity={0.2} strokeWidth={1}
+          x1={PAD.left}
+          y1={PAD.top}
+          x2={PAD.left}
+          y2={PAD.top + chartH}
+          stroke="currentColor"
+          strokeOpacity={0.2}
+          strokeWidth={1}
         />
         <line
-          x1={PAD.left} y1={PAD.top + chartH}
-          x2={PAD.left + chartW} y2={PAD.top + chartH}
-          stroke="currentColor" strokeOpacity={0.2} strokeWidth={1}
+          x1={PAD.left}
+          y1={PAD.top + chartH}
+          x2={PAD.left + chartW}
+          y2={PAD.top + chartH}
+          stroke="currentColor"
+          strokeOpacity={0.2}
+          strokeWidth={1}
         />
       </svg>
     </div>

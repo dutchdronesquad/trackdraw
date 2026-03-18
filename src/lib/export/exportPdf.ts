@@ -1,7 +1,11 @@
 import type Konva from "konva";
 import type { TrackDesign } from "../types";
 
-async function loadSvgAsPng(svgUrl: string, w: number, h: number): Promise<string> {
+async function loadSvgAsPng(
+  svgUrl: string,
+  w: number,
+  h: number
+): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
@@ -34,15 +38,15 @@ export async function exportPdf(
   // ── Layout ──────────────────────────────────────────────────
   const margin = 14;
   const footerH = 12;
-  const footerGap = 8;   // gap between track card and footer
+  const footerGap = 8; // gap between track card and footer
   const availW = pageW - margin * 2;
   const availH = pageH - margin * 2 - footerGap - footerH;
 
   // ── Colors ──────────────────────────────────────────────────
-  const colBg: [number, number, number]       = [244, 246, 250];
-  const colWhite: [number, number, number]    = [255, 255, 255];
-  const colBorder: [number, number, number]   = [215, 223, 235];
-  const colMeta: [number, number, number]     = [95, 112, 140];
+  const colBg: [number, number, number] = [244, 246, 250];
+  const colWhite: [number, number, number] = [255, 255, 255];
+  const colBorder: [number, number, number] = [215, 223, 235];
+  const colMeta: [number, number, number] = [95, 112, 140];
   const colFooterBg: [number, number, number] = [236, 241, 248];
 
   // ── Page background ──────────────────────────────────────────
@@ -69,7 +73,13 @@ export async function exportPdf(
   const clipY = stage.y();
   const clipW = design.field.width * ppm * stageScale;
   const clipH = design.field.height * ppm * stageScale;
-  const dataUrl = stage.toDataURL({ x: clipX, y: clipY, width: clipW, height: clipH, pixelRatio: 2 });
+  const dataUrl = stage.toDataURL({
+    x: clipX,
+    y: clipY,
+    width: clipW,
+    height: clipH,
+    pixelRatio: 2,
+  });
   pdf.addImage(dataUrl, "PNG", imgX, imgY, imgW, imgH);
 
   // Dimension labels
@@ -77,7 +87,10 @@ export async function exportPdf(
   pdf.setFontSize(6.5);
   pdf.setTextColor(...colMeta);
   pdf.text(`${width} m`, imgX + imgW / 2, imgY + imgH + 8, { align: "center" });
-  pdf.text(`${height} m`, imgX - 7, imgY + imgH / 2, { angle: 90, align: "center" });
+  pdf.text(`${height} m`, imgX - 7, imgY + imgH / 2, {
+    angle: 90,
+    align: "center",
+  });
 
   // ── Footer bar ───────────────────────────────────────────────
   const footerY = pageH - margin - footerH;
@@ -91,16 +104,29 @@ export async function exportPdf(
   // Left: TrackDraw logo
   const logoH = 6;
   const logoW = logoH * (799 / 200);
-  const logoDataUrl = await loadSvgAsPng("/assets/brand/trackdraw-logo-mono-lightbg.svg", 799, 200);
+  const logoDataUrl = await loadSvgAsPng(
+    "/assets/brand/trackdraw-logo-mono-lightbg.svg",
+    799,
+    200
+  );
   if (logoDataUrl) {
-    pdf.addImage(logoDataUrl, "PNG", margin + 5, footerY + (footerH - logoH) / 2, logoW, logoH);
+    pdf.addImage(
+      logoDataUrl,
+      "PNG",
+      margin + 5,
+      footerY + (footerH - logoH) / 2,
+      logoW,
+      logoH
+    );
   }
 
   // Center: track title + field size
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(7.5);
   pdf.setTextColor(...colMeta);
-  pdf.text(design.title.trim() || "Untitled Track", margin + availW / 2, midY, { align: "center" });
+  pdf.text(design.title.trim() || "Untitled Track", margin + availW / 2, midY, {
+    align: "center",
+  });
 
   const titleW = pdf.getTextWidth(design.title.trim() || "Untitled Track");
   pdf.setFont("helvetica", "normal");
@@ -108,7 +134,11 @@ export async function exportPdf(
   pdf.text(`  ${width} × ${height} m`, margin + availW / 2 + titleW / 2, midY);
 
   // Right: date
-  const dateStr = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  const dateStr = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
   pdf.setTextColor(...colMeta);

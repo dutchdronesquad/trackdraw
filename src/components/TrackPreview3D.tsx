@@ -3,7 +3,15 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Grid, RoundedBox, Text } from "@react-three/drei";
 import { useEditor } from "@/store/editor";
-import { useMemo, useRef, useState, useEffect, useCallback, forwardRef, useImperativeHandle } from "react";
+import {
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import * as THREE from "three";
 
 export interface TrackPreview3DHandle {
@@ -11,7 +19,11 @@ export interface TrackPreview3DHandle {
 }
 
 // Captures the WebGL renderer reference so we can call toDataURL from outside
-function ScreenshotHelper({ onReady }: { onReady: (fn: () => string) => void }) {
+function ScreenshotHelper({
+  onReady,
+}: {
+  onReady: (fn: () => string) => void;
+}) {
   const { gl } = useThree();
   useEffect(() => {
     onReady(() => gl.domElement.toDataURL("image/png"));
@@ -34,7 +46,11 @@ import type {
 } from "@/lib/types";
 
 // Creates a canvas texture with text drawn on it
-function useTextTexture(text: string, color: string, fontSize: number): THREE.CanvasTexture {
+function useTextTexture(
+  text: string,
+  color: string,
+  fontSize: number
+): THREE.CanvasTexture {
   return useMemo(() => {
     const scale = 4;
     const measW = Math.max(256, text.length * fontSize * scale * 0.62 + 40);
@@ -50,17 +66,20 @@ function useTextTexture(text: string, color: string, fontSize: number): THREE.Ca
     ctx.textBaseline = "middle";
     ctx.fillText(text, measW / 2, measH / 2);
     return new THREE.CanvasTexture(canvas);
-   
   }, [text, color, fontSize]);
 }
 
 // ── Gate ────────────────────────────────────────────────────
 function Gate3D({ shape }: { shape: GateShape }) {
   const color = shape.color ?? "#3b82f6";
-  const thick = shape.thick ?? 0.20;
+  const thick = shape.thick ?? 0.2;
   const h = shape.height ?? 2;
   const w = shape.width ?? 3;
-  const rot: [number, number, number] = [0, (-shape.rotation * Math.PI) / 180, 0];
+  const rot: [number, number, number] = [
+    0,
+    (-shape.rotation * Math.PI) / 180,
+    0,
+  ];
 
   return (
     <group position={[shape.x, 0, shape.y]} rotation={rot}>
@@ -100,7 +119,7 @@ function Flag3D({ shape }: { shape: FlagShape }) {
       </mesh>
       {/* Top cap glow */}
       <mesh position={[0, ph, 0]}>
-        <sphereGeometry args={[0.10, 8, 8]} />
+        <sphereGeometry args={[0.1, 8, 8]} />
         <meshBasicMaterial color={color} transparent opacity={0.55} />
       </mesh>
     </group>
@@ -131,14 +150,23 @@ function Label3D({ shape }: { shape: LabelShape }) {
   const planeH = size * 1.4;
 
   useFrame(({ camera }) => {
-    if (!shape.project && groupRef.current) groupRef.current.quaternion.copy(camera.quaternion);
+    if (!shape.project && groupRef.current)
+      groupRef.current.quaternion.copy(camera.quaternion);
   });
 
   if (shape.project) {
     return (
-      <mesh position={[shape.x, 0.05, shape.y]} rotation={[-Math.PI / 2, 0, (-shape.rotation * Math.PI) / 180]}>
+      <mesh
+        position={[shape.x, 0.05, shape.y]}
+        rotation={[-Math.PI / 2, 0, (-shape.rotation * Math.PI) / 180]}
+      >
         <planeGeometry args={[planeW, planeH]} />
-        <meshBasicMaterial map={texture} transparent side={THREE.DoubleSide} depthWrite={false} />
+        <meshBasicMaterial
+          map={texture}
+          transparent
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
       </mesh>
     );
   }
@@ -146,7 +174,12 @@ function Label3D({ shape }: { shape: LabelShape }) {
     <group ref={groupRef} position={[shape.x, 2.5, shape.y]}>
       <mesh>
         <planeGeometry args={[planeW, planeH]} />
-        <meshBasicMaterial map={texture} transparent side={THREE.DoubleSide} depthWrite={false} />
+        <meshBasicMaterial
+          map={texture}
+          transparent
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
       </mesh>
     </group>
   );
@@ -164,7 +197,11 @@ function StartFinish3D({ shape }: { shape: StartFinishShape }) {
   const topInset = 0.08;
   const stripeW = 0.1;
   const gap = spacing - podW;
-  const rot: [number, number, number] = [0, (-shape.rotation * Math.PI) / 180, 0];
+  const rot: [number, number, number] = [
+    0,
+    (-shape.rotation * Math.PI) / 180,
+    0,
+  ];
 
   return (
     <group position={[shape.x, 0, shape.y]} rotation={rot}>
@@ -181,7 +218,11 @@ function StartFinish3D({ shape }: { shape: StartFinishShape }) {
               receiveShadow
               castShadow
             >
-              <meshStandardMaterial color="#111a26" roughness={0.88} metalness={0.08} />
+              <meshStandardMaterial
+                color="#111a26"
+                roughness={0.88}
+                metalness={0.08}
+              />
             </RoundedBox>
 
             <RoundedBox
@@ -191,10 +232,19 @@ function StartFinish3D({ shape }: { shape: StartFinishShape }) {
               position={[0, podH + 0.012, 0]}
               receiveShadow
             >
-              <meshStandardMaterial color={color} emissive={color} emissiveIntensity={emissive} roughness={0.34} metalness={0.18} />
+              <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={emissive}
+                roughness={0.34}
+                metalness={0.18}
+              />
             </RoundedBox>
 
-            <mesh position={[0, podH + 0.022, -(podD / 2) + 0.16]} rotation={[-Math.PI / 2, 0, 0]}>
+            <mesh
+              position={[0, podH + 0.022, -(podD / 2) + 0.16]}
+              rotation={[-Math.PI / 2, 0, 0]}
+            >
               <planeGeometry args={[podW - topInset * 1.2, stripeW]} />
               <meshBasicMaterial color="#ffffff" transparent opacity={0.16} />
             </mesh>
@@ -219,9 +269,17 @@ function StartFinish3D({ shape }: { shape: StartFinishShape }) {
       })}
 
       {[-1, 1].map((dir) => (
-        <mesh key={`bridge-${dir}`} position={[dir * spacing, 0.01, 0]} receiveShadow>
+        <mesh
+          key={`bridge-${dir}`}
+          position={[dir * spacing, 0.01, 0]}
+          receiveShadow
+        >
           <boxGeometry args={[gap + 0.02, 0.015, 0.1]} />
-          <meshStandardMaterial color="#1c2634" roughness={0.9} metalness={0.04} />
+          <meshStandardMaterial
+            color="#1c2634"
+            roughness={0.9}
+            metalness={0.04}
+          />
         </mesh>
       ))}
     </group>
@@ -233,27 +291,48 @@ function Checkpoint3D({ shape }: { shape: CheckpointShape }) {
   const color = shape.color ?? "#22c55e";
   const w = shape.width ?? 3;
   const h = 2.0;
-  const rot: [number, number, number] = [0, (-shape.rotation * Math.PI) / 180, 0];
+  const rot: [number, number, number] = [
+    0,
+    (-shape.rotation * Math.PI) / 180,
+    0,
+  ];
 
   return (
     <group position={[shape.x, 0, shape.y]} rotation={rot}>
       {/* Thin arch-style checkpoint */}
       <mesh position={[-(w / 2), h / 2, 0]} castShadow>
         <cylinderGeometry args={[0.06, 0.06, h, 8]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.4}
+        />
       </mesh>
       <mesh position={[w / 2, h / 2, 0]} castShadow>
         <cylinderGeometry args={[0.06, 0.06, h, 8]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.4}
+        />
       </mesh>
       <mesh position={[0, h, 0]} castShadow>
         <boxGeometry args={[w + 0.12, 0.12, 0.12]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={0.4}
+        />
       </mesh>
       {/* Glowing gate plane */}
       <mesh position={[0, h / 2, 0]} rotation={[0, 0, 0]}>
         <planeGeometry args={[w, h]} />
-        <meshBasicMaterial color={color} transparent opacity={0.08} side={THREE.DoubleSide} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0.08}
+          side={THREE.DoubleSide}
+        />
       </mesh>
     </group>
   );
@@ -267,9 +346,13 @@ function Ladder3D({ shape }: { shape: LadderShape }) {
   const w = shape.width ?? 1.5;
   const totalH = shape.height ?? 4.5;
   const rungs = Math.max(1, shape.rungs ?? 3);
-  const thick = 0.20; // same as Gate3D
+  const thick = 0.2; // same as Gate3D
   const gateH = totalH / rungs; // height of each individual opening
-  const rot: [number, number, number] = [0, (-shape.rotation * Math.PI) / 180, 0];
+  const rot: [number, number, number] = [
+    0,
+    (-shape.rotation * Math.PI) / 180,
+    0,
+  ];
 
   return (
     <group position={[shape.x, 0, shape.y]} rotation={rot}>
@@ -293,7 +376,12 @@ function Ladder3D({ shape }: { shape: LadderShape }) {
           {/* Transparent fill — same style as Gate3D fill plane */}
           <mesh position={[0, gateH / 2, 0]}>
             <planeGeometry args={[w, gateH]} />
-            <meshBasicMaterial color={color} transparent opacity={0.06} side={THREE.DoubleSide} />
+            <meshBasicMaterial
+              color={color}
+              transparent
+              opacity={0.06}
+              side={THREE.DoubleSide}
+            />
           </mesh>
         </group>
       ))}
@@ -306,7 +394,7 @@ function Ladder3D({ shape }: { shape: LadderShape }) {
 function DiveGate3D({ shape }: { shape: DiveGateShape }) {
   const color = shape.color ?? "#f97316";
   const sz = shape.size ?? 2.8;
-  const thick = shape.thick ?? 0.20;
+  const thick = shape.thick ?? 0.2;
   const tilt = shape.tilt ?? 0;
   const tiltRad = (tilt * Math.PI) / 180;
   const yawRad = (-shape.rotation * Math.PI) / 180;
@@ -315,16 +403,19 @@ function DiveGate3D({ shape }: { shape: DiveGateShape }) {
 
   // Frame corner world positions: y = centerY ± (sz/2)·sin(tilt), z = ∓(sz/2)·cos(tilt)
   const bottomY = centerY - (sz / 2) * Math.sin(tiltRad);
-  const topY    = centerY + (sz / 2) * Math.sin(tiltRad);
-  const bottomZ =  (sz / 2) * Math.cos(tiltRad);
-  const topZ    = -(sz / 2) * Math.cos(tiltRad);
+  const topY = centerY + (sz / 2) * Math.sin(tiltRad);
+  const bottomZ = (sz / 2) * Math.cos(tiltRad);
+  const topZ = -(sz / 2) * Math.cos(tiltRad);
   const postW = thick;
 
   return (
     <group position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
       {/* Frame centered at ~3m height, tilted around X axis */}
-      <group position={[0, centerY, 0]} rotation={[-Math.PI / 2 + tiltRad, 0, 0]}>
-        <mesh position={[0,  sz / 2, 0]} castShadow>
+      <group
+        position={[0, centerY, 0]}
+        rotation={[-Math.PI / 2 + tiltRad, 0, 0]}
+      >
+        <mesh position={[0, sz / 2, 0]} castShadow>
           <boxGeometry args={[sz, thick, thick]} />
           <meshStandardMaterial color={color} />
         </mesh>
@@ -342,12 +433,21 @@ function DiveGate3D({ shape }: { shape: DiveGateShape }) {
         </mesh>
         <mesh>
           <planeGeometry args={[sz - thick * 2, sz - thick * 2]} />
-          <meshBasicMaterial color={color} transparent opacity={0.07} side={THREE.DoubleSide} />
+          <meshBasicMaterial
+            color={color}
+            transparent
+            opacity={0.07}
+            side={THREE.DoubleSide}
+          />
         </mesh>
       </group>
       {/* Vertical posts from all 4 frame corners to ground */}
-      {[[-sz / 2, bottomY, bottomZ], [sz / 2, bottomY, bottomZ],
-        [-sz / 2, topY,    topZ   ], [sz / 2, topY,    topZ   ]].map(([px, py, pz], i) =>
+      {[
+        [-sz / 2, bottomY, bottomZ],
+        [sz / 2, bottomY, bottomZ],
+        [-sz / 2, topY, topZ],
+        [sz / 2, topY, topZ],
+      ].map(([px, py, pz], i) =>
         py > 0.05 ? (
           <mesh key={i} position={[px, py / 2, pz]} castShadow>
             <boxGeometry args={[postW, py, postW]} />
@@ -364,7 +464,9 @@ function RaceLine3D({ shape }: { shape: PolylineShape }) {
   const geometry = useMemo(() => {
     const pts = shape.points;
     if (pts.length < 2) return null;
-    const vectors = pts.map((p) => new THREE.Vector3(p.x, Math.max(p.z ?? 0, 0) + 0.5, p.y));
+    const vectors = pts.map(
+      (p) => new THREE.Vector3(p.x, Math.max(p.z ?? 0, 0) + 0.5, p.y)
+    );
     const curve = new THREE.CatmullRomCurve3(vectors, false, "catmullrom", 0.5);
     const tubeRadius = Math.max(0.02, (shape.strokeWidth ?? 0.16) / 2);
     return new THREE.TubeGeometry(curve, 64, tubeRadius, 8, false);
@@ -381,16 +483,26 @@ function RaceLine3D({ shape }: { shape: PolylineShape }) {
 // ── Shape dispatcher ─────────────────────────────────────────
 function Shape3D({ shape }: { shape: Shape }) {
   switch (shape.kind) {
-    case "gate":        return <Gate3D shape={shape as GateShape} />;
-    case "flag":        return <Flag3D shape={shape as FlagShape} />;
-    case "cone":        return <Cone3D shape={shape as ConeShape} />;
-    case "label":       return <Label3D shape={shape as LabelShape} />;
-    case "polyline":    return <RaceLine3D shape={shape as PolylineShape} />;
-    case "startfinish": return <StartFinish3D shape={shape as StartFinishShape} />;
-    case "checkpoint":  return <Checkpoint3D shape={shape as CheckpointShape} />;
-    case "ladder":      return <Ladder3D shape={shape as LadderShape} />;
-    case "divegate":    return <DiveGate3D shape={shape as DiveGateShape} />;
-    default:            return null;
+    case "gate":
+      return <Gate3D shape={shape as GateShape} />;
+    case "flag":
+      return <Flag3D shape={shape as FlagShape} />;
+    case "cone":
+      return <Cone3D shape={shape as ConeShape} />;
+    case "label":
+      return <Label3D shape={shape as LabelShape} />;
+    case "polyline":
+      return <RaceLine3D shape={shape as PolylineShape} />;
+    case "startfinish":
+      return <StartFinish3D shape={shape as StartFinishShape} />;
+    case "checkpoint":
+      return <Checkpoint3D shape={shape as CheckpointShape} />;
+    case "ladder":
+      return <Ladder3D shape={shape as LadderShape} />;
+    case "divegate":
+      return <DiveGate3D shape={shape as DiveGateShape} />;
+    default:
+      return null;
   }
 }
 
@@ -464,7 +576,15 @@ const THEME = {
 };
 
 // ── Field watermark ──────────────────────────────────────────
-function FieldWatermark({ fw, fh, isDark }: { fw: number; fh: number; isDark: boolean }) {
+function FieldWatermark({
+  fw,
+  fh,
+  isDark,
+}: {
+  fw: number;
+  fh: number;
+  isDark: boolean;
+}) {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
   const [aspect, setAspect] = useState(799 / 200);
 
@@ -503,153 +623,192 @@ function FieldWatermark({ fw, fh, isDark }: { fw: number; fh: number; isDark: bo
 }
 
 // ── Main ─────────────────────────────────────────────────────
-const TrackPreview3D = forwardRef<TrackPreview3DHandle>(function TrackPreview3D(_, ref) {
-  const { design } = useEditor();
-  const theme = useTheme();
-  const t = THEME[theme];
-  const cx = design.field.width / 2;
-  const cz = design.field.height / 2;
-  const longest = Math.max(design.field.width, design.field.height);
+const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
+  function TrackPreview3D(_, ref) {
+    const { design } = useEditor();
+    const theme = useTheme();
+    const t = THEME[theme];
+    const cx = design.field.width / 2;
+    const cz = design.field.height / 2;
+    const longest = Math.max(design.field.width, design.field.height);
 
-  const [flyMode, setFlyMode] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
-  const screenshotFnRef = useRef<(() => string) | null>(null);
+    const [flyMode, setFlyMode] = useState(false);
+    const [playing, setPlaying] = useState(false);
+    const [speed, setSpeed] = useState(1);
+    const screenshotFnRef = useRef<(() => string) | null>(null);
 
-  useImperativeHandle(ref, () => ({
-    screenshot: () => screenshotFnRef.current?.() ?? "",
-  }));
+    useImperativeHandle(ref, () => ({
+      screenshot: () => screenshotFnRef.current?.() ?? "",
+    }));
 
-  const handleScreenshotReady = useCallback((fn: () => string) => {
-    screenshotFnRef.current = fn;
-  }, []);
+    const handleScreenshotReady = useCallback((fn: () => string) => {
+      screenshotFnRef.current = fn;
+    }, []);
 
-  const hasPath = design.shapes.some(
-    (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
-  );
+    const hasPath = design.shapes.some(
+      (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
+    );
 
-  return (
-    <div className="h-full w-full relative" style={{ background: t.bg }}>
-      <Canvas
-        shadows
-        camera={{ position: [cx - 14, 18, cz + 20], fov: 46, near: 0.1, far: 500 }}
-        gl={{ antialias: true, preserveDrawingBuffer: true }}
-      >
-        <color attach="background" args={[t.bg]} />
-        <fog attach="fog" args={[t.fog, 80, 260]} />
-        <ambientLight intensity={t.ambientIntensity} />
-        <directionalLight
-          position={[cx + 12, 28, cz + 8]}
-          intensity={t.dirIntensity}
-          castShadow
-          shadow-mapSize-width={1536}
-          shadow-mapSize-height={1536}
-        />
-        <pointLight position={[cx - 10, 8, cz - 5]} intensity={0.3} color="#2dd4bf" />
-        <pointLight position={[cx + 15, 6, cz + 12]} intensity={0.25} color="#60a5fa" />
-
-        {/* Ground */}
-        <mesh
-          position={[cx, -0.01, cz]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          receiveShadow
+    return (
+      <div className="relative h-full w-full" style={{ background: t.bg }}>
+        <Canvas
+          shadows
+          camera={{
+            position: [cx - 14, 18, cz + 20],
+            fov: 46,
+            near: 0.1,
+            far: 500,
+          }}
+          gl={{ antialias: true, preserveDrawingBuffer: true }}
         >
-          <planeGeometry args={[design.field.width, design.field.height]} />
-          <meshStandardMaterial color={t.groundColor} roughness={0.98} metalness={0} />
-        </mesh>
-
-        {/* Grid */}
-        <Grid
-          position={[cx, 0, cz]}
-          args={[design.field.width, design.field.height]}
-          cellSize={design.field.gridStep}
-          cellColor={t.gridCell}
-          sectionSize={design.field.gridStep * 5}
-          sectionColor={t.gridSection}
-          fadeDistance={Math.max(90, longest * 2)}
-          fadeStrength={1.15}
-          infiniteGrid={false}
-        />
-        {/* Shapes */}
-        {design.shapes.map((shape) => (
-          <Shape3D key={shape.id} shape={shape} />
-        ))}
-
-        <FieldWatermark fw={design.field.width} fh={design.field.height} isDark={theme === "dark"} />
-
-        <ScreenshotHelper onReady={handleScreenshotReady} />
-        {flyMode ? (
-          <DroneCamera shapes={design.shapes} playing={playing} speed={speed} />
-        ) : (
-          <OrbitControls
-            makeDefault
-            enableDamping
-            dampingFactor={0.08}
-            target={[cx, 0, cz]}
-            maxPolarAngle={Math.PI / 2}
-            minDistance={8}
-            maxDistance={Math.max(120, longest * 3)}
-            mouseButtons={{
-              LEFT: THREE.MOUSE.ROTATE,
-              MIDDLE: THREE.MOUSE.PAN,
-            }}
+          <color attach="background" args={[t.bg]} />
+          <fog attach="fog" args={[t.fog, 80, 260]} />
+          <ambientLight intensity={t.ambientIntensity} />
+          <directionalLight
+            position={[cx + 12, 28, cz + 8]}
+            intensity={t.dirIntensity}
+            castShadow
+            shadow-mapSize-width={1536}
+            shadow-mapSize-height={1536}
           />
-        )}
-      </Canvas>
+          <pointLight
+            position={[cx - 10, 8, cz - 5]}
+            intensity={0.3}
+            color="#2dd4bf"
+          />
+          <pointLight
+            position={[cx + 15, 6, cz + 12]}
+            intensity={0.25}
+            color="#60a5fa"
+          />
 
-      {/* Fly-through controls overlay */}
-      {hasPath && (
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-xl border border-white/10 bg-black/70 px-3 py-1.5 backdrop-blur shadow-lg text-sm select-none">
+          {/* Ground */}
+          <mesh
+            position={[cx, -0.01, cz]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            receiveShadow
+          >
+            <planeGeometry args={[design.field.width, design.field.height]} />
+            <meshStandardMaterial
+              color={t.groundColor}
+              roughness={0.98}
+              metalness={0}
+            />
+          </mesh>
+
+          {/* Grid */}
+          <Grid
+            position={[cx, 0, cz]}
+            args={[design.field.width, design.field.height]}
+            cellSize={design.field.gridStep}
+            cellColor={t.gridCell}
+            sectionSize={design.field.gridStep * 5}
+            sectionColor={t.gridSection}
+            fadeDistance={Math.max(90, longest * 2)}
+            fadeStrength={1.15}
+            infiniteGrid={false}
+          />
+          {/* Shapes */}
+          {design.shapes.map((shape) => (
+            <Shape3D key={shape.id} shape={shape} />
+          ))}
+
+          <FieldWatermark
+            fw={design.field.width}
+            fh={design.field.height}
+            isDark={theme === "dark"}
+          />
+
+          <ScreenshotHelper onReady={handleScreenshotReady} />
           {flyMode ? (
-            <>
-              <button
-                onClick={() => setPlaying((p) => !p)}
-                className="size-7 rounded flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-                title={playing ? "Pause" : "Play"}
-              >
-                {playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}
-              </button>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-white/40">Speed</span>
-                <input
-                  type="range"
-                  min={0.2}
-                  max={5}
-                  step={0.1}
-                  value={speed}
-                  onChange={(e) => setSpeed(+e.target.value)}
-                  className="w-20 accent-white cursor-pointer"
-                />
-                <span className="text-[10px] font-mono w-6 text-white/60">{speed.toFixed(1)}×</span>
-              </div>
-              <div className="w-px h-4 bg-white/10 mx-0.5" />
-              <button
-                onClick={() => { setFlyMode(false); setPlaying(false); }}
-                className="text-[11px] text-white/40 hover:text-white/80 transition-colors px-1"
-              >
-                Exit
-              </button>
-            </>
+            <DroneCamera
+              shapes={design.shapes}
+              playing={playing}
+              speed={speed}
+            />
           ) : (
-            <button
-              onClick={() => { setFlyMode(true); setPlaying(true); }}
-              className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/90 transition-colors px-1"
-            >
-              <Wind className="size-3.5" />
-              Fly-Through
-            </button>
+            <OrbitControls
+              makeDefault
+              enableDamping
+              dampingFactor={0.08}
+              target={[cx, 0, cz]}
+              maxPolarAngle={Math.PI / 2}
+              minDistance={8}
+              maxDistance={Math.max(120, longest * 3)}
+              mouseButtons={{
+                LEFT: THREE.MOUSE.ROTATE,
+                MIDDLE: THREE.MOUSE.PAN,
+              }}
+            />
           )}
-        </div>
-      )}
+        </Canvas>
 
-      {/* No path hint */}
-      {!hasPath && (
-        <div className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 text-[11px] text-white/20 select-none">
-          Draw a race path in 2D to enable fly-through
-        </div>
-      )}
-    </div>
-  );
-});
+        {/* Fly-through controls overlay */}
+        {hasPath && (
+          <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-white/10 bg-black/70 px-3 py-1.5 text-sm shadow-lg backdrop-blur select-none">
+            {flyMode ? (
+              <>
+                <button
+                  onClick={() => setPlaying((p) => !p)}
+                  className="flex size-7 items-center justify-center rounded text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                  title={playing ? "Pause" : "Play"}
+                >
+                  {playing ? (
+                    <Pause className="size-3.5" />
+                  ) : (
+                    <Play className="size-3.5" />
+                  )}
+                </button>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-white/40">Speed</span>
+                  <input
+                    type="range"
+                    min={0.2}
+                    max={5}
+                    step={0.1}
+                    value={speed}
+                    onChange={(e) => setSpeed(+e.target.value)}
+                    className="w-20 cursor-pointer accent-white"
+                  />
+                  <span className="w-6 font-mono text-[10px] text-white/60">
+                    {speed.toFixed(1)}×
+                  </span>
+                </div>
+                <div className="mx-0.5 h-4 w-px bg-white/10" />
+                <button
+                  onClick={() => {
+                    setFlyMode(false);
+                    setPlaying(false);
+                  }}
+                  className="px-1 text-[11px] text-white/40 transition-colors hover:text-white/80"
+                >
+                  Exit
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  setFlyMode(true);
+                  setPlaying(true);
+                }}
+                className="flex items-center gap-1.5 px-1 text-[11px] text-white/50 transition-colors hover:text-white/90"
+              >
+                <Wind className="size-3.5" />
+                Fly-Through
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* No path hint */}
+        {!hasPath && (
+          <div className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 text-[11px] text-white/20 select-none">
+            Draw a race path in 2D to enable fly-through
+          </div>
+        )}
+      </div>
+    );
+  }
+);
 
 export default TrackPreview3D;

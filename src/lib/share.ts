@@ -9,7 +9,10 @@ function normalizeDesign(raw: TrackDesign): TrackDesign {
     version: 1 as const,
     shapes: raw.shapes.map((shape) => {
       if (shape.kind === "polyline") {
-        return { ...shape, smooth: (shape as PolylineShape).smooth ?? true } as Shape;
+        return {
+          ...shape,
+          smooth: (shape as PolylineShape).smooth ?? true,
+        } as Shape;
       }
       return shape;
     }),

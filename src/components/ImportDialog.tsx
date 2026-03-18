@@ -1,7 +1,12 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useEditor } from "@/store/editor";
 import { cn } from "@/lib/utils";
 import { Upload, FileJson, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -14,20 +19,30 @@ interface ImportDialogProps {
 
 type ParsedFile = { design: TrackDesign; shapeCount: number };
 
-export default function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
+export default function ImportDialog({
+  open,
+  onOpenChange,
+}: ImportDialogProps) {
   const { replaceDesign } = useEditor();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [parsed, setParsed] = useState<ParsedFile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const reset = () => { setParsed(null); setError(null); };
+  const reset = () => {
+    setParsed(null);
+    setError(null);
+  };
 
   const tryParse = useCallback((text: string) => {
     try {
       const data = JSON.parse(text);
-      if (!data || typeof data !== "object" || !Array.isArray(data.shapes)) throw new Error();
-      setParsed({ design: data as TrackDesign, shapeCount: data.shapes.length });
+      if (!data || typeof data !== "object" || !Array.isArray(data.shapes))
+        throw new Error();
+      setParsed({
+        design: data as TrackDesign,
+        shapeCount: data.shapes.length,
+      });
       setError(null);
     } catch {
       setError("Invalid file — this doesn't look like a TrackDraw project.");
@@ -35,21 +50,27 @@ export default function ImportDialog({ open, onOpenChange }: ImportDialogProps) 
     }
   }, []);
 
-  const handleFile = useCallback((file: File) => {
-    if (!file.name.endsWith(".json")) {
-      setError("Only .json files are supported.");
-      setParsed(null);
-      return;
-    }
-    file.text().then(tryParse);
-  }, [tryParse]);
+  const handleFile = useCallback(
+    (file: File) => {
+      if (!file.name.endsWith(".json")) {
+        setError("Only .json files are supported.");
+        setParsed(null);
+        return;
+      }
+      file.text().then(tryParse);
+    },
+    [tryParse]
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  }, [handleFile]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,60 +101,77 @@ export default function ImportDialog({ open, onOpenChange }: ImportDialogProps) 
           <>
             {/* Drop zone */}
             <div
-              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
               onDragLeave={() => setDragging(false)}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 cursor-pointer transition-colors",
+                "relative flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 transition-colors",
                 dragging
                   ? "border-primary/60 bg-primary/5"
                   : "border-border/60 hover:border-border hover:bg-muted/30"
               )}
             >
-              <Upload className={cn("size-8 transition-colors", dragging ? "text-primary" : "text-muted-foreground/40")} />
+              <Upload
+                className={cn(
+                  "size-8 transition-colors",
+                  dragging ? "text-primary" : "text-muted-foreground/40"
+                )}
+              />
               <div className="text-center">
-                <p className="text-sm font-medium text-foreground">Drop a file here</p>
-                <p className="text-xs text-muted-foreground mt-1">or click to browse</p>
+                <p className="text-foreground text-sm font-medium">
+                  Drop a file here
+                </p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  or click to browse
+                </p>
               </div>
-              <span className="text-[10px] text-muted-foreground/40 font-mono">.json</span>
+              <span className="text-muted-foreground/40 font-mono text-[10px]">
+                .json
+              </span>
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2.5">
-                <AlertCircle className="size-4 text-destructive shrink-0 mt-0.5" />
-                <p className="text-xs text-destructive">{error}</p>
+              <div className="bg-destructive/10 border-destructive/20 flex items-start gap-2 rounded-lg border px-3 py-2.5">
+                <AlertCircle className="text-destructive mt-0.5 size-4 shrink-0" />
+                <p className="text-destructive text-xs">{error}</p>
               </div>
             )}
           </>
         ) : (
           /* Preview */
           <div className="space-y-3">
-            <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/20 px-4 py-3.5">
-              <FileJson className="size-8 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="border-border bg-muted/20 flex items-start gap-3 rounded-xl border px-4 py-3.5">
+              <FileJson className="mt-0.5 size-8 shrink-0 text-emerald-400" />
               <div className="min-w-0">
-                <p className="text-sm font-semibold truncate">{parsed.design.title || "Untitled project"}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="truncate text-sm font-semibold">
+                  {parsed.design.title || "Untitled project"}
+                </p>
+                <p className="text-muted-foreground mt-0.5 text-xs">
                   {parsed.design.field.width} × {parsed.design.field.height} m
                   &nbsp;·&nbsp;
-                  {parsed.shapeCount} {parsed.shapeCount === 1 ? "object" : "objects"}
+                  {parsed.shapeCount}{" "}
+                  {parsed.shapeCount === 1 ? "object" : "objects"}
                 </p>
               </div>
-              <CheckCircle2 className="size-4 text-emerald-400 shrink-0 mt-1" />
+              <CheckCircle2 className="mt-1 size-4 shrink-0 text-emerald-400" />
             </div>
-            <p className="text-xs text-muted-foreground px-0.5">
+            <p className="text-muted-foreground px-0.5 text-xs">
               The current project will be replaced. This cannot be undone.
             </p>
             <div className="flex gap-2">
               <button
                 onClick={reset}
-                className="flex-1 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted/40 transition-colors"
+                className="border-border text-muted-foreground hover:bg-muted/40 flex-1 rounded-lg border px-4 py-2 text-sm transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirm}
-                className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
               >
                 Load
               </button>
@@ -141,7 +179,13 @@ export default function ImportDialog({ open, onOpenChange }: ImportDialogProps) 
           </div>
         )}
 
-        <input ref={fileInputRef} type="file" accept=".json,application/json" className="hidden" onChange={handleFileInput} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,application/json"
+          className="hidden"
+          onChange={handleFileInput}
+        />
       </DialogContent>
     </Dialog>
   );

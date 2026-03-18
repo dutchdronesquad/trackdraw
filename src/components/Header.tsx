@@ -4,11 +4,32 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { buttonVariants } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
-import { Undo2, Redo2, Share2, Eye, Download, Keyboard, ChevronDown, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  Undo2,
+  Redo2,
+  Share2,
+  Eye,
+  Download,
+  Keyboard,
+  ChevronDown,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
 import { useState } from "react";
@@ -85,22 +106,26 @@ export default function Header({
   const [openShortcutSection, setOpenShortcutSection] = useState("Tools");
 
   const viewToggle = (
-    <div className="flex items-center rounded-md border border-border/70 overflow-hidden text-[11px] font-medium">
+    <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
       <button
         onClick={() => onTabChange("2d")}
         className={cn(
           "px-2.5 py-1 transition-colors",
-          tab === "2d" ? "bg-muted/80 text-foreground" : "text-muted-foreground hover:text-foreground"
+          tab === "2d"
+            ? "bg-muted/80 text-foreground"
+            : "text-muted-foreground hover:text-foreground"
         )}
       >
         2D
       </button>
-      <div className="w-px h-full bg-border/60 self-stretch" />
+      <div className="bg-border/60 h-full w-px self-stretch" />
       <button
         onClick={() => onTabChange("3d")}
         className={cn(
           "px-2.5 py-1 transition-colors",
-          tab === "3d" ? "bg-muted/80 text-foreground" : "text-muted-foreground hover:text-foreground"
+          tab === "3d"
+            ? "bg-muted/80 text-foreground"
+            : "text-muted-foreground hover:text-foreground"
         )}
       >
         3D
@@ -111,7 +136,7 @@ export default function Header({
   const mobileTabToggle = (
     <button
       onClick={() => onTabChange(tab === "2d" ? "3d" : "2d")}
-      className="inline-flex h-7 min-w-10 items-center justify-center rounded-md border border-border/70 px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"
+      className="border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted inline-flex h-7 min-w-10 items-center justify-center rounded-md border px-2 text-[11px] font-medium transition-colors"
       aria-label={`Switch to ${tab === "2d" ? "3D" : "2D"} view`}
     >
       {tab === "2d" ? "2D" : "3D"}
@@ -119,17 +144,23 @@ export default function Header({
   );
 
   return (
-    <header className="relative h-11 shrink-0 flex items-center px-3 border-b border-border bg-sidebar z-20 select-none gap-2">
-      <div className="flex min-w-0 flex-1 items-center gap-2 shrink-0">
+    <header className="border-border bg-sidebar relative z-20 flex h-11 shrink-0 items-center gap-2 border-b px-3 select-none">
+      <div className="flex min-w-0 flex-1 shrink-0 items-center gap-2">
         {!readOnly && onToggleCollapsed && (
           <Tooltip>
             <TooltipTrigger
               onClick={() => onToggleCollapsed()}
-              className="hidden lg:flex shrink-0 size-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 shrink-0 items-center justify-center rounded-md transition-colors lg:flex"
             >
-              {collapsed ? <PanelLeftOpen className="size-3.5" /> : <PanelLeftClose className="size-3.5" />}
+              {collapsed ? (
+                <PanelLeftOpen className="size-3.5" />
+              ) : (
+                <PanelLeftClose className="size-3.5" />
+              )}
             </TooltipTrigger>
-            <TooltipContent>{collapsed ? "Expand sidebar" : "Collapse sidebar"}</TooltipContent>
+            <TooltipContent>
+              {collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            </TooltipContent>
           </Tooltip>
         )}
         <div className="flex items-center gap-2 lg:hidden">
@@ -137,7 +168,7 @@ export default function Header({
         </div>
       </div>
 
-      <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden">
+      <div className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden">
         <Image
           src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
           alt="TrackDraw"
@@ -149,57 +180,69 @@ export default function Header({
       </div>
 
       <div className="ml-auto flex shrink-0 items-center gap-1">
-        <div className="hidden lg:flex mr-1">
-          {viewToggle}
-        </div>
+        <div className="mr-1 hidden lg:flex">{viewToggle}</div>
 
-        <div className="hidden lg:block h-4 w-px bg-border/80 mx-1" />
+        <div className="bg-border/80 mx-1 hidden h-4 w-px lg:block" />
 
         {readOnly && (
           <>
-            <span className="hidden sm:flex items-center gap-1 shrink-0 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium text-sky-400">
+            <span className="hidden shrink-0 items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium text-sky-400 sm:flex">
               <Eye className="size-3" />
               View only
             </span>
-            <div className="hidden sm:block h-4 w-px bg-border/80 mx-1" />
+            <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
           </>
         )}
 
         {/* Undo/Redo — hidden on mobile */}
         {!readOnly && (
-          <div className="hidden sm:flex items-center gap-1">
+          <div className="hidden items-center gap-1 sm:flex">
             <Tooltip>
               <TooltipTrigger
                 className={cn(
-                  "size-7 rounded-md flex items-center justify-center transition-colors text-muted-foreground",
-                  canUndo ? "hover:text-foreground hover:bg-muted" : "opacity-25 pointer-events-none"
+                  "text-muted-foreground flex size-7 items-center justify-center rounded-md transition-colors",
+                  canUndo
+                    ? "hover:text-foreground hover:bg-muted"
+                    : "pointer-events-none opacity-25"
                 )}
                 onClick={() => undo()}
                 aria-label="Undo"
               >
                 <Undo2 className="size-3.5" />
               </TooltipTrigger>
-              <TooltipContent>Undo <span className="ml-1 opacity-50 font-mono text-[10px]">⌃Z</span></TooltipContent>
+              <TooltipContent>
+                Undo{" "}
+                <span className="ml-1 font-mono text-[10px] opacity-50">
+                  ⌃Z
+                </span>
+              </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger
                 className={cn(
-                  "size-7 rounded-md flex items-center justify-center transition-colors text-muted-foreground",
-                  canRedo ? "hover:text-foreground hover:bg-muted" : "opacity-25 pointer-events-none"
+                  "text-muted-foreground flex size-7 items-center justify-center rounded-md transition-colors",
+                  canRedo
+                    ? "hover:text-foreground hover:bg-muted"
+                    : "pointer-events-none opacity-25"
                 )}
                 onClick={() => redo()}
                 aria-label="Redo"
               >
                 <Redo2 className="size-3.5" />
               </TooltipTrigger>
-              <TooltipContent>Redo <span className="ml-1 opacity-50 font-mono text-[10px]">⌃Y</span></TooltipContent>
+              <TooltipContent>
+                Redo{" "}
+                <span className="ml-1 font-mono text-[10px] opacity-50">
+                  ⌃Y
+                </span>
+              </TooltipContent>
             </Tooltip>
             <Dialog>
               <Tooltip>
                 <TooltipTrigger
                   render={
                     <DialogTrigger
-                      className="hidden lg:flex size-7 rounded-md items-center justify-center transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 items-center justify-center rounded-md transition-colors lg:flex"
                       aria-label="Keyboard shortcuts"
                     />
                   }
@@ -208,7 +251,10 @@ export default function Header({
                 </TooltipTrigger>
                 <TooltipContent>Keyboard shortcuts</TooltipContent>
               </Tooltip>
-              <DialogContent size="auto" className="hidden max-w-none gap-3 lg:grid lg:w-[540px]">
+              <DialogContent
+                size="auto"
+                className="hidden max-w-none gap-3 lg:grid lg:w-[540px]"
+              >
                 <DialogHeader>
                   <DialogTitle>Keyboard Shortcuts</DialogTitle>
                   <DialogDescription>
@@ -219,22 +265,29 @@ export default function Header({
                   {shortcutSections.map((section) => (
                     <div
                       key={section.title}
-                      className="group overflow-hidden rounded-lg border border-border/70 bg-muted/15"
+                      className="group border-border/70 bg-muted/15 overflow-hidden rounded-lg border"
                     >
                       <button
                         type="button"
-                        onClick={() => setOpenShortcutSection((current) => current === section.title ? "" : section.title)}
-                        className="flex w-full items-center justify-between gap-3 bg-muted/40 px-3 py-2 text-left transition-colors hover:bg-muted/60"
+                        onClick={() =>
+                          setOpenShortcutSection((current) =>
+                            current === section.title ? "" : section.title
+                          )
+                        }
+                        className="bg-muted/40 hover:bg-muted/60 flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors"
                         aria-expanded={openShortcutSection === section.title}
                       >
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80">
+                        <span className="text-muted-foreground/80 text-[11px] font-semibold tracking-[0.16em] uppercase">
                           {section.title}
                         </span>
                         <motion.div
-                          animate={{ rotate: openShortcutSection === section.title ? 180 : 0 }}
+                          animate={{
+                            rotate:
+                              openShortcutSection === section.title ? 180 : 0,
+                          }}
                           transition={{ duration: 0.18, ease: "easeOut" }}
                         >
-                          <ChevronDown className="size-3.5 text-muted-foreground" />
+                          <ChevronDown className="text-muted-foreground size-3.5" />
                         </motion.div>
                       </button>
                       <AnimatePresence initial={false}>
@@ -246,13 +299,20 @@ export default function Header({
                             transition={{ duration: 0.18, ease: "easeOut" }}
                             className="overflow-hidden"
                           >
-                            <div className="divide-y divide-border/60">
+                            <div className="divide-border/60 divide-y">
                               {section.items.map((item) => (
-                                <div key={`${section.title}-${item.label}-${item.keys.join("-")}`} className="flex min-h-9 items-center justify-between gap-3 px-3 py-1.5">
-                                  <span className="pr-3 text-[13px] leading-5 text-foreground/80">{item.label}</span>
+                                <div
+                                  key={`${section.title}-${item.label}-${item.keys.join("-")}`}
+                                  className="flex min-h-9 items-center justify-between gap-3 px-3 py-1.5"
+                                >
+                                  <span className="text-foreground/80 pr-3 text-[13px] leading-5">
+                                    {item.label}
+                                  </span>
                                   <KbdGroup className="shrink-0 flex-wrap justify-end">
                                     {item.keys.map((key) => (
-                                      <Kbd key={`${item.label}-${key}`}>{key}</Kbd>
+                                      <Kbd key={`${item.label}-${key}`}>
+                                        {key}
+                                      </Kbd>
                                     ))}
                                   </KbdGroup>
                                 </div>
@@ -271,14 +331,17 @@ export default function Header({
 
         {!readOnly && (
           <>
-            <div className="hidden sm:block h-4 w-px bg-border/80 mx-1" />
+            <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
           </>
         )}
 
         {!readOnly && onExport && (
           <button
             onClick={onExport}
-            className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 px-2 sm:px-2.5 text-xs gap-1.5")}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "h-7 gap-1.5 px-2 text-xs sm:px-2.5"
+            )}
           >
             <Download className="size-3.5" />
             <span className="hidden sm:inline">Export</span>
@@ -287,13 +350,16 @@ export default function Header({
 
         <button
           onClick={onShare}
-          className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "h-7 px-2 sm:px-2.5 text-xs gap-1.5")}
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "h-7 gap-1.5 px-2 text-xs sm:px-2.5"
+          )}
         >
           <Share2 className="size-3.5" />
           <span className="hidden sm:inline">Share</span>
         </button>
 
-        <div className="h-4 w-px bg-border/80 mx-1" />
+        <div className="bg-border/80 mx-1 h-4 w-px" />
         <ThemeToggle />
       </div>
     </header>

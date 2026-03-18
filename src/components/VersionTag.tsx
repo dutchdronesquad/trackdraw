@@ -1,6 +1,10 @@
 "use client";
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 function shortSha(sha?: string | null) {
@@ -14,10 +18,12 @@ export default function VersionTag({ className }: { className?: string }) {
 
   return (
     <Tooltip>
-      <TooltipTrigger className={cn(
-        "inline-flex cursor-default select-none items-center rounded-md border border-border bg-muted px-1.5 py-0.5 text-[11px] font-mono font-medium text-foreground/70 transition-colors hover:text-foreground",
-        className,
-      )}>
+      <TooltipTrigger
+        className={cn(
+          "border-border bg-muted text-foreground/70 hover:text-foreground inline-flex cursor-default items-center rounded-md border px-1.5 py-0.5 font-mono text-[11px] font-medium transition-colors select-none",
+          className
+        )}
+      >
         {version}
       </TooltipTrigger>
       {sha && <TooltipContent sideOffset={4}>commit {sha}</TooltipContent>}

@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   description: "View this FPV race track designed with TrackDraw.",
 };
 
-export default function ShareLayout({ children }: { children: React.ReactNode }) {
+export default function ShareLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }

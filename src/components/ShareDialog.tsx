@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/store/editor";
@@ -31,7 +34,8 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
       toast.success("Link copied");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      const input = document.querySelector<HTMLInputElement>("#share-url-input");
+      const input =
+        document.querySelector<HTMLInputElement>("#share-url-input");
       input?.select();
     }
   };
@@ -43,7 +47,9 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
         text: `Check out this FPV track: ${design.title || "Untitled"}`,
         url: shareUrl,
       });
-    } catch { /* user cancelled */ }
+    } catch {
+      /* user cancelled */
+    }
   };
 
   return (
@@ -57,7 +63,10 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
           {!safe && (
             <div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2.5 text-xs text-yellow-400">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-              <span>Track is very large — the URL may not work in all browsers. Export as JSON for a reliable backup.</span>
+              <span>
+                Track is very large — the URL may not work in all browsers.
+                Export as JSON for a reliable backup.
+              </span>
             </div>
           )}
 
@@ -68,15 +77,30 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
               readOnly
               value={shareUrl}
               onFocus={(e) => e.target.select()}
-              className="flex-1 min-w-0 rounded-md border border-border bg-muted/30 px-3 py-1.5 text-xs font-mono text-foreground outline-none focus:ring-1 focus:ring-primary/50 truncate"
+              className="border-border bg-muted/30 text-foreground focus:ring-primary/50 min-w-0 flex-1 truncate rounded-md border px-3 py-1.5 font-mono text-xs outline-none focus:ring-1"
             />
-            <Button size="icon-sm" variant="outline" onClick={handleCopy} className="shrink-0" title="Copy link">
-              {copied ? <Check className="size-3.5 text-green-400" /> : <Copy className="size-3.5" />}
+            <Button
+              size="icon-sm"
+              variant="outline"
+              onClick={handleCopy}
+              className="shrink-0"
+              title="Copy link"
+            >
+              {copied ? (
+                <Check className="size-3.5 text-green-400" />
+              ) : (
+                <Copy className="size-3.5" />
+              )}
             </Button>
           </div>
 
           {/* Action buttons */}
-          <div className={cn("grid gap-2", canNativeShare ? "grid-cols-2" : "grid-cols-1")}>
+          <div
+            className={cn(
+              "grid gap-2",
+              canNativeShare ? "grid-cols-2" : "grid-cols-1"
+            )}
+          >
             {canNativeShare && (
               <Button
                 variant="outline"
@@ -93,14 +117,16 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
               variant="outline"
               size="sm"
               className="gap-1.5 text-xs"
-              onClick={() => window.open(shareUrl, "_blank", "noopener,noreferrer")}
+              onClick={() =>
+                window.open(shareUrl, "_blank", "noopener,noreferrer")
+              }
             >
               <ExternalLink className="size-3.5" />
               Open in tab
             </Button>
           </div>
 
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-muted-foreground text-[11px]">
             The link contains the full track — no account needed.
           </p>
         </div>
