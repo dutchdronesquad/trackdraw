@@ -114,6 +114,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const containerRef = useRef<HTMLDivElement | null>(null);
     const shapeRefs = useRef<Record<string, KonvaGroup | null>>({});
     const dragSnapRef = useRef<boolean>(true);
+    const lastPinchCenterRef = useRef<{ x: number; y: number } | null>(null);
     const lastPinchDistRef = useRef<number | null>(null);
     const lastTouchPosRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -357,7 +358,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       addShape,
       designField: design.field,
       designShapes: design.shapes,
+      disableTouchGestures: rotationSession !== null,
       finalizePath,
+      lastPinchCenterRef,
       lastPinchDistRef,
       lastTouchPosRef,
       marqueeAdditiveRef: marqueeAdditive,
@@ -535,7 +538,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       const stage = stageRef.current;
       if (!stage) return;
 
-      const handlePointerMove = (event: MouseEvent) => {
+      const updateRotationFromEvent = (event: MouseEvent | TouchEvent) => {
         stage.setPointersPositions(event);
         const pointer = stage.getRelativePointerPosition();
         if (!pointer) return;
@@ -555,7 +558,8 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             360) +
             360) %
           360;
-        const normalizedRotation = event.altKey
+        const normalizedRotation =
+          "altKey" in event && event.altKey
           ? Math.round(nextRotation)
           : Math.round(nextRotation / 5) * 5;
 
@@ -564,16 +568,33 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         });
       };
 
+      const handleMouseMove = (event: MouseEvent) => {
+        updateRotationFromEvent(event);
+      };
+
+      const handleTouchMove = (event: TouchEvent) => {
+        event.preventDefault();
+        updateRotationFromEvent(event);
+      };
+
       const handlePointerUp = () => {
         setRotationSession(null);
       };
 
-      window.addEventListener("mousemove", handlePointerMove);
+      window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handlePointerUp);
+      window.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+      window.addEventListener("touchend", handlePointerUp);
+      window.addEventListener("touchcancel", handlePointerUp);
 
       return () => {
-        window.removeEventListener("mousemove", handlePointerMove);
+        window.removeEventListener("mousemove", handleMouseMove);
         window.removeEventListener("mouseup", handlePointerUp);
+        window.removeEventListener("touchmove", handleTouchMove);
+        window.removeEventListener("touchend", handlePointerUp);
+        window.removeEventListener("touchcancel", handlePointerUp);
       };
     }, [rotationSession, updateShape]);
 
@@ -599,7 +620,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             </span>
           </div>
           <div
-            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute right-2 z-20 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
+            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-[42px] right-2 z-20 hidden rounded-md border px-2 py-1 text-[10px] backdrop-blur md:block"
             style={{ top: RULER_SIZE + 6 }}
           >
             <span className="text-foreground/60 font-medium">Mid-click</span>{" "}

@@ -22,7 +22,9 @@ interface TrackCanvasInteractionsParams {
   addShape: (shape: ShapeDraft) => string;
   designField: { gridStep: number; ppm: number };
   designShapes: Shape[];
+  disableTouchGestures: boolean;
   finalizePath: () => void;
+  lastPinchCenterRef: React.MutableRefObject<{ x: number; y: number } | null>;
   lastPinchDistRef: React.MutableRefObject<number | null>;
   lastTouchPosRef: React.MutableRefObject<{ x: number; y: number } | null>;
   marqueeAdditiveRef: React.MutableRefObject<boolean>;
@@ -54,7 +56,9 @@ export function useTrackCanvasInteractions({
   addShape,
   designField,
   designShapes,
+  disableTouchGestures,
   finalizePath,
+  lastPinchCenterRef,
   lastPinchDistRef,
   lastTouchPosRef,
   marqueeAdditiveRef,
@@ -171,6 +175,8 @@ export function useTrackCanvasInteractions({
 
   const onTouchStart = useCallback(
     (event: { evt: TouchEvent }) => {
+      if (disableTouchGestures) return;
+
       if (event.evt.touches.length === 2) {
         event.evt.preventDefault();
         lastTouchPosRef.current = null;
@@ -179,17 +185,37 @@ export function useTrackCanvasInteractions({
           touch2.clientX - touch1.clientX,
           touch2.clientY - touch1.clientY
         );
+        const stage = stageRef.current;
+        const stageBox = stage?.container().getBoundingClientRect();
+        lastPinchCenterRef.current = stageBox
+          ? {
+              x: (touch1.clientX + touch2.clientX) / 2 - stageBox.left,
+              y: (touch1.clientY + touch2.clientY) / 2 - stageBox.top,
+            }
+          : null;
       } else if (event.evt.touches.length === 1) {
         const touch = event.evt.touches[0];
         lastTouchPosRef.current = { x: touch.clientX, y: touch.clientY };
         lastPinchDistRef.current = null;
+        lastPinchCenterRef.current = null;
       }
     },
-    [lastPinchDistRef, lastTouchPosRef]
+    [
+      disableTouchGestures,
+      lastPinchCenterRef,
+      lastPinchDistRef,
+      lastTouchPosRef,
+      stageRef,
+    ]
   );
 
   const onTouchMove = useCallback(
     (event: { evt: TouchEvent }) => {
+      if (disableTouchGestures) {
+        event.evt.preventDefault();
+        return;
+      }
+
       if (event.evt.touches.length === 1) {
         event.evt.preventDefault();
         const stage = stageRef.current;
@@ -220,8 +246,16 @@ export function useTrackCanvasInteractions({
         touch2.clientY - touch1.clientY
       );
       const lastDist = lastPinchDistRef.current;
-      if (lastDist === null) {
+      const stageBox = stage.container().getBoundingClientRect();
+      const center = {
+        x: (touch1.clientX + touch2.clientX) / 2 - stageBox.left,
+        y: (touch1.clientY + touch2.clientY) / 2 - stageBox.top,
+      };
+      const lastCenter = lastPinchCenterRef.current;
+
+      if (lastDist === null || !lastCenter) {
         lastPinchDistRef.current = dist;
+        lastPinchCenterRef.current = center;
         return;
       }
 
@@ -230,23 +264,22 @@ export function useTrackCanvasInteractions({
       setManualView(true);
       const oldScale = stage.scaleX();
       const newScale = Math.max(0.2, Math.min(5, oldScale * scaleBy));
-      const midX = (touch1.clientX + touch2.clientX) / 2;
-      const midY = (touch1.clientY + touch2.clientY) / 2;
-      const stageBox = stage.container().getBoundingClientRect();
-      const pointer = { x: midX - stageBox.left, y: midY - stageBox.top };
       const pointTo = {
-        x: (pointer.x - stage.x()) / oldScale,
-        y: (pointer.y - stage.y()) / oldScale,
+        x: (lastCenter.x - stage.x()) / oldScale,
+        y: (lastCenter.y - stage.y()) / oldScale,
       };
       stage.scale({ x: newScale, y: newScale });
       stage.position({
-        x: pointer.x - pointTo.x * newScale,
-        y: pointer.y - pointTo.y * newScale,
+        x: center.x - pointTo.x * newScale,
+        y: center.y - pointTo.y * newScale,
       });
       setZoom(newScale);
       syncTransform();
+      lastPinchCenterRef.current = center;
     },
     [
+      disableTouchGestures,
+      lastPinchCenterRef,
       lastPinchDistRef,
       lastTouchPosRef,
       setManualView,

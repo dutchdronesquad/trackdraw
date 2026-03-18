@@ -204,7 +204,7 @@ export function RotationGuideOverlay({
   rotationGuide,
 }: {
   isDark: boolean;
-  onRotateStart: (event: KonvaEventObject<MouseEvent>) => void;
+  onRotateStart: (event: KonvaEventObject<MouseEvent | TouchEvent>) => void;
   showAngleLabel?: boolean;
   rotationGuide: {
     angleDeg: number;
@@ -252,6 +252,7 @@ export function RotationGuideOverlay({
         fill="#60a5fa"
         opacity={0.001}
         onMouseDown={onRotateStart}
+        onTouchStart={onRotateStart}
       />
       <Circle
         x={handleOuterX}
