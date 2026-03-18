@@ -141,8 +141,6 @@ export const toolbarToolGroups: ToolGroup[] = [
 ];
 
 export const mobileToolEntries: ToolEntry[] = [
-  buildToolEntry("select", "size-5"),
-  buildToolEntry("grab", "size-5"),
   buildToolEntry("gate", "size-5"),
   buildToolEntry("ladder", "size-5"),
   buildToolEntry("divegate", "size-5"),

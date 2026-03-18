@@ -444,6 +444,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       onSnapChange,
       readOnly,
       selection,
+      setActiveTool,
       setCursor,
       setDraftPath,
       setIsStageDragging,
@@ -791,6 +792,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     dragSnapRef={dragSnapRef}
                     effectiveVertexSel={effectiveVertexSel}
                     hoveredWaypoint={hoveredWaypoint}
+                    isMobile={isMobile}
                     isSelected={selection.includes(shape.id)}
                     onShapeContextMenu={(clickedShape) => {
                       if (activeTool !== "select" || readOnly) return;

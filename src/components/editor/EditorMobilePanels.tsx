@@ -176,8 +176,8 @@ export function EditorMobilePanels({
                   Mobile canvas
                 </p>
                 <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
-                  Tap an item to select it. Drag empty space to move the canvas,
-                  or use two fingers to zoom and pan more precisely.
+                  Tap to select, drag items directly to move them, and use empty
+                  space or two fingers to navigate the canvas.
                 </p>
               </div>
               <button
@@ -227,10 +227,12 @@ export function EditorMobilePanels({
             </button>
             <div className="min-w-0 flex-[1.2] rounded-[1rem] px-2 py-2 text-center landscape:hidden">
               <p className="truncate text-[10px] font-semibold tracking-[0.08em] text-white/92 uppercase">
-                {toolDisplayName[activeTool] ?? activeTool}
+                {selectedCount > 0
+                  ? `${selectedCount} selected`
+                  : (toolDisplayName[activeTool] ?? activeTool)}
               </p>
               <p className="truncate text-[10px] text-white/55">
-                {selectedCount > 0 ? `${selectedCount} selected` : "Canvas"}
+                {selectedCount > 0 ? "Ready to edit" : "Canvas"}
               </p>
             </div>
             <button
@@ -290,6 +292,35 @@ export function EditorMobilePanels({
             )}
 
             <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
+              <div className="border-border/50 bg-muted/18 rounded-[1rem] border px-3 py-3">
+                <p className="text-muted-foreground/70 text-[10px] font-semibold tracking-widest uppercase">
+                  Current mode
+                </p>
+                <div className="mt-2 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-foreground truncate text-sm font-medium">
+                      {toolDisplayName[activeTool] ?? activeTool}
+                    </p>
+                    <p className="text-muted-foreground pt-0.5 text-[11px] leading-relaxed">
+                      {selectedCount > 0
+                        ? `${selectedCount} selected on canvas`
+                        : "Pick a tool, then place or adjust items on the canvas"}
+                    </p>
+                  </div>
+                  {selectedCount > 0 ? (
+                    <button
+                      onClick={() => {
+                        onSetMobileToolsOpen(false);
+                        onOpenInspector();
+                      }}
+                      className="border-border/60 bg-background/80 text-foreground hover:bg-background shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors"
+                    >
+                      Edit
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+
               <div>
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
                   Drawing tools

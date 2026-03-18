@@ -182,9 +182,15 @@ export default function EditorShell({
           onCloseInspector={() => setMobileInspectorOpen(false)}
           onDismissMobileOverride={() => setMobileOverrideDismissed(true)}
           onFitView={() => canvasRef.current?.fitToWindow()}
-          onOpenInspector={() => setMobileInspectorOpen(true)}
+          onOpenInspector={() => {
+            setMobileToolsOpen(false);
+            setMobileInspectorOpen(true);
+          }}
           onOpenReadOnlyMenu={() => setReadOnlyMenuOpen(true)}
-          onOpenTools={() => setMobileToolsOpen(true)}
+          onOpenTools={() => {
+            setMobileInspectorOpen(false);
+            setMobileToolsOpen(true);
+          }}
           onSetMobileRulersEnabled={setMobileRulersEnabled}
           onSelectTool={(tool) => {
             setSelection([]);
@@ -211,7 +217,12 @@ export default function EditorShell({
             setExportOpen(true);
             setMobileToolsOpen(false);
           }}
-          onTabChange={setTab}
+          onTabChange={(nextTab) => {
+            setTab(nextTab);
+            setMobileInspectorOpen(false);
+            setMobileToolsOpen(false);
+            setReadOnlyMenuOpen(false);
+          }}
         />
       </div>
 
