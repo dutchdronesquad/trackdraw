@@ -125,9 +125,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const lastPinchDistRef = useRef<number | null>(null);
     const lastTouchPosRef = useRef<{ x: number; y: number } | null>(null);
     const suppressTapRef = useRef(false);
-    const touchInteractionModeRef = useRef<"none" | "pan" | "content">(
-      "none"
-    );
+    const touchInteractionModeRef = useRef<"none" | "pan" | "content">("none");
 
     const [vertexSel, setVertexSel] = useState<{
       shapeId: string;

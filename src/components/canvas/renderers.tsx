@@ -450,23 +450,23 @@ export function TrackShapeNode({
         {shape.kind === "divegate" &&
           renderDiveGate(shape, selected, designPpm)}
         {shape.kind === "polyline" && (
-            <PolylineShapeContent
-              allowInteraction={allowInteraction}
-              designPpm={designPpm}
-              dragBound={waypointDragBound}
-              dragSnapRef={dragSnapRef}
-              effectiveVertexSel={effectiveVertexSel}
-              hoveredWaypoint={hoveredWaypoint}
-              isSelected={isSelected}
-              path={shape}
-              resolveWaypointDragPosition={resolveWaypointDragPosition}
-              setSelection={setSelection}
-              setDragSnapPreview={setDragSnapPreview}
-              setVertexSel={setVertexSel}
-              updateShape={updateShape}
-              zmax={zmax}
-              zmin={zmin}
-            />
+          <PolylineShapeContent
+            allowInteraction={allowInteraction}
+            designPpm={designPpm}
+            dragBound={waypointDragBound}
+            dragSnapRef={dragSnapRef}
+            effectiveVertexSel={effectiveVertexSel}
+            hoveredWaypoint={hoveredWaypoint}
+            isSelected={isSelected}
+            path={shape}
+            resolveWaypointDragPosition={resolveWaypointDragPosition}
+            setSelection={setSelection}
+            setDragSnapPreview={setDragSnapPreview}
+            setVertexSel={setVertexSel}
+            updateShape={updateShape}
+            zmax={zmax}
+            zmin={zmin}
+          />
         )}
       </Group>
       {shape.locked && renderLockedIndicator(shape, selected, designPpm)}
