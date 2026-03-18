@@ -17,6 +17,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { buttonVariants } from "@/components/ui/button";
 import type { EditorTool } from "@/lib/editor-tools";
 import { cn } from "@/lib/utils";
 
