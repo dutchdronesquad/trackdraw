@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -181,12 +180,13 @@ export default function Header({
           aria-label="Go to homepage"
           className="flex items-center rounded-sm opacity-90 transition-opacity hover:opacity-100"
         >
-          <Image
+          <img
             src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
             alt="TrackDraw"
+            loading="eager"
             width={102}
             height={22}
-            className="h-[18px] w-auto"
+            style={{ width: "auto", height: "18px" }}
             draggable={false}
           />
         </Link>

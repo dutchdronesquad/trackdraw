@@ -82,16 +82,18 @@ function BrandLogo({
         alt="TrackDraw"
         width={170}
         height={40}
-        className="block h-full w-auto dark:hidden"
+        className="block dark:hidden"
         priority
+        style={{ width: "auto", height: "100%" }}
       />
       <Image
         src={dark}
         alt="TrackDraw"
         width={170}
         height={40}
-        className="hidden h-full w-auto dark:block"
+        className="hidden dark:block"
         priority
+        style={{ width: "auto", height: "100%" }}
       />
     </span>
   );
