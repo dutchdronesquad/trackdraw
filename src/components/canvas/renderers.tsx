@@ -251,7 +251,19 @@ export function RotationGuideOverlay({
         radius={11}
         fill="#60a5fa"
         opacity={0.001}
-        onMouseDown={onRotateStart}
+        onMouseEnter={(event) => {
+          const container = event.target.getStage()?.container();
+          if (container) container.style.cursor = "grab";
+        }}
+        onMouseLeave={(event) => {
+          const container = event.target.getStage()?.container();
+          if (container) container.style.cursor = "";
+        }}
+        onMouseDown={(event) => {
+          const container = event.target.getStage()?.container();
+          if (container) container.style.cursor = "grabbing";
+          onRotateStart(event);
+        }}
         onTouchStart={onRotateStart}
       />
       <Circle
@@ -259,6 +271,14 @@ export function RotationGuideOverlay({
         y={handleOuterY}
         radius={6}
         fill="#60a5fa"
+        opacity={0.95}
+        listening={false}
+      />
+      <Circle
+        x={handleOuterX}
+        y={handleOuterY}
+        radius={4}
+        fill="#ffffff"
         opacity={0.95}
         listening={false}
       />

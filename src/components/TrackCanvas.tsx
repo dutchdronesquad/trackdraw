@@ -37,6 +37,7 @@ import type { PolylinePoint, Shape } from "@/lib/types";
 import { distance2D } from "@/lib/geometry";
 import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import {
   Tooltip,
@@ -76,12 +77,18 @@ export interface TrackCanvasHandle {
 interface TrackCanvasProps {
   onCursorChange?: (pos: { x: number; y: number } | null) => void;
   onSnapChange?: (active: boolean) => void;
+  mobileRulersEnabled?: boolean;
   readOnly?: boolean;
 }
 
 const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
   function TrackCanvas(
-    { onCursorChange, onSnapChange, readOnly = false },
+    {
+      onCursorChange,
+      onSnapChange,
+      mobileRulersEnabled = false,
+      readOnly = false,
+    },
     ref
   ) {
     const {
@@ -157,6 +164,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     } | null>(null);
     const hasManualViewRef = useRef(false);
     const isDark = useTheme() === "dark";
+    const isMobile = useIsMobile();
+    const showRulers = !isMobile || mobileRulersEnabled;
+    const showDesktopCanvasChrome = viewportSize.width >= 1024;
 
     const normalizeRotation = useCallback(
       (rotation: number) => ((rotation % 360) + 360) % 360,
@@ -537,6 +547,8 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
 
       const stage = stageRef.current;
       if (!stage) return;
+      const container = stage.container();
+      container.style.cursor = "grabbing";
 
       const updateRotationFromEvent = (event: MouseEvent | TouchEvent) => {
         stage.setPointersPositions(event);
@@ -590,6 +602,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       window.addEventListener("touchcancel", handlePointerUp);
 
       return () => {
+        container.style.cursor = "";
         window.removeEventListener("mousemove", handleMouseMove);
         window.removeEventListener("mouseup", handlePointerUp);
         window.removeEventListener("touchmove", handleTouchMove);
@@ -606,8 +619,12 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           style={{ cursor: cursorStyle, touchAction: "none" }}
         >
           <div
-            className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 flex items-center gap-2 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
-            style={{ top: RULER_SIZE + 6, left: RULER_SIZE + 6 }}
+            className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 items-center gap-2 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
+            style={{
+              top: RULER_SIZE + 6,
+              left: RULER_SIZE + 6,
+              display: showDesktopCanvasChrome ? "flex" : "none",
+            }}
           >
             <span>
               {design.field.width}m × {design.field.height}m
@@ -620,8 +637,11 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             </span>
           </div>
           <div
-            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-[42px] right-2 z-20 hidden rounded-md border px-2 py-1 text-[10px] backdrop-blur md:block"
-            style={{ top: RULER_SIZE + 6 }}
+            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-[42px] right-2 z-20 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
+            style={{
+              top: RULER_SIZE + 6,
+              display: showDesktopCanvasChrome ? "block" : "none",
+            }}
           >
             <span className="text-foreground/60 font-medium">Mid-click</span>{" "}
             pan ·{" "}
@@ -632,7 +652,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           {!readOnly && (
             <div
               className="absolute right-2 z-20"
-              style={{ top: RULER_SIZE + 34 }}
+              style={{
+                top: RULER_SIZE + 34,
+                display: showDesktopCanvasChrome ? "block" : "none",
+              }}
             >
               <Tooltip>
                 <TooltipTrigger
@@ -891,75 +914,80 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             </Layer>
           </Stage>
 
-          {/* Rulers */}
-          {/* Horizontal ruler — top edge, inset by RULER_SIZE to leave room for corner */}
-          <div
-            className="pointer-events-none absolute z-10"
-            style={{ top: 0, left: RULER_SIZE }}
-          >
-            <div
-              style={{
-                position: "relative",
-                width: viewportSize.width - RULER_SIZE,
-                height: RULER_SIZE,
-              }}
-            >
-              <CanvasRuler
-                orientation="h"
-                stageTransform={{
-                  ...stageTransform,
-                  x: stageTransform.x - RULER_SIZE,
+          {showRulers && (
+            <>
+              <div
+                className="pointer-events-none absolute z-10"
+                style={{ top: 0, left: RULER_SIZE }}
+              >
+                <div
+                  style={{
+                    position: "relative",
+                    width: viewportSize.width - RULER_SIZE,
+                    height: RULER_SIZE,
+                  }}
+                >
+                  <CanvasRuler
+                    orientation="h"
+                    stageTransform={{
+                      ...stageTransform,
+                      x: stageTransform.x - RULER_SIZE,
+                    }}
+                    ppm={design.field.ppm}
+                    gridStep={design.field.gridStep}
+                    length={viewportSize.width - RULER_SIZE}
+                    isDark={isDark}
+                  />
+                </div>
+              </div>
+              <div
+                className="pointer-events-none absolute z-10"
+                style={{ top: RULER_SIZE, left: 0 }}
+              >
+                <div
+                  style={{
+                    position: "relative",
+                    width: RULER_SIZE,
+                    height: viewportSize.height - RULER_SIZE,
+                  }}
+                >
+                  <CanvasRuler
+                    orientation="v"
+                    stageTransform={{
+                      ...stageTransform,
+                      y: stageTransform.y - RULER_SIZE,
+                    }}
+                    ppm={design.field.ppm}
+                    gridStep={design.field.gridStep}
+                    length={viewportSize.height - RULER_SIZE}
+                    isDark={isDark}
+                  />
+                </div>
+              </div>
+              <div
+                className="pointer-events-none absolute z-10"
+                style={{
+                  top: 0,
+                  left: 0,
+                  width: RULER_SIZE,
+                  height: RULER_SIZE,
+                  background: isDark ? "#070b12" : "#f2f4f7",
+                  borderRight: isDark
+                    ? "1px solid #1a2636"
+                    : "1px solid #c8d2db",
+                  borderBottom: isDark
+                    ? "1px solid #1a2636"
+                    : "1px solid #c8d2db",
                 }}
-                ppm={design.field.ppm}
-                gridStep={design.field.gridStep}
-                length={viewportSize.width - RULER_SIZE}
-                isDark={isDark}
               />
-            </div>
-          </div>
-          {/* Vertical ruler — left edge, inset by RULER_SIZE to leave room for corner */}
-          <div
-            className="pointer-events-none absolute z-10"
-            style={{ top: RULER_SIZE, left: 0 }}
-          >
-            <div
-              style={{
-                position: "relative",
-                width: RULER_SIZE,
-                height: viewportSize.height - RULER_SIZE,
-              }}
-            >
-              <CanvasRuler
-                orientation="v"
-                stageTransform={{
-                  ...stageTransform,
-                  y: stageTransform.y - RULER_SIZE,
-                }}
-                ppm={design.field.ppm}
-                gridStep={design.field.gridStep}
-                length={viewportSize.height - RULER_SIZE}
-                isDark={isDark}
-              />
-            </div>
-          </div>
-          {/* Corner square */}
-          <div
-            className="pointer-events-none absolute z-10"
-            style={{
-              top: 0,
-              left: 0,
-              width: RULER_SIZE,
-              height: RULER_SIZE,
-              background: isDark ? "#070b12" : "#f2f4f7",
-              borderRight: isDark ? "1px solid #1a2636" : "1px solid #c8d2db",
-              borderBottom: isDark ? "1px solid #1a2636" : "1px solid #c8d2db",
-            }}
-          />
+            </>
+          )}
 
           {/* Status overlay */}
           {draftPath.length > 0 && (
             <div className="text-primary/70 bg-background/80 border-border/40 pointer-events-none absolute inset-x-0 bottom-0 border-t px-3 py-2 text-[11px]">
-              Click to add points · Double-click or{" "}
+              {isMobile ? "Tap" : "Click"} to add points ·{" "}
+              {isMobile ? "double-tap" : "double-click"} or{" "}
               <span className="text-foreground/60 font-medium">Enter</span> to
               finish ·{" "}
               <span className="text-foreground/60 font-medium">Esc</span> to

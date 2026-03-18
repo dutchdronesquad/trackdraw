@@ -143,7 +143,7 @@ export default function Header({
   const mobileTabToggle = (
     <button
       onClick={() => onTabChange(tab === "2d" ? "3d" : "2d")}
-      className="border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted inline-flex h-8 min-w-11 items-center justify-center rounded-md border px-2.5 text-[11px] font-medium transition-colors"
+      className="border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted inline-flex h-9 min-w-11 items-center justify-center rounded-md border px-3 text-[11px] font-medium transition-colors"
       aria-label={`Switch to ${tab === "2d" ? "3D" : "2D"} view`}
     >
       {tab === "2d" ? "2D" : "3D"}
@@ -151,7 +151,7 @@ export default function Header({
   );
 
   return (
-    <header className="border-border bg-sidebar relative z-20 flex h-11 shrink-0 items-center gap-2 border-b px-3 select-none">
+    <header className="border-border bg-sidebar relative z-20 flex h-12 shrink-0 items-center gap-2 border-b px-3 select-none lg:h-11">
       <div className="flex min-w-0 flex-1 shrink-0 items-center gap-2">
         {!readOnly && onToggleCollapsed && (
           <Tooltip>

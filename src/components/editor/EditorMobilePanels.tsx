@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Download,
@@ -7,7 +8,11 @@ import {
   FolderOpen,
   LayoutGrid,
   Monitor,
+  Scan,
   Share2,
+  SlidersHorizontal,
+  SquareMousePointer,
+  X,
 } from "lucide-react";
 import Inspector from "@/components/Inspector";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
@@ -26,15 +31,20 @@ export type EditorViewportTab = "2d" | "3d";
 interface EditorMobilePanelsProps {
   activeTool: EditorTool;
   mobileInspectorOpen: boolean;
+  mobileRulersEnabled: boolean;
   mobileToolsOpen: boolean;
   mobileOverrideDismissed: boolean;
   readOnly: boolean;
   readOnlyMenuOpen: boolean;
+  selectedCount: number;
   tab: EditorViewportTab;
   onCloseInspector: () => void;
   onDismissMobileOverride: () => void;
+  onFitView: () => void;
+  onOpenInspector: () => void;
   onOpenReadOnlyMenu: () => void;
   onOpenTools: () => void;
+  onSetMobileRulersEnabled: (enabled: boolean) => void;
   onSelectTool: (tool: EditorTool) => void;
   onSetMobileToolsOpen: (open: boolean) => void;
   onSetReadOnlyMenuOpen: (open: boolean) => void;
@@ -48,15 +58,20 @@ interface EditorMobilePanelsProps {
 export function EditorMobilePanels({
   activeTool,
   mobileInspectorOpen,
+  mobileRulersEnabled,
   mobileToolsOpen,
   mobileOverrideDismissed,
   readOnly,
   readOnlyMenuOpen,
+  selectedCount,
   tab,
   onCloseInspector,
   onDismissMobileOverride,
+  onFitView,
+  onOpenInspector,
   onOpenReadOnlyMenu,
   onOpenTools,
+  onSetMobileRulersEnabled,
   onSelectTool,
   onSetMobileToolsOpen,
   onSetReadOnlyMenuOpen,
@@ -66,6 +81,36 @@ export function EditorMobilePanels({
   onExport,
   onTabChange,
 }: EditorMobilePanelsProps) {
+  const [isLandscapeMobile, setIsLandscapeMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(
+      "(max-width: 1023px) and (orientation: landscape)"
+    );
+
+    const updateLandscapeMobile = () => {
+      setIsLandscapeMobile(mediaQuery.matches);
+    };
+
+    updateLandscapeMobile();
+    mediaQuery.addEventListener("change", updateLandscapeMobile);
+    return () =>
+      mediaQuery.removeEventListener("change", updateLandscapeMobile);
+  }, []);
+
+  const toolDisplayName: Record<string, string> = {
+    select: "Select",
+    grab: "Grab",
+    gate: "Gate",
+    flag: "Flag",
+    cone: "Cone",
+    label: "Label",
+    polyline: "Path",
+    ladder: "Ladder",
+    startfinish: "Start",
+    divegate: "Dive",
+  };
+
   const mobileDrawerHeader = (
     title: string,
     subtitle?: string,
@@ -115,41 +160,100 @@ export function EditorMobilePanels({
         </div>
       )}
 
-      {!readOnly && mobileOverrideDismissed && (
-        <div className="absolute right-4 bottom-10 z-30 lg:hidden">
-          <motion.button
-            onClick={onOpenTools}
-            initial={{ opacity: 0, y: 10, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="bg-sidebar border-border text-foreground hover:bg-muted flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-medium shadow-lg transition-colors"
-            aria-label="Open tools"
-          >
-            <span className="tracking-wide capitalize">{activeTool}</span>
-            <LayoutGrid className="text-muted-foreground size-3.5" />
-          </motion.button>
-        </div>
+      {!readOnly && !mobileOverrideDismissed && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed inset-x-3 top-[3.6rem] z-40 lg:hidden landscape:inset-x-auto landscape:left-3 landscape:max-w-[19rem]"
+        >
+          <div className="border-border/70 bg-background/97 rounded-[1.4rem] border px-3.5 py-3 shadow-[0_18px_38px_rgba(15,23,42,0.14)] backdrop-blur">
+            <div className="flex items-start gap-3">
+              <div className="border-border/60 bg-card mt-0.5 rounded-2xl border p-2.5">
+                <Monitor className="text-muted-foreground/50 size-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-foreground text-[12px] font-semibold tracking-[0.04em]">
+                  Mobile canvas
+                </p>
+                <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
+                  Tap an item to select it. Drag empty space to move the canvas,
+                  or use two fingers to zoom and pan more precisely.
+                </p>
+              </div>
+              <button
+                onClick={onDismissMobileOverride}
+                className="text-muted-foreground hover:text-foreground mt-0.5 shrink-0 rounded-full p-1 transition-colors"
+                aria-label="Dismiss mobile hint"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
       )}
 
-      {!readOnly && !mobileOverrideDismissed && (
-        <div className="bg-background fixed inset-0 z-[200] flex flex-col items-center justify-center gap-5 px-8 text-center lg:hidden">
-          <div className="border-border/60 bg-card rounded-2xl border p-5">
-            <Monitor className="text-muted-foreground/50 size-10" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold">Open on a larger screen</h2>
-            <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-              TrackDraw Studio is designed for desktop and tablet. Editing on a
-              phone is not fully supported.
-            </p>
-          </div>
-          <button
-            onClick={onDismissMobileOverride}
-            className="text-muted-foreground/50 hover:text-muted-foreground mt-2 text-xs underline underline-offset-2 transition-colors"
+      {!readOnly && tab === "2d" && (
+        <div
+          className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
+          style={{
+            bottom: isLandscapeMobile
+              ? "calc(0.35rem + env(safe-area-inset-bottom))"
+              : "calc(0.55rem + env(safe-area-inset-bottom))",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="pointer-events-auto flex w-full max-w-sm items-center gap-1 rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-1.5 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur landscape:max-w-[16.5rem] landscape:gap-0.5 landscape:px-1 landscape:py-1"
           >
-            Continue anyway
-          </button>
+            <button
+              onClick={() => onSelectTool("select")}
+              className={cn(
+                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
+                activeTool === "select"
+                  ? "bg-white text-slate-950"
+                  : "text-white/72 hover:bg-white/10 hover:text-white"
+              )}
+            >
+              <SquareMousePointer className="size-3.5" />
+              <span className="landscape:sr-only">Select</span>
+            </button>
+            <button
+              onClick={onOpenTools}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
+            >
+              <LayoutGrid className="size-3.5" />
+              <span className="landscape:sr-only">Tools</span>
+            </button>
+            <div className="min-w-0 flex-[1.2] rounded-[1rem] px-2 py-2 text-center landscape:hidden">
+              <p className="truncate text-[10px] font-semibold tracking-[0.08em] text-white/92 uppercase">
+                {toolDisplayName[activeTool] ?? activeTool}
+              </p>
+              <p className="truncate text-[10px] text-white/55">
+                {selectedCount > 0 ? `${selectedCount} selected` : "Canvas"}
+              </p>
+            </div>
+            <button
+              onClick={onFitView}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
+            >
+              <Scan className="size-3.5" />
+              <span className="landscape:sr-only">Fit</span>
+            </button>
+            <button
+              onClick={onOpenInspector}
+              disabled={selectedCount === 0}
+              className={cn(
+                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
+                selectedCount > 0
+                  ? "text-white/72 hover:bg-white/10 hover:text-white"
+                  : "text-white/30"
+              )}
+            >
+              <SlidersHorizontal className="size-3.5" />
+              <span className="landscape:sr-only">Edit</span>
+            </button>
+          </motion.div>
         </div>
       )}
 
@@ -191,26 +295,30 @@ export function EditorMobilePanels({
                   Drawing tools
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  {mobileToolEntries.map((tool) => {
-                    const active = activeTool === tool.id;
-                    return (
-                      <button
-                        key={tool.id}
-                        onClick={() => onSelectTool(tool.id)}
-                        className={cn(
-                          "flex flex-col items-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all",
-                          active
-                            ? "border-border/80 bg-muted/55 text-foreground"
-                            : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-                        )}
-                      >
-                        {tool.icon}
-                        <span className="text-[11px] leading-none font-medium">
-                          {tool.label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {mobileToolEntries
+                    .filter(
+                      (tool) => tool.id !== "select" && tool.id !== "grab"
+                    )
+                    .map((tool) => {
+                      const active = activeTool === tool.id;
+                      return (
+                        <button
+                          key={tool.id}
+                          onClick={() => onSelectTool(tool.id)}
+                          className={cn(
+                            "flex flex-col items-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all",
+                            active
+                              ? "border-border/80 bg-muted/55 text-foreground"
+                              : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                          )}
+                        >
+                          {tool.icon}
+                          <span className="text-[11px] leading-none font-medium">
+                            {tool.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
 
@@ -237,6 +345,32 @@ export function EditorMobilePanels({
                     </button>
                   ))}
                 </div>
+                <button
+                  onClick={() => onSetMobileRulersEnabled(!mobileRulersEnabled)}
+                  className={cn(
+                    "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                    mobileRulersEnabled
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <div>
+                    <p className="text-[11px] font-medium">Rulers</p>
+                    <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                      Show top and left guides on mobile
+                    </p>
+                  </div>
+                  <div
+                    className={cn(
+                      "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                      mobileRulersEnabled
+                        ? "bg-foreground/90 justify-end"
+                        : "bg-border/80 justify-start"
+                    )}
+                  >
+                    <span className="bg-background block size-5 rounded-full shadow-sm" />
+                  </div>
+                </button>
               </div>
 
               <div>
