@@ -10,6 +10,8 @@
 
 TrackDraw is a free, browser-based track designer built for FPV drone racing pilots and event organisers. Open the studio, drop your obstacles on the canvas, tweak the layout until it feels right, and share the result with your team using a single link — no account required.
 
+TrackDraw is currently in beta and still actively evolving. Expect rapid UI changes, feature tweaks and occasional rough edges while the editor matures.
+
 ## What you can do
 
 - 🏁 **Place obstacles** - gates, flags, cones, dive gates, ladders, start/finish lines, labels and free-form polylines
@@ -35,8 +37,27 @@ Open [http://localhost:3000](http://localhost:3000). The studio is at `/studio`.
 1. **Pick a tool** from the toolbar (gate, cone, flag, etc.)
 2. **Click on the canvas** to place obstacles — drag to reposition, click to select and edit properties
 3. **Use the inspector panel** on the right to fine-tune size, rotation, colour and other shape properties
-4. **Toggle the 3D panel** to preview your layout from above or in perspective
-5. **Hit Share** to get a URL you can send directly to pilots or co-organisers
+4. **Right-click a selected item** in the 2D canvas for quick actions like duplicate, lock/unlock, arrange, rotate and delete
+5. **Toggle the 3D panel** to preview your layout from above or in perspective, and click items there to inspect them without losing selection while orbiting
+6. **Hit Share** to get a URL you can send directly to pilots or co-organisers
+
+## Useful shortcuts
+
+- `V` select mode
+- `H` hand / pan mode
+- `G`, `F`, `C`, `L`, `P`, `S`, `R`, `D` switch tools
+- `Arrow keys` nudge selected items by the grid step
+- `Alt` + `Arrow keys` nudge selected items by `0.1m`
+- `Q` / `[` rotate selected items left by `15°`
+- `E` / `]` rotate selected items right by `15°`
+- `Shift` + `Q` / `E` or `[` / `]` rotate by `5°`
+- `Alt` + `Q` / `E` or `[` / `]` rotate by `1°`
+- Drag the 2D rotate handle to snap in `5°` steps
+- Hold `Alt` while dragging the 2D rotate handle to snap in `1°` steps
+- `Ctrl/Cmd + D` duplicate selection
+- `Ctrl/Cmd + C`, `Ctrl/Cmd + V` copy and paste
+- `Delete` remove selection
+- `0` fit the field back into view
 
 ## Tech stack
 

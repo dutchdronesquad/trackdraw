@@ -1,6 +1,6 @@
 "use client";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Grid, RoundedBox, Text } from "@react-three/drei";
 import { useEditor } from "@/store/editor";
 import {
@@ -70,7 +70,13 @@ function useTextTexture(
 }
 
 // ── Gate ────────────────────────────────────────────────────
-function Gate3D({ shape }: { shape: GateShape }) {
+function Gate3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: GateShape;
+}) {
   const color = shape.color ?? "#3b82f6";
   const thick = shape.thick ?? 0.2;
   const h = shape.height ?? 2;
@@ -85,15 +91,27 @@ function Gate3D({ shape }: { shape: GateShape }) {
     <group position={[shape.x, 0, shape.y]} rotation={rot}>
       <mesh position={[-(w / 2), h / 2, 0]} castShadow>
         <boxGeometry args={[thick, h, thick]} />
-        <meshStandardMaterial color={color} />
+        <meshStandardMaterial
+          color={color}
+          emissive={selected ? "#60a5fa" : color}
+          emissiveIntensity={selected ? 0.55 : 0.08}
+        />
       </mesh>
       <mesh position={[w / 2, h / 2, 0]} castShadow>
         <boxGeometry args={[thick, h, thick]} />
-        <meshStandardMaterial color={color} />
+        <meshStandardMaterial
+          color={color}
+          emissive={selected ? "#60a5fa" : color}
+          emissiveIntensity={selected ? 0.55 : 0.08}
+        />
       </mesh>
       <mesh position={[0, h, 0]} castShadow>
         <boxGeometry args={[w + thick, thick, thick]} />
-        <meshStandardMaterial color={color} />
+        <meshStandardMaterial
+          color={color}
+          emissive={selected ? "#60a5fa" : color}
+          emissiveIntensity={selected ? 0.55 : 0.08}
+        />
       </mesh>
     </group>
   );
@@ -101,7 +119,13 @@ function Gate3D({ shape }: { shape: GateShape }) {
 
 // ── Flag ────────────────────────────────────────────────────
 // Beam / ray straight up — simple glowing cylinder
-function Flag3D({ shape }: { shape: FlagShape }) {
+function Flag3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: FlagShape;
+}) {
   const color = shape.color ?? "#a855f7";
   const ph = shape.poleHeight ?? 3.5;
 
@@ -110,24 +134,38 @@ function Flag3D({ shape }: { shape: FlagShape }) {
       {/* Outer glow */}
       <mesh position={[0, ph / 2, 0]}>
         <cylinderGeometry args={[0.16, 0.16, ph, 8]} />
-        <meshBasicMaterial color={color} transparent opacity={0.18} />
+        <meshBasicMaterial
+          color={selected ? "#60a5fa" : color}
+          transparent
+          opacity={selected ? 0.34 : 0.18}
+        />
       </mesh>
       {/* Core beam */}
       <mesh position={[0, ph / 2, 0]}>
         <cylinderGeometry args={[0.07, 0.07, ph, 8]} />
-        <meshBasicMaterial color={color} />
+        <meshBasicMaterial color={selected ? "#93c5fd" : color} />
       </mesh>
       {/* Top cap glow */}
       <mesh position={[0, ph, 0]}>
         <sphereGeometry args={[0.1, 8, 8]} />
-        <meshBasicMaterial color={color} transparent opacity={0.55} />
+        <meshBasicMaterial
+          color={selected ? "#93c5fd" : color}
+          transparent
+          opacity={selected ? 0.8 : 0.55}
+        />
       </mesh>
     </group>
   );
 }
 
 // ── Cone ────────────────────────────────────────────────────
-function Cone3D({ shape }: { shape: ConeShape }) {
+function Cone3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: ConeShape;
+}) {
   const color = shape.color ?? "#f97316";
   const r = shape.radius ?? 0.2;
   const h = r * 2.5;
@@ -135,13 +173,23 @@ function Cone3D({ shape }: { shape: ConeShape }) {
   return (
     <mesh position={[shape.x, h / 2, shape.y]} castShadow>
       <coneGeometry args={[r, h, 16]} />
-      <meshStandardMaterial color={color} />
+      <meshStandardMaterial
+        color={color}
+        emissive={selected ? "#60a5fa" : color}
+        emissiveIntensity={selected ? 0.45 : 0.06}
+      />
     </mesh>
   );
 }
 
 // ── Label ────────────────────────────────────────────────────
-function Label3D({ shape }: { shape: LabelShape }) {
+function Label3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: LabelShape;
+}) {
   const color = shape.color ?? "#ffffff";
   const size = Math.max(0.3, (shape.fontSize ?? 18) * 0.055);
   const texture = useTextTexture(shape.text, color, shape.fontSize ?? 18);
@@ -166,6 +214,7 @@ function Label3D({ shape }: { shape: LabelShape }) {
           transparent
           side={THREE.DoubleSide}
           depthWrite={false}
+          opacity={selected ? 1 : 0.9}
         />
       </mesh>
     );
@@ -179,6 +228,7 @@ function Label3D({ shape }: { shape: LabelShape }) {
           transparent
           side={THREE.DoubleSide}
           depthWrite={false}
+          opacity={selected ? 1 : 0.92}
         />
       </mesh>
     </group>
@@ -187,7 +237,13 @@ function Label3D({ shape }: { shape: LabelShape }) {
 
 // ── Start Pads ────────────────────────────────────────────────
 // 4 launch pads with a cleaner podium-like base and numbered pads
-function StartFinish3D({ shape }: { shape: StartFinishShape }) {
+function StartFinish3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: StartFinishShape;
+}) {
   const color = shape.color ?? "#f59e0b";
   const totalW = shape.width ?? 3.0;
   const spacing = totalW / 4;
@@ -234,8 +290,8 @@ function StartFinish3D({ shape }: { shape: StartFinishShape }) {
             >
               <meshStandardMaterial
                 color={color}
-                emissive={color}
-                emissiveIntensity={emissive}
+                emissive={selected ? "#60a5fa" : color}
+                emissiveIntensity={selected ? emissive + 0.32 : emissive}
                 roughness={0.34}
                 metalness={0.18}
               />
@@ -287,7 +343,13 @@ function StartFinish3D({ shape }: { shape: StartFinishShape }) {
 }
 
 // ── Checkpoint ────────────────────────────────────────────────
-function Checkpoint3D({ shape }: { shape: CheckpointShape }) {
+function Checkpoint3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: CheckpointShape;
+}) {
   const color = shape.color ?? "#22c55e";
   const w = shape.width ?? 3;
   const h = 2.0;
@@ -304,33 +366,33 @@ function Checkpoint3D({ shape }: { shape: CheckpointShape }) {
         <cylinderGeometry args={[0.06, 0.06, h, 8]} />
         <meshStandardMaterial
           color={color}
-          emissive={color}
-          emissiveIntensity={0.4}
+          emissive={selected ? "#60a5fa" : color}
+          emissiveIntensity={selected ? 0.72 : 0.4}
         />
       </mesh>
       <mesh position={[w / 2, h / 2, 0]} castShadow>
         <cylinderGeometry args={[0.06, 0.06, h, 8]} />
         <meshStandardMaterial
           color={color}
-          emissive={color}
-          emissiveIntensity={0.4}
+          emissive={selected ? "#60a5fa" : color}
+          emissiveIntensity={selected ? 0.72 : 0.4}
         />
       </mesh>
       <mesh position={[0, h, 0]} castShadow>
         <boxGeometry args={[w + 0.12, 0.12, 0.12]} />
         <meshStandardMaterial
           color={color}
-          emissive={color}
-          emissiveIntensity={0.4}
+          emissive={selected ? "#60a5fa" : color}
+          emissiveIntensity={selected ? 0.72 : 0.4}
         />
       </mesh>
       {/* Glowing gate plane */}
       <mesh position={[0, h / 2, 0]} rotation={[0, 0, 0]}>
         <planeGeometry args={[w, h]} />
         <meshBasicMaterial
-          color={color}
+          color={selected ? "#93c5fd" : color}
           transparent
-          opacity={0.08}
+          opacity={selected ? 0.18 : 0.08}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -341,7 +403,13 @@ function Checkpoint3D({ shape }: { shape: CheckpointShape }) {
 // ── Ladder ────────────────────────────────────────────────────
 // Exactly like Gate3D, but `rungs` frames stacked vertically.
 // shape.height = total ladder height; each opening = height / rungs.
-function Ladder3D({ shape }: { shape: LadderShape }) {
+function Ladder3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: LadderShape;
+}) {
   const color = shape.color ?? "#3b82f6";
   const w = shape.width ?? 1.5;
   const totalH = shape.height ?? 4.5;
@@ -361,25 +429,37 @@ function Ladder3D({ shape }: { shape: LadderShape }) {
           {/* Left post */}
           <mesh position={[-(w / 2), gateH / 2, 0]} castShadow>
             <boxGeometry args={[thick, gateH, thick]} />
-            <meshStandardMaterial color={color} />
+            <meshStandardMaterial
+              color={color}
+              emissive={selected ? "#60a5fa" : color}
+              emissiveIntensity={selected ? 0.5 : 0.08}
+            />
           </mesh>
           {/* Right post */}
           <mesh position={[w / 2, gateH / 2, 0]} castShadow>
             <boxGeometry args={[thick, gateH, thick]} />
-            <meshStandardMaterial color={color} />
+            <meshStandardMaterial
+              color={color}
+              emissive={selected ? "#60a5fa" : color}
+              emissiveIntensity={selected ? 0.5 : 0.08}
+            />
           </mesh>
           {/* Top bar (doubles as bottom bar of the gate above) */}
           <mesh position={[0, gateH, 0]} castShadow>
             <boxGeometry args={[w + thick, thick, thick]} />
-            <meshStandardMaterial color={color} />
+            <meshStandardMaterial
+              color={color}
+              emissive={selected ? "#60a5fa" : color}
+              emissiveIntensity={selected ? 0.5 : 0.08}
+            />
           </mesh>
           {/* Transparent fill — same style as Gate3D fill plane */}
           <mesh position={[0, gateH / 2, 0]}>
             <planeGeometry args={[w, gateH]} />
             <meshBasicMaterial
-              color={color}
+              color={selected ? "#93c5fd" : color}
               transparent
-              opacity={0.06}
+              opacity={selected ? 0.14 : 0.06}
               side={THREE.DoubleSide}
             />
           </mesh>
@@ -391,7 +471,13 @@ function Ladder3D({ shape }: { shape: LadderShape }) {
 
 // ── DiveGate ──────────────────────────────────────────────────
 // Square frame: tilt=0 → vertical wall, tilt=90 → flat/horizontal
-function DiveGate3D({ shape }: { shape: DiveGateShape }) {
+function DiveGate3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: DiveGateShape;
+}) {
   const color = shape.color ?? "#f97316";
   const sz = shape.size ?? 2.8;
   const thick = shape.thick ?? 0.2;
@@ -417,26 +503,42 @@ function DiveGate3D({ shape }: { shape: DiveGateShape }) {
       >
         <mesh position={[0, sz / 2, 0]} castShadow>
           <boxGeometry args={[sz, thick, thick]} />
-          <meshStandardMaterial color={color} />
+          <meshStandardMaterial
+            color={color}
+            emissive={selected ? "#60a5fa" : color}
+            emissiveIntensity={selected ? 0.55 : 0.08}
+          />
         </mesh>
         <mesh position={[0, -sz / 2, 0]} castShadow>
           <boxGeometry args={[sz, thick, thick]} />
-          <meshStandardMaterial color={color} />
+          <meshStandardMaterial
+            color={color}
+            emissive={selected ? "#60a5fa" : color}
+            emissiveIntensity={selected ? 0.55 : 0.08}
+          />
         </mesh>
         <mesh position={[-sz / 2, 0, 0]} castShadow>
           <boxGeometry args={[thick, sz, thick]} />
-          <meshStandardMaterial color={color} />
+          <meshStandardMaterial
+            color={color}
+            emissive={selected ? "#60a5fa" : color}
+            emissiveIntensity={selected ? 0.55 : 0.08}
+          />
         </mesh>
         <mesh position={[sz / 2, 0, 0]} castShadow>
           <boxGeometry args={[thick, sz, thick]} />
-          <meshStandardMaterial color={color} />
+          <meshStandardMaterial
+            color={color}
+            emissive={selected ? "#60a5fa" : color}
+            emissiveIntensity={selected ? 0.55 : 0.08}
+          />
         </mesh>
         <mesh>
           <planeGeometry args={[sz - thick * 2, sz - thick * 2]} />
           <meshBasicMaterial
-            color={color}
+            color={selected ? "#93c5fd" : color}
             transparent
-            opacity={0.07}
+            opacity={selected ? 0.15 : 0.07}
             side={THREE.DoubleSide}
           />
         </mesh>
@@ -451,7 +553,11 @@ function DiveGate3D({ shape }: { shape: DiveGateShape }) {
         py > 0.05 ? (
           <mesh key={i} position={[px, py / 2, pz]} castShadow>
             <boxGeometry args={[postW, py, postW]} />
-            <meshStandardMaterial color={color} />
+            <meshStandardMaterial
+              color={color}
+              emissive={selected ? "#60a5fa" : color}
+              emissiveIntensity={selected ? 0.55 : 0.08}
+            />
           </mesh>
         ) : null
       )}
@@ -460,7 +566,13 @@ function DiveGate3D({ shape }: { shape: DiveGateShape }) {
 }
 
 // ── RaceLine ─────────────────────────────────────────────────
-function RaceLine3D({ shape }: { shape: PolylineShape }) {
+function RaceLine3D({
+  selected = false,
+  shape,
+}: {
+  selected?: boolean;
+  shape: PolylineShape;
+}) {
   const geometry = useMemo(() => {
     const pts = shape.points;
     if (pts.length < 2) return null;
@@ -475,32 +587,133 @@ function RaceLine3D({ shape }: { shape: PolylineShape }) {
   if (!geometry) return null;
   return (
     <mesh geometry={geometry} castShadow>
-      <meshStandardMaterial color={shape.color ?? "#3b82f6"} roughness={0.4} />
+      <meshStandardMaterial
+        color={selected ? "#93c5fd" : (shape.color ?? "#3b82f6")}
+        emissive={selected ? "#60a5fa" : "#000000"}
+        emissiveIntensity={selected ? 0.8 : 0}
+        roughness={0.4}
+      />
     </mesh>
   );
 }
 
 // ── Shape dispatcher ─────────────────────────────────────────
-function Shape3D({ shape }: { shape: Shape }) {
+function SelectionMarker3D({ shape }: { shape: Shape }) {
+  const pulse = useRef(0);
+  const meshRef = useRef<THREE.Mesh>(null);
+
+  const heightByKind: Partial<Record<Shape["kind"], number>> = {
+    gate: Math.max((shape as GateShape).height ?? 2, 1.4) + 0.45,
+    flag: Math.max((shape as FlagShape).poleHeight ?? 3.5, 1.8) + 0.35,
+    cone: Math.max(((shape as ConeShape).radius ?? 0.2) * 2.5, 0.5) + 0.35,
+    label: (shape as LabelShape).project ? 0.8 : 3.1,
+    polyline: 0.95,
+    startfinish: 0.55,
+    checkpoint: 2.45,
+    ladder: Math.max((shape as LadderShape).height ?? 4.5, 1.8) + 0.35,
+    divegate: Math.max((shape as DiveGateShape).elevation ?? 3, 1.8) + 0.55,
+  };
+  const markerY = heightByKind[shape.kind] ?? 1.2;
+
+  useFrame((_, delta) => {
+    pulse.current += delta * 3.4;
+    if (!meshRef.current) return;
+    const scale = 1 + Math.sin(pulse.current) * 0.08;
+    meshRef.current.scale.setScalar(scale);
+  });
+
+  return (
+    <mesh ref={meshRef} position={[shape.x, markerY, shape.y]} renderOrder={10}>
+      <sphereGeometry args={[0.12, 18, 18]} />
+      <meshBasicMaterial
+        color="#60a5fa"
+        transparent
+        opacity={0.95}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
+function Shape3D({
+  isSelected,
+  onSelect,
+  shape,
+}: {
+  isSelected: boolean;
+  onSelect: (event: ThreeEvent<MouseEvent>, shapeId: string) => void;
+  shape: Shape;
+}) {
   switch (shape.kind) {
     case "gate":
-      return <Gate3D shape={shape as GateShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <Gate3D shape={shape as GateShape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     case "flag":
-      return <Flag3D shape={shape as FlagShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <Flag3D shape={shape as FlagShape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     case "cone":
-      return <Cone3D shape={shape as ConeShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <Cone3D shape={shape as ConeShape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     case "label":
-      return <Label3D shape={shape as LabelShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <Label3D shape={shape as LabelShape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     case "polyline":
-      return <RaceLine3D shape={shape as PolylineShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <RaceLine3D shape={shape as PolylineShape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     case "startfinish":
-      return <StartFinish3D shape={shape as StartFinishShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <StartFinish3D
+            shape={shape as StartFinishShape}
+            selected={isSelected}
+          />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     case "checkpoint":
-      return <Checkpoint3D shape={shape as CheckpointShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <Checkpoint3D
+            shape={shape as CheckpointShape}
+            selected={isSelected}
+          />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     case "ladder":
-      return <Ladder3D shape={shape as LadderShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <Ladder3D shape={shape as LadderShape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     case "divegate":
-      return <DiveGate3D shape={shape as DiveGateShape} />;
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <DiveGate3D shape={shape as DiveGateShape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
     default:
       return null;
   }
@@ -625,7 +838,7 @@ function FieldWatermark({
 // ── Main ─────────────────────────────────────────────────────
 const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
   function TrackPreview3D(_, ref) {
-    const { design } = useEditor();
+    const { design, selection, setSelection } = useEditor();
     const theme = useTheme();
     const t = THEME[theme];
     const cx = design.field.width / 2;
@@ -648,11 +861,30 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
     const hasPath = design.shapes.some(
       (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
     );
+    const handleShapeSelect = useCallback(
+      (event: ThreeEvent<MouseEvent>, shapeId: string) => {
+        event.stopPropagation();
+        if (event.delta > 3) {
+          return;
+        }
+
+        if (event.ctrlKey || event.metaKey || event.shiftKey) {
+          const current = new Set(selection);
+          if (current.has(shapeId)) current.delete(shapeId);
+          else current.add(shapeId);
+          setSelection(Array.from(current));
+          return;
+        }
+
+        setSelection([shapeId]);
+      },
+      [selection, setSelection]
+    );
 
     return (
       <div className="relative h-full w-full" style={{ background: t.bg }}>
         <Canvas
-          shadows
+          shadows="percentage"
           camera={{
             position: [cx - 14, 18, cz + 20],
             fov: 46,
@@ -687,6 +919,13 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
             position={[cx, -0.01, cz]}
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
+            onClick={(event) => {
+              event.stopPropagation();
+              if (event.delta > 3) {
+                return;
+              }
+              setSelection([]);
+            }}
           >
             <planeGeometry args={[design.field.width, design.field.height]} />
             <meshStandardMaterial
@@ -710,7 +949,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
           />
           {/* Shapes */}
           {design.shapes.map((shape) => (
-            <Shape3D key={shape.id} shape={shape} />
+            <Shape3D
+              key={shape.id}
+              isSelected={selection.includes(shape.id)}
+              onSelect={handleShapeSelect}
+              shape={shape}
+            />
           ))}
 
           <FieldWatermark

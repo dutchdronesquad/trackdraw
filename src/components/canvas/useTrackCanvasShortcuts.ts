@@ -33,6 +33,14 @@ interface TrackCanvasShortcutsParams {
   updateShape: (id: string, patch: Partial<Shape>) => void;
 }
 
+function normalizeRotation(rotation: number) {
+  return ((rotation % 360) + 360) % 360;
+}
+
+function canRotateShape(shape: Shape) {
+  return shape.kind !== "polyline" && !shape.locked;
+}
+
 export function useTrackCanvasShortcuts({
   activeTool,
   addShape,
@@ -54,6 +62,15 @@ export function useTrackCanvasShortcuts({
   updateShape,
 }: TrackCanvasShortcutsParams) {
   useEffect(() => {
+    const rotateSelection = (delta: number) => {
+      for (const id of selection) {
+        const shape = designShapes.find((candidate) => candidate.id === id);
+        if (!shape || !canRotateShape(shape)) continue;
+        updateShape(id, {
+          rotation: normalizeRotation((shape.rotation ?? 0) + delta),
+        });
+      }
+    };
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (isTypingInInput(target)) return;
@@ -118,6 +135,18 @@ export function useTrackCanvasShortcuts({
         return;
       }
 
+      if (
+        ["[", "]", "q", "e", "Q", "E"].includes(event.key) &&
+        selection.length > 0 &&
+        activeTool === "select"
+      ) {
+        event.preventDefault();
+        const step = event.altKey ? 1 : event.shiftKey ? 5 : 15;
+        const delta =
+          event.key === "[" || event.key.toLowerCase() === "q" ? -step : step;
+        rotateSelection(delta);
+        return;
+      }
       if (event.key === "0" && !meta) {
         event.preventDefault();
         setManualView(false);

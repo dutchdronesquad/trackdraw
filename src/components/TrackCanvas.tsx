@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
@@ -23,6 +24,8 @@ import {
 import { useTrackCanvasInteractions } from "@/components/canvas/useTrackCanvasInteractions";
 import {
   FieldLayerContent,
+  getShapeLocalBounds,
+  RotationGuideOverlay,
   TrackShapeNode,
 } from "@/components/canvas/renderers";
 import { useTrackCanvasShortcuts } from "@/components/canvas/useTrackCanvasShortcuts";
@@ -30,16 +33,40 @@ import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewpo
 import { useEditor } from "@/store/editor";
 import { m2px } from "@/lib/units";
 import { zRangeForDesign } from "@/lib/alt";
-import type { PolylinePoint } from "@/lib/types";
+import type { PolylinePoint, Shape } from "@/lib/types";
 import { distance2D } from "@/lib/geometry";
 import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
+import { shapeKindLabels } from "@/lib/editor-tools";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Scan } from "lucide-react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuGroup,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  ArrowDown,
+  ArrowUp,
+  Copy,
+  Lock,
+  RotateCcw,
+  RotateCw,
+  Scan,
+  Trash2,
+  Unlock,
+} from "lucide-react";
 
 export interface TrackCanvasHandle {
   getStage: () => KonvaStage | null;
@@ -70,8 +97,19 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       nudgeShapes,
       setZoom,
       hoveredWaypoint,
+      bringForward,
+      sendBackward,
     } = useEditor();
 
+    const estimateRotationGuideRadiusPx = useCallback(
+      (shape: Shape) => {
+        if (shape.kind === "polyline") return 0;
+        const bounds = getShapeLocalBounds(shape, design.field.ppm);
+        if (!bounds) return 18;
+        return Math.hypot(bounds.width, bounds.height) / 2 + 18;
+      },
+      [design.field.ppm]
+    );
     const stageRef = useRef<KonvaStage | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const shapeRefs = useRef<Record<string, KonvaGroup | null>>({});
@@ -104,8 +142,38 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       y: 0,
       scale: 1,
     });
+    const [rotationSession, setRotationSession] = useState<{
+      center: { x: number; y: number };
+      shapeId: string;
+      startAngle: number;
+      startRotation: number;
+    } | null>(null);
+    const [contextMenu, setContextMenu] = useState<{
+      ids: string[];
+      label: string;
+      locked: boolean;
+      rotatableIds: string[];
+    } | null>(null);
     const hasManualViewRef = useRef(false);
     const isDark = useTheme() === "dark";
+
+    const normalizeRotation = useCallback(
+      (rotation: number) => ((rotation % 360) + 360) % 360,
+      []
+    );
+
+    const rotateShapes = useCallback(
+      (ids: string[], delta: number) => {
+        for (const id of ids) {
+          const shape = design.shapes.find((candidate) => candidate.id === id);
+          if (!shape || shape.kind === "polyline" || shape.locked) continue;
+          updateShape(id, {
+            rotation: normalizeRotation((shape.rotation ?? 0) + delta),
+          });
+        }
+      },
+      [design.shapes, normalizeRotation, updateShape]
+    );
 
     const effectiveVertexSel = useMemo(
       () =>
@@ -113,6 +181,34 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       [selection.length, activeTool, vertexSel]
     );
     const effectiveSelectionFrame = selection.length ? selectionFrame : null;
+    const singleSelectedShape = useMemo(
+      () =>
+        selection.length === 1
+          ? (design.shapes.find((shape) => shape.id === selection[0]) ?? null)
+          : null,
+      [design.shapes, selection]
+    );
+    const rotationGuide = useMemo(() => {
+      if (
+        !singleSelectedShape ||
+        singleSelectedShape.kind === "polyline" ||
+        singleSelectedShape.locked
+      ) {
+        return null;
+      }
+
+      const center = {
+        x: m2px(singleSelectedShape.x, design.field.ppm),
+        y: m2px(singleSelectedShape.y, design.field.ppm),
+      };
+
+      return {
+        angleDeg: singleSelectedShape.rotation - 90,
+        center,
+        label: `${Math.round(singleSelectedShape.rotation)}°`,
+        radius: estimateRotationGuideRadiusPx(singleSelectedShape),
+      };
+    }, [design.field.ppm, estimateRotationGuideRadiusPx, singleSelectedShape]);
 
     const syncTransform = useCallback(() => {
       const s = stageRef.current;
@@ -433,12 +529,61 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       };
     }, [cursor, stepPx, activeTool]);
 
+    useEffect(() => {
+      if (!rotationSession) return;
+
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      const handlePointerMove = (event: MouseEvent) => {
+        stage.setPointersPositions(event);
+        const pointer = stage.getRelativePointerPosition();
+        if (!pointer) return;
+
+        const currentAngle =
+          (Math.atan2(
+            pointer.y - rotationSession.center.y,
+            pointer.x - rotationSession.center.x
+          ) *
+            180) /
+          Math.PI;
+        const nextRotation =
+          (((rotationSession.startRotation +
+            currentAngle -
+            rotationSession.startAngle +
+            90) %
+            360) +
+            360) %
+          360;
+        const normalizedRotation = event.altKey
+          ? Math.round(nextRotation)
+          : Math.round(nextRotation / 5) * 5;
+
+        updateShape(rotationSession.shapeId, {
+          rotation: ((normalizedRotation % 360) + 360) % 360,
+        });
+      };
+
+      const handlePointerUp = () => {
+        setRotationSession(null);
+      };
+
+      window.addEventListener("mousemove", handlePointerMove);
+      window.addEventListener("mouseup", handlePointerUp);
+
+      return () => {
+        window.removeEventListener("mousemove", handlePointerMove);
+        window.removeEventListener("mouseup", handlePointerUp);
+      };
+    }, [rotationSession, updateShape]);
+
     return (
-      <div
-        ref={containerRef}
-        className="relative h-full w-full overflow-hidden"
-        style={{ cursor: cursorStyle, touchAction: "none" }}
-      >
+      <ContextMenu onOpenChange={(open) => !open && setContextMenu(null)}>
+        <ContextMenuTrigger
+          ref={containerRef}
+          className="relative h-full w-full overflow-hidden"
+          style={{ cursor: cursorStyle, touchAction: "none" }}
+        >
         <div
           className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 flex items-center gap-2 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
           style={{ top: RULER_SIZE + 6, left: RULER_SIZE + 6 }}
@@ -456,7 +601,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           style={{ top: RULER_SIZE + 6 }}
         >
           <span className="text-foreground/60 font-medium">Mid-click</span> pan
-          · <span className="text-foreground/60 font-medium">Alt</span> free
+          · <span className="text-foreground/60 font-medium">Right-click</span>{" "}
+          menu · <span className="text-foreground/60 font-medium">Alt</span>{" "}
+          free
         </div>
         {!readOnly && (
           <div
@@ -501,7 +648,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           <Layer listening={false}>
             <FieldLayerContent
               designField={design.field}
-              effectiveSelectionFrame={effectiveSelectionFrame}
+              effectiveSelectionFrame={
+                selection.length > 1 ? effectiveSelectionFrame : null
+              }
               grid={grid}
               heightPx={heightPx}
               hoverCell={hoverCell}
@@ -527,6 +676,39 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                   heightPx={heightPx}
                   hoveredWaypoint={hoveredWaypoint}
                   isSelected={selection.includes(shape.id)}
+                  onShapeContextMenu={(clickedShape) => {
+                    if (activeTool !== "select" || readOnly) return;
+
+                    const nextSelection = selection.includes(clickedShape.id)
+                      ? selection
+                      : [clickedShape.id];
+                    if (!selection.includes(clickedShape.id)) {
+                      setSelection(nextSelection);
+                    }
+                    const rotatableIds = nextSelection.filter((id) => {
+                      const shape = design.shapes.find(
+                        (candidate) => candidate.id === id
+                      );
+                      return (
+                        shape && shape.kind !== "polyline" && !shape.locked
+                      );
+                    });
+
+                    setContextMenu({
+                      ids: nextSelection,
+                      label:
+                        nextSelection.length > 1
+                          ? `${nextSelection.length} items`
+                          : shapeKindLabels[clickedShape.kind],
+                      locked: nextSelection.every((id) => {
+                        const shape = design.shapes.find(
+                          (candidate) => candidate.id === id
+                        );
+                        return Boolean(shape?.locked);
+                      }),
+                      rotatableIds,
+                    });
+                  }}
                   selection={selection}
                   setSelection={setSelection}
                   setVertexSel={setVertexSel}
@@ -542,7 +724,48 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                 />
               );
             })}
+          </Layer>
 
+          {!readOnly && activeTool === "select" && (
+            <Layer>
+              <RotationGuideOverlay
+                isDark={isDark}
+                onRotateStart={(event) => {
+                  if (
+                    !singleSelectedShape ||
+                    singleSelectedShape.locked ||
+                    !rotationGuide
+                  ) {
+                    return;
+                  }
+
+                  event.cancelBubble = true;
+                  const stage = stageRef.current;
+                  const pointer = stage?.getRelativePointerPosition();
+                  if (!pointer) return;
+
+                  const startAngle =
+                    (Math.atan2(
+                      pointer.y - rotationGuide.center.y,
+                      pointer.x - rotationGuide.center.x
+                    ) *
+                      180) /
+                    Math.PI;
+
+                  setRotationSession({
+                    center: rotationGuide.center,
+                    shapeId: singleSelectedShape.id,
+                    startAngle,
+                    startRotation: singleSelectedShape.rotation - 90,
+                  });
+                }}
+                rotationGuide={rotationGuide}
+                showAngleLabel={rotationSession !== null}
+              />
+            </Layer>
+          )}
+
+          <Layer>
             {/* Snap-to-element indicator (polyline drawing mode) */}
             {snapTarget &&
               activeTool === "polyline" &&
@@ -721,7 +944,122 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             )}
           </div>
         )}
-      </div>
+        </ContextMenuTrigger>
+
+        {contextMenu && (
+          <ContextMenuContent sideOffset={6} className="min-w-56">
+            <ContextMenuGroup>
+              <ContextMenuLabel>
+                <div className="text-foreground/85 font-medium">
+                  {contextMenu.label}
+                </div>
+                <div className="text-muted-foreground text-[11px]">
+                  {contextMenu.ids.length === 1
+                    ? "Quick actions"
+                    : `${contextMenu.ids.length} selected`}
+                </div>
+              </ContextMenuLabel>
+              <ContextMenuItem
+                onClick={() => {
+                  duplicateShapes(contextMenu.ids);
+                  setContextMenu(null);
+                }}
+              >
+                <Copy className="size-3.5" />
+                Duplicate
+                <ContextMenuShortcut>Ctrl/Cmd+D</ContextMenuShortcut>
+              </ContextMenuItem>
+              <ContextMenuItem
+                onClick={() => {
+                  for (const id of contextMenu.ids) {
+                    const shape = design.shapes.find(
+                      (candidate) => candidate.id === id
+                    );
+                    if (!shape) continue;
+                    updateShape(id, { locked: !contextMenu.locked });
+                  }
+                  setContextMenu(null);
+                }}
+              >
+                {contextMenu.locked ? (
+                  <Unlock className="size-3.5" />
+                ) : (
+                  <Lock className="size-3.5" />
+                )}
+                {contextMenu.locked ? "Unlock" : "Lock"}
+              </ContextMenuItem>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger disabled={contextMenu.ids.length !== 1}>
+                  <ArrowUp className="size-3.5" />
+                  Arrange
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem
+                    onClick={() => {
+                      bringForward(contextMenu.ids[0]);
+                      setContextMenu(null);
+                    }}
+                  >
+                    <ArrowUp className="size-3.5" />
+                    Bring forward
+                  </ContextMenuItem>
+                  <ContextMenuItem
+                    onClick={() => {
+                      sendBackward(contextMenu.ids[0]);
+                      setContextMenu(null);
+                    }}
+                  >
+                    <ArrowDown className="size-3.5" />
+                    Send backward
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger
+                  disabled={contextMenu.rotatableIds.length === 0}
+                >
+                  <RotateCw className="size-3.5" />
+                  Rotate
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent>
+                  <ContextMenuItem
+                    onClick={() => {
+                      rotateShapes(contextMenu.rotatableIds, -15);
+                      setContextMenu(null);
+                    }}
+                  >
+                    <RotateCcw className="size-3.5" />
+                    Rotate left
+                    <ContextMenuShortcut>Q / [</ContextMenuShortcut>
+                  </ContextMenuItem>
+                  <ContextMenuItem
+                    onClick={() => {
+                      rotateShapes(contextMenu.rotatableIds, 15);
+                      setContextMenu(null);
+                    }}
+                  >
+                    <RotateCw className="size-3.5" />
+                    Rotate right
+                    <ContextMenuShortcut>E / ]</ContextMenuShortcut>
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+            </ContextMenuGroup>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              variant="destructive"
+              onClick={() => {
+                removeShapes(contextMenu.ids);
+                setContextMenu(null);
+              }}
+            >
+              <Trash2 className="size-3.5" />
+              Delete
+              <ContextMenuShortcut>Del</ContextMenuShortcut>
+            </ContextMenuItem>
+          </ContextMenuContent>
+        )}
+      </ContextMenu>
     );
   }
 );
