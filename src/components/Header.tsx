@@ -186,6 +186,7 @@ export default function Header({
             alt="TrackDraw"
             width={114}
             height={20}
+            className="h-[20px] w-[114px]"
             priority
             unoptimized
             draggable={false}

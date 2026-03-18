@@ -119,7 +119,7 @@ export default function Toolbar({
                 <Image
                   src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
                   alt="TrackDraw"
-                  className="select-none"
+                  className="h-[30px] w-[136px] select-none"
                   width={136}
                   height={30}
                   priority
