@@ -19,8 +19,9 @@ TrackDraw is currently in beta and still actively evolving. Expect rapid UI chan
 - 🎥 **Preview in 3D** - a live Three.js render shows the track from a drone perspective as you build
 - 📈 **Check elevation** - altitude profile chart along polyline paths, useful for planning vertical sections
 - ↩️ **Undo anything** - full undo/redo history so you can experiment freely
+- 📱 **Edit on mobile** - a dedicated mobile editor flow supports touch navigation, direct placement, mobile multi-select and quick actions
 - 📤 **Export** - save your design as PNG, SVG or PDF to print or share offline
-- 🔗 **Share with a link** - the entire design is compressed into the URL; send it to anyone and they see the exact same track
+- 🔗 **Share with a link** - the entire design is compressed into the URL; shared links open in a clean read-only view with a clear path back into Studio
 - 📥 **Import** - load a previously saved design file to continue editing
 
 ## Getting started
@@ -31,6 +32,8 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The studio is at `/studio`.
+
+Shared links open at `/share?d=...`.
 
 ## How it works
 
@@ -66,9 +69,9 @@ Open [http://localhost:3000](http://localhost:3000). The studio is at `/studio`.
 | Framework  | Next.js 16 (App Router, Turbopack)                        |
 | UI         | React 19, Tailwind CSS 4, shadcn/ui v4 (`@base-ui/react`) |
 | 2D canvas  | Konva 10 + react-konva                                    |
-| 3D preview | Three.js 0.175 + @react-three/fiber + drei                |
+| 3D preview | Three.js 0.183 + @react-three/fiber + drei                |
 | State      | Zustand 5 + zundo 2 (temporal) + Immer                    |
-| Export     | jsPDF, Konva stage snapshots                              |
+| Export     | jsPDF, shared 2D shape definitions, Konva stage snapshots |
 | Sharing    | lz-string                                                 |
 | Icons      | Lucide React                                              |
 
@@ -104,6 +107,7 @@ npm run dev    # Development server (Turbopack)
 npm run build  # Production build
 npm run start  # Production server
 npm run lint   # ESLint
+npm run type   # TypeScript check
 ```
 
 ## License

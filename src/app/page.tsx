@@ -4,7 +4,7 @@ import Image from "next/image";
 export const metadata: Metadata = {
   title: "TrackDraw - FPV Race Track Planner",
   description:
-    "Design FPV drone race tracks to scale, preview in 3D, and share with your pilots in seconds. Built for race directors.",
+    "Design FPV drone race tracks to scale, preview them in 3D, and share read-only plans with pilots in seconds. Built for race directors.",
   keywords: [
     "FPV",
     "drone racing",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     siteName: "TrackDraw",
     title: "TrackDraw - FPV Race Track Planner",
     description:
-      "Design FPV drone race tracks to scale, preview in 3D, and share with your pilots in seconds.",
+      "Design FPV drone race tracks to scale, preview them in 3D, and share read-only plans with your pilots in seconds.",
     images: [
       {
         url: "/assets/screenshots/editor-overview.png",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TrackDraw - FPV Race Track Planner",
     description:
-      "Design FPV drone race tracks to scale, preview in 3D, and share with your pilots in seconds.",
+      "Design FPV drone race tracks to scale, preview them in 3D, and share read-only plans with your pilots in seconds.",
     images: ["/assets/screenshots/editor-overview.png"],
   },
 };
@@ -50,7 +50,6 @@ import {
   Route,
   Share2,
   Waves,
-  Spline,
   FileText,
 } from "lucide-react";
 import { SectionScreenshot } from "@/components/landing/ScreenshotFrame";
@@ -149,15 +148,15 @@ const features = [
     bg: "bg-emerald-500/10",
     glow: "#34d399",
     title: "Share with one link",
-    text: "Send one link to pilots, judges and crew. Everyone sees the same plan, no app or account needed.",
+    text: "Send one link to pilots, judges and crew. Everyone sees the same plan in a clean read-only view, no app or account needed.",
   },
   {
-    icon: Spline,
-    color: "text-brand-primary",
-    bg: "bg-brand-primary/10",
-    glow: "#1E93DB",
-    title: "Smooth race-line path",
-    text: "Draw the flight path with smooth curves and directional arrows. Pilots know where to fly before they see the first gate.",
+    icon: CheckCircle2,
+    color: "text-sky-400",
+    bg: "bg-sky-500/10",
+    glow: "#38bdf8",
+    title: "Mobile-ready editing",
+    text: "Make practical edits on phones with touch navigation, a mobile action bar, long-press multi-select and focused quick actions.",
   },
   {
     icon: FileText,
@@ -188,7 +187,7 @@ const faq = [
   },
   {
     q: "Can I use TrackDraw on a tablet at the venue?",
-    a: "Yes. The read-only view works on any device. For editing, a tablet or laptop is most comfortable since the canvas benefits from the extra screen space.",
+    a: "Yes. The read-only view works on any device, and the editor now supports practical mobile and tablet use as well. For heavier editing, a tablet or laptop is still the most comfortable.",
   },
 ];
 
@@ -223,7 +222,9 @@ export default function Home() {
             </a>
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
             <Link
               href="/studio"
               className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/30 transition hover:brightness-110"
@@ -259,7 +260,7 @@ export default function Home() {
               </FadeUp>
 
               <FadeUp delay={0.07} className="mt-5">
-                <h1 className="text-[clamp(34px,4.5vw,58px)] leading-[1.08] font-semibold tracking-[-0.04em]">
+                <h1 className="text-[clamp(40px,11vw,58px)] leading-[1.04] font-semibold tracking-[-0.04em] sm:leading-[1.08]">
                   Race day starts
                   <br />
                   <span className="from-brand-primary bg-gradient-to-r to-sky-300 bg-clip-text text-transparent">
@@ -271,8 +272,9 @@ export default function Home() {
               <FadeUp delay={0.13} className="mt-5">
                 <p className="text-muted-foreground max-w-sm text-[15px] leading-7">
                   A browser-based track designer for FPV race directors. Draw to
-                  scale, preview in 3D, share a live link. All before the gates
-                  leave the van.
+                  scale, preview in 3D, share a read-only link, and make quick
+                  edits from mobile when you need to. All before the gates leave
+                  the van.
                 </p>
               </FadeUp>
 
@@ -301,7 +303,7 @@ export default function Home() {
                     "5+ element types",
                     "2D and 3D preview",
                     "PDF, SVG and PNG export",
-                    "Free to use and share",
+                    "Read-only sharing",
                   ].map((item) => (
                     <li
                       key={item}
