@@ -191,7 +191,7 @@ export default function EditorShell({
                 >
                   <TrackPreview3D
                     ref={preview3DRef}
-                    showGizmo={!readOnly ? mobileGizmoEnabled : true}
+                    showGizmo={mobileGizmoEnabled}
                   />
                 </div>
                 <div className="absolute right-0 bottom-0 left-0 z-20">

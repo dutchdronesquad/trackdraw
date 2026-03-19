@@ -1,11 +1,13 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useEditor } from "@/store/editor";
 import { decodeDesign } from "@/lib/share";
 import EditorShell from "@/components/EditorShell";
-import { Eye } from "lucide-react";
+import { ContextOverlayCard } from "@/components/ContextOverlayCard";
+import { ArrowRight, Eye } from "lucide-react";
 
 function ShareLoader() {
   const searchParams = useSearchParams();
@@ -24,29 +26,35 @@ function ShareLoader() {
 }
 
 export default function SharePage() {
-  const router = useRouter();
+  const [introDismissed, setIntroDismissed] = useState(false);
 
   return (
-    <div className="flex h-screen flex-col">
-      <div className="bg-primary/10 border-primary/20 flex shrink-0 items-center justify-between gap-4 border-b px-4 py-1.5 text-xs">
-        <div className="text-primary flex items-center gap-2">
-          <Eye className="size-3.5" />
-          <span className="font-medium">View-only</span>
-          <span className="text-muted-foreground">- shared track</span>
+    <div className="relative h-[100dvh]">
+      <Suspense>
+        <ShareLoader />
+      </Suspense>
+      <EditorShell readOnly={true} />
+      {!introDismissed && (
+        <div className="pointer-events-none absolute inset-x-0 top-14 z-30 flex justify-center px-3">
+          <ContextOverlayCard
+            icon={<Eye className="size-3.5" />}
+            title="Shared track"
+            description="This shared view is read-only, so you can review layout without changing the track. Open Studio to make edits."
+            dismissLabel="Dismiss shared track intro"
+            onDismiss={() => setIntroDismissed(true)}
+            variant="subtle"
+            action={
+              <Link
+                href="/studio"
+                className="border-border bg-background hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors"
+              >
+                Open Studio
+                <ArrowRight className="size-3.5" />
+              </Link>
+            }
+          />
         </div>
-        <button
-          onClick={() => router.push("/studio")}
-          className="bg-primary text-primary-foreground rounded-md px-3 py-1 text-xs font-semibold transition hover:brightness-110"
-        >
-          Open in Studio →
-        </button>
-      </div>
-      <div className="min-h-0 flex-1">
-        <Suspense>
-          <ShareLoader />
-        </Suspense>
-        <EditorShell readOnly={true} />
-      </div>
+      )}
     </div>
   );
 }

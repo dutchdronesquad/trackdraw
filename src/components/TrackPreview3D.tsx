@@ -921,7 +921,15 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     );
 
     return (
-      <div className="relative h-full w-full" style={{ background: t.bg }}>
+      <div
+        className="relative h-full w-full"
+        style={{ background: t.bg }}
+        onMouseDownCapture={(event) => {
+          if (event.button === 1) {
+            event.preventDefault();
+          }
+        }}
+      >
         <Canvas
           shadows="percentage"
           camera={{
