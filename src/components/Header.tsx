@@ -143,10 +143,21 @@ export default function Header({
   const mobileTabToggle = (
     <button
       onClick={() => onTabChange(tab === "2d" ? "3d" : "2d")}
-      className="border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted inline-flex h-9 min-w-11 items-center justify-center rounded-md border px-3 text-[11px] font-medium transition-colors"
+      className="text-foreground inline-flex h-8 min-w-11 items-center justify-center px-2 text-[11px] font-medium"
       aria-label={`Switch to ${tab === "2d" ? "3D" : "2D"} view`}
     >
-      {tab === "2d" ? "2D" : "3D"}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={tab}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.16, ease: "easeOut" }}
+          className="inline-block"
+        >
+          {tab.toUpperCase()}
+        </motion.span>
+      </AnimatePresence>
     </button>
   );
 
