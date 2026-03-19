@@ -11,6 +11,14 @@ import type {
   DiveGateShape,
 } from "../types";
 import { smoothPolyline } from "../geometry";
+import {
+  getCone2DShape,
+  getDiveGate2DShape,
+  getFlag2DShape,
+  getGate2DShape,
+  getLadder2DShape,
+  getStartFinish2DShape,
+} from "../shape2d";
 
 function m(v: number, ppm: number) {
   return v * ppm;
@@ -27,38 +35,35 @@ function escapeXml(str: string): string {
 function gateToSvg(s: GateShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
-  const w = m(s.width, ppm);
-  const h = m(s.height, ppm);
-  const thick = m(s.thick ?? 0.2, ppm);
-  const color = s.color ?? "#3b82f6";
+  const { color, depth, radius, width } = getGate2DShape(s, ppm);
   const rot = s.rotation;
 
   return `<g transform="translate(${cx},${cy}) rotate(${rot})">
-    <rect x="${-w / 2 - thick}" y="${-h / 2 - thick}" width="${thick}" height="${h + thick * 2}" fill="${color}"/>
-    <rect x="${w / 2}" y="${-h / 2 - thick}" width="${thick}" height="${h + thick * 2}" fill="${color}"/>
-    <rect x="${-w / 2 - thick}" y="${-h / 2 - thick}" width="${w + thick * 2}" height="${thick}" fill="${color}"/>
+    <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="${color}" fill-opacity="0.15" rx="${radius}"/>
+    <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="none" stroke="${color}" stroke-width="2" rx="${radius}"/>
   </g>`;
 }
 
 function flagToSvg(s: FlagShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
-  const r = m(s.radius, ppm);
-  const color = s.color ?? "#f59e0b";
+  const { bannerLength, bannerWidth, color, mastRadius } = getFlag2DShape(
+    s,
+    ppm
+  );
   return `<g transform="translate(${cx},${cy}) rotate(${s.rotation})">
-    <circle r="${r}" fill="${color}" opacity="0.65"/>
-    <circle r="${Math.max(2, r * 0.25)}" fill="${color}"/>
-    <line x1="0" y1="0" x2="0" y2="${-m(s.poleHeight ?? 1.5, ppm)}" stroke="${color}" stroke-width="2"/>
+    <path d="M${mastRadius * 0.2} ${-bannerWidth * 0.34} C ${bannerLength * 0.22} ${-bannerWidth * 0.62}, ${bannerLength * 0.76} ${-bannerWidth * 0.42}, ${bannerLength} 0 C ${bannerLength * 0.76} ${bannerWidth * 0.42}, ${bannerLength * 0.22} ${bannerWidth * 0.62}, ${mastRadius * 0.2} ${bannerWidth * 0.34} Q 0 ${bannerWidth * 0.14}, 0 0 Q 0 ${-bannerWidth * 0.14}, ${mastRadius * 0.2} ${-bannerWidth * 0.34} Z" fill="${color}" fill-opacity="0.8"/>
+    <circle r="${mastRadius}" fill="${color}"/>
+    <circle r="${Math.max(1.5, mastRadius * 0.38)}" fill="#ffffff" fill-opacity="0.78"/>
   </g>`;
 }
 
 function coneToSvg(s: ConeShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
-  const r = m(s.radius, ppm);
-  const color = s.color ?? "#f97316";
+  const { color, radius } = getCone2DShape(s, ppm);
   return `<g transform="translate(${cx},${cy})">
-    <polygon points="0,${-r * 1.4} ${r},${r * 0.7} ${-r},${r * 0.7}" fill="${color}"/>
+    <circle r="${radius}" fill="${color}" stroke="${color}" stroke-width="2"/>
   </g>`;
 }
 
@@ -92,47 +97,46 @@ function polylineToSvg(s: PolylineShape, ppm: number): string {
 function startfinishToSvg(s: StartFinishShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
-  const w = m(s.width ?? 3, ppm);
-  const depth = m(0.3, ppm);
-  const color = s.color ?? "#f59e0b";
-  const segments = 8;
-  const segW = w / segments;
-  let checker = "";
-  for (let i = 0; i < segments; i++) {
-    checker += `<rect x="${cx - w / 2 + i * segW}" y="${cy - depth / 2}" width="${segW - 1}" height="${depth}" fill="${i % 2 === 0 ? "#ffffff" : "#111111"}" opacity="0.5"/>`;
-  }
-  return `<g transform="rotate(${s.rotation},${cx},${cy})">
-    <rect x="${cx - w / 2}" y="${cy - depth / 2}" width="${w}" height="${depth}" stroke="${color}" stroke-width="2" fill="${color}" fill-opacity="0.30"/>
-    ${checker}
+  const { color, padDepth, padWidth, pads } = getStartFinish2DShape(s, ppm);
+  const padMarkup = pads
+    .map(({ index, x }) => {
+      const fontSize = Math.max(7, padWidth * 0.45);
+      return `<g transform="translate(${x},0)">
+        <rect x="${-padWidth / 2}" y="${-padDepth / 2}" width="${padWidth}" height="${padDepth}" fill="${color}" fill-opacity="0.25" rx="2"/>
+        <rect x="${-padWidth / 2}" y="${-padDepth / 2}" width="${padWidth}" height="${padDepth}" fill="none" stroke="${color}" stroke-width="1.5" rx="2"/>
+        <text x="0" y="${fontSize * 0.35}" font-size="${fontSize}" fill="${color}" fill-opacity="0.7" text-anchor="middle">${index + 1}</text>
+      </g>`;
+    })
+    .join("");
+  return `<g transform="translate(${cx},${cy}) rotate(${s.rotation})">
+    ${padMarkup}
   </g>`;
 }
 
 function ladderToSvg(s: LadderShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
-  const w = m(s.width ?? 1.5, ppm);
-  const depth = m(0.08, ppm);
-  const color = s.color ?? "#f97316";
+  const { color, depth, radius, width } = getLadder2DShape(s, ppm);
   return `<g transform="rotate(${s.rotation},${cx},${cy})">
-    <rect x="${cx - w / 2}" y="${cy - depth / 2}" width="${w}" height="${depth}" fill="${color}" fill-opacity="0.25"/>
-    <rect x="${cx - w / 2}" y="${cy - depth / 2}" width="${w}" height="${depth}" stroke="${color}" stroke-width="2" fill="none" rx="2"/>
+    <rect x="${cx - width / 2}" y="${cy - depth / 2}" width="${width}" height="${depth}" fill="${color}" fill-opacity="0.16" rx="${radius}"/>
+    <rect x="${cx - width / 2}" y="${cy - depth / 2}" width="${width}" height="${depth}" stroke="${color}" stroke-width="2" fill="none" rx="${radius}"/>
   </g>`;
 }
 
 function diveGateToSvg(s: DiveGateShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
-  const sz = m(s.size ?? 2.8, ppm);
-  const thick = m(s.thick ?? 0.2, ppm);
-  const tilt = s.tilt ?? 0;
-  const color = s.color ?? "#f97316";
-  // Project size: cos(tilt) shrinks the visible depth dimension
-  const visibleSz = sz * Math.cos((tilt * Math.PI) / 180);
-  const outer = visibleSz;
-  const inner = outer - thick * 2;
+  const { color, inset, postRadius, size, visibleDepth } = getDiveGate2DShape(
+    s,
+    ppm
+  );
   return `<g transform="rotate(${s.rotation},${cx},${cy})">
-    <rect x="${cx - outer / 2}" y="${cy - outer / 2}" width="${outer}" height="${outer}" stroke="${color}" stroke-width="1.5" fill="${color}" fill-opacity="0.08"/>
-    <rect x="${cx - inner / 2}" y="${cy - inner / 2}" width="${inner}" height="${inner}" stroke="${color}" stroke-width="1" fill="none" stroke-dasharray="4,3" opacity="0.5"/>
+    <rect x="${cx - size / 2}" y="${cy - visibleDepth / 2}" width="${size}" height="${visibleDepth}" fill="${color}" fill-opacity="0.03" rx="4"/>
+    <rect x="${cx - size / 2}" y="${cy - visibleDepth / 2}" width="${size}" height="${visibleDepth}" stroke="${color}" stroke-width="2" fill="none" rx="4" opacity="0.95"/>
+    <circle cx="${cx - size / 2 + inset}" cy="${cy - visibleDepth / 2 + inset}" r="${postRadius}" fill="${color}"/>
+    <circle cx="${cx + size / 2 - inset}" cy="${cy - visibleDepth / 2 + inset}" r="${postRadius}" fill="${color}"/>
+    <circle cx="${cx - size / 2 + inset}" cy="${cy + visibleDepth / 2 - inset}" r="${postRadius}" fill="${color}"/>
+    <circle cx="${cx + size / 2 - inset}" cy="${cy + visibleDepth / 2 - inset}" r="${postRadius}" fill="${color}"/>
   </g>`;
 }
 

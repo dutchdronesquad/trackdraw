@@ -6,7 +6,7 @@ import {
   useThree,
   type ThreeEvent,
 } from "@react-three/fiber";
-import { OrbitControls, Grid, RoundedBox } from "@react-three/drei";
+import { Grid, OrbitControls, RoundedBox } from "@react-three/drei";
 import { useEditor } from "@/store/editor";
 import {
   useMemo,
@@ -23,6 +23,12 @@ export interface TrackPreview3DHandle {
   screenshot: () => string;
 }
 
+export interface TrackPreview3DProps {
+  showGizmo?: boolean;
+}
+
+type QuaternionState = [number, number, number, number];
+
 // Captures the WebGL renderer reference so we can call toDataURL from outside
 function ScreenshotHelper({
   onReady,
@@ -33,6 +39,28 @@ function ScreenshotHelper({
   useEffect(() => {
     onReady(() => gl.domElement.toDataURL("image/png"));
   }, [gl, onReady]);
+  return null;
+}
+
+function CameraAxisTracker({
+  onChange,
+}: {
+  onChange: (state: QuaternionState) => void;
+}) {
+  const { camera } = useThree();
+  const lastKeyRef = useRef("");
+
+  useFrame(() => {
+    const inverse = camera.quaternion.clone().invert();
+    const next: QuaternionState = [inverse.x, inverse.y, inverse.z, inverse.w];
+    const key = next.map((value) => value.toFixed(4)).join("|");
+
+    if (key !== lastKeyRef.current) {
+      lastKeyRef.current = key;
+      onChange(next);
+    }
+  });
+
   return null;
 }
 import { Play, Pause, Wind } from "lucide-react";
@@ -122,7 +150,6 @@ function Gate3D({
 }
 
 // ── Flag ────────────────────────────────────────────────────
-// Beam / ray straight up — simple glowing cylinder
 function Flag3D({
   selected = false,
   shape,
@@ -132,30 +159,94 @@ function Flag3D({
 }) {
   const color = shape.color ?? "#a855f7";
   const ph = shape.poleHeight ?? 3.5;
+  const yawRad = (-shape.rotation * Math.PI) / 180;
+  const mastCurve = useMemo(
+    () =>
+      new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, ph * 0.42, 0),
+        new THREE.Vector3(0.01, ph * 0.74, 0),
+        new THREE.Vector3(0.045, ph * 0.9, 0),
+        new THREE.Vector3(0.11, ph * 0.985, 0),
+        new THREE.Vector3(0.2, ph * 0.985, 0),
+      ]),
+    [ph]
+  );
+  const bannerTop = ph * 0.96;
+  const bannerBottom = ph * 0.18;
+  const bannerWidth = Math.max(ph * 0.18, 0.62);
+  const bannerShape = useMemo(() => {
+    const banner = new THREE.Shape();
+    banner.moveTo(0.03, bannerBottom);
+    banner.bezierCurveTo(0.02, ph * 0.34, 0.01, ph * 0.72, 0.08, bannerTop);
+    banner.bezierCurveTo(
+      bannerWidth * 0.24,
+      ph * 1.01,
+      bannerWidth * 0.72,
+      ph * 0.96,
+      bannerWidth * 0.94,
+      ph * 0.78
+    );
+    banner.bezierCurveTo(
+      bannerWidth * 1.02,
+      ph * 0.6,
+      bannerWidth * 0.82,
+      ph * 0.34,
+      bannerWidth * 0.22,
+      bannerBottom + ph * 0.02
+    );
+    banner.bezierCurveTo(
+      bannerWidth * 0.1,
+      bannerBottom - ph * 0.005,
+      0.05,
+      bannerBottom - ph * 0.002,
+      0.03,
+      bannerBottom
+    );
+    return banner;
+  }, [bannerBottom, bannerTop, bannerWidth, ph]);
 
   return (
-    <group position={[shape.x, 0, shape.y]}>
-      {/* Outer glow */}
-      <mesh position={[0, ph / 2, 0]}>
-        <cylinderGeometry args={[0.16, 0.16, ph, 8]} />
-        <meshBasicMaterial
-          color={selected ? "#60a5fa" : color}
-          transparent
-          opacity={selected ? 0.34 : 0.18}
-        />
-      </mesh>
-      {/* Core beam */}
-      <mesh position={[0, ph / 2, 0]}>
-        <cylinderGeometry args={[0.07, 0.07, ph, 8]} />
-        <meshBasicMaterial color={selected ? "#93c5fd" : color} />
-      </mesh>
-      {/* Top cap glow */}
-      <mesh position={[0, ph, 0]}>
-        <sphereGeometry args={[0.1, 8, 8]} />
+    <group position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
+      <mesh
+        position={[0, 0.025, 0]}
+        receiveShadow
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry args={[0.06, 0.14, 24]} />
         <meshBasicMaterial
           color={selected ? "#93c5fd" : color}
           transparent
-          opacity={selected ? 0.8 : 0.55}
+          opacity={selected ? 0.3 : 0.14}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh castShadow>
+        <tubeGeometry args={[mastCurve, 40, 0.024, 10, false]} />
+        <meshStandardMaterial
+          color="#d7dde8"
+          metalness={0.3}
+          roughness={0.42}
+          emissive={selected ? "#60a5fa" : "#000000"}
+          emissiveIntensity={selected ? 0.14 : 0}
+        />
+      </mesh>
+      <mesh position={[0.01, 0, 0]} castShadow receiveShadow>
+        <extrudeGeometry
+          args={[
+            bannerShape,
+            {
+              depth: 0.018,
+              bevelEnabled: false,
+            },
+          ]}
+        />
+        <meshStandardMaterial
+          color={color}
+          emissive={selected ? "#60a5fa" : color}
+          emissiveIntensity={selected ? 0.24 : 0.08}
+          side={THREE.DoubleSide}
+          roughness={0.68}
         />
       </mesh>
     </group>
@@ -172,17 +263,30 @@ function Cone3D({
 }) {
   const color = shape.color ?? "#f97316";
   const r = shape.radius ?? 0.2;
-  const h = r * 2.5;
+  const h = Math.max(r * 1.15, 0.11);
+  const baseRadius = Math.max(r * 1.18, 0.12);
+  const topRadius = Math.max(baseRadius * 0.6, 0.075);
 
   return (
-    <mesh position={[shape.x, h / 2, shape.y]} castShadow>
-      <coneGeometry args={[r, h, 16]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={selected ? "#60a5fa" : color}
-        emissiveIntensity={selected ? 0.45 : 0.06}
-      />
-    </mesh>
+    <group position={[shape.x, 0, shape.y]}>
+      <mesh position={[0, h / 2, 0]} castShadow>
+        <cylinderGeometry args={[topRadius, baseRadius, h, 24]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={selected ? "#60a5fa" : color}
+          emissiveIntensity={selected ? 0.45 : 0.06}
+        />
+      </mesh>
+      <mesh position={[0, h + 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[topRadius * 0.28, topRadius * 0.86, 24]} />
+        <meshBasicMaterial
+          color={selected ? "#fdba74" : "#fed7aa"}
+          transparent
+          opacity={0.85}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
   );
 }
 
@@ -768,8 +872,8 @@ function FieldWatermark({
 }
 
 // ── Main ─────────────────────────────────────────────────────
-const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
-  function TrackPreview3D(_, ref) {
+const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
+  function TrackPreview3D({ showGizmo = true }: TrackPreview3DProps, ref) {
     const { design, selection, setSelection } = useEditor();
     const theme = useTheme();
     const t = THEME[theme];
@@ -780,6 +884,9 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
     const [flyMode, setFlyMode] = useState(false);
     const [playing, setPlaying] = useState(false);
     const [speed, setSpeed] = useState(1);
+    const [axisQuaternion, setAxisQuaternion] = useState<QuaternionState>([
+      0, 0, 0, 1,
+    ]);
     const screenshotFnRef = useRef<(() => string) | null>(null);
 
     useImperativeHandle(ref, () => ({
@@ -896,6 +1003,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
           />
 
           <ScreenshotHelper onReady={handleScreenshotReady} />
+          <CameraAxisTracker onChange={setAxisQuaternion} />
           {flyMode ? (
             <DroneCamera
               shapes={design.shapes}
@@ -918,6 +1026,96 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle>(
             />
           )}
         </Canvas>
+        {showGizmo && (
+          <div className="pointer-events-none absolute top-3 right-3 select-none">
+            <div className="rounded-full border border-white/10 bg-black/45 p-2 shadow-md backdrop-blur-sm">
+              <svg
+                width="68"
+                height="68"
+                viewBox="0 0 68 68"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="34"
+                  cy="34"
+                  r="28"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.08)"
+                  strokeWidth="1"
+                />
+                <circle cx="34" cy="34" r="2.5" fill="rgba(255,255,255,0.65)" />
+
+                {(
+                  [
+                    ["x", "#ef4444", "#fca5a5", "X"],
+                    ["y", "#22c55e", "#86efac", "Y"],
+                    ["z", "#3b82f6", "#93c5fd", "Z"],
+                  ] as const
+                )
+                  .map(([axis, stroke, label, text]) => {
+                    const q = new THREE.Quaternion(...axisQuaternion);
+                    const base =
+                      axis === "x"
+                        ? new THREE.Vector3(1, 0, 0)
+                        : axis === "y"
+                          ? new THREE.Vector3(0, 1, 0)
+                          : new THREE.Vector3(0, 0, 1);
+                    const v = base.applyQuaternion(q);
+                    return {
+                      axis,
+                      stroke,
+                      label,
+                      text,
+                      x: v.x,
+                      y: -v.y,
+                      depth: v.z,
+                    };
+                  })
+                  .sort((a, b) => a.depth - b.depth)
+                  .map(({ axis, stroke, label, text, x, y, depth }) => {
+                    const len = 22;
+                    const head = 6;
+                    const ex = 34 + x * len;
+                    const ey = 34 + y * len;
+                    const nx = Math.hypot(x, y) || 1;
+                    const px = (-y / nx) * 3.5;
+                    const py = (x / nx) * 3.5;
+                    const bx = ex - (x / nx) * head;
+                    const by = ey - (y / nx) * head;
+                    const opacity = 0.45 + ((depth + 1) / 2) * 0.55;
+
+                    return (
+                      <g key={axis} opacity={opacity}>
+                        <line
+                          x1="34"
+                          y1="34"
+                          x2={ex}
+                          y2={ey}
+                          stroke={stroke}
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                        />
+                        <polygon
+                          points={`${ex},${ey} ${bx + px},${by + py} ${bx - px},${by - py}`}
+                          fill={stroke}
+                        />
+                        <text
+                          x={ex + (x / nx) * 7}
+                          y={ey + (y / nx) * 7 + 3}
+                          fill={label}
+                          fontSize="10"
+                          fontWeight="700"
+                          textAnchor="middle"
+                        >
+                          {text}
+                        </text>
+                      </g>
+                    );
+                  })}
+              </svg>
+            </div>
+          </div>
+        )}
 
         {/* Fly-through controls overlay */}
         {hasPath && (

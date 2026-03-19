@@ -1,7 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRef, useState, useEffect } from "react";
+import {
+  useRef,
+  useState,
+  useEffect,
+  type ForwardRefExoticComponent,
+  type RefAttributes,
+} from "react";
 import { EditorMobilePanels } from "@/components/editor/EditorMobilePanels";
 import Header from "@/components/Header";
 import Toolbar from "@/components/Toolbar";
@@ -11,18 +17,26 @@ import ShareDialog from "@/components/ShareDialog";
 import ExportDialog from "@/components/ExportDialog";
 import ImportDialog from "@/components/ImportDialog";
 import TrackCanvas, { type TrackCanvasHandle } from "@/components/TrackCanvas";
-import type { TrackPreview3DHandle } from "@/components/TrackPreview3D";
+import type {
+  TrackPreview3DHandle,
+  TrackPreview3DProps,
+} from "@/components/TrackPreview3D";
 import { parseDesign } from "@/lib/design";
 import { useEditor } from "@/store/editor";
 
-const TrackPreview3D = dynamic(() => import("@/components/TrackPreview3D"), {
-  ssr: false,
-  loading: () => (
-    <div className="text-muted-foreground/40 flex h-full items-center justify-center text-xs">
-      Loading 3D…
-    </div>
-  ),
-});
+const TrackPreview3D = dynamic<TrackPreview3DProps>(
+  () => import("@/components/TrackPreview3D"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="text-muted-foreground/40 flex h-full items-center justify-center text-xs">
+        Loading 3D…
+      </div>
+    ),
+  }
+) as ForwardRefExoticComponent<
+  TrackPreview3DProps & RefAttributes<TrackPreview3DHandle>
+>;
 
 export default function EditorShell({
   readOnly = false,
@@ -56,6 +70,7 @@ export default function EditorShell({
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
   const [mobileOverrideDismissed, setMobileOverrideDismissed] = useState(false);
   const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
+  const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(true);
   const [mobileMultiSelectEnabled, setMobileMultiSelectEnabled] =
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -174,7 +189,10 @@ export default function EditorShell({
                   className="absolute inset-0"
                   style={{ display: tab === "3d" ? "block" : "none" }}
                 >
-                  <TrackPreview3D ref={preview3DRef} />
+                  <TrackPreview3D
+                    ref={preview3DRef}
+                    showGizmo={!readOnly ? mobileGizmoEnabled : true}
+                  />
                 </div>
                 <div className="absolute right-0 bottom-0 left-0 z-20">
                   <StatusBar cursorPos={cursorPos} snapActive={snapActive} />
@@ -196,6 +214,7 @@ export default function EditorShell({
           mobileInspectorOpen={mobileInspectorOpen}
           mobileToolsOpen={mobileToolsOpen}
           mobileMultiSelectEnabled={mobileMultiSelectEnabled}
+          mobileGizmoEnabled={mobileGizmoEnabled}
           mobileOverrideDismissed={mobileOverrideDismissed}
           mobileRulersEnabled={mobileRulersEnabled}
           readOnly={readOnly}
@@ -229,6 +248,7 @@ export default function EditorShell({
               updateShape(id, { locked: !selectionLocked });
             }
           }}
+          onSetMobileGizmoEnabled={setMobileGizmoEnabled}
           onSetMobileRulersEnabled={setMobileRulersEnabled}
           onExitMobileMultiSelect={() => {
             setMobileMultiSelectEnabled(false);
