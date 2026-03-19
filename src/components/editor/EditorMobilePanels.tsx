@@ -120,6 +120,14 @@ export function EditorMobilePanels({
       mediaQuery.removeEventListener("change", updateLandscapeMobile);
   }, []);
 
+  useEffect(() => {
+    if (readOnly || mobileOverrideDismissed) return;
+    const timeoutId = window.setTimeout(() => {
+      onDismissMobileOverride();
+    }, 8000);
+    return () => window.clearTimeout(timeoutId);
+  }, [mobileOverrideDismissed, onDismissMobileOverride, readOnly]);
+
   const toolDisplayName: Record<string, string> = {
     select: "Select",
     grab: "Grab",
@@ -133,12 +141,19 @@ export function EditorMobilePanels({
     divegate: "Dive",
   };
 
-  const canOpenInspector = selectedCount === 1 && !mobileMultiSelectEnabled;
+  const canOpenInspector = selectedCount <= 1 && !mobileMultiSelectEnabled;
   const mobileStatusTitle = mobileMultiSelectEnabled ? "Multi" : "Tool";
   const mobileStatusValue =
     selectedCount > 0
       ? `${selectedCount} items`
       : (toolDisplayName[activeTool] ?? activeTool);
+  const handleMobileSelectButton = () => {
+    if (mobileMultiSelectEnabled) {
+      onExitMobileMultiSelect();
+      return;
+    }
+    onSelectTool("select");
+  };
   const mobileDrawerHeader = (
     title: string,
     subtitle?: string,
@@ -222,16 +237,18 @@ export function EditorMobilePanels({
             className="pointer-events-auto flex w-full max-w-sm items-center gap-1 rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-1.5 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur landscape:max-w-[16.5rem] landscape:gap-0.5 landscape:px-1 landscape:py-1"
           >
             <button
-              onClick={() => onSelectTool("select")}
+              onClick={handleMobileSelectButton}
               className={cn(
                 "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
-                activeTool === "select"
+                activeTool === "select" && !mobileMultiSelectEnabled
                   ? "bg-white text-slate-950"
                   : "text-white/72 hover:bg-white/10 hover:text-white"
               )}
             >
               <SquareMousePointer className="size-3.5" />
-              <span className="landscape:sr-only">Select</span>
+              <span className="landscape:sr-only">
+                {mobileMultiSelectEnabled ? "Exit" : "Select"}
+              </span>
             </button>
             <button
               onClick={onOpenTools}
@@ -268,7 +285,9 @@ export function EditorMobilePanels({
               )}
             >
               <SlidersHorizontal className="size-3.5" />
-              <span className="landscape:sr-only">Edit</span>
+              <span className="landscape:sr-only">
+                {selectedCount === 0 ? "Settings" : "Edit"}
+              </span>
             </button>
           </motion.div>
         </div>
@@ -288,7 +307,7 @@ export function EditorMobilePanels({
             animate={{ opacity: 1, y: 0 }}
             className="pointer-events-auto w-full max-w-sm rounded-[1.2rem] border border-white/10 bg-slate-950/88 p-2 text-white shadow-[0_16px_34px_rgba(15,23,42,0.34)] backdrop-blur"
           >
-            <div className="flex items-center justify-between gap-3 px-1 pb-2">
+            <div className="px-1 pb-2">
               <div className="min-w-0">
                 <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
                   {selectedCount > 0
@@ -296,15 +315,9 @@ export function EditorMobilePanels({
                     : "Multi-select"}
                 </p>
                 <p className="truncate text-[10px] text-white/55">
-                  Tap items to add or remove them
+                  Tap items to add or remove them. Use Select to exit.
                 </p>
               </div>
-              <button
-                onClick={onExitMobileMultiSelect}
-                className="rounded-full border border-white/12 px-3 py-1.5 text-[10px] font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                Done
-              </button>
             </div>
 
             <div className="grid grid-cols-3 gap-1.5">
@@ -370,7 +383,13 @@ export function EditorMobilePanels({
           }}
         >
           <DrawerContent className="border-border/60 bg-background max-h-[72dvh] gap-0 overflow-hidden [overscroll-behavior:contain] rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
-            {mobileDrawerHeader("Inspector", "Selection properties", "brand")}
+            {mobileDrawerHeader(
+              selectedCount === 0 ? "Design" : "Inspector",
+              selectedCount === 0
+                ? "Project and canvas settings"
+                : "Selection properties",
+              "brand"
+            )}
             <div className="min-h-0 flex-1 overflow-hidden [overscroll-behavior:contain]">
               <Inspector />
             </div>

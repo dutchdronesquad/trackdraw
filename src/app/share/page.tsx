@@ -28,6 +28,14 @@ function ShareLoader() {
 export default function SharePage() {
   const [introDismissed, setIntroDismissed] = useState(false);
 
+  useEffect(() => {
+    if (introDismissed) return;
+    const timeoutId = window.setTimeout(() => {
+      setIntroDismissed(true);
+    }, 8000);
+    return () => window.clearTimeout(timeoutId);
+  }, [introDismissed]);
+
   return (
     <div className="relative h-[100dvh]">
       <Suspense>
