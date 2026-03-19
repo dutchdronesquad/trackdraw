@@ -73,12 +73,12 @@ export const toolShortcuts: Partial<Record<EditorTool, string>> = {
 };
 
 const toolShapeDefaults: ToolShapeDefaults = {
-  gate: { width: 1.5, height: 1.5, thick: 0.2, color: "#3b82f6" },
+  gate: { width: 2, height: 2, thick: 0.2, color: "#3b82f6" },
   flag: { radius: 0.25, poleHeight: 3.5, color: "#a855f7" },
   cone: { radius: 0.2, color: "#f97316" },
   label: { text: "Gate A", fontSize: 18, color: "#e2e8f0" },
   startfinish: { width: 3, color: "#f59e0b" },
-  ladder: { width: 1.5, height: 4.5, rungs: 3, color: "#14b8a6" },
+  ladder: { width: 2, height: 6, rungs: 3, color: "#14b8a6" },
   divegate: {
     size: 2.8,
     thick: 0.2,

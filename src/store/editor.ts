@@ -94,7 +94,12 @@ export const useEditor = create<EditorState>()(
             );
             if (idx === -1) continue;
             const shape = draft.design.shapes[idx];
-            if (shape.kind === "polyline" || shape.locked) continue;
+            if (
+              shape.kind === "polyline" ||
+              shape.kind === "cone" ||
+              shape.locked
+            )
+              continue;
             shape.rotation = (((shape.rotation + delta) % 360) + 360) % 360;
             changed = true;
           }

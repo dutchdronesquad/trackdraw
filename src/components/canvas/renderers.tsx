@@ -16,6 +16,14 @@ import type { Vector2d } from "konva/lib/types";
 import { smoothPolyline } from "@/lib/geometry";
 import { zToColor } from "@/lib/alt";
 import { m2px, px2m } from "@/lib/units";
+import {
+  getCone2DShape,
+  getDiveGate2DShape,
+  getFlag2DShape,
+  getGate2DShape,
+  getLadder2DShape,
+  getStartFinish2DShape,
+} from "@/lib/shape2d";
 import { type RectLike } from "@/components/canvas/shared";
 import type {
   ConeShape,
@@ -630,8 +638,7 @@ function renderLockedIndicator(shape: Shape, selected: boolean, ppm: number) {
 export function getShapeLocalBounds(shape: Shape, ppm: number) {
   switch (shape.kind) {
     case "gate": {
-      const width = m2px(shape.width, ppm);
-      const depth = m2px(shape.thick ?? 0.2, ppm);
+      const { width, depth } = getGate2DShape(shape, ppm);
       return {
         x: -width / 2,
         y: -depth / 2,
@@ -640,28 +647,10 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
       };
     }
     case "flag": {
-      const radius = m2px(shape.radius, ppm);
-      const poleVisible = Math.min(
-        m2px(shape.poleHeight ?? 3.5, ppm),
-        m2px(1, ppm)
-      );
-      const flagWidth = poleVisible * 0.42;
-      const flagHeight = poleVisible * 1.5;
-      return {
-        x: -radius,
-        y: -poleVisible,
-        width: Math.max(radius * 2, flagWidth + radius),
-        height: Math.max(radius, poleVisible + flagHeight),
-      };
+      return getFlag2DShape(shape, ppm).bounds;
     }
     case "cone": {
-      const radius = m2px(shape.radius, ppm);
-      return {
-        x: -radius,
-        y: -radius,
-        width: radius * 2,
-        height: radius * 2,
-      };
+      return getCone2DShape(shape, ppm).bounds;
     }
     case "label": {
       const fontSize = shape.fontSize ?? 18;
@@ -674,10 +663,7 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
       };
     }
     case "startfinish": {
-      const totalWidth = m2px(shape.width ?? 3, ppm);
-      const spacing = totalWidth / 4;
-      const padWidth = spacing * 0.78;
-      const padDepth = padWidth * 1.2;
+      const { totalWidth, padDepth } = getStartFinish2DShape(shape, ppm);
       return {
         x: -totalWidth / 2,
         y: -padDepth / 2,
@@ -686,8 +672,7 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
       };
     }
     case "ladder": {
-      const width = m2px(shape.width ?? 1.5, ppm);
-      const depth = m2px(0.18, ppm);
+      const { width, depth } = getLadder2DShape(shape, ppm);
       return {
         x: -width / 2,
         y: -depth / 2,
@@ -696,12 +681,12 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
       };
     }
     case "divegate": {
-      const size = m2px(shape.size ?? 2.8, ppm);
+      const { size, visibleDepth } = getDiveGate2DShape(shape, ppm);
       return {
         x: -size / 2,
-        y: -size / 2,
+        y: -visibleDepth / 2,
         width: size,
-        height: size,
+        height: visibleDepth,
       };
     }
     case "polyline": {
@@ -726,9 +711,7 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
 }
 
 function renderGate(shape: GateShape, selected: boolean, ppm: number) {
-  const width = m2px(shape.width, ppm);
-  const depth = m2px(shape.thick ?? 0.2, ppm);
-  const color = shape.color ?? "#3b82f6";
+  const { color, depth, radius, width } = getGate2DShape(shape, ppm);
   return (
     <>
       {selected && (
@@ -760,57 +743,52 @@ function renderGate(shape: GateShape, selected: boolean, ppm: number) {
         offsetY={depth / 2}
         stroke={color}
         strokeWidth={2}
-        cornerRadius={Math.min(12, depth / 2)}
+        cornerRadius={radius}
       />
     </>
   );
 }
 
 function renderFlag(shape: FlagShape, selected: boolean, ppm: number) {
-  const radius = m2px(shape.radius, ppm);
-  const poleVisible = Math.min(
-    m2px(shape.poleHeight ?? 3.5, ppm),
-    m2px(1, ppm)
-  );
-  const color = shape.color ?? "#a855f7";
-  const flagWidth = poleVisible * 0.42;
-  const flagHeight = poleVisible * 0.3;
+  const { bannerLength, bannerWidth, color, mastRadius, selectionRadius } =
+    getFlag2DShape(shape, ppm);
   return (
     <>
       {selected && (
         <Circle
-          radius={radius + m2px(0.18, ppm)}
+          radius={selectionRadius}
           stroke="#3b82f6"
           strokeWidth={1.4}
           dash={[6, 4]}
           listening={false}
         />
       )}
-      <Line
-        points={[0, 0, 0, -poleVisible]}
-        stroke={color}
-        strokeWidth={2}
-        lineCap="round"
-      />
       <KonvaShape
         sceneFunc={(ctx, shapeNode) => {
           ctx.beginPath();
-          ctx.moveTo(0, -poleVisible);
+          ctx.moveTo(mastRadius * 0.2, -bannerWidth * 0.34);
           ctx.bezierCurveTo(
-            flagWidth,
-            -poleVisible,
-            flagWidth * 1.1,
-            -poleVisible + flagHeight * 0.5,
-            flagWidth * 0.8,
-            -poleVisible + flagHeight
+            bannerLength * 0.22,
+            -bannerWidth * 0.62,
+            bannerLength * 0.76,
+            -bannerWidth * 0.42,
+            bannerLength,
+            0
           );
           ctx.bezierCurveTo(
-            flagWidth * 0.5,
-            -poleVisible + flagHeight * 1.4,
-            0.06,
-            -poleVisible + flagHeight * 1.5,
+            bannerLength * 0.76,
+            bannerWidth * 0.42,
+            bannerLength * 0.22,
+            bannerWidth * 0.62,
+            mastRadius * 0.2,
+            bannerWidth * 0.34
+          );
+          ctx.quadraticCurveTo(0, bannerWidth * 0.14, 0, 0);
+          ctx.quadraticCurveTo(
             0,
-            -poleVisible + flagHeight * 1.5
+            -bannerWidth * 0.14,
+            mastRadius * 0.2,
+            -bannerWidth * 0.34
           );
           ctx.closePath();
           ctx.fillStrokeShape(shapeNode);
@@ -818,21 +796,26 @@ function renderFlag(shape: FlagShape, selected: boolean, ppm: number) {
         fill={color}
         opacity={0.8}
       />
-      <Circle radius={Math.max(3, m2px(0.06, ppm))} fill={color} />
+      <Circle radius={mastRadius} fill={color} />
+      <Circle
+        radius={Math.max(1.5, mastRadius * 0.38)}
+        fill="#ffffff"
+        opacity={0.78}
+      />
     </>
   );
 }
 
 function renderCone(shape: ConeShape, selected: boolean, ppm: number) {
-  const radius = m2px(shape.radius, ppm);
-  const color = shape.color ?? "#f97316";
+  const { color, radius, selectionRadius } = getCone2DShape(shape, ppm);
   return (
     <>
       {selected && (
         <Circle
-          radius={radius + m2px(0.12, ppm)}
+          radius={selectionRadius}
           stroke="#3b82f6"
           strokeWidth={1.3}
+          opacity={0.9}
           dash={[5, 4]}
           listening={false}
         />
@@ -840,7 +823,7 @@ function renderCone(shape: ConeShape, selected: boolean, ppm: number) {
       <Circle
         radius={radius}
         fill={color}
-        opacity={0.2}
+        opacity={1}
         stroke={color}
         strokeWidth={2}
       />
@@ -883,11 +866,10 @@ function renderStartFinish(
   selected: boolean,
   ppm: number
 ) {
-  const totalWidth = m2px(shape.width ?? 3, ppm);
-  const color = shape.color ?? "#f59e0b";
-  const spacing = totalWidth / 4;
-  const padWidth = spacing * 0.78;
-  const padDepth = padWidth * 1.2;
+  const { color, padDepth, padWidth, pads, totalWidth } = getStartFinish2DShape(
+    shape,
+    ppm
+  );
   return (
     <>
       {selected && (
@@ -903,8 +885,7 @@ function renderStartFinish(
           listening={false}
         />
       )}
-      {Array.from({ length: 4 }).map((_, index) => {
-        const x = -totalWidth / 2 + spacing * index + spacing / 2;
+      {pads.map(({ index, x }) => {
         return (
           <Group key={index} x={x}>
             <Rect
@@ -944,9 +925,7 @@ function renderStartFinish(
 }
 
 function renderLadder(shape: LadderShape, selected: boolean, ppm: number) {
-  const width = m2px(shape.width ?? 1.5, ppm);
-  const depth = m2px(0.18, ppm);
-  const color = shape.color ?? "#14b8a6";
+  const { color, depth, radius, width } = getLadder2DShape(shape, ppm);
   return (
     <>
       {selected && (
@@ -978,23 +957,17 @@ function renderLadder(shape: LadderShape, selected: boolean, ppm: number) {
         offsetY={depth / 2}
         stroke={color}
         strokeWidth={2}
-        cornerRadius={Math.min(12, depth / 2)}
+        cornerRadius={radius}
       />
     </>
   );
 }
 
 function renderDiveGate(shape: DiveGateShape, selected: boolean, ppm: number) {
-  const size = m2px(shape.size ?? 2.8, ppm);
-  const thick = m2px(shape.thick ?? 0.2, ppm);
-  const tilt = shape.tilt ?? 0;
-  const visibleDepth = Math.max(
-    thick * 2 + 4,
-    size * Math.max(0.2, Math.cos((tilt * Math.PI) / 180))
+  const { color, inset, postRadius, size, visibleDepth } = getDiveGate2DShape(
+    shape,
+    ppm
   );
-  const color = shape.color ?? "#f97316";
-  const postRadius = Math.max(3, thick * 0.5);
-  const inset = Math.max(postRadius * 0.85, thick * 0.75);
   return (
     <>
       {selected && (

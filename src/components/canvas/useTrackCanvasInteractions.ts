@@ -95,7 +95,11 @@ export function useTrackCanvasInteractions({
   const snapRadiusMeters = Math.max(1, designField.gridStep * 1.5);
 
   const pointerToMeters = useCallback(
-    (pointer: { x: number; y: number } | null, snap = true) => {
+    (
+      pointer: { x: number; y: number } | null,
+      snap = true,
+      magnetic = true
+    ) => {
       if (!pointer) return null;
       const px = snap ? Math.round(pointer.x / stepPx) * stepPx : pointer.x;
       const py = snap ? Math.round(pointer.y / stepPx) * stepPx : pointer.y;
@@ -104,6 +108,7 @@ export function useTrackCanvasInteractions({
         y: px2m(py, designField.ppm),
       };
       if (!snap) return gridMeters;
+      if (!magnetic) return gridMeters;
 
       let nearest: { x: number; y: number } | null = null;
       let minDist = snapRadiusMeters;
@@ -333,7 +338,7 @@ export function useTrackCanvasInteractions({
     const pointer = stage.getRelativePointerPosition();
     if (!pointer) return;
 
-    const meters = pointerToMeters(pointer, true);
+    const meters = pointerToMeters(pointer, true, activeTool === "polyline");
     if (!meters) return;
 
     if (activeTool === "polyline" && !readOnly) {
@@ -426,7 +431,7 @@ export function useTrackCanvasInteractions({
           finalizePath();
           return;
         }
-        const meters = pointerToMeters(pointer, snap);
+        const meters = pointerToMeters(pointer, snap, true);
         if (!meters) return;
         const pos = snapTarget ?? meters;
         setDraftPath((previous) => {
@@ -435,16 +440,6 @@ export function useTrackCanvasInteractions({
           return [...previous, { ...pos, z: 0 }];
         });
         setSelection([]);
-        return;
-      }
-
-      if (activeTool !== "select" && !readOnly) {
-        const meters = pointerToMeters(pointer, snap);
-        if (!meters) return;
-        const shape = createShapeForTool(activeTool, meters);
-        if (!shape) return;
-        const id = addShape(shape);
-        setSelection([id]);
         return;
       }
 
@@ -461,7 +456,6 @@ export function useTrackCanvasInteractions({
     },
     [
       activeTool,
-      addShape,
       finalizePath,
       marqueeAdditiveRef,
       marqueeOriginRef,
@@ -539,41 +533,71 @@ export function useTrackCanvasInteractions({
     setSnapTarget,
   ]);
 
-  const onMouseUp = useCallback(() => {
-    const stage = stageRef.current;
-    if (!stage || !marqueeOriginRef.current || !marqueeRect) {
+  const onMouseUp = useCallback(
+    (event?: { evt: MouseEvent; target: unknown }) => {
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      if (activeTool !== "select" && activeTool !== "grab" && !readOnly) {
+        if (event?.target !== stage) return;
+        const pointer = stage.getRelativePointerPosition();
+        if (!pointer) return;
+        const snap = !(
+          event?.evt.altKey ||
+          event?.evt.metaKey ||
+          event?.evt.shiftKey
+        );
+        const meters = pointerToMeters(pointer, snap, false);
+        if (!meters) return;
+        const shape = createShapeForTool(activeTool, meters);
+        if (!shape) return;
+        const id = addShape(shape);
+        setSelection([id]);
+        suppressTapRef.current = true;
+        return;
+      }
+
+      if (!marqueeOriginRef.current || !marqueeRect) {
+        marqueeOriginRef.current = null;
+        setMarqueeRect(null);
+        return;
+      }
+
+      const rect = marqueeRect;
       marqueeOriginRef.current = null;
       setMarqueeRect(null);
-      return;
-    }
+      if (rect.width < MIN_MARQUEE_SIZE && rect.height < MIN_MARQUEE_SIZE)
+        return;
 
-    const rect = marqueeRect;
-    marqueeOriginRef.current = null;
-    setMarqueeRect(null);
-    if (rect.width < MIN_MARQUEE_SIZE && rect.height < MIN_MARQUEE_SIZE) return;
+      const selectedIds = Object.entries(shapeRefs.current)
+        .filter((entry): entry is [string, KonvaGroup] => Boolean(entry[1]))
+        .filter(([, node]) =>
+          rectsIntersect(rect, node.getClientRect({ relativeTo: stage }))
+        )
+        .map(([id]) => id);
 
-    const selectedIds = Object.entries(shapeRefs.current)
-      .filter((entry): entry is [string, KonvaGroup] => Boolean(entry[1]))
-      .filter(([, node]) =>
-        rectsIntersect(rect, node.getClientRect({ relativeTo: stage }))
-      )
-      .map(([id]) => id);
-
-    if (marqueeAdditiveRef.current) {
-      setSelection(Array.from(new Set([...selection, ...selectedIds])));
-    } else {
-      setSelection(selectedIds);
-    }
-  }, [
-    marqueeAdditiveRef,
-    marqueeOriginRef,
-    marqueeRect,
-    selection,
-    setMarqueeRect,
-    setSelection,
-    shapeRefs,
-    stageRef,
-  ]);
+      if (marqueeAdditiveRef.current) {
+        setSelection(Array.from(new Set([...selection, ...selectedIds])));
+      } else {
+        setSelection(selectedIds);
+      }
+    },
+    [
+      activeTool,
+      addShape,
+      marqueeAdditiveRef,
+      marqueeOriginRef,
+      marqueeRect,
+      pointerToMeters,
+      readOnly,
+      selection,
+      setMarqueeRect,
+      setSelection,
+      shapeRefs,
+      stageRef,
+      suppressTapRef,
+    ]
+  );
 
   return {
     onMouseDown,

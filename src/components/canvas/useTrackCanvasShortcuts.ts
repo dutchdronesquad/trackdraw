@@ -38,7 +38,7 @@ function normalizeRotation(rotation: number) {
 }
 
 function canRotateShape(shape: Shape) {
-  return shape.kind !== "polyline" && !shape.locked;
+  return shape.kind !== "polyline" && shape.kind !== "cone" && !shape.locked;
 }
 
 export function useTrackCanvasShortcuts({

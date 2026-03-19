@@ -210,6 +210,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       if (
         !singleSelectedShape ||
         singleSelectedShape.kind === "polyline" ||
+        singleSelectedShape.kind === "cone" ||
         singleSelectedShape.locked
       ) {
         return null;
@@ -886,7 +887,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                           (candidate) => candidate.id === id
                         );
                         return (
-                          shape && shape.kind !== "polyline" && !shape.locked
+                          shape &&
+                          shape.kind !== "polyline" &&
+                          shape.kind !== "cone" &&
+                          !shape.locked
                         );
                       });
 

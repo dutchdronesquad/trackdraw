@@ -355,7 +355,7 @@ export default function Header({
             onClick={onExport}
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
-              "h-8 gap-1.5 px-2 text-xs sm:h-7 sm:px-2.5"
+              "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"
             )}
           >
             <Download className="size-3.5" />

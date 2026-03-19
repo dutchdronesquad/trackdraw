@@ -37,6 +37,7 @@ interface EditorMobilePanelsProps {
   activeTool: EditorTool;
   mobileInspectorOpen: boolean;
   mobileMultiSelectEnabled: boolean;
+  mobileGizmoEnabled: boolean;
   mobileRulersEnabled: boolean;
   mobileToolsOpen: boolean;
   mobileOverrideDismissed: boolean;
@@ -56,6 +57,7 @@ interface EditorMobilePanelsProps {
   onOpenReadOnlyMenu: () => void;
   onOpenTools: () => void;
   onSetMobileRulersEnabled: (enabled: boolean) => void;
+  onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSelectTool: (tool: EditorTool) => void;
   onSetMobileToolsOpen: (open: boolean) => void;
   onSetReadOnlyMenuOpen: (open: boolean) => void;
@@ -70,6 +72,7 @@ export function EditorMobilePanels({
   activeTool,
   mobileInspectorOpen,
   mobileMultiSelectEnabled,
+  mobileGizmoEnabled,
   mobileRulersEnabled,
   mobileToolsOpen,
   mobileOverrideDismissed,
@@ -89,6 +92,7 @@ export function EditorMobilePanels({
   onOpenReadOnlyMenu,
   onOpenTools,
   onSetMobileRulersEnabled,
+  onSetMobileGizmoEnabled,
   onSelectTool,
   onSetMobileToolsOpen,
   onSetReadOnlyMenuOpen,
@@ -349,6 +353,25 @@ export function EditorMobilePanels({
         </div>
       )}
 
+      {!readOnly && tab === "3d" && (
+        <div
+          className="absolute right-4 z-30 lg:hidden"
+          style={{ bottom: "calc(5.25rem + env(safe-area-inset-bottom))" }}
+        >
+          <motion.button
+            onClick={onOpenTools}
+            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="bg-sidebar/96 border-border text-foreground hover:bg-muted flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur transition-colors"
+            aria-label="Open 3D view options"
+          >
+            <LayoutGrid className="text-muted-foreground size-4" />
+          </motion.button>
+        </div>
+      )}
+
       {!readOnly && (
         <Drawer
           open={mobileInspectorOpen}
@@ -376,43 +399,47 @@ export function EditorMobilePanels({
         >
           <DrawerContent className="border-border/60 bg-background max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader(
-              "Tools",
-              "Drawing, view and project actions",
+              tab === "3d" ? "View" : "Tools",
+              tab === "3d"
+                ? "3D preview controls and project actions"
+                : "Drawing, view and project actions",
               "brand"
             )}
 
             <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  Drawing tools
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {mobileToolEntries
-                    .filter(
-                      (tool) => tool.id !== "select" && tool.id !== "grab"
-                    )
-                    .map((tool) => {
-                      const active = activeTool === tool.id;
-                      return (
-                        <button
-                          key={tool.id}
-                          onClick={() => onSelectTool(tool.id)}
-                          className={cn(
-                            "flex flex-col items-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all",
-                            active
-                              ? "border-border/80 bg-muted/55 text-foreground"
-                              : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-                          )}
-                        >
-                          {tool.icon}
-                          <span className="text-[11px] leading-none font-medium">
-                            {tool.label}
-                          </span>
-                        </button>
-                      );
-                    })}
+              {tab === "2d" && (
+                <div>
+                  <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                    Drawing tools
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {mobileToolEntries
+                      .filter(
+                        (tool) => tool.id !== "select" && tool.id !== "grab"
+                      )
+                      .map((tool) => {
+                        const active = activeTool === tool.id;
+                        return (
+                          <button
+                            key={tool.id}
+                            onClick={() => onSelectTool(tool.id)}
+                            className={cn(
+                              "flex flex-col items-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all",
+                              active
+                                ? "border-border/80 bg-muted/55 text-foreground"
+                                : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                            )}
+                          >
+                            {tool.icon}
+                            <span className="text-[11px] leading-none font-medium">
+                              {tool.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div>
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
@@ -437,32 +464,64 @@ export function EditorMobilePanels({
                     </button>
                   ))}
                 </div>
-                <button
-                  onClick={() => onSetMobileRulersEnabled(!mobileRulersEnabled)}
-                  className={cn(
-                    "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
-                    mobileRulersEnabled
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <div>
-                    <p className="text-[11px] font-medium">Rulers</p>
-                    <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                      Show top and left guides on mobile
-                    </p>
-                  </div>
-                  <div
+                {tab === "2d" && (
+                  <button
+                    onClick={() =>
+                      onSetMobileRulersEnabled(!mobileRulersEnabled)
+                    }
                     className={cn(
-                      "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
                       mobileRulersEnabled
-                        ? "bg-foreground/90 justify-end"
-                        : "bg-border/80 justify-start"
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <span className="bg-background block size-5 rounded-full shadow-sm" />
-                  </div>
-                </button>
+                    <div>
+                      <p className="text-[11px] font-medium">Rulers</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                        Show top and left guides on mobile
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileRulersEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-sm" />
+                    </div>
+                  </button>
+                )}
+                {tab === "3d" && (
+                  <button
+                    onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
+                    className={cn(
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                      mobileGizmoEnabled
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <div>
+                      <p className="text-[11px] font-medium">Gizmo</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                        Show the axis helper in 3D preview
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileGizmoEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-sm" />
+                    </div>
+                  </button>
+                )}
               </div>
 
               <div>

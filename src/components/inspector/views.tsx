@@ -269,13 +269,17 @@ export function SingleInspectorView({
                 onChange={(value) => updateShape(shape.id, { y: value })}
               />
             </Row>
-            <Row label="Rotation">
-              <Num
-                value={shape.rotation}
-                onChange={(value) => updateShape(shape.id, { rotation: value })}
-                step={1}
-              />
-            </Row>
+            {shape.kind !== "cone" && (
+              <Row label="Rotation">
+                <Num
+                  value={shape.rotation}
+                  onChange={(value) =>
+                    updateShape(shape.id, { rotation: value })
+                  }
+                  step={1}
+                />
+              </Row>
+            )}
             <Row label="Color">
               <div className="flex items-center gap-2">
                 <input
