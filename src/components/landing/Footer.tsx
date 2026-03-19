@@ -34,7 +34,8 @@ export function Footer() {
             </div>
             <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
               Browser-based track designer for FPV race directors. Draw to
-              scale, preview in 3D, share a live link.
+              scale, preview in 3D, share a read-only link, and keep quick
+              edits moving on mobile.
             </p>
           </div>
 
