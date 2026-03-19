@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
+  ArrowRight,
   Copy,
   Download,
   FilePlus,
@@ -16,7 +18,6 @@ import {
   SquareMousePointer,
   Trash2,
   Unlock,
-  X,
 } from "lucide-react";
 import Inspector from "@/components/Inspector";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
@@ -27,7 +28,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { buttonVariants } from "@/components/ui/button";
+import { ContextOverlayCard } from "@/components/ContextOverlayCard";
 import type { EditorTool } from "@/lib/editor-tools";
 import { cn } from "@/lib/utils";
 
@@ -172,17 +173,20 @@ export function EditorMobilePanels({
   return (
     <>
       {readOnly && (
-        <div className="absolute right-4 bottom-10 z-30 lg:hidden">
+        <div
+          className="absolute right-4 z-30 lg:hidden"
+          style={{ bottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}
+        >
           <motion.button
             onClick={onOpenReadOnlyMenu}
             initial={{ opacity: 0, y: 10, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             whileTap={{ scale: 0.97 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="bg-sidebar border-border text-foreground hover:bg-muted flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-medium shadow-lg transition-colors"
+            className="bg-sidebar/96 border-border text-foreground hover:bg-muted flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur transition-colors"
+            aria-label="Open shared view options"
           >
-            <span className="tracking-wide uppercase">{tab}</span>
-            <LayoutGrid className="text-muted-foreground size-3.5" />
+            <LayoutGrid className="text-muted-foreground size-4" />
           </motion.button>
         </div>
       )}
@@ -193,29 +197,13 @@ export function EditorMobilePanels({
           animate={{ opacity: 1, y: 0 }}
           className="fixed inset-x-3 top-[3.6rem] z-40 lg:hidden landscape:inset-x-auto landscape:left-3 landscape:max-w-[19rem]"
         >
-          <div className="border-border/70 bg-background/97 rounded-[1.4rem] border px-3.5 py-3 shadow-[0_18px_38px_rgba(15,23,42,0.14)] backdrop-blur">
-            <div className="flex items-start gap-3">
-              <div className="border-border/60 bg-card mt-0.5 rounded-2xl border p-2.5">
-                <Monitor className="text-muted-foreground/50 size-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground text-[12px] font-semibold tracking-[0.04em]">
-                  Mobile canvas
-                </p>
-                <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
-                  Tap to select, drag items directly to move them, and use empty
-                  space or two fingers to navigate the canvas.
-                </p>
-              </div>
-              <button
-                onClick={onDismissMobileOverride}
-                className="text-muted-foreground hover:text-foreground mt-0.5 shrink-0 rounded-full p-1 transition-colors"
-                aria-label="Dismiss mobile hint"
-              >
-                <X className="size-3.5" />
-              </button>
-            </div>
-          </div>
+          <ContextOverlayCard
+            icon={<Monitor className="size-3.5" />}
+            title="Mobile canvas"
+            description="Tap to select, drag items directly to move them, and use empty space or two fingers to navigate the canvas."
+            dismissLabel="Dismiss mobile hint"
+            onDismiss={onDismissMobileOverride}
+          />
         </motion.div>
       )}
 
@@ -356,7 +344,7 @@ export function EditorMobilePanels({
       {!readOnly && tab === "3d" && (
         <div
           className="absolute right-4 z-30 lg:hidden"
-          style={{ bottom: "calc(5.25rem + env(safe-area-inset-bottom))" }}
+          style={{ bottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}
         >
           <motion.button
             onClick={onOpenTools}
@@ -570,12 +558,16 @@ export function EditorMobilePanels({
           modal
           onOpenChange={onSetReadOnlyMenuOpen}
         >
-          <DrawerContent className="border-border/60 bg-background max-h-[60dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
-            {mobileDrawerHeader("View", "Switch mode or share this track")}
-            <div className="space-y-5 px-4 pb-4">
+          <DrawerContent className="border-border/60 bg-background max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
+            {mobileDrawerHeader(
+              "View",
+              "Switch mode or share this track",
+              "brand"
+            )}
+            <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
               <div>
-                <p className="text-muted-foreground/60 mb-2 text-[10px] font-semibold tracking-widest uppercase">
-                  View mode
+                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                  View
                 </p>
                 <div className="border-border/50 bg-muted/18 flex items-center gap-1.5 rounded-[1rem] border p-1">
                   {(["2d", "3d"] as const).map((nextTab) => (
@@ -586,31 +578,99 @@ export function EditorMobilePanels({
                         onSetReadOnlyMenuOpen(false);
                       }}
                       className={cn(
-                        "flex-1 rounded-[0.8rem] py-2.5 text-sm font-medium tracking-wide uppercase transition-colors",
+                        "flex-1 rounded-[0.8rem] py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
                         tab === nextTab
                           ? "bg-background text-foreground shadow-sm"
                           : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
                       )}
                     >
-                      {nextTab === "2d" ? "2D View" : "3D Preview"}
+                      {nextTab === "2d" ? "Canvas" : "3D Preview"}
                     </button>
                   ))}
                 </div>
+                {tab === "2d" && (
+                  <button
+                    onClick={() =>
+                      onSetMobileRulersEnabled(!mobileRulersEnabled)
+                    }
+                    className={cn(
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                      mobileRulersEnabled
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <div>
+                      <p className="text-[11px] font-medium">Rulers</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                        Show top and left guides on mobile
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileRulersEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-sm" />
+                    </div>
+                  </button>
+                )}
+                {tab === "3d" && (
+                  <button
+                    onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
+                    className={cn(
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                      mobileGizmoEnabled
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <div>
+                      <p className="text-[11px] font-medium">Gizmo</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                        Show the axis helper in 3D preview
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileGizmoEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-sm" />
+                    </div>
+                  </button>
+                )}
               </div>
               <div>
-                <p className="text-muted-foreground/60 mb-2 text-[10px] font-semibold tracking-widest uppercase">
+                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
                   Share
                 </p>
-                <button
-                  onClick={onShare}
-                  className={cn(
-                    buttonVariants({ variant: "outline", size: "sm" }),
-                    "border-border/60 bg-muted/12 hover:bg-muted/24 h-10 w-full gap-2"
-                  )}
-                >
-                  <Share2 className="size-4" />
-                  Share track
-                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href="/studio"
+                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all"
+                  >
+                    <ArrowRight className="size-4" />
+                    <span className="text-[11px] leading-none font-medium">
+                      Open Studio
+                    </span>
+                  </Link>
+                  <button
+                    onClick={onShare}
+                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all"
+                  >
+                    <Share2 className="size-4" />
+                    <span className="text-[11px] leading-none font-medium">
+                      Share
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           </DrawerContent>

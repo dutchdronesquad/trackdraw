@@ -153,6 +153,24 @@ export default function Header({
   return (
     <header className="border-border bg-sidebar relative z-20 flex h-12 shrink-0 items-center gap-2 border-b px-3 select-none lg:h-11">
       <div className="flex min-w-0 flex-1 shrink-0 items-center gap-2">
+        {readOnly && (
+          <Link
+            href="/"
+            aria-label="Go to homepage"
+            className="hidden shrink-0 items-center rounded-sm opacity-90 transition-opacity hover:opacity-100 lg:flex"
+          >
+            <Image
+              src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+              alt="TrackDraw"
+              width={118}
+              height={22}
+              className="h-[22px] w-[118px]"
+              priority
+              unoptimized
+              draggable={false}
+            />
+          </Link>
+        )}
         {!readOnly && onToggleCollapsed && (
           <Tooltip>
             <TooltipTrigger
@@ -205,6 +223,16 @@ export default function Header({
               <Eye className="size-3" />
               View only
             </span>
+            <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
+            <Link
+              href="/studio"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"
+              )}
+            >
+              Open Studio
+            </Link>
             <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
           </>
         )}
