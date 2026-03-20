@@ -26,20 +26,9 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
-import { useState } from "react";
 
 function TrackDrawIcon({ className }: { className?: string }) {
   return (
@@ -73,6 +62,7 @@ function TrackDrawIcon({ className }: { className?: string }) {
 interface ToolbarProps {
   onImport: () => void;
   onExport: () => void;
+  onOpenProjectManager: () => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
 }
@@ -80,247 +70,214 @@ interface ToolbarProps {
 export default function Toolbar({
   onImport,
   onExport,
+  onOpenProjectManager,
   collapsed,
 }: ToolbarProps) {
-  const { activeTool, setActiveTool, setSelection, newProject } = useEditor();
+  const { activeTool, setActiveTool, setSelection } = useEditor();
   const theme = useTheme();
-  const [confirmOpen, setConfirmOpen] = useState(false);
 
   function handleAction(action: "new" | "import" | "export") {
-    if (action === "new") setConfirmOpen(true);
+    if (action === "new") onOpenProjectManager();
     else if (action === "import") onImport();
     else onExport();
   }
 
   return (
-    <>
-      <SidebarProvider
-        className="hidden h-full !min-h-0 !w-auto shrink-0 lg:flex"
-        style={
-          {
-            "--sidebar-width": collapsed ? "3.5rem" : "11.5rem",
-          } as React.CSSProperties
-        }
+    <SidebarProvider
+      className="hidden h-full !min-h-0 !w-auto shrink-0 lg:flex"
+      style={
+        {
+          "--sidebar-width": collapsed ? "3.5rem" : "11.5rem",
+        } as React.CSSProperties
+      }
+    >
+      <Sidebar
+        collapsible="none"
+        className="border-border h-full overflow-hidden border-r transition-[width] duration-200 ease-in-out"
       >
-        <Sidebar
-          collapsible="none"
-          className="border-border h-full overflow-hidden border-r transition-[width] duration-200 ease-in-out"
-        >
-          {/* Logo header */}
-          <SidebarHeader className="border-border/60 flex h-11 items-center justify-center border-b px-3 py-0">
-            <Link
-              href="/"
-              className="flex items-center justify-center rounded-md opacity-90 transition-opacity hover:opacity-100"
-              aria-label="Go to homepage"
-            >
-              {collapsed ? (
-                <TrackDrawIcon className="text-foreground/80 size-6" />
-              ) : (
-                <Image
-                  src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
-                  alt="TrackDraw"
-                  className="h-[30px] w-[136px] select-none"
-                  width={136}
-                  height={30}
-                  priority
-                  unoptimized
-                  draggable={false}
-                />
-              )}
-            </Link>
-          </SidebarHeader>
+        {/* Logo header */}
+        <SidebarHeader className="border-border/60 flex h-11 items-center justify-center border-b px-3 py-0">
+          <Link
+            href="/"
+            className="flex items-center justify-center rounded-md opacity-90 transition-opacity hover:opacity-100"
+            aria-label="Go to homepage"
+          >
+            {collapsed ? (
+              <TrackDrawIcon className="text-foreground/80 size-6" />
+            ) : (
+              <Image
+                src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+                alt="TrackDraw"
+                className="h-[30px] w-[136px] select-none"
+                width={136}
+                height={30}
+                priority
+                unoptimized
+                draggable={false}
+              />
+            )}
+          </Link>
+        </SidebarHeader>
 
-          <SidebarContent className="gap-0 py-2">
-            {toolbarToolGroups.map((group, gi) => (
-              <SidebarGroup key={gi} className="px-2 py-0">
-                {gi > 0 &&
-                  (collapsed ? (
-                    <SidebarSeparator className="my-2" />
-                  ) : group.title ? (
-                    <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[10px] tracking-widest uppercase">
-                      {group.title}
-                    </SidebarGroupLabel>
-                  ) : (
-                    <div className="h-2" />
-                  ))}
-                <SidebarMenu className="space-y-1">
-                  {group.tools.map((tool) => {
-                    const active = tool.id === activeTool;
-                    const btn = (
-                      <motion.div
-                        whileTap={{ scale: 0.985 }}
-                        transition={{ duration: 0.16, ease: "easeOut" }}
+        <SidebarContent className="gap-0 py-2">
+          {toolbarToolGroups.map((group, gi) => (
+            <SidebarGroup key={gi} className="px-2 py-0">
+              {gi > 0 &&
+                (collapsed ? (
+                  <SidebarSeparator className="my-2" />
+                ) : group.title ? (
+                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[10px] tracking-widest uppercase">
+                    {group.title}
+                  </SidebarGroupLabel>
+                ) : (
+                  <div className="h-2" />
+                ))}
+              <SidebarMenu className="space-y-1">
+                {group.tools.map((tool) => {
+                  const active = tool.id === activeTool;
+                  const btn = (
+                    <motion.div
+                      whileTap={{ scale: 0.985 }}
+                      transition={{ duration: 0.16, ease: "easeOut" }}
+                    >
+                      <SidebarMenuButton
+                        isActive={active}
+                        onClick={() => {
+                          setSelection([]);
+                          setActiveTool(tool.id);
+                        }}
+                        className={cn(
+                          "relative h-8 overflow-hidden rounded-lg border transition-all duration-150",
+                          collapsed ? "justify-center px-0" : "gap-2.5",
+                          active
+                            ? "border-brand-primary/30 bg-brand-primary/14 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                            : "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
+                        )}
                       >
-                        <SidebarMenuButton
-                          isActive={active}
-                          onClick={() => {
-                            setSelection([]);
-                            setActiveTool(tool.id);
-                          }}
+                        {active && (
+                          <motion.span
+                            layoutId="toolbar-active-pill"
+                            className="bg-brand-primary/12 absolute inset-0 rounded-lg"
+                            transition={{
+                              type: "spring",
+                              stiffness: 420,
+                              damping: 34,
+                            }}
+                          />
+                        )}
+                        <span
                           className={cn(
-                            "relative h-8 overflow-hidden rounded-lg border transition-all duration-150",
-                            collapsed ? "justify-center px-0" : "gap-2.5",
+                            "flex size-4 shrink-0 items-center justify-center transition-colors",
                             active
-                              ? "border-brand-primary/30 bg-brand-primary/14 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                              : "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
+                              ? "text-brand-primary"
+                              : "text-sidebar-foreground/70 group-hover/menu-button:text-foreground"
                           )}
                         >
-                          {active && (
-                            <motion.span
-                              layoutId="toolbar-active-pill"
-                              className="bg-brand-primary/12 absolute inset-0 rounded-lg"
-                              transition={{
-                                type: "spring",
-                                stiffness: 420,
-                                damping: 34,
-                              }}
-                            />
-                          )}
-                          <span
+                          {tool.icon}
+                        </span>
+                        {!collapsed && (
+                          <span className="flex-1 truncate text-[13px]">
+                            {tool.label}
+                          </span>
+                        )}
+                        {!collapsed && (
+                          <Kbd
                             className={cn(
-                              "flex size-4 shrink-0 items-center justify-center transition-colors",
+                              "h-4 min-w-4 px-1 font-mono text-[9px] leading-none shadow-none",
                               active
-                                ? "text-brand-primary"
-                                : "text-sidebar-foreground/70 group-hover/menu-button:text-foreground"
+                                ? "bg-brand-primary/10 text-foreground/55"
+                                : "bg-muted/80 text-muted-foreground/55"
+                            )}
+                          >
+                            {tool.shortcut}
+                          </Kbd>
+                        )}
+                      </SidebarMenuButton>
+                    </motion.div>
+                  );
+                  return (
+                    <SidebarMenuItem key={tool.id}>
+                      {collapsed ? (
+                        <Tooltip>
+                          <TooltipTrigger
+                            onClick={() => {
+                              setSelection([]);
+                              setActiveTool(tool.id);
+                            }}
+                            className={cn(
+                              "flex h-8 w-full items-center justify-center rounded-lg border transition-colors duration-150",
+                              active
+                                ? "border-brand-primary/30 bg-brand-primary/14 text-brand-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                                : "text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
                             )}
                           >
                             {tool.icon}
-                          </span>
-                          {!collapsed && (
-                            <span className="flex-1 truncate text-[13px]">
-                              {tool.label}
+                          </TooltipTrigger>
+                          <TooltipContent side="right" sideOffset={8}>
+                            <span>{tool.label}</span>
+                            <span className="ml-2 inline-flex">
+                              <Kbd className="h-4 min-w-4 px-1 font-mono text-[9px] shadow-none">
+                                {tool.shortcut}
+                              </Kbd>
                             </span>
-                          )}
-                          {!collapsed && (
-                            <Kbd
-                              className={cn(
-                                "h-4 min-w-4 px-1 font-mono text-[9px] leading-none shadow-none",
-                                active
-                                  ? "bg-brand-primary/10 text-foreground/55"
-                                  : "bg-muted/80 text-muted-foreground/55"
-                              )}
-                            >
-                              {tool.shortcut}
-                            </Kbd>
-                          )}
-                        </SidebarMenuButton>
-                      </motion.div>
-                    );
-                    return (
-                      <SidebarMenuItem key={tool.id}>
-                        {collapsed ? (
-                          <Tooltip>
-                            <TooltipTrigger
-                              onClick={() => {
-                                setSelection([]);
-                                setActiveTool(tool.id);
-                              }}
-                              className={cn(
-                                "flex h-8 w-full items-center justify-center rounded-lg border transition-colors duration-150",
-                                active
-                                  ? "border-brand-primary/30 bg-brand-primary/14 text-brand-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                                  : "text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
-                              )}
-                            >
-                              {tool.icon}
-                            </TooltipTrigger>
-                            <TooltipContent side="right" sideOffset={8}>
-                              <span>{tool.label}</span>
-                              <span className="ml-2 inline-flex">
-                                <Kbd className="h-4 min-w-4 px-1 font-mono text-[9px] shadow-none">
-                                  {tool.shortcut}
-                                </Kbd>
-                              </span>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          btn
-                        )}
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroup>
-            ))}
-          </SidebarContent>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        btn
+                      )}
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          ))}
+        </SidebarContent>
 
-          <SidebarFooter className="border-border/60 gap-0 border-t p-2">
-            <SidebarMenu className="space-y-1">
-              {bottomActions.map(({ label, tooltip, icon, action }) => {
-                const btn = (
-                  <motion.div
-                    whileTap={{ scale: 0.985 }}
-                    transition={{ duration: 0.16, ease: "easeOut" }}
-                  >
-                    <SidebarMenuButton
-                      onClick={() => handleAction(action)}
-                      className={cn(
-                        "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-8 rounded-lg border border-transparent transition-all duration-200",
-                        collapsed ? "justify-center px-0" : "gap-2.5"
-                      )}
-                    >
-                      <span className="flex size-4 shrink-0 items-center justify-center">
-                        {icon}
-                      </span>
-                      {!collapsed && (
-                        <span className="text-[13px]">{label}</span>
-                      )}
-                    </SidebarMenuButton>
-                  </motion.div>
-                );
-                return (
-                  <SidebarMenuItem key={label}>
-                    {collapsed ? (
-                      <Tooltip>
-                        <TooltipTrigger
-                          onClick={() => handleAction(action)}
-                          className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-8 w-full items-center justify-center rounded-lg border border-transparent transition-colors"
-                        >
-                          {icon}
-                        </TooltipTrigger>
-                        <TooltipContent side="right" sideOffset={8}>
-                          {tooltip}
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      btn
+        <SidebarFooter className="border-border/60 gap-0 border-t p-2">
+          <SidebarMenu className="space-y-1">
+            {bottomActions.map(({ label, tooltip, icon, action }) => {
+              const btn = (
+                <motion.div
+                  whileTap={{ scale: 0.985 }}
+                  transition={{ duration: 0.16, ease: "easeOut" }}
+                >
+                  <SidebarMenuButton
+                    onClick={() => handleAction(action)}
+                    className={cn(
+                      "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-8 rounded-lg border border-transparent transition-all duration-200",
+                      collapsed ? "justify-center px-0" : "gap-2.5"
                     )}
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarFooter>
-        </Sidebar>
-      </SidebarProvider>
-
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="max-w-xs" showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>New Project</DialogTitle>
-            <DialogDescription>
-              This will clear your current track. Any unsaved changes will be
-              lost.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose
-              render={<Button variant="outline" className="flex-1" />}
-            >
-              Cancel
-            </DialogClose>
-            <Button
-              variant="destructive"
-              className="flex-1"
-              onClick={() => {
-                newProject();
-                setConfirmOpen(false);
-              }}
-            >
-              Start New
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+                  >
+                    <span className="flex size-4 shrink-0 items-center justify-center">
+                      {icon}
+                    </span>
+                    {!collapsed && <span className="text-[13px]">{label}</span>}
+                  </SidebarMenuButton>
+                </motion.div>
+              );
+              return (
+                <SidebarMenuItem key={label}>
+                  {collapsed ? (
+                    <Tooltip>
+                      <TooltipTrigger
+                        onClick={() => handleAction(action)}
+                        className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-8 w-full items-center justify-center rounded-lg border border-transparent transition-colors"
+                      >
+                        {icon}
+                      </TooltipTrigger>
+                      <TooltipContent side="right" sideOffset={8}>
+                        {tooltip}
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    btn
+                  )}
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+    </SidebarProvider>
   );
 }

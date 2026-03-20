@@ -26,9 +26,14 @@ import { cn } from "@/lib/utils";
 interface ShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onExportJson?: () => void;
 }
 
-export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
+export default function ShareDialog({
+  open,
+  onOpenChange,
+  onExportJson,
+}: ShareDialogProps) {
   const design = useEditor((s) => s.design);
   const [copied, setCopied] = useState(false);
 
@@ -114,7 +119,7 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
           {!safe && (
             <div className="flex items-start gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2.5 text-xs text-yellow-400">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-              <span>
+              <span className="leading-relaxed">
                 Track is very large — the URL may not work in all browsers.
                 Export as JSON for a reliable backup.
               </span>
@@ -190,6 +195,18 @@ export default function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
               Open in tab
             </Button>
           </div>
+
+          {onExportJson ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-1.5 text-xs"
+              onClick={onExportJson}
+            >
+              <Boxes className="size-3.5" />
+              Export JSON instead
+            </Button>
+          ) : null}
 
           <div className="border-border/50 bg-muted/12 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[11px]">
             <Boxes className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />

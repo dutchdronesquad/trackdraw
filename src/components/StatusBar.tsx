@@ -22,8 +22,8 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const { design, zoom, selection, activeTool } = useEditor();
 
   return (
-    <div className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-[11px] select-none lg:flex">
-      <span className="text-foreground/70 shrink-0">
+    <div className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex">
+      <span className="text-foreground/80 shrink-0">
         {toolLabel[activeTool] ?? activeTool}
       </span>
       <span className="text-muted-foreground/25">·</span>
@@ -62,7 +62,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {/* Selection count */}
       {selection.length > 0 && (
         <>
-          <span className="text-foreground/60">
+          <span className="text-foreground/75">
             {selection.length} selected
           </span>
           <span className="text-muted-foreground/25">·</span>

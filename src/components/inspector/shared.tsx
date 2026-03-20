@@ -14,7 +14,7 @@ export function PanelHeader({
 }) {
   return (
     <div className="border-border/60 bg-card/95 supports-[backdrop-filter]:bg-card/90 sticky top-0 z-10 flex h-11 shrink-0 items-center justify-between border-b px-4 backdrop-blur lg:h-9 lg:px-3">
-      <span className="text-foreground/70 text-[11px] font-medium tracking-[0.12em] uppercase lg:text-[10px]">
+      <span className="text-foreground/80 text-xs font-medium tracking-[0.1em] uppercase lg:text-[11px]">
         {title}
       </span>
       {actions && <div className="flex gap-1 lg:gap-0.5">{actions}</div>}
@@ -31,7 +31,7 @@ export function Row({
 }) {
   return (
     <div className="flex min-h-9 items-center gap-3 py-1 lg:min-h-8 lg:py-0.5">
-      <span className="text-muted-foreground/70 w-[78px] shrink-0 text-[10px] tracking-[0.04em] lg:w-[88px]">
+      <span className="text-muted-foreground/85 w-[78px] shrink-0 text-[11px] tracking-[0.02em] lg:w-[88px]">
         {label}
       </span>
       <div className="min-w-0 flex-1">{children}</div>
@@ -48,7 +48,7 @@ export function Section({
 }) {
   return (
     <div className="border-border/20 border-t pt-3 first:border-t-0 first:pt-0">
-      <p className="text-muted-foreground/50 mb-2 text-[10px] font-medium tracking-[0.14em] uppercase">
+      <p className="text-muted-foreground/75 mb-2 text-[11px] font-medium tracking-[0.12em] uppercase">
         {title}
       </p>
       <div className="space-y-1 lg:space-y-0.5">{children}</div>

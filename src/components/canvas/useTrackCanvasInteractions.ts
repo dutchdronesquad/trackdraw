@@ -49,6 +49,7 @@ interface TrackCanvasInteractionsParams {
   setActiveTool: (tool: EditorTool) => void;
   setCursor: React.Dispatch<React.SetStateAction<CursorState | null>>;
   setDraftPath: React.Dispatch<React.SetStateAction<DraftPoint[]>>;
+  setDraftForceClosed: React.Dispatch<React.SetStateAction<boolean>>;
   setIsStageDragging: React.Dispatch<React.SetStateAction<boolean>>;
   setManualView: (value: boolean) => void;
   setMarqueeRect: React.Dispatch<React.SetStateAction<RectLike | null>>;
@@ -94,6 +95,7 @@ export function useTrackCanvasInteractions({
   setActiveTool,
   setCursor,
   setDraftPath,
+  setDraftForceClosed,
   setIsStageDragging,
   setManualView,
   setMarqueeRect,
@@ -507,6 +509,7 @@ export function useTrackCanvasInteractions({
           touchInteractionModeRef.current = "none";
           return;
         }
+        setDraftForceClosed(false);
         setDraftPath((previous) => {
           if (shouldSkipDraftPoint(previous, pos)) return previous;
           return [...previous, { ...pos, z: 0 }];
@@ -544,6 +547,7 @@ export function useTrackCanvasInteractions({
       readOnly,
       setActiveTool,
       setDraftPath,
+      setDraftForceClosed,
       setSelection,
       shouldCloseDraftLoop,
       shouldSkipDraftPoint,
@@ -605,6 +609,7 @@ export function useTrackCanvasInteractions({
           finalizePath(true);
           return;
         }
+        setDraftForceClosed(false);
         setDraftPath((previous) => {
           if (shouldSkipDraftPoint(previous, pos)) return previous;
           return [...previous, { ...pos, z: 0 }];
@@ -632,6 +637,7 @@ export function useTrackCanvasInteractions({
       pointerToMeters,
       readOnly,
       setDraftPath,
+      setDraftForceClosed,
       setMarqueeRect,
       setSelection,
       snapTarget,

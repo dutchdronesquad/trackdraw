@@ -16,6 +16,7 @@ import StatusBar from "@/components/StatusBar";
 import ShareDialog from "@/components/ShareDialog";
 import ExportDialog from "@/components/ExportDialog";
 import ImportDialog from "@/components/ImportDialog";
+import ProjectManagerDialog from "@/components/ProjectManagerDialog";
 import TrackCanvas, { type TrackCanvasHandle } from "@/components/TrackCanvas";
 import type {
   TrackPreview3DHandle,
@@ -65,6 +66,7 @@ export default function EditorShell({
   const [snapActive, setSnapActive] = useState(false);
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
+  const [mobileViewOpen, setMobileViewOpen] = useState(false);
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
   const [mobileOverrideDismissed, setMobileOverrideDismissed] = useState(false);
   const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
@@ -74,12 +76,18 @@ export default function EditorShell({
   const [mobileDraftPathState, setMobileDraftPathState] = useState({
     active: false,
     canClose: false,
+    closed: false,
     length: 0,
     pointCount: 0,
   });
   const [mobilePathBuilderPinnedOpen, setMobilePathBuilderPinnedOpen] =
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [projectManagerOpen, setProjectManagerOpen] = useState(false);
+  const [showStarter, setShowStarter] = useState(false);
+  const [saveStatusLabel, setSaveStatusLabel] = useState("Saving locally…");
+  const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
+  const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
   const selectionLocked =
     selection.length > 0 &&
     selection.every((id) => {
@@ -93,10 +101,17 @@ export default function EditorShell({
       const saved = localStorage.getItem("trackdraw-design");
       if (saved) {
         const parsed = parseDesign(JSON.parse(saved));
-        if (parsed) replaceDesign(parsed);
+        if (parsed) {
+          replaceDesign(parsed);
+          setSaveStatusLabel("Restored from local autosave");
+          return;
+        }
       }
+      setShowStarter(true);
+      setSaveStatusLabel("Fresh local project");
     } catch {
-      /* ignore */
+      setShowStarter(true);
+      setSaveStatusLabel("Fresh local project");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -106,6 +121,12 @@ export default function EditorShell({
     if (readOnly) return;
     try {
       localStorage.setItem("trackdraw-design", JSON.stringify(design));
+      setSaveStatusLabel(
+        `Saved locally at ${new Intl.DateTimeFormat(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date())}`
+      );
     } catch {
       /* ignore */
     }
@@ -124,27 +145,32 @@ export default function EditorShell({
     setMobilePathBuilderPinnedOpen(false);
   }, [activeTool, mobileDraftPathState.active]);
 
+  useEffect(() => {
+    if (!pendingFlyThroughStart || tab !== "3d") return;
+
+    let frameId = 0;
+
+    const tryStart = () => {
+      if (preview3DRef.current) {
+        preview3DRef.current.startFlyThrough();
+        setPendingFlyThroughStart(false);
+        return;
+      }
+      frameId = window.requestAnimationFrame(tryStart);
+    };
+
+    frameId = window.requestAnimationFrame(tryStart);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [pendingFlyThroughStart, tab]);
+
   return (
     <>
       <div className="bg-background text-foreground relative flex h-[100dvh] overflow-hidden">
-        <div className="pointer-events-none absolute top-0 right-0 left-0 z-30 hidden h-11 items-center justify-center lg:flex">
-          <div className="flex max-w-[28rem] items-center gap-2 px-6">
-            <span className="text-foreground/70 truncate text-center text-sm">
-              {design.title || "Untitled"}
-            </span>
-            <span className="inline-flex h-5 shrink-0 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 px-1.5 text-amber-500">
-              <span className="inline-flex h-3 items-center text-[9px] leading-none font-semibold tracking-[0.12em] uppercase">
-                Beta
-              </span>
-            </span>
-          </div>
-        </div>
-
-        {/* ── Sidebar (full height) ───────────────────────────── */}
         {!readOnly && (
           <Toolbar
             onImport={() => setImportOpen(true)}
             onExport={() => setExportOpen(true)}
+            onOpenProjectManager={() => setProjectManagerOpen(true)}
             collapsed={sidebarCollapsed}
             onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
           />
@@ -162,6 +188,15 @@ export default function EditorShell({
             hideTabsOnMobile
             collapsed={sidebarCollapsed}
             onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
+            title={design.title || "Untitled track"}
+            statusLabel={readOnly ? "Read-only shared view" : saveStatusLabel}
+            selectionLabel={
+              selection.length > 0
+                ? `${selection.length} selected`
+                : tab === "3d"
+                  ? "3D preview"
+                  : "2D canvas"
+            }
           />
 
           {/* ── Body ─────────────────────────────────────────── */}
@@ -203,8 +238,71 @@ export default function EditorShell({
                   <TrackPreview3D
                     ref={preview3DRef}
                     showGizmo={mobileGizmoEnabled}
+                    onFlyModeChange={setMobileFlyModeActive}
                   />
                 </div>
+                {!readOnly &&
+                showStarter &&
+                design.shapes.length === 0 &&
+                !design.title.trim() ? (
+                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4">
+                    <div className="border-border/70 bg-card/96 pointer-events-auto w-full max-w-md rounded-2xl border p-4 shadow-xl backdrop-blur">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-foreground text-sm font-semibold">
+                            Start with a clear project action
+                          </p>
+                          <p className="text-muted-foreground pt-1 text-xs leading-relaxed">
+                            Begin with a blank field, open an existing JSON, or
+                            keep this empty starter canvas and start placing
+                            objects.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowStarter(false)}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            newProject();
+                            setShowStarter(false);
+                          }}
+                          className="border-border/70 hover:bg-muted/40 rounded-xl border px-3 py-2 text-sm font-medium transition-colors"
+                        >
+                          Blank project
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImportOpen(true);
+                            setShowStarter(false);
+                          }}
+                          className="border-border/70 hover:bg-muted/40 rounded-xl border px-3 py-2 text-sm font-medium transition-colors"
+                        >
+                          Open JSON
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowStarter(false)}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
+                        >
+                          Start drawing
+                        </button>
+                      </div>
+                      <p className="text-muted-foreground/80 mt-3 text-[11px]">
+                        Quick tips: `Tools` chooses objects, `Inspect` edits the
+                        current selection, and `View` switches between 2D and
+                        3D.
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
                 <div className="absolute right-0 bottom-0 left-0 z-20">
                   <StatusBar cursorPos={cursorPos} snapActive={snapActive} />
                 </div>
@@ -228,9 +326,12 @@ export default function EditorShell({
         <EditorMobilePanels
           activeTool={activeTool}
           draftPathActive={mobileDraftPathState.active}
-          draftPathCanClose={mobileDraftPathState.canClose}
+          draftPathClosed={mobileDraftPathState.closed}
           draftPathLength={mobileDraftPathState.length}
           draftPathPointCount={mobileDraftPathState.pointCount}
+          hasPath={design.shapes.some(
+            (shape) => shape.kind === "polyline" && shape.points.length >= 2
+          )}
           hasSelectedPolyline={
             selection.length === 1 &&
             design.shapes.some(
@@ -240,14 +341,17 @@ export default function EditorShell({
           pathBuilderPinnedOpen={mobilePathBuilderPinnedOpen}
           mobileInspectorOpen={mobileInspectorOpen}
           mobileToolsOpen={mobileToolsOpen}
+          mobileViewOpen={mobileViewOpen}
           mobileMultiSelectEnabled={mobileMultiSelectEnabled}
           mobileGizmoEnabled={mobileGizmoEnabled}
           mobileOverrideDismissed={mobileOverrideDismissed}
           mobileRulersEnabled={mobileRulersEnabled}
+          mobileFlyModeActive={mobileFlyModeActive}
           readOnly={readOnly}
           readOnlyMenuOpen={readOnlyMenuOpen}
           selectionLocked={selectionLocked}
           selectedCount={selection.length}
+          saveStatusLabel={saveStatusLabel}
           tab={tab}
           onCloseInspector={() => setMobileInspectorOpen(false)}
           onDismissMobileOverride={() => setMobileOverrideDismissed(true)}
@@ -257,8 +361,9 @@ export default function EditorShell({
             setMobilePathBuilderPinnedOpen(false);
             setActiveTool("select");
           }}
+          onCloseLoop={() => canvasRef.current?.closeDraftLoop()}
           onFinishPath={() => {
-            canvasRef.current?.finishDraftPath();
+            canvasRef.current?.finishDraftPath(false);
             setMobilePathBuilderPinnedOpen(false);
           }}
           onOpenInspector={() => {
@@ -277,7 +382,13 @@ export default function EditorShell({
           onOpenReadOnlyMenu={() => setReadOnlyMenuOpen(true)}
           onOpenTools={() => {
             setMobileInspectorOpen(false);
+            setMobileViewOpen(false);
             setMobileToolsOpen(true);
+          }}
+          onOpenView={() => {
+            setMobileInspectorOpen(false);
+            setMobileToolsOpen(false);
+            setMobileViewOpen(true);
           }}
           onUndoPathPoint={() => canvasRef.current?.undoDraftPoint()}
           onDeleteSelection={() => {
@@ -308,17 +419,18 @@ export default function EditorShell({
             setMobileToolsOpen(false);
           }}
           onSetMobileToolsOpen={setMobileToolsOpen}
+          onSetMobileViewOpen={setMobileViewOpen}
           onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
           onShare={() => {
             setShareOpen(true);
             setReadOnlyMenuOpen(false);
           }}
-          onStartNewProject={() => {
-            if (confirm("Start a new project? Unsaved changes will be lost.")) {
-              newProject();
-              setMobileToolsOpen(false);
-            }
+          onStartFlyThrough={() => {
+            setTab("3d");
+            setMobileViewOpen(false);
+            setPendingFlyThroughStart(true);
           }}
+          onStartNewProject={() => setProjectManagerOpen(true)}
           onImport={() => {
             setImportOpen(true);
             setMobileToolsOpen(false);
@@ -334,18 +446,49 @@ export default function EditorShell({
             }
             setMobileInspectorOpen(false);
             setMobileToolsOpen(false);
+            setMobileViewOpen(false);
             setReadOnlyMenuOpen(false);
           }}
         />
       </div>
 
-      <ShareDialog open={shareOpen} onOpenChange={setShareOpen} />
-      <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
+      <ShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        onExportJson={() => {
+          setShareOpen(false);
+          setExportOpen(true);
+        }}
+      />
+      <ImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onBackupCurrent={() => {
+          setImportOpen(false);
+          setExportOpen(true);
+        }}
+      />
       <ExportDialog
         open={exportOpen}
         onOpenChange={setExportOpen}
         canvasRef={canvasRef}
         preview3DRef={preview3DRef}
+        onRequest3DView={() => setTab("3d")}
+      />
+      <ProjectManagerDialog
+        open={projectManagerOpen}
+        onOpenChange={setProjectManagerOpen}
+        hasContent={Boolean(design.title.trim() || design.shapes.length)}
+        onNewProject={() => {
+          newProject();
+          setProjectManagerOpen(false);
+          setMobileToolsOpen(false);
+          setShowStarter(false);
+        }}
+        onBackupProject={() => {
+          setProjectManagerOpen(false);
+          setExportOpen(true);
+        }}
       />
     </>
   );
