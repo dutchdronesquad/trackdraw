@@ -545,7 +545,7 @@ export function SingleInspectorView({
                       {shape.points.length} waypoints
                     </span>
                   </div>
-                  <div className="flex gap-3 pr-0.5">
+                  <div className="flex items-center gap-3 pr-0.5">
                     <span className="text-muted-foreground/40 text-[9px] font-semibold tracking-wider uppercase">
                       x, y
                     </span>
@@ -553,6 +553,10 @@ export function SingleInspectorView({
                       elev
                     </span>
                   </div>
+                </div>
+
+                <div className="border-border/30 bg-amber-400/5 border-b px-3 py-2 text-[11px] text-amber-500/80">
+                  Tip: select this race line in 3D and drag the waypoint handles vertically to adjust elevation directly.
                 </div>
 
                 <div className="max-h-64 overflow-y-auto lg:max-h-56">

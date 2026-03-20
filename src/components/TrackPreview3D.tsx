@@ -77,6 +77,7 @@ import type {
   StartFinishShape,
   LadderShape,
   DiveGateShape,
+  PolylinePoint,
 } from "@/lib/types";
 
 // Creates a canvas texture with text drawn on it
@@ -653,6 +654,49 @@ function RaceLine3D({
   );
 }
 
+function PolylineElevationHandles3D({
+  path,
+  activeIndex,
+  onDragStart,
+}: {
+  path: PolylineShape;
+  activeIndex: number | null;
+  onDragStart: (event: ThreeEvent<PointerEvent>, index: number) => void;
+}) {
+  return (
+    <group>
+      {path.points.map((point, index) => {
+        const handleHeight = Math.max(0.18, (point.z ?? 0) + 0.6);
+        const isActive = activeIndex === index;
+        return (
+          <group key={`${path.id}-elev-${index}`}>
+            <mesh position={[point.x, handleHeight / 2, point.y]}>
+              <cylinderGeometry args={[0.025, 0.025, handleHeight, 10]} />
+              <meshBasicMaterial
+                color={isActive ? "#f59e0b" : "#93c5fd"}
+                transparent
+                opacity={isActive ? 0.95 : 0.42}
+              />
+            </mesh>
+            <mesh
+              position={[point.x, handleHeight, point.y]}
+              onPointerDown={(event) => onDragStart(event, index)}
+            >
+              <sphereGeometry args={[isActive ? 0.18 : 0.14, 18, 18]} />
+              <meshStandardMaterial
+                color={isActive ? "#f59e0b" : "#60a5fa"}
+                emissive={isActive ? "#fbbf24" : "#60a5fa"}
+                emissiveIntensity={isActive ? 0.85 : 0.28}
+                roughness={0.28}
+              />
+            </mesh>
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
 const MemoShape3D = memo(
   Shape3D,
   (prev, next) =>
@@ -895,6 +939,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const design = useEditor((state) => state.design);
     const selection = useEditor((state) => state.selection);
     const setSelection = useEditor((state) => state.setSelection);
+    const updateShape = useEditor((state) => state.updateShape);
     const theme = useTheme();
     const t = THEME[theme];
     const cx = design.field.width / 2;
@@ -907,7 +952,20 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const [axisQuaternion, setAxisQuaternion] = useState<QuaternionState>([
       0, 0, 0, 1,
     ]);
+    const [elevationDrag, setElevationDrag] = useState<{
+      shapeId: string;
+      idx: number;
+      startClientY: number;
+      startZ: number;
+    } | null>(null);
     const screenshotFnRef = useRef<(() => string) | null>(null);
+    const elevationDragRef = useRef(elevationDrag);
+    const dragAnimationFrameRef = useRef<number | null>(null);
+    const pendingClientYRef = useRef<number | null>(null);
+
+    useEffect(() => {
+      elevationDragRef.current = elevationDrag;
+    }, [elevationDrag]);
 
     useImperativeHandle(ref, () => ({
       screenshot: () => screenshotFnRef.current?.() ?? "",
@@ -939,6 +997,61 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       },
       [selection, setSelection]
     );
+
+    const selectedPolyline = useMemo(() => {
+      if (selection.length !== 1) return null;
+      const shape = design.shapes.find((candidate) => candidate.id === selection[0]);
+      return shape?.kind === "polyline" ? shape : null;
+    }, [design.shapes, selection]);
+
+    const applyElevationDrag = useCallback(
+      (clientY: number) => {
+        const drag = elevationDragRef.current;
+        if (!drag) return;
+        const shape = design.shapes.find((candidate) => candidate.id === drag.shapeId);
+        if (!shape || shape.kind !== "polyline") return;
+        const deltaMeters = (drag.startClientY - clientY) * 0.035;
+        const nextZ = Math.max(0, +(drag.startZ + deltaMeters).toFixed(2));
+        const currentPoint = shape.points[drag.idx];
+        if (!currentPoint || Math.abs((currentPoint.z ?? 0) - nextZ) < 0.01) return;
+        const nextPoints: PolylinePoint[] = shape.points.map((point, index) =>
+          index === drag.idx ? { ...point, z: nextZ } : point
+        );
+        updateShape(shape.id, { points: nextPoints });
+      },
+      [design.shapes, updateShape]
+    );
+
+    useEffect(() => {
+      if (!elevationDrag) return;
+
+      const handleMouseMove = (event: MouseEvent) => {
+        pendingClientYRef.current = event.clientY;
+        if (dragAnimationFrameRef.current !== null) return;
+        dragAnimationFrameRef.current = window.requestAnimationFrame(() => {
+          dragAnimationFrameRef.current = null;
+          if (pendingClientYRef.current !== null) {
+            applyElevationDrag(pendingClientYRef.current);
+          }
+        });
+      };
+
+      const stopDrag = () => {
+        setElevationDrag(null);
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", stopDrag);
+
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", stopDrag);
+        if (dragAnimationFrameRef.current !== null) {
+          window.cancelAnimationFrame(dragAnimationFrameRef.current);
+          dragAnimationFrameRef.current = null;
+        }
+      };
+    }, [applyElevationDrag, elevationDrag]);
 
     return (
       <div
@@ -1023,6 +1136,24 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               shape={shape}
             />
           ))}
+          {selectedPolyline && !flyMode && (
+            <PolylineElevationHandles3D
+              path={selectedPolyline}
+              activeIndex={elevationDrag?.idx ?? null}
+              onDragStart={(event, index) => {
+                event.stopPropagation();
+                const point = selectedPolyline.points[index];
+                if (!point) return;
+                setSelection([selectedPolyline.id]);
+                setElevationDrag({
+                  shapeId: selectedPolyline.id,
+                  idx: index,
+                  startClientY: event.nativeEvent.clientY,
+                  startZ: point.z ?? 0,
+                });
+              }}
+            />
+          )}
 
           <FieldWatermark
             fw={design.field.width}
@@ -1041,6 +1172,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           ) : (
             <OrbitControls
               makeDefault
+              enabled={!elevationDrag}
               enableDamping
               dampingFactor={0.08}
               target={[cx, 0, cz]}
@@ -1199,6 +1331,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                 Fly-Through
               </button>
             )}
+          </div>
+        )}
+
+        {selectedPolyline && !flyMode && (
+          <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/55 px-3 py-1 text-[11px] text-white/70 shadow-lg backdrop-blur">
+            Drag waypoint handles up or down to edit elevation live
           </div>
         )}
 

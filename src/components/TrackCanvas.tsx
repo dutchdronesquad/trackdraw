@@ -34,7 +34,7 @@ import { useEditor } from "@/store/editor";
 import { m2px } from "@/lib/units";
 import { zRangeForDesign } from "@/lib/alt";
 import type { PolylinePoint, Shape } from "@/lib/types";
-import { distance2D } from "@/lib/geometry";
+import { distance2D, smoothPolyline } from "@/lib/geometry";
 import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -129,6 +129,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const lastTouchPosRef = useRef<{ x: number; y: number } | null>(null);
     const suppressTapRef = useRef(false);
     const touchInteractionModeRef = useRef<"none" | "pan" | "content">("none");
+    const syncFrameRef = useRef<number | null>(null);
 
     const [vertexSel, setVertexSel] = useState<{
       shapeId: string;
@@ -238,17 +239,30 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     }, [design.field.ppm, estimateRotationGuideRadiusPx, singleSelectedShape]);
 
     const syncTransform = useCallback(() => {
-      const s = stageRef.current;
-      if (!s) return;
-      const nextTransform = { x: s.x(), y: s.y(), scale: s.scaleX() };
-      setStageTransform((current) =>
-        Math.abs(current.x - nextTransform.x) < 0.001 &&
-        Math.abs(current.y - nextTransform.y) < 0.001 &&
-        Math.abs(current.scale - nextTransform.scale) < 0.001
-          ? current
-          : nextTransform
-      );
+      if (syncFrameRef.current !== null) return;
+      syncFrameRef.current = window.requestAnimationFrame(() => {
+        syncFrameRef.current = null;
+        const s = stageRef.current;
+        if (!s) return;
+        const nextTransform = { x: s.x(), y: s.y(), scale: s.scaleX() };
+        setStageTransform((current) =>
+          Math.abs(current.x - nextTransform.x) < 0.001 &&
+          Math.abs(current.y - nextTransform.y) < 0.001 &&
+          Math.abs(current.scale - nextTransform.scale) < 0.001
+            ? current
+            : nextTransform
+        );
+      });
     }, []);
+
+    useEffect(
+      () => () => {
+        if (syncFrameRef.current !== null) {
+          window.cancelAnimationFrame(syncFrameRef.current);
+        }
+      },
+      []
+    );
 
     const widthPx = useMemo(
       () => m2px(design.field.width, design.field.ppm),
@@ -703,6 +717,29 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       ]);
     }, [design.field.ppm, draftPath]);
 
+    const draftPreviewPath = useMemo(() => {
+      if (!draftPath.length) return draftPath;
+
+      const previewPoints = [...draftPath];
+      if (activeTool === "polyline" && cursor) {
+        previewPoints.push({
+          x: snapTarget?.x ?? cursor.snappedMeters.x,
+          y: snapTarget?.y ?? cursor.snappedMeters.y,
+          z: draftPath.at(-1)?.z ?? 0,
+        });
+      }
+
+      return previewPoints;
+    }, [activeTool, cursor, draftPath, snapTarget]);
+
+    const draftPreviewSmoothPx = useMemo(() => {
+      if (draftPreviewPath.length < 2) return [];
+      return smoothPolyline(draftPreviewPath).flatMap((point) => [
+        m2px(point.x, design.field.ppm),
+        m2px(point.y, design.field.ppm),
+      ]);
+    }, [design.field.ppm, draftPreviewPath]);
+
     const draftLength = useMemo(() => {
       if (draftPath.length < 2) return 0;
       let total = 0;
@@ -1139,14 +1176,35 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                 })()}
 
               {/* Draft polyline */}
+              {draftPreviewSmoothPx.length >= 4 && (
+                <>
+                  <Line
+                    points={draftPreviewSmoothPx}
+                    stroke="#60a5fa"
+                    strokeWidth={m2px(0.28, design.field.ppm)}
+                    lineCap="round"
+                    lineJoin="round"
+                    opacity={0.2}
+                  />
+                  <Line
+                    points={draftPreviewSmoothPx}
+                    stroke={snapTarget ? "#22c55e" : "#3b82f6"}
+                    strokeWidth={m2px(0.18, design.field.ppm)}
+                    lineCap="round"
+                    lineJoin="round"
+                    opacity={0.55}
+                  />
+                </>
+              )}
               {draftPointsPx.length > 0 && (
                 <Line
                   points={draftPointsPx}
-                  stroke="#3b82f6"
-                  strokeWidth={m2px(0.18, design.field.ppm)}
-                  dash={[6, 6]}
+                  stroke="#93c5fd"
+                  strokeWidth={Math.max(1, m2px(0.08, design.field.ppm))}
+                  dash={[4, 6]}
                   lineCap="round"
                   lineJoin="round"
+                  opacity={0.45}
                 />
               )}
               {draftPointsPx.length > 0 &&
@@ -1167,9 +1225,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                         endY,
                       ]}
                       stroke={snapTarget ? "#22c55e" : "#60a5fa"}
-                      strokeWidth={m2px(0.18, design.field.ppm)}
+                      strokeWidth={Math.max(1, m2px(0.12, design.field.ppm))}
                       dash={[4, 6]}
-                      opacity={0.7}
+                      opacity={0.5}
                       lineCap="round"
                     />
                   );
