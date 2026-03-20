@@ -3,7 +3,7 @@
 import { useRef, type ReactNode } from "react";
 import { motion, useInView } from "framer-motion";
 
-export function FadeUp({
+export function Reveal({
   children,
   delay = 0,
   className = "",
@@ -27,7 +27,7 @@ export function FadeUp({
   );
 }
 
-export function StaggerGrid({
+export function RevealStagger({
   children,
   className = "",
 }: {
@@ -52,7 +52,7 @@ export function StaggerGrid({
   );
 }
 
-export function StaggerItem({
+export function RevealStaggerItem({
   children,
   className = "",
 }: {
