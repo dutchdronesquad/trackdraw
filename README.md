@@ -10,7 +10,12 @@
 
 TrackDraw is a free, browser-based track designer built for FPV drone racing pilots and event organisers. Open the studio, drop your obstacles on the canvas, tweak the layout until it feels right, and share the result with your team using a single link — no account required.
 
-TrackDraw is currently in beta and still actively evolving. Expect rapid UI changes, feature tweaks and occasional rough edges while the editor matures.
+> [!IMPORTANT]
+> TrackDraw is currently in beta and still actively evolving. Expect rapid UI changes, feature tweaks and occasional rough edges while the editor matures.
+
+<p align="center">
+  <img src="public/assets/screenshots/editor-3d-flythroug.png" alt="TrackDraw editor showcase" width="960" />
+</p>
 
 ## What you can do
 
