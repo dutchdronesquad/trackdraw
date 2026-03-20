@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import type { TrackCanvasHandle } from "@/components/TrackCanvas";
 import { Download, Loader2, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/TrackPreview3D";
+import { useTheme } from "@/hooks/useTheme";
 
 interface ExportDialogProps {
   open: boolean;
@@ -139,19 +140,23 @@ export default function ExportDialog({
   preview3DRef,
 }: ExportDialogProps) {
   const design = useEditor((s) => s.design);
+  const currentTheme = useTheme();
   const [busy, setBusy] = useState<string | null>(null);
   const [pngTheme, setPngTheme] = useState<Theme>("dark");
   const [svgTheme, setSvgTheme] = useState<Theme>("dark");
   const [filename, setFilename] = useState("");
 
-  const safeName = (suffix = "") => {
+  useEffect(() => {
+    setPngTheme(currentTheme);
+    setSvgTheme(currentTheme);
+  }, [currentTheme]);
+
+  const safeName = ({ theme, view }: { theme?: Theme; view: "2d" | "3d" }) => {
     const base = (filename.trim() || design.title.trim() || "track").replace(
       /[^a-z0-9-_]+/gi,
       "_"
     );
-    const dims = `${design.field.width}x${design.field.height}m`;
-    const date = new Date().toISOString().slice(0, 10);
-    return [base, dims, date, suffix].filter(Boolean).join("_");
+    return [base, view, theme].filter(Boolean).join("_");
   };
 
   const run = async (id: string, fn: () => void | Promise<void>) => {
@@ -206,7 +211,11 @@ export default function ExportDialog({
                 busy={busy === "png"}
                 onExport={() =>
                   run("png", () =>
-                    exportPng(design, `${safeName()}.png`, pngTheme)
+                    exportPng(
+                      design,
+                      `${safeName({ view: "2d", theme: pngTheme })}.png`,
+                      pngTheme
+                    )
                   )
                 }
               />
@@ -220,7 +229,11 @@ export default function ExportDialog({
                 busy={busy === "svg"}
                 onExport={() =>
                   run("svg", () =>
-                    exportSvg(design, `${safeName()}.svg`, svgTheme)
+                    exportSvg(
+                      design,
+                      `${safeName({ view: "2d", theme: svgTheme })}.svg`,
+                      svgTheme
+                    )
                   )
                 }
               />
@@ -228,7 +241,7 @@ export default function ExportDialog({
                 ext="PDF"
                 label="Document"
                 color="bg-red-500/15 text-red-400"
-                description="A4 page with title and field dimensions"
+                description={`A4 page from the current ${currentTheme} canvas theme`}
                 busy={busy === "pdf"}
                 onExport={() =>
                   run("pdf", async () => {
@@ -236,7 +249,11 @@ export default function ExportDialog({
                     if (!stage) throw new Error("Canvas not ready");
                     const { exportPdf } =
                       await import("@/lib/export/exportPdf");
-                    await exportPdf(stage, design, `${safeName()}.pdf`);
+                    await exportPdf(
+                      stage,
+                      design,
+                      `${safeName({ view: "2d", theme: currentTheme })}.pdf`
+                    );
                   })
                 }
               />
@@ -251,7 +268,7 @@ export default function ExportDialog({
                 ext="PNG"
                 label="3D Render"
                 color="bg-orange-500/15 text-orange-400"
-                description="Screenshot of the current 3D view"
+                description={`Screenshot of the current ${currentTheme} 3D view`}
                 busy={busy === "3d"}
                 onExport={() =>
                   run("3d", () => {
@@ -262,7 +279,10 @@ export default function ExportDialog({
                       );
                     const a = document.createElement("a");
                     a.href = dataUrl;
-                    a.download = `${safeName("3d")}.png`;
+                    a.download = `${safeName({
+                      view: "3d",
+                      theme: currentTheme,
+                    })}.png`;
                     a.click();
                   })
                 }
@@ -288,7 +308,10 @@ export default function ExportDialog({
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = `${safeName()}.json`;
+                    a.download = `${safeName({
+                      view: "2d",
+                      theme: currentTheme,
+                    })}.json`;
                     a.click();
                     URL.revokeObjectURL(url);
                   })

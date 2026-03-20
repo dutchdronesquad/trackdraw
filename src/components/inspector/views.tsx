@@ -1,6 +1,13 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 import ElevationChart from "@/components/ElevationChart";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
@@ -30,22 +37,207 @@ type DesignMetaPatch = Partial<
   Pick<TrackDesign, "title" | "description" | "authorName" | "tags">
 >;
 
+function MetaPill({ children }: { children: ReactNode }) {
+  return (
+    <span className="border-border/50 bg-muted/25 text-muted-foreground rounded-full border px-2 py-1 text-[10px] font-medium">
+      {children}
+    </span>
+  );
+}
+
+function InspectorLead({
+  title,
+  subtitle,
+  meta,
+}: {
+  title: string;
+  subtitle?: string;
+  meta?: string[];
+}) {
+  return (
+    <div className="space-y-2 pb-1">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-foreground text-sm font-semibold">{title}</p>
+          {subtitle ? (
+            <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
+              {subtitle}
+            </p>
+          ) : null}
+        </div>
+      </div>
+      {meta?.length ? (
+        <div className="flex flex-wrap gap-1.5">
+          {meta.map((item) => (
+            <MetaPill key={item}>{item}</MetaPill>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function useIsDesktopInspector() {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const updateIsDesktop = () => setIsDesktop(mediaQuery.matches);
+
+    updateIsDesktop();
+    mediaQuery.addEventListener("change", updateIsDesktop);
+    return () => mediaQuery.removeEventListener("change", updateIsDesktop);
+  }, []);
+
+  return isDesktop;
+}
+
+function InspectorScrollBody({ children }: { children: ReactNode }) {
+  const isDesktop = useIsDesktopInspector();
+
+  if (isDesktop) {
+    return <ScrollArea className="min-h-0 flex-1">{children}</ScrollArea>;
+  }
+
+  return (
+    <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto [overscroll-behavior-y:contain] [webkit-overflow-scrolling:touch]">
+      {children}
+    </div>
+  );
+}
+
 interface EmptyInspectorViewProps {
   design: TrackDesign;
+  setSelection: (ids: string[]) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (patch: DesignMetaPatch) => void;
 }
 
+function ItemOverviewList({
+  shapes,
+  setSelection,
+}: {
+  shapes: Shape[];
+  setSelection: (ids: string[]) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const filteredShapes = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return shapes;
+    return shapes.filter((shape, index) => {
+      const name =
+        shape.name?.trim() || `${shapeKindLabels[shape.kind]} ${index + 1}`;
+      const position = `${fmt(shape.x)}, ${fmt(shape.y)}`;
+      return (
+        name.toLowerCase().includes(normalizedQuery) ||
+        shapeKindLabels[shape.kind].toLowerCase().includes(normalizedQuery) ||
+        position.includes(normalizedQuery)
+      );
+    });
+  }, [query, shapes]);
+  const shapeOrder = useMemo(
+    () => new Map(shapes.map((shape, index) => [shape.id, index + 1] as const)),
+    [shapes]
+  );
+  const hasQuery = query.trim().length > 0;
+  const visibleShapes =
+    expanded || hasQuery ? filteredShapes : filteredShapes.slice(0, 8);
+  const hiddenCount = filteredShapes.length - visibleShapes.length;
+
+  return (
+    <Section title="Items">
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Filter items"
+            className="bg-muted/35 border-border/50 h-8 text-[11px] lg:h-7"
+          />
+          <MetaPill>
+            {filteredShapes.length}/{shapes.length}
+          </MetaPill>
+        </div>
+        <div className="border-border/40 overflow-hidden rounded-lg border">
+          <div className="border-border/30 bg-muted/15 flex items-center justify-between border-b px-2.5 py-1.5">
+            <span className="text-muted-foreground/65 text-[10px] font-medium tracking-[0.08em] uppercase">
+              Name
+            </span>
+            <span className="text-muted-foreground/50 font-mono text-[10px]">
+              x, y
+            </span>
+          </div>
+          <div className="divide-border/30 divide-y">
+            {visibleShapes.length ? (
+              visibleShapes.map((shape, index) => (
+                <button
+                  key={shape.id}
+                  type="button"
+                  onClick={() => setSelection([shape.id])}
+                  className="hover:bg-muted/30 focus-visible:ring-primary/30 flex w-full items-center justify-between px-2.5 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="text-muted-foreground/55 w-5 shrink-0 text-center font-mono text-[10px]">
+                      {shapeOrder.get(shape.id)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-foreground truncate text-[11px] font-medium">
+                        {shape.name?.trim() || shapeKindLabels[shape.kind]}
+                      </p>
+                      <p className="text-muted-foreground/65 text-[10px] uppercase">
+                        {shapeKindLabels[shape.kind]}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-muted-foreground font-mono text-[10px]">
+                    {fmt(shape.x)}, {fmt(shape.y)}
+                  </span>
+                </button>
+              ))
+            ) : (
+              <div className="px-3 py-4 text-center">
+                <p className="text-muted-foreground/55 text-[11px]">
+                  No items match this filter.
+                </p>
+              </div>
+            )}
+          </div>
+          {!hasQuery && filteredShapes.length > 8 ? (
+            <button
+              type="button"
+              onClick={() => setExpanded((current) => !current)}
+              className="border-border/30 bg-muted/10 text-muted-foreground hover:bg-muted/20 hover:text-foreground flex w-full items-center justify-center border-t px-3 py-2 text-[11px] font-medium transition-colors"
+            >
+              {expanded ? "Show fewer items" : `Show ${hiddenCount} more items`}
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 export function EmptyInspectorView({
   design,
+  setSelection,
   updateField,
   updateDesignMeta,
 }: EmptyInspectorViewProps) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <PanelHeader title="Design" />
-      <ScrollArea className="flex-1">
+      <InspectorScrollBody>
         <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
+          <InspectorLead
+            title="Project settings"
+            subtitle="Tune the field, review the placed items, or jump into an object from the list below."
+            meta={[
+              `${design.shapes.length} items`,
+              `${design.field.width}x${design.field.height} m`,
+              `grid ${design.field.gridStep} m`,
+            ]}
+          />
           <div>
             <p className="text-muted-foreground/50 mb-1.5 text-[10px] font-medium tracking-[0.08em] uppercase">
               Title
@@ -108,14 +300,24 @@ export function EmptyInspectorView({
             </Row>
           </Section>
 
-          <div className="border-border/40 rounded-lg border border-dashed p-3 text-center">
-            <p className="text-muted-foreground/40 text-[11px]">
-              Click a shape to inspect it
-            </p>
-          </div>
+          {design.shapes.length > 0 ? (
+            <ItemOverviewList
+              shapes={design.shapes}
+              setSelection={setSelection}
+            />
+          ) : (
+            <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
+              <p className="text-foreground/75 text-[11px] font-medium">
+                Nothing selected yet
+              </p>
+              <p className="text-muted-foreground/50 mt-1 text-[11px] leading-relaxed">
+                Place or click a shape on the canvas to open its settings here.
+              </p>
+            </div>
+          )}
+          <ElevationChart />
         </div>
-      </ScrollArea>
-      <ElevationChart />
+      </InspectorScrollBody>
     </div>
   );
 }
@@ -158,7 +360,7 @@ export function MultiInspectorView({
     .map((shape) => shape.id);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <PanelHeader
         title={`${selectedShapes.length} selected`}
         actions={
@@ -190,33 +392,43 @@ export function MultiInspectorView({
           </>
         }
       />
-      <div className="space-y-3 p-4 lg:space-y-2 lg:p-3">
-        <div className="grid grid-cols-2 gap-2 lg:gap-1">
-          {Object.entries(kinds)
-            .filter(([, count]) => count > 0)
-            .map(([kind, count]) => (
-              <div
-                key={kind}
-                className="border-border/60 bg-muted/30 rounded-md border px-2.5 py-2"
-              >
-                <p className="text-muted-foreground text-[9px] tracking-wider uppercase">
-                  {shapeKindLabels[kind as Shape["kind"]]}
-                </p>
-                <p className="text-sm font-semibold">{count}×</p>
-              </div>
-            ))}
+      <InspectorScrollBody>
+        <div className="space-y-3 p-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-2 lg:p-3 lg:pb-3">
+          <InspectorLead
+            title={`${selectedShapes.length} items selected`}
+            subtitle="Bulk actions are available here. Open a single item from the canvas when you need detailed editing."
+            meta={[
+              `${Object.values(kinds).reduce((sum, count) => sum + (count > 0 ? 1 : 0), 0)} kinds`,
+              ...(polylineIds.length >= 2 ? ["join available"] : []),
+            ]}
+          />
+          <div className="grid grid-cols-2 gap-2 lg:gap-1">
+            {Object.entries(kinds)
+              .filter(([, count]) => count > 0)
+              .map(([kind, count]) => (
+                <div
+                  key={kind}
+                  className="border-border/60 bg-muted/30 rounded-md border px-2.5 py-2"
+                >
+                  <p className="text-muted-foreground text-[9px] tracking-wider uppercase">
+                    {shapeKindLabels[kind as Shape["kind"]]}
+                  </p>
+                  <p className="text-sm font-semibold">{count}×</p>
+                </div>
+              ))}
+          </div>
+          {polylineIds.length >= 2 && (
+            <button
+              className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border px-3 text-[11px] transition-colors lg:h-8"
+              onClick={() => joinPolylines(polylineIds)}
+            >
+              <GitMerge className="size-3.5" />
+              Join selected paths
+            </button>
+          )}
+          <ElevationChart />
         </div>
-        {polylineIds.length >= 2 && (
-          <button
-            className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border px-3 text-[11px] transition-colors lg:h-8"
-            onClick={() => joinPolylines(polylineIds)}
-          >
-            <GitMerge className="size-3.5" />
-            Join selected paths
-          </button>
-        )}
-      </div>
-      <ElevationChart />
+      </InspectorScrollBody>
     </div>
   );
 }
@@ -258,9 +470,10 @@ export function SingleInspectorView({
           y: polylineAnchor.y / shape.points.length,
         }
       : { x: shape.x, y: shape.y };
+  const shapeDisplayName = shape.name?.trim() || shapeKindLabels[shape.kind];
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <PanelHeader
         title={shapeKindLabels[shape.kind]}
         actions={
@@ -295,9 +508,28 @@ export function SingleInspectorView({
         }
       />
 
-      <ScrollArea className="min-h-0 flex-1">
+      <InspectorScrollBody>
         <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
+          <InspectorLead
+            title={shapeDisplayName}
+            subtitle={`Editing ${shapeKindLabels[shape.kind].toLowerCase()} properties and placement.`}
+            meta={[
+              shapeKindLabels[shape.kind],
+              `${fmt(anchorPosition.x)}, ${fmt(anchorPosition.y)}`,
+              shape.locked ? "locked" : "editable",
+            ]}
+          />
           <Section title="Transform">
+            <Row label="Name">
+              <Input
+                value={shape.name ?? ""}
+                onChange={(event) =>
+                  updateShape(shape.id, { name: event.target.value })
+                }
+                placeholder={`${shapeKindLabels[shape.kind]} name`}
+                className="bg-muted/50 border-border/70 focus-visible:border-primary/50 focus-visible:ring-primary/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
+              />
+            </Row>
             <Row label="X">
               <Num
                 value={fmt(anchorPosition.x)}
@@ -615,7 +847,7 @@ export function SingleInspectorView({
                   vertically to adjust elevation directly.
                 </div>
 
-                <div className="max-h-64 overflow-y-auto lg:max-h-56">
+                <div className="overflow-visible lg:max-h-56 lg:overflow-y-auto">
                   {shape.points.map((point, index) => (
                     <div
                       key={index}
@@ -711,10 +943,9 @@ export function SingleInspectorView({
               </div>
             </Section>
           )}
+          <ElevationChart />
         </div>
-      </ScrollArea>
-
-      <ElevationChart />
+      </InspectorScrollBody>
     </div>
   );
 }
