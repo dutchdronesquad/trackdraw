@@ -16,6 +16,7 @@ import type { TrackDesign } from "@/lib/types";
 interface ImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onBackupCurrent?: () => void;
 }
 
 type ParsedFile = { design: TrackDesign; shapeCount: number };
@@ -23,6 +24,7 @@ type ParsedFile = { design: TrackDesign; shapeCount: number };
 export default function ImportDialog({
   open,
   onOpenChange,
+  onBackupCurrent,
 }: ImportDialogProps) {
   const { replaceDesign } = useEditor();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -164,7 +166,8 @@ export default function ImportDialog({
               <CheckCircle2 className="mt-1 size-4 shrink-0 text-emerald-400" />
             </div>
             <p className="text-muted-foreground px-0.5 text-xs">
-              The current project will be replaced. This cannot be undone.
+              The current project will be replaced. Export a JSON backup first
+              if you want a manual restore point outside local autosave.
             </p>
             <div className="flex gap-2">
               <button
@@ -177,9 +180,17 @@ export default function ImportDialog({
                 onClick={handleConfirm}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
               >
-                Load
+                Replace project
               </button>
             </div>
+            {onBackupCurrent ? (
+              <button
+                onClick={onBackupCurrent}
+                className="text-muted-foreground hover:text-foreground border-border/70 w-full rounded-lg border border-dashed px-4 py-2 text-sm transition-colors"
+              >
+                Back up current project first
+              </button>
+            ) : null}
           </div>
         )}
 

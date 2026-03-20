@@ -44,6 +44,9 @@ interface HeaderProps {
   hideTabsOnMobile?: boolean;
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
+  title?: string;
+  statusLabel?: string;
+  selectionLabel?: string;
 }
 
 const shortcutSections = [
@@ -107,10 +110,12 @@ export default function Header({
   readOnly = false,
   collapsed,
   onToggleCollapsed,
+  title = "Untitled",
 }: HeaderProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
   const [openShortcutSection, setOpenShortcutSection] = useState("Tools");
+  const sidebarOffset = collapsed ? "1.75rem" : "5.75rem";
 
   const viewToggle = (
     <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
@@ -222,6 +227,27 @@ export default function Header({
           />
         </Link>
       </div>
+
+      {!readOnly && (
+        <div
+          className="pointer-events-none absolute top-0 z-10 hidden h-11 items-center justify-center lg:flex"
+          style={{
+            left: `calc(50% - ${sidebarOffset})`,
+            transform: "translateX(-50%)",
+          }}
+        >
+          <div className="flex max-w-[28rem] items-center gap-2 px-6">
+            <span className="text-foreground/70 truncate text-center text-sm">
+              {title}
+            </span>
+            <span className="inline-flex h-5 shrink-0 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 px-1.5 text-amber-500">
+              <span className="inline-flex h-3 items-center text-[9px] leading-none font-semibold tracking-[0.12em] uppercase">
+                Beta
+              </span>
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="ml-auto flex h-full shrink-0 items-center gap-1">
         <div className="mr-1 hidden lg:flex">{viewToggle}</div>

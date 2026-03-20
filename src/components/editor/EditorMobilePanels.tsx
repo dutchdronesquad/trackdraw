@@ -13,6 +13,7 @@ import {
   Lock,
   Monitor,
   PencilLine,
+  Play,
   Scan,
   Share2,
   SlidersHorizontal,
@@ -40,26 +41,32 @@ interface EditorMobilePanelsProps {
   activeTool: EditorTool;
   draftPathActive: boolean;
   draftPathCanClose: boolean;
+  draftPathClosed: boolean;
   draftPathLength: number;
   draftPathPointCount: number;
+  hasPath: boolean;
   hasSelectedPolyline: boolean;
   pathBuilderPinnedOpen: boolean;
   mobileInspectorOpen: boolean;
   mobileMultiSelectEnabled: boolean;
   mobileGizmoEnabled: boolean;
   mobileRulersEnabled: boolean;
+  mobileFlyModeActive: boolean;
   mobileToolsOpen: boolean;
+  mobileViewOpen: boolean;
   mobileOverrideDismissed: boolean;
   readOnly: boolean;
   readOnlyMenuOpen: boolean;
   selectionLocked: boolean;
   selectedCount: number;
+  saveStatusLabel: string;
   tab: EditorViewportTab;
   onCloseInspector: () => void;
   onDismissMobileOverride: () => void;
   onFitView: () => void;
   onDeleteSelection: () => void;
   onCancelPath: () => void;
+  onCloseLoop: () => void;
   onDuplicateSelection: () => void;
   onExitMobileMultiSelect: () => void;
   onFinishPath: () => void;
@@ -67,13 +74,16 @@ interface EditorMobilePanelsProps {
   onOpenInspector: () => void;
   onOpenReadOnlyMenu: () => void;
   onOpenTools: () => void;
+  onOpenView: () => void;
   onResumeSelectedPath: () => void;
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSelectTool: (tool: EditorTool) => void;
   onSetMobileToolsOpen: (open: boolean) => void;
+  onSetMobileViewOpen: (open: boolean) => void;
   onSetReadOnlyMenuOpen: (open: boolean) => void;
   onShare: () => void;
+  onStartFlyThrough: () => void;
   onStartNewProject: () => void;
   onUndoPathPoint: () => void;
   onImport: () => void;
@@ -85,25 +95,31 @@ export function EditorMobilePanels({
   activeTool,
   draftPathActive,
   draftPathCanClose,
+  draftPathClosed,
   draftPathLength,
   draftPathPointCount,
+  hasPath,
   hasSelectedPolyline,
   pathBuilderPinnedOpen,
   mobileInspectorOpen,
   mobileMultiSelectEnabled,
   mobileGizmoEnabled,
   mobileRulersEnabled,
+  mobileFlyModeActive,
   mobileToolsOpen,
+  mobileViewOpen,
   mobileOverrideDismissed,
   readOnly,
   readOnlyMenuOpen,
   selectionLocked,
   selectedCount,
+  saveStatusLabel,
   tab,
   onCloseInspector,
   onDismissMobileOverride,
   onDeleteSelection,
   onCancelPath,
+  onCloseLoop,
   onDuplicateSelection,
   onExitMobileMultiSelect,
   onFinishPath,
@@ -112,13 +128,16 @@ export function EditorMobilePanels({
   onOpenInspector,
   onOpenReadOnlyMenu,
   onOpenTools,
+  onOpenView,
   onResumeSelectedPath,
   onSetMobileRulersEnabled,
   onSetMobileGizmoEnabled,
   onSelectTool,
   onSetMobileToolsOpen,
+  onSetMobileViewOpen,
   onSetReadOnlyMenuOpen,
   onShare,
+  onStartFlyThrough,
   onStartNewProject,
   onUndoPathPoint,
   onImport,
@@ -166,14 +185,6 @@ export function EditorMobilePanels({
       mediaQuery.removeEventListener("change", updateLandscapeMobile);
   }, []);
 
-  useEffect(() => {
-    if (readOnly || mobileOverrideDismissed) return;
-    const timeoutId = window.setTimeout(() => {
-      onDismissMobileOverride();
-    }, 8000);
-    return () => window.clearTimeout(timeoutId);
-  }, [mobileOverrideDismissed, onDismissMobileOverride, readOnly]);
-
   const toolDisplayName: Record<string, string> = {
     select: "Select",
     grab: "Grab",
@@ -204,6 +215,11 @@ export function EditorMobilePanels({
     selectedCount > 0
       ? `${selectedCount} items`
       : (toolDisplayName[activeTool] ?? activeTool);
+  const inspectorHint = canOpenInspector
+    ? selectedCount > 0
+      ? `${selectedCount} selected`
+      : "Design settings"
+    : "Finish multi-select to inspect";
   const handleMobileSelectButton = () => {
     if (mobileMultiSelectEnabled) {
       onExitMobileMultiSelect();
@@ -242,25 +258,6 @@ export function EditorMobilePanels({
 
   return (
     <>
-      {readOnly && (
-        <div
-          className="absolute right-4 z-30 lg:hidden"
-          style={{ bottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}
-        >
-          <motion.button
-            onClick={openReadOnlyDrawer}
-            initial={{ opacity: 0, y: 10, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="bg-sidebar/96 border-border text-foreground hover:bg-muted flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur transition-colors"
-            aria-label="Open shared view options"
-          >
-            <LayoutGrid className="text-muted-foreground size-4" />
-          </motion.button>
-        </div>
-      )}
-
       {!readOnly && !mobileOverrideDismissed && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -277,7 +274,7 @@ export function EditorMobilePanels({
         </motion.div>
       )}
 
-      {!readOnly && tab === "2d" && (
+      {!readOnly && !mobileFlyModeActive && (
         <div
           className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
           style={{
@@ -301,34 +298,25 @@ export function EditorMobilePanels({
               )}
             >
               <SquareMousePointer className="size-3.5" />
-              <span className="landscape:sr-only">
-                {mobileMultiSelectEnabled ? "Exit" : "Select"}
-              </span>
+              <span>{mobileMultiSelectEnabled ? "Exit" : "Select"}</span>
             </button>
             <button
               onClick={openToolsDrawer}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <LayoutGrid className="size-3.5" />
-              <span className="landscape:sr-only">Tools</span>
+              <span>Tools</span>
             </button>
-            <div className="min-w-0 flex-[1.1] landscape:hidden">
-              <div className="mx-auto flex max-w-[7rem] flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
+            <div className="min-w-0 flex-[1.25]">
+              <div className="mx-auto flex max-w-[8.5rem] flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
                 <p className="text-[8px] font-medium tracking-[0.08em] text-white/52 uppercase">
                   {mobileStatusTitle}
                 </p>
-                <p className="max-w-full text-[10px] leading-tight font-semibold text-white">
+                <p className="max-w-full truncate text-[10px] leading-tight font-semibold text-white">
                   {mobileStatusValue}
                 </p>
               </div>
             </div>
-            <button
-              onClick={onFitView}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
-            >
-              <Scan className="size-3.5" />
-              <span className="landscape:sr-only">Fit</span>
-            </button>
             <button
               onClick={openInspectorDrawer}
               disabled={!canOpenInspector}
@@ -336,13 +324,70 @@ export function EditorMobilePanels({
                 "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
                 canOpenInspector
                   ? "text-white/72 hover:bg-white/10 hover:text-white"
-                  : "text-white/30"
+                  : "text-white/38"
               )}
             >
               <SlidersHorizontal className="size-3.5" />
-              <span className="landscape:sr-only">
-                {selectedCount === 0 ? "Settings" : "Edit"}
-              </span>
+              <span>Inspect</span>
+            </button>
+            <button
+              onClick={onOpenView}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
+            >
+              <Scan className="size-3.5" />
+              <span>View</span>
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {readOnly && (
+        <div
+          className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
+          style={{
+            bottom: isLandscapeMobile
+              ? "calc(0.35rem + env(safe-area-inset-bottom))"
+              : "calc(0.55rem + env(safe-area-inset-bottom))",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="pointer-events-auto flex w-full max-w-sm items-center gap-1 rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-1.5 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur"
+          >
+            <Link
+              href="/studio"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <ArrowRight className="size-3.5" />
+              <span>Studio</span>
+            </Link>
+            <div className="min-w-0 flex-[1.1]">
+              <div className="mx-auto flex max-w-[8rem] flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
+                <p className="text-[8px] font-medium tracking-[0.08em] text-white/52 uppercase">
+                  Mode
+                </p>
+                <p className="max-w-full truncate text-[10px] leading-tight font-semibold text-white">
+                  {tab === "2d" ? "Canvas review" : "3D review"}
+                </p>
+                <p className="max-w-full truncate text-[9px] text-white/60">
+                  Read-only track
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onShare}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <Share2 className="size-3.5" />
+              <span>Share</span>
+            </button>
+            <button
+              onClick={openReadOnlyDrawer}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <Scan className="size-3.5" />
+              <span>View</span>
             </button>
           </motion.div>
         </div>
@@ -414,7 +459,7 @@ export function EditorMobilePanels({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-4 gap-1.5">
               <button
                 onClick={onUndoPathPoint}
                 disabled={draftPathPointCount === 0}
@@ -424,12 +469,20 @@ export function EditorMobilePanels({
                 <span>Undo</span>
               </button>
               <button
+                onClick={onCloseLoop}
+                disabled={draftPathPointCount < 3 || draftPathClosed}
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+              >
+                <PencilLine className="size-4" />
+                <span>Close loop</span>
+              </button>
+              <button
                 onClick={onFinishPath}
                 disabled={draftPathPointCount < 2}
                 className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
               >
                 <PencilLine className="size-4" />
-                <span>{draftPathCanClose ? "Close" : "Finish"}</span>
+                <span>Finish</span>
               </button>
               <button
                 onClick={onCancelPath}
@@ -504,25 +557,6 @@ export function EditorMobilePanels({
         </div>
       )}
 
-      {!readOnly && tab === "3d" && (
-        <div
-          className="absolute right-4 z-30 lg:hidden"
-          style={{ bottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}
-        >
-          <motion.button
-            onClick={openToolsDrawer}
-            initial={{ opacity: 0, y: 10, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="bg-sidebar/96 border-border text-foreground hover:bg-muted flex h-11 w-11 items-center justify-center rounded-full border shadow-lg backdrop-blur transition-colors"
-            aria-label="Open 3D view options"
-          >
-            <LayoutGrid className="text-muted-foreground size-4" />
-          </motion.button>
-        </div>
-      )}
-
       {!readOnly && (
         <Drawer
           open={mobileInspectorOpen}
@@ -534,14 +568,15 @@ export function EditorMobilePanels({
         >
           <DrawerContent className="border-border/50 bg-card max-h-[92dvh] min-h-[72dvh] gap-0 overflow-hidden [overscroll-behavior:contain] rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader(
-              selectedCount === 0 ? "Design" : "Inspector",
+              "Inspector",
               selectedCount === 0
-                ? "Project and canvas settings"
-                : "Selection properties",
+                ? "Design settings and placed items"
+                : "Selection properties and editing",
               "brand"
             )}
-            <div className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="bg-card min-h-0 flex-1 touch-pan-y overflow-y-auto [overscroll-behavior-y:contain] [webkit-overflow-scrolling:touch]">
               <Inspector
+                mobileInline
                 onResumeSelectedPath={() => {
                   onCloseInspector();
                   onResumeSelectedPath();
@@ -561,10 +596,10 @@ export function EditorMobilePanels({
         >
           <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader(
-              tab === "3d" ? "View" : "Tools",
+              "Tools",
               tab === "3d"
-                ? "3D preview controls and project actions"
-                : "Drawing, view and project actions",
+                ? "Project actions for the current 3D session"
+                : "Drawing and project actions",
               "brand"
             )}
 
@@ -576,9 +611,7 @@ export function EditorMobilePanels({
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     {mobileToolEntries
-                      .filter(
-                        (tool) => tool.id !== "select" && tool.id !== "grab"
-                      )
+                      .filter((tool) => tool.id !== "grab")
                       .map((tool) => {
                         const active = activeTool === tool.id;
                         return (
@@ -602,89 +635,6 @@ export function EditorMobilePanels({
                   </div>
                 </div>
               )}
-
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  View
-                </p>
-                <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-[1rem] border p-1">
-                  {(["2d", "3d"] as const).map((nextTab) => (
-                    <button
-                      key={nextTab}
-                      onClick={() => {
-                        onTabChange(nextTab);
-                        onSetMobileToolsOpen(false);
-                      }}
-                      className={cn(
-                        "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
-                        tab === nextTab
-                          ? "border-primary/30 bg-primary/12 text-primary shadow-sm"
-                          : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
-                      )}
-                    >
-                      {nextTab === "2d" ? "Canvas" : "3D Preview"}
-                    </button>
-                  ))}
-                </div>
-                {tab === "2d" && (
-                  <button
-                    onClick={() =>
-                      onSetMobileRulersEnabled(!mobileRulersEnabled)
-                    }
-                    className={cn(
-                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
-                      mobileRulersEnabled
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <div>
-                      <p className="text-[11px] font-medium">Rulers</p>
-                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                        Show top and left guides on mobile
-                      </p>
-                    </div>
-                    <div
-                      className={cn(
-                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
-                        mobileRulersEnabled
-                          ? "bg-foreground/90 justify-end"
-                          : "bg-border/80 justify-start"
-                      )}
-                    >
-                      <span className="bg-background block size-5 rounded-full shadow-sm" />
-                    </div>
-                  </button>
-                )}
-                {tab === "3d" && (
-                  <button
-                    onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
-                    className={cn(
-                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
-                      mobileGizmoEnabled
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <div>
-                      <p className="text-[11px] font-medium">Gizmo</p>
-                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                        Show the axis helper in 3D preview
-                      </p>
-                    </div>
-                    <div
-                      className={cn(
-                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
-                        mobileGizmoEnabled
-                          ? "bg-foreground/90 justify-end"
-                          : "bg-border/80 justify-start"
-                      )}
-                    >
-                      <span className="bg-background block size-5 rounded-full shadow-sm" />
-                    </div>
-                  </button>
-                )}
-              </div>
 
               <div>
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
@@ -719,6 +669,158 @@ export function EditorMobilePanels({
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
+
+      {!readOnly && (
+        <Drawer
+          open={mobileViewOpen}
+          direction="bottom"
+          modal
+          onOpenChange={onSetMobileViewOpen}
+        >
+          <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
+            {mobileDrawerHeader(
+              "View",
+              "Canvas mode, guides and viewport controls",
+              "brand"
+            )}
+
+            <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
+              <div>
+                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                  Current mode
+                </p>
+                <div className="border-border/50 bg-muted/18 rounded-[1rem] border px-3 py-3">
+                  <p className="text-foreground text-sm font-medium">
+                    {tab === "2d" ? "2D canvas" : "3D preview"}
+                  </p>
+                  <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
+                    {inspectorHint}. {saveStatusLabel}.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                  View mode
+                </p>
+                <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-[1rem] border p-1">
+                  {(["2d", "3d"] as const).map((nextTab) => (
+                    <button
+                      key={nextTab}
+                      onClick={() => {
+                        onTabChange(nextTab);
+                        onSetMobileViewOpen(false);
+                      }}
+                      className={cn(
+                        "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
+                        tab === nextTab
+                          ? "border-primary/30 bg-primary/12 text-primary shadow-sm"
+                          : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
+                      )}
+                    >
+                      {nextTab === "2d" ? "Canvas" : "3D Preview"}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={onFitView}
+                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors"
+                >
+                  <div>
+                    <p className="text-[11px] font-medium">Fit to field</p>
+                    <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                      Center the current design in view
+                    </p>
+                  </div>
+                  <Scan className="size-4" />
+                </button>
+                {tab === "2d" && (
+                  <button
+                    onClick={() =>
+                      onSetMobileRulersEnabled(!mobileRulersEnabled)
+                    }
+                    className={cn(
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                      mobileRulersEnabled
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <div>
+                      <p className="text-[11px] font-medium">Rulers</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                        Show top and left guides on mobile
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileRulersEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-sm" />
+                    </div>
+                  </button>
+                )}
+                {tab === "3d" && (
+                  <>
+                    <button
+                      onClick={onStartFlyThrough}
+                      disabled={!hasPath}
+                      className={cn(
+                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                        hasPath
+                          ? "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                          : "text-muted-foreground/45 cursor-not-allowed"
+                      )}
+                    >
+                      <div>
+                        <p className="text-[11px] font-medium">Fly-through</p>
+                        <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                          {hasPath
+                            ? "Start the race-line preview camera"
+                            : "Draw a path in 2D first to enable this"}
+                        </p>
+                      </div>
+                      <Play className="size-4" />
+                    </button>
+                    <button
+                      onClick={() =>
+                        onSetMobileGizmoEnabled(!mobileGizmoEnabled)
+                      }
+                      className={cn(
+                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                        mobileGizmoEnabled
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <div>
+                        <p className="text-[11px] font-medium">Gizmo</p>
+                        <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                          Show the axis helper in 3D preview
+                        </p>
+                      </div>
+                      <div
+                        className={cn(
+                          "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                          mobileGizmoEnabled
+                            ? "bg-foreground/90 justify-end"
+                            : "bg-border/80 justify-start"
+                        )}
+                      >
+                        <span className="bg-background block size-5 rounded-full shadow-sm" />
+                      </div>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </DrawerContent>

@@ -23,6 +23,7 @@ interface ExportDialogProps {
   onOpenChange: (open: boolean) => void;
   canvasRef: React.RefObject<TrackCanvasHandle | null>;
   preview3DRef?: React.RefObject<TrackPreview3DHandle | null>;
+  onRequest3DView?: () => void;
 }
 
 type Theme = "dark" | "light";
@@ -138,6 +139,7 @@ export default function ExportDialog({
   onOpenChange,
   canvasRef,
   preview3DRef,
+  onRequest3DView,
 }: ExportDialogProps) {
   const design = useEditor((s) => s.design);
   const currentTheme = useTheme();
@@ -287,6 +289,24 @@ export default function ExportDialog({
                   })
                 }
               />
+            </div>
+            <div className="border-border/50 bg-muted/20 mt-2 rounded-lg border px-3 py-2.5">
+              <p className="text-foreground text-[11px] font-medium">
+                3D export depends on the live preview
+              </p>
+              <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
+                Open the 3D tab once so TrackDraw can render the preview before
+                you capture it.
+              </p>
+              {onRequest3DView ? (
+                <button
+                  type="button"
+                  onClick={onRequest3DView}
+                  className="text-primary hover:text-primary/80 mt-2 text-xs font-medium transition-colors"
+                >
+                  Switch to 3D now
+                </button>
+              ) : null}
             </div>
           </div>
 

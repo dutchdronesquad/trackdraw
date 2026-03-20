@@ -74,7 +74,8 @@ import {
 export interface TrackCanvasHandle {
   getStage: () => KonvaStage | null;
   fitToWindow: () => void;
-  finishDraftPath: () => void;
+  closeDraftLoop: () => void;
+  finishDraftPath: (closeLoop?: boolean) => void;
   cancelDraftPath: () => void;
   undoDraftPoint: () => void;
   resumePolylineEditing: (shapeId: string) => void;
@@ -85,6 +86,7 @@ interface TrackCanvasProps {
   onDraftPathStateChange?: (state: {
     active: boolean;
     canClose: boolean;
+    closed: boolean;
     length: number;
     pointCount: number;
   }) => void;
@@ -161,6 +163,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       idx: number;
     } | null>(null);
     const [draftPath, setDraftPath] = useState<DraftPoint[]>([]);
+    const [draftForceClosed, setDraftForceClosed] = useState(false);
     const [draftSourcePath, setDraftSourcePath] =
       useState<PolylineShape | null>(null);
     const [cursor, setCursor] = useState<CursorState | null>(null);
@@ -534,9 +537,12 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       (closed = false) => {
         if (draftPath.length < 2) {
           setDraftPath([]);
+          setDraftForceClosed(false);
           setDraftSourcePath(null);
           return;
         }
+        const nextClosed =
+          closed || draftForceClosed || Boolean(draftSourcePath?.closed);
         const points: PolylinePoint[] = draftPath.map((p) => ({
           x: p.x,
           y: p.y,
@@ -551,7 +557,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             y: 0,
             rotation: 0,
             points,
-            closed,
+            closed: nextClosed,
             strokeWidth: 0.26,
             showArrows: false,
             arrowSpacing: 15,
@@ -561,20 +567,23 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         if (sourcePath) {
           updateShape(sourcePath.id, {
             points,
-            closed,
+            closed: nextClosed,
           });
         }
         setSelection([id]);
         setVertexSel(null);
         setDraftPath([]);
+        setDraftForceClosed(false);
         setDraftSourcePath(null);
         setActiveTool("select");
       },
       [
         addShape,
+        draftForceClosed,
         draftPath,
         draftSourcePath,
         setActiveTool,
+        setDraftForceClosed,
         setSelection,
         updateShape,
       ]
@@ -582,6 +591,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
 
     const cancelDraftPath = useCallback(() => {
       setDraftPath([]);
+      setDraftForceClosed(false);
       if (draftSourcePath) {
         setSelection([draftSourcePath.id]);
         setActiveTool("select");
@@ -667,6 +677,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       setSelection,
       setSnapTarget,
       setZoom,
+      setDraftForceClosed,
       shapeRefs,
       snapTarget,
       stageRef,
@@ -808,25 +819,41 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       const previewPoints = [...draftPath];
       if (activeTool === "polyline" && cursor) {
         previewPoints.push({
-          x: draftCloseTarget?.x ?? snapTarget?.x ?? cursor.snappedMeters.x,
-          y: draftCloseTarget?.y ?? snapTarget?.y ?? cursor.snappedMeters.y,
+          x: draftForceClosed
+            ? draftPath[0].x
+            : (draftCloseTarget?.x ?? snapTarget?.x ?? cursor.snappedMeters.x),
+          y: draftForceClosed
+            ? draftPath[0].y
+            : (draftCloseTarget?.y ?? snapTarget?.y ?? cursor.snappedMeters.y),
           z: draftPath.at(-1)?.z ?? 0,
         });
       }
 
       return previewPoints;
-    }, [activeTool, cursor, draftCloseTarget, draftPath, snapTarget]);
+    }, [
+      activeTool,
+      cursor,
+      draftCloseTarget,
+      draftForceClosed,
+      draftPath,
+      snapTarget,
+    ]);
 
     const draftPreviewSmoothPx = useMemo(() => {
       if (draftPreviewPath.length < 2) return [];
       return getPolyline2DPoints(draftPreviewPath, {
-        closed: Boolean(draftCloseTarget),
+        closed: Boolean(draftCloseTarget) || draftForceClosed,
         smooth: true,
       }).flatMap((point) => [
         m2px(point.x, design.field.ppm),
         m2px(point.y, design.field.ppm),
       ]);
-    }, [design.field.ppm, draftCloseTarget, draftPreviewPath]);
+    }, [
+      design.field.ppm,
+      draftCloseTarget,
+      draftForceClosed,
+      draftPreviewPath,
+    ]);
 
     const draftLength = useMemo(() => {
       if (draftPath.length < 2) return 0;
@@ -839,6 +866,12 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const draftLengthWithCursor = useMemo(() => {
       if (activeTool !== "polyline" || !draftPath.length || !cursor)
         return draftLength;
+      if (draftForceClosed && draftPath.length >= 2) {
+        return (
+          draftLength +
+          distance2D(draftPath[draftPath.length - 1], draftPath[0])
+        );
+      }
       return (
         draftLength +
         distance2D(draftPath[draftPath.length - 1], {
@@ -846,18 +879,20 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           y: cursor.snappedMeters.y,
         })
       );
-    }, [activeTool, cursor, draftLength, draftPath]);
+    }, [activeTool, cursor, draftForceClosed, draftLength, draftPath]);
 
     useEffect(() => {
       onDraftPathStateChange?.({
         active: draftPath.length > 0 || activeTool === "polyline",
-        canClose: Boolean(draftCloseTarget),
+        canClose: Boolean(draftCloseTarget) || draftForceClosed,
+        closed: draftForceClosed,
         length: draftLengthWithCursor,
         pointCount: draftPath.length,
       });
     }, [
       activeTool,
       draftCloseTarget,
+      draftForceClosed,
       draftLengthWithCursor,
       draftPath.length,
       onDraftPathStateChange,
@@ -871,18 +906,26 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           setManualView(false);
           fitFieldToViewport();
         },
-        finishDraftPath: () => finalizePath(Boolean(draftCloseTarget)),
+        closeDraftLoop: () => {
+          if (draftPath.length < 3) return;
+          setDraftForceClosed(true);
+        },
+        finishDraftPath: (closeLoop = Boolean(draftCloseTarget)) =>
+          finalizePath(closeLoop),
         cancelDraftPath,
-        undoDraftPoint: () =>
+        undoDraftPoint: () => {
+          setDraftForceClosed(false);
           setDraftPath((previous) =>
             previous.slice(0, Math.max(0, previous.length - 1))
-          ),
+          );
+        },
         resumePolylineEditing: (shapeId: string) => {
           const shape = design.shapes.find(
             (candidate) => candidate.id === shapeId
           );
           if (!shape || shape.kind !== "polyline") return;
           setDraftSourcePath(shape);
+          setDraftForceClosed(Boolean(shape.closed));
           setDraftPath(
             shape.points.map((point) => ({
               x: point.x,
@@ -899,9 +942,11 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         design.shapes,
         cancelDraftPath,
         draftCloseTarget,
+        draftPath.length,
         finalizePath,
         fitFieldToViewport,
         setActiveTool,
+        setDraftForceClosed,
         setManualView,
         setSelection,
       ]

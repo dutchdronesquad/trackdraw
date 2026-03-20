@@ -24,10 +24,13 @@ import { getAdaptiveCurveSegments, smoothPolyline3D } from "@/lib/geometry";
 
 export interface TrackPreview3DHandle {
   screenshot: () => string;
+  startFlyThrough: () => void;
+  stopFlyThrough: () => void;
 }
 
 export interface TrackPreview3DProps {
   showGizmo?: boolean;
+  onFlyModeChange?: (active: boolean) => void;
 }
 
 type QuaternionState = [number, number, number, number];
@@ -1207,7 +1210,10 @@ function FieldWatermark({
 
 // ── Main ─────────────────────────────────────────────────────
 const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
-  function TrackPreview3D({ showGizmo = true }: TrackPreview3DProps, ref) {
+  function TrackPreview3D(
+    { showGizmo = true, onFlyModeChange }: TrackPreview3DProps,
+    ref
+  ) {
     const design = useEditor((state) => state.design);
     const selection = useEditor((state) => state.selection);
     const setSelection = useEditor((state) => state.setSelection);
@@ -1247,8 +1253,21 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       elevationDragRef.current = elevationDrag;
     }, [elevationDrag]);
 
+    useEffect(() => {
+      onFlyModeChange?.(flyMode);
+    }, [flyMode, onFlyModeChange]);
+
     useImperativeHandle(ref, () => ({
       screenshot: () => screenshotFnRef.current?.() ?? "",
+      startFlyThrough: () => {
+        if (!hasPath) return;
+        setFlyMode(true);
+        setPlaying(true);
+      },
+      stopFlyThrough: () => {
+        setFlyMode(false);
+        setPlaying(false);
+      },
     }));
 
     const handleScreenshotReady = useCallback((fn: () => string) => {
@@ -1625,7 +1644,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         )}
 
         {/* Fly-through controls overlay */}
-        {hasPath && (
+        {hasPath && (!isMobile || flyMode) && (
           <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-white/10 bg-black/65 px-2.5 py-1.5 text-sm shadow-lg backdrop-blur select-none">
             {flyMode ? (
               <>

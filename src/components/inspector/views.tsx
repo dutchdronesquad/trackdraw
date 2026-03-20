@@ -94,8 +94,18 @@ function useIsDesktopInspector() {
   return isDesktop;
 }
 
-function InspectorScrollBody({ children }: { children: ReactNode }) {
+function InspectorScrollBody({
+  children,
+  mobileInline = false,
+}: {
+  children: ReactNode;
+  mobileInline?: boolean;
+}) {
   const isDesktop = useIsDesktopInspector();
+
+  if (mobileInline && !isDesktop) {
+    return <div>{children}</div>;
+  }
 
   if (isDesktop) {
     return <ScrollArea className="min-h-0 flex-1">{children}</ScrollArea>;
@@ -161,6 +171,7 @@ interface EmptyInspectorViewProps {
   updateDesignMeta: (patch: DesignMetaPatch) => void;
   removeShapes: (ids: string[]) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
+  mobileInline?: boolean;
 }
 
 function ItemOverviewList({
@@ -301,11 +312,12 @@ export function EmptyInspectorView({
   updateDesignMeta,
   removeShapes,
   setHoveredShapeId,
+  mobileInline = false,
 }: EmptyInspectorViewProps) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PanelHeader title="Design" />
-      <InspectorScrollBody>
+      <InspectorScrollBody mobileInline={mobileInline}>
         <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
           <InspectorLead
             title="Project settings"
@@ -400,6 +412,7 @@ interface MultiInspectorViewProps {
   joinPolylines: (ids: string[]) => string | null;
   removeShapes: (ids: string[]) => void;
   setSelection: Dispatch<SetStateAction<string[]>> | ((ids: string[]) => void);
+  mobileInline?: boolean;
 }
 
 export function MultiInspectorView({
@@ -409,6 +422,7 @@ export function MultiInspectorView({
   joinPolylines,
   removeShapes,
   setSelection,
+  mobileInline = false,
 }: MultiInspectorViewProps) {
   const kinds = selectedShapes.reduce<Record<Shape["kind"], number>>(
     (accumulator, shape) => {
@@ -463,7 +477,7 @@ export function MultiInspectorView({
           </>
         }
       />
-      <InspectorScrollBody>
+      <InspectorScrollBody mobileInline={mobileInline}>
         <div className="space-y-3 p-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-2 lg:p-3 lg:pb-3">
           <InspectorLead
             title={`${selectedShapes.length} items selected`}
@@ -520,6 +534,7 @@ interface SingleInspectorViewProps {
     waypoint: { shapeId: string; idx: number } | null
   ) => void;
   onResumeSelectedPath?: (shapeId: string) => void;
+  mobileInline?: boolean;
 }
 
 export function SingleInspectorView({
@@ -531,6 +546,7 @@ export function SingleInspectorView({
   setSelection,
   setHoveredWaypoint,
   onResumeSelectedPath,
+  mobileInline = false,
 }: SingleInspectorViewProps) {
   const defaultColor = shape.color ?? "#3b82f6";
   const polylineAnchor =
@@ -588,7 +604,7 @@ export function SingleInspectorView({
         }
       />
 
-      <InspectorScrollBody>
+      <InspectorScrollBody mobileInline={mobileInline}>
         <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
           <InspectorLead
             title={shapeDisplayName}
