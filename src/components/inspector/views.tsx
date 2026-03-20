@@ -21,6 +21,7 @@ import {
   LockOpen,
   Plus,
   PlusCircle,
+  Scan,
   Trash2,
   X,
 } from "lucide-react";
@@ -436,6 +437,7 @@ export function MultiInspectorView({
 interface SingleInspectorViewProps {
   shape: Shape;
   updateShape: (id: string, patch: Partial<Shape>) => void;
+  closePolyline: (id: string) => boolean;
   duplicateShapes: (ids: string[]) => void;
   removeShapes: (ids: string[]) => void;
   setSelection: (ids: string[]) => void;
@@ -447,6 +449,7 @@ interface SingleInspectorViewProps {
 export function SingleInspectorView({
   shape,
   updateShape,
+  closePolyline,
   duplicateShapes,
   removeShapes,
   setSelection,
@@ -811,17 +814,28 @@ export function SingleInspectorView({
                 </Row>
               )}
               <Row label="Direction">
-                <button
-                  className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-[11px] transition-colors lg:h-7 lg:px-2"
-                  onClick={() => {
-                    updateShape(shape.id, {
-                      points: [...shape.points].reverse(),
-                    });
-                  }}
-                >
-                  <FlipHorizontal2 className="size-3" />
-                  Flip path
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-[11px] transition-colors lg:h-7 lg:px-2"
+                    onClick={() => {
+                      updateShape(shape.id, {
+                        points: [...shape.points].reverse(),
+                      });
+                    }}
+                  >
+                    <FlipHorizontal2 className="size-3" />
+                    Flip path
+                  </button>
+                  {!shape.closed && shape.points.length >= 3 && (
+                    <button
+                      className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-[11px] transition-colors lg:h-7 lg:px-2"
+                      onClick={() => closePolyline(shape.id)}
+                    >
+                      <Scan className="size-3" />
+                      Close loop
+                    </button>
+                  )}
+                </div>
               </Row>
 
               <div className="border-border/50 bg-background/60 mt-2 overflow-hidden rounded-xl border">

@@ -32,6 +32,7 @@ interface EditorState {
   removeShapes: (ids: string[]) => void;
   duplicateShapes: (ids: string[]) => void;
   joinPolylines: (ids: string[]) => string | null;
+  closePolyline: (id: string) => boolean;
   nudgeShapes: (ids: string[], dx: number, dy: number) => void;
   setSelection: (ids: string[]) => void;
   setActiveTool: (tool: EditorTool) => void;
@@ -371,6 +372,26 @@ export const useEditor = create<EditorState>()(
         });
 
         return created ? nextId : null;
+      },
+
+      closePolyline: (id) => {
+        let closed = false;
+
+        set((draft) => {
+          const shape = draft.design.shapes.find(
+            (candidate): candidate is PolylineShape =>
+              candidate.id === id && candidate.kind === "polyline"
+          );
+
+          if (!shape || shape.closed || shape.points.length < 3) return;
+
+          shape.closed = true;
+          draft.selection = [id];
+          draft.design.updatedAt = nowIso();
+          closed = true;
+        });
+
+        return closed;
       },
 
       setSelection: (ids) =>
