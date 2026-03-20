@@ -189,7 +189,7 @@ export function EditorMobilePanels({
 
   const canOpenInspector = selectedCount <= 1 && !mobileMultiSelectEnabled;
   const showPathBuilderOverlay =
-    !readOnly && tab === "2d" && (pathBuilderPinnedOpen || draftPathActive);
+    !readOnly && tab === "2d" && activeTool === "polyline" && (pathBuilderPinnedOpen || draftPathActive);
   const showResumePathButton =
     !readOnly &&
     tab === "2d" &&

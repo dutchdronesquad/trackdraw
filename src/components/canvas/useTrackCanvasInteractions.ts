@@ -216,12 +216,15 @@ export function useTrackCanvasInteractions({
       if (!stage) return;
       setManualView(true);
 
+      const hasHorizontalScroll = Math.abs(event.evt.deltaX) > 0.01;
+      const isFineVerticalScroll = Math.abs(event.evt.deltaY) < 40;
       const isTrackpadPan =
         isMobile === false &&
         event.evt.deltaMode === 0 &&
         !event.evt.ctrlKey &&
         !event.evt.metaKey &&
-        !event.evt.altKey;
+        !event.evt.altKey &&
+        (hasHorizontalScroll || isFineVerticalScroll);
 
       if (isTrackpadPan) {
         stage.position({

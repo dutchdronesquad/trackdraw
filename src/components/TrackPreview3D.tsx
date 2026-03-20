@@ -66,6 +66,86 @@ function CameraAxisTracker({
 
   return null;
 }
+
+function panPerspectiveCamera(
+  camera: THREE.PerspectiveCamera,
+  target: THREE.Vector3,
+  element: HTMLElement,
+  deltaX: number,
+  deltaY: number
+) {
+  const offset = camera.position.clone().sub(target);
+  const targetDistance =
+    offset.length() * Math.tan((camera.fov / 2) * (Math.PI / 180));
+  const panOffset = new THREE.Vector3()
+    .add(
+      new THREE.Vector3()
+        .setFromMatrixColumn(camera.matrix, 0)
+        .multiplyScalar((-2 * deltaX * targetDistance) / element.clientHeight)
+    )
+    .add(
+      new THREE.Vector3()
+        .setFromMatrixColumn(camera.matrix, 1)
+        .multiplyScalar((2 * deltaY * targetDistance) / element.clientHeight)
+    );
+
+  camera.position.add(panOffset);
+  target.add(panOffset);
+}
+
+function TrackpadPanBridge({
+  controlsRef,
+  enabled,
+}: {
+  controlsRef: { current: OrbitControlsImpl | null };
+  enabled: boolean;
+}) {
+  const { camera, gl } = useThree();
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const element = gl.domElement;
+
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || event.metaKey) return;
+
+      const controls = controlsRef.current;
+      if (!controls || !controls.enabled) return;
+
+      const hasHorizontalScroll = Math.abs(event.deltaX) > 0.01;
+      const isFineVerticalScroll = Math.abs(event.deltaY) < 40;
+      const isTrackpadGesture =
+        event.deltaMode === 0 && (hasHorizontalScroll || isFineVerticalScroll);
+
+      if (!isTrackpadGesture) return;
+      if (!(camera instanceof THREE.PerspectiveCamera)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      panPerspectiveCamera(
+        camera,
+        controls.target,
+        element,
+        -event.deltaX,
+        -event.deltaY
+      );
+      controls.update();
+    };
+
+    element.addEventListener("wheel", handleWheel, {
+      passive: false,
+      capture: true,
+    });
+
+    return () => {
+      element.removeEventListener("wheel", handleWheel, true);
+    };
+  }, [camera, controlsRef, enabled, gl]);
+
+  return null;
+}
 import { Play, Pause, Wind } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
@@ -1399,6 +1479,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           />
 
           <ScreenshotHelper onReady={handleScreenshotReady} />
+          <TrackpadPanBridge
+            controlsRef={orbitControlsRef}
+            enabled={!flyMode && !isMobile && !elevationDrag}
+          />
           {showGizmo && <CameraAxisTracker onChange={setAxisQuaternion} />}
           {flyMode ? (
             <DroneCamera
@@ -1443,7 +1527,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               maxDistance={Math.max(120, longest * 3)}
               mouseButtons={{
                 LEFT: THREE.MOUSE.ROTATE,
-                MIDDLE: THREE.MOUSE.DOLLY,
+                MIDDLE: THREE.MOUSE.PAN,
                 RIGHT: THREE.MOUSE.PAN,
               }}
             />
@@ -1629,7 +1713,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
         {!flyMode && !isMobile && !selectedPolyline && (
           <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/50 px-3 py-1 text-[11px] text-white/55 shadow-lg backdrop-blur">
-            Drag to orbit, scroll to zoom, right-drag to pan
+            Drag to orbit, scroll to zoom, middle-drag or two-finger pan
           </div>
         )}
 

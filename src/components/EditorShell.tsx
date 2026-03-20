@@ -119,6 +119,11 @@ export default function EditorShell({
     }
   }, [selection]);
 
+  useEffect(() => {
+    if (activeTool === "polyline" || mobileDraftPathState.active) return;
+    setMobilePathBuilderPinnedOpen(false);
+  }, [activeTool, mobileDraftPathState.active]);
+
   return (
     <>
       <div className="bg-background text-foreground relative flex h-[100dvh] overflow-hidden">
