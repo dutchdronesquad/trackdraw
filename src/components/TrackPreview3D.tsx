@@ -892,7 +892,9 @@ function FieldWatermark({
 // ── Main ─────────────────────────────────────────────────────
 const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
   function TrackPreview3D({ showGizmo = true }: TrackPreview3DProps, ref) {
-    const { design, selection, setSelection } = useEditor();
+    const design = useEditor((state) => state.design);
+    const selection = useEditor((state) => state.selection);
+    const setSelection = useEditor((state) => state.setSelection);
     const theme = useTheme();
     const t = THEME[theme];
     const cx = design.field.width / 2;
