@@ -8,7 +8,11 @@ import {
 } from "@/components/inspector/views";
 import { useEditor } from "@/store/editor";
 
-export default function Inspector() {
+export default function Inspector({
+  onResumeSelectedPath,
+}: {
+  onResumeSelectedPath?: (shapeId: string) => void;
+}) {
   const {
     design,
     selection,
@@ -20,6 +24,7 @@ export default function Inspector() {
     setSelection,
     updateField,
     updateDesignMeta,
+    setHoveredShapeId,
     setHoveredWaypoint,
   } = useEditor();
 
@@ -36,6 +41,8 @@ export default function Inspector() {
         setSelection={setSelection}
         updateField={updateField}
         updateDesignMeta={updateDesignMeta}
+        removeShapes={removeShapes}
+        setHoveredShapeId={setHoveredShapeId}
       />
     );
   }
@@ -61,7 +68,9 @@ export default function Inspector() {
       duplicateShapes={duplicateShapes}
       removeShapes={removeShapes}
       setSelection={setSelection}
+      setHoveredShapeId={setHoveredShapeId}
       setHoveredWaypoint={setHoveredWaypoint}
+      onResumeSelectedPath={onResumeSelectedPath}
     />
   );
 }

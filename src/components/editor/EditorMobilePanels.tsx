@@ -213,14 +213,12 @@ export function EditorMobilePanels({
     subtitle?: string,
     tone: "default" | "brand" = "default"
   ) => (
-    <div className="border-border/50 bg-background/96 shrink-0 border-b backdrop-blur-sm">
-      <div className="flex items-center justify-center pt-2.5 pb-2">
+    <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-sm">
+      <div className="flex items-center justify-center pt-2.5 pb-1.5">
         <div
           className={cn(
             "h-1 rounded-full",
-            tone === "brand"
-              ? "bg-brand-primary/18 w-10"
-              : "bg-muted-foreground/18 w-8"
+            tone === "brand" ? "bg-primary/20 w-10" : "bg-border w-8"
           )}
         />
       </div>
@@ -230,7 +228,7 @@ export function EditorMobilePanels({
             {title}
           </DrawerTitle>
           {subtitle ? (
-            <DrawerDescription className="text-muted-foreground/70 pt-0.5 text-[10px] leading-relaxed">
+            <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[10px] leading-relaxed">
               {subtitle}
             </DrawerDescription>
           ) : null}
@@ -531,7 +529,7 @@ export function EditorMobilePanels({
             if (!open) onCloseInspector();
           }}
         >
-          <DrawerContent className="border-border/60 bg-background max-h-[92dvh] min-h-[72dvh] gap-0 overflow-hidden [overscroll-behavior:contain] rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
+          <DrawerContent className="border-border/50 bg-card max-h-[92dvh] min-h-[72dvh] gap-0 overflow-hidden [overscroll-behavior:contain] rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader(
               selectedCount === 0 ? "Design" : "Inspector",
               selectedCount === 0
@@ -539,8 +537,13 @@ export function EditorMobilePanels({
                 : "Selection properties",
               "brand"
             )}
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              <Inspector />
+            <div className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden">
+              <Inspector
+                onResumeSelectedPath={() => {
+                  onCloseInspector();
+                  onResumeSelectedPath();
+                }}
+              />
             </div>
           </DrawerContent>
         </Drawer>
@@ -553,7 +556,7 @@ export function EditorMobilePanels({
           modal
           onOpenChange={onSetMobileToolsOpen}
         >
-          <DrawerContent className="border-border/60 bg-background max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
+          <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader(
               tab === "3d" ? "View" : "Tools",
               tab === "3d"
@@ -601,7 +604,7 @@ export function EditorMobilePanels({
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
                   View
                 </p>
-                <div className="border-border/50 bg-muted/18 flex items-center gap-1.5 rounded-[1rem] border p-1">
+                <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-[1rem] border p-1">
                   {(["2d", "3d"] as const).map((nextTab) => (
                     <button
                       key={nextTab}
@@ -610,10 +613,10 @@ export function EditorMobilePanels({
                         onSetMobileToolsOpen(false);
                       }}
                       className={cn(
-                        "flex-1 rounded-[0.8rem] py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
+                        "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
                         tab === nextTab
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
+                          ? "border-primary/30 bg-primary/12 text-primary shadow-sm"
+                          : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
                       )}
                     >
                       {nextTab === "2d" ? "Canvas" : "3D Preview"}

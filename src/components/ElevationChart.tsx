@@ -5,6 +5,7 @@ import { useEditor } from "@/store/editor";
 import { elevationSamples, totalLength2D } from "@/lib/geometry";
 import { isPolylineShape } from "@/lib/shape-utils";
 import type { PolylineShape } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const VIEW_W = 400;
 const VIEW_H = 120;
@@ -22,7 +23,7 @@ function niceStep(range: number, targetTicks: number): number {
   return candidates.find((c) => c >= raw) ?? candidates[candidates.length - 1];
 }
 
-export default function ElevationChart() {
+export default function ElevationChart({ className }: { className?: string }) {
   const { design, selection } = useEditor();
 
   const path = useMemo<PolylineShape | null>(() => {
@@ -101,7 +102,12 @@ export default function ElevationChart() {
 
   if (!path || !chartData) {
     return (
-      <div className="border-border bg-card/50 text-muted-foreground -mx-4 flex shrink-0 items-center justify-center border-t px-4 py-4 text-xs lg:-mx-3 lg:px-3">
+      <div
+        className={cn(
+          "border-border/40 bg-card text-muted-foreground -mx-4 flex shrink-0 items-center justify-center border-t px-4 py-4 text-xs lg:-mx-3 lg:px-3",
+          className
+        )}
+      >
         No race line selected
       </div>
     );
@@ -122,7 +128,12 @@ export default function ElevationChart() {
   } = chartData;
 
   return (
-    <div className="border-border bg-card/50 -mx-4 shrink-0 border-t px-4 py-3 lg:-mx-3 lg:px-3">
+    <div
+      className={cn(
+        "border-border/40 bg-card -mx-4 shrink-0 border-t px-4 py-3 lg:-mx-3 lg:px-3",
+        className
+      )}
+    >
       <div className="mb-2 flex items-baseline justify-between">
         <span className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
           Elevation Profile

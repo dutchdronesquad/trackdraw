@@ -122,6 +122,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const closePolyline = useEditor((state) => state.closePolyline);
     const nudgeShapes = useEditor((state) => state.nudgeShapes);
     const setZoom = useEditor((state) => state.setZoom);
+    const hoveredShapeId = useEditor((state) => state.hoveredShapeId);
     const hoveredWaypoint = useEditor((state) => state.hoveredWaypoint);
     const bringForward = useEditor((state) => state.bringForward);
     const sendBackward = useEditor((state) => state.sendBackward);
@@ -1108,6 +1109,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                       dragSnapRef={dragSnapRef}
                       effectiveVertexSel={effectiveVertexSel}
                       hoveredWaypoint={hoveredWaypoint}
+                      isHovered={hoveredShapeId === shape.id}
                       isMobile={isMobile}
                       mobileMultiSelectEnabled={mobileMultiSelectEnabled}
                       isSelected={selection.includes(shape.id)}

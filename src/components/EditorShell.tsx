@@ -208,8 +208,13 @@ export default function EditorShell({
 
             {/* Desktop Inspector */}
             {!readOnly && (
-              <aside className="border-border/80 bg-card/95 hidden min-h-0 w-[300px] shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex">
-                <Inspector />
+              <aside className="border-border/80 bg-card/95 hidden min-h-0 w-[340px] shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex">
+                <Inspector
+                  onResumeSelectedPath={(shapeId) => {
+                    setTab("2d");
+                    canvasRef.current?.resumePolylineEditing(shapeId);
+                  }}
+                />
               </aside>
             )}
           </div>
