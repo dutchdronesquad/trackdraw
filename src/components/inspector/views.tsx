@@ -170,7 +170,7 @@ function ItemOverviewList({
           </div>
           <div className="divide-border/30 divide-y">
             {visibleShapes.length ? (
-              visibleShapes.map((shape, index) => (
+              visibleShapes.map((shape) => (
                 <button
                   key={shape.id}
                   type="button"
