@@ -23,6 +23,7 @@ interface EditorState {
   activeTool: EditorTool;
   zoom: number;
   panOffset: { x: number; y: number };
+  hoveredShapeId: string | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
 
   addShape: (s: ShapeDraft) => string;
@@ -38,6 +39,7 @@ interface EditorState {
   setActiveTool: (tool: EditorTool) => void;
   setZoom: (zoom: number) => void;
   setPanOffset: (offset: { x: number; y: number }) => void;
+  setHoveredShapeId: (shapeId: string | null) => void;
   setHoveredWaypoint: (w: { shapeId: string; idx: number } | null) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (
@@ -196,6 +198,7 @@ export const useEditor = create<EditorState>()(
       activeTool: "select",
       zoom: 1,
       panOffset: { x: 0, y: 0 },
+      hoveredShapeId: null,
       hoveredWaypoint: null,
 
       addShape: (s) => {
@@ -431,6 +434,12 @@ export const useEditor = create<EditorState>()(
           draft.design = normalizeDesign(design);
           draft.selection = [];
           draft.activeTool = "select";
+          draft.hoveredShapeId = null;
+        }),
+
+      setHoveredShapeId: (shapeId) =>
+        set((draft) => {
+          draft.hoveredShapeId = shapeId;
         }),
 
       setHoveredWaypoint: (w) =>
@@ -445,6 +454,7 @@ export const useEditor = create<EditorState>()(
           draft.activeTool = "select";
           draft.zoom = 1;
           draft.panOffset = { x: 0, y: 0 };
+          draft.hoveredShapeId = null;
           draft.hoveredWaypoint = null;
         }),
 

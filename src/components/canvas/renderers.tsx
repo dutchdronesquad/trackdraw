@@ -328,6 +328,7 @@ interface TrackShapeNodeProps {
   dragSnapRef: React.MutableRefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
+  isHovered: boolean;
   isMobile: boolean;
   mobileMultiSelectEnabled?: boolean;
   isSelected: boolean;
@@ -362,6 +363,7 @@ function TrackShapeNodeComponent({
   dragSnapRef,
   effectiveVertexSel,
   hoveredWaypoint,
+  isHovered,
   isMobile,
   mobileMultiSelectEnabled = false,
   isSelected,
@@ -387,6 +389,7 @@ function TrackShapeNodeComponent({
   const longPressTriggeredRef = useRef(false);
   const dragTriggeredRef = useRef(false);
   const selected = isSelected;
+  const highlighted = isSelected || isHovered;
   const touchBounds =
     isMobile && shape.kind !== "polyline"
       ? getShapeLocalBounds(shape, designPpm)
@@ -545,7 +548,8 @@ function TrackShapeNodeComponent({
         onShapeContextMenu?.(shape);
       }}
     >
-      <Group opacity={shape.locked ? (selected ? 0.78 : 0.58) : 1}>
+      <Group opacity={shape.locked ? (highlighted ? 0.78 : 0.58) : 1}>
+        {isHovered && !selected && renderHoverIndicator(shape, designPpm)}
         {touchTargetRect && (
           <Rect
             x={touchTargetRect.x}
@@ -556,15 +560,15 @@ function TrackShapeNodeComponent({
             opacity={0.001}
           />
         )}
-        {shape.kind === "gate" && renderGate(shape, selected, designPpm)}
-        {shape.kind === "flag" && renderFlag(shape, selected, designPpm)}
-        {shape.kind === "cone" && renderCone(shape, selected, designPpm)}
-        {shape.kind === "label" && renderLabel(shape, selected)}
+        {shape.kind === "gate" && renderGate(shape, highlighted, designPpm)}
+        {shape.kind === "flag" && renderFlag(shape, highlighted, designPpm)}
+        {shape.kind === "cone" && renderCone(shape, highlighted, designPpm)}
+        {shape.kind === "label" && renderLabel(shape, highlighted)}
         {shape.kind === "startfinish" &&
-          renderStartFinish(shape, selected, designPpm)}
-        {shape.kind === "ladder" && renderLadder(shape, selected, designPpm)}
+          renderStartFinish(shape, highlighted, designPpm)}
+        {shape.kind === "ladder" && renderLadder(shape, highlighted, designPpm)}
         {shape.kind === "divegate" &&
-          renderDiveGate(shape, selected, designPpm)}
+          renderDiveGate(shape, highlighted, designPpm)}
         {shape.kind === "polyline" && (
           <PolylineShapeContent
             allowInteraction={allowInteraction}
@@ -574,7 +578,7 @@ function TrackShapeNodeComponent({
             effectiveVertexSel={effectiveVertexSel}
             hoveredWaypoint={hoveredWaypoint}
             isMobile={isMobile}
-            isSelected={isSelected}
+            isSelected={highlighted}
             path={shape}
             resolveWaypointDragPosition={resolveWaypointDragPosition}
             setSelection={setSelection}
@@ -586,7 +590,7 @@ function TrackShapeNodeComponent({
           />
         )}
       </Group>
-      {shape.locked && renderLockedIndicator(shape, selected, designPpm)}
+      {shape.locked && renderLockedIndicator(shape, highlighted, designPpm)}
     </Group>
   );
 }
@@ -622,6 +626,7 @@ export const TrackShapeNode = memo(TrackShapeNodeComponent, (prev, next) => {
     prev.allowInteraction === next.allowInteraction &&
     prev.designPpm === next.designPpm &&
     prev.isMobile === next.isMobile &&
+    prev.isHovered === next.isHovered &&
     prev.mobileMultiSelectEnabled === next.mobileMultiSelectEnabled &&
     prev.isSelected === next.isSelected &&
     prev.selectionCount === next.selectionCount &&
@@ -689,6 +694,27 @@ function renderLockedIndicator(shape: Shape, selected: boolean, ppm: number) {
         lineJoin="round"
       />
     </Group>
+  );
+}
+
+function renderHoverIndicator(shape: Shape, ppm: number) {
+  const bounds = getShapeLocalBounds(shape, ppm);
+  if (!bounds) return null;
+
+  const pad = 8;
+  return (
+    <Rect
+      x={bounds.x - pad}
+      y={bounds.y - pad}
+      width={bounds.width + pad * 2}
+      height={bounds.height + pad * 2}
+      stroke="#60a5fa"
+      strokeWidth={1.25}
+      dash={[5, 4]}
+      opacity={0.88}
+      cornerRadius={6}
+      listening={false}
+    />
   );
 }
 

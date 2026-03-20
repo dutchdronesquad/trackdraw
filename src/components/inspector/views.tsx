@@ -19,6 +19,7 @@ import {
   GitMerge,
   Lock,
   LockOpen,
+  PencilLine,
   Plus,
   PlusCircle,
   Scan,
@@ -40,7 +41,7 @@ type DesignMetaPatch = Partial<
 
 function MetaPill({ children }: { children: ReactNode }) {
   return (
-    <span className="border-border/50 bg-muted/25 text-muted-foreground rounded-full border px-2 py-1 text-[10px] font-medium">
+    <span className="border-border/25 text-muted-foreground rounded-full border px-2 py-0.5 text-[10px]">
       {children}
     </span>
   );
@@ -59,9 +60,9 @@ function InspectorLead({
     <div className="space-y-2 pb-1">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-foreground text-sm font-semibold">{title}</p>
+          <p className="text-foreground/90 text-sm font-medium">{title}</p>
           {subtitle ? (
-            <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
+            <p className="text-muted-foreground/60 mt-1 text-[11px] leading-relaxed">
               {subtitle}
             </p>
           ) : null}
@@ -107,22 +108,73 @@ function InspectorScrollBody({ children }: { children: ReactNode }) {
   );
 }
 
+function InspectorFooterDesktop({ children }: { children: ReactNode }) {
+  return (
+    <div className="border-border/40 bg-card hidden shrink-0 lg:block">
+      <div className="bg-muted/35 border-border/30 h-px border-b" />
+      {children}
+    </div>
+  );
+}
+
+function InspectorFooterMobile({ children }: { children: ReactNode }) {
+  return <div className="lg:hidden">{children}</div>;
+}
+
+function ListPanel({
+  title,
+  subtitle,
+  meta,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  meta?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="border-border/25 overflow-hidden rounded-lg border">
+      <div className="flex items-center gap-3 px-3 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2.5">
+            <span className="text-foreground/80 text-[11px] font-medium">
+              {title}
+            </span>
+            {meta ? <div className="shrink-0">{meta}</div> : null}
+          </div>
+          {subtitle ? (
+            <p className="text-muted-foreground/70 mt-1 text-[10px] leading-relaxed">
+              {subtitle}
+            </p>
+          ) : null}
+        </div>
+      </div>
+      <div className="border-border/15 border-t">{children}</div>
+    </div>
+  );
+}
+
 interface EmptyInspectorViewProps {
   design: TrackDesign;
   setSelection: (ids: string[]) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (patch: DesignMetaPatch) => void;
+  removeShapes: (ids: string[]) => void;
+  setHoveredShapeId: (shapeId: string | null) => void;
 }
 
 function ItemOverviewList({
   shapes,
   setSelection,
+  removeShapes,
+  setHoveredShapeId,
 }: {
   shapes: Shape[];
   setSelection: (ids: string[]) => void;
+  removeShapes: (ids: string[]) => void;
+  setHoveredShapeId: (shapeId: string | null) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [expanded, setExpanded] = useState(false);
   const filteredShapes = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     if (!normalizedQuery) return shapes;
@@ -141,10 +193,6 @@ function ItemOverviewList({
     () => new Map(shapes.map((shape, index) => [shape.id, index + 1] as const)),
     [shapes]
   );
-  const hasQuery = query.trim().length > 0;
-  const visibleShapes =
-    expanded || hasQuery ? filteredShapes : filteredShapes.slice(0, 8);
-  const hiddenCount = filteredShapes.length - visibleShapes.length;
 
   return (
     <Section title="Items">
@@ -154,66 +202,93 @@ function ItemOverviewList({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Filter items"
-            className="bg-muted/35 border-border/50 h-8 text-[11px] lg:h-7"
+            className="bg-background border-border/40 h-8 text-[11px] shadow-none lg:h-7"
           />
           <MetaPill>
             {filteredShapes.length}/{shapes.length}
           </MetaPill>
         </div>
-        <div className="border-border/40 overflow-hidden rounded-lg border">
-          <div className="border-border/30 bg-muted/15 flex items-center justify-between border-b px-2.5 py-1.5">
-            <span className="text-muted-foreground/65 text-[10px] font-medium tracking-[0.08em] uppercase">
-              Name
+        <ListPanel
+          title="Placed items"
+          subtitle="Select an item from the list."
+          meta={
+            <span className="text-muted-foreground/50 text-[10px]">
+              {shapes.length}
             </span>
-            <span className="text-muted-foreground/50 font-mono text-[10px]">
+          }
+        >
+          <div className="border-border/15 grid grid-cols-[minmax(0,1fr)_72px] items-center gap-3 border-b px-3 py-1.5">
+            <span className="text-muted-foreground/65 text-[10px] font-medium tracking-[0.08em] uppercase">
+              Item
+            </span>
+            <span className="text-muted-foreground/50 text-right font-mono text-[10px]">
               x, y
             </span>
           </div>
-          <div className="divide-border/30 divide-y">
-            {visibleShapes.length ? (
-              visibleShapes.map((shape) => (
-                <button
-                  key={shape.id}
-                  type="button"
-                  onClick={() => setSelection([shape.id])}
-                  className="hover:bg-muted/30 focus-visible:ring-primary/30 flex w-full items-center justify-between px-2.5 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                >
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="text-muted-foreground/55 w-5 shrink-0 text-center font-mono text-[10px]">
-                      {shapeOrder.get(shape.id)}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-foreground truncate text-[11px] font-medium">
-                        {shape.name?.trim() || shapeKindLabels[shape.kind]}
-                      </p>
-                      <p className="text-muted-foreground/65 text-[10px] uppercase">
-                        {shapeKindLabels[shape.kind]}
-                      </p>
+          <div className="max-h-72 overflow-y-auto">
+            <div className="divide-border/15 divide-y">
+              {filteredShapes.length ? (
+                filteredShapes.map((shape) => (
+                  <div
+                    key={shape.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelection([shape.id])}
+                    className="group/item hover:bg-primary/8 focus-visible:ring-primary/20 relative grid w-full grid-cols-[minmax(0,1fr)_72px_28px] items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    onMouseEnter={() => setHoveredShapeId(shape.id)}
+                    onMouseLeave={() => setHoveredShapeId(null)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelection([shape.id]);
+                      }
+                    }}
+                  >
+                    <span className="bg-primary absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-r-full opacity-0 transition-opacity group-hover/item:opacity-100" />
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="border-border/30 bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border font-mono text-[10px]">
+                        {shapeOrder.get(shape.id)}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-foreground truncate text-[11px] font-medium">
+                          {shape.name?.trim() || shapeKindLabels[shape.kind]}
+                        </p>
+                        <p className="text-muted-foreground/55 truncate text-[10px] uppercase">
+                          {shapeKindLabels[shape.kind]}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-foreground/85 block font-mono text-[10px]">
+                        {fmt(shape.x)}, {fmt(shape.y)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-end opacity-100 transition-opacity lg:opacity-0 lg:group-hover/item:opacity-100">
+                      <button
+                        type="button"
+                        title="Remove item"
+                        className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          removeShapes([shape.id]);
+                          setHoveredShapeId(null);
+                        }}
+                      >
+                        <X className="size-3" />
+                      </button>
                     </div>
                   </div>
-                  <span className="text-muted-foreground font-mono text-[10px]">
-                    {fmt(shape.x)}, {fmt(shape.y)}
-                  </span>
-                </button>
-              ))
-            ) : (
-              <div className="px-3 py-4 text-center">
-                <p className="text-muted-foreground/55 text-[11px]">
-                  No items match this filter.
-                </p>
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="px-3 py-4 text-center">
+                  <p className="text-muted-foreground/55 text-[11px]">
+                    No items match this filter.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          {!hasQuery && filteredShapes.length > 8 ? (
-            <button
-              type="button"
-              onClick={() => setExpanded((current) => !current)}
-              className="border-border/30 bg-muted/10 text-muted-foreground hover:bg-muted/20 hover:text-foreground flex w-full items-center justify-center border-t px-3 py-2 text-[11px] font-medium transition-colors"
-            >
-              {expanded ? "Show fewer items" : `Show ${hiddenCount} more items`}
-            </button>
-          ) : null}
-        </div>
+        </ListPanel>
       </div>
     </Section>
   );
@@ -224,6 +299,8 @@ export function EmptyInspectorView({
   setSelection,
   updateField,
   updateDesignMeta,
+  removeShapes,
+  setHoveredShapeId,
 }: EmptyInspectorViewProps) {
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -287,24 +364,12 @@ export function EmptyInspectorView({
               />
             </Row>
           </Section>
-
-          <Section title="Info">
-            <Row label="Elements">
-              <span className="text-foreground font-mono text-[11px]">
-                {design.shapes.length}
-              </span>
-            </Row>
-            <Row label="Size">
-              <span className="text-foreground font-mono text-[11px]">
-                {design.field.width}×{design.field.height} m
-              </span>
-            </Row>
-          </Section>
-
           {design.shapes.length > 0 ? (
             <ItemOverviewList
               shapes={design.shapes}
               setSelection={setSelection}
+              removeShapes={removeShapes}
+              setHoveredShapeId={setHoveredShapeId}
             />
           ) : (
             <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
@@ -316,9 +381,14 @@ export function EmptyInspectorView({
               </p>
             </div>
           )}
-          <ElevationChart />
+          <InspectorFooterMobile>
+            <ElevationChart />
+          </InspectorFooterMobile>
         </div>
       </InspectorScrollBody>
+      <InspectorFooterDesktop>
+        <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
+      </InspectorFooterDesktop>
     </div>
   );
 }
@@ -427,9 +497,14 @@ export function MultiInspectorView({
               Join selected paths
             </button>
           )}
-          <ElevationChart />
+          <InspectorFooterMobile>
+            <ElevationChart />
+          </InspectorFooterMobile>
         </div>
       </InspectorScrollBody>
+      <InspectorFooterDesktop>
+        <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
+      </InspectorFooterDesktop>
     </div>
   );
 }
@@ -444,6 +519,7 @@ interface SingleInspectorViewProps {
   setHoveredWaypoint: (
     waypoint: { shapeId: string; idx: number } | null
   ) => void;
+  onResumeSelectedPath?: (shapeId: string) => void;
 }
 
 export function SingleInspectorView({
@@ -454,6 +530,7 @@ export function SingleInspectorView({
   removeShapes,
   setSelection,
   setHoveredWaypoint,
+  onResumeSelectedPath,
 }: SingleInspectorViewProps) {
   const defaultColor = shape.color ?? "#3b82f6";
   const polylineAnchor =
@@ -813,10 +890,19 @@ export function SingleInspectorView({
                   />
                 </Row>
               )}
-              <Row label="Direction">
-                <div className="flex flex-wrap gap-2">
+              <div className="border-border/15 mt-3 border-t pt-3">
+                <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-0.5">
+                  {onResumeSelectedPath ? (
+                    <button
+                      className="border-border/35 bg-primary/6 text-primary hover:bg-primary/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] transition-colors lg:h-7"
+                      onClick={() => onResumeSelectedPath(shape.id)}
+                    >
+                      <PencilLine className="size-3" />
+                      Continue editing
+                    </button>
+                  ) : null}
                   <button
-                    className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-[11px] transition-colors lg:h-7 lg:px-2"
+                    className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] transition-colors lg:h-7"
                     onClick={() => {
                       updateShape(shape.id, {
                         points: [...shape.points].reverse(),
@@ -828,7 +914,7 @@ export function SingleInspectorView({
                   </button>
                   {!shape.closed && shape.points.length >= 3 && (
                     <button
-                      className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-[11px] transition-colors lg:h-7 lg:px-2"
+                      className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] transition-colors lg:h-7"
                       onClick={() => closePolyline(shape.id)}
                     >
                       <Scan className="size-3" />
@@ -836,130 +922,139 @@ export function SingleInspectorView({
                     </button>
                   )}
                 </div>
-              </Row>
+              </div>
 
-              <div className="border-border/50 bg-background/60 mt-2 overflow-hidden rounded-xl border">
-                <div className="border-border/40 bg-muted/20 flex items-center justify-between border-b px-3 py-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-amber-400/80" />
-                    <span className="text-foreground/70 text-[11px] font-semibold">
-                      {shape.points.length} waypoints
+              <div className="mt-3">
+                <ListPanel
+                  title="Waypoints"
+                  subtitle="Adjust each point and its elevation."
+                  meta={
+                    <span className="text-muted-foreground/50 text-[10px]">
+                      {shape.points.length}
                     </span>
-                  </div>
-                  <div className="flex items-center gap-3 pr-0.5">
+                  }
+                >
+                  <div className="border-border/15 grid grid-cols-[28px_minmax(0,1fr)_56px_44px] items-center gap-2 border-b px-3 py-1.5">
+                    <span className="text-muted-foreground/65 text-[10px] font-medium tracking-[0.08em] uppercase">
+                      #
+                    </span>
                     <span className="text-muted-foreground/40 text-[9px] font-semibold tracking-wider uppercase">
                       x, y
                     </span>
-                    <span className="text-muted-foreground/40 text-[9px] font-semibold tracking-wider uppercase">
+                    <span className="text-muted-foreground/40 text-right text-[9px] font-semibold tracking-wider uppercase">
                       elev
                     </span>
+                    <span className="text-muted-foreground/40 text-right text-[9px] font-semibold tracking-wider uppercase">
+                      edit
+                    </span>
                   </div>
-                </div>
-
-                <div className="border-border/30 border-b bg-amber-400/5 px-3 py-2 text-[11px] text-amber-500/80">
-                  Tip: select this race line in 3D and drag the waypoint handles
-                  vertically to adjust elevation directly.
-                </div>
-
-                <div className="overflow-visible lg:max-h-56 lg:overflow-y-auto">
-                  {shape.points.map((point, index) => (
-                    <div
-                      key={index}
-                      className="group/row border-border/20 relative flex items-center gap-2.5 border-b py-2 pr-3 pl-3 transition-colors last:border-b-0 hover:bg-amber-500/5 lg:py-1 lg:pr-2"
-                      onMouseEnter={() =>
-                        setHoveredWaypoint({ shapeId: shape.id, idx: index })
-                      }
-                      onMouseLeave={() => setHoveredWaypoint(null)}
-                    >
-                      <span className="absolute top-0 bottom-0 left-0 w-0.5 rounded-r-full bg-amber-400 opacity-0 transition-opacity group-hover/row:opacity-100" />
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-amber-400/30 bg-amber-400/15 text-[10px] leading-none font-bold text-amber-400 tabular-nums lg:size-5">
-                        {index}
-                      </span>
-                      <span className="text-foreground/60 flex-1 font-mono text-[11px] leading-none tabular-nums">
-                        {point.x.toFixed(1)},&thinsp;{point.y.toFixed(1)}
-                      </span>
-                      <input
-                        type="number"
-                        step={0.5}
-                        title="Elevation (m)"
-                        className="text-foreground/70 focus:bg-muted/40 focus:text-foreground hover:border-border/40 h-8 w-16 rounded-md border border-transparent bg-transparent px-2 py-1 text-right font-mono text-xs transition-colors focus:border-amber-400/50 focus:outline-none lg:h-auto lg:w-14 lg:px-1.5 lg:py-0.5 lg:text-[11px]"
-                        value={point.z ?? 0}
-                        onChange={(event) => {
-                          const nextPoints = [...shape.points];
-                          nextPoints[index] = {
-                            ...nextPoints[index],
-                            z: +event.target.value,
-                          };
-                          updateShape(shape.id, { points: nextPoints });
-                        }}
-                      />
-                      <div className="flex w-[52px] shrink-0 items-center justify-end gap-1 opacity-100 transition-opacity lg:w-[42px] lg:gap-0.5 lg:opacity-0 lg:group-hover/row:opacity-100">
-                        {index < shape.points.length - 1 && (
+                  <div className="max-h-72 overflow-y-auto">
+                    {shape.points.map((point, index) => (
+                      <div
+                        key={index}
+                        className="group/row border-border/10 hover:bg-primary/6 relative grid grid-cols-[28px_minmax(0,1fr)_56px_44px] items-center gap-2 border-b py-2 pr-3 pl-3 transition-colors last:border-b-0 lg:py-1.5 lg:pr-2"
+                        onMouseEnter={() =>
+                          setHoveredWaypoint({ shapeId: shape.id, idx: index })
+                        }
+                        onMouseLeave={() => setHoveredWaypoint(null)}
+                      >
+                        <span className="bg-primary/40 absolute top-0 bottom-0 left-0 w-px opacity-0 transition-opacity group-hover/row:opacity-100" />
+                        <span className="border-border/30 bg-primary/8 text-primary/80 flex h-5 w-5 items-center justify-center rounded-sm border font-mono text-[10px] tabular-nums">
+                          {index}
+                        </span>
+                        <div className="min-w-0">
+                          <span className="text-foreground/85 block font-mono text-[11px] leading-none tabular-nums">
+                            {point.x.toFixed(1)}, {point.y.toFixed(1)}
+                          </span>
+                        </div>
+                        <input
+                          type="number"
+                          step={0.5}
+                          title="Elevation (m)"
+                          className="text-foreground/90 focus:bg-primary/6 focus:text-foreground hover:border-border/25 focus:border-primary/30 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-none"
+                          value={point.z ?? 0}
+                          onChange={(event) => {
+                            const nextPoints = [...shape.points];
+                            nextPoints[index] = {
+                              ...nextPoints[index],
+                              z: +event.target.value,
+                            };
+                            updateShape(shape.id, { points: nextPoints });
+                          }}
+                        />
+                        <div className="flex items-center justify-end gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover/row:opacity-100">
+                          {index < shape.points.length - 1 && (
+                            <button
+                              title="Insert point after"
+                              className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors"
+                              onClick={() => {
+                                const current = shape.points[index];
+                                const next = shape.points[index + 1];
+                                const midpoint = {
+                                  x: +((current.x + next.x) / 2).toFixed(2),
+                                  y: +((current.y + next.y) / 2).toFixed(2),
+                                  z: +(
+                                    ((current.z ?? 0) + (next.z ?? 0)) /
+                                    2
+                                  ).toFixed(2),
+                                };
+                                const nextPoints = [...shape.points];
+                                nextPoints.splice(index + 1, 0, midpoint);
+                                updateShape(shape.id, { points: nextPoints });
+                              }}
+                            >
+                              <PlusCircle className="size-3" />
+                            </button>
+                          )}
                           <button
-                            title="Insert point after"
-                            className="text-muted-foreground/50 hover:text-primary hover:bg-primary/10 flex size-6 items-center justify-center rounded-md transition-colors lg:size-5 lg:rounded"
+                            title="Remove point"
+                            className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors"
                             onClick={() => {
-                              const current = shape.points[index];
-                              const next = shape.points[index + 1];
-                              const midpoint = {
-                                x: +((current.x + next.x) / 2).toFixed(2),
-                                y: +((current.y + next.y) / 2).toFixed(2),
-                                z: +(
-                                  ((current.z ?? 0) + (next.z ?? 0)) /
-                                  2
-                                ).toFixed(2),
-                              };
-                              const nextPoints = [...shape.points];
-                              nextPoints.splice(index + 1, 0, midpoint);
+                              if (shape.points.length <= 2) return;
+                              const nextPoints = shape.points.filter(
+                                (_, pointIndex) => pointIndex !== index
+                              );
                               updateShape(shape.id, { points: nextPoints });
                             }}
                           >
-                            <PlusCircle className="size-3" />
+                            <X className="size-3" />
                           </button>
-                        )}
-                        <button
-                          title="Remove point"
-                          className="text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 flex size-6 items-center justify-center rounded-md transition-colors lg:size-5 lg:rounded"
-                          onClick={() => {
-                            if (shape.points.length <= 2) return;
-                            const nextPoints = shape.points.filter(
-                              (_, pointIndex) => pointIndex !== index
-                            );
-                            updateShape(shape.id, { points: nextPoints });
-                          }}
-                        >
-                          <X className="size-3" />
-                        </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                <button
-                  className="border-border/40 text-muted-foreground/60 hover:text-foreground hover:bg-muted/20 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors lg:h-auto lg:text-[11px]"
-                  onClick={() => {
-                    const points = [...shape.points];
-                    const lastPoint = points[points.length - 1] ?? {
-                      x: 0,
-                      y: 0,
-                      z: 0,
-                    };
-                    points.push({
-                      x: +(lastPoint.x + 1).toFixed(2),
-                      y: +(lastPoint.y + 1).toFixed(2),
-                      z: lastPoint.z ?? 0,
-                    });
-                    updateShape(shape.id, { points });
-                  }}
-                >
-                  <Plus className="size-3" /> Add point
-                </button>
+                  <button
+                    className="border-border/15 text-muted-foreground/55 hover:text-foreground hover:bg-muted/6 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors lg:h-auto lg:text-[11px]"
+                    onClick={() => {
+                      const points = [...shape.points];
+                      const lastPoint = points[points.length - 1] ?? {
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                      };
+                      points.push({
+                        x: +(lastPoint.x + 1).toFixed(2),
+                        y: +(lastPoint.y + 1).toFixed(2),
+                        z: lastPoint.z ?? 0,
+                      });
+                      updateShape(shape.id, { points });
+                    }}
+                  >
+                    <Plus className="size-3" /> Add point
+                  </button>
+                </ListPanel>
               </div>
             </Section>
           )}
-          <ElevationChart />
+          <InspectorFooterMobile>
+            <ElevationChart />
+          </InspectorFooterMobile>
         </div>
       </InspectorScrollBody>
+      <InspectorFooterDesktop>
+        <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
+      </InspectorFooterDesktop>
     </div>
   );
 }
