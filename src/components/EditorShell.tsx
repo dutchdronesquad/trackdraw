@@ -43,18 +43,16 @@ export default function EditorShell({
 }: {
   readOnly?: boolean;
 }) {
-  const {
-    selection,
-    design,
-    replaceDesign,
-    activeTool,
-    removeShapes,
-    duplicateShapes,
-    updateShape,
-    setActiveTool,
-    setSelection,
-    newProject,
-  } = useEditor();
+  const selection = useEditor((state) => state.selection);
+  const design = useEditor((state) => state.design);
+  const replaceDesign = useEditor((state) => state.replaceDesign);
+  const activeTool = useEditor((state) => state.activeTool);
+  const removeShapes = useEditor((state) => state.removeShapes);
+  const duplicateShapes = useEditor((state) => state.duplicateShapes);
+  const updateShape = useEditor((state) => state.updateShape);
+  const setActiveTool = useEditor((state) => state.setActiveTool);
+  const setSelection = useEditor((state) => state.setSelection);
+  const newProject = useEditor((state) => state.newProject);
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [shareOpen, setShareOpen] = useState(false);

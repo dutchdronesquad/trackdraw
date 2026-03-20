@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import {
   Arrow,
   Circle,
@@ -331,13 +331,12 @@ interface TrackShapeNodeProps {
   isMobile: boolean;
   mobileMultiSelectEnabled?: boolean;
   isSelected: boolean;
+  selectionCount: number;
   groupDragOffsetPx?: { x: number; y: number } | null;
   onMobileMultiSelectStart?: (shapeId: string) => void;
-  onShapeContextMenu?: (
-    shape: Shape,
-    event: KonvaEventObject<PointerEvent>
-  ) => void;
-  selection: string[];
+  onSelectOnly: (shapeId: string) => void;
+  onToggleSelection: (shapeId: string) => void;
+  onShapeContextMenu?: (shape: Shape) => void;
   setSelection: (ids: string[]) => void;
   setDragSnapPreview: React.Dispatch<
     React.SetStateAction<{ x: number; y: number } | null>
@@ -356,7 +355,7 @@ interface TrackShapeNodeProps {
   zmin: number;
 }
 
-export function TrackShapeNode({
+function TrackShapeNodeComponent({
   allowInteraction,
   designPpm,
   dragBound,
@@ -366,10 +365,12 @@ export function TrackShapeNode({
   isMobile,
   mobileMultiSelectEnabled = false,
   isSelected,
+  selectionCount,
   groupDragOffsetPx,
   onMobileMultiSelectStart,
+  onSelectOnly,
+  onToggleSelection,
   onShapeContextMenu,
-  selection,
   setSelection,
   setDragSnapPreview,
   setVertexSel,
@@ -385,7 +386,7 @@ export function TrackShapeNode({
   const longPressTimerRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef(false);
   const dragTriggeredRef = useRef(false);
-  const selected = selection.includes(shape.id);
+  const selected = isSelected;
   const touchBounds =
     isMobile && shape.kind !== "polyline"
       ? getShapeLocalBounds(shape, designPpm)
@@ -455,7 +456,7 @@ export function TrackShapeNode({
       draggable={
         allowInteraction &&
         !shape.locked &&
-        !(selected && selection.length > 1) &&
+        !(selected && selectionCount > 1) &&
         (!isMobile ||
           !mobileMultiSelectEnabled ||
           (mobileMultiSelectEnabled && selected))
@@ -470,15 +471,12 @@ export function TrackShapeNode({
         event.cancelBubble = true;
         if (isMobile && mobileMultiSelectEnabled) return;
         if (event.evt.shiftKey || event.evt.metaKey || event.evt.ctrlKey) {
-          const current = new Set(selection);
-          if (current.has(shape.id)) current.delete(shape.id);
-          else current.add(shape.id);
-          setSelection(Array.from(current));
-        } else if (selection.includes(shape.id) && selection.length > 1) {
+          onToggleSelection(shape.id);
+        } else if (selected && selectionCount > 1) {
           // Preserve an existing multiselect when starting a drag from within it.
           return;
         } else {
-          setSelection([shape.id]);
+          onSelectOnly(shape.id);
         }
       }}
       onTap={(event) => {
@@ -493,16 +491,10 @@ export function TrackShapeNode({
           return;
         }
         if (isMobile && mobileMultiSelectEnabled) {
-          const current = new Set(selection);
-          if (current.has(shape.id)) {
-            current.delete(shape.id);
-          } else {
-            current.add(shape.id);
-          }
-          setSelection(Array.from(current));
+          onToggleSelection(shape.id);
           return;
         }
-        setSelection([shape.id]);
+        onSelectOnly(shape.id);
       }}
       onTouchStart={() => {
         if (
@@ -529,7 +521,8 @@ export function TrackShapeNode({
       }}
       onContextMenu={(event) => {
         if (!allowInteraction) return;
-        onShapeContextMenu?.(shape, event);
+        event.cancelBubble = true;
+        onShapeContextMenu?.(shape);
       }}
     >
       <Group opacity={shape.locked ? (selected ? 0.78 : 0.58) : 1}>
@@ -576,6 +569,49 @@ export function TrackShapeNode({
     </Group>
   );
 }
+
+function sameOffset(
+  a: { x: number; y: number } | null | undefined,
+  b: { x: number; y: number } | null | undefined
+) {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  return Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001;
+}
+
+export const TrackShapeNode = memo(TrackShapeNodeComponent, (prev, next) => {
+  const prevVertexActive =
+    prev.effectiveVertexSel?.shapeId === prev.shape.id
+      ? prev.effectiveVertexSel.idx
+      : null;
+  const nextVertexActive =
+    next.effectiveVertexSel?.shapeId === next.shape.id
+      ? next.effectiveVertexSel.idx
+      : null;
+  const prevHoveredWaypoint =
+    prev.hoveredWaypoint?.shapeId === prev.shape.id
+      ? prev.hoveredWaypoint.idx
+      : null;
+  const nextHoveredWaypoint =
+    next.hoveredWaypoint?.shapeId === next.shape.id
+      ? next.hoveredWaypoint.idx
+      : null;
+
+  return (
+    prev.allowInteraction === next.allowInteraction &&
+    prev.designPpm === next.designPpm &&
+    prev.isMobile === next.isMobile &&
+    prev.mobileMultiSelectEnabled === next.mobileMultiSelectEnabled &&
+    prev.isSelected === next.isSelected &&
+    prev.selectionCount === next.selectionCount &&
+    prev.shape === next.shape &&
+    prev.zmin === next.zmin &&
+    prev.zmax === next.zmax &&
+    prevVertexActive === nextVertexActive &&
+    prevHoveredWaypoint === nextHoveredWaypoint &&
+    sameOffset(prev.groupDragOffsetPx, next.groupDragOffsetPx)
+  );
+});
 
 function renderLockedIndicator(shape: Shape, selected: boolean, ppm: number) {
   const bounds = getShapeLocalBounds(shape, ppm);
@@ -1071,26 +1107,36 @@ function PolylineShapeContent({
   zmax,
   zmin,
 }: PolylineShapeContentProps) {
-  const pointsPx = path.points.flatMap((point) => [
-    m2px(point.x, designPpm),
-    m2px(point.y, designPpm),
-  ]);
   const strokePx = m2px(path.strokeWidth ?? 0.18, designPpm);
-  const smoothPoints =
-    (path.smooth ?? true) ? smoothPolyline(path.points) : path.points;
-  const smoothPx = smoothPoints.flatMap((point) => [
-    m2px(point.x, designPpm),
-    m2px(point.y, designPpm),
-  ]);
+  const smoothPoints = useMemo(
+    () => ((path.smooth ?? true) ? smoothPolyline(path.points) : path.points),
+    [path.points, path.smooth]
+  );
+  const pointsPxMemo = useMemo(
+    () =>
+      path.points.flatMap((point) => [
+        m2px(point.x, designPpm),
+        m2px(point.y, designPpm),
+      ]),
+    [designPpm, path.points]
+  );
+  const smoothPx = useMemo(
+    () =>
+      smoothPoints.flatMap((point) => [
+        m2px(point.x, designPpm),
+        m2px(point.y, designPpm),
+      ]),
+    [designPpm, smoothPoints]
+  );
   const color = path.color ?? "#3b82f6";
 
-  if (!pointsPx.length) return null;
+  if (!pointsPxMemo.length) return null;
 
   return (
     <>
       {isSelected && (
         <Line
-          points={pointsPx}
+          points={pointsPxMemo}
           stroke="#3b82f6"
           strokeWidth={strokePx + 4}
           lineCap="round"
@@ -1103,7 +1149,14 @@ function PolylineShapeContent({
           const pct =
             path.points.length > 1 ? index / (path.points.length - 1) : 0;
           const zColor = zToColor(point.z ?? 0, zmin, zmax);
-          const segment = smoothPx.slice(index * 2, index * 2 + 4);
+          const sampleIndex =
+            path.points.length <= 1
+              ? 0
+              : Math.round(
+                  (index / (path.points.length - 1)) *
+                    Math.max(0, smoothPoints.length - 2)
+                );
+          const segment = smoothPx.slice(sampleIndex * 2, sampleIndex * 2 + 4);
           if (segment.length < 4) return null;
           const segmentColor = path.color ? color : zColor;
           return (

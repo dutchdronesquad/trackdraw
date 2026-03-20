@@ -95,23 +95,21 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     },
     ref
   ) {
-    const {
-      design,
-      selection,
-      setSelection,
-      updateShape,
-      addShape,
-      activeTool,
-      setActiveTool,
-      rotateShapes,
-      removeShapes,
-      duplicateShapes,
-      nudgeShapes,
-      setZoom,
-      hoveredWaypoint,
-      bringForward,
-      sendBackward,
-    } = useEditor();
+    const design = useEditor((state) => state.design);
+    const selection = useEditor((state) => state.selection);
+    const setSelection = useEditor((state) => state.setSelection);
+    const updateShape = useEditor((state) => state.updateShape);
+    const addShape = useEditor((state) => state.addShape);
+    const activeTool = useEditor((state) => state.activeTool);
+    const setActiveTool = useEditor((state) => state.setActiveTool);
+    const rotateShapes = useEditor((state) => state.rotateShapes);
+    const removeShapes = useEditor((state) => state.removeShapes);
+    const duplicateShapes = useEditor((state) => state.duplicateShapes);
+    const nudgeShapes = useEditor((state) => state.nudgeShapes);
+    const setZoom = useEditor((state) => state.setZoom);
+    const hoveredWaypoint = useEditor((state) => state.hoveredWaypoint);
+    const bringForward = useEditor((state) => state.bringForward);
+    const sendBackward = useEditor((state) => state.sendBackward);
 
     const estimateRotationGuideRadiusPx = useCallback(
       (shape: Shape) => {
@@ -184,6 +182,16 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const isMobile = useIsMobile();
     const showRulers = !isMobile || mobileRulersEnabled;
     const showDesktopCanvasChrome = viewportSize.width >= 1024;
+    const selectionRef = useRef(selection);
+    const shapesRef = useRef(design.shapes);
+
+    useEffect(() => {
+      selectionRef.current = selection;
+    }, [selection]);
+
+    useEffect(() => {
+      shapesRef.current = design.shapes;
+    }, [design.shapes]);
 
     const effectiveVertexSel = useMemo(
       () =>
@@ -232,7 +240,14 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const syncTransform = useCallback(() => {
       const s = stageRef.current;
       if (!s) return;
-      setStageTransform({ x: s.x(), y: s.y(), scale: s.scaleX() });
+      const nextTransform = { x: s.x(), y: s.y(), scale: s.scaleX() };
+      setStageTransform((current) =>
+        Math.abs(current.x - nextTransform.x) < 0.001 &&
+        Math.abs(current.y - nextTransform.y) < 0.001 &&
+        Math.abs(current.scale - nextTransform.scale) < 0.001
+          ? current
+          : nextTransform
+      );
     }, []);
 
     const widthPx = useMemo(
@@ -364,19 +379,66 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         if (Math.abs(dxPx) < 0.5 && Math.abs(dyPx) < 0.5) return;
         const dxMeters = dxPx / design.field.ppm;
         const dyMeters = dyPx / design.field.ppm;
-
-        for (const selectedId of ids) {
-          const selectedShape = design.shapes.find(
-            (candidate) => candidate.id === selectedId
-          );
-          if (!selectedShape || selectedShape.locked) continue;
-          updateShape(selectedId, {
-            x: selectedShape.x + dxMeters,
-            y: selectedShape.y + dyMeters,
-          });
-        }
+        nudgeShapes(ids, dxMeters, dyMeters);
       },
-      [design.field.ppm, design.shapes, updateShape]
+      [design.field.ppm, nudgeShapes]
+    );
+
+    const selectOnlyShape = useCallback(
+      (shapeId: string) => {
+        setSelection([shapeId]);
+      },
+      [setSelection]
+    );
+
+    const toggleShapeSelection = useCallback(
+      (shapeId: string) => {
+        const current = new Set(selectionRef.current);
+        if (current.has(shapeId)) current.delete(shapeId);
+        else current.add(shapeId);
+        setSelection(Array.from(current));
+      },
+      [setSelection]
+    );
+
+    const openShapeContextMenu = useCallback(
+      (clickedShape: Shape) => {
+        if (activeTool !== "select" || readOnly) return;
+
+        const currentSelection = selectionRef.current;
+        const nextSelection = currentSelection.includes(clickedShape.id)
+          ? currentSelection
+          : [clickedShape.id];
+
+        if (!currentSelection.includes(clickedShape.id)) {
+          setSelection(nextSelection);
+        }
+
+        const shapes = shapesRef.current;
+        const rotatableIds = nextSelection.filter((id) => {
+          const shape = shapes.find((candidate) => candidate.id === id);
+          return (
+            shape &&
+            shape.kind !== "polyline" &&
+            shape.kind !== "cone" &&
+            !shape.locked
+          );
+        });
+
+        setContextMenu({
+          ids: nextSelection,
+          label:
+            nextSelection.length > 1
+              ? `${nextSelection.length} items`
+              : shapeKindLabels[clickedShape.kind],
+          locked: nextSelection.every((id) => {
+            const shape = shapes.find((candidate) => candidate.id === id);
+            return Boolean(shape?.locked);
+          }),
+          rotatableIds,
+        });
+      },
+      [activeTool, readOnly, setSelection]
     );
 
     const waypointDragBound = useCallback(
@@ -863,6 +925,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     isMobile={isMobile}
                     mobileMultiSelectEnabled={mobileMultiSelectEnabled}
                     isSelected={selection.includes(shape.id)}
+                    selectionCount={selection.length}
                     groupDragOffsetPx={
                       groupDragPreview &&
                       groupDragPreview.ids.includes(shape.id)
@@ -873,43 +936,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                         : null
                     }
                     onMobileMultiSelectStart={onMobileMultiSelectStart}
-                    onShapeContextMenu={(clickedShape) => {
-                      if (activeTool !== "select" || readOnly) return;
-
-                      const nextSelection = selection.includes(clickedShape.id)
-                        ? selection
-                        : [clickedShape.id];
-                      if (!selection.includes(clickedShape.id)) {
-                        setSelection(nextSelection);
-                      }
-                      const rotatableIds = nextSelection.filter((id) => {
-                        const shape = design.shapes.find(
-                          (candidate) => candidate.id === id
-                        );
-                        return (
-                          shape &&
-                          shape.kind !== "polyline" &&
-                          shape.kind !== "cone" &&
-                          !shape.locked
-                        );
-                      });
-
-                      setContextMenu({
-                        ids: nextSelection,
-                        label:
-                          nextSelection.length > 1
-                            ? `${nextSelection.length} items`
-                            : shapeKindLabels[clickedShape.kind],
-                        locked: nextSelection.every((id) => {
-                          const shape = design.shapes.find(
-                            (candidate) => candidate.id === id
-                          );
-                          return Boolean(shape?.locked);
-                        }),
-                        rotatableIds,
-                      });
-                    }}
-                    selection={selection}
+                    onShapeContextMenu={openShapeContextMenu}
+                    onSelectOnly={selectOnlyShape}
+                    onToggleSelection={toggleShapeSelection}
                     setSelection={setSelection}
                     setVertexSel={setVertexSel}
                     shape={shape}
