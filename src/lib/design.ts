@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { Shape, TrackDesign } from "@/lib/types";
+import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -7,11 +7,29 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export const nowIso = () => new Date().toISOString();
 
+function normalizePolylinePosition(shape: PolylineShape): PolylineShape {
+  const offsetX = shape.x ?? 0;
+  const offsetY = shape.y ?? 0;
+
+  return {
+    ...shape,
+    x: 0,
+    y: 0,
+    points: shape.points.map((point) => ({
+      ...point,
+      x: point.x + offsetX,
+      y: point.y + offsetY,
+    })),
+  };
+}
+
 export function normalizeShape(shape: Shape): Shape {
   if (shape.kind === "polyline") {
     return {
-      ...shape,
-      smooth: shape.smooth ?? true,
+      ...normalizePolylinePosition(shape),
+      arrowSpacing: shape.arrowSpacing ?? 15,
+      strokeWidth: shape.strokeWidth ?? 0.26,
+      smooth: true,
     };
   }
 

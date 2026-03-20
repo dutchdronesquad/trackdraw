@@ -15,6 +15,7 @@ export default function Inspector() {
     updateShape,
     removeShapes,
     duplicateShapes,
+    joinPolylines,
     setSelection,
     updateField,
     updateDesignMeta,
@@ -43,6 +44,7 @@ export default function Inspector() {
         selectedShapes={selectedShapes}
         selection={selection}
         duplicateShapes={duplicateShapes}
+        joinPolylines={joinPolylines}
         removeShapes={removeShapes}
         setSelection={setSelection}
       />

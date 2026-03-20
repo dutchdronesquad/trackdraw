@@ -7,6 +7,7 @@ import {
   type ThreeEvent,
 } from "@react-three/fiber";
 import { Grid, OrbitControls, RoundedBox } from "@react-three/drei";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useEditor } from "@/store/editor";
 import {
   useMemo,
@@ -66,6 +67,7 @@ function CameraAxisTracker({
   return null;
 }
 import { Play, Pause, Wind } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/useTheme";
 import type {
   GateShape,
@@ -79,6 +81,46 @@ import type {
   DiveGateShape,
   PolylinePoint,
 } from "@/lib/types";
+
+function buildPolylineCurve3(
+  points: PolylinePoint[],
+  options?: {
+    closed?: boolean;
+    heightOffset?: number;
+    samplesPerSegment?: number;
+    density?: number;
+  }
+) {
+  if (points.length < 2) return null;
+
+  const closed = options?.closed ?? false;
+  const heightOffset = options?.heightOffset ?? 0;
+  const samplesPerSegment = options?.samplesPerSegment ?? 18;
+  const density = options?.density ?? 12;
+
+  const smoothPoints = smoothPolyline3D(points, {
+    closed,
+    samplesPerSegment,
+  });
+  const baseVectors = smoothPoints.map(
+    (point) =>
+      new THREE.Vector3(point.x, Math.max(point.z, 0) + heightOffset, point.y)
+  );
+  const baseCurve = new THREE.CatmullRomCurve3(
+    baseVectors,
+    closed,
+    "centripetal"
+  );
+  const segmentCount = getAdaptiveCurveSegments(smoothPoints, density);
+  const spacedPoints = baseCurve.getSpacedPoints(segmentCount);
+  const curve = new THREE.CatmullRomCurve3(spacedPoints, closed, "centripetal");
+  curve.arcLengthDivisions = Math.max(240, segmentCount * 3);
+
+  return {
+    curve,
+    segmentCount,
+  };
+}
 
 // Creates a canvas texture with text drawn on it
 function useTextTexture(
@@ -624,22 +666,22 @@ function RaceLine3D({
   shape: PolylineShape;
 }) {
   const geometry = useMemo(() => {
-    const pts = shape.points;
-    if (pts.length < 2) return null;
-    const smoothPoints = smoothPolyline3D(pts, 10);
-    const vectors = smoothPoints.map(
-      (p) => new THREE.Vector3(p.x, Math.max(p.z, 0) + 0.5, p.y)
-    );
-    const curve = new THREE.CatmullRomCurve3(vectors, false, "centripetal");
-    const tubeRadius = Math.max(0.02, (shape.strokeWidth ?? 0.16) / 2);
+    const curveData = buildPolylineCurve3(shape.points, {
+      closed: shape.closed ?? false,
+      heightOffset: 0.5,
+      samplesPerSegment: 18,
+      density: 12,
+    });
+    if (!curveData) return null;
+    const tubeRadius = Math.max(0.02, (shape.strokeWidth ?? 0.26) / 2);
     return new THREE.TubeGeometry(
-      curve,
-      getAdaptiveCurveSegments(pts, 7),
+      curveData.curve,
+      curveData.segmentCount,
       tubeRadius,
-      6,
-      false
+      10,
+      shape.closed ?? false
     );
-  }, [shape.points, shape.strokeWidth]);
+  }, [shape.closed, shape.points, shape.strokeWidth]);
 
   if (!geometry) return null;
   return (
@@ -655,41 +697,123 @@ function RaceLine3D({
 }
 
 function PolylineElevationHandles3D({
+  isMobile,
   path,
   activeIndex,
   onDragStart,
 }: {
+  isMobile: boolean;
   path: PolylineShape;
   activeIndex: number | null;
   onDragStart: (event: ThreeEvent<PointerEvent>, index: number) => void;
 }) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   return (
     <group>
       {path.points.map((point, index) => {
-        const handleHeight = Math.max(0.18, (point.z ?? 0) + 0.6);
+        const pointHeight = Math.max(point.z ?? 0, 0);
+        const guideHeight = Math.max(0.4, pointHeight + 0.5);
         const isActive = activeIndex === index;
+        const isHovered = hoveredIndex === index;
+        const handleY = pointHeight + 0.52;
+        const gripRadius = isMobile
+          ? isActive
+            ? 0.2
+            : 0.18
+          : isActive
+            ? 0.16
+            : 0.14;
+        const gripHeight = isMobile
+          ? isActive
+            ? 0.2
+            : 0.18
+          : isActive
+            ? 0.16
+            : 0.13;
+        const touchTargetRadius = isMobile ? 0.34 : gripRadius;
+        const touchTargetHeight = isMobile ? 0.58 : gripHeight;
         return (
           <group key={`${path.id}-elev-${index}`}>
-            <mesh position={[point.x, handleHeight / 2, point.y]}>
-              <cylinderGeometry args={[0.025, 0.025, handleHeight, 10]} />
+            <mesh position={[point.x, guideHeight / 2, point.y]}>
+              <cylinderGeometry args={[0.02, 0.02, guideHeight, 12]} />
               <meshBasicMaterial
-                color={isActive ? "#f59e0b" : "#93c5fd"}
+                color={isActive ? "#f59e0b" : isHovered ? "#bfdbfe" : "#93c5fd"}
                 transparent
-                opacity={isActive ? 0.95 : 0.42}
+                opacity={isActive ? 0.95 : isHovered ? 0.75 : 0.35}
               />
             </mesh>
             <mesh
-              position={[point.x, handleHeight, point.y]}
-              onPointerDown={(event) => onDragStart(event, index)}
+              position={[point.x, pointHeight + 0.03, point.y]}
+              rotation={[-Math.PI / 2, 0, 0]}
             >
-              <sphereGeometry args={[isActive ? 0.18 : 0.14, 18, 18]} />
-              <meshStandardMaterial
-                color={isActive ? "#f59e0b" : "#60a5fa"}
-                emissive={isActive ? "#fbbf24" : "#60a5fa"}
-                emissiveIntensity={isActive ? 0.85 : 0.28}
-                roughness={0.28}
+              <ringGeometry args={[0.12, 0.155, 32]} />
+              <meshBasicMaterial
+                color={isActive ? "#fbbf24" : "#60a5fa"}
+                transparent
+                opacity={isActive ? 0.9 : isHovered ? 0.5 : 0.24}
+                side={THREE.DoubleSide}
               />
             </mesh>
+            <mesh
+              position={[point.x, handleY, point.y]}
+              onPointerDown={(event) => onDragStart(event, index)}
+              onPointerOver={() => setHoveredIndex(index)}
+              onPointerOut={() =>
+                setHoveredIndex((current) =>
+                  current === index ? null : current
+                )
+              }
+            >
+              <cylinderGeometry
+                args={[
+                  touchTargetRadius,
+                  touchTargetRadius,
+                  touchTargetHeight,
+                  24,
+                ]}
+              />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+            </mesh>
+            <mesh position={[point.x, handleY, point.y]}>
+              <cylinderGeometry
+                args={[gripRadius, gripRadius, gripHeight, 24]}
+              />
+              <meshStandardMaterial
+                color={isActive ? "#f59e0b" : isHovered ? "#93c5fd" : "#e2e8f0"}
+                emissive={isActive ? "#fbbf24" : "#60a5fa"}
+                emissiveIntensity={isActive ? 0.85 : isHovered ? 0.38 : 0.18}
+                roughness={0.2}
+                metalness={0.08}
+              />
+            </mesh>
+            <mesh position={[point.x, handleY + gripHeight * 0.22, point.y]}>
+              <cylinderGeometry
+                args={[
+                  gripRadius * 0.72,
+                  gripRadius * 0.92,
+                  Math.max(gripHeight * 0.38, 0.05),
+                  24,
+                ]}
+              />
+              <meshStandardMaterial
+                color={isActive ? "#fde68a" : isHovered ? "#dbeafe" : "#f8fafc"}
+                emissive={isActive ? "#fbbf24" : "#93c5fd"}
+                emissiveIntensity={isActive ? 0.55 : isHovered ? 0.24 : 0.1}
+                roughness={0.16}
+                metalness={0.06}
+              />
+            </mesh>
+            {(isActive || isHovered) && (
+              <mesh position={[point.x, handleY + 0.12, point.y]}>
+                <sphereGeometry args={[0.04, 16, 16]} />
+                <meshBasicMaterial
+                  color={isActive ? "#fbbf24" : "#60a5fa"}
+                  transparent
+                  opacity={0.95}
+                />
+              </mesh>
+            )}
           </group>
         );
       })}
@@ -834,11 +958,15 @@ function DroneCamera({
       (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
     ) as PolylineShape | undefined;
     if (!pl) return null;
-    const smoothPoints = smoothPolyline3D(pl.points, 10);
-    const vecs = smoothPoints.map(
-      (p) => new THREE.Vector3(p.x, Math.max(p.z, 0) + 0.8, p.y)
+
+    return (
+      buildPolylineCurve3(pl.points, {
+        closed: pl.closed ?? false,
+        heightOffset: 0.8,
+        samplesPerSegment: 18,
+        density: 12,
+      })?.curve ?? null
     );
-    return new THREE.CatmullRomCurve3(vecs, false, "centripetal");
   }, [shapes]);
 
   // Snap camera to start of path when activated
@@ -941,6 +1069,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const setSelection = useEditor((state) => state.setSelection);
     const updateShape = useEditor((state) => state.updateShape);
     const theme = useTheme();
+    const isMobile = useIsMobile();
     const t = THEME[theme];
     const cx = design.field.width / 2;
     const cz = design.field.height / 2;
@@ -959,9 +1088,15 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       startZ: number;
     } | null>(null);
     const screenshotFnRef = useRef<(() => string) | null>(null);
+    const orbitControlsRef = useRef<OrbitControlsImpl | null>(null);
     const elevationDragRef = useRef(elevationDrag);
     const dragAnimationFrameRef = useRef<number | null>(null);
     const pendingClientYRef = useRef<number | null>(null);
+    const selectionRef = useRef(selection);
+
+    useEffect(() => {
+      selectionRef.current = selection;
+    }, [selection]);
 
     useEffect(() => {
       elevationDragRef.current = elevationDrag;
@@ -986,7 +1121,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         }
 
         if (event.ctrlKey || event.metaKey || event.shiftKey) {
-          const current = new Set(selection);
+          const current = new Set(selectionRef.current);
           if (current.has(shapeId)) current.delete(shapeId);
           else current.add(shapeId);
           setSelection(Array.from(current));
@@ -995,25 +1130,46 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
         setSelection([shapeId]);
       },
-      [selection, setSelection]
+      [setSelection]
     );
 
     const selectedPolyline = useMemo(() => {
       if (selection.length !== 1) return null;
-      const shape = design.shapes.find((candidate) => candidate.id === selection[0]);
+      const shape = design.shapes.find(
+        (candidate) => candidate.id === selection[0]
+      );
       return shape?.kind === "polyline" ? shape : null;
     }, [design.shapes, selection]);
+
+    const handleElevationDragStart = useCallback(
+      (event: ThreeEvent<PointerEvent>, index: number) => {
+        event.stopPropagation();
+        const point = selectedPolyline?.points[index];
+        if (!selectedPolyline || !point) return;
+        setSelection([selectedPolyline.id]);
+        setElevationDrag({
+          shapeId: selectedPolyline.id,
+          idx: index,
+          startClientY: event.nativeEvent.clientY,
+          startZ: point.z ?? 0,
+        });
+      },
+      [selectedPolyline, setSelection]
+    );
 
     const applyElevationDrag = useCallback(
       (clientY: number) => {
         const drag = elevationDragRef.current;
         if (!drag) return;
-        const shape = design.shapes.find((candidate) => candidate.id === drag.shapeId);
+        const shape = design.shapes.find(
+          (candidate) => candidate.id === drag.shapeId
+        );
         if (!shape || shape.kind !== "polyline") return;
         const deltaMeters = (drag.startClientY - clientY) * 0.035;
         const nextZ = Math.max(0, +(drag.startZ + deltaMeters).toFixed(2));
         const currentPoint = shape.points[drag.idx];
-        if (!currentPoint || Math.abs((currentPoint.z ?? 0) - nextZ) < 0.01) return;
+        if (!currentPoint || Math.abs((currentPoint.z ?? 0) - nextZ) < 0.01)
+          return;
         const nextPoints: PolylinePoint[] = shape.points.map((point, index) =>
           index === drag.idx ? { ...point, z: nextZ } : point
         );
@@ -1036,16 +1192,37 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         });
       };
 
+      const handleTouchMove = (event: TouchEvent) => {
+        if (!event.touches.length) return;
+        event.preventDefault();
+        pendingClientYRef.current = event.touches[0].clientY;
+        if (dragAnimationFrameRef.current !== null) return;
+        dragAnimationFrameRef.current = window.requestAnimationFrame(() => {
+          dragAnimationFrameRef.current = null;
+          if (pendingClientYRef.current !== null) {
+            applyElevationDrag(pendingClientYRef.current);
+          }
+        });
+      };
+
       const stopDrag = () => {
         setElevationDrag(null);
       };
 
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", stopDrag);
+      window.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+      window.addEventListener("touchend", stopDrag);
+      window.addEventListener("touchcancel", stopDrag);
 
       return () => {
         window.removeEventListener("mousemove", handleMouseMove);
         window.removeEventListener("mouseup", stopDrag);
+        window.removeEventListener("touchmove", handleTouchMove);
+        window.removeEventListener("touchend", stopDrag);
+        window.removeEventListener("touchcancel", stopDrag);
         if (dragAnimationFrameRef.current !== null) {
           window.cancelAnimationFrame(dragAnimationFrameRef.current);
           dragAnimationFrameRef.current = null;
@@ -1056,7 +1233,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     return (
       <div
         className="relative h-full w-full"
-        style={{ background: t.bg }}
+        style={{
+          background: t.bg,
+          overscrollBehaviorX: "none",
+          overscrollBehaviorY: "none",
+          touchAction: "none",
+        }}
         onMouseDownCapture={(event) => {
           if (event.button === 1) {
             event.preventDefault();
@@ -1138,20 +1320,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           ))}
           {selectedPolyline && !flyMode && (
             <PolylineElevationHandles3D
+              isMobile={isMobile}
               path={selectedPolyline}
               activeIndex={elevationDrag?.idx ?? null}
-              onDragStart={(event, index) => {
-                event.stopPropagation();
-                const point = selectedPolyline.points[index];
-                if (!point) return;
-                setSelection([selectedPolyline.id]);
-                setElevationDrag({
-                  shapeId: selectedPolyline.id,
-                  idx: index,
-                  startClientY: event.nativeEvent.clientY,
-                  startZ: point.z ?? 0,
-                });
-              }}
+              onDragStart={handleElevationDragStart}
             />
           )}
 
@@ -1162,26 +1334,51 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           />
 
           <ScreenshotHelper onReady={handleScreenshotReady} />
-          <CameraAxisTracker onChange={setAxisQuaternion} />
+          {showGizmo && <CameraAxisTracker onChange={setAxisQuaternion} />}
           {flyMode ? (
             <DroneCamera
               shapes={design.shapes}
               playing={playing}
               speed={speed}
             />
-          ) : (
+          ) : isMobile ? (
             <OrbitControls
+              ref={orbitControlsRef}
               makeDefault
               enabled={!elevationDrag}
               enableDamping
               dampingFactor={0.08}
+              screenSpacePanning
               target={[cx, 0, cz]}
               maxPolarAngle={Math.PI / 2}
               minDistance={8}
               maxDistance={Math.max(120, longest * 3)}
               mouseButtons={{
                 LEFT: THREE.MOUSE.ROTATE,
-                MIDDLE: THREE.MOUSE.PAN,
+                MIDDLE: THREE.MOUSE.DOLLY,
+                RIGHT: THREE.MOUSE.PAN,
+              }}
+              touches={{
+                ONE: THREE.TOUCH.ROTATE,
+                TWO: THREE.TOUCH.DOLLY_PAN,
+              }}
+            />
+          ) : (
+            <OrbitControls
+              ref={orbitControlsRef}
+              makeDefault
+              enabled={!elevationDrag}
+              enableDamping
+              dampingFactor={0.08}
+              screenSpacePanning
+              target={[cx, 0, cz]}
+              maxPolarAngle={Math.PI / 2}
+              minDistance={8}
+              maxDistance={Math.max(120, longest * 3)}
+              mouseButtons={{
+                LEFT: THREE.MOUSE.ROTATE,
+                MIDDLE: THREE.MOUSE.DOLLY,
+                RIGHT: THREE.MOUSE.PAN,
               }}
             />
           )}
@@ -1336,13 +1533,21 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
         {selectedPolyline && !flyMode && (
           <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/55 px-3 py-1 text-[11px] text-white/70 shadow-lg backdrop-blur">
-            Drag waypoint handles up or down to edit elevation live
+            {isMobile
+              ? "Touch and drag a waypoint grip up or down to edit elevation"
+              : "Drag waypoint handles up or down to edit elevation live"}
+          </div>
+        )}
+
+        {!flyMode && !isMobile && !selectedPolyline && (
+          <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/50 px-3 py-1 text-[11px] text-white/55 shadow-lg backdrop-blur">
+            Drag to orbit, scroll to zoom, right-drag to pan
           </div>
         )}
 
         {/* No path hint */}
         {!hasPath && (
-          <div className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 text-[11px] text-white/20 select-none">
+          <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-[11px] text-white/20 select-none">
             Draw a race path in 2D to enable fly-through
           </div>
         )}

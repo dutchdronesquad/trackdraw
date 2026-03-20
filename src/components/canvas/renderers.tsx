@@ -13,7 +13,7 @@ import {
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Vector2d } from "konva/lib/types";
-import { smoothPolyline } from "@/lib/geometry";
+import { getPolyline2DPoints, getPolylineArrowMarkers } from "@/lib/geometry";
 import { zToColor } from "@/lib/alt";
 import { m2px, px2m } from "@/lib/units";
 import {
@@ -430,6 +430,20 @@ function TrackShapeNodeComponent({
       dragSnapRef.current
     );
     setDragSnapPreview(null);
+    if (shape.kind === "polyline") {
+      const dx = px2m(resolved.x, designPpm);
+      const dy = px2m(resolved.y, designPpm);
+      event.currentTarget.position({ x: 0, y: 0 });
+      updateShape(shape.id, {
+        points: shape.points.map((point) => ({
+          ...point,
+          x: point.x + dx,
+          y: point.y + dy,
+        })),
+      });
+      return;
+    }
+
     event.currentTarget.position(resolved);
     updateShape(shape.id, {
       x: px2m(resolved.x, designPpm),
@@ -450,8 +464,14 @@ function TrackShapeNodeComponent({
     <Group
       key={shape.id}
       ref={shapeRef}
-      x={m2px(shape.x, designPpm) + (groupDragOffsetPx?.x ?? 0)}
-      y={m2px(shape.y, designPpm) + (groupDragOffsetPx?.y ?? 0)}
+      x={
+        m2px(shape.kind === "polyline" ? 0 : shape.x, designPpm) +
+        (groupDragOffsetPx?.x ?? 0)
+      }
+      y={
+        m2px(shape.kind === "polyline" ? 0 : shape.y, designPpm) +
+        (groupDragOffsetPx?.y ?? 0)
+      }
       rotation={shape.rotation}
       draggable={
         allowInteraction &&
@@ -553,6 +573,7 @@ function TrackShapeNodeComponent({
             dragSnapRef={dragSnapRef}
             effectiveVertexSel={effectiveVertexSel}
             hoveredWaypoint={hoveredWaypoint}
+            isMobile={isMobile}
             isSelected={isSelected}
             path={shape}
             resolveWaypointDragPosition={resolveWaypointDragPosition}
@@ -726,8 +747,10 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
       };
     }
     case "polyline": {
-      const points =
-        (shape.smooth ?? true) ? smoothPolyline(shape.points) : shape.points;
+      const points = getPolyline2DPoints(shape.points, {
+        closed: shape.closed ?? false,
+        smooth: true,
+      });
       if (!points.length) return null;
       const pxPoints = points.map((point) => ({
         x: m2px(point.x, ppm),
@@ -735,7 +758,7 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
       }));
       const xs = pxPoints.map((point) => point.x);
       const ys = pxPoints.map((point) => point.y);
-      const strokePx = m2px(shape.strokeWidth ?? 0.18, ppm);
+      const strokePx = m2px(shape.strokeWidth ?? 0.26, ppm);
       return {
         x: Math.min(...xs) - strokePx,
         y: Math.min(...ys) - strokePx,
@@ -1074,6 +1097,7 @@ interface PolylineShapeContentProps {
   dragSnapRef: React.MutableRefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
+  isMobile: boolean;
   isSelected: boolean;
   path: PolylineShape;
   resolveWaypointDragPosition: (
@@ -1097,6 +1121,7 @@ function PolylineShapeContent({
   dragSnapRef,
   effectiveVertexSel,
   hoveredWaypoint,
+  isMobile,
   isSelected,
   path,
   resolveWaypointDragPosition,
@@ -1107,19 +1132,29 @@ function PolylineShapeContent({
   zmax,
   zmin,
 }: PolylineShapeContentProps) {
-  const strokePx = m2px(path.strokeWidth ?? 0.18, designPpm);
+  const strokePx = m2px(path.strokeWidth ?? 0.26, designPpm);
+  const selectionStrokePx = isMobile
+    ? Math.max(22, strokePx + 18)
+    : Math.max(14, strokePx + 10);
   const smoothPoints = useMemo(
-    () => ((path.smooth ?? true) ? smoothPolyline(path.points) : path.points),
-    [path.points, path.smooth]
-  );
-  const pointsPxMemo = useMemo(
     () =>
-      path.points.flatMap((point) => [
-        m2px(point.x, designPpm),
-        m2px(point.y, designPpm),
-      ]),
-    [designPpm, path.points]
+      getPolyline2DPoints(path.points, {
+        closed: path.closed ?? false,
+        smooth: true,
+      }),
+    [path.closed, path.points]
   );
+  const pointsPxMemo = useMemo(() => {
+    const basePoints =
+      path.closed && path.points.length > 1
+        ? [...path.points, path.points[0]]
+        : path.points;
+
+    return basePoints.flatMap((point) => [
+      m2px(point.x, designPpm),
+      m2px(point.y, designPpm),
+    ]);
+  }, [designPpm, path.closed, path.points]);
   const smoothPx = useMemo(
     () =>
       smoothPoints.flatMap((point) => [
@@ -1128,70 +1163,103 @@ function PolylineShapeContent({
       ]),
     [designPpm, smoothPoints]
   );
+  const arrowMarkers = useMemo(
+    () =>
+      path.showArrows
+        ? getPolylineArrowMarkers(path.points, path.arrowSpacing ?? 15, {
+            closed: path.closed ?? false,
+            samplesPerSegment: 10,
+          })
+        : [],
+    [path.arrowSpacing, path.closed, path.points, path.showArrows]
+  );
   const color = path.color ?? "#3b82f6";
+  const waypointRadius = Math.max(4, m2px(0.08, designPpm));
+  const waypointTouchRadius = isMobile
+    ? Math.max(14, waypointRadius * 2.75)
+    : waypointRadius;
+
+  const handlePathSelect = (
+    event: KonvaEventObject<MouseEvent | TouchEvent>
+  ) => {
+    event.cancelBubble = true;
+    setSelection([path.id]);
+    setVertexSel(null);
+  };
 
   if (!pointsPxMemo.length) return null;
 
   return (
     <>
+      {allowInteraction && (
+        <Line
+          points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
+          stroke="#000000"
+          strokeWidth={selectionStrokePx}
+          opacity={0.001}
+          lineCap="round"
+          lineJoin="round"
+          onMouseDown={handlePathSelect}
+          onTap={handlePathSelect}
+        />
+      )}
       {isSelected && (
         <Line
-          points={pointsPxMemo}
+          points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
           stroke="#3b82f6"
           strokeWidth={strokePx + 4}
           lineCap="round"
+          lineJoin="round"
           opacity={0.3}
           listening={false}
         />
       )}
       <Group listening={false}>
-        {path.points.map((point, index) => {
-          const pct =
-            path.points.length > 1 ? index / (path.points.length - 1) : 0;
-          const zColor = zToColor(point.z ?? 0, zmin, zmax);
-          const sampleIndex =
-            path.points.length <= 1
-              ? 0
-              : Math.round(
-                  (index / (path.points.length - 1)) *
-                    Math.max(0, smoothPoints.length - 2)
-                );
-          const segment = smoothPx.slice(sampleIndex * 2, sampleIndex * 2 + 4);
-          if (segment.length < 4) return null;
-          const segmentColor = path.color ? color : zColor;
+        <Line
+          points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
+          stroke={
+            path.color ? color : zToColor(path.points.at(0)?.z ?? 0, zmin, zmax)
+          }
+          strokeWidth={strokePx}
+          lineCap="round"
+          lineJoin="round"
+          opacity={0.92}
+        />
+        {arrowMarkers.map((marker, index) => {
+          const arrowLength = Math.max(12, strokePx * 7);
+          const tailLength = arrowLength * 0.55;
+          const x = m2px(marker.x, designPpm);
+          const y = m2px(marker.y, designPpm);
+          const dx = Math.cos(marker.angle);
+          const dy = Math.sin(marker.angle);
+
           return (
-            <Line
-              key={`${path.id}-seg-${index}`}
-              points={segment}
-              stroke={segmentColor}
-              strokeWidth={strokePx}
+            <Arrow
+              key={`${path.id}-flow-${index}`}
+              points={[
+                x - dx * tailLength * 0.5,
+                y - dy * tailLength * 0.5,
+                x + dx * tailLength,
+                y + dy * tailLength,
+              ]}
+              stroke={color}
+              fill={color}
+              strokeWidth={Math.max(1.2, strokePx * 0.9)}
+              pointerLength={Math.max(8, strokePx * 2.8)}
+              pointerWidth={Math.max(7, strokePx * 2.2)}
+              opacity={0.82}
               lineCap="round"
               lineJoin="round"
-              opacity={Math.max(0.4, 1 - pct * 0.15)}
+              pointerAtEnding
             />
           );
         })}
-        {path.showArrows && path.points.length >= 2 && (
-          <Arrow
-            points={smoothPx}
-            stroke={color}
-            fill={color}
-            strokeWidth={strokePx}
-            pointerLength={Math.max(10, strokePx * 3)}
-            pointerWidth={Math.max(8, strokePx * 2)}
-            lineCap="round"
-            lineJoin="round"
-            pointerAtEnding
-            pointerAtBeginning
-          />
-        )}
       </Group>
       {allowInteraction &&
         !path.locked &&
         path.points.map((point, index) => {
           const x = m2px(point.x, designPpm);
           const y = m2px(point.y, designPpm);
-          const radius = Math.max(4, m2px(0.08, designPpm));
           const active =
             effectiveVertexSel &&
             effectiveVertexSel.shapeId === path.id &&
@@ -1200,64 +1268,95 @@ function PolylineShapeContent({
             hoveredWaypoint?.shapeId === path.id &&
             hoveredWaypoint.idx === index;
 
+          const handleDragStart = (event: KonvaEventObject<DragEvent>) => {
+            event.cancelBubble = true;
+            dragSnapRef.current = !(
+              event.evt.altKey ||
+              event.evt.metaKey ||
+              event.evt.shiftKey
+            );
+            setDragSnapPreview(null);
+          };
+
+          const handleDragMove = (event: KonvaEventObject<DragEvent>) => {
+            event.cancelBubble = true;
+            const current = event.target.position();
+            const resolved = resolveWaypointDragPosition(
+              current,
+              dragSnapRef.current
+            );
+            const isSnapping =
+              Math.abs(current.x - resolved.x) > 0.5 ||
+              Math.abs(current.y - resolved.y) > 0.5;
+            setDragSnapPreview(isSnapping ? resolved : null);
+          };
+
+          const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
+            event.cancelBubble = true;
+            const resolved = resolveWaypointDragPosition(
+              event.target.position(),
+              dragSnapRef.current
+            );
+            setDragSnapPreview(null);
+            event.target.position(resolved);
+            const points: PolylinePoint[] = path.points.map(
+              (candidate, candidateIndex) =>
+                candidateIndex === index
+                  ? {
+                      ...candidate,
+                      x: px2m(resolved.x, designPpm),
+                      y: px2m(resolved.y, designPpm),
+                    }
+                  : candidate
+            );
+            updateShape(path.id, { points });
+          };
+
+          const handlePointerDown = (
+            event: KonvaEventObject<MouseEvent | TouchEvent>
+          ) => {
+            event.cancelBubble = true;
+            setSelection([path.id]);
+            setVertexSel({ shapeId: path.id, idx: index });
+          };
+
           return (
-            <Circle
+            <Group
               key={`${path.id}-vh-${index}`}
-              x={x}
-              y={y}
-              radius={hovered ? radius * 1.6 : radius}
-              fill={active ? "#3b82f6" : hovered ? "#f59e0b" : "#1e293b"}
-              stroke={active ? "#ffffff" : hovered ? "#ffffff" : "#3b82f6"}
-              strokeWidth={hovered ? 2.5 : 2}
-              draggable
-              dragBoundFunc={dragBound}
-              onDragStart={(event) => {
-                event.cancelBubble = true;
-                dragSnapRef.current = !(
-                  event.evt.altKey ||
-                  event.evt.metaKey ||
-                  event.evt.shiftKey
-                );
-                setDragSnapPreview(null);
-              }}
-              onDragMove={(event) => {
-                event.cancelBubble = true;
-                const current = event.target.position();
-                const resolved = resolveWaypointDragPosition(
-                  current,
-                  dragSnapRef.current
-                );
-                const isSnapping =
-                  Math.abs(current.x - resolved.x) > 0.5 ||
-                  Math.abs(current.y - resolved.y) > 0.5;
-                setDragSnapPreview(isSnapping ? resolved : null);
-              }}
-              onDragEnd={(event) => {
-                event.cancelBubble = true;
-                const resolved = resolveWaypointDragPosition(
-                  event.target.position(),
-                  dragSnapRef.current
-                );
-                setDragSnapPreview(null);
-                event.target.position(resolved);
-                const points: PolylinePoint[] = path.points.map(
-                  (candidate, candidateIndex) =>
-                    candidateIndex === index
-                      ? {
-                          ...candidate,
-                          x: px2m(resolved.x, designPpm),
-                          y: px2m(resolved.y, designPpm),
-                        }
-                      : candidate
-                );
-                updateShape(path.id, { points });
-              }}
-              onMouseDown={(event) => {
-                event.cancelBubble = true;
-                setSelection([path.id]);
-                setVertexSel({ shapeId: path.id, idx: index });
-              }}
-            />
+              x={isMobile ? x : 0}
+              y={isMobile ? y : 0}
+              draggable={isMobile}
+              dragBoundFunc={isMobile ? dragBound : undefined}
+              onDragStart={isMobile ? handleDragStart : undefined}
+              onDragMove={isMobile ? handleDragMove : undefined}
+              onDragEnd={isMobile ? handleDragEnd : undefined}
+              onMouseDown={handlePointerDown}
+              onTap={handlePointerDown}
+            >
+              {isMobile && (
+                <Circle
+                  x={0}
+                  y={0}
+                  radius={waypointTouchRadius}
+                  fill="#000000"
+                  opacity={0.001}
+                />
+              )}
+              <Circle
+                x={isMobile ? 0 : x}
+                y={isMobile ? 0 : y}
+                radius={hovered ? waypointRadius * 1.6 : waypointRadius}
+                fill={active ? "#3b82f6" : hovered ? "#f59e0b" : "#1e293b"}
+                stroke={active ? "#ffffff" : hovered ? "#ffffff" : "#3b82f6"}
+                strokeWidth={hovered ? 2.5 : 2}
+                draggable={!isMobile}
+                dragBoundFunc={!isMobile ? dragBound : undefined}
+                onDragStart={!isMobile ? handleDragStart : undefined}
+                onDragMove={!isMobile ? handleDragMove : undefined}
+                onDragEnd={!isMobile ? handleDragEnd : undefined}
+                listening={!isMobile}
+              />
+            </Group>
           );
         })}
     </>

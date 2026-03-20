@@ -10,7 +10,7 @@ import type {
   LadderShape,
   DiveGateShape,
 } from "../types";
-import { smoothPolyline } from "../geometry";
+import { getPolyline2DPoints } from "../geometry";
 import {
   getCone2DShape,
   getDiveGate2DShape,
@@ -76,15 +76,15 @@ function labelToSvg(s: LabelShape, ppm: number): string {
 }
 
 function polylineToSvg(s: PolylineShape, ppm: number): string {
-  const pts =
-    s.smooth && s.points.length >= 3
-      ? smoothPolyline(s.points)
-      : s.points.map(({ x, y }) => ({ x, y }));
+  const pts = getPolyline2DPoints(s.points, {
+    closed: s.closed ?? false,
+    smooth: true,
+  });
   if (pts.length < 2) return "";
   const d = pts
     .map((p, i) => `${i === 0 ? "M" : "L"}${m(p.x, ppm)},${m(p.y, ppm)}`)
     .join(" ");
-  const sw = m(s.strokeWidth ?? 0.18, ppm);
+  const sw = m(s.strokeWidth ?? 0.26, ppm);
   const color = s.color ?? "#3b82f6";
   const closed = s.closed ? " Z" : "";
   // glow pass behind + crisp line on top

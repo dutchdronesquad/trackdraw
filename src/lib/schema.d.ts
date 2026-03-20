@@ -48,6 +48,7 @@ export const polylineShape = baseShape.extend({
   closed: z.boolean().optional(),
   strokeWidth: z.number().positive().optional(),
   showArrows: z.boolean().optional(),
+  arrowSpacing: z.number().positive().optional(),
 });
 
 export const shape = z.discriminatedUnion("kind", [

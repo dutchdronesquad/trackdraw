@@ -12,12 +12,14 @@ import {
   LayoutGrid,
   Lock,
   Monitor,
+  PencilLine,
   Scan,
   Share2,
   SlidersHorizontal,
   SquareMousePointer,
   Trash2,
   Unlock,
+  X,
 } from "lucide-react";
 import Inspector from "@/components/Inspector";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
@@ -36,6 +38,12 @@ export type EditorViewportTab = "2d" | "3d";
 
 interface EditorMobilePanelsProps {
   activeTool: EditorTool;
+  draftPathActive: boolean;
+  draftPathCanClose: boolean;
+  draftPathLength: number;
+  draftPathPointCount: number;
+  hasSelectedPolyline: boolean;
+  pathBuilderPinnedOpen: boolean;
   mobileInspectorOpen: boolean;
   mobileMultiSelectEnabled: boolean;
   mobileGizmoEnabled: boolean;
@@ -51,12 +59,15 @@ interface EditorMobilePanelsProps {
   onDismissMobileOverride: () => void;
   onFitView: () => void;
   onDeleteSelection: () => void;
+  onCancelPath: () => void;
   onDuplicateSelection: () => void;
   onExitMobileMultiSelect: () => void;
+  onFinishPath: () => void;
   onToggleSelectionLock: () => void;
   onOpenInspector: () => void;
   onOpenReadOnlyMenu: () => void;
   onOpenTools: () => void;
+  onResumeSelectedPath: () => void;
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSelectTool: (tool: EditorTool) => void;
@@ -64,6 +75,7 @@ interface EditorMobilePanelsProps {
   onSetReadOnlyMenuOpen: (open: boolean) => void;
   onShare: () => void;
   onStartNewProject: () => void;
+  onUndoPathPoint: () => void;
   onImport: () => void;
   onExport: () => void;
   onTabChange: (tab: EditorViewportTab) => void;
@@ -71,6 +83,12 @@ interface EditorMobilePanelsProps {
 
 export function EditorMobilePanels({
   activeTool,
+  draftPathActive,
+  draftPathCanClose,
+  draftPathLength,
+  draftPathPointCount,
+  hasSelectedPolyline,
+  pathBuilderPinnedOpen,
   mobileInspectorOpen,
   mobileMultiSelectEnabled,
   mobileGizmoEnabled,
@@ -85,13 +103,16 @@ export function EditorMobilePanels({
   onCloseInspector,
   onDismissMobileOverride,
   onDeleteSelection,
+  onCancelPath,
   onDuplicateSelection,
   onExitMobileMultiSelect,
+  onFinishPath,
   onToggleSelectionLock,
   onFitView,
   onOpenInspector,
   onOpenReadOnlyMenu,
   onOpenTools,
+  onResumeSelectedPath,
   onSetMobileRulersEnabled,
   onSetMobileGizmoEnabled,
   onSelectTool,
@@ -99,10 +120,13 @@ export function EditorMobilePanels({
   onSetReadOnlyMenuOpen,
   onShare,
   onStartNewProject,
+  onUndoPathPoint,
   onImport,
   onExport,
   onTabChange,
 }: EditorMobilePanelsProps) {
+  const mobileOverlaySurfaceClassName =
+    "pointer-events-auto w-full max-w-sm rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-2 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur";
   const [isLandscapeMobile, setIsLandscapeMobile] = useState(false);
 
   useEffect(() => {
@@ -142,6 +166,14 @@ export function EditorMobilePanels({
   };
 
   const canOpenInspector = selectedCount <= 1 && !mobileMultiSelectEnabled;
+  const showPathBuilderOverlay =
+    !readOnly && tab === "2d" && (pathBuilderPinnedOpen || draftPathActive);
+  const showResumePathButton =
+    !readOnly &&
+    tab === "2d" &&
+    hasSelectedPolyline &&
+    !showPathBuilderOverlay &&
+    !mobileMultiSelectEnabled;
   const mobileStatusTitle = mobileMultiSelectEnabled ? "Multi" : "Tool";
   const mobileStatusValue =
     selectedCount > 0
@@ -215,7 +247,7 @@ export function EditorMobilePanels({
           <ContextOverlayCard
             icon={<Monitor className="size-3.5" />}
             title="Mobile canvas"
-            description="Tap to select, drag items directly to move them, and use empty space or two fingers to navigate the canvas."
+            description="Tap to select, drag items directly to move them, and use two fingers to pan or zoom the canvas."
             dismissLabel="Dismiss mobile hint"
             onDismiss={onDismissMobileOverride}
           />
@@ -293,6 +325,101 @@ export function EditorMobilePanels({
         </div>
       )}
 
+      {showResumePathButton && (
+        <div
+          className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
+          style={{
+            bottom: isLandscapeMobile
+              ? "calc(4.55rem + env(safe-area-inset-bottom))"
+              : "calc(5.05rem + env(safe-area-inset-bottom))",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="pointer-events-auto w-full max-w-sm"
+          >
+            <button
+              onClick={onResumeSelectedPath}
+              className="flex w-full items-center justify-between rounded-[1.15rem] border border-white/10 bg-slate-950/86 px-3 py-2.5 text-left text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur transition-colors hover:bg-white/10"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8">
+                  <PencilLine className="size-4 text-white/85" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
+                    Path
+                  </p>
+                  <p className="truncate text-[11px] text-white/62">
+                    Continue editing selected line
+                  </p>
+                </div>
+              </div>
+              <span className="rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-[10px] font-medium text-white/72">
+                Edit
+              </span>
+            </button>
+          </motion.div>
+        </div>
+      )}
+
+      {showPathBuilderOverlay && (
+        <div
+          className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
+          style={{
+            bottom: isLandscapeMobile
+              ? "calc(4.55rem + env(safe-area-inset-bottom))"
+              : "calc(5.05rem + env(safe-area-inset-bottom))",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={mobileOverlaySurfaceClassName}
+          >
+            <div className="flex items-start justify-between gap-3 px-1 pb-2">
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
+                  Path builder
+                </p>
+                <p className="truncate text-[10px] text-white/55">
+                  {draftPathPointCount > 0
+                    ? `${draftPathPointCount} points · ${draftPathLength.toFixed(1)} m`
+                    : "Tap the canvas to place the first point"}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                onClick={onUndoPathPoint}
+                disabled={draftPathPointCount === 0}
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+              >
+                <ArrowRight className="size-4 rotate-180" />
+                <span>Undo</span>
+              </button>
+              <button
+                onClick={onFinishPath}
+                disabled={draftPathPointCount < 2}
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+              >
+                <PencilLine className="size-4" />
+                <span>{draftPathCanClose ? "Close" : "Finish"}</span>
+              </button>
+              <button
+                onClick={onCancelPath}
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
+              >
+                <X className="size-4" />
+                <span>Cancel</span>
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {!readOnly && tab === "2d" && mobileMultiSelectEnabled && (
         <div
           className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
@@ -305,9 +432,9 @@ export function EditorMobilePanels({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="pointer-events-auto w-full max-w-sm rounded-[1.2rem] border border-white/10 bg-slate-950/88 p-2 text-white shadow-[0_16px_34px_rgba(15,23,42,0.34)] backdrop-blur"
+            className={mobileOverlaySurfaceClassName}
           >
-            <div className="px-1 pb-2">
+            <div className="flex items-start justify-between gap-3 px-1 pb-2">
               <div className="min-w-0">
                 <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
                   {selectedCount > 0
@@ -315,7 +442,7 @@ export function EditorMobilePanels({
                     : "Multi-select"}
                 </p>
                 <p className="truncate text-[10px] text-white/55">
-                  Tap items to add or remove them. Use Select to exit.
+                  Tap items to add or remove them.
                 </p>
               </div>
             </div>

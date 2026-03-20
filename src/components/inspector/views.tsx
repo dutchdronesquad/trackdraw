@@ -8,6 +8,8 @@ import { shapeKindLabels } from "@/lib/editor-tools";
 import type { FieldSpec, Shape, TrackDesign } from "@/lib/types";
 import {
   Copy,
+  FlipHorizontal2,
+  GitMerge,
   Lock,
   LockOpen,
   Plus,
@@ -122,6 +124,7 @@ interface MultiInspectorViewProps {
   selectedShapes: Shape[];
   selection: string[];
   duplicateShapes: (ids: string[]) => void;
+  joinPolylines: (ids: string[]) => string | null;
   removeShapes: (ids: string[]) => void;
   setSelection: Dispatch<SetStateAction<string[]>> | ((ids: string[]) => void);
 }
@@ -130,6 +133,7 @@ export function MultiInspectorView({
   selectedShapes,
   selection,
   duplicateShapes,
+  joinPolylines,
   removeShapes,
   setSelection,
 }: MultiInspectorViewProps) {
@@ -149,6 +153,9 @@ export function MultiInspectorView({
       divegate: 0,
     }
   );
+  const polylineIds = selectedShapes
+    .filter((shape) => shape.kind === "polyline" && !shape.closed)
+    .map((shape) => shape.id);
 
   return (
     <div className="flex h-full flex-col">
@@ -156,6 +163,14 @@ export function MultiInspectorView({
         title={`${selectedShapes.length} selected`}
         actions={
           <>
+            {polylineIds.length >= 2 && (
+              <IconBtn
+                onClick={() => joinPolylines(polylineIds)}
+                title="Join paths"
+              >
+                <GitMerge className="size-3" />
+              </IconBtn>
+            )}
             <IconBtn
               onClick={() => duplicateShapes(selection)}
               title="Duplicate"
@@ -191,6 +206,15 @@ export function MultiInspectorView({
               </div>
             ))}
         </div>
+        {polylineIds.length >= 2 && (
+          <button
+            className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border px-3 text-[11px] transition-colors lg:h-8"
+            onClick={() => joinPolylines(polylineIds)}
+          >
+            <GitMerge className="size-3.5" />
+            Join selected paths
+          </button>
+        )}
       </div>
       <ElevationChart />
     </div>
@@ -217,6 +241,23 @@ export function SingleInspectorView({
   setHoveredWaypoint,
 }: SingleInspectorViewProps) {
   const defaultColor = shape.color ?? "#3b82f6";
+  const polylineAnchor =
+    shape.kind === "polyline" && shape.points.length
+      ? shape.points.reduce(
+          (accumulator, point) => ({
+            x: accumulator.x + point.x,
+            y: accumulator.y + point.y,
+          }),
+          { x: 0, y: 0 }
+        )
+      : null;
+  const anchorPosition =
+    polylineAnchor && shape.kind === "polyline"
+      ? {
+          x: polylineAnchor.x / shape.points.length,
+          y: polylineAnchor.y / shape.points.length,
+        }
+      : { x: shape.x, y: shape.y };
 
   return (
     <div className="flex h-full flex-col">
@@ -259,13 +300,13 @@ export function SingleInspectorView({
           <Section title="Transform">
             <Row label="X">
               <Num
-                value={fmt(shape.x)}
+                value={fmt(anchorPosition.x)}
                 onChange={(value) => updateShape(shape.id, { x: value })}
               />
             </Row>
             <Row label="Y">
               <Num
-                value={fmt(shape.y)}
+                value={fmt(anchorPosition.y)}
                 onChange={(value) => updateShape(shape.id, { y: value })}
               />
             </Row>
@@ -498,7 +539,7 @@ export function SingleInspectorView({
             <Section title="Race Line">
               <Row label="Stroke">
                 <Num
-                  value={shape.strokeWidth ?? 0.18}
+                  value={shape.strokeWidth ?? 0.26}
                   onChange={(value) =>
                     updateShape(shape.id, { strokeWidth: value })
                   }
@@ -506,20 +547,7 @@ export function SingleInspectorView({
                   min={0.05}
                 />
               </Row>
-              <Row label="Smooth">
-                <label className="flex h-full cursor-pointer items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="accent-foreground size-4 lg:size-3"
-                    checked={shape.smooth ?? true}
-                    onChange={(event) =>
-                      updateShape(shape.id, { smooth: event.target.checked })
-                    }
-                  />
-                  <span className="text-muted-foreground text-[11px]">on</span>
-                </label>
-              </Row>
-              <Row label="Arrows">
+              <Row label="Flow">
                 <label className="flex h-full cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
@@ -532,9 +560,36 @@ export function SingleInspectorView({
                     }
                   />
                   <span className="text-muted-foreground text-[11px]">
-                    show
+                    show direction
                   </span>
                 </label>
+              </Row>
+              {shape.showArrows && (
+                <Row label="Every (m)">
+                  <Num
+                    value={shape.arrowSpacing ?? 15}
+                    onChange={(value) =>
+                      updateShape(shape.id, {
+                        arrowSpacing: Math.max(1, Math.round(value * 2) / 2),
+                      })
+                    }
+                    step={0.5}
+                    min={1}
+                  />
+                </Row>
+              )}
+              <Row label="Direction">
+                <button
+                  className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-8 items-center gap-2 rounded-md border px-2.5 text-[11px] transition-colors lg:h-7 lg:px-2"
+                  onClick={() => {
+                    updateShape(shape.id, {
+                      points: [...shape.points].reverse(),
+                    });
+                  }}
+                >
+                  <FlipHorizontal2 className="size-3" />
+                  Flip path
+                </button>
               </Row>
 
               <div className="border-border/50 bg-background/60 mt-2 overflow-hidden rounded-xl border">
@@ -555,8 +610,9 @@ export function SingleInspectorView({
                   </div>
                 </div>
 
-                <div className="border-border/30 bg-amber-400/5 border-b px-3 py-2 text-[11px] text-amber-500/80">
-                  Tip: select this race line in 3D and drag the waypoint handles vertically to adjust elevation directly.
+                <div className="border-border/30 border-b bg-amber-400/5 px-3 py-2 text-[11px] text-amber-500/80">
+                  Tip: select this race line in 3D and drag the waypoint handles
+                  vertically to adjust elevation directly.
                 </div>
 
                 <div className="max-h-64 overflow-y-auto lg:max-h-56">

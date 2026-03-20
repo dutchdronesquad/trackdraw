@@ -79,6 +79,7 @@ export interface PolylineShape extends BaseShape {
   closed?: boolean;
   strokeWidth?: number; // m
   showArrows?: boolean;
+  arrowSpacing?: number; // m
   smooth?: boolean;
 }
 
