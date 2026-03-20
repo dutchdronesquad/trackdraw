@@ -101,7 +101,7 @@ export default function ElevationChart() {
 
   if (!path || !chartData) {
     return (
-      <div className="border-border bg-card/50 text-muted-foreground flex shrink-0 items-center justify-center border-t px-4 py-4 text-xs">
+      <div className="border-border bg-card/50 text-muted-foreground -mx-4 flex shrink-0 items-center justify-center border-t px-4 py-4 text-xs lg:-mx-3 lg:px-3">
         No race line selected
       </div>
     );
@@ -122,7 +122,7 @@ export default function ElevationChart() {
   } = chartData;
 
   return (
-    <div className="border-border bg-card/50 shrink-0 border-t px-3 py-3">
+    <div className="border-border bg-card/50 -mx-4 shrink-0 border-t px-4 py-3 lg:-mx-3 lg:px-3">
       <div className="mb-2 flex items-baseline justify-between">
         <span className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
           Elevation Profile

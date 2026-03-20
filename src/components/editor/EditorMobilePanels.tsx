@@ -129,6 +129,28 @@ export function EditorMobilePanels({
     "pointer-events-auto w-full max-w-sm rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-2 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur";
   const [isLandscapeMobile, setIsLandscapeMobile] = useState(false);
 
+  const blurActiveControl = () => {
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement) {
+      activeElement.blur();
+    }
+  };
+
+  const openInspectorDrawer = () => {
+    blurActiveControl();
+    onOpenInspector();
+  };
+
+  const openToolsDrawer = () => {
+    blurActiveControl();
+    onOpenTools();
+  };
+
+  const openReadOnlyDrawer = () => {
+    blurActiveControl();
+    onOpenReadOnlyMenu();
+  };
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(
       "(max-width: 1023px) and (orientation: landscape)"
@@ -225,7 +247,7 @@ export function EditorMobilePanels({
           style={{ bottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}
         >
           <motion.button
-            onClick={onOpenReadOnlyMenu}
+            onClick={openReadOnlyDrawer}
             initial={{ opacity: 0, y: 10, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             whileTap={{ scale: 0.97 }}
@@ -283,7 +305,7 @@ export function EditorMobilePanels({
               </span>
             </button>
             <button
-              onClick={onOpenTools}
+              onClick={openToolsDrawer}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <LayoutGrid className="size-3.5" />
@@ -307,7 +329,7 @@ export function EditorMobilePanels({
               <span className="landscape:sr-only">Fit</span>
             </button>
             <button
-              onClick={onOpenInspector}
+              onClick={openInspectorDrawer}
               disabled={!canOpenInspector}
               className={cn(
                 "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
@@ -487,7 +509,7 @@ export function EditorMobilePanels({
           style={{ bottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}
         >
           <motion.button
-            onClick={onOpenTools}
+            onClick={openToolsDrawer}
             initial={{ opacity: 0, y: 10, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             whileTap={{ scale: 0.97 }}
@@ -509,7 +531,7 @@ export function EditorMobilePanels({
             if (!open) onCloseInspector();
           }}
         >
-          <DrawerContent className="border-border/60 bg-background max-h-[72dvh] gap-0 overflow-hidden [overscroll-behavior:contain] rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
+          <DrawerContent className="border-border/60 bg-background max-h-[92dvh] min-h-[72dvh] gap-0 overflow-hidden [overscroll-behavior:contain] rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader(
               selectedCount === 0 ? "Design" : "Inspector",
               selectedCount === 0
@@ -517,7 +539,7 @@ export function EditorMobilePanels({
                 : "Selection properties",
               "brand"
             )}
-            <div className="min-h-0 flex-1 overflow-hidden [overscroll-behavior:contain]">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <Inspector />
             </div>
           </DrawerContent>

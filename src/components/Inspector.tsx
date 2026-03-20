@@ -32,6 +32,7 @@ export default function Inspector() {
     return (
       <EmptyInspectorView
         design={design}
+        setSelection={setSelection}
         updateField={updateField}
         updateDesignMeta={updateDesignMeta}
       />

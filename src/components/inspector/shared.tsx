@@ -13,8 +13,8 @@ export function PanelHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="border-border bg-card/95 supports-[backdrop-filter]:bg-card/85 sticky top-0 z-10 flex h-11 shrink-0 items-center justify-between border-b px-4 backdrop-blur lg:h-9 lg:px-3">
-      <span className="text-foreground/70 text-xs font-medium lg:text-[11px]">
+    <div className="border-border bg-card/95 supports-[backdrop-filter]:bg-card/85 sticky top-0 z-10 flex h-11 shrink-0 items-center justify-between border-b px-4 shadow-[0_1px_0_rgba(255,255,255,0.03)] backdrop-blur lg:h-9 lg:px-3">
+      <span className="text-foreground/80 text-xs font-semibold tracking-[0.08em] uppercase lg:text-[10px]">
         {title}
       </span>
       {actions && <div className="flex gap-1 lg:gap-0.5">{actions}</div>}
@@ -30,8 +30,8 @@ export function Row({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-8 items-center gap-2 py-0.5">
-      <span className="text-muted-foreground/80 w-[72px] shrink-0 text-[11px] lg:w-[88px]">
+    <div className="flex min-h-9 items-center gap-3 py-1 lg:min-h-8 lg:py-0.5">
+      <span className="text-muted-foreground/80 w-[78px] shrink-0 text-[11px] lg:w-[88px]">
         {label}
       </span>
       <div className="min-w-0 flex-1">{children}</div>
