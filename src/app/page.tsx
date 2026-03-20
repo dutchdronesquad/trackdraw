@@ -45,20 +45,21 @@ import {
   ArrowRight,
   Check,
   CheckCircle2,
-  ChevronDown,
+  ClipboardCheck,
   Orbit,
   Route,
   Share2,
   Waves,
   FileText,
 } from "lucide-react";
-import { SectionScreenshot } from "@/components/landing/ScreenshotFrame";
+import { Screenshot } from "@/components/landing/Screenshot";
+import { FaqAccordion } from "@/components/landing/FaqAccordion";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
-  FadeUp,
-  StaggerGrid,
-  StaggerItem,
-} from "@/components/landing/LandingClient";
+  Reveal,
+  RevealStagger,
+  RevealStaggerItem,
+} from "@/components/landing/Motion";
 
 // ── Brand logo ──────────────────────────────────────────────────
 function BrandLogo({
@@ -121,50 +122,64 @@ const features = [
   {
     icon: Route,
     color: "text-brand-primary",
-    bg: "bg-brand-primary/10",
+    bg: "bg-brand-primary/12",
+    border: "border-brand-primary/20",
+    surface:
+      "from-brand-primary/[0.12] via-brand-primary/[0.03] to-transparent",
     glow: "#1E93DB",
     title: "True-to-scale canvas",
     text: "Set field dimensions, drop elements and snap to a real-scale grid. What you design is what the crew builds.",
   },
   {
-    icon: Orbit,
-    color: "text-purple-400",
-    bg: "bg-purple-500/10",
-    glow: "#a855f7",
-    title: "3D preview",
-    text: "Switch from the flat 2D plan to a live 3D scene in one click. No extra software needed.",
+    icon: FileText,
+    color: "text-brand-secondary",
+    bg: "bg-brand-secondary/12",
+    border: "border-brand-secondary/20",
+    surface:
+      "from-brand-secondary/[0.13] via-brand-secondary/[0.035] to-transparent",
+    glow: "#F0761D",
+    title: "Built-in obstacle set",
+    text: "Design with the elements race crews actually use: gates, flags, cones, start pads, ladders, dive gates, labels and race lines.",
   },
   {
     icon: Waves,
-    color: "text-brand-secondary",
-    bg: "bg-brand-secondary/10",
-    glow: "#F0761D",
-    title: "Elevation on the race line",
-    text: "Assign altitude to every waypoint and catch vertical problems before you're on-site.",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/12",
+    border: "border-emerald-500/20",
+    surface: "from-emerald-500/[0.13] via-emerald-500/[0.035] to-transparent",
+    glow: "#34d399",
+    title: "Elevation-aware planning",
+    text: "Add height to the race line while you plan so vertical problems show up before anyone starts setting the course.",
   },
   {
     icon: Share2,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    glow: "#34d399",
-    title: "Share with one link",
-    text: "Send one link to pilots, judges and crew. Everyone sees the same plan in a clean read-only view, no app or account needed.",
+    color: "text-violet-400",
+    bg: "bg-violet-500/12",
+    border: "border-violet-500/20",
+    surface: "from-violet-500/[0.13] via-violet-500/[0.035] to-transparent",
+    glow: "#a855f7",
+    title: "Shared review links",
+    text: "Send one current plan to pilots, judges and crew without asking anyone to install or log in first.",
   },
   {
-    icon: CheckCircle2,
+    icon: ClipboardCheck,
     color: "text-sky-400",
-    bg: "bg-sky-500/10",
+    bg: "bg-sky-500/12",
+    border: "border-sky-500/20",
+    surface: "from-sky-500/[0.13] via-sky-500/[0.035] to-transparent",
     glow: "#38bdf8",
-    title: "Mobile-ready editing",
-    text: "Make practical edits on phones with touch navigation, a mobile action bar, long-press multi-select and focused quick actions.",
+    title: "Venue-ready mobile use",
+    text: "Handle practical touch edits on phones and tablets when the real venue forces a quick change.",
   },
   {
     icon: FileText,
-    color: "text-brand-secondary",
-    bg: "bg-brand-secondary/10",
-    glow: "#F0761D",
-    title: "Export for any format",
-    text: "Print-ready PDF, high-res PNG, vector SVG, or JSON. Every export carries the title, field size and scale.",
+    color: "text-rose-400",
+    bg: "bg-rose-500/12",
+    border: "border-rose-500/20",
+    surface: "from-rose-500/[0.13] via-rose-500/[0.035] to-transparent",
+    glow: "#fb7185",
+    title: "Portable deliverables",
+    text: "Turn the design into briefing files, print assets and reusable project data without rebuilding it elsewhere.",
   },
 ];
 
@@ -189,6 +204,14 @@ const faq = [
     q: "Can I use TrackDraw on a tablet at the venue?",
     a: "Yes. The read-only view works on any device, and the editor now supports practical mobile and tablet use as well. For heavier editing, a tablet or laptop is still the most comfortable.",
   },
+  {
+    q: "Do I need an account to start designing?",
+    a: "No. You can open the studio and start designing immediately in the browser. The goal is to keep planning fast, especially when you just need to sketch, revise or share a course.",
+  },
+  {
+    q: "Can I reuse an older track layout later?",
+    a: "Yes. Export the project as JSON and import it again whenever you want to base a new event on an older design.",
+  },
 ];
 
 // ── Page ────────────────────────────────────────────────────────
@@ -197,7 +220,7 @@ export default function Home() {
     "inline-flex min-h-[30px] items-center rounded-full border px-3.5 py-1 text-xs font-medium";
 
   return (
-    <div className="bg-background text-foreground min-h-screen">
+    <div id="top" className="bg-background text-foreground min-h-screen">
       {/* ── Nav ─────────────────────────────────────────────── */}
       <header className="border-border/40 bg-background/75 sticky top-0 z-50 border-b backdrop-blur-xl backdrop-saturate-150">
         <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
@@ -205,6 +228,9 @@ export default function Home() {
             <BrandLogo className="h-8 w-auto sm:h-9" />
           </Link>
           <div className="text-muted-foreground hidden items-center gap-7 text-sm sm:flex">
+            <a href="#top" className="hover:text-foreground transition-colors">
+              Home
+            </a>
             <a
               href="#features"
               className="hover:text-foreground transition-colors"
@@ -244,7 +270,7 @@ export default function Home() {
           <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.45fr] lg:gap-16">
             {/* Left: text */}
             <div>
-              <FadeUp>
+              <Reveal>
                 <div className="flex items-center gap-3">
                   <span
                     className={`border-brand-primary/25 bg-brand-primary/8 text-brand-primary ${heroPillClassName} gap-2`}
@@ -257,9 +283,9 @@ export default function Home() {
                     className={`${heroPillClassName} border-amber-500/30 bg-amber-500/10 font-sans text-amber-500 hover:bg-amber-500/15 hover:text-amber-400`}
                   />
                 </div>
-              </FadeUp>
+              </Reveal>
 
-              <FadeUp delay={0.07} className="mt-5">
+              <Reveal delay={0.07} className="mt-5">
                 <h1 className="text-[clamp(40px,11vw,58px)] leading-[1.04] font-semibold tracking-[-0.04em] sm:leading-[1.08]">
                   Race day starts
                   <br />
@@ -267,18 +293,18 @@ export default function Home() {
                     with a plan.
                   </span>
                 </h1>
-              </FadeUp>
+              </Reveal>
 
-              <FadeUp delay={0.13} className="mt-5">
+              <Reveal delay={0.13} className="mt-5">
                 <p className="text-muted-foreground max-w-sm text-[15px] leading-7">
                   A browser-based track designer for FPV race directors. Draw to
                   scale, preview in 3D, share a read-only link, and make quick
                   edits from mobile when you need to. All before the gates leave
                   the van.
                 </p>
-              </FadeUp>
+              </Reveal>
 
-              <FadeUp
+              <Reveal
                 delay={0.18}
                 className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
               >
@@ -295,9 +321,9 @@ export default function Home() {
                 >
                   See the features
                 </a>
-              </FadeUp>
+              </Reveal>
 
-              <FadeUp delay={0.23}>
+              <Reveal delay={0.23}>
                 <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-2.5">
                   {[
                     "5+ element types",
@@ -316,16 +342,17 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-              </FadeUp>
+              </Reveal>
             </div>
 
             {/* Right: screenshot */}
-            <FadeUp delay={0.12}>
-              <SectionScreenshot
-                src="/assets/screenshots/editor-overview.png"
-                alt="TrackDraw 2D track editor"
+            <Reveal delay={0.12}>
+              <Screenshot
+                src="/assets/screenshots/editor-project-workflow.png"
+                alt="TrackDraw editor overview with active canvas and inspector"
+                className="min-h-[360px]"
               />
-            </FadeUp>
+            </Reveal>
           </div>
         </section>
       </div>
@@ -334,24 +361,34 @@ export default function Home() {
         {/* ── Features grid ────────────────────────────────── */}
         <section id="features" className="border-border/40 border-t">
           <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
-            <FadeUp className="mb-12">
+            <Reveal className="mb-12">
               <Eyebrow>Features</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Everything a race director needs.
+                The planning foundation.
               </h2>
-            </FadeUp>
+              <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
+                TrackDraw gives you a clean base to design a course properly:
+                real field dimensions, the right obstacle set, and enough
+                structure to map the lap before anyone starts building.
+              </p>
+            </Reveal>
 
-            <StaggerGrid className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <RevealStagger className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {features.map((f) => (
-                <StaggerItem key={f.title} className="h-full">
-                  <div className="group border-border/50 bg-card/20 hover:border-border hover:bg-card/40 relative flex h-full flex-col gap-4 overflow-hidden rounded-2xl border p-6 transition-all duration-300">
+                <RevealStaggerItem key={f.title} className="h-full">
+                  <div
+                    className={`group border-border/50 bg-card/20 hover:bg-card/45 relative flex h-full flex-col gap-4 overflow-hidden rounded-2xl border p-6 transition-all duration-300 ${f.border}`}
+                  >
+                    <div
+                      className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${f.surface} opacity-80 transition-opacity duration-300 group-hover:opacity-100`}
+                    />
                     {/* Per-card colour glow in the top-right corner */}
                     <div
                       className="pointer-events-none absolute -top-6 -right-6 size-28 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
                       style={{ background: f.glow }}
                     />
                     <div
-                      className={`relative inline-flex size-9 items-center justify-center rounded-xl border border-white/5 ${f.bg}`}
+                      className={`relative inline-flex size-9 items-center justify-center rounded-xl border border-white/8 ${f.bg}`}
                     >
                       <f.icon className={`size-4 ${f.color}`} />
                     </div>
@@ -362,9 +399,9 @@ export default function Home() {
                       </p>
                     </div>
                   </div>
-                </StaggerItem>
+                </RevealStaggerItem>
               ))}
-            </StaggerGrid>
+            </RevealStagger>
           </div>
         </section>
 
@@ -374,18 +411,107 @@ export default function Home() {
           className="border-border/40 bg-muted/[0.035] border-t"
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
-            <FadeUp className="mb-12 sm:mb-20">
+            <Reveal className="mb-12 sm:mb-20">
               <Eyebrow>In depth</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Two more things worth knowing.
+                From first layout to team hand-off.
               </h2>
-            </FadeUp>
+              <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
+                The tool works best as a sequence: map the course in 2D, check
+                it in 3D, make practical edits when reality changes, then hand
+                the same plan to pilots and crew.
+              </p>
+            </Reveal>
 
             <div className="space-y-16 sm:space-y-28">
-              {/* 3D Preview */}
-              <FadeUp>
-                <div className="grid items-center gap-12 lg:grid-cols-2">
+              <Reveal>
+                <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
+                  <Screenshot
+                    src="/assets/screenshots/editor-element-library.png"
+                    alt="TrackDraw 2D layout editor with obstacle library and course plan"
+                    className="order-last lg:order-first"
+                  />
+                  <div className="order-first lg:order-last">
+                    <div className="border-brand-primary/20 bg-brand-primary/8 text-brand-primary inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-[0.15em] uppercase">
+                      <Route className="size-3" /> 2D Layout
+                    </div>
+                    <h3 className="mt-4 text-xl font-semibold tracking-tight">
+                      Build the course on a field that matches reality.
+                    </h3>
+                    <p className="text-muted-foreground mt-3 text-sm leading-7">
+                      Start with the field dimensions, then place the elements
+                      crews already recognize. That makes the first version of
+                      the plan useful immediately, instead of just being a rough
+                      sketch.
+                    </p>
+                    <ul className="mt-5 space-y-2.5">
+                      {[
+                        "Scale-accurate field dimensions",
+                        "Gates, flags, cones, start pads and larger features",
+                        "Race line and labels for briefing clarity",
+                      ].map((b) => (
+                        <li
+                          key={b}
+                          className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                        >
+                          <CheckCircle2 className="text-brand-primary size-3.5 shrink-0" />{" "}
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal>
+                <div className="grid items-center gap-8 sm:gap-9 lg:grid-cols-[1.28fr_0.72fr] lg:gap-14">
                   <div>
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-emerald-400 uppercase">
+                      <ClipboardCheck className="size-3" /> Fine-Tune
+                    </div>
+                    <h3 className="mt-4 text-xl font-semibold tracking-tight">
+                      Keep editing when the venue forces a change.
+                    </h3>
+                    <p className="text-muted-foreground mt-3 text-sm leading-7">
+                      A good plan changes cleanly. Inspector controls and
+                      mobile-friendly editing make it possible to adjust object
+                      properties, reposition items and keep the design usable
+                      even when the real venue refuses to stay static.
+                    </p>
+                    <ul className="mt-5 space-y-2.5">
+                      {[
+                        "Inspector controls for dimensions, rotation and color",
+                        "Touch-friendly editing on phones and tablets",
+                        "Fast adjustments without leaving the main plan",
+                      ].map((b) => (
+                        <li
+                          key={b}
+                          className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                        >
+                          <CheckCircle2 className="size-3.5 shrink-0 text-emerald-400" />{" "}
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <Screenshot
+                    src="/assets/screenshots/editor-mobile-settings.png"
+                    alt="TrackDraw mobile editor with settings panel open"
+                    aspect="portrait"
+                    accentClassName="bg-emerald-500/16"
+                    className="mx-auto w-full max-w-[205px] self-center sm:max-w-[230px] lg:max-w-[250px]"
+                  />
+                </div>
+              </Reveal>
+
+              <Reveal>
+                <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
+                  <Screenshot
+                    src="/assets/screenshots/editor-3d-flythroug.png"
+                    alt="TrackDraw 3D preview showing the course flow and elevation"
+                    className="order-last lg:order-first"
+                  />
+                  <div className="order-first lg:order-last">
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-purple-400 uppercase">
                       <Orbit className="size-3" /> 3D Preview
                     </div>
@@ -414,42 +540,29 @@ export default function Home() {
                       ))}
                     </ul>
                   </div>
-                  <SectionScreenshot
-                    src="/assets/screenshots/editor-3d.png"
-                    alt="3D view of the track"
-                  />
                 </div>
-              </FadeUp>
+              </Reveal>
 
-              {/* Inspector & Share */}
-              <FadeUp>
-                <div className="grid items-center gap-12 lg:grid-cols-2">
-                  <SectionScreenshot
-                    src="/assets/screenshots/editor-inspector.png"
-                    alt="Element inspector and share panel"
-                    className="order-last lg:order-first"
-                  />
-                  <div className="order-first lg:order-last">
+              <Reveal>
+                <div className="grid items-center gap-8 sm:gap-9 lg:grid-cols-[1.28fr_0.72fr] lg:gap-14">
+                  <div>
                     <div className="border-brand-secondary/20 bg-brand-secondary/8 text-brand-secondary inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-[0.15em] uppercase">
-                      <Share2 className="size-3" /> Inspector & Share
+                      <Share2 className="size-3" /> Hand-Off
                     </div>
                     <h3 className="mt-4 text-xl font-semibold tracking-tight">
-                      Tune every detail, then share.
+                      Give pilots and crew the same current version.
                     </h3>
                     <p className="text-muted-foreground mt-3 text-sm leading-7">
-                      Select any element to edit its properties: dimensions,
-                      rotation, colour and race-line altitude, all in one panel.
-                      Right-click in the 2D editor for quick actions like
-                      duplicate, rotate or delete. When the track is ready, hit
-                      Share and copy the link. Pilots open it on their phone
-                      without an account or app.
+                      A plan only matters if other people can open it. Shared
+                      read-only links and exports turn the layout into something
+                      pilots can review, crew can print and organizers can reuse
+                      later.
                     </p>
                     <ul className="mt-5 space-y-2.5">
                       {[
-                        "Live property panel for every track element",
-                        "Quick context actions directly on the canvas",
-                        "Read-only share link, works on any device",
-                        "PDF, PNG, SVG and JSON export",
+                        "Read-only links that open on any device",
+                        "PDF, PNG and SVG for briefing and print workflows",
+                        "JSON export to archive and reuse layouts later",
                       ].map((b) => (
                         <li
                           key={b}
@@ -461,8 +574,15 @@ export default function Home() {
                       ))}
                     </ul>
                   </div>
+                  <Screenshot
+                    src="/assets/screenshots/editor-share-readonly-mobile.png"
+                    alt="TrackDraw read-only shared view open on mobile"
+                    aspect="portrait"
+                    accentClassName="bg-brand-secondary/18"
+                    className="mx-auto w-full max-w-[205px] self-center sm:max-w-[230px] lg:max-w-[250px]"
+                  />
                 </div>
-              </FadeUp>
+              </Reveal>
             </div>
           </div>
         </section>
@@ -470,25 +590,13 @@ export default function Home() {
         {/* ── FAQ ──────────────────────────────────────────── */}
         <section id="faq" className="border-border/40 border-t">
           <div className="mx-auto w-full max-w-2xl px-6 py-14 sm:py-20">
-            <FadeUp className="mb-10">
+            <Reveal className="mb-10">
               <Eyebrow>FAQ</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">
                 Common questions.
               </h2>
-            </FadeUp>
-            <div className="divide-border/50 divide-y">
-              {faq.map((item, i) => (
-                <details key={item.q} className="group" open={i === 0}>
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-sm font-medium">
-                    {item.q}
-                    <ChevronDown className="text-muted-foreground size-4 shrink-0 transition-transform duration-200 group-open:rotate-180" />
-                  </summary>
-                  <p className="text-muted-foreground pb-5 text-sm leading-6">
-                    {item.a}
-                  </p>
-                </details>
-              ))}
-            </div>
+            </Reveal>
+            <FaqAccordion items={faq} />
           </div>
         </section>
       </main>
