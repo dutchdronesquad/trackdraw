@@ -1257,6 +1257,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       onFlyModeChange?.(flyMode);
     }, [flyMode, onFlyModeChange]);
 
+    const hasPath = design.shapes.some(
+      (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
+    );
+
     useImperativeHandle(ref, () => ({
       screenshot: () => screenshotFnRef.current?.() ?? "",
       startFlyThrough: () => {
@@ -1273,10 +1277,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const handleScreenshotReady = useCallback((fn: () => string) => {
       screenshotFnRef.current = fn;
     }, []);
-
-    const hasPath = design.shapes.some(
-      (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
-    );
     const handleShapeSelect = useCallback(
       (event: ThreeEvent<MouseEvent>, shapeId: string) => {
         event.stopPropagation();

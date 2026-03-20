@@ -40,7 +40,6 @@ export type EditorViewportTab = "2d" | "3d";
 interface EditorMobilePanelsProps {
   activeTool: EditorTool;
   draftPathActive: boolean;
-  draftPathCanClose: boolean;
   draftPathClosed: boolean;
   draftPathLength: number;
   draftPathPointCount: number;
@@ -94,7 +93,6 @@ interface EditorMobilePanelsProps {
 export function EditorMobilePanels({
   activeTool,
   draftPathActive,
-  draftPathCanClose,
   draftPathClosed,
   draftPathLength,
   draftPathPointCount,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   EmptyInspectorView,
   MultiInspectorView,
@@ -36,15 +36,10 @@ export default function Inspector({
     [design.shapes, selection]
   );
   const count = selectedShapes.length;
-  const [panel, setPanel] = useState<"design" | "selection">("design");
-
-  useEffect(() => {
-    if (count > 0) {
-      setPanel("selection");
-      return;
-    }
-    setPanel("design");
-  }, [count]);
+  const [panelOverride, setPanelOverride] = useState<
+    "design" | "selection" | null
+  >(null);
+  const panel = count === 0 ? "design" : (panelOverride ?? "selection");
 
   const selectionDisabled = count === 0;
 
@@ -104,7 +99,7 @@ export default function Inspector({
               key={item.id}
               type="button"
               disabled={item.id === "selection" && selectionDisabled}
-              onClick={() => setPanel(item.id)}
+              onClick={() => setPanelOverride(item.id)}
               className={cn(
                 "group relative -mb-px min-h-11 border-b-2 px-1 py-2.5 text-sm font-semibold transition-colors",
                 panel === item.id

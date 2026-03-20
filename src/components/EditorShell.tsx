@@ -326,7 +326,6 @@ export default function EditorShell({
         <EditorMobilePanels
           activeTool={activeTool}
           draftPathActive={mobileDraftPathState.active}
-          draftPathCanClose={mobileDraftPathState.canClose}
           draftPathClosed={mobileDraftPathState.closed}
           draftPathLength={mobileDraftPathState.length}
           draftPathPointCount={mobileDraftPathState.pointCount}
