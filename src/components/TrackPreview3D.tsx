@@ -945,48 +945,112 @@ function DroneCamera({
   shapes,
   playing,
   speed,
+  bankingEnabled,
 }: {
   shapes: Shape[];
   playing: boolean;
   speed: number;
+  bankingEnabled: boolean;
 }) {
   const { camera } = useThree();
   const tRef = useRef(0);
+  const bankRef = useRef(0);
+  const cameraRef = useRef(camera);
+  const bankingEnabledRef = useRef(bankingEnabled);
+  const worldUpRef = useRef(new THREE.Vector3(0, 1, 0));
 
-  const curve = useMemo(() => {
+  useEffect(() => {
+    cameraRef.current = camera;
+  }, [camera]);
+
+  useEffect(() => {
+    bankingEnabledRef.current = bankingEnabled;
+  }, [bankingEnabled]);
+
+  const flightPath = useMemo(() => {
     const pl = shapes.find(
       (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
     ) as PolylineShape | undefined;
     if (!pl) return null;
 
-    return (
-      buildPolylineCurve3(pl.points, {
-        closed: pl.closed ?? false,
-        heightOffset: 0.8,
-        samplesPerSegment: 18,
-        density: 12,
-      })?.curve ?? null
-    );
+    const curve = buildPolylineCurve3(pl.points, {
+      closed: pl.closed ?? false,
+      heightOffset: 0.8,
+      samplesPerSegment: 18,
+      density: 12,
+    })?.curve;
+
+    if (!curve) return null;
+
+    return {
+      closed: Boolean(pl.closed),
+      curve,
+    };
   }, [shapes]);
+
+  const applyCameraPose = useCallback(
+    (t: number) => {
+      if (!flightPath) return;
+
+      const samplePoint = (offset: number) => {
+        const nextT = t + offset;
+
+        if (flightPath.closed) {
+          const wrapped = ((nextT % 1) + 1) % 1;
+          return flightPath.curve.getPoint(wrapped);
+        }
+
+        return flightPath.curve.getPoint(
+          THREE.MathUtils.clamp(nextT, 0, 0.9999)
+        );
+      };
+
+      const pos = samplePoint(0);
+      const lookTarget = samplePoint(0.02);
+      const behind = samplePoint(-0.015);
+      const ahead = samplePoint(0.015);
+      const incoming = ahead.clone().sub(behind).setY(0);
+      const outgoing = lookTarget.clone().sub(pos).setY(0);
+
+      let bankTarget = 0;
+      if (incoming.lengthSq() > 1e-6 && outgoing.lengthSq() > 1e-6) {
+        incoming.normalize();
+        outgoing.normalize();
+        const signedTurn = incoming.clone().cross(outgoing).y;
+        bankTarget = THREE.MathUtils.clamp(signedTurn * 1.1, -0.34, 0.34);
+      }
+
+      const resolvedBankTarget = bankingEnabledRef.current ? bankTarget : 0;
+      bankRef.current = THREE.MathUtils.lerp(
+        bankRef.current,
+        resolvedBankTarget,
+        0.14
+      );
+
+      camera.position.copy(pos);
+      camera.up.copy(worldUpRef.current);
+      camera.lookAt(lookTarget);
+      camera.rotateZ(bankRef.current);
+    },
+    [camera, flightPath]
+  );
 
   // Snap camera to start of path when activated
   useEffect(() => {
-    if (!curve) return;
+    if (!flightPath) return;
     tRef.current = 0;
-    const start = curve.getPoint(0);
-    const ahead = curve.getPoint(0.02);
-    camera.position.copy(start);
-    camera.lookAt(ahead);
-  }, [curve, camera]);
+    bankRef.current = 0;
+    const start = flightPath.curve.getPoint(0);
+    const ahead = flightPath.curve.getPoint(flightPath.closed ? 0.02 : 0.02);
+    cameraRef.current.position.copy(start);
+    cameraRef.current.up.copy(worldUpRef.current);
+    cameraRef.current.lookAt(ahead);
+  }, [flightPath]);
 
   useFrame((_, delta) => {
-    if (!playing || !curve) return;
+    if (!playing || !flightPath) return;
     tRef.current = (tRef.current + delta * speed * 0.035) % 1;
-    const t = tRef.current;
-    const pos = curve.getPoint(t);
-    const lookTarget = curve.getPoint((t + 0.02) % 1);
-    camera.position.copy(pos);
-    camera.lookAt(lookTarget);
+    applyCameraPose(tRef.current);
   });
 
   return null;
@@ -1078,6 +1142,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const [flyMode, setFlyMode] = useState(false);
     const [playing, setPlaying] = useState(false);
     const [speed, setSpeed] = useState(1);
+    const [bankingEnabled, setBankingEnabled] = useState(true);
     const [axisQuaternion, setAxisQuaternion] = useState<QuaternionState>([
       0, 0, 0, 1,
     ]);
@@ -1340,6 +1405,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               shapes={design.shapes}
               playing={playing}
               speed={speed}
+              bankingEnabled={bankingEnabled}
             />
           ) : isMobile ? (
             <OrbitControls
@@ -1476,12 +1542,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
         {/* Fly-through controls overlay */}
         {hasPath && (
-          <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-white/10 bg-black/70 px-3 py-1.5 text-sm shadow-lg backdrop-blur select-none">
+          <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-white/10 bg-black/65 px-2.5 py-1.5 text-sm shadow-lg backdrop-blur select-none">
             {flyMode ? (
               <>
                 <button
                   onClick={() => setPlaying((p) => !p)}
-                  className="flex size-7 items-center justify-center rounded text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                  className="flex size-7 items-center justify-center rounded-md text-white/80 transition-colors hover:bg-white/10 hover:text-white"
                   title={playing ? "Pause" : "Play"}
                 >
                   {playing ? (
@@ -1505,6 +1571,28 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                     {speed.toFixed(1)}×
                   </span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setBankingEnabled((value) => !value)}
+                  className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
+                    bankingEnabled
+                      ? "bg-white/10 text-white/85 hover:bg-white/14"
+                      : "text-white/45 hover:bg-white/8 hover:text-white/75"
+                  }`}
+                  title="Toggle roll"
+                  aria-pressed={bankingEnabled}
+                >
+                  <span>Roll</span>
+                  <span
+                    className={`rounded px-1 py-0.5 font-mono text-[9px] ${
+                      bankingEnabled
+                        ? "bg-white/10 text-white/75"
+                        : "bg-white/6 text-white/40"
+                    }`}
+                  >
+                    {bankingEnabled ? "On" : "Off"}
+                  </span>
+                </button>
                 <div className="mx-0.5 h-4 w-px bg-white/10" />
                 <button
                   onClick={() => {

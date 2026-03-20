@@ -119,6 +119,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const removeShapes = useEditor((state) => state.removeShapes);
     const duplicateShapes = useEditor((state) => state.duplicateShapes);
     const joinPolylines = useEditor((state) => state.joinPolylines);
+    const closePolyline = useEditor((state) => state.closePolyline);
     const nudgeShapes = useEditor((state) => state.nudgeShapes);
     const setZoom = useEditor((state) => state.setZoom);
     const hoveredWaypoint = useEditor((state) => state.hoveredWaypoint);
@@ -198,6 +199,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       dy: number;
     } | null>(null);
     const [contextMenu, setContextMenu] = useState<{
+      closablePolylineId: string | null;
       editablePolylineId: string | null;
       ids: string[];
       joinablePolylineIds: string[];
@@ -467,6 +469,13 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         });
 
         setContextMenu({
+          closablePolylineId:
+            nextSelection.length === 1 &&
+            clickedShape.kind === "polyline" &&
+            !clickedShape.closed &&
+            clickedShape.points.length >= 3
+              ? clickedShape.id
+              : null,
           editablePolylineId:
             nextSelection.length === 1 && clickedShape.kind === "polyline"
               ? clickedShape.id
@@ -1540,32 +1549,43 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     : `${contextMenu.ids.length} selected`}
                 </div>
               </ContextMenuLabel>
-              <ContextMenuItem
-                disabled={!contextMenu.editablePolylineId}
-                onClick={() => {
-                  if (!contextMenu.editablePolylineId) return;
-                  const shape = design.shapes.find(
-                    (candidate) =>
-                      candidate.id === contextMenu.editablePolylineId
-                  );
-                  if (!shape || shape.kind !== "polyline") return;
-                  setDraftSourcePath(shape);
-                  setDraftPath(
-                    shape.points.map((point) => ({
-                      x: point.x,
-                      y: point.y,
-                      z: point.z ?? 0,
-                    }))
-                  );
-                  setSelection([]);
-                  setVertexSel(null);
-                  setActiveTool("polyline");
-                  setContextMenu(null);
-                }}
-              >
-                <PencilLine className="size-3.5" />
-                Continue editing
-              </ContextMenuItem>
+              {contextMenu.editablePolylineId && (
+                <ContextMenuItem
+                  onClick={() => {
+                    const shape = design.shapes.find(
+                      (candidate) =>
+                        candidate.id === contextMenu.editablePolylineId
+                    );
+                    if (!shape || shape.kind !== "polyline") return;
+                    setDraftSourcePath(shape);
+                    setDraftPath(
+                      shape.points.map((point) => ({
+                        x: point.x,
+                        y: point.y,
+                        z: point.z ?? 0,
+                      }))
+                    );
+                    setSelection([]);
+                    setVertexSel(null);
+                    setActiveTool("polyline");
+                    setContextMenu(null);
+                  }}
+                >
+                  <PencilLine className="size-3.5" />
+                  Continue editing
+                </ContextMenuItem>
+              )}
+              {contextMenu.closablePolylineId && (
+                <ContextMenuItem
+                  onClick={() => {
+                    closePolyline(contextMenu.closablePolylineId!);
+                    setContextMenu(null);
+                  }}
+                >
+                  <Scan className="size-3.5" />
+                  Close loop
+                </ContextMenuItem>
+              )}
               <ContextMenuItem
                 onClick={() => {
                   duplicateShapes(contextMenu.ids);
@@ -1576,16 +1596,17 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                 Duplicate
                 <ContextMenuShortcut>Ctrl/Cmd+D</ContextMenuShortcut>
               </ContextMenuItem>
-              <ContextMenuItem
-                disabled={contextMenu.joinablePolylineIds.length < 2}
-                onClick={() => {
-                  joinPolylines(contextMenu.joinablePolylineIds);
-                  setContextMenu(null);
-                }}
-              >
-                <GitMerge className="size-3.5" />
-                Join paths
-              </ContextMenuItem>
+              {contextMenu.joinablePolylineIds.length >= 2 && (
+                <ContextMenuItem
+                  onClick={() => {
+                    joinPolylines(contextMenu.joinablePolylineIds);
+                    setContextMenu(null);
+                  }}
+                >
+                  <GitMerge className="size-3.5" />
+                  Join paths
+                </ContextMenuItem>
+              )}
               <ContextMenuItem
                 onClick={() => {
                   for (const id of contextMenu.ids) {
