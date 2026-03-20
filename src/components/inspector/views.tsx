@@ -516,7 +516,6 @@ interface SingleInspectorViewProps {
   duplicateShapes: (ids: string[]) => void;
   removeShapes: (ids: string[]) => void;
   setSelection: (ids: string[]) => void;
-  setHoveredShapeId: (shapeId: string | null) => void;
   setHoveredWaypoint: (
     waypoint: { shapeId: string; idx: number } | null
   ) => void;
@@ -530,7 +529,6 @@ export function SingleInspectorView({
   duplicateShapes,
   removeShapes,
   setSelection,
-  setHoveredShapeId,
   setHoveredWaypoint,
   onResumeSelectedPath,
 }: SingleInspectorViewProps) {

@@ -68,7 +68,6 @@ export default function Inspector({
       duplicateShapes={duplicateShapes}
       removeShapes={removeShapes}
       setSelection={setSelection}
-      setHoveredShapeId={setHoveredShapeId}
       setHoveredWaypoint={setHoveredWaypoint}
       onResumeSelectedPath={onResumeSelectedPath}
     />
