@@ -541,8 +541,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           setDraftSourcePath(null);
           return;
         }
-        const nextClosed =
-          closed || draftForceClosed || Boolean(draftSourcePath?.closed);
+        const nextClosed = closed || draftForceClosed;
         const points: PolylinePoint[] = draftPath.map((p) => ({
           x: p.x,
           y: p.y,
