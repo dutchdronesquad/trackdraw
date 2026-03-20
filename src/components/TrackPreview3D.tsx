@@ -14,10 +14,12 @@ import {
   useState,
   useEffect,
   useCallback,
+  memo,
   forwardRef,
   useImperativeHandle,
 } from "react";
 import * as THREE from "three";
+import { getAdaptiveCurveSegments, smoothPolyline3D } from "@/lib/geometry";
 
 export interface TrackPreview3DHandle {
   screenshot: () => string;
@@ -623,12 +625,19 @@ function RaceLine3D({
   const geometry = useMemo(() => {
     const pts = shape.points;
     if (pts.length < 2) return null;
-    const vectors = pts.map(
-      (p) => new THREE.Vector3(p.x, Math.max(p.z ?? 0, 0) + 0.5, p.y)
+    const smoothPoints = smoothPolyline3D(pts, 10);
+    const vectors = smoothPoints.map(
+      (p) => new THREE.Vector3(p.x, Math.max(p.z, 0) + 0.5, p.y)
     );
-    const curve = new THREE.CatmullRomCurve3(vectors, false, "catmullrom", 0.5);
+    const curve = new THREE.CatmullRomCurve3(vectors, false, "centripetal");
     const tubeRadius = Math.max(0.02, (shape.strokeWidth ?? 0.16) / 2);
-    return new THREE.TubeGeometry(curve, 64, tubeRadius, 8, false);
+    return new THREE.TubeGeometry(
+      curve,
+      getAdaptiveCurveSegments(pts, 7),
+      tubeRadius,
+      6,
+      false
+    );
   }, [shape.points, shape.strokeWidth]);
 
   if (!geometry) return null;
@@ -643,6 +652,14 @@ function RaceLine3D({
     </mesh>
   );
 }
+
+const MemoShape3D = memo(
+  Shape3D,
+  (prev, next) =>
+    prev.shape === next.shape &&
+    prev.isSelected === next.isSelected &&
+    prev.onSelect === next.onSelect
+);
 
 // ── Shape dispatcher ─────────────────────────────────────────
 function SelectionMarker3D({ shape }: { shape: Shape }) {
@@ -773,10 +790,11 @@ function DroneCamera({
       (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
     ) as PolylineShape | undefined;
     if (!pl) return null;
-    const vecs = pl.points.map(
-      (p) => new THREE.Vector3(p.x, Math.max(p.z ?? 0, 0) + 0.8, p.y)
+    const smoothPoints = smoothPolyline3D(pl.points, 10);
+    const vecs = smoothPoints.map(
+      (p) => new THREE.Vector3(p.x, Math.max(p.z, 0) + 0.8, p.y)
     );
-    return new THREE.CatmullRomCurve3(vecs, false, "catmullrom", 0.5);
+    return new THREE.CatmullRomCurve3(vecs, false, "centripetal");
   }, [shapes]);
 
   // Snap camera to start of path when activated
@@ -996,7 +1014,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           />
           {/* Shapes */}
           {design.shapes.map((shape) => (
-            <Shape3D
+            <MemoShape3D
               key={shape.id}
               isSelected={selection.includes(shape.id)}
               onSelect={handleShapeSelect}

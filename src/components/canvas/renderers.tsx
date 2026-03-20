@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   Arrow,
   Circle,
@@ -1071,26 +1071,36 @@ function PolylineShapeContent({
   zmax,
   zmin,
 }: PolylineShapeContentProps) {
-  const pointsPx = path.points.flatMap((point) => [
-    m2px(point.x, designPpm),
-    m2px(point.y, designPpm),
-  ]);
   const strokePx = m2px(path.strokeWidth ?? 0.18, designPpm);
-  const smoothPoints =
-    (path.smooth ?? true) ? smoothPolyline(path.points) : path.points;
-  const smoothPx = smoothPoints.flatMap((point) => [
-    m2px(point.x, designPpm),
-    m2px(point.y, designPpm),
-  ]);
+  const smoothPoints = useMemo(
+    () => ((path.smooth ?? true) ? smoothPolyline(path.points) : path.points),
+    [path.points, path.smooth]
+  );
+  const pointsPxMemo = useMemo(
+    () =>
+      path.points.flatMap((point) => [
+        m2px(point.x, designPpm),
+        m2px(point.y, designPpm),
+      ]),
+    [designPpm, path.points]
+  );
+  const smoothPx = useMemo(
+    () =>
+      smoothPoints.flatMap((point) => [
+        m2px(point.x, designPpm),
+        m2px(point.y, designPpm),
+      ]),
+    [designPpm, smoothPoints]
+  );
   const color = path.color ?? "#3b82f6";
 
-  if (!pointsPx.length) return null;
+  if (!pointsPxMemo.length) return null;
 
   return (
     <>
       {isSelected && (
         <Line
-          points={pointsPx}
+          points={pointsPxMemo}
           stroke="#3b82f6"
           strokeWidth={strokePx + 4}
           lineCap="round"
@@ -1103,7 +1113,14 @@ function PolylineShapeContent({
           const pct =
             path.points.length > 1 ? index / (path.points.length - 1) : 0;
           const zColor = zToColor(point.z ?? 0, zmin, zmax);
-          const segment = smoothPx.slice(index * 2, index * 2 + 4);
+          const sampleIndex =
+            path.points.length <= 1
+              ? 0
+              : Math.round(
+                  (index / (path.points.length - 1)) *
+                    Math.max(0, smoothPoints.length - 2)
+                );
+          const segment = smoothPx.slice(sampleIndex * 2, sampleIndex * 2 + 4);
           if (segment.length < 4) return null;
           const segmentColor = path.color ? color : zColor;
           return (
