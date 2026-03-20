@@ -28,50 +28,229 @@ export function totalLength2D(path: PolylineShape): number {
   return elevationSamples(path).at(-1)?.d ?? 0;
 }
 
-const catmull = (
-  t: number,
-  p0: { x: number; y: number },
-  p1: { x: number; y: number },
-  p2: { x: number; y: number },
-  p3: { x: number; y: number }
-) => {
-  const t2 = t * t;
-  const t3 = t2 * t;
+interface SmoothPolylineOptions {
+  alpha?: number;
+  closed?: boolean;
+  samplesPerSegment?: number;
+}
+
+function normalizeSmoothOptions(
+  samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
+): Required<SmoothPolylineOptions> {
+  if (typeof samplesPerSegmentOrOptions === "number") {
+    return {
+      alpha: 0.5,
+      closed: false,
+      samplesPerSegment: samplesPerSegmentOrOptions,
+    };
+  }
+
   return {
-    x:
-      0.5 *
-      (2 * p1.x +
-        (-p0.x + p2.x) * t +
-        (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
-        (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
-    y:
-      0.5 *
-      (2 * p1.y +
-        (-p0.y + p2.y) * t +
-        (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
-        (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3),
+    alpha: samplesPerSegmentOrOptions?.alpha ?? 0.5,
+    closed: samplesPerSegmentOrOptions?.closed ?? false,
+    samplesPerSegment: samplesPerSegmentOrOptions?.samplesPerSegment ?? 8,
   };
-};
+}
+
+function getWrappedPoint<T>(points: T[], index: number, closed: boolean): T {
+  if (closed) {
+    const wrappedIndex =
+      ((index % points.length) + points.length) % points.length;
+    return points[wrappedIndex];
+  }
+
+  return points[Math.max(0, Math.min(points.length - 1, index))];
+}
+
+function extrapolatePoint(
+  anchor: PolylinePoint,
+  neighbor: PolylinePoint
+): PolylinePoint {
+  return {
+    x: anchor.x * 2 - neighbor.x,
+    y: anchor.y * 2 - neighbor.y,
+    z: (anchor.z ?? 0) * 2 - (neighbor.z ?? 0),
+  };
+}
+
+function getControlPoint(
+  points: PolylinePoint[],
+  index: number,
+  closed: boolean
+): PolylinePoint {
+  if (closed) return getWrappedPoint(points, index, true);
+
+  if (index < 0) {
+    return extrapolatePoint(points[0], points[1] ?? points[0]);
+  }
+
+  if (index >= points.length) {
+    return extrapolatePoint(
+      points[points.length - 1],
+      points[points.length - 2] ?? points[points.length - 1]
+    );
+  }
+
+  return points[index];
+}
+
+function chordLength(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+  alpha: number
+): number {
+  return Math.max(distance2D(a, b) ** alpha, 1e-4);
+}
+
+function interpolateChannel(
+  t: number,
+  t0: number,
+  t1: number,
+  t2: number,
+  t3: number,
+  p0: number,
+  p1: number,
+  p2: number,
+  p3: number
+): number {
+  const safeLerp = (
+    startT: number,
+    endT: number,
+    startValue: number,
+    endValue: number
+  ) => {
+    const span = endT - startT;
+    if (Math.abs(span) < 1e-6) return startValue;
+    return ((endT - t) / span) * startValue + ((t - startT) / span) * endValue;
+  };
+
+  const a1 = safeLerp(t0, t1, p0, p1);
+  const a2 = safeLerp(t1, t2, p1, p2);
+  const a3 = safeLerp(t2, t3, p2, p3);
+  const b1 = safeLerp(t0, t2, a1, a2);
+  const b2 = safeLerp(t1, t3, a2, a3);
+  return safeLerp(t1, t2, b1, b2);
+}
+
+function sampleCatmullRomPoint(
+  t: number,
+  p0: PolylinePoint,
+  p1: PolylinePoint,
+  p2: PolylinePoint,
+  p3: PolylinePoint,
+  alpha: number
+) {
+  const t0 = 0;
+  const t1 = t0 + chordLength(p0, p1, alpha);
+  const t2 = t1 + chordLength(p1, p2, alpha);
+  const t3 = t2 + chordLength(p2, p3, alpha);
+  const sampleT = t1 + (t2 - t1) * t;
+
+  return {
+    x: interpolateChannel(sampleT, t0, t1, t2, t3, p0.x, p1.x, p2.x, p3.x),
+    y: interpolateChannel(sampleT, t0, t1, t2, t3, p0.y, p1.y, p2.y, p3.y),
+    z: interpolateChannel(
+      sampleT,
+      t0,
+      t1,
+      t2,
+      t3,
+      p0.z ?? 0,
+      p1.z ?? 0,
+      p2.z ?? 0,
+      p3.z ?? 0
+    ),
+  };
+}
+
+function getClosedPolylinePoints(points: PolylinePoint[]): PolylinePoint[] {
+  if (!points.length) return [];
+  return [...points, { ...points[0] }];
+}
+
+function getSegmentCount(points: PolylinePoint[], closed: boolean): number {
+  if (points.length < 2) return 0;
+  return closed ? points.length : points.length - 1;
+}
+
+function smoothPolylinePoints(
+  points: PolylinePoint[],
+  samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
+) {
+  const { alpha, closed, samplesPerSegment } = normalizeSmoothOptions(
+    samplesPerSegmentOrOptions
+  );
+
+  if (points.length < 2) return points.map((point) => ({ ...point }));
+  if (points.length < 3) {
+    return (closed ? getClosedPolylinePoints(points) : points).map((point) => ({
+      ...point,
+    }));
+  }
+
+  const segmentCount = getSegmentCount(points, closed);
+  const result: PolylinePoint[] = [];
+
+  for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex += 1) {
+    const p0 = getControlPoint(points, segmentIndex - 1, closed);
+    const p1 = getControlPoint(points, segmentIndex, closed);
+    const p2 = getControlPoint(points, segmentIndex + 1, closed);
+    const p3 = getControlPoint(points, segmentIndex + 2, closed);
+
+    for (
+      let sampleIndex = segmentIndex === 0 ? 0 : 1;
+      sampleIndex < samplesPerSegment;
+      sampleIndex += 1
+    ) {
+      result.push(
+        sampleCatmullRomPoint(
+          sampleIndex / samplesPerSegment,
+          p0,
+          p1,
+          p2,
+          p3,
+          alpha
+        )
+      );
+    }
+  }
+
+  result.push(...(closed ? [{ ...points[0] }] : [{ ...points.at(-1)! }]));
+  return result;
+}
+
+function withClosedPoint<T extends { x: number; y: number }>(
+  points: T[],
+  closed: boolean
+) {
+  if (!closed || !points.length) return points;
+  return [...points, { ...points[0] }];
+}
 
 export function smoothPolyline(
   points: PolylinePoint[],
-  samplesPerSegment = 8
+  samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
 ): Array<{ x: number; y: number }> {
-  if (points.length < 3) return points.map(({ x, y }) => ({ x, y }));
-  const result: Array<{ x: number; y: number }> = [];
-  for (let i = 0; i < points.length - 1; i += 1) {
-    const p0 = points[i - 1] ?? points[i];
-    const p1 = points[i];
-    const p2 = points[i + 1] ?? points[i];
-    const p3 = points[i + 2] ?? p2;
-    for (let j = 0; j < samplesPerSegment; j += 1) {
-      const t = j / samplesPerSegment;
-      result.push(catmull(t, p0, p1, p2, p3));
-    }
+  return smoothPolylinePoints(points, samplesPerSegmentOrOptions).map(
+    ({ x, y }) => ({ x, y })
+  );
+}
+
+export function getPolyline2DPoints(
+  points: PolylinePoint[],
+  options?: SmoothPolylineOptions & { smooth?: boolean }
+): Array<{ x: number; y: number }> {
+  const smooth = options?.smooth ?? true;
+  const closed = options?.closed ?? false;
+
+  if (!smooth) {
+    return withClosedPoint(
+      points.map(({ x, y }) => ({ x, y })),
+      closed
+    );
   }
-  const last = points.at(-1)!;
-  result.push({ x: last.x, y: last.y });
-  return result;
+
+  return smoothPolyline(points, options);
 }
 
 export function polylineLength(points: PolylinePoint[]): number {
@@ -88,60 +267,109 @@ export function getAdaptiveCurveSegments(
   density = 6
 ): number {
   if (points.length < 2) return 0;
+
+  const getTurnWeight = (
+    prev: PolylinePoint,
+    current: PolylinePoint,
+    next: PolylinePoint
+  ) => {
+    const ax = current.x - prev.x;
+    const ay = current.y - prev.y;
+    const bx = next.x - current.x;
+    const by = next.y - current.y;
+    const aLen = Math.hypot(ax, ay);
+    const bLen = Math.hypot(bx, by);
+    if (aLen < 1e-4 || bLen < 1e-4) return 0;
+
+    const dot = (ax * bx + ay * by) / (aLen * bLen);
+    const clampedDot = Math.max(-1, Math.min(1, dot));
+    const turnAngle = Math.acos(clampedDot);
+    const turnStrength = turnAngle / Math.PI;
+    const localScale = Math.min((aLen + bLen) / 2, 6);
+    return turnStrength * localScale;
+  };
+
   const length = polylineLength(points);
   const byLength = Math.round(length * density);
-  const byPoints = (points.length - 1) * 10;
-  return Math.max(24, Math.min(160, Math.max(byLength, byPoints)));
+  const byPoints = (points.length - 1) * 16;
+  let turnBonus = 0;
+
+  for (let index = 1; index < points.length - 1; index += 1) {
+    turnBonus += getTurnWeight(
+      points[index - 1],
+      points[index],
+      points[index + 1]
+    );
+  }
+
+  const byTurns = Math.round(turnBonus * density * 1.8);
+  return Math.max(32, Math.min(360, Math.max(byLength, byPoints, byTurns)));
 }
 
 export function smoothPolyline3D(
   points: PolylinePoint[],
-  samplesPerSegment = 10
+  samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
 ): Array<{ x: number; y: number; z: number }> {
-  if (points.length === 0) return [];
-  if (points.length === 1) {
-    const point = points[0];
-    return [{ x: point.x, y: point.y, z: point.z ?? 0 }];
-  }
+  return smoothPolylinePoints(points, samplesPerSegmentOrOptions).map(
+    ({ x, y, z }) => ({
+      x,
+      y,
+      z: z ?? 0,
+    })
+  );
+}
 
-  const xyPoints = smoothPolyline(points, samplesPerSegment);
-  const sourceDistances = [0];
-  for (let i = 1; i < points.length; i += 1) {
-    sourceDistances.push(
-      sourceDistances[i - 1] + distance2D(points[i - 1], points[i])
+export function getPolylineArrowMarkers(
+  points: PolylinePoint[],
+  spacing: number,
+  options?: SmoothPolylineOptions
+): Array<{ x: number; y: number; angle: number }> {
+  const closed = options?.closed ?? false;
+  const smoothPoints = getPolyline2DPoints(points, {
+    ...options,
+    closed,
+    smooth: true,
+  });
+
+  if (smoothPoints.length < 2 || spacing <= 0) return [];
+
+  const distances = [0];
+  for (let index = 1; index < smoothPoints.length; index += 1) {
+    distances.push(
+      distances[index - 1] +
+        distance2D(smoothPoints[index - 1], smoothPoints[index])
     );
   }
 
-  let sampledDistance = 0;
-  let segmentIndex = 1;
+  const totalLength = distances.at(-1) ?? 0;
+  if (totalLength < spacing) return [];
 
-  return xyPoints.map((point, index) => {
-    if (index > 0) {
-      sampledDistance += distance2D(xyPoints[index - 1], point);
-    }
+  const startOffset = closed ? spacing / 2 : spacing;
+  const markers: Array<{ x: number; y: number; angle: number }> = [];
 
+  for (let target = startOffset; target < totalLength; target += spacing) {
+    let segmentIndex = 1;
     while (
-      segmentIndex < sourceDistances.length - 1 &&
-      sampledDistance > sourceDistances[segmentIndex]
+      segmentIndex < distances.length &&
+      distances[segmentIndex] < target
     ) {
       segmentIndex += 1;
     }
 
-    const prevIndex = Math.max(0, segmentIndex - 1);
-    const segmentStart = sourceDistances[prevIndex];
-    const segmentEnd = sourceDistances[segmentIndex] ?? segmentStart;
-    const segmentSpan = Math.max(segmentEnd - segmentStart, 1e-6);
-    const t = Math.min(
-      1,
-      Math.max(0, (sampledDistance - segmentStart) / segmentSpan)
-    );
-    const z0 = points[prevIndex]?.z ?? 0;
-    const z1 = points[segmentIndex]?.z ?? z0;
+    if (segmentIndex >= smoothPoints.length) break;
 
-    return {
-      x: point.x,
-      y: point.y,
-      z: z0 + (z1 - z0) * t,
-    };
-  });
+    const prev = smoothPoints[segmentIndex - 1];
+    const next = smoothPoints[segmentIndex];
+    const segmentStart = distances[segmentIndex - 1];
+    const segmentEnd = distances[segmentIndex];
+    const span = Math.max(segmentEnd - segmentStart, 1e-6);
+    const t = (target - segmentStart) / span;
+    const x = prev.x + (next.x - prev.x) * t;
+    const y = prev.y + (next.y - prev.y) * t;
+    const angle = Math.atan2(next.y - prev.y, next.x - prev.x);
+
+    markers.push({ x, y, angle });
+  }
+
+  return markers;
 }

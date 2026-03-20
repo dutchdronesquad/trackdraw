@@ -33,8 +33,8 @@ import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewpo
 import { useEditor } from "@/store/editor";
 import { m2px } from "@/lib/units";
 import { zRangeForDesign } from "@/lib/alt";
-import type { PolylinePoint, Shape } from "@/lib/types";
-import { distance2D } from "@/lib/geometry";
+import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
+import { distance2D, getPolyline2DPoints } from "@/lib/geometry";
 import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -61,7 +61,9 @@ import {
   ArrowDown,
   ArrowUp,
   Copy,
+  GitMerge,
   Lock,
+  PencilLine,
   RotateCcw,
   RotateCw,
   Scan,
@@ -72,10 +74,20 @@ import {
 export interface TrackCanvasHandle {
   getStage: () => KonvaStage | null;
   fitToWindow: () => void;
+  finishDraftPath: () => void;
+  cancelDraftPath: () => void;
+  undoDraftPoint: () => void;
+  resumePolylineEditing: (shapeId: string) => void;
 }
 
 interface TrackCanvasProps {
   onCursorChange?: (pos: { x: number; y: number } | null) => void;
+  onDraftPathStateChange?: (state: {
+    active: boolean;
+    canClose: boolean;
+    length: number;
+    pointCount: number;
+  }) => void;
   onSnapChange?: (active: boolean) => void;
   onMobileMultiSelectStart?: (shapeId: string) => void;
   mobileRulersEnabled?: boolean;
@@ -87,6 +99,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
   function TrackCanvas(
     {
       onCursorChange,
+      onDraftPathStateChange,
       onSnapChange,
       onMobileMultiSelectStart,
       mobileRulersEnabled = false,
@@ -105,6 +118,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const rotateShapes = useEditor((state) => state.rotateShapes);
     const removeShapes = useEditor((state) => state.removeShapes);
     const duplicateShapes = useEditor((state) => state.duplicateShapes);
+    const joinPolylines = useEditor((state) => state.joinPolylines);
     const nudgeShapes = useEditor((state) => state.nudgeShapes);
     const setZoom = useEditor((state) => state.setZoom);
     const hoveredWaypoint = useEditor((state) => state.hoveredWaypoint);
@@ -127,14 +141,26 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const lastPinchCenterRef = useRef<{ x: number; y: number } | null>(null);
     const lastPinchDistRef = useRef<number | null>(null);
     const lastTouchPosRef = useRef<{ x: number; y: number } | null>(null);
+    const lastTouchStartClientRef = useRef<{ x: number; y: number } | null>(
+      null
+    );
+    const lastTouchStagePointRef = useRef<{ x: number; y: number } | null>(
+      null
+    );
+    const touchMovedRef = useRef(false);
     const suppressTapRef = useRef(false);
-    const touchInteractionModeRef = useRef<"none" | "pan" | "content">("none");
+    const touchInteractionModeRef = useRef<
+      "none" | "pan" | "content" | "viewportGesture"
+    >("none");
+    const syncFrameRef = useRef<number | null>(null);
 
     const [vertexSel, setVertexSel] = useState<{
       shapeId: string;
       idx: number;
     } | null>(null);
     const [draftPath, setDraftPath] = useState<DraftPoint[]>([]);
+    const [draftSourcePath, setDraftSourcePath] =
+      useState<PolylineShape | null>(null);
     const [cursor, setCursor] = useState<CursorState | null>(null);
     const [snapTarget, setSnapTarget] = useState<{
       x: number;
@@ -172,7 +198,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       dy: number;
     } | null>(null);
     const [contextMenu, setContextMenu] = useState<{
+      editablePolylineId: string | null;
       ids: string[];
+      joinablePolylineIds: string[];
       label: string;
       locked: boolean;
       rotatableIds: string[];
@@ -238,17 +266,30 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     }, [design.field.ppm, estimateRotationGuideRadiusPx, singleSelectedShape]);
 
     const syncTransform = useCallback(() => {
-      const s = stageRef.current;
-      if (!s) return;
-      const nextTransform = { x: s.x(), y: s.y(), scale: s.scaleX() };
-      setStageTransform((current) =>
-        Math.abs(current.x - nextTransform.x) < 0.001 &&
-        Math.abs(current.y - nextTransform.y) < 0.001 &&
-        Math.abs(current.scale - nextTransform.scale) < 0.001
-          ? current
-          : nextTransform
-      );
+      if (syncFrameRef.current !== null) return;
+      syncFrameRef.current = window.requestAnimationFrame(() => {
+        syncFrameRef.current = null;
+        const s = stageRef.current;
+        if (!s) return;
+        const nextTransform = { x: s.x(), y: s.y(), scale: s.scaleX() };
+        setStageTransform((current) =>
+          Math.abs(current.x - nextTransform.x) < 0.001 &&
+          Math.abs(current.y - nextTransform.y) < 0.001 &&
+          Math.abs(current.scale - nextTransform.scale) < 0.001
+            ? current
+            : nextTransform
+        );
+      });
     }, []);
+
+    useEffect(
+      () => () => {
+        if (syncFrameRef.current !== null) {
+          window.cancelAnimationFrame(syncFrameRef.current);
+        }
+      },
+      []
+    );
 
     const widthPx = useMemo(
       () => m2px(design.field.width, design.field.ppm),
@@ -426,7 +467,15 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         });
 
         setContextMenu({
+          editablePolylineId:
+            nextSelection.length === 1 && clickedShape.kind === "polyline"
+              ? clickedShape.id
+              : null,
           ids: nextSelection,
+          joinablePolylineIds: nextSelection.filter((id) => {
+            const shape = shapes.find((candidate) => candidate.id === id);
+            return shape?.kind === "polyline" && !shape.closed;
+          }),
           label:
             nextSelection.length > 1
               ? `${nextSelection.length} items`
@@ -471,48 +520,69 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       hasManualViewRef.current = value;
     }, []);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        getStage: () => stageRef.current,
-        fitToWindow: () => {
-          setManualView(false);
-          fitFieldToViewport();
-        },
-      }),
-      [fitFieldToViewport, setManualView]
+    const finalizePath = useCallback(
+      (closed = false) => {
+        if (draftPath.length < 2) {
+          setDraftPath([]);
+          setDraftSourcePath(null);
+          return;
+        }
+        const points: PolylinePoint[] = draftPath.map((p) => ({
+          x: p.x,
+          y: p.y,
+          z: p.z ?? 0,
+        }));
+        const sourcePath = draftSourcePath;
+        const id =
+          sourcePath?.id ??
+          addShape({
+            kind: "polyline",
+            x: 0,
+            y: 0,
+            rotation: 0,
+            points,
+            closed,
+            strokeWidth: 0.26,
+            showArrows: false,
+            arrowSpacing: 15,
+            smooth: true,
+            color: "#3b82f6",
+          });
+        if (sourcePath) {
+          updateShape(sourcePath.id, {
+            points,
+            closed,
+          });
+        }
+        setSelection([id]);
+        setVertexSel(null);
+        setDraftPath([]);
+        setDraftSourcePath(null);
+        setActiveTool("select");
+      },
+      [
+        addShape,
+        draftPath,
+        draftSourcePath,
+        setActiveTool,
+        setSelection,
+        updateShape,
+      ]
     );
 
-    const finalizePath = useCallback(() => {
-      if (draftPath.length < 2) {
-        setDraftPath([]);
-        return;
-      }
-      const points: PolylinePoint[] = draftPath.map((p) => ({
-        x: p.x,
-        y: p.y,
-        z: p.z ?? 0,
-      }));
-      const id = addShape({
-        kind: "polyline",
-        x: 0,
-        y: 0,
-        rotation: 0,
-        points,
-        strokeWidth: 0.18,
-        showArrows: true,
-        smooth: true,
-        color: "#3b82f6",
-      });
-      setSelection([id]);
-      setVertexSel(null);
+    const cancelDraftPath = useCallback(() => {
       setDraftPath([]);
-      setActiveTool("select");
-    }, [addShape, draftPath, setActiveTool, setSelection]);
+      if (draftSourcePath) {
+        setSelection([draftSourcePath.id]);
+        setActiveTool("select");
+      }
+      setDraftSourcePath(null);
+    }, [draftSourcePath, setActiveTool, setSelection]);
 
     useTrackCanvasShortcuts({
       activeTool,
       addShape,
+      cancelDraftPath,
       designFieldGridStep: design.field.gridStep,
       designShapes: design.shapes,
       draftPath,
@@ -551,6 +621,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       onStageDragEnd,
       onStageDragMove,
       onStageDragStart,
+      onTouchEnd,
       onTouchMove,
       onTouchStart,
       onWheel,
@@ -561,11 +632,14 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       designField: design.field,
       designShapes: design.shapes,
       disableTouchGestures: rotationSession !== null,
+      draftPath,
       finalizePath,
       isMobile,
       lastPinchCenterRef,
       lastPinchDistRef,
       lastTouchPosRef,
+      lastTouchStartClientRef,
+      lastTouchStagePointRef,
       marqueeAdditiveRef: marqueeAdditive,
       marqueeOriginRef: marqueeOrigin,
       marqueeRect,
@@ -589,6 +663,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       stepPx,
       suppressTapRef,
       syncTransform,
+      touchMovedRef,
       touchInteractionModeRef,
     });
 
@@ -703,6 +778,46 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       ]);
     }, [design.field.ppm, draftPath]);
 
+    const draftCloseTarget = useMemo(() => {
+      if (activeTool !== "polyline" || draftPath.length < 3 || !cursor) {
+        return null;
+      }
+
+      const candidate = snapTarget ?? cursor.snappedMeters;
+      const firstPoint = draftPath[0];
+      const closeRadius = Math.max(design.field.gridStep * 1.25, 0.9);
+
+      return distance2D(candidate, firstPoint) <= closeRadius
+        ? firstPoint
+        : null;
+    }, [activeTool, cursor, design.field.gridStep, draftPath, snapTarget]);
+
+    const draftPreviewPath = useMemo(() => {
+      if (!draftPath.length) return draftPath;
+
+      const previewPoints = [...draftPath];
+      if (activeTool === "polyline" && cursor) {
+        previewPoints.push({
+          x: draftCloseTarget?.x ?? snapTarget?.x ?? cursor.snappedMeters.x,
+          y: draftCloseTarget?.y ?? snapTarget?.y ?? cursor.snappedMeters.y,
+          z: draftPath.at(-1)?.z ?? 0,
+        });
+      }
+
+      return previewPoints;
+    }, [activeTool, cursor, draftCloseTarget, draftPath, snapTarget]);
+
+    const draftPreviewSmoothPx = useMemo(() => {
+      if (draftPreviewPath.length < 2) return [];
+      return getPolyline2DPoints(draftPreviewPath, {
+        closed: Boolean(draftCloseTarget),
+        smooth: true,
+      }).flatMap((point) => [
+        m2px(point.x, design.field.ppm),
+        m2px(point.y, design.field.ppm),
+      ]);
+    }, [design.field.ppm, draftCloseTarget, draftPreviewPath]);
+
     const draftLength = useMemo(() => {
       if (draftPath.length < 2) return 0;
       let total = 0;
@@ -722,6 +837,65 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         })
       );
     }, [activeTool, cursor, draftLength, draftPath]);
+
+    useEffect(() => {
+      onDraftPathStateChange?.({
+        active: draftPath.length > 0 || activeTool === "polyline",
+        canClose: Boolean(draftCloseTarget),
+        length: draftLengthWithCursor,
+        pointCount: draftPath.length,
+      });
+    }, [
+      activeTool,
+      draftCloseTarget,
+      draftLengthWithCursor,
+      draftPath.length,
+      onDraftPathStateChange,
+    ]);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        getStage: () => stageRef.current,
+        fitToWindow: () => {
+          setManualView(false);
+          fitFieldToViewport();
+        },
+        finishDraftPath: () => finalizePath(Boolean(draftCloseTarget)),
+        cancelDraftPath,
+        undoDraftPoint: () =>
+          setDraftPath((previous) =>
+            previous.slice(0, Math.max(0, previous.length - 1))
+          ),
+        resumePolylineEditing: (shapeId: string) => {
+          const shape = design.shapes.find(
+            (candidate) => candidate.id === shapeId
+          );
+          if (!shape || shape.kind !== "polyline") return;
+          setDraftSourcePath(shape);
+          setDraftPath(
+            shape.points.map((point) => ({
+              x: point.x,
+              y: point.y,
+              z: point.z ?? 0,
+            }))
+          );
+          setSelection([]);
+          setVertexSel(null);
+          setActiveTool("polyline");
+        },
+      }),
+      [
+        design.shapes,
+        cancelDraftPath,
+        draftCloseTarget,
+        finalizePath,
+        fitFieldToViewport,
+        setActiveTool,
+        setManualView,
+        setSelection,
+      ]
+    );
 
     const cursorStyle = useMemo(() => {
       if (isStageDragging) return "grabbing";
@@ -885,6 +1059,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             onWheel={onWheel}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
             onTap={onTap}
             onDblTap={onDblTap}
             onMouseDown={onMouseDown}
@@ -911,50 +1086,52 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
 
             {/* Shapes layer */}
             <Layer>
-              {design.shapes.map((shape) => {
-                const allowInteraction = activeTool === "select" && !readOnly;
-                return (
-                  <TrackShapeNode
-                    key={shape.id}
-                    allowInteraction={allowInteraction}
-                    designPpm={design.field.ppm}
-                    dragBound={dragBound}
-                    dragSnapRef={dragSnapRef}
-                    effectiveVertexSel={effectiveVertexSel}
-                    hoveredWaypoint={hoveredWaypoint}
-                    isMobile={isMobile}
-                    mobileMultiSelectEnabled={mobileMultiSelectEnabled}
-                    isSelected={selection.includes(shape.id)}
-                    selectionCount={selection.length}
-                    groupDragOffsetPx={
-                      groupDragPreview &&
-                      groupDragPreview.ids.includes(shape.id)
-                        ? {
-                            x: groupDragPreview.dx,
-                            y: groupDragPreview.dy,
-                          }
-                        : null
-                    }
-                    onMobileMultiSelectStart={onMobileMultiSelectStart}
-                    onShapeContextMenu={openShapeContextMenu}
-                    onSelectOnly={selectOnlyShape}
-                    onToggleSelection={toggleShapeSelection}
-                    setSelection={setSelection}
-                    setVertexSel={setVertexSel}
-                    shape={shape}
-                    shapeRef={(node) => {
-                      shapeRefs.current[shape.id] = node;
-                    }}
-                    setDragSnapPreview={setDragSnapPreview}
-                    resolveShapeDragPosition={resolveShapeDragPosition}
-                    waypointDragBound={waypointDragBound}
-                    resolveWaypointDragPosition={resolveWaypointDragPosition}
-                    updateShape={updateShape}
-                    zmax={zmax}
-                    zmin={zmin}
-                  />
-                );
-              })}
+              {design.shapes
+                .filter((shape) => shape.id !== draftSourcePath?.id)
+                .map((shape) => {
+                  const allowInteraction = activeTool === "select" && !readOnly;
+                  return (
+                    <TrackShapeNode
+                      key={shape.id}
+                      allowInteraction={allowInteraction}
+                      designPpm={design.field.ppm}
+                      dragBound={dragBound}
+                      dragSnapRef={dragSnapRef}
+                      effectiveVertexSel={effectiveVertexSel}
+                      hoveredWaypoint={hoveredWaypoint}
+                      isMobile={isMobile}
+                      mobileMultiSelectEnabled={mobileMultiSelectEnabled}
+                      isSelected={selection.includes(shape.id)}
+                      selectionCount={selection.length}
+                      groupDragOffsetPx={
+                        groupDragPreview &&
+                        groupDragPreview.ids.includes(shape.id)
+                          ? {
+                              x: groupDragPreview.dx,
+                              y: groupDragPreview.dy,
+                            }
+                          : null
+                      }
+                      onMobileMultiSelectStart={onMobileMultiSelectStart}
+                      onShapeContextMenu={openShapeContextMenu}
+                      onSelectOnly={selectOnlyShape}
+                      onToggleSelection={toggleShapeSelection}
+                      setSelection={setSelection}
+                      setVertexSel={setVertexSel}
+                      shape={shape}
+                      shapeRef={(node) => {
+                        shapeRefs.current[shape.id] = node;
+                      }}
+                      setDragSnapPreview={setDragSnapPreview}
+                      resolveShapeDragPosition={resolveShapeDragPosition}
+                      waypointDragBound={waypointDragBound}
+                      resolveWaypointDragPosition={resolveWaypointDragPosition}
+                      updateShape={updateShape}
+                      zmax={zmax}
+                      zmin={zmin}
+                    />
+                  );
+                })}
               {activeTool === "select" &&
                 !readOnly &&
                 selection.length > 1 &&
@@ -1139,14 +1316,35 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                 })()}
 
               {/* Draft polyline */}
+              {draftPreviewSmoothPx.length >= 4 && (
+                <>
+                  <Line
+                    points={draftPreviewSmoothPx}
+                    stroke="#60a5fa"
+                    strokeWidth={m2px(0.28, design.field.ppm)}
+                    lineCap="round"
+                    lineJoin="round"
+                    opacity={0.2}
+                  />
+                  <Line
+                    points={draftPreviewSmoothPx}
+                    stroke={snapTarget ? "#22c55e" : "#3b82f6"}
+                    strokeWidth={m2px(0.18, design.field.ppm)}
+                    lineCap="round"
+                    lineJoin="round"
+                    opacity={0.55}
+                  />
+                </>
+              )}
               {draftPointsPx.length > 0 && (
                 <Line
                   points={draftPointsPx}
-                  stroke="#3b82f6"
-                  strokeWidth={m2px(0.18, design.field.ppm)}
-                  dash={[6, 6]}
+                  stroke="#93c5fd"
+                  strokeWidth={Math.max(1, m2px(0.08, design.field.ppm))}
+                  dash={[4, 6]}
                   lineCap="round"
                   lineJoin="round"
+                  opacity={0.45}
                 />
               )}
               {draftPointsPx.length > 0 &&
@@ -1158,22 +1356,54 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                   const endY = snapTarget
                     ? m2px(snapTarget.y, design.field.ppm)
                     : cursor.snappedPx.y;
+                  const previewX = draftCloseTarget
+                    ? m2px(draftCloseTarget.x, design.field.ppm)
+                    : endX;
+                  const previewY = draftCloseTarget
+                    ? m2px(draftCloseTarget.y, design.field.ppm)
+                    : endY;
                   return (
                     <Line
                       points={[
                         draftPointsPx[draftPointsPx.length - 2],
                         draftPointsPx[draftPointsPx.length - 1],
-                        endX,
-                        endY,
+                        previewX,
+                        previewY,
                       ]}
-                      stroke={snapTarget ? "#22c55e" : "#60a5fa"}
-                      strokeWidth={m2px(0.18, design.field.ppm)}
+                      stroke={
+                        draftCloseTarget
+                          ? "#f59e0b"
+                          : snapTarget
+                            ? "#22c55e"
+                            : "#60a5fa"
+                      }
+                      strokeWidth={Math.max(1, m2px(0.12, design.field.ppm))}
                       dash={[4, 6]}
-                      opacity={0.7}
+                      opacity={0.5}
                       lineCap="round"
                     />
                   );
                 })()}
+              {draftCloseTarget && (
+                <Group listening={false}>
+                  <Circle
+                    x={m2px(draftCloseTarget.x, design.field.ppm)}
+                    y={m2px(draftCloseTarget.y, design.field.ppm)}
+                    radius={Math.max(9, m2px(0.28, design.field.ppm))}
+                    stroke="#f59e0b"
+                    strokeWidth={1.5}
+                    dash={[5, 4]}
+                    opacity={0.9}
+                  />
+                  <Circle
+                    x={m2px(draftCloseTarget.x, design.field.ppm)}
+                    y={m2px(draftCloseTarget.y, design.field.ppm)}
+                    radius={3.5}
+                    fill="#f59e0b"
+                    opacity={0.95}
+                  />
+                </Group>
+              )}
 
               {/* Cursor crosshair */}
               {cursor && (
@@ -1275,7 +1505,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           )}
 
           {/* Status overlay */}
-          {draftPath.length > 0 && (
+          {draftPath.length > 0 && !isMobile && (
             <div className="text-primary/70 bg-background/80 border-border/40 pointer-events-none absolute inset-x-0 bottom-0 border-t px-3 py-2 text-[11px]">
               {isMobile ? "Tap" : "Click"} to add points ·{" "}
               {isMobile ? "double-tap" : "double-click"} or{" "}
@@ -1283,6 +1513,11 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
               finish ·{" "}
               <span className="text-foreground/60 font-medium">Esc</span> to
               cancel
+              {draftCloseTarget && (
+                <span className="ml-3 text-amber-500/90">
+                  Release to close loop
+                </span>
+              )}
               {draftLengthWithCursor > 0 && (
                 <span className="text-muted-foreground/60 ml-3">
                   {draftLengthWithCursor.toFixed(1)} m
@@ -1306,6 +1541,32 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                 </div>
               </ContextMenuLabel>
               <ContextMenuItem
+                disabled={!contextMenu.editablePolylineId}
+                onClick={() => {
+                  if (!contextMenu.editablePolylineId) return;
+                  const shape = design.shapes.find(
+                    (candidate) =>
+                      candidate.id === contextMenu.editablePolylineId
+                  );
+                  if (!shape || shape.kind !== "polyline") return;
+                  setDraftSourcePath(shape);
+                  setDraftPath(
+                    shape.points.map((point) => ({
+                      x: point.x,
+                      y: point.y,
+                      z: point.z ?? 0,
+                    }))
+                  );
+                  setSelection([]);
+                  setVertexSel(null);
+                  setActiveTool("polyline");
+                  setContextMenu(null);
+                }}
+              >
+                <PencilLine className="size-3.5" />
+                Continue editing
+              </ContextMenuItem>
+              <ContextMenuItem
                 onClick={() => {
                   duplicateShapes(contextMenu.ids);
                   setContextMenu(null);
@@ -1314,6 +1575,16 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                 <Copy className="size-3.5" />
                 Duplicate
                 <ContextMenuShortcut>Ctrl/Cmd+D</ContextMenuShortcut>
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={contextMenu.joinablePolylineIds.length < 2}
+                onClick={() => {
+                  joinPolylines(contextMenu.joinablePolylineIds);
+                  setContextMenu(null);
+                }}
+              >
+                <GitMerge className="size-3.5" />
+                Join paths
               </ContextMenuItem>
               <ContextMenuItem
                 onClick={() => {
@@ -1360,36 +1631,36 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                   </ContextMenuItem>
                 </ContextMenuSubContent>
               </ContextMenuSub>
-              <ContextMenuSub>
-                <ContextMenuSubTrigger
-                  disabled={contextMenu.rotatableIds.length === 0}
-                >
-                  <RotateCw className="size-3.5" />
-                  Rotate
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  <ContextMenuItem
-                    onClick={() => {
-                      rotateShapes(contextMenu.rotatableIds, -15);
-                      setContextMenu(null);
-                    }}
-                  >
-                    <RotateCcw className="size-3.5" />
-                    Rotate left
-                    <ContextMenuShortcut>Q / [</ContextMenuShortcut>
-                  </ContextMenuItem>
-                  <ContextMenuItem
-                    onClick={() => {
-                      rotateShapes(contextMenu.rotatableIds, 15);
-                      setContextMenu(null);
-                    }}
-                  >
+              {contextMenu.rotatableIds.length > 0 && (
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>
                     <RotateCw className="size-3.5" />
-                    Rotate right
-                    <ContextMenuShortcut>E / ]</ContextMenuShortcut>
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
-              </ContextMenuSub>
+                    Rotate
+                  </ContextMenuSubTrigger>
+                  <ContextMenuSubContent>
+                    <ContextMenuItem
+                      onClick={() => {
+                        rotateShapes(contextMenu.rotatableIds, -15);
+                        setContextMenu(null);
+                      }}
+                    >
+                      <RotateCcw className="size-3.5" />
+                      Rotate left
+                      <ContextMenuShortcut>Q / [</ContextMenuShortcut>
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onClick={() => {
+                        rotateShapes(contextMenu.rotatableIds, 15);
+                        setContextMenu(null);
+                      }}
+                    >
+                      <RotateCw className="size-3.5" />
+                      Rotate right
+                      <ContextMenuShortcut>E / ]</ContextMenuShortcut>
+                    </ContextMenuItem>
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
+              )}
             </ContextMenuGroup>
             <ContextMenuSeparator />
             <ContextMenuItem

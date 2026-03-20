@@ -5,7 +5,13 @@ import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
 import { nanoid } from "nanoid";
-import type { FieldSpec, Shape, ShapeDraft, TrackDesign } from "@/lib/types";
+import type {
+  FieldSpec,
+  PolylineShape,
+  Shape,
+  ShapeDraft,
+  TrackDesign,
+} from "@/lib/types";
 import { createDefaultDesign, normalizeDesign, nowIso } from "@/lib/design";
 import type { EditorTool } from "@/lib/editor-tools";
 
@@ -25,6 +31,7 @@ interface EditorState {
   rotateShapes: (ids: string[], delta: number) => void;
   removeShapes: (ids: string[]) => void;
   duplicateShapes: (ids: string[]) => void;
+  joinPolylines: (ids: string[]) => string | null;
   nudgeShapes: (ids: string[], dx: number, dy: number) => void;
   setSelection: (ids: string[]) => void;
   setActiveTool: (tool: EditorTool) => void;
@@ -41,6 +48,143 @@ interface EditorState {
   newProject: () => void;
   bringForward: (id: string) => void;
   sendBackward: (id: string) => void;
+}
+
+function reversePolyline(path: PolylineShape): PolylineShape {
+  return {
+    ...path,
+    points: [...path.points].reverse(),
+  };
+}
+
+function endpointDistance(
+  a: { x: number; y: number },
+  b: { x: number; y: number }
+) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function getPolylineAnchor(path: PolylineShape) {
+  if (!path.points.length) {
+    return { x: path.x, y: path.y };
+  }
+
+  const totals = path.points.reduce(
+    (accumulator, point) => ({
+      x: accumulator.x + point.x,
+      y: accumulator.y + point.y,
+    }),
+    { x: 0, y: 0 }
+  );
+
+  return {
+    x: totals.x / path.points.length,
+    y: totals.y / path.points.length,
+  };
+}
+
+function joinPolylineShapes(paths: PolylineShape[]): PolylineShape | null {
+  const openPaths = paths
+    .filter((path) => !path.closed && path.points.length >= 2)
+    .map((path) => ({
+      ...path,
+      x: 0,
+      y: 0,
+      points: path.points.map((point) => ({
+        ...point,
+        x: point.x + path.x,
+        y: point.y + path.y,
+      })),
+    }));
+
+  if (openPaths.length < 2) return null;
+
+  const remaining = [...openPaths];
+  let merged = remaining.shift()!;
+
+  while (remaining.length) {
+    const mergedStart = merged.points[0];
+    const mergedEnd = merged.points.at(-1)!;
+    let bestIndex = 0;
+    let bestCandidate = remaining[0];
+    let bestOrientation: "append" | "prepend" = "append";
+    let bestReverse = false;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    remaining.forEach((candidate, index) => {
+      const candidateStart = candidate.points[0];
+      const candidateEnd = candidate.points.at(-1)!;
+      const options = [
+        {
+          distance: endpointDistance(mergedEnd, candidateStart),
+          orientation: "append" as const,
+          reverse: false,
+        },
+        {
+          distance: endpointDistance(mergedEnd, candidateEnd),
+          orientation: "append" as const,
+          reverse: true,
+        },
+        {
+          distance: endpointDistance(mergedStart, candidateEnd),
+          orientation: "prepend" as const,
+          reverse: false,
+        },
+        {
+          distance: endpointDistance(mergedStart, candidateStart),
+          orientation: "prepend" as const,
+          reverse: true,
+        },
+      ];
+
+      for (const option of options) {
+        if (option.distance < bestDistance) {
+          bestDistance = option.distance;
+          bestIndex = index;
+          bestCandidate = candidate;
+          bestOrientation = option.orientation;
+          bestReverse = option.reverse;
+        }
+      }
+    });
+
+    const nextPath = bestReverse
+      ? reversePolyline(bestCandidate)
+      : bestCandidate;
+    const nextPoints =
+      bestOrientation === "append"
+        ? [...merged.points, ...nextPath.points]
+        : [...nextPath.points, ...merged.points];
+
+    const dedupedPoints = nextPoints.filter(
+      (point, index, all) =>
+        index === 0 ||
+        endpointDistance(point, all[index - 1]) > 0.001 ||
+        Math.abs((point.z ?? 0) - (all[index - 1].z ?? 0)) > 0.001
+    );
+
+    merged = {
+      ...merged,
+      points: dedupedPoints,
+      x: 0,
+      y: 0,
+      showArrows: merged.showArrows || nextPath.showArrows,
+      arrowSpacing: Math.min(
+        merged.arrowSpacing ?? 15,
+        nextPath.arrowSpacing ?? 15
+      ),
+      strokeWidth: Math.max(
+        merged.strokeWidth ?? 0.26,
+        nextPath.strokeWidth ?? 0.26
+      ),
+      closed: false,
+      locked: false,
+    };
+
+    remaining.splice(bestIndex, 1);
+  }
+
+  return merged;
 }
 
 export const useEditor = create<EditorState>()(
@@ -80,7 +224,35 @@ export const useEditor = create<EditorState>()(
         set((draft) => {
           const idx = draft.design.shapes.findIndex((sh) => sh.id === id);
           if (idx !== -1) {
-            Object.assign(draft.design.shapes[idx], patch);
+            const shape = draft.design.shapes[idx];
+            if (shape.kind === "polyline") {
+              const polyline = shape;
+              const nextPatch = { ...patch } as Partial<Shape>;
+              const currentAnchor = getPolylineAnchor(polyline);
+              const nextX =
+                typeof nextPatch.x === "number" ? nextPatch.x : currentAnchor.x;
+              const nextY =
+                typeof nextPatch.y === "number" ? nextPatch.y : currentAnchor.y;
+
+              if (
+                typeof nextPatch.x === "number" ||
+                typeof nextPatch.y === "number"
+              ) {
+                const dx = nextX - currentAnchor.x;
+                const dy = nextY - currentAnchor.y;
+                polyline.points = polyline.points.map((point) => ({
+                  ...point,
+                  x: point.x + dx,
+                  y: point.y + dy,
+                }));
+                nextPatch.x = 0;
+                nextPatch.y = 0;
+              }
+
+              Object.assign(polyline, nextPatch);
+            } else {
+              Object.assign(shape, patch);
+            }
             draft.design.updatedAt = nowIso();
           }
         }),
@@ -122,8 +294,17 @@ export const useEditor = create<EditorState>()(
           for (const id of ids) {
             const idx = draft.design.shapes.findIndex((s) => s.id === id);
             if (idx !== -1 && !draft.design.shapes[idx].locked) {
-              draft.design.shapes[idx].x += dx;
-              draft.design.shapes[idx].y += dy;
+              const shape = draft.design.shapes[idx];
+              if (shape.kind === "polyline") {
+                shape.points = shape.points.map((point) => ({
+                  ...point,
+                  x: point.x + dx,
+                  y: point.y + dy,
+                }));
+              } else {
+                shape.x += dx;
+                shape.y += dy;
+              }
             }
           }
           draft.design.updatedAt = nowIso();
@@ -134,17 +315,63 @@ export const useEditor = create<EditorState>()(
           const toDuplicate = draft.design.shapes.filter((sh) =>
             ids.includes(sh.id)
           );
-          const newShapes = toDuplicate.map((sh) => ({
-            ...sh,
-            id: nanoid(),
-            x: sh.x + 1,
-            y: sh.y + 1,
-            name: sh.name ? `${sh.name} copy` : undefined,
-          }));
+          const newShapes = toDuplicate.map((sh) =>
+            sh.kind === "polyline"
+              ? {
+                  ...sh,
+                  id: nanoid(),
+                  x: 0,
+                  y: 0,
+                  points: sh.points.map((point) => ({
+                    ...point,
+                    x: point.x + 1,
+                    y: point.y + 1,
+                  })),
+                  name: sh.name ? `${sh.name} copy` : undefined,
+                }
+              : {
+                  ...sh,
+                  id: nanoid(),
+                  x: sh.x + 1,
+                  y: sh.y + 1,
+                  name: sh.name ? `${sh.name} copy` : undefined,
+                }
+          );
           draft.design.shapes.push(...newShapes);
           draft.selection = newShapes.map((s) => s.id);
           draft.design.updatedAt = nowIso();
         }),
+
+      joinPolylines: (ids) => {
+        const nextId = nanoid();
+        let created = false;
+
+        set((draft) => {
+          const polylineShapes = draft.design.shapes.filter(
+            (shape): shape is PolylineShape =>
+              ids.includes(shape.id) && shape.kind === "polyline"
+          );
+          const merged = joinPolylineShapes(polylineShapes);
+          if (!merged) return;
+
+          draft.design.shapes = draft.design.shapes.filter(
+            (shape) => !ids.includes(shape.id)
+          );
+          draft.design.shapes.push({
+            ...merged,
+            id: nextId,
+            name:
+              polylineShapes.length === 2
+                ? "Joined path"
+                : `Joined ${polylineShapes.length} paths`,
+          });
+          draft.selection = [nextId];
+          draft.design.updatedAt = nowIso();
+          created = true;
+        });
+
+        return created ? nextId : null;
+      },
 
       setSelection: (ids) =>
         set((draft) => {

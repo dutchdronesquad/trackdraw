@@ -13,6 +13,7 @@ import {
 interface TrackCanvasShortcutsParams {
   activeTool: EditorTool;
   addShape: (shape: ShapeDraft) => string;
+  cancelDraftPath: () => void;
   designFieldGridStep: number;
   designShapes: Shape[];
   draftPath: DraftPoint[];
@@ -44,6 +45,7 @@ function canRotateShape(shape: Shape) {
 export function useTrackCanvasShortcuts({
   activeTool,
   addShape,
+  cancelDraftPath,
   designFieldGridStep,
   designShapes,
   draftPath,
@@ -101,8 +103,17 @@ export function useTrackCanvasShortcuts({
           const { id: _id, ...rest } = shape;
           const duplicatedShape: ShapeDraft = {
             ...rest,
-            x: shape.x + 1,
-            y: shape.y + 1,
+            x: shape.kind === "polyline" ? 0 : shape.x + 1,
+            y: shape.kind === "polyline" ? 0 : shape.y + 1,
+            ...(shape.kind === "polyline"
+              ? {
+                  points: shape.points.map((point) => ({
+                    ...point,
+                    x: point.x + 1,
+                    y: point.y + 1,
+                  })),
+                }
+              : {}),
           };
           newIds.push(addShape(duplicatedShape));
         });
@@ -156,7 +167,7 @@ export function useTrackCanvasShortcuts({
 
       const key = event.key;
       if (key === "Escape") {
-        if (draftPath.length) setDraftPath([]);
+        if (draftPath.length) cancelDraftPath();
         else {
           setSelection([]);
           setVertexSel(null);
@@ -231,6 +242,7 @@ export function useTrackCanvasShortcuts({
   }, [
     activeTool,
     addShape,
+    cancelDraftPath,
     designFieldGridStep,
     designShapes,
     draftPath,

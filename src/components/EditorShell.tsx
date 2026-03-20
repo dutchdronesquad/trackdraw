@@ -71,6 +71,14 @@ export default function EditorShell({
   const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(true);
   const [mobileMultiSelectEnabled, setMobileMultiSelectEnabled] =
     useState(false);
+  const [mobileDraftPathState, setMobileDraftPathState] = useState({
+    active: false,
+    canClose: false,
+    length: 0,
+    pointCount: 0,
+  });
+  const [mobilePathBuilderPinnedOpen, setMobilePathBuilderPinnedOpen] =
+    useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const selectionLocked =
     selection.length > 0 &&
@@ -78,7 +86,6 @@ export default function EditorShell({
       const shape = design.shapes.find((candidate) => candidate.id === id);
       return Boolean(shape?.locked);
     });
-
   // Load persisted design on mount
   useEffect(() => {
     if (readOnly) return;
@@ -168,6 +175,7 @@ export default function EditorShell({
                   <TrackCanvas
                     ref={canvasRef}
                     onCursorChange={setCursorPos}
+                    onDraftPathStateChange={setMobileDraftPathState}
                     onSnapChange={setSnapActive}
                     onMobileMultiSelectStart={(shapeId) => {
                       setMobileMultiSelectEnabled(true);
@@ -209,6 +217,17 @@ export default function EditorShell({
 
         <EditorMobilePanels
           activeTool={activeTool}
+          draftPathActive={mobileDraftPathState.active}
+          draftPathCanClose={mobileDraftPathState.canClose}
+          draftPathLength={mobileDraftPathState.length}
+          draftPathPointCount={mobileDraftPathState.pointCount}
+          hasSelectedPolyline={
+            selection.length === 1 &&
+            design.shapes.some(
+              (shape) => shape.id === selection[0] && shape.kind === "polyline"
+            )
+          }
+          pathBuilderPinnedOpen={mobilePathBuilderPinnedOpen}
           mobileInspectorOpen={mobileInspectorOpen}
           mobileToolsOpen={mobileToolsOpen}
           mobileMultiSelectEnabled={mobileMultiSelectEnabled}
@@ -223,15 +242,34 @@ export default function EditorShell({
           onCloseInspector={() => setMobileInspectorOpen(false)}
           onDismissMobileOverride={() => setMobileOverrideDismissed(true)}
           onFitView={() => canvasRef.current?.fitToWindow()}
+          onCancelPath={() => {
+            canvasRef.current?.cancelDraftPath();
+            setMobilePathBuilderPinnedOpen(false);
+            setActiveTool("select");
+          }}
+          onFinishPath={() => {
+            canvasRef.current?.finishDraftPath();
+            setMobilePathBuilderPinnedOpen(false);
+          }}
           onOpenInspector={() => {
             setMobileToolsOpen(false);
             setMobileInspectorOpen(true);
+          }}
+          onResumeSelectedPath={() => {
+            const selectedShape =
+              selection.length === 1
+                ? design.shapes.find((shape) => shape.id === selection[0])
+                : null;
+            if (!selectedShape || selectedShape.kind !== "polyline") return;
+            setMobilePathBuilderPinnedOpen(true);
+            canvasRef.current?.resumePolylineEditing(selectedShape.id);
           }}
           onOpenReadOnlyMenu={() => setReadOnlyMenuOpen(true)}
           onOpenTools={() => {
             setMobileInspectorOpen(false);
             setMobileToolsOpen(true);
           }}
+          onUndoPathPoint={() => canvasRef.current?.undoDraftPoint()}
           onDeleteSelection={() => {
             if (!selection.length) return;
             removeShapes(selection);
@@ -255,6 +293,7 @@ export default function EditorShell({
           onSelectTool={(tool) => {
             setSelection([]);
             setMobileMultiSelectEnabled(false);
+            setMobilePathBuilderPinnedOpen(tool === "polyline");
             setActiveTool(tool);
             setMobileToolsOpen(false);
           }}
@@ -280,6 +319,9 @@ export default function EditorShell({
           }}
           onTabChange={(nextTab) => {
             setTab(nextTab);
+            if (nextTab !== "2d") {
+              setMobilePathBuilderPinnedOpen(false);
+            }
             setMobileInspectorOpen(false);
             setMobileToolsOpen(false);
             setReadOnlyMenuOpen(false);
