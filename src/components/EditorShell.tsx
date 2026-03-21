@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
   useEffect,
-  useMemo,
   type ForwardRefExoticComponent,
   type RefAttributes,
 } from "react";
@@ -25,6 +24,13 @@ import type {
 } from "@/components/TrackPreview3D";
 import { parseDesign } from "@/lib/design";
 import { useEditor } from "@/store/editor";
+import {
+  selectDesignShapes,
+  selectHasPath,
+  selectHasSelectedPolyline,
+  selectSelectionLocked,
+  selectShapeRecordMap,
+} from "@/store/selectors";
 
 const TrackPreview3D = dynamic<TrackPreview3DProps>(
   () => import("@/components/TrackPreview3D"),
@@ -47,14 +53,23 @@ export default function EditorShell({
 }) {
   const selection = useEditor((state) => state.selection);
   const design = useEditor((state) => state.design);
-  const activeTool = useEditor((state) => state.activeTool);
+  const activeTool = useEditor((state) => state.transient.activeTool);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
   const newProject = useEditor((state) => state.newProject);
   const removeShapes = useEditor((state) => state.removeShapes);
   const replaceDesign = useEditor((state) => state.replaceDesign);
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setSelection = useEditor((state) => state.setSelection);
-  const updateShape = useEditor((state) => state.updateShape);
+  const setShapesLocked = useEditor((state) => state.setShapesLocked);
+  const historyPaused = useEditor((state) => state.historyPaused);
+  const interactionSessionDepth = useEditor(
+    (state) => state.interactionSessionDepth
+  );
+  const designShapes = useEditor(selectDesignShapes);
+  const hasPath = useEditor(selectHasPath);
+  const hasSelectedPolyline = useEditor(selectHasSelectedPolyline);
+  const shapeById = useEditor(selectShapeRecordMap);
+  const selectionLocked = useEditor(selectSelectionLocked);
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -89,13 +104,6 @@ export default function EditorShell({
   const [saveStatusLabel, setSaveStatusLabel] = useState("Saving locally…");
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
-  const shapeById = useMemo(
-    () => new Map(design.shapes.map((shape) => [shape.id, shape])),
-    [design.shapes]
-  );
-  const selectionLocked =
-    selection.length > 0 &&
-    selection.every((id) => Boolean(shapeById.get(id)?.locked));
   // Load persisted design on mount
   useEffect(() => {
     if (readOnly) return;
@@ -122,6 +130,10 @@ export default function EditorShell({
   // autosave on every intermediate state.
   useEffect(() => {
     if (readOnly) return;
+    if (historyPaused || interactionSessionDepth > 0) {
+      setSaveStatusLabel("Editing…");
+      return;
+    }
 
     const timeoutId = window.setTimeout(() => {
       try {
@@ -138,7 +150,7 @@ export default function EditorShell({
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [design, readOnly]);
+  }, [design, historyPaused, interactionSessionDepth, readOnly]);
 
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
@@ -251,7 +263,7 @@ export default function EditorShell({
                 </div>
                 {!readOnly &&
                 showStarter &&
-                design.shapes.length === 0 &&
+                designShapes.length === 0 &&
                 !design.title.trim() ? (
                   <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4">
                     <div className="border-border/70 bg-card/96 pointer-events-auto w-full max-w-md rounded-2xl border p-4 shadow-xl backdrop-blur">
@@ -337,15 +349,8 @@ export default function EditorShell({
           draftPathClosed={mobileDraftPathState.closed}
           draftPathLength={mobileDraftPathState.length}
           draftPathPointCount={mobileDraftPathState.pointCount}
-          hasPath={design.shapes.some(
-            (shape) => shape.kind === "polyline" && shape.points.length >= 2
-          )}
-          hasSelectedPolyline={
-            selection.length === 1 &&
-            design.shapes.some(
-              (shape) => shape.id === selection[0] && shape.kind === "polyline"
-            )
-          }
+          hasPath={hasPath}
+          hasSelectedPolyline={hasSelectedPolyline}
           pathBuilderPinnedOpen={mobilePathBuilderPinnedOpen}
           mobileInspectorOpen={mobileInspectorOpen}
           mobileToolsOpen={mobileToolsOpen}
@@ -380,7 +385,7 @@ export default function EditorShell({
           }}
           onResumeSelectedPath={() => {
             const selectedShape =
-              selection.length === 1 ? shapeById.get(selection[0]) : null;
+              selection.length === 1 ? shapeById[selection[0]] : null;
             if (!selectedShape || selectedShape.kind !== "polyline") return;
             setMobilePathBuilderPinnedOpen(true);
             canvasRef.current?.resumePolylineEditing(selectedShape.id);
@@ -407,9 +412,7 @@ export default function EditorShell({
           }}
           onToggleSelectionLock={() => {
             if (!selection.length) return;
-            for (const id of selection) {
-              updateShape(id, { locked: !selectionLocked });
-            }
+            setShapesLocked(selection, !selectionLocked);
           }}
           onSetMobileGizmoEnabled={setMobileGizmoEnabled}
           onSetMobileRulersEnabled={setMobileRulersEnabled}
@@ -484,7 +487,7 @@ export default function EditorShell({
       <ProjectManagerDialog
         open={projectManagerOpen}
         onOpenChange={setProjectManagerOpen}
-        hasContent={Boolean(design.title.trim() || design.shapes.length)}
+        hasContent={Boolean(design.title.trim() || designShapes.length)}
         onNewProject={() => {
           newProject();
           setProjectManagerOpen(false);

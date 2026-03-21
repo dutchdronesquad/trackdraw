@@ -25,7 +25,10 @@ import {
   useImperativeHandle,
 } from "react";
 import * as THREE from "three";
-import { getAdaptiveCurveSegments, smoothPolyline3D } from "@/lib/geometry";
+import {
+  getPolylineCurve3Derived,
+  getPolylinePreview3DPoints,
+} from "@/lib/polyline-derived";
 
 export interface TrackPreview3DHandle {
   screenshot: () => string;
@@ -162,53 +165,19 @@ import type {
   FlagShape,
   ConeShape,
   LabelShape,
+  PolylinePoint,
   PolylineShape,
   Shape,
   StartFinishShape,
   LadderShape,
   DiveGateShape,
-  PolylinePoint,
 } from "@/lib/types";
-
-function buildPolylineCurve3(
-  points: PolylinePoint[],
-  options?: {
-    closed?: boolean;
-    heightOffset?: number;
-    samplesPerSegment?: number;
-    density?: number;
-  }
-) {
-  if (points.length < 2) return null;
-
-  const closed = options?.closed ?? false;
-  const heightOffset = options?.heightOffset ?? 0;
-  const samplesPerSegment = options?.samplesPerSegment ?? 18;
-  const density = options?.density ?? 12;
-
-  const smoothPoints = smoothPolyline3D(points, {
-    closed,
-    samplesPerSegment,
-  });
-  const baseVectors = smoothPoints.map(
-    (point) =>
-      new THREE.Vector3(point.x, Math.max(point.z, 0) + heightOffset, point.y)
-  );
-  const baseCurve = new THREE.CatmullRomCurve3(
-    baseVectors,
-    closed,
-    "centripetal"
-  );
-  const segmentCount = getAdaptiveCurveSegments(smoothPoints, density);
-  const spacedPoints = baseCurve.getSpacedPoints(segmentCount);
-  const curve = new THREE.CatmullRomCurve3(spacedPoints, closed, "centripetal");
-  curve.arcLengthDivisions = Math.max(240, segmentCount * 3);
-
-  return {
-    curve,
-    segmentCount,
-  };
-}
+import {
+  selectDesignShapes,
+  selectHasPath,
+  selectSelectedPolyline,
+  selectShapeRecordMap,
+} from "@/store/selectors";
 
 // Creates a canvas texture with text drawn on it
 function useTextTexture(
@@ -760,18 +729,12 @@ function RaceLine3D({
   shape: PolylineShape;
 }) {
   const previewPoints = useMemo(
-    () =>
-      shape.points.map((point) => [
-        point.x,
-        Math.max(point.z ?? 0, 0) + 0.5,
-        point.y,
-      ]) as [number, number, number][],
-    [shape.points]
+    () => getPolylinePreview3DPoints(shape, 0.5),
+    [shape]
   );
   const geometry = useMemo(() => {
     if (editing) return null;
-    const curveData = buildPolylineCurve3(shape.points, {
-      closed: shape.closed ?? false,
+    const curveData = getPolylineCurve3Derived(shape, {
       heightOffset: 0.5,
       samplesPerSegment: 18,
       density: 12,
@@ -785,7 +748,7 @@ function RaceLine3D({
       10,
       shape.closed ?? false
     );
-  }, [editing, shape.closed, shape.points, shape.strokeWidth]);
+  }, [editing, shape]);
 
   if (editing) {
     return (
@@ -1094,8 +1057,7 @@ function DroneCamera({
     ) as PolylineShape | undefined;
     if (!pl) return null;
 
-    const curve = buildPolylineCurve3(pl.points, {
-      closed: pl.closed ?? false,
+    const curve = getPolylineCurve3Derived(pl, {
       heightOffset: 0.8,
       samplesPerSegment: 18,
       density: 12,
@@ -1264,10 +1226,17 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     ref
   ) {
     const field = useEditor((state) => state.design.field);
-    const shapes = useEditor((state) => state.design.shapes);
     const selection = useEditor((state) => state.selection);
     const setSelection = useEditor((state) => state.setSelection);
-    const updateShape = useEditor((state) => state.updateShape);
+    const pauseHistory = useEditor((state) => state.pauseHistory);
+    const resumeHistory = useEditor((state) => state.resumeHistory);
+    const beginInteraction = useEditor((state) => state.beginInteraction);
+    const endInteraction = useEditor((state) => state.endInteraction);
+    const setPolylinePoints = useEditor((state) => state.setPolylinePoints);
+    const shapes = useEditor(selectDesignShapes);
+    const hasPath = useEditor(selectHasPath);
+    const shapeById = useEditor(selectShapeRecordMap);
+    const selectedPolyline = useEditor(selectSelectedPolyline);
     const theme = useTheme();
     const isMobile = useIsMobile();
     const t = THEME[theme];
@@ -1297,10 +1266,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const dragAnimationFrameRef = useRef<number | null>(null);
     const pendingClientYRef = useRef<number | null>(null);
     const selectionRef = useRef(selection);
-    const shapeById = useMemo(
-      () => new Map<string, Shape>(shapes.map((shape) => [shape.id, shape])),
-      [shapes]
-    );
     const selectedIdSet = useMemo(() => new Set(selection), [selection]);
 
     useEffect(() => {
@@ -1314,10 +1279,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     useEffect(() => {
       onFlyModeChange?.(flyMode);
     }, [flyMode, onFlyModeChange]);
-
-    const hasPath = shapes.some(
-      (s) => s.kind === "polyline" && (s as PolylineShape).points.length >= 2
-    );
 
     useImperativeHandle(ref, () => ({
       screenshot: () => screenshotFnRef.current?.() ?? "",
@@ -1355,12 +1316,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       [setSelection]
     );
 
-    const selectedPolyline = useMemo(() => {
-      if (selection.length !== 1) return null;
-      const shape = shapeById.get(selection[0]);
-      return shape?.kind === "polyline" ? shape : null;
-    }, [selection, shapeById]);
-
     const previewPolyline = useMemo(() => {
       if (!selectedPolyline || !elevationPreviewPoints) return selectedPolyline;
       return {
@@ -1374,6 +1329,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         event.stopPropagation();
         const point = selectedPolyline?.points[index];
         if (!selectedPolyline || !point) return;
+        beginInteraction();
+        pauseHistory();
         setSelection([selectedPolyline.id]);
         setElevationPreviewPoints(selectedPolyline.points);
         setElevationDrag({
@@ -1383,14 +1340,14 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           startZ: point.z ?? 0,
         });
       },
-      [selectedPolyline, setSelection]
+      [beginInteraction, pauseHistory, selectedPolyline, setSelection]
     );
 
     const applyElevationDrag = useCallback(
       (clientY: number) => {
         const drag = elevationDragRef.current;
         if (!drag) return;
-        const shape = shapeById.get(drag.shapeId);
+        const shape = shapeById[drag.shapeId];
         if (!shape || shape.kind !== "polyline") return;
         const deltaMeters = (drag.startClientY - clientY) * 0.035;
         const nextZ = Math.max(0, +(drag.startZ + deltaMeters).toFixed(2));
@@ -1437,8 +1394,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       const stopDrag = () => {
         const drag = elevationDragRef.current;
         if (drag && elevationPreviewPoints) {
-          updateShape(drag.shapeId, { points: elevationPreviewPoints });
+          setPolylinePoints(drag.shapeId, elevationPreviewPoints);
         }
+        resumeHistory();
+        endInteraction();
         setElevationPreviewPoints(null);
         setElevationDrag(null);
       };
@@ -1461,12 +1420,16 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           window.cancelAnimationFrame(dragAnimationFrameRef.current);
           dragAnimationFrameRef.current = null;
         }
+        resumeHistory();
+        endInteraction();
       };
     }, [
       applyElevationDrag,
       elevationDrag,
       elevationPreviewPoints,
-      updateShape,
+      endInteraction,
+      resumeHistory,
+      setPolylinePoints,
     ]);
 
     return (

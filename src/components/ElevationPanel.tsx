@@ -1,26 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
 import { useEditor } from "@/store/editor";
-import { elevationSamples, totalLength2D } from "@/lib/geometry";
-import type { PolylineShape } from "@/lib/types";
+import {
+  getPolylineElevationSamples,
+  getPolylineTotalLength2D,
+} from "@/lib/polyline-derived";
+import { selectPrimaryPolyline } from "@/store/selectors";
 
 const W = 260;
 const H = 80;
 const PAD = { top: 8, right: 8, bottom: 20, left: 32 };
 
 export default function ElevationPanel() {
-  const shapes = useEditor((state) => state.design.shapes);
-  const selection = useEditor((state) => state.selection);
-
-  const path = useMemo<PolylineShape | null>(() => {
-    const selected = shapes.find(
-      (s) => selection.includes(s.id) && s.kind === "polyline"
-    );
-    if (selected?.kind === "polyline") return selected;
-    const fallback = shapes.find((s) => s.kind === "polyline");
-    return fallback?.kind === "polyline" ? fallback : null;
-  }, [shapes, selection]);
+  const path = useEditor(selectPrimaryPolyline);
 
   if (!path) {
     return (
@@ -31,8 +23,8 @@ export default function ElevationPanel() {
     );
   }
 
-  const data = elevationSamples(path);
-  const total = totalLength2D(path);
+  const data = getPolylineElevationSamples(path);
+  const total = getPolylineTotalLength2D(path);
   const minZ = Math.min(...data.map((d) => d.z));
   const maxZ = Math.max(...data.map((d) => d.z));
   const zRange = Math.max(maxZ - minZ, 0.5);

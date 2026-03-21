@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   EmptyInspectorView,
   MultiInspectorView,
@@ -8,6 +8,7 @@ import {
 } from "@/components/inspector/views";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
+import { selectDesignShapes, selectSelectedShapes } from "@/store/selectors";
 
 export default function Inspector({
   onResumeSelectedPath,
@@ -19,6 +20,14 @@ export default function Inspector({
   const design = useEditor((state) => state.design);
   const selection = useEditor((state) => state.selection);
   const updateShape = useEditor((state) => state.updateShape);
+  const setShapesLocked = useEditor((state) => state.setShapesLocked);
+  const updatePolylinePoint = useEditor((state) => state.updatePolylinePoint);
+  const insertPolylinePoint = useEditor((state) => state.insertPolylinePoint);
+  const removePolylinePoint = useEditor((state) => state.removePolylinePoint);
+  const appendPolylinePoint = useEditor((state) => state.appendPolylinePoint);
+  const reversePolylinePoints = useEditor(
+    (state) => state.reversePolylinePoints
+  );
   const removeShapes = useEditor((state) => state.removeShapes);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
   const joinPolylines = useEditor((state) => state.joinPolylines);
@@ -28,11 +37,8 @@ export default function Inspector({
   const updateDesignMeta = useEditor((state) => state.updateDesignMeta);
   const setHoveredShapeId = useEditor((state) => state.setHoveredShapeId);
   const setHoveredWaypoint = useEditor((state) => state.setHoveredWaypoint);
-
-  const selectedShapes = useMemo(
-    () => design.shapes.filter((s) => selection.includes(s.id)),
-    [design.shapes, selection]
-  );
+  const designShapes = useEditor(selectDesignShapes);
+  const selectedShapes = useEditor(selectSelectedShapes);
   const count = selectedShapes.length;
   const [panelOverride, setPanelOverride] = useState<
     "design" | "selection" | null
@@ -70,6 +76,12 @@ export default function Inspector({
         mobileInline={mobileInline}
         shape={selectedShapes[0]}
         updateShape={updateShape}
+        setShapesLocked={setShapesLocked}
+        updatePolylinePoint={updatePolylinePoint}
+        insertPolylinePoint={insertPolylinePoint}
+        removePolylinePoint={removePolylinePoint}
+        appendPolylinePoint={appendPolylinePoint}
+        reversePolylinePoints={reversePolylinePoints}
         closePolyline={closePolyline}
         duplicateShapes={duplicateShapes}
         removeShapes={removeShapes}
@@ -127,6 +139,7 @@ export default function Inspector({
           <EmptyInspectorView
             mobileInline={mobileInline}
             design={design}
+            shapes={designShapes}
             setSelection={setSelection}
             updateField={updateField}
             updateDesignMeta={updateDesignMeta}

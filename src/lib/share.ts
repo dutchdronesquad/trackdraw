@@ -1,11 +1,11 @@
 import LZString from "lz-string";
-import { normalizeDesign } from "@/lib/design";
+import { normalizeDesign, serializeDesign } from "@/lib/design";
 import type { TrackDesign } from "./types";
 
 const MAX_SAFE_TOKEN_LENGTH = 7500;
 
 export function encodeDesign(design: TrackDesign): string {
-  const json = JSON.stringify(design);
+  const json = JSON.stringify(serializeDesign(design));
   return LZString.compressToEncodedURIComponent(json);
 }
 

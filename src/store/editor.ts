@@ -3,32 +3,81 @@
 import { create } from "zustand";
 import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
-import { shallow } from "zustand/shallow";
 import { nanoid } from "nanoid";
 import type {
   FieldSpec,
+  PolylinePoint,
   PolylineShape,
+  SerializedTrackDesign,
   Shape,
   ShapeDraft,
   TrackDesign,
 } from "@/lib/types";
-import { createDefaultDesign, normalizeDesign, nowIso } from "@/lib/design";
+import {
+  createDefaultDesign,
+  getDesignShapeById,
+  normalizeDesign,
+  nowIso,
+  serializeDesign,
+} from "@/lib/design";
 import type { EditorTool } from "@/lib/editor-tools";
+import type { DraftPoint, RectLike } from "@/components/canvas/shared";
 
 export type { EditorTool } from "@/lib/editor-tools";
 
-interface EditorState {
-  design: TrackDesign;
-  selection: string[];
+interface EditorTransientState {
   activeTool: EditorTool;
   zoom: number;
   panOffset: { x: number; y: number };
   hoveredShapeId: string | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
+  vertexSelection: { shapeId: string; idx: number } | null;
+  draftPath: DraftPoint[];
+  draftForceClosed: boolean;
+  draftSourceShapeId: string | null;
+  marqueeRect: RectLike | null;
+  rotationSession: {
+    center: { x: number; y: number };
+    shapeId: string;
+    startAngle: number;
+    startRotation: number;
+    previewRotation: number;
+  } | null;
+  groupDragPreview: {
+    ids: string[];
+    origin: { x: number; y: number };
+    dx: number;
+    dy: number;
+  } | null;
+}
+
+interface EditorState {
+  design: TrackDesign;
+  selection: string[];
+  transient: EditorTransientState;
+  historyPaused: boolean;
+  historySessionDepth: number;
+  interactionSessionDepth: number;
 
   addShape: (s: ShapeDraft) => string;
   addShapes: (shapes: ShapeDraft[]) => string[];
   updateShape: (id: string, patch: Partial<Shape>) => void;
+  updateShapes: (ids: string[], patch: Partial<Shape>) => void;
+  setShapesLocked: (ids: string[], locked: boolean) => void;
+  setPolylinePoints: (id: string, points: PolylinePoint[]) => void;
+  updatePolylinePoint: (
+    id: string,
+    index: number,
+    patch: Partial<PolylinePoint>
+  ) => void;
+  insertPolylinePoint: (
+    id: string,
+    index: number,
+    point: PolylinePoint
+  ) => void;
+  removePolylinePoint: (id: string, index: number) => void;
+  appendPolylinePoint: (id: string, point: PolylinePoint) => void;
+  reversePolylinePoints: (id: string) => void;
   rotateShapes: (ids: string[], delta: number) => void;
   removeShapes: (ids: string[]) => void;
   duplicateShapes: (ids: string[]) => void;
@@ -41,16 +90,91 @@ interface EditorState {
   setPanOffset: (offset: { x: number; y: number }) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
   setHoveredWaypoint: (w: { shapeId: string; idx: number } | null) => void;
+  setVertexSelection: (
+    value:
+      | { shapeId: string; idx: number }
+      | null
+      | ((
+          previous: { shapeId: string; idx: number } | null
+        ) => { shapeId: string; idx: number } | null)
+  ) => void;
+  setDraftPath: (
+    value: DraftPoint[] | ((previous: DraftPoint[]) => DraftPoint[])
+  ) => void;
+  setDraftForceClosed: (
+    value: boolean | ((previous: boolean) => boolean)
+  ) => void;
+  setDraftSourceShapeId: (
+    value: string | null | ((previous: string | null) => string | null)
+  ) => void;
+  setMarqueeRect: (
+    value: RectLike | null | ((previous: RectLike | null) => RectLike | null)
+  ) => void;
+  setRotationSession: (
+    value:
+      | {
+          center: { x: number; y: number };
+          shapeId: string;
+          startAngle: number;
+          startRotation: number;
+          previewRotation: number;
+        }
+      | null
+      | ((
+          previous: {
+            center: { x: number; y: number };
+            shapeId: string;
+            startAngle: number;
+            startRotation: number;
+            previewRotation: number;
+          } | null
+        ) => {
+          center: { x: number; y: number };
+          shapeId: string;
+          startAngle: number;
+          startRotation: number;
+          previewRotation: number;
+        } | null)
+  ) => void;
+  setGroupDragPreview: (
+    value:
+      | {
+          ids: string[];
+          origin: { x: number; y: number };
+          dx: number;
+          dy: number;
+        }
+      | null
+      | ((
+          previous: {
+            ids: string[];
+            origin: { x: number; y: number };
+            dx: number;
+            dy: number;
+          } | null
+        ) => {
+          ids: string[];
+          origin: { x: number; y: number };
+          dx: number;
+          dy: number;
+        } | null)
+  ) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (
     patch: Partial<
       Pick<TrackDesign, "title" | "description" | "authorName" | "tags">
     >
   ) => void;
-  replaceDesign: (design: TrackDesign) => void;
+  replaceDesign: (design: TrackDesign | SerializedTrackDesign) => void;
   newProject: () => void;
   bringForward: (id: string) => void;
   sendBackward: (id: string) => void;
+  pauseHistory: () => void;
+  resumeHistory: () => void;
+  clearHistory: () => void;
+  beginInteraction: () => void;
+  endInteraction: () => void;
+  sanitizeHistoryState: () => void;
 }
 
 function reversePolyline(path: PolylineShape): PolylineShape {
@@ -58,6 +182,32 @@ function reversePolyline(path: PolylineShape): PolylineShape {
     ...path,
     points: [...path.points].reverse(),
   };
+}
+
+function addShapeRecord(design: TrackDesign, shape: Shape) {
+  design.shapeOrder.push(shape.id);
+  design.shapeById[shape.id] = shape;
+}
+
+function findShapeOrderIndex(design: TrackDesign, id: string) {
+  return design.shapeOrder.indexOf(id);
+}
+
+function removeShapeRecord(design: TrackDesign, id: string) {
+  delete design.shapeById[id];
+  design.shapeOrder = design.shapeOrder.filter((shapeId) => shapeId !== id);
+}
+
+function pauseTemporalHistory() {
+  useEditor.temporal.getState().pause();
+}
+
+function resumeTemporalHistory() {
+  useEditor.temporal.getState().resume();
+}
+
+function clearTemporalHistory() {
+  useEditor.temporal.getState().clear();
 }
 
 function endpointDistance(
@@ -195,17 +345,29 @@ export const useEditor = create<EditorState>()(
     immer<EditorState>((set) => ({
       design: createDefaultDesign(),
       selection: [],
-      activeTool: "select",
-      zoom: 1,
-      panOffset: { x: 0, y: 0 },
-      hoveredShapeId: null,
-      hoveredWaypoint: null,
+      transient: {
+        activeTool: "select",
+        zoom: 1,
+        panOffset: { x: 0, y: 0 },
+        hoveredShapeId: null,
+        hoveredWaypoint: null,
+        vertexSelection: null,
+        draftPath: [],
+        draftForceClosed: false,
+        draftSourceShapeId: null,
+        marqueeRect: null,
+        rotationSession: null,
+        groupDragPreview: null,
+      },
+      historyPaused: false,
+      historySessionDepth: 0,
+      interactionSessionDepth: 0,
 
       addShape: (s) => {
         const id = nanoid();
         set((draft) => {
           const nextShape: Shape = { ...s, id };
-          draft.design.shapes.push(nextShape);
+          addShapeRecord(draft.design, nextShape);
           draft.design.updatedAt = nowIso();
         });
         return id;
@@ -218,7 +380,7 @@ export const useEditor = create<EditorState>()(
             ...shape,
             id: ids[index],
           }));
-          draft.design.shapes.push(...nextShapes);
+          nextShapes.forEach((shape) => addShapeRecord(draft.design, shape));
           draft.design.updatedAt = nowIso();
         });
         return ids;
@@ -226,9 +388,47 @@ export const useEditor = create<EditorState>()(
 
       updateShape: (id, patch) =>
         set((draft) => {
-          const idx = draft.design.shapes.findIndex((sh) => sh.id === id);
-          if (idx !== -1) {
-            const shape = draft.design.shapes[idx];
+          const shape = draft.design.shapeById[id];
+          if (!shape) return;
+          if (shape.kind === "polyline") {
+            const polyline = shape;
+            const nextPatch = { ...patch } as Partial<Shape>;
+            const currentAnchor = getPolylineAnchor(polyline);
+            const nextX =
+              typeof nextPatch.x === "number" ? nextPatch.x : currentAnchor.x;
+            const nextY =
+              typeof nextPatch.y === "number" ? nextPatch.y : currentAnchor.y;
+
+            if (
+              typeof nextPatch.x === "number" ||
+              typeof nextPatch.y === "number"
+            ) {
+              const dx = nextX - currentAnchor.x;
+              const dy = nextY - currentAnchor.y;
+              polyline.points = polyline.points.map((point) => ({
+                ...point,
+                x: point.x + dx,
+                y: point.y + dy,
+              }));
+              nextPatch.x = 0;
+              nextPatch.y = 0;
+            }
+
+            Object.assign(polyline, nextPatch);
+          } else {
+            Object.assign(shape, patch);
+          }
+          draft.design.updatedAt = nowIso();
+        }),
+
+      updateShapes: (ids, patch) =>
+        set((draft) => {
+          let changed = false;
+
+          for (const id of ids) {
+            const shape = draft.design.shapeById[id];
+            if (!shape) continue;
+
             if (shape.kind === "polyline") {
               const polyline = shape;
               const nextPatch = { ...patch } as Partial<Shape>;
@@ -257,19 +457,91 @@ export const useEditor = create<EditorState>()(
             } else {
               Object.assign(shape, patch);
             }
+
+            changed = true;
+          }
+
+          if (changed) {
             draft.design.updatedAt = nowIso();
           }
+        }),
+
+      setShapesLocked: (ids, locked) =>
+        set((draft) => {
+          let changed = false;
+
+          for (const id of ids) {
+            const shape = draft.design.shapeById[id];
+            if (!shape || shape.locked === locked) continue;
+            shape.locked = locked;
+            changed = true;
+          }
+
+          if (changed) {
+            draft.design.updatedAt = nowIso();
+          }
+        }),
+
+      setPolylinePoints: (id, points) =>
+        set((draft) => {
+          const shape = draft.design.shapeById[id];
+          if (!shape || shape.kind !== "polyline") return;
+          shape.points = points;
+          draft.design.updatedAt = nowIso();
+        }),
+
+      updatePolylinePoint: (id, index, patch) =>
+        set((draft) => {
+          const shape = draft.design.shapeById[id];
+          if (!shape || shape.kind !== "polyline") return;
+          if (index < 0 || index >= shape.points.length) return;
+          shape.points[index] = {
+            ...shape.points[index],
+            ...patch,
+          };
+          draft.design.updatedAt = nowIso();
+        }),
+
+      insertPolylinePoint: (id, index, point) =>
+        set((draft) => {
+          const shape = draft.design.shapeById[id];
+          if (!shape || shape.kind !== "polyline") return;
+          shape.points.splice(index, 0, point);
+          draft.design.updatedAt = nowIso();
+        }),
+
+      removePolylinePoint: (id, index) =>
+        set((draft) => {
+          const shape = draft.design.shapeById[id];
+          if (!shape || shape.kind !== "polyline") return;
+          if (shape.points.length <= 2) return;
+          if (index < 0 || index >= shape.points.length) return;
+          shape.points.splice(index, 1);
+          draft.design.updatedAt = nowIso();
+        }),
+
+      appendPolylinePoint: (id, point) =>
+        set((draft) => {
+          const shape = draft.design.shapeById[id];
+          if (!shape || shape.kind !== "polyline") return;
+          shape.points.push(point);
+          draft.design.updatedAt = nowIso();
+        }),
+
+      reversePolylinePoints: (id) =>
+        set((draft) => {
+          const shape = draft.design.shapeById[id];
+          if (!shape || shape.kind !== "polyline") return;
+          shape.points.reverse();
+          draft.design.updatedAt = nowIso();
         }),
 
       rotateShapes: (ids, delta) =>
         set((draft) => {
           let changed = false;
           for (const id of ids) {
-            const idx = draft.design.shapes.findIndex(
-              (shape) => shape.id === id
-            );
-            if (idx === -1) continue;
-            const shape = draft.design.shapes[idx];
+            const shape = draft.design.shapeById[id];
+            if (!shape) continue;
             if (
               shape.kind === "polyline" ||
               shape.kind === "cone" ||
@@ -286,29 +558,26 @@ export const useEditor = create<EditorState>()(
 
       removeShapes: (ids) =>
         set((draft) => {
-          draft.design.shapes = draft.design.shapes.filter(
-            (sh) => !ids.includes(sh.id)
-          );
-          draft.selection = draft.selection.filter((x) => !ids.includes(x));
+          const idSet = new Set(ids);
+          ids.forEach((id) => removeShapeRecord(draft.design, id));
+          draft.selection = draft.selection.filter((id) => !idSet.has(id));
           draft.design.updatedAt = nowIso();
         }),
 
       nudgeShapes: (ids, dx, dy) =>
         set((draft) => {
           for (const id of ids) {
-            const idx = draft.design.shapes.findIndex((s) => s.id === id);
-            if (idx !== -1 && !draft.design.shapes[idx].locked) {
-              const shape = draft.design.shapes[idx];
-              if (shape.kind === "polyline") {
-                shape.points = shape.points.map((point) => ({
-                  ...point,
-                  x: point.x + dx,
-                  y: point.y + dy,
-                }));
-              } else {
-                shape.x += dx;
-                shape.y += dy;
-              }
+            const shape = draft.design.shapeById[id];
+            if (!shape || shape.locked) continue;
+            if (shape.kind === "polyline") {
+              shape.points = shape.points.map((point) => ({
+                ...point,
+                x: point.x + dx,
+                y: point.y + dy,
+              }));
+            } else {
+              shape.x += dx;
+              shape.y += dy;
             }
           }
           draft.design.updatedAt = nowIso();
@@ -316,9 +585,11 @@ export const useEditor = create<EditorState>()(
 
       duplicateShapes: (ids) =>
         set((draft) => {
-          const toDuplicate = draft.design.shapes.filter((sh) =>
-            ids.includes(sh.id)
-          );
+          const idSet = new Set(ids);
+          const toDuplicate = draft.design.shapeOrder
+            .filter((id) => idSet.has(id))
+            .map((id) => draft.design.shapeById[id])
+            .filter((shape): shape is Shape => Boolean(shape));
           const newShapes = toDuplicate.map((sh) =>
             sh.kind === "polyline"
               ? {
@@ -341,7 +612,7 @@ export const useEditor = create<EditorState>()(
                   name: sh.name ? `${sh.name} copy` : undefined,
                 }
           );
-          draft.design.shapes.push(...newShapes);
+          newShapes.forEach((shape) => addShapeRecord(draft.design, shape));
           draft.selection = newShapes.map((s) => s.id);
           draft.design.updatedAt = nowIso();
         }),
@@ -351,17 +622,19 @@ export const useEditor = create<EditorState>()(
         let created = false;
 
         set((draft) => {
-          const polylineShapes = draft.design.shapes.filter(
-            (shape): shape is PolylineShape =>
-              ids.includes(shape.id) && shape.kind === "polyline"
-          );
+          const idSet = new Set(ids);
+          const polylineShapes = draft.design.shapeOrder
+            .filter((id) => idSet.has(id))
+            .map((id) => draft.design.shapeById[id])
+            .filter(
+              (shape): shape is PolylineShape =>
+                Boolean(shape) && shape.kind === "polyline"
+            );
           const merged = joinPolylineShapes(polylineShapes);
           if (!merged) return;
 
-          draft.design.shapes = draft.design.shapes.filter(
-            (shape) => !ids.includes(shape.id)
-          );
-          draft.design.shapes.push({
+          ids.forEach((id) => removeShapeRecord(draft.design, id));
+          addShapeRecord(draft.design, {
             ...merged,
             id: nextId,
             name:
@@ -381,12 +654,15 @@ export const useEditor = create<EditorState>()(
         let closed = false;
 
         set((draft) => {
-          const shape = draft.design.shapes.find(
-            (candidate): candidate is PolylineShape =>
-              candidate.id === id && candidate.kind === "polyline"
-          );
+          const shape = getDesignShapeById(draft.design, id);
 
-          if (!shape || shape.closed || shape.points.length < 3) return;
+          if (
+            !shape ||
+            shape.kind !== "polyline" ||
+            shape.closed ||
+            shape.points.length < 3
+          )
+            return;
 
           shape.closed = true;
           draft.selection = [id];
@@ -404,17 +680,17 @@ export const useEditor = create<EditorState>()(
 
       setActiveTool: (tool) =>
         set((draft) => {
-          draft.activeTool = tool;
+          draft.transient.activeTool = tool;
         }),
 
       setZoom: (zoom) =>
         set((draft) => {
-          draft.zoom = Math.max(0.1, Math.min(5, zoom));
+          draft.transient.zoom = Math.max(0.1, Math.min(5, zoom));
         }),
 
       setPanOffset: (offset) =>
         set((draft) => {
-          draft.panOffset = offset;
+          draft.transient.panOffset = offset;
         }),
 
       updateField: (patch) =>
@@ -429,56 +705,204 @@ export const useEditor = create<EditorState>()(
           draft.design.updatedAt = nowIso();
         }),
 
-      replaceDesign: (design) =>
+      replaceDesign: (design) => {
         set((draft) => {
           draft.design = normalizeDesign(design);
           draft.selection = [];
-          draft.activeTool = "select";
-          draft.hoveredShapeId = null;
-        }),
+          draft.transient.activeTool = "select";
+          draft.transient.hoveredShapeId = null;
+          draft.transient.hoveredWaypoint = null;
+          draft.transient.vertexSelection = null;
+          draft.transient.draftPath = [];
+          draft.transient.draftForceClosed = false;
+          draft.transient.draftSourceShapeId = null;
+          draft.transient.marqueeRect = null;
+          draft.transient.rotationSession = null;
+          draft.transient.groupDragPreview = null;
+          draft.historyPaused = false;
+          draft.historySessionDepth = 0;
+          draft.interactionSessionDepth = 0;
+        });
+        clearTemporalHistory();
+      },
 
       setHoveredShapeId: (shapeId) =>
         set((draft) => {
-          draft.hoveredShapeId = shapeId;
+          draft.transient.hoveredShapeId = shapeId;
         }),
 
       setHoveredWaypoint: (w) =>
         set((draft) => {
-          draft.hoveredWaypoint = w;
+          draft.transient.hoveredWaypoint = w;
         }),
 
-      newProject: () =>
+      setVertexSelection: (value) =>
+        set((draft) => {
+          draft.transient.vertexSelection =
+            typeof value === "function"
+              ? value(draft.transient.vertexSelection)
+              : value;
+        }),
+
+      setDraftPath: (value) =>
+        set((draft) => {
+          draft.transient.draftPath =
+            typeof value === "function"
+              ? value(draft.transient.draftPath)
+              : value;
+        }),
+
+      setDraftForceClosed: (value) =>
+        set((draft) => {
+          draft.transient.draftForceClosed =
+            typeof value === "function"
+              ? value(draft.transient.draftForceClosed)
+              : value;
+        }),
+
+      setDraftSourceShapeId: (value) =>
+        set((draft) => {
+          draft.transient.draftSourceShapeId =
+            typeof value === "function"
+              ? value(draft.transient.draftSourceShapeId)
+              : value;
+        }),
+
+      setMarqueeRect: (value) =>
+        set((draft) => {
+          draft.transient.marqueeRect =
+            typeof value === "function"
+              ? value(draft.transient.marqueeRect)
+              : value;
+        }),
+
+      setRotationSession: (value) =>
+        set((draft) => {
+          draft.transient.rotationSession =
+            typeof value === "function"
+              ? value(draft.transient.rotationSession)
+              : value;
+        }),
+
+      setGroupDragPreview: (value) =>
+        set((draft) => {
+          draft.transient.groupDragPreview =
+            typeof value === "function"
+              ? value(draft.transient.groupDragPreview)
+              : value;
+        }),
+
+      newProject: () => {
         set((draft) => {
           draft.design = createDefaultDesign();
           draft.selection = [];
-          draft.activeTool = "select";
-          draft.zoom = 1;
-          draft.panOffset = { x: 0, y: 0 };
-          draft.hoveredShapeId = null;
-          draft.hoveredWaypoint = null;
-        }),
+          draft.transient.activeTool = "select";
+          draft.transient.zoom = 1;
+          draft.transient.panOffset = { x: 0, y: 0 };
+          draft.transient.hoveredShapeId = null;
+          draft.transient.hoveredWaypoint = null;
+          draft.transient.vertexSelection = null;
+          draft.transient.draftPath = [];
+          draft.transient.draftForceClosed = false;
+          draft.transient.draftSourceShapeId = null;
+          draft.transient.marqueeRect = null;
+          draft.transient.rotationSession = null;
+          draft.transient.groupDragPreview = null;
+          draft.historyPaused = false;
+          draft.historySessionDepth = 0;
+          draft.interactionSessionDepth = 0;
+        });
+        clearTemporalHistory();
+      },
 
       bringForward: (id) =>
         set((draft) => {
-          const idx = draft.design.shapes.findIndex((s) => s.id === id);
-          if (idx < draft.design.shapes.length - 1) {
-            const [shape] = draft.design.shapes.splice(idx, 1);
-            draft.design.shapes.splice(idx + 1, 0, shape);
+          const idx = findShapeOrderIndex(draft.design, id);
+          if (idx < draft.design.shapeOrder.length - 1) {
+            const [shapeId] = draft.design.shapeOrder.splice(idx, 1);
+            draft.design.shapeOrder.splice(idx + 1, 0, shapeId);
+            draft.design.updatedAt = nowIso();
           }
         }),
 
       sendBackward: (id) =>
         set((draft) => {
-          const idx = draft.design.shapes.findIndex((s) => s.id === id);
+          const idx = findShapeOrderIndex(draft.design, id);
           if (idx > 0) {
-            const [shape] = draft.design.shapes.splice(idx, 1);
-            draft.design.shapes.splice(idx - 1, 0, shape);
+            const [shapeId] = draft.design.shapeOrder.splice(idx, 1);
+            draft.design.shapeOrder.splice(idx - 1, 0, shapeId);
+            draft.design.updatedAt = nowIso();
           }
         }),
+
+      pauseHistory: () => {
+        set((draft) => {
+          draft.historySessionDepth += 1;
+          if (draft.historySessionDepth === 1) {
+            pauseTemporalHistory();
+            draft.historyPaused = true;
+          }
+        });
+      },
+
+      resumeHistory: () => {
+        set((draft) => {
+          draft.historySessionDepth = Math.max(
+            0,
+            draft.historySessionDepth - 1
+          );
+          if (draft.historySessionDepth === 0) {
+            resumeTemporalHistory();
+            draft.historyPaused = false;
+          }
+        });
+      },
+
+      clearHistory: () => {
+        clearTemporalHistory();
+        set((draft) => {
+          draft.historyPaused = false;
+          draft.historySessionDepth = 0;
+        });
+      },
+
+      beginInteraction: () => {
+        set((draft) => {
+          draft.interactionSessionDepth += 1;
+        });
+      },
+
+      endInteraction: () => {
+        set((draft) => {
+          draft.interactionSessionDepth = Math.max(
+            0,
+            draft.interactionSessionDepth - 1
+          );
+        });
+      },
+
+      sanitizeHistoryState: () => {
+        set((draft) => {
+          draft.design = normalizeDesign(draft.design);
+          draft.transient.hoveredShapeId = null;
+          draft.transient.hoveredWaypoint = null;
+          draft.transient.vertexSelection = null;
+          draft.transient.marqueeRect = null;
+          draft.transient.rotationSession = null;
+          draft.transient.groupDragPreview = null;
+          draft.historyPaused = false;
+          draft.historySessionDepth = 0;
+          draft.interactionSessionDepth = 0;
+        });
+      },
     })),
     {
-      partialize: (state) => ({ design: state.design }),
-      equality: shallow,
+      partialize: (state) => ({
+        design: normalizeDesign(serializeDesign(state.design)),
+      }),
+      equality: (past, current) =>
+        past.design.id === current.design.id &&
+        past.design.updatedAt === current.design.updatedAt,
       limit: 100,
     }
   )

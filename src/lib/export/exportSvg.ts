@@ -10,7 +10,8 @@ import type {
   LadderShape,
   DiveGateShape,
 } from "../types";
-import { getPolyline2DPoints } from "../geometry";
+import { getDesignShapes } from "../design";
+import { getPolyline2DDerived } from "../polyline-derived";
 import {
   getCone2DShape,
   getDiveGate2DShape,
@@ -76,10 +77,7 @@ function labelToSvg(s: LabelShape, ppm: number): string {
 }
 
 function polylineToSvg(s: PolylineShape, ppm: number): string {
-  const pts = getPolyline2DPoints(s.points, {
-    closed: s.closed ?? false,
-    smooth: true,
-  });
+  const pts = getPolyline2DDerived(s).smoothPoints;
   if (pts.length < 2) return "";
   const d = pts
     .map((p, i) => `${i === 0 ? "M" : "L"}${m(p.x, ppm)},${m(p.y, ppm)}`)
@@ -220,7 +218,9 @@ export function designToSvg(
     gridLines += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${stroke}" stroke-width="${sw}"/>`;
   }
 
-  const shapeSvg = design.shapes.map((s) => shapeToSvg(s, ppm)).join("\n  ");
+  const shapeSvg = getDesignShapes(design)
+    .map((s) => shapeToSvg(s, ppm))
+    .join("\n  ");
 
   const titleText = design.title.trim() || "Untitled Track";
   const sizeText = `${width}×${height} m`;

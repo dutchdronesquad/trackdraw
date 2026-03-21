@@ -26,20 +26,20 @@ interface TrackCanvasInteractionsParams {
   draftPath: DraftPoint[];
   finalizePath: (closed?: boolean) => void;
   isMobile: boolean;
-  lastPinchCenterRef: React.MutableRefObject<{ x: number; y: number } | null>;
-  lastPinchDistRef: React.MutableRefObject<number | null>;
-  lastTouchPosRef: React.MutableRefObject<{ x: number; y: number } | null>;
-  lastTouchStartClientRef: React.MutableRefObject<{
+  lastPinchCenterRef: React.RefObject<{ x: number; y: number } | null>;
+  lastPinchDistRef: React.RefObject<number | null>;
+  lastTouchPosRef: React.RefObject<{ x: number; y: number } | null>;
+  lastTouchStartClientRef: React.RefObject<{
     x: number;
     y: number;
   } | null>;
-  lastTouchStagePointRef: React.MutableRefObject<{
+  lastTouchStagePointRef: React.RefObject<{
     x: number;
     y: number;
   } | null>;
-  touchMovedRef: React.MutableRefObject<boolean>;
-  marqueeAdditiveRef: React.MutableRefObject<boolean>;
-  marqueeOriginRef: React.MutableRefObject<Vector2d | null>;
+  touchMovedRef: React.RefObject<boolean>;
+  marqueeAdditiveRef: React.RefObject<boolean>;
+  marqueeOriginRef: React.RefObject<Vector2d | null>;
   marqueeRect: RectLike | null;
   mobileMultiSelectEnabled?: boolean;
   onCursorChange?: (pos: { x: number; y: number } | null) => void;
@@ -48,23 +48,29 @@ interface TrackCanvasInteractionsParams {
   selection: string[];
   setActiveTool: (tool: EditorTool) => void;
   setCursor: React.Dispatch<React.SetStateAction<CursorState | null>>;
-  setDraftPath: React.Dispatch<React.SetStateAction<DraftPoint[]>>;
-  setDraftForceClosed: React.Dispatch<React.SetStateAction<boolean>>;
+  setDraftPath: (
+    value: DraftPoint[] | ((previous: DraftPoint[]) => DraftPoint[])
+  ) => void;
+  setDraftForceClosed: (
+    value: boolean | ((previous: boolean) => boolean)
+  ) => void;
   setIsStageDragging: React.Dispatch<React.SetStateAction<boolean>>;
   setManualView: (value: boolean) => void;
-  setMarqueeRect: React.Dispatch<React.SetStateAction<RectLike | null>>;
+  setMarqueeRect: (
+    value: RectLike | null | ((previous: RectLike | null) => RectLike | null)
+  ) => void;
   setSelection: (ids: string[]) => void;
   setSnapTarget: React.Dispatch<
     React.SetStateAction<{ x: number; y: number; id: string } | null>
   >;
   setZoom: (zoom: number) => void;
-  shapeRefs: React.MutableRefObject<Record<string, KonvaGroup | null>>;
+  shapeRefs: React.RefObject<Record<string, KonvaGroup | null>>;
   snapTarget: { x: number; y: number; id: string } | null;
-  stageRef: React.MutableRefObject<KonvaStage | null>;
+  stageRef: React.RefObject<KonvaStage | null>;
   stepPx: number;
-  suppressTapRef: React.MutableRefObject<boolean>;
+  suppressTapRef: React.RefObject<boolean>;
   syncTransform: () => void;
-  touchInteractionModeRef: React.MutableRefObject<
+  touchInteractionModeRef: React.RefObject<
     "none" | "pan" | "content" | "viewportGesture"
   >;
 }
