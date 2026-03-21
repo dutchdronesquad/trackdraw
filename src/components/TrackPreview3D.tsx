@@ -159,6 +159,7 @@ function TrackpadPanBridge({
 }
 import { Play, Pause, Wind } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
 import type {
   GateShape,
@@ -1225,6 +1226,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     { showGizmo = true, onFlyModeChange }: TrackPreview3DProps,
     ref
   ) {
+    usePerfMetric("render:TrackPreview3D");
     const field = useEditor((state) => state.design.field);
     const selection = useEditor((state) => state.selection);
     const setSelection = useEditor((state) => state.setSelection);
