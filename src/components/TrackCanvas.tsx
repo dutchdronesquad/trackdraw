@@ -510,18 +510,26 @@ const TrackCanvas = memo(
       [setSelection]
     );
 
-    const openShapeContextMenu = useCallback(
-      (clickedShape: Shape) => {
-        if (activeTool !== "select" || readOnly) return;
+    const openContextMenuForSelection = useCallback(
+      (ids: string[], clickedShape?: Shape) => {
+        if (activeTool !== "select" || readOnly || ids.length === 0) return;
 
-        const currentSelection = selectionRef.current;
-        const nextSelection = currentSelection.includes(clickedShape.id)
-          ? currentSelection
-          : [clickedShape.id];
+        const nextSelection =
+          clickedShape && !ids.includes(clickedShape.id)
+            ? [clickedShape.id]
+            : ids;
 
-        if (!currentSelection.includes(clickedShape.id)) {
+        if (
+          nextSelection.length !== selectionRef.current.length ||
+          nextSelection.some((id, index) => selectionRef.current[index] !== id)
+        ) {
           setSelection(nextSelection);
         }
+
+        const primaryShape =
+          (clickedShape && nextSelection.includes(clickedShape.id)
+            ? clickedShape
+            : shapeById[nextSelection[0]]) ?? null;
 
         const rotatableIds = nextSelection.filter((id) => {
           const shape = shapeById[id];
@@ -536,14 +544,14 @@ const TrackCanvas = memo(
         setContextMenu({
           closablePolylineId:
             nextSelection.length === 1 &&
-            clickedShape.kind === "polyline" &&
-            !clickedShape.closed &&
-            clickedShape.points.length >= 3
-              ? clickedShape.id
+            primaryShape?.kind === "polyline" &&
+            !primaryShape.closed &&
+            primaryShape.points.length >= 3
+              ? primaryShape.id
               : null,
           editablePolylineId:
-            nextSelection.length === 1 && clickedShape.kind === "polyline"
-              ? clickedShape.id
+            nextSelection.length === 1 && primaryShape?.kind === "polyline"
+              ? primaryShape.id
               : null,
           ids: nextSelection,
           joinablePolylineIds: nextSelection.filter((id) => {
@@ -553,7 +561,9 @@ const TrackCanvas = memo(
           label:
             nextSelection.length > 1
               ? `${nextSelection.length} items`
-              : shapeKindLabels[clickedShape.kind],
+              : primaryShape
+                ? shapeKindLabels[primaryShape.kind]
+                : "Selection",
           locked: nextSelection.every((id) => {
             const shape = shapeById[id];
             return Boolean(shape?.locked);
@@ -562,6 +572,17 @@ const TrackCanvas = memo(
         });
       },
       [activeTool, readOnly, setSelection, shapeById]
+    );
+
+    const openShapeContextMenu = useCallback(
+      (clickedShape: Shape) => {
+        const currentSelection = selectionRef.current;
+        const ids = currentSelection.includes(clickedShape.id)
+          ? currentSelection
+          : [clickedShape.id];
+        openContextMenuForSelection(ids, clickedShape);
+      },
+      [openContextMenuForSelection]
     );
 
     const waypointDragBound = useCallback(
@@ -1313,6 +1334,10 @@ const TrackCanvas = memo(
                     }}
                     onTap={(event) => {
                       event.cancelBubble = true;
+                    }}
+                    onContextMenu={(event) => {
+                      event.cancelBubble = true;
+                      openContextMenuForSelection(selectionRef.current);
                     }}
                     onDragStart={(event) => {
                       event.cancelBubble = true;
