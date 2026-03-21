@@ -26,7 +26,7 @@ export default function ImportDialog({
   onOpenChange,
   onBackupCurrent,
 }: ImportDialogProps) {
-  const { replaceDesign } = useEditor();
+  const replaceDesign = useEditor((state) => state.replaceDesign);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [parsed, setParsed] = useState<ParsedFile | null>(null);

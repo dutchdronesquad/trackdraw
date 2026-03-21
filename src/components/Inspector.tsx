@@ -16,20 +16,18 @@ export default function Inspector({
   onResumeSelectedPath?: (shapeId: string) => void;
   mobileInline?: boolean;
 }) {
-  const {
-    design,
-    selection,
-    updateShape,
-    removeShapes,
-    duplicateShapes,
-    joinPolylines,
-    closePolyline,
-    setSelection,
-    updateField,
-    updateDesignMeta,
-    setHoveredShapeId,
-    setHoveredWaypoint,
-  } = useEditor();
+  const design = useEditor((state) => state.design);
+  const selection = useEditor((state) => state.selection);
+  const updateShape = useEditor((state) => state.updateShape);
+  const removeShapes = useEditor((state) => state.removeShapes);
+  const duplicateShapes = useEditor((state) => state.duplicateShapes);
+  const joinPolylines = useEditor((state) => state.joinPolylines);
+  const closePolyline = useEditor((state) => state.closePolyline);
+  const setSelection = useEditor((state) => state.setSelection);
+  const updateField = useEditor((state) => state.updateField);
+  const updateDesignMeta = useEditor((state) => state.updateDesignMeta);
+  const setHoveredShapeId = useEditor((state) => state.setHoveredShapeId);
+  const setHoveredWaypoint = useEditor((state) => state.setHoveredWaypoint);
 
   const selectedShapes = useMemo(
     () => design.shapes.filter((s) => selection.includes(s.id)),

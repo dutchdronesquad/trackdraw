@@ -24,16 +24,17 @@ function niceStep(range: number, targetTicks: number): number {
 }
 
 export default function ElevationChart({ className }: { className?: string }) {
-  const { design, selection } = useEditor();
+  const shapes = useEditor((state) => state.design.shapes);
+  const selection = useEditor((state) => state.selection);
 
   const path = useMemo<PolylineShape | null>(() => {
-    const selected = design.shapes.find(
+    const selected = shapes.find(
       (s) => selection.includes(s.id) && s.kind === "polyline"
     );
     if (selected && isPolylineShape(selected)) return selected;
-    const fallback = design.shapes.find((s) => s.kind === "polyline");
+    const fallback = shapes.find((s) => s.kind === "polyline");
     return fallback && isPolylineShape(fallback) ? fallback : null;
-  }, [design.shapes, selection]);
+  }, [shapes, selection]);
 
   const chartData = useMemo(() => {
     if (!path) return null;

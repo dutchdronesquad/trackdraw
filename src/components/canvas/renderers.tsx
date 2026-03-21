@@ -38,6 +38,81 @@ import type {
   StartFinishShape,
 } from "@/lib/types";
 
+type CachedPolylineMetrics = {
+  arrowMarkers: Array<{ x: number; y: number; angle: number }>;
+  boundsByPpm: Map<
+    number,
+    { x: number; y: number; width: number; height: number }
+  >;
+  smoothPoints: Array<{ x: number; y: number }>;
+};
+
+const polylineMetricsCache = new WeakMap<
+  PolylinePoint[],
+  Map<string, CachedPolylineMetrics>
+>();
+
+function getCachedPolylineMetrics(path: PolylineShape): CachedPolylineMetrics {
+  const cacheKey = `${path.closed ? 1 : 0}|${path.showArrows ? 1 : 0}|${path.arrowSpacing ?? 15}`;
+  let byVariant = polylineMetricsCache.get(path.points);
+  if (!byVariant) {
+    byVariant = new Map();
+    polylineMetricsCache.set(path.points, byVariant);
+  }
+
+  const cached = byVariant.get(cacheKey);
+  if (cached) return cached;
+
+  const smoothPoints = getPolyline2DPoints(path.points, {
+    closed: path.closed ?? false,
+    smooth: true,
+  });
+  const metrics: CachedPolylineMetrics = {
+    arrowMarkers: path.showArrows
+      ? getPolylineArrowMarkers(path.points, path.arrowSpacing ?? 15, {
+          closed: path.closed ?? false,
+          samplesPerSegment: 10,
+        })
+      : [],
+    boundsByPpm: new Map(),
+    smoothPoints,
+  };
+
+  byVariant.set(cacheKey, metrics);
+  return metrics;
+}
+
+function getCachedPolylineBounds(path: PolylineShape, ppm: number) {
+  const metrics = getCachedPolylineMetrics(path);
+  const cachedBounds = metrics.boundsByPpm.get(ppm);
+  if (cachedBounds) return cachedBounds;
+  if (!metrics.smoothPoints.length) return null;
+
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  for (const point of metrics.smoothPoints) {
+    const x = m2px(point.x, ppm);
+    const y = m2px(point.y, ppm);
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  }
+
+  const strokePx = m2px(path.strokeWidth ?? 0.26, ppm);
+  const bounds = {
+    x: minX - strokePx,
+    y: minY - strokePx,
+    width: maxX - minX + strokePx * 2,
+    height: maxY - minY + strokePx * 2,
+  };
+  metrics.boundsByPpm.set(ppm, bounds);
+  return bounds;
+}
+
 interface FieldLayerContentProps {
   designField: {
     width: number;
@@ -773,24 +848,7 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
       };
     }
     case "polyline": {
-      const points = getPolyline2DPoints(shape.points, {
-        closed: shape.closed ?? false,
-        smooth: true,
-      });
-      if (!points.length) return null;
-      const pxPoints = points.map((point) => ({
-        x: m2px(point.x, ppm),
-        y: m2px(point.y, ppm),
-      }));
-      const xs = pxPoints.map((point) => point.x);
-      const ys = pxPoints.map((point) => point.y);
-      const strokePx = m2px(shape.strokeWidth ?? 0.26, ppm);
-      return {
-        x: Math.min(...xs) - strokePx,
-        y: Math.min(...ys) - strokePx,
-        width: Math.max(...xs) - Math.min(...xs) + strokePx * 2,
-        height: Math.max(...ys) - Math.min(...ys) + strokePx * 2,
-      };
+      return getCachedPolylineBounds(shape, ppm);
     }
   }
 }
@@ -1162,14 +1220,7 @@ function PolylineShapeContent({
   const selectionStrokePx = isMobile
     ? Math.max(22, strokePx + 18)
     : Math.max(14, strokePx + 10);
-  const smoothPoints = useMemo(
-    () =>
-      getPolyline2DPoints(path.points, {
-        closed: path.closed ?? false,
-        smooth: true,
-      }),
-    [path.closed, path.points]
-  );
+  const polylineMetrics = useMemo(() => getCachedPolylineMetrics(path), [path]);
   const pointsPxMemo = useMemo(() => {
     const basePoints =
       path.closed && path.points.length > 1
@@ -1183,22 +1234,13 @@ function PolylineShapeContent({
   }, [designPpm, path.closed, path.points]);
   const smoothPx = useMemo(
     () =>
-      smoothPoints.flatMap((point) => [
+      polylineMetrics.smoothPoints.flatMap((point) => [
         m2px(point.x, designPpm),
         m2px(point.y, designPpm),
       ]),
-    [designPpm, smoothPoints]
+    [designPpm, polylineMetrics.smoothPoints]
   );
-  const arrowMarkers = useMemo(
-    () =>
-      path.showArrows
-        ? getPolylineArrowMarkers(path.points, path.arrowSpacing ?? 15, {
-            closed: path.closed ?? false,
-            samplesPerSegment: 10,
-          })
-        : [],
-    [path.arrowSpacing, path.closed, path.points, path.showArrows]
-  );
+  const arrowMarkers = polylineMetrics.arrowMarkers;
   const color = path.color ?? "#3b82f6";
   const waypointRadius = Math.max(4, m2px(0.08, designPpm));
   const waypointTouchRadius = isMobile
