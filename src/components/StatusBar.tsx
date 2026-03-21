@@ -2,6 +2,7 @@
 
 import { useEditor } from "@/store/editor";
 import VersionTag from "@/components/VersionTag";
+import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 
 const toolLabel: Record<string, string> = {
   select: "Select",
@@ -19,6 +20,7 @@ interface StatusBarProps {
 }
 
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
+  const { enabled, toggle } = useDeveloperMode();
   const activeTool = useEditor((state) => state.transient.activeTool);
   const field = useEditor((state) => state.design.field);
   const selectionCount = useEditor((state) => state.selection.length);
@@ -77,6 +79,19 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
         </span>
         <span className="text-muted-foreground/25">·</span>
       </span>
+
+      {process.env.NODE_ENV !== "production" && (
+        <>
+          <button
+            type="button"
+            onClick={toggle}
+            className="text-muted-foreground/65 hover:text-foreground hover:bg-muted pointer-events-auto inline-flex h-5 items-center rounded px-1.5 text-[11px] transition-colors"
+          >
+            {enabled ? "Dev On" : "Dev"}
+          </button>
+          <span className="text-muted-foreground/25">·</span>
+        </>
+      )}
 
       <VersionTag className="text-muted-foreground/50 hover:text-muted-foreground border-0 bg-transparent p-0 text-[11px]" />
     </div>

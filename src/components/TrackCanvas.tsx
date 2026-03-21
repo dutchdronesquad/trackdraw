@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  memo,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -29,6 +30,7 @@ import {
 } from "@/components/canvas/renderers";
 import { useTrackCanvasShortcuts } from "@/components/canvas/useTrackCanvasShortcuts";
 import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewport";
+import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditor } from "@/store/editor";
 import {
   selectDesignShapes,
@@ -100,8 +102,8 @@ interface TrackCanvasProps {
   readOnly?: boolean;
 }
 
-const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
-  function TrackCanvas(
+const TrackCanvas = memo(
+  forwardRef<TrackCanvasHandle, TrackCanvasProps>(function TrackCanvas(
     {
       onCursorChange,
       onDraftPathStateChange,
@@ -113,6 +115,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     },
     ref
   ) {
+    usePerfMetric("render:TrackCanvas");
     const design = useEditor((state) => state.design);
     const designShapes = useEditor(selectDesignShapes);
     const [zmin, zmax] = useEditor(selectDesignPolylineZRange);
@@ -1848,7 +1851,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         )}
       </ContextMenu>
     );
-  }
+  })
 );
 
 export default TrackCanvas;

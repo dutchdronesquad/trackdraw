@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import {
+  useCallback,
   useRef,
   useState,
   useEffect,
@@ -16,6 +17,7 @@ import StatusBar from "@/components/StatusBar";
 import ShareDialog from "@/components/ShareDialog";
 import ExportDialog from "@/components/ExportDialog";
 import ImportDialog from "@/components/ImportDialog";
+import PerformanceHud from "@/components/PerformanceHud";
 import ProjectManagerDialog from "@/components/ProjectManagerDialog";
 import TrackCanvas, { type TrackCanvasHandle } from "@/components/TrackCanvas";
 import type {
@@ -23,6 +25,9 @@ import type {
   TrackPreview3DProps,
 } from "@/components/TrackPreview3D";
 import { parseDesign } from "@/lib/design";
+import { useDeveloperMode } from "@/hooks/useDeveloperMode";
+import { usePerfMetric } from "@/hooks/usePerfMetric";
+import { recordPerfSample } from "@/lib/perf";
 import { useEditor } from "@/store/editor";
 import {
   selectDesignShapes,
@@ -51,6 +56,9 @@ export default function EditorShell({
 }: {
   readOnly?: boolean;
 }) {
+  usePerfMetric("render:EditorShell");
+  const { enabled: developerModeEnabled, toggle: toggleDeveloperMode } =
+    useDeveloperMode();
   const selection = useEditor((state) => state.selection);
   const design = useEditor((state) => state.design);
   const activeTool = useEditor((state) => state.transient.activeTool);
@@ -137,7 +145,12 @@ export default function EditorShell({
 
     const timeoutId = window.setTimeout(() => {
       try {
+        const startedAt = performance.now();
         localStorage.setItem("trackdraw-design", JSON.stringify(design));
+        recordPerfSample(
+          "autosave:localStorage",
+          performance.now() - startedAt
+        );
         setSaveStatusLabel(
           `Saved locally at ${new Intl.DateTimeFormat(undefined, {
             hour: "2-digit",
@@ -182,6 +195,44 @@ export default function EditorShell({
     frameId = window.requestAnimationFrame(tryStart);
     return () => window.cancelAnimationFrame(frameId);
   }, [pendingFlyThroughStart, tab]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || !event.shiftKey) return;
+      if (event.key !== ".") return;
+
+      const target = event.target as HTMLElement | null;
+      const isInput =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable;
+      if (isInput) return;
+
+      event.preventDefault();
+      toggleDeveloperMode();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleDeveloperMode]);
+
+  const handleMobileMultiSelectStart = useCallback(
+    (shapeId: string) => {
+      setMobileMultiSelectEnabled(true);
+      setActiveTool("select");
+      setSelection(
+        selection.includes(shapeId) ? selection : [...selection, shapeId]
+      );
+    },
+    [selection, setActiveTool, setSelection]
+  );
+
+  const handleResumeSelectedPath = useCallback((shapeId: string) => {
+    setTab("2d");
+    canvasRef.current?.resumePolylineEditing(shapeId);
+  }, []);
 
   return (
     <>
@@ -237,15 +288,7 @@ export default function EditorShell({
                     onCursorChange={setCursorPos}
                     onDraftPathStateChange={setMobileDraftPathState}
                     onSnapChange={setSnapActive}
-                    onMobileMultiSelectStart={(shapeId) => {
-                      setMobileMultiSelectEnabled(true);
-                      setActiveTool("select");
-                      setSelection(
-                        selection.includes(shapeId)
-                          ? selection
-                          : [...selection, shapeId]
-                      );
-                    }}
+                    onMobileMultiSelectStart={handleMobileMultiSelectStart}
                     mobileRulersEnabled={mobileRulersEnabled}
                     mobileMultiSelectEnabled={mobileMultiSelectEnabled}
                     readOnly={readOnly}
@@ -332,12 +375,7 @@ export default function EditorShell({
             {/* Desktop Inspector */}
             {!readOnly && (
               <aside className="border-border/80 bg-card/95 hidden min-h-0 w-[340px] shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex">
-                <Inspector
-                  onResumeSelectedPath={(shapeId) => {
-                    setTab("2d");
-                    canvasRef.current?.resumePolylineEditing(shapeId);
-                  }}
-                />
+                <Inspector onResumeSelectedPath={handleResumeSelectedPath} />
               </aside>
             )}
           </div>
@@ -499,6 +537,7 @@ export default function EditorShell({
           setExportOpen(true);
         }}
       />
+      {developerModeEnabled ? <PerformanceHud /> : null}
     </>
   );
 }

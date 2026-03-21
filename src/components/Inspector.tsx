@@ -1,22 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import {
   EmptyInspectorView,
   MultiInspectorView,
   SingleInspectorView,
 } from "@/components/inspector/views";
+import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
 import { selectDesignShapes, selectSelectedShapes } from "@/store/selectors";
 
-export default function Inspector({
+function Inspector({
   onResumeSelectedPath,
   mobileInline = false,
 }: {
   onResumeSelectedPath?: (shapeId: string) => void;
   mobileInline?: boolean;
 }) {
+  usePerfMetric("render:Inspector");
   const design = useEditor((state) => state.design);
   const selection = useEditor((state) => state.selection);
   const updateShape = useEditor((state) => state.updateShape);
@@ -153,3 +155,5 @@ export default function Inspector({
     </div>
   );
 }
+
+export default memo(Inspector);
