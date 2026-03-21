@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 import type { Vector2d } from "konva/lib/types";
@@ -116,6 +116,42 @@ export function useTrackCanvasInteractions({
     ? Math.max(designField.gridStep * 0.7, 0.45)
     : 0.05;
   const mobileTapMoveThresholdPx = 10;
+  const lastCursorKeyRef = useRef("");
+  const lastSnapTargetIdRef = useRef<string | null>(null);
+  const snapCellSize = Math.max(snapRadiusMeters * 2, designField.gridStep * 4);
+  const snapIndex = useMemo(() => {
+    const index = new Map<string, Shape[]>();
+
+    for (const shape of designShapes) {
+      if (shape.kind === "polyline") continue;
+      const cellX = Math.floor(shape.x / snapCellSize);
+      const cellY = Math.floor(shape.y / snapCellSize);
+      const key = `${cellX}:${cellY}`;
+      const bucket = index.get(key);
+      if (bucket) bucket.push(shape);
+      else index.set(key, [shape]);
+    }
+
+    return index;
+  }, [designShapes, snapCellSize]);
+
+  const getNearbySnapCandidates = useCallback(
+    (meters: { x: number; y: number }) => {
+      const baseX = Math.floor(meters.x / snapCellSize);
+      const baseY = Math.floor(meters.y / snapCellSize);
+      const nearby: Shape[] = [];
+
+      for (let dx = -1; dx <= 1; dx += 1) {
+        for (let dy = -1; dy <= 1; dy += 1) {
+          const bucket = snapIndex.get(`${baseX + dx}:${baseY + dy}`);
+          if (bucket) nearby.push(...bucket);
+        }
+      }
+
+      return nearby;
+    },
+    [snapCellSize, snapIndex]
+  );
 
   const pointerToMeters = useCallback(
     (
@@ -135,8 +171,7 @@ export function useTrackCanvasInteractions({
 
       let nearest: { x: number; y: number } | null = null;
       let minDist = snapRadiusMeters;
-      for (const shape of designShapes) {
-        if (shape.kind === "polyline") continue;
+      for (const shape of getNearbySnapCandidates(gridMeters)) {
         const dist = Math.sqrt(
           (shape.x - gridMeters.x) ** 2 + (shape.y - gridMeters.y) ** 2
         );
@@ -147,7 +182,7 @@ export function useTrackCanvasInteractions({
       }
       return nearest ?? gridMeters;
     },
-    [designField.ppm, designShapes, snapRadiusMeters, stepPx]
+    [designField.ppm, getNearbySnapCandidates, snapRadiusMeters, stepPx]
   );
 
   const touchToStagePoint = useCallback((touch: Touch, stage: KonvaStage) => {
@@ -164,8 +199,7 @@ export function useTrackCanvasInteractions({
     (meters: { x: number; y: number }) => {
       let nearest: { x: number; y: number; id: string } | null = null;
       let minDist = snapRadiusMeters;
-      for (const shape of designShapes) {
-        if (shape.kind === "polyline") continue;
+      for (const shape of getNearbySnapCandidates(meters)) {
         const dist = Math.sqrt(
           (shape.x - meters.x) ** 2 + (shape.y - meters.y) ** 2
         );
@@ -176,7 +210,7 @@ export function useTrackCanvasInteractions({
       }
       return nearest;
     },
-    [designShapes, snapRadiusMeters]
+    [getNearbySnapCandidates, snapRadiusMeters]
   );
 
   const shouldCloseDraftLoop = useCallback(
@@ -657,7 +691,7 @@ export function useTrackCanvasInteractions({
     const rawMeters = pointerToMeters(pointer, false);
     const snappedMeters = pointerToMeters(pointer, true);
     if (rawMeters && snappedMeters) {
-      setCursor({
+      const nextCursor = {
         rawMeters,
         snappedMeters,
         rawPx: { x: pointer.x, y: pointer.y },
@@ -665,14 +699,28 @@ export function useTrackCanvasInteractions({
           x: Math.round(pointer.x / stepPx) * stepPx,
           y: Math.round(pointer.y / stepPx) * stepPx,
         },
-      });
+      };
+      const cursorKey = [
+        nextCursor.rawPx.x.toFixed(2),
+        nextCursor.rawPx.y.toFixed(2),
+        nextCursor.snappedMeters.x.toFixed(2),
+        nextCursor.snappedMeters.y.toFixed(2),
+      ].join("|");
+      if (cursorKey !== lastCursorKeyRef.current) {
+        lastCursorKeyRef.current = cursorKey;
+        setCursor(nextCursor);
+      }
       onCursorChange?.(rawMeters);
 
       if (activeTool === "polyline") {
         const target = findSnapTarget(rawMeters);
-        setSnapTarget(target);
-        onSnapChange?.(target !== null);
+        if ((target?.id ?? null) !== lastSnapTargetIdRef.current) {
+          lastSnapTargetIdRef.current = target?.id ?? null;
+          setSnapTarget(target);
+          onSnapChange?.(target !== null);
+        }
       } else if (snapTarget) {
+        lastSnapTargetIdRef.current = null;
         setSnapTarget(null);
         onSnapChange?.(false);
       }
@@ -699,6 +747,8 @@ export function useTrackCanvasInteractions({
   const onMouseLeave = useCallback(() => {
     setCursor(null);
     setSnapTarget(null);
+    lastCursorKeyRef.current = "";
+    lastSnapTargetIdRef.current = null;
     onCursorChange?.(null);
     onSnapChange?.(false);
     setMarqueeRect(null);

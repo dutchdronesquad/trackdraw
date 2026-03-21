@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   useEffect,
+  useMemo,
   type ForwardRefExoticComponent,
   type RefAttributes,
 } from "react";
@@ -46,14 +47,14 @@ export default function EditorShell({
 }) {
   const selection = useEditor((state) => state.selection);
   const design = useEditor((state) => state.design);
-  const replaceDesign = useEditor((state) => state.replaceDesign);
   const activeTool = useEditor((state) => state.activeTool);
-  const removeShapes = useEditor((state) => state.removeShapes);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
-  const updateShape = useEditor((state) => state.updateShape);
+  const newProject = useEditor((state) => state.newProject);
+  const removeShapes = useEditor((state) => state.removeShapes);
+  const replaceDesign = useEditor((state) => state.replaceDesign);
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setSelection = useEditor((state) => state.setSelection);
-  const newProject = useEditor((state) => state.newProject);
+  const updateShape = useEditor((state) => state.updateShape);
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -88,12 +89,13 @@ export default function EditorShell({
   const [saveStatusLabel, setSaveStatusLabel] = useState("Saving locally…");
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
+  const shapeById = useMemo(
+    () => new Map(design.shapes.map((shape) => [shape.id, shape])),
+    [design.shapes]
+  );
   const selectionLocked =
     selection.length > 0 &&
-    selection.every((id) => {
-      const shape = design.shapes.find((candidate) => candidate.id === id);
-      return Boolean(shape?.locked);
-    });
+    selection.every((id) => Boolean(shapeById.get(id)?.locked));
   // Load persisted design on mount
   useEffect(() => {
     if (readOnly) return;
@@ -116,20 +118,26 @@ export default function EditorShell({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Save design to localStorage on every change
+  // Debounce full-design serialization so interactive edits do not fight local
+  // autosave on every intermediate state.
   useEffect(() => {
     if (readOnly) return;
-    try {
-      localStorage.setItem("trackdraw-design", JSON.stringify(design));
-      setSaveStatusLabel(
-        `Saved locally at ${new Intl.DateTimeFormat(undefined, {
-          hour: "2-digit",
-          minute: "2-digit",
-        }).format(new Date())}`
-      );
-    } catch {
-      /* ignore */
-    }
+
+    const timeoutId = window.setTimeout(() => {
+      try {
+        localStorage.setItem("trackdraw-design", JSON.stringify(design));
+        setSaveStatusLabel(
+          `Saved locally at ${new Intl.DateTimeFormat(undefined, {
+            hour: "2-digit",
+            minute: "2-digit",
+          }).format(new Date())}`
+        );
+      } catch {
+        /* ignore */
+      }
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
   }, [design, readOnly]);
 
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
@@ -372,9 +380,7 @@ export default function EditorShell({
           }}
           onResumeSelectedPath={() => {
             const selectedShape =
-              selection.length === 1
-                ? design.shapes.find((shape) => shape.id === selection[0])
-                : null;
+              selection.length === 1 ? shapeById.get(selection[0]) : null;
             if (!selectedShape || selectedShape.kind !== "polyline") return;
             setMobilePathBuilderPinnedOpen(true);
             canvasRef.current?.resumePolylineEditing(selectedShape.id);

@@ -10,16 +10,17 @@ const H = 80;
 const PAD = { top: 8, right: 8, bottom: 20, left: 32 };
 
 export default function ElevationPanel() {
-  const { design, selection } = useEditor();
+  const shapes = useEditor((state) => state.design.shapes);
+  const selection = useEditor((state) => state.selection);
 
   const path = useMemo<PolylineShape | null>(() => {
-    const selected = design.shapes.find(
+    const selected = shapes.find(
       (s) => selection.includes(s.id) && s.kind === "polyline"
     );
     if (selected?.kind === "polyline") return selected;
-    const fallback = design.shapes.find((s) => s.kind === "polyline");
+    const fallback = shapes.find((s) => s.kind === "polyline");
     return fallback?.kind === "polyline" ? fallback : null;
-  }, [design, selection]);
+  }, [shapes, selection]);
 
   if (!path) {
     return (

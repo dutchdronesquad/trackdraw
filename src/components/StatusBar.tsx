@@ -19,7 +19,10 @@ interface StatusBarProps {
 }
 
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
-  const { design, zoom, selection, activeTool } = useEditor();
+  const activeTool = useEditor((state) => state.activeTool);
+  const field = useEditor((state) => state.design.field);
+  const selectionCount = useEditor((state) => state.selection.length);
+  const zoom = useEditor((state) => state.zoom);
 
   return (
     <div className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex">
@@ -34,7 +37,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {/* Grid step — desktop only */}
       <span className="hidden lg:contents">
         <span className="text-muted-foreground/25">·</span>
-        <span>{design.field.gridStep}m</span>
+        <span>{field.gridStep}m</span>
         <span className="text-muted-foreground/25">·</span>
       </span>
 
@@ -60,11 +63,9 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       <div className="flex-1" />
 
       {/* Selection count */}
-      {selection.length > 0 && (
+      {selectionCount > 0 && (
         <>
-          <span className="text-foreground/75">
-            {selection.length} selected
-          </span>
+          <span className="text-foreground/75">{selectionCount} selected</span>
           <span className="text-muted-foreground/25">·</span>
         </>
       )}
@@ -72,7 +73,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {/* Field size — desktop only */}
       <span className="hidden lg:contents">
         <span>
-          {design.field.width}×{design.field.height} m
+          {field.width}×{field.height} m
         </span>
         <span className="text-muted-foreground/25">·</span>
       </span>

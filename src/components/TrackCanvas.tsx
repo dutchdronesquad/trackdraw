@@ -217,15 +217,19 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     const showRulers = !isMobile || mobileRulersEnabled;
     const showDesktopCanvasChrome = viewportSize.width >= 1024;
     const selectionRef = useRef(selection);
-    const shapesRef = useRef(design.shapes);
+    const selectionIdSet = useMemo(() => new Set(selection), [selection]);
+    const groupDragIdSet = useMemo(
+      () => new Set(groupDragPreview?.ids ?? []),
+      [groupDragPreview]
+    );
+    const shapeById = useMemo(
+      () => new Map(design.shapes.map((shape) => [shape.id, shape])),
+      [design.shapes]
+    );
 
     useEffect(() => {
       selectionRef.current = selection;
     }, [selection]);
-
-    useEffect(() => {
-      shapesRef.current = design.shapes;
-    }, [design.shapes]);
 
     const effectiveVertexSel = useMemo(
       () =>
@@ -243,10 +247,8 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     }, [groupDragPreview, selection.length, selectionFrame]);
     const singleSelectedShape = useMemo(
       () =>
-        selection.length === 1
-          ? (design.shapes.find((shape) => shape.id === selection[0]) ?? null)
-          : null,
-      [design.shapes, selection]
+        selection.length === 1 ? (shapeById.get(selection[0]) ?? null) : null,
+      [selection, shapeById]
     );
     const rotationGuide = useMemo(() => {
       if (
@@ -461,9 +463,8 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
           setSelection(nextSelection);
         }
 
-        const shapes = shapesRef.current;
         const rotatableIds = nextSelection.filter((id) => {
-          const shape = shapes.find((candidate) => candidate.id === id);
+          const shape = shapeById.get(id);
           return (
             shape &&
             shape.kind !== "polyline" &&
@@ -486,7 +487,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
               : null,
           ids: nextSelection,
           joinablePolylineIds: nextSelection.filter((id) => {
-            const shape = shapes.find((candidate) => candidate.id === id);
+            const shape = shapeById.get(id);
             return shape?.kind === "polyline" && !shape.closed;
           }),
           label:
@@ -494,13 +495,13 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
               ? `${nextSelection.length} items`
               : shapeKindLabels[clickedShape.kind],
           locked: nextSelection.every((id) => {
-            const shape = shapes.find((candidate) => candidate.id === id);
+            const shape = shapeById.get(id);
             return Boolean(shape?.locked);
           }),
           rotatableIds,
         });
       },
-      [activeTool, readOnly, setSelection]
+      [activeTool, readOnly, setSelection, shapeById]
     );
 
     const waypointDragBound = useCallback(
@@ -697,7 +698,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       setSelectionFrame(mergeClientRects(rects));
     }, [selection, design.shapes]);
 
-    const [zmin, zmax] = zRangeForDesign(design);
+    const [zmin, zmax] = useMemo(() => zRangeForDesign(design), [design]);
 
     // ── Infinite grid ────────────────────────────────────────────
     const grid = useMemo(() => {
@@ -1156,11 +1157,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                       isHovered={hoveredShapeId === shape.id}
                       isMobile={isMobile}
                       mobileMultiSelectEnabled={mobileMultiSelectEnabled}
-                      isSelected={selection.includes(shape.id)}
+                      isSelected={selectionIdSet.has(shape.id)}
                       selectionCount={selection.length}
                       groupDragOffsetPx={
-                        groupDragPreview &&
-                        groupDragPreview.ids.includes(shape.id)
+                        groupDragPreview && groupDragIdSet.has(shape.id)
                           ? {
                               x: groupDragPreview.dx,
                               y: groupDragPreview.dy,
@@ -1598,10 +1598,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
               {contextMenu.editablePolylineId && (
                 <ContextMenuItem
                   onClick={() => {
-                    const shape = design.shapes.find(
-                      (candidate) =>
-                        candidate.id === contextMenu.editablePolylineId
-                    );
+                    const editableId = contextMenu.editablePolylineId;
+                    if (!editableId) return;
+                    const shape = shapeById.get(editableId);
                     if (!shape || shape.kind !== "polyline") return;
                     setDraftSourcePath(shape);
                     setDraftPath(
@@ -1656,9 +1655,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
               <ContextMenuItem
                 onClick={() => {
                   for (const id of contextMenu.ids) {
-                    const shape = design.shapes.find(
-                      (candidate) => candidate.id === id
-                    );
+                    const shape = shapeById.get(id);
                     if (!shape) continue;
                     updateShape(id, { locked: !contextMenu.locked });
                   }
