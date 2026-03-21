@@ -113,7 +113,21 @@ export interface TrackDesign {
   tags?: string[];
   authorName?: string;
   field: FieldSpec;
-  shapes: Shape[];
+  shapeOrder: UUID[];
+  shapeById: Record<UUID, Shape>;
   createdAt: string; // ISO-8601
   updatedAt: string; // ISO-8601
+}
+
+export interface SerializedTrackDesign {
+  id: UUID;
+  version: 1;
+  title: string;
+  description?: string;
+  tags?: string[];
+  authorName?: string;
+  field: FieldSpec;
+  shapes: Shape[];
+  createdAt: string;
+  updatedAt: string;
 }

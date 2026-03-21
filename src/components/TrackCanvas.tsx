@@ -18,7 +18,6 @@ import {
   clamp,
   mergeClientRects,
   type CursorState,
-  type DraftPoint,
   type RectLike,
 } from "@/components/canvas/shared";
 import { useTrackCanvasInteractions } from "@/components/canvas/useTrackCanvasInteractions";
@@ -31,8 +30,12 @@ import {
 import { useTrackCanvasShortcuts } from "@/components/canvas/useTrackCanvasShortcuts";
 import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewport";
 import { useEditor } from "@/store/editor";
+import {
+  selectDesignShapes,
+  selectDesignPolylineZRange,
+  selectShapeRecordMap,
+} from "@/store/selectors";
 import { m2px } from "@/lib/units";
-import { zRangeForDesign } from "@/lib/alt";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
 import { distance2D, getPolyline2DPoints } from "@/lib/geometry";
 import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
@@ -111,21 +114,58 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     ref
   ) {
     const design = useEditor((state) => state.design);
+    const designShapes = useEditor(selectDesignShapes);
+    const [zmin, zmax] = useEditor(selectDesignPolylineZRange);
+    const shapeById = useEditor(selectShapeRecordMap);
     const selection = useEditor((state) => state.selection);
     const setSelection = useEditor((state) => state.setSelection);
     const updateShape = useEditor((state) => state.updateShape);
+    const setShapesLocked = useEditor((state) => state.setShapesLocked);
+    const setPolylinePoints = useEditor((state) => state.setPolylinePoints);
+    const removePolylinePoint = useEditor((state) => state.removePolylinePoint);
     const addShape = useEditor((state) => state.addShape);
-    const activeTool = useEditor((state) => state.activeTool);
+    const addShapes = useEditor((state) => state.addShapes);
+    const activeTool = useEditor((state) => state.transient.activeTool);
+    const vertexSel = useEditor((state) => state.transient.vertexSelection);
+    const draftPath = useEditor((state) => state.transient.draftPath);
+    const draftForceClosed = useEditor(
+      (state) => state.transient.draftForceClosed
+    );
+    const draftSourceShapeId = useEditor(
+      (state) => state.transient.draftSourceShapeId
+    );
+    const marqueeRect = useEditor((state) => state.transient.marqueeRect);
+    const rotationSession = useEditor(
+      (state) => state.transient.rotationSession
+    );
+    const groupDragPreview = useEditor(
+      (state) => state.transient.groupDragPreview
+    );
     const setActiveTool = useEditor((state) => state.setActiveTool);
+    const setVertexSel = useEditor((state) => state.setVertexSelection);
+    const setDraftPath = useEditor((state) => state.setDraftPath);
+    const setDraftForceClosed = useEditor((state) => state.setDraftForceClosed);
+    const setDraftSourceShapeId = useEditor(
+      (state) => state.setDraftSourceShapeId
+    );
+    const setMarqueeRect = useEditor((state) => state.setMarqueeRect);
+    const setRotationSession = useEditor((state) => state.setRotationSession);
+    const setGroupDragPreview = useEditor((state) => state.setGroupDragPreview);
     const rotateShapes = useEditor((state) => state.rotateShapes);
     const removeShapes = useEditor((state) => state.removeShapes);
     const duplicateShapes = useEditor((state) => state.duplicateShapes);
     const joinPolylines = useEditor((state) => state.joinPolylines);
     const closePolyline = useEditor((state) => state.closePolyline);
     const nudgeShapes = useEditor((state) => state.nudgeShapes);
+    const pauseHistory = useEditor((state) => state.pauseHistory);
+    const resumeHistory = useEditor((state) => state.resumeHistory);
+    const beginInteraction = useEditor((state) => state.beginInteraction);
+    const endInteraction = useEditor((state) => state.endInteraction);
     const setZoom = useEditor((state) => state.setZoom);
-    const hoveredShapeId = useEditor((state) => state.hoveredShapeId);
-    const hoveredWaypoint = useEditor((state) => state.hoveredWaypoint);
+    const hoveredShapeId = useEditor((state) => state.transient.hoveredShapeId);
+    const hoveredWaypoint = useEditor(
+      (state) => state.transient.hoveredWaypoint
+    );
     const bringForward = useEditor((state) => state.bringForward);
     const sendBackward = useEditor((state) => state.sendBackward);
 
@@ -157,15 +197,13 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       "none" | "pan" | "content" | "viewportGesture"
     >("none");
     const syncFrameRef = useRef<number | null>(null);
+    const rotationSessionRef = useRef(rotationSession);
+    const resumeHistoryRef = useRef(resumeHistory);
+    const updateShapeRef = useRef(updateShape);
+    const rotationEffectSessionKeyRef = useRef<string | null>(null);
+    const rotationEffectCleanupRef = useRef<(() => void) | null>(null);
+    const rotationEffectResumedRef = useRef(false);
 
-    const [vertexSel, setVertexSel] = useState<{
-      shapeId: string;
-      idx: number;
-    } | null>(null);
-    const [draftPath, setDraftPath] = useState<DraftPoint[]>([]);
-    const [draftForceClosed, setDraftForceClosed] = useState(false);
-    const [draftSourcePath, setDraftSourcePath] =
-      useState<PolylineShape | null>(null);
     const [cursor, setCursor] = useState<CursorState | null>(null);
     const [snapTarget, setSnapTarget] = useState<{
       x: number;
@@ -176,7 +214,6 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       x: number;
       y: number;
     } | null>(null);
-    const [marqueeRect, setMarqueeRect] = useState<RectLike | null>(null);
     const marqueeOrigin = useRef<Vector2d | null>(null);
     const marqueeAdditive = useRef(false);
     const [selectionFrame, setSelectionFrame] = useState<RectLike | null>(null);
@@ -190,18 +227,6 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       y: 0,
       scale: 1,
     });
-    const [rotationSession, setRotationSession] = useState<{
-      center: { x: number; y: number };
-      shapeId: string;
-      startAngle: number;
-      startRotation: number;
-    } | null>(null);
-    const [groupDragPreview, setGroupDragPreview] = useState<{
-      ids: string[];
-      origin: { x: number; y: number };
-      dx: number;
-      dy: number;
-    } | null>(null);
     const [contextMenu, setContextMenu] = useState<{
       closablePolylineId: string | null;
       editablePolylineId: string | null;
@@ -222,14 +247,30 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       () => new Set(groupDragPreview?.ids ?? []),
       [groupDragPreview]
     );
-    const shapeById = useMemo(
-      () => new Map(design.shapes.map((shape) => [shape.id, shape])),
-      [design.shapes]
+    const draftSourcePath = useMemo(
+      () =>
+        draftSourceShapeId
+          ? ((shapeById[draftSourceShapeId] as PolylineShape | undefined) ??
+            null)
+          : null,
+      [draftSourceShapeId, shapeById]
     );
 
     useEffect(() => {
       selectionRef.current = selection;
     }, [selection]);
+
+    useEffect(() => {
+      rotationSessionRef.current = rotationSession;
+    }, [rotationSession]);
+
+    useEffect(() => {
+      resumeHistoryRef.current = resumeHistory;
+    }, [resumeHistory]);
+
+    useEffect(() => {
+      updateShapeRef.current = updateShape;
+    }, [updateShape]);
 
     const effectiveVertexSel = useMemo(
       () =>
@@ -246,32 +287,45 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       };
     }, [groupDragPreview, selection.length, selectionFrame]);
     const singleSelectedShape = useMemo(
-      () =>
-        selection.length === 1 ? (shapeById.get(selection[0]) ?? null) : null,
+      () => (selection.length === 1 ? (shapeById[selection[0]] ?? null) : null),
       [selection, shapeById]
     );
+    const displaySingleSelectedShape = useMemo(() => {
+      if (!singleSelectedShape) return null;
+      if (rotationSession?.shapeId !== singleSelectedShape.id) {
+        return singleSelectedShape;
+      }
+      return {
+        ...singleSelectedShape,
+        rotation: rotationSession.previewRotation,
+      };
+    }, [rotationSession, singleSelectedShape]);
     const rotationGuide = useMemo(() => {
       if (
-        !singleSelectedShape ||
-        singleSelectedShape.kind === "polyline" ||
-        singleSelectedShape.kind === "cone" ||
-        singleSelectedShape.locked
+        !displaySingleSelectedShape ||
+        displaySingleSelectedShape.kind === "polyline" ||
+        displaySingleSelectedShape.kind === "cone" ||
+        displaySingleSelectedShape.locked
       ) {
         return null;
       }
 
       const center = {
-        x: m2px(singleSelectedShape.x, design.field.ppm),
-        y: m2px(singleSelectedShape.y, design.field.ppm),
+        x: m2px(displaySingleSelectedShape.x, design.field.ppm),
+        y: m2px(displaySingleSelectedShape.y, design.field.ppm),
       };
 
       return {
-        angleDeg: singleSelectedShape.rotation - 90,
+        angleDeg: displaySingleSelectedShape.rotation - 90,
         center,
-        label: `${Math.round(singleSelectedShape.rotation)}°`,
-        radius: estimateRotationGuideRadiusPx(singleSelectedShape),
+        label: `${Math.round(displaySingleSelectedShape.rotation)}°`,
+        radius: estimateRotationGuideRadiusPx(displaySingleSelectedShape),
       };
-    }, [design.field.ppm, estimateRotationGuideRadiusPx, singleSelectedShape]);
+    }, [
+      design.field.ppm,
+      displaySingleSelectedShape,
+      estimateRotationGuideRadiusPx,
+    ]);
 
     const syncTransform = useCallback(() => {
       if (syncFrameRef.current !== null) return;
@@ -295,8 +349,11 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         if (syncFrameRef.current !== null) {
           window.cancelAnimationFrame(syncFrameRef.current);
         }
+        setMarqueeRect(null);
+        setGroupDragPreview(null);
+        setRotationSession(null);
       },
-      []
+      [setGroupDragPreview, setMarqueeRect, setRotationSession]
     );
 
     const widthPx = useMemo(
@@ -464,7 +521,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         }
 
         const rotatableIds = nextSelection.filter((id) => {
-          const shape = shapeById.get(id);
+          const shape = shapeById[id];
           return (
             shape &&
             shape.kind !== "polyline" &&
@@ -487,7 +544,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
               : null,
           ids: nextSelection,
           joinablePolylineIds: nextSelection.filter((id) => {
-            const shape = shapeById.get(id);
+            const shape = shapeById[id];
             return shape?.kind === "polyline" && !shape.closed;
           }),
           label:
@@ -495,7 +552,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
               ? `${nextSelection.length} items`
               : shapeKindLabels[clickedShape.kind],
           locked: nextSelection.every((id) => {
-            const shape = shapeById.get(id);
+            const shape = shapeById[id];
             return Boolean(shape?.locked);
           }),
           rotatableIds,
@@ -539,7 +596,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         if (draftPath.length < 2) {
           setDraftPath([]);
           setDraftForceClosed(false);
-          setDraftSourcePath(null);
+          setDraftSourceShapeId(null);
           return;
         }
         const nextClosed = closed || draftForceClosed;
@@ -574,7 +631,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         setVertexSel(null);
         setDraftPath([]);
         setDraftForceClosed(false);
-        setDraftSourcePath(null);
+        setDraftSourceShapeId(null);
         setActiveTool("select");
       },
       [
@@ -584,7 +641,10 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         draftSourcePath,
         setActiveTool,
         setDraftForceClosed,
+        setDraftPath,
+        setDraftSourceShapeId,
         setSelection,
+        setVertexSel,
         updateShape,
       ]
     );
@@ -596,29 +656,41 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         setSelection([draftSourcePath.id]);
         setActiveTool("select");
       }
-      setDraftSourcePath(null);
-    }, [draftSourcePath, setActiveTool, setSelection]);
+      setDraftSourceShapeId(null);
+    }, [
+      draftSourcePath,
+      setActiveTool,
+      setDraftForceClosed,
+      setDraftPath,
+      setDraftSourceShapeId,
+      setSelection,
+    ]);
 
     useTrackCanvasShortcuts({
       activeTool,
-      addShape,
+      addShapes,
       cancelDraftPath,
       designFieldGridStep: design.field.gridStep,
-      designShapes: design.shapes,
+      shapeById,
       draftPath,
       duplicateShapes,
       effectiveVertexSel,
       finalizePath,
       fitFieldToViewport,
+      beginInteraction,
       nudgeShapes,
+      pauseHistory,
       removeShapes,
+      resumeHistory,
+      rotateShapes,
       selection,
       setActiveTool,
       setManualView,
       setSelection,
       setDraftPath,
       setVertexSel,
-      updateShape,
+      removePolylinePoint,
+      endInteraction,
     });
 
     useTrackCanvasViewport({
@@ -650,7 +722,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       activeTool,
       addShape,
       designField: design.field,
-      designShapes: design.shapes,
+      designShapes,
       disableTouchGestures: rotationSession !== null,
       draftPath,
       finalizePath,
@@ -696,9 +768,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
         .filter((node): node is KonvaGroup => Boolean(node))
         .map((node) => node.getClientRect({ relativeTo: stage }));
       setSelectionFrame(mergeClientRects(rects));
-    }, [selection, design.shapes]);
-
-    const [zmin, zmax] = useMemo(() => zRangeForDesign(design), [design]);
+    }, [selection, designShapes]);
 
     // ── Infinite grid ────────────────────────────────────────────
     const grid = useMemo(() => {
@@ -898,59 +968,42 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       onDraftPathStateChange,
     ]);
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        getStage: () => stageRef.current,
-        fitToWindow: () => {
-          setManualView(false);
-          fitFieldToViewport();
-        },
-        closeDraftLoop: () => {
-          if (draftPath.length < 3) return;
-          setDraftForceClosed(true);
-        },
-        finishDraftPath: (closeLoop = Boolean(draftCloseTarget)) =>
-          finalizePath(closeLoop),
-        cancelDraftPath,
-        undoDraftPoint: () => {
-          setDraftForceClosed(false);
-          setDraftPath((previous) =>
-            previous.slice(0, Math.max(0, previous.length - 1))
-          );
-        },
-        resumePolylineEditing: (shapeId: string) => {
-          const shape = design.shapes.find(
-            (candidate) => candidate.id === shapeId
-          );
-          if (!shape || shape.kind !== "polyline") return;
-          setDraftSourcePath(shape);
-          setDraftForceClosed(Boolean(shape.closed));
-          setDraftPath(
-            shape.points.map((point) => ({
-              x: point.x,
-              y: point.y,
-              z: point.z ?? 0,
-            }))
-          );
-          setSelection([]);
-          setVertexSel(null);
-          setActiveTool("polyline");
-        },
-      }),
-      [
-        design.shapes,
-        cancelDraftPath,
-        draftCloseTarget,
-        draftPath.length,
-        finalizePath,
-        fitFieldToViewport,
-        setActiveTool,
-        setDraftForceClosed,
-        setManualView,
-        setSelection,
-      ]
-    );
+    useImperativeHandle(ref, () => ({
+      getStage: () => stageRef.current,
+      fitToWindow: () => {
+        setManualView(false);
+        fitFieldToViewport();
+      },
+      closeDraftLoop: () => {
+        if (draftPath.length < 3) return;
+        setDraftForceClosed(true);
+      },
+      finishDraftPath: (closeLoop = Boolean(draftCloseTarget)) =>
+        finalizePath(closeLoop),
+      cancelDraftPath,
+      undoDraftPoint: () => {
+        setDraftForceClosed(false);
+        setDraftPath((previous) =>
+          previous.slice(0, Math.max(0, previous.length - 1))
+        );
+      },
+      resumePolylineEditing: (shapeId: string) => {
+        const shape = shapeById[shapeId];
+        if (!shape || shape.kind !== "polyline") return;
+        setDraftSourceShapeId(shape.id);
+        setDraftForceClosed(Boolean(shape.closed));
+        setDraftPath(
+          shape.points.map((point) => ({
+            x: point.x,
+            y: point.y,
+            z: point.z ?? 0,
+          }))
+        );
+        setSelection([]);
+        setVertexSel(null);
+        setActiveTool("polyline");
+      },
+    }));
 
     const cursorStyle = useMemo(() => {
       if (isStageDragging) return "grabbing";
@@ -969,7 +1022,19 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
     }, [cursor, stepPx, activeTool]);
 
     useEffect(() => {
-      if (!rotationSession) return;
+      const session = rotationSessionRef.current;
+      const sessionKey = session
+        ? `${session.shapeId}:${session.startAngle}:${session.startRotation}`
+        : null;
+
+      if (rotationEffectSessionKeyRef.current === sessionKey) return;
+
+      rotationEffectCleanupRef.current?.();
+      rotationEffectCleanupRef.current = null;
+      rotationEffectSessionKeyRef.current = sessionKey;
+      rotationEffectResumedRef.current = false;
+
+      if (!session) return;
 
       const stage = stageRef.current;
       if (!stage) return;
@@ -977,21 +1042,24 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       container.style.cursor = "grabbing";
 
       const updateRotationFromEvent = (event: MouseEvent | TouchEvent) => {
+        const activeSession = rotationSessionRef.current;
+        if (!activeSession) return;
+
         stage.setPointersPositions(event);
         const pointer = stage.getRelativePointerPosition();
         if (!pointer) return;
 
         const currentAngle =
           (Math.atan2(
-            pointer.y - rotationSession.center.y,
-            pointer.x - rotationSession.center.x
+            pointer.y - activeSession.center.y,
+            pointer.x - activeSession.center.x
           ) *
             180) /
           Math.PI;
         const nextRotation =
-          (((rotationSession.startRotation +
+          (((activeSession.startRotation +
             currentAngle -
-            rotationSession.startAngle +
+            activeSession.startAngle +
             90) %
             360) +
             360) %
@@ -1001,9 +1069,15 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
             ? Math.round(nextRotation)
             : Math.round(nextRotation / 5) * 5;
 
-        updateShape(rotationSession.shapeId, {
-          rotation: ((normalizedRotation % 360) + 360) % 360,
-        });
+        const previewRotation = ((normalizedRotation % 360) + 360) % 360;
+        setRotationSession((current) =>
+          current
+            ? {
+                ...current,
+                previewRotation,
+              }
+            : current
+        );
       };
 
       const handleMouseMove = (event: MouseEvent) => {
@@ -1016,7 +1090,32 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       };
 
       const handlePointerUp = () => {
+        const activeSession = rotationSessionRef.current;
+        if (activeSession) {
+          updateShapeRef.current(activeSession.shapeId, {
+            rotation: activeSession.previewRotation,
+          });
+        }
+        if (!rotationEffectResumedRef.current) {
+          resumeHistoryRef.current();
+          rotationEffectResumedRef.current = true;
+        }
+        endInteraction();
         setRotationSession(null);
+      };
+
+      const cleanup = () => {
+        container.style.cursor = "";
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handlePointerUp);
+        window.removeEventListener("touchmove", handleTouchMove);
+        window.removeEventListener("touchend", handlePointerUp);
+        window.removeEventListener("touchcancel", handlePointerUp);
+        if (!rotationEffectResumedRef.current) {
+          resumeHistoryRef.current();
+          rotationEffectResumedRef.current = true;
+        }
+        endInteraction();
       };
 
       window.addEventListener("mousemove", handleMouseMove);
@@ -1027,15 +1126,16 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
       window.addEventListener("touchend", handlePointerUp);
       window.addEventListener("touchcancel", handlePointerUp);
 
-      return () => {
-        container.style.cursor = "";
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handlePointerUp);
-        window.removeEventListener("touchmove", handleTouchMove);
-        window.removeEventListener("touchend", handlePointerUp);
-        window.removeEventListener("touchcancel", handlePointerUp);
-      };
-    }, [rotationSession, updateShape]);
+      rotationEffectCleanupRef.current = cleanup;
+    });
+
+    useEffect(
+      () => () => {
+        rotationEffectCleanupRef.current?.();
+        rotationEffectCleanupRef.current = null;
+      },
+      []
+    );
 
     return (
       <ContextMenu onOpenChange={(open) => !open && setContextMenu(null)}>
@@ -1141,10 +1241,14 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
 
             {/* Shapes layer */}
             <Layer>
-              {design.shapes
-                .filter((shape) => shape.id !== draftSourcePath?.id)
+              {designShapes
+                .filter((shape) => shape.id !== draftSourceShapeId)
                 .map((shape) => {
                   const allowInteraction = activeTool === "select" && !readOnly;
+                  const displayShape =
+                    rotationSession?.shapeId === shape.id
+                      ? { ...shape, rotation: rotationSession.previewRotation }
+                      : shape;
                   return (
                     <TrackShapeNode
                       key={shape.id}
@@ -1173,7 +1277,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                       onToggleSelection={toggleShapeSelection}
                       setSelection={setSelection}
                       setVertexSel={setVertexSel}
-                      shape={shape}
+                      shape={displayShape}
                       shapeRef={(node) => {
                         shapeRefs.current[shape.id] = node;
                       }}
@@ -1181,6 +1285,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                       resolveShapeDragPosition={resolveShapeDragPosition}
                       waypointDragBound={waypointDragBound}
                       resolveWaypointDragPosition={resolveWaypointDragPosition}
+                      setPolylinePoints={setPolylinePoints}
                       updateShape={updateShape}
                       zmax={zmax}
                       zmin={zmin}
@@ -1214,6 +1319,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                         event.evt.shiftKey
                       );
                       setDragSnapPreview(null);
+                      beginInteraction();
                       setGroupDragPreview({
                         ids: [...selection],
                         origin: { x: selectionFrame.x, y: selectionFrame.y },
@@ -1254,6 +1360,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                       setDragSnapPreview(null);
                       const activePreview = groupDragPreview;
                       setGroupDragPreview(null);
+                      endInteraction();
                       const origin = activePreview?.origin ?? {
                         x: selectionFrame.x,
                         y: selectionFrame.y,
@@ -1286,6 +1393,8 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     const stage = stageRef.current;
                     const pointer = stage?.getRelativePointerPosition();
                     if (!pointer) return;
+                    beginInteraction();
+                    pauseHistory();
 
                     const startAngle =
                       (Math.atan2(
@@ -1298,6 +1407,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                     setRotationSession({
                       center: rotationGuide.center,
                       shapeId: singleSelectedShape.id,
+                      previewRotation: singleSelectedShape.rotation,
                       startAngle,
                       startRotation: singleSelectedShape.rotation - 90,
                     });
@@ -1600,9 +1710,9 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
                   onClick={() => {
                     const editableId = contextMenu.editablePolylineId;
                     if (!editableId) return;
-                    const shape = shapeById.get(editableId);
+                    const shape = shapeById[editableId];
                     if (!shape || shape.kind !== "polyline") return;
-                    setDraftSourcePath(shape);
+                    setDraftSourceShapeId(shape.id);
                     setDraftPath(
                       shape.points.map((point) => ({
                         x: point.x,
@@ -1654,11 +1764,7 @@ const TrackCanvas = forwardRef<TrackCanvasHandle, TrackCanvasProps>(
               )}
               <ContextMenuItem
                 onClick={() => {
-                  for (const id of contextMenu.ids) {
-                    const shape = shapeById.get(id);
-                    if (!shape) continue;
-                    updateShape(id, { locked: !contextMenu.locked });
-                  }
+                  setShapesLocked(contextMenu.ids, !contextMenu.locked);
                   setContextMenu(null);
                 }}
               >

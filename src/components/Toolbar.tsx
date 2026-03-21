@@ -73,7 +73,7 @@ export default function Toolbar({
   onOpenProjectManager,
   collapsed,
 }: ToolbarProps) {
-  const activeTool = useEditor((state) => state.activeTool);
+  const activeTool = useEditor((state) => state.transient.activeTool);
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setSelection = useEditor((state) => state.setSelection);
   const theme = useTheme();

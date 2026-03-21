@@ -2,9 +2,11 @@
 
 import { useMemo } from "react";
 import { useEditor } from "@/store/editor";
-import { elevationSamples, totalLength2D } from "@/lib/geometry";
-import { isPolylineShape } from "@/lib/shape-utils";
-import type { PolylineShape } from "@/lib/types";
+import {
+  getPolylineElevationSamples,
+  getPolylineTotalLength2D,
+} from "@/lib/polyline-derived";
+import { selectPrimaryPolyline } from "@/store/selectors";
 import { cn } from "@/lib/utils";
 
 const VIEW_W = 400;
@@ -24,24 +26,14 @@ function niceStep(range: number, targetTicks: number): number {
 }
 
 export default function ElevationChart({ className }: { className?: string }) {
-  const shapes = useEditor((state) => state.design.shapes);
-  const selection = useEditor((state) => state.selection);
-
-  const path = useMemo<PolylineShape | null>(() => {
-    const selected = shapes.find(
-      (s) => selection.includes(s.id) && s.kind === "polyline"
-    );
-    if (selected && isPolylineShape(selected)) return selected;
-    const fallback = shapes.find((s) => s.kind === "polyline");
-    return fallback && isPolylineShape(fallback) ? fallback : null;
-  }, [shapes, selection]);
+  const path = useEditor(selectPrimaryPolyline);
 
   const chartData = useMemo(() => {
     if (!path) return null;
-    const samples = elevationSamples(path);
+    const samples = getPolylineElevationSamples(path);
     if (samples.length < 2) return null;
 
-    const totalDist = totalLength2D(path);
+    const totalDist = getPolylineTotalLength2D(path);
     const rawMinZ = samples.reduce((a, s) => Math.min(a, s.z), Infinity);
     const rawMaxZ = samples.reduce((a, s) => Math.max(a, s.z), -Infinity);
     const zRange = rawMaxZ - rawMinZ;

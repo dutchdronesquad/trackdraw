@@ -12,7 +12,7 @@ import ElevationChart from "@/components/ElevationChart";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
-import type { FieldSpec, Shape, TrackDesign } from "@/lib/types";
+import type { FieldSpec, PolylinePoint, Shape, TrackDesign } from "@/lib/types";
 import {
   Copy,
   FlipHorizontal2,
@@ -33,6 +33,7 @@ import {
   PanelHeader,
   Row,
   Section,
+  useInspectorInputBatch,
 } from "@/components/inspector/shared";
 
 type DesignMetaPatch = Partial<
@@ -166,6 +167,7 @@ function ListPanel({
 
 interface EmptyInspectorViewProps {
   design: TrackDesign;
+  shapes: Shape[];
   setSelection: (ids: string[]) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (patch: DesignMetaPatch) => void;
@@ -307,6 +309,7 @@ function ItemOverviewList({
 
 export function EmptyInspectorView({
   design,
+  shapes,
   setSelection,
   updateField,
   updateDesignMeta,
@@ -314,6 +317,8 @@ export function EmptyInspectorView({
   setHoveredShapeId,
   mobileInline = false,
 }: EmptyInspectorViewProps) {
+  const { startBatch, finishBatch } = useInspectorInputBatch();
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PanelHeader title="Design" />
@@ -323,7 +328,7 @@ export function EmptyInspectorView({
             title="Project settings"
             subtitle="Tune the field, review the placed items, or jump into an object from the list below."
             meta={[
-              `${design.shapes.length} items`,
+              `${shapes.length} items`,
               `${design.field.width}x${design.field.height} m`,
               `grid ${design.field.gridStep} m`,
             ]}
@@ -334,6 +339,13 @@ export function EmptyInspectorView({
             </p>
             <Input
               value={design.title}
+              onFocus={startBatch}
+              onBlur={finishBatch}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.currentTarget.blur();
+                }
+              }}
               onChange={(event) =>
                 updateDesignMeta({ title: event.target.value })
               }
@@ -376,9 +388,9 @@ export function EmptyInspectorView({
               />
             </Row>
           </Section>
-          {design.shapes.length > 0 ? (
+          {shapes.length > 0 ? (
             <ItemOverviewList
-              shapes={design.shapes}
+              shapes={shapes}
               setSelection={setSelection}
               removeShapes={removeShapes}
               setHoveredShapeId={setHoveredShapeId}
@@ -526,6 +538,20 @@ export function MultiInspectorView({
 interface SingleInspectorViewProps {
   shape: Shape;
   updateShape: (id: string, patch: Partial<Shape>) => void;
+  setShapesLocked: (ids: string[], locked: boolean) => void;
+  updatePolylinePoint: (
+    id: string,
+    index: number,
+    patch: Partial<PolylinePoint>
+  ) => void;
+  insertPolylinePoint: (
+    id: string,
+    index: number,
+    point: PolylinePoint
+  ) => void;
+  removePolylinePoint: (id: string, index: number) => void;
+  appendPolylinePoint: (id: string, point: PolylinePoint) => void;
+  reversePolylinePoints: (id: string) => void;
   closePolyline: (id: string) => boolean;
   duplicateShapes: (ids: string[]) => void;
   removeShapes: (ids: string[]) => void;
@@ -540,6 +566,12 @@ interface SingleInspectorViewProps {
 export function SingleInspectorView({
   shape,
   updateShape,
+  setShapesLocked,
+  updatePolylinePoint,
+  insertPolylinePoint,
+  removePolylinePoint,
+  appendPolylinePoint,
+  reversePolylinePoints,
   closePolyline,
   duplicateShapes,
   removeShapes,
@@ -548,6 +580,7 @@ export function SingleInspectorView({
   onResumeSelectedPath,
   mobileInline = false,
 }: SingleInspectorViewProps) {
+  const { startBatch, finishBatch } = useInspectorInputBatch();
   const defaultColor = shape.color ?? "#3b82f6";
   const polylineAnchor =
     shape.kind === "polyline" && shape.points.length
@@ -575,7 +608,7 @@ export function SingleInspectorView({
         actions={
           <>
             <IconBtn
-              onClick={() => updateShape(shape.id, { locked: !shape.locked })}
+              onClick={() => setShapesLocked([shape.id], !shape.locked)}
               title={shape.locked ? "Unlock" : "Lock"}
             >
               {shape.locked ? (
@@ -619,6 +652,13 @@ export function SingleInspectorView({
             <Row label="Name">
               <Input
                 value={shape.name ?? ""}
+                onFocus={startBatch}
+                onBlur={finishBatch}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.currentTarget.blur();
+                  }
+                }}
                 onChange={(event) =>
                   updateShape(shape.id, { name: event.target.value })
                 }
@@ -655,6 +695,8 @@ export function SingleInspectorView({
                   type="color"
                   className="border-border/40 size-9 cursor-pointer rounded-md border bg-transparent lg:size-6 lg:rounded"
                   value={defaultColor}
+                  onFocus={startBatch}
+                  onBlur={finishBatch}
                   onChange={(event) =>
                     updateShape(shape.id, { color: event.target.value })
                   }
@@ -738,6 +780,8 @@ export function SingleInspectorView({
                   rows={2}
                   className="border-border/40 bg-muted/40 text-foreground placeholder:text-muted-foreground/40 focus-visible:ring-ring/30 w-full resize-none rounded-md border px-3 py-2 text-xs focus-visible:ring-1 focus-visible:outline-none lg:rounded lg:px-2 lg:py-1 lg:text-[11px]"
                   value={shape.text}
+                  onFocus={startBatch}
+                  onBlur={finishBatch}
                   onChange={(event) =>
                     updateShape(shape.id, { text: event.target.value })
                   }
@@ -757,6 +801,8 @@ export function SingleInspectorView({
                 <select
                   className="border-border/40 bg-muted/40 text-foreground h-9 w-full rounded-md border px-3 py-1 text-xs focus-visible:outline-none lg:h-7 lg:rounded lg:px-2 lg:text-[11px]"
                   value={shape.project ? "ground" : "float"}
+                  onFocus={startBatch}
+                  onBlur={finishBatch}
                   onChange={(event) =>
                     updateShape(shape.id, {
                       project: event.target.value === "ground",
@@ -920,9 +966,7 @@ export function SingleInspectorView({
                   <button
                     className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] transition-colors lg:h-7"
                     onClick={() => {
-                      updateShape(shape.id, {
-                        points: [...shape.points].reverse(),
-                      });
+                      reversePolylinePoints(shape.id);
                     }}
                   >
                     <FlipHorizontal2 className="size-3" />
@@ -989,13 +1033,17 @@ export function SingleInspectorView({
                           title="Elevation (m)"
                           className="text-foreground/90 focus:bg-primary/6 focus:text-foreground hover:border-border/25 focus:border-primary/30 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-none"
                           value={point.z ?? 0}
+                          onFocus={startBatch}
+                          onBlur={finishBatch}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.currentTarget.blur();
+                            }
+                          }}
                           onChange={(event) => {
-                            const nextPoints = [...shape.points];
-                            nextPoints[index] = {
-                              ...nextPoints[index],
+                            updatePolylinePoint(shape.id, index, {
                               z: +event.target.value,
-                            };
-                            updateShape(shape.id, { points: nextPoints });
+                            });
                           }}
                         />
                         <div className="flex items-center justify-end gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover/row:opacity-100">
@@ -1014,9 +1062,11 @@ export function SingleInspectorView({
                                     2
                                   ).toFixed(2),
                                 };
-                                const nextPoints = [...shape.points];
-                                nextPoints.splice(index + 1, 0, midpoint);
-                                updateShape(shape.id, { points: nextPoints });
+                                insertPolylinePoint(
+                                  shape.id,
+                                  index + 1,
+                                  midpoint
+                                );
                               }}
                             >
                               <PlusCircle className="size-3" />
@@ -1026,11 +1076,7 @@ export function SingleInspectorView({
                             title="Remove point"
                             className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors"
                             onClick={() => {
-                              if (shape.points.length <= 2) return;
-                              const nextPoints = shape.points.filter(
-                                (_, pointIndex) => pointIndex !== index
-                              );
-                              updateShape(shape.id, { points: nextPoints });
+                              removePolylinePoint(shape.id, index);
                             }}
                           >
                             <X className="size-3" />
@@ -1043,18 +1089,18 @@ export function SingleInspectorView({
                   <button
                     className="border-border/15 text-muted-foreground/55 hover:text-foreground hover:bg-muted/6 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors lg:h-auto lg:text-[11px]"
                     onClick={() => {
-                      const points = [...shape.points];
-                      const lastPoint = points[points.length - 1] ?? {
+                      const lastPoint = shape.points[
+                        shape.points.length - 1
+                      ] ?? {
                         x: 0,
                         y: 0,
                         z: 0,
                       };
-                      points.push({
+                      appendPolylinePoint(shape.id, {
                         x: +(lastPoint.x + 1).toFixed(2),
                         y: +(lastPoint.y + 1).toFixed(2),
                         z: lastPoint.z ?? 0,
                       });
-                      updateShape(shape.id, { points });
                     }}
                   >
                     <Plus className="size-3" /> Add point

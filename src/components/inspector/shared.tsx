@@ -1,9 +1,48 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { Input } from "@/components/ui/input";
+import { useEditor } from "@/store/editor";
 
 export const fmt = (value: number) => Number(value.toFixed(2));
+
+export function useInspectorInputBatch() {
+  const beginInteraction = useEditor((state) => state.beginInteraction);
+  const endInteraction = useEditor((state) => state.endInteraction);
+  const pauseHistory = useEditor((state) => state.pauseHistory);
+  const resumeHistory = useEditor((state) => state.resumeHistory);
+  const batchActiveRef = useRef(false);
+
+  const startBatch = () => {
+    if (batchActiveRef.current) return;
+    batchActiveRef.current = true;
+    beginInteraction();
+    pauseHistory();
+  };
+
+  const finishBatch = () => {
+    if (!batchActiveRef.current) return;
+    batchActiveRef.current = false;
+    resumeHistory();
+    endInteraction();
+  };
+
+  useEffect(
+    () => () => {
+      if (!batchActiveRef.current) return;
+      batchActiveRef.current = false;
+      resumeHistory();
+      endInteraction();
+    },
+    [endInteraction, resumeHistory]
+  );
+
+  return {
+    startBatch,
+    finishBatch,
+  };
+}
 
 export function PanelHeader({
   title,
@@ -67,12 +106,21 @@ export function Num({
   step?: number;
   min?: number;
 }) {
+  const { startBatch, finishBatch } = useInspectorInputBatch();
+
   return (
     <Input
       type="number"
       step={step}
       min={min}
       value={value}
+      onFocus={startBatch}
+      onBlur={finishBatch}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          event.currentTarget.blur();
+        }
+      }}
       onChange={(event) => onChange(+event.target.value)}
       className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
     />

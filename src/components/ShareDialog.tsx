@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/store/editor";
+import { selectDesignShapeCount } from "@/store/selectors";
 import { buildShareUrl, isShareSafe } from "@/lib/share";
 import {
   Copy,
@@ -35,12 +36,12 @@ export default function ShareDialog({
   onExportJson,
 }: ShareDialogProps) {
   const design = useEditor((s) => s.design);
+  const shapeCount = useEditor(selectDesignShapeCount);
   const [copied, setCopied] = useState(false);
 
   const shareUrl = buildShareUrl(design);
   const safe = isShareSafe(design);
   const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
-  const shapeCount = design.shapes.length;
   const shareTitle = design.title.trim() || "Untitled track";
   const hostname =
     typeof window !== "undefined" ? window.location.host : "trackdraw.app";

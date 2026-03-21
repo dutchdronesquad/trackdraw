@@ -1,4 +1,5 @@
-import type { PolylineShape, TrackDesign } from "./types";
+import { getDesignPolylineZRange } from "./polyline-derived";
+import type { TrackDesign } from "./types";
 
 export function zToColor(z: number, zmin: number, zmax: number): string {
   const t = zmax === zmin ? 0 : (z - zmin) / (zmax - zmin);
@@ -7,23 +8,5 @@ export function zToColor(z: number, zmin: number, zmax: number): string {
 }
 
 export function zRangeForDesign(design: TrackDesign): [number, number] {
-  let zmin = 0,
-    zmax = 0,
-    seen = false;
-  for (const s of design.shapes)
-    if (s.kind === "polyline") {
-      const polyline = s as PolylineShape;
-      for (const p of polyline.points) {
-        const z = p.z ?? 0;
-        if (!seen) {
-          zmin = z;
-          zmax = z;
-          seen = true;
-        } else {
-          zmin = Math.min(zmin, z);
-          zmax = Math.max(zmax, z);
-        }
-      }
-    }
-  return [zmin, zmax];
+  return getDesignPolylineZRange(design);
 }

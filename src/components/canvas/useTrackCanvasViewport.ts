@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, type MutableRefObject } from "react";
+import { useEffect, type RefObject } from "react";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 
 interface TrackCanvasViewportParams {
-  containerRef: MutableRefObject<HTMLDivElement | null>;
+  containerRef: RefObject<HTMLDivElement | null>;
   fitFieldToViewport: () => void;
-  hasManualViewRef: MutableRefObject<boolean>;
+  hasManualViewRef: RefObject<boolean>;
   setManualView: (value: boolean) => void;
   setViewportSize: (size: { width: number; height: number }) => void;
-  stageRef: MutableRefObject<KonvaStage | null>;
+  stageRef: RefObject<KonvaStage | null>;
   syncTransform: () => void;
 }
 

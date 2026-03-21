@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Arrow,
   Circle,
@@ -13,7 +13,11 @@ import {
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Vector2d } from "konva/lib/types";
-import { getPolyline2DPoints, getPolylineArrowMarkers } from "@/lib/geometry";
+import {
+  getPolyline2DDerived,
+  getPolylineBounds,
+  getPolylineSmoothPointsPx,
+} from "@/lib/polyline-derived";
 import { zToColor } from "@/lib/alt";
 import { m2px, px2m } from "@/lib/units";
 import {
@@ -37,81 +41,6 @@ import type {
   Shape,
   StartFinishShape,
 } from "@/lib/types";
-
-type CachedPolylineMetrics = {
-  arrowMarkers: Array<{ x: number; y: number; angle: number }>;
-  boundsByPpm: Map<
-    number,
-    { x: number; y: number; width: number; height: number }
-  >;
-  smoothPoints: Array<{ x: number; y: number }>;
-};
-
-const polylineMetricsCache = new WeakMap<
-  PolylinePoint[],
-  Map<string, CachedPolylineMetrics>
->();
-
-function getCachedPolylineMetrics(path: PolylineShape): CachedPolylineMetrics {
-  const cacheKey = `${path.closed ? 1 : 0}|${path.showArrows ? 1 : 0}|${path.arrowSpacing ?? 15}`;
-  let byVariant = polylineMetricsCache.get(path.points);
-  if (!byVariant) {
-    byVariant = new Map();
-    polylineMetricsCache.set(path.points, byVariant);
-  }
-
-  const cached = byVariant.get(cacheKey);
-  if (cached) return cached;
-
-  const smoothPoints = getPolyline2DPoints(path.points, {
-    closed: path.closed ?? false,
-    smooth: true,
-  });
-  const metrics: CachedPolylineMetrics = {
-    arrowMarkers: path.showArrows
-      ? getPolylineArrowMarkers(path.points, path.arrowSpacing ?? 15, {
-          closed: path.closed ?? false,
-          samplesPerSegment: 10,
-        })
-      : [],
-    boundsByPpm: new Map(),
-    smoothPoints,
-  };
-
-  byVariant.set(cacheKey, metrics);
-  return metrics;
-}
-
-function getCachedPolylineBounds(path: PolylineShape, ppm: number) {
-  const metrics = getCachedPolylineMetrics(path);
-  const cachedBounds = metrics.boundsByPpm.get(ppm);
-  if (cachedBounds) return cachedBounds;
-  if (!metrics.smoothPoints.length) return null;
-
-  let minX = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
-
-  for (const point of metrics.smoothPoints) {
-    const x = m2px(point.x, ppm);
-    const y = m2px(point.y, ppm);
-    minX = Math.min(minX, x);
-    maxX = Math.max(maxX, x);
-    minY = Math.min(minY, y);
-    maxY = Math.max(maxY, y);
-  }
-
-  const strokePx = m2px(path.strokeWidth ?? 0.26, ppm);
-  const bounds = {
-    x: minX - strokePx,
-    y: minY - strokePx,
-    width: maxX - minX + strokePx * 2,
-    height: maxY - minY + strokePx * 2,
-  };
-  metrics.boundsByPpm.set(ppm, bounds);
-  return bounds;
-}
 
 interface FieldLayerContentProps {
   designField: {
@@ -400,7 +329,7 @@ interface TrackShapeNodeProps {
   allowInteraction: boolean;
   designPpm: number;
   dragBound: (pos: Vector2d) => Vector2d;
-  dragSnapRef: React.MutableRefObject<boolean>;
+  dragSnapRef: React.RefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
   isHovered: boolean;
@@ -426,6 +355,7 @@ interface TrackShapeNodeProps {
     pos: Vector2d,
     snapEnabled: boolean
   ) => Vector2d;
+  setPolylinePoints: (id: string, points: PolylinePoint[]) => void;
   updateShape: (id: string, patch: Partial<Shape>) => void;
   zmax: number;
   zmin: number;
@@ -456,6 +386,7 @@ function TrackShapeNodeComponent({
   resolveShapeDragPosition,
   waypointDragBound,
   resolveWaypointDragPosition,
+  setPolylinePoints,
   updateShape,
   zmax,
   zmin,
@@ -512,13 +443,14 @@ function TrackShapeNodeComponent({
       const dx = px2m(resolved.x, designPpm);
       const dy = px2m(resolved.y, designPpm);
       event.currentTarget.position({ x: 0, y: 0 });
-      updateShape(shape.id, {
-        points: shape.points.map((point) => ({
+      setPolylinePoints(
+        shape.id,
+        shape.points.map((point) => ({
           ...point,
           x: point.x + dx,
           y: point.y + dy,
-        })),
-      });
+        }))
+      );
       return;
     }
 
@@ -659,7 +591,7 @@ function TrackShapeNodeComponent({
             setSelection={setSelection}
             setDragSnapPreview={setDragSnapPreview}
             setVertexSel={setVertexSel}
-            updateShape={updateShape}
+            setPolylinePoints={setPolylinePoints}
             zmax={zmax}
             zmin={zmin}
           />
@@ -848,7 +780,7 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
       };
     }
     case "polyline": {
-      return getCachedPolylineBounds(shape, ppm);
+      return getPolylineBounds(shape, ppm);
     }
   }
 }
@@ -1178,7 +1110,7 @@ interface PolylineShapeContentProps {
   allowInteraction: boolean;
   designPpm: number;
   dragBound: (pos: Vector2d) => Vector2d;
-  dragSnapRef: React.MutableRefObject<boolean>;
+  dragSnapRef: React.RefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
   isMobile: boolean;
@@ -1193,7 +1125,7 @@ interface PolylineShapeContentProps {
     React.SetStateAction<{ x: number; y: number } | null>
   >;
   setVertexSel: (value: { shapeId: string; idx: number } | null) => void;
-  updateShape: (id: string, patch: Partial<Shape>) => void;
+  setPolylinePoints: (id: string, points: PolylinePoint[]) => void;
   zmax: number;
   zmin: number;
 }
@@ -1212,36 +1144,48 @@ function PolylineShapeContent({
   setSelection,
   setDragSnapPreview,
   setVertexSel,
-  updateShape,
+  setPolylinePoints,
   zmax,
   zmin,
 }: PolylineShapeContentProps) {
-  const strokePx = m2px(path.strokeWidth ?? 0.26, designPpm);
+  const [previewPoints, setPreviewPoints] = useState<PolylinePoint[] | null>(
+    null
+  );
+  const displayPath = useMemo(
+    () =>
+      previewPoints
+        ? {
+            ...path,
+            points: previewPoints,
+          }
+        : path,
+    [path, previewPoints]
+  );
+  const strokePx = m2px(displayPath.strokeWidth ?? 0.26, designPpm);
   const selectionStrokePx = isMobile
     ? Math.max(22, strokePx + 18)
     : Math.max(14, strokePx + 10);
-  const polylineMetrics = useMemo(() => getCachedPolylineMetrics(path), [path]);
+  const polylineMetrics = useMemo(
+    () => getPolyline2DDerived(displayPath),
+    [displayPath]
+  );
   const pointsPxMemo = useMemo(() => {
     const basePoints =
-      path.closed && path.points.length > 1
-        ? [...path.points, path.points[0]]
-        : path.points;
+      displayPath.closed && displayPath.points.length > 1
+        ? [...displayPath.points, displayPath.points[0]]
+        : displayPath.points;
 
     return basePoints.flatMap((point) => [
       m2px(point.x, designPpm),
       m2px(point.y, designPpm),
     ]);
-  }, [designPpm, path.closed, path.points]);
+  }, [designPpm, displayPath.closed, displayPath.points]);
   const smoothPx = useMemo(
-    () =>
-      polylineMetrics.smoothPoints.flatMap((point) => [
-        m2px(point.x, designPpm),
-        m2px(point.y, designPpm),
-      ]),
-    [designPpm, polylineMetrics.smoothPoints]
+    () => getPolylineSmoothPointsPx(displayPath, designPpm),
+    [designPpm, displayPath]
   );
   const arrowMarkers = polylineMetrics.arrowMarkers;
-  const color = path.color ?? "#3b82f6";
+  const color = displayPath.color ?? "#3b82f6";
   const waypointRadius = Math.max(4, m2px(0.08, designPpm));
   const waypointTouchRadius = isMobile
     ? Math.max(14, waypointRadius * 2.75)
@@ -1357,6 +1301,17 @@ function PolylineShapeContent({
               Math.abs(current.x - resolved.x) > 0.5 ||
               Math.abs(current.y - resolved.y) > 0.5;
             setDragSnapPreview(isSnapping ? resolved : null);
+            setPreviewPoints(
+              path.points.map((candidate, candidateIndex) =>
+                candidateIndex === index
+                  ? {
+                      ...candidate,
+                      x: px2m(resolved.x, designPpm),
+                      y: px2m(resolved.y, designPpm),
+                    }
+                  : candidate
+              )
+            );
           };
 
           const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
@@ -1377,7 +1332,8 @@ function PolylineShapeContent({
                     }
                   : candidate
             );
-            updateShape(path.id, { points });
+            setPreviewPoints(null);
+            setPolylinePoints(path.id, points);
           };
 
           const handlePointerDown = (
@@ -1423,6 +1379,7 @@ function PolylineShapeContent({
                 onDragMove={!isMobile ? handleDragMove : undefined}
                 onDragEnd={!isMobile ? handleDragEnd : undefined}
                 listening={!isMobile}
+                onDragCancel={() => setPreviewPoints(null)}
               />
             </Group>
           );

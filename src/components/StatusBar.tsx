@@ -19,10 +19,10 @@ interface StatusBarProps {
 }
 
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
-  const activeTool = useEditor((state) => state.activeTool);
+  const activeTool = useEditor((state) => state.transient.activeTool);
   const field = useEditor((state) => state.design.field);
   const selectionCount = useEditor((state) => state.selection.length);
-  const zoom = useEditor((state) => state.zoom);
+  const zoom = useEditor((state) => state.transient.zoom);
 
   return (
     <div className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex">

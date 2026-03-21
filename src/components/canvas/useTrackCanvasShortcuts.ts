@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useRef } from "react";
 import { isPolylineShape } from "@/lib/shape-utils";
 import type { EditorTool } from "@/lib/editor-tools";
 import type { Shape, ShapeDraft } from "@/lib/types";
@@ -12,30 +12,38 @@ import {
 
 interface TrackCanvasShortcutsParams {
   activeTool: EditorTool;
-  addShape: (shape: ShapeDraft) => string;
+  addShapes: (shapes: ShapeDraft[]) => string[];
   cancelDraftPath: () => void;
   designFieldGridStep: number;
-  designShapes: Shape[];
+  shapeById: Record<string, Shape>;
   draftPath: DraftPoint[];
   duplicateShapes: (ids: string[]) => void;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   finalizePath: () => void;
   fitFieldToViewport: () => void;
+  beginInteraction: () => void;
   nudgeShapes: (ids: string[], dx: number, dy: number) => void;
+  pauseHistory: () => void;
   removeShapes: (ids: string[]) => void;
+  removePolylinePoint: (id: string, index: number) => void;
+  resumeHistory: () => void;
+  rotateShapes: (ids: string[], delta: number) => void;
   selection: string[];
   setActiveTool: (tool: EditorTool) => void;
-  setDraftPath: Dispatch<SetStateAction<DraftPoint[]>>;
+  setDraftPath: (
+    value: DraftPoint[] | ((previous: DraftPoint[]) => DraftPoint[])
+  ) => void;
   setManualView: (value: boolean) => void;
   setSelection: (ids: string[]) => void;
-  setVertexSel: Dispatch<
-    SetStateAction<{ shapeId: string; idx: number } | null>
-  >;
-  updateShape: (id: string, patch: Partial<Shape>) => void;
-}
-
-function normalizeRotation(rotation: number) {
-  return ((rotation % 360) + 360) % 360;
+  setVertexSel: (
+    value:
+      | { shapeId: string; idx: number }
+      | null
+      | ((
+          previous: { shapeId: string; idx: number } | null
+        ) => { shapeId: string; idx: number } | null)
+  ) => void;
+  endInteraction: () => void;
 }
 
 function canRotateShape(shape: Shape) {
@@ -44,33 +52,62 @@ function canRotateShape(shape: Shape) {
 
 export function useTrackCanvasShortcuts({
   activeTool,
-  addShape,
+  addShapes,
   cancelDraftPath,
   designFieldGridStep,
-  designShapes,
+  shapeById,
   draftPath,
   duplicateShapes,
   effectiveVertexSel,
   finalizePath,
   fitFieldToViewport,
+  beginInteraction,
   nudgeShapes,
+  pauseHistory,
   removeShapes,
+  removePolylinePoint,
+  resumeHistory,
+  rotateShapes,
   selection,
   setActiveTool,
   setDraftPath,
   setManualView,
   setSelection,
   setVertexSel,
-  updateShape,
+  endInteraction,
 }: TrackCanvasShortcutsParams) {
+  const keyboardBatchTimeoutRef = useRef<number | null>(null);
+  const keyboardBatchActiveRef = useRef(false);
+
   useEffect(() => {
+    const beginKeyboardBatch = () => {
+      if (!keyboardBatchActiveRef.current) {
+        keyboardBatchActiveRef.current = true;
+        beginInteraction();
+        pauseHistory();
+      }
+
+      if (keyboardBatchTimeoutRef.current !== null) {
+        window.clearTimeout(keyboardBatchTimeoutRef.current);
+      }
+
+      keyboardBatchTimeoutRef.current = window.setTimeout(() => {
+        keyboardBatchTimeoutRef.current = null;
+        if (!keyboardBatchActiveRef.current) return;
+        keyboardBatchActiveRef.current = false;
+        resumeHistory();
+        endInteraction();
+      }, 220);
+    };
+
     const rotateSelection = (delta: number) => {
-      for (const id of selection) {
-        const shape = designShapes.find((candidate) => candidate.id === id);
-        if (!shape || !canRotateShape(shape)) continue;
-        updateShape(id, {
-          rotation: normalizeRotation((shape.rotation ?? 0) + delta),
-        });
+      beginKeyboardBatch();
+      const rotatableIds = selection.filter((id) => {
+        const shape = shapeById[id];
+        return Boolean(shape && canRotateShape(shape));
+      });
+      if (rotatableIds.length) {
+        rotateShapes(rotatableIds, delta);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -90,7 +127,9 @@ export function useTrackCanvasShortcuts({
         clipboard.splice(
           0,
           clipboard.length,
-          ...designShapes.filter((shape) => selection.includes(shape.id))
+          ...selection
+            .map((id) => shapeById[id])
+            .filter((shape): shape is Shape => Boolean(shape))
         );
         return;
       }
@@ -98,10 +137,9 @@ export function useTrackCanvasShortcuts({
       if (meta && event.key === "v") {
         event.preventDefault();
         if (!clipboard.length) return;
-        const newIds: string[] = [];
-        clipboard.forEach((shape) => {
+        const duplicatedShapes: ShapeDraft[] = clipboard.map((shape) => {
           const { id: _id, ...rest } = shape;
-          const duplicatedShape: ShapeDraft = {
+          return {
             ...rest,
             x: shape.kind === "polyline" ? 0 : shape.x + 1,
             y: shape.kind === "polyline" ? 0 : shape.y + 1,
@@ -115,8 +153,8 @@ export function useTrackCanvasShortcuts({
                 }
               : {}),
           };
-          newIds.push(addShape(duplicatedShape));
         });
+        const newIds = addShapes(duplicatedShapes);
         setSelection(newIds);
         return;
       }
@@ -129,6 +167,7 @@ export function useTrackCanvasShortcuts({
         activeTool === "select"
       ) {
         event.preventDefault();
+        beginKeyboardBatch();
         const step = event.altKey ? 0.1 : designFieldGridStep;
         const dx =
           event.key === "ArrowLeft"
@@ -186,15 +225,9 @@ export function useTrackCanvasShortcuts({
         }
 
         if (effectiveVertexSel) {
-          const shape = designShapes.find(
-            (candidate) => candidate.id === effectiveVertexSel.shapeId
-          );
+          const shape = shapeById[effectiveVertexSel.shapeId];
           if (shape && isPolylineShape(shape)) {
-            const points = [...shape.points];
-            if (points.length > 2) {
-              points.splice(effectiveVertexSel.idx, 1);
-              updateShape(shape.id, { points });
-            }
+            removePolylinePoint(shape.id, effectiveVertexSel.idx);
           }
           setVertexSel(null);
           return;
@@ -238,26 +271,42 @@ export function useTrackCanvasShortcuts({
     };
 
     window.addEventListener("keydown", handleKeyDown, { passive: false });
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      if (keyboardBatchTimeoutRef.current !== null) {
+        window.clearTimeout(keyboardBatchTimeoutRef.current);
+        keyboardBatchTimeoutRef.current = null;
+      }
+      if (keyboardBatchActiveRef.current) {
+        keyboardBatchActiveRef.current = false;
+        resumeHistory();
+        endInteraction();
+      }
+    };
   }, [
     activeTool,
-    addShape,
+    addShapes,
+    beginInteraction,
     cancelDraftPath,
     designFieldGridStep,
-    designShapes,
+    shapeById,
     draftPath,
     duplicateShapes,
+    endInteraction,
     effectiveVertexSel,
     finalizePath,
     fitFieldToViewport,
     nudgeShapes,
+    pauseHistory,
     removeShapes,
+    removePolylinePoint,
+    resumeHistory,
+    rotateShapes,
     selection,
     setActiveTool,
     setDraftPath,
     setManualView,
     setSelection,
     setVertexSel,
-    updateShape,
   ]);
 }
