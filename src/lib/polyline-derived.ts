@@ -14,6 +14,8 @@ type PolylineCurve3Data = {
   segmentCount: number;
 };
 
+const POLYLINE_2D_SAMPLES_PER_SEGMENT = 18;
+
 type Cached2DPolylineMetrics = {
   arrowMarkers: Array<{ x: number; y: number; angle: number }>;
   boundsByPpm: Map<
@@ -100,7 +102,7 @@ export function getPolyline2DDerived(
     arrowMarkers: path.showArrows
       ? getPolylineArrowMarkers(path.points, path.arrowSpacing ?? 15, {
           closed: path.closed ?? false,
-          samplesPerSegment: 10,
+          samplesPerSegment: POLYLINE_2D_SAMPLES_PER_SEGMENT,
         })
       : [],
     boundsByPpm: new Map(),
@@ -108,6 +110,7 @@ export function getPolyline2DDerived(
     smoothPoints: getPolyline2DPoints(path.points, {
       closed: path.closed ?? false,
       smooth: true,
+      samplesPerSegment: POLYLINE_2D_SAMPLES_PER_SEGMENT,
     }),
     smoothPxByPpm: new Map(),
     totalLength2D,
