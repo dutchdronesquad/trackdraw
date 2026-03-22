@@ -26,9 +26,20 @@ export function buildShareUrl(design: TrackDesign): string {
     typeof window !== "undefined"
       ? `${window.location.protocol}//${window.location.host}`
       : "";
-  return `${base}/share?d=${token}`;
+  return `${base}/share/${token}`;
 }
 
 export function isShareSafe(design: TrackDesign): boolean {
   return encodeDesign(design).length <= MAX_SAFE_TOKEN_LENGTH;
+}
+
+export function getShareTitle(design: TrackDesign) {
+  return design.title.trim() || "Untitled track";
+}
+
+export function getShareDescription(design: TrackDesign) {
+  const customDescription = design.description?.trim();
+  if (customDescription) return customDescription;
+
+  return `Read-only TrackDraw plan for ${getShareTitle(design)}.`;
 }
