@@ -35,6 +35,11 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 - [x] Export and project portability
       Support now includes PNG, SVG, PDF, 3D render capture, and JSON project export/import.
 
+## Release Cleanup
+
+- [ ] Share route deprecation before v1
+      Keep `/share/[token]` as the canonical read-only route for v1, remove legacy `/share?d=...` support before release, and update docs and product copy to match.
+
 ## Priority 1
 
 - [ ] Obstacle presets
@@ -91,7 +96,13 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
       Let portrait and landscape diverge where that clearly improves editing and navigation.
 
 - [ ] Codebase architecture and performance refactor
-      Evaluate targeted refactors that improve maintainability, state-flow clarity, and runtime efficiency as the editor grows, without turning it into a rewrite project.
+      Continue improving maintainability, state-flow clarity, and runtime efficiency as the editor grows, without turning the effort into a rewrite.
+      - [x] Lightweight performance instrumentation
+            Add internal render and autosave instrumentation so editor hotspots can be observed during development without introducing heavyweight profiling infrastructure.
+      - [x] Targeted editor and canvas modularisation
+            Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
+      - [ ] Complete targeted maintainability and state-flow refactor pass
+            Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
 
 ## Priority 3
 

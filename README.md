@@ -32,7 +32,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the current roadmap assessment.
 - ↩️ **Undo anything** - full undo/redo history so you can experiment freely
 - 📱 **Edit on mobile** - a dedicated mobile editor flow supports touch navigation, direct placement, mobile multi-select and quick actions
 - 📤 **Export** - save your design as PNG, SVG, PDF, a 3D render screenshot, or JSON project file for backup and reuse
-- 🔗 **Share with a link** - the entire design is compressed into the URL; shared links open in a clean read-only view with a clear path back into Studio
+- 🔗 **Share with a link** - the entire design is compressed into the URL; shared links open at `/share/[token]` in a clean read-only view with a clear path back into Studio
 - 📥 **Import** - load a previously exported JSON project file to continue editing
 
 ## Getting started
@@ -44,7 +44,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). The studio is at `/studio`.
 
-Shared links open at `/share?d=...`.
+Shared links open at `/share/[token]`.
 
 ## How it works
 
@@ -91,7 +91,7 @@ Shared links open at `/share?d=...`.
 
 ```
 src/
-├── app/              # Next.js pages (/, /studio, /share)
+├── app/              # Next.js pages (/, /studio, /share/[token])
 ├── components/       # React components
 │   ├── EditorShell   # Layout orchestrator
 │   ├── TrackCanvas   # Konva 2D editor

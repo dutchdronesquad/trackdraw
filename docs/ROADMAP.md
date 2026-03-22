@@ -82,6 +82,24 @@ Why it matters:
 - TrackDraw now supports both quick sharing and reliable project reuse
 - The next roadmap step should be better project structure, not basic file survival
 
+## Release Cleanup
+
+### Share Route Deprecation Before v1
+
+Keep `/share/[token]` as the current canonical read-only route for now, but remove legacy `/share?d=...` query-param support before the v1 release.
+
+Included:
+
+- Keep `/share/[token]` as the supported read-only route for v1
+- Remove legacy `/share?d=...` support before release
+- Update docs and product copy so query-based shared links are no longer referenced
+
+Why it matters:
+
+- The product should ship v1 with one clear share-link format
+- Removing the query-param variant reduces migration debt before release
+- Product copy and technical behavior should describe the same share model
+
 ## Near-Term Priorities
 
 ### 1. Obstacle Presets
@@ -285,19 +303,22 @@ Let portrait and landscape diverge where that clearly improves usability.
 
 ### 17. Codebase Architecture And Performance Refactor
 
-Evaluate whether parts of the application should be refactored to improve maintainability, state-flow clarity, and runtime efficiency as the product grows.
+This area now has meaningful groundwork, but it should stay on the roadmap as an ongoing internal quality track rather than being treated as fully complete.
+
+Sub-items:
+
+- [x] Lightweight performance instrumentation
+  Add render and autosave instrumentation for development-time performance visibility.
+- [x] Editor and canvas modularisation
+  Split key interaction and rendering responsibilities across more focused hooks, selectors, and utility modules.
+- [ ] Remaining maintainability and state-flow refactor pass
+  Further reduce complexity in large rendering surfaces, persistence flow, and state-heavy editor paths.
 
 Why:
 
 - The editor is gaining more product structure, which increases pressure on state and component architecture
 - Better internal boundaries can reduce feature risk and make future work faster
 - Performance and code clarity should be improved deliberately instead of through scattered one-off changes
-
-Recommended approach:
-
-- Treat this as targeted refactoring, not a rewrite
-- Prioritize hotspots such as editor state, persistence, and large rendering surfaces
-- Tie refactor work to concrete bottlenecks or recurring implementation pain
 
 ## Long-Term Priorities
 
