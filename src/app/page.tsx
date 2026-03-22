@@ -1,40 +1,42 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import {
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_SOCIAL_IMAGE,
+  DEFAULT_SOCIAL_IMAGE_HEIGHT,
+  DEFAULT_SOCIAL_IMAGE_WIDTH,
+  SITE_AUTHOR,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  getSiteUrl,
+} from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "TrackDraw - FPV Race Track Planner",
-  description:
-    "Design FPV drone race tracks to scale, preview them in 3D, and share read-only plans with pilots in seconds. Built for race directors.",
-  keywords: [
-    "FPV",
-    "drone racing",
-    "track design",
-    "race track planner",
-    "FPV track builder",
-    "Dutch Drone Squad",
-  ],
-  authors: [{ name: "Dutch Drone Squad", url: "https://dutchdronesquad.nl" }],
+  title: "FPV Race Track Planner",
+  description: `${SITE_DESCRIPTION} Built for race directors.`,
+  keywords: SITE_KEYWORDS,
+  authors: [SITE_AUTHOR],
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    type: "website",
-    siteName: "TrackDraw",
-    title: "TrackDraw - FPV Race Track Planner",
-    description:
-      "Design FPV drone race tracks to scale, preview them in 3D, and share read-only plans with your pilots in seconds.",
+    title: "TrackDraw | FPV Race Track Planner",
+    description: SITE_DESCRIPTION,
+    url: "/",
     images: [
       {
-        url: "/assets/screenshots/editor-overview.png",
-        width: 1920,
-        height: 1080,
-        alt: "TrackDraw editor",
+        url: DEFAULT_SOCIAL_IMAGE,
+        width: DEFAULT_SOCIAL_IMAGE_WIDTH,
+        height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
+        alt: DEFAULT_OG_IMAGE_ALT,
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "TrackDraw - FPV Race Track Planner",
-    description:
-      "Design FPV drone race tracks to scale, preview them in 3D, and share read-only plans with your pilots in seconds.",
-    images: ["/assets/screenshots/editor-overview.png"],
+    title: "TrackDraw | FPV Race Track Planner",
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_SOCIAL_IMAGE],
   },
 };
 import Link from "next/link";
@@ -214,6 +216,26 @@ const faq = [
   },
 ];
 
+const softwareApplicationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: SITE_NAME,
+  applicationCategory: "DesignApplication",
+  operatingSystem: "Web",
+  description: SITE_DESCRIPTION,
+  url: getSiteUrl(),
+  author: {
+    "@type": "Organization",
+    name: SITE_AUTHOR.name,
+    url: SITE_AUTHOR.url,
+  },
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "EUR",
+  },
+};
+
 // ── Page ────────────────────────────────────────────────────────
 export default function Home() {
   const heroPillClassName =
@@ -221,6 +243,12 @@ export default function Home() {
 
   return (
     <div id="top" className="bg-background text-foreground min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareApplicationJsonLd),
+        }}
+      />
       {/* ── Nav ─────────────────────────────────────────────── */}
       <header className="border-border/40 bg-background/75 sticky top-0 z-50 border-b backdrop-blur-xl backdrop-saturate-150">
         <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
