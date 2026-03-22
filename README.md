@@ -17,6 +17,12 @@ TrackDraw is a free, browser-based track designer built for FPV drone racing pil
 > [!IMPORTANT]
 > TrackDraw is currently in beta and still actively evolving. Expect rapid UI changes, feature tweaks and occasional rough edges while the editor matures.
 
+## Project status
+
+TrackDraw has a solid editing baseline now across desktop, shared read-only viewing, and practical mobile use. The current roadmap focus is on speeding up layout creation, improving iteration inside one project, and turning finished designs into better race-day outputs.
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the current roadmap assessment.
+
 ## What you can do
 
 - 🏁 **Place obstacles** - gates, flags, cones, dive gates, ladders, start/finish lines, labels and free-form polylines
@@ -25,9 +31,9 @@ TrackDraw is a free, browser-based track designer built for FPV drone racing pil
 - 📈 **Check elevation** - altitude profile chart along polyline paths, useful for planning vertical sections
 - ↩️ **Undo anything** - full undo/redo history so you can experiment freely
 - 📱 **Edit on mobile** - a dedicated mobile editor flow supports touch navigation, direct placement, mobile multi-select and quick actions
-- 📤 **Export** - save your design as PNG, SVG or PDF to print or share offline
+- 📤 **Export** - save your design as PNG, SVG, PDF, a 3D render screenshot, or JSON project file for backup and reuse
 - 🔗 **Share with a link** - the entire design is compressed into the URL; shared links open in a clean read-only view with a clear path back into Studio
-- 📥 **Import** - load a previously saved design file to continue editing
+- 📥 **Import** - load a previously exported JSON project file to continue editing
 
 ## Getting started
 
@@ -48,6 +54,7 @@ Shared links open at `/share?d=...`.
 4. **Right-click a selected item** in the 2D canvas for quick actions like duplicate, lock/unlock, arrange, rotate and delete
 5. **Toggle the 3D panel** to preview your layout from above or in perspective, and click items there to inspect them without losing selection while orbiting
 6. **Hit Share** to get a URL you can send directly to pilots or co-organisers
+7. **Use Export** when you need printable assets, a 3D screenshot, or a JSON project backup
 
 ## Useful shortcuts
 
