@@ -94,15 +94,14 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 - [ ] Adaptive mobile UI
       Let portrait and landscape diverge where that clearly improves editing and navigation.
-
 - [ ] Codebase architecture and performance refactor
       Continue improving maintainability, state-flow clarity, and runtime efficiency as the editor grows, without turning the effort into a rewrite.
-      - [x] Lightweight performance instrumentation
-            Add internal render and autosave instrumentation so editor hotspots can be observed during development without introducing heavyweight profiling infrastructure.
-      - [x] Targeted editor and canvas modularisation
-            Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
-      - [ ] Complete targeted maintainability and state-flow refactor pass
-            Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
+  - [x] Lightweight performance instrumentation
+        Add internal render and autosave instrumentation so editor hotspots can be observed during development without introducing heavyweight profiling infrastructure.
+  - [x] Targeted editor and canvas modularisation
+        Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
+  - [ ] Complete targeted maintainability and state-flow refactor pass
+        Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
 
 ## Priority 3
 

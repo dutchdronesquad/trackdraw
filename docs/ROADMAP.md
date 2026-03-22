@@ -308,11 +308,11 @@ This area now has meaningful groundwork, but it should stay on the roadmap as an
 Sub-items:
 
 - [x] Lightweight performance instrumentation
-  Add render and autosave instrumentation for development-time performance visibility.
+      Add render and autosave instrumentation for development-time performance visibility.
 - [x] Editor and canvas modularisation
-  Split key interaction and rendering responsibilities across more focused hooks, selectors, and utility modules.
+      Split key interaction and rendering responsibilities across more focused hooks, selectors, and utility modules.
 - [ ] Remaining maintainability and state-flow refactor pass
-  Further reduce complexity in large rendering surfaces, persistence flow, and state-heavy editor paths.
+      Further reduce complexity in large rendering surfaces, persistence flow, and state-heavy editor paths.
 
 Why:
 
