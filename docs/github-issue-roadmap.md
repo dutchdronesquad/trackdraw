@@ -2,7 +2,7 @@
 
 This issue tracks the current roadmap for TrackDraw as of March 20, 2026.
 
-TrackDraw has moved well beyond the initial editor foundation. The near-term focus should now be faster layout creation, better iteration inside a single project, lightweight design validation, and stronger race-day outputs.
+TrackDraw has moved well beyond the initial editor foundation. The near-term focus should now be faster layout creation, better project workflow and recovery, stronger sharing and handoff, lightweight path review, and more deliberate race-day outputs.
 
 ## Product Direction
 
@@ -42,49 +42,34 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 ## Priority 1
 
-- [ ] Obstacle presets
-      Add a curated preset library for reusable obstacle groupings such as gate runs, slaloms, start/finish setups, and compact training layouts.
+- [ ] Layout acceleration
+      Add reusable building blocks such as obstacle presets, starter layouts, selection grouping, and venue-aware field templates.
 
-- [ ] Snapshots and layout variants
-      Let users save named snapshots and compare multiple layout options inside a single project instead of splitting work across separate files.
+- [ ] Project workflow and recovery
+      Add a stronger local-first project model with a project list, safer recovery paths, and restore points beyond one implicit autosave state.
 
-- [ ] Project manager and local project management
-      Add a local-first project manager so users can keep, reopen, rename, duplicate, and delete multiple TrackDraw projects over time. The model should stay compatible with a possible future cross-device sync direction, without requiring accounts in v1.
+- [ ] Share and publish workflow
+      Move sharing toward intentional published states with clearer invalid-link handling, better separation from working state, and a cleaner long-term share model.
 
-- [ ] Share snapshots
-      Allow a specific named snapshot or variant to be shared through a stable read-only link, separate from the current working state.
+- [ ] Path and flow review
+      Add lightweight warnings and route-review cues on top of the current path, elevation, and 3D tooling.
 
-- [ ] Lightweight course validation
-      Warn about issues such as tight turns, suspicious spacing, incomplete routes, or abrupt elevation changes without turning the app into a heavy rules engine.
+- [ ] Race-day communication and briefing
+      Turn existing export, read-only, and fly-through capabilities into better pilot briefing, marshal pack, and numbered handoff workflows.
 
 - [ ] Studio onboarding and starter flows
       Reduce blank-canvas friction with a better first-use path, contextual hints, and a few lightweight starter options.
 
-- [ ] Canvas display controls
-      Unify rulers, helper overlays, labels, and 3D gizmo toggles into a coherent display-control system.
+- [ ] Mobile venue editing
+      Improve touch precision, review defaults, and quick actions for practical field-side changes and read-only review.
 
-- [ ] Selection grouping
-      Let users turn a multi-selection into a movable and duplicable logical group without introducing a heavy compound-object system.
-
-- [ ] Touch-friendly transform and path handles
-      Improve precision and affordances for touch editing of small obstacles and polyline points.
+- [ ] Canvas display profiles
+      Turn rulers, labels, helper overlays, and the 3D gizmo into clearer edit, review, and briefing display modes.
 
 ## Priority 2
 
-- [ ] Printable marshal pack
-      Generate race-day documents with obstacle counts, dimensions, sectors, setup notes, and a practical build sheet for crews.
-
-- [ ] Obstacle numbering
-      Support automatic and manual numbering for gates, sectors, or other key references so setup, briefings, and marshal coordination become clearer.
-
-- [ ] Pilot briefing mode
-      Create a presentation-friendly track view for pilot meetings, larger screens, and cleaner briefings.
-
 - [ ] Velocidrone export compatibility research
       Investigate whether TrackDraw layouts can be exported into Velocidrone's track-builder workflow. This likely starts as reverse-engineering and format discovery work because there is no public API or official documentation to build against.
-
-- [ ] Field templates and venue constraints
-      Support reusable venue setups with field dimensions, no-go areas, and recurring setup structure.
 
 - [ ] Comments and review mode
       Anchor feedback to specific obstacles or route sections without requiring live collaboration first.
@@ -104,6 +89,9 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
         Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
 
 ## Priority 3
+
+- [ ] Stable share links and share storage
+      Move from payload-in-URL sharing toward durable short links backed by stored share state once the publish model is clearer.
 
 - [ ] Map and field overlay
       Support venue plans, field maps, or imagery as reference layers behind the editor canvas.

@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw as of March 20, 2026. The product has moved beyond "basic editor prototype" territory. The core design loop is now credible across desktop, shared read-only viewing, and practical mobile use. The next phase should focus less on generic polish and more on workflow acceleration, design confidence, and race-day usefulness.
+This roadmap reflects the current state of TrackDraw as of March 20, 2026. The product has moved beyond "basic editor prototype" territory. The core design loop is now credible across desktop, shared read-only viewing, practical mobile use, and race-day handoff. The next phase should focus less on generic polish and more on workflow acceleration, design confidence, handoff quality, and venue-side usefulness.
 
 ## Current Assessment
 
@@ -16,9 +16,11 @@ The biggest remaining gaps are:
 
 - Faster layout creation from reusable building blocks
 - Better support for iteration and comparison inside one project
-- Lightweight design feedback before a layout reaches the field
-- More deliberate outputs for race-day communication
+- Better project recovery and clearer local project structure
+- Better design feedback before a layout reaches the field
+- More deliberate outputs for race-day communication and presentation
 - A cleaner first-use path for new users
+- A more durable share and publish model than "current state in one URL"
 
 ## Product Principles
 
@@ -27,6 +29,7 @@ The biggest remaining gaps are:
 - Analysis should stay lightweight, visual, and design-oriented before becoming simulation-heavy
 - Mobile should be practical and deliberate, not a compromised desktop clone
 - Race-day deliverables should extend the editor, not become a separate product surface
+- Sharing should feel intentional and publishable, not like a side effect of editor state
 
 ## Recently Completed
 
@@ -102,75 +105,82 @@ Why it matters:
 
 ## Near-Term Priorities
 
-### 1. Obstacle Presets
+### 1. Layout Acceleration
 
-Add a curated preset library for reusable obstacle groupings and common race-building patterns.
+Reduce repetitive setup work so users can compose good layouts faster.
 
 Why now:
 
 - The editor is strong enough that speed of composition is the next obvious bottleneck
-- Presets create immediate value without introducing heavy new systems
+- Faster composition improves nearly every real workflow in the product
 
 Good first slice:
 
+- Obstacle presets for reusable obstacle groupings and common race-building patterns
 - Start/finish setups
 - Straight gate runs
 - Slalom blocks
 - Ladder and dive combinations
 - Small training layouts
+- Selection grouping for repeated layout sections
+- Venue-aware field templates and starter fields
 
-### 2. Snapshots And Layout Variants
+### 2. Project Workflow And Recovery
 
-Combine named snapshots and multi-layout variants into one coherent project iteration model.
-
-Why now:
-
-- Users have more reasons to iterate now that the editor is mature
-- Separate exports are a poor substitute for structured comparison
-- This is the natural foundation for later project-manager and cross-device workflows
-
-Good first slice:
-
-- Save named snapshots inside one project
-- Duplicate the current layout into a variant
-- Switch between variants without opening separate files
-- Mark one variant as the active share/export target
-
-Strong extension after the first slice:
-
-- Share a specific snapshot or variant through a stable read-only link
-- Keep a clear distinction between the current working state and intentionally shared states
-
-### 3. Project Manager And Local Project Management
-
-Introduce a local-first project manager so users can keep, reopen, duplicate, and remove multiple TrackDraw projects over time instead of working from one implicit editor state.
+Turn the current local-first foundation into a clearer, safer project workflow.
 
 Why now:
 
-- A richer project model becomes much more useful once variants and snapshots exist
-- Real use already points toward seasonal or event-based project collections
-- This creates a cleaner path toward future cross-device support without requiring accounts yet
+- The editor already autosaves and supports import/export, but the user-facing project model is still thin
+- More serious usage needs recovery, restore, and clearer project boundaries
+- This should exist before more advanced publish or share-state features
 
 Good first slice:
 
 - Local project list with title and last-updated state
 - Create, open, rename, duplicate, and delete project flows
-- Clear separation between the current project and the broader projects overview
-- Stable project ids and metadata suitable for future sync-compatible architecture
+- Restore points or local recovery entries beyond one implicit autosave state
+- Clear separation between the current project and broader project history
+
+Strong extension after the first slice:
+
+- Save named snapshots inside one project
+- Duplicate the current layout into a variant
+- Switch between variants without opening separate files
+- Mark one variant as the active share/export target
+- Share a specific snapshot or variant through a stable read-only link
+- Keep a clear distinction between the current working state and intentionally shared states
+
+### 3. Share And Publish Workflow
+
+Move sharing from "the current state in one link" toward a cleaner publish model.
+
+Why now:
+
+- Shared links are already core to the product story
+- The current model is useful, but still tied too tightly to raw editor state
+- A better publish model improves trust, previews, and long-term share reliability
+
+Good first slice:
+
+- Share a specific snapshot or variant through a stable read-only link
+- Keep a clear distinction between working state and intentionally shared states
+- Better invalid-share and fallback states
+- Cleaner read-only/share metadata behavior across the product
 
 Future note:
 
-- Keep the first release explicitly local-first
-- Design the model so future cross-device sync is possible without reworking the project structure from scratch
+- Shorter stable share links likely require server-side share storage
+- Link lifecycle controls such as regenerate, revoke, or expire become more relevant once shares are durable objects
 
-### 4. Lightweight Course Validation
+### 4. Path And Flow Review
 
-Introduce helpful warnings for track design issues without turning the product into a rules engine.
+Build on the existing path, elevation, and 3D review tools with lightweight feedback layers.
 
 Why now:
 
 - Path authoring and 3D preview are now good enough to support design feedback
-- This adds confidence for less experienced builders and speeds review for experienced ones
+- The current path toolset is already strong enough that review quality is the next product layer
 
 Good first slice:
 
@@ -178,8 +188,25 @@ Good first slice:
 - Suspicious obstacle spacing
 - Track path gaps or unfinished route states
 - Large elevation jumps between nearby points
+- Better route readability and review cues before heavier simulation-style analysis
 
-### 5. Studio Onboarding And Starter Flows
+### 5. Race-Day Communication And Briefing
+
+Turn existing export and read-only capabilities into more deliberate communication outputs.
+
+Why now:
+
+- The product already has export breadth, a read-only view, and a fly-through
+- What is missing is better packaging for pilots, marshals, and setup crews
+
+Good first slice:
+
+- Pilot briefing mode
+- Obstacle numbering
+- Printable marshal pack
+- Export presets tuned for briefing, print, and mobile review
+
+### 6. Studio Onboarding And Starter Flows
 
 Reduce blank-canvas friction for first-time users.
 
@@ -194,76 +221,44 @@ Good first slice:
 - One or two starter layouts or starter field presets
 - Contextual hints around path drawing, 3D preview, and sharing
 
-### 6. Canvas Display Controls
+### 7. Mobile Venue Editing
 
-Turn the current scattered view toggles into a coherent display-control system.
+Push the already-credible mobile experience further toward practical venue-side use.
 
 Why now:
 
-- Mobile rulers and the 3D gizmo already prove the value
-- As the editor grows, optional chrome needs clearer structure
+- Mobile editing already works in a deliberate product way, not just responsively
+- The next gains come from reducing friction during quick field-side edits and review
 
 Good first slice:
 
-- Rulers
-- Labels
-- Helper overlays
-- 3D gizmo
+- Better touch precision for small objects and path points
+- Better mobile review and briefing defaults
+- More venue-side quick actions and display choices
+
+### 8. Canvas Display Profiles
+
+Turn the current scattered view toggles into clearer display profiles for editing, review, and presentation.
+
+Why now:
+
+- Rulers, gizmo visibility, labels, and helper chrome already exist in partial form
+- The missing piece is a coherent model for switching visual context based on task
+
+Good first slice:
+
+- Edit profile
+- Review profile
 - Share/read-only-safe defaults
-
-### 7. Selection Grouping
-
-Allow users to turn a set of selected shapes into a movable, duplicable logical group without collapsing everything into a rigid compound object model.
-
-Why now:
-
-- The editor already supports multi-select, duplication, and bulk movement
-- Grouping would remove a lot of repetitive section-level editing friction
-
-Good first slice:
-
-- Create and dissolve a selection group
-- Move, duplicate, lock, and delete a group as one unit
-- Keep child shapes editable when explicitly entering the group
-- Keep the underlying shape model simple and reversible
-
-### 8. Touch-Friendly Transform And Path Handles
-
-Improve the precision and clarity of touch editing for small objects and path points.
-
-Why now:
-
-- Mobile editing is now viable, so the next gains come from reducing touch precision friction
-- This is a better investment than broad new mobile chrome changes right now
+- Briefing-friendly display defaults
 
 ## Mid-Term Priorities
 
-### 9. Printable Marshal Pack
+### 9. Comments And Review Mode
 
-Generate setup-friendly race-day documents with obstacle counts, dimensions, sectors, notes, and a practical build sheet for setup crews.
+Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
 
-Good first slice:
-
-- Obstacle inventory by type
-- Field dimensions and key layout notes
-- Numbered setup references for major obstacles or sectors
-- A print-friendly summary that crews can use without opening the editor
-
-### 10. Obstacle Numbering
-
-Support automatic and manual numbering for key obstacles such as gates, sectors, or route references.
-
-Why:
-
-- Makes setup communication much clearer
-- Improves pilot briefing and marshal coordination
-- Pairs naturally with build sheets, annotations, and briefing exports
-
-### 11. Pilot Briefing Mode
-
-Create a presentation-friendly viewing mode for pilot meetings, screens, and fly-throughs.
-
-### 12. Velocidrone Export Compatibility
+### 10. Velocidrone Export Compatibility
 
 Explore whether TrackDraw layouts can be exported into a format that is usable inside Velocidrone's track builder workflow.
 
@@ -285,23 +280,15 @@ Recommended approach:
 - Start with format discovery and proof-of-concept export
 - Only promote it to a supported feature if the workflow is stable enough to maintain
 
-### 13. Field Templates And Venue Constraints
-
-Support reusable field setups with dimensions, no-go areas, and recurring venue structure.
-
-### 14. Comments And Review Mode
-
-Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
-
-### 15. Heatmap And Flow Analysis
+### 11. Heatmap And Flow Analysis
 
 Add lightweight visual feedback for rhythm, density, and bottlenecks after validation basics are in place.
 
-### 16. Adaptive Mobile UI
+### 12. Adaptive Mobile UI
 
 Let portrait and landscape diverge where that clearly improves usability.
 
-### 17. Codebase Architecture And Performance Refactor
+### 13. Codebase Architecture And Performance Refactor
 
 This area now has meaningful groundwork, but it should stay on the roadmap as an ongoing internal quality track rather than being treated as fully complete.
 
@@ -322,15 +309,25 @@ Why:
 
 ## Long-Term Priorities
 
-### 18. Map And Field Overlay
+### 14. Stable Share Links And Share Storage
+
+Move from payload-in-URL sharing toward durable short links backed by stored share state.
+
+Why:
+
+- Shorter links are meaningfully better for copying, previewing, and publishing
+- Durable share objects create a cleaner base for publish lifecycle features
+- This should follow the earlier share-model cleanup, not precede it
+
+### 15. Map And Field Overlay
 
 Support background references such as venue plans, field maps, or imagery.
 
-### 19. Lap Simulator
+### 16. Lap Simulator
 
 Estimate route timing and flow once lighter analysis tools have proven useful.
 
-### 20. Real-Time Collaboration
+### 17. Real-Time Collaboration
 
 Allow multiple users to work on the same design concurrently.
 
@@ -339,12 +336,12 @@ Allow multiple users to work on the same design concurrently.
 If the goal is to deliver the highest product value over the next cycle, the best order is:
 
 1. Obstacle presets
-2. Snapshots and layout variants
-3. Project manager and local project management
-4. Lightweight course validation
-5. Studio onboarding and starter flows
-6. Canvas display controls
-7. Selection grouping
+2. Project workflow and recovery
+3. Share and publish workflow
+4. Path and flow review
+5. Race-day communication and briefing
+6. Studio onboarding and starter flows
+7. Mobile venue editing
 
 This sequence builds directly on the current strengths of the editor and improves the practical path from "draw a layout" to "use it on race day."
 
