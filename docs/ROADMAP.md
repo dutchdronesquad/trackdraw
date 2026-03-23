@@ -42,6 +42,7 @@ Included:
 - Refined 2D drag behavior with more readable snap feedback
 - Better desktop and mobile interaction consistency
 - Multi-select support on mobile with quick actions
+- Better mobile venue-side quick actions including single-selection adjust controls and mobile undo/redo access
 - Inspector cleanup and broader property editing polish
 - Better status and version visibility inside the app shell
 
@@ -221,44 +222,13 @@ Good first slice:
 - One or two starter layouts or starter field presets
 - Contextual hints around path drawing, 3D preview, and sharing
 
-### 7. Mobile Venue Editing
-
-Push the already-credible mobile experience further toward practical venue-side use.
-
-Why now:
-
-- Mobile editing already works in a deliberate product way, not just responsively
-- The next gains come from reducing friction during quick field-side edits and review
-
-Good first slice:
-
-- Better touch precision for small objects and path points
-- Better mobile review and briefing defaults
-- More venue-side quick actions and display choices
-
-### 8. Canvas Display Profiles
-
-Turn the current scattered view toggles into clearer display profiles for editing, review, and presentation.
-
-Why now:
-
-- Rulers, gizmo visibility, labels, and helper chrome already exist in partial form
-- The missing piece is a coherent model for switching visual context based on task
-
-Good first slice:
-
-- Edit profile
-- Review profile
-- Share/read-only-safe defaults
-- Briefing-friendly display defaults
-
 ## Mid-Term Priorities
 
-### 9. Comments And Review Mode
+### 7. Comments And Review Mode
 
 Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
 
-### 10. Velocidrone Export Compatibility
+### 8. Velocidrone Export Compatibility
 
 Explore whether TrackDraw layouts can be exported into a format that is usable inside Velocidrone's track builder workflow.
 
@@ -280,15 +250,15 @@ Recommended approach:
 - Start with format discovery and proof-of-concept export
 - Only promote it to a supported feature if the workflow is stable enough to maintain
 
-### 11. Heatmap And Flow Analysis
+### 9. Heatmap And Flow Analysis
 
 Add lightweight visual feedback for rhythm, density, and bottlenecks after validation basics are in place.
 
-### 12. Adaptive Mobile UI
+### 10. Adaptive Mobile UI
 
 Let portrait and landscape diverge where that clearly improves usability.
 
-### 13. Codebase Architecture And Performance Refactor
+### 11. Codebase Architecture And Performance Refactor
 
 This area now has meaningful groundwork, but it should stay on the roadmap as an ongoing internal quality track rather than being treated as fully complete.
 
@@ -309,7 +279,7 @@ Why:
 
 ## Long-Term Priorities
 
-### 14. Stable Share Links And Share Storage
+### 12. Stable Share Links And Share Storage
 
 Move from payload-in-URL sharing toward durable short links backed by stored share state.
 
@@ -319,15 +289,69 @@ Why:
 - Durable share objects create a cleaner base for publish lifecycle features
 - This should follow the earlier share-model cleanup, not precede it
 
-### 15. Map And Field Overlay
+## Product Opportunities
+
+These ideas are not part of the immediate delivery sequence yet, but they fit the product direction especially well and are worth keeping visible.
+
+### A. Obstacle Inventory And Setup Estimate
+
+Automatically summarize what a layout requires in practical setup terms: obstacle counts, key sections, and a lightweight estimate of setup complexity.
+
+Why it fits:
+
+- Builds directly on existing export and handoff flows
+- Translates design work into race-day preparation value
+- Creates a natural bridge toward marshal packs and build-oriented outputs
+
+### B. Venue Library And Constraints
+
+Support reusable venue records with field dimensions, recurring boundaries, fixed no-go zones, and known setup constraints.
+
+Why it fits:
+
+- Extends the local-first project model in a practical direction
+- Makes repeat event planning much faster
+- Adds realism to planning without becoming a mapping product first
+
+### C. Revision Compare
+
+Make it easy to compare two layout states and see what changed between versions, snapshots, or variants.
+
+Why it fits:
+
+- Pairs naturally with snapshots and layout variants
+- Helps race directors communicate changes between iterations
+- Makes TrackDraw stronger as a planning and review tool, not just a drawing surface
+
+### D. Marshal Mode
+
+Create a race-day view focused on marshal readability, sectors, references, and obstacle clarity rather than editing.
+
+Why it fits:
+
+- Different users need a different view than the editor or pilot briefing mode
+- Builds on existing share and output strengths
+- Reinforces TrackDraw's usefulness during live event operations
+
+### E. Build Mode / Setup Sequence
+
+Turn a finished layout into a structured setup order so crews can build the course in a clearer sequence.
+
+Why it fits:
+
+- Moves TrackDraw from design into execution support
+- Complements obstacle inventory and marshal-oriented outputs
+- Feels genuinely differentiated from generic diagram tools
+
+### 13. Map And Field Overlay
 
 Support background references such as venue plans, field maps, or imagery.
 
-### 16. Lap Simulator
+### 14. Lap Simulator
 
 Estimate route timing and flow once lighter analysis tools have proven useful.
 
-### 17. Real-Time Collaboration
+### 15. Real-Time Collaboration
 
 Allow multiple users to work on the same design concurrently.
 
