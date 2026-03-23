@@ -23,6 +23,9 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 - [x] Mobile multi-select and quick actions
       Added long-press multi-select, group movement, and contextual duplicate, lock, and delete actions.
 
+- [x] Mobile venue editing first pass
+      Added faster single-selection venue-side actions, compact mobile adjust controls, and undo/redo access in the mobile tools flow.
+
 - [x] 2D drag and snap refinement
       Improved pointer-following drag behavior and made snap feedback more readable.
 
@@ -60,12 +63,6 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 - [ ] Studio onboarding and starter flows
       Reduce blank-canvas friction with a better first-use path, contextual hints, and a few lightweight starter options.
 
-- [ ] Mobile venue editing
-      Improve touch precision, review defaults, and quick actions for practical field-side changes and read-only review.
-
-- [ ] Canvas display profiles
-      Turn rulers, labels, helper overlays, and the 3D gizmo into clearer edit, review, and briefing display modes.
-
 ## Priority 2
 
 - [ ] Velocidrone export compatibility research
@@ -87,11 +84,28 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
         Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
   - [ ] Complete targeted maintainability and state-flow refactor pass
         Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
+  - [ ] Rework file structure and split oversized files
+        Introduce more focused subdirectories and break up broad components/modules so ownership and navigation stay manageable as the editor grows.
 
 ## Priority 3
 
 - [ ] Stable share links and share storage
       Move from payload-in-URL sharing toward durable short links backed by stored share state once the publish model is clearer.
+
+- [ ] Obstacle inventory and setup estimate
+      Summarize obstacle counts, key sections, and rough setup complexity so a finished layout translates more directly into race-day preparation.
+
+- [ ] Venue library and constraints
+      Support reusable venue records with field dimensions, recurring boundaries, fixed no-go zones, and known setup constraints.
+
+- [ ] Revision compare
+      Compare two layout states and show what changed between versions, snapshots, or variants.
+
+- [ ] Marshal mode
+      Create a race-day view focused on marshal readability, sectors, references, and obstacle clarity rather than editing.
+
+- [ ] Build mode / setup sequence
+      Turn a finished layout into a structured setup order so crews can build the course in a clearer sequence.
 
 - [ ] Map and field overlay
       Support venue plans, field maps, or imagery as reference layers behind the editor canvas.

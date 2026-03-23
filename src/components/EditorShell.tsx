@@ -25,7 +25,9 @@ import type {
   TrackPreview3DProps,
 } from "@/components/TrackPreview3D";
 import { parseDesign } from "@/lib/design";
+import { shapeKindLabels } from "@/lib/editor-tools";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { recordPerfSample } from "@/lib/perf";
 import { useEditor } from "@/store/editor";
@@ -57,6 +59,7 @@ export default function EditorShell({
   readOnly?: boolean;
 }) {
   usePerfMetric("render:EditorShell");
+  const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const { enabled: developerModeEnabled, toggle: toggleDeveloperMode } =
     useDeveloperMode();
   const selection = useEditor((state) => state.selection);
@@ -64,8 +67,10 @@ export default function EditorShell({
   const activeTool = useEditor((state) => state.transient.activeTool);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
   const newProject = useEditor((state) => state.newProject);
+  const nudgeShapes = useEditor((state) => state.nudgeShapes);
   const removeShapes = useEditor((state) => state.removeShapes);
   const replaceDesign = useEditor((state) => state.replaceDesign);
+  const rotateShapes = useEditor((state) => state.rotateShapes);
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setSelection = useEditor((state) => state.setSelection);
   const setShapesLocked = useEditor((state) => state.setShapesLocked);
@@ -78,6 +83,21 @@ export default function EditorShell({
   const hasSelectedPolyline = useEditor(selectHasSelectedPolyline);
   const shapeById = useEditor(selectShapeRecordMap);
   const selectionLocked = useEditor(selectSelectionLocked);
+  const singleSelectedShape =
+    selection.length === 1 ? (shapeById[selection[0]] ?? null) : null;
+  const singleSelectedShapeLabel = singleSelectedShape
+    ? shapeKindLabels[singleSelectedShape.kind]
+    : null;
+  const mobilePrecisionStep = Math.min(design.field.gridStep, 0.1);
+  const mobilePrecisionStepLabel = `${mobilePrecisionStep.toFixed(
+    mobilePrecisionStep < 0.1 ? 2 : 1
+  )} m`;
+  const singleSelectionCanRotate = Boolean(
+    singleSelectedShape &&
+    singleSelectedShape.kind !== "polyline" &&
+    singleSelectedShape.kind !== "cone" &&
+    !singleSelectedShape.locked
+  );
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -93,8 +113,8 @@ export default function EditorShell({
   const [mobileViewOpen, setMobileViewOpen] = useState(false);
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
   const [mobileOverrideDismissed, setMobileOverrideDismissed] = useState(false);
-  const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
-  const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(true);
+  const [mobileRulersEnabled, setMobileRulersEnabled] = useState(readOnly);
+  const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(!readOnly);
   const [mobileMultiSelectEnabled, setMobileMultiSelectEnabled] =
     useState(false);
   const [mobileDraftPathState, setMobileDraftPathState] = useState({
@@ -398,8 +418,18 @@ export default function EditorShell({
           mobileOverrideDismissed={mobileOverrideDismissed}
           mobileRulersEnabled={mobileRulersEnabled}
           mobileFlyModeActive={mobileFlyModeActive}
+          mobilePrecisionStep={mobilePrecisionStep}
+          mobilePrecisionStepLabel={mobilePrecisionStepLabel}
           readOnly={readOnly}
           readOnlyMenuOpen={readOnlyMenuOpen}
+          singleSelectedShapeLabel={singleSelectedShapeLabel}
+          singleSelectionCanNudge={Boolean(
+            singleSelectedShape && !selectionLocked
+          )}
+          singleSelectionCanQuickAdjust={Boolean(
+            singleSelectedShape && singleSelectedShape.kind !== "polyline"
+          )}
+          singleSelectionCanRotate={singleSelectionCanRotate}
           selectionLocked={selectionLocked}
           selectedCount={selection.length}
           saveStatusLabel={saveStatusLabel}
@@ -447,6 +477,16 @@ export default function EditorShell({
           onDuplicateSelection={() => {
             if (!selection.length) return;
             duplicateShapes(selection);
+          }}
+          onUndo={undo}
+          onRedo={redo}
+          onNudgeSelection={(dx, dy) => {
+            if (!selection.length) return;
+            nudgeShapes(selection, dx, dy);
+          }}
+          onRotateSelection={(delta) => {
+            if (!selection.length) return;
+            rotateShapes(selection, delta);
           }}
           onToggleSelectionLock={() => {
             if (!selection.length) return;
@@ -496,6 +536,8 @@ export default function EditorShell({
             setMobileViewOpen(false);
             setReadOnlyMenuOpen(false);
           }}
+          canUndo={canUndo}
+          canRedo={canRedo}
         />
       </div>
 
