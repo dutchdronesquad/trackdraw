@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
@@ -77,18 +78,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const themeInitScript = `(()=>{try{const k='trackdraw.theme';const stored=localStorage.getItem(k);const theme=stored==='light'||stored==='dark'||stored==='system'?stored:'system';const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;const isDark=theme==='dark'||(theme==='system'&&prefersDark);document.documentElement.classList.toggle('dark',isDark);}catch(e){}})();`;
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(()=>{try{const k='trackdraw.theme';const stored=localStorage.getItem(k);const theme=stored==='light'||stored==='dark'||stored==='system'?stored:'system';const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;const isDark=theme==='dark'||(theme==='system'&&prefersDark);document.documentElement.classList.toggle('dark',isDark);}catch(e){}})();`,
-          }}
-        />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
         <TooltipProvider delay={500}>{children}</TooltipProvider>
         <Toaster position="bottom-right" theme="dark" richColors />
       </body>

@@ -4,6 +4,19 @@ import type { TrackDesign } from "./types";
 
 const MAX_SAFE_TOKEN_LENGTH = 7500;
 
+function normalizeShareToken(token: string): string {
+  const trimmedToken = token.trim();
+
+  // Legacy query-param share links may arrive with "+" normalized to spaces.
+  const plusNormalizedToken = trimmedToken.replace(/ /g, "+");
+
+  try {
+    return decodeURIComponent(plusNormalizedToken);
+  } catch {
+    return plusNormalizedToken;
+  }
+}
+
 export function encodeDesign(design: TrackDesign): string {
   const json = JSON.stringify(serializeDesign(design));
   return LZString.compressToEncodedURIComponent(json);
@@ -11,7 +24,9 @@ export function encodeDesign(design: TrackDesign): string {
 
 export function decodeDesign(token: string): TrackDesign | null {
   try {
-    const json = LZString.decompressFromEncodedURIComponent(token);
+    const json = LZString.decompressFromEncodedURIComponent(
+      normalizeShareToken(token)
+    );
     if (!json) return null;
     const raw = JSON.parse(json) as TrackDesign;
     return normalizeDesign(raw);
@@ -26,7 +41,7 @@ export function buildShareUrl(design: TrackDesign): string {
     typeof window !== "undefined"
       ? `${window.location.protocol}//${window.location.host}`
       : "";
-  return `${base}/share/${token}`;
+  return `${base}/share/${encodeURIComponent(token)}`;
 }
 
 export function isShareSafe(design: TrackDesign): boolean {
