@@ -1599,7 +1599,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         </Canvas>
         {showGizmo && (
           <div className="pointer-events-none absolute top-3 right-3 select-none">
-            <div className="rounded-full border border-white/10 bg-black/45 p-2 shadow-md backdrop-blur-sm">
+            <div className="rounded-full border border-white/10 bg-black/45 p-2 shadow-md backdrop-blur-xs">
               <svg
                 width="68"
                 height="68"

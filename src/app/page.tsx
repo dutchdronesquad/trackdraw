@@ -240,7 +240,7 @@ const softwareApplicationJsonLd = {
 // ── Page ────────────────────────────────────────────────────────
 export default function Home() {
   const heroPillClassName =
-    "inline-flex min-h-[30px] items-center rounded-full border px-3.5 py-1 text-xs font-medium";
+    "inline-flex min-h-7.5 items-center rounded-full border px-3.5 py-1 text-xs font-medium";
 
   return (
     <div id="top" className="bg-background text-foreground min-h-screen">
@@ -290,7 +290,7 @@ export default function Home() {
       {/* ── Hero ────────────────────────────────────────────── */}
       <div className="relative overflow-hidden">
         {/* Ambient glow — top-left, keyed to the text column */}
-        <div className="pointer-events-none absolute -top-32 left-0 h-[600px] w-[600px] rounded-full bg-[#1E93DB] opacity-[0.06] blur-[120px]" />
+        <div className="pointer-events-none absolute -top-32 left-0 h-150 w-150 rounded-full bg-[#1E93DB] opacity-[0.06] blur-[120px]" />
 
         <section className="relative z-10 mx-auto w-full max-w-6xl px-6 py-14 sm:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.45fr] lg:gap-16">
@@ -315,7 +315,7 @@ export default function Home() {
                 <h1 className="text-[clamp(40px,11vw,58px)] leading-[1.04] font-semibold tracking-[-0.04em] sm:leading-[1.08]">
                   Race day starts
                   <br />
-                  <span className="from-brand-primary bg-gradient-to-r to-sky-300 bg-clip-text text-transparent">
+                  <span className="from-brand-primary bg-linear-to-r to-sky-300 bg-clip-text text-transparent">
                     with a plan.
                   </span>
                 </h1>
@@ -376,7 +376,7 @@ export default function Home() {
               <Screenshot
                 src="/assets/screenshots/editor-project-workflow.png"
                 alt="TrackDraw editor overview with active canvas and inspector"
-                className="min-h-[360px]"
+                className="min-h-90"
               />
             </Reveal>
           </div>
@@ -406,7 +406,7 @@ export default function Home() {
                     className={`group border-border/50 bg-card/20 hover:bg-card/45 relative flex h-full flex-col gap-4 overflow-hidden rounded-2xl border p-6 transition-all duration-300 ${f.border}`}
                   >
                     <div
-                      className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${f.surface} opacity-80 transition-opacity duration-300 group-hover:opacity-100`}
+                      className={`pointer-events-none absolute inset-0 bg-linear-to-br ${f.surface} opacity-80 transition-opacity duration-300 group-hover:opacity-100`}
                     />
                     {/* Per-card colour glow in the top-right corner */}
                     <div
@@ -525,7 +525,7 @@ export default function Home() {
                     alt="TrackDraw mobile editor with settings panel open"
                     aspect="portrait"
                     accentClassName="bg-emerald-500/16"
-                    className="mx-auto w-full max-w-[205px] self-center sm:max-w-[230px] lg:max-w-[250px]"
+                    className="mx-auto w-full max-w-51.25 self-center sm:max-w-57.5 lg:max-w-62.5"
                   />
                 </div>
               </Reveal>
@@ -605,7 +605,7 @@ export default function Home() {
                     alt="TrackDraw read-only shared view open on mobile"
                     aspect="portrait"
                     accentClassName="bg-brand-secondary/18"
-                    className="mx-auto w-full max-w-[205px] self-center sm:max-w-[230px] lg:max-w-[250px]"
+                    className="mx-auto w-full max-w-51.25 self-center sm:max-w-57.5 lg:max-w-62.5"
                   />
                 </div>
               </Reveal>

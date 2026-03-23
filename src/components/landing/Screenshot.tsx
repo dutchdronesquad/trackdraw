@@ -40,10 +40,10 @@ export function Screenshot({
             className={`pointer-events-none absolute inset-x-8 top-8 bottom-10 rounded-full opacity-70 blur-3xl ${accentClassName || "bg-brand-primary/18"}`}
           />
           <div className="bg-canvas/92 relative mx-auto overflow-hidden rounded-[2.35rem] border-[7px] border-slate-800/85 shadow-[0_24px_72px_rgba(0,0,0,0.32)] ring-1 ring-white/8 transition-shadow duration-300 hover:shadow-[0_34px_88px_rgba(0,0,0,0.4)] dark:border-slate-700/80">
-            <div className="absolute top-20 -left-[10px] h-10 w-[2px] rounded-l-lg bg-slate-700/90 dark:bg-slate-600/80" />
-            <div className="absolute top-[8.25rem] -left-[10px] h-12 w-[2px] rounded-l-lg bg-slate-700/90 dark:bg-slate-600/80" />
-            <div className="absolute top-[11.75rem] -left-[10px] h-12 w-[2px] rounded-l-lg bg-slate-700/90 dark:bg-slate-600/80" />
-            <div className="absolute top-[7.5rem] -right-[10px] h-16 w-[2px] rounded-r-lg bg-slate-700/90 dark:bg-slate-600/80" />
+            <div className="absolute top-20 -left-2.5 h-10 w-0.5 rounded-l-lg bg-slate-700/90 dark:bg-slate-600/80" />
+            <div className="absolute top-33 -left-2.5 h-12 w-0.5 rounded-l-lg bg-slate-700/90 dark:bg-slate-600/80" />
+            <div className="absolute top-47 -left-2.5 h-12 w-0.5 rounded-l-lg bg-slate-700/90 dark:bg-slate-600/80" />
+            <div className="absolute top-30 -right-2.5 h-16 w-0.5 rounded-r-lg bg-slate-700/90 dark:bg-slate-600/80" />
 
             <div className="overflow-hidden rounded-[1.9rem] bg-black">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -103,16 +103,16 @@ export function ScreenshotPlaceholder({
       className={`relative ${className}`}
     >
       <div
-        className={`border-border/60 bg-card/35 from-background via-muted/18 to-background relative overflow-hidden rounded-[1.75rem] border bg-gradient-to-br shadow-[0_24px_60px_rgba(0,0,0,0.18)] ring-1 ring-white/5 ${frameClassName}`}
+        className={`border-border/60 bg-card/35 from-background via-muted/18 to-background relative overflow-hidden rounded-[1.75rem] border bg-linear-to-br shadow-[0_24px_60px_rgba(0,0,0,0.18)] ring-1 ring-white/5 ${frameClassName}`}
       >
-        <div className={`h-16 bg-gradient-to-br ${accentClassName}`} />
+        <div className={`h-16 bg-linear-to-br ${accentClassName}`} />
 
         <div className="px-5 py-5">
           <div
             className={`border-border/60 bg-background/55 relative overflow-hidden rounded-[1.35rem] border border-dashed ${
               isPortrait
-                ? "mx-auto aspect-[9/18] max-w-[250px]"
-                : "aspect-[16/10] w-full"
+                ? "mx-auto aspect-9/18 max-w-62.5"
+                : "aspect-16/10 w-full"
             }`}
           >
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]" />
@@ -139,7 +139,7 @@ export function ScreenshotPlaceholder({
           </h3>
           <p className="text-muted-foreground mt-2 text-sm leading-6">{note}</p>
 
-          <div className="border-border/60 bg-background/72 mt-4 rounded-2xl border px-3 py-2.5 backdrop-blur-sm">
+          <div className="border-border/60 bg-background/72 mt-4 rounded-2xl border px-3 py-2.5 backdrop-blur-xs">
             <p className="text-muted-foreground text-[10px] tracking-[0.16em] uppercase">
               Planned Asset
             </p>

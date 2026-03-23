@@ -418,7 +418,7 @@ export function EditorMobilePanels({
     subtitle?: string,
     tone: "default" | "brand" = "default"
   ) => (
-    <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-sm">
+    <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs">
       <div className="flex items-center justify-center pt-2.5 pb-1.5">
         <div
           className={cn(
@@ -448,7 +448,7 @@ export function EditorMobilePanels({
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed inset-x-3 top-[3.6rem] z-40 lg:hidden landscape:inset-x-auto landscape:left-3 landscape:max-w-[19rem]"
+          className="fixed inset-x-3 top-[3.6rem] z-40 lg:hidden landscape:inset-x-auto landscape:left-3 landscape:max-w-76"
         >
           <ContextOverlayCard
             icon={<Monitor className="size-3.5" />}
@@ -472,12 +472,12 @@ export function EditorMobilePanels({
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            className="pointer-events-auto flex w-full max-w-sm items-center gap-1 rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-1.5 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur landscape:max-w-[16.5rem] landscape:gap-0.5 landscape:px-1 landscape:py-1"
+            className="pointer-events-auto flex w-full max-w-sm items-center gap-1 rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-1.5 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur landscape:max-w-66 landscape:gap-0.5 landscape:px-1 landscape:py-1"
           >
             <button
               onClick={handleMobileSelectButton}
               className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
+                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
                 activeTool === "select" && !mobileMultiSelectEnabled
                   ? "bg-white text-slate-950"
                   : "text-white/72 hover:bg-white/10 hover:text-white"
@@ -488,13 +488,13 @@ export function EditorMobilePanels({
             </button>
             <button
               onClick={openToolsDrawer}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <LayoutGrid className="size-3.5" />
               <span>Tools</span>
             </button>
             <div className="min-w-0 flex-[1.25]">
-              <div className="mx-auto flex max-w-[8.5rem] flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
+              <div className="mx-auto flex max-w-34 flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
                 <p className="text-[8px] font-medium tracking-[0.08em] text-white/52 uppercase">
                   {mobileStatusTitle}
                 </p>
@@ -507,7 +507,7 @@ export function EditorMobilePanels({
               onClick={openInspectorDrawer}
               disabled={!canOpenInspector}
               className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
+                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
                 canOpenInspector
                   ? "text-white/72 hover:bg-white/10 hover:text-white"
                   : "text-white/38"
@@ -518,7 +518,7 @@ export function EditorMobilePanels({
             </button>
             <button
               onClick={onOpenView}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <Scan className="size-3.5" />
               <span>View</span>
@@ -543,13 +543,13 @@ export function EditorMobilePanels({
           >
             <Link
               href="/studio"
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <ArrowRight className="size-3.5" />
               <span>Studio</span>
             </Link>
             <div className="min-w-0 flex-[1.1]">
-              <div className="mx-auto flex max-w-[8rem] flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
+              <div className="mx-auto flex max-w-32 flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
                 <p className="text-[8px] font-medium tracking-[0.08em] text-white/52 uppercase">
                   Mode
                 </p>
@@ -563,14 +563,14 @@ export function EditorMobilePanels({
             </div>
             <button
               onClick={onShare}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Share2 className="size-3.5" />
               <span>Share</span>
             </button>
             <button
               onClick={openReadOnlyDrawer}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-[1rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Scan className="size-3.5" />
               <span>View</span>
@@ -778,7 +778,7 @@ export function EditorMobilePanels({
             if (!open) onCloseInspector();
           }}
         >
-          <DrawerContent className="border-border/50 bg-card max-h-[92dvh] min-h-[72dvh] gap-0 overflow-hidden [overscroll-behavior:contain] rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
+          <DrawerContent className="border-border/50 bg-card max-h-[92dvh] min-h-[72dvh] gap-0 overflow-hidden overscroll-contain rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader(
               "Inspector",
               selectedCount === 0
@@ -786,7 +786,7 @@ export function EditorMobilePanels({
                 : "Selection properties and editing",
               "brand"
             )}
-            <div className="bg-card min-h-0 flex-1 touch-pan-y overflow-y-auto [overscroll-behavior-y:contain] [webkit-overflow-scrolling:touch]">
+            <div className="bg-card min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
               <Inspector
                 mobileInline
                 onResumeSelectedPath={() => {
@@ -824,7 +824,7 @@ export function EditorMobilePanels({
                   <button
                     onClick={onUndo}
                     disabled={!canUndo}
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-[1rem] border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Undo2 className="size-4" />
                     <span className="text-[11px] leading-none font-medium">
@@ -834,7 +834,7 @@ export function EditorMobilePanels({
                   <button
                     onClick={onRedo}
                     disabled={!canRedo}
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-[1rem] border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Redo2 className="size-4" />
                     <span className="text-[11px] leading-none font-medium">
@@ -859,7 +859,7 @@ export function EditorMobilePanels({
                             key={tool.id}
                             onClick={() => onSelectTool(tool.id)}
                             className={cn(
-                              "flex flex-col items-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all",
+                              "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
                               active
                                 ? "border-border/80 bg-muted/55 text-foreground"
                                 : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
@@ -898,7 +898,7 @@ export function EditorMobilePanels({
                     <button
                       key={actionItem.label}
                       onClick={actionItem.action}
-                      className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex flex-col items-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all"
+                      className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
                     >
                       {index === 0 ? <FilePlus className="size-5" /> : null}
                       {index === 1 ? <FolderOpen className="size-5" /> : null}
@@ -934,7 +934,7 @@ export function EditorMobilePanels({
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
                   Current mode
                 </p>
-                <div className="border-border/50 bg-muted/18 rounded-[1rem] border px-3 py-3">
+                <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
                   <p className="text-foreground text-sm font-medium">
                     {tab === "2d" ? "2D canvas" : "3D preview"}
                   </p>
@@ -948,7 +948,7 @@ export function EditorMobilePanels({
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
                   View mode
                 </p>
-                <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-[1rem] border p-1">
+                <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
                   {(["2d", "3d"] as const).map((nextTab) => (
                     <button
                       key={nextTab}
@@ -959,7 +959,7 @@ export function EditorMobilePanels({
                       className={cn(
                         "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
                         tab === nextTab
-                          ? "border-primary/30 bg-primary/12 text-primary shadow-sm"
+                          ? "border-primary/30 bg-primary/12 text-primary shadow-xs"
                           : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
                       )}
                     >
@@ -969,7 +969,7 @@ export function EditorMobilePanels({
                 </div>
                 <button
                   onClick={onFitView}
-                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors"
+                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
                 >
                   <div>
                     <p className="text-[11px] font-medium">Fit to field</p>
@@ -985,7 +985,7 @@ export function EditorMobilePanels({
                       onSetMobileRulersEnabled(!mobileRulersEnabled)
                     }
                     className={cn(
-                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
                       mobileRulersEnabled
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -1005,7 +1005,7 @@ export function EditorMobilePanels({
                           : "bg-border/80 justify-start"
                       )}
                     >
-                      <span className="bg-background block size-5 rounded-full shadow-sm" />
+                      <span className="bg-background block size-5 rounded-full shadow-xs" />
                     </div>
                   </button>
                 )}
@@ -1015,7 +1015,7 @@ export function EditorMobilePanels({
                       onClick={onStartFlyThrough}
                       disabled={!hasPath}
                       className={cn(
-                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
                         hasPath
                           ? "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
                           : "text-muted-foreground/45 cursor-not-allowed"
@@ -1036,7 +1036,7 @@ export function EditorMobilePanels({
                         onSetMobileGizmoEnabled(!mobileGizmoEnabled)
                       }
                       className={cn(
-                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
                         mobileGizmoEnabled
                           ? "text-foreground"
                           : "text-muted-foreground hover:text-foreground"
@@ -1056,7 +1056,7 @@ export function EditorMobilePanels({
                             : "bg-border/80 justify-start"
                         )}
                       >
-                        <span className="bg-background block size-5 rounded-full shadow-sm" />
+                        <span className="bg-background block size-5 rounded-full shadow-xs" />
                       </div>
                     </button>
                   </>
@@ -1085,7 +1085,7 @@ export function EditorMobilePanels({
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
                   View
                 </p>
-                <div className="border-border/50 bg-muted/18 flex items-center gap-1.5 rounded-[1rem] border p-1">
+                <div className="border-border/50 bg-muted/18 flex items-center gap-1.5 rounded-2xl border p-1">
                   {(["2d", "3d"] as const).map((nextTab) => (
                     <button
                       key={nextTab}
@@ -1096,7 +1096,7 @@ export function EditorMobilePanels({
                       className={cn(
                         "flex-1 rounded-[0.8rem] py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
                         tab === nextTab
-                          ? "bg-background text-foreground shadow-sm"
+                          ? "bg-background text-foreground shadow-xs"
                           : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
                       )}
                     >
@@ -1110,7 +1110,7 @@ export function EditorMobilePanels({
                       onSetMobileRulersEnabled(!mobileRulersEnabled)
                     }
                     className={cn(
-                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
                       mobileRulersEnabled
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -1130,7 +1130,7 @@ export function EditorMobilePanels({
                           : "bg-border/80 justify-start"
                       )}
                     >
-                      <span className="bg-background block size-5 rounded-full shadow-sm" />
+                      <span className="bg-background block size-5 rounded-full shadow-xs" />
                     </div>
                   </button>
                 )}
@@ -1138,7 +1138,7 @@ export function EditorMobilePanels({
                   <button
                     onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
                     className={cn(
-                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-[1rem] border px-3 py-2.5 text-left transition-colors",
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
                       mobileGizmoEnabled
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground"
@@ -1158,7 +1158,7 @@ export function EditorMobilePanels({
                           : "bg-border/80 justify-start"
                       )}
                     >
-                      <span className="bg-background block size-5 rounded-full shadow-sm" />
+                      <span className="bg-background block size-5 rounded-full shadow-xs" />
                     </div>
                   </button>
                 )}
@@ -1170,7 +1170,7 @@ export function EditorMobilePanels({
                 <div className="grid grid-cols-2 gap-2">
                   <Link
                     href="/studio"
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all"
+                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
                   >
                     <ArrowRight className="size-4" />
                     <span className="text-[11px] leading-none font-medium">
@@ -1179,7 +1179,7 @@ export function EditorMobilePanels({
                   </Link>
                   <button
                     onClick={onShare}
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-[1rem] border px-2 py-3 transition-all"
+                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
                   >
                     <Share2 className="size-4" />
                     <span className="text-[11px] leading-none font-medium">

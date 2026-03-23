@@ -76,7 +76,7 @@ export default function PerformanceHud() {
       }
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={HUD_TRANSITION}
-      className={`pointer-events-auto fixed right-3 bottom-3 z-[80] w-[18.5rem] max-w-[calc(100vw-1.5rem)] rounded-2xl border ${panelClass}`}
+      className={`pointer-events-auto fixed right-3 bottom-3 z-80 w-74 max-w-[calc(100vw-1.5rem)] rounded-2xl border ${panelClass}`}
     >
       <div className="border-b border-current/8 px-3 py-2.5">
         <div className="flex items-start justify-between gap-2">
