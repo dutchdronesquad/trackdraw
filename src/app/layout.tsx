@@ -81,7 +81,12 @@ export default function RootLayout({
   const themeInitScript = `(()=>{try{const k='trackdraw.theme';const stored=localStorage.getItem(k);const theme=stored==='light'||stored==='dark'||stored==='system'?stored:'system';const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;const isDark=theme==='dark'||(theme==='system'&&prefersDark);document.documentElement.classList.toggle('dark',isDark);}catch(e){}})();`;
 
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html
+      lang="en"
+      className="dark"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >

@@ -107,16 +107,16 @@ export default function Toolbar({
             {collapsed ? (
               <TrackDrawIcon className="text-foreground/80 size-6" />
             ) : (
-              <Image
-                src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
-                alt="TrackDraw"
-                className="h-7.5 w-34 select-none"
-                width={136}
-                height={30}
-                priority
-                unoptimized
-                draggable={false}
-              />
+              <span className="relative block h-7.5 w-34 select-none">
+                <Image
+                  src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+                  alt="TrackDraw"
+                  fill
+                  unoptimized
+                  className="object-contain"
+                  draggable={false}
+                />
+              </span>
             )}
           </Link>
         </SidebarHeader>
