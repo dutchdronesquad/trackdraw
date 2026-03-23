@@ -84,6 +84,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
         Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
   - [ ] Complete targeted maintainability and state-flow refactor pass
         Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
+  - [ ] Rework file structure and split oversized files
+        Introduce more focused subdirectories and break up broad components/modules so ownership and navigation stay manageable as the editor grows.
 
 ## Priority 3
 

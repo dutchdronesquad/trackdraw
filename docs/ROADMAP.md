@@ -270,12 +270,15 @@ Sub-items:
       Split key interaction and rendering responsibilities across more focused hooks, selectors, and utility modules.
 - [ ] Remaining maintainability and state-flow refactor pass
       Further reduce complexity in large rendering surfaces, persistence flow, and state-heavy editor paths.
+- [ ] File structure and large-file decomposition pass
+      Revisit folder structure, introduce more focused subdirectories, and split oversized components and modules into smaller ownership boundaries.
 
 Why:
 
 - The editor is gaining more product structure, which increases pressure on state and component architecture
 - Better internal boundaries can reduce feature risk and make future work faster
 - Performance and code clarity should be improved deliberately instead of through scattered one-off changes
+- Some core files are growing too broad, which makes navigation, ownership, and safe iteration harder than it should be
 
 ## Long-Term Priorities
 

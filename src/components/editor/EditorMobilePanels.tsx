@@ -109,6 +109,154 @@ interface EditorMobilePanelsProps {
   canUndo: boolean;
 }
 
+function MobileQuickActionsOverlay({
+  className,
+  mobilePrecisionStep,
+  mobilePrecisionStepLabel,
+  onDeleteSelection,
+  onDuplicateSelection,
+  onNudgeSelection,
+  onRotateSelection,
+  onToggleSelectionLock,
+  selectionLocked,
+  singleSelectedShapeLabel,
+  singleSelectionCanNudge,
+  singleSelectionCanRotate,
+}: {
+  className: string;
+  mobilePrecisionStep: number;
+  mobilePrecisionStepLabel: string;
+  onDeleteSelection: () => void;
+  onDuplicateSelection: () => void;
+  onNudgeSelection: (dx: number, dy: number) => void;
+  onRotateSelection: (delta: number) => void;
+  onToggleSelectionLock: () => void;
+  selectionLocked: boolean;
+  singleSelectedShapeLabel: string | null;
+  singleSelectionCanNudge: boolean;
+  singleSelectionCanRotate: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={className}
+    >
+      <div className="flex items-start justify-between gap-3 px-1 pb-2">
+        <div className="min-w-0">
+          <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
+            {expanded ? "Adjust" : "Quick actions"}
+          </p>
+          <p className="truncate text-[10px] text-white/55">
+            {singleSelectedShapeLabel ?? "Selection"} ·{" "}
+            {mobilePrecisionStepLabel} step
+          </p>
+        </div>
+      </div>
+
+      {!expanded ? (
+        <div className="grid grid-cols-4 gap-1.5">
+          <button
+            onClick={onDuplicateSelection}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <Copy className="size-4" />
+            <span>Duplicate</span>
+          </button>
+          <button
+            onClick={onToggleSelectionLock}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            {selectionLocked ? (
+              <Unlock className="size-4" />
+            ) : (
+              <Lock className="size-4" />
+            )}
+            <span>{selectionLocked ? "Unlock" : "Lock"}</span>
+          </button>
+          <button
+            onClick={onDeleteSelection}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
+          >
+            <Trash2 className="size-4" />
+            <span>Delete</span>
+          </button>
+          <button
+            onClick={() => setExpanded(true)}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <SlidersHorizontal className="size-4" />
+            <span>Adjust</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 gap-1.5">
+          <button
+            onClick={() => setExpanded(false)}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/62 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <ArrowLeft className="size-4" />
+            <span>Back</span>
+          </button>
+          <button
+            onClick={() => onRotateSelection(-15)}
+            disabled={!singleSelectionCanRotate}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+          >
+            <RotateCcw className="size-4" />
+            <span>-15°</span>
+          </button>
+          <button
+            onClick={() => onRotateSelection(15)}
+            disabled={!singleSelectionCanRotate}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+          >
+            <RotateCw className="size-4" />
+            <span>+15°</span>
+          </button>
+          <div className="flex items-center justify-center text-[9px] font-medium tracking-[0.08em] text-white/35 uppercase">
+            Step
+          </div>
+          <button
+            onClick={() => onNudgeSelection(-mobilePrecisionStep, 0)}
+            disabled={!singleSelectionCanNudge}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+          >
+            <ArrowLeft className="size-4" />
+            <span>Left</span>
+          </button>
+          <button
+            onClick={() => onNudgeSelection(0, -mobilePrecisionStep)}
+            disabled={!singleSelectionCanNudge}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+          >
+            <ArrowUp className="size-4" />
+            <span>Up</span>
+          </button>
+          <button
+            onClick={() => onNudgeSelection(0, mobilePrecisionStep)}
+            disabled={!singleSelectionCanNudge}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+          >
+            <ArrowDown className="size-4" />
+            <span>Down</span>
+          </button>
+          <button
+            onClick={() => onNudgeSelection(mobilePrecisionStep, 0)}
+            disabled={!singleSelectionCanNudge}
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+          >
+            <ArrowRight className="size-4" />
+            <span>Right</span>
+          </button>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 export function EditorMobilePanels({
   activeTool,
   draftPathActive,
@@ -176,8 +324,6 @@ export function EditorMobilePanels({
   const mobileOverlaySurfaceClassName =
     "pointer-events-auto w-full max-w-sm rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-2 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur";
   const [isLandscapeMobile, setIsLandscapeMobile] = useState(false);
-  const [mobileQuickAdjustExpanded, setMobileQuickAdjustExpanded] =
-    useState(false);
 
   const blurActiveControl = () => {
     const activeElement = document.activeElement;
@@ -266,12 +412,6 @@ export function EditorMobilePanels({
     !mobileMultiSelectEnabled &&
     !showPathBuilderOverlay &&
     !showResumePathButton;
-
-  useEffect(() => {
-    if (!showQuickAdjustOverlay) {
-      setMobileQuickAdjustExpanded(false);
-    }
-  }, [showQuickAdjustOverlay]);
 
   const mobileDrawerHeader = (
     title: string,
@@ -487,121 +627,20 @@ export function EditorMobilePanels({
               : "calc(5.15rem + env(safe-area-inset-bottom))",
           }}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+          <MobileQuickActionsOverlay
             className={mobileOverlaySurfaceClassName}
-          >
-            <div className="flex items-start justify-between gap-3 px-1 pb-2">
-              <div className="min-w-0">
-                <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
-                  {mobileQuickAdjustExpanded ? "Adjust" : "Quick actions"}
-                </p>
-                <p className="truncate text-[10px] text-white/55">
-                  {singleSelectedShapeLabel ?? "Selection"} ·{" "}
-                  {mobilePrecisionStepLabel} step
-                </p>
-              </div>
-            </div>
-
-            {!mobileQuickAdjustExpanded ? (
-              <div className="grid grid-cols-4 gap-1.5">
-                <button
-                  onClick={onDuplicateSelection}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  <Copy className="size-4" />
-                  <span>Duplicate</span>
-                </button>
-                <button
-                  onClick={onToggleSelectionLock}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  {selectionLocked ? (
-                    <Unlock className="size-4" />
-                  ) : (
-                    <Lock className="size-4" />
-                  )}
-                  <span>{selectionLocked ? "Unlock" : "Lock"}</span>
-                </button>
-                <button
-                  onClick={onDeleteSelection}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
-                >
-                  <Trash2 className="size-4" />
-                  <span>Delete</span>
-                </button>
-                <button
-                  onClick={() => setMobileQuickAdjustExpanded(true)}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  <SlidersHorizontal className="size-4" />
-                  <span>Adjust</span>
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-4 gap-1.5">
-                <button
-                  onClick={() => setMobileQuickAdjustExpanded(false)}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/62 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  <ArrowLeft className="size-4" />
-                  <span>Back</span>
-                </button>
-                <button
-                  onClick={() => onRotateSelection(-15)}
-                  disabled={!singleSelectionCanRotate}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
-                >
-                  <RotateCcw className="size-4" />
-                  <span>-15°</span>
-                </button>
-                <button
-                  onClick={() => onRotateSelection(15)}
-                  disabled={!singleSelectionCanRotate}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
-                >
-                  <RotateCw className="size-4" />
-                  <span>+15°</span>
-                </button>
-                <div className="flex items-center justify-center text-[9px] font-medium tracking-[0.08em] text-white/35 uppercase">
-                  Step
-                </div>
-                <button
-                  onClick={() => onNudgeSelection(-mobilePrecisionStep, 0)}
-                  disabled={!singleSelectionCanNudge}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
-                >
-                  <ArrowLeft className="size-4" />
-                  <span>Left</span>
-                </button>
-                <button
-                  onClick={() => onNudgeSelection(0, -mobilePrecisionStep)}
-                  disabled={!singleSelectionCanNudge}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
-                >
-                  <ArrowUp className="size-4" />
-                  <span>Up</span>
-                </button>
-                <button
-                  onClick={() => onNudgeSelection(0, mobilePrecisionStep)}
-                  disabled={!singleSelectionCanNudge}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
-                >
-                  <ArrowDown className="size-4" />
-                  <span>Down</span>
-                </button>
-                <button
-                  onClick={() => onNudgeSelection(mobilePrecisionStep, 0)}
-                  disabled={!singleSelectionCanNudge}
-                  className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
-                >
-                  <ArrowRight className="size-4" />
-                  <span>Right</span>
-                </button>
-              </div>
-            )}
-          </motion.div>
+            mobilePrecisionStep={mobilePrecisionStep}
+            mobilePrecisionStepLabel={mobilePrecisionStepLabel}
+            onDeleteSelection={onDeleteSelection}
+            onDuplicateSelection={onDuplicateSelection}
+            onNudgeSelection={onNudgeSelection}
+            onRotateSelection={onRotateSelection}
+            onToggleSelectionLock={onToggleSelectionLock}
+            selectionLocked={selectionLocked}
+            singleSelectedShapeLabel={singleSelectedShapeLabel}
+            singleSelectionCanNudge={singleSelectionCanNudge}
+            singleSelectionCanRotate={singleSelectionCanRotate}
+          />
         </div>
       )}
 
