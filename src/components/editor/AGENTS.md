@@ -43,4 +43,3 @@ After changes in this folder, verify as many of these as the environment allows:
 - Read-only mode does not expose editing actions
 - Path-building actions remain coherent for draft, selected, and completed paths
 - Undo/redo and share entry points still remain reachable on mobile
-
