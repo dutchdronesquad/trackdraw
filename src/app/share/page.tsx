@@ -12,5 +12,5 @@ export default async function SharePage({ searchParams }: SharePageProps) {
     ? resolvedSearchParams.d[0]
     : resolvedSearchParams.d;
 
-  redirect(token ? `/share/${token}` : "/");
+  redirect(token ? `/share/${encodeURIComponent(token)}` : "/");
 }
