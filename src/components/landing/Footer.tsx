@@ -13,22 +13,24 @@ export function Footer() {
           <div className="col-span-2 space-y-3 md:col-span-1">
             <div className="flex items-center gap-2.5">
               <span className="inline-flex">
-                <Image
-                  src="/assets/brand/trackdraw-logo-mono-lightbg.svg"
-                  alt="TrackDraw"
-                  width={140}
-                  height={32}
-                  className="block dark:hidden"
-                  style={{ width: "auto", height: "2rem" }}
-                />
-                <Image
-                  src="/assets/brand/trackdraw-logo-mono-darkbg.svg"
-                  alt="TrackDraw"
-                  width={140}
-                  height={32}
-                  className="hidden dark:block"
-                  style={{ width: "auto", height: "2rem" }}
-                />
+                <span className="relative block h-8 w-35 dark:hidden">
+                  <Image
+                    src="/assets/brand/trackdraw-logo-mono-lightbg.svg"
+                    alt="TrackDraw"
+                    fill
+                    unoptimized
+                    className="object-contain"
+                  />
+                </span>
+                <span className="relative hidden h-8 w-35 dark:block">
+                  <Image
+                    src="/assets/brand/trackdraw-logo-mono-darkbg.svg"
+                    alt="TrackDraw"
+                    fill
+                    unoptimized
+                    className="object-contain"
+                  />
+                </span>
               </span>
               <VersionTag />
             </div>

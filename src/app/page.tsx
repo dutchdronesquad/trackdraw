@@ -80,24 +80,26 @@ function BrandLogo({
     : "/assets/brand/trackdraw-logo-color-darkbg.svg";
   return (
     <span className={`inline-flex ${className}`}>
-      <Image
-        src={light}
-        alt="TrackDraw"
-        width={170}
-        height={40}
-        className="block dark:hidden"
-        priority
-        style={{ width: "auto", height: "100%" }}
-      />
-      <Image
-        src={dark}
-        alt="TrackDraw"
-        width={170}
-        height={40}
-        className="hidden dark:block"
-        priority
-        style={{ width: "auto", height: "100%" }}
-      />
+      <span className="relative block aspect-17/4 h-full dark:hidden">
+        <Image
+          src={light}
+          alt="TrackDraw"
+          fill
+          priority
+          unoptimized
+          className="object-contain"
+        />
+      </span>
+      <span className="relative hidden aspect-17/4 h-full dark:block">
+        <Image
+          src={dark}
+          alt="TrackDraw"
+          fill
+          priority
+          unoptimized
+          className="object-contain"
+        />
+      </span>
     </span>
   );
 }

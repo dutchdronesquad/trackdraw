@@ -175,16 +175,16 @@ export default function Header({
             aria-label="Go to homepage"
             className="hidden shrink-0 items-center rounded-xs opacity-90 transition-opacity hover:opacity-100 lg:flex"
           >
-            <Image
-              src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
-              alt="TrackDraw"
-              width={118}
-              height={22}
-              className="h-5.5 w-29.5"
-              priority
-              unoptimized
-              draggable={false}
-            />
+            <span className="relative block h-7 w-37">
+              <Image
+                src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+                alt="TrackDraw"
+                fill
+                unoptimized
+                className="object-contain"
+                draggable={false}
+              />
+            </span>
           </Link>
         )}
         {!readOnly && onToggleCollapsed && (
@@ -215,16 +215,16 @@ export default function Header({
           aria-label="Go to homepage"
           className="flex items-center rounded-xs opacity-90 transition-opacity hover:opacity-100"
         >
-          <Image
-            src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
-            alt="TrackDraw"
-            width={130}
-            height={30}
-            className="h-7.5 w-32.5"
-            priority
-            unoptimized
-            draggable={false}
-          />
+          <span className="relative block h-9 w-40">
+            <Image
+              src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+              alt="TrackDraw"
+              fill
+              unoptimized
+              className="object-contain"
+              draggable={false}
+            />
+          </span>
         </Link>
       </div>
 
