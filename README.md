@@ -30,6 +30,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the current roadmap assessment.
 - 🎥 **Preview in 3D** - a live Three.js render shows the track from a drone perspective as you build
 - 📈 **Check elevation** - altitude profile chart along polyline paths, useful for planning vertical sections
 - ↩️ **Undo anything** - full undo/redo history so you can experiment freely
+- 🚀 **Start faster** - first-use studio flows now guide the first editing step and surface next-step hints
 - 📱 **Edit on mobile** - a dedicated mobile editor flow supports touch navigation, direct placement, mobile multi-select and quick actions
 - 📤 **Export** - save your design as PNG, SVG, PDF, a 3D render screenshot, or JSON project file for backup and reuse
 - 🔗 **Share with a link** - the entire design is compressed into the URL; shared links open at `/share/[token]` in a clean read-only view with a clear path back into Studio
