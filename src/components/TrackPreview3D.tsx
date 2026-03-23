@@ -1768,23 +1768,24 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         )}
 
         {selectedPolyline && !flyMode && (
-          <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/55 px-3 py-1 text-[11px] text-white/70 shadow-lg backdrop-blur">
+          <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/46 px-3.5 py-1.5 text-[11px] text-white/78 shadow-[0_10px_28px_rgba(15,23,42,0.24)] backdrop-blur-md">
             {isMobile
-              ? "Touch and drag a waypoint grip up or down to edit elevation"
-              : "Drag waypoint handles up or down to edit elevation live"}
+              ? "Drag a waypoint grip up or down to adjust elevation"
+              : "Drag waypoint handles up or down to adjust elevation"}
           </div>
         )}
 
         {!flyMode && !isMobile && !selectedPolyline && (
-          <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/50 px-3 py-1 text-[11px] text-white/55 shadow-lg backdrop-blur">
-            Drag to orbit, scroll to zoom, middle-drag or two-finger pan
+          <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/42 px-3.5 py-1.5 text-[11px] text-white/68 shadow-[0_10px_28px_rgba(15,23,42,0.22)] backdrop-blur-md">
+            Orbit to inspect spacing and elevation. Scroll to zoom, middle-drag
+            to pan.
           </div>
         )}
 
         {/* No path hint */}
         {!hasPath && (
-          <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-[11px] text-white/20 select-none">
-            Draw a race path in 2D to enable fly-through
+          <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-white/8 bg-black/24 px-3 py-1 text-[10px] text-white/36 shadow-[0_8px_20px_rgba(15,23,42,0.18)] backdrop-blur-sm select-none">
+            Draw the route in 2D to enable fly-through
           </div>
         )}
       </div>

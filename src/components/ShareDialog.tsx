@@ -27,12 +27,14 @@ import { cn } from "@/lib/utils";
 interface ShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  hasPath?: boolean;
   onExportJson?: () => void;
 }
 
 export default function ShareDialog({
   open,
   onOpenChange,
+  hasPath = false,
   onExportJson,
 }: ShareDialogProps) {
   const design = useEditor((s) => s.design);
@@ -164,6 +166,16 @@ export default function ShareDialog({
                 )}
               </Button>
             </div>
+          </div>
+
+          <div className="border-border/50 bg-muted/12 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[11px]">
+            <Share2 className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
+            <p className="text-muted-foreground leading-relaxed">
+              Shared links open as read-only review pages.{" "}
+              {hasPath
+                ? "This track already includes a route for 3D review and fly-through."
+                : "Add a path first if you want reviewers to use fly-through and elevation review."}
+            </p>
           </div>
 
           <div

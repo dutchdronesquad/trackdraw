@@ -14,7 +14,6 @@ import {
   FolderOpen,
   LayoutGrid,
   Lock,
-  Monitor,
   PencilLine,
   Play,
   Redo2,
@@ -38,7 +37,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ContextOverlayCard } from "@/components/ContextOverlayCard";
 import type { EditorTool } from "@/lib/editor-tools";
 import { cn } from "@/lib/utils";
 
@@ -62,7 +60,6 @@ interface EditorMobilePanelsProps {
   mobilePrecisionStepLabel: string;
   mobileToolsOpen: boolean;
   mobileViewOpen: boolean;
-  mobileOverrideDismissed: boolean;
   readOnly: boolean;
   readOnlyMenuOpen: boolean;
   singleSelectedShapeLabel: string | null;
@@ -74,7 +71,6 @@ interface EditorMobilePanelsProps {
   saveStatusLabel: string;
   tab: EditorViewportTab;
   onCloseInspector: () => void;
-  onDismissMobileOverride: () => void;
   onFitView: () => void;
   onDeleteSelection: () => void;
   onCancelPath: () => void;
@@ -275,7 +271,6 @@ export function EditorMobilePanels({
   mobilePrecisionStepLabel,
   mobileToolsOpen,
   mobileViewOpen,
-  mobileOverrideDismissed,
   readOnly,
   readOnlyMenuOpen,
   singleSelectedShapeLabel,
@@ -287,7 +282,6 @@ export function EditorMobilePanels({
   saveStatusLabel,
   tab,
   onCloseInspector,
-  onDismissMobileOverride,
   onDeleteSelection,
   onCancelPath,
   onCloseLoop,
@@ -351,11 +345,8 @@ export function EditorMobilePanels({
     const mediaQuery = window.matchMedia(
       "(max-width: 1023px) and (orientation: landscape)"
     );
-
-    const updateLandscapeMobile = () => {
+    const updateLandscapeMobile = () =>
       setIsLandscapeMobile(mediaQuery.matches);
-    };
-
     updateLandscapeMobile();
     mediaQuery.addEventListener("change", updateLandscapeMobile);
     return () =>
@@ -444,22 +435,6 @@ export function EditorMobilePanels({
 
   return (
     <>
-      {!readOnly && !mobileOverrideDismissed && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed inset-x-3 top-[3.6rem] z-40 lg:hidden landscape:inset-x-auto landscape:left-3 landscape:max-w-76"
-        >
-          <ContextOverlayCard
-            icon={<Monitor className="size-3.5" />}
-            title="Mobile canvas"
-            description="Tap to select, drag items directly to move them, and use two fingers to pan or zoom the canvas."
-            dismissLabel="Dismiss mobile hint"
-            onDismiss={onDismissMobileOverride}
-          />
-        </motion.div>
-      )}
-
       {!readOnly && !mobileFlyModeActive && (
         <div
           className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"

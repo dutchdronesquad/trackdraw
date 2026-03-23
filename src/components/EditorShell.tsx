@@ -14,18 +14,28 @@ import Header from "@/components/Header";
 import Toolbar from "@/components/Toolbar";
 import Inspector from "@/components/Inspector";
 import StatusBar from "@/components/StatusBar";
+import { ContextOverlayCard } from "@/components/ContextOverlayCard";
 import ShareDialog from "@/components/ShareDialog";
 import ExportDialog from "@/components/ExportDialog";
 import ImportDialog from "@/components/ImportDialog";
 import PerformanceHud from "@/components/PerformanceHud";
 import ProjectManagerDialog from "@/components/ProjectManagerDialog";
+import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import TrackCanvas, { type TrackCanvasHandle } from "@/components/TrackCanvas";
 import type {
   TrackPreview3DHandle,
   TrackPreview3DProps,
 } from "@/components/TrackPreview3D";
-import { parseDesign } from "@/lib/design";
+import { createDefaultDesign, parseDesign } from "@/lib/design";
 import { shapeKindLabels } from "@/lib/editor-tools";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
@@ -38,6 +48,202 @@ import {
   selectSelectionLocked,
   selectShapeRecordMap,
 } from "@/store/selectors";
+import { Box, ChevronRight, Route, X } from "lucide-react";
+import { Kbd } from "@/components/ui/kbd";
+
+const HINT_STORAGE_KEYS = {
+  gate: "trackdraw-hint-gate-dismissed",
+  path: "trackdraw-hint-path-dismissed",
+  preview: "trackdraw-hint-preview-dismissed",
+  review3d: "trackdraw-hint-review3d-dismissed",
+  postPath: "trackdraw-hint-post-path-dismissed",
+} as const;
+
+function shouldShowStarterForDesign(params: {
+  title: string;
+  shapeCount: number;
+}) {
+  const title = params.title.trim();
+  return params.shapeCount === 0 && (!title || title === "New Track");
+}
+
+function createFirstUseBlankDesign() {
+  const design = createDefaultDesign();
+  return {
+    ...design,
+    title: "",
+    description: "",
+  };
+}
+
+const STARTER_STEPS = [
+  {
+    id: "01",
+    title: "Place a few gates and obstacles",
+    description: "Start small so the course structure appears quickly.",
+  },
+  {
+    id: "02",
+    title: "Draw the race path through them",
+    description:
+      "The path usually makes the layout click faster than obstacle tweaking alone.",
+  },
+  {
+    id: "03",
+    title: "Check 3D, then export or share",
+    description:
+      "Review the route early and send a read-only link when it is ready.",
+  },
+] as const;
+
+function StarterSteps({ mobile = false }: { mobile?: boolean }) {
+  return (
+    <div>
+      <p
+        className={
+          mobile
+            ? "text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase"
+            : "text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
+        }
+      >
+        Good first steps
+      </p>
+      <ol className={mobile ? "space-y-3" : "mt-3 space-y-3"}>
+        {STARTER_STEPS.map((step) => (
+          <li
+            key={step.id}
+            className={
+              mobile ? "flex items-start gap-3" : "flex items-start gap-3"
+            }
+          >
+            <span className="text-primary/60 mt-px w-5 shrink-0 text-[11px] font-semibold tabular-nums">
+              {step.id}
+            </span>
+            <div>
+              <p
+                className={
+                  mobile
+                    ? "text-foreground text-[13px] font-medium"
+                    : "text-foreground text-[13px] font-medium"
+                }
+              >
+                {step.title}
+              </p>
+              <p
+                className={
+                  mobile
+                    ? "text-muted-foreground mt-0.5 text-[11px] leading-5"
+                    : "text-muted-foreground mt-0.5 text-[12px] leading-5"
+                }
+              >
+                {step.description}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function StarterActions({
+  mobile = false,
+  onPath,
+  onBlank,
+}: {
+  mobile?: boolean;
+  onPath: () => void;
+  onBlank: () => void;
+}) {
+  if (!mobile) {
+    return (
+      <>
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={onPath}
+            className="border-primary/18 bg-primary/[0.07] text-muted-foreground hover:bg-primary/11 hover:text-foreground flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-all"
+          >
+            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
+              <Box className="size-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-foreground text-sm font-medium">
+                Start by placing gates
+              </p>
+              <p className="text-muted-foreground mt-1 text-xs leading-5">
+                Open an empty field with `Gate` selected so you can block out
+                the course first. Draw the path once the first obstacles are
+                down.
+              </p>
+            </div>
+            <div className="flex h-full items-center self-stretch">
+              <ChevronRight className="text-muted-foreground/45 size-4 shrink-0" />
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={onBlank}
+            className="text-muted-foreground hover:text-foreground mt-3 w-full text-center text-sm underline-offset-2 transition-colors hover:underline"
+          >
+            Continue with blank canvas
+          </button>
+        </div>
+        <p className="text-muted-foreground mt-5 hidden flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] sm:flex">
+          <Kbd>G</Kbd> places gates
+          <span className="text-muted-foreground/40">·</span>
+          <Kbd>P</Kbd> starts the route
+          <span className="text-muted-foreground/40">·</span>
+          <Kbd>Enter</Kbd> finishes the path
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-2.5">
+        <button
+          type="button"
+          onClick={onPath}
+          className="border-primary/18 bg-primary/[0.07] text-muted-foreground hover:bg-primary/11 hover:text-foreground flex w-full items-start gap-3 rounded-2xl border px-3 py-3 text-left transition-all"
+        >
+          <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-xl">
+            <Box className="size-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground text-[13px] font-medium">
+              Start by placing gates
+            </p>
+            <p className="text-muted-foreground mt-1 text-[11px] leading-5">
+              Open an empty field with Gate selected. Draw the path once the
+              first obstacles are down.
+            </p>
+          </div>
+          <ChevronRight className="text-muted-foreground/45 mt-0.5 size-4 shrink-0" />
+        </button>
+        <button
+          type="button"
+          onClick={onBlank}
+          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex w-full items-start gap-3 rounded-2xl border px-3 py-3 text-left transition-all"
+        >
+          <div className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-xl">
+            <ChevronRight className="size-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground text-[13px] font-medium">
+              Continue with blank canvas
+            </p>
+            <p className="text-muted-foreground mt-1 text-[11px] leading-5">
+              Skip the guided start and open the empty studio instead.
+            </p>
+          </div>
+        </button>
+      </div>
+    </>
+  );
+}
 
 const TrackPreview3D = dynamic<TrackPreview3DProps>(
   () => import("@/components/TrackPreview3D"),
@@ -98,6 +304,7 @@ export default function EditorShell({
     singleSelectedShape.kind !== "cone" &&
     !singleSelectedShape.locked
   );
+  const isMobile = useIsMobile();
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -112,7 +319,6 @@ export default function EditorShell({
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [mobileViewOpen, setMobileViewOpen] = useState(false);
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
-  const [mobileOverrideDismissed, setMobileOverrideDismissed] = useState(false);
   const [mobileRulersEnabled, setMobileRulersEnabled] = useState(readOnly);
   const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(!readOnly);
   const [mobileMultiSelectEnabled, setMobileMultiSelectEnabled] =
@@ -128,10 +334,22 @@ export default function EditorShell({
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [projectManagerOpen, setProjectManagerOpen] = useState(false);
-  const [showStarter, setShowStarter] = useState(false);
+  const [starterDismissed, setStarterDismissed] = useState(false);
+  const [starterMode, setStarterMode] = useState<"guided" | "blank" | null>(
+    null
+  );
   const [saveStatusLabel, setSaveStatusLabel] = useState("Saving locally…");
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
+  const [gateHintDismissed, setGateHintDismissed] = useState(false);
+  const [desktopPathHintDismissed, setDesktopPathHintDismissed] =
+    useState(false);
+  const [desktopPreviewHintDismissed, setDesktopPreviewHintDismissed] =
+    useState(false);
+  const [review3DHintDismissed, setReview3DHintDismissed] = useState(false);
+  const [postPathNudgeDismissed, setPostPathNudgeDismissed] = useState(false);
+  const [showPostPathNudge, setShowPostPathNudge] = useState(false);
+  const prevHasPath = useRef(false);
   // Load persisted design on mount
   useEffect(() => {
     if (readOnly) return;
@@ -145,14 +363,36 @@ export default function EditorShell({
           return;
         }
       }
-      setShowStarter(true);
       setSaveStatusLabel("Fresh local project");
     } catch {
-      setShowStarter(true);
       setSaveStatusLabel("Fresh local project");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (readOnly) return;
+
+    try {
+      setGateHintDismissed(
+        localStorage.getItem(HINT_STORAGE_KEYS.gate) === "true"
+      );
+      setDesktopPathHintDismissed(
+        localStorage.getItem(HINT_STORAGE_KEYS.path) === "true"
+      );
+      setDesktopPreviewHintDismissed(
+        localStorage.getItem(HINT_STORAGE_KEYS.preview) === "true"
+      );
+      setReview3DHintDismissed(
+        localStorage.getItem(HINT_STORAGE_KEYS.review3d) === "true"
+      );
+      setPostPathNudgeDismissed(
+        localStorage.getItem(HINT_STORAGE_KEYS.postPath) === "true"
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [readOnly]);
 
   // Debounce full-design serialization so interactive edits do not fight local
   // autosave on every intermediate state.
@@ -216,6 +456,15 @@ export default function EditorShell({
     return () => window.cancelAnimationFrame(frameId);
   }, [pendingFlyThroughStart, tab]);
 
+  // Detect first path completion and show a one-time nudge toward 3D preview.
+  useEffect(() => {
+    if (readOnly) return;
+    if (!prevHasPath.current && hasPath) {
+      setShowPostPathNudge(true);
+    }
+    prevHasPath.current = hasPath;
+  }, [hasPath, readOnly]);
+
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
 
@@ -253,6 +502,101 @@ export default function EditorShell({
     setTab("2d");
     canvasRef.current?.resumePolylineEditing(shapeId);
   }, []);
+
+  const dismissDesktopPathHint = useCallback(() => {
+    setDesktopPathHintDismissed(true);
+    try {
+      localStorage.setItem(HINT_STORAGE_KEYS.path, "true");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const dismissGateHint = useCallback(() => {
+    setGateHintDismissed(true);
+    try {
+      localStorage.setItem(HINT_STORAGE_KEYS.gate, "true");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const dismissDesktopPreviewHint = useCallback(() => {
+    setDesktopPreviewHintDismissed(true);
+    try {
+      localStorage.setItem(HINT_STORAGE_KEYS.preview, "true");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const dismissReview3DHint = useCallback(() => {
+    setReview3DHintDismissed(true);
+    try {
+      localStorage.setItem(HINT_STORAGE_KEYS.review3d, "true");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const dismissPostPathNudge = useCallback(() => {
+    setPostPathNudgeDismissed(true);
+    try {
+      localStorage.setItem(HINT_STORAGE_KEYS.postPath, "true");
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const resetGuidedHints = useCallback(() => {
+    setGateHintDismissed(false);
+    setDesktopPathHintDismissed(false);
+    setDesktopPreviewHintDismissed(false);
+    setReview3DHintDismissed(false);
+    setPostPathNudgeDismissed(false);
+    setShowPostPathNudge(false);
+    prevHasPath.current = false;
+
+    try {
+      localStorage.removeItem(HINT_STORAGE_KEYS.gate);
+      localStorage.removeItem(HINT_STORAGE_KEYS.path);
+      localStorage.removeItem(HINT_STORAGE_KEYS.preview);
+      localStorage.removeItem(HINT_STORAGE_KEYS.review3d);
+      localStorage.removeItem(HINT_STORAGE_KEYS.postPath);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const shouldShowStarter =
+    !readOnly &&
+    !starterDismissed &&
+    shouldShowStarterForDesign({
+      title: design.title,
+      shapeCount: designShapes.length,
+    });
+
+  const applyStarterDesign = useCallback(
+    (kind: "blank" | "gate") => {
+      replaceDesign(createFirstUseBlankDesign());
+      setStarterDismissed(true);
+      setTab("2d");
+
+      if (kind === "gate") {
+        setStarterMode("guided");
+        resetGuidedHints();
+        setActiveTool("gate");
+      } else {
+        setStarterMode("blank");
+        setActiveTool("select");
+      }
+
+      window.requestAnimationFrame(() => {
+        canvasRef.current?.fitToWindow();
+      });
+    },
+    [replaceDesign, resetGuidedHints, setActiveTool]
+  );
 
   return (
     <>
@@ -324,65 +668,219 @@ export default function EditorShell({
                     onFlyModeChange={setMobileFlyModeActive}
                   />
                 </div>
-                {!readOnly &&
-                showStarter &&
-                designShapes.length === 0 &&
-                !design.title.trim() ? (
-                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4">
-                    <div className="border-border/70 bg-card/96 pointer-events-auto w-full max-w-md rounded-2xl border p-4 shadow-xl backdrop-blur">
-                      <div className="flex items-start justify-between gap-3">
+                {shouldShowStarter && isMobile ? (
+                  <div>
+                    <Drawer
+                      open={shouldShowStarter}
+                      direction="bottom"
+                      modal
+                      onOpenChange={(open) => {
+                        if (!open) setStarterDismissed(true);
+                      }}
+                    >
+                      <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] [&>div:first-child]:hidden">
+                        <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs">
+                          <div className="flex items-center justify-center pt-2.5 pb-1.5">
+                            <div className="bg-primary/20 h-1 w-10 rounded-full" />
+                          </div>
+                          <DrawerHeader className="px-4 pt-0 pb-3 text-left">
+                            <div className="min-w-0">
+                              <DrawerTitle className="text-foreground/88 text-[13px] font-medium tracking-[0.01em]">
+                                Welcome to TrackDraw
+                              </DrawerTitle>
+                              <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[10px] leading-relaxed">
+                                Place a few gates, draw the route, check 3D,
+                                then share when the track is ready.
+                              </DrawerDescription>
+                            </div>
+                          </DrawerHeader>
+                        </div>
+
+                        <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
+                          <StarterSteps mobile />
+                          <StarterActions
+                            mobile
+                            onPath={() => applyStarterDesign("gate")}
+                            onBlank={() => applyStarterDesign("blank")}
+                          />
+                        </div>
+                      </DrawerContent>
+                    </Drawer>
+                  </div>
+                ) : null}
+                {shouldShowStarter && !isMobile ? (
+                  <div className="absolute inset-0 z-20 hidden items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm lg:flex">
+                    <div className="border-border/50 bg-card/97 pointer-events-auto w-full max-w-xl rounded-4xl border px-8 py-8 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur">
+                      <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="text-foreground text-sm font-semibold">
-                            Start with a clear project action
+                          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
+                            Studio
                           </p>
-                          <p className="text-muted-foreground pt-1 text-xs leading-relaxed">
-                            Begin with a blank field, open an existing JSON, or
-                            keep this empty starter canvas and start placing
-                            objects.
+                          <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
+                            Welcome to TrackDraw
+                          </p>
+                          <p className="text-muted-foreground mt-2 max-w-sm text-sm leading-relaxed">
+                            Design the layout in 2D, review elevation in 3D, and
+                            share a read-only link when the track is ready.
                           </p>
                         </div>
                         <button
                           type="button"
-                          onClick={() => setShowStarter(false)}
-                          className="text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => setStarterDismissed(true)}
+                          className="text-muted-foreground/75 hover:text-foreground hover:bg-muted rounded-full p-1.5 transition-colors"
+                          aria-label="Dismiss starter dialog"
                         >
-                          Dismiss
+                          <X className="size-4" />
                         </button>
                       </div>
-                      <div className="mt-4 grid gap-2 sm:grid-cols-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            newProject();
-                            setShowStarter(false);
-                          }}
-                          className="border-border/70 hover:bg-muted/40 rounded-xl border px-3 py-2 text-sm font-medium transition-colors"
-                        >
-                          Blank project
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setImportOpen(true);
-                            setShowStarter(false);
-                          }}
-                          className="border-border/70 hover:bg-muted/40 rounded-xl border px-3 py-2 text-sm font-medium transition-colors"
-                        >
-                          Open JSON
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setShowStarter(false)}
-                          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-3 py-2 text-sm font-medium transition-colors"
-                        >
-                          Start drawing
-                        </button>
+
+                      <div className="mt-6">
+                        <StarterSteps />
+                        <StarterActions
+                          onPath={() => applyStarterDesign("gate")}
+                          onBlank={() => applyStarterDesign("blank")}
+                        />
                       </div>
-                      <p className="text-muted-foreground/80 mt-3 text-[11px]">
-                        Quick tips: `Tools` chooses objects, `Inspect` edits the
-                        current selection, and `View` switches between 2D and
-                        3D.
-                      </p>
+                    </div>
+                  </div>
+                ) : null}
+                {!readOnly &&
+                starterMode === "guided" &&
+                tab === "2d" &&
+                designShapes.length === 0 &&
+                activeTool === "gate" &&
+                !gateHintDismissed ? (
+                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
+                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
+                      <ContextOverlayCard
+                        icon={<Box className="size-4" />}
+                        title="Place your first gate"
+                        badge="Guided"
+                        description="Tap or click on the canvas to drop the first gate. Add a few gates before switching to Path."
+                        action={
+                          <Button size="sm" onClick={dismissGateHint}>
+                            Got it
+                          </Button>
+                        }
+                        dismissLabel="Dismiss gate placement hint"
+                        onDismiss={dismissGateHint}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+                {!readOnly &&
+                starterMode === "guided" &&
+                tab === "2d" &&
+                !shouldShowStarter &&
+                designShapes.length > 0 &&
+                !hasPath &&
+                !desktopPathHintDismissed ? (
+                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
+                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
+                      <ContextOverlayCard
+                        icon={<Route className="size-4" />}
+                        title="Next, draw the route"
+                        badge="Guided"
+                        description="Place a few gates first, then switch to Path and trace the lap through them. Finish the route before checking 3D."
+                        action={
+                          <Button
+                            size="sm"
+                            onClick={() => setActiveTool("polyline")}
+                          >
+                            Start path
+                          </Button>
+                        }
+                        dismissLabel="Dismiss path onboarding hint"
+                        onDismiss={dismissDesktopPathHint}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+                {!readOnly &&
+                starterMode === "guided" &&
+                tab === "3d" &&
+                !hasPath &&
+                !desktopPreviewHintDismissed ? (
+                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
+                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
+                      <ContextOverlayCard
+                        icon={<Box className="size-4" />}
+                        title="3D works best after the route"
+                        badge="Preview"
+                        description="Obstacle placement already previews here, but the route is what makes elevation and fly-through review useful."
+                        action={
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setTab("2d");
+                              setActiveTool("polyline");
+                            }}
+                          >
+                            Draw path in 2D
+                          </Button>
+                        }
+                        dismissLabel="Dismiss 3D preview onboarding hint"
+                        onDismiss={dismissDesktopPreviewHint}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+                {!readOnly &&
+                starterMode === "guided" &&
+                tab === "3d" &&
+                hasPath &&
+                !review3DHintDismissed ? (
+                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
+                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
+                      <ContextOverlayCard
+                        icon={<Box className="size-4" />}
+                        title="Now review it in 3D"
+                        badge="Guided"
+                        description="Orbit around the route, check elevation and spacing, then share or export once the layout feels right."
+                        action={
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setShareOpen(true);
+                              dismissReview3DHint();
+                            }}
+                          >
+                            Share or export next
+                          </Button>
+                        }
+                        dismissLabel="Dismiss 3D review hint"
+                        onDismiss={dismissReview3DHint}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+                {!readOnly &&
+                starterMode === "guided" &&
+                tab === "2d" &&
+                showPostPathNudge &&
+                !postPathNudgeDismissed ? (
+                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
+                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
+                      <ContextOverlayCard
+                        icon={<Box className="size-4" />}
+                        title="Route ready — check it in 3D"
+                        badge="Next step"
+                        description="Switch to the 3D tab now to review the route before refining more obstacle placement."
+                        action={
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setTab("3d");
+                              dismissPostPathNudge();
+                            }}
+                          >
+                            Switch to 3D
+                          </Button>
+                        }
+                        dismissLabel="Dismiss post-path 3D nudge"
+                        onDismiss={dismissPostPathNudge}
+                      />
                     </div>
                   </div>
                 ) : null}
@@ -415,7 +913,6 @@ export default function EditorShell({
           mobileViewOpen={mobileViewOpen}
           mobileMultiSelectEnabled={mobileMultiSelectEnabled}
           mobileGizmoEnabled={mobileGizmoEnabled}
-          mobileOverrideDismissed={mobileOverrideDismissed}
           mobileRulersEnabled={mobileRulersEnabled}
           mobileFlyModeActive={mobileFlyModeActive}
           mobilePrecisionStep={mobilePrecisionStep}
@@ -435,7 +932,6 @@ export default function EditorShell({
           saveStatusLabel={saveStatusLabel}
           tab={tab}
           onCloseInspector={() => setMobileInspectorOpen(false)}
-          onDismissMobileOverride={() => setMobileOverrideDismissed(true)}
           onFitView={() => canvasRef.current?.fitToWindow()}
           onCancelPath={() => {
             canvasRef.current?.cancelDraftPath();
@@ -544,6 +1040,7 @@ export default function EditorShell({
       <ShareDialog
         open={shareOpen}
         onOpenChange={setShareOpen}
+        hasPath={hasPath}
         onExportJson={() => {
           setShareOpen(false);
           setExportOpen(true);
@@ -572,7 +1069,7 @@ export default function EditorShell({
           newProject();
           setProjectManagerOpen(false);
           setMobileToolsOpen(false);
-          setShowStarter(false);
+          setStarterDismissed(false);
         }}
         onBackupProject={() => {
           setProjectManagerOpen(false);
