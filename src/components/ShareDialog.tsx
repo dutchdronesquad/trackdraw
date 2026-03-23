@@ -148,7 +148,7 @@ export default function ShareDialog({
                 readOnly
                 value={shareUrl}
                 onFocus={(e) => e.target.select()}
-                className="border-border bg-background/70 text-foreground focus:ring-primary/50 min-w-0 flex-1 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-none focus:ring-1"
+                className="border-border bg-background/70 text-foreground focus:ring-primary/50 min-w-0 flex-1 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
               />
               <Button
                 size="icon-sm"

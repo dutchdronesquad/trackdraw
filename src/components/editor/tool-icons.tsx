@@ -114,26 +114,26 @@ export const toolbarToolGroups: ToolGroup[] = [
   {
     title: "",
     tools: [
-      buildToolEntry("select", "size-[14px]"),
-      buildToolEntry("grab", "size-[14px]"),
+      buildToolEntry("select", "size-3.5"),
+      buildToolEntry("grab", "size-3.5"),
     ],
   },
   {
     title: "Track",
     tools: [
-      buildToolEntry("gate", "size-[14px]"),
-      buildToolEntry("ladder", "size-[14px]"),
-      buildToolEntry("divegate", "size-[14px]"),
-      buildToolEntry("flag", "size-[14px]"),
-      buildToolEntry("cone", "size-[14px]"),
+      buildToolEntry("gate", "size-3.5"),
+      buildToolEntry("ladder", "size-3.5"),
+      buildToolEntry("divegate", "size-3.5"),
+      buildToolEntry("flag", "size-3.5"),
+      buildToolEntry("cone", "size-3.5"),
     ],
   },
   {
     title: "Extra",
     tools: [
-      buildToolEntry("startfinish", "size-[14px]"),
-      buildToolEntry("label", "size-[14px]"),
-      buildToolEntry("polyline", "size-[14px]"),
+      buildToolEntry("startfinish", "size-3.5"),
+      buildToolEntry("label", "size-3.5"),
+      buildToolEntry("polyline", "size-3.5"),
     ],
   },
 ];
@@ -153,19 +153,19 @@ export const bottomActions = [
   {
     label: "New",
     tooltip: "New project",
-    icon: <FilePlus className="size-[14px]" />,
+    icon: <FilePlus className="size-3.5" />,
     action: "new" as const,
   },
   {
     label: "Open",
     tooltip: "Open project",
-    icon: <FolderOpen className="size-[14px]" />,
+    icon: <FolderOpen className="size-3.5" />,
     action: "import" as const,
   },
   {
     label: "Export",
     tooltip: "Export track",
-    icon: <Download className="size-[14px]" />,
+    icon: <Download className="size-3.5" />,
     action: "export" as const,
   },
 ];

@@ -173,14 +173,14 @@ export default function Header({
           <Link
             href="/"
             aria-label="Go to homepage"
-            className="hidden shrink-0 items-center rounded-sm opacity-90 transition-opacity hover:opacity-100 lg:flex"
+            className="hidden shrink-0 items-center rounded-xs opacity-90 transition-opacity hover:opacity-100 lg:flex"
           >
             <Image
               src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
               alt="TrackDraw"
               width={118}
               height={22}
-              className="h-[22px] w-[118px]"
+              className="h-5.5 w-29.5"
               priority
               unoptimized
               draggable={false}
@@ -213,14 +213,14 @@ export default function Header({
         <Link
           href="/"
           aria-label="Go to homepage"
-          className="flex items-center rounded-sm opacity-90 transition-opacity hover:opacity-100"
+          className="flex items-center rounded-xs opacity-90 transition-opacity hover:opacity-100"
         >
           <Image
             src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
             alt="TrackDraw"
             width={130}
             height={30}
-            className="h-[30px] w-[130px]"
+            className="h-7.5 w-32.5"
             priority
             unoptimized
             draggable={false}
@@ -236,7 +236,7 @@ export default function Header({
             transform: "translateX(-50%)",
           }}
         >
-          <div className="flex max-w-[28rem] items-center gap-2 px-6">
+          <div className="flex max-w-md items-center gap-2 px-6">
             <span className="text-foreground/70 truncate text-center text-sm">
               {title}
             </span>
@@ -333,7 +333,7 @@ export default function Header({
               </Tooltip>
               <DialogContent
                 size="auto"
-                className="hidden max-w-none gap-3 lg:grid lg:w-[540px]"
+                className="hidden max-w-none gap-3 lg:grid lg:w-135"
               >
                 <DialogHeader>
                   <DialogTitle>Keyboard Shortcuts</DialogTitle>

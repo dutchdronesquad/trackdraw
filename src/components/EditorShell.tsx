@@ -256,7 +256,7 @@ export default function EditorShell({
 
   return (
     <>
-      <div className="bg-background text-foreground relative flex h-[100dvh] overflow-hidden">
+      <div className="bg-background text-foreground relative flex h-dvh overflow-hidden">
         {!readOnly && (
           <Toolbar
             onImport={() => setImportOpen(true)}
@@ -394,7 +394,7 @@ export default function EditorShell({
 
             {/* Desktop Inspector */}
             {!readOnly && (
-              <aside className="border-border/80 bg-card/95 hidden min-h-0 w-[340px] shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex">
+              <aside className="border-border/80 bg-card/95 hidden min-h-0 w-85 shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex">
                 <Inspector onResumeSelectedPath={handleResumeSelectedPath} />
               </aside>
             )}

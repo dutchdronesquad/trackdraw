@@ -194,7 +194,7 @@ export default function ExportDialog({
             placeholder={design.title.trim() || "track"}
             value={filename}
             onChange={(e) => setFilename(e.target.value)}
-            className="text-foreground placeholder:text-muted-foreground/40 min-w-0 flex-1 bg-transparent text-sm outline-none"
+            className="text-foreground placeholder:text-muted-foreground/40 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
           />
         </div>
 

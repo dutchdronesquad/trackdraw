@@ -86,7 +86,7 @@ export default function Toolbar({
 
   return (
     <SidebarProvider
-      className="hidden h-full !min-h-0 !w-auto shrink-0 lg:flex"
+      className="hidden h-full min-h-0! w-auto! shrink-0 lg:flex"
       style={
         {
           "--sidebar-width": collapsed ? "3.5rem" : "11.5rem",
@@ -110,7 +110,7 @@ export default function Toolbar({
               <Image
                 src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
                 alt="TrackDraw"
-                className="h-[30px] w-[136px] select-none"
+                className="h-7.5 w-34 select-none"
                 width={136}
                 height={30}
                 priority

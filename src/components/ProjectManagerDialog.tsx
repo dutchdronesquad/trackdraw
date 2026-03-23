@@ -124,7 +124,7 @@ export default function ProjectManagerDialog({
     return (
       <Drawer open={open} direction="bottom" modal onOpenChange={onOpenChange}>
         <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] [&>div:first-child]:hidden">
-          <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-sm">
+          <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs">
             <div className="flex items-center justify-center pt-2.5 pb-1.5">
               <div className="bg-primary/20 h-1 w-10 rounded-full" />
             </div>

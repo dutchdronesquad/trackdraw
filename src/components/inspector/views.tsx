@@ -113,7 +113,7 @@ function InspectorScrollBody({
   }
 
   return (
-    <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto [overscroll-behavior-y:contain] [webkit-overflow-scrolling:touch]">
+    <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
       {children}
     </div>
   );
@@ -247,7 +247,7 @@ function ItemOverviewList({
                     role="button"
                     tabIndex={0}
                     onClick={() => setSelection([shape.id])}
-                    className="group/item hover:bg-primary/8 focus-visible:ring-primary/20 relative grid w-full grid-cols-[minmax(0,1fr)_72px_28px] items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    className="group/item hover:bg-primary/8 focus-visible:ring-primary/20 relative grid w-full grid-cols-[minmax(0,1fr)_72px_28px] items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
                     onMouseEnter={() => setHoveredShapeId(shape.id)}
                     onMouseLeave={() => setHoveredShapeId(null)}
                     onKeyDown={(event) => {
@@ -259,7 +259,7 @@ function ItemOverviewList({
                   >
                     <span className="bg-primary absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-r-full opacity-0 transition-opacity group-hover/item:opacity-100" />
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="border-border/30 bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border font-mono text-[10px]">
+                      <span className="border-border/30 bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-xs border font-mono text-[10px]">
                         {shapeOrder.get(shape.id)}
                       </span>
                       <div className="min-w-0">
@@ -778,7 +778,7 @@ export function SingleInspectorView({
               <Row label="Text">
                 <textarea
                   rows={2}
-                  className="border-border/40 bg-muted/40 text-foreground placeholder:text-muted-foreground/40 focus-visible:ring-ring/30 w-full resize-none rounded-md border px-3 py-2 text-xs focus-visible:ring-1 focus-visible:outline-none lg:rounded lg:px-2 lg:py-1 lg:text-[11px]"
+                  className="border-border/40 bg-muted/40 text-foreground placeholder:text-muted-foreground/40 focus-visible:ring-ring/30 w-full resize-none rounded-md border px-3 py-2 text-xs focus-visible:ring-1 focus-visible:outline-hidden lg:rounded lg:px-2 lg:py-1 lg:text-[11px]"
                   value={shape.text}
                   onFocus={startBatch}
                   onBlur={finishBatch}
@@ -799,7 +799,7 @@ export function SingleInspectorView({
               </Row>
               <Row label="3D mode">
                 <select
-                  className="border-border/40 bg-muted/40 text-foreground h-9 w-full rounded-md border px-3 py-1 text-xs focus-visible:outline-none lg:h-7 lg:rounded lg:px-2 lg:text-[11px]"
+                  className="border-border/40 bg-muted/40 text-foreground h-9 w-full rounded-md border px-3 py-1 text-xs focus-visible:outline-hidden lg:h-7 lg:rounded lg:px-2 lg:text-[11px]"
                   value={shape.project ? "ground" : "float"}
                   onFocus={startBatch}
                   onBlur={finishBatch}
@@ -1019,7 +1019,7 @@ export function SingleInspectorView({
                         onMouseLeave={() => setHoveredWaypoint(null)}
                       >
                         <span className="bg-primary/40 absolute top-0 bottom-0 left-0 w-px opacity-0 transition-opacity group-hover/row:opacity-100" />
-                        <span className="border-border/30 bg-primary/8 text-primary/80 flex h-5 w-5 items-center justify-center rounded-sm border font-mono text-[10px] tabular-nums">
+                        <span className="border-border/30 bg-primary/8 text-primary/80 flex h-5 w-5 items-center justify-center rounded-xs border font-mono text-[10px] tabular-nums">
                           {index}
                         </span>
                         <div className="min-w-0">
@@ -1031,7 +1031,7 @@ export function SingleInspectorView({
                           type="number"
                           step={0.5}
                           title="Elevation (m)"
-                          className="text-foreground/90 focus:bg-primary/6 focus:text-foreground hover:border-border/25 focus:border-primary/30 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-none"
+                          className="text-foreground/90 focus:bg-primary/6 focus:text-foreground hover:border-border/25 focus:border-primary/30 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-hidden"
                           value={point.z ?? 0}
                           onFocus={startBatch}
                           onBlur={finishBatch}

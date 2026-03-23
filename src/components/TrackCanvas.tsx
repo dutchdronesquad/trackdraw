@@ -1187,7 +1187,7 @@ const TrackCanvas = memo(
             </span>
           </div>
           <div
-            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-[42px] right-2 z-20 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
+            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-10.5 right-2 z-20 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
             style={{
               top: RULER_SIZE + 6,
               display: showDesktopCanvasChrome ? "block" : "none",
@@ -1213,7 +1213,7 @@ const TrackCanvas = memo(
                     setManualView(false);
                     fitFieldToViewport();
                   }}
-                  className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-sm backdrop-blur transition-colors"
+                  className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
                   aria-label="Fit to window"
                 >
                   <Scan className="size-3.5" />
