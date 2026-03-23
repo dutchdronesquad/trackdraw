@@ -341,6 +341,22 @@ export function EditorMobilePanels({
     onOpenReadOnlyMenu();
   };
 
+  const openViewDrawer = () => {
+    blurActiveControl();
+    onOpenView();
+  };
+
+  const runMobileAction = (action: () => void) => {
+    blurActiveControl();
+    action();
+  };
+
+  const runAfterClosingToolsDrawer = (action: () => void) => {
+    blurActiveControl();
+    onSetMobileToolsOpen(false);
+    window.setTimeout(action, 0);
+  };
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(
       "(max-width: 1023px) and (orientation: landscape)"
@@ -492,7 +508,7 @@ export function EditorMobilePanels({
               <span>Inspect</span>
             </button>
             <button
-              onClick={onOpenView}
+              onClick={openViewDrawer}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <Scan className="size-3.5" />
@@ -797,7 +813,7 @@ export function EditorMobilePanels({
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={onUndo}
+                    onClick={() => runMobileAction(onUndo)}
                     disabled={!canUndo}
                     className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
                   >
@@ -807,7 +823,7 @@ export function EditorMobilePanels({
                     </span>
                   </button>
                   <button
-                    onClick={onRedo}
+                    onClick={() => runMobileAction(onRedo)}
                     disabled={!canRedo}
                     className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
                   >
@@ -832,7 +848,9 @@ export function EditorMobilePanels({
                         return (
                           <button
                             key={tool.id}
-                            onClick={() => onSelectTool(tool.id)}
+                            onClick={() =>
+                              runMobileAction(() => onSelectTool(tool.id))
+                            }
                             className={cn(
                               "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
                               active
@@ -872,7 +890,9 @@ export function EditorMobilePanels({
                   ].map((actionItem, index) => (
                     <button
                       key={actionItem.label}
-                      onClick={actionItem.action}
+                      onClick={() =>
+                        runAfterClosingToolsDrawer(actionItem.action)
+                      }
                       className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
                     >
                       {index === 0 ? <FilePlus className="size-5" /> : null}

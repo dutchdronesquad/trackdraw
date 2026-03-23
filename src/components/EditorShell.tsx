@@ -350,6 +350,34 @@ export default function EditorShell({
   const [postPathNudgeDismissed, setPostPathNudgeDismissed] = useState(false);
   const [showPostPathNudge, setShowPostPathNudge] = useState(false);
   const prevHasPath = useRef(false);
+  const mobileProjectManagerOpenTimerRef = useRef<number | null>(null);
+
+  const openProjectManager = useCallback(() => {
+    if (!isMobile) {
+      setProjectManagerOpen(true);
+      return;
+    }
+
+    setMobileToolsOpen(false);
+
+    if (mobileProjectManagerOpenTimerRef.current !== null) {
+      window.clearTimeout(mobileProjectManagerOpenTimerRef.current);
+    }
+
+    mobileProjectManagerOpenTimerRef.current = window.setTimeout(() => {
+      setProjectManagerOpen(true);
+      mobileProjectManagerOpenTimerRef.current = null;
+    }, 180);
+  }, [isMobile]);
+
+  useEffect(() => {
+    return () => {
+      if (mobileProjectManagerOpenTimerRef.current !== null) {
+        window.clearTimeout(mobileProjectManagerOpenTimerRef.current);
+      }
+    };
+  }, []);
+
   // Load persisted design on mount
   useEffect(() => {
     if (readOnly) return;
@@ -1013,7 +1041,7 @@ export default function EditorShell({
             setMobileViewOpen(false);
             setPendingFlyThroughStart(true);
           }}
-          onStartNewProject={() => setProjectManagerOpen(true)}
+          onStartNewProject={openProjectManager}
           onImport={() => {
             setImportOpen(true);
             setMobileToolsOpen(false);
