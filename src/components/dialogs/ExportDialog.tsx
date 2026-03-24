@@ -12,10 +12,10 @@ import { useEditor } from "@/store/editor";
 import { exportSvg } from "@/lib/export/exportSvg";
 import { exportPng } from "@/lib/export/exportPng";
 import { cn } from "@/lib/utils";
-import type { TrackCanvasHandle } from "@/components/TrackCanvas";
+import type { TrackCanvasHandle } from "@/components/canvas/TrackCanvas";
 import { Download, Loader2, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
-import type { TrackPreview3DHandle } from "@/components/TrackPreview3D";
+import type { TrackPreview3DHandle } from "@/components/canvas/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
 
 interface ExportDialogProps {

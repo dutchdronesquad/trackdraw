@@ -28,7 +28,7 @@ import {
   Undo2,
   X,
 } from "lucide-react";
-import Inspector from "@/components/Inspector";
+import Inspector from "@/components/inspector/Inspector";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
 import {
   Drawer,

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
 import { decodeDesign } from "@/lib/share";
-import EditorShell from "@/components/EditorShell";
-import { ContextOverlayCard } from "@/components/ContextOverlayCard";
+import EditorShell from "@/components/editor/EditorShell";
+import { ContextOverlayCard } from "@/components/editor/ContextOverlayCard";
 import { ArrowRight, Eye } from "lucide-react";
 
 export default function ShareViewer({ token }: { token: string }) {

@@ -40,7 +40,7 @@ import {
 import { m2px } from "@/lib/units";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
 import { distance2D, getPolyline2DPoints } from "@/lib/geometry";
-import { CanvasRuler, RULER_SIZE } from "@/components/CanvasRuler";
+import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { shapeKindLabels } from "@/lib/editor-tools";

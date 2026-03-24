@@ -10,16 +10,16 @@ import {
   type RefAttributes,
 } from "react";
 import { EditorMobilePanels } from "@/components/editor/EditorMobilePanels";
-import Header from "@/components/Header";
-import Toolbar from "@/components/Toolbar";
-import Inspector from "@/components/Inspector";
-import StatusBar from "@/components/StatusBar";
-import { ContextOverlayCard } from "@/components/ContextOverlayCard";
-import ShareDialog from "@/components/ShareDialog";
-import ExportDialog from "@/components/ExportDialog";
-import ImportDialog from "@/components/ImportDialog";
-import PerformanceHud from "@/components/PerformanceHud";
-import ProjectManagerDialog from "@/components/ProjectManagerDialog";
+import Header from "./Header";
+import Toolbar from "./Toolbar";
+import Inspector from "@/components/inspector/Inspector";
+import StatusBar from "./StatusBar";
+import { ContextOverlayCard } from "./ContextOverlayCard";
+import ShareDialog from "@/components/dialogs/ShareDialog";
+import ExportDialog from "@/components/dialogs/ExportDialog";
+import ImportDialog from "@/components/dialogs/ImportDialog";
+import PerformanceHud from "./PerformanceHud";
+import ProjectManagerDialog from "@/components/dialogs/ProjectManagerDialog";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -28,11 +28,13 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import TrackCanvas, { type TrackCanvasHandle } from "@/components/TrackCanvas";
+import TrackCanvas, {
+  type TrackCanvasHandle,
+} from "@/components/canvas/TrackCanvas";
 import type {
   TrackPreview3DHandle,
   TrackPreview3DProps,
-} from "@/components/TrackPreview3D";
+} from "@/components/canvas/TrackPreview3D";
 import { createDefaultDesign, parseDesign } from "@/lib/design";
 import {
   createRestorePoint,
@@ -260,7 +262,7 @@ function StarterActions({
 }
 
 const TrackPreview3D = dynamic<TrackPreview3DProps>(
-  () => import("@/components/TrackPreview3D"),
+  () => import("@/components/canvas/TrackPreview3D"),
   {
     ssr: false,
     loading: () => (
