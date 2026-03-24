@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { decodeDesign } from "@/lib/share";
+import { decodeDesignWithReason } from "@/lib/share";
 import { parseEditorView } from "@/lib/view";
 import ShareViewer from "../ShareViewer";
+import ShareError from "../ShareError";
 
 type ShareTokenPageProps = {
   params: Promise<{
@@ -18,9 +19,12 @@ export default async function ShareTokenPage({
 }: ShareTokenPageProps) {
   const { token } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const design = decodeDesign(token);
+  const result = decodeDesignWithReason(token);
 
-  if (!design) {
+  if (!result.ok) {
+    if (result.reason === "too-large") {
+      return <ShareError />;
+    }
     notFound();
   }
 

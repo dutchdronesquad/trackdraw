@@ -95,6 +95,7 @@ interface EditorMobilePanelsProps {
   onSetReadOnlyMenuOpen: (open: boolean) => void;
   onShare: () => void;
   onStartFlyThrough: () => void;
+  studioHref?: string;
   onStartNewProject: () => void;
   onUndo: () => void;
   onUndoPathPoint: () => void;
@@ -314,6 +315,7 @@ export function EditorMobilePanels({
   onTabChange,
   canRedo,
   canUndo,
+  studioHref = "/studio",
 }: EditorMobilePanelsProps) {
   const mobileOverlaySurfaceClassName =
     "pointer-events-auto w-full max-w-sm rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-2 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur";
@@ -1056,18 +1058,19 @@ export function EditorMobilePanels({
           modal
           onOpenChange={onSetReadOnlyMenuOpen}
         >
-          <DrawerContent className="border-border/60 bg-background max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] lg:hidden [&>div:first-child]:hidden">
+          <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
             {mobileDrawerHeader(
               "View",
-              "Switch mode or share this track",
+              "Canvas mode, guides and viewport controls",
               "brand"
             )}
+
             <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
               <div>
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  View
+                  View mode
                 </p>
-                <div className="border-border/50 bg-muted/18 flex items-center gap-1.5 rounded-2xl border p-1">
+                <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
                   {(["2d", "3d"] as const).map((nextTab) => (
                     <button
                       key={nextTab}
@@ -1076,16 +1079,28 @@ export function EditorMobilePanels({
                         onSetReadOnlyMenuOpen(false);
                       }}
                       className={cn(
-                        "flex-1 rounded-[0.8rem] py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
+                        "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
                         tab === nextTab
-                          ? "bg-background text-foreground shadow-xs"
-                          : "text-muted-foreground hover:bg-background/40 hover:text-foreground"
+                          ? "border-primary/30 bg-primary/12 text-primary shadow-xs"
+                          : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
                       )}
                     >
                       {nextTab === "2d" ? "Canvas" : "3D Preview"}
                     </button>
                   ))}
                 </div>
+                <button
+                  onClick={onFitView}
+                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
+                >
+                  <div>
+                    <p className="text-[11px] font-medium">Fit to field</p>
+                    <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                      Center the current design in view
+                    </p>
+                  </div>
+                  <Scan className="size-4" />
+                </button>
                 {tab === "2d" && (
                   <button
                     onClick={() =>
@@ -1117,32 +1132,56 @@ export function EditorMobilePanels({
                   </button>
                 )}
                 {tab === "3d" && (
-                  <button
-                    onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
-                    className={cn(
-                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                      mobileGizmoEnabled
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <div>
-                      <p className="text-[11px] font-medium">Gizmo</p>
-                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                        Show the axis helper in 3D preview
-                      </p>
-                    </div>
-                    <div
+                  <>
+                    <button
+                      onClick={onStartFlyThrough}
+                      disabled={!hasPath}
                       className={cn(
-                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
-                        mobileGizmoEnabled
-                          ? "bg-foreground/90 justify-end"
-                          : "bg-border/80 justify-start"
+                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                        hasPath
+                          ? "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                          : "text-muted-foreground/45 cursor-not-allowed"
                       )}
                     >
-                      <span className="bg-background block size-5 rounded-full shadow-xs" />
-                    </div>
-                  </button>
+                      <div>
+                        <p className="text-[11px] font-medium">Fly-through</p>
+                        <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                          {hasPath
+                            ? "Start the race-line preview camera"
+                            : "No route in this shared track"}
+                        </p>
+                      </div>
+                      <Play className="size-4" />
+                    </button>
+                    <button
+                      onClick={() =>
+                        onSetMobileGizmoEnabled(!mobileGizmoEnabled)
+                      }
+                      className={cn(
+                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                        mobileGizmoEnabled
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      <div>
+                        <p className="text-[11px] font-medium">Gizmo</p>
+                        <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                          Show the axis helper in 3D preview
+                        </p>
+                      </div>
+                      <div
+                        className={cn(
+                          "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                          mobileGizmoEnabled
+                            ? "bg-foreground/90 justify-end"
+                            : "bg-border/80 justify-start"
+                        )}
+                      >
+                        <span className="bg-background block size-5 rounded-full shadow-xs" />
+                      </div>
+                    </button>
+                  </>
                 )}
               </div>
               <div>
@@ -1151,7 +1190,7 @@ export function EditorMobilePanels({
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   <Link
-                    href="/studio"
+                    href={studioHref}
                     className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
                   >
                     <ArrowRight className="size-4" />

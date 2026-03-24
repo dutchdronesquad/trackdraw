@@ -7,7 +7,7 @@ function TrackDrawLogo() {
     <div className="inline-flex">
       <div className="relative h-8 w-34 dark:hidden">
         <Image
-          src="/assets/brand/trackdraw-logo-mono-lightbg.svg"
+          src="/assets/brand/trackdraw-logo-color-lightbg.svg"
           alt="TrackDraw"
           fill
           priority
@@ -17,7 +17,7 @@ function TrackDrawLogo() {
       </div>
       <div className="relative hidden h-8 w-34 dark:block">
         <Image
-          src="/assets/brand/trackdraw-logo-mono-darkbg.svg"
+          src="/assets/brand/trackdraw-logo-color-darkbg.svg"
           alt="TrackDraw"
           fill
           priority

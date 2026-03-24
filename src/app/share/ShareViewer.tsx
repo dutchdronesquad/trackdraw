@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
 import { decodeDesign } from "@/lib/share";
@@ -19,6 +19,7 @@ export default function ShareViewer({
 }) {
   const replaceDesign = useEditor((s) => s.replaceDesign);
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [introDismissed, setIntroDismissed] = useState(false);
   const currentView = parseEditorView(searchParams.get("view")) ?? initialTab;
   const alternateView = currentView === "3d" ? "2d" : "3d";
@@ -31,14 +32,6 @@ export default function ShareViewer({
     }
   }, [token, replaceDesign]);
 
-  useEffect(() => {
-    if (introDismissed) return;
-    const timeoutId = window.setTimeout(() => {
-      setIntroDismissed(true);
-    }, 8000);
-    return () => window.clearTimeout(timeoutId);
-  }, [introDismissed]);
-
   return (
     <div className="relative h-dvh">
       <EditorShell
@@ -50,15 +43,15 @@ export default function ShareViewer({
         <div className="pointer-events-none absolute inset-x-0 top-14 z-30 flex justify-center px-3">
           <ContextOverlayCard
             icon={<Eye className="size-3.5" />}
-            title={`Shared track · ${currentView.toUpperCase()} review`}
-            description={`This shared view is read-only, so you can review the layout without changing the track. Switch to ${alternateView.toUpperCase()} or open Studio to edit your own copy.`}
+            title={`Shared track · ${currentView.toUpperCase()}`}
+            description={`Read-only, no edits are saved. Switch to ${alternateView.toUpperCase()} or open Studio to edit your own copy.`}
             dismissLabel="Dismiss shared track intro"
             onDismiss={() => setIntroDismissed(true)}
             variant="subtle"
             action={
               <div className="flex flex-wrap items-center gap-2">
                 <Link
-                  href={`/share/${encodeURIComponent(token)}?view=${alternateView}`}
+                  href={`${pathname}?view=${alternateView}`}
                   className="border-border bg-background hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors"
                 >
                   Open {alternateView.toUpperCase()}

@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw as of March 23, 2026. The product has moved beyond "basic editor prototype" territory. The core design loop is now credible across desktop, shared read-only viewing, practical mobile use, and race-day handoff. The next phase should focus less on generic polish and more on workflow acceleration, design confidence, handoff quality, and venue-side usefulness.
+This roadmap reflects the current state of TrackDraw as of March 25, 2026. The product has moved beyond "basic editor prototype" territory. The core design loop is now credible across desktop, shared read-only viewing, practical mobile use, and race-day handoff. The next phase should focus less on generic polish and more on workflow acceleration, design confidence, handoff quality, and venue-side usefulness.
 
 ## Current Assessment
 
@@ -171,12 +171,15 @@ Why now:
 - The current model is useful, but still tied too tightly to raw editor state
 - A better publish model improves trust, previews, and long-term share reliability
 
+Completed:
+
+- Distinct error pages for invalid vs oversized share tokens — oversized links surface JSON export guidance; corrupt or miscopied tokens hit a focused not-found page
+- Read-only view UX polish — improved overlay copy, view switching with correct deep-linking, fit-to-window on desktop, editor-only hints suppressed in read-only, mobile view drawer aligned with the studio drawer
+
 Good first slice:
 
 - Share a specific snapshot or variant through a stable read-only link
 - Keep a clear distinction between working state and intentionally shared states
-- Better invalid-share and fallback states
-- Cleaner read-only/share metadata behavior across the product
 
 Future note:
 
@@ -199,6 +202,7 @@ Good first slice:
 - Track path gaps or unfinished route states
 - Large elevation jumps between nearby points
 - Better route readability and review cues before heavier simulation-style analysis
+- Explore 3D obstacle orientation controls so gates can be rotated and dive gates tilted more naturally during spatial review
 
 ### 5. Race-Day Communication And Briefing
 
@@ -270,6 +274,7 @@ Let portrait and landscape diverge where that clearly improves usability.
 Good first slice:
 
 - Convert the remaining desktop-style dialogs that still feel awkward on phones into bottom-drawer flows where that improves reach, focus handling, and small-screen usability
+- Start with `ExportDialog`, `ImportDialog`, and the studio keyboard-shortcuts dialog; these should adopt the newer modal style on desktop and bottom-drawer presentation on mobile
 
 ### 11. Codebase Architecture And Performance Refactor
 
