@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "sonner";
+import ThemedToaster from "@/components/ThemedToaster";
 import {
   DEFAULT_SOCIAL_IMAGE,
   DEFAULT_SOCIAL_IMAGE_HEIGHT,
@@ -94,7 +94,7 @@ export default function RootLayout({
           {themeInitScript}
         </Script>
         <TooltipProvider delay={500}>{children}</TooltipProvider>
-        <Toaster position="bottom-right" theme="dark" richColors />
+        <ThemedToaster />
       </body>
     </html>
   );

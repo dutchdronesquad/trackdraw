@@ -876,11 +876,11 @@ export function EditorMobilePanels({
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     {
-                      label: "New",
+                      label: "Projects",
                       action: onStartNewProject,
                     },
                     {
-                      label: "Open",
+                      label: "Import",
                       action: onImport,
                     },
                     {
@@ -895,8 +895,8 @@ export function EditorMobilePanels({
                       }
                       className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
                     >
-                      {index === 0 ? <FilePlus className="size-5" /> : null}
-                      {index === 1 ? <FolderOpen className="size-5" /> : null}
+                      {index === 0 ? <FolderOpen className="size-5" /> : null}
+                      {index === 1 ? <FilePlus className="size-5" /> : null}
                       {index === 2 ? <Download className="size-5" /> : null}
                       <span className="text-[11px] leading-none font-medium">
                         {actionItem.label}

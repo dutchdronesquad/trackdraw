@@ -151,15 +151,15 @@ export const mobileToolEntries: ToolEntry[] = [
 
 export const bottomActions = [
   {
-    label: "New",
-    tooltip: "New project",
-    icon: <FilePlus className="size-3.5" />,
+    label: "Projects",
+    tooltip: "Manage projects",
+    icon: <FolderOpen className="size-3.5" />,
     action: "new" as const,
   },
   {
-    label: "Open",
-    tooltip: "Open project",
-    icon: <FolderOpen className="size-3.5" />,
+    label: "Import",
+    tooltip: "Import JSON",
+    icon: <FilePlus className="size-3.5" />,
     action: "import" as const,
   },
   {

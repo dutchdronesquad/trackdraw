@@ -30,6 +30,7 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
+  Save,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
@@ -40,11 +41,13 @@ interface HeaderProps {
   onTabChange: (t: "2d" | "3d") => void;
   onShare: () => void;
   onExport?: () => void;
+  onSaveSnapshot?: () => void;
   readOnly?: boolean;
   hideTabsOnMobile?: boolean;
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
   title?: string;
+  lastSavedLabel?: string;
   statusLabel?: string;
   selectionLabel?: string;
 }
@@ -100,6 +103,10 @@ const shortcutSections = [
       { label: "Zoom", keys: ["Mouse Wheel"] },
     ],
   },
+  {
+    title: "Project",
+    items: [{ label: "Save snapshot", keys: ["Ctrl/Cmd", "S"] }],
+  },
 ];
 
 export default function Header({
@@ -107,10 +114,12 @@ export default function Header({
   onTabChange,
   onShare,
   onExport,
+  onSaveSnapshot,
   readOnly = false,
   collapsed,
   onToggleCollapsed,
   title = "Untitled",
+  lastSavedLabel,
 }: HeaderProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
@@ -317,6 +326,26 @@ export default function Header({
                 </span>
               </TooltipContent>
             </Tooltip>
+            {onSaveSnapshot && (
+              <Tooltip>
+                <TooltipTrigger
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 cursor-pointer items-center justify-center rounded-md transition-colors lg:flex"
+                  onClick={onSaveSnapshot}
+                  aria-label="Save snapshot"
+                >
+                  <Save className="size-3.5" />
+                </TooltipTrigger>
+                <TooltipContent className="flex flex-col gap-0.5">
+                  <span>
+                    Save snapshot{" "}
+                    <span className="font-mono text-[10px] opacity-50">⌘S</span>
+                  </span>
+                  {lastSavedLabel && (
+                    <span className="opacity-60">{lastSavedLabel}</span>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Dialog>
               <Tooltip>
                 <TooltipTrigger
