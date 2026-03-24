@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Drawer,
   DrawerContent,
@@ -13,6 +14,7 @@ import { useEditor } from "@/store/editor";
 import { selectDesignShapeCount } from "@/store/selectors";
 import { buildShareUrl, encodeDesign, isShareSafe } from "@/lib/share";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { parseEditorView } from "@/lib/view";
 import {
   Copy,
   Check,
@@ -48,9 +50,11 @@ function ShareContent({
 }) {
   const design = useEditor((s) => s.design);
   const shapeCount = useEditor(selectDesignShapeCount);
+  const searchParams = useSearchParams();
   const [copied, setCopied] = useState(false);
+  const currentView = parseEditorView(searchParams.get("view")) ?? "2d";
 
-  const shareUrl = buildShareUrl(design);
+  const shareUrl = buildShareUrl(design, currentView);
   const currentToken = encodeDesign(design);
   const safe = isShareSafe(design);
   const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
@@ -169,7 +173,7 @@ function ShareContent({
                 {shareTitle}
               </p>
               <p className="text-muted-foreground mt-0.5 text-[11px]">
-                Shared from the current studio state
+                Shared from the current {currentView.toUpperCase()} studio view
               </p>
             </div>
             <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
@@ -230,7 +234,8 @@ function ShareContent({
               Shareable link
             </p>
             <p className="text-muted-foreground text-[11px]">
-              Contains the full track in the URL on {hostname}
+              Contains the full track and opens in {currentView.toUpperCase()}{" "}
+              on {hostname}
             </p>
           </div>
         </div>
@@ -264,7 +269,7 @@ function ShareContent({
         <p className="text-muted-foreground leading-relaxed">
           Shared links open as read-only review pages.{" "}
           {hasPath
-            ? "This track already includes a route for 3D review and fly-through."
+            ? `This link opens straight into ${currentView.toUpperCase()} review, and the route is ready for fly-through.`
             : "Add a path first if you want reviewers to use fly-through and elevation review."}
         </p>
       </div>

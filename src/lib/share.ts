@@ -1,6 +1,7 @@
 import LZString from "lz-string";
 import { normalizeDesign, serializeDesign } from "@/lib/design";
 import type { TrackDesign } from "./types";
+import type { EditorView } from "./view";
 
 const MAX_SAFE_TOKEN_LENGTH = 7500;
 
@@ -31,13 +32,19 @@ export function decodeDesign(token: string): TrackDesign | null {
   }
 }
 
-export function buildShareUrl(design: TrackDesign): string {
+export function buildShareUrl(design: TrackDesign, view?: EditorView): string {
   const token = encodeDesign(design);
-  const base =
-    typeof window !== "undefined"
-      ? `${window.location.protocol}//${window.location.host}`
-      : "";
-  return `${base}/share/${encodeURIComponent(token)}`;
+  const path = `/share/${encodeURIComponent(token)}`;
+  if (typeof window === "undefined") {
+    return view ? `${path}?view=${view}` : path;
+  }
+
+  const base = `${window.location.protocol}//${window.location.host}`;
+  const url = new URL(path, `${base}/`);
+  if (view) {
+    url.searchParams.set("view", view);
+  }
+  return url.toString();
 }
 
 export function isShareSafe(design: TrackDesign): boolean {
