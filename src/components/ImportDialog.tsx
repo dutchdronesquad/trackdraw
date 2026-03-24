@@ -17,6 +17,7 @@ interface ImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onBackupCurrent?: () => void;
+  onBeforeConfirm?: () => void;
 }
 
 type ParsedFile = { design: TrackDesign; shapeCount: number };
@@ -25,6 +26,7 @@ export default function ImportDialog({
   open,
   onOpenChange,
   onBackupCurrent,
+  onBeforeConfirm,
 }: ImportDialogProps) {
   const replaceDesign = useEditor((state) => state.replaceDesign);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,6 +85,7 @@ export default function ImportDialog({
 
   const handleConfirm = () => {
     if (!parsed) return;
+    onBeforeConfirm?.();
     replaceDesign(parsed.design);
     onOpenChange(false);
     reset();

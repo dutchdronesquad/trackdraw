@@ -34,6 +34,19 @@ import type {
   TrackPreview3DProps,
 } from "@/components/TrackPreview3D";
 import { createDefaultDesign, parseDesign } from "@/lib/design";
+import {
+  createRestorePoint,
+  deleteProject,
+  deleteRestorePoint,
+  listProjects,
+  listRestorePointsForProject,
+  loadProject,
+  loadRestorePoint,
+  renameProject,
+  saveProject,
+  type ProjectMeta,
+  type RestorePointMeta,
+} from "@/lib/projects";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
@@ -50,6 +63,7 @@ import {
 } from "@/store/selectors";
 import { Box, ChevronRight, Route, X } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
+import { toast } from "sonner";
 
 const HINT_STORAGE_KEYS = {
   gate: "trackdraw-hint-gate-dismissed",
@@ -272,7 +286,6 @@ export default function EditorShell({
   const design = useEditor((state) => state.design);
   const activeTool = useEditor((state) => state.transient.activeTool);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
-  const newProject = useEditor((state) => state.newProject);
   const nudgeShapes = useEditor((state) => state.nudgeShapes);
   const removeShapes = useEditor((state) => state.removeShapes);
   const replaceDesign = useEditor((state) => state.replaceDesign);
@@ -334,6 +347,12 @@ export default function EditorShell({
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [projectManagerOpen, setProjectManagerOpen] = useState(false);
+  const [projects, setProjects] = useState<ProjectMeta[]>([]);
+  const [restorePoints, setRestorePoints] = useState<RestorePointMeta[]>([]);
+  const [activeRestorePointId, setActiveRestorePointId] = useState<
+    string | null
+  >(null);
+  const [initialized, setInitialized] = useState(false);
   const [starterDismissed, setStarterDismissed] = useState(false);
   const [starterMode, setStarterMode] = useState<"guided" | "blank" | null>(
     null
@@ -388,6 +407,9 @@ export default function EditorShell({
         if (parsed) {
           replaceDesign(parsed);
           setSaveStatusLabel("Restored from local autosave");
+          setProjects(listProjects());
+          setRestorePoints(listRestorePointsForProject(parsed.id));
+          setInitialized(true);
           return;
         }
       }
@@ -395,6 +417,9 @@ export default function EditorShell({
     } catch {
       setSaveStatusLabel("Fresh local project");
     }
+    setProjects(listProjects());
+    setRestorePoints(listRestorePointsForProject(design.id));
+    setInitialized(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -435,6 +460,10 @@ export default function EditorShell({
       try {
         const startedAt = performance.now();
         localStorage.setItem("trackdraw-design", JSON.stringify(design));
+        if (designShapes.length > 0 || design.title.trim()) {
+          saveProject(design);
+          setProjects(listProjects());
+        }
         recordPerfSample(
           "autosave:localStorage",
           performance.now() - startedAt
@@ -451,7 +480,13 @@ export default function EditorShell({
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [design, historyPaused, interactionSessionDepth, readOnly]);
+  }, [
+    design,
+    designShapes.length,
+    historyPaused,
+    interactionSessionDepth,
+    readOnly,
+  ]);
 
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
@@ -492,6 +527,23 @@ export default function EditorShell({
     }
     prevHasPath.current = hasPath;
   }, [hasPath, readOnly]);
+
+  // Periodic restore points — every 5 min if the design changed
+  useEffect(() => {
+    if (readOnly) return;
+    let lastUpdatedAt = useEditor.getState().design.updatedAt;
+    const intervalId = window.setInterval(
+      () => {
+        const current = useEditor.getState().design;
+        if (current.updatedAt === lastUpdatedAt) return;
+        createRestorePoint(current);
+        setRestorePoints(listRestorePointsForProject(current.id));
+        lastUpdatedAt = current.updatedAt;
+      },
+      5 * 60 * 1000
+    );
+    return () => window.clearInterval(intervalId);
+  }, [readOnly]);
 
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
@@ -596,7 +648,96 @@ export default function EditorShell({
     }
   }, []);
 
+  const handleOpenProject = useCallback(
+    (id: string) => {
+      const loaded = loadProject(id);
+      if (!loaded) return;
+      // Save current work and snapshot before switching
+      if (designShapes.length > 0 || design.title.trim()) {
+        saveProject(design);
+        createRestorePoint(design);
+      }
+      replaceDesign(loaded);
+      setProjects(listProjects());
+      setRestorePoints(listRestorePointsForProject(loaded.id));
+      setActiveRestorePointId(null);
+      setSaveStatusLabel("Project opened");
+    },
+    [design, designShapes.length, replaceDesign]
+  );
+
+  const handleDeleteProject = useCallback((id: string) => {
+    deleteProject(id);
+    setProjects(listProjects());
+  }, []);
+
+  const handleRenameProject = useCallback(
+    (id: string, title: string) => {
+      renameProject(id, title);
+      setProjects(listProjects());
+      // If renaming the active project, also update the design title
+      if (id === design.id) {
+        useEditor.getState().updateDesignMeta({ title });
+      }
+    },
+    [design.id]
+  );
+
+  const handleRestorePoint = useCallback(
+    (id: string) => {
+      const loaded = loadRestorePoint(id);
+      if (!loaded) return;
+      replaceDesign(loaded);
+      setRestorePoints(listRestorePointsForProject(loaded.id));
+      setActiveRestorePointId(id);
+      setSaveStatusLabel("Restored from snapshot");
+    },
+    [replaceDesign]
+  );
+
+  const handleDeleteRestorePoint = useCallback(
+    (id: string) => {
+      deleteRestorePoint(id);
+      setRestorePoints(listRestorePointsForProject(design.id));
+    },
+    [design.id]
+  );
+
+  const handleSaveSnapshot = useCallback(() => {
+    createRestorePoint(design);
+    setRestorePoints(listRestorePointsForProject(design.id));
+    setActiveRestorePointId(null);
+    const time = new Intl.DateTimeFormat(undefined, {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date());
+    setSaveStatusLabel(`Snapshot saved at ${time}`);
+    toast.success("Snapshot saved", {
+      description: `Restore point created at ${time}`,
+    });
+  }, [design]);
+
+  // Cmd+S / Ctrl+S → manual snapshot
+  useEffect(() => {
+    if (readOnly) return;
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key !== "s") return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable
+      )
+        return;
+      e.preventDefault();
+      handleSaveSnapshot();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [readOnly, handleSaveSnapshot]);
+
   const shouldShowStarter =
+    initialized &&
     !readOnly &&
     !starterDismissed &&
     shouldShowStarterForDesign({
@@ -647,11 +788,13 @@ export default function EditorShell({
             onTabChange={setTab}
             onShare={() => setShareOpen(true)}
             onExport={() => setExportOpen(true)}
+            onSaveSnapshot={readOnly ? undefined : handleSaveSnapshot}
             readOnly={readOnly}
             hideTabsOnMobile
             collapsed={sidebarCollapsed}
             onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
             title={design.title || "Untitled track"}
+            lastSavedLabel={readOnly ? undefined : saveStatusLabel}
             statusLabel={readOnly ? "Read-only shared view" : saveStatusLabel}
             selectionLabel={
               selection.length > 0
@@ -1077,6 +1220,14 @@ export default function EditorShell({
       <ImportDialog
         open={importOpen}
         onOpenChange={setImportOpen}
+        onBeforeConfirm={() => {
+          if (designShapes.length > 0 || design.title.trim()) {
+            saveProject(design);
+            createRestorePoint(design);
+            setProjects(listProjects());
+            setRestorePoints(listRestorePointsForProject(design.id));
+          }
+        }}
         onBackupCurrent={() => {
           setImportOpen(false);
           setExportOpen(true);
@@ -1094,7 +1245,13 @@ export default function EditorShell({
         onOpenChange={setProjectManagerOpen}
         hasContent={Boolean(design.title.trim() || designShapes.length)}
         onNewProject={() => {
-          newProject();
+          if (designShapes.length > 0 || design.title.trim()) {
+            saveProject(design);
+            createRestorePoint(design);
+            setProjects(listProjects());
+            setRestorePoints(listRestorePointsForProject(design.id));
+          }
+          replaceDesign(createFirstUseBlankDesign());
           setProjectManagerOpen(false);
           setMobileToolsOpen(false);
           setStarterDismissed(false);
@@ -1103,6 +1260,15 @@ export default function EditorShell({
           setProjectManagerOpen(false);
           setExportOpen(true);
         }}
+        onOpenProject={handleOpenProject}
+        onDeleteProject={handleDeleteProject}
+        onRenameProject={handleRenameProject}
+        onRestorePoint={handleRestorePoint}
+        onDeleteRestorePoint={handleDeleteRestorePoint}
+        projects={projects}
+        restorePoints={restorePoints}
+        activeDesignId={design.id}
+        activeRestorePointId={activeRestorePointId ?? undefined}
       />
       {developerModeEnabled ? <PerformanceHud /> : null}
     </>

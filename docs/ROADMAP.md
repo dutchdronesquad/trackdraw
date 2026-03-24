@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw as of March 20, 2026. The product has moved beyond "basic editor prototype" territory. The core design loop is now credible across desktop, shared read-only viewing, practical mobile use, and race-day handoff. The next phase should focus less on generic polish and more on workflow acceleration, design confidence, handoff quality, and venue-side usefulness.
+This roadmap reflects the current state of TrackDraw as of March 23, 2026. The product has moved beyond "basic editor prototype" territory. The core design loop is now credible across desktop, shared read-only viewing, practical mobile use, and race-day handoff. The next phase should focus less on generic polish and more on workflow acceleration, design confidence, handoff quality, and venue-side usefulness.
 
 ## Current Assessment
 
@@ -86,6 +86,21 @@ Why it matters:
 - TrackDraw now supports both quick sharing and reliable project reuse
 - The next roadmap step should be better project structure, not basic file survival
 
+### Starter Flows And Project Reset First Pass
+
+The blank-canvas experience now has better early guidance and a clearer reset path than earlier roadmap versions assumed.
+
+Included:
+
+- A first-use starter surface inside Studio with guided and blank entry paths
+- Contextual starter guidance tied to initial layout work
+- A dedicated new-project confirmation flow across desktop and mobile
+
+Why it matters:
+
+- The roadmap can treat onboarding as an active product track with real groundwork already shipped
+- The next step is broader starter content and project structure, not basic "how do I begin" or "how do I safely reset" coverage
+
 ## Release Cleanup
 
 ### Share Route Deprecation Before v1
@@ -136,21 +151,15 @@ Why now:
 - More serious usage needs recovery, restore, and clearer project boundaries
 - This should exist before more advanced publish or share-state features
 
-Good first slice:
+Completed:
 
-- Local project list with title and last-updated state
-- Create, open, rename, duplicate, and delete project flows
-- Restore points or local recovery entries beyond one implicit autosave state
-- Clear separation between the current project and broader project history
-
-Strong extension after the first slice:
-
-- Save named snapshots inside one project
-- Duplicate the current layout into a variant
-- Switch between variants without opening separate files
-- Mark one variant as the active share/export target
-- Share a specific snapshot or variant through a stable read-only link
-- Keep a clear distinction between the current working state and intentionally shared states
+- Projects dialog accessible from the toolbar — desktop overlay and mobile drawer
+- Project list with title, shape count, and last-modified time; active project marked "current"
+- Create, open, rename, and delete projects; autosave keeps the list in sync
+- Restore points created automatically before any destructive action (new project, open, import)
+- Manual snapshots via Cmd+S or the save button in the desktop header; a toast confirms each save
+- Periodic snapshots every 5 minutes when the design has changed
+- Up to 10 restore points retained; oldest pruned automatically
 
 ### 3. Share And Publish Workflow
 
@@ -257,6 +266,10 @@ Add lightweight visual feedback for rhythm, density, and bottlenecks after valid
 ### 10. Adaptive Mobile UI
 
 Let portrait and landscape diverge where that clearly improves usability.
+
+Good first slice:
+
+- Convert the remaining desktop-style dialogs that still feel awkward on phones into bottom-drawer flows where that improves reach, focus handling, and small-screen usability
 
 ### 11. Codebase Architecture And Performance Refactor
 

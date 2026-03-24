@@ -1,6 +1,6 @@
 # Roadmap: Future Features for TrackDraw
 
-This issue tracks the current roadmap for TrackDraw as of March 20, 2026.
+This issue tracks the current roadmap for TrackDraw as of March 23, 2026.
 
 TrackDraw has moved well beyond the initial editor foundation. The near-term focus should now be faster layout creation, better project workflow and recovery, stronger sharing and handoff, lightweight path review, and more deliberate race-day outputs.
 
@@ -38,6 +38,9 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 - [x] Export and project portability
       Support now includes PNG, SVG, PDF, 3D render capture, and JSON project export/import.
 
+- [x] Project workflow and recovery
+      Local project list with open, rename, and delete flows. Restore points created automatically on destructive actions, on Cmd+S, and every 5 minutes when the design has changed. Projects dialog (desktop overlay + mobile drawer) for switching projects and restoring snapshots.
+
 ## Release Cleanup
 
 - [ ] Share route deprecation before v1
@@ -48,8 +51,14 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 - [ ] Layout acceleration
       Add reusable building blocks such as obstacle presets, starter layouts, selection grouping, and venue-aware field templates.
 
-- [ ] Project workflow and recovery
-      Add a stronger local-first project model with a project list, safer recovery paths, and restore points beyond one implicit autosave state.
+- [x] Project workflow and recovery
+      Added a local project list, restore points, manual snapshots (Cmd+S + save button), periodic auto-snapshots, and a Projects dialog for managing and restoring saved states.
+  - [x] Project list, restore points, and safer recovery first pass
+        Added a local project list, automatic save-before-replace on new project, open, and import, restore points with open/delete, and a project manager dialog in the welcome style with inline rename support.
+  - [x] Cmd+S shortcut for manual snapshots
+        Cmd+S (or Ctrl+S) creates a restore point snapshot of the current design. A save button in the desktop header provides the same action. Last-save time is shown subtly under the title in the header.
+  - [x] Periodic restore points
+        A restore point is automatically created every 5 minutes during an active editing session if the design has changed since the last periodic snapshot.
 
 - [ ] Share and publish workflow
       Move sharing toward intentional published states with clearer invalid-link handling, better separation from working state, and a cleaner long-term share model.
@@ -62,6 +71,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 - [ ] Studio onboarding and starter flows
       Reduce blank-canvas friction with a better first-use path, contextual hints, and a few lightweight starter options.
+  - [x] First-use starter flow and project reset first pass
+        Added first-use starter guidance, a clearer blank-canvas entry path, and a dedicated new-project confirmation flow that works across desktop and mobile.
 
 ## Priority 2
 
@@ -76,6 +87,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 - [ ] Adaptive mobile UI
       Let portrait and landscape diverge where that clearly improves editing and navigation.
+  - [ ] Mobile dialog-to-drawer conversion pass
+        Convert the remaining desktop-style dialogs that still feel awkward on phones into bottom-drawer flows where that improves reach, focus handling, and small-screen usability.
 - [ ] Codebase architecture and performance refactor
       Continue improving maintainability, state-flow clarity, and runtime efficiency as the editor grows, without turning the effort into a rewrite.
   - [x] Lightweight performance instrumentation
