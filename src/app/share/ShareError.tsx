@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, RefreshCcw, Unlink } from "lucide-react";
+import { ArrowRight, FileJson, Unlink } from "lucide-react";
 
 function TrackDrawLogo() {
   return (
@@ -29,7 +29,7 @@ function TrackDrawLogo() {
   );
 }
 
-export default function ShareNotFound() {
+export default function ShareError() {
   return (
     <main className="bg-background text-foreground relative min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-0">
@@ -50,19 +50,18 @@ export default function ShareNotFound() {
           <div className="space-y-8">
             <div className="max-w-3xl space-y-4">
               <h1 className="text-4xl font-semibold tracking-[-0.04em] text-balance sm:text-6xl">
-                This shared track could not be opened
+                This track is too large to open as a link
               </h1>
               <p className="text-muted-foreground max-w-2xl text-sm leading-7 sm:text-base">
-                The share link may be outdated, incomplete, or miscopied. Ask
-                the sender for a fresh link and try again. If the track is very
-                large, a JSON export is a more reliable alternative to a share
-                link.
+                URL-based sharing has size limits enforced by browsers,
+                messaging apps, and email clients. This design exceeds those
+                limits and the link was likely truncated before it reached you.
               </p>
             </div>
 
             <div className="max-w-4xl">
               <p className="text-muted-foreground/70 mb-3 text-[11px] font-semibold tracking-[0.16em] uppercase">
-                What To Try
+                What To Do
               </p>
               <ol className="text-muted-foreground text-sm leading-relaxed">
                 <li className="flex gap-3 py-2">
@@ -70,7 +69,11 @@ export default function ShareNotFound() {
                     1.
                   </span>
                   <span>
-                    Ask the sender to copy the latest share link again.
+                    Ask the sender to export the track as a{" "}
+                    <strong className="text-foreground/80 font-semibold">
+                      JSON file
+                    </strong>{" "}
+                    using Studio&apos;s Export function.
                   </span>
                 </li>
                 <li className="flex gap-3 py-2">
@@ -78,7 +81,11 @@ export default function ShareNotFound() {
                     2.
                   </span>
                   <span>
-                    Open the link directly from the message where it was sent.
+                    Open Studio, use{" "}
+                    <strong className="text-foreground/80 font-semibold">
+                      Import
+                    </strong>{" "}
+                    to load the JSON file, and review or edit the layout there.
                   </span>
                 </li>
                 <li className="flex gap-3 py-2">
@@ -86,8 +93,8 @@ export default function ShareNotFound() {
                     3.
                   </span>
                   <span>
-                    Ask for a JSON export if the track is very large — JSON
-                    files are not subject to URL size limits.
+                    JSON files are not URL-limited and open reliably regardless
+                    of layout size.
                   </span>
                 </li>
               </ol>
@@ -98,14 +105,14 @@ export default function ShareNotFound() {
                 href="/studio"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-medium transition-colors"
               >
-                <ArrowRight className="size-4" />
-                Open Studio
+                <FileJson className="size-4" />
+                Open Studio to Import
               </Link>
               <Link
                 href="/"
                 className="border-border/50 bg-muted/18 text-foreground hover:bg-muted/28 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border px-5 text-sm font-medium transition-colors"
               >
-                <RefreshCcw className="size-4" />
+                <ArrowRight className="size-4" />
                 Back to Home
               </Link>
             </div>

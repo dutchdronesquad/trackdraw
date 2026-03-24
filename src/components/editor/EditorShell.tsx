@@ -346,7 +346,7 @@ export default function EditorShell({
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [mobileViewOpen, setMobileViewOpen] = useState(false);
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
-  const [mobileRulersEnabled, setMobileRulersEnabled] = useState(readOnly);
+  const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
   const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(!readOnly);
   const [mobileMultiSelectEnabled, setMobileMultiSelectEnabled] =
     useState(false);
@@ -384,6 +384,11 @@ export default function EditorShell({
   const [showPostPathNudge, setShowPostPathNudge] = useState(false);
   const prevHasPath = useRef(false);
   const mobileProjectManagerOpenTimerRef = useRef<number | null>(null);
+
+  // Sync tab when initialTab prop changes (e.g. ShareViewer navigates ?view=3d via Link)
+  useEffect(() => {
+    setTab(initialTab);
+  }, [initialTab]);
 
   const handleTabChange = useCallback(
     (nextTab: EditorView) => {
@@ -884,6 +889,7 @@ export default function EditorShell({
                     ref={preview3DRef}
                     showGizmo={mobileGizmoEnabled}
                     onFlyModeChange={setMobileFlyModeActive}
+                    readOnly={readOnly}
                   />
                 </div>
                 {shouldShowStarter && isMobile ? (
@@ -1135,6 +1141,7 @@ export default function EditorShell({
           mobilePrecisionStepLabel={mobilePrecisionStepLabel}
           readOnly={readOnly}
           readOnlyMenuOpen={readOnlyMenuOpen}
+          studioHref={studioHref}
           singleSelectedShapeLabel={singleSelectedShapeLabel}
           singleSelectionCanNudge={Boolean(
             singleSelectedShape && !selectionLocked

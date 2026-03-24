@@ -51,6 +51,25 @@ export function isShareSafe(design: TrackDesign): boolean {
   return encodeDesign(design).length <= MAX_SAFE_TOKEN_LENGTH;
 }
 
+export type ShareDecodeError = "too-large" | "invalid";
+
+/**
+ * Like decodeDesign, but distinguishes between a token that is too long for
+ * browsers/apps to pass intact ("too-large") and one that is simply corrupt or
+ * miscopied ("invalid"). The heuristic is: if the token itself exceeds
+ * MAX_SAFE_TOKEN_LENGTH the decode failure is most likely due to truncation.
+ */
+export function decodeDesignWithReason(
+  token: string
+): { ok: true; design: TrackDesign } | { ok: false; reason: ShareDecodeError } {
+  const normalized = normalizeShareToken(token);
+  const design = decodeDesign(token);
+  if (design) return { ok: true, design };
+  const reason: ShareDecodeError =
+    normalized.length > MAX_SAFE_TOKEN_LENGTH ? "too-large" : "invalid";
+  return { ok: false, reason };
+}
+
 export function getShareTitle(design: TrackDesign) {
   return design.title.trim() || "Untitled track";
 }

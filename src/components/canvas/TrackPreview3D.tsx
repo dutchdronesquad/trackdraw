@@ -39,6 +39,7 @@ export interface TrackPreview3DHandle {
 export interface TrackPreview3DProps {
   showGizmo?: boolean;
   onFlyModeChange?: (active: boolean) => void;
+  readOnly?: boolean;
 }
 
 type QuaternionState = [number, number, number, number];
@@ -1333,7 +1334,11 @@ function FieldWatermark({
 // ── Main ─────────────────────────────────────────────────────
 const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
   function TrackPreview3D(
-    { showGizmo = true, onFlyModeChange }: TrackPreview3DProps,
+    {
+      showGizmo = true,
+      onFlyModeChange,
+      readOnly = false,
+    }: TrackPreview3DProps,
     ref
   ) {
     usePerfMetric("render:TrackPreview3D");
@@ -1927,8 +1932,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           </div>
         )}
 
-        {/* No path hint */}
-        {!hasPath && (
+        {/* No path hint — only shown in the editor, not in read-only shared views */}
+        {!hasPath && !readOnly && (
           <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-sky-200/16 bg-slate-950/72 px-3.5 py-1.5 text-[11px] font-medium text-sky-50/88 shadow-[0_12px_32px_rgba(15,23,42,0.28)] backdrop-blur-md select-none">
             <span className="flex size-5 items-center justify-center rounded-full bg-sky-300/12 text-sky-200/85">
               <Route className="size-3" />

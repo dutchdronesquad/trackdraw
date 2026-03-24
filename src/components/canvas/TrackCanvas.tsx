@@ -1199,34 +1199,30 @@ const TrackCanvas = memo(
             menu · <span className="text-foreground/60 font-medium">Alt</span>{" "}
             free
           </div>
-          {!readOnly && (
-            <div
-              className="absolute right-2 z-20"
-              style={{
-                top: RULER_SIZE + 34,
-                display: showDesktopCanvasChrome ? "block" : "none",
-              }}
-            >
-              <Tooltip>
-                <TooltipTrigger
-                  onClick={() => {
-                    setManualView(false);
-                    fitFieldToViewport();
-                  }}
-                  className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
-                  aria-label="Fit to window"
-                >
-                  <Scan className="size-3.5" />
-                </TooltipTrigger>
-                <TooltipContent side="left">
-                  Fit to window{" "}
-                  <span className="ml-1 font-mono text-[10px] opacity-50">
-                    0
-                  </span>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          )}
+          <div
+            className="absolute right-2 z-20"
+            style={{
+              top: RULER_SIZE + 34,
+              display: showDesktopCanvasChrome ? "block" : "none",
+            }}
+          >
+            <Tooltip>
+              <TooltipTrigger
+                onClick={() => {
+                  setManualView(false);
+                  fitFieldToViewport();
+                }}
+                className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
+                aria-label="Fit to window"
+              >
+                <Scan className="size-3.5" />
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                Fit to window{" "}
+                <span className="ml-1 font-mono text-[10px] opacity-50">0</span>
+              </TooltipContent>
+            </Tooltip>
+          </div>
           <Stage
             width={viewportSize.width}
             height={viewportSize.height}

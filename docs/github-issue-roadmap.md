@@ -1,6 +1,6 @@
 # Roadmap: Future Features for TrackDraw
 
-This issue tracks the current roadmap for TrackDraw as of March 24, 2026.
+This issue tracks the current roadmap for TrackDraw as of March 25, 2026.
 
 TrackDraw has moved well beyond the initial editor foundation. The near-term focus should now be faster layout creation, better project workflow and recovery, stronger sharing and handoff, lightweight path review, and more deliberate race-day outputs.
 
@@ -38,9 +38,6 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 - [x] Export and project portability
       Support now includes PNG, SVG, PDF, 3D render capture, and JSON project export/import.
 
-- [x] Project workflow and recovery
-      Local project list with open, rename, and delete flows. Restore points created automatically on destructive actions, on Cmd+S, and every 5 minutes when the design has changed. Projects dialog (desktop overlay + mobile drawer) for switching projects and restoring snapshots.
-
 ## Release Cleanup
 
 - [x] Share route deprecation before v1
@@ -62,9 +59,15 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 - [ ] Share and publish workflow
       Move sharing toward intentional published states with clearer invalid-link handling, better separation from working state, and a cleaner long-term share model.
+  - [x] Distinct error pages for invalid vs oversized share links
+        Oversized tokens now show a dedicated error page with JSON export guidance instead of a generic 404. Invalid or corrupt tokens still return 404 with a focused not-found page.
+  - [x] Read-only view UX polish
+        Improved overlay copy and title. View switching via the overlay now deep-links correctly without re-encoding the token. Fit-to-window is available in the read-only desktop view. The "draw a route in 2D" hint is suppressed in read-only mode. The mobile view drawer now matches the studio drawer style with active tab indicators, fly-through access, and a working Open Studio link.
 
 - [ ] Path and flow review
       Add lightweight warnings and route-review cues on top of the current path, elevation, and 3D tooling.
+  - [ ] 3D obstacle orientation controls
+        Explore whether gates should get rotate controls and the dive gate should get tilt controls directly in the 3D view so spatial setup can be reviewed and adjusted more naturally.
 
 - [ ] Race-day communication and briefing
       Turn existing export, read-only, and fly-through capabilities into better pilot briefing, marshal pack, and numbered handoff workflows.
@@ -73,6 +76,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
       Reduce blank-canvas friction with a better first-use path, contextual hints, and a few lightweight starter options.
   - [x] First-use starter flow and project reset first pass
         Added first-use starter guidance, a clearer blank-canvas entry path, and a dedicated new-project confirmation flow that works across desktop and mobile.
+  - [ ] Starter layouts and field presets
+        Add one or two lightweight starter layouts or venue-aware field presets so onboarding includes a faster first useful canvas.
 
 ## Priority 2
 
@@ -89,6 +94,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
       Let portrait and landscape diverge where that clearly improves editing and navigation.
   - [ ] Mobile dialog-to-drawer conversion pass
         Convert the remaining desktop-style dialogs that still feel awkward on phones into bottom-drawer flows where that improves reach, focus handling, and small-screen usability.
+        Targets:
+        `ExportDialog`, `ImportDialog`, and the studio keyboard-shortcuts dialog should move to the newer modal style on desktop and bottom-drawer presentation on mobile.
 - [ ] Codebase architecture and performance refactor
       Continue improving maintainability, state-flow clarity, and runtime efficiency as the editor grows, without turning the effort into a rewrite.
   - [x] Lightweight performance instrumentation
@@ -97,8 +104,10 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
         Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
   - [ ] Complete targeted maintainability and state-flow refactor pass
         Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
-  - [x] Rework file structure and split oversized files
+  - [x] Initial file structure and oversized-file split pass
         Moved 16 root-level components into canvas/, editor/, inspector/, and a new dialogs/ folder. Split canvas/renderers.tsx and inspector/views.tsx into per-responsibility modules. Root components reduced from 19 files to 3.
+  - [ ] Remaining file structure and large-file decomposition pass
+        Continue tightening folder ownership and splitting broad components and modules where internal navigation and safe iteration are still harder than they should be.
 
 ## Priority 3
 
