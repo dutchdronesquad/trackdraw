@@ -6,14 +6,10 @@ const MAX_SAFE_TOKEN_LENGTH = 7500;
 
 function normalizeShareToken(token: string): string {
   const trimmedToken = token.trim();
-
-  // Legacy query-param share links may arrive with "+" normalized to spaces.
-  const plusNormalizedToken = trimmedToken.replace(/ /g, "+");
-
   try {
-    return decodeURIComponent(plusNormalizedToken);
+    return decodeURIComponent(trimmedToken);
   } catch {
-    return plusNormalizedToken;
+    return trimmedToken;
   }
 }
 

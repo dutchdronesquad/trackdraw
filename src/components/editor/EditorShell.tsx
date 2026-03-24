@@ -36,6 +36,7 @@ import type {
   TrackPreview3DProps,
 } from "@/components/canvas/TrackPreview3D";
 import { createDefaultDesign, parseDesign } from "@/lib/design";
+import { decodeDesign } from "@/lib/share";
 import {
   createRestorePoint,
   deleteProject,
@@ -277,8 +278,10 @@ const TrackPreview3D = dynamic<TrackPreview3DProps>(
 
 export default function EditorShell({
   readOnly = false,
+  seedToken,
 }: {
   readOnly?: boolean;
+  seedToken?: string;
 }) {
   usePerfMetric("render:EditorShell");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
@@ -402,6 +405,23 @@ export default function EditorShell({
   // Load persisted design on mount
   useEffect(() => {
     if (readOnly) return;
+
+    // Load from share token if provided (takes priority over autosave)
+    if (seedToken) {
+      const shared = decodeDesign(seedToken);
+      if (shared) {
+        replaceDesign(shared);
+        setSaveStatusLabel("Loaded from shared link");
+        setProjects(listProjects());
+        setRestorePoints(listRestorePointsForProject(shared.id));
+        setInitialized(true);
+        return;
+      }
+      console.warn(
+        "[EditorShell] seedToken decode failed — falling back to autosave"
+      );
+    }
+
     try {
       const saved = localStorage.getItem("trackdraw-design");
       if (saved) {

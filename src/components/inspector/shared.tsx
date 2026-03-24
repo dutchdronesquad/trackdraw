@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useEditor } from "@/store/editor";
 
@@ -81,16 +82,30 @@ export function Row({
 export function Section({
   title,
   children,
+  className,
 }: {
   title: string;
   children: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="border-border/20 border-t pt-3 first:border-t-0 first:pt-0">
-      <p className="text-muted-foreground/75 mb-2 text-[11px] font-medium tracking-[0.12em] uppercase">
+    <div
+      className={cn(
+        "border-border/20 border-t pt-3 first:border-t-0 first:pt-0",
+        className
+      )}
+    >
+      <p className="text-muted-foreground/75 mb-2 shrink-0 text-[11px] font-medium tracking-[0.12em] uppercase">
         {title}
       </p>
-      <div className="space-y-1 lg:space-y-0.5">{children}</div>
+      <div
+        className={cn(
+          "space-y-1 lg:space-y-0.5",
+          className && "flex min-h-0 flex-1 flex-col"
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 }

@@ -532,33 +532,6 @@ export function EditorMobilePanels({
             animate={{ opacity: 1, y: 0 }}
             className="pointer-events-auto flex w-full max-w-sm items-center gap-1 rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-1.5 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur"
           >
-            <Link
-              href="/studio"
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <ArrowRight className="size-3.5" />
-              <span>Studio</span>
-            </Link>
-            <div className="min-w-0 flex-[1.1]">
-              <div className="mx-auto flex max-w-32 flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
-                <p className="text-[8px] font-medium tracking-[0.08em] text-white/52 uppercase">
-                  Mode
-                </p>
-                <p className="max-w-full truncate text-[10px] leading-tight font-semibold text-white">
-                  {tab === "2d" ? "Canvas review" : "3D review"}
-                </p>
-                <p className="max-w-full truncate text-[9px] text-white/60">
-                  Read-only track
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onShare}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <Share2 className="size-3.5" />
-              <span>Share</span>
-            </button>
             <button
               onClick={openReadOnlyDrawer}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
@@ -566,6 +539,20 @@ export function EditorMobilePanels({
               <Scan className="size-3.5" />
               <span>View</span>
             </button>
+            <button
+              onClick={onShare}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <Share2 className="size-3.5" />
+              <span>Share</span>
+            </button>
+            <Link
+              href="/studio"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <ArrowRight className="size-3.5" />
+              <span>Edit</span>
+            </Link>
           </motion.div>
         </div>
       )}
