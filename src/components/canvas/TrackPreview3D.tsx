@@ -267,7 +267,7 @@ function WheelBridge({
 
   return null;
 }
-import { Play, Pause, Wind } from "lucide-react";
+import { Move3D, Play, Pause, Route, Wind } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
@@ -1824,7 +1824,13 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
         {/* Fly-through controls overlay */}
         {hasPath && (!isMobile || flyMode) && (
-          <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-white/10 bg-black/65 px-2.5 py-1.5 text-sm shadow-lg backdrop-blur select-none">
+          <div
+            className={`absolute z-30 flex items-center gap-2 shadow-lg backdrop-blur select-none ${
+              flyMode
+                ? "bottom-10 left-1/2 -translate-x-1/2 rounded-xl border border-white/10 bg-black/65 px-2.5 py-1.5 text-sm"
+                : "bottom-10 left-1/2 -translate-x-1/2 rounded-2xl border border-sky-300/18 bg-slate-950/78 px-3 py-2 text-sm shadow-[0_14px_42px_rgba(15,23,42,0.34)]"
+            }`}
+          >
             {flyMode ? (
               <>
                 <button
@@ -1910,16 +1916,24 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         )}
 
         {!flyMode && !isMobile && !selectedPolyline && (
-          <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/42 px-3.5 py-1.5 text-[11px] text-white/68 shadow-[0_10px_28px_rgba(15,23,42,0.22)] backdrop-blur-md">
-            Orbit to inspect spacing and elevation. Scroll to zoom, middle-drag
-            to pan.
+          <div className="pointer-events-none absolute top-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-sky-200/16 bg-slate-950/72 px-3.5 py-1.5 text-[11px] font-medium text-sky-50/88 shadow-[0_12px_32px_rgba(15,23,42,0.28)] backdrop-blur-md select-none">
+            <span className="flex size-5 items-center justify-center rounded-full bg-sky-300/12 text-sky-200/85">
+              <Move3D className="size-3" />
+            </span>
+            <span>
+              Orbit to inspect spacing and elevation. Scroll to zoom,
+              middle-drag to pan.
+            </span>
           </div>
         )}
 
         {/* No path hint */}
         {!hasPath && (
-          <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-white/8 bg-black/24 px-3 py-1 text-[10px] text-white/36 shadow-[0_8px_20px_rgba(15,23,42,0.18)] backdrop-blur-sm select-none">
-            Draw the route in 2D to enable fly-through
+          <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-sky-200/16 bg-slate-950/72 px-3.5 py-1.5 text-[11px] font-medium text-sky-50/88 shadow-[0_12px_32px_rgba(15,23,42,0.28)] backdrop-blur-md select-none">
+            <span className="flex size-5 items-center justify-center rounded-full bg-sky-300/12 text-sky-200/85">
+              <Route className="size-3" />
+            </span>
+            <span>Draw the route in 2D to enable fly-through</span>
           </div>
         )}
       </div>

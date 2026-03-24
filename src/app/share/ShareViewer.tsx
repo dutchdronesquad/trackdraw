@@ -6,9 +6,16 @@ import { useEditor } from "@/store/editor";
 import { decodeDesign } from "@/lib/share";
 import EditorShell from "@/components/editor/EditorShell";
 import { ContextOverlayCard } from "@/components/editor/ContextOverlayCard";
+import type { EditorView } from "@/lib/view";
 import { ArrowRight, Eye } from "lucide-react";
 
-export default function ShareViewer({ token }: { token: string }) {
+export default function ShareViewer({
+  token,
+  initialTab = "2d",
+}: {
+  token: string;
+  initialTab?: EditorView;
+}) {
   const replaceDesign = useEditor((s) => s.replaceDesign);
   const [introDismissed, setIntroDismissed] = useState(false);
 
@@ -29,7 +36,7 @@ export default function ShareViewer({ token }: { token: string }) {
 
   return (
     <div className="relative h-dvh">
-      <EditorShell readOnly={true} />
+      <EditorShell readOnly={true} initialTab={initialTab} />
       {!introDismissed && (
         <div className="pointer-events-none absolute inset-x-0 top-14 z-30 flex justify-center px-3">
           <ContextOverlayCard
@@ -41,7 +48,7 @@ export default function ShareViewer({ token }: { token: string }) {
             variant="subtle"
             action={
               <Link
-                href={`/studio?token=${encodeURIComponent(token)}`}
+                href={`/studio?token=${encodeURIComponent(token)}&view=${initialTab}`}
                 className="border-border bg-background hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors"
               >
                 Edit in Studio
