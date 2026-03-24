@@ -36,6 +36,8 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
 import { useState } from "react";
 
+const INSPECTOR_WIDTH = "21.25rem";
+
 interface HeaderProps {
   tab: "2d" | "3d";
   onTabChange: (t: "2d" | "3d") => void;
@@ -47,6 +49,7 @@ interface HeaderProps {
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
   title?: string;
+  studioHref?: string;
   lastSavedLabel?: string;
   statusLabel?: string;
   selectionLabel?: string;
@@ -119,12 +122,12 @@ export default function Header({
   collapsed,
   onToggleCollapsed,
   title = "Untitled",
+  studioHref = "/studio",
   lastSavedLabel,
 }: HeaderProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
   const [openShortcutSection, setOpenShortcutSection] = useState("Tools");
-  const canvasCenterOffset = "10.625rem";
 
   const viewToggle = (
     <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
@@ -239,11 +242,8 @@ export default function Header({
 
       {!readOnly && (
         <div
-          className="pointer-events-none absolute top-0 z-10 hidden h-11 items-center justify-center lg:flex"
-          style={{
-            left: `calc(50% - ${canvasCenterOffset})`,
-            transform: "translateX(-50%)",
-          }}
+          className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden items-center justify-center lg:flex"
+          style={{ right: INSPECTOR_WIDTH }}
         >
           <div className="flex max-w-md items-center gap-2 px-6">
             <span className="text-foreground/70 truncate text-center text-sm">
@@ -271,7 +271,7 @@ export default function Header({
             </span>
             <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
             <Link
-              href="/studio"
+              href={studioHref}
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
                 "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"

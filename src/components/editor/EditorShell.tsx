@@ -282,10 +282,12 @@ export default function EditorShell({
   readOnly = false,
   seedToken,
   initialTab = "2d",
+  studioHref,
 }: {
   readOnly?: boolean;
   seedToken?: string;
   initialTab?: EditorView;
+  studioHref?: string;
 }) {
   usePerfMetric("render:EditorShell");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
@@ -838,6 +840,7 @@ export default function EditorShell({
             collapsed={sidebarCollapsed}
             onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
             title={design.title || "Untitled track"}
+            studioHref={studioHref}
             lastSavedLabel={readOnly ? undefined : saveStatusLabel}
             statusLabel={readOnly ? "Read-only shared view" : saveStatusLabel}
             selectionLabel={
