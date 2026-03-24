@@ -124,7 +124,7 @@ export default function Header({
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
   const [openShortcutSection, setOpenShortcutSection] = useState("Tools");
-  const sidebarOffset = collapsed ? "1.75rem" : "5.75rem";
+  const canvasCenterOffset = "10.625rem";
 
   const viewToggle = (
     <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
@@ -241,7 +241,7 @@ export default function Header({
         <div
           className="pointer-events-none absolute top-0 z-10 hidden h-11 items-center justify-center lg:flex"
           style={{
-            left: `calc(50% - ${sidebarOffset})`,
+            left: `calc(50% - ${canvasCenterOffset})`,
             transform: "translateX(-50%)",
           }}
         >

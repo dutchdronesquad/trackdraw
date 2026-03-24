@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useRef,
@@ -56,6 +57,7 @@ import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { recordPerfSample } from "@/lib/perf";
+import type { EditorView } from "@/lib/view";
 import { useEditor } from "@/store/editor";
 import {
   selectDesignShapes,
@@ -279,9 +281,11 @@ const TrackPreview3D = dynamic<TrackPreview3DProps>(
 export default function EditorShell({
   readOnly = false,
   seedToken,
+  initialTab = "2d",
 }: {
   readOnly?: boolean;
   seedToken?: string;
+  initialTab?: EditorView;
 }) {
   usePerfMetric("render:EditorShell");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
@@ -323,12 +327,15 @@ export default function EditorShell({
     !singleSelectedShape.locked
   );
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [tab, setTab] = useState<"2d" | "3d">("2d");
+  const [tab, setTab] = useState<"2d" | "3d">(initialTab);
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
     null
   );
@@ -375,6 +382,18 @@ export default function EditorShell({
   const [showPostPathNudge, setShowPostPathNudge] = useState(false);
   const prevHasPath = useRef(false);
   const mobileProjectManagerOpenTimerRef = useRef<number | null>(null);
+
+  const handleTabChange = useCallback(
+    (nextTab: EditorView) => {
+      setTab(nextTab);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("view", nextTab);
+      const nextQuery = params.toString();
+      const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+      router.replace(nextUrl, { scroll: false });
+    },
+    [pathname, router, searchParams]
+  );
 
   const openProjectManager = useCallback(() => {
     if (!isMobile) {
@@ -600,10 +619,13 @@ export default function EditorShell({
     [selection, setActiveTool, setSelection]
   );
 
-  const handleResumeSelectedPath = useCallback((shapeId: string) => {
-    setTab("2d");
-    canvasRef.current?.resumePolylineEditing(shapeId);
-  }, []);
+  const handleResumeSelectedPath = useCallback(
+    (shapeId: string) => {
+      handleTabChange("2d");
+      canvasRef.current?.resumePolylineEditing(shapeId);
+    },
+    [handleTabChange]
+  );
 
   const dismissDesktopPathHint = useCallback(() => {
     setDesktopPathHintDismissed(true);
@@ -771,7 +793,7 @@ export default function EditorShell({
     (kind: "blank" | "gate") => {
       replaceDesign(createFirstUseBlankDesign());
       setStarterDismissed(true);
-      setTab("2d");
+      handleTabChange("2d");
 
       if (kind === "gate") {
         setStarterMode("guided");
@@ -786,7 +808,7 @@ export default function EditorShell({
         canvasRef.current?.fitToWindow();
       });
     },
-    [replaceDesign, resetGuidedHints, setActiveTool]
+    [handleTabChange, replaceDesign, resetGuidedHints, setActiveTool]
   );
 
   return (
@@ -807,7 +829,7 @@ export default function EditorShell({
           {/* Header */}
           <Header
             tab={tab}
-            onTabChange={setTab}
+            onTabChange={handleTabChange}
             onShare={() => setShareOpen(true)}
             onExport={() => setExportOpen(true)}
             onSaveSnapshot={readOnly ? undefined : handleSaveSnapshot}
@@ -830,8 +852,8 @@ export default function EditorShell({
           {/* ── Body ─────────────────────────────────────────── */}
           <div className="relative flex min-h-0 flex-1 overflow-hidden">
             {/* Canvas area */}
-            <div className="relative min-h-0 flex-1">
-              <div className="bg-canvas relative h-full overflow-hidden">
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="bg-canvas relative min-h-0 flex-1 overflow-hidden">
                 {/* 2D: always mounted so export always works; hidden visually when not active */}
                 <div
                   className="absolute inset-0"
@@ -1006,7 +1028,7 @@ export default function EditorShell({
                             size="sm"
                             variant="outline"
                             onClick={() => {
-                              setTab("2d");
+                              handleTabChange("2d");
                               setActiveTool("polyline");
                             }}
                           >
@@ -1064,7 +1086,7 @@ export default function EditorShell({
                           <Button
                             size="sm"
                             onClick={() => {
-                              setTab("3d");
+                              handleTabChange("3d");
                               dismissPostPathNudge();
                             }}
                           >
@@ -1077,10 +1099,8 @@ export default function EditorShell({
                     </div>
                   </div>
                 ) : null}
-                <div className="absolute right-0 bottom-0 left-0 z-20">
-                  <StatusBar cursorPos={cursorPos} snapActive={snapActive} />
-                </div>
               </div>
+              <StatusBar cursorPos={cursorPos} snapActive={snapActive} />
             </div>
 
             {/* Desktop Inspector */}
@@ -1202,7 +1222,7 @@ export default function EditorShell({
             setReadOnlyMenuOpen(false);
           }}
           onStartFlyThrough={() => {
-            setTab("3d");
+            handleTabChange("3d");
             setMobileViewOpen(false);
             setPendingFlyThroughStart(true);
           }}
@@ -1216,7 +1236,7 @@ export default function EditorShell({
             setMobileToolsOpen(false);
           }}
           onTabChange={(nextTab) => {
-            setTab(nextTab);
+            handleTabChange(nextTab);
             if (nextTab !== "2d") {
               setMobilePathBuilderPinnedOpen(false);
             }
@@ -1260,7 +1280,7 @@ export default function EditorShell({
         onOpenChange={setExportOpen}
         canvasRef={canvasRef}
         preview3DRef={preview3DRef}
-        onRequest3DView={() => setTab("3d")}
+        onRequest3DView={() => handleTabChange("3d")}
       />
       <ProjectManagerDialog
         open={projectManagerOpen}
