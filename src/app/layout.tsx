@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeBootstrap from "@/components/ThemeBootstrap";
@@ -16,6 +17,14 @@ import {
   SITE_TITLE,
   getSiteUrl,
 } from "@/lib/seo";
+import {
+  parseResolvedTheme,
+  parseThemePreference,
+  RESOLVED_THEME_COOKIE,
+  resolveTheme,
+  THEME_COOKIE,
+  type ResolvedTheme,
+} from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -73,15 +82,40 @@ export const viewport: Viewport = {
   themeColor: "#0c0c0f",
 };
 
-export default function RootLayout({
+function getInitialTheme(
+  preferenceCookie: string | undefined,
+  resolvedCookie: string | undefined
+): ResolvedTheme {
+  const preference = parseThemePreference(preferenceCookie);
+  const resolved = parseResolvedTheme(resolvedCookie);
+
+  if (preference === "light" || preference === "dark") {
+    return preference;
+  }
+
+  if (resolved) {
+    return resolved;
+  }
+
+  return resolveTheme("system", false);
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const initialTheme = getInitialTheme(
+    cookieStore.get(THEME_COOKIE)?.value,
+    cookieStore.get(RESOLVED_THEME_COOKIE)?.value
+  );
+
   return (
     <html
       lang="en"
-      className="dark"
+      className={initialTheme === "dark" ? "dark" : undefined}
+      style={{ colorScheme: initialTheme }}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
