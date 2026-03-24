@@ -206,10 +206,14 @@ function WheelBridge({
       passive: false,
       capture: true,
     });
-    element.addEventListener("gesturestart", handleGestureStart as EventListener, {
-      passive: false,
-      capture: true,
-    });
+    element.addEventListener(
+      "gesturestart",
+      handleGestureStart as EventListener,
+      {
+        passive: false,
+        capture: true,
+      }
+    );
     element.addEventListener(
       "gesturechange",
       handleGestureChange as EventListener,
@@ -1376,6 +1380,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const pendingClientYRef = useRef<number | null>(null);
     const selectionRef = useRef(selection);
     const selectedIdSet = useMemo(() => new Set(selection), [selection]);
+    const showMiddleMousePanningCursor =
+      isMiddleMousePanning && !isMobile && !flyMode && !elevationDrag;
 
     useEffect(() => {
       selectionRef.current = selection;
@@ -1388,12 +1394,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     useEffect(() => {
       onFlyModeChange?.(flyMode);
     }, [flyMode, onFlyModeChange]);
-
-    useEffect(() => {
-      if (isMobile || flyMode || elevationDrag) {
-        setIsMiddleMousePanning(false);
-      }
-    }, [elevationDrag, flyMode, isMobile]);
 
     useEffect(() => {
       const stopMiddleMousePanning = () => {
@@ -1569,10 +1569,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           overscrollBehaviorX: "none",
           overscrollBehaviorY: "none",
           touchAction: "none",
-          cursor:
-            !isMobile && !flyMode && !elevationDrag && isMiddleMousePanning
-              ? "grabbing"
-              : undefined,
+          cursor: showMiddleMousePanningCursor ? "grabbing" : undefined,
         }}
         onMouseDownCapture={(event) => {
           if (event.button === 1) {
