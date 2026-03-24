@@ -123,7 +123,11 @@ export function useTrackCanvasInteractions({
     : 0.05;
   const mobileTapMoveThresholdPx = 10;
   const lastCursorKeyRef = useRef("");
+  const lastHorizontalScrollTimeRef = useRef(0);
   const lastSnapTargetIdRef = useRef<string | null>(null);
+  const wheelTargetScaleRef = useRef<number | null>(null);
+  const wheelPointerRef = useRef<{ x: number; y: number } | null>(null);
+  const wheelAnimFrameRef = useRef<number | null>(null);
   const snapCellSize = Math.max(snapRadiusMeters * 2, designField.gridStep * 4);
   const snapIndex = useMemo(() => {
     const index = new Map<string, Shape[]>();
@@ -259,14 +263,19 @@ export function useTrackCanvasInteractions({
       setManualView(true);
 
       const hasHorizontalScroll = Math.abs(event.evt.deltaX) > 0.01;
-      const isFineVerticalScroll = Math.abs(event.evt.deltaY) < 40;
+      const now = Date.now();
+      if (hasHorizontalScroll) {
+        lastHorizontalScrollTimeRef.current = now;
+      }
+      const recentHorizontalScroll =
+        now - lastHorizontalScrollTimeRef.current < 400;
       const isTrackpadPan =
         isMobile === false &&
         event.evt.deltaMode === 0 &&
         !event.evt.ctrlKey &&
         !event.evt.metaKey &&
         !event.evt.altKey &&
-        (hasHorizontalScroll || isFineVerticalScroll);
+        (hasHorizontalScroll || recentHorizontalScroll);
 
       if (isTrackpadPan) {
         stage.position({
@@ -277,24 +286,51 @@ export function useTrackCanvasInteractions({
         return;
       }
 
-      const oldScale = stage.scaleX();
       const pointer = stage.getPointerPosition();
       if (!pointer) return;
       const zoomIntensity = event.evt.ctrlKey ? 0.006 : 0.0025;
       const zoomFactor = Math.exp(-event.evt.deltaY * zoomIntensity);
-      const nextScale = oldScale * zoomFactor;
-      const clampedScale = Math.max(0.2, Math.min(5, nextScale));
-      const mousePointTo = {
-        x: (pointer.x - stage.x()) / oldScale,
-        y: (pointer.y - stage.y()) / oldScale,
-      };
-      stage.scale({ x: clampedScale, y: clampedScale });
-      stage.position({
-        x: pointer.x - mousePointTo.x * clampedScale,
-        y: pointer.y - mousePointTo.y * clampedScale,
-      });
-      setZoom(clampedScale);
-      syncTransform();
+      const currentTarget = wheelTargetScaleRef.current ?? stage.scaleX();
+      wheelTargetScaleRef.current = Math.max(
+        0.2,
+        Math.min(5, currentTarget * zoomFactor)
+      );
+      wheelPointerRef.current = pointer;
+
+      if (!wheelAnimFrameRef.current) {
+        const animate = () => {
+          const s = stageRef.current;
+          const target = wheelTargetScaleRef.current;
+          const ptr = wheelPointerRef.current;
+          if (!s || target === null || !ptr) {
+            wheelAnimFrameRef.current = null;
+            return;
+          }
+          const current = s.scaleX();
+          const next = current + (target - current) * 0.25;
+          const settled = Math.abs(target - next) < 0.0005;
+          const applied = settled ? target : next;
+          const pointTo = {
+            x: (ptr.x - s.x()) / current,
+            y: (ptr.y - s.y()) / current,
+          };
+          s.scale({ x: applied, y: applied });
+          s.position({
+            x: ptr.x - pointTo.x * applied,
+            y: ptr.y - pointTo.y * applied,
+          });
+          setZoom(applied);
+          syncTransform();
+          if (settled) {
+            wheelTargetScaleRef.current = null;
+            wheelPointerRef.current = null;
+            wheelAnimFrameRef.current = null;
+          } else {
+            wheelAnimFrameRef.current = requestAnimationFrame(animate);
+          }
+        };
+        wheelAnimFrameRef.current = requestAnimationFrame(animate);
+      }
     },
     [isMobile, setManualView, setZoom, stageRef, syncTransform]
   );
