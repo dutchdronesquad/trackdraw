@@ -1,6 +1,6 @@
 # Roadmap: Future Features for TrackDraw
 
-This issue tracks the current roadmap for TrackDraw as of March 23, 2026.
+This issue tracks the current roadmap for TrackDraw as of March 24, 2026.
 
 TrackDraw has moved well beyond the initial editor foundation. The near-term focus should now be faster layout creation, better project workflow and recovery, stronger sharing and handoff, lightweight path review, and more deliberate race-day outputs.
 
@@ -43,8 +43,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 ## Release Cleanup
 
-- [ ] Share route deprecation before v1
-      Keep `/share/[token]` as the canonical read-only route for v1, remove legacy `/share?d=...` support before release, and update docs and product copy to match.
+- [x] Share route deprecation before v1
+      Removed legacy `/share?d=...` redirect and its query-param token normalization. `/share/[token]` is now the sole canonical read-only route.
 
 ## Priority 1
 
@@ -97,8 +97,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
         Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
   - [ ] Complete targeted maintainability and state-flow refactor pass
         Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
-  - [ ] Rework file structure and split oversized files
-        Introduce more focused subdirectories and break up broad components/modules so ownership and navigation stay manageable as the editor grows.
+  - [x] Rework file structure and split oversized files
+        Moved 16 root-level components into canvas/, editor/, inspector/, and a new dialogs/ folder. Split canvas/renderers.tsx and inspector/views.tsx into per-responsibility modules. Root components reduced from 19 files to 3.
 
 ## Priority 3
 

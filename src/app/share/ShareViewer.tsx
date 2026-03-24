@@ -28,23 +28,23 @@ export default function ShareViewer({ token }: { token: string }) {
   }, [introDismissed]);
 
   return (
-    <div className="relative h-[100dvh]">
+    <div className="relative h-dvh">
       <EditorShell readOnly={true} />
       {!introDismissed && (
         <div className="pointer-events-none absolute inset-x-0 top-14 z-30 flex justify-center px-3">
           <ContextOverlayCard
             icon={<Eye className="size-3.5" />}
             title="Shared track"
-            description="This shared view is read-only, so you can review layout without changing the track. Open Studio to make edits."
+            description="This shared view is read-only, so you can review the layout without changing the track. Open Studio to edit your own copy."
             dismissLabel="Dismiss shared track intro"
             onDismiss={() => setIntroDismissed(true)}
             variant="subtle"
             action={
               <Link
-                href="/studio"
+                href={`/studio?token=${encodeURIComponent(token)}`}
                 className="border-border bg-background hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors"
               >
-                Open Studio
+                Edit in Studio
                 <ArrowRight className="size-3.5" />
               </Link>
             }

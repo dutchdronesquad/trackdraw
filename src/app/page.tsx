@@ -40,7 +40,6 @@ export const metadata: Metadata = {
   },
 };
 import Link from "next/link";
-import Script from "next/script";
 import { Footer } from "@/components/landing/Footer";
 import VersionTag from "@/components/VersionTag";
 
@@ -246,9 +245,13 @@ export default function Home() {
 
   return (
     <div id="top" className="bg-background text-foreground min-h-screen">
-      <Script id="software-application-jsonld" type="application/ld+json">
-        {JSON.stringify(softwareApplicationJsonLd)}
-      </Script>
+      <script
+        id="software-application-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareApplicationJsonLd),
+        }}
+      />
       {/* ── Nav ─────────────────────────────────────────────── */}
       <header className="border-border/40 bg-background/75 sticky top-0 z-50 border-b backdrop-blur-xl backdrop-saturate-150">
         <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">

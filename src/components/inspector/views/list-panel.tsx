@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import type { Shape, TrackDesign } from "@/lib/types";
@@ -17,15 +18,22 @@ export function ListPanel({
   subtitle,
   meta,
   children,
+  grow = false,
 }: {
   title: string;
   subtitle?: string;
   meta?: ReactNode;
   children: ReactNode;
+  grow?: boolean;
 }) {
   return (
-    <div className="border-border/25 overflow-hidden rounded-lg border">
-      <div className="flex items-center gap-3 px-3 py-3">
+    <div
+      className={cn(
+        "border-border/25 overflow-hidden rounded-lg border",
+        grow && "flex min-h-0 flex-1 flex-col"
+      )}
+    >
+      <div className="flex shrink-0 items-center gap-3 px-3 py-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
             <span className="text-foreground/80 text-[11px] font-medium">
@@ -40,7 +48,14 @@ export function ListPanel({
           ) : null}
         </div>
       </div>
-      <div className="border-border/15 border-t">{children}</div>
+      <div
+        className={cn(
+          "border-border/15 border-t",
+          grow && "flex min-h-0 flex-1 flex-col"
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -50,11 +65,13 @@ export function ItemOverviewList({
   setSelection,
   removeShapes,
   setHoveredShapeId,
+  grow = false,
 }: {
   shapes: Shape[];
   setSelection: (ids: string[]) => void;
   removeShapes: (ids: string[]) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
+  grow?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const filteredShapes = useMemo(() => {
@@ -77,9 +94,14 @@ export function ItemOverviewList({
   );
 
   return (
-    <Section title="Items">
-      <div className="space-y-2.5">
-        <div className="flex items-center gap-2">
+    <Section
+      title="Items"
+      className={cn(grow && "flex min-h-0 flex-1 flex-col")}
+    >
+      <div
+        className={cn("space-y-2.5", grow && "flex min-h-0 flex-1 flex-col")}
+      >
+        <div className="flex shrink-0 items-center gap-2">
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -93,13 +115,14 @@ export function ItemOverviewList({
         <ListPanel
           title="Placed items"
           subtitle="Select an item from the list."
+          grow={grow}
           meta={
             <span className="text-muted-foreground/50 text-[10px]">
               {shapes.length}
             </span>
           }
         >
-          <div className="border-border/15 grid grid-cols-[minmax(0,1fr)_72px] items-center gap-3 border-b px-3 py-1.5">
+          <div className="border-border/15 grid shrink-0 grid-cols-[minmax(0,1fr)_72px] items-center gap-3 border-b px-3 py-1.5">
             <span className="text-muted-foreground/65 text-[10px] font-medium tracking-[0.08em] uppercase">
               Item
             </span>
@@ -107,7 +130,13 @@ export function ItemOverviewList({
               x, y
             </span>
           </div>
-          <div className="max-h-72 overflow-y-auto">
+          <div
+            className={cn(
+              grow
+                ? "min-h-0 flex-1 overflow-y-auto"
+                : "max-h-72 overflow-y-auto"
+            )}
+          >
             <div className="divide-border/15 divide-y">
               {filteredShapes.length ? (
                 filteredShapes.map((shape) => (

@@ -7,15 +7,22 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import {
+  parseThemePreference,
+  resolveTheme,
+  RESOLVED_THEME_COOKIE,
+  THEME_COOKIE,
+  THEME_COOKIE_MAX_AGE,
+  THEME_STORAGE_KEY,
+  type ThemePreference,
+} from "@/lib/theme";
 
-type Theme = "light" | "dark" | "system";
-
-const NEXT: Record<Theme, Theme> = {
+const NEXT: Record<ThemePreference, ThemePreference> = {
   light: "dark",
   dark: "system",
   system: "light",
 };
-const LABEL: Record<Theme, string> = {
+const LABEL: Record<ThemePreference, string> = {
   light: "Light",
   dark: "Dark",
   system: "System",
@@ -31,27 +38,34 @@ function subscribe(cb: () => void) {
   };
 }
 
-function getSnapshot(): Theme {
+function getSnapshot(): ThemePreference {
   try {
-    const v = localStorage.getItem("trackdraw.theme");
-    if (v === "light" || v === "dark" || v === "system") return v;
+    const stored = parseThemePreference(
+      localStorage.getItem(THEME_STORAGE_KEY)
+    );
+    if (stored) return stored;
   } catch {}
   return "system";
 }
 
-function applyTheme(theme: Theme) {
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const isDark = theme === "dark" || (theme === "system" && prefersDark);
-  document.documentElement.classList.toggle("dark", isDark);
+function applyTheme(theme: ThemePreference) {
+  const resolvedTheme = resolveTheme(
+    theme,
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
+  document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
+  document.documentElement.style.colorScheme = resolvedTheme;
   try {
-    localStorage.setItem("trackdraw.theme", theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {}
+  document.cookie = `${THEME_COOKIE}=${theme}; Max-Age=${THEME_COOKIE_MAX_AGE}; Path=/; SameSite=Lax`;
+  document.cookie = `${RESOLVED_THEME_COOKIE}=${resolvedTheme}; Max-Age=${THEME_COOKIE_MAX_AGE}; Path=/; SameSite=Lax`;
   window.dispatchEvent(new Event(EVENT));
 }
 
-const getServerSnapshot = (): Theme => "system";
+const getServerSnapshot = (): ThemePreference => "system";
 
-const icons: Record<Theme, React.ReactNode> = {
+const icons: Record<ThemePreference, React.ReactNode> = {
   light: <Sun className="size-4" />,
   dark: <Moon className="size-4" />,
   system: <Monitor className="size-4" />,
