@@ -57,7 +57,7 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
   - [x] Periodic restore points
         A restore point is automatically created every 5 minutes during an active editing session if the design has changed since the last periodic snapshot.
 
-- [ ] Share and publish workflow
+- [x] Share and publish workflow
       Move sharing toward intentional published states with clearer invalid-link handling, better separation from working state, and a cleaner long-term share model.
   - [x] Distinct error pages for invalid vs oversized share links
         Oversized tokens now show a dedicated error page with JSON export guidance instead of a generic 404. Invalid or corrupt tokens still return 404 with a focused not-found page.
@@ -96,17 +96,17 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
         Convert the remaining desktop-style dialogs that still feel awkward on phones into bottom-drawer flows where that improves reach, focus handling, and small-screen usability.
         Targets:
         `ExportDialog`, `ImportDialog`, and the studio keyboard-shortcuts dialog should move to the newer modal style on desktop and bottom-drawer presentation on mobile.
-- [ ] Codebase architecture and performance refactor
+- [x] Codebase architecture and performance refactor
       Continue improving maintainability, state-flow clarity, and runtime efficiency as the editor grows, without turning the effort into a rewrite.
   - [x] Lightweight performance instrumentation
         Add internal render and autosave instrumentation so editor hotspots can be observed during development without introducing heavyweight profiling infrastructure.
   - [x] Targeted editor and canvas modularisation
         Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
-  - [ ] Complete targeted maintainability and state-flow refactor pass
+  - [x] Complete targeted maintainability and state-flow refactor pass
         Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
   - [x] Initial file structure and oversized-file split pass
         Moved 16 root-level components into canvas/, editor/, inspector/, and a new dialogs/ folder. Split canvas/renderers.tsx and inspector/views.tsx into per-responsibility modules. Root components reduced from 19 files to 3.
-  - [ ] Remaining file structure and large-file decomposition pass
+  - [x] Remaining file structure and large-file decomposition pass
         Continue tightening folder ownership and splitting broad components and modules where internal navigation and safe iteration are still harder than they should be.
 
 ## Priority 3
