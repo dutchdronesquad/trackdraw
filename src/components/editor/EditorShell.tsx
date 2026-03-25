@@ -800,6 +800,7 @@ export default function EditorShell({
         onOpenChange={setExportOpen}
         canvasRef={canvasRef}
         preview3DRef={preview3DRef}
+        activeTab={tab}
         onRequest3DView={() => handleTabChange("3d")}
       />
       <KeyboardShortcutsDialog
