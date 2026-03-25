@@ -1959,8 +1959,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           </CanvasHintPill>
         )}
 
-        {/* No path hint — only shown in the editor, not in read-only shared views */}
-        {!hasPath && !readOnly && (
+        {/* No path hint — only shown in the editor (desktop), not on mobile or in read-only shared views */}
+        {!hasPath && !readOnly && !isMobile && (
           <CanvasHintPill
             icon={<Route className="size-3" />}
             position="bottom-4"
