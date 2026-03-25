@@ -90,9 +90,9 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 - [ ] Heatmap and flow analysis
       Add lightweight visual feedback for rhythm, density, and bottlenecks once validation basics are in place.
 
-- [ ] Adaptive mobile UI
+- [x] Adaptive mobile UI
       Let portrait and landscape diverge where that clearly improves editing and navigation.
-  - [ ] Mobile dialog-to-drawer conversion pass
+  - [x] Mobile dialog-to-drawer conversion pass
         Convert the remaining desktop-style dialogs that still feel awkward on phones into bottom-drawer flows where that improves reach, focus handling, and small-screen usability.
         Targets:
         `ExportDialog`, `ImportDialog`, and the studio keyboard-shortcuts dialog should move to the newer modal style on desktop and bottom-drawer presentation on mobile.

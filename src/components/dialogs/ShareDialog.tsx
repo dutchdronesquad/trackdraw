@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/store/editor";
 import { selectDesignShapeCount } from "@/store/selectors";
@@ -342,33 +336,21 @@ export default function ShareDialog({
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="border-border/60 bg-background max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-18px_40px_rgba(0,0,0,0.18)] [&>div:first-child]:hidden">
-          <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs">
-            <div className="flex items-center justify-center pt-2.5 pb-1.5">
-              <div className="bg-primary/20 h-1 w-10 rounded-full" />
-            </div>
-            <DrawerHeader className="px-4 pt-0 pb-3 text-left">
-              <div className="min-w-0">
-                <DrawerTitle className="text-foreground/88 text-[13px] font-medium tracking-[0.01em]">
-                  Share
-                </DrawerTitle>
-                <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[10px] leading-relaxed">
-                  Share a read-only review link for this track
-                </DrawerDescription>
-              </div>
-            </DrawerHeader>
-          </div>
-          <div className="bg-background min-h-0 flex-1 overflow-y-auto">
-            <ShareContent
-              onClose={() => onOpenChange(false)}
-              hasPath={hasPath}
-              onExportJson={onExportJson}
-              mobile
-            />
-          </div>
-        </DrawerContent>
-      </Drawer>
+      <MobileDrawer
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Share"
+        subtitle="Share a read-only review link for this track"
+        contentClassName="border-border/60 bg-background shadow-[0_-18px_40px_rgba(0,0,0,0.18)]"
+        bodyClassName="bg-background min-h-0 p-0"
+      >
+        <ShareContent
+          onClose={() => onOpenChange(false)}
+          hasPath={hasPath}
+          onExportJson={onExportJson}
+          mobile
+        />
+      </MobileDrawer>
     );
   }
 
@@ -376,7 +358,7 @@ export default function ShareDialog({
 
   return (
     <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm"
       onClick={() => onOpenChange(false)}
     >
       <div

@@ -30,13 +30,7 @@ import {
 } from "lucide-react";
 import Inspector from "@/components/inspector/Inspector";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { MobileDrawer } from "@/components/MobileDrawer";
 import type { EditorTool } from "@/lib/editor-tools";
 import { cn } from "@/lib/utils";
 
@@ -422,35 +416,6 @@ export function EditorMobilePanels({
     !showPathBuilderOverlay &&
     !showResumePathButton;
 
-  const mobileDrawerHeader = (
-    title: string,
-    subtitle?: string,
-    tone: "default" | "brand" = "default"
-  ) => (
-    <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs">
-      <div className="flex items-center justify-center pt-2.5 pb-1.5">
-        <div
-          className={cn(
-            "h-1 rounded-full",
-            tone === "brand" ? "bg-primary/20 w-10" : "bg-border w-8"
-          )}
-        />
-      </div>
-      <DrawerHeader className="px-4 pt-0 pb-3 text-left">
-        <div className="min-w-0">
-          <DrawerTitle className="text-foreground/88 text-[13px] font-medium tracking-[0.01em]">
-            {title}
-          </DrawerTitle>
-          {subtitle ? (
-            <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[10px] leading-relaxed">
-              {subtitle}
-            </DrawerDescription>
-          ) : null}
-        </div>
-      </DrawerHeader>
-    </div>
-  );
-
   return (
     <>
       {!readOnly && !mobileFlyModeActive && (
@@ -750,241 +715,260 @@ export function EditorMobilePanels({
       )}
 
       {!readOnly && (
-        <Drawer
+        <MobileDrawer
           open={mobileInspectorOpen}
-          direction="bottom"
-          modal
           onOpenChange={(open) => {
             if (!open) onCloseInspector();
           }}
+          title="Inspector"
+          subtitle={
+            selectedCount === 0
+              ? "Design settings and placed items"
+              : "Selection properties and editing"
+          }
+          contentClassName="max-h-[92dvh] min-h-[72dvh] overscroll-contain"
+          bodyClassName="bg-card min-h-0 touch-pan-y overscroll-y-contain [-webkit-overflow-scrolling:touch] p-0"
         >
-          <DrawerContent className="border-border/50 bg-card max-h-[92dvh] min-h-[72dvh] gap-0 overflow-hidden overscroll-contain rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
-            {mobileDrawerHeader(
-              "Inspector",
-              selectedCount === 0
-                ? "Design settings and placed items"
-                : "Selection properties and editing",
-              "brand"
-            )}
-            <div className="bg-card min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
-              <Inspector
-                mobileInline
-                onResumeSelectedPath={() => {
-                  onCloseInspector();
-                  onResumeSelectedPath();
-                }}
-              />
-            </div>
-          </DrawerContent>
-        </Drawer>
+          <Inspector
+            mobileInline
+            onResumeSelectedPath={() => {
+              onCloseInspector();
+              onResumeSelectedPath();
+            }}
+          />
+        </MobileDrawer>
       )}
 
       {!readOnly && (
-        <Drawer
+        <MobileDrawer
           open={mobileToolsOpen}
-          direction="bottom"
-          modal
           onOpenChange={onSetMobileToolsOpen}
+          title="Tools"
+          subtitle={
+            tab === "3d"
+              ? "Project actions for the current 3D session"
+              : "Drawing and project actions"
+          }
+          bodyClassName="space-y-5 pt-3 pb-4"
         >
-          <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
-            {mobileDrawerHeader(
-              "Tools",
-              tab === "3d"
-                ? "Project actions for the current 3D session"
-                : "Drawing and project actions",
-              "brand"
-            )}
-
-            <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  History
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => runMobileAction(onUndo)}
-                    disabled={!canUndo}
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Undo2 className="size-4" />
-                    <span className="text-[11px] leading-none font-medium">
-                      Undo
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => runMobileAction(onRedo)}
-                    disabled={!canRedo}
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Redo2 className="size-4" />
-                    <span className="text-[11px] leading-none font-medium">
-                      Redo
-                    </span>
-                  </button>
-                </div>
+          <>
+            <div>
+              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                History
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => runMobileAction(onUndo)}
+                  disabled={!canUndo}
+                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Undo2 className="size-4" />
+                  <span className="text-[11px] leading-none font-medium">
+                    Undo
+                  </span>
+                </button>
+                <button
+                  onClick={() => runMobileAction(onRedo)}
+                  disabled={!canRedo}
+                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Redo2 className="size-4" />
+                  <span className="text-[11px] leading-none font-medium">
+                    Redo
+                  </span>
+                </button>
               </div>
-
-              {tab === "2d" && (
-                <div>
-                  <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                    Drawing tools
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {mobileToolEntries
-                      .filter((tool) => tool.id !== "grab")
-                      .map((tool) => {
-                        const active = activeTool === tool.id;
-                        return (
-                          <button
-                            key={tool.id}
-                            onClick={() =>
-                              runMobileAction(() => onSelectTool(tool.id))
-                            }
-                            className={cn(
-                              "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
-                              active
-                                ? "border-border/80 bg-muted/55 text-foreground"
-                                : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-                            )}
-                          >
-                            {tool.icon}
-                            <span className="text-[11px] leading-none font-medium">
-                              {tool.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                  </div>
-                </div>
-              )}
-
+            </div>
+            {tab === "2d" && (
               <div>
                 <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  Project
+                  Drawing tools
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  {[
-                    {
-                      label: "Projects",
-                      action: onStartNewProject,
-                    },
-                    {
-                      label: "Import",
-                      action: onImport,
-                    },
-                    {
-                      label: "Export",
-                      action: onExport,
-                    },
-                  ].map((actionItem, index) => (
-                    <button
-                      key={actionItem.label}
-                      onClick={() =>
-                        runAfterClosingToolsDrawer(actionItem.action)
-                      }
-                      className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
-                    >
-                      {index === 0 ? <FolderOpen className="size-5" /> : null}
-                      {index === 1 ? <FilePlus className="size-5" /> : null}
-                      {index === 2 ? <Download className="size-5" /> : null}
-                      <span className="text-[11px] leading-none font-medium">
-                        {actionItem.label}
-                      </span>
-                    </button>
-                  ))}
+                  {mobileToolEntries
+                    .filter((tool) => tool.id !== "grab")
+                    .map((tool) => {
+                      const active = activeTool === tool.id;
+                      return (
+                        <button
+                          key={tool.id}
+                          onClick={() =>
+                            runMobileAction(() => onSelectTool(tool.id))
+                          }
+                          className={cn(
+                            "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
+                            active
+                              ? "border-border/80 bg-muted/55 text-foreground"
+                              : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                          )}
+                        >
+                          {tool.icon}
+                          <span className="text-[11px] leading-none font-medium">
+                            {tool.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
+            )}
+            <div>
+              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                Project
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: "Projects", action: onStartNewProject },
+                  { label: "Import", action: onImport },
+                  { label: "Export", action: onExport },
+                ].map((actionItem, index) => (
+                  <button
+                    key={actionItem.label}
+                    onClick={() =>
+                      runAfterClosingToolsDrawer(actionItem.action)
+                    }
+                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
+                  >
+                    {index === 0 ? <FolderOpen className="size-5" /> : null}
+                    {index === 1 ? <FilePlus className="size-5" /> : null}
+                    {index === 2 ? <Download className="size-5" /> : null}
+                    <span className="text-[11px] leading-none font-medium">
+                      {actionItem.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </DrawerContent>
-        </Drawer>
+          </>
+        </MobileDrawer>
       )}
 
       {!readOnly && (
-        <Drawer
+        <MobileDrawer
           open={mobileViewOpen}
-          direction="bottom"
-          modal
           onOpenChange={onSetMobileViewOpen}
+          title="View"
+          subtitle="Canvas mode, guides and viewport controls"
+          bodyClassName="space-y-5 pt-3 pb-4"
         >
-          <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
-            {mobileDrawerHeader(
-              "View",
-              "Canvas mode, guides and viewport controls",
-              "brand"
-            )}
-
-            <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  Current mode
+          <>
+            <div>
+              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                Current mode
+              </p>
+              <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
+                <p className="text-foreground text-sm font-medium">
+                  {tab === "2d" ? "2D canvas" : "3D preview"}
                 </p>
-                <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
-                  <p className="text-foreground text-sm font-medium">
-                    {tab === "2d" ? "2D canvas" : "3D preview"}
-                  </p>
-                  <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
-                    {inspectorHint}. {saveStatusLabel}.
-                  </p>
-                </div>
+                <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
+                  {inspectorHint}. {saveStatusLabel}.
+                </p>
               </div>
-
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  View mode
-                </p>
-                <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
-                  {(["2d", "3d"] as const).map((nextTab) => (
-                    <button
-                      key={nextTab}
-                      onClick={() => {
-                        onTabChange(nextTab);
-                        onSetMobileViewOpen(false);
-                      }}
-                      className={cn(
-                        "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
-                        tab === nextTab
-                          ? "border-primary/30 bg-primary/12 text-primary shadow-xs"
-                          : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
-                      )}
-                    >
-                      {nextTab === "2d" ? "Canvas" : "3D Preview"}
-                    </button>
-                  ))}
+            </div>
+            <div>
+              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                View mode
+              </p>
+              <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
+                {(["2d", "3d"] as const).map((nextTab) => (
+                  <button
+                    key={nextTab}
+                    onClick={() => {
+                      onTabChange(nextTab);
+                      onSetMobileViewOpen(false);
+                    }}
+                    className={cn(
+                      "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
+                      tab === nextTab
+                        ? "border-primary/30 bg-primary/12 text-primary shadow-xs"
+                        : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
+                    )}
+                  >
+                    {nextTab === "2d" ? "Canvas" : "3D Preview"}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={onFitView}
+                className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
+              >
+                <div>
+                  <p className="text-[11px] font-medium">Fit to field</p>
+                  <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                    Center the current design in view
+                  </p>
                 </div>
+                <Scan className="size-4" />
+              </button>
+              {tab === "2d" && (
                 <button
-                  onClick={onFitView}
-                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
+                  onClick={() => onSetMobileRulersEnabled(!mobileRulersEnabled)}
+                  className={cn(
+                    "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                    mobileRulersEnabled
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
                 >
                   <div>
-                    <p className="text-[11px] font-medium">Fit to field</p>
+                    <p className="text-[11px] font-medium">Rulers</p>
                     <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                      Center the current design in view
+                      Show top and left guides on mobile
                     </p>
                   </div>
-                  <Scan className="size-4" />
+                  <div
+                    className={cn(
+                      "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                      mobileRulersEnabled
+                        ? "bg-foreground/90 justify-end"
+                        : "bg-border/80 justify-start"
+                    )}
+                  >
+                    <span className="bg-background block size-5 rounded-full shadow-xs" />
+                  </div>
                 </button>
-                {tab === "2d" && (
+              )}
+              {tab === "3d" && (
+                <>
                   <button
-                    onClick={() =>
-                      onSetMobileRulersEnabled(!mobileRulersEnabled)
-                    }
+                    onClick={onStartFlyThrough}
+                    disabled={!hasPath}
                     className={cn(
                       "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                      mobileRulersEnabled
+                      hasPath
+                        ? "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                        : "text-muted-foreground/45 cursor-not-allowed"
+                    )}
+                  >
+                    <div>
+                      <p className="text-[11px] font-medium">Fly-through</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                        {hasPath
+                          ? "Start the race-line preview camera"
+                          : "Draw a path in 2D first to enable this"}
+                      </p>
+                    </div>
+                    <Play className="size-4" />
+                  </button>
+                  <button
+                    onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
+                    className={cn(
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                      mobileGizmoEnabled
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <div>
-                      <p className="text-[11px] font-medium">Rulers</p>
+                      <p className="text-[11px] font-medium">Gizmo</p>
                       <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                        Show top and left guides on mobile
+                        Show the axis helper in 3D preview
                       </p>
                     </div>
                     <div
                       className={cn(
                         "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
-                        mobileRulersEnabled
+                        mobileGizmoEnabled
                           ? "bg-foreground/90 justify-end"
                           : "bg-border/80 justify-start"
                       )}
@@ -992,137 +976,126 @@ export function EditorMobilePanels({
                       <span className="bg-background block size-5 rounded-full shadow-xs" />
                     </div>
                   </button>
-                )}
-                {tab === "3d" && (
-                  <>
-                    <button
-                      onClick={onStartFlyThrough}
-                      disabled={!hasPath}
-                      className={cn(
-                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                        hasPath
-                          ? "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-                          : "text-muted-foreground/45 cursor-not-allowed"
-                      )}
-                    >
-                      <div>
-                        <p className="text-[11px] font-medium">Fly-through</p>
-                        <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                          {hasPath
-                            ? "Start the race-line preview camera"
-                            : "Draw a path in 2D first to enable this"}
-                        </p>
-                      </div>
-                      <Play className="size-4" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        onSetMobileGizmoEnabled(!mobileGizmoEnabled)
-                      }
-                      className={cn(
-                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                        mobileGizmoEnabled
-                          ? "text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <div>
-                        <p className="text-[11px] font-medium">Gizmo</p>
-                        <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                          Show the axis helper in 3D preview
-                        </p>
-                      </div>
-                      <div
-                        className={cn(
-                          "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
-                          mobileGizmoEnabled
-                            ? "bg-foreground/90 justify-end"
-                            : "bg-border/80 justify-start"
-                        )}
-                      >
-                        <span className="bg-background block size-5 rounded-full shadow-xs" />
-                      </div>
-                    </button>
-                  </>
-                )}
-              </div>
+                </>
+              )}
             </div>
-          </DrawerContent>
-        </Drawer>
+          </>
+        </MobileDrawer>
       )}
 
       {readOnly && (
-        <Drawer
+        <MobileDrawer
           open={readOnlyMenuOpen}
-          direction="bottom"
-          modal
           onOpenChange={onSetReadOnlyMenuOpen}
+          title="View"
+          subtitle="Canvas mode, guides and viewport controls"
+          bodyClassName="space-y-5 pt-3 pb-4"
         >
-          <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden">
-            {mobileDrawerHeader(
-              "View",
-              "Canvas mode, guides and viewport controls",
-              "brand"
-            )}
-
-            <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  View mode
-                </p>
-                <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
-                  {(["2d", "3d"] as const).map((nextTab) => (
-                    <button
-                      key={nextTab}
-                      onClick={() => {
-                        onTabChange(nextTab);
-                        onSetReadOnlyMenuOpen(false);
-                      }}
-                      className={cn(
-                        "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
-                        tab === nextTab
-                          ? "border-primary/30 bg-primary/12 text-primary shadow-xs"
-                          : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
-                      )}
-                    >
-                      {nextTab === "2d" ? "Canvas" : "3D Preview"}
-                    </button>
-                  ))}
+          <>
+            <div>
+              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                View mode
+              </p>
+              <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
+                {(["2d", "3d"] as const).map((nextTab) => (
+                  <button
+                    key={nextTab}
+                    onClick={() => {
+                      onTabChange(nextTab);
+                      onSetReadOnlyMenuOpen(false);
+                    }}
+                    className={cn(
+                      "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
+                      tab === nextTab
+                        ? "border-primary/30 bg-primary/12 text-primary shadow-xs"
+                        : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
+                    )}
+                  >
+                    {nextTab === "2d" ? "Canvas" : "3D Preview"}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={onFitView}
+                className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
+              >
+                <div>
+                  <p className="text-[11px] font-medium">Fit to field</p>
+                  <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                    Center the current design in view
+                  </p>
                 </div>
+                <Scan className="size-4" />
+              </button>
+              {tab === "2d" && (
                 <button
-                  onClick={onFitView}
-                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
+                  onClick={() => onSetMobileRulersEnabled(!mobileRulersEnabled)}
+                  className={cn(
+                    "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                    mobileRulersEnabled
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
                 >
                   <div>
-                    <p className="text-[11px] font-medium">Fit to field</p>
+                    <p className="text-[11px] font-medium">Rulers</p>
                     <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                      Center the current design in view
+                      Show top and left guides on mobile
                     </p>
                   </div>
-                  <Scan className="size-4" />
+                  <div
+                    className={cn(
+                      "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                      mobileRulersEnabled
+                        ? "bg-foreground/90 justify-end"
+                        : "bg-border/80 justify-start"
+                    )}
+                  >
+                    <span className="bg-background block size-5 rounded-full shadow-xs" />
+                  </div>
                 </button>
-                {tab === "2d" && (
+              )}
+              {tab === "3d" && (
+                <>
                   <button
-                    onClick={() =>
-                      onSetMobileRulersEnabled(!mobileRulersEnabled)
-                    }
+                    onClick={onStartFlyThrough}
+                    disabled={!hasPath}
                     className={cn(
                       "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                      mobileRulersEnabled
+                      hasPath
+                        ? "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                        : "text-muted-foreground/45 cursor-not-allowed"
+                    )}
+                  >
+                    <div>
+                      <p className="text-[11px] font-medium">Fly-through</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                        {hasPath
+                          ? "Start the race-line preview camera"
+                          : "No route in this shared track"}
+                      </p>
+                    </div>
+                    <Play className="size-4" />
+                  </button>
+                  <button
+                    onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
+                    className={cn(
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                      mobileGizmoEnabled
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <div>
-                      <p className="text-[11px] font-medium">Rulers</p>
+                      <p className="text-[11px] font-medium">Gizmo</p>
                       <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                        Show top and left guides on mobile
+                        Show the axis helper in 3D preview
                       </p>
                     </div>
                     <div
                       className={cn(
                         "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
-                        mobileRulersEnabled
+                        mobileGizmoEnabled
                           ? "bg-foreground/90 justify-end"
                           : "bg-border/80 justify-start"
                       )}
@@ -1130,88 +1103,36 @@ export function EditorMobilePanels({
                       <span className="bg-background block size-5 rounded-full shadow-xs" />
                     </div>
                   </button>
-                )}
-                {tab === "3d" && (
-                  <>
-                    <button
-                      onClick={onStartFlyThrough}
-                      disabled={!hasPath}
-                      className={cn(
-                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                        hasPath
-                          ? "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-                          : "text-muted-foreground/45 cursor-not-allowed"
-                      )}
-                    >
-                      <div>
-                        <p className="text-[11px] font-medium">Fly-through</p>
-                        <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                          {hasPath
-                            ? "Start the race-line preview camera"
-                            : "No route in this shared track"}
-                        </p>
-                      </div>
-                      <Play className="size-4" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        onSetMobileGizmoEnabled(!mobileGizmoEnabled)
-                      }
-                      className={cn(
-                        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                        mobileGizmoEnabled
-                          ? "text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <div>
-                        <p className="text-[11px] font-medium">Gizmo</p>
-                        <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
-                          Show the axis helper in 3D preview
-                        </p>
-                      </div>
-                      <div
-                        className={cn(
-                          "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
-                          mobileGizmoEnabled
-                            ? "bg-foreground/90 justify-end"
-                            : "bg-border/80 justify-start"
-                        )}
-                      >
-                        <span className="bg-background block size-5 rounded-full shadow-xs" />
-                      </div>
-                    </button>
-                  </>
-                )}
-              </div>
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
-                  Share
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href={studioHref}
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
-                  >
-                    <ArrowRight className="size-4" />
-                    <span className="text-[11px] leading-none font-medium">
-                      Open Studio
-                    </span>
-                  </Link>
-                  <button
-                    onClick={onShare}
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
-                  >
-                    <Share2 className="size-4" />
-                    <span className="text-[11px] leading-none font-medium">
-                      Share
-                    </span>
-                  </button>
-                </div>
+                </>
+              )}
+            </div>
+            <div>
+              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                Share
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href={studioHref}
+                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
+                >
+                  <ArrowRight className="size-4" />
+                  <span className="text-[11px] leading-none font-medium">
+                    Open Studio
+                  </span>
+                </Link>
+                <button
+                  onClick={onShare}
+                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
+                >
+                  <Share2 className="size-4" />
+                  <span className="text-[11px] leading-none font-medium">
+                    Share
+                  </span>
+                </button>
               </div>
             </div>
-          </DrawerContent>
-        </Drawer>
+          </>
+        </MobileDrawer>
       )}
     </>
   );
