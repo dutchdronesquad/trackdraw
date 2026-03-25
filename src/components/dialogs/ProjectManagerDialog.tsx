@@ -243,7 +243,10 @@ export default function ProjectManagerDialog({
                   {itemLabel(p.shapeCount)} · {formatRelativeTime(p.updatedAt)}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-1">
+              <div
+                className="flex shrink-0 items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {isRenaming ? (
                   <button
                     onClick={() => commitRename(p.id)}
@@ -263,7 +266,7 @@ export default function ProjectManagerDialog({
                         <Pencil className="size-3.5" />
                       </button>
                     ) : null}
-                    {onDeleteProject ? (
+                    {onDeleteProject && !isCurrent ? (
                       confirmDeleteId === p.id ? (
                         <div className="flex items-center gap-1">
                           <button
