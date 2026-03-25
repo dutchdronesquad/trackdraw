@@ -36,27 +36,19 @@ import type {
   TrackPreview3DHandle,
   TrackPreview3DProps,
 } from "@/components/canvas/TrackPreview3D";
-import { createDefaultDesign, parseDesign } from "@/lib/design";
-import { decodeDesign } from "@/lib/share";
-import {
-  createRestorePoint,
-  deleteProject,
-  deleteRestorePoint,
-  listProjects,
-  listRestorePointsForProject,
-  loadProject,
-  loadRestorePoint,
-  renameProject,
-  saveProject,
-  type ProjectMeta,
-  type RestorePointMeta,
-} from "@/lib/projects";
+import { createDefaultDesign } from "@/lib/design";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
-import { recordPerfSample } from "@/lib/perf";
+import { useEditorProjects } from "@/hooks/useEditorProjects";
+import { useEditorHints } from "@/hooks/useEditorHints";
+import {
+  StarterSteps,
+  StarterActions,
+  shouldShowStarterForDesign,
+} from "@/components/editor/StarterFlow";
 import type { EditorView } from "@/lib/view";
 import { useEditor } from "@/store/editor";
 import {
@@ -66,25 +58,7 @@ import {
   selectSelectionLocked,
   selectShapeRecordMap,
 } from "@/store/selectors";
-import { Box, ChevronRight, Route, X } from "lucide-react";
-import { Kbd } from "@/components/ui/kbd";
-import { toast } from "sonner";
-
-const HINT_STORAGE_KEYS = {
-  gate: "trackdraw-hint-gate-dismissed",
-  path: "trackdraw-hint-path-dismissed",
-  preview: "trackdraw-hint-preview-dismissed",
-  review3d: "trackdraw-hint-review3d-dismissed",
-  postPath: "trackdraw-hint-post-path-dismissed",
-} as const;
-
-function shouldShowStarterForDesign(params: {
-  title: string;
-  shapeCount: number;
-}) {
-  const title = params.title.trim();
-  return params.shapeCount === 0 && (!title || title === "New Track");
-}
+import { Box, Route, X } from "lucide-react";
 
 function createFirstUseBlankDesign() {
   const design = createDefaultDesign();
@@ -93,175 +67,6 @@ function createFirstUseBlankDesign() {
     title: "",
     description: "",
   };
-}
-
-const STARTER_STEPS = [
-  {
-    id: "01",
-    title: "Place a few gates and obstacles",
-    description: "Start small so the course structure appears quickly.",
-  },
-  {
-    id: "02",
-    title: "Draw the race path through them",
-    description:
-      "The path usually makes the layout click faster than obstacle tweaking alone.",
-  },
-  {
-    id: "03",
-    title: "Check 3D, then export or share",
-    description:
-      "Review the route early and send a read-only link when it is ready.",
-  },
-] as const;
-
-function StarterSteps({ mobile = false }: { mobile?: boolean }) {
-  return (
-    <div>
-      <p
-        className={
-          mobile
-            ? "text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase"
-            : "text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
-        }
-      >
-        Good first steps
-      </p>
-      <ol className={mobile ? "space-y-3" : "mt-3 space-y-3"}>
-        {STARTER_STEPS.map((step) => (
-          <li
-            key={step.id}
-            className={
-              mobile ? "flex items-start gap-3" : "flex items-start gap-3"
-            }
-          >
-            <span className="text-primary/60 mt-px w-5 shrink-0 text-[11px] font-semibold tabular-nums">
-              {step.id}
-            </span>
-            <div>
-              <p
-                className={
-                  mobile
-                    ? "text-foreground text-[13px] font-medium"
-                    : "text-foreground text-[13px] font-medium"
-                }
-              >
-                {step.title}
-              </p>
-              <p
-                className={
-                  mobile
-                    ? "text-muted-foreground mt-0.5 text-[11px] leading-5"
-                    : "text-muted-foreground mt-0.5 text-[12px] leading-5"
-                }
-              >
-                {step.description}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-function StarterActions({
-  mobile = false,
-  onPath,
-  onBlank,
-}: {
-  mobile?: boolean;
-  onPath: () => void;
-  onBlank: () => void;
-}) {
-  if (!mobile) {
-    return (
-      <>
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={onPath}
-            className="border-primary/18 bg-primary/[0.07] text-muted-foreground hover:bg-primary/11 hover:text-foreground flex w-full items-start gap-3 rounded-2xl border px-4 py-4 text-left transition-all"
-          >
-            <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-              <Box className="size-4" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-foreground text-sm font-medium">
-                Start by placing gates
-              </p>
-              <p className="text-muted-foreground mt-1 text-xs leading-5">
-                Open an empty field with `Gate` selected so you can block out
-                the course first. Draw the path once the first obstacles are
-                down.
-              </p>
-            </div>
-            <div className="flex h-full items-center self-stretch">
-              <ChevronRight className="text-muted-foreground/45 size-4 shrink-0" />
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={onBlank}
-            className="text-muted-foreground hover:text-foreground mt-3 w-full text-center text-sm underline-offset-2 transition-colors hover:underline"
-          >
-            Continue with blank canvas
-          </button>
-        </div>
-        <p className="text-muted-foreground mt-5 hidden flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] sm:flex">
-          <Kbd>G</Kbd> places gates
-          <span className="text-muted-foreground/40">·</span>
-          <Kbd>P</Kbd> starts the route
-          <span className="text-muted-foreground/40">·</span>
-          <Kbd>Enter</Kbd> finishes the path
-        </p>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <div className="space-y-2.5">
-        <button
-          type="button"
-          onClick={onPath}
-          className="border-primary/18 bg-primary/[0.07] text-muted-foreground hover:bg-primary/11 hover:text-foreground flex w-full items-start gap-3 rounded-2xl border px-3 py-3 text-left transition-all"
-        >
-          <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-xl">
-            <Box className="size-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-foreground text-[13px] font-medium">
-              Start by placing gates
-            </p>
-            <p className="text-muted-foreground mt-1 text-[11px] leading-5">
-              Open an empty field with Gate selected. Draw the path once the
-              first obstacles are down.
-            </p>
-          </div>
-          <ChevronRight className="text-muted-foreground/45 mt-0.5 size-4 shrink-0" />
-        </button>
-        <button
-          type="button"
-          onClick={onBlank}
-          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex w-full items-start gap-3 rounded-2xl border px-3 py-3 text-left transition-all"
-        >
-          <div className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-xl">
-            <ChevronRight className="size-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-foreground text-[13px] font-medium">
-              Continue with blank canvas
-            </p>
-            <p className="text-muted-foreground mt-1 text-[11px] leading-5">
-              Skip the guided start and open the empty studio instead.
-            </p>
-          </div>
-        </button>
-      </div>
-    </>
-  );
 }
 
 const TrackPreview3D = dynamic<TrackPreview3DProps>(
@@ -361,29 +166,51 @@ export default function EditorShell({
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [projectManagerOpen, setProjectManagerOpen] = useState(false);
-  const [projects, setProjects] = useState<ProjectMeta[]>([]);
-  const [restorePoints, setRestorePoints] = useState<RestorePointMeta[]>([]);
-  const [activeRestorePointId, setActiveRestorePointId] = useState<
-    string | null
-  >(null);
-  const [initialized, setInitialized] = useState(false);
   const [starterDismissed, setStarterDismissed] = useState(false);
   const [starterMode, setStarterMode] = useState<"guided" | "blank" | null>(
     null
   );
-  const [saveStatusLabel, setSaveStatusLabel] = useState("Saving locally…");
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
-  const [gateHintDismissed, setGateHintDismissed] = useState(false);
-  const [desktopPathHintDismissed, setDesktopPathHintDismissed] =
-    useState(false);
-  const [desktopPreviewHintDismissed, setDesktopPreviewHintDismissed] =
-    useState(false);
-  const [review3DHintDismissed, setReview3DHintDismissed] = useState(false);
-  const [postPathNudgeDismissed, setPostPathNudgeDismissed] = useState(false);
-  const [showPostPathNudge, setShowPostPathNudge] = useState(false);
-  const prevHasPath = useRef(false);
   const mobileProjectManagerOpenTimerRef = useRef<number | null>(null);
+
+  const {
+    projects,
+    restorePoints,
+    activeRestorePointId,
+    saveStatusLabel,
+    initialized,
+    handleSaveSnapshot,
+    handleOpenProject,
+    handleDeleteProject,
+    handleRenameProject,
+    handleRestorePoint,
+    handleDeleteRestorePoint,
+    snapshotCurrentDesign,
+  } = useEditorProjects({
+    readOnly,
+    seedToken,
+    design,
+    designShapesLength: designShapes.length,
+    historyPaused,
+    interactionSessionDepth,
+    replaceDesign,
+  });
+
+  const {
+    gateHintDismissed,
+    desktopPathHintDismissed,
+    desktopPreviewHintDismissed,
+    review3DHintDismissed,
+    postPathNudgeDismissed,
+    showPostPathNudge,
+    dismissGateHint,
+    dismissDesktopPathHint,
+    dismissDesktopPreviewHint,
+    dismissReview3DHint,
+    dismissPostPathNudge,
+    resetGuidedHints,
+  } = useEditorHints({ readOnly, hasPath });
 
   // Sync tab when initialTab prop changes (e.g. ShareViewer navigates ?view=3d via Link)
   useEffect(() => {
@@ -428,114 +255,6 @@ export default function EditorShell({
     };
   }, []);
 
-  // Load persisted design on mount
-  useEffect(() => {
-    if (readOnly) return;
-
-    // Load from share token if provided (takes priority over autosave)
-    if (seedToken) {
-      const shared = decodeDesign(seedToken);
-      if (shared) {
-        replaceDesign(shared);
-        setSaveStatusLabel("Loaded from shared link");
-        setProjects(listProjects());
-        setRestorePoints(listRestorePointsForProject(shared.id));
-        setInitialized(true);
-        return;
-      }
-      console.warn(
-        "[EditorShell] seedToken decode failed — falling back to autosave"
-      );
-    }
-
-    try {
-      const saved = localStorage.getItem("trackdraw-design");
-      if (saved) {
-        const parsed = parseDesign(JSON.parse(saved));
-        if (parsed) {
-          replaceDesign(parsed);
-          setSaveStatusLabel("Restored from local autosave");
-          setProjects(listProjects());
-          setRestorePoints(listRestorePointsForProject(parsed.id));
-          setInitialized(true);
-          return;
-        }
-      }
-      setSaveStatusLabel("Fresh local project");
-    } catch {
-      setSaveStatusLabel("Fresh local project");
-    }
-    setProjects(listProjects());
-    setRestorePoints(listRestorePointsForProject(design.id));
-    setInitialized(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (readOnly) return;
-
-    try {
-      setGateHintDismissed(
-        localStorage.getItem(HINT_STORAGE_KEYS.gate) === "true"
-      );
-      setDesktopPathHintDismissed(
-        localStorage.getItem(HINT_STORAGE_KEYS.path) === "true"
-      );
-      setDesktopPreviewHintDismissed(
-        localStorage.getItem(HINT_STORAGE_KEYS.preview) === "true"
-      );
-      setReview3DHintDismissed(
-        localStorage.getItem(HINT_STORAGE_KEYS.review3d) === "true"
-      );
-      setPostPathNudgeDismissed(
-        localStorage.getItem(HINT_STORAGE_KEYS.postPath) === "true"
-      );
-    } catch {
-      /* ignore */
-    }
-  }, [readOnly]);
-
-  // Debounce full-design serialization so interactive edits do not fight local
-  // autosave on every intermediate state.
-  useEffect(() => {
-    if (readOnly) return;
-    if (historyPaused || interactionSessionDepth > 0) {
-      setSaveStatusLabel("Editing…");
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      try {
-        const startedAt = performance.now();
-        localStorage.setItem("trackdraw-design", JSON.stringify(design));
-        if (designShapes.length > 0 || design.title.trim()) {
-          saveProject(design);
-          setProjects(listProjects());
-        }
-        recordPerfSample(
-          "autosave:localStorage",
-          performance.now() - startedAt
-        );
-        setSaveStatusLabel(
-          `Saved locally at ${new Intl.DateTimeFormat(undefined, {
-            hour: "2-digit",
-            minute: "2-digit",
-          }).format(new Date())}`
-        );
-      } catch {
-        /* ignore */
-      }
-    }, 350);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [
-    design,
-    designShapes.length,
-    historyPaused,
-    interactionSessionDepth,
-    readOnly,
-  ]);
-
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
     if (selection.length === 0) {
@@ -566,32 +285,6 @@ export default function EditorShell({
     frameId = window.requestAnimationFrame(tryStart);
     return () => window.cancelAnimationFrame(frameId);
   }, [pendingFlyThroughStart, tab]);
-
-  // Detect first path completion and show a one-time nudge toward 3D preview.
-  useEffect(() => {
-    if (readOnly) return;
-    if (!prevHasPath.current && hasPath) {
-      setShowPostPathNudge(true);
-    }
-    prevHasPath.current = hasPath;
-  }, [hasPath, readOnly]);
-
-  // Periodic restore points — every 5 min if the design changed
-  useEffect(() => {
-    if (readOnly) return;
-    let lastUpdatedAt = useEditor.getState().design.updatedAt;
-    const intervalId = window.setInterval(
-      () => {
-        const current = useEditor.getState().design;
-        if (current.updatedAt === lastUpdatedAt) return;
-        createRestorePoint(current);
-        setRestorePoints(listRestorePointsForProject(current.id));
-        lastUpdatedAt = current.updatedAt;
-      },
-      5 * 60 * 1000
-    );
-    return () => window.clearInterval(intervalId);
-  }, [readOnly]);
 
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
@@ -633,159 +326,6 @@ export default function EditorShell({
     },
     [handleTabChange]
   );
-
-  const dismissDesktopPathHint = useCallback(() => {
-    setDesktopPathHintDismissed(true);
-    try {
-      localStorage.setItem(HINT_STORAGE_KEYS.path, "true");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const dismissGateHint = useCallback(() => {
-    setGateHintDismissed(true);
-    try {
-      localStorage.setItem(HINT_STORAGE_KEYS.gate, "true");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const dismissDesktopPreviewHint = useCallback(() => {
-    setDesktopPreviewHintDismissed(true);
-    try {
-      localStorage.setItem(HINT_STORAGE_KEYS.preview, "true");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const dismissReview3DHint = useCallback(() => {
-    setReview3DHintDismissed(true);
-    try {
-      localStorage.setItem(HINT_STORAGE_KEYS.review3d, "true");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const dismissPostPathNudge = useCallback(() => {
-    setPostPathNudgeDismissed(true);
-    try {
-      localStorage.setItem(HINT_STORAGE_KEYS.postPath, "true");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const resetGuidedHints = useCallback(() => {
-    setGateHintDismissed(false);
-    setDesktopPathHintDismissed(false);
-    setDesktopPreviewHintDismissed(false);
-    setReview3DHintDismissed(false);
-    setPostPathNudgeDismissed(false);
-    setShowPostPathNudge(false);
-    prevHasPath.current = false;
-
-    try {
-      localStorage.removeItem(HINT_STORAGE_KEYS.gate);
-      localStorage.removeItem(HINT_STORAGE_KEYS.path);
-      localStorage.removeItem(HINT_STORAGE_KEYS.preview);
-      localStorage.removeItem(HINT_STORAGE_KEYS.review3d);
-      localStorage.removeItem(HINT_STORAGE_KEYS.postPath);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  const handleOpenProject = useCallback(
-    (id: string) => {
-      const loaded = loadProject(id);
-      if (!loaded) return;
-      // Save current work and snapshot before switching
-      if (designShapes.length > 0 || design.title.trim()) {
-        saveProject(design);
-        createRestorePoint(design);
-      }
-      replaceDesign(loaded);
-      setProjects(listProjects());
-      setRestorePoints(listRestorePointsForProject(loaded.id));
-      setActiveRestorePointId(null);
-      setSaveStatusLabel("Project opened");
-    },
-    [design, designShapes.length, replaceDesign]
-  );
-
-  const handleDeleteProject = useCallback((id: string) => {
-    deleteProject(id);
-    setProjects(listProjects());
-  }, []);
-
-  const handleRenameProject = useCallback(
-    (id: string, title: string) => {
-      renameProject(id, title);
-      setProjects(listProjects());
-      // If renaming the active project, also update the design title
-      if (id === design.id) {
-        useEditor.getState().updateDesignMeta({ title });
-      }
-    },
-    [design.id]
-  );
-
-  const handleRestorePoint = useCallback(
-    (id: string) => {
-      const loaded = loadRestorePoint(id);
-      if (!loaded) return;
-      replaceDesign(loaded);
-      setRestorePoints(listRestorePointsForProject(loaded.id));
-      setActiveRestorePointId(id);
-      setSaveStatusLabel("Restored from snapshot");
-    },
-    [replaceDesign]
-  );
-
-  const handleDeleteRestorePoint = useCallback(
-    (id: string) => {
-      deleteRestorePoint(id);
-      setRestorePoints(listRestorePointsForProject(design.id));
-    },
-    [design.id]
-  );
-
-  const handleSaveSnapshot = useCallback(() => {
-    createRestorePoint(design);
-    setRestorePoints(listRestorePointsForProject(design.id));
-    setActiveRestorePointId(null);
-    const time = new Intl.DateTimeFormat(undefined, {
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date());
-    setSaveStatusLabel(`Snapshot saved at ${time}`);
-    toast.success("Snapshot saved", {
-      description: `Restore point created at ${time}`,
-    });
-  }, [design]);
-
-  // Cmd+S / Ctrl+S → manual snapshot
-  useEffect(() => {
-    if (readOnly) return;
-    const handler = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || e.key !== "s") return;
-      const target = e.target as HTMLElement | null;
-      if (
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable
-      )
-        return;
-      e.preventDefault();
-      handleSaveSnapshot();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [readOnly, handleSaveSnapshot]);
 
   const shouldShowStarter =
     initialized &&
@@ -1273,12 +813,7 @@ export default function EditorShell({
         open={importOpen}
         onOpenChange={setImportOpen}
         onBeforeConfirm={() => {
-          if (designShapes.length > 0 || design.title.trim()) {
-            saveProject(design);
-            createRestorePoint(design);
-            setProjects(listProjects());
-            setRestorePoints(listRestorePointsForProject(design.id));
-          }
+          snapshotCurrentDesign();
         }}
         onBackupCurrent={() => {
           setImportOpen(false);
@@ -1297,12 +832,7 @@ export default function EditorShell({
         onOpenChange={setProjectManagerOpen}
         hasContent={Boolean(design.title.trim() || designShapes.length)}
         onNewProject={() => {
-          if (designShapes.length > 0 || design.title.trim()) {
-            saveProject(design);
-            createRestorePoint(design);
-            setProjects(listProjects());
-            setRestorePoints(listRestorePointsForProject(design.id));
-          }
+          snapshotCurrentDesign();
           replaceDesign(createFirstUseBlankDesign());
           setProjectManagerOpen(false);
           setMobileToolsOpen(false);

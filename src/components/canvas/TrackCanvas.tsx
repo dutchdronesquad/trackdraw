@@ -49,32 +49,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuGroup,
-  ContextMenuItem,
-  ContextMenuLabel,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import {
-  ArrowDown,
-  ArrowUp,
-  Copy,
-  GitMerge,
-  Lock,
-  PencilLine,
-  RotateCcw,
-  RotateCw,
-  Scan,
-  Trash2,
-  Unlock,
-} from "lucide-react";
+import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { CanvasContextMenuContent } from "@/components/canvas/CanvasContextMenu";
+import { Scan } from "lucide-react";
 
 export interface TrackCanvasHandle {
   getStage: () => KonvaStage | null;
@@ -1161,6 +1138,32 @@ const TrackCanvas = memo(
       []
     );
 
+    const handleContinueEditing = useCallback(
+      (polylineId: string) => {
+        const shape = shapeById[polylineId];
+        if (!shape || shape.kind !== "polyline") return;
+        setDraftSourceShapeId(shape.id);
+        setDraftPath(
+          shape.points.map((point) => ({
+            x: point.x,
+            y: point.y,
+            z: point.z ?? 0,
+          }))
+        );
+        setSelection([]);
+        setVertexSel(null);
+        setActiveTool("polyline");
+      },
+      [
+        shapeById,
+        setActiveTool,
+        setDraftPath,
+        setDraftSourceShapeId,
+        setSelection,
+        setVertexSel,
+      ]
+    );
+
     return (
       <ContextMenu onOpenChange={(open) => !open && setContextMenu(null)}>
         <ContextMenuTrigger
@@ -1717,158 +1720,19 @@ const TrackCanvas = memo(
         </ContextMenuTrigger>
 
         {contextMenu && (
-          <ContextMenuContent sideOffset={6} className="min-w-56">
-            <ContextMenuGroup>
-              <ContextMenuLabel>
-                <div className="text-foreground/85 font-medium">
-                  {contextMenu.label}
-                </div>
-                <div className="text-muted-foreground text-[11px]">
-                  {contextMenu.ids.length === 1
-                    ? "Quick actions"
-                    : `${contextMenu.ids.length} selected`}
-                </div>
-              </ContextMenuLabel>
-              {contextMenu.editablePolylineId && (
-                <ContextMenuItem
-                  onClick={() => {
-                    const editableId = contextMenu.editablePolylineId;
-                    if (!editableId) return;
-                    const shape = shapeById[editableId];
-                    if (!shape || shape.kind !== "polyline") return;
-                    setDraftSourceShapeId(shape.id);
-                    setDraftPath(
-                      shape.points.map((point) => ({
-                        x: point.x,
-                        y: point.y,
-                        z: point.z ?? 0,
-                      }))
-                    );
-                    setSelection([]);
-                    setVertexSel(null);
-                    setActiveTool("polyline");
-                    setContextMenu(null);
-                  }}
-                >
-                  <PencilLine className="size-3.5" />
-                  Continue editing
-                </ContextMenuItem>
-              )}
-              {contextMenu.closablePolylineId && (
-                <ContextMenuItem
-                  onClick={() => {
-                    closePolyline(contextMenu.closablePolylineId!);
-                    setContextMenu(null);
-                  }}
-                >
-                  <Scan className="size-3.5" />
-                  Close loop
-                </ContextMenuItem>
-              )}
-              <ContextMenuItem
-                onClick={() => {
-                  duplicateShapes(contextMenu.ids);
-                  setContextMenu(null);
-                }}
-              >
-                <Copy className="size-3.5" />
-                Duplicate
-                <ContextMenuShortcut>Ctrl/Cmd+D</ContextMenuShortcut>
-              </ContextMenuItem>
-              {contextMenu.joinablePolylineIds.length >= 2 && (
-                <ContextMenuItem
-                  onClick={() => {
-                    joinPolylines(contextMenu.joinablePolylineIds);
-                    setContextMenu(null);
-                  }}
-                >
-                  <GitMerge className="size-3.5" />
-                  Join paths
-                </ContextMenuItem>
-              )}
-              <ContextMenuItem
-                onClick={() => {
-                  setShapesLocked(contextMenu.ids, !contextMenu.locked);
-                  setContextMenu(null);
-                }}
-              >
-                {contextMenu.locked ? (
-                  <Unlock className="size-3.5" />
-                ) : (
-                  <Lock className="size-3.5" />
-                )}
-                {contextMenu.locked ? "Unlock" : "Lock"}
-              </ContextMenuItem>
-              <ContextMenuSub>
-                <ContextMenuSubTrigger disabled={contextMenu.ids.length !== 1}>
-                  <ArrowUp className="size-3.5" />
-                  Arrange
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  <ContextMenuItem
-                    onClick={() => {
-                      bringForward(contextMenu.ids[0]);
-                      setContextMenu(null);
-                    }}
-                  >
-                    <ArrowUp className="size-3.5" />
-                    Bring forward
-                  </ContextMenuItem>
-                  <ContextMenuItem
-                    onClick={() => {
-                      sendBackward(contextMenu.ids[0]);
-                      setContextMenu(null);
-                    }}
-                  >
-                    <ArrowDown className="size-3.5" />
-                    Send backward
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
-              </ContextMenuSub>
-              {contextMenu.rotatableIds.length > 0 && (
-                <ContextMenuSub>
-                  <ContextMenuSubTrigger>
-                    <RotateCw className="size-3.5" />
-                    Rotate
-                  </ContextMenuSubTrigger>
-                  <ContextMenuSubContent>
-                    <ContextMenuItem
-                      onClick={() => {
-                        rotateShapes(contextMenu.rotatableIds, -15);
-                        setContextMenu(null);
-                      }}
-                    >
-                      <RotateCcw className="size-3.5" />
-                      Rotate left
-                      <ContextMenuShortcut>Q / [</ContextMenuShortcut>
-                    </ContextMenuItem>
-                    <ContextMenuItem
-                      onClick={() => {
-                        rotateShapes(contextMenu.rotatableIds, 15);
-                        setContextMenu(null);
-                      }}
-                    >
-                      <RotateCw className="size-3.5" />
-                      Rotate right
-                      <ContextMenuShortcut>E / ]</ContextMenuShortcut>
-                    </ContextMenuItem>
-                  </ContextMenuSubContent>
-                </ContextMenuSub>
-              )}
-            </ContextMenuGroup>
-            <ContextMenuSeparator />
-            <ContextMenuItem
-              variant="destructive"
-              onClick={() => {
-                removeShapes(contextMenu.ids);
-                setContextMenu(null);
-              }}
-            >
-              <Trash2 className="size-3.5" />
-              Delete
-              <ContextMenuShortcut>Del</ContextMenuShortcut>
-            </ContextMenuItem>
-          </ContextMenuContent>
+          <CanvasContextMenuContent
+            contextMenu={contextMenu}
+            onClose={() => setContextMenu(null)}
+            onContinueEditing={handleContinueEditing}
+            onClosePolyline={closePolyline}
+            onDuplicate={duplicateShapes}
+            onJoinPolylines={joinPolylines}
+            onToggleLock={setShapesLocked}
+            onBringForward={bringForward}
+            onSendBackward={sendBackward}
+            onRotate={rotateShapes}
+            onDelete={removeShapes}
+          />
         )}
       </ContextMenu>
     );
