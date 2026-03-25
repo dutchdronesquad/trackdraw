@@ -482,6 +482,10 @@ export function SingleInspectorView({
                 </div>
               </div>
 
+              <InspectorFooterMobile>
+                <ElevationChart />
+              </InspectorFooterMobile>
+
               <div className="mt-3">
                 <ListPanel
                   title="Waypoints"
@@ -607,9 +611,6 @@ export function SingleInspectorView({
               </div>
             </Section>
           )}
-          <InspectorFooterMobile>
-            <ElevationChart />
-          </InspectorFooterMobile>
         </div>
       </InspectorScrollBody>
       <InspectorFooterDesktop>

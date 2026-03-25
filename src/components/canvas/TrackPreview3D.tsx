@@ -268,7 +268,7 @@ function WheelBridge({
 
   return null;
 }
-import { Move3D, Play, Pause, Route, Wind } from "lucide-react";
+import { Move3D, MoveVertical, Play, Pause, Route, Wind } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
@@ -1273,6 +1273,46 @@ const THEME = {
   },
 };
 
+// ── Canvas hint pill ─────────────────────────────────────────
+function CanvasHintPill({
+  icon,
+  position = "top-3",
+  onClick,
+  children,
+}: {
+  icon?: React.ReactNode;
+  position?: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") onClick();
+            }
+          : undefined
+      }
+      className={`absolute left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-sky-200/16 bg-slate-950/72 px-3.5 py-1.5 text-[11px] font-medium text-sky-50/88 shadow-[0_12px_32px_rgba(15,23,42,0.28)] backdrop-blur-md select-none ${
+        onClick
+          ? "cursor-pointer transition-colors hover:bg-slate-900/80 hover:text-sky-50"
+          : "pointer-events-none"
+      } ${position}`}
+    >
+      {icon && (
+        <span className="flex size-5 items-center justify-center rounded-full bg-sky-300/12 text-sky-200/85">
+          {icon}
+        </span>
+      )}
+      <span>{children}</span>
+    </div>
+  );
+}
+
 // ── Field watermark ──────────────────────────────────────────
 function FieldWatermark({
   fw,
@@ -1828,118 +1868,105 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         )}
 
         {/* Fly-through controls overlay */}
-        {hasPath && (!isMobile || flyMode) && (
-          <div
-            className={`absolute z-30 flex items-center gap-2 shadow-lg backdrop-blur select-none ${
-              flyMode
-                ? "bottom-10 left-1/2 -translate-x-1/2 rounded-xl border border-white/10 bg-black/65 px-2.5 py-1.5 text-sm"
-                : "bottom-10 left-1/2 -translate-x-1/2 rounded-2xl border border-sky-300/18 bg-slate-950/78 px-3 py-2 text-sm shadow-[0_14px_42px_rgba(15,23,42,0.34)]"
-            }`}
-          >
-            {flyMode ? (
-              <>
-                <button
-                  onClick={() => setPlaying((p) => !p)}
-                  className="flex size-7 items-center justify-center rounded-md text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-                  title={playing ? "Pause" : "Play"}
-                >
-                  {playing ? (
-                    <Pause className="size-3.5" />
-                  ) : (
-                    <Play className="size-3.5" />
-                  )}
-                </button>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-white/40">Speed</span>
-                  <input
-                    type="range"
-                    min={0.2}
-                    max={5}
-                    step={0.1}
-                    value={speed}
-                    onChange={(e) => setSpeed(+e.target.value)}
-                    className="w-20 cursor-pointer accent-white"
-                  />
-                  <span className="w-6 font-mono text-[10px] text-white/60">
-                    {speed.toFixed(1)}×
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setBankingEnabled((value) => !value)}
-                  className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
-                    bankingEnabled
-                      ? "bg-white/10 text-white/85 hover:bg-white/14"
-                      : "text-white/45 hover:bg-white/8 hover:text-white/75"
-                  }`}
-                  title="Toggle roll"
-                  aria-pressed={bankingEnabled}
-                >
-                  <span>Roll</span>
-                  <span
-                    className={`rounded px-1 py-0.5 font-mono text-[9px] ${
-                      bankingEnabled
-                        ? "bg-white/10 text-white/75"
-                        : "bg-white/6 text-white/40"
-                    }`}
-                  >
-                    {bankingEnabled ? "On" : "Off"}
-                  </span>
-                </button>
-                <div className="mx-0.5 h-4 w-px bg-white/10" />
-                <button
-                  onClick={() => {
-                    setFlyMode(false);
-                    setPlaying(false);
-                  }}
-                  className="px-1 text-[11px] text-white/40 transition-colors hover:text-white/80"
-                >
-                  Exit
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => {
-                  setFlyMode(true);
-                  setPlaying(true);
-                }}
-                className="flex items-center gap-1.5 px-1 text-[11px] text-white/50 transition-colors hover:text-white/90"
+        {flyMode && (
+          <div className="absolute bottom-3 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-white/10 bg-black/65 px-2.5 py-1.5 text-sm shadow-lg backdrop-blur select-none">
+            <button
+              onClick={() => setPlaying((p) => !p)}
+              className="flex size-7 items-center justify-center rounded-md text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+              title={playing ? "Pause" : "Play"}
+            >
+              {playing ? (
+                <Pause className="size-3.5" />
+              ) : (
+                <Play className="size-3.5" />
+              )}
+            </button>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-white/40">Speed</span>
+              <input
+                type="range"
+                min={0.2}
+                max={5}
+                step={0.1}
+                value={speed}
+                onChange={(e) => setSpeed(+e.target.value)}
+                className="w-20 cursor-pointer accent-white"
+              />
+              <span className="w-6 font-mono text-[10px] text-white/60">
+                {speed.toFixed(1)}×
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setBankingEnabled((value) => !value)}
+              className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
+                bankingEnabled
+                  ? "bg-white/10 text-white/85 hover:bg-white/14"
+                  : "text-white/45 hover:bg-white/8 hover:text-white/75"
+              }`}
+              title="Toggle roll"
+              aria-pressed={bankingEnabled}
+            >
+              <span>Roll</span>
+              <span
+                className={`rounded px-1 py-0.5 font-mono text-[9px] ${
+                  bankingEnabled
+                    ? "bg-white/10 text-white/75"
+                    : "bg-white/6 text-white/40"
+                }`}
               >
-                <Wind className="size-3.5" />
-                Fly-Through
-              </button>
-            )}
+                {bankingEnabled ? "On" : "Off"}
+              </span>
+            </button>
+            <div className="mx-0.5 h-4 w-px bg-white/10" />
+            <button
+              onClick={() => {
+                setFlyMode(false);
+                setPlaying(false);
+              }}
+              className="px-1 text-[11px] text-white/40 transition-colors hover:text-white/80"
+            >
+              Exit
+            </button>
           </div>
+        )}
+
+        {hasPath && !flyMode && !isMobile && (
+          <CanvasHintPill
+            icon={<Wind className="size-3" />}
+            position="bottom-3 z-30"
+            onClick={() => {
+              setFlyMode(true);
+              setPlaying(true);
+            }}
+          >
+            Fly-Through
+          </CanvasHintPill>
         )}
 
         {selectedPolyline && !flyMode && (
-          <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-black/46 px-3.5 py-1.5 text-[11px] text-white/78 shadow-[0_10px_28px_rgba(15,23,42,0.24)] backdrop-blur-md">
+          <CanvasHintPill icon={<MoveVertical className="size-3" />}>
             {isMobile
               ? "Drag a waypoint grip up or down to adjust elevation"
               : "Drag waypoint handles up or down to adjust elevation"}
-          </div>
+          </CanvasHintPill>
         )}
 
         {!flyMode && !isMobile && !selectedPolyline && (
-          <div className="pointer-events-none absolute top-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-sky-200/16 bg-slate-950/72 px-3.5 py-1.5 text-[11px] font-medium text-sky-50/88 shadow-[0_12px_32px_rgba(15,23,42,0.28)] backdrop-blur-md select-none">
-            <span className="flex size-5 items-center justify-center rounded-full bg-sky-300/12 text-sky-200/85">
-              <Move3D className="size-3" />
-            </span>
-            <span>
-              Orbit to inspect spacing and elevation. Scroll to zoom,
-              middle-drag to pan.
-            </span>
-          </div>
+          <CanvasHintPill icon={<Move3D className="size-3" />}>
+            Orbit to inspect spacing and elevation. Scroll to zoom, middle-drag
+            to pan.
+          </CanvasHintPill>
         )}
 
         {/* No path hint — only shown in the editor, not in read-only shared views */}
         {!hasPath && !readOnly && (
-          <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border border-sky-200/16 bg-slate-950/72 px-3.5 py-1.5 text-[11px] font-medium text-sky-50/88 shadow-[0_12px_32px_rgba(15,23,42,0.28)] backdrop-blur-md select-none">
-            <span className="flex size-5 items-center justify-center rounded-full bg-sky-300/12 text-sky-200/85">
-              <Route className="size-3" />
-            </span>
-            <span>Draw the route in 2D to enable fly-through</span>
-          </div>
+          <CanvasHintPill
+            icon={<Route className="size-3" />}
+            position="bottom-4"
+          >
+            Draw the route in 2D to enable fly-through
+          </CanvasHintPill>
         )}
       </div>
     );

@@ -245,6 +245,72 @@ export function getPolylinePreview3DPoints(
   return cache.metrics3D.get(cacheKey)?.previewPoints ?? [];
 }
 
+export type RouteWarningKind = "flat" | "steep" | "hairpin" | "close-points";
+
+export interface RouteWarning {
+  kind: RouteWarningKind;
+  waypointIndex?: number;
+}
+
+/**
+ * Returns lightweight route-review cues for a polyline:
+ * - flat: no elevation data set (all z = 0)
+ * - steep: segment gradient > 50%
+ * - hairpin: interior vertex angle < 45°
+ * - close-points: consecutive waypoints < 0.5 m apart
+ */
+export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
+  const pts = path.points;
+  if (pts.length < 2) return [];
+
+  const warnings: RouteWarning[] = [];
+
+  const hasElevation = pts.some((p) => (p.z ?? 0) !== 0);
+  if (!hasElevation) {
+    warnings.push({ kind: "flat" });
+  }
+
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const horizDist = Math.hypot(curr.x - prev.x, curr.y - prev.y);
+
+    if (horizDist < 0.5) {
+      warnings.push({ kind: "close-points", waypointIndex: i });
+      continue;
+    }
+
+    if (hasElevation) {
+      const dz = Math.abs((curr.z ?? 0) - (prev.z ?? 0));
+      if (dz / horizDist > 0.5) {
+        warnings.push({ kind: "steep", waypointIndex: i });
+      }
+    }
+  }
+
+  for (let i = 1; i < pts.length - 1; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const next = pts[i + 1];
+    const ax = prev.x - curr.x;
+    const ay = prev.y - curr.y;
+    const bx = next.x - curr.x;
+    const by = next.y - curr.y;
+    const magA = Math.hypot(ax, ay);
+    const magB = Math.hypot(bx, by);
+    if (magA > 0.1 && magB > 0.1) {
+      const cos = (ax * bx + ay * by) / (magA * magB);
+      const angleDeg =
+        Math.acos(Math.max(-1, Math.min(1, cos))) * (180 / Math.PI);
+      if (angleDeg < 45) {
+        warnings.push({ kind: "hairpin", waypointIndex: i });
+      }
+    }
+  }
+
+  return warnings;
+}
+
 export function getDesignPolylineZRange(design: TrackDesign): [number, number] {
   let zmin = 0;
   let zmax = 0;
