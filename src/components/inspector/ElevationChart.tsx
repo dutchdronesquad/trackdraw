@@ -5,9 +5,65 @@ import { useEditor } from "@/store/editor";
 import {
   getPolylineElevationSamples,
   getPolylineTotalLength2D,
+  getPolylineRouteWarnings,
+  type RouteWarning,
+  type RouteWarningKind,
 } from "@/lib/polyline-derived";
 import { selectPrimaryPolyline } from "@/store/selectors";
 import { cn } from "@/lib/utils";
+
+const WARNING_LABELS: Record<
+  RouteWarningKind,
+  (count: number, first?: number) => string
+> = {
+  flat: () => "No elevation set — 3D preview will be flat",
+  steep: (n, first) =>
+    n === 1
+      ? `Steep grade near waypoint ${first}`
+      : `Steep grade at ${n} segments`,
+  hairpin: (n, first) =>
+    n === 1 ? `Tight turn at waypoint ${first}` : `${n} tight turns`,
+  "close-points": (n, first) =>
+    n === 1 ? `Close waypoints near ${first}` : `${n} closely spaced waypoints`,
+};
+
+function RouteWarnings({ warnings }: { warnings: RouteWarning[] }) {
+  const grouped = useMemo(() => {
+    const map = new Map<RouteWarningKind, { count: number; first?: number }>();
+    for (const w of warnings) {
+      const existing = map.get(w.kind);
+      if (!existing) {
+        map.set(w.kind, { count: 1, first: w.waypointIndex });
+      } else {
+        existing.count += 1;
+      }
+    }
+    return Array.from(map.entries());
+  }, [warnings]);
+
+  if (grouped.length === 0) return null;
+
+  return (
+    <div className="mb-2 space-y-1">
+      {grouped.map(([kind, { count, first }]) => {
+        const isWarn = kind === "steep" || kind === "close-points";
+        return (
+          <div
+            key={kind}
+            className={`flex items-start gap-1.5 rounded px-2 py-1 text-[10px] leading-snug ${
+              isWarn
+                ? "bg-amber-500/8 text-amber-600 dark:text-amber-400"
+                : "bg-muted/40 text-muted-foreground"
+            }`}
+          >
+            <span className="mt-px shrink-0">{isWarn ? "⚠" : "↳"}</span>
+            <span>{WARNING_LABELS[kind](count, first)}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 const VIEW_W = 400;
 const VIEW_H = 120;
@@ -27,6 +83,11 @@ function niceStep(range: number, targetTicks: number): number {
 
 export default function ElevationChart({ className }: { className?: string }) {
   const path = useEditor(selectPrimaryPolyline);
+
+  const warnings = useMemo(
+    () => (path ? getPolylineRouteWarnings(path) : []),
+    [path]
+  );
 
   const chartData = useMemo(() => {
     if (!path) return null;
@@ -135,6 +196,8 @@ export default function ElevationChart({ className }: { className?: string }) {
           {totalDist.toFixed(1)} m · {rawMinZ.toFixed(1)}–{rawMaxZ.toFixed(1)} m
         </span>
       </div>
+
+      <RouteWarnings warnings={warnings} />
 
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}

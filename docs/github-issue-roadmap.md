@@ -66,6 +66,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 - [ ] Path and flow review
       Add lightweight warnings and route-review cues on top of the current path, elevation, and 3D tooling.
+  - [x] Route-review cues in the elevation panel
+        Added lightweight warnings to the elevation profile panel: flat path (no elevation data set), steep grades, tight turns, and closely spaced waypoints. Warnings appear in the ElevationChart footer on desktop and inline above the waypoints list on mobile.
   - [ ] 3D obstacle orientation controls
         Explore whether gates should get rotate controls and the dive gate should get tilt controls directly in the 3D view so spatial setup can be reviewed and adjusted more naturally.
 
