@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { MobileDrawer } from "@/components/MobileDrawer";
+import { DesktopModal } from "@/components/DesktopModal";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useEditor } from "@/store/editor";
 import { exportSvg } from "@/lib/export/exportSvg";
 import { exportPng } from "@/lib/export/exportPng";
@@ -143,6 +139,7 @@ export default function ExportDialog({
 }: ExportDialogProps) {
   const design = useEditor((s) => s.design);
   const currentTheme = useTheme();
+  const isMobile = useIsMobile();
   const [busy, setBusy] = useState<string | null>(null);
   const [pngTheme, setPngTheme] = useState<Theme>("dark");
   const [svgTheme, setSvgTheme] = useState<Theme>("dark");
@@ -174,173 +171,185 @@ export default function ExportDialog({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Export</DialogTitle>
-          <DialogDescription>
-            Export the current track as a 2D file or 3D render.
-          </DialogDescription>
-        </DialogHeader>
+  const body = (
+    <>
+      {/* Filename */}
+      <div className="border-border/60 bg-muted/20 mb-1 flex items-center gap-2 rounded-lg border px-3 py-2">
+        <span className="text-muted-foreground shrink-0 text-xs">Filename</span>
+        <input
+          type="text"
+          placeholder={design.title.trim() || "track"}
+          value={filename}
+          onChange={(e) => setFilename(e.target.value)}
+          className="text-foreground placeholder:text-muted-foreground/40 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
+        />
+      </div>
 
-        {/* Filename */}
-        <div className="border-border/60 bg-muted/20 mb-1 flex items-center gap-2 rounded-lg border px-3 py-2">
-          <span className="text-muted-foreground shrink-0 text-xs">
-            Filename
-          </span>
-          <input
-            type="text"
-            placeholder={design.title.trim() || "track"}
-            value={filename}
-            onChange={(e) => setFilename(e.target.value)}
-            className="text-foreground placeholder:text-muted-foreground/40 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
-          />
+      <div className="space-y-4">
+        {/* 2D */}
+        <div>
+          <SectionLabel>2D</SectionLabel>
+          <div className="border-border/50 divide-border/40 divide-y overflow-hidden rounded-xl border">
+            <FormatRow
+              ext="PNG"
+              label="Image"
+              color="bg-sky-500/15 text-sky-400"
+              description="High-res raster (2×)"
+              theme={pngTheme}
+              onThemeChange={setPngTheme}
+              busy={busy === "png"}
+              onExport={() =>
+                run("png", () =>
+                  exportPng(
+                    design,
+                    `${safeName({ view: "2d", theme: pngTheme })}.png`,
+                    pngTheme
+                  )
+                )
+              }
+            />
+            <FormatRow
+              ext="SVG"
+              label="Vector"
+              color="bg-purple-500/15 text-purple-400"
+              description="Scalable vector, opens in Illustrator / Inkscape"
+              theme={svgTheme}
+              onThemeChange={setSvgTheme}
+              busy={busy === "svg"}
+              onExport={() =>
+                run("svg", () =>
+                  exportSvg(
+                    design,
+                    `${safeName({ view: "2d", theme: svgTheme })}.svg`,
+                    svgTheme
+                  )
+                )
+              }
+            />
+            <FormatRow
+              ext="PDF"
+              label="Document"
+              color="bg-red-500/15 text-red-400"
+              description={`A4 page from the current ${currentTheme} canvas theme`}
+              busy={busy === "pdf"}
+              onExport={() =>
+                run("pdf", async () => {
+                  const stage = canvasRef.current?.getStage();
+                  if (!stage) throw new Error("Canvas not ready");
+                  const { exportPdf } = await import("@/lib/export/exportPdf");
+                  await exportPdf(
+                    stage,
+                    design,
+                    `${safeName({ view: "2d", theme: currentTheme })}.pdf`
+                  );
+                })
+              }
+            />
+          </div>
         </div>
 
-        <div className="space-y-4">
-          {/* 2D */}
-          <div>
-            <SectionLabel>2D</SectionLabel>
-            <div className="border-border/50 divide-border/40 divide-y overflow-hidden rounded-xl border">
-              <FormatRow
-                ext="PNG"
-                label="Image"
-                color="bg-sky-500/15 text-sky-400"
-                description="High-res raster (2×)"
-                theme={pngTheme}
-                onThemeChange={setPngTheme}
-                busy={busy === "png"}
-                onExport={() =>
-                  run("png", () =>
-                    exportPng(
-                      design,
-                      `${safeName({ view: "2d", theme: pngTheme })}.png`,
-                      pngTheme
-                    )
-                  )
-                }
-              />
-              <FormatRow
-                ext="SVG"
-                label="Vector"
-                color="bg-purple-500/15 text-purple-400"
-                description="Scalable vector, opens in Illustrator / Inkscape"
-                theme={svgTheme}
-                onThemeChange={setSvgTheme}
-                busy={busy === "svg"}
-                onExport={() =>
-                  run("svg", () =>
-                    exportSvg(
-                      design,
-                      `${safeName({ view: "2d", theme: svgTheme })}.svg`,
-                      svgTheme
-                    )
-                  )
-                }
-              />
-              <FormatRow
-                ext="PDF"
-                label="Document"
-                color="bg-red-500/15 text-red-400"
-                description={`A4 page from the current ${currentTheme} canvas theme`}
-                busy={busy === "pdf"}
-                onExport={() =>
-                  run("pdf", async () => {
-                    const stage = canvasRef.current?.getStage();
-                    if (!stage) throw new Error("Canvas not ready");
-                    const { exportPdf } =
-                      await import("@/lib/export/exportPdf");
-                    await exportPdf(
-                      stage,
-                      design,
-                      `${safeName({ view: "2d", theme: currentTheme })}.pdf`
+        {/* 3D */}
+        <div>
+          <SectionLabel>3D</SectionLabel>
+          <div className="border-border/50 overflow-hidden rounded-xl border">
+            <FormatRow
+              ext="PNG"
+              label="3D Render"
+              color="bg-orange-500/15 text-orange-400"
+              description={`Screenshot of the current ${currentTheme} 3D view`}
+              busy={busy === "3d"}
+              onExport={() =>
+                run("3d", () => {
+                  const dataUrl = preview3DRef?.current?.screenshot();
+                  if (!dataUrl)
+                    throw new Error(
+                      "3D view not available — open the 3D tab first"
                     );
-                  })
-                }
-              />
-            </div>
+                  const a = document.createElement("a");
+                  a.href = dataUrl;
+                  a.download = `${safeName({
+                    view: "3d",
+                    theme: currentTheme,
+                  })}.png`;
+                  a.click();
+                })
+              }
+            />
           </div>
-
-          {/* 3D */}
-          <div>
-            <SectionLabel>3D</SectionLabel>
-            <div className="border-border/50 overflow-hidden rounded-xl border">
-              <FormatRow
-                ext="PNG"
-                label="3D Render"
-                color="bg-orange-500/15 text-orange-400"
-                description={`Screenshot of the current ${currentTheme} 3D view`}
-                busy={busy === "3d"}
-                onExport={() =>
-                  run("3d", () => {
-                    const dataUrl = preview3DRef?.current?.screenshot();
-                    if (!dataUrl)
-                      throw new Error(
-                        "3D view not available — open the 3D tab first"
-                      );
-                    const a = document.createElement("a");
-                    a.href = dataUrl;
-                    a.download = `${safeName({
-                      view: "3d",
-                      theme: currentTheme,
-                    })}.png`;
-                    a.click();
-                  })
-                }
-              />
-            </div>
-            <div className="border-border/50 bg-muted/20 mt-2 rounded-lg border px-3 py-2.5">
-              <p className="text-foreground text-[11px] font-medium">
-                3D export depends on the live preview
-              </p>
-              <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
-                Open the 3D tab once so TrackDraw can render the preview before
-                you capture it.
-              </p>
-              {onRequest3DView ? (
-                <button
-                  type="button"
-                  onClick={onRequest3DView}
-                  className="text-primary hover:text-primary/80 mt-2 text-xs font-medium transition-colors"
-                >
-                  Switch to 3D now
-                </button>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Project */}
-          <div>
-            <SectionLabel>Project</SectionLabel>
-            <div className="border-border/50 overflow-hidden rounded-xl border">
-              <FormatRow
-                ext="JSON"
-                label="Project File"
-                color="bg-emerald-500/15 text-emerald-400"
-                description="Import this file back into TrackDraw later"
-                busy={busy === "json"}
-                onExport={() =>
-                  run("json", () => {
-                    const blob = new Blob([JSON.stringify(design, null, 2)], {
-                      type: "application/json",
-                    });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `${safeName({
-                      view: "2d",
-                      theme: currentTheme,
-                    })}.json`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  })
-                }
-              />
-            </div>
+          <div className="border-border/50 bg-muted/20 mt-2 rounded-lg border px-3 py-2.5">
+            <p className="text-foreground text-[11px] font-medium">
+              3D export depends on the live preview
+            </p>
+            <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
+              Open the 3D tab once so TrackDraw can render the preview before
+              you capture it.
+            </p>
+            {onRequest3DView ? (
+              <button
+                type="button"
+                onClick={onRequest3DView}
+                className="text-primary hover:text-primary/80 mt-2 text-xs font-medium transition-colors"
+              >
+                Switch to 3D now
+              </button>
+            ) : null}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Project */}
+        <div>
+          <SectionLabel>Project</SectionLabel>
+          <div className="border-border/50 overflow-hidden rounded-xl border">
+            <FormatRow
+              ext="JSON"
+              label="Project File"
+              color="bg-emerald-500/15 text-emerald-400"
+              description="Import this file back into TrackDraw later"
+              busy={busy === "json"}
+              onExport={() =>
+                run("json", () => {
+                  const blob = new Blob([JSON.stringify(design, null, 2)], {
+                    type: "application/json",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${safeName({
+                    view: "2d",
+                    theme: currentTheme,
+                  })}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                })
+              }
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <MobileDrawer
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Export"
+        subtitle="Export the current track as a 2D file or 3D render."
+      >
+        {body}
+      </MobileDrawer>
+    );
+  }
+
+  return (
+    <DesktopModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Export"
+      subtitle="Export the current track as a 2D file or 3D render."
+    >
+      {body}
+    </DesktopModal>
   );
 }

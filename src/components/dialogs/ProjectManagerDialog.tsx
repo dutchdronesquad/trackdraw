@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { MobileDrawer } from "@/components/MobileDrawer";
 import {
   FilePlus,
   Download,
@@ -385,35 +379,25 @@ export default function ProjectManagerDialog({
 
   if (isMobile) {
     return (
-      <Drawer open={open} direction="bottom" modal onOpenChange={onOpenChange}>
-        <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] [&>div:first-child]:hidden">
-          <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs">
-            <div className="flex items-center justify-center pt-2.5 pb-1.5">
-              <div className="bg-primary/20 h-1 w-10 rounded-full" />
+      <MobileDrawer
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Projects"
+        subtitle="Switch between saved projects or restore a snapshot."
+        pinnedContent={
+          <>
+            <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-4">
+              {newProjectBlock}
             </div>
-            <DrawerHeader className="px-4 pt-0 pb-3 text-left">
-              <DrawerTitle className="text-foreground/88 text-[13px] font-medium tracking-[0.01em]">
-                Projects
-              </DrawerTitle>
-              <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[10px] leading-relaxed">
-                Switch between saved projects or restore a snapshot.
-              </DrawerDescription>
-            </DrawerHeader>
-          </div>
-          {/* New project pinned */}
-          <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-4">
-            {newProjectBlock}
-          </div>
-          {/* Tabs */}
-          <div className="border-border/30 shrink-0 border-b px-4 pt-3">
-            {tabBar(true)}
-          </div>
-          {/* Tab content */}
-          <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
-            {tab === "projects" ? projectsList : restoreList}
-          </div>
-        </DrawerContent>
-      </Drawer>
+            <div className="border-border/30 shrink-0 border-b px-4 pt-3">
+              {tabBar(true)}
+            </div>
+          </>
+        }
+        bodyClassName="pt-4 pb-4"
+      >
+        {tab === "projects" ? projectsList : restoreList}
+      </MobileDrawer>
     );
   }
 
@@ -421,7 +405,7 @@ export default function ProjectManagerDialog({
 
   return (
     <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm"
       onClick={() => onOpenChange(false)}
     >
       <div

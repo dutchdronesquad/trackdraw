@@ -19,16 +19,11 @@ import { ContextOverlayCard } from "./ContextOverlayCard";
 import ShareDialog from "@/components/dialogs/ShareDialog";
 import ExportDialog from "@/components/dialogs/ExportDialog";
 import ImportDialog from "@/components/dialogs/ImportDialog";
+import KeyboardShortcutsDialog from "@/components/dialogs/KeyboardShortcutsDialog";
 import PerformanceHud from "./PerformanceHud";
 import ProjectManagerDialog from "@/components/dialogs/ProjectManagerDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { MobileDrawer } from "@/components/MobileDrawer";
 import TrackCanvas, {
   type TrackCanvasHandle,
 } from "@/components/canvas/TrackCanvas";
@@ -142,6 +137,7 @@ export default function EditorShell({
   const [shareOpen, setShareOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [tab, setTab] = useState<"2d" | "3d">(initialTab);
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
     null
@@ -380,6 +376,7 @@ export default function EditorShell({
             onShare={() => setShareOpen(true)}
             onExport={() => setExportOpen(true)}
             onSaveSnapshot={readOnly ? undefined : handleSaveSnapshot}
+            onOpenShortcuts={() => setShortcutsOpen(true)}
             readOnly={readOnly}
             hideTabsOnMobile
             collapsed={sidebarCollapsed}
@@ -433,44 +430,22 @@ export default function EditorShell({
                   />
                 </div>
                 {shouldShowStarter && isMobile ? (
-                  <div>
-                    <Drawer
-                      open={shouldShowStarter}
-                      direction="bottom"
-                      modal
-                      onOpenChange={(open) => {
-                        if (!open) setStarterDismissed(true);
-                      }}
-                    >
-                      <DrawerContent className="border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] [&>div:first-child]:hidden">
-                        <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs">
-                          <div className="flex items-center justify-center pt-2.5 pb-1.5">
-                            <div className="bg-primary/20 h-1 w-10 rounded-full" />
-                          </div>
-                          <DrawerHeader className="px-4 pt-0 pb-3 text-left">
-                            <div className="min-w-0">
-                              <DrawerTitle className="text-foreground/88 text-[13px] font-medium tracking-[0.01em]">
-                                Welcome to TrackDraw
-                              </DrawerTitle>
-                              <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[10px] leading-relaxed">
-                                Place a few gates, draw the route, check 3D,
-                                then share when the track is ready.
-                              </DrawerDescription>
-                            </div>
-                          </DrawerHeader>
-                        </div>
-
-                        <div className="flex-1 space-y-5 overflow-y-auto px-4 pt-3 pb-4">
-                          <StarterSteps mobile />
-                          <StarterActions
-                            mobile
-                            onPath={() => applyStarterDesign("gate")}
-                            onBlank={() => applyStarterDesign("blank")}
-                          />
-                        </div>
-                      </DrawerContent>
-                    </Drawer>
-                  </div>
+                  <MobileDrawer
+                    open={shouldShowStarter}
+                    onOpenChange={(open) => {
+                      if (!open) setStarterDismissed(true);
+                    }}
+                    title="Welcome to TrackDraw"
+                    subtitle="Place a few gates, draw the route, check 3D, then share when the track is ready."
+                    bodyClassName="space-y-5 pt-3 pb-4"
+                  >
+                    <StarterSteps mobile />
+                    <StarterActions
+                      mobile
+                      onPath={() => applyStarterDesign("gate")}
+                      onBlank={() => applyStarterDesign("blank")}
+                    />
+                  </MobileDrawer>
                 ) : null}
                 {shouldShowStarter && !isMobile ? (
                   <div className="absolute inset-0 z-20 hidden items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm lg:flex">
@@ -826,6 +801,10 @@ export default function EditorShell({
         canvasRef={canvasRef}
         preview3DRef={preview3DRef}
         onRequest3DView={() => handleTabChange("3d")}
+      />
+      <KeyboardShortcutsDialog
+        open={shortcutsOpen}
+        onOpenChange={setShortcutsOpen}
       />
       <ProjectManagerDialog
         open={projectManagerOpen}
