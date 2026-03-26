@@ -351,8 +351,7 @@ export function TrackPreview3DHintOverlays({
 
       {!flyMode && !isMobile && !selectedPolyline && !hasSelectedRotatable ? (
         <CanvasHintPill icon={<Move3D className="size-3" />}>
-          Orbit to inspect spacing and elevation. Scroll to zoom, middle-drag to
-          pan.
+          Orbit to inspect · scroll to zoom · middle-drag to pan
         </CanvasHintPill>
       ) : null}
 

@@ -122,12 +122,9 @@ export function ItemOverviewList({
             </span>
           }
         >
-          <div className="border-border/15 grid shrink-0 grid-cols-[minmax(0,1fr)_72px] items-center gap-3 border-b px-3 py-1.5">
+          <div className="border-border/15 grid shrink-0 grid-cols-[minmax(0,1fr)] items-center gap-3 border-b px-3 py-1.5">
             <span className="text-muted-foreground/65 text-[11px] font-medium tracking-[0.08em] uppercase">
               Item
-            </span>
-            <span className="text-muted-foreground/65 text-right font-mono text-[11px]">
-              x, y
             </span>
           </div>
           <div
@@ -145,7 +142,7 @@ export function ItemOverviewList({
                     role="button"
                     tabIndex={0}
                     onClick={() => setSelection([shape.id])}
-                    className="group/item hover:bg-primary/8 focus-visible:ring-primary/20 relative grid w-full grid-cols-[minmax(0,1fr)_72px_28px] items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
+                    className="group/item hover:bg-primary/8 focus-visible:ring-primary/20 relative grid w-full grid-cols-[minmax(0,1fr)_28px] items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
                     onMouseEnter={() => setHoveredShapeId(shape.id)}
                     onMouseLeave={() => setHoveredShapeId(null)}
                     onKeyDown={(event) => {
@@ -168,11 +165,6 @@ export function ItemOverviewList({
                           {shapeKindLabels[shape.kind]}
                         </p>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-foreground/85 block font-mono text-[11px]">
-                        {fmt(shape.x)}, {fmt(shape.y)}
-                      </span>
                     </div>
                     <div className="flex items-center justify-end opacity-100 transition-opacity lg:opacity-0 lg:group-hover/item:opacity-100">
                       <button
