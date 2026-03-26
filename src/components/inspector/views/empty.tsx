@@ -55,7 +55,7 @@ export function EmptyInspectorView({
         ]}
       />
       <div>
-        <p className="text-muted-foreground/70 mb-1.5 text-[10px] font-medium tracking-[0.08em] uppercase">
+        <p className="text-muted-foreground/70 mb-1.5 text-[11px] font-medium tracking-[0.08em] uppercase">
           Title
         </p>
         <Input
