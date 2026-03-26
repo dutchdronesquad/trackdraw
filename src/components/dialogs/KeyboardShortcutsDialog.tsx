@@ -80,6 +80,7 @@ function ShortcutSections() {
           key={section.title}
           className="group border-border/70 bg-muted/15 overflow-hidden rounded-lg border"
         >
+          <h3 className="m-0">
           <button
             type="button"
             onClick={() =>
@@ -100,6 +101,7 @@ function ShortcutSections() {
               <ChevronDown className="text-muted-foreground size-3.5" />
             </motion.div>
           </button>
+          </h3>
           <AnimatePresence initial={false}>
             {openSection === section.title && (
               <motion.div

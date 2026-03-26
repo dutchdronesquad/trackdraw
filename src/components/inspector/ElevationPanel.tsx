@@ -88,7 +88,7 @@ export default function ElevationPanel() {
             x2={PAD.left + chartW}
             y2={t.y}
             stroke="currentColor"
-            strokeOpacity={0.1}
+            strokeOpacity={0.2}
             strokeWidth={1}
           />
         ))}
@@ -126,9 +126,9 @@ export default function ElevationPanel() {
             y={t.y}
             textAnchor="end"
             dominantBaseline="middle"
-            fontSize={8}
+            fontSize={10}
             fill="currentColor"
-            fillOpacity={0.5}
+            fillOpacity={0.7}
           >
             {t.label}
           </text>
@@ -140,9 +140,9 @@ export default function ElevationPanel() {
             x={t.x}
             y={PAD.top + chartH + 12}
             textAnchor="middle"
-            fontSize={8}
+            fontSize={10}
             fill="currentColor"
-            fillOpacity={0.5}
+            fillOpacity={0.7}
           >
             {t.label}m
           </text>
@@ -154,7 +154,7 @@ export default function ElevationPanel() {
           x2={PAD.left}
           y2={PAD.top + chartH}
           stroke="currentColor"
-          strokeOpacity={0.2}
+          strokeOpacity={0.3}
           strokeWidth={1}
         />
         <line
@@ -163,7 +163,7 @@ export default function ElevationPanel() {
           x2={PAD.left + chartW}
           y2={PAD.top + chartH}
           stroke="currentColor"
-          strokeOpacity={0.2}
+          strokeOpacity={0.3}
           strokeWidth={1}
         />
       </svg>

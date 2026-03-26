@@ -102,7 +102,7 @@ function Inspector({
       )}
     >
       <div className="border-border/60 bg-card/96 px-4 py-3 lg:px-3 lg:py-2.5">
-        <div className="border-border/60 flex items-center gap-5 border-b">
+        <div role="tablist" aria-label="Inspector panels" className="border-border/60 flex items-center gap-5 border-b">
           {[
             { id: "design" as const, label: "Project" },
             { id: "selection" as const, label: "Selection" },
@@ -110,6 +110,10 @@ function Inspector({
             <button
               key={item.id}
               type="button"
+              role="tab"
+              aria-selected={panel === item.id}
+              aria-controls={`inspector-panel-${item.id}`}
+              id={`inspector-tab-${item.id}`}
               disabled={item.id === "selection" && selectionDisabled}
               onClick={() => setPanelOverride(item.id)}
               className={cn(
@@ -136,7 +140,12 @@ function Inspector({
         </p>
       </div>
 
-      <div className={cn(mobileInline ? "" : "min-h-0 flex-1 overflow-hidden")}>
+      <div
+        role="tabpanel"
+        id={`inspector-panel-${panel}`}
+        aria-labelledby={`inspector-tab-${panel}`}
+        className={cn(mobileInline ? "" : "min-h-0 flex-1 overflow-hidden")}
+      >
         {panel === "design" ? (
           <EmptyInspectorView
             mobileInline={mobileInline}

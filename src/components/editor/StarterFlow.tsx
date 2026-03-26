@@ -37,8 +37,8 @@ export function StarterSteps({ mobile = false }: { mobile?: boolean }) {
       <p
         className={
           mobile
-            ? "text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase"
-            : "text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
+            ? "text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase"
+            : "text-muted-foreground text-[11px] font-semibold tracking-widest uppercase"
         }
       >
         Good first steps
@@ -122,9 +122,9 @@ export function StarterActions({
         </div>
         <p className="text-muted-foreground mt-5 hidden flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] sm:flex">
           <Kbd>G</Kbd> places gates
-          <span className="text-muted-foreground/40">·</span>
+          <span className="text-muted-foreground/60">·</span>
           <Kbd>P</Kbd> starts the route
-          <span className="text-muted-foreground/40">·</span>
+          <span className="text-muted-foreground/60">·</span>
           <Kbd>Enter</Kbd> finishes the path
         </p>
       </>

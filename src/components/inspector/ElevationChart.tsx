@@ -52,7 +52,7 @@ function RouteWarnings({ warnings }: { warnings: RouteWarning[] }) {
         return (
           <div
             key={kind}
-            className={`flex items-start gap-1.5 rounded px-2 py-1 text-[10px] leading-snug ${
+            className={`flex items-start gap-1.5 rounded px-2 py-1 text-[11px] leading-snug ${
               isWarn
                 ? "bg-amber-500/8 text-amber-600 dark:text-amber-400"
                 : "bg-muted/40 text-muted-foreground"
@@ -202,10 +202,10 @@ export default function ElevationChart({ className }: { className?: string }) {
       )}
     >
       <div className="mb-2 flex items-baseline justify-between">
-        <span className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
+        <span className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
           Elevation Profile
         </span>
-        <span className="text-muted-foreground text-[10px]">
+        <span className="text-muted-foreground text-[11px]">
           {totalDist.toFixed(1)} m · {rawMinZ.toFixed(1)}–{rawMaxZ.toFixed(1)} m
         </span>
       </div>
@@ -217,6 +217,7 @@ export default function ElevationChart({ className }: { className?: string }) {
         width="100%"
         height={VIEW_H}
         className="overflow-visible"
+        aria-label="Elevation profile chart"
       >
         <defs>
           <linearGradient id="elev-fill" x1="0" y1="0" x2="0" y2="1">
@@ -244,7 +245,7 @@ export default function ElevationChart({ className }: { className?: string }) {
             x2={PAD_LEFT + PLOT_W}
             y2={toY(z).toFixed(2)}
             stroke="currentColor"
-            strokeOpacity={0.1}
+            strokeOpacity={0.2}
             strokeWidth={0.5}
             strokeDasharray="3 3"
           />
@@ -291,9 +292,9 @@ export default function ElevationChart({ className }: { className?: string }) {
               x={toX(minSample.d)}
               y={toY(minSample.z) + 10}
               textAnchor="middle"
-              fontSize="8"
+              fontSize="10"
               fill="currentColor"
-              fillOpacity={0.5}
+              fillOpacity={0.7}
             >
               {minSample.z.toFixed(1)}m
             </text>
@@ -312,7 +313,7 @@ export default function ElevationChart({ className }: { className?: string }) {
           x={toX(maxSample.d)}
           y={toY(maxSample.z) - 5}
           textAnchor="middle"
-          fontSize="8"
+          fontSize="10"
           fill="var(--color-primary)"
           fontWeight="600"
         >
@@ -325,7 +326,7 @@ export default function ElevationChart({ className }: { className?: string }) {
           x2={PAD_LEFT + PLOT_W}
           y2={PAD_TOP + PLOT_H}
           stroke="currentColor"
-          strokeOpacity={0.2}
+          strokeOpacity={0.3}
           strokeWidth={1}
         />
         <line
@@ -334,7 +335,7 @@ export default function ElevationChart({ className }: { className?: string }) {
           x2={PAD_LEFT}
           y2={PAD_TOP + PLOT_H}
           stroke="currentColor"
-          strokeOpacity={0.2}
+          strokeOpacity={0.3}
           strokeWidth={1}
         />
 
@@ -346,16 +347,16 @@ export default function ElevationChart({ className }: { className?: string }) {
               x2={toX(d)}
               y2={PAD_TOP + PLOT_H + 3}
               stroke="currentColor"
-              strokeOpacity={0.2}
+              strokeOpacity={0.3}
               strokeWidth={1}
             />
             <text
               x={toX(d)}
               y={VIEW_H - 4}
               textAnchor="middle"
-              fontSize="8"
+              fontSize="10"
               fill="currentColor"
-              fillOpacity={0.5}
+              fillOpacity={0.7}
             >
               {label}
             </text>
@@ -370,16 +371,16 @@ export default function ElevationChart({ className }: { className?: string }) {
               x2={PAD_LEFT}
               y2={toY(z)}
               stroke="currentColor"
-              strokeOpacity={0.2}
+              strokeOpacity={0.3}
               strokeWidth={1}
             />
             <text
               x={PAD_LEFT - 5}
               y={toY(z) + 3}
               textAnchor="end"
-              fontSize="8"
+              fontSize="10"
               fill="currentColor"
-              fillOpacity={0.5}
+              fillOpacity={0.7}
             >
               {label}
             </text>
