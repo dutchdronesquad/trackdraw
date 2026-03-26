@@ -11,7 +11,11 @@ import type {
   DiveGateShape,
 } from "../types";
 import { getDesignShapes } from "../design";
-import { getPolyline2DDerived } from "../polyline-derived";
+import {
+  getPolyline2DDerived,
+  getPolylineRouteWarningSegmentVisuals,
+  getPolylineSmoothSegmentPointsPx,
+} from "../polyline-derived";
 import {
   getCone2DShape,
   getDiveGate2DShape,
@@ -76,7 +80,11 @@ function labelToSvg(s: LabelShape, ppm: number): string {
   return `<text x="${cx}" y="${cy}" font-size="${fs}" fill="${color}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${s.rotation},${cx},${cy})">${escapeXml(s.text)}</text>`;
 }
 
-function polylineToSvg(s: PolylineShape, ppm: number): string {
+function polylineToSvg(
+  s: PolylineShape,
+  ppm: number,
+  showWarningVisuals = false
+): string {
   const pts = getPolyline2DDerived(s).smoothPoints;
   if (pts.length < 2) return "";
   const d = pts
@@ -85,10 +93,50 @@ function polylineToSvg(s: PolylineShape, ppm: number): string {
   const sw = m(s.strokeWidth ?? 0.26, ppm);
   const color = s.color ?? "#3b82f6";
   const closed = s.closed ? " Z" : "";
-  // glow pass behind + crisp line on top
+  const warningSegments = showWarningVisuals
+    ? getPolylineRouteWarningSegmentVisuals(s)
+    : [];
+  const warningKindBySegment = new Map(
+    warningSegments.map((segment) => [segment.segmentIndex, segment.kind])
+  );
+  const smoothSegmentPx = showWarningVisuals
+    ? getPolylineSmoothSegmentPointsPx(s, ppm)
+    : [];
+  const segmentMarkup =
+    showWarningVisuals && warningSegments.length
+      ? smoothSegmentPx
+          .map((points, segmentIndex) => {
+            if (!points || points.length < 4) return "";
+            const warningKind = warningKindBySegment.get(segmentIndex);
+            const stroke = !warningKind
+              ? color
+              : warningKind === "close-points"
+                ? "#ef4444"
+                : warningKind === "steep"
+                  ? "#f97316"
+                  : "#fbbf24";
+            const segmentPath = points
+              .reduce<string[]>((commands, value, index) => {
+                if (index % 2 === 0) {
+                  commands.push(
+                    `${index === 0 ? "M" : "L"}${value},${points[index + 1]}`
+                  );
+                }
+                return commands;
+              }, [])
+              .join(" ");
+            return `<path d="${segmentPath}" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
+          })
+          .join("")
+      : "";
+
   return `<g>
-    <path d="${d}${closed}" fill="none" stroke="${color}" stroke-width="${sw * 3.5}" stroke-opacity="0.22" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="${d}${closed}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${d}${closed}" fill="none" stroke="${color}" stroke-width="${sw * 2}" stroke-opacity="0.12" stroke-linecap="round" stroke-linejoin="round"/>
+    ${
+      showWarningVisuals && warningSegments.length
+        ? segmentMarkup
+        : `<path d="${d}${closed}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`
+    }
   </g>`;
 }
 
@@ -138,7 +186,11 @@ function diveGateToSvg(s: DiveGateShape, ppm: number): string {
   </g>`;
 }
 
-function shapeToSvg(shape: Shape, ppm: number): string {
+function shapeToSvg(
+  shape: Shape,
+  ppm: number,
+  primaryPolylineId: string | null
+): string {
   switch (shape.kind) {
     case "gate":
       return gateToSvg(shape, ppm);
@@ -149,7 +201,7 @@ function shapeToSvg(shape: Shape, ppm: number): string {
     case "label":
       return labelToSvg(shape, ppm);
     case "polyline":
-      return polylineToSvg(shape, ppm);
+      return polylineToSvg(shape, ppm, primaryPolylineId === shape.id);
     case "startfinish":
       return startfinishToSvg(shape, ppm);
     case "ladder":
@@ -218,8 +270,12 @@ export function designToSvg(
     gridLines += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${stroke}" stroke-width="${sw}"/>`;
   }
 
-  const shapeSvg = getDesignShapes(design)
-    .map((s) => shapeToSvg(s, ppm))
+  const shapeSvg = getDesignShapes(design);
+  const primaryPolylineId =
+    shapeSvg.find((shape): shape is PolylineShape => shape.kind === "polyline")
+      ?.id ?? null;
+  const shapeMarkup = shapeSvg
+    .map((s) => shapeToSvg(s, ppm, primaryPolylineId))
     .join("\n  ");
 
   const titleText = design.title.trim() || "Untitled Track";
@@ -253,7 +309,7 @@ export function designToSvg(
     <polyline points="${W - bl},${H} ${W},${H} ${W},${H - bl}"/>
   </g>
   <!-- Shapes -->
-  ${shapeSvg}
+  ${shapeMarkup}
   <!-- Footer bar -->
   <rect x="0" y="${H - FOOTER}" width="${W}" height="${FOOTER}" fill="${colors.footerBg}" opacity="0.85"/>
   <line x1="0" y1="${H - FOOTER}" x2="${W}" y2="${H - FOOTER}" stroke="${colors.footerLine}" stroke-width="0.75"/>
