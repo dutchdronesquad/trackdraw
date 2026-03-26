@@ -1092,14 +1092,14 @@ const TrackCanvas = memo(
 
       const handlePointerUp = () => {
         const activeSession = rotationSessionRef.current;
+        if (!rotationEffectResumedRef.current) {
+          resumeHistoryRef.current();
+          rotationEffectResumedRef.current = true;
+        }
         if (activeSession) {
           updateShapeRef.current(activeSession.shapeId, {
             rotation: activeSession.previewRotation,
           });
-        }
-        if (!rotationEffectResumedRef.current) {
-          resumeHistoryRef.current();
-          rotationEffectResumedRef.current = true;
         }
         endInteraction();
         setRotationSession(null);
