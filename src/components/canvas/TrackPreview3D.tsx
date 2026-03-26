@@ -25,6 +25,7 @@ import type {
 import {
   selectDesignShapes,
   selectHasPath,
+  selectPrimaryPolyline,
   selectSelectedPolyline,
   selectShapeRecordMap,
 } from "@/store/selectors";
@@ -103,6 +104,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const updateShape = useEditor((state) => state.updateShape);
     const shapes = useEditor(selectDesignShapes);
     const hasPath = useEditor(selectHasPath);
+    const primaryPolyline = useEditor(selectPrimaryPolyline);
     const shapeById = useEditor(selectShapeRecordMap);
     const selectedPolyline = useEditor(selectSelectedPolyline);
     const theme = useTheme();
@@ -312,6 +314,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             <MemoShape3D
               key={shape.id}
               isEditing={elevationDrag?.shapeId === shape.id}
+              isPrimaryPolyline={primaryPolyline?.id === shape.id}
               isSelected={selectedIdSet.has(shape.id)}
               onSelect={handleShapeSelect}
               shape={

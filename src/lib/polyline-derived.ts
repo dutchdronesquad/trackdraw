@@ -2,6 +2,8 @@ import * as THREE from "three";
 import {
   getAdaptiveCurveSegments,
   getPolyline2DPoints,
+  getPolylineSegment2DPoints,
+  getPolylineSegment3DPoints,
   getPolylineArrowMarkers,
   smoothPolyline3D,
 } from "./geometry";
@@ -23,8 +25,10 @@ type Cached2DPolylineMetrics = {
     { x: number; y: number; width: number; height: number }
   >;
   elevationSamples: Array<{ d: number; z: number }>;
+  smoothSegmentPoints: Array<Array<{ x: number; y: number }>>;
   smoothPoints: Array<{ x: number; y: number }>;
   smoothPxByPpm: Map<number, number[]>;
+  smoothSegmentPxByPpm: Map<number, number[][]>;
   totalLength2D: number;
 };
 
@@ -107,12 +111,18 @@ export function getPolyline2DDerived(
       : [],
     boundsByPpm: new Map(),
     elevationSamples,
+    smoothSegmentPoints: getPolylineSegment2DPoints(path.points, {
+      closed: path.closed ?? false,
+      smooth: true,
+      samplesPerSegment: POLYLINE_2D_SAMPLES_PER_SEGMENT,
+    }),
     smoothPoints: getPolyline2DPoints(path.points, {
       closed: path.closed ?? false,
       smooth: true,
       samplesPerSegment: POLYLINE_2D_SAMPLES_PER_SEGMENT,
     }),
     smoothPxByPpm: new Map(),
+    smoothSegmentPxByPpm: new Map(),
     totalLength2D,
   };
   cache.metrics2D.set(cacheKey, next);
@@ -141,6 +151,21 @@ export function getPolylineSmoothPointsPx(
   ]);
   metrics.smoothPxByPpm.set(ppm, pointsPx);
   return pointsPx;
+}
+
+export function getPolylineSmoothSegmentPointsPx(
+  path: PolylineShape,
+  ppm: number
+): number[][] {
+  const metrics = getPolyline2DDerived(path);
+  const cached = metrics.smoothSegmentPxByPpm.get(ppm);
+  if (cached) return cached;
+
+  const next = metrics.smoothSegmentPoints.map((segment) =>
+    segment.flatMap((point) => [m2px(point.x, ppm), m2px(point.y, ppm)])
+  );
+  metrics.smoothSegmentPxByPpm.set(ppm, next);
+  return next;
 }
 
 export function getPolylineBounds(path: PolylineShape, ppm: number) {
@@ -245,11 +270,45 @@ export function getPolylinePreview3DPoints(
   return cache.metrics3D.get(cacheKey)?.previewPoints ?? [];
 }
 
+export function getPolylineSmoothSegmentPoints3D(
+  path: PolylineShape,
+  heightOffset = 0,
+  samplesPerSegment = 18
+): Array<Array<[number, number, number]>> {
+  return getPolylineSegment3DPoints(path.points, {
+    closed: path.closed ?? false,
+    samplesPerSegment,
+  }).map((segment) =>
+    segment.map(
+      (point) =>
+        [point.x, Math.max(point.z, 0) + heightOffset, point.y] as [
+          number,
+          number,
+          number,
+        ]
+    )
+  );
+}
+
 export type RouteWarningKind = "flat" | "steep" | "hairpin" | "close-points";
 
 export interface RouteWarning {
   kind: RouteWarningKind;
   waypointIndex?: number;
+}
+
+export interface RouteWarningVisual {
+  kind: Exclude<RouteWarningKind, "flat">;
+  waypointIndex: number;
+  point: PolylinePoint;
+  previousPoint?: PolylinePoint;
+}
+
+export interface RouteWarningSegmentVisual {
+  kind: Exclude<RouteWarningKind, "flat">;
+  segmentIndex: number;
+  startPoint: PolylinePoint;
+  endPoint: PolylinePoint;
 }
 
 /**
@@ -309,6 +368,92 @@ export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
   }
 
   return warnings;
+}
+
+export function getPolylineRouteWarningVisuals(
+  path: PolylineShape
+): RouteWarningVisual[] {
+  const visuals: RouteWarningVisual[] = [];
+
+  for (const warning of getPolylineRouteWarnings(path)) {
+    if (warning.kind === "flat") continue;
+    if (typeof warning.waypointIndex !== "number") continue;
+
+    const point = path.points[warning.waypointIndex];
+    if (!point) continue;
+
+    visuals.push({
+      kind: warning.kind,
+      waypointIndex: warning.waypointIndex,
+      point,
+      previousPoint:
+        warning.waypointIndex > 0
+          ? path.points[warning.waypointIndex - 1]
+          : undefined,
+    });
+  }
+
+  return visuals;
+}
+
+const ROUTE_WARNING_PRIORITY: Record<
+  Exclude<RouteWarningKind, "flat">,
+  number
+> = {
+  hairpin: 1,
+  steep: 2,
+  "close-points": 3,
+};
+
+export function getPolylineRouteWarningSegmentVisuals(
+  path: PolylineShape
+): RouteWarningSegmentVisual[] {
+  const segments = new Map<number, RouteWarningSegmentVisual>();
+
+  const assignSegment = (
+    segmentIndex: number,
+    kind: Exclude<RouteWarningKind, "flat">
+  ) => {
+    if (segmentIndex < 0 || segmentIndex >= path.points.length - 1) return;
+
+    const startPoint = path.points[segmentIndex];
+    const endPoint = path.points[segmentIndex + 1];
+    if (!startPoint || !endPoint) return;
+
+    const existing = segments.get(segmentIndex);
+    if (
+      existing &&
+      ROUTE_WARNING_PRIORITY[existing.kind] >= ROUTE_WARNING_PRIORITY[kind]
+    ) {
+      return;
+    }
+
+    segments.set(segmentIndex, {
+      kind,
+      segmentIndex,
+      startPoint,
+      endPoint,
+    });
+  };
+
+  for (const warning of getPolylineRouteWarnings(path)) {
+    if (warning.kind === "flat") continue;
+    if (typeof warning.waypointIndex !== "number") continue;
+
+    if (warning.kind === "steep" || warning.kind === "close-points") {
+      assignSegment(warning.waypointIndex - 1, warning.kind);
+      continue;
+    }
+
+    if (warning.kind === "hairpin") {
+      assignSegment(warning.waypointIndex - 1, warning.kind);
+      assignSegment(warning.waypointIndex, warning.kind);
+    }
+  }
+
+  return Array.from(segments.values()).sort(
+    (left, right) => left.segmentIndex - right.segmentIndex
+  );
 }
 
 export function getDesignPolylineZRange(design: TrackDesign): [number, number] {

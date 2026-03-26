@@ -134,7 +134,7 @@ export function ItemOverviewList({
             className={cn(
               grow
                 ? "min-h-0 flex-1 overflow-y-auto"
-                : "max-h-72 overflow-y-auto"
+                : "max-h-[32rem] overflow-y-auto"
             )}
           >
             <div className="divide-border/15 divide-y">
