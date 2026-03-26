@@ -290,22 +290,29 @@ export function getPolylineSmoothSegmentPoints3D(
   );
 }
 
-export type RouteWarningKind = "flat" | "steep" | "hairpin" | "close-points";
+export type RouteWarningKind =
+  | "stub"
+  | "flat"
+  | "steep"
+  | "hairpin"
+  | "close-points";
 
 export interface RouteWarning {
   kind: RouteWarningKind;
   waypointIndex?: number;
 }
 
+type SegmentWarningKind = Exclude<RouteWarningKind, "flat" | "stub">;
+
 export interface RouteWarningVisual {
-  kind: Exclude<RouteWarningKind, "flat">;
+  kind: SegmentWarningKind;
   waypointIndex: number;
   point: PolylinePoint;
   previousPoint?: PolylinePoint;
 }
 
 export interface RouteWarningSegmentVisual {
-  kind: Exclude<RouteWarningKind, "flat">;
+  kind: SegmentWarningKind;
   segmentIndex: number;
   startPoint: PolylinePoint;
   endPoint: PolylinePoint;
@@ -313,6 +320,7 @@ export interface RouteWarningSegmentVisual {
 
 /**
  * Returns lightweight route-review cues for a polyline:
+ * - stub: fewer than 2 waypoints — path cannot form a route
  * - flat: no elevation data set (all z = 0)
  * - steep: segment gradient > 50%
  * - hairpin: interior vertex angle < 45°
@@ -320,7 +328,7 @@ export interface RouteWarningSegmentVisual {
  */
 export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
   const pts = path.points;
-  if (pts.length < 2) return [];
+  if (pts.length < 2) return [{ kind: "stub" }];
 
   const warnings: RouteWarning[] = [];
 
@@ -376,7 +384,7 @@ export function getPolylineRouteWarningVisuals(
   const visuals: RouteWarningVisual[] = [];
 
   for (const warning of getPolylineRouteWarnings(path)) {
-    if (warning.kind === "flat") continue;
+    if (warning.kind === "flat" || warning.kind === "stub") continue;
     if (typeof warning.waypointIndex !== "number") continue;
 
     const point = path.points[warning.waypointIndex];
@@ -396,10 +404,7 @@ export function getPolylineRouteWarningVisuals(
   return visuals;
 }
 
-const ROUTE_WARNING_PRIORITY: Record<
-  Exclude<RouteWarningKind, "flat">,
-  number
-> = {
+const ROUTE_WARNING_PRIORITY: Record<SegmentWarningKind, number> = {
   hairpin: 1,
   steep: 2,
   "close-points": 3,
@@ -410,10 +415,7 @@ export function getPolylineRouteWarningSegmentVisuals(
 ): RouteWarningSegmentVisual[] {
   const segments = new Map<number, RouteWarningSegmentVisual>();
 
-  const assignSegment = (
-    segmentIndex: number,
-    kind: Exclude<RouteWarningKind, "flat">
-  ) => {
+  const assignSegment = (segmentIndex: number, kind: SegmentWarningKind) => {
     if (segmentIndex < 0 || segmentIndex >= path.points.length - 1) return;
 
     const startPoint = path.points[segmentIndex];
@@ -437,7 +439,7 @@ export function getPolylineRouteWarningSegmentVisuals(
   };
 
   for (const warning of getPolylineRouteWarnings(path)) {
-    if (warning.kind === "flat") continue;
+    if (warning.kind === "flat" || warning.kind === "stub") continue;
     if (typeof warning.waypointIndex !== "number") continue;
 
     if (warning.kind === "steep" || warning.kind === "close-points") {

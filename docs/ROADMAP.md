@@ -103,145 +103,76 @@ Why it matters:
 
 ## Release Cleanup
 
-### Share Route Deprecation Before v1
+### Share Route Deprecation Before v1 ✓
 
-Keep `/share/[token]` as the current canonical read-only route for now, but remove legacy `/share?d=...` query-param support before the v1 release.
-
-Included:
-
-- Keep `/share/[token]` as the supported read-only route for v1
-- Remove legacy `/share?d=...` support before release
-- Update docs and product copy so query-based shared links are no longer referenced
-
-Why it matters:
-
-- The product should ship v1 with one clear share-link format
-- Removing the query-param variant reduces migration debt before release
-- Product copy and technical behavior should describe the same share model
+Completed. The legacy `/share?d=...` redirect and its query-param token normalization have been removed. `/share/[token]` is now the sole canonical read-only route. No query-param share links remain in the codebase or product copy.
 
 ## Near-Term Priorities
 
-### 1. Layout Acceleration
+### 1. Project Workflow And Recovery ✓
 
-Reduce repetitive setup work so users can compose good layouts faster.
+Completed. Projects dialog, project list with title/shape count/last-modified, create/open/rename/delete, autosave, restore points before destructive actions, manual snapshots via Cmd+S, periodic snapshots every 5 minutes, up to 10 restore points retained.
 
-Why now:
+### 2. Share And Publish Workflow ✓
 
-- The editor is strong enough that speed of composition is the next obvious bottleneck
-- Faster composition improves nearly every real workflow in the product
+Completed for v1. Distinct error pages for invalid vs oversized share tokens. Read-only view UX polish with improved overlay copy, correct deep-linking, fit-to-window on desktop, and mobile drawer aligned with studio.
 
-Good first slice:
+Post-v1:
 
-- Obstacle presets for reusable obstacle groupings and common race-building patterns
-- Start/finish setups
-- Straight gate runs
-- Slalom blocks
-- Ladder and dive combinations
-- Small training layouts
-- Selection grouping for repeated layout sections
-- Venue-aware field templates and starter fields
+- Sharing a specific snapshot through a stable link requires server-side share storage
+- Link lifecycle controls (regenerate, revoke, expire) follow from durable share objects
 
-### 2. Project Workflow And Recovery
+### 3. Path And Flow Review ✓
 
-Turn the current local-first foundation into a clearer, safer project workflow.
+Completed. Tight-turn warnings (hairpin), steep grade warnings, close-point warnings, stub path warning (fewer than 2 waypoints), and 3D obstacle rotation and dive gate tilt controls.
 
-Why now:
+Post-v1:
 
-- The editor already autosaves and supports import/export, but the user-facing project model is still thin
-- More serious usage needs recovery, restore, and clearer project boundaries
-- This should exist before more advanced publish or share-state features
-
-Completed:
-
-- Projects dialog accessible from the toolbar — desktop overlay and mobile drawer
-- Project list with title, shape count, and last-modified time; active project marked "current"
-- Create, open, rename, and delete projects; autosave keeps the list in sync
-- Restore points created automatically before any destructive action (new project, open, import)
-- Manual snapshots via Cmd+S or the save button in the desktop header; a toast confirms each save
-- Periodic snapshots every 5 minutes when the design has changed
-- Up to 10 restore points retained; oldest pruned automatically
-
-### 3. Share And Publish Workflow
-
-Move sharing from "the current state in one link" toward a cleaner publish model.
-
-Why now:
-
-- Shared links are already core to the product story
-- The current model is useful, but still tied too tightly to raw editor state
-- A better publish model improves trust, previews, and long-term share reliability
-
-Completed:
-
-- Distinct error pages for invalid vs oversized share tokens — oversized links surface JSON export guidance; corrupt or miscopied tokens hit a focused not-found page
-- Read-only view UX polish — improved overlay copy, view switching with correct deep-linking, fit-to-window on desktop, editor-only hints suppressed in read-only, mobile view drawer aligned with the studio drawer
-
-Good first slice:
-
-- Share a specific snapshot or variant through a stable read-only link
-- Keep a clear distinction between working state and intentionally shared states
-
-Future note:
-
-- Shorter stable share links likely require server-side share storage
-- Link lifecycle controls such as regenerate, revoke, or expire become more relevant once shares are durable objects
-
-### 4. Path And Flow Review
-
-Build on the existing path, elevation, and 3D review tools with lightweight feedback layers.
-
-Why now:
-
-- Path authoring and 3D preview are now good enough to support design feedback
-- The current path toolset is already strong enough that review quality is the next product layer
-
-Good first slice:
-
-- Tight-turn warnings
 - Suspicious obstacle spacing
-- Track path gaps or unfinished route states
-- Large elevation jumps between nearby points
-- Better route readability and review cues before heavier simulation-style analysis
-- Explore 3D obstacle orientation controls so gates can be rotated and dive gates tilted more naturally during spatial review
+- Heatmap and flow density overlays
+
+### 4. Studio Onboarding And Starter Flows ✓
+
+Completed. First-use starter surface with guided ("Start by placing gates") and blank entry paths. Dedicated new-project confirmation flow across desktop and mobile. Contextual hints for gate placement, path drawing, 3D preview, 3D review, and post-path nudge toward preview — all dismissible and localStorage-persisted.
+
+## Mid-Term Priorities
 
 ### 5. Race-Day Communication And Briefing
 
 Turn existing export and read-only capabilities into more deliberate communication outputs.
 
-Why now:
+Why post-v1:
 
-- The product already has export breadth, a read-only view, and a fly-through
-- What is missing is better packaging for pilots, marshals, and setup crews
+- The product already has export breadth and a read-only view, but briefing workflows require a distinct output surface that goes beyond what the current export and share model supports
+- This is meaningful work in its own right and benefits from the share and path review layers being solid first
 
-Good first slice:
+Scope:
 
-- Pilot briefing mode
 - Obstacle numbering
+- Pilot briefing mode
 - Printable marshal pack
 - Export presets tuned for briefing, print, and mobile review
 
-### 6. Studio Onboarding And Starter Flows
+### 6. Layout Acceleration
 
-Reduce blank-canvas friction for first-time users.
+Reduce repetitive setup work so users can compose good layouts faster.
 
-Why now:
+Why post-v1:
 
-- The product surface has grown enough that a cold start is more intimidating
-- Better onboarding should improve activation without adding heavy product chrome
+- The editor is complete enough for v1 without preset content
+- Presets require both a solid preset library and a good UI surface for browsing and applying them — this is a meaningful product investment better made after v1 ships
 
-Good first slice:
+Scope:
 
-- A guided empty-state prompt
-- One or two starter layouts or starter field presets
-- Contextual hints around path drawing, 3D preview, and sharing
-
-## Mid-Term Priorities
+- Obstacle presets for reusable groupings and common race-building patterns (start/finish setups, straight gate runs, slalom blocks, ladder and dive combinations, small training layouts)
+- Selection grouping for repeated layout sections
+- Venue-aware field templates and starter fields
 
 ### 7. Comments And Review Mode
 
 Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
 
-### 8. Velocidrone Export Compatibility
+### 8. Velocidrone Export Compatibility (Research)
 
 Explore whether TrackDraw layouts can be exported into a format that is usable inside Velocidrone's track builder workflow.
 
@@ -267,14 +198,9 @@ Recommended approach:
 
 Add lightweight visual feedback for rhythm, density, and bottlenecks after validation basics are in place.
 
-### 10. Adaptive Mobile UI
+### 10. Adaptive Mobile UI ✓
 
-Let portrait and landscape diverge where that clearly improves usability.
-
-Good first slice:
-
-- Convert the remaining desktop-style dialogs that still feel awkward on phones into bottom-drawer flows where that improves reach, focus handling, and small-screen usability
-- Start with `ExportDialog`, `ImportDialog`, and the studio keyboard-shortcuts dialog; these should adopt the newer modal style on desktop and bottom-drawer presentation on mobile
+Completed. `ExportDialog`, `ImportDialog`, and the studio keyboard-shortcuts dialog now use the newer modal style on desktop and bottom-drawer presentation on mobile.
 
 ### 11. Codebase Architecture And Performance Refactor
 
@@ -378,17 +304,19 @@ Allow multiple users to work on the same design concurrently.
 
 ## Recommended Sequence
 
-If the goal is to deliver the highest product value over the next cycle, the best order is:
+### v1
 
-1. Obstacle presets
-2. Project workflow and recovery
-3. Share and publish workflow
-4. Path and flow review
-5. Race-day communication and briefing
-6. Studio onboarding and starter flows
-7. Mobile venue editing
+The v1 scope is complete. All items are done: project workflow, share route deprecation, share/publish UX, path and flow review (including stub warning), contextual hints, mobile dialogs, onboarding, and codebase refactor.
 
-This sequence builds directly on the current strengths of the editor and improves the practical path from "draw a layout" to "use it on race day."
+### Post-v1
+
+3. Race-day communication and briefing
+4. Layout acceleration (obstacle presets, selection grouping, venue templates)
+5. Comments and review mode
+6. Velocidrone export (research track)
+7. Stable share links and share storage
+
+This sequence delivers a complete, clean product at v1 and keeps post-v1 work focused on extending workflow depth rather than plugging gaps.
 
 ## Supporting Design Docs
 
