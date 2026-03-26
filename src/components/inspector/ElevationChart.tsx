@@ -17,6 +17,7 @@ const WARNING_LABELS: Record<
   RouteWarningKind,
   (count: number, first?: number) => string
 > = {
+  stub: () => "Path needs at least 2 waypoints to form a route",
   flat: () => "No elevation set — 3D preview will be flat",
   steep: (n, first) =>
     n === 1

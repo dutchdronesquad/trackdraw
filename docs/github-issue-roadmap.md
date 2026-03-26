@@ -64,22 +64,24 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
   - [x] Read-only view UX polish
         Improved overlay copy and title. View switching via the overlay now deep-links correctly without re-encoding the token. Fit-to-window is available in the read-only desktop view. The "draw a route in 2D" hint is suppressed in read-only mode. The mobile view drawer now matches the studio drawer style with active tab indicators, fly-through access, and a working Open Studio link.
 
-- [ ] Path and flow review
-      Add lightweight warnings and route-review cues on top of the current path, elevation, and 3D tooling.
+- [x] Path and flow review
+      Lightweight warnings and route-review cues on top of the current path, elevation, and 3D tooling.
   - [x] Route-review cues in the elevation panel
         Added lightweight warnings to the elevation profile panel: flat path (no elevation data set), steep grades, tight turns, and closely spaced waypoints. Warnings appear in the ElevationChart footer on desktop and inline above the waypoints list on mobile.
   - [x] 3D obstacle orientation controls
         Gates, ladders, and dive gates get interactive handles in the 3D view: a ring puck at ground level to drag-rotate (yaw) and, for dive gates, an orange puck at the top corner of the frame to drag-tilt. OrbitControls disable during drag; history is batched per gesture for clean undo.
+  - [x] Path stub warning
+        Paths with fewer than 2 waypoints now emit a "stub" route warning. The elevation panel shows "Path needs at least 2 waypoints to form a route" instead of silently producing no output.
 
 - [ ] Race-day communication and briefing
       Turn existing export, read-only, and fly-through capabilities into better pilot briefing, marshal pack, and numbered handoff workflows.
 
-- [ ] Studio onboarding and starter flows
-      Reduce blank-canvas friction with a better first-use path, contextual hints, and a few lightweight starter options.
+- [x] Studio onboarding and starter flows
+      First-use starter surface, contextual hints (gate, path, preview, 3D review, post-path nudge), and new-project confirmation flow. Starter field presets descoped — the guided StarterFlow provides enough direction without prescribing a specific field layout.
   - [x] First-use starter flow and project reset first pass
         Added first-use starter guidance, a clearer blank-canvas entry path, and a dedicated new-project confirmation flow that works across desktop and mobile.
-  - [ ] Starter layouts and field presets
-        Add one or two lightweight starter layouts or venue-aware field presets so onboarding includes a faster first useful canvas.
+  - [x] Contextual hints
+        Dismissible hints for gate placement, path drawing, 3D preview, 3D review, and a post-path nudge toward 3D preview — all localStorage-persisted.
 
 ## Priority 2
 
