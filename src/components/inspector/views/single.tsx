@@ -454,7 +454,7 @@ export function SingleInspectorView({
                 <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-0.5">
                   {onResumeSelectedPath ? (
                     <button
-                      className="border-border/35 bg-primary/6 text-primary hover:bg-primary/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] transition-colors lg:h-7"
+                      className="border-border/35 bg-primary/6 text-primary hover:bg-primary/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors lg:h-7"
                       onClick={() => onResumeSelectedPath(shape.id)}
                     >
                       <PencilLine className="size-3" />
@@ -462,7 +462,7 @@ export function SingleInspectorView({
                     </button>
                   ) : null}
                   <button
-                    className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] transition-colors lg:h-7"
+                    className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors lg:h-7"
                     onClick={() => {
                       reversePolylinePoints(shape.id);
                     }}
@@ -472,7 +472,7 @@ export function SingleInspectorView({
                   </button>
                   {!shape.closed && shape.points.length >= 3 && (
                     <button
-                      className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] transition-colors lg:h-7"
+                      className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors lg:h-7"
                       onClick={() => closePolyline(shape.id)}
                     >
                       <Scan className="size-3" />
@@ -491,13 +491,13 @@ export function SingleInspectorView({
                   title="Waypoints"
                   subtitle="Adjust each point and its elevation."
                   meta={
-                    <span className="text-muted-foreground/50 text-[10px]">
+                    <span className="text-muted-foreground/65 text-[11px]">
                       {shape.points.length}
                     </span>
                   }
                 >
                   <div className="border-border/15 grid grid-cols-[28px_minmax(0,1fr)_56px_44px] items-center gap-2 border-b px-3 py-1.5">
-                    <span className="text-muted-foreground/65 text-[10px] font-medium tracking-[0.08em] uppercase">
+                    <span className="text-muted-foreground/65 text-[11px] font-medium tracking-[0.08em] uppercase">
                       #
                     </span>
                     <span className="text-muted-foreground/40 text-[9px] font-semibold tracking-wider uppercase">

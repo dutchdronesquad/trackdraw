@@ -140,7 +140,7 @@ function MobileQuickActionsOverlay({
           <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
             {expanded ? "Adjust" : "Quick actions"}
           </p>
-          <p className="truncate text-[10px] text-white/55">
+          <p className="truncate text-[11px] text-white/70">
             {singleSelectedShapeLabel ?? "Selection"} ·{" "}
             {mobilePrecisionStepLabel} step
           </p>
@@ -151,14 +151,14 @@ function MobileQuickActionsOverlay({
         <div className="grid grid-cols-4 gap-1.5">
           <button
             onClick={onDuplicateSelection}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
           >
             <Copy className="size-4" />
             <span>Duplicate</span>
           </button>
           <button
             onClick={onToggleSelectionLock}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
           >
             {selectionLocked ? (
               <Unlock className="size-4" />
@@ -169,14 +169,14 @@ function MobileQuickActionsOverlay({
           </button>
           <button
             onClick={onDeleteSelection}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
           >
             <Trash2 className="size-4" />
             <span>Delete</span>
           </button>
           <button
             onClick={() => setExpanded(true)}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
           >
             <SlidersHorizontal className="size-4" />
             <span>Adjust</span>
@@ -186,7 +186,7 @@ function MobileQuickActionsOverlay({
         <div className="grid grid-cols-4 gap-1.5">
           <button
             onClick={() => setExpanded(false)}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/62 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/62 transition-colors hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="size-4" />
             <span>Back</span>
@@ -194,7 +194,7 @@ function MobileQuickActionsOverlay({
           <button
             onClick={() => onRotateSelection(-15)}
             disabled={!singleSelectionCanRotate}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <RotateCcw className="size-4" />
             <span>-15°</span>
@@ -202,7 +202,7 @@ function MobileQuickActionsOverlay({
           <button
             onClick={() => onRotateSelection(15)}
             disabled={!singleSelectionCanRotate}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <RotateCw className="size-4" />
             <span>+15°</span>
@@ -213,7 +213,7 @@ function MobileQuickActionsOverlay({
           <button
             onClick={() => onNudgeSelection(-mobilePrecisionStep, 0)}
             disabled={!singleSelectionCanNudge}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowLeft className="size-4" />
             <span>Left</span>
@@ -221,7 +221,7 @@ function MobileQuickActionsOverlay({
           <button
             onClick={() => onNudgeSelection(0, -mobilePrecisionStep)}
             disabled={!singleSelectionCanNudge}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowUp className="size-4" />
             <span>Up</span>
@@ -229,7 +229,7 @@ function MobileQuickActionsOverlay({
           <button
             onClick={() => onNudgeSelection(0, mobilePrecisionStep)}
             disabled={!singleSelectionCanNudge}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowDown className="size-4" />
             <span>Down</span>
@@ -237,7 +237,7 @@ function MobileQuickActionsOverlay({
           <button
             onClick={() => onNudgeSelection(mobilePrecisionStep, 0)}
             disabled={!singleSelectionCanNudge}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowRight className="size-4" />
             <span>Right</span>
@@ -435,7 +435,7 @@ export function EditorMobilePanels({
             <button
               onClick={handleMobileSelectButton}
               className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
+                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
                 activeTool === "select" && !mobileMultiSelectEnabled
                   ? "bg-white text-slate-950"
                   : "text-white/72 hover:bg-white/10 hover:text-white"
@@ -446,7 +446,7 @@ export function EditorMobilePanels({
             </button>
             <button
               onClick={openToolsDrawer}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <LayoutGrid className="size-3.5" />
               <span>Tools</span>
@@ -456,7 +456,7 @@ export function EditorMobilePanels({
                 <p className="text-[8px] font-medium tracking-[0.08em] text-white/52 uppercase">
                   {mobileStatusTitle}
                 </p>
-                <p className="max-w-full truncate text-[10px] leading-tight font-semibold text-white">
+                <p className="max-w-full truncate text-[11px] leading-tight font-semibold text-white">
                   {mobileStatusValue}
                 </p>
               </div>
@@ -465,7 +465,7 @@ export function EditorMobilePanels({
               onClick={openInspectorDrawer}
               disabled={!canOpenInspector}
               className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
+                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
                 canOpenInspector
                   ? "text-white/72 hover:bg-white/10 hover:text-white"
                   : "text-white/38"
@@ -476,7 +476,7 @@ export function EditorMobilePanels({
             </button>
             <button
               onClick={openViewDrawer}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <Scan className="size-3.5" />
               <span>View</span>
@@ -501,21 +501,21 @@ export function EditorMobilePanels({
           >
             <button
               onClick={openReadOnlyDrawer}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Scan className="size-3.5" />
               <span>View</span>
             </button>
             <button
               onClick={onShare}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Share2 className="size-3.5" />
               <span>Share</span>
             </button>
             <Link
               href="/studio"
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <ArrowRight className="size-3.5" />
               <span>Edit</span>
@@ -555,7 +555,7 @@ export function EditorMobilePanels({
                   </p>
                 </div>
               </div>
-              <span className="rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-[10px] font-medium text-white/72">
+              <span className="rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-[11px] font-medium text-white/72">
                 Edit
               </span>
             </button>
@@ -608,7 +608,7 @@ export function EditorMobilePanels({
                 <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
                   Path builder
                 </p>
-                <p className="truncate text-[10px] text-white/55">
+                <p className="truncate text-[11px] text-white/70">
                   {draftPathPointCount > 0
                     ? `${draftPathPointCount} points · ${draftPathLength.toFixed(1)} m`
                     : "Tap the canvas to place the first point"}
@@ -620,7 +620,7 @@ export function EditorMobilePanels({
               <button
                 onClick={onUndoPathPoint}
                 disabled={draftPathPointCount === 0}
-                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
               >
                 <ArrowRight className="size-4 rotate-180" />
                 <span>Undo</span>
@@ -628,7 +628,7 @@ export function EditorMobilePanels({
               <button
                 onClick={onCloseLoop}
                 disabled={draftPathPointCount < 3 || draftPathClosed}
-                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
               >
                 <PencilLine className="size-4" />
                 <span>Close loop</span>
@@ -636,14 +636,14 @@ export function EditorMobilePanels({
               <button
                 onClick={onFinishPath}
                 disabled={draftPathPointCount < 2}
-                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
               >
                 <PencilLine className="size-4" />
                 <span>Finish</span>
               </button>
               <button
                 onClick={onCancelPath}
-                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
               >
                 <X className="size-4" />
                 <span>Cancel</span>
@@ -674,7 +674,7 @@ export function EditorMobilePanels({
                     ? `${selectedCount} selected`
                     : "Multi-select"}
                 </p>
-                <p className="truncate text-[10px] text-white/55">
+                <p className="truncate text-[11px] text-white/70">
                   Tap items to add or remove them.
                 </p>
               </div>
@@ -684,7 +684,7 @@ export function EditorMobilePanels({
               <button
                 onClick={onDuplicateSelection}
                 disabled={selectedCount === 0}
-                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
               >
                 <Copy className="size-4" />
                 <span>Duplicate</span>
@@ -692,7 +692,7 @@ export function EditorMobilePanels({
               <button
                 onClick={onToggleSelectionLock}
                 disabled={selectedCount === 0}
-                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/25"
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
               >
                 {selectionLocked ? (
                   <Unlock className="size-4" />
@@ -704,7 +704,7 @@ export function EditorMobilePanels({
               <button
                 onClick={onDeleteSelection}
                 disabled={selectedCount === 0}
-                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[10px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200 disabled:text-white/25"
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200 disabled:text-white/35"
               >
                 <Trash2 className="size-4" />
                 <span>Delete</span>
@@ -753,7 +753,7 @@ export function EditorMobilePanels({
         >
           <>
             <div>
-              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+              <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
                 History
               </p>
               <div className="grid grid-cols-2 gap-2">
@@ -781,7 +781,7 @@ export function EditorMobilePanels({
             </div>
             {tab === "2d" && (
               <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+                <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
                   Drawing tools
                 </p>
                 <div className="grid grid-cols-3 gap-2">
@@ -813,7 +813,7 @@ export function EditorMobilePanels({
               </div>
             )}
             <div>
-              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+              <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
                 Project
               </p>
               <div className="grid grid-cols-3 gap-2">
@@ -853,7 +853,7 @@ export function EditorMobilePanels({
         >
           <>
             <div>
-              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+              <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
                 Current mode
               </p>
               <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
@@ -866,7 +866,7 @@ export function EditorMobilePanels({
               </div>
             </div>
             <div>
-              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+              <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
                 View mode
               </p>
               <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
@@ -894,7 +894,7 @@ export function EditorMobilePanels({
               >
                 <div>
                   <p className="text-[11px] font-medium">Fit to field</p>
-                  <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                  <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                     Center the current design in view
                   </p>
                 </div>
@@ -912,7 +912,7 @@ export function EditorMobilePanels({
                 >
                   <div>
                     <p className="text-[11px] font-medium">Rulers</p>
-                    <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                    <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                       Show top and left guides on mobile
                     </p>
                   </div>
@@ -942,7 +942,7 @@ export function EditorMobilePanels({
                   >
                     <div>
                       <p className="text-[11px] font-medium">Fly-through</p>
-                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                      <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                         {hasPath
                           ? "Start the race-line preview camera"
                           : "Draw a path in 2D first to enable this"}
@@ -961,7 +961,7 @@ export function EditorMobilePanels({
                   >
                     <div>
                       <p className="text-[11px] font-medium">Gizmo</p>
-                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                      <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                         Show the axis helper in 3D preview
                       </p>
                     </div>
@@ -993,7 +993,7 @@ export function EditorMobilePanels({
         >
           <>
             <div>
-              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+              <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
                 View mode
               </p>
               <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
@@ -1021,7 +1021,7 @@ export function EditorMobilePanels({
               >
                 <div>
                   <p className="text-[11px] font-medium">Fit to field</p>
-                  <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                  <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                     Center the current design in view
                   </p>
                 </div>
@@ -1039,7 +1039,7 @@ export function EditorMobilePanels({
                 >
                   <div>
                     <p className="text-[11px] font-medium">Rulers</p>
-                    <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                    <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                       Show top and left guides on mobile
                     </p>
                   </div>
@@ -1069,7 +1069,7 @@ export function EditorMobilePanels({
                   >
                     <div>
                       <p className="text-[11px] font-medium">Fly-through</p>
-                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                      <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                         {hasPath
                           ? "Start the race-line preview camera"
                           : "No route in this shared track"}
@@ -1088,7 +1088,7 @@ export function EditorMobilePanels({
                   >
                     <div>
                       <p className="text-[11px] font-medium">Gizmo</p>
-                      <p className="text-muted-foreground/75 pt-0.5 text-[10px]">
+                      <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                         Show the axis helper in 3D preview
                       </p>
                     </div>
@@ -1107,7 +1107,7 @@ export function EditorMobilePanels({
               )}
             </div>
             <div>
-              <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+              <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
                 Share
               </p>
               <div className="grid grid-cols-2 gap-2">

@@ -42,7 +42,7 @@ export function ListPanel({
             {meta ? <div className="shrink-0">{meta}</div> : null}
           </div>
           {subtitle ? (
-            <p className="text-muted-foreground/70 mt-1 text-[10px] leading-relaxed">
+            <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
               {subtitle}
             </p>
           ) : null}
@@ -117,16 +117,16 @@ export function ItemOverviewList({
           subtitle="Select an item from the list."
           grow={grow}
           meta={
-            <span className="text-muted-foreground/50 text-[10px]">
+            <span className="text-muted-foreground/65 text-[11px]">
               {shapes.length}
             </span>
           }
         >
           <div className="border-border/15 grid shrink-0 grid-cols-[minmax(0,1fr)_72px] items-center gap-3 border-b px-3 py-1.5">
-            <span className="text-muted-foreground/65 text-[10px] font-medium tracking-[0.08em] uppercase">
+            <span className="text-muted-foreground/65 text-[11px] font-medium tracking-[0.08em] uppercase">
               Item
             </span>
-            <span className="text-muted-foreground/50 text-right font-mono text-[10px]">
+            <span className="text-muted-foreground/65 text-right font-mono text-[11px]">
               x, y
             </span>
           </div>
@@ -134,7 +134,7 @@ export function ItemOverviewList({
             className={cn(
               grow
                 ? "min-h-0 flex-1 overflow-y-auto"
-                : "max-h-[32rem] overflow-y-auto"
+                : "max-h-128 overflow-y-auto"
             )}
           >
             <div className="divide-border/15 divide-y">
@@ -164,13 +164,13 @@ export function ItemOverviewList({
                         <p className="text-foreground truncate text-[11px] font-medium">
                           {shape.name?.trim() || shapeKindLabels[shape.kind]}
                         </p>
-                        <p className="text-muted-foreground/55 truncate text-[10px] uppercase">
+                        <p className="text-muted-foreground/65 truncate text-[11px] uppercase">
                           {shapeKindLabels[shape.kind]}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-foreground/85 block font-mono text-[10px]">
+                      <span className="text-foreground/85 block font-mono text-[11px]">
                         {fmt(shape.x)}, {fmt(shape.y)}
                       </span>
                     </div>

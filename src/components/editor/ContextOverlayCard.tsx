@@ -72,7 +72,7 @@ export function ContextOverlayCard({
             {title}
           </p>
           {badge ? (
-            <span className="border-border/60 bg-muted/45 text-muted-foreground rounded-md border px-1.5 py-0.5 text-[10px] font-medium tracking-[0.08em] uppercase">
+            <span className="border-border/60 bg-muted/45 text-muted-foreground rounded-md border px-1.5 py-0.5 text-[11px] font-medium tracking-[0.08em] uppercase">
               {badge}
             </span>
           ) : null}

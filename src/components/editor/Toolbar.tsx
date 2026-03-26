@@ -128,7 +128,7 @@ export default function Toolbar({
                 (collapsed ? (
                   <SidebarSeparator className="my-2" />
                 ) : group.title ? (
-                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[10px] tracking-widest uppercase">
+                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[11px] tracking-widest uppercase">
                     {group.title}
                   </SidebarGroupLabel>
                 ) : (
@@ -206,7 +206,6 @@ export default function Toolbar({
                               setSelection([]);
                               setActiveTool(tool.id);
                             }}
-                            aria-label={tool.label}
                             className={cn(
                               "flex h-8 w-full items-center justify-center rounded-lg border transition-colors duration-150",
                               active
@@ -264,7 +263,6 @@ export default function Toolbar({
                     <Tooltip>
                       <TooltipTrigger
                         onClick={() => handleAction(action)}
-                        aria-label={tooltip}
                         className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-8 w-full items-center justify-center rounded-lg border border-transparent transition-colors"
                       >
                         {icon}

@@ -242,7 +242,7 @@ export function FlyThroughControlsOverlay({
         )}
       </button>
       <div className="flex items-center gap-1.5">
-        <span className="text-[10px] text-white/40">Speed</span>
+        <span className="text-[11px] text-white/60">Speed</span>
         <input
           type="range"
           min={0.2}
@@ -252,14 +252,14 @@ export function FlyThroughControlsOverlay({
           onChange={(event) => setSpeed(+event.target.value)}
           className="w-20 cursor-pointer accent-white"
         />
-        <span className="w-6 font-mono text-[10px] text-white/60">
+        <span className="w-6 font-mono text-[11px] text-white/60">
           {speed.toFixed(1)}×
         </span>
       </div>
       <button
         type="button"
         onClick={() => setBankingEnabled((value) => !value)}
-        className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] transition-colors ${
+        className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] transition-colors ${
           bankingEnabled
             ? "bg-white/10 text-white/85 hover:bg-white/14"
             : "text-white/45 hover:bg-white/8 hover:text-white/75"

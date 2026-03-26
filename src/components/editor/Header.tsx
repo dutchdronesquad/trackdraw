@@ -66,8 +66,6 @@ export default function Header({
     <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
       <button
         onClick={() => onTabChange("2d")}
-        aria-label="Switch to 2D view"
-        aria-pressed={tab === "2d"}
         className={cn(
           "px-2.5 py-1 transition-colors",
           tab === "2d"
@@ -80,8 +78,6 @@ export default function Header({
       <div className="bg-border/60 h-full w-px self-stretch" />
       <button
         onClick={() => onTabChange("3d")}
-        aria-label="Switch to 3D view"
-        aria-pressed={tab === "3d"}
         className={cn(
           "px-2.5 py-1 transition-colors",
           tab === "3d"
@@ -140,7 +136,6 @@ export default function Header({
           <Tooltip>
             <TooltipTrigger
               onClick={() => onToggleCollapsed()}
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 shrink-0 items-center justify-center rounded-md transition-colors lg:flex"
             >
               {collapsed ? (
@@ -203,7 +198,7 @@ export default function Header({
 
         {readOnly && (
           <>
-            <span className="hidden shrink-0 items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/20 px-1.5 py-0.5 text-[11px] font-medium text-sky-400 sm:flex">
+            <span className="hidden shrink-0 items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[11px] font-medium text-sky-400 sm:flex">
               <Eye className="size-3" />
               View only
             </span>
@@ -230,7 +225,7 @@ export default function Header({
                   "text-muted-foreground flex size-7 items-center justify-center rounded-md transition-colors",
                   canUndo
                     ? "hover:text-foreground hover:bg-muted"
-                    : "pointer-events-none opacity-40"
+                    : "pointer-events-none opacity-25"
                 )}
                 onClick={() => undo()}
                 aria-label="Undo"
@@ -239,7 +234,7 @@ export default function Header({
               </TooltipTrigger>
               <TooltipContent>
                 Undo{" "}
-                <span className="ml-1 font-mono text-[10px] opacity-50">
+                <span className="ml-1 font-mono text-[11px] opacity-65">
                   ⌃Z
                 </span>
               </TooltipContent>
@@ -250,7 +245,7 @@ export default function Header({
                   "text-muted-foreground flex size-7 items-center justify-center rounded-md transition-colors",
                   canRedo
                     ? "hover:text-foreground hover:bg-muted"
-                    : "pointer-events-none opacity-40"
+                    : "pointer-events-none opacity-25"
                 )}
                 onClick={() => redo()}
                 aria-label="Redo"
@@ -259,7 +254,7 @@ export default function Header({
               </TooltipTrigger>
               <TooltipContent>
                 Redo{" "}
-                <span className="ml-1 font-mono text-[10px] opacity-50">
+                <span className="ml-1 font-mono text-[11px] opacity-65">
                   ⌃Y
                 </span>
               </TooltipContent>
@@ -276,7 +271,7 @@ export default function Header({
                 <TooltipContent className="flex flex-col gap-0.5">
                   <span>
                     Save snapshot{" "}
-                    <span className="font-mono text-[10px] opacity-50">⌘S</span>
+                    <span className="font-mono text-[11px] opacity-65">⌘S</span>
                   </span>
                   {lastSavedLabel && (
                     <span className="opacity-60">{lastSavedLabel}</span>
@@ -308,7 +303,6 @@ export default function Header({
         {!readOnly && onExport && (
           <button
             onClick={onExport}
-            aria-label="Export"
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
               "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"
@@ -321,7 +315,6 @@ export default function Header({
 
         <button
           onClick={onShare}
-          aria-label="Share"
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
             "h-8 gap-1.5 px-2 text-xs sm:h-7 sm:px-2.5"

@@ -127,7 +127,7 @@ export default function ImportDialog({
                 or click to browse
               </p>
             </div>
-            <span className="text-muted-foreground/40 font-mono text-[10px]">
+            <span className="text-muted-foreground/55 font-mono text-[11px]">
               .json
             </span>
           </div>
