@@ -80,26 +80,28 @@ function ShortcutSections() {
           key={section.title}
           className="group border-border/70 bg-muted/15 overflow-hidden rounded-lg border"
         >
-          <button
-            type="button"
-            onClick={() =>
-              setOpenSection((current) =>
-                current === section.title ? "" : section.title
-              )
-            }
-            className="bg-muted/40 hover:bg-muted/60 flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors"
-            aria-expanded={openSection === section.title}
-          >
-            <span className="text-muted-foreground/80 text-[11px] font-semibold tracking-[0.16em] uppercase">
-              {section.title}
-            </span>
-            <motion.div
-              animate={{ rotate: openSection === section.title ? 180 : 0 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
+          <h3 className="m-0">
+            <button
+              type="button"
+              onClick={() =>
+                setOpenSection((current) =>
+                  current === section.title ? "" : section.title
+                )
+              }
+              className="bg-muted/40 hover:bg-muted/60 flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors"
+              aria-expanded={openSection === section.title}
             >
-              <ChevronDown className="text-muted-foreground size-3.5" />
-            </motion.div>
-          </button>
+              <span className="text-muted-foreground/80 text-[11px] font-semibold tracking-[0.16em] uppercase">
+                {section.title}
+              </span>
+              <motion.div
+                animate={{ rotate: openSection === section.title ? 180 : 0 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+              >
+                <ChevronDown className="text-muted-foreground size-3.5" />
+              </motion.div>
+            </button>
+          </h3>
           <AnimatePresence initial={false}>
             {openSection === section.title && (
               <motion.div

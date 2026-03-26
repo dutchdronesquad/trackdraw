@@ -66,10 +66,10 @@ export default function ElevationPanel() {
   return (
     <div className="border-border bg-card/50 shrink-0 border-t px-4 py-3">
       <div className="mb-2 flex items-baseline justify-between">
-        <p className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
+        <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
           Elevation Profile
         </p>
-        <p className="text-muted-foreground text-[10px]">
+        <p className="text-muted-foreground text-[11px]">
           {total.toFixed(1)} m · {minZ.toFixed(1)}–{maxZ.toFixed(1)} m
         </p>
       </div>

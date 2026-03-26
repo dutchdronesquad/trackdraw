@@ -445,7 +445,7 @@ export default function ProjectManagerDialog({
         <div className="border-border/30 grid min-h-0 grid-cols-2 border-t">
           {/* Left: new project */}
           <div className="border-border/30 border-r px-6 py-6">
-            <p className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-widest uppercase">
+            <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
               New project
             </p>
             {newProjectBlock}

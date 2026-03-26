@@ -27,7 +27,7 @@ type Theme = "dark" | "light";
 
 function SectionLabel({ children }: { children: string }) {
   return (
-    <p className="text-muted-foreground/40 pb-2.5 text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
+    <p className="text-muted-foreground/60 pb-2.5 text-[11px] font-semibold tracking-[0.12em] uppercase select-none">
       {children}
     </p>
   );
@@ -108,16 +108,16 @@ function FormatTile({
       <div className="flex items-start justify-between gap-2">
         <span
           className={cn(
-            "rounded-md px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide",
+            "rounded-md px-2 py-0.5 font-mono text-[11px] font-bold tracking-wide",
             color
           )}
         >
           {ext}
         </span>
         {busy ? (
-          <Loader2 className="text-muted-foreground/50 size-3.5 shrink-0 animate-spin" />
+          <Loader2 className="text-muted-foreground/65 size-3.5 shrink-0 animate-spin" />
         ) : (
-          <Download className="text-muted-foreground/20 group-hover:text-muted-foreground/60 size-3.5 shrink-0 transition-colors" />
+          <Download className="text-muted-foreground/40 group-hover:text-muted-foreground/60 size-3.5 shrink-0 transition-colors" />
         )}
       </div>
       <div className="flex-1">
@@ -182,7 +182,7 @@ export default function ExportDialog({
           placeholder={design.title.trim() || "track"}
           value={filename}
           onChange={(e) => setFilename(e.target.value)}
-          className="text-foreground placeholder:text-muted-foreground/30 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
+          className="text-foreground placeholder:text-muted-foreground/45 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
         />
       </div>
       <ExportThemeToggle value={exportTheme} onChange={setExportTheme} />
@@ -387,7 +387,7 @@ export default function ExportDialog({
             >
               <span
                 className={cn(
-                  "w-10 shrink-0 rounded-md py-0.5 text-center font-mono text-[10px] font-bold tracking-wide",
+                  "w-10 shrink-0 rounded-md py-0.5 text-center font-mono text-[11px] font-bold tracking-wide",
                   f.color
                 )}
               >
@@ -400,9 +400,9 @@ export default function ExportDialog({
                 </p>
               </div>
               {busy === f.id ? (
-                <Loader2 className="text-muted-foreground/50 size-4 shrink-0 animate-spin" />
+                <Loader2 className="text-muted-foreground/65 size-4 shrink-0 animate-spin" />
               ) : (
-                <Download className="text-muted-foreground/30 size-4 shrink-0" />
+                <Download className="text-muted-foreground/50 size-4 shrink-0" />
               )}
             </button>
           ))}
@@ -492,16 +492,16 @@ export default function ExportDialog({
                 <div className="flex items-start justify-between gap-2">
                   <span
                     className={cn(
-                      "rounded-md px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide",
+                      "rounded-md px-2 py-0.5 font-mono text-[11px] font-bold tracking-wide",
                       f.color
                     )}
                   >
                     {f.ext}
                   </span>
                   {isBusy ? (
-                    <Loader2 className="text-muted-foreground/50 size-3.5 shrink-0 animate-spin" />
+                    <Loader2 className="text-muted-foreground/65 size-3.5 shrink-0 animate-spin" />
                   ) : (
-                    <Download className="text-muted-foreground/30 size-3.5 shrink-0" />
+                    <Download className="text-muted-foreground/50 size-3.5 shrink-0" />
                   )}
                 </div>
                 <div>
@@ -538,7 +538,7 @@ export default function ExportDialog({
                 placeholder={design.title.trim() || "track"}
                 value={filename}
                 onChange={(e) => setFilename(e.target.value)}
-                className="text-foreground placeholder:text-muted-foreground/30 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
+                className="text-foreground placeholder:text-muted-foreground/45 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
               />
             </div>
             <ExportThemeToggle value={exportTheme} onChange={setExportTheme} />

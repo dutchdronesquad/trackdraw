@@ -1172,7 +1172,7 @@ const TrackCanvas = memo(
           style={{ cursor: cursorStyle, touchAction: "none" }}
         >
           <div
-            className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 items-center gap-2 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
+            className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 items-center gap-2 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
             style={{
               top: RULER_SIZE + 6,
               left: RULER_SIZE + 6,
@@ -1190,7 +1190,7 @@ const TrackCanvas = memo(
             </span>
           </div>
           <div
-            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-10.5 right-2 z-20 rounded-md border px-2 py-1 text-[10px] backdrop-blur"
+            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-10.5 right-2 z-20 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
             style={{
               top: RULER_SIZE + 6,
               display: showDesktopCanvasChrome ? "block" : "none",
@@ -1222,7 +1222,7 @@ const TrackCanvas = memo(
               </TooltipTrigger>
               <TooltipContent side="left">
                 Fit to window{" "}
-                <span className="ml-1 font-mono text-[10px] opacity-50">0</span>
+                <span className="ml-1 font-mono text-[11px] opacity-65">0</span>
               </TooltipContent>
             </Tooltip>
           </div>

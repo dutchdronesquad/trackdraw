@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function MetaPill({ children }: { children: ReactNode }) {
   return (
-    <span className="border-border/25 text-muted-foreground rounded-full border px-2 py-0.5 text-[10px]">
+    <span className="border-border/25 text-muted-foreground rounded-full border px-2 py-0.5 text-[11px]">
       {children}
     </span>
   );

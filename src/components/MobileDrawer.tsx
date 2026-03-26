@@ -49,7 +49,7 @@ export function MobileDrawer({
                 {title}
               </DrawerTitle>
               {subtitle ? (
-                <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[10px] leading-relaxed">
+                <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[11px] leading-relaxed">
                   {subtitle}
                 </DrawerDescription>
               ) : null}

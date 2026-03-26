@@ -27,20 +27,24 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const zoom = useEditor((state) => state.transient.zoom);
 
   return (
-    <div className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex">
+    <div
+      role="status"
+      aria-live="polite"
+      className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex"
+    >
       <span className="text-foreground/80 shrink-0">
         {toolLabel[activeTool] ?? activeTool}
       </span>
-      <span className="text-muted-foreground/25">·</span>
+      <span className="text-muted-foreground/45">·</span>
 
       {/* Zoom */}
       <span>{Math.round(zoom * 100)}%</span>
 
       {/* Grid step — desktop only */}
       <span className="hidden lg:contents">
-        <span className="text-muted-foreground/25">·</span>
+        <span className="text-muted-foreground/45">·</span>
         <span>{field.gridStep}m</span>
-        <span className="text-muted-foreground/25">·</span>
+        <span className="text-muted-foreground/45">·</span>
       </span>
 
       {/* Cursor position — desktop only */}
@@ -50,14 +54,14 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
             {cursorPos.x.toFixed(1)}, {cursorPos.y.toFixed(1)} m
           </span>
         ) : (
-          <span className="text-muted-foreground/25">— m</span>
+          <span className="text-muted-foreground/45">— m</span>
         )}
       </span>
 
       {/* Snap indicator — desktop only */}
       {snapActive && (
         <span className="hidden lg:contents">
-          <span className="text-muted-foreground/25">·</span>
+          <span className="text-muted-foreground/45">·</span>
           <span className="text-green-500/70">● snap</span>
         </span>
       )}
@@ -68,7 +72,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {selectionCount > 0 && (
         <>
           <span className="text-foreground/75">{selectionCount} selected</span>
-          <span className="text-muted-foreground/25">·</span>
+          <span className="text-muted-foreground/45">·</span>
         </>
       )}
 
@@ -77,7 +81,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
         <span>
           {field.width}×{field.height} m
         </span>
-        <span className="text-muted-foreground/25">·</span>
+        <span className="text-muted-foreground/45">·</span>
       </span>
 
       {process.env.NODE_ENV !== "production" && (
@@ -89,7 +93,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
           >
             {enabled ? "Dev On" : "Dev"}
           </button>
-          <span className="text-muted-foreground/25">·</span>
+          <span className="text-muted-foreground/45">·</span>
         </>
       )}
 

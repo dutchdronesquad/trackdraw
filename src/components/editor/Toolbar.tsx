@@ -128,7 +128,7 @@ export default function Toolbar({
                 (collapsed ? (
                   <SidebarSeparator className="my-2" />
                 ) : group.title ? (
-                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[10px] tracking-widest uppercase">
+                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[11px] tracking-widest uppercase">
                     {group.title}
                   </SidebarGroupLabel>
                 ) : (

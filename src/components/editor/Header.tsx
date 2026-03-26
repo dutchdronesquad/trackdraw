@@ -198,7 +198,7 @@ export default function Header({
 
         {readOnly && (
           <>
-            <span className="hidden shrink-0 items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium text-sky-400 sm:flex">
+            <span className="hidden shrink-0 items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[11px] font-medium text-sky-400 sm:flex">
               <Eye className="size-3" />
               View only
             </span>
@@ -234,7 +234,7 @@ export default function Header({
               </TooltipTrigger>
               <TooltipContent>
                 Undo{" "}
-                <span className="ml-1 font-mono text-[10px] opacity-50">
+                <span className="ml-1 font-mono text-[11px] opacity-65">
                   ⌃Z
                 </span>
               </TooltipContent>
@@ -254,7 +254,7 @@ export default function Header({
               </TooltipTrigger>
               <TooltipContent>
                 Redo{" "}
-                <span className="ml-1 font-mono text-[10px] opacity-50">
+                <span className="ml-1 font-mono text-[11px] opacity-65">
                   ⌃Y
                 </span>
               </TooltipContent>
@@ -271,7 +271,7 @@ export default function Header({
                 <TooltipContent className="flex flex-col gap-0.5">
                   <span>
                     Save snapshot{" "}
-                    <span className="font-mono text-[10px] opacity-50">⌘S</span>
+                    <span className="font-mono text-[11px] opacity-65">⌘S</span>
                   </span>
                   {lastSavedLabel && (
                     <span className="opacity-60">{lastSavedLabel}</span>

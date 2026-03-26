@@ -110,7 +110,7 @@ function ShareContent({
     <div className={cn("space-y-5", mobile ? "px-4 pt-3 pb-4" : "space-y-3.5")}>
       {mobile ? (
         <div>
-          <p className="text-muted-foreground/60 mb-2.5 text-[10px] font-semibold tracking-widest uppercase">
+          <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
             Current track
           </p>
           <div className="min-w-0">
@@ -176,7 +176,7 @@ function ShareContent({
           </div>
           <div className="grid grid-cols-2 gap-px bg-white/5">
             <div className="px-4 py-3">
-              <p className="text-muted-foreground/70 text-[10px] font-semibold tracking-[0.12em] uppercase">
+              <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
                 Field
               </p>
               <p className="text-foreground mt-1 text-sm font-medium">
@@ -184,7 +184,7 @@ function ShareContent({
               </p>
             </div>
             <div className="px-4 py-3">
-              <p className="text-muted-foreground/70 text-[10px] font-semibold tracking-[0.12em] uppercase">
+              <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
                 Objects
               </p>
               <p className="text-foreground mt-1 text-sm font-medium">

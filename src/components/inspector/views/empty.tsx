@@ -55,7 +55,7 @@ export function EmptyInspectorView({
         ]}
       />
       <div>
-        <p className="text-muted-foreground/50 mb-1.5 text-[10px] font-medium tracking-[0.08em] uppercase">
+        <p className="text-muted-foreground/70 mb-1.5 text-[11px] font-medium tracking-[0.08em] uppercase">
           Title
         </p>
         <Input
@@ -128,7 +128,7 @@ export function EmptyInspectorView({
                 <p className="text-foreground/75 text-[11px] font-medium">
                   Nothing selected yet
                 </p>
-                <p className="text-muted-foreground/50 mt-1 text-[11px] leading-relaxed">
+                <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
                   Place or click a shape on the canvas to open its settings
                   here.
                 </p>
@@ -161,7 +161,7 @@ export function EmptyInspectorView({
               <p className="text-foreground/75 text-[11px] font-medium">
                 Nothing selected yet
               </p>
-              <p className="text-muted-foreground/50 mt-1 text-[11px] leading-relaxed">
+              <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
                 Place or click a shape on the canvas to open its settings here.
               </p>
             </div>
