@@ -27,7 +27,11 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const zoom = useEditor((state) => state.transient.zoom);
 
   return (
-    <div role="status" aria-live="polite" className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex">
+    <div
+      role="status"
+      aria-live="polite"
+      className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex"
+    >
       <span className="text-foreground/80 shrink-0">
         {toolLabel[activeTool] ?? activeTool}
       </span>

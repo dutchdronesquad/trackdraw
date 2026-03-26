@@ -102,7 +102,11 @@ function Inspector({
       )}
     >
       <div className="border-border/60 bg-card/96 px-4 py-3 lg:px-3 lg:py-2.5">
-        <div role="tablist" aria-label="Inspector panels" className="border-border/60 flex items-center gap-5 border-b">
+        <div
+          role="tablist"
+          aria-label="Inspector panels"
+          className="border-border/60 flex items-center gap-5 border-b"
+        >
           {[
             { id: "design" as const, label: "Project" },
             { id: "selection" as const, label: "Selection" },
