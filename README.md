@@ -1,17 +1,45 @@
 <p align="center">
-  <img src="public/assets/brand/trackdraw-logo-color-lightbg.svg" alt="TrackDraw" width="320" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/dutchdronesquad/trackdraw/main/public/assets/brand/trackdraw-logo-color-darkbg.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/dutchdronesquad/trackdraw/main/public/assets/brand/trackdraw-logo-color-lightbg.svg">
+    <img alt="TrackDraw" src="https://raw.githubusercontent.com/dutchdronesquad/trackdraw/main/public/assets/brand/trackdraw-logo-color-lightbg.svg" width="320">
+  </picture>
 </p>
 
 <p align="center">
-  Design FPV drone racing tracks in your browser — true to scale, in 2D and 3D.
+  <strong>Plan FPV race courses to scale, preview in 3D, share with the team.</strong>
 </p>
 
----
-
-TrackDraw is a free, browser-based track designer built for FPV drone racing pilots and event organisers. Open the studio, drop your obstacles on the canvas, tweak the layout until it feels right, and share the result with your team using a single link — no account required.
+<p align="center">
+  <a href="https://github.com/dutchdronesquad/trackdraw/actions/workflows/linting.yaml"><img
+    src="https://github.com/dutchdronesquad/trackdraw/actions/workflows/linting.yaml/badge.svg"
+    alt="Linting"
+  /></a>
+  <a href="https://github.com/dutchdronesquad/trackdraw/actions/workflows/deploy.yaml"><img
+    src="https://github.com/dutchdronesquad/trackdraw/actions/workflows/deploy.yaml/badge.svg"
+    alt="Deployment"
+  /></a>
+  <a href="LICENSE"><img
+    src="https://img.shields.io/badge/license-LGPL--3.0--or--later-blue"
+    alt="License"
+  /></a>
+</p>
 
 <p align="center">
-  <img src="public/assets/screenshots/editor-3d-flythroug.png" alt="TrackDraw editor showcase" width="800" />
+  <a href="https://trackdraw.app/"><strong>Home</strong></a>
+  &middot;
+  <a href="https://trackdraw.app/studio"><strong>Open Studio</strong></a>
+  &middot;
+  <a href="docs/ROADMAP.md"><strong>Roadmap</strong></a>
+</p>
+
+<p align="center">
+  TrackDraw is a free, browser-based track designer for FPV race directors.
+  Drop obstacles on a real-scale canvas, check the layout in 3D, and hand pilots a read-only link before the gates leave the van.
+</p>
+
+<p align="center">
+  <img alt="TrackDraw editor showcase" src="https://raw.githubusercontent.com/dutchdronesquad/trackdraw/main/public/assets/screenshot.png" width="800">
 </p>
 
 > [!IMPORTANT]
@@ -57,24 +85,6 @@ Shared links open at `/share/[token]`.
 6. **Hit Share** to get a URL you can send directly to pilots or co-organisers
 7. **Use Export** when you need printable assets, a 3D screenshot, or a JSON project backup
 
-## Useful shortcuts
-
-- `V` select mode
-- `H` hand / pan mode
-- `G`, `F`, `C`, `L`, `P`, `S`, `R`, `D` switch tools
-- `Arrow keys` nudge selected items by the grid step
-- `Alt` + `Arrow keys` nudge selected items by `0.1m`
-- `Q` / `[` rotate selected items left by `15°`
-- `E` / `]` rotate selected items right by `15°`
-- `Shift` + `Q` / `E` or `[` / `]` rotate by `5°`
-- `Alt` + `Q` / `E` or `[` / `]` rotate by `1°`
-- Drag the 2D rotate handle to snap in `5°` steps
-- Hold `Alt` while dragging the 2D rotate handle to snap in `1°` steps
-- `Ctrl/Cmd + D` duplicate selection
-- `Ctrl/Cmd + C`, `Ctrl/Cmd + V` copy and paste
-- `Delete` remove selection
-- `0` fit the field back into view
-
 ## Tech stack
 
 | Layer      | Library                                                   |
@@ -94,13 +104,10 @@ Shared links open at `/share/[token]`.
 src/
 ├── app/              # Next.js pages (/, /studio, /share/[token])
 ├── components/       # React components
-│   ├── EditorShell   # Layout orchestrator
-│   ├── TrackCanvas   # Konva 2D editor
-│   ├── Inspector     # Shape properties panel
-│   ├── TrackPreview3D
-│   ├── ElevationChart / ElevationPanel
-│   ├── Header / Toolbar / StatusBar
-│   ├── ExportDialog / ImportDialog / ShareDialog
+│   ├── canvas/       # TrackCanvas (2D editor), TrackPreview3D
+│   ├── dialogs/      # Export, Import, Share, ProjectManager, KeyboardShortcuts
+│   ├── editor/       # EditorShell, Header, Toolbar, StatusBar, StarterFlow
+│   ├── inspector/    # Inspector, ElevationChart, ElevationPanel
 │   ├── landing/      # Marketing page components
 │   └── ui/           # @base-ui/react wrappers
 ├── store/
