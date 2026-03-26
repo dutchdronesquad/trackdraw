@@ -16,7 +16,9 @@ import {
 import * as THREE from "three";
 import {
   getPolylineCurve3Derived,
+  getPolylineRouteWarningSegmentVisuals,
   getPolylinePreview3DPoints,
+  getPolylineSmoothSegmentPoints3D,
 } from "@/lib/polyline-derived";
 import type {
   ConeShape,
@@ -841,10 +843,12 @@ function DiveGate3D({
 
 function RaceLine3D({
   editing = false,
+  isPrimary = false,
   selected = false,
   shape,
 }: {
   editing?: boolean;
+  isPrimary?: boolean;
   selected?: boolean;
   shape: PolylineShape;
 }) {
@@ -852,6 +856,45 @@ function RaceLine3D({
     () => getPolylinePreview3DPoints(shape, 0.5),
     [shape]
   );
+  const warningSegments = useMemo(
+    () => getPolylineRouteWarningSegmentVisuals(shape),
+    [shape]
+  );
+  const warningKindBySegment = useMemo(
+    () =>
+      new Map(
+        warningSegments.map((segment) => [segment.segmentIndex, segment.kind])
+      ),
+    [warningSegments]
+  );
+  const smoothSegmentPoints = useMemo(
+    () => getPolylineSmoothSegmentPoints3D(shape, 0.5, 18),
+    [shape]
+  );
+  const showWarningVisuals = selected || isPrimary;
+  const tubeRadius = Math.max(0.02, (shape.strokeWidth ?? 0.26) / 2);
+  const segmentedGeometries = useMemo(() => {
+    if (!showWarningVisuals || !warningSegments.length) return null;
+
+    return smoothSegmentPoints.map((points) => {
+      if (!points || points.length < 2) return null;
+
+      const vectors = points.map(([x, y, z]) => new THREE.Vector3(x, y, z));
+      const curve = new THREE.CatmullRomCurve3(vectors, false, "centripetal");
+      return new THREE.TubeGeometry(
+        curve,
+        Math.max(6, vectors.length * 2),
+        tubeRadius,
+        10,
+        false
+      );
+    });
+  }, [
+    showWarningVisuals,
+    smoothSegmentPoints,
+    tubeRadius,
+    warningSegments.length,
+  ]);
   const geometry = useMemo(() => {
     if (editing) return null;
     const curveData = getPolylineCurve3Derived(shape, {
@@ -860,7 +903,6 @@ function RaceLine3D({
       density: 12,
     });
     if (!curveData) return null;
-    const tubeRadius = Math.max(0.02, (shape.strokeWidth ?? 0.26) / 2);
     return new THREE.TubeGeometry(
       curveData.curve,
       curveData.segmentCount,
@@ -868,7 +910,13 @@ function RaceLine3D({
       10,
       shape.closed ?? false
     );
-  }, [editing, shape]);
+  }, [editing, shape, tubeRadius]);
+
+  useEffect(() => {
+    return () => {
+      segmentedGeometries?.forEach((geometry) => geometry?.dispose());
+    };
+  }, [segmentedGeometries]);
 
   if (editing) {
     return (
@@ -882,14 +930,47 @@ function RaceLine3D({
 
   if (!geometry) return null;
   return (
-    <mesh geometry={geometry} castShadow>
-      <meshStandardMaterial
-        color={selected ? "#93c5fd" : (shape.color ?? "#3b82f6")}
-        emissive={selected ? "#60a5fa" : "#000000"}
-        emissiveIntensity={selected ? 0.8 : 0}
-        roughness={0.4}
-      />
-    </mesh>
+    <group>
+      {showWarningVisuals && warningSegments.length && segmentedGeometries ? (
+        segmentedGeometries.map((segmentGeometry, segmentIndex) => {
+          if (!segmentGeometry) return null;
+          const warningKind = warningKindBySegment.get(segmentIndex);
+          const color = !warningKind
+            ? selected
+              ? "#93c5fd"
+              : (shape.color ?? "#3b82f6")
+            : warningKind === "close-points"
+              ? "#ef4444"
+              : warningKind === "steep"
+                ? "#f97316"
+                : "#fbbf24";
+
+          return (
+            <mesh
+              key={`${shape.id}-segment-${segmentIndex}`}
+              geometry={segmentGeometry}
+              castShadow
+            >
+              <meshStandardMaterial
+                color={color}
+                emissive={selected ? "#60a5fa" : color}
+                emissiveIntensity={selected ? 0.35 : 0.08}
+                roughness={0.4}
+              />
+            </mesh>
+          );
+        })
+      ) : (
+        <mesh geometry={geometry} castShadow>
+          <meshStandardMaterial
+            color={selected ? "#93c5fd" : (shape.color ?? "#3b82f6")}
+            emissive={selected ? "#60a5fa" : "#000000"}
+            emissiveIntensity={selected ? 0.8 : 0}
+            roughness={0.4}
+          />
+        </mesh>
+      )}
+    </group>
   );
 }
 
@@ -1372,6 +1453,7 @@ function SelectionMarker3D({ shape }: { shape: Shape }) {
 
 function Shape3D({
   isEditing,
+  isPrimaryPolyline,
   isSelected,
   onSelect,
   shape,
@@ -1379,6 +1461,7 @@ function Shape3D({
   tiltDragRef,
 }: {
   isEditing: boolean;
+  isPrimaryPolyline: boolean;
   isSelected: boolean;
   onSelect: (event: ThreeEvent<MouseEvent>, shapeId: string) => void;
   shape: Shape;
@@ -1417,7 +1500,12 @@ function Shape3D({
     case "polyline":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <RaceLine3D editing={isEditing} shape={shape} selected={isSelected} />
+          <RaceLine3D
+            editing={isEditing}
+            isPrimary={isPrimaryPolyline}
+            shape={shape}
+            selected={isSelected}
+          />
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
@@ -1457,6 +1545,7 @@ export const MemoShape3D = memo(
   (prev, next) =>
     prev.shape === next.shape &&
     prev.isEditing === next.isEditing &&
+    prev.isPrimaryPolyline === next.isPrimaryPolyline &&
     prev.isSelected === next.isSelected &&
     prev.onSelect === next.onSelect &&
     prev.outerRef === next.outerRef &&

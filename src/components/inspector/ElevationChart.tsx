@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useEditor } from "@/store/editor";
 import {
   getPolylineElevationSamples,
+  getPolylineRouteWarningSegmentVisuals,
   getPolylineTotalLength2D,
   getPolylineRouteWarnings,
   type RouteWarning,
@@ -88,6 +89,17 @@ export default function ElevationChart({ className }: { className?: string }) {
     () => (path ? getPolylineRouteWarnings(path) : []),
     [path]
   );
+  const warningSegments = useMemo(
+    () => (path ? getPolylineRouteWarningSegmentVisuals(path) : []),
+    [path]
+  );
+  const warningKindBySegment = useMemo(
+    () =>
+      new Map(
+        warningSegments.map((segment) => [segment.segmentIndex, segment.kind])
+      ),
+    [warningSegments]
+  );
 
   const chartData = useMemo(() => {
     if (!path) return null;
@@ -140,8 +152,8 @@ export default function ElevationChart({ className }: { className?: string }) {
     const maxSample = samples.reduce((a, s) => (s.z > a.z ? s : a), samples[0]);
 
     return {
-      linePath,
       fillPath,
+      samples,
       totalDist,
       rawMinZ,
       rawMaxZ,
@@ -168,8 +180,8 @@ export default function ElevationChart({ className }: { className?: string }) {
   }
 
   const {
-    linePath,
     fillPath,
+    samples,
     totalDist,
     rawMinZ,
     rawMaxZ,
@@ -238,15 +250,31 @@ export default function ElevationChart({ className }: { className?: string }) {
         ))}
 
         <path d={fillPath} fill="url(#elev-fill)" clipPath="url(#elev-clip)" />
-        <path
-          d={linePath}
-          fill="none"
-          stroke="var(--color-primary)"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          clipPath="url(#elev-clip)"
-        />
+        {samples.slice(1).map((sample, index) => {
+          const previous = samples[index];
+          if (!previous) return null;
+          const warningKind = warningKindBySegment.get(index);
+          const stroke = !warningKind
+            ? "var(--color-primary)"
+            : warningKind === "close-points"
+              ? "#ef4444"
+              : warningKind === "steep"
+                ? "#f97316"
+                : "#fbbf24";
+
+          return (
+            <path
+              key={`segment-${index}`}
+              d={`M${toX(previous.d).toFixed(2)},${toY(previous.z).toFixed(2)} L${toX(sample.d).toFixed(2)},${toY(sample.z).toFixed(2)}`}
+              fill="none"
+              stroke={stroke}
+              strokeWidth="1.9"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              clipPath="url(#elev-clip)"
+            />
+          );
+        })}
 
         {minSample.d !== maxSample.d && (
           <>

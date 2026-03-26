@@ -6,11 +6,15 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import type { Vector2d } from "konva/lib/types";
 import {
   getPolyline2DDerived,
+  getPolylineRouteWarningSegmentVisuals,
+  getPolylineSmoothSegmentPointsPx,
   getPolylineSmoothPointsPx,
 } from "@/lib/polyline-derived";
 import { zToColor } from "@/lib/alt";
 import { m2px, px2m } from "@/lib/units";
 import type { PolylinePoint, PolylineShape } from "@/lib/types";
+import { useEditor } from "@/store/editor";
+import { selectPrimaryPolyline } from "@/store/selectors";
 
 export interface PolylineShapeContentProps {
   allowInteraction: boolean;
@@ -57,6 +61,7 @@ export function PolylineShapeContent({
   const [previewPoints, setPreviewPoints] = useState<PolylinePoint[] | null>(
     null
   );
+  const primaryPolyline = useEditor(selectPrimaryPolyline);
   const displayPath = useMemo(
     () =>
       previewPoints
@@ -75,6 +80,22 @@ export function PolylineShapeContent({
     () => getPolyline2DDerived(displayPath),
     [displayPath]
   );
+  const warningSegments = useMemo(
+    () => getPolylineRouteWarningSegmentVisuals(displayPath),
+    [displayPath]
+  );
+  const warningKindBySegment = useMemo(
+    () =>
+      new Map(
+        warningSegments.map((segment) => [segment.segmentIndex, segment.kind])
+      ),
+    [warningSegments]
+  );
+  const smoothSegmentPx = useMemo(
+    () => getPolylineSmoothSegmentPointsPx(displayPath, designPpm),
+    [designPpm, displayPath]
+  );
+  const showWarningVisuals = primaryPolyline?.id === path.id || isSelected;
   const pointsPxMemo = useMemo(() => {
     const basePoints =
       displayPath.closed && displayPath.points.length > 1
@@ -133,16 +154,46 @@ export function PolylineShapeContent({
         />
       )}
       <Group listening={false}>
-        <Line
-          points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
-          stroke={
-            path.color ? color : zToColor(path.points.at(0)?.z ?? 0, zmin, zmax)
-          }
-          strokeWidth={strokePx}
-          lineCap="round"
-          lineJoin="round"
-          opacity={0.92}
-        />
+        {showWarningVisuals && warningSegments.length ? (
+          smoothSegmentPx.map((points, segmentIndex) => {
+            if (!points || points.length < 4) return null;
+            const warningKind = warningKindBySegment.get(segmentIndex);
+            const stroke = !warningKind
+              ? path.color
+                ? color
+                : zToColor(path.points.at(0)?.z ?? 0, zmin, zmax)
+              : warningKind === "close-points"
+                ? "#ef4444"
+                : warningKind === "steep"
+                  ? "#f97316"
+                  : "#fbbf24";
+
+            return (
+              <Line
+                key={`${path.id}-segment-${segmentIndex}`}
+                points={points}
+                stroke={stroke}
+                strokeWidth={strokePx}
+                lineCap="round"
+                lineJoin="round"
+                opacity={0.92}
+              />
+            );
+          })
+        ) : (
+          <Line
+            points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
+            stroke={
+              path.color
+                ? color
+                : zToColor(path.points.at(0)?.z ?? 0, zmin, zmax)
+            }
+            strokeWidth={strokePx}
+            lineCap="round"
+            lineJoin="round"
+            opacity={0.92}
+          />
+        )}
         {arrowMarkers.map((marker, index) => {
           const arrowLength = Math.max(12, strokePx * 7);
           const tailLength = arrowLength * 0.55;

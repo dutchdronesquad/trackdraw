@@ -113,31 +113,29 @@ export function EmptyInspectorView({
     return (
       <div className="flex h-full min-h-0 flex-col">
         <PanelHeader title="Design" />
-        <div className="shrink-0 space-y-4 overflow-y-auto px-3 py-3">
-          {upperContent}
-        </div>
-        {shapes.length > 0 ? (
-          <div className="border-border/20 flex min-h-0 flex-1 flex-col overflow-hidden border-t px-3 pt-3 pb-3">
-            <ItemOverviewList
-              shapes={shapes}
-              setSelection={setSelection}
-              removeShapes={removeShapes}
-              setHoveredShapeId={setHoveredShapeId}
-              grow
-            />
+        <InspectorScrollBody>
+          <div className="space-y-4 px-3 py-3">
+            {upperContent}
+            {shapes.length > 0 ? (
+              <ItemOverviewList
+                shapes={shapes}
+                setSelection={setSelection}
+                removeShapes={removeShapes}
+                setHoveredShapeId={setHoveredShapeId}
+              />
+            ) : (
+              <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
+                <p className="text-foreground/75 text-[11px] font-medium">
+                  Nothing selected yet
+                </p>
+                <p className="text-muted-foreground/50 mt-1 text-[11px] leading-relaxed">
+                  Place or click a shape on the canvas to open its settings
+                  here.
+                </p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="border-border/20 border-t px-3 pt-3">
-            <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
-              <p className="text-foreground/75 text-[11px] font-medium">
-                Nothing selected yet
-              </p>
-              <p className="text-muted-foreground/50 mt-1 text-[11px] leading-relaxed">
-                Place or click a shape on the canvas to open its settings here.
-              </p>
-            </div>
-          </div>
-        )}
+        </InspectorScrollBody>
         <InspectorFooterDesktop>
           <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
         </InspectorFooterDesktop>

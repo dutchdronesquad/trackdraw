@@ -219,6 +219,58 @@ function smoothPolylinePoints(
   return result;
 }
 
+function smoothPolylinePointSegments(
+  points: PolylinePoint[],
+  samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
+) {
+  const { alpha, closed, samplesPerSegment } = normalizeSmoothOptions(
+    samplesPerSegmentOrOptions
+  );
+
+  if (points.length < 2) return [];
+  if (points.length < 3) {
+    const basePoints = closed ? getClosedPolylinePoints(points) : points;
+    const segments: PolylinePoint[][] = [];
+    for (let index = 1; index < basePoints.length; index += 1) {
+      segments.push([{ ...basePoints[index - 1] }, { ...basePoints[index] }]);
+    }
+    return segments;
+  }
+
+  const segmentCount = getSegmentCount(points, closed);
+  const segments: PolylinePoint[][] = [];
+
+  for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex += 1) {
+    const p0 = getControlPoint(points, segmentIndex - 1, closed);
+    const p1 = getControlPoint(points, segmentIndex, closed);
+    const p2 = getControlPoint(points, segmentIndex + 1, closed);
+    const p3 = getControlPoint(points, segmentIndex + 2, closed);
+    const segmentPoints: PolylinePoint[] = [];
+
+    for (
+      let sampleIndex = 0;
+      sampleIndex < samplesPerSegment;
+      sampleIndex += 1
+    ) {
+      segmentPoints.push(
+        sampleCatmullRomPoint(
+          sampleIndex / samplesPerSegment,
+          p0,
+          p1,
+          p2,
+          p3,
+          alpha
+        )
+      );
+    }
+
+    segmentPoints.push({ ...p2 });
+    segments.push(segmentPoints);
+  }
+
+  return segments;
+}
+
 function withClosedPoint<T extends { x: number; y: number }>(
   points: T[],
   closed: boolean
@@ -251,6 +303,30 @@ export function getPolyline2DPoints(
   }
 
   return smoothPolyline(points, options);
+}
+
+export function getPolylineSegment2DPoints(
+  points: PolylinePoint[],
+  options?: SmoothPolylineOptions & { smooth?: boolean }
+): Array<Array<{ x: number; y: number }>> {
+  const smooth = options?.smooth ?? true;
+  const closed = options?.closed ?? false;
+
+  if (!smooth) {
+    const basePoints = withClosedPoint(
+      points.map(({ x, y }) => ({ x, y })),
+      closed
+    );
+    const segments: Array<Array<{ x: number; y: number }>> = [];
+    for (let index = 1; index < basePoints.length; index += 1) {
+      segments.push([basePoints[index - 1], basePoints[index]]);
+    }
+    return segments;
+  }
+
+  return smoothPolylinePointSegments(points, options).map((segment) =>
+    segment.map(({ x, y }) => ({ x, y }))
+  );
 }
 
 export function polylineLength(points: PolylinePoint[]): number {
@@ -316,6 +392,20 @@ export function smoothPolyline3D(
       y,
       z: z ?? 0,
     })
+  );
+}
+
+export function getPolylineSegment3DPoints(
+  points: PolylinePoint[],
+  samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
+): Array<Array<{ x: number; y: number; z: number }>> {
+  return smoothPolylinePointSegments(points, samplesPerSegmentOrOptions).map(
+    (segment) =>
+      segment.map(({ x, y, z }) => ({
+        x,
+        y,
+        z: z ?? 0,
+      }))
   );
 }
 
