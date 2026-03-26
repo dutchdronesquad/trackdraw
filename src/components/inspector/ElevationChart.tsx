@@ -152,7 +152,6 @@ export default function ElevationChart({ className }: { className?: string }) {
     const maxSample = samples.reduce((a, s) => (s.z > a.z ? s : a), samples[0]);
 
     return {
-      linePath,
       fillPath,
       samples,
       totalDist,
@@ -181,7 +180,6 @@ export default function ElevationChart({ className }: { className?: string }) {
   }
 
   const {
-    linePath,
     fillPath,
     samples,
     totalDist,
