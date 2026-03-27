@@ -34,9 +34,9 @@ export function decodeDesign(token: string): TrackDesign | null {
 
 export function buildShareUrl(design: TrackDesign, view?: EditorView): string {
   const token = encodeDesign(design);
-  const path = `/share/${encodeURIComponent(token)}`;
+  const path = buildStoredSharePath(token, view);
   if (typeof window === "undefined") {
-    return view ? `${path}?view=${view}` : path;
+    return path;
   }
 
   const base = `${window.location.protocol}//${window.location.host}`;
@@ -45,6 +45,12 @@ export function buildShareUrl(design: TrackDesign, view?: EditorView): string {
     url.searchParams.set("view", view);
   }
   return url.toString();
+}
+
+export function buildStoredSharePath(token: string, view?: EditorView) {
+  const path = `/share/${encodeURIComponent(token)}`;
+  if (!view) return path;
+  return `${path}?view=${view}`;
 }
 
 export function isShareSafe(design: TrackDesign): boolean {

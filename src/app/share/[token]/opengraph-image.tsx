@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getDesignShapes } from "@/lib/design";
 import { decodeDesign, getShareDescription, getShareTitle } from "@/lib/share";
+import { resolveShareView } from "@/lib/server/share-resolution";
 import { SITE_NAME } from "@/lib/seo";
 
 export const size = {
@@ -18,11 +19,22 @@ type ShareImageProps = {
 
 export default async function ShareOpenGraphImage({ params }: ShareImageProps) {
   const { token } = await params;
-  const design = decodeDesign(token);
+  const resolvedShare = await resolveShareView(token);
+  const design =
+    resolvedShare.status === "available"
+      ? resolvedShare.design
+      : decodeDesign(token);
 
-  const title = design ? getShareTitle(design) : "Shared Track";
+  const title =
+    resolvedShare.status === "available" && resolvedShare.source === "stored"
+      ? resolvedShare.title
+      : design
+        ? getShareTitle(design)
+        : "Shared Track";
   const description = design
-    ? getShareDescription(design)
+    ? resolvedShare.status === "available" && resolvedShare.source === "stored"
+      ? resolvedShare.description
+      : getShareDescription(design)
     : "Open a read-only TrackDraw link to review layout, flow and obstacle placement before race day.";
   const shapeCount = design ? getDesignShapes(design).length : 0;
   const fieldLabel = design

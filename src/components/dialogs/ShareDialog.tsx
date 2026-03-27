@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/store/editor";
 import { selectDesignShapeCount } from "@/store/selectors";
-import { buildShareUrl, encodeDesign, isShareSafe } from "@/lib/share";
+import { encodeDesign } from "@/lib/share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { parseEditorView } from "@/lib/view";
 import {
@@ -14,7 +14,6 @@ import {
   Check,
   ExternalLink,
   Share2,
-  AlertTriangle,
   Link2,
   Boxes,
   X,
@@ -23,6 +22,11 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const LAST_SHARE_TOKEN_KEY = "trackdraw-last-share-token";
+const SHARE_EXPIRY_OPTIONS = [
+  { value: 7, label: "7 days" },
+  { value: 30, label: "30 days" },
+  { value: 90, label: "90 days" },
+] as const;
 
 interface ShareDialogProps {
   open: boolean;
@@ -46,11 +50,17 @@ function ShareContent({
   const shapeCount = useEditor(selectDesignShapeCount);
   const searchParams = useSearchParams();
   const [copied, setCopied] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishedShareUrl, setPublishedShareUrl] = useState<string | null>(
+    null
+  );
+  const [expiresInDays, setExpiresInDays] = useState<7 | 30 | 90>(90);
+  const [publishedSourceToken, setPublishedSourceToken] = useState<
+    string | null
+  >(null);
   const currentView = parseEditorView(searchParams.get("view")) ?? "2d";
 
-  const shareUrl = buildShareUrl(design, currentView);
   const currentToken = encodeDesign(design);
-  const safe = isShareSafe(design);
   const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
   const shareTitle = design.title.trim() || "Untitled track";
   const hostname =
@@ -69,6 +79,20 @@ function ShareContent({
   const lastShareToken = sessionToken ?? storedToken;
   const hasChangedSinceShare =
     lastShareToken !== null && lastShareToken !== currentToken;
+  const effectiveShareUrl =
+    publishedShareUrl ?? "Create a published share link";
+
+  useEffect(() => {
+    if (publishedSourceToken && publishedSourceToken !== currentToken) {
+      setPublishedShareUrl(null);
+      setPublishedSourceToken(null);
+    }
+  }, [currentToken, publishedSourceToken]);
+
+  useEffect(() => {
+    setPublishedShareUrl(null);
+    setPublishedSourceToken(null);
+  }, [expiresInDays]);
 
   const writeLastShareToken = () => {
     try {
@@ -79,14 +103,57 @@ function ShareContent({
     }
   };
 
+  const ensurePublishedShareUrl = async () => {
+    if (publishedShareUrl) return publishedShareUrl;
+
+    setPublishing(true);
+
+    try {
+      const response = await fetch("/api/shares", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          design,
+          view: currentView,
+          expiresInDays,
+        }),
+      });
+
+      const data = (await response.json()) as
+        | { ok: true; share: { path: string } }
+        | { ok: false; error?: string };
+
+      if (!response.ok || !data.ok) {
+        throw new Error(
+          data.ok
+            ? "Failed to create share link"
+            : (data.error ?? "Failed to create share link")
+        );
+      }
+
+      const url = new URL(data.share.path, window.location.origin).toString();
+      setPublishedShareUrl(url);
+      setPublishedSourceToken(currentToken);
+      return url;
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      const url = await ensurePublishedShareUrl();
+      await navigator.clipboard.writeText(url);
       writeLastShareToken();
       setCopied(true);
       toast.success("Link copied");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create share link"
+      );
       const input =
         document.querySelector<HTMLInputElement>("#share-url-input");
       input?.select();
@@ -95,13 +162,17 @@ function ShareContent({
 
   const handleNativeShare = async () => {
     try {
+      const url = await ensurePublishedShareUrl();
       await navigator.share({
         title: design.title || "TrackDraw",
         text: `Check out this FPV track: ${design.title || "Untitled"}`,
-        url: shareUrl,
+        url,
       });
       writeLastShareToken();
-    } catch {
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
       /* user cancelled */
     }
   };
@@ -118,7 +189,8 @@ function ShareContent({
               {shareTitle}
             </p>
             <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
-              Create a read-only review link from the current studio state.
+              Create a read-only review link from the current studio state and
+              choose how long it stays active.
             </p>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -135,24 +207,35 @@ function ShareContent({
           </div>
         </div>
 
+        <div className="space-y-2">
+          <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
+            Link lifetime
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {SHARE_EXPIRY_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setExpiresInDays(option.value)}
+                className={cn(
+                  "border-border/60 bg-background/65 text-foreground rounded-lg border px-3 py-2 text-xs transition-colors",
+                  expiresInDays === option.value &&
+                    "border-primary bg-primary/10 text-primary"
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Changed-since-share indicator */}
         {hasChangedSinceShare && (
           <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
             <Share2 className="mt-0.5 size-3.5 shrink-0" />
             <span className="leading-relaxed">
               Design has changed since last share — copy the link again to share
-              the latest version.
-            </span>
-          </div>
-        )}
-
-        {/* Too-large warning */}
-        {!safe && (
-          <div className="flex items-start gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2.5 text-xs text-yellow-200">
-            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-            <span className="leading-relaxed">
-              Track is very large — the URL may not work in all browsers. Export
-              as JSON for a reliable backup.
+              a fresh published snapshot.
             </span>
           </div>
         )}
@@ -165,11 +248,11 @@ function ShareContent({
             </div>
             <div className="min-w-0">
               <p className="text-foreground text-sm font-medium">
-                Shareable link
+                Published link
               </p>
               <p className="text-muted-foreground text-[11px]">
-                Contains the full track and opens in {currentView.toUpperCase()}{" "}
-                on {hostname}
+                Published share opens in {currentView.toUpperCase()} on{" "}
+                {hostname} and expires after {expiresInDays} days
               </p>
             </div>
           </div>
@@ -177,7 +260,7 @@ function ShareContent({
             <input
               id="share-url-input"
               readOnly
-              value={shareUrl}
+              value={effectiveShareUrl}
               onFocus={(e) => e.target.select()}
               className="border-border bg-background/70 text-foreground focus:ring-primary/50 min-w-0 flex-1 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
             />
@@ -186,6 +269,7 @@ function ShareContent({
               variant="outline"
               onClick={handleCopy}
               className="shrink-0"
+              disabled={publishing}
               title="Copy link"
             >
               {copied ? (
@@ -229,9 +313,19 @@ function ShareContent({
             </button>
           )}
           <button
-            onClick={() =>
-              window.open(shareUrl, "_blank", "noopener,noreferrer")
-            }
+            onClick={async () => {
+              try {
+                const url = await ensurePublishedShareUrl();
+                window.open(url, "_blank", "noopener,noreferrer");
+                writeLastShareToken();
+              } catch (error) {
+                toast.error(
+                  error instanceof Error
+                    ? error.message
+                    : "Failed to create share link"
+                );
+              }
+            }}
             className={cn(
               "hover:bg-muted/40 flex w-full items-center gap-3 px-4 py-3 text-left transition-colors",
               onExportJson ? "border-border/40 border-b" : ""
@@ -283,7 +377,7 @@ function ShareContent({
             Share Track
           </p>
           <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-            Create a shareable link for this track design.
+            Publish a read-only share link for this track design.
           </p>
         </div>
         <button
@@ -301,21 +395,11 @@ function ShareContent({
         <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
           <Share2 className="mt-0.5 size-3.5 shrink-0" />
           <span className="leading-relaxed">
-            Design has changed since last share — copy the link again to share
-            the latest version.
+            Design has changed since last share — copy the link again to share a
+            fresh published snapshot.
           </span>
         </div>
       )}
-      {!safe && (
-        <div className="flex items-start gap-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2.5 text-xs text-yellow-200">
-          <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-          <span className="leading-relaxed">
-            Track is very large — the URL may not work in all browsers. Export
-            as JSON for a reliable backup.
-          </span>
-        </div>
-      )}
-
       {/* 2-column grid */}
       <div className="grid grid-cols-2 gap-4">
         {/* Left: design card + link */}
@@ -355,6 +439,33 @@ function ShareContent({
             </div>
           </div>
 
+          <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
+            <div>
+              <p className="text-foreground text-sm font-medium">
+                Link lifetime
+              </p>
+              <p className="text-muted-foreground mt-1 text-[11px]">
+                New published links expire after the selected duration.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {SHARE_EXPIRY_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setExpiresInDays(option.value)}
+                  className={cn(
+                    "border-border/60 bg-background/65 text-foreground rounded-lg border px-3 py-2 text-xs transition-colors",
+                    expiresInDays === option.value &&
+                      "border-primary bg-primary/10 text-primary"
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Link row */}
           <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
             <div className="flex items-center gap-2">
@@ -363,10 +474,11 @@ function ShareContent({
               </div>
               <div className="min-w-0">
                 <p className="text-foreground text-sm font-medium">
-                  Shareable link
+                  Published link
                 </p>
                 <p className="text-muted-foreground text-[11px]">
-                  Opens on {hostname}
+                  Published share opens on {hostname} and expires after{" "}
+                  {expiresInDays} days
                 </p>
               </div>
             </div>
@@ -374,7 +486,7 @@ function ShareContent({
               <input
                 id="share-url-input"
                 readOnly
-                value={shareUrl}
+                value={effectiveShareUrl}
                 onFocus={(e) => e.target.select()}
                 className="border-border bg-background/70 text-foreground focus:ring-primary/50 min-w-0 flex-1 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
               />
@@ -383,6 +495,7 @@ function ShareContent({
                 variant="outline"
                 onClick={handleCopy}
                 className="shrink-0"
+                disabled={publishing}
                 title="Copy link"
               >
                 {copied ? (
@@ -429,9 +542,19 @@ function ShareContent({
               </button>
             )}
             <button
-              onClick={() =>
-                window.open(shareUrl, "_blank", "noopener,noreferrer")
-              }
+              onClick={async () => {
+                try {
+                  const url = await ensurePublishedShareUrl();
+                  window.open(url, "_blank", "noopener,noreferrer");
+                  writeLastShareToken();
+                } catch (error) {
+                  toast.error(
+                    error instanceof Error
+                      ? error.message
+                      : "Failed to create share link"
+                  );
+                }
+              }}
               className={cn(
                 "hover:bg-muted/40 flex w-full items-center gap-3 px-4 py-3 text-left transition-colors",
                 onExportJson ? "border-border/40 border-b" : ""

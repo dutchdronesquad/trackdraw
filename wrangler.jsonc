@@ -1,0 +1,42 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "trackdraw",
+  "compatibility_date": "2026-03-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "98c8ee9b612646628245b78023d7b147",
+      "localConnectionString": "postgres://username:password@0.0.0.0:5432/database_name"
+    }
+  ],
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://trackdraw.app",
+    "NEXT_PUBLIC_APP_ENV": "production",
+    "TRACKDRAW_RUNTIME_ENV": "production",
+    "TRACKDRAW_DB_ENV": "production"
+  },
+  "env": {
+    "dev": {
+      "name": "trackdraw-dev",
+      "hyperdrive": [
+        {
+          "binding": "HYPERDRIVE",
+          "id": "d30c04d6d02e4536a85a6718bc059245",
+          "localConnectionString": "postgres://username:password@0.0.0.0:5432/database_name_dev"
+        }
+      ],
+      "vars": {
+        "NEXT_PUBLIC_SITE_URL": "https://dev.trackdraw.app",
+        "NEXT_PUBLIC_APP_ENV": "development",
+        "TRACKDRAW_RUNTIME_ENV": "development",
+        "TRACKDRAW_DB_ENV": "development"
+      }
+    }
+  }
+}

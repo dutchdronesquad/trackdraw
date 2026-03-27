@@ -15,8 +15,8 @@
     src="https://github.com/dutchdronesquad/trackdraw/actions/workflows/linting.yaml/badge.svg"
     alt="Linting"
   /></a>
-  <a href="https://github.com/dutchdronesquad/trackdraw/actions/workflows/deploy.yaml"><img
-    src="https://github.com/dutchdronesquad/trackdraw/actions/workflows/deploy.yaml/badge.svg"
+  <a href="https://github.com/dutchdronesquad/trackdraw/actions/workflows/deploy-prod.yaml"><img
+    src="https://github.com/dutchdronesquad/trackdraw/actions/workflows/deploy-prod.yaml/badge.svg"
     alt="Deployment"
   /></a>
   <a href="LICENSE"><img
@@ -126,9 +126,19 @@ src/
 npm run dev    # Development server (Turbopack)
 npm run build  # Production build
 npm run start  # Production server
+npm run preview # Local Cloudflare/OpenNext preview with Wrangler
+npm run migrate:up:dev   # Apply development PostgreSQL migrations
+npm run migrate:down:dev # Roll back the latest development migration
+npm run migrate:up:production   # Apply production PostgreSQL migrations
+npm run migrate:down:production # Roll back the latest production migration
 npm run lint   # ESLint
 npm run type   # TypeScript check
 ```
+
+Use `npm run dev` for fast local UI work.
+Use `npm run preview` to validate behavior against the Cloudflare/OpenNext runtime, especially for Hyperdrive-backed share flows.
+
+Deployment, Cloudflare, Hyperdrive, and database environment setup live in [docs/deployment-setup.md](docs/deployment-setup.md).
 
 ## License
 
