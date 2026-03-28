@@ -87,16 +87,16 @@ Shared links open at `/share/[token]`.
 
 ## Tech stack
 
-| Layer      | Library                                                   |
-| ---------- | --------------------------------------------------------- |
-| Framework  | Next.js 16 (App Router, Turbopack)                        |
-| UI         | React 19, Tailwind CSS 4, shadcn/ui v4 (`@base-ui/react`) |
-| 2D canvas  | Konva 10 + react-konva                                    |
-| 3D preview | Three.js 0.183 + @react-three/fiber + drei                |
-| State      | Zustand 5 + zundo 2 (temporal) + Immer                    |
-| Export     | jsPDF, shared 2D shape definitions, Konva stage snapshots |
+| Layer      | Library                                                                                         |
+| ---------- | ----------------------------------------------------------------------------------------------- |
+| Framework  | Next.js 16 (App Router, Turbopack)                                                              |
+| UI         | React 19, Tailwind CSS 4, shadcn/ui v4 (`@base-ui/react`)                                       |
+| 2D canvas  | Konva 10 + react-konva                                                                          |
+| 3D preview | Three.js 0.183 + @react-three/fiber + drei                                                      |
+| State      | Zustand 5 + zundo 2 (temporal) + Immer                                                          |
+| Export     | jsPDF, shared 2D shape definitions, Konva stage snapshots                                       |
 | Sharing    | Stored share publishing on Cloudflare D1, with legacy `lz-string` compatibility for older links |
-| Icons      | Lucide React                                              |
+| Icons      | Lucide React                                                                                    |
 
 ## Project structure
 
@@ -142,7 +142,7 @@ Deployment, Cloudflare, and D1 environment setup live in [docs/deployment-setup.
 The current deployment model is:
 
 - Vercel for pull request previews
-- Cloudflare `development` for the main development environment
+- Cloudflare `development` for the main branch
 - Cloudflare production on `release.published`
 - GitHub Environments `cf-dev` and `cf-prod` for the Cloudflare deploy workflows
 
