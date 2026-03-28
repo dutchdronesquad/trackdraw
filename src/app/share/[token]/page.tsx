@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import { decodeDesignWithReason } from "@/lib/share";
+import { resolveShareView } from "@/lib/server/share-resolution";
 import { parseEditorView } from "@/lib/view";
 import ShareViewer from "../ShareViewer";
 import ShareError from "../ShareError";
+import ShareExpired from "../ShareExpired";
 
 type ShareTokenPageProps = {
   params: Promise<{
@@ -19,19 +20,29 @@ export default async function ShareTokenPage({
 }: ShareTokenPageProps) {
   const { token } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const result = decodeDesignWithReason(token);
+  const resolvedShare = await resolveShareView(token);
 
-  if (!result.ok) {
-    if (result.reason === "too-large") {
-      return <ShareError />;
-    }
+  if (resolvedShare.status === "available") {
+    return (
+      <ShareViewer
+        design={resolvedShare.design}
+        studioSeedToken={resolvedShare.studioSeedToken}
+        initialTab={parseEditorView(resolvedSearchParams?.view) ?? "2d"}
+      />
+    );
+  }
+
+  if (resolvedShare.status === "expired") {
+    return <ShareExpired />;
+  }
+
+  if (resolvedShare.status === "revoked") {
     notFound();
   }
 
-  return (
-    <ShareViewer
-      token={token}
-      initialTab={parseEditorView(resolvedSearchParams?.view) ?? "2d"}
-    />
-  );
+  if (resolvedShare.status === "too-large") {
+    return <ShareError />;
+  }
+
+  notFound();
 }

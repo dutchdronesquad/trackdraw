@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { decodeDesign, getShareDescription, getShareTitle } from "@/lib/share";
+import { getShareDescription, getShareTitle } from "@/lib/share";
+import { resolveShareView } from "@/lib/server/share-resolution";
 
 type ShareTokenLayoutProps = {
   children: React.ReactNode;
@@ -12,17 +13,33 @@ export async function generateMetadata({
   params,
 }: ShareTokenLayoutProps): Promise<Metadata> {
   const { token } = await params;
-  const design = decodeDesign(token);
+  const resolvedShare = await resolveShareView(token);
 
-  if (!design) {
+  if (resolvedShare.status === "expired") {
+    return {
+      title: "Expired Track Share",
+      description:
+        "This TrackDraw share link has expired. Ask the sender to publish a fresh link.",
+    };
+  }
+
+  if (resolvedShare.status !== "available") {
     return {
       title: "View Track",
       description: "View this FPV race track designed with TrackDraw.",
     };
   }
 
-  const title = getShareTitle(design);
-  const description = getShareDescription(design);
+  const design = resolvedShare.design;
+
+  const title =
+    resolvedShare.source === "stored"
+      ? resolvedShare.title
+      : getShareTitle(design);
+  const description =
+    resolvedShare.source === "stored"
+      ? resolvedShare.description
+      : getShareDescription(design);
   const encodedToken = encodeURIComponent(token);
 
   return {

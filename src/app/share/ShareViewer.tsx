@@ -4,17 +4,19 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
-import { decodeDesign } from "@/lib/share";
 import EditorShell from "@/components/editor/EditorShell";
 import { ContextOverlayCard } from "@/components/editor/ContextOverlayCard";
 import { parseEditorView, type EditorView } from "@/lib/view";
 import { ArrowRight, Eye } from "lucide-react";
+import type { TrackDesign } from "@/lib/types";
 
 export default function ShareViewer({
-  token,
+  design,
+  studioSeedToken,
   initialTab = "2d",
 }: {
-  token: string;
+  design: TrackDesign;
+  studioSeedToken: string;
   initialTab?: EditorView;
 }) {
   const replaceDesign = useEditor((s) => s.replaceDesign);
@@ -23,14 +25,11 @@ export default function ShareViewer({
   const [introDismissed, setIntroDismissed] = useState(false);
   const currentView = parseEditorView(searchParams.get("view")) ?? initialTab;
   const alternateView = currentView === "3d" ? "2d" : "3d";
-  const studioHref = `/studio?token=${encodeURIComponent(token)}&view=${currentView}`;
+  const studioHref = `/studio?token=${encodeURIComponent(studioSeedToken)}&view=${currentView}`;
 
   useEffect(() => {
-    const design = decodeDesign(token);
-    if (design) {
-      replaceDesign(design);
-    }
-  }, [token, replaceDesign]);
+    replaceDesign(design);
+  }, [design, replaceDesign]);
 
   return (
     <div className="relative h-dvh">
