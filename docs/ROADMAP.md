@@ -15,12 +15,11 @@ TrackDraw is now strong in these areas:
 The biggest remaining gaps are:
 
 - Faster layout creation from reusable building blocks
-- Better support for iteration and comparison inside one project
-- Better project recovery and clearer local project structure
+- Better support for layout variants and comparison inside one project
 - Better design feedback before a layout reaches the field
 - More deliberate outputs for race-day communication and presentation
 - A cleaner first-use path for new users
-- A more durable share and publish model than "current state in one URL"
+- Better lifecycle controls around published shares
 
 ## Product Principles
 
@@ -119,8 +118,8 @@ Completed for v1. Distinct error pages for invalid vs oversized share tokens. Re
 
 Post-v1:
 
-- Sharing a specific snapshot through a stable link requires server-side share storage
-- Link lifecycle controls (regenerate, revoke, expire) follow from durable share objects
+- Revoke and regenerate controls on top of the stored-share model
+- Better published-link management for repeated use in Studio
 
 ### 3. Path And Flow Review ✓
 
@@ -359,9 +358,9 @@ The v1 scope is complete. All items are done: project workflow, share route depr
 
 3. Race-day communication and briefing
 4. Layout acceleration (obstacle presets, selection grouping, venue templates)
-5. Comments and review mode
-6. Velocidrone export (research track)
-7. Stable share links and share storage
+5. Published share lifecycle controls and legacy-share retirement
+6. Comments and review mode
+7. Velocidrone export (research track)
 
 This sequence delivers a complete, clean product at v1 and keeps post-v1 work focused on extending workflow depth rather than plugging gaps.
 

@@ -61,7 +61,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the current roadmap assessment.
 - 🚀 **Start faster** - first-use studio flows now guide the first editing step and surface next-step hints
 - 📱 **Edit on mobile** - a dedicated mobile editor flow supports touch navigation, direct placement, mobile multi-select and quick actions
 - 📤 **Export** - save your design as PNG, SVG, PDF, a 3D render screenshot, or JSON project file for backup and reuse
-- 🔗 **Share with a link** - the entire design is compressed into the URL; shared links open at `/share/[token]` in a clean read-only view with a clear path back into Studio
+- 🔗 **Share with a link** - publish a read-only snapshot that opens at `/share/[token]` with clean metadata, social previews, and a clear path back into Studio
 - 📥 **Import** - load a previously exported JSON project file to continue editing
 
 ## Getting started
@@ -95,7 +95,7 @@ Shared links open at `/share/[token]`.
 | 3D preview | Three.js 0.183 + @react-three/fiber + drei                |
 | State      | Zustand 5 + zundo 2 (temporal) + Immer                    |
 | Export     | jsPDF, shared 2D shape definitions, Konva stage snapshots |
-| Sharing    | lz-string                                                 |
+| Sharing    | Stored share publishing on Cloudflare D1, with legacy `lz-string` compatibility for older links |
 | Icons      | Lucide React                                              |
 
 ## Project structure
