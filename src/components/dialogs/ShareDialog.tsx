@@ -58,7 +58,9 @@ function ShareContent({
   const searchParams = useSearchParams();
   const [copied, setCopied] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [publishedShareUrl, setPublishedShareUrl] = useState<string | null>(null);
+  const [publishedShareUrl, setPublishedShareUrl] = useState<string | null>(
+    null
+  );
   const [expiresInDays, setExpiresInDays] = useState<7 | 30 | 90>(90);
   const [publishedExpiresInDays, setPublishedExpiresInDays] = useState<
     7 | 30 | 90 | null
@@ -152,7 +154,9 @@ function ShareContent({
     }
 
     setPublishedShareUrl((current) => current ?? storedShareState.url);
-    setPublishedSourceToken((current) => current ?? storedShareState.sourceToken);
+    setPublishedSourceToken(
+      (current) => current ?? storedShareState.sourceToken
+    );
     setPublishedExpiresInDays(
       (current) => current ?? storedShareState.expiresInDays
     );
@@ -347,7 +351,7 @@ function ShareContent({
               readOnly
               value={publishedShareUrl}
               onFocus={(e) => e.target.select()}
-              className="border-border bg-background/70 text-foreground focus:ring-primary/50 min-w-0 w-full truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+              className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
             />
           ) : null}
           {showRefreshNotice ? (
@@ -573,7 +577,9 @@ function ShareContent({
               </div>
               <div className="min-w-0">
                 <p className="text-foreground text-sm font-medium">
-                  {publishedShareUrl ? "Published link" : "No published link yet"}
+                  {publishedShareUrl
+                    ? "Published link"
+                    : "No published link yet"}
                 </p>
                 <p className="text-muted-foreground text-[11px]">
                   {publishedShareUrl
@@ -588,7 +594,7 @@ function ShareContent({
                 readOnly
                 value={publishedShareUrl}
                 onFocus={(e) => e.target.select()}
-                className="border-border bg-background/70 text-foreground focus:ring-primary/50 min-w-0 w-full truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+                className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
               />
             ) : null}
             <Button
