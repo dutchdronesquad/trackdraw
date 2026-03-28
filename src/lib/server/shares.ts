@@ -8,7 +8,7 @@ import {
 } from "@/lib/design";
 import { getShareDescription, getShareTitle } from "@/lib/share";
 import type { SerializedTrackDesign, TrackDesign } from "@/lib/types";
-import { createDatabaseClient } from "@/lib/server/db";
+import { getDatabase } from "@/lib/server/db";
 
 const createShareToken = customAlphabet(
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -21,8 +21,8 @@ type ShareRow = {
   design_json: SerializedTrackDesign | string;
   title: string | null;
   description: string | null;
-  field_width: number | string | null;
-  field_height: number | string | null;
+  field_width: number | null;
+  field_height: number | null;
   shape_count: number;
   created_at: string;
   updated_at: string;
@@ -52,6 +52,10 @@ export type StoredShareResolution =
   | { status: "expired"; share: StoredShare }
   | { status: "revoked"; share: StoredShare }
   | { status: "missing" };
+
+function toIsoDateAfterDays(days: number) {
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+}
 
 function mapShareRow(row: ShareRow): StoredShare {
   const rawDesign =
@@ -86,45 +90,44 @@ function mapShareRow(row: ShareRow): StoredShare {
 export async function resolveStoredShare(
   token: string
 ): Promise<StoredShareResolution> {
-  const sql = await createDatabaseClient();
+  const db = await getDatabase();
+  const row = await db
+    .prepare(
+      `
+        select
+          id,
+          token,
+          design_json,
+          title,
+          description,
+          field_width,
+          field_height,
+          shape_count,
+          created_at,
+          updated_at,
+          published_at,
+          expires_at,
+          revoked_at
+        from shares
+        where token = ?
+        limit 1
+      `
+    )
+    .bind(token)
+    .first<ShareRow>();
 
-  try {
-    const rows = await sql<ShareRow[]>`
-      select
-        id,
-        token,
-        design_json,
-        title,
-        description,
-        field_width,
-        field_height,
-        shape_count,
-        created_at,
-        updated_at,
-        published_at,
-        expires_at,
-        revoked_at
-      from shares
-      where token = ${token}
-      limit 1
-    `;
+  if (!row) return { status: "missing" };
 
-    const row = rows[0];
-    if (!row) return { status: "missing" };
-
-    const share = mapShareRow(row);
-    if (share.revokedAt) {
-      return { status: "revoked", share };
-    }
-
-    if (new Date(share.expiresAt).getTime() <= Date.now()) {
-      return { status: "expired", share };
-    }
-
-    return { status: "available", share };
-  } finally {
-    await sql.end();
+  const share = mapShareRow(row);
+  if (share.revokedAt) {
+    return { status: "revoked", share };
   }
+
+  if (new Date(share.expiresAt).getTime() <= Date.now()) {
+    return { status: "expired", share };
+  }
+
+  return { status: "available", share };
 }
 
 export async function getShareByToken(token: string) {
@@ -138,10 +141,8 @@ type CreateShareOptions = {
 
 function isUniqueViolation(error: unknown) {
   return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === "23505"
+    error instanceof Error &&
+    /UNIQUE constraint failed|SQLITE_CONSTRAINT/i.test(error.message)
   );
 }
 
@@ -156,62 +157,76 @@ export async function createShare(
   const description = getShareDescription(normalized);
   const shapeCount = getDesignShapes(normalized).length;
   const expiresInDays = options.expiresInDays ?? 90;
-  const sql = await createDatabaseClient();
+  const db = await getDatabase();
 
-  try {
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      const token = createShareToken();
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const id = crypto.randomUUID();
+    const token = createShareToken();
+    const now = new Date().toISOString();
+    const expiresAt = toIsoDateAfterDays(expiresInDays);
 
-      try {
-        const rows = await sql<ShareRow[]>`
-          insert into shares (
-            token,
-            design_json,
-            title,
-            description,
-            field_width,
-            field_height,
-            shape_count,
-            expires_at
-          )
-          values (
-            ${token},
-            ${serializedJson}::jsonb,
-            ${title},
-            ${description},
-            ${normalized.field.width},
-            ${normalized.field.height},
-            ${shapeCount},
-            now() + (${expiresInDays}::text || ' days')::interval
-          )
-          returning
-            id,
-            token,
-            design_json,
-            title,
-            description,
-            field_width,
-            field_height,
-            shape_count,
-            created_at,
-            updated_at,
-            published_at,
-            expires_at,
-            revoked_at
-        `;
+    try {
+      await db
+        .prepare(
+          `
+            insert into shares (
+              id,
+              token,
+              design_json,
+              title,
+              description,
+              field_width,
+              field_height,
+              shape_count,
+              created_at,
+              updated_at,
+              published_at,
+              expires_at,
+              revoked_at
+            )
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `
+        )
+        .bind(
+          id,
+          token,
+          serializedJson,
+          title,
+          description,
+          normalized.field.width,
+          normalized.field.height,
+          shapeCount,
+          now,
+          now,
+          now,
+          expiresAt,
+          null
+        )
+        .run();
 
-        return mapShareRow(rows[0]);
-      } catch (error) {
-        if (attempt < 2 && isUniqueViolation(error)) {
-          continue;
-        }
-
-        throw error;
+      return {
+        id,
+        token,
+        design: normalized,
+        title,
+        description,
+        shapeCount,
+        fieldWidth: normalized.field.width,
+        fieldHeight: normalized.field.height,
+        createdAt: now,
+        updatedAt: now,
+        publishedAt: now,
+        expiresAt,
+        revokedAt: null,
+      };
+    } catch (error) {
+      if (attempt < 2 && isUniqueViolation(error)) {
+        continue;
       }
-    }
 
-    throw new Error("Failed to generate a unique share token");
-  } finally {
-    await sql.end();
+      throw error;
+    }
   }
+
+  throw new Error("Failed to generate a unique share token");
 }

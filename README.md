@@ -127,18 +127,17 @@ npm run dev    # Development server (Turbopack)
 npm run build  # Production build
 npm run start  # Production server
 npm run preview # Local Cloudflare/OpenNext preview with Wrangler
-npm run migrate:up:dev   # Apply development PostgreSQL migrations
-npm run migrate:down:dev # Roll back the latest development migration
-npm run migrate:up:production   # Apply production PostgreSQL migrations
-npm run migrate:down:production # Roll back the latest production migration
+npm run migrate:local # Apply local D1 migrations for preview/dev
+npm run migrate:up:dev   # Apply development D1 migrations
+npm run migrate:up:production   # Apply production D1 migrations
 npm run lint   # ESLint
 npm run type   # TypeScript check
 ```
 
 Use `npm run dev` for fast local UI work.
-Use `npm run preview` to validate behavior against the Cloudflare/OpenNext runtime, especially for Hyperdrive-backed share flows.
+Use `npm run preview` to validate behavior against the Cloudflare/OpenNext runtime, especially for D1-backed share flows.
 
-Deployment, Cloudflare, Hyperdrive, and database environment setup live in [docs/deployment-setup.md](docs/deployment-setup.md).
+Deployment, Cloudflare, and D1 environment setup live in [docs/deployment-setup.md](docs/deployment-setup.md).
 
 ## License
 

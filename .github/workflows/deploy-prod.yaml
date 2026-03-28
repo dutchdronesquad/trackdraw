@@ -24,7 +24,7 @@ env:
 
 jobs:
   deploy:
-    name: Deploy to Cloudflare production
+    name: Deploy Production
     runs-on: ubuntu-latest
     environment: production
     steps:

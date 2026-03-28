@@ -8,34 +8,30 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
-  "hyperdrive": [
+  "d1_databases": [
     {
-      "binding": "HYPERDRIVE",
-      "id": "98c8ee9b612646628245b78023d7b147",
-      "localConnectionString": "postgres://username:password@0.0.0.0:5432/database_name",
+      "binding": "DB",
+      "database_name": "trackdraw",
+      "database_id": "875a18b9-ce1a-4e29-ac76-d0dc950dc574",
     },
   ],
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://trackdraw.app",
     "NEXT_PUBLIC_APP_ENV": "production",
-    "TRACKDRAW_RUNTIME_ENV": "production",
-    "TRACKDRAW_DB_ENV": "production",
   },
   "env": {
     "dev": {
       "name": "trackdraw-dev",
-      "hyperdrive": [
+      "d1_databases": [
         {
-          "binding": "HYPERDRIVE",
-          "id": "d30c04d6d02e4536a85a6718bc059245",
-          "localConnectionString": "postgres://username:password@0.0.0.0:5432/database_name_dev",
+          "binding": "DB",
+          "database_name": "trackdraw-dev",
+          "database_id": "8b9a4679-c919-4082-93d1-3841fa2bfc19",
         },
       ],
       "vars": {
         "NEXT_PUBLIC_SITE_URL": "https://dev.trackdraw.app",
         "NEXT_PUBLIC_APP_ENV": "development",
-        "TRACKDRAW_RUNTIME_ENV": "development",
-        "TRACKDRAW_DB_ENV": "development",
       },
     },
   },
