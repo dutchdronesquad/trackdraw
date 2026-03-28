@@ -40,7 +40,7 @@ export default async function ShareTokenPage({
     notFound();
   }
 
-  if (resolvedShare.status === "too-large") {
+  if (resolvedShare.status === "retired") {
     return <ShareError />;
   }
 
