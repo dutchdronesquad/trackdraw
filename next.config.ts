@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["trackdraw.home.arpa"],
 };
 
-initOpenNextCloudflareForDev();
+if (process.env.NODE_ENV === "development" && !process.env.VERCEL) {
+  initOpenNextCloudflareForDev();
+}
 
 export default nextConfig;
