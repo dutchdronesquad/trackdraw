@@ -87,16 +87,16 @@ Shared links open at `/share/[token]`.
 
 ## Tech stack
 
-| Layer      | Library                                                                                         |
-| ---------- | ----------------------------------------------------------------------------------------------- |
-| Framework  | Next.js 16 (App Router, Turbopack)                                                              |
-| UI         | React 19, Tailwind CSS 4, shadcn/ui v4 (`@base-ui/react`)                                       |
-| 2D canvas  | Konva 10 + react-konva                                                                          |
-| 3D preview | Three.js 0.183 + @react-three/fiber + drei                                                      |
-| State      | Zustand 5 + zundo 2 (temporal) + Immer                                                          |
-| Export     | jsPDF, shared 2D shape definitions, Konva stage snapshots                                       |
-| Sharing    | Stored share publishing on Cloudflare D1, with legacy `lz-string` compatibility for older links |
-| Icons      | Lucide React                                                                                    |
+| Layer      | Library                                                   |
+| ---------- | --------------------------------------------------------- |
+| Framework  | Next.js 16 (App Router, Turbopack)                        |
+| UI         | React 19, Tailwind CSS 4, shadcn/ui v4 (`@base-ui/react`) |
+| 2D canvas  | Konva 10 + react-konva                                    |
+| 3D preview | Three.js 0.183 + @react-three/fiber + drei                |
+| State      | Zustand 5 + zundo 2 (temporal) + Immer                    |
+| Export     | jsPDF, shared 2D shape definitions, Konva stage snapshots |
+| Sharing    | Stored share publishing on Cloudflare D1                  |
+| Icons      | Lucide React                                              |
 
 ## Project structure
 

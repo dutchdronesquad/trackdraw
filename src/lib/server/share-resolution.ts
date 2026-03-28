@@ -19,13 +19,7 @@ export type ResolvedShareView =
     }
   | {
       source: "legacy";
-      status: "available";
-      design: TrackDesign;
-      studioSeedToken: string;
-    }
-  | {
-      source: "legacy";
-      status: "too-large" | "invalid";
+      status: "retired" | "invalid";
     };
 
 export async function resolveShareView(
@@ -53,17 +47,15 @@ export async function resolveShareView(
 
   const legacy = decodeDesignWithReason(token);
 
-  if (legacy.ok) {
+  if (legacy.ok || legacy.reason === "too-large") {
     return {
       source: "legacy",
-      status: "available",
-      design: legacy.design,
-      studioSeedToken: token,
+      status: "retired",
     };
   }
 
   return {
     source: "legacy",
-    status: legacy.reason,
+    status: "invalid",
   };
 }

@@ -175,20 +175,18 @@ Included:
 - Stored share publishing with shorter, durable tokens
 - Database-backed share reads
 - Share metadata and social image generation driven by stored share state
-- Legacy fallback isolated into a compatibility layer instead of remaining the primary share model
+- Legacy payload-in-URL share support retired behind a safe failure path
 - Share expiry support with a default lifecycle window
 - Automatic cleanup for revoked shares and expired links beyond the retention window
 - A calmer publish flow that separates link creation from follow-up actions like copy, open, and native share
 
 Constraints:
 
-- Legacy URL-embedded share links are still temporarily supported and should not remain a permanent codepath
 - Share publishing and retrieval should continue to be modeled in TrackDraw domain terms first, not around storage schema details
 - The first backend integration should still leave room for later migration to another relational backend or another hosting platform
 
 Remaining:
 
-- Define the retirement path for legacy URL-embedded shares
 - Add revoke/regenerate lifecycle controls
 - Decide how much share administration should live in the product UI
 - Keep refining the publish dialog around repeated use in Studio without regressing the current flow
@@ -358,7 +356,7 @@ The v1 scope is complete. All items are done: project workflow, share route depr
 
 3. Race-day communication and briefing
 4. Layout acceleration (obstacle presets, selection grouping, venue templates)
-5. Published share lifecycle controls and legacy-share retirement
+5. Published share lifecycle controls
 6. Comments and review mode
 7. Velocidrone export (research track)
 

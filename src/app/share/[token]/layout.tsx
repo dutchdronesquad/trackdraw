@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { getShareDescription, getShareTitle } from "@/lib/share";
 import { resolveShareView } from "@/lib/server/share-resolution";
+import {
+  DEFAULT_OG_IMAGE_ALT,
+  DEFAULT_SOCIAL_IMAGE,
+  DEFAULT_SOCIAL_IMAGE_HEIGHT,
+  DEFAULT_SOCIAL_IMAGE_WIDTH,
+  SITE_NAME,
+} from "@/lib/seo";
 
 type ShareTokenLayoutProps = {
   children: React.ReactNode;
@@ -23,6 +30,14 @@ export async function generateMetadata({
     };
   }
 
+  if (resolvedShare.status === "retired") {
+    return {
+      title: "Unsupported Track Share",
+      description:
+        "This older TrackDraw share format is no longer supported. Ask the sender to publish a fresh link.",
+    };
+  }
+
   if (resolvedShare.status !== "available") {
     return {
       title: "View Track",
@@ -41,6 +56,12 @@ export async function generateMetadata({
       ? resolvedShare.description
       : getShareDescription(design);
   const encodedToken = encodeURIComponent(token);
+  const socialImage = {
+    url: DEFAULT_SOCIAL_IMAGE,
+    width: DEFAULT_SOCIAL_IMAGE_WIDTH,
+    height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
+    alt: DEFAULT_OG_IMAGE_ALT,
+  };
 
   return {
     title,
@@ -49,15 +70,18 @@ export async function generateMetadata({
       canonical: `/share/${encodedToken}`,
     },
     openGraph: {
+      type: "website",
+      siteName: SITE_NAME,
       title,
       description,
       url: `/share/${encodedToken}`,
-      images: [`/share/${encodedToken}/opengraph-image`],
+      images: [socialImage],
     },
     twitter: {
+      card: "summary_large_image",
       title,
       description,
-      images: [`/share/${encodedToken}/twitter-image`],
+      images: [DEFAULT_SOCIAL_IMAGE],
     },
   };
 }

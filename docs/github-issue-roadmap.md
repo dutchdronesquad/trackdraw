@@ -102,8 +102,8 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
       Move from payload-in-URL sharing toward durable stored share objects while preserving `/share/[token]` as the canonical public route.
   - [x] Persisted share object model
         Define the first database-backed share model for publish/read flows, using Cloudflare D1 initially.
-  - [ ] Legacy share retirement plan
-        Deprecate URL-embedded share payloads with a deliberate compatibility window and a safe failure path once the old decode logic is removed.
+  - [x] Legacy share retirement plan
+        Retired URL-embedded share payload support. Older links now fail through a deliberate fallback screen that asks the sender to publish a fresh link or provide a JSON export.
   - [x] Share metadata and OG storage integration
         Move share metadata and social image generation onto stored share state instead of URL payload decoding.
   - [ ] Share lifecycle management

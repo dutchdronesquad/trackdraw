@@ -9,7 +9,7 @@ Agents working in this repo should optimize for product safety over broad refact
 ## Product Context
 
 - The main app surfaces are the landing page at `/`, the editor at `/studio`, and read-only shared views at `/share/[token]`.
-- The product is local-first. Editing, autosave, import/export, and URL-based sharing are all core behavior.
+- The product is local-first. Editing, autosave, import/export, and published sharing are all core behavior.
 - Mobile support is intentional product scope, not a degraded desktop fallback.
 - Shared links must open cleanly in read-only mode and remain compatible with the canonical `/share/[token]` route.
 
@@ -29,7 +29,7 @@ Agents working in this repo should optimize for product safety over broad refact
 - Preserve existing visual language and interaction patterns unless the task explicitly asks for redesign.
 - Keep TypeScript strictness intact. Avoid `any` unless there is a clear boundary reason.
 - Reuse existing helpers and types before adding parallel abstractions.
-- Do not break import/export, autosave, share encoding, or read-only viewing while changing editor features.
+- Do not break import/export, autosave, share publish/read flows, or read-only viewing while changing editor features.
 
 ## Files And Responsibilities
 
@@ -42,6 +42,7 @@ Agents working in this repo should optimize for product safety over broad refact
 ## Commands
 
 - `npm run dev`
+- `npm run preview`
 - `npm run lint`
 - `npm run type`
 - `npm run build`

@@ -50,12 +50,12 @@ export default function ShareError() {
           <div className="space-y-8">
             <div className="max-w-3xl space-y-4">
               <h1 className="text-4xl font-semibold tracking-[-0.04em] text-balance sm:text-6xl">
-                This track is too large to open as a link
+                This shared track link is no longer supported
               </h1>
               <p className="text-muted-foreground max-w-2xl text-sm leading-7 sm:text-base">
-                URL-based sharing has size limits enforced by browsers,
-                messaging apps, and email clients. This design exceeds those
-                limits and the link was likely truncated before it reached you.
+                TrackDraw now uses published share links instead of the older
+                URL-embedded share format. This older link can no longer be
+                opened directly.
               </p>
             </div>
 
@@ -69,11 +69,11 @@ export default function ShareError() {
                     1.
                   </span>
                   <span>
-                    Ask the sender to export the track as a{" "}
+                    Ask the sender to publish a fresh share link from{" "}
                     <strong className="text-foreground/80 font-semibold">
-                      JSON file
-                    </strong>{" "}
-                    using Studio&apos;s Export function.
+                      Studio
+                    </strong>
+                    .
                   </span>
                 </li>
                 <li className="flex gap-3 py-2">
@@ -81,11 +81,11 @@ export default function ShareError() {
                     2.
                   </span>
                   <span>
-                    Open Studio, use{" "}
+                    If you still need an offline handoff, ask for a{" "}
                     <strong className="text-foreground/80 font-semibold">
-                      Import
+                      JSON export
                     </strong>{" "}
-                    to load the JSON file, and review or edit the layout there.
+                    and open it in Studio with Import.
                   </span>
                 </li>
                 <li className="flex gap-3 py-2">
@@ -93,8 +93,8 @@ export default function ShareError() {
                     3.
                   </span>
                   <span>
-                    JSON files are not URL-limited and open reliably regardless
-                    of layout size.
+                    New published links use the canonical `/share/[token]` route
+                    and remain the supported way to share read-only layouts.
                   </span>
                 </li>
               </ol>

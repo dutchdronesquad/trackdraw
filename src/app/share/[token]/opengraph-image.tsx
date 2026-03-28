@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getDesignShapes } from "@/lib/design";
-import { decodeDesign, getShareDescription, getShareTitle } from "@/lib/share";
+import { getShareDescription, getShareTitle } from "@/lib/share";
 import { resolveShareView } from "@/lib/server/share-resolution";
 import { SITE_NAME } from "@/lib/seo";
 
@@ -21,9 +21,7 @@ export default async function ShareOpenGraphImage({ params }: ShareImageProps) {
   const { token } = await params;
   const resolvedShare = await resolveShareView(token);
   const design =
-    resolvedShare.status === "available"
-      ? resolvedShare.design
-      : decodeDesign(token);
+    resolvedShare.status === "available" ? resolvedShare.design : null;
 
   const title =
     resolvedShare.status === "available" && resolvedShare.source === "stored"
