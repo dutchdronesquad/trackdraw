@@ -144,6 +144,7 @@ The current deployment model is:
 - Vercel for pull request previews
 - Cloudflare `development` for the main development environment
 - Cloudflare production on `release.published`
+- GitHub Environments `cf-dev` and `cf-prod` for the Cloudflare deploy workflows
 
 ## License
 

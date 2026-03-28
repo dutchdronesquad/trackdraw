@@ -12,7 +12,8 @@ TrackDraw uses a split runtime setup:
 - `npm run preview` is local Cloudflare/OpenNext validation
 - Cloudflare root config is production
 - Cloudflare `env.dev` is the development deployment target
-- GitHub Actions deploys `main` to `development` and deploys production on `release.published`
+- GitHub Actions uses the GitHub Environment `cf-dev` for the development deploy from `main`
+- GitHub Actions uses the GitHub Environment `cf-prod` for the production deploy on `release.published`
 
 ## Database split
 
