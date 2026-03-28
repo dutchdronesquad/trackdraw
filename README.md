@@ -139,6 +139,12 @@ Use `npm run preview` to validate behavior against the Cloudflare/OpenNext runti
 
 Deployment, Cloudflare, and D1 environment setup live in [docs/deployment-setup.md](docs/deployment-setup.md).
 
+The current deployment model is:
+
+- Vercel for pull request previews
+- Cloudflare `development` for the main development environment
+- Cloudflare production on `release.published`
+
 ## License
 
 Distributed under the **LGPL-3.0-or-later** License. See [`LICENSE`](LICENSE) for more information.

@@ -137,7 +137,64 @@ Completed. First-use starter surface with guided ("Start by placing gates") and 
 
 ## Mid-Term Priorities
 
-### 5. Race-Day Communication And Briefing
+### 5. Runtime And Deployment Migration ✓
+
+Completed in foundation form. TrackDraw is now set up around a real application runtime path instead of GitHub Pages, with Cloudflare Workers/OpenNext in the repo, development and production deploy workflows, and Vercel reduced to pull request previews.
+
+Why now:
+
+- The current app is already stretching beyond static-export assumptions
+- Dynamic share metadata and OG image generation now conflict directly with static hosting
+- Database-backed shares require a real runtime and backend connectivity
+- This migration unblocks the next generation of share and publish work
+
+Included:
+
+- Vercel continues to handle pull request previews
+- Cloudflare Workers becomes the runtime for `main` as a development environment
+- Cloudflare Workers becomes the production runtime on `release.published`
+- Cloudflare D1 is now the first persisted backend for share objects, but the app should avoid hard-coupling to provider-specific assumptions
+
+Why it matters:
+
+- Dynamic share metadata and OG image generation are no longer blocked by static export
+- The app now has a viable path for backend-backed share storage
+- The remaining work is operational validation and deployment hardening, not architecture selection
+
+Remaining:
+
+- Validate the first full `dev` deploy on Cloudflare
+- Validate the first release-gated production deploy
+- Finalize environment secrets and domain routing in Cloudflare/GitHub
+
+### 6. Stable Share Links And Share Storage ✓
+
+Completed in first production-facing form. TrackDraw now supports persisted share objects behind the canonical `/share/[token]` route, with database-backed publish/read flows and stored-state-driven metadata generation.
+
+Included:
+
+- Stored share publishing with shorter, durable tokens
+- Database-backed share reads
+- Share metadata and social image generation driven by stored share state
+- Legacy fallback isolated into a compatibility layer instead of remaining the primary share model
+- Share expiry support with a default lifecycle window
+- Automatic cleanup for revoked shares and expired links beyond the retention window
+- A calmer publish flow that separates link creation from follow-up actions like copy, open, and native share
+
+Constraints:
+
+- Legacy URL-embedded share links are still temporarily supported and should not remain a permanent codepath
+- Share publishing and retrieval should continue to be modeled in TrackDraw domain terms first, not around storage schema details
+- The first backend integration should still leave room for later migration to another relational backend or another hosting platform
+
+Remaining:
+
+- Define the retirement path for legacy URL-embedded shares
+- Add revoke/regenerate lifecycle controls
+- Decide how much share administration should live in the product UI
+- Keep refining the publish dialog around repeated use in Studio without regressing the current flow
+
+### 7. Race-Day Communication And Briefing
 
 Turn existing export and read-only capabilities into more deliberate communication outputs.
 
@@ -153,7 +210,7 @@ Scope:
 - Printable marshal pack
 - Export presets tuned for briefing, print, and mobile review
 
-### 6. Layout Acceleration
+### 8. Layout Acceleration
 
 Reduce repetitive setup work so users can compose good layouts faster.
 
@@ -168,11 +225,11 @@ Scope:
 - Selection grouping for repeated layout sections
 - Venue-aware field templates and starter fields
 
-### 7. Comments And Review Mode
+### 9. Comments And Review Mode
 
 Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
 
-### 8. Velocidrone Export Compatibility (Research)
+### 10. Velocidrone Export Compatibility (Research)
 
 Explore whether TrackDraw layouts can be exported into a format that is usable inside Velocidrone's track builder workflow.
 
@@ -194,15 +251,15 @@ Recommended approach:
 - Start with format discovery and proof-of-concept export
 - Only promote it to a supported feature if the workflow is stable enough to maintain
 
-### 9. Heatmap And Flow Analysis
+### 11. Heatmap And Flow Analysis
 
 Add lightweight visual feedback for rhythm, density, and bottlenecks after validation basics are in place.
 
-### 10. Adaptive Mobile UI ✓
+### 12. Adaptive Mobile UI ✓
 
 Completed. `ExportDialog`, `ImportDialog`, and the studio keyboard-shortcuts dialog now use the newer modal style on desktop and bottom-drawer presentation on mobile.
 
-### 11. Codebase Architecture And Performance Refactor
+### 13. Codebase Architecture And Performance Refactor
 
 This area now has meaningful groundwork, but it should stay on the roadmap as an ongoing internal quality track rather than being treated as fully complete.
 
@@ -225,16 +282,6 @@ Why:
 - Some core files are growing too broad, which makes navigation, ownership, and safe iteration harder than it should be
 
 ## Long-Term Priorities
-
-### 12. Stable Share Links And Share Storage
-
-Move from payload-in-URL sharing toward durable short links backed by stored share state.
-
-Why:
-
-- Shorter links are meaningfully better for copying, previewing, and publishing
-- Durable share objects create a cleaner base for publish lifecycle features
-- This should follow the earlier share-model cleanup, not precede it
 
 ## Product Opportunities
 

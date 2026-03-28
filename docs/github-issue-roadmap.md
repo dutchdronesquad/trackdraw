@@ -85,6 +85,30 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 ## Priority 2
 
+- [x] Runtime and deployment migration
+      Move TrackDraw off GitHub Pages and onto a real app runtime that supports dynamic routes, OG image generation, and backend-backed share flows.
+  - [x] Hybrid runtime setup
+        Keep Vercel for pull request previews, deploy `main` to a Cloudflare development environment, and deploy production on `release.published`.
+  - [x] Cloudflare/OpenNext integration
+        Add the configuration and workflows needed to run the existing Next.js app on Cloudflare Workers without breaking the current review flow.
+  - [x] Backend portability guardrails
+        Introduce the backend-facing share/publish layer in a way that keeps the first storage choice replaceable rather than turning Cloudflare D1 into a permanent platform assumption.
+  - [x] Workers-to-database connectivity decision
+        Replace the earlier home-hosted PostgreSQL plan with a Cloudflare-native D1 setup that removes private network connectivity from the share storage path.
+  - [ ] Cloudflare production rollout validation
+        Finish the first successful end-to-end development deploy, validate `dev.trackdraw.app`, and then verify the release-gated production deploy path with the final GitHub environment secrets and domains.
+
+- [x] Stable share links and share storage
+      Move from payload-in-URL sharing toward durable stored share objects while preserving `/share/[token]` as the canonical public route.
+  - [x] Persisted share object model
+        Define the first database-backed share model for publish/read flows, using Cloudflare D1 initially.
+  - [ ] Legacy share retirement plan
+        Deprecate URL-embedded share payloads with a deliberate compatibility window and a safe failure path once the old decode logic is removed.
+  - [x] Share metadata and OG storage integration
+        Move share metadata and social image generation onto stored share state instead of URL payload decoding.
+  - [ ] Share lifecycle management
+        Expiry, retention cleanup, and calmer publish-link behavior are now in place. Remaining work is revoke, regenerate, and clearer controls for reviewing and managing published links.
+
 - [ ] Velocidrone export compatibility research
       Investigate whether TrackDraw layouts can be exported into Velocidrone's track-builder workflow. This likely starts as reverse-engineering and format discovery work because there is no public API or official documentation to build against.
 
@@ -114,9 +138,6 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
         Continue tightening folder ownership and splitting broad components and modules where internal navigation and safe iteration are still harder than they should be.
 
 ## Priority 3
-
-- [ ] Stable share links and share storage
-      Move from payload-in-URL sharing toward durable short links backed by stored share state once the publish model is clearer.
 
 - [ ] Obstacle inventory and setup estimate
       Summarize obstacle counts, key sections, and rough setup complexity so a finished layout translates more directly into race-day preparation.

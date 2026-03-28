@@ -3,7 +3,7 @@
 TrackDraw uses a split runtime setup:
 
 - `local` for fast development and local Cloudflare preview
-- `dev` on `dev.trackdraw.app`
+- `development` on `dev.trackdraw.app`
 - `production` on `trackdraw.app`
 
 ## Runtime split
@@ -12,32 +12,30 @@ TrackDraw uses a split runtime setup:
 - `npm run preview` is local Cloudflare/OpenNext validation
 - Cloudflare root config is production
 - Cloudflare `env.dev` is the development deployment target
+- GitHub Actions deploys `main` to `development` and deploys production on `release.published`
 
 ## Database split
 
-Use separate PostgreSQL databases and credentials per environment.
+TrackDraw uses Cloudflare D1 for persisted share storage.
 
-- development should point to a dedicated development database
-- production should point to a separate production database
-- do not reuse production credentials for local or development workflows
-
-TrackDraw also enforces a runtime/database environment match:
-
-- `TRACKDRAW_RUNTIME_ENV=development` must only talk to a development database
-- `TRACKDRAW_RUNTIME_ENV=production` must only talk to a production database
-
-If those do not match, the server-side database layer fails fast.
+- production should use its own D1 database binding
+- development should use a separate D1 database binding under `env.dev`
+- local preview uses Wrangler's local D1 state for the development environment
+- a scheduled Worker cleanup removes expired or revoked shares after a retention window
 
 ## Local env files
 
-Local Cloudflare preview uses both:
+Local Cloudflare preview does not need a database connection string anymore.
 
-- `.env.local`
+Plain Next.js development can still use:
+
+- `.env`
+
+Wrangler-local overrides can live in:
+
 - `.dev.vars`
 
-The local Hyperdrive connection string should point to the development database.
-
-See [`.env.example`](../.env.example) and [`.dev.vars.example`](../.dev.vars.example).
+No committed example env files are kept in the repo anymore.
 
 ## Wrangler
 
@@ -46,9 +44,20 @@ See [`.env.example`](../.env.example) and [`.dev.vars.example`](../.dev.vars.exa
 - root config: production
 - `env.dev`: development
 
-The development Hyperdrive binding should use its own Hyperdrive ID and local dev connection string.
+Each environment should bind its own D1 database through `d1_databases`.
+
+Before the first deploy, replace the placeholder `database_id` values in [`wrangler.jsonc`](../wrangler.jsonc) with the real Cloudflare D1 database IDs for:
+
+- production
+- development
 
 ## Migrations
+
+Local D1 migrations:
+
+```bash
+npm run migrate:local
+```
 
 Development migrations:
 
@@ -56,11 +65,11 @@ Development migrations:
 npm run migrate:up:dev
 ```
 
-Production migrations are intentionally gated:
+The development deploy workflow applies D1 migrations before deploying the Worker.
+
+Production migrations are intentionally explicit:
 
 ```bash
-DATABASE_URL_PRODUCTION=postgres://...
-CONFIRM_PRODUCTION=trackdraw-production
 npm run migrate:up:production
 ```
 
@@ -70,8 +79,8 @@ Typical local workflow:
 
 ```bash
 npm install
-npm run migrate:up:dev
-npm run dev
+npm run migrate:local
+npm run preview
 ```
 
 When validating Cloudflare-specific behavior:
@@ -80,4 +89,27 @@ When validating Cloudflare-specific behavior:
 npm run preview
 ```
 
-Use preview for stored-share publishing, Hyperdrive-backed reads, and other Worker-specific flows.
+Use preview for stored-share publishing, D1-backed reads, and other Worker-specific flows.
+
+## Share retention
+
+Shares become invalid when `expires_at` is reached, but they are not deleted immediately.
+
+The Worker runs a daily cron cleanup and removes:
+
+- revoked shares
+- shares that have been expired for more than 30 days
+
+The current cron runs daily at `03:17 UTC`.
+
+To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
+
+```bash
+npx wrangler dev --env dev --test-scheduled
+curl "http://localhost:8787/__scheduled?cron=17+3+*+*+*"
+```
+
+Cloudflare documents `--test-scheduled` and the local `__scheduled` route for scheduled handler testing:
+
+- https://developers.cloudflare.com/workers/runtime-apis/scheduled-event/
+- https://developers.cloudflare.com/workers/configuration/cron-triggers/
