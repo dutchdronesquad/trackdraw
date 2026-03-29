@@ -1,8 +1,8 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw as of March 25, 2026. The product has moved beyond "basic editor prototype" territory. The core design loop is now credible across desktop, shared read-only viewing, practical mobile use, and race-day handoff. The next phase should focus less on generic polish and more on workflow acceleration, design confidence, handoff quality, and venue-side usefulness.
+This roadmap reflects the current state of TrackDraw after the v1 release. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. The roadmap should now focus primarily on workflow depth, race-day outputs, and faster layout building rather than on v1 foundation work.
 
-## Current Assessment
+## Post-v1 Focus
 
 TrackDraw is now strong in these areas:
 
@@ -12,13 +12,13 @@ TrackDraw is now strong in these areas:
 - Practical mobile editing for quick venue-side changes
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 
-The biggest remaining gaps are:
+The most useful next product moves are:
 
 - Faster layout creation from reusable building blocks
 - Better support for layout variants and comparison inside one project
 - Better design feedback before a layout reaches the field
 - More deliberate outputs for race-day communication and presentation
-- A cleaner first-use path for new users
+- Better validation that a planned layout matches the real inventory on hand
 - Better lifecycle controls around published shares
 
 ## Product Principles
@@ -29,6 +29,153 @@ The biggest remaining gaps are:
 - Mobile should be practical and deliberate, not a compromised desktop clone
 - Race-day deliverables should extend the editor, not become a separate product surface
 - Sharing should feel intentional and publishable, not like a side effect of editor state
+- Local-first workflows should remain usable without requiring sign-in
+- Optional accounts should only appear where sync, ownership, identity, or shared administration clearly improve the workflow
+
+## Active Roadmap
+
+### 1. Race-Day Communication And Briefing
+
+Turn existing export and read-only capabilities into more deliberate communication outputs.
+
+Why now:
+
+- The product already has export breadth and a read-only view, but briefing workflows still need a more deliberate output surface
+- This is the clearest next step now that the v1 planning loop is stable
+
+Scope:
+
+- Obstacle numbering
+- Pilot briefing mode
+- Printable marshal pack
+- Export presets tuned for briefing, print, and mobile review
+
+Next slices:
+
+- Briefing-oriented export preset with title, field dimensions, and obstacle index
+- Read-only briefing mode with cleaner labels and less editor-like chrome
+- Marshal-pack print layout once numbering and briefing output are stable
+
+### 2. Layout Acceleration
+
+Reduce repetitive setup work so users can compose good layouts faster.
+
+Why now:
+
+- The editor is complete enough for v1 without preset content
+- Presets now matter more as workflow acceleration than as foundational capability
+
+Scope:
+
+- Obstacle presets for reusable groupings and common race-building patterns
+- Selection grouping for repeated layout sections
+- Venue-aware field templates and starter fields
+
+Next slices:
+
+- Obstacle-pack presets for common race-building patterns
+- Selection grouping with duplicate/move as one unit
+- Starter layouts before venue-aware templates
+- Template browser only after preset content and grouping are proven useful
+
+### 3. Share Lifecycle Follow-up
+
+Keep refining published links now that stored share publishing is the default model.
+
+Focus:
+
+- Better published-link management for repeated use in Studio
+- Keep local-first publish flows simple for unauthenticated use
+- Decide how much share administration should live in the product UI
+- Revisit any replace/regenerate flow only once account-backed ownership exists
+
+### 4. Comments And Review Mode
+
+Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
+
+Suggested first slices:
+
+- Pinned notes anchored to a selected obstacle as a local-first first pass
+- Notes anchored to a route waypoint or path segment without requiring identity first
+- Read-only review mode that surfaces notes clearly without exposing editing tools
+- Richer threaded comments only if simple anchored notes prove useful
+  and an account-backed identity model exists
+
+### 5. Heatmap And Flow Analysis
+
+Add lightweight visual feedback for rhythm, density, and bottlenecks once the v1 validation basics are in place.
+
+Suggested first slices:
+
+- Density overlay
+- Suspicious spacing cues
+- Route rhythm cues
+
+### 6. Operational Follow-up
+
+Deployment validation is complete. The runtime path is live across development and production, and the remaining work is now ordinary operational maintenance rather than a roadmap blocker.
+
+Completed:
+
+- `dev.trackdraw.app` validated on Cloudflare
+- Production domain and release-gated production deploy validated
+- GitHub environment secrets and domain routing finalized
+
+### 7. Research Tracks
+
+- Velocidrone export compatibility
+- Desktop and mobile wrapper evaluation
+- PWA evaluation
+- Optional accounts and cross-device project evaluation
+
+### 8. Inventory And Buildability Validation
+
+Connect the design to the actual obstacle stock available to a club or event.
+
+Why now:
+
+- A layout is only useful if it can actually be built with the gear on hand
+- This creates a strong bridge between planning and race-day feasibility without requiring simulation
+
+Suggested first slices:
+
+- "My inventory" setup for available gates, ladders, dive gates, start/finish elements, flags, cones, and other obstacle types, stored as a local-first project profile
+- Required-vs-available comparison for the current design without requiring an account
+- Buildability warnings when a layout depends on more obstacles than are available
+- Later: inventory profiles tied to a venue or club setup, which may justify optional account-backed persistence
+
+Current first pass:
+
+- Inventory can now be entered directly in the design inspector
+- The current layout is compared against saved stock counts
+- The inspector surfaces missing counts and a simple buildable-vs-short status
+
+Still open:
+
+- A clearer obstacle summary for race-day preparation and handoff
+- Lightweight setup-complexity cues on top of the raw counts
+
+### 9. Accounts Boundary
+
+Be deliberate about what should stay account-free versus what actually benefits from optional identity.
+
+Keep account-free where possible:
+
+- Core editing, preview, import/export, and local project work
+- Local inventory, venue setup, and lightweight notes first passes
+- One-off share publishing and local revoke from the current Studio session
+
+Likely account-backed follow-up:
+
+- Cross-device project sync and cloud-backed project libraries
+- Durable ownership and administration of published shares
+- Shared venue or club records, including shared inventory profiles
+- Identity-aware comments, review threads, and future collaboration
+
+## v1 Archive
+
+<details>
+<summary>Completed v1 foundation and release work</summary>
 
 ## Recently Completed
 
@@ -162,9 +309,7 @@ Why it matters:
 
 Remaining:
 
-- Validate the first full `dev` deploy on Cloudflare
-- Validate the first release-gated production deploy
-- Finalize environment secrets and domain routing in Cloudflare/GitHub
+- Operational maintenance and rollout monitoring only
 
 ### 6. Stable Share Links And Share Storage ✓
 
@@ -190,63 +335,6 @@ Remaining:
 - Decide how much share administration should live in the product UI
 - Keep refining the publish dialog around repeated use in Studio without regressing the current flow
 - Revisit any replace/regenerate flow only once account-backed ownership exists
-
-### 7. Race-Day Communication And Briefing (Started)
-
-Turn existing export and read-only capabilities into more deliberate communication outputs.
-
-Why post-v1:
-
-- The product already has export breadth and a read-only view, but briefing workflows require a distinct output surface that goes beyond what the current export and share model supports
-- This is meaningful work in its own right and benefits from the share and path review layers being solid first
-
-Scope:
-
-- Obstacle numbering
-- Pilot briefing mode
-- Printable marshal pack
-- Export presets tuned for briefing, print, and mobile review
-
-Suggested first slices:
-
-- Obstacle numbering overlay in 2D is now shipped, with numbering shown on the canvas and in the item list inspector
-- Obstacle numbering now also carries across 2D exports and the read-only share surface
-- Briefing-oriented export preset with title, field dimensions, and obstacle index
-- Read-only briefing mode with cleaner labels and less editor-like chrome
-- Marshal-pack print layout once numbering and briefing output are stable
-
-### 8. Layout Acceleration
-
-Reduce repetitive setup work so users can compose good layouts faster.
-
-Why post-v1:
-
-- The editor is complete enough for v1 without preset content
-- Presets require both a solid preset library and a good UI surface for browsing and applying them — this is a meaningful product investment better made after v1 ships
-
-Scope:
-
-- Obstacle presets for reusable groupings and common race-building patterns (start/finish setups, straight gate runs, slalom blocks, ladder and dive combinations, small training layouts)
-- Selection grouping for repeated layout sections
-- Venue-aware field templates and starter fields
-
-Suggested first slices:
-
-- Obstacle-pack presets for common race-building patterns
-- Selection grouping with duplicate/move as one unit
-- Starter layouts before venue-aware templates
-- Template browser only after preset content and grouping are proven useful
-
-### 9. Comments And Review Mode
-
-Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
-
-Suggested first slices:
-
-- Pinned notes anchored to a selected obstacle
-- Notes anchored to a route waypoint or path segment
-- Read-only review mode that surfaces notes clearly without exposing editing tools
-- Richer threaded comments only if simple anchored notes prove useful
 
 ### 10. Velocidrone Export Compatibility (Research)
 
@@ -440,6 +528,8 @@ The v1 scope is complete. All items are done: project workflow, share route depr
 7. Velocidrone export (research track)
 
 This sequence delivers a complete, clean product at v1 and keeps post-v1 work focused on extending workflow depth rather than plugging gaps.
+
+</details>
 
 ## Supporting Design Docs
 

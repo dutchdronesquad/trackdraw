@@ -10,6 +10,13 @@ export type ShapeKind =
   | "ladder"
   | "divegate";
 
+export type InventoryShapeKind = Extract<
+  ShapeKind,
+  "gate" | "flag" | "cone" | "startfinish" | "ladder" | "divegate"
+>;
+
+export type InventoryProfile = Record<InventoryShapeKind, number>;
+
 export interface BaseShape {
   id: UUID;
   kind: ShapeKind;
@@ -112,6 +119,7 @@ export interface TrackDesign {
   description?: string;
   tags?: string[];
   authorName?: string;
+  inventory: InventoryProfile;
   field: FieldSpec;
   shapeOrder: UUID[];
   shapeById: Record<UUID, Shape>;
@@ -126,6 +134,7 @@ export interface SerializedTrackDesign {
   description?: string;
   tags?: string[];
   authorName?: string;
+  inventory: InventoryProfile;
   field: FieldSpec;
   shapes: Shape[];
   createdAt: string;

@@ -5,7 +5,7 @@ import ElevationChart from "@/components/inspector/ElevationChart";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import type { Shape } from "@/lib/types";
 import { Copy, GitMerge, Trash2 } from "lucide-react";
-import { IconBtn, PanelHeader } from "@/components/inspector/shared";
+import { IconBtn } from "@/components/inspector/shared";
 import {
   InspectorFooterDesktop,
   InspectorFooterMobile,
@@ -54,37 +54,6 @@ export function MultiInspectorView({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <PanelHeader
-        title={`${selectedShapes.length} selected`}
-        actions={
-          <>
-            {polylineIds.length >= 2 && (
-              <IconBtn
-                onClick={() => joinPolylines(polylineIds)}
-                title="Join paths"
-              >
-                <GitMerge className="size-3" />
-              </IconBtn>
-            )}
-            <IconBtn
-              onClick={() => duplicateShapes(selection)}
-              title="Duplicate"
-            >
-              <Copy className="size-3" />
-            </IconBtn>
-            <IconBtn
-              onClick={() => {
-                removeShapes(selection);
-                setSelection([]);
-              }}
-              title="Delete"
-              danger
-            >
-              <Trash2 className="size-3" />
-            </IconBtn>
-          </>
-        }
-      />
       <InspectorScrollBody mobileInline={mobileInline}>
         <div className="space-y-3 p-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-2 lg:p-3 lg:pb-3">
           <InspectorLead
@@ -95,6 +64,35 @@ export function MultiInspectorView({
               ...(polylineIds.length >= 2 ? ["join available"] : []),
             ]}
           />
+          <div className="flex flex-wrap items-center gap-1.5">
+            {polylineIds.length >= 2 && (
+              <IconBtn
+                onClick={() => joinPolylines(polylineIds)}
+                title="Join paths"
+                label="Join"
+              >
+                <GitMerge className="size-3" />
+              </IconBtn>
+            )}
+            <IconBtn
+              onClick={() => duplicateShapes(selection)}
+              title="Duplicate"
+              label="Duplicate"
+            >
+              <Copy className="size-3" />
+            </IconBtn>
+            <IconBtn
+              onClick={() => {
+                removeShapes(selection);
+                setSelection([]);
+              }}
+              title="Delete"
+              danger
+              label="Delete"
+            >
+              <Trash2 className="size-3" />
+            </IconBtn>
+          </div>
           <div className="grid grid-cols-2 gap-2 lg:gap-1">
             {Object.entries(kinds)
               .filter(([, count]) => count > 0)

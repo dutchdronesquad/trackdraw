@@ -11,7 +11,10 @@ import { fmt, Section } from "@/components/inspector/shared";
 import { MetaPill } from "./layout";
 
 export type DesignMetaPatch = Partial<
-  Pick<TrackDesign, "title" | "description" | "authorName" | "tags">
+  Pick<
+    TrackDesign,
+    "title" | "description" | "authorName" | "tags" | "inventory"
+  >
 >;
 
 export function ListPanel({

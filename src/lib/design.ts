@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import { normalizeInventoryProfile } from "@/lib/inventory";
 import type {
   PolylineShape,
   SerializedTrackDesign,
@@ -108,6 +109,7 @@ export function serializeDesign(design: TrackDesign): SerializedTrackDesign {
     description: design.description,
     tags: design.tags,
     authorName: design.authorName,
+    inventory: normalizeInventoryProfile(design.inventory),
     field: design.field,
     shapes: getDesignShapes(design),
     createdAt: design.createdAt,
@@ -122,6 +124,9 @@ export function normalizeDesign(
   return {
     ...design,
     version: 1,
+    inventory: normalizeInventoryProfile(
+      (design as Partial<TrackDesign>).inventory
+    ),
     shapeById,
     shapeOrder,
   };
@@ -136,6 +141,7 @@ export function createDefaultDesign(): TrackDesign {
     description: "",
     tags: [],
     authorName: "",
+    inventory: normalizeInventoryProfile(),
     field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
     shapeOrder: [],
     shapeById: {},
