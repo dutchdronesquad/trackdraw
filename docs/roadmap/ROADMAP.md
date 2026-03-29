@@ -118,8 +118,8 @@ Completed for v1. Distinct error pages for invalid vs oversized share tokens. Re
 
 Post-v1:
 
-- Revoke and regenerate controls on top of the stored-share model
 - Better published-link management for repeated use in Studio
+- Revisit link replacement/regeneration only once account-backed ownership exists
 
 ### 3. Path And Flow Review ✓
 
@@ -187,11 +187,11 @@ Constraints:
 
 Remaining:
 
-- Add revoke/regenerate lifecycle controls
 - Decide how much share administration should live in the product UI
 - Keep refining the publish dialog around repeated use in Studio without regressing the current flow
+- Revisit any replace/regenerate flow only once account-backed ownership exists
 
-### 7. Race-Day Communication And Briefing
+### 7. Race-Day Communication And Briefing (Started)
 
 Turn existing export and read-only capabilities into more deliberate communication outputs.
 
@@ -206,6 +206,14 @@ Scope:
 - Pilot briefing mode
 - Printable marshal pack
 - Export presets tuned for briefing, print, and mobile review
+
+Suggested first slices:
+
+- Obstacle numbering overlay in 2D is now shipped, with numbering shown on the canvas and in the item list inspector
+- Obstacle numbering now also carries across 2D exports and the read-only share surface
+- Briefing-oriented export preset with title, field dimensions, and obstacle index
+- Read-only briefing mode with cleaner labels and less editor-like chrome
+- Marshal-pack print layout once numbering and briefing output are stable
 
 ### 8. Layout Acceleration
 
@@ -222,9 +230,23 @@ Scope:
 - Selection grouping for repeated layout sections
 - Venue-aware field templates and starter fields
 
+Suggested first slices:
+
+- Obstacle-pack presets for common race-building patterns
+- Selection grouping with duplicate/move as one unit
+- Starter layouts before venue-aware templates
+- Template browser only after preset content and grouping are proven useful
+
 ### 9. Comments And Review Mode
 
 Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
+
+Suggested first slices:
+
+- Pinned notes anchored to a selected obstacle
+- Notes anchored to a route waypoint or path segment
+- Read-only review mode that surfaces notes clearly without exposing editing tools
+- Richer threaded comments only if simple anchored notes prove useful
 
 ### 10. Velocidrone Export Compatibility (Research)
 
@@ -251,6 +273,13 @@ Recommended approach:
 ### 11. Heatmap And Flow Analysis
 
 Add lightweight visual feedback for rhythm, density, and bottlenecks after validation basics are in place.
+
+Suggested first slices:
+
+- Basic density overlay for obstacle clusters and repeated turns
+- Suspicious spacing warnings between obstacles or route sections
+- Route rhythm cues before any heavier timing or simulation work
+- Heatmap polish only after the simpler warnings prove actionable
 
 ### 12. Adaptive Mobile UI ✓
 
@@ -334,6 +363,56 @@ Why it fits:
 - Complements obstacle inventory and marshal-oriented outputs
 - Feels genuinely differentiated from generic diagram tools
 
+### F. Desktop And Mobile Wrapper Evaluation
+
+Evaluate whether an Electron desktop wrapper or a Capacitor mobile wrapper would materially improve TrackDraw beyond the web app.
+
+Why it fits:
+
+- TrackDraw is already local-first, which makes filesystem, offline, and installability questions product-relevant
+- Desktop and mobile wrappers could improve import/export, local project handling, and venue-side launch ergonomics
+- The app now has enough real workflow depth that wrapper work can be judged against concrete user value instead of hypothetical future needs
+
+Research outcome:
+
+- no wrapper needed yet
+- Electron proof of concept
+- Capacitor proof of concept
+- or a clear decision to stay web-first for the foreseeable future
+
+### G. PWA Evaluation
+
+Evaluate whether TrackDraw should add a deliberate Progressive Web App layer for installability and limited offline resilience.
+
+Why it fits:
+
+- TrackDraw already behaves like an application more than a document site
+- mobile and venue-side usage make installability and launch behavior relevant
+- PWA may solve part of the "app-like" need without wrapper complexity
+
+Research outcome:
+
+- stay a standard web app
+- add a narrow installable PWA layer
+- or expand into a stronger offline/app-shell strategy later
+
+### H. Optional Accounts And Cross-Device Projects
+
+Evaluate whether optional user accounts should unlock cloud-backed project storage, project management, and cross-device continuation.
+
+Why it fits:
+
+- local-first project work is already valuable, but browser-local persistence has obvious long-term limits
+- cross-device access and safer project storage may matter before real-time collaboration does
+- the current share and runtime model already points toward future ownership and project boundaries
+
+Research outcome:
+
+- stay fully local-first
+- add optional cloud backup only
+- add optional account-linked project libraries and sync
+- or later expand toward broader team workflows
+
 ### 13. Map And Field Overlay
 
 Support background references such as venue plans, field maps, or imagery.
@@ -364,5 +443,8 @@ This sequence delivers a complete, clean product at v1 and keeps post-v1 work fo
 
 ## Supporting Design Docs
 
-- [Obstacle Presets PVA](./obstacle-presets-pva.md)
-- [Snapshots And Layout Variants Design](./snapshots-layout-variants-design.md)
+- [Obstacle Presets PVA](../pva/obstacle-presets-pva.md)
+- [Snapshots And Layout Variants Design](../pva/snapshots-layout-variants-design.md)
+- [Wrapper Evaluation](../research/wrapper-evaluation.md)
+- [PWA Evaluation](../research/pwa-evaluation.md)
+- [Accounts And Cross-Device Evaluation](../research/accounts-and-cross-device-evaluation.md)
