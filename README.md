@@ -30,7 +30,7 @@
   &middot;
   <a href="https://trackdraw.app/studio"><strong>Open Studio</strong></a>
   &middot;
-  <a href="docs/ROADMAP.md"><strong>Roadmap</strong></a>
+  <a href="docs/roadmap/ROADMAP.md"><strong>Roadmap</strong></a>
 </p>
 
 <p align="center">
@@ -49,7 +49,7 @@
 
 TrackDraw has a solid editing baseline now across desktop, shared read-only viewing, and practical mobile use. The current roadmap focus is on speeding up layout creation, improving iteration inside one project, and turning finished designs into better race-day outputs.
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for the current roadmap assessment.
+See [docs/roadmap/ROADMAP.md](docs/roadmap/ROADMAP.md) for the current roadmap assessment.
 
 ## What you can do
 
@@ -137,7 +137,7 @@ npm run type   # TypeScript check
 Use `npm run dev` for fast local UI work.
 Use `npm run preview` to validate behavior against the Cloudflare/OpenNext runtime, especially for D1-backed share flows.
 
-Deployment, Cloudflare, and D1 environment setup live in [docs/deployment-setup.md](docs/deployment-setup.md).
+Deployment, Cloudflare, and D1 environment setup live in [docs/deployment/deployment-setup.md](docs/deployment/deployment-setup.md).
 
 The current deployment model is:
 

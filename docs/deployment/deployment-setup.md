@@ -40,14 +40,14 @@ No committed example env files are kept in the repo anymore.
 
 ## Wrangler
 
-[`wrangler.jsonc`](../wrangler.jsonc) is structured as:
+[`wrangler.jsonc`](../../wrangler.jsonc) is structured as:
 
 - root config: production
 - `env.dev`: development
 
 Each environment should bind its own D1 database through `d1_databases`.
 
-Before the first deploy, replace the placeholder `database_id` values in [`wrangler.jsonc`](../wrangler.jsonc) with the real Cloudflare D1 database IDs for:
+Before the first deploy, replace the placeholder `database_id` values in [`wrangler.jsonc`](../../wrangler.jsonc) with the real Cloudflare D1 database IDs for:
 
 - production
 - development

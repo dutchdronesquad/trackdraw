@@ -47,6 +47,14 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 - [ ] Layout acceleration
       Add reusable building blocks such as obstacle presets, starter layouts, selection grouping, and venue-aware field templates.
+  - [ ] Obstacle-pack presets
+        Add reusable building blocks such as slalom sections, gate runs, start/finish setups, and small training patterns.
+  - [ ] Selection grouping
+        Let repeated layout sections be grouped, duplicated, and moved as one unit.
+  - [ ] Starter layouts
+        Add a small set of ready-to-edit layouts before moving to broader venue-aware templates.
+  - [ ] Template browser
+        Add a dedicated browsing/apply surface only after preset content and grouping prove useful.
 
 - [x] Project workflow and recovery
       Added a local project list, restore points, manual snapshots (Cmd+S + save button), periodic auto-snapshots, and a Projects dialog for managing and restoring saved states.
@@ -75,6 +83,16 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 - [ ] Race-day communication and briefing
       Turn existing export, read-only, and fly-through capabilities into better pilot briefing, marshal pack, and numbered handoff workflows.
+  - [x] Obstacle numbering overlay in 2D
+        Route-driven numbering is now available on the 2D canvas and in the inspector item list for gates, ladders, and dive gates.
+  - [x] Obstacle numbering in export/read-only surfaces
+        Obstacle numbering now carries across 2D exports and the read-only share surface, using the same route-driven numbering model as the editor canvas.
+  - [ ] Briefing export preset
+        Add a simpler pilot-briefing output with title, field dimensions, and obstacle index.
+  - [ ] Read-only briefing mode
+        Create a cleaner read-only presentation that feels more like a briefing surface than the editor shell.
+  - [ ] Marshal pack print layout
+        Add a print-oriented marshal handoff once numbering and briefing outputs are stable.
 
 - [x] Studio onboarding and starter flows
       First-use starter surface, contextual hints (gate, path, preview, 3D review, post-path nudge), and new-project confirmation flow. Starter field presets descoped — the guided StarterFlow provides enough direction without prescribing a specific field layout.
@@ -106,17 +124,33 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
         Retired URL-embedded share payload support. Older links now fail through a deliberate fallback screen that asks the sender to publish a fresh link or provide a JSON export.
   - [x] Share metadata and OG storage integration
         Move share metadata and social image generation onto stored share state instead of URL payload decoding.
-  - [ ] Share lifecycle management
-        Expiry, retention cleanup, and calmer publish-link behavior are now in place. Remaining work is revoke, regenerate, and clearer controls for reviewing and managing published links.
+  - [x] Local revoke control
+        Published links can now be revoked from the current Studio session. This is intentionally scoped to local publish management, not account-backed share administration.
+  - [ ] Share lifecycle management follow-up
+        Expiry, retention cleanup, calmer publish-link behavior, and local revoke are now in place. Remaining work is clearer repeated-use management in Studio. Regenerate stays deferred until an account-backed ownership model exists.
 
 - [ ] Velocidrone export compatibility research
       Investigate whether TrackDraw layouts can be exported into Velocidrone's track-builder workflow. This likely starts as reverse-engineering and format discovery work because there is no public API or official documentation to build against.
 
 - [ ] Comments and review mode
       Anchor feedback to specific obstacles or route sections without requiring live collaboration first.
+  - [ ] Pinned obstacle notes
+        Add simple notes attached to specific obstacles.
+  - [ ] Route-section notes
+        Let notes attach to a route waypoint or path segment.
+  - [ ] Read-only review surface
+        Surface anchored notes clearly in read-only review without exposing editing actions.
+  - [ ] Threaded comments follow-up
+        Consider richer review threads only if simple anchored notes prove useful.
 
 - [ ] Heatmap and flow analysis
       Add lightweight visual feedback for rhythm, density, and bottlenecks once validation basics are in place.
+  - [ ] Density overlay
+        Highlight obstacle clusters and repeated-turn pressure zones.
+  - [ ] Suspicious spacing cues
+        Flag obstacle or route spacing that looks unusually tight or inconsistent.
+  - [ ] Route rhythm cues
+        Add lightweight flow cues before any heavier timing or simulation layer.
 
 - [x] Adaptive mobile UI
       Let portrait and landscape diverge where that clearly improves editing and navigation.
@@ -162,3 +196,30 @@ TrackDraw has moved well beyond the initial editor foundation. The near-term foc
 
 - [ ] Real-time collaboration
       Allow multiple users to work on the same design concurrently.
+
+- [ ] Desktop and mobile wrapper evaluation
+      Evaluate whether an Electron desktop wrapper or a Capacitor mobile wrapper would materially improve local project handling, native file workflows, offline resilience, or venue-side usability beyond the web app.
+  - [ ] Product-problem validation
+        Identify which concrete user pain points would justify a wrapper instead of improving the web app directly.
+  - [ ] Technical architecture evaluation
+        Decide whether any wrapper should load the hosted app first or require its own local runtime strategy.
+  - [ ] Platform recommendation
+        Conclude whether TrackDraw should stay web-first, explore Electron first, explore Capacitor first, or avoid wrappers entirely for now.
+
+- [ ] PWA evaluation
+      Evaluate whether TrackDraw should add a deliberate Progressive Web App layer for installability, app-like launch behavior, and narrowly scoped offline resilience.
+  - [ ] Installability and manifest pass
+        Determine whether a proper manifest and installable app shell would materially help repeat venue-side use.
+  - [ ] Service worker risk/benefit evaluation
+        Decide whether any offline caching layer would create more value than deployment and stale-cache risk.
+  - [ ] PWA scope recommendation
+        Conclude whether TrackDraw should remain a standard web app, add a narrow installable PWA layer, or invest further in offline/app-shell behavior later.
+
+- [ ] Optional accounts and cross-device project evaluation
+      Evaluate whether optional user accounts should unlock cloud backup, project libraries, and cross-device continuation without turning TrackDraw into an auth-first product.
+  - [ ] User-value validation
+        Determine whether cross-device continuation and safer project storage are meaningful enough to justify cloud-backed project models.
+  - [ ] Product model evaluation
+        Define how local projects, cloud-backed projects, and published shares should relate without confusing users.
+  - [ ] Authentication and storage recommendation
+        Conclude whether TrackDraw should stay fully local-first, add optional cloud backup, or later support broader account-linked project sync.
