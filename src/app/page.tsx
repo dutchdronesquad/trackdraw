@@ -310,7 +310,7 @@ export default function Home() {
                     Built for FPV race directors
                   </span>
                   <VersionTag
-                    className={`${heroPillClassName} border-emerald-500/30 bg-emerald-500/10 font-sans text-emerald-500 hover:bg-emerald-500/15 hover:text-emerald-400`}
+                    className={`${heroPillClassName} border-amber-500/30 bg-amber-500/10 font-sans text-amber-500 hover:bg-amber-500/15 hover:text-amber-400`}
                   />
                 </div>
               </Reveal>

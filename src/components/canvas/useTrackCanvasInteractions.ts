@@ -808,6 +808,7 @@ export function useTrackCanvasInteractions({
     (event?: { evt: MouseEvent; target: unknown }) => {
       const stage = stageRef.current;
       if (!stage) return;
+      if (event && event.evt.button !== 0) return;
 
       if (activeTool !== "select" && activeTool !== "grab" && !readOnly) {
         if (event?.target !== stage) return;
