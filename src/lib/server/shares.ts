@@ -135,6 +135,22 @@ export async function getShareByToken(token: string) {
   return resolved.status === "available" ? resolved.share : null;
 }
 
+export async function revokeShare(token: string) {
+  const db = await getDatabase();
+  const now = new Date().toISOString();
+
+  await db
+    .prepare(
+      `
+        update shares
+        set revoked_at = ?, updated_at = ?
+        where token = ? and revoked_at is null
+      `
+    )
+    .bind(now, now, token)
+    .run();
+}
+
 type CreateShareOptions = {
   expiresInDays?: number;
 };

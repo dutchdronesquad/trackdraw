@@ -17,6 +17,7 @@ import {
   Link2,
   Boxes,
   X,
+  Ban,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,22 @@ interface ShareDialogProps {
   onExportJson?: () => void;
 }
 
+function getShareTokenFromUrl(url: string | null) {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    if (segments[0] !== "share" || !segments[1]) {
+      return null;
+    }
+
+    return decodeURIComponent(segments[1]);
+  } catch {
+    return null;
+  }
+}
+
 function ShareContent({
   onClose,
   hasPath = false,
@@ -58,6 +75,7 @@ function ShareContent({
   const searchParams = useSearchParams();
   const [copied, setCopied] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [revoking, setRevoking] = useState(false);
   const [publishedShareUrl, setPublishedShareUrl] = useState<string | null>(
     null
   );
@@ -126,6 +144,7 @@ function ShareContent({
   const canUseShareActions = !!publishedShareUrl;
   const showOutdatedNotice = publishedShareUrl && hasChangedSinceShare;
   const showRefreshNotice = publishedShareUrl && shareNeedsRefresh;
+  const activeShareToken = getShareTokenFromUrl(publishedShareUrl);
 
   const writeLastShareToken = () => {
     try {
@@ -139,6 +158,18 @@ function ShareContent({
   const persistPublishedShare = (nextState: StoredShareState) => {
     try {
       localStorage.setItem(LAST_SHARE_STATE_KEY, JSON.stringify(nextState));
+    } catch {
+      /* ignore quota errors */
+    }
+  };
+
+  const clearPublishedShare = () => {
+    setPublishedShareUrl(null);
+    setPublishedSourceToken(null);
+    setPublishedExpiresInDays(null);
+
+    try {
+      localStorage.removeItem(LAST_SHARE_STATE_KEY);
     } catch {
       /* ignore quota errors */
     }
@@ -256,6 +287,50 @@ function ShareContent({
     }
   };
 
+  const revokePublishedShare = async () => {
+    if (!activeShareToken) {
+      throw new Error("Missing published share token");
+    }
+
+    setRevoking(true);
+
+    try {
+      const response = await fetch(
+        `/api/shares/${encodeURIComponent(activeShareToken)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = (await response.json()) as
+        | { ok: true }
+        | { ok: false; error?: string };
+
+      if (!response.ok || !data.ok) {
+        throw new Error(
+          data.ok
+            ? "Failed to revoke share link"
+            : (data.error ?? "Failed to revoke share link")
+        );
+      }
+
+      clearPublishedShare();
+    } finally {
+      setRevoking(false);
+    }
+  };
+
+  const handleRevoke = async () => {
+    try {
+      await revokePublishedShare();
+      toast.success("Link revoked");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to revoke share link"
+      );
+    }
+  };
+
   const publishedLifetimeLabel =
     publishedExpiresInDays === null ? null : `${publishedExpiresInDays} days`;
   const primaryActionLabel = publishedShareUrl
@@ -370,14 +445,29 @@ function ShareContent({
               </span>
             </div>
           ) : null}
-          <Button
-            onClick={primaryAction}
-            disabled={publishing}
-            className="w-full"
-          >
-            <PrimaryActionIcon className="size-4" />
-            {primaryActionLabel}
-          </Button>
+          <div className="grid grid-cols-1 gap-2">
+            <Button
+              onClick={primaryAction}
+              disabled={publishing || revoking}
+              className="w-full"
+            >
+              <PrimaryActionIcon className="size-4" />
+              {primaryActionLabel}
+            </Button>
+            {publishedShareUrl ? (
+              <div className="grid grid-cols-1 gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleRevoke}
+                  disabled={publishing || revoking}
+                  className="w-full"
+                >
+                  <Ban className="size-4" />
+                  Revoke
+                </Button>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {/* Read-only notice */}
@@ -597,14 +687,29 @@ function ShareContent({
                 className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
               />
             ) : null}
-            <Button
-              onClick={primaryAction}
-              disabled={publishing}
-              className="w-full"
-            >
-              <PrimaryActionIcon className="size-4" />
-              {primaryActionLabel}
-            </Button>
+            <div className="grid grid-cols-1 gap-2">
+              <Button
+                onClick={primaryAction}
+                disabled={publishing || revoking}
+                className="w-full"
+              >
+                <PrimaryActionIcon className="size-4" />
+                {primaryActionLabel}
+              </Button>
+              {publishedShareUrl ? (
+                <div className="grid grid-cols-1 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleRevoke}
+                    disabled={publishing || revoking}
+                    className="w-full"
+                  >
+                    <Ban className="size-4" />
+                    Revoke
+                  </Button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -714,7 +819,7 @@ export default function ShareDialog({
         onOpenChange={onOpenChange}
         title="Share"
         subtitle="Share a read-only review link for this track"
-        contentClassName="border-border/60 bg-background shadow-[0_-18px_40px_rgba(0,0,0,0.18)]"
+        contentClassName="border-border/60 bg-background shadow-[0_-18px_40px_rgba(0,0,0,0.18)] data-[vaul-drawer-direction=bottom]:mt-12 data-[vaul-drawer-direction=bottom]:max-h-[90dvh]"
         bodyClassName="bg-background min-h-0 p-0"
       >
         <ShareContent

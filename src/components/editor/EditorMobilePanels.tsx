@@ -48,6 +48,7 @@ interface EditorMobilePanelsProps {
   mobileInspectorOpen: boolean;
   mobileMultiSelectEnabled: boolean;
   mobileGizmoEnabled: boolean;
+  mobileObstacleNumbersEnabled: boolean;
   mobileRulersEnabled: boolean;
   mobileFlyModeActive: boolean;
   mobilePrecisionStep: number;
@@ -83,6 +84,7 @@ interface EditorMobilePanelsProps {
   onResumeSelectedPath: () => void;
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
+  onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
   onSelectTool: (tool: EditorTool) => void;
   onSetMobileToolsOpen: (open: boolean) => void;
   onSetMobileViewOpen: (open: boolean) => void;
@@ -260,6 +262,7 @@ export function EditorMobilePanels({
   mobileInspectorOpen,
   mobileMultiSelectEnabled,
   mobileGizmoEnabled,
+  mobileObstacleNumbersEnabled,
   mobileRulersEnabled,
   mobileFlyModeActive,
   mobilePrecisionStep,
@@ -295,6 +298,7 @@ export function EditorMobilePanels({
   onResumeSelectedPath,
   onSetMobileRulersEnabled,
   onSetMobileGizmoEnabled,
+  onSetMobileObstacleNumbersEnabled,
   onSelectTool,
   onSetMobileToolsOpen,
   onSetMobileViewOpen,
@@ -901,32 +905,68 @@ export function EditorMobilePanels({
                 <Scan className="size-4" />
               </button>
               {tab === "2d" && (
-                <button
-                  onClick={() => onSetMobileRulersEnabled(!mobileRulersEnabled)}
-                  className={cn(
-                    "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                    mobileRulersEnabled
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <div>
-                    <p className="text-[11px] font-medium">Rulers</p>
-                    <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
-                      Show top and left guides on mobile
-                    </p>
-                  </div>
-                  <div
+                <>
+                  <button
+                    onClick={() =>
+                      onSetMobileRulersEnabled(!mobileRulersEnabled)
+                    }
                     className={cn(
-                      "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
                       mobileRulersEnabled
-                        ? "bg-foreground/90 justify-end"
-                        : "bg-border/80 justify-start"
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <span className="bg-background block size-5 rounded-full shadow-xs" />
-                  </div>
-                </button>
+                    <div>
+                      <p className="text-[11px] font-medium">Rulers</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+                        Show top and left guides on mobile
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileRulersEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-xs" />
+                    </div>
+                  </button>
+                  <button
+                    onClick={() =>
+                      onSetMobileObstacleNumbersEnabled(
+                        !mobileObstacleNumbersEnabled
+                      )
+                    }
+                    className={cn(
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                      mobileObstacleNumbersEnabled
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <div>
+                      <p className="text-[11px] font-medium">
+                        Obstacle numbers
+                      </p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+                        Show path numbers on route obstacles
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileObstacleNumbersEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-xs" />
+                    </div>
+                  </button>
+                </>
               )}
               {tab === "3d" && (
                 <>
@@ -1028,32 +1068,68 @@ export function EditorMobilePanels({
                 <Scan className="size-4" />
               </button>
               {tab === "2d" && (
-                <button
-                  onClick={() => onSetMobileRulersEnabled(!mobileRulersEnabled)}
-                  className={cn(
-                    "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                    mobileRulersEnabled
-                      ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <div>
-                    <p className="text-[11px] font-medium">Rulers</p>
-                    <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
-                      Show top and left guides on mobile
-                    </p>
-                  </div>
-                  <div
+                <>
+                  <button
+                    onClick={() =>
+                      onSetMobileRulersEnabled(!mobileRulersEnabled)
+                    }
                     className={cn(
-                      "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
                       mobileRulersEnabled
-                        ? "bg-foreground/90 justify-end"
-                        : "bg-border/80 justify-start"
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <span className="bg-background block size-5 rounded-full shadow-xs" />
-                  </div>
-                </button>
+                    <div>
+                      <p className="text-[11px] font-medium">Rulers</p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+                        Show top and left guides on mobile
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileRulersEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-xs" />
+                    </div>
+                  </button>
+                  <button
+                    onClick={() =>
+                      onSetMobileObstacleNumbersEnabled(
+                        !mobileObstacleNumbersEnabled
+                      )
+                    }
+                    className={cn(
+                      "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                      mobileObstacleNumbersEnabled
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <div>
+                      <p className="text-[11px] font-medium">
+                        Obstacle numbers
+                      </p>
+                      <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+                        Show path numbers on route obstacles
+                      </p>
+                    </div>
+                    <div
+                      className={cn(
+                        "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                        mobileObstacleNumbersEnabled
+                          ? "bg-foreground/90 justify-end"
+                          : "bg-border/80 justify-start"
+                      )}
+                    >
+                      <span className="bg-background block size-5 rounded-full shadow-xs" />
+                    </div>
+                  </button>
+                </>
               )}
               {tab === "3d" && (
                 <>

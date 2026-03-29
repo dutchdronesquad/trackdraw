@@ -21,6 +21,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Save,
+  ListOrdered,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
@@ -43,6 +44,8 @@ interface HeaderProps {
   lastSavedLabel?: string;
   statusLabel?: string;
   selectionLabel?: string;
+  showObstacleNumbers?: boolean;
+  onToggleObstacleNumbers?: () => void;
 }
 
 export default function Header({
@@ -58,6 +61,8 @@ export default function Header({
   title = "Untitled",
   studioHref = "/studio",
   lastSavedLabel,
+  showObstacleNumbers = false,
+  onToggleObstacleNumbers,
 }: HeaderProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
@@ -195,6 +200,32 @@ export default function Header({
         <div className="mr-1 hidden lg:flex">{viewToggle}</div>
 
         <div className="bg-border/80 mx-1 hidden h-4 w-px lg:block" />
+
+        {onToggleObstacleNumbers && (
+          <Tooltip>
+            <TooltipTrigger
+              onClick={onToggleObstacleNumbers}
+              className={cn(
+                "text-muted-foreground hidden size-7 items-center justify-center rounded-md transition-colors lg:flex",
+                showObstacleNumbers
+                  ? "bg-muted text-foreground"
+                  : "hover:text-foreground hover:bg-muted"
+              )}
+              aria-label={
+                showObstacleNumbers
+                  ? "Hide obstacle numbers"
+                  : "Show obstacle numbers"
+              }
+            >
+              <ListOrdered className="size-3.5" />
+            </TooltipTrigger>
+            <TooltipContent>
+              {showObstacleNumbers
+                ? "Hide obstacle numbers"
+                : "Show obstacle numbers"}
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {readOnly && (
           <>

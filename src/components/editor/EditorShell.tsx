@@ -149,6 +149,7 @@ export default function EditorShell({
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
   const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
   const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(!readOnly);
+  const [showObstacleNumbers, setShowObstacleNumbers] = useState(readOnly);
   const [mobileMultiSelectEnabled, setMobileMultiSelectEnabled] =
     useState(false);
   const [mobileDraftPathState, setMobileDraftPathState] = useState({
@@ -385,6 +386,10 @@ export default function EditorShell({
             studioHref={studioHref}
             lastSavedLabel={readOnly ? undefined : saveStatusLabel}
             statusLabel={readOnly ? "Read-only shared view" : saveStatusLabel}
+            showObstacleNumbers={showObstacleNumbers}
+            onToggleObstacleNumbers={() =>
+              setShowObstacleNumbers((current) => !current)
+            }
             selectionLabel={
               selection.length > 0
                 ? `${selection.length} selected`
@@ -416,6 +421,7 @@ export default function EditorShell({
                     mobileRulersEnabled={mobileRulersEnabled}
                     mobileMultiSelectEnabled={mobileMultiSelectEnabled}
                     readOnly={readOnly}
+                    showObstacleNumbers={showObstacleNumbers}
                   />
                 </div>
                 <div
@@ -650,6 +656,7 @@ export default function EditorShell({
           mobileViewOpen={mobileViewOpen}
           mobileMultiSelectEnabled={mobileMultiSelectEnabled}
           mobileGizmoEnabled={mobileGizmoEnabled}
+          mobileObstacleNumbersEnabled={showObstacleNumbers}
           mobileRulersEnabled={mobileRulersEnabled}
           mobileFlyModeActive={mobileFlyModeActive}
           mobilePrecisionStep={mobilePrecisionStep}
@@ -727,6 +734,7 @@ export default function EditorShell({
             setShapesLocked(selection, !selectionLocked);
           }}
           onSetMobileGizmoEnabled={setMobileGizmoEnabled}
+          onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
           onSetMobileRulersEnabled={setMobileRulersEnabled}
           onExitMobileMultiSelect={() => {
             setMobileMultiSelectEnabled(false);
