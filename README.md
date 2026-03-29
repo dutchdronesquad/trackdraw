@@ -43,11 +43,11 @@
 </p>
 
 > [!IMPORTANT]
-> TrackDraw is currently in beta and still actively evolving. Expect rapid UI changes, feature tweaks and occasional rough edges while the editor matures.
+> TrackDraw is now positioned as v1: the core workflow of designing, reviewing, sharing, and exporting tracks is in place. Ongoing roadmap work is focused on deeper race-day outputs, faster layout building, and post-v1 workflow depth.
 
 ## Project status
 
-TrackDraw has a solid editing baseline now across desktop, shared read-only viewing, and practical mobile use. The current roadmap focus is on speeding up layout creation, improving iteration inside one project, and turning finished designs into better race-day outputs.
+TrackDraw v1 covers the core workflow across desktop, shared read-only viewing, and practical mobile use. The current roadmap focus is on speeding up layout creation, improving iteration inside one project, and turning finished designs into better race-day outputs.
 
 See [docs/roadmap/ROADMAP.md](docs/roadmap/ROADMAP.md) for the current roadmap assessment.
 

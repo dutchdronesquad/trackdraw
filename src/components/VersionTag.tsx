@@ -13,13 +13,7 @@ function shortSha(sha?: string | null) {
   return sha.slice(0, 7);
 }
 
-export default function VersionTag({
-  className,
-  showBeta = false,
-}: {
-  className?: string;
-  showBeta?: boolean;
-}) {
+export default function VersionTag({ className }: { className?: string }) {
   const version = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
   const sha = shortSha(process.env.NEXT_PUBLIC_COMMIT_SHA);
   const releaseHref =
@@ -36,11 +30,6 @@ export default function VersionTag({
           className
         )}
       >
-        {showBeta && (
-          <span className="inline-flex h-3 items-center font-sans text-[9px] leading-none font-semibold tracking-[0.12em] text-amber-500 uppercase">
-            Beta
-          </span>
-        )}
         <span className="inline-flex h-3 items-center leading-none">
           {version}
         </span>

@@ -202,7 +202,7 @@ const faq = [
   },
   {
     q: "What exactly gets exported?",
-    a: "PDF (A4, portrait or landscape, with title and field dimensions), PNG (2× high-res, light or dark background), SVG (vector for Illustrator or Inkscape), and a JSON project file you can re-import at any time.",
+    a: "PDF (A4, portrait or landscape, with title and field dimensions), PNG (2× high-res, light or dark background), SVG (vector for Illustrator or Inkscape), and a JSON project file you can re-import at any time. 2D exports can also include obstacle numbering for briefing use.",
   },
   {
     q: "Can I use TrackDraw on a tablet at the venue?",
@@ -310,8 +310,7 @@ export default function Home() {
                     Built for FPV race directors
                   </span>
                   <VersionTag
-                    showBeta
-                    className={`${heroPillClassName} border-amber-500/30 bg-amber-500/10 font-sans text-amber-500 hover:bg-amber-500/15 hover:text-amber-400`}
+                    className={`${heroPillClassName} border-emerald-500/30 bg-emerald-500/10 font-sans text-emerald-500 hover:bg-emerald-500/15 hover:text-emerald-400`}
                   />
                 </div>
               </Reveal>
@@ -328,10 +327,10 @@ export default function Home() {
 
               <Reveal delay={0.13} className="mt-5">
                 <p className="text-muted-foreground max-w-sm text-[15px] leading-7">
-                  A browser-based track designer for FPV race directors. Draw to
-                  scale, preview in 3D, share a read-only link, and make quick
-                  edits from mobile when you need to. All before the gates leave
-                  the van.
+                  A browser-based track designer for FPV race directors. Build
+                  the track to scale, review the flow in 3D, share a read-only
+                  layout with pilots and crew, and make quick changes from
+                  desktop or mobile.
                 </p>
               </Reveal>
 
@@ -343,8 +342,7 @@ export default function Home() {
                   href="/studio"
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-6 text-sm font-medium text-white shadow-lg shadow-[#1E93DB]/25 transition hover:brightness-110"
                 >
-                  Start designing, it&apos;s free{" "}
-                  <ArrowRight className="size-3.5" />
+                  Open Studio <ArrowRight className="size-3.5" />
                 </Link>
                 <a
                   href="#features"
@@ -395,7 +393,7 @@ export default function Home() {
             <Reveal className="mb-12">
               <Eyebrow>Features</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-                The planning foundation.
+                Plan, review, and hand off.
               </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
                 TrackDraw gives you a clean base to design a course properly:
