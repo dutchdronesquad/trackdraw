@@ -118,6 +118,7 @@ export function EmptyInspectorView({
             {upperContent}
             {shapes.length > 0 ? (
               <ItemOverviewList
+                design={design}
                 shapes={shapes}
                 setSelection={setSelection}
                 removeShapes={removeShapes}
@@ -151,6 +152,7 @@ export function EmptyInspectorView({
           {upperContent}
           {shapes.length > 0 ? (
             <ItemOverviewList
+              design={design}
               shapes={shapes}
               setSelection={setSelection}
               removeShapes={removeShapes}

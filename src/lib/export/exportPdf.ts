@@ -1,6 +1,11 @@
 import type Konva from "konva";
 import { jsPDF } from "@/lib/vendor/jspdf";
 import type { TrackDesign } from "../types";
+import {
+  designToSvg,
+  type Export2DOptions,
+  type ExportTheme,
+} from "./exportSvg";
 
 async function loadSvgAsPng(
   svgUrl: string,
@@ -25,7 +30,9 @@ async function loadSvgAsPng(
 export async function exportPdf(
   stage: Konva.Stage,
   design: TrackDesign,
-  filename = "track.pdf"
+  filename = "track.pdf",
+  theme: ExportTheme = "dark",
+  options?: Export2DOptions
 ): Promise<void> {
   const { width, height } = design.field;
 
@@ -67,19 +74,19 @@ export async function exportPdf(
   pdf.roundedRect(imgX - 5, imgY - 5, imgW + 10, imgH + 10, 3, 3, "FD");
 
   // Track raster
-  const ppm = design.field.ppm;
-  const stageScale = stage.scaleX();
-  const clipX = stage.x();
-  const clipY = stage.y();
-  const clipW = design.field.width * ppm * stageScale;
-  const clipH = design.field.height * ppm * stageScale;
-  const dataUrl = stage.toDataURL({
-    x: clipX,
-    y: clipY,
-    width: clipW,
-    height: clipH,
-    pixelRatio: 2,
-  });
+  void stage;
+  const svgString = designToSvg(design, theme, options);
+  const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
+  const svgUrl = URL.createObjectURL(svgBlob);
+  const dataUrl = await loadSvgAsPng(
+    svgUrl,
+    Math.round(width * design.field.ppm * 2),
+    Math.round(height * design.field.ppm * 2)
+  );
+  URL.revokeObjectURL(svgUrl);
+  if (!dataUrl) {
+    throw new Error("PDF render failed");
+  }
   pdf.addImage(dataUrl, "PNG", imgX, imgY, imgW, imgH);
 
   // Dimension labels

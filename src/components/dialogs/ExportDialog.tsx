@@ -40,28 +40,63 @@ function ExportThemeToggle({
   value: Theme;
   onChange: (v: Theme) => void;
 }) {
+  const options = [
+    { id: "dark" as const, label: "Dark", icon: Moon },
+    { id: "light" as const, label: "Light", icon: Sun },
+  ];
+
   return (
-    <div className="border-border/50 bg-muted/28 flex shrink-0 items-center gap-1.5 rounded-2xl border p-1">
-      {(["dark", "light"] as const).map((t) => (
-        <button
-          key={t}
-          type="button"
-          onClick={() => onChange(t)}
-          className={cn(
-            "flex flex-1 items-center justify-center gap-1.5 rounded-[0.8rem] border px-3 py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
-            value === t
-              ? "border-primary/30 bg-primary/12 text-primary shadow-xs"
-              : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
-          )}
-        >
-          {t === "dark" ? (
-            <Moon className="size-3.5 shrink-0" />
-          ) : (
-            <Sun className="size-3.5 shrink-0" />
-          )}
-          {t}
-        </button>
-      ))}
+    <div className="border-border/60 bg-muted/20 relative grid w-full shrink-0 grid-cols-2 rounded-2xl border p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:w-auto sm:min-w-[12rem]">
+      <div
+        className={cn(
+          "bg-background/96 absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-xl shadow-[0_8px_20px_rgba(15,23,42,0.08),inset_0_0_0_1px_rgba(100,116,139,0.16)] transition-transform duration-250 ease-out",
+          value === "dark" ? "translate-x-0" : "translate-x-full"
+        )}
+        style={{ left: "0.25rem" }}
+        aria-hidden="true"
+      />
+      {options.map((option) => {
+        const Icon = option.icon;
+        const active = value === option.id;
+        return (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onChange(option.id)}
+            className={cn(
+              "relative z-10 flex min-w-0 items-center justify-center gap-2 rounded-xl px-3 py-2 text-[11px] font-medium transition-colors duration-200",
+              active
+                ? "text-foreground"
+                : "text-muted-foreground/75 hover:bg-background/35 hover:text-foreground"
+            )}
+            aria-pressed={active}
+          >
+            <span
+              className={cn(
+                "flex size-5 shrink-0 items-center justify-center rounded-md transition-all duration-200",
+                active
+                  ? "bg-foreground/6 text-foreground"
+                  : "text-muted-foreground/70 bg-transparent"
+              )}
+            >
+              <Icon
+                className={cn(
+                  "size-3.5 shrink-0 transition-all duration-200",
+                  active ? "scale-100 opacity-100" : "scale-95 opacity-80"
+                )}
+              />
+            </span>
+            <span
+              className={cn(
+                "transition-all duration-200",
+                active ? "opacity-100" : "opacity-90"
+              )}
+            >
+              {option.label}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -144,6 +179,7 @@ export default function ExportDialog({
   const isMobile = useIsMobile();
   const [busy, setBusy] = useState<string | null>(null);
   const [exportTheme, setExportTheme] = useState<Theme>("dark");
+  const [includeObstacleNumbers, setIncludeObstacleNumbers] = useState(true);
   const [filename, setFilename] = useState("");
 
   useEffect(() => {
@@ -172,20 +208,52 @@ export default function ExportDialog({
   };
 
   const settingsBar = (
-    <div className="flex items-center gap-3">
-      <div className="border-border/50 flex min-w-0 flex-1 items-center gap-3 rounded-xl border px-3.5 py-2.5">
-        <span className="text-muted-foreground/60 shrink-0 text-xs font-medium">
-          Filename
-        </span>
-        <input
-          type="text"
-          placeholder={design.title.trim() || "track"}
-          value={filename}
-          onChange={(e) => setFilename(e.target.value)}
-          className="text-foreground placeholder:text-muted-foreground/45 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
-        />
+    <div className="space-y-3">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="border-border/50 flex min-w-0 flex-1 items-center gap-3 rounded-xl border px-3.5 py-2.5">
+          <span className="text-muted-foreground/60 shrink-0 text-xs font-medium">
+            Filename
+          </span>
+          <input
+            type="text"
+            placeholder={design.title.trim() || "track"}
+            value={filename}
+            onChange={(e) => setFilename(e.target.value)}
+            className="text-foreground placeholder:text-muted-foreground/45 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
+          />
+        </div>
+        <div className="md:shrink-0">
+          <ExportThemeToggle value={exportTheme} onChange={setExportTheme} />
+        </div>
       </div>
-      <ExportThemeToggle value={exportTheme} onChange={setExportTheme} />
+      <div className="border-border/50 flex min-w-0 flex-1 items-center gap-3 rounded-xl border px-3.5 py-2.5">
+        <div className="min-w-0 flex-1">
+          <p className="text-foreground text-xs font-medium">
+            Include obstacle numbers
+          </p>
+          <p className="text-muted-foreground/70 pt-px text-[11px] leading-snug">
+            Adds route numbers in 2D exports.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIncludeObstacleNumbers((current) => !current)}
+          className={cn(
+            "flex h-6 w-10 shrink-0 items-center rounded-full p-0.5 transition-colors",
+            includeObstacleNumbers
+              ? "bg-foreground/90 justify-end"
+              : "bg-border/80 justify-start"
+          )}
+          aria-pressed={includeObstacleNumbers}
+          aria-label={
+            includeObstacleNumbers
+              ? "Disable obstacle numbers in export"
+              : "Enable obstacle numbers in export"
+          }
+        >
+          <span className="bg-background block size-5 rounded-full shadow-xs" />
+        </button>
+      </div>
     </div>
   );
 
@@ -205,7 +273,9 @@ export default function ExportDialog({
                 exportPng(
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.png`,
-                  exportTheme
+                  exportTheme,
+                  3,
+                  { includeObstacleNumbers }
                 )
               )
             }
@@ -221,7 +291,8 @@ export default function ExportDialog({
                 exportSvg(
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.svg`,
-                  exportTheme
+                  exportTheme,
+                  { includeObstacleNumbers }
                 )
               )
             }
@@ -230,7 +301,7 @@ export default function ExportDialog({
             ext="PDF"
             label="Document"
             color="bg-red-500/15 text-red-400"
-            description={`A4 print-ready document using the current ${currentTheme} canvas theme.`}
+            description={`A4 print-ready document using the ${exportTheme} export theme.`}
             busy={busy === "pdf"}
             onExport={() =>
               run("pdf", async () => {
@@ -240,7 +311,9 @@ export default function ExportDialog({
                 await exportPdf(
                   stage,
                   design,
-                  `${safeName({ view: "2d", theme: currentTheme })}.pdf`
+                  `${safeName({ view: "2d", theme: exportTheme })}.pdf`,
+                  exportTheme,
+                  { includeObstacleNumbers }
                 );
               })
             }
@@ -335,7 +408,9 @@ export default function ExportDialog({
                     exportPng(
                       design,
                       `${safeName({ view: "2d", theme: exportTheme })}.png`,
-                      exportTheme
+                      exportTheme,
+                      3,
+                      { includeObstacleNumbers }
                     )
                   ),
               },
@@ -350,7 +425,8 @@ export default function ExportDialog({
                     exportSvg(
                       design,
                       `${safeName({ view: "2d", theme: exportTheme })}.svg`,
-                      exportTheme
+                      exportTheme,
+                      { includeObstacleNumbers }
                     )
                   ),
               },
@@ -358,7 +434,7 @@ export default function ExportDialog({
                 ext: "PDF",
                 label: "Document",
                 color: "bg-red-500/15 text-red-400",
-                description: `A4 print-ready · ${currentTheme} theme`,
+                description: `A4 print-ready · ${exportTheme} theme`,
                 id: "pdf",
                 onExport: () =>
                   run("pdf", async () => {
@@ -369,7 +445,9 @@ export default function ExportDialog({
                     await exportPdf(
                       stage,
                       design,
-                      `${safeName({ view: "2d", theme: currentTheme })}.pdf`
+                      `${safeName({ view: "2d", theme: exportTheme })}.pdf`,
+                      exportTheme,
+                      { includeObstacleNumbers }
                     );
                   }),
               },
@@ -527,6 +605,7 @@ export default function ExportDialog({
         onOpenChange={onOpenChange}
         title="Export"
         subtitle="Export the current track as a 2D file or 3D render."
+        contentClassName="data-[vaul-drawer-direction=bottom]:mt-12 data-[vaul-drawer-direction=bottom]:max-h-[90dvh]"
         pinnedContent={
           <div className="border-border/40 space-y-3 border-b px-4 py-3">
             <div className="border-border/50 flex items-center gap-3 rounded-xl border px-3.5 py-2.5">
@@ -542,6 +621,34 @@ export default function ExportDialog({
               />
             </div>
             <ExportThemeToggle value={exportTheme} onChange={setExportTheme} />
+            <div className="border-border/50 flex items-center gap-3 rounded-xl border px-3.5 py-2.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-foreground text-xs font-medium">
+                  Include obstacle numbers
+                </p>
+                <p className="text-muted-foreground/70 pt-px text-[11px] leading-snug">
+                  Adds route numbers in 2D exports.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIncludeObstacleNumbers((current) => !current)}
+                className={cn(
+                  "flex h-6 w-10 shrink-0 items-center rounded-full p-0.5 transition-colors",
+                  includeObstacleNumbers
+                    ? "bg-foreground/90 justify-end"
+                    : "bg-border/80 justify-start"
+                )}
+                aria-pressed={includeObstacleNumbers}
+                aria-label={
+                  includeObstacleNumbers
+                    ? "Disable obstacle numbers in export"
+                    : "Enable obstacle numbers in export"
+                }
+              >
+                <span className="bg-background block size-5 rounded-full shadow-xs" />
+              </button>
+            </div>
           </div>
         }
       >

@@ -1,13 +1,18 @@
 import type { TrackDesign } from "../types";
-import { designToSvg, type ExportTheme } from "./exportSvg";
+import {
+  designToSvg,
+  type Export2DOptions,
+  type ExportTheme,
+} from "./exportSvg";
 
 export async function exportPng(
   design: TrackDesign,
   filename = "track.png",
   theme: ExportTheme = "dark",
-  scale = 3
+  scale = 3,
+  options?: Export2DOptions
 ): Promise<void> {
-  const svgString = designToSvg(design, theme);
+  const svgString = designToSvg(design, theme, options);
   const W = design.field.width * design.field.ppm;
   const H = design.field.height * design.field.ppm;
 

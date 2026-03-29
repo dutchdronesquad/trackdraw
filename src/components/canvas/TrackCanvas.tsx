@@ -11,7 +11,7 @@ import {
   useState,
   forwardRef,
 } from "react";
-import { Stage, Layer, Circle, Line, Group, Rect } from "react-konva";
+import { Stage, Layer, Circle, Line, Group, Rect, Text } from "react-konva";
 import type { Vector2d } from "konva/lib/types";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
@@ -40,6 +40,7 @@ import {
 import { m2px } from "@/lib/units";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
 import { distance2D, getPolyline2DPoints } from "@/lib/geometry";
+import { getObstacleNumberMap } from "@/lib/obstacleNumbering";
 import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -77,6 +78,7 @@ interface TrackCanvasProps {
   mobileRulersEnabled?: boolean;
   mobileMultiSelectEnabled?: boolean;
   readOnly?: boolean;
+  showObstacleNumbers?: boolean;
 }
 
 const TrackCanvas = memo(
@@ -89,6 +91,7 @@ const TrackCanvas = memo(
       mobileRulersEnabled = false,
       mobileMultiSelectEnabled = false,
       readOnly = false,
+      showObstacleNumbers = false,
     },
     ref
   ) {
@@ -218,6 +221,10 @@ const TrackCanvas = memo(
     } | null>(null);
     const hasManualViewRef = useRef(false);
     const isDark = useTheme() === "dark";
+    const obstacleNumberMap = useMemo(
+      () => (showObstacleNumbers ? getObstacleNumberMap(design) : null),
+      [design, showObstacleNumbers]
+    );
     const isMobile = useIsMobile();
     const showRulers = !isMobile || mobileRulersEnabled;
     const showDesktopCanvasChrome = viewportSize.width >= 1024;
@@ -1446,6 +1453,79 @@ const TrackCanvas = memo(
             )}
 
             <Layer>
+              {showObstacleNumbers &&
+                obstacleNumberMap &&
+                designShapes
+                  .filter((shape) => shape.id !== draftSourceShapeId)
+                  .map((shape) => {
+                    const obstacleNumber = obstacleNumberMap.get(shape.id);
+                    if (typeof obstacleNumber !== "number") return null;
+
+                    const bounds = getShapeLocalBounds(shape, design.field.ppm);
+                    if (!bounds) return null;
+
+                    const localX = bounds.x + bounds.width / 2;
+                    const localY = bounds.y - 16;
+                    const radians = (shape.rotation * Math.PI) / 180;
+                    const rotatedX =
+                      localX * Math.cos(radians) - localY * Math.sin(radians);
+                    const rotatedY =
+                      localX * Math.sin(radians) + localY * Math.cos(radians);
+                    const offset =
+                      groupDragPreview && groupDragIdSet.has(shape.id)
+                        ? {
+                            x: groupDragPreview.dx,
+                            y: groupDragPreview.dy,
+                          }
+                        : { x: 0, y: 0 };
+                    const x =
+                      m2px(
+                        shape.kind === "polyline" ? 0 : shape.x,
+                        design.field.ppm
+                      ) +
+                      rotatedX +
+                      offset.x;
+                    const y =
+                      m2px(
+                        shape.kind === "polyline" ? 0 : shape.y,
+                        design.field.ppm
+                      ) +
+                      rotatedY +
+                      offset.y;
+
+                    return (
+                      <Group
+                        key={`obstacle-number-${shape.id}`}
+                        listening={false}
+                      >
+                        <Circle
+                          x={x}
+                          y={y}
+                          radius={10}
+                          fill={
+                            selectionIdSet.has(shape.id) ? "#0f172a" : "#111827"
+                          }
+                          stroke={
+                            selectionIdSet.has(shape.id) ? "#60a5fa" : "#94a3b8"
+                          }
+                          strokeWidth={selectionIdSet.has(shape.id) ? 1.5 : 1}
+                          opacity={0.96}
+                        />
+                        <Text
+                          x={x - 10}
+                          y={y - 9}
+                          width={20}
+                          height={20}
+                          align="center"
+                          verticalAlign="middle"
+                          text={String(obstacleNumber)}
+                          fontSize={11}
+                          fontStyle="700"
+                          fill="#f8fafc"
+                        />
+                      </Group>
+                    );
+                  })}
               {dragSnapPreview && (
                 <Group listening={false}>
                   <Circle

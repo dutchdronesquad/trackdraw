@@ -11,6 +11,7 @@ import type {
   DiveGateShape,
 } from "../types";
 import { getDesignShapes } from "../design";
+import { getObstacleNumberMap, isNumberedObstacle } from "../obstacleNumbering";
 import {
   getPolyline2DDerived,
   getPolylineRouteWarningSegmentVisuals,
@@ -213,11 +214,87 @@ function shapeToSvg(
   }
 }
 
+function getNumberedShapeBounds(shape: Shape, ppm: number) {
+  switch (shape.kind) {
+    case "gate": {
+      const { width, depth } = getGate2DShape(shape, ppm);
+      return { x: -width / 2, y: -depth / 2, width, height: depth };
+    }
+    case "ladder": {
+      const { width, depth } = getLadder2DShape(shape, ppm);
+      return { x: -width / 2, y: -depth / 2, width, height: depth };
+    }
+    case "divegate": {
+      const { size, visibleDepth } = getDiveGate2DShape(shape, ppm);
+      return {
+        x: -size / 2,
+        y: -visibleDepth / 2,
+        width: size,
+        height: visibleDepth,
+      };
+    }
+    default:
+      return null;
+  }
+}
+
+function rotatePoint(
+  point: { x: number; y: number },
+  rotation: number
+): { x: number; y: number } {
+  const radians = (rotation * Math.PI) / 180;
+  return {
+    x: point.x * Math.cos(radians) - point.y * Math.sin(radians),
+    y: point.x * Math.sin(radians) + point.y * Math.cos(radians),
+  };
+}
+
+function obstacleNumbersToSvg(
+  design: TrackDesign,
+  ppm: number,
+  theme: ExportTheme
+) {
+  const obstacleNumberMap = getObstacleNumberMap(design);
+  if (!obstacleNumberMap.size) return "";
+
+  const badgeFill = theme === "dark" ? "#111827" : "#0f172a";
+  const badgeStroke = theme === "dark" ? "#94a3b8" : "#cbd5e1";
+  const textFill = "#f8fafc";
+
+  return getDesignShapes(design)
+    .filter(
+      (shape) => isNumberedObstacle(shape) && obstacleNumberMap.has(shape.id)
+    )
+    .map((shape) => {
+      const number = obstacleNumberMap.get(shape.id);
+      const bounds = getNumberedShapeBounds(shape, ppm);
+      if (!bounds || typeof number !== "number") return "";
+
+      const localPoint = {
+        x: bounds.x + bounds.width / 2,
+        y: bounds.y - 16,
+      };
+      const rotatedPoint = rotatePoint(localPoint, shape.rotation);
+      const cx = m(shape.x, ppm) + rotatedPoint.x;
+      const cy = m(shape.y, ppm) + rotatedPoint.y;
+
+      return `<g>
+    <circle cx="${cx}" cy="${cy}" r="10" fill="${badgeFill}" stroke="${badgeStroke}" stroke-width="1"/>
+    <text x="${cx}" y="${cy + 3.7}" font-size="11" font-weight="700" fill="${textFill}" text-anchor="middle">${number}</text>
+  </g>`;
+    })
+    .join("");
+}
+
 export type ExportTheme = "dark" | "light";
+export interface Export2DOptions {
+  includeObstacleNumbers?: boolean;
+}
 
 export function designToSvg(
   design: TrackDesign,
-  theme: ExportTheme = "dark"
+  theme: ExportTheme = "dark",
+  options?: Export2DOptions
 ): string {
   const { width, height, ppm, gridStep } = design.field;
   const W = m(width, ppm);
@@ -277,6 +354,10 @@ export function designToSvg(
   const shapeMarkup = shapeSvg
     .map((s) => shapeToSvg(s, ppm, primaryPolylineId))
     .join("\n  ");
+  const obstacleNumberMarkup =
+    options?.includeObstacleNumbers === false
+      ? ""
+      : obstacleNumbersToSvg(design, ppm, theme);
 
   const titleText = design.title.trim() || "Untitled Track";
   const sizeText = `${width}×${height} m`;
@@ -310,6 +391,8 @@ export function designToSvg(
   </g>
   <!-- Shapes -->
   ${shapeMarkup}
+  <!-- Obstacle numbers -->
+  ${obstacleNumberMarkup}
   <!-- Footer bar -->
   <rect x="0" y="${H - FOOTER}" width="${W}" height="${FOOTER}" fill="${colors.footerBg}" opacity="0.85"/>
   <line x1="0" y1="${H - FOOTER}" x2="${W}" y2="${H - FOOTER}" stroke="${colors.footerLine}" stroke-width="0.75"/>
@@ -332,7 +415,8 @@ function downloadText(content: string, filename: string, type: string) {
 export function exportSvg(
   design: TrackDesign,
   filename = "track.svg",
-  theme: ExportTheme = "dark"
+  theme: ExportTheme = "dark",
+  options?: Export2DOptions
 ): void {
-  downloadText(designToSvg(design, theme), filename, "image/svg+xml");
+  downloadText(designToSvg(design, theme, options), filename, "image/svg+xml");
 }
