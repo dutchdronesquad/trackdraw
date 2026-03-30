@@ -58,7 +58,9 @@ jobs:
           fetch-depth: 0
       - name: Resolve checked out commit
         id: rev
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
       - name: Setup Node.js ${{ env.DEFAULT_NODE }}
         uses: actions/setup-node@v6.3.0
         with:
@@ -70,6 +72,6 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          NEXT_PUBLIC_APP_VERSION: "${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}"
+          NEXT_PUBLIC_APP_VERSION: "${{ github.event_name == 'release' && github.event.release.tag_name || format('sha-{0}', steps.rev.outputs.short_sha) }}"
           NEXT_PUBLIC_COMMIT_SHA: "${{ steps.rev.outputs.sha }}"
-        run: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy
+        run: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy --tag "$NEXT_PUBLIC_APP_VERSION"

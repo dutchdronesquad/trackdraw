@@ -13,13 +13,16 @@ function shortSha(sha?: string | null) {
   return sha.slice(0, 7);
 }
 
+function isReleaseTag(version: string) {
+  return /^v\d+\.\d+\.\d+([-.].+)?$/.test(version);
+}
+
 export default function VersionTag({ className }: { className?: string }) {
   const version = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
   const sha = shortSha(process.env.NEXT_PUBLIC_COMMIT_SHA);
-  const releaseHref =
-    version === "dev"
-      ? "https://github.com/dutchdronesquad/trackdraw/releases"
-      : `https://github.com/dutchdronesquad/trackdraw/releases/tag/${encodeURIComponent(version)}`;
+  const releaseHref = isReleaseTag(version)
+    ? `https://github.com/dutchdronesquad/trackdraw/releases/tag/${encodeURIComponent(version)}`
+    : "https://github.com/dutchdronesquad/trackdraw/releases";
 
   return (
     <Tooltip>
