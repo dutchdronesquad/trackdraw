@@ -51,7 +51,7 @@ jobs:
         id: rev
         run: |
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "short_sha=$(git rev-parse --short=5 HEAD)" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
       - name: Setup Node.js ${{ env.DEFAULT_NODE }}
         uses: actions/setup-node@v6.3.0
         with:
@@ -65,4 +65,4 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NEXT_PUBLIC_APP_VERSION: "dev-${{ steps.rev.outputs.short_sha }}"
           NEXT_PUBLIC_COMMIT_SHA: "${{ steps.rev.outputs.sha }}"
-        run: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy --env dev
+        run: npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy --env dev --tag "$NEXT_PUBLIC_APP_VERSION"
