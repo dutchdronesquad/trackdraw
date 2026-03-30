@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function MetaPill({ children }: { children: ReactNode }) {
   return (
-    <span className="border-border/25 text-muted-foreground rounded-full border px-2 py-0.5 text-[11px]">
+    <span className="bg-muted/25 text-muted-foreground/85 rounded-full px-2 py-0.5 text-[10px] font-medium">
       {children}
     </span>
   );
@@ -21,19 +21,19 @@ export function InspectorLead({
   meta?: string[];
 }) {
   return (
-    <div className="space-y-2 pb-1">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-foreground/90 text-sm font-medium">{title}</p>
-          {subtitle ? (
-            <p className="text-muted-foreground/60 mt-1 text-[11px] leading-relaxed">
-              {subtitle}
-            </p>
-          ) : null}
-        </div>
+    <div className="border-border/30 space-y-2.5 border-b pb-3">
+      <div className="min-w-0">
+        <p className="text-foreground text-[17px] leading-none font-semibold tracking-[-0.02em] lg:text-[15px]">
+          {title}
+        </p>
+        {subtitle ? (
+          <p className="text-muted-foreground/72 mt-2 text-[12px] leading-relaxed lg:text-[11px]">
+            {subtitle}
+          </p>
+        ) : null}
       </div>
       {meta?.length ? (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 pt-0.5">
           {meta.map((item) => (
             <MetaPill key={item}>{item}</MetaPill>
           ))}

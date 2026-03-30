@@ -71,6 +71,16 @@ export const trackDesign = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string().optional(),
+  inventory: z
+    .object({
+      gate: z.number().int().nonnegative(),
+      flag: z.number().int().nonnegative(),
+      cone: z.number().int().nonnegative(),
+      startfinish: z.number().int().nonnegative(),
+      ladder: z.number().int().nonnegative(),
+      divegate: z.number().int().nonnegative(),
+    })
+    .optional(),
   field: fieldSpec,
   shapes: z.array(shape),
   createdAt: z.string(),

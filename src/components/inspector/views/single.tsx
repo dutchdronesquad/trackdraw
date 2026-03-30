@@ -20,7 +20,6 @@ import {
   fmt,
   IconBtn,
   Num,
-  PanelHeader,
   Row,
   Section,
   useInspectorInputBatch,
@@ -101,40 +100,6 @@ export function SingleInspectorView({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <PanelHeader
-        title={shapeKindLabels[shape.kind]}
-        actions={
-          <>
-            <IconBtn
-              onClick={() => setShapesLocked([shape.id], !shape.locked)}
-              title={shape.locked ? "Unlock" : "Lock"}
-            >
-              {shape.locked ? (
-                <Lock className="size-3 text-amber-400" />
-              ) : (
-                <LockOpen className="size-3" />
-              )}
-            </IconBtn>
-            <IconBtn
-              onClick={() => duplicateShapes([shape.id])}
-              title="Duplicate"
-            >
-              <Copy className="size-3" />
-            </IconBtn>
-            <IconBtn
-              onClick={() => {
-                removeShapes([shape.id]);
-                setSelection([]);
-              }}
-              title="Delete"
-              danger
-            >
-              <Trash2 className="size-3" />
-            </IconBtn>
-          </>
-        }
-      />
-
       <InspectorScrollBody mobileInline={mobileInline}>
         <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
           <InspectorLead
@@ -146,6 +111,37 @@ export function SingleInspectorView({
               shape.locked ? "locked" : "editable",
             ]}
           />
+          <div className="flex flex-wrap items-center gap-1.5">
+            <IconBtn
+              onClick={() => setShapesLocked([shape.id], !shape.locked)}
+              title={shape.locked ? "Unlock" : "Lock"}
+              label={shape.locked ? "Unlock" : "Lock"}
+            >
+              {shape.locked ? (
+                <Lock className="size-3 text-amber-400" />
+              ) : (
+                <LockOpen className="size-3" />
+              )}
+            </IconBtn>
+            <IconBtn
+              onClick={() => duplicateShapes([shape.id])}
+              title="Duplicate"
+              label="Duplicate"
+            >
+              <Copy className="size-3" />
+            </IconBtn>
+            <IconBtn
+              onClick={() => {
+                removeShapes([shape.id]);
+                setSelection([]);
+              }}
+              title="Delete"
+              danger
+              label="Delete"
+            >
+              <Trash2 className="size-3" />
+            </IconBtn>
+          </div>
           <Section title="Transform">
             <Row label="Name">
               <Input

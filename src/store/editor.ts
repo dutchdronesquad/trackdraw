@@ -162,7 +162,10 @@ interface EditorState {
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (
     patch: Partial<
-      Pick<TrackDesign, "title" | "description" | "authorName" | "tags">
+      Pick<
+        TrackDesign,
+        "title" | "description" | "authorName" | "tags" | "inventory"
+      >
     >
   ) => void;
   replaceDesign: (design: TrackDesign | SerializedTrackDesign) => void;

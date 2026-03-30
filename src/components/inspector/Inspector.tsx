@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
+import { motion } from "framer-motion";
 import {
   EmptyInspectorView,
   MultiInspectorView,
@@ -43,11 +44,14 @@ function Inspector({
   const selectedShapes = useEditor(selectSelectedShapes);
   const count = selectedShapes.length;
   const [panelOverride, setPanelOverride] = useState<
-    "design" | "selection" | null
+    "project" | "layout" | "selection" | null
   >(null);
-  const panel = count === 0 ? "design" : (panelOverride ?? "selection");
-
   const selectionDisabled = count === 0;
+  const defaultPanel = selectionDisabled ? "project" : "selection";
+  const panel =
+    panelOverride === "selection" && selectionDisabled
+      ? defaultPanel
+      : (panelOverride ?? defaultPanel);
 
   let selectionView = (
     <div className="flex h-full items-center justify-center px-6 text-center">
@@ -108,7 +112,8 @@ function Inspector({
           className="border-border/60 flex items-center gap-5 border-b"
         >
           {[
-            { id: "design" as const, label: "Project" },
+            { id: "project" as const, label: "Project" },
+            { id: "layout" as const, label: "Layout" },
             { id: "selection" as const, label: "Selection" },
           ].map((item) => (
             <button
@@ -121,27 +126,31 @@ function Inspector({
               disabled={item.id === "selection" && selectionDisabled}
               onClick={() => setPanelOverride(item.id)}
               className={cn(
-                "group relative -mb-px min-h-11 border-b-2 px-1 py-2.5 text-sm font-semibold transition-colors",
+                "group relative -mb-px min-h-11 px-1 py-2.5 text-sm font-semibold transition-colors",
                 panel === item.id
-                  ? "border-foreground text-foreground"
-                  : "text-muted-foreground hover:border-border hover:text-foreground active:text-foreground border-transparent",
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground active:text-foreground",
                 item.id === "selection" && selectionDisabled
                   ? "cursor-not-allowed opacity-45"
                   : ""
               )}
             >
+              {panel === item.id ? (
+                <motion.span
+                  layoutId="inspector-active-tab"
+                  className="bg-foreground absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full"
+                  transition={{
+                    type: "spring",
+                    stiffness: 420,
+                    damping: 34,
+                  }}
+                />
+              ) : null}
               {item.label}
               <span className="group-hover:bg-border pointer-events-none absolute inset-x-0 -bottom-px h-px bg-transparent transition-colors" />
             </button>
           ))}
         </div>
-        <p className="text-muted-foreground/80 pt-2 text-[11px]">
-          {panel === "design"
-            ? "Project metadata, field settings and placed items."
-            : selectionDisabled
-              ? "Select an item to unlock object-level controls."
-              : `${count} item${count === 1 ? "" : "s"} selected for editing.`}
-        </p>
       </div>
 
       <div
@@ -150,9 +159,10 @@ function Inspector({
         aria-labelledby={`inspector-tab-${panel}`}
         className={cn(mobileInline ? "" : "min-h-0 flex-1 overflow-hidden")}
       >
-        {panel === "design" ? (
+        {panel === "project" || panel === "layout" ? (
           <EmptyInspectorView
             mobileInline={mobileInline}
+            panel={panel}
             design={design}
             shapes={designShapes}
             setSelection={setSelection}

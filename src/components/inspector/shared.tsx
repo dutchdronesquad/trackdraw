@@ -147,23 +147,28 @@ export function IconBtn({
   title,
   children,
   danger,
+  label,
 }: {
   onClick: () => void;
   title: string;
   children: ReactNode;
   danger?: boolean;
+  label?: string;
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       title={title}
-      className={`flex size-7 items-center justify-center rounded-md transition-colors lg:size-6 lg:rounded ${
+      aria-label={title}
+      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-md border px-2.5 text-[11px] font-medium transition-colors lg:h-7 lg:px-2 ${
         danger
-          ? "text-muted-foreground hover:text-foreground hover:bg-muted/20"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
+          ? "border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12"
+          : "border-border/50 bg-background text-foreground/82 hover:bg-muted/35"
       }`}
     >
       {children}
+      {label ? <span>{label}</span> : null}
     </button>
   );
 }
