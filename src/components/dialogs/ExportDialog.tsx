@@ -299,21 +299,24 @@ export default function ExportDialog({
           />
           <FormatTile
             ext="PDF"
-            label="Document"
+            label="Race Pack"
             color="bg-red-500/15 text-red-400"
-            description={`A4 print-ready document using the ${exportTheme} export theme.`}
-            busy={busy === "pdf"}
+            description="A multi-page race pack with the track map, material list, build guidance, and numbering context."
+            busy={busy === "race-day-pdf"}
             onExport={() =>
-              run("pdf", async () => {
+              run("race-day-pdf", async () => {
                 const stage = canvasRef.current?.getStage();
                 if (!stage) throw new Error("Canvas not ready");
                 const { exportPdf } = await import("@/lib/export/exportPdf");
                 await exportPdf(
                   stage,
                   design,
-                  `${safeName({ view: "2d", theme: exportTheme })}.pdf`,
+                  `${(filename.trim() || design.title.trim() || "track").replace(/[^a-z0-9-_]+/gi, "_")}_race_pack.pdf`,
                   exportTheme,
-                  { includeObstacleNumbers }
+                  {
+                    includeObstacleNumbers,
+                    preset: "race-day",
+                  }
                 );
               })
             }
@@ -432,12 +435,13 @@ export default function ExportDialog({
               },
               {
                 ext: "PDF",
-                label: "Document",
+                label: "Race Pack",
                 color: "bg-red-500/15 text-red-400",
-                description: `A4 print-ready · ${exportTheme} theme`,
-                id: "pdf",
+                description:
+                  "Map, material list, build guidance, and stock status",
+                id: "race-day-pdf",
                 onExport: () =>
-                  run("pdf", async () => {
+                  run("race-day-pdf", async () => {
                     const stage = canvasRef.current?.getStage();
                     if (!stage) throw new Error("Canvas not ready");
                     const { exportPdf } =
@@ -445,9 +449,12 @@ export default function ExportDialog({
                     await exportPdf(
                       stage,
                       design,
-                      `${safeName({ view: "2d", theme: exportTheme })}.pdf`,
+                      `${(filename.trim() || design.title.trim() || "track").replace(/[^a-z0-9-_]+/gi, "_")}_race_pack.pdf`,
                       exportTheme,
-                      { includeObstacleNumbers }
+                      {
+                        includeObstacleNumbers,
+                        preset: "race-day",
+                      }
                     );
                   }),
               },

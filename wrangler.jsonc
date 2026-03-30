@@ -7,7 +7,7 @@
   "observability": {
     "enabled": true,
     "logs": {
-      "invocation_logs": true,
+      "invocation_logs": false,
     },
   },
   "workers_dev": false,
@@ -36,7 +36,7 @@
       "observability": {
         "enabled": true,
         "logs": {
-          "invocation_logs": true,
+          "invocation_logs": false,
         },
       },
       "d1_databases": [
