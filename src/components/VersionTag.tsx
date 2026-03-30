@@ -20,10 +20,9 @@ function isReleaseTag(version: string) {
 export default function VersionTag({ className }: { className?: string }) {
   const version = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
   const sha = shortSha(process.env.NEXT_PUBLIC_COMMIT_SHA);
-  const releaseHref =
-    isReleaseTag(version)
-      ? `https://github.com/dutchdronesquad/trackdraw/releases/tag/${encodeURIComponent(version)}`
-      : "https://github.com/dutchdronesquad/trackdraw/releases";
+  const releaseHref = isReleaseTag(version)
+    ? `https://github.com/dutchdronesquad/trackdraw/releases/tag/${encodeURIComponent(version)}`
+    : "https://github.com/dutchdronesquad/trackdraw/releases";
 
   return (
     <Tooltip>
