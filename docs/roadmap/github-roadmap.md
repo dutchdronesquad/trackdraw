@@ -16,9 +16,16 @@ TrackDraw's core planning workflow is now in place. The roadmap should now focus
 
 ## Active Post-v1 Focus
 
+Labels used below:
+
+- `No account required` means the feature should remain usable without an account
+- `Account-backed` means the meaningful version depends on ownership, sync, identity, or shared persistence
+- `Research` means the work is still primarily exploratory
+- `Blocked` means the item depends on another roadmap decision or capability first
+
 ## Priority 1
 
-- [ ] Layout acceleration
+- [ ] Layout acceleration (`No account required`)
       Add reusable building blocks such as obstacle presets, starter layouts, selection grouping, and venue-aware field templates.
   - [ ] Obstacle-pack presets
         Add reusable building blocks such as slalom sections, gate runs, start/finish setups, and small training patterns.
@@ -29,31 +36,18 @@ TrackDraw's core planning workflow is now in place. The roadmap should now focus
   - [ ] Template browser
         Add a dedicated browsing/apply surface only after preset content and grouping prove useful.
 
-- [ ] Race-day communication and briefing
+- [ ] Race-day communication and briefing (`No account required`)
       Turn existing export, read-only, and fly-through capabilities into better pilot briefing, marshal pack, and numbered handoff workflows.
   - [x] Obstacle numbering overlay in 2D
         Route-driven numbering is now available on the 2D canvas and in the inspector item list for gates, ladders, and dive gates.
   - [x] Obstacle numbering in export/read-only surfaces
         Obstacle numbering now carries across 2D exports and the read-only share surface, using the same route-driven numbering model as the editor canvas.
-  - [ ] Briefing export preset
-        Add a simpler pilot-briefing output with title, field dimensions, and obstacle index.
-  - [ ] Read-only briefing mode
-        Create a cleaner read-only presentation that feels more like a briefing surface than the editor shell.
-  - [ ] Marshal pack print layout
-        Add a print-oriented marshal handoff once numbering and briefing outputs are stable.
+  - [x] Race Pack export foundation
+        PDF export now includes a dedicated multi-page Race Pack with a cover page, track map, material list, stock status, setup sequence, numbering context, and first-pass timing/build guidance.
+  - [ ] Race director page in Race Pack
+        Add a race-director-oriented page within the Race Pack once TrackDraw can capture practical start-area metadata such as director position, timing/start box position, cable run, and related ops notes.
 
-- [ ] Comments and review mode
-      Anchor feedback to specific obstacles or route sections without requiring live collaboration first.
-  - [ ] Pinned obstacle notes
-        Add simple notes attached to specific obstacles as a local-first first pass.
-  - [ ] Route-section notes
-        Let notes attach to a route waypoint or path segment without requiring identity first.
-  - [ ] Read-only review surface
-        Surface anchored notes clearly in read-only review without exposing editing actions.
-  - [ ] Threaded comments follow-up
-        Consider richer review threads only if simple anchored notes prove useful and an account-backed identity model exists.
-
-- [ ] Heatmap and flow analysis
+- [ ] Heatmap and flow analysis (`No account required`)
       Add lightweight visual feedback for rhythm, density, and bottlenecks once validation basics are in place.
   - [ ] Density overlay
         Highlight obstacle clusters and repeated-turn pressure zones.
@@ -64,18 +58,41 @@ TrackDraw's core planning workflow is now in place. The roadmap should now focus
 
 ## Priority 2
 
+- [ ] Optional accounts and cross-device project evaluation (`Research`)
+      Evaluate whether optional user accounts should unlock cloud backup, project libraries, cross-device continuation, and clearer ownership of shares and future venue/inventory records without turning TrackDraw into an auth-first product.
+  - [ ] User-value validation
+        Determine whether cross-device continuation, safer project storage, and durable ownership are meaningful enough to justify cloud-backed project models.
+  - [ ] Product model evaluation
+        Define how local projects, cloud-backed projects, published shares, and local-first feature fallbacks should relate without confusing users.
+  - [ ] Authentication and storage recommendation
+        Decide whether TrackDraw should remain local-first only, add optional auth-backed sync for ownership and cross-device management, or stop before account work entirely.
+
 - [x] Cloudflare production rollout validation
       Development and production Cloudflare domains are now live, and the release-gated production deploy path has been validated with the final GitHub environment secrets and domains.
 
-- [ ] Share lifecycle management follow-up
-      Expiry, retention cleanup, calmer publish-link behavior, and local revoke are now in place. Remaining work is clearer repeated-use management in Studio. Local-first publish flows should stay simple; regenerate and broader share administration stay deferred until an account-backed ownership model exists.
+- [ ] Share lifecycle management follow-up (`Account-backed`, `Blocked`)
+      Expiry, retention cleanup, calmer publish-link behavior, and local revoke are now in place. Remaining work is clearer repeated-use management in Studio and a cleaner ownership model once optional accounts are evaluated. Local-first publish flows should stay simple for one-off use.
 
-- [ ] Velocidrone export compatibility research
+- [ ] Venue library and constraints (`Account-backed`, `Blocked`)
+      Support reusable venue records with field dimensions, recurring boundaries, fixed no-go zones, known setup constraints, and eventually venue-specific inventory profiles. This is most valuable as an account-backed feature tied to a person, club, or event context.
+
+- [ ] Velocidrone export compatibility research (`Research`)
       Investigate whether TrackDraw layouts can be exported into Velocidrone's track-builder workflow. This likely starts as reverse-engineering and format discovery work because there is no public API or official documentation to build against.
 
 ## Priority 3
 
-- [ ] Obstacle inventory and setup estimate
+- [ ] Comments and review mode (`Account-backed`, `Blocked`)
+      Anchor feedback to specific obstacles or route sections without requiring live collaboration first. This now sits behind the optional-accounts decision because richer review workflows become much clearer once identity and ownership are better defined.
+  - [ ] Pinned obstacle notes
+        Add simple notes attached to specific obstacles as a local-first first pass.
+  - [ ] Route-section notes
+        Let notes attach to a route waypoint or path segment without requiring identity first.
+  - [ ] Read-only review surface
+        Surface anchored notes clearly in read-only review without exposing editing actions.
+  - [ ] Threaded comments follow-up
+        Consider richer review threads only if simple anchored notes prove useful and an account-backed identity model exists.
+
+- [ ] Obstacle inventory and setup estimate (`No account required`)
       Summarize obstacle counts, compare them against available stock, and turn that into a clearer race-day setup summary.
   - [x] My inventory
         Users can now record how many gates, ladders, dive gates, start/finish elements, flags, and cones are available as a local-first profile stored in the project.
@@ -83,33 +100,32 @@ TrackDraw's core planning workflow is now in place. The roadmap should now focus
         The design inspector now compares current layout counts against the saved inventory so shortages are visible without an account.
   - [x] Buildability warnings
         The inventory section now flags missing stock per obstacle type and surfaces a simple buildable vs short status.
-  - [ ] Setup estimate summary
-        Turn the raw inventory counts into a clearer obstacle summary for race-day preparation and handoff.
-  - [ ] Rough setup complexity cues
-        Add lightweight signals for how involved the current layout is to build once the summary format is in place.
+  - [x] Setup estimate summary
+        The Race Pack now turns raw inventory and obstacle data into a clearer race-day setup summary with material counts, grouped setup steps, and first-pass build guidance.
+  - [x] Rough setup complexity cues
+        The Race Pack now includes first-pass setup timing ranges and lightweight complexity cues based on obstacle mix and setup steps.
 
-- [ ] Venue library and constraints
-      Support reusable venue records with field dimensions, recurring boundaries, fixed no-go zones, known setup constraints, and eventually venue-specific inventory profiles. Local-first venue records can come first; shared club or event records likely belong behind optional accounts.
+- [ ] Build mode / setup sequence (`No account required`, `Blocked`)
+      Turn a finished layout into a dedicated operational build surface for race-day setup, rather than extending the Race Pack document indefinitely.
+  - [ ] Dedicated build-mode view
+        Add a separate build-mode page or mode with its own information hierarchy for on-field setup, instead of treating setup sequence as only a document section.
+  - [ ] Map-linked setup steps
+        Let crews move through setup phases and steps while keeping the relevant obstacles highlighted on the map.
+  - [ ] Grouped build phases and check-off flow
+        Organize setup into clearer phases such as unload, prep, anchors/heavy structures, numbered obstacle line, and final walk, with practical completion tracking.
+  - [ ] Crew and venue assumptions
+        Allow setup order and timing to adapt better to crew size, venue constraints, and rigging assumptions beyond the current generalized Race Pack heuristic.
 
-- [ ] Revision compare
-      Compare two layout states and show what changed between versions, snapshots, or variants.
-
-- [ ] Marshal mode
-      Create a race-day view focused on marshal readability, sectors, references, and obstacle clarity rather than editing.
-
-- [ ] Build mode / setup sequence
-      Turn a finished layout into a structured setup order so crews can build the course in a clearer sequence.
-
-- [ ] Map and field overlay
+- [ ] Map and field overlay (`No account required`)
       Support venue plans, field maps, or imagery as reference layers behind the editor canvas.
 
-- [ ] Lap simulator
+- [ ] Lap simulator (`Research`)
       Estimate route timing and flow once the lighter analysis layers have proven valuable.
 
-- [ ] Real-time collaboration
+- [ ] Real-time collaboration (`Account-backed`)
       Allow multiple users to work on the same design concurrently.
 
-- [ ] Desktop and mobile wrapper evaluation
+- [ ] Desktop and mobile wrapper evaluation (`Research`)
       Evaluate whether an Electron desktop wrapper or a Capacitor mobile wrapper would materially improve local project handling, native file workflows, offline resilience, or venue-side usability beyond the web app.
   - [ ] Product-problem validation
         Identify which concrete user pain points would justify a wrapper instead of improving the web app directly.
@@ -118,7 +134,7 @@ TrackDraw's core planning workflow is now in place. The roadmap should now focus
   - [ ] Platform recommendation
         Conclude whether TrackDraw should stay web-first, explore Electron first, explore Capacitor first, or avoid wrappers entirely for now.
 
-- [ ] PWA evaluation
+- [ ] PWA evaluation (`Research`)
       Evaluate whether TrackDraw should add a deliberate Progressive Web App layer for installability, app-like launch behavior, and narrowly scoped offline resilience.
   - [ ] Installability and manifest pass
         Determine whether a proper manifest and installable app shell would materially help repeat venue-side use.
@@ -126,15 +142,6 @@ TrackDraw's core planning workflow is now in place. The roadmap should now focus
         Decide whether any offline caching layer would create more value than deployment and stale-cache risk.
   - [ ] PWA scope recommendation
         Conclude whether TrackDraw should remain a standard web app, add a narrow installable PWA layer, or invest further in offline/app-shell behavior later.
-
-- [ ] Optional accounts and cross-device project evaluation
-      Evaluate whether optional user accounts should unlock cloud backup, project libraries, and cross-device continuation without turning TrackDraw into an auth-first product.
-  - [ ] User-value validation
-        Determine whether cross-device continuation and safer project storage are meaningful enough to justify cloud-backed project models.
-  - [ ] Product model evaluation
-        Define how local projects, cloud-backed projects, published shares, and local-first feature fallbacks should relate without confusing users.
-  - [ ] Authentication and storage recommendation
-        Decide whether TrackDraw should remain local-first only, add optional auth-backed sync for ownership and cross-device management, or stop before account work entirely.
 
 ## v1 Archive
 

@@ -289,6 +289,7 @@ function obstacleNumbersToSvg(
 export type ExportTheme = "dark" | "light";
 export interface Export2DOptions {
   includeObstacleNumbers?: boolean;
+  preset?: "standard" | "race-day";
 }
 
 export function designToSvg(
