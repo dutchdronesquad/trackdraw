@@ -1,13 +1,14 @@
 import type { PolylineShape, Shape, ShapeDraft, ShapeKind } from "@/lib/types";
 
 type PlaceablePresetShape = Exclude<Shape, PolylineShape>;
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
+  : never;
 
-export type LayoutPresetShapeDraft = Omit<
-  PlaceablePresetShape,
-  "id" | "x" | "y" | "rotation"
+export type LayoutPresetShapeDraft = DistributiveOmit<
+  ShapeDraft<PlaceablePresetShape>,
+  "rotation"
 > & {
-  x: number;
-  y: number;
   rotation?: number;
 };
 
