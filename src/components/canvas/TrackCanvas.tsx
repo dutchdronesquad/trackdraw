@@ -109,6 +109,7 @@ const TrackCanvas = memo(
     const addShape = useEditor((state) => state.addShape);
     const addShapes = useEditor((state) => state.addShapes);
     const activeTool = useEditor((state) => state.transient.activeTool);
+    const activePresetId = useEditor((state) => state.transient.activePresetId);
     const vertexSel = useEditor((state) => state.transient.vertexSelection);
     const draftPath = useEditor((state) => state.transient.draftPath);
     const draftForceClosed = useEditor(
@@ -728,7 +729,9 @@ const TrackCanvas = memo(
       snapRadiusMeters,
     } = useTrackCanvasInteractions({
       activeTool,
+      activePresetId,
       addShape,
+      addShapes,
       designField: design.field,
       designShapes,
       disableTouchGestures: rotationSession !== null,

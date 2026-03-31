@@ -5,6 +5,7 @@ import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 import type { Vector2d } from "konva/lib/types";
 import { createShapeForTool, type EditorTool } from "@/lib/editor-tools";
+import { getLayoutPresetById, placeLayoutPreset } from "@/lib/layout-presets";
 import { distance2D } from "@/lib/geometry";
 import { px2m } from "@/lib/units";
 import {
@@ -19,7 +20,9 @@ import type { Shape, ShapeDraft } from "@/lib/types";
 
 interface TrackCanvasInteractionsParams {
   activeTool: EditorTool;
+  activePresetId: string | null;
   addShape: (shape: ShapeDraft) => string;
+  addShapes: (shapes: ShapeDraft[]) => string[];
   designField: { gridStep: number; ppm: number };
   designShapes: Shape[];
   disableTouchGestures: boolean;
@@ -77,7 +80,9 @@ interface TrackCanvasInteractionsParams {
 
 export function useTrackCanvasInteractions({
   activeTool,
+  activePresetId,
   addShape,
+  addShapes,
   designField,
   designShapes,
   disableTouchGestures,
@@ -596,6 +601,17 @@ export function useTrackCanvasInteractions({
       }
 
       if (activeTool !== "select" && activeTool !== "grab" && !readOnly) {
+        if (activeTool === "preset") {
+          const preset = getLayoutPresetById(activePresetId);
+          if (!preset) return;
+          const ids = addShapes(placeLayoutPreset(preset, meters));
+          setSelection(ids);
+          if (isMobile) {
+            setActiveTool("select");
+          }
+          touchInteractionModeRef.current = "none";
+          return;
+        }
         const shape = createShapeForTool(activeTool, meters);
         if (!shape) return;
         const id = addShape(shape);
@@ -616,7 +632,9 @@ export function useTrackCanvasInteractions({
     },
     [
       activeTool,
+      activePresetId,
       addShape,
+      addShapes,
       finalizePath,
       isMobile,
       pointerToMeters,
@@ -821,6 +839,14 @@ export function useTrackCanvasInteractions({
         );
         const meters = pointerToMeters(pointer, snap, false);
         if (!meters) return;
+        if (activeTool === "preset") {
+          const preset = getLayoutPresetById(activePresetId);
+          if (!preset) return;
+          const ids = addShapes(placeLayoutPreset(preset, meters));
+          setSelection(ids);
+          suppressTapRef.current = true;
+          return;
+        }
         const shape = createShapeForTool(activeTool, meters);
         if (!shape) return;
         const id = addShape(shape);
@@ -856,7 +882,9 @@ export function useTrackCanvasInteractions({
     },
     [
       activeTool,
+      activePresetId,
       addShape,
+      addShapes,
       marqueeAdditiveRef,
       marqueeOriginRef,
       marqueeRect,

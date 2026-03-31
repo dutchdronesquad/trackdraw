@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/store/editor";
@@ -561,8 +562,8 @@ function ShareContent({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex items-start gap-4">
+        <div className="min-w-0 flex-1">
           <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
             Studio
           </p>
@@ -576,7 +577,7 @@ function ShareContent({
         <button
           type="button"
           onClick={onClose}
-          className="text-muted-foreground/75 hover:text-foreground hover:bg-muted cursor-pointer rounded-full p-1.5 transition-colors"
+          className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
           aria-label="Close"
         >
           <X className="size-4" />
@@ -832,23 +833,20 @@ export default function ShareDialog({
     );
   }
 
-  if (!open) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm"
-      onClick={() => onOpenChange(false)}
+    <DesktopModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Share"
+      headerless
+      maxWidth="max-w-2xl"
+      panelClassName="rounded-3xl p-6"
     >
-      <div
-        className="border-border/50 bg-card/97 pointer-events-auto w-full max-w-2xl overflow-hidden rounded-3xl border p-6 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <ShareContent
-          onClose={() => onOpenChange(false)}
-          hasPath={hasPath}
-          onExportJson={onExportJson}
-        />
-      </div>
-    </div>
+      <ShareContent
+        onClose={() => onOpenChange(false)}
+        hasPath={hasPath}
+        onExportJson={onExportJson}
+      />
+    </DesktopModal>
   );
 }

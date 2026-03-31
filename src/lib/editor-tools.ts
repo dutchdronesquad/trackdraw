@@ -13,6 +13,7 @@ import type {
 export type EditorTool =
   | "select"
   | "grab"
+  | "preset"
   | "gate"
   | "flag"
   | "cone"
@@ -49,6 +50,7 @@ export const shapeKindLabels: Record<ShapeKind, string> = {
 export const toolLabels: Record<EditorTool, string> = {
   select: "Select",
   grab: "Grab",
+  preset: "Presets",
   gate: "Gate",
   flag: "Flag",
   cone: "Cone",
@@ -151,6 +153,7 @@ export function createShapeForTool(
       };
     case "select":
     case "grab":
+    case "preset":
     case "polyline":
       return null;
   }

@@ -3,15 +3,20 @@
 import { useEditor } from "@/store/editor";
 import VersionTag from "@/components/VersionTag";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
+import { getLayoutPresetById } from "@/lib/layout-presets";
 
 const toolLabel: Record<string, string> = {
   select: "Select",
   grab: "Grab",
   gate: "Gate",
+  ladder: "Ladder",
+  divegate: "Dive Gate",
   flag: "Flag",
   cone: "Cone",
   label: "Label",
   polyline: "Path",
+  startfinish: "Start / Finish",
+  preset: "Presets",
 };
 
 interface StatusBarProps {
@@ -22,9 +27,15 @@ interface StatusBarProps {
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const { enabled, toggle } = useDeveloperMode();
   const activeTool = useEditor((state) => state.transient.activeTool);
+  const activePresetId = useEditor((state) => state.transient.activePresetId);
   const field = useEditor((state) => state.design.field);
   const selectionCount = useEditor((state) => state.selection.length);
   const zoom = useEditor((state) => state.transient.zoom);
+  const activePreset = getLayoutPresetById(activePresetId);
+  const activeToolLabel =
+    activeTool === "preset" && activePreset
+      ? `${toolLabel[activeTool]}: ${activePreset.name}`
+      : (toolLabel[activeTool] ?? activeTool);
 
   return (
     <div
@@ -32,9 +43,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       aria-live="polite"
       className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex"
     >
-      <span className="text-foreground/80 shrink-0">
-        {toolLabel[activeTool] ?? activeTool}
-      </span>
+      <span className="text-foreground/80 shrink-0">{activeToolLabel}</span>
       <span className="text-muted-foreground/45">·</span>
 
       {/* Zoom */}
