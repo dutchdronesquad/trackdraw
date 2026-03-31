@@ -1,7 +1,10 @@
-import type { ShapeDraft, ShapeKind } from "@/lib/types";
+import type { PolylineShape, Shape, ShapeDraft, ShapeKind } from "@/lib/types";
+
+type PlaceablePresetShape = Exclude<Shape, PolylineShape>;
 
 export type LayoutPresetShapeDraft = Omit<
-  ShapeDraft,
+  PlaceablePresetShape,
+  "id" |
   "x" | "y" | "rotation"
 > & {
   x: number;
@@ -162,7 +165,7 @@ export function placeLayoutPreset(
   preset: LayoutPreset,
   anchor: { x: number; y: number },
   rotation = 0
-) {
+): ShapeDraft[] {
   const angle = (rotation * Math.PI) / 180;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
