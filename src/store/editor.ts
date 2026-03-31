@@ -22,6 +22,7 @@ import {
 } from "@/lib/design";
 import type { EditorTool } from "@/lib/editor-tools";
 import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/layout-presets";
+import { expandGroupedSelection, getShapeGroupId } from "@/lib/shape-groups";
 import type { DraftPoint, RectLike } from "@/components/canvas/shared";
 
 export type { EditorTool } from "@/lib/editor-tools";
@@ -83,6 +84,9 @@ interface EditorState {
   rotateShapes: (ids: string[], delta: number) => void;
   removeShapes: (ids: string[]) => void;
   duplicateShapes: (ids: string[]) => void;
+  groupSelection: (ids: string[]) => string | null;
+  setGroupName: (ids: string[], name: string) => void;
+  ungroupSelection: (ids: string[]) => void;
   joinPolylines: (ids: string[]) => string | null;
   closePolyline: (id: string) => boolean;
   nudgeShapes: (ids: string[], dx: number, dy: number) => void;
@@ -593,6 +597,7 @@ export const useEditor = create<EditorState>()(
       duplicateShapes: (ids) =>
         set((draft) => {
           const idSet = new Set(ids);
+          const duplicatedGroupIds = new Map<string, string>();
           const toDuplicate = draft.design.shapeOrder
             .filter((id) => idSet.has(id))
             .map((id) => draft.design.shapeById[id])
@@ -609,6 +614,14 @@ export const useEditor = create<EditorState>()(
                     x: point.x + 1,
                     y: point.y + 1,
                   })),
+                  meta: (() => {
+                    const groupId = getShapeGroupId(sh);
+                    if (!groupId) return sh.meta;
+                    const nextGroupId =
+                      duplicatedGroupIds.get(groupId) ?? nanoid();
+                    duplicatedGroupIds.set(groupId, nextGroupId);
+                    return { ...sh.meta, groupId: nextGroupId };
+                  })(),
                   name: sh.name ? `${sh.name} copy` : undefined,
                 }
               : {
@@ -616,12 +629,112 @@ export const useEditor = create<EditorState>()(
                   id: nanoid(),
                   x: sh.x + 1,
                   y: sh.y + 1,
+                  meta: (() => {
+                    const groupId = getShapeGroupId(sh);
+                    if (!groupId) return sh.meta;
+                    const nextGroupId =
+                      duplicatedGroupIds.get(groupId) ?? nanoid();
+                    duplicatedGroupIds.set(groupId, nextGroupId);
+                    return { ...sh.meta, groupId: nextGroupId };
+                  })(),
                   name: sh.name ? `${sh.name} copy` : undefined,
                 }
           );
           newShapes.forEach((shape) => addShapeRecord(draft.design, shape));
           draft.selection = newShapes.map((s) => s.id);
           draft.design.updatedAt = nowIso();
+        }),
+
+      groupSelection: (ids) => {
+        const nextGroupId = nanoid();
+        let grouped = false;
+
+        set((draft) => {
+          const expandedIds = expandGroupedSelection(draft.design, ids);
+          if (expandedIds.length < 2) return;
+
+          for (const id of expandedIds) {
+            const shape = draft.design.shapeById[id];
+            if (!shape) continue;
+            shape.meta = {
+              ...shape.meta,
+              groupId: nextGroupId,
+            };
+          }
+
+          draft.selection = expandedIds;
+          draft.design.updatedAt = nowIso();
+          grouped = true;
+        });
+
+        return grouped ? nextGroupId : null;
+      },
+
+      setGroupName: (ids, name) =>
+        set((draft) => {
+          const expandedIds = expandGroupedSelection(draft.design, ids);
+          const selectedGroupIds = new Set<string>();
+          let changed = false;
+
+          for (const id of expandedIds) {
+            const shape = draft.design.shapeById[id];
+            if (!shape) continue;
+
+            const groupId = getShapeGroupId(shape);
+            if (groupId) {
+              selectedGroupIds.add(groupId);
+            }
+          }
+
+          if (selectedGroupIds.size === 0) return;
+
+          for (const id of draft.design.shapeOrder) {
+            const shape = draft.design.shapeById[id];
+            if (!shape) continue;
+
+            const groupId = getShapeGroupId(shape);
+            if (!groupId || !selectedGroupIds.has(groupId)) continue;
+
+            const nextMeta = { ...(shape.meta ?? {}) };
+            if (name.trim().length > 0) {
+              nextMeta.groupName = name;
+            } else {
+              delete nextMeta.groupName;
+            }
+
+            shape.meta =
+              Object.keys(nextMeta).length > 0 ? nextMeta : undefined;
+            changed = true;
+          }
+
+          if (changed) {
+            draft.design.updatedAt = nowIso();
+          }
+        }),
+
+      ungroupSelection: (ids) =>
+        set((draft) => {
+          const expandedIds = expandGroupedSelection(draft.design, ids);
+          let changed = false;
+
+          for (const id of expandedIds) {
+            const shape = draft.design.shapeById[id];
+            if (!shape || !shape.meta || !("groupId" in shape.meta)) continue;
+
+            const {
+              groupId: _groupId,
+              groupName: _groupName,
+              ...restMeta
+            } = shape.meta;
+            shape.meta =
+              Object.keys(restMeta).length > 0 ? restMeta : undefined;
+            changed = true;
+          }
+
+          if (changed) {
+            draft.selection = expandedIds;
+            draft.design.updatedAt = nowIso();
+          }
         }),
 
       joinPolylines: (ids) => {
@@ -682,7 +795,7 @@ export const useEditor = create<EditorState>()(
 
       setSelection: (ids) =>
         set((draft) => {
-          draft.selection = ids;
+          draft.selection = expandGroupedSelection(draft.design, ids);
         }),
 
       setActiveTool: (tool) =>

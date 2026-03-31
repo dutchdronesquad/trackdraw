@@ -1,9 +1,11 @@
 "use client";
 
 import { useEditor } from "@/store/editor";
+import { selectShapeRecordMap } from "@/store/selectors";
 import VersionTag from "@/components/VersionTag";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { getLayoutPresetById } from "@/lib/layout-presets";
+import { getShapeGroupId, getShapeGroupName } from "@/lib/shape-groups";
 
 const toolLabel: Record<string, string> = {
   select: "Select",
@@ -29,9 +31,31 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const activeTool = useEditor((state) => state.transient.activeTool);
   const activePresetId = useEditor((state) => state.transient.activePresetId);
   const field = useEditor((state) => state.design.field);
-  const selectionCount = useEditor((state) => state.selection.length);
+  const selection = useEditor((state) => state.selection);
+  const selectionCount = selection.length;
+  const shapeById = useEditor(selectShapeRecordMap);
   const zoom = useEditor((state) => state.transient.zoom);
   const activePreset = getLayoutPresetById(activePresetId);
+  const selectedShapes = selection.map((id) => shapeById[id]).filter(Boolean);
+  const selectedGroupIds = Array.from(
+    new Set(
+      selectedShapes
+        .map((shape) => getShapeGroupId(shape))
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+  const selectedGroupLabel =
+    selectedGroupIds.length === 1
+      ? (() => {
+          const namedShape = selectedShapes.find(
+            (shape) => getShapeGroupId(shape) === selectedGroupIds[0]
+          );
+          const groupName = namedShape ? getShapeGroupName(namedShape) : null;
+          return groupName ? `Group: ${groupName}` : "Grouped";
+        })()
+      : selectedGroupIds.length > 1
+        ? `${selectedGroupIds.length} groups`
+        : null;
   const activeToolLabel =
     activeTool === "preset" && activePreset
       ? `${toolLabel[activeTool]}: ${activePreset.name}`
@@ -81,6 +105,14 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {selectionCount > 0 && (
         <>
           <span className="text-foreground/75">{selectionCount} selected</span>
+          {selectedGroupLabel && (
+            <>
+              <span className="text-muted-foreground/45">·</span>
+              <span className="text-sky-600 dark:text-sky-300">
+                {selectedGroupLabel}
+              </span>
+            </>
+          )}
           <span className="text-muted-foreground/45">·</span>
         </>
       )}

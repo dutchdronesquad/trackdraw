@@ -35,6 +35,11 @@ import type {
 import { createDefaultDesign } from "@/lib/design";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import { getLayoutPresetById } from "@/lib/layout-presets";
+import {
+  getShapeGroupId,
+  getShapeGroupName,
+  selectionHasGroupedShapes,
+} from "@/lib/shape-groups";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -100,14 +105,17 @@ export default function EditorShell({
   const activeTool = useEditor((state) => state.transient.activeTool);
   const activePresetId = useEditor((state) => state.transient.activePresetId);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
+  const groupSelection = useEditor((state) => state.groupSelection);
   const nudgeShapes = useEditor((state) => state.nudgeShapes);
   const removeShapes = useEditor((state) => state.removeShapes);
   const replaceDesign = useEditor((state) => state.replaceDesign);
   const rotateShapes = useEditor((state) => state.rotateShapes);
+  const setGroupName = useEditor((state) => state.setGroupName);
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setActivePresetId = useEditor((state) => state.setActivePresetId);
   const setSelection = useEditor((state) => state.setSelection);
   const setShapesLocked = useEditor((state) => state.setShapesLocked);
+  const ungroupSelection = useEditor((state) => state.ungroupSelection);
   const historyPaused = useEditor((state) => state.historyPaused);
   const interactionSessionDepth = useEditor(
     (state) => state.interactionSessionDepth
@@ -119,6 +127,25 @@ export default function EditorShell({
   const selectionLocked = useEditor(selectSelectionLocked);
   const singleSelectedShape =
     selection.length === 1 ? (shapeById[selection[0]] ?? null) : null;
+  const selectedShapes = selection.map((id) => shapeById[id]).filter(Boolean);
+  const canUngroupSelection = selectionHasGroupedShapes(selectedShapes);
+  const selectedGroupNames = Array.from(
+    new Set(
+      selectedShapes
+        .map((shape) => {
+          const groupId = getShapeGroupId(shape);
+          return groupId ? (getShapeGroupName(shape) ?? "") : null;
+        })
+        .filter((value): value is string => value !== null)
+    )
+  );
+  const selectedGroupIds = new Set(
+    selectedShapes
+      .map((shape) => getShapeGroupId(shape))
+      .filter((value): value is string => Boolean(value))
+  );
+  const selectedGroupName =
+    selectedGroupIds.size === 1 ? (selectedGroupNames[0] ?? "") : null;
   const singleSelectedShapeLabel = singleSelectedShape
     ? shapeKindLabels[singleSelectedShape.kind]
     : null;
@@ -700,6 +727,7 @@ export default function EditorShell({
           singleSelectionCanRotate={singleSelectionCanRotate}
           selectionLocked={selectionLocked}
           selectedCount={selection.length}
+          selectedGroupName={selectedGroupName}
           saveStatusLabel={saveStatusLabel}
           tab={tab}
           onCloseInspector={() => setMobileInspectorOpen(false)}
@@ -740,6 +768,10 @@ export default function EditorShell({
           onDeleteSelection={() => {
             if (!selection.length) return;
             removeShapes(selection);
+          }}
+          onGroupSelection={() => {
+            if (selection.length < 2) return;
+            groupSelection(selection);
           }}
           onDuplicateSelection={() => {
             if (!selection.length) return;
@@ -785,12 +817,20 @@ export default function EditorShell({
             setShareOpen(true);
             setReadOnlyMenuOpen(false);
           }}
+          onSetGroupName={(name) => {
+            if (!selection.length) return;
+            setGroupName(selection, name);
+          }}
           onStartFlyThrough={() => {
             handleTabChange("3d");
             setMobileViewOpen(false);
             setPendingFlyThroughStart(true);
           }}
           onStartNewProject={openProjectManager}
+          onUngroupSelection={() => {
+            if (!selection.length) return;
+            ungroupSelection(selection);
+          }}
           onImport={() => {
             setImportOpen(true);
             setMobileToolsOpen(false);
@@ -811,6 +851,7 @@ export default function EditorShell({
           }}
           canUndo={canUndo}
           canRedo={canRedo}
+          canUngroupSelection={canUngroupSelection}
         />
       </div>
 

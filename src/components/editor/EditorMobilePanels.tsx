@@ -12,6 +12,7 @@ import {
   Download,
   FilePlus,
   FolderOpen,
+  Group,
   LayoutGrid,
   Lock,
   PencilLine,
@@ -26,9 +27,11 @@ import {
   Trash2,
   Unlock,
   Undo2,
+  Ungroup,
   X,
 } from "lucide-react";
 import Inspector from "@/components/inspector/Inspector";
+import { Input } from "@/components/ui/input";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import type { EditorTool } from "@/lib/editor-tools";
@@ -64,11 +67,13 @@ interface EditorMobilePanelsProps {
   singleSelectionCanRotate: boolean;
   selectionLocked: boolean;
   selectedCount: number;
+  selectedGroupName?: string | null;
   saveStatusLabel: string;
   tab: EditorViewportTab;
   onCloseInspector: () => void;
   onFitView: () => void;
   onDeleteSelection: () => void;
+  onGroupSelection: () => void;
   onCancelPath: () => void;
   onCloseLoop: () => void;
   onDuplicateSelection: () => void;
@@ -91,15 +96,18 @@ interface EditorMobilePanelsProps {
   onSetMobileViewOpen: (open: boolean) => void;
   onSetReadOnlyMenuOpen: (open: boolean) => void;
   onShare: () => void;
+  onSetGroupName?: (name: string) => void;
   onStartFlyThrough: () => void;
   studioHref?: string;
   onStartNewProject: () => void;
+  onUngroupSelection: () => void;
   onUndo: () => void;
   onUndoPathPoint: () => void;
   onImport: () => void;
   onExport: () => void;
   onTabChange: (tab: EditorViewportTab) => void;
   canRedo: boolean;
+  canUngroupSelection: boolean;
   canUndo: boolean;
 }
 
@@ -279,10 +287,12 @@ export function EditorMobilePanels({
   singleSelectionCanRotate,
   selectionLocked,
   selectedCount,
+  selectedGroupName,
   saveStatusLabel,
   tab,
   onCloseInspector,
   onDeleteSelection,
+  onGroupSelection,
   onCancelPath,
   onCloseLoop,
   onDuplicateSelection,
@@ -306,14 +316,17 @@ export function EditorMobilePanels({
   onSetMobileViewOpen,
   onSetReadOnlyMenuOpen,
   onShare,
+  onSetGroupName,
   onStartFlyThrough,
   onStartNewProject,
+  onUngroupSelection,
   onUndo,
   onUndoPathPoint,
   onImport,
   onExport,
   onTabChange,
   canRedo,
+  canUngroupSelection,
   canUndo,
   studioHref = "/studio",
 }: EditorMobilePanelsProps) {
@@ -385,7 +398,7 @@ export function EditorMobilePanels({
     divegate: "Dive",
   };
 
-  const canOpenInspector = selectedCount <= 1 && !mobileMultiSelectEnabled;
+  const canOpenInspector = !mobileMultiSelectEnabled;
   const showPathBuilderOverlay =
     !readOnly &&
     tab === "2d" &&
@@ -689,7 +702,18 @@ export function EditorMobilePanels({
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5">
+            {canUngroupSelection && onSetGroupName && (
+              <div className="px-1 pb-2">
+                <Input
+                  value={selectedGroupName ?? ""}
+                  onChange={(event) => onSetGroupName(event.target.value)}
+                  placeholder="Group name"
+                  className="h-9 rounded-[0.9rem] border-white/12 bg-white/8 px-3 text-[12px] text-white placeholder:text-white/38"
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-4 gap-1.5">
               <button
                 onClick={onDuplicateSelection}
                 disabled={selectedCount === 0}
@@ -697,6 +721,20 @@ export function EditorMobilePanels({
               >
                 <Copy className="size-4" />
                 <span>Duplicate</span>
+              </button>
+              <button
+                onClick={
+                  canUngroupSelection ? onUngroupSelection : onGroupSelection
+                }
+                disabled={selectedCount < 2 && !canUngroupSelection}
+                className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
+              >
+                {canUngroupSelection ? (
+                  <Ungroup className="size-4" />
+                ) : (
+                  <Group className="size-4" />
+                )}
+                <span>{canUngroupSelection ? "Ungroup" : "Group"}</span>
               </button>
               <button
                 onClick={onToggleSelectionLock}
@@ -735,7 +773,7 @@ export function EditorMobilePanels({
               ? "Design settings and placed items"
               : "Selection properties and editing"
           }
-          contentClassName="max-h-[92dvh] min-h-[72dvh] overscroll-contain"
+          contentClassName="h-[82dvh] max-h-[92dvh] min-h-[72dvh] overscroll-contain"
           bodyClassName="bg-card min-h-0 touch-pan-y overscroll-y-contain [-webkit-overflow-scrolling:touch] p-0"
         >
           <Inspector

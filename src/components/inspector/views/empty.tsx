@@ -153,7 +153,7 @@ export function EmptyInspectorView({
             ? "buildable"
             : `short ${totalMissing} item${totalMissing === 1 ? "" : "s"}`,
           kindsMissing > 0
-            ? `${kindsMissing} kind${kindsMissing === 1 ? "" : "s"} missing`
+            ? `${kindsMissing} obstacle type${kindsMissing === 1 ? "" : "s"} missing`
             : "stock covered",
         ]}
       />
@@ -178,7 +178,7 @@ export function EmptyInspectorView({
             </div>
             <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
               <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-                Kinds
+                Types
               </p>
               <p className="text-foreground text-[12px] font-semibold">
                 {kindsMissing}

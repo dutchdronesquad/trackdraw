@@ -41,6 +41,11 @@ import { m2px } from "@/lib/units";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
 import { distance2D, getPolyline2DPoints } from "@/lib/geometry";
 import { getObstacleNumberMap } from "@/lib/obstacleNumbering";
+import {
+  getShapeGroupId,
+  getShapeGroupName,
+  selectionHasGroupedShapes,
+} from "@/lib/shape-groups";
 import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -138,9 +143,11 @@ const TrackCanvas = memo(
     const rotateShapes = useEditor((state) => state.rotateShapes);
     const removeShapes = useEditor((state) => state.removeShapes);
     const duplicateShapes = useEditor((state) => state.duplicateShapes);
+    const groupSelection = useEditor((state) => state.groupSelection);
     const joinPolylines = useEditor((state) => state.joinPolylines);
     const closePolyline = useEditor((state) => state.closePolyline);
     const nudgeShapes = useEditor((state) => state.nudgeShapes);
+    const ungroupSelection = useEditor((state) => state.ungroupSelection);
     const pauseHistory = useEditor((state) => state.pauseHistory);
     const resumeHistory = useEditor((state) => state.resumeHistory);
     const beginInteraction = useEditor((state) => state.beginInteraction);
@@ -212,8 +219,11 @@ const TrackCanvas = memo(
       scale: 1,
     });
     const [contextMenu, setContextMenu] = useState<{
+      canGroup: boolean;
       closablePolylineId: string | null;
       editablePolylineId: string | null;
+      groupLabel: string | null;
+      hasGroupedShapes: boolean;
       ids: string[];
       joinablePolylineIds: string[];
       label: string;
@@ -235,6 +245,35 @@ const TrackCanvas = memo(
       () => new Set(groupDragPreview?.ids ?? []),
       [groupDragPreview]
     );
+    const selectedShapes = useMemo(
+      () => selection.map((id) => shapeById[id]),
+      [selection, shapeById]
+    );
+    const hasGroupedSelection = useMemo(
+      () => selectionHasGroupedShapes(selectedShapes),
+      [selectedShapes]
+    );
+    const selectedGroupCount = useMemo(() => {
+      const groupIds = new Set<string>();
+      for (const shape of selectedShapes) {
+        if (!shape) continue;
+        const groupId = getShapeGroupId(shape);
+        if (groupId) {
+          groupIds.add(groupId);
+        }
+      }
+      return groupIds.size;
+    }, [selectedShapes]);
+    const groupedSelectionLabel = useMemo(() => {
+      if (!hasGroupedSelection) return null;
+      if (selectedGroupCount === 1) {
+        const namedShape = selectedShapes.find((shape) => shape !== undefined);
+        return namedShape
+          ? (getShapeGroupName(namedShape) ?? "Group")
+          : "Group";
+      }
+      return `${selectedGroupCount} groups`;
+    }, [hasGroupedSelection, selectedGroupCount, selectedShapes]);
     const draftSourcePath = useMemo(
       () =>
         draftSourceShapeId
@@ -525,8 +564,31 @@ const TrackCanvas = memo(
             !shape.locked
           );
         });
-
+        const selectedShapes = nextSelection.map((id) => shapeById[id]);
+        const selectedGroupIds = Array.from(
+          new Set(
+            selectedShapes
+              .map((shape) => (shape ? getShapeGroupId(shape) : null))
+              .filter((value): value is string => Boolean(value))
+          )
+        );
+        const groupLabel =
+          selectedGroupIds.length === 1
+            ? (() => {
+                const namedShape = selectedShapes.find((shape) => {
+                  if (!shape) return false;
+                  return getShapeGroupId(shape) === selectedGroupIds[0];
+                });
+                const groupName = namedShape
+                  ? getShapeGroupName(namedShape)
+                  : null;
+                return groupName ? `Group: ${groupName}` : "Grouped selection";
+              })()
+            : null;
         setContextMenu({
+          canGroup:
+            nextSelection.length > 1 &&
+            !selectionHasGroupedShapes(selectedShapes),
           closablePolylineId:
             nextSelection.length === 1 &&
             primaryShape?.kind === "polyline" &&
@@ -538,6 +600,8 @@ const TrackCanvas = memo(
             nextSelection.length === 1 && primaryShape?.kind === "polyline"
               ? primaryShape.id
               : null,
+          groupLabel,
+          hasGroupedShapes: selectionHasGroupedShapes(selectedShapes),
           ids: nextSelection,
           joinablePolylineIds: nextSelection.filter((id) => {
             const shape = shapeById[id];
@@ -1294,7 +1358,9 @@ const TrackCanvas = memo(
                       isHovered={hoveredShapeId === shape.id}
                       isMobile={isMobile}
                       mobileMultiSelectEnabled={mobileMultiSelectEnabled}
-                      isSelected={selectionIdSet.has(shape.id)}
+                      isSelected={
+                        activeTool === "select" && selectionIdSet.has(shape.id)
+                      }
                       selectionCount={selection.length}
                       groupDragOffsetPx={
                         groupDragPreview && groupDragIdSet.has(shape.id)
@@ -1329,13 +1395,9 @@ const TrackCanvas = memo(
                 !readOnly &&
                 selection.length > 1 &&
                 selectionFrame && (
-                  <Rect
+                  <Group
                     x={selectionFrame.x + (groupDragPreview?.dx ?? 0)}
                     y={selectionFrame.y + (groupDragPreview?.dy ?? 0)}
-                    width={selectionFrame.width}
-                    height={selectionFrame.height}
-                    fill={isDark ? "#60a5fa12" : "#3b82f610"}
-                    strokeEnabled={false}
                     draggable
                     dragBoundFunc={dragBound}
                     onMouseDown={(event) => {
@@ -1409,7 +1471,44 @@ const TrackCanvas = memo(
                         resolved.finalPosition.y - origin.y
                       );
                     }}
-                  />
+                  >
+                    <Rect
+                      width={selectionFrame.width}
+                      height={selectionFrame.height}
+                      fill={isDark ? "#60a5fa12" : "#3b82f610"}
+                      strokeEnabled={false}
+                      cornerRadius={8}
+                    />
+                    {groupedSelectionLabel && (
+                      <Group x={10} y={-28} listening={false}>
+                        <Rect
+                          width={Math.max(
+                            54,
+                            groupedSelectionLabel.length * 7.2 + 18
+                          )}
+                          height={20}
+                          fill={isDark ? "#082f49" : "#e0f2fe"}
+                          stroke={isDark ? "#38bdf8" : "#0284c7"}
+                          strokeWidth={1}
+                          cornerRadius={999}
+                          opacity={0.96}
+                        />
+                        <Text
+                          x={0}
+                          y={4}
+                          width={Math.max(
+                            54,
+                            groupedSelectionLabel.length * 7.2 + 18
+                          )}
+                          align="center"
+                          text={groupedSelectionLabel}
+                          fontSize={11}
+                          fontStyle="600"
+                          fill={isDark ? "#e0f2fe" : "#075985"}
+                        />
+                      </Group>
+                    )}
+                  </Group>
                 )}
             </Layer>
 
@@ -1809,11 +1908,13 @@ const TrackCanvas = memo(
             onContinueEditing={handleContinueEditing}
             onClosePolyline={closePolyline}
             onDuplicate={duplicateShapes}
+            onGroupSelection={groupSelection}
             onJoinPolylines={joinPolylines}
             onToggleLock={setShapesLocked}
             onBringForward={bringForward}
             onSendBackward={sendBackward}
             onRotate={rotateShapes}
+            onUngroupSelection={ungroupSelection}
             onDelete={removeShapes}
           />
         )}

@@ -2,7 +2,7 @@
 
 Date: March 31, 2026
 
-Status: obstacle presets first pass shipped
+Status: obstacle presets and selection grouping first pass shipped
 
 ## Purpose
 
@@ -87,6 +87,13 @@ This is the fastest path to visible value.
 
 Use grouping to solve repeated manipulation of already-existing sections on the canvas.
 
+Shipped first pass:
+
+- multi-select can be grouped and ungrouped
+- grouped sections move and duplicate as one unit
+- group controls are available in desktop/mobile selection flows
+- a group can carry an optional project-local name
+
 Grouping should let users:
 
 - treat several selected shapes as one unit
@@ -100,7 +107,7 @@ Important boundary:
 - grouping is not a reusable library
 - grouping should be project-local editor behavior first
 
-Grouping becomes more valuable after presets exist, but it should not be required to ship presets.
+Grouping now exists as project-local editor behavior and remains intentionally separate from any reusable library model.
 
 ### 3. Starter Layouts
 
@@ -121,17 +128,19 @@ Examples:
 
 These should help users start quickly without implying venue specificity or rules compliance.
 
-### 4. Template Browser
+### 4. Shared Template Libraries
 
-The template browser should not come first.
+A broader template-browsing surface should not come first.
 
-A dedicated browse/apply surface is only justified after:
+Without accounts, it risks becoming a second curated content surface that overlaps awkwardly with presets and starter layouts.
 
-- the preset catalog proves useful
-- grouping exists or is close behind
-- starter layouts are clearly worth surfacing
+If TrackDraw goes broader here later, it should be as an account-backed library model:
 
-Before that point, a heavyweight browser risks creating too much UI for too little real speed gain.
+- personal templates
+- shared club or team templates
+- clearer ownership and management
+
+That is a different product category from layout acceleration first-pass work.
 
 ### 5. Venue-Aware Templates
 
@@ -152,7 +161,7 @@ The feature family should follow one simple mental model:
 - presets insert ready-made sections
 - grouping manipulates existing sections as one unit
 - starter layouts open with a useful first draft
-- templates become a broader browsing concept only after the first three prove value
+- shared template libraries only become relevant once ownership and account boundaries are clearer
 
 This separation matters. If the product blurs those concepts together too early, users will struggle to understand whether TrackDraw is placing content, saving reusable content, or managing special objects.
 
@@ -178,6 +187,7 @@ This is the smallest slice with the clearest product value.
 - select several shapes
 - group them
 - move, duplicate, rotate, and lock as one unit
+- add lightweight naming only if it stays project-local
 
 This strengthens repeatability inside real projects without introducing accounts or libraries.
 
@@ -187,29 +197,27 @@ This strengthens repeatability inside real projects without introducing accounts
 - entry from onboarding or new-project flow
 - clearly framed as editable starting points
 
-### Phase 4: Re-evaluate browse surfaces
+### Phase 4: Revisit shared libraries later
 
-- only add a dedicated template browser if presets and starter layouts demonstrably need it
-- keep the first browse model close to the existing tool flow if possible
+- only revisit broader template browsing once optional accounts can support ownership
+- treat personal or shared template libraries as a separate account-backed track
 
 ### Phase 5: Revisit venue-aware templates
 
 - only after the optional-account boundary and venue model are clearer
 
-## Recommended First Build Target
+## Recommended Next Build Target
 
-If only one layout-acceleration slice should move forward next, it should still be `Obstacle presets`.
+The next layout-acceleration slice should now be `Starter layouts`.
 
 Reason:
 
-- highest direct speed gain
-- clearest product boundary
-- smallest risk of creating new long-term state complexity
-- strongest fit with the current editor model
+- presets and grouping already cover insertion and manipulation
+- starter layouts now address the remaining blank-canvas friction
+- it keeps the acceleration work account-free and editor-first
 
 ## Open Questions
 
-- Should grouping ship with an explicit named-group concept, or only as lightweight project-local grouping first?
 - Should starter layouts live in onboarding, new-project flow, or the normal tool flow?
 - Should the first starter layouts include a route, or only obstacle drafts?
 - At what point does “starter layout” become a venue template and therefore a different product category?
@@ -223,5 +231,5 @@ Treat it as a sequence of narrowly defined accelerators:
 1. presets for insertion
 2. grouping for manipulation
 3. starter layouts for blank-canvas entry
-4. template browser only if usage proves it necessary
+4. shared template libraries later, likely on the account-backed side
 5. venue-aware templates later, likely near the optional-account boundary
