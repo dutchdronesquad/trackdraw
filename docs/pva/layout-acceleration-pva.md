@@ -33,9 +33,9 @@ The feature family should feel like speed assistance for the existing editor, no
 
 ## Core Boundary
 
-The first meaningful version of layout acceleration should remain account-free.
+The first meaningful version of layout acceleration should remain usable without an account.
 
-Keep it account-free:
+Keep it usable without an account:
 
 - curated presets shipped with the product
 - grouping and duplicate/move behavior inside a project
@@ -222,7 +222,7 @@ Reason:
 
 - presets, grouping, and starter layouts now cover insertion, manipulation, and blank-canvas entry
 - the main remaining questions are about which starters get used and what deserves refinement
-- this keeps the acceleration work account-free and avoids inventing a broader template surface too early
+- this keeps the acceleration work usable without an account and avoids inventing a broader template surface too early
 
 ## Open Questions
 

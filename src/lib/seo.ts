@@ -1,8 +1,8 @@
 export const SITE_NAME = "TrackDraw";
 export const SITE_TITLE = "TrackDraw";
 export const SITE_DESCRIPTION =
-  "Design FPV drone race tracks to scale, preview them in 3D, and share read-only plans with pilots in seconds.";
-export const SITE_TAGLINE = "FPV Race Track Planner";
+  "Plan drone race tracks to scale, review FPV track flow in 3D, and share read-only race-day layouts with pilots and crew.";
+export const SITE_TAGLINE = "Drone Race Track Planner";
 export const SITE_KEYWORDS = [
   "FPV",
   "drone racing",

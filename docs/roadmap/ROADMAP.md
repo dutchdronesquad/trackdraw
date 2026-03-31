@@ -1,8 +1,8 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw after the v1 release. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. The roadmap should now focus primarily on workflow depth, race-day outputs, and faster layout building rather than on v1 foundation work.
+This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. The roadmap should now focus primarily on workflow depth, race-day outputs, and faster layout building rather than on foundation work.
 
-## Post-v1 Focus
+## Current Focus
 
 TrackDraw is now strong in these areas:
 
@@ -14,11 +14,9 @@ TrackDraw is now strong in these areas:
 
 The most useful next product moves are:
 
-- Faster layout creation from reusable building blocks
 - A clearer decision on optional accounts, ownership, and cross-device persistence
 - Better design feedback before a layout reaches the field
 - More deliberate outputs for race-day communication and presentation
-- Better validation that a planned layout matches the real inventory on hand
 - Better lifecycle controls around published shares
 
 ## Product Principles
@@ -65,47 +63,14 @@ Next slices:
 Current first pass:
 
 - PDF export now includes a dedicated Race Pack variant
-- The Race Pack now ships as a multi-page race-day document with a cover page, track map, material list, inventory/buildability status, setup sequence, and first-pass timing/build guidance
+- The Race Pack now ships as a multi-page race-day document with a cover page, track map, material list, inventory/buildability status, setup sequence, and initial timing/build guidance
 
 Important boundary:
 
 - The Race Pack is now the handoff document for briefing, print, and sharing
 - A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
 
-### 2. Layout Acceleration (`No account required`)
-
-Reduce repetitive setup work so users can compose good layouts faster.
-
-Why now:
-
-- The editor is complete enough for v1 without preset content
-- Presets now matter more as workflow acceleration than as foundational capability
-
-Scope:
-
-- Obstacle presets for reusable groupings and common race-building patterns
-- Selection grouping for repeated layout sections
-- Starter layouts for faster blank-project starts
-
-Current state:
-
-- Obstacle presets now ship in first-pass form
-- The current curated set is intentionally small: start/finish setup, straight gate run, slalom run, and ladder section
-- Desktop and mobile both use a lightweight preset picker that inserts ordinary editable shapes
-- Selection grouping now also ships in first-pass form
-- Groups are project-local, can be duplicated and ungrouped, and can carry an optional group name across desktop and mobile selection flows
-- Starter layouts now also ship in first-pass form
-- The current starter set is intentionally small: Open practice, Compact race start, and Technical ladder line
-- Starter layouts are surfaced from onboarding and new-project flow and create ordinary editable projects
-
-Next slices:
-
-- Preset and grouping polish based on real use
-- Starter-layout polish based on real use
-- Revisit whether starter layouts need route drafts before adding more catalog breadth
-- Shared template libraries only after optional-account ownership is clear
-
-### 3. Share Lifecycle Follow-up (`Account-backed`, `Blocked`)
+### 2. Share Lifecycle Follow-up (`Account-backed`, `Blocked`)
 
 Keep refining published links now that stored share publishing is the default model.
 
@@ -116,7 +81,7 @@ Focus:
 - Decide how much share administration should live in the product UI
 - Revisit any replace/regenerate flow only once optional-account ownership is properly defined
 
-### 4. Heatmap And Flow Analysis (`No account required`)
+### 3. Heatmap And Flow Analysis (`No account required`)
 
 Add lightweight visual feedback for rhythm, density, and bottlenecks once the v1 validation basics are in place.
 
@@ -126,17 +91,7 @@ Suggested first slices:
 - Suspicious spacing cues
 - Route rhythm cues
 
-### 5. Operational Follow-up
-
-Deployment validation is complete. The runtime path is live across development and production, and the remaining work is now ordinary operational maintenance rather than a roadmap blocker.
-
-Completed:
-
-- `dev.trackdraw.app` validated on Cloudflare
-- Production domain and release-gated production deploy validated
-- GitHub environment secrets and domain routing finalized
-
-### 6. Optional Accounts And Ownership Model (`Research`)
+### 4. Optional Accounts And Ownership Model (`Research`)
 
 Decide sooner how far TrackDraw should go with optional identity, sync, and ownership.
 
@@ -151,45 +106,7 @@ Focus:
 - Define how local-first projects and cloud-backed projects should coexist
 - Clarify ownership for shares, venue records, and future shared race-day metadata
 
-### 7. Inventory And Buildability Validation (`No account required`)
-
-Connect the design to the actual obstacle stock available to a club or event.
-
-Why now:
-
-- A layout is only useful if it can actually be built with the gear on hand
-- This creates a strong bridge between planning and race-day feasibility without requiring simulation
-
-Suggested first slices:
-
-- "My inventory" setup for available gates, ladders, dive gates, start/finish elements, flags, cones, and other obstacle types, stored as a local-first project profile
-- Required-vs-available comparison for the current design without requiring an account
-- Buildability warnings when a layout depends on more obstacles than are available
-- Later: inventory profiles tied to a venue or club setup, which may justify optional account-backed persistence
-
-Current first pass:
-
-- Inventory can now be entered directly in the design inspector
-- The current layout is compared against saved stock counts
-- The inspector surfaces missing counts and a simple buildable-vs-short status
-- The Race Pack now turns those counts into a clearer race-day setup summary with grouped setup steps, timing ranges, and lightweight complexity cues
-
-Current status:
-
-- This roadmap track is complete as a first pass
-- The next work from here belongs to `Build mode / setup sequence`, not to more expansion of the basic inventory comparison layer
-
-Still open:
-
-- Smarter venue- or club-specific setup assumptions instead of one generalized heuristic
-- Deeper build-mode guidance beyond the current Race Pack first pass, such as stronger crew coordination and on-field sequencing
-
-What that means:
-
-- Inventory/buildability and the Race Pack now cover document-style setup guidance
-- A true Build mode remains a separate future track with its own page or mode, map-linked steps, grouped phases, and on-field interaction model
-
-### 8. Comments And Review Mode (`Account-backed`, `Blocked`)
+### 5. Comments And Review Mode (`Account-backed`, `Blocked`)
 
 Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
 
@@ -201,25 +118,26 @@ Why later:
 Suggested first slices:
 
 - Pinned notes anchored to a selected obstacle as a local-first first pass
+- Pinned notes anchored to a selected obstacle as an initial local-first version
 - Notes anchored to a route waypoint or path segment without requiring identity first
 - Read-only review mode that surfaces notes clearly without exposing editing tools
 - Richer threaded comments only if simple anchored notes prove useful
   and an account-backed identity model exists
 
-### 9. Research Tracks (`Research`)
+### 6. Research Tracks (`Research`)
 
 - Velocidrone export compatibility
 - Desktop and mobile wrapper evaluation
 - PWA evaluation
 
-### 10. Accounts Boundary
+### 7. Accounts Boundary
 
-Be deliberate about what should stay account-free versus what actually benefits from optional identity.
+Be deliberate about what should stay usable without an account versus what actually benefits from optional identity.
 
-Keep account-free where possible:
+Keep these usable without an account where possible:
 
 - Core editing, preview, import/export, and local project work
-- Local inventory, venue setup, and lightweight notes first passes
+- Local inventory, venue setup, and lightweight notes in their initial versions
 - One-off share publishing and local revoke from the current Studio session
 
 Likely account-backed follow-up:
@@ -229,7 +147,26 @@ Likely account-backed follow-up:
 - Shared venue or club records, including shared inventory profiles
 - Identity-aware comments, review threads, and future collaboration
 
-## v1 Archive
+## v1.1.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.1.0</summary>
+
+### Layout Acceleration (`No account required`)
+
+This initial acceleration release that works without an account is now shipped through obstacle presets, selection grouping, and starter layouts. The next work here should be polish and learning rather than a broader template system.
+
+### Operational Follow-up
+
+The production runtime and deployment path are now treated as validated. Development and production Cloudflare domains are live, release-gated deploys are validated, and the remaining work is ordinary operational maintenance rather than a roadmap blocker.
+
+### Inventory And Buildability Validation (`No account required`)
+
+This initial release is also complete. TrackDraw now supports local inventory entry, required-vs-available comparison, buildability warnings, and Race Pack setup estimates. The next work from here belongs to `Build mode / setup sequence`, not to more expansion of the basic inventory comparison layer.
+
+</details>
+
+## v1.0.0 Archive
 
 <details>
 <summary>Completed v1 foundation and release work</summary>
@@ -320,7 +257,7 @@ Completed. Projects dialog, project list with title/shape count/last-modified, c
 
 Completed for v1. Distinct error pages for invalid vs oversized share tokens. Read-only view UX polish with improved overlay copy, correct deep-linking, fit-to-window on desktop, and mobile drawer aligned with studio.
 
-Post-v1:
+Follow-up:
 
 - Better published-link management for repeated use in Studio
 - Revisit link replacement/regeneration only once account-backed ownership exists
@@ -329,7 +266,7 @@ Post-v1:
 
 Completed. Tight-turn warnings (hairpin), steep grade warnings, close-point warnings, stub path warning (fewer than 2 waypoints), and 3D obstacle rotation and dive gate tilt controls.
 
-Post-v1:
+Follow-up:
 
 - Suspicious obstacle spacing
 - Heatmap and flow density overlays
@@ -576,7 +513,7 @@ Allow multiple users to work on the same design concurrently.
 
 The v1 scope is complete. All items are done: project workflow, share route deprecation, share/publish UX, path and flow review (including stub warning), contextual hints, mobile dialogs, onboarding, and codebase refactor.
 
-### Post-v1
+### Current Roadmap
 
 3. Race-day communication and briefing
 4. Layout acceleration (obstacle presets, selection grouping, venue templates)
@@ -584,7 +521,7 @@ The v1 scope is complete. All items are done: project workflow, share route depr
 6. Comments and review mode
 7. Velocidrone export (research track)
 
-This sequence delivers a complete, clean product at v1 and keeps post-v1 work focused on extending workflow depth rather than plugging gaps.
+This sequence keeps the roadmap focused on extending workflow depth rather than plugging product gaps.
 
 </details>
 

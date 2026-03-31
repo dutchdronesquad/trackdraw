@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <strong>Plan FPV race courses to scale, preview in 3D, share with the team.</strong>
+  <strong>Design FPV race layouts to scale, review them in 3D, and hand off a race-day plan.</strong>
 </p>
 
 <p align="center">
@@ -35,34 +35,27 @@
 
 <p align="center">
   TrackDraw is a free, browser-based track designer for FPV race directors.
-  Drop obstacles on a real-scale canvas, check the layout in 3D, and hand pilots a read-only link before the gates leave the van.
+  Build layouts on a real-scale canvas, review route flow in 3D, and turn the result into a shareable race-day handoff.
 </p>
 
 <p align="center">
   <img alt="TrackDraw editor showcase" src="https://raw.githubusercontent.com/dutchdronesquad/trackdraw/main/public/assets/screenshot.png" width="800">
 </p>
 
-> [!IMPORTANT]
-> TrackDraw is now positioned as v1: the core workflow of designing, reviewing, sharing, and exporting tracks is in place. Ongoing roadmap work is focused on deeper race-day outputs, faster layout building, and post-v1 workflow depth.
-
 ## Project status
 
-TrackDraw v1 covers the core workflow across desktop, shared read-only viewing, and practical mobile use. The current roadmap focus is on speeding up layout creation, improving iteration inside one project, and turning finished designs into better race-day outputs.
+TrackDraw covers the core workflow across desktop, shared read-only viewing, and practical mobile use. It is built around layout design first, then route review, then race-day handoff through export and sharing.
 
 See [docs/roadmap/ROADMAP.md](docs/roadmap/ROADMAP.md) for the current roadmap assessment.
 
 ## What you can do
 
-- 🏁 **Place obstacles** - gates, flags, cones, dive gates, ladders, start/finish lines, labels and free-form polylines
-- 📐 **Work to scale** - the canvas maps directly to real-world dimensions; set your field size and meters-per-pixel ratio to get accurate distances
-- 🎥 **Preview in 3D** - a live Three.js render shows the track from a drone perspective as you build
-- 📈 **Check elevation** - altitude profile chart along polyline paths, useful for planning vertical sections
-- ↩️ **Undo anything** - full undo/redo history so you can experiment freely
-- 🚀 **Start faster** - first-use studio flows now guide the first editing step and surface next-step hints
-- 📱 **Edit on mobile** - a dedicated mobile editor flow supports touch navigation, direct placement, mobile multi-select and quick actions
-- 📤 **Export** - save your design as PNG, SVG, PDF, a 3D render screenshot, or JSON project file for backup and reuse
-- 🔗 **Share with a link** - publish a read-only snapshot that opens at `/share/[token]` with clean metadata, social previews, and a clear path back into Studio
-- 📥 **Import** - load a previously exported JSON project file to continue editing
+- 🏁 **Design layouts to scale** - place obstacles on a real-scale canvas with field dimensions that map cleanly to the real world
+- ⚡ **Start and iterate faster** - use obstacle presets, selection grouping, and starter layouts to get from blank canvas to a workable draft quickly
+- 🎥 **Review route flow in 3D** - use the live 3D preview and elevation tools to check how the layout reads before race day
+- 📋 **Prepare a race-day handoff** - export a dedicated Race Pack PDF with map, numbering, material list, stock status, setup sequence, and initial build guidance
+- 📦 **Check buildability early** - compare the current layout against available obstacle stock before the gear leaves the van
+- 🔗 **Share and export cleanly** - publish a read-only link or export PNG, SVG, PDF, 3D screenshots, and JSON project files from the same design
 
 ## Getting started
 
@@ -78,12 +71,12 @@ Shared links open at `/share/[token]`.
 ## How it works
 
 1. **Pick a tool** from the toolbar (gate, cone, flag, etc.)
-2. **Click on the canvas** to place obstacles — drag to reposition, click to select and edit properties
+2. **Click on the canvas** to place obstacles, or start from a preset or starter layout when you do not want to begin from scratch
 3. **Use the inspector panel** on the right to fine-tune size, rotation, colour and other shape properties
-4. **Right-click a selected item** in the 2D canvas for quick actions like duplicate, lock/unlock, arrange, rotate and delete
-5. **Toggle the 3D panel** to preview your layout from above or in perspective, and click items there to inspect them without losing selection while orbiting
+4. **Group or duplicate sections** when parts of the layout should move or repeat together
+5. **Toggle the 3D panel** to preview your layout from above or in perspective, and use the elevation and route review tools to check flow
 6. **Hit Share** to get a URL you can send directly to pilots or co-organisers
-7. **Use Export** when you need printable assets, a 3D screenshot, or a JSON project backup
+7. **Use Export** when you need a Race Pack, printable assets, a 3D screenshot, or a JSON project backup
 
 ## Tech stack
 

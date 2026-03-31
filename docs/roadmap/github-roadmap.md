@@ -1,8 +1,8 @@
 # Roadmap: Future Features for TrackDraw
 
-This discussion tracks the current roadmap for TrackDraw after the v1 release.
+This discussion tracks the current roadmap for TrackDraw.
 
-TrackDraw's core planning workflow is now in place. The roadmap should now focus on post-v1 feature depth: faster layout building, richer race-day outputs, better review tooling, and the remaining operational follow-up around deployment and published-link management.
+TrackDraw's core planning workflow is now in place. The roadmap should now focus on workflow depth: faster layout building, richer race-day outputs, better review tooling, and the remaining operational follow-up around deployment and published-link management.
 
 ## Product Direction
 
@@ -14,7 +14,7 @@ TrackDraw's core planning workflow is now in place. The roadmap should now focus
 - Local-first workflows should stay available without requiring an account
 - Accounts should remain optional and only unlock ownership, sync, and shared management where that clearly adds value
 
-## Active Post-v1 Focus
+## Active Roadmap
 
 Labels used below:
 
@@ -25,17 +25,6 @@ Labels used below:
 
 ## Priority 1
 
-- [ ] Layout acceleration (`No account required`)
-      Add reusable building blocks such as obstacle presets, selection grouping, and starter layouts.
-      Keep this account-free for curated and project-local acceleration only. Shared libraries, sync, and team template management belong on the optional-account side.
-      Current state: obstacle presets, selection grouping, and starter layouts now all ship as first-pass slices. The next work here should be polish and learning, not a broader template system.
-  - [x] Obstacle-pack presets first pass
-        A first curated preset picker now ships on desktop and mobile with four presets: Start/finish setup, Straight gate run, Slalom run, and Ladder section. Presets expand into ordinary editable shapes after placement.
-  - [x] Selection grouping first pass
-        Selected shapes can now be grouped, duplicated, moved, ungrouped, and named as one project-local section. Group controls are available from the context menu, inspector, and mobile multi-select flow.
-  - [x] Starter layouts first pass
-        TrackDraw now ships three curated starter layouts in onboarding and new-project flow: Open practice, Compact race start, and Technical ladder line. Choosing one creates an ordinary editable project rather than a separate template object.
-
 - [ ] Race-day communication and briefing (`No account required`)
       Turn existing export, read-only, and fly-through capabilities into better pilot briefing, marshal pack, and numbered handoff workflows.
   - [x] Obstacle numbering overlay in 2D
@@ -43,7 +32,7 @@ Labels used below:
   - [x] Obstacle numbering in export/read-only surfaces
         Obstacle numbering now carries across 2D exports and the read-only share surface, using the same route-driven numbering model as the editor canvas.
   - [x] Race Pack export foundation
-        PDF export now includes a dedicated multi-page Race Pack with a cover page, track map, material list, stock status, setup sequence, numbering context, and first-pass timing/build guidance.
+        PDF export now includes a dedicated multi-page Race Pack with a cover page, track map, material list, stock status, setup sequence, numbering context, and initial timing/build guidance.
   - [ ] Race director page in Race Pack
         Add a race-director-oriented page within the Race Pack once TrackDraw can capture practical start-area metadata such as director position, timing/start box position, cable run, and related ops notes.
 
@@ -69,9 +58,6 @@ Labels used below:
   - [ ] Shared template libraries
         Revisit broader template browsing only once accounts can support personal, club, or team-owned template libraries with clear ownership and management.
 
-- [x] Cloudflare production rollout validation
-      Development and production Cloudflare domains are now live, and the release-gated production deploy path has been validated with the final GitHub environment secrets and domains.
-
 - [ ] Share lifecycle management follow-up (`Account-backed`, `Blocked`)
       Expiry, retention cleanup, calmer publish-link behavior, and local revoke are now in place. Remaining work is clearer repeated-use management in Studio and a cleaner ownership model once optional accounts are evaluated. Local-first publish flows should stay simple for one-off use.
 
@@ -86,7 +72,7 @@ Labels used below:
 - [ ] Comments and review mode (`Account-backed`, `Blocked`)
       Anchor feedback to specific obstacles or route sections without requiring live collaboration first. This now sits behind the optional-accounts decision because richer review workflows become much clearer once identity and ownership are better defined.
   - [ ] Pinned obstacle notes
-        Add simple notes attached to specific obstacles as a local-first first pass.
+        Add simple notes attached to specific obstacles as an initial local-first version.
   - [ ] Route-section notes
         Let notes attach to a route waypoint or path segment without requiring identity first.
   - [ ] Read-only review surface
@@ -94,21 +80,8 @@ Labels used below:
   - [ ] Threaded comments follow-up
         Consider richer review threads only if simple anchored notes prove useful and an account-backed identity model exists.
 
-- [x] Obstacle inventory and setup estimate (`No account required`)
-      Local inventory entry, required-vs-available comparison, buildability warnings, and Race Pack setup estimates now ship as the completed first pass for this track.
-  - [x] My inventory
-        Users can now record how many gates, ladders, dive gates, start/finish elements, flags, and cones are available as a local-first profile stored in the project.
-  - [x] Required vs available comparison
-        The design inspector now compares current layout counts against the saved inventory so shortages are visible without an account.
-  - [x] Buildability warnings
-        The inventory section now flags missing stock per obstacle type and surfaces a simple buildable vs short status.
-  - [x] Setup estimate summary
-        The Race Pack now turns raw inventory and obstacle data into a clearer race-day setup summary with material counts, grouped setup steps, and first-pass build guidance.
-  - [x] Rough setup complexity cues
-        The Race Pack now includes first-pass setup timing ranges and lightweight complexity cues based on obstacle mix and setup steps.
-
 - [ ] Build mode / setup sequence (`No account required`, `Blocked`)
-      Turn a finished layout into a dedicated operational build surface for race-day setup, rather than extending the Race Pack document indefinitely. This is now the follow-up epic after the completed inventory and setup-estimate first pass.
+      Turn a finished layout into a dedicated operational build surface for race-day setup, rather than extending the Race Pack document indefinitely. This is now the follow-up epic after the completed inventory and setup-estimate release.
   - [ ] Dedicated build-mode view
         Add a separate build-mode page or mode with its own information hierarchy for on-field setup, instead of treating setup sequence as only a document section.
   - [ ] Map-linked setup steps
@@ -145,7 +118,39 @@ Labels used below:
   - [ ] PWA scope recommendation
         Conclude whether TrackDraw should remain a standard web app, add a narrow installable PWA layer, or invest further in offline/app-shell behavior later.
 
-## v1 Archive
+## v1.1.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.1.0</summary>
+
+- [x] Layout acceleration (`No account required`)
+      Obstacle presets, selection grouping, and starter layouts now all ship as initial slices. The next work here should be polish and learning, not a broader template system.
+  - [x] Obstacle-pack presets
+        A first curated preset picker now ships on desktop and mobile with four presets: Start/finish setup, Straight gate run, Slalom run, and Ladder section. Presets expand into ordinary editable shapes after placement.
+  - [x] Selection grouping
+        Selected shapes can now be grouped, duplicated, moved, ungrouped, and named as one project-local section. Group controls are available from the context menu, inspector, and mobile multi-select flow.
+  - [x] Starter layouts
+        TrackDraw now ships three curated starter layouts in onboarding and new-project flow: Open practice, Compact race start, and Technical ladder line. Choosing one creates an ordinary editable project rather than a separate template object.
+
+- [x] Cloudflare production rollout validation
+      Development and production Cloudflare domains are now live, and the release-gated production deploy path has been validated with the final GitHub environment secrets and domains.
+
+- [x] Obstacle inventory and setup estimate (`No account required`)
+      Local inventory entry, required-vs-available comparison, buildability warnings, and Race Pack setup estimates now ship as the completed initial release for this track.
+  - [x] My inventory
+        Users can now record how many gates, ladders, dive gates, start/finish elements, flags, and cones are available as a local-first profile stored in the project.
+  - [x] Required vs available comparison
+        The design inspector now compares current layout counts against the saved inventory so shortages are visible without an account.
+  - [x] Buildability warnings
+        The inventory section now flags missing stock per obstacle type and surfaces a simple buildable vs short status.
+  - [x] Setup estimate summary
+        The Race Pack now turns raw inventory and obstacle data into a clearer race-day setup summary with material counts, grouped setup steps, and first-pass build guidance.
+  - [x] Rough setup complexity cues
+        The Race Pack now includes initial setup timing ranges and lightweight complexity cues based on obstacle mix and setup steps.
+
+</details>
+
+## v1.0.0 Archive
 
 <details>
 <summary>Completed v1 foundation work</summary>
