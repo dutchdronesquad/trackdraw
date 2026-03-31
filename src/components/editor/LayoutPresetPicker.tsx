@@ -147,7 +147,7 @@ function LayoutPresetPickerBody({
             type="button"
             onClick={() => onSelectPreset(preset.id)}
             className={cn(
-              "border-border/60 bg-card hover:border-border hover:bg-muted/35 flex flex-col gap-3 rounded-2xl border p-3 text-left transition-colors",
+              "border-border/60 bg-card hover:border-border hover:bg-muted/35 flex cursor-pointer flex-col gap-3 rounded-2xl border p-3 text-left transition-colors",
               selected && "border-primary/25 bg-primary/4"
             )}
           >
