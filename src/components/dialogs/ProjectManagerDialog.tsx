@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import {
+  Box,
   FilePlus,
   Download,
   Pencil,
@@ -17,11 +18,13 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Kbd } from "@/components/ui/kbd";
 import type { ProjectMeta, RestorePointMeta } from "@/lib/projects";
+import { starterLayouts } from "@/lib/starter-layouts";
 
 interface ProjectManagerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onNewProject: () => void;
+  onStartStarterLayout?: (layoutId: string) => void;
   onBackupProject?: () => void;
   onOpenProject?: (id: string) => void;
   onDeleteProject?: (id: string) => void;
@@ -60,6 +63,7 @@ export default function ProjectManagerDialog({
   open,
   onOpenChange,
   onNewProject,
+  onStartStarterLayout,
   onBackupProject,
   onOpenProject,
   onDeleteProject,
@@ -96,7 +100,7 @@ export default function ProjectManagerDialog({
   const actionRowClass =
     "border-border/60 hover:bg-muted/35 flex w-full cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors";
 
-  // Pinned new-project block
+  // Pinned new-project block (blank canvas + optional export, no starters)
   const newProjectBlock = (
     <div className="space-y-2.5">
       {hasContent ? (
@@ -116,11 +120,9 @@ export default function ProjectManagerDialog({
           <FilePlus className="size-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-foreground text-sm font-medium">
-            Start new project
-          </p>
+          <p className="text-foreground text-sm font-medium">Start fresh</p>
           <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            Clear the current track and continue with an empty field.
+            An empty field where you place your first gate and build from there.
           </p>
         </div>
         <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
@@ -142,6 +144,31 @@ export default function ProjectManagerDialog({
       ) : null}
     </div>
   );
+
+  // Starter layouts strip (desktop: horizontal grid; mobile: vertical list)
+  const starterStrip = onStartStarterLayout ? (
+    <div className="space-y-2.5">
+      {starterLayouts.map((layout) => (
+        <button
+          key={layout.id}
+          type="button"
+          onClick={() => onStartStarterLayout(layout.id)}
+          className={actionRowClass}
+        >
+          <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
+            <Box className="size-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground text-sm font-medium">{layout.name}</p>
+            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+              {layout.description}
+            </p>
+          </div>
+          <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
+        </button>
+      ))}
+    </div>
+  ) : null;
 
   // Tab bar
   const tabBar = (mobile = false) => (
@@ -388,11 +415,31 @@ export default function ProjectManagerDialog({
         onOpenChange={onOpenChange}
         title="Projects"
         subtitle="Switch between saved projects or restore a snapshot."
+        contentClassName="h-[82dvh] max-h-[92dvh] min-h-[72dvh]"
         pinnedContent={
           <>
             <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-4">
               {newProjectBlock}
             </div>
+            {onStartStarterLayout ? (
+              <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-3">
+                <p className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-widest uppercase">
+                  Starter layouts
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {starterLayouts.map((layout) => (
+                    <button
+                      key={layout.id}
+                      type="button"
+                      onClick={() => onStartStarterLayout(layout.id)}
+                      className="border-border/60 bg-card hover:bg-muted/35 text-muted-foreground hover:text-foreground cursor-pointer rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors"
+                    >
+                      {layout.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <div className="border-border/30 shrink-0 border-b px-4 pt-3">
               {tabBar(true)}
             </div>
@@ -425,8 +472,8 @@ export default function ProjectManagerDialog({
               Projects
             </p>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              Switch between saved projects, restore a snapshot, or start a new
-              track from scratch.
+              Open a saved track, start fresh, or begin with one of the starter
+              layouts.
             </p>
           </div>
           <button
@@ -441,9 +488,9 @@ export default function ProjectManagerDialog({
       </div>
 
       {/* Two-column body */}
-      <div className="border-border/30 grid min-h-0 grid-cols-2 border-t">
+      <div className="border-border/30 grid min-h-0 grid-cols-2 overflow-hidden border-t">
         {/* Left: new project */}
-        <div className="border-border/30 border-r px-6 py-6">
+        <div className="border-border/30 overflow-y-auto border-r px-6 py-6">
           <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
             New project
           </p>
@@ -451,13 +498,44 @@ export default function ProjectManagerDialog({
         </div>
 
         {/* Right: tabs + lists */}
-        <div className="flex min-h-0 flex-col">
+        <div className="flex min-h-0 flex-col overflow-hidden">
           <div className="shrink-0 px-8 pt-5">{tabBar()}</div>
-          <div className="max-h-[50vh] min-h-0 overflow-y-auto px-8 py-4">
+          <div className="max-h-80 overflow-y-auto px-8 py-4">
             {tab === "projects" ? projectsList : restoreList}
           </div>
         </div>
       </div>
+
+      {/* Bottom: starter layouts strip */}
+      {starterStrip ? (
+        <div className="border-border/30 shrink-0 border-t px-6 py-5">
+          <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
+            Start from a layout
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {starterLayouts.map((layout) => (
+              <button
+                key={layout.id}
+                type="button"
+                onClick={() => onStartStarterLayout!(layout.id)}
+                className="border-border/60 hover:bg-muted/35 flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-colors"
+              >
+                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                  <Box className="size-3.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground truncate text-xs font-medium">
+                    {layout.name}
+                  </p>
+                  <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
+                    {layout.description}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="shrink-0 pb-2" />
     </DesktopModal>

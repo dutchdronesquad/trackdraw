@@ -94,13 +94,15 @@ Current state:
 - Desktop and mobile both use a lightweight preset picker that inserts ordinary editable shapes
 - Selection grouping now also ships in first-pass form
 - Groups are project-local, can be duplicated and ungrouped, and can carry an optional group name across desktop and mobile selection flows
-- Starter layouts are now the next planned slice in this track
+- Starter layouts now also ship in first-pass form
+- The current starter set is intentionally small: Open practice, Compact race start, and Technical ladder line
+- Starter layouts are surfaced from onboarding and new-project flow and create ordinary editable projects
 
 Next slices:
 
 - Preset and grouping polish based on real use
-- Starter layouts before venue-aware templates
-  First pass should stay small: three curated starters surfaced from onboarding or new-project flow.
+- Starter-layout polish based on real use
+- Revisit whether starter layouts need route drafts before adding more catalog breadth
 - Shared template libraries only after optional-account ownership is clear
 
 ### 3. Share Lifecycle Follow-up (`Account-backed`, `Blocked`)
@@ -171,6 +173,11 @@ Current first pass:
 - The current layout is compared against saved stock counts
 - The inspector surfaces missing counts and a simple buildable-vs-short status
 - The Race Pack now turns those counts into a clearer race-day setup summary with grouped setup steps, timing ranges, and lightweight complexity cues
+
+Current status:
+
+- This roadmap track is complete as a first pass
+- The next work from here belongs to `Build mode / setup sequence`, not to more expansion of the basic inventory comparison layer
 
 Still open:
 

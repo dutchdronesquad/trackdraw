@@ -28,13 +28,13 @@ Labels used below:
 - [ ] Layout acceleration (`No account required`)
       Add reusable building blocks such as obstacle presets, selection grouping, and starter layouts.
       Keep this account-free for curated and project-local acceleration only. Shared libraries, sync, and team template management belong on the optional-account side.
-      Current sequence: obstacle presets and selection grouping are shipped first-pass slices; starter layouts are the next planned build target.
+      Current state: obstacle presets, selection grouping, and starter layouts now all ship as first-pass slices. The next work here should be polish and learning, not a broader template system.
   - [x] Obstacle-pack presets first pass
         A first curated preset picker now ships on desktop and mobile with four presets: Start/finish setup, Straight gate run, Slalom run, and Ladder section. Presets expand into ordinary editable shapes after placement.
   - [x] Selection grouping first pass
         Selected shapes can now be grouped, duplicated, moved, ungrouped, and named as one project-local section. Group controls are available from the context menu, inspector, and mobile multi-select flow.
-  - [ ] Starter layouts
-        Add a small set of ready-to-edit starting layouts. Recommended first pass: three curated starters surfaced in onboarding or new-project flow, not as a full template browser.
+  - [x] Starter layouts first pass
+        TrackDraw now ships three curated starter layouts in onboarding and new-project flow: Open practice, Compact race start, and Technical ladder line. Choosing one creates an ordinary editable project rather than a separate template object.
 
 - [ ] Race-day communication and briefing (`No account required`)
       Turn existing export, read-only, and fly-through capabilities into better pilot briefing, marshal pack, and numbered handoff workflows.
@@ -94,8 +94,8 @@ Labels used below:
   - [ ] Threaded comments follow-up
         Consider richer review threads only if simple anchored notes prove useful and an account-backed identity model exists.
 
-- [ ] Obstacle inventory and setup estimate (`No account required`)
-      Summarize obstacle counts, compare them against available stock, and turn that into a clearer race-day setup summary.
+- [x] Obstacle inventory and setup estimate (`No account required`)
+      Local inventory entry, required-vs-available comparison, buildability warnings, and Race Pack setup estimates now ship as the completed first pass for this track.
   - [x] My inventory
         Users can now record how many gates, ladders, dive gates, start/finish elements, flags, and cones are available as a local-first profile stored in the project.
   - [x] Required vs available comparison
@@ -108,7 +108,7 @@ Labels used below:
         The Race Pack now includes first-pass setup timing ranges and lightweight complexity cues based on obstacle mix and setup steps.
 
 - [ ] Build mode / setup sequence (`No account required`, `Blocked`)
-      Turn a finished layout into a dedicated operational build surface for race-day setup, rather than extending the Race Pack document indefinitely.
+      Turn a finished layout into a dedicated operational build surface for race-day setup, rather than extending the Race Pack document indefinitely. This is now the follow-up epic after the completed inventory and setup-estimate first pass.
   - [ ] Dedicated build-mode view
         Add a separate build-mode page or mode with its own information hierarchy for on-field setup, instead of treating setup sequence as only a document section.
   - [ ] Map-linked setup steps
