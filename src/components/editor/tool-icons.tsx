@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  Blocks,
   Download,
   FilePlus,
   Flag,
@@ -70,6 +71,8 @@ function iconForTool(tool: EditorTool, className: string): ReactNode {
       return <MousePointer2 className={className} />;
     case "grab":
       return <Hand className={className} />;
+    case "preset":
+      return <Blocks className={className} />;
     case "gate":
       return <GateIcon className={className} />;
     case "ladder":
@@ -116,6 +119,7 @@ export const toolbarToolGroups: ToolGroup[] = [
     tools: [
       buildToolEntry("select", "size-3.5"),
       buildToolEntry("grab", "size-3.5"),
+      buildToolEntry("preset", "size-3.5"),
     ],
   },
   {
@@ -139,6 +143,7 @@ export const toolbarToolGroups: ToolGroup[] = [
 ];
 
 export const mobileToolEntries: ToolEntry[] = [
+  buildToolEntry("preset", "size-5"),
   buildToolEntry("gate", "size-5"),
   buildToolEntry("ladder", "size-5"),
   buildToolEntry("divegate", "size-5"),

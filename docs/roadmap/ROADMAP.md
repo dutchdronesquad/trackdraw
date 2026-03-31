@@ -87,6 +87,13 @@ Scope:
 - Selection grouping for repeated layout sections
 - Venue-aware field templates and starter fields
 
+Current state:
+
+- Obstacle presets now ship in first-pass form
+- The current curated set is intentionally small: start/finish setup, straight gate run, slalom run, and ladder section
+- Desktop and mobile both use a lightweight preset picker that inserts ordinary editable shapes
+- Selection grouping remains the next meaningful follow-up
+
 Next slices:
 
 - Obstacle-pack presets for common race-building patterns

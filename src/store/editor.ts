@@ -21,12 +21,14 @@ import {
   serializeDesign,
 } from "@/lib/design";
 import type { EditorTool } from "@/lib/editor-tools";
+import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/layout-presets";
 import type { DraftPoint, RectLike } from "@/components/canvas/shared";
 
 export type { EditorTool } from "@/lib/editor-tools";
 
 interface EditorTransientState {
   activeTool: EditorTool;
+  activePresetId: string | null;
   zoom: number;
   panOffset: { x: number; y: number };
   hoveredShapeId: string | null;
@@ -86,6 +88,7 @@ interface EditorState {
   nudgeShapes: (ids: string[], dx: number, dy: number) => void;
   setSelection: (ids: string[]) => void;
   setActiveTool: (tool: EditorTool) => void;
+  setActivePresetId: (presetId: string | null) => void;
   setZoom: (zoom: number) => void;
   setPanOffset: (offset: { x: number; y: number }) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
@@ -350,6 +353,7 @@ export const useEditor = create<EditorState>()(
       selection: [],
       transient: {
         activeTool: "select",
+        activePresetId: DEFAULT_LAYOUT_PRESET_ID,
         zoom: 1,
         panOffset: { x: 0, y: 0 },
         hoveredShapeId: null,
@@ -684,6 +688,11 @@ export const useEditor = create<EditorState>()(
       setActiveTool: (tool) =>
         set((draft) => {
           draft.transient.activeTool = tool;
+        }),
+
+      setActivePresetId: (presetId) =>
+        set((draft) => {
+          draft.transient.activePresetId = presetId;
         }),
 
       setZoom: (zoom) =>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import {
   FilePlus,
@@ -404,21 +405,19 @@ export default function ProjectManagerDialog({
     );
   }
 
-  if (!open) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm"
-      onClick={() => onOpenChange(false)}
+    <DesktopModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Projects"
+      headerless
+      maxWidth="max-w-3xl"
+      panelClassName="flex flex-col overflow-hidden rounded-4xl p-0"
     >
-      <div
-        className="border-border/50 bg-card/97 pointer-events-auto flex w-full max-w-3xl flex-col overflow-hidden rounded-4xl border shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur"
-        onClick={(e) => e.stopPropagation()}
-      >
         {/* Header */}
         <div className="shrink-0 px-8 pt-8 pb-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
+          <div className="flex items-start gap-4">
+            <div className="min-w-0 flex-1">
               <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
                 Studio
               </p>
@@ -433,7 +432,7 @@ export default function ProjectManagerDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="text-muted-foreground/75 hover:text-foreground hover:bg-muted cursor-pointer rounded-full p-1.5 transition-colors"
+              className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
               aria-label="Close"
             >
               <X className="size-4" />
@@ -461,7 +460,6 @@ export default function ProjectManagerDialog({
         </div>
 
         <div className="shrink-0 pb-2" />
-      </div>
-    </div>
+    </DesktopModal>
   );
 }

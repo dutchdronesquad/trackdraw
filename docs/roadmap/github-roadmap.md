@@ -27,8 +27,10 @@ Labels used below:
 
 - [ ] Layout acceleration (`No account required`)
       Add reusable building blocks such as obstacle presets, starter layouts, selection grouping, and venue-aware field templates.
-  - [ ] Obstacle-pack presets
-        Add reusable building blocks such as slalom sections, gate runs, start/finish setups, and small training patterns.
+      Keep this account-free for curated and project-local acceleration only. Shared libraries, sync, and team template management belong on the optional-account side.
+      Sequence: obstacle presets, selection grouping, starter layouts, then a broader template browser only if needed.
+  - [x] Obstacle-pack presets first pass
+        A first curated preset picker now ships on desktop and mobile with four presets: Start/finish setup, Straight gate run, Slalom run, and Ladder section. Presets expand into ordinary editable shapes after placement.
   - [ ] Selection grouping
         Let repeated layout sections be grouped, duplicated, and moved as one unit.
   - [ ] Starter layouts
@@ -63,9 +65,9 @@ Labels used below:
   - [ ] User-value validation
         Determine whether cross-device continuation, safer project storage, and durable ownership are meaningful enough to justify cloud-backed project models.
   - [ ] Product model evaluation
-        Define how local projects, cloud-backed projects, published shares, and local-first feature fallbacks should relate without confusing users.
+        Define how local projects, cloud-backed projects, published shares, and local-first feature fallbacks should relate without confusing users, with optional sign-in and no login wall for core design use.
   - [ ] Authentication and storage recommendation
-        Decide whether TrackDraw should remain local-first only, add optional auth-backed sync for ownership and cross-device management, or stop before account work entirely.
+        Decide whether TrackDraw should remain local-first only, add optional auth-backed sync for ownership and cross-device management, or stop before account work entirely. Current technical direction to evaluate first: `Auth.js`.
 
 - [x] Cloudflare production rollout validation
       Development and production Cloudflare domains are now live, and the release-gated production deploy path has been validated with the final GitHub environment secrets and domains.

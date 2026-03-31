@@ -63,6 +63,7 @@ interface ToolbarProps {
   onImport: () => void;
   onExport: () => void;
   onOpenProjectManager: () => void;
+  onOpenPresets: () => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
 }
@@ -71,6 +72,7 @@ export default function Toolbar({
   onImport,
   onExport,
   onOpenProjectManager,
+  onOpenPresets,
   collapsed,
 }: ToolbarProps) {
   const activeTool = useEditor((state) => state.transient.activeTool);
@@ -82,6 +84,15 @@ export default function Toolbar({
     if (action === "new") onOpenProjectManager();
     else if (action === "import") onImport();
     else onExport();
+  }
+
+  function handleToolSelect(tool: (typeof toolbarToolGroups)[number]["tools"][number]["id"]) {
+    setSelection([]);
+    if (tool === "preset") {
+      onOpenPresets();
+      return;
+    }
+    setActiveTool(tool);
   }
 
   return (
@@ -142,12 +153,9 @@ export default function Toolbar({
                       whileTap={{ scale: 0.985 }}
                       transition={{ duration: 0.16, ease: "easeOut" }}
                     >
-                      <SidebarMenuButton
-                        isActive={active}
-                        onClick={() => {
-                          setSelection([]);
-                          setActiveTool(tool.id);
-                        }}
+                        <SidebarMenuButton
+                          isActive={active}
+                          onClick={() => handleToolSelect(tool.id)}
                         className={cn(
                           "relative h-8 overflow-hidden rounded-lg border transition-all duration-150",
                           collapsed ? "justify-center px-0" : "gap-2.5",
@@ -182,7 +190,7 @@ export default function Toolbar({
                             {tool.label}
                           </span>
                         )}
-                        {!collapsed && (
+                        {!collapsed && tool.shortcut && (
                           <Kbd
                             className={cn(
                               "h-4 min-w-4 px-1 font-mono text-[9px] leading-none shadow-none",
@@ -202,10 +210,7 @@ export default function Toolbar({
                       {collapsed ? (
                         <Tooltip>
                           <TooltipTrigger
-                            onClick={() => {
-                              setSelection([]);
-                              setActiveTool(tool.id);
-                            }}
+                            onClick={() => handleToolSelect(tool.id)}
                             className={cn(
                               "flex h-8 w-full items-center justify-center rounded-lg border transition-colors duration-150",
                               active
@@ -217,11 +222,13 @@ export default function Toolbar({
                           </TooltipTrigger>
                           <TooltipContent side="right" sideOffset={8}>
                             <span>{tool.label}</span>
-                            <span className="ml-2 inline-flex">
-                              <Kbd className="h-4 min-w-4 px-1 font-mono text-[9px] shadow-none">
-                                {tool.shortcut}
-                              </Kbd>
-                            </span>
+                            {tool.shortcut ? (
+                              <span className="ml-2 inline-flex">
+                                <Kbd className="h-4 min-w-4 px-1 font-mono text-[9px] shadow-none">
+                                  {tool.shortcut}
+                                </Kbd>
+                              </span>
+                            ) : null}
                           </TooltipContent>
                         </Tooltip>
                       ) : (

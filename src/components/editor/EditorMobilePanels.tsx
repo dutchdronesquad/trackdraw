@@ -38,6 +38,7 @@ export type EditorViewportTab = "2d" | "3d";
 
 interface EditorMobilePanelsProps {
   activeTool: EditorTool;
+  activePresetLabel?: string | null;
   draftPathActive: boolean;
   draftPathClosed: boolean;
   draftPathLength: number;
@@ -252,6 +253,7 @@ function MobileQuickActionsOverlay({
 
 export function EditorMobilePanels({
   activeTool,
+  activePresetLabel,
   draftPathActive,
   draftPathClosed,
   draftPathLength,
@@ -372,6 +374,7 @@ export function EditorMobilePanels({
   const toolDisplayName: Record<string, string> = {
     select: "Select",
     grab: "Grab",
+    preset: "Presets",
     gate: "Gate",
     flag: "Flag",
     cone: "Cone",
@@ -398,7 +401,9 @@ export function EditorMobilePanels({
   const mobileStatusValue =
     selectedCount > 0
       ? `${selectedCount} items`
-      : (toolDisplayName[activeTool] ?? activeTool);
+      : activeTool === "preset" && activePresetLabel
+        ? activePresetLabel
+        : (toolDisplayName[activeTool] ?? activeTool);
   const inspectorHint = canOpenInspector
     ? selectedCount > 0
       ? `${selectedCount} selected`
@@ -786,11 +791,39 @@ export function EditorMobilePanels({
             {tab === "2d" && (
               <div>
                 <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
+                  Presets
+                </p>
+                <button
+                  onClick={() => runMobileAction(() => onSelectTool("preset"))}
+                  className={cn(
+                    "border-border/50 flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all",
+                    activeTool === "preset"
+                      ? "border-border/80 bg-muted/55 text-foreground"
+                      : "bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">Layout presets</p>
+                    <p className="pt-1 text-[11px] leading-relaxed opacity-80">
+                      {activePresetLabel
+                        ? `Current preset: ${activePresetLabel}`
+                        : "Place a curated multi-shape section in one tap."}
+                    </p>
+                  </div>
+                  <LayoutGrid className="size-4 shrink-0" />
+                </button>
+              </div>
+            )}
+            {tab === "2d" && (
+              <div>
+                <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
                   Drawing tools
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {mobileToolEntries
-                    .filter((tool) => tool.id !== "grab")
+                    .filter(
+                      (tool) => tool.id !== "grab" && tool.id !== "preset"
+                    )
                     .map((tool) => {
                       const active = activeTool === tool.id;
                       return (

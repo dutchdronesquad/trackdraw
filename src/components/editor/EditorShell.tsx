@@ -11,6 +11,7 @@ import {
   type RefAttributes,
 } from "react";
 import { EditorMobilePanels } from "@/components/editor/EditorMobilePanels";
+import { LayoutPresetPicker } from "@/components/editor/LayoutPresetPicker";
 import Header from "./Header";
 import Toolbar from "./Toolbar";
 import Inspector from "@/components/inspector/Inspector";
@@ -33,6 +34,7 @@ import type {
 } from "@/components/canvas/TrackPreview3D";
 import { createDefaultDesign } from "@/lib/design";
 import { shapeKindLabels } from "@/lib/editor-tools";
+import { getLayoutPresetById } from "@/lib/layout-presets";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -96,12 +98,14 @@ export default function EditorShell({
   const selection = useEditor((state) => state.selection);
   const design = useEditor((state) => state.design);
   const activeTool = useEditor((state) => state.transient.activeTool);
+  const activePresetId = useEditor((state) => state.transient.activePresetId);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
   const nudgeShapes = useEditor((state) => state.nudgeShapes);
   const removeShapes = useEditor((state) => state.removeShapes);
   const replaceDesign = useEditor((state) => state.replaceDesign);
   const rotateShapes = useEditor((state) => state.rotateShapes);
   const setActiveTool = useEditor((state) => state.setActiveTool);
+  const setActivePresetId = useEditor((state) => state.setActivePresetId);
   const setSelection = useEditor((state) => state.setSelection);
   const setShapesLocked = useEditor((state) => state.setShapesLocked);
   const historyPaused = useEditor((state) => state.historyPaused);
@@ -119,6 +123,8 @@ export default function EditorShell({
     ? shapeKindLabels[singleSelectedShape.kind]
     : null;
   const mobilePrecisionStep = Math.min(design.field.gridStep, 0.1);
+  const activePreset = getLayoutPresetById(activePresetId);
+  const activePresetLabel = activePreset?.name ?? null;
   const mobilePrecisionStepLabel = `${mobilePrecisionStep.toFixed(
     mobilePrecisionStep < 0.1 ? 2 : 1
   )} m`;
@@ -163,6 +169,7 @@ export default function EditorShell({
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [projectManagerOpen, setProjectManagerOpen] = useState(false);
+  const [presetPickerOpen, setPresetPickerOpen] = useState(false);
   const [starterDismissed, setStarterDismissed] = useState(false);
   const [starterMode, setStarterMode] = useState<"guided" | "blank" | null>(
     null
@@ -355,6 +362,23 @@ export default function EditorShell({
     [handleTabChange, replaceDesign, resetGuidedHints, setActiveTool]
   );
 
+  const openPresetPicker = useCallback(() => {
+    setPresetPickerOpen(true);
+  }, []);
+
+  const handlePresetSelect = useCallback(
+    (presetId: string) => {
+      setSelection([]);
+      setMobileMultiSelectEnabled(false);
+      setMobilePathBuilderPinnedOpen(false);
+      setActivePresetId(presetId);
+      setActiveTool("preset");
+      setMobileToolsOpen(false);
+      setPresetPickerOpen(false);
+    },
+    [setActivePresetId, setActiveTool, setSelection]
+  );
+
   return (
     <>
       <div className="bg-background text-foreground relative flex h-dvh overflow-hidden">
@@ -363,6 +387,7 @@ export default function EditorShell({
             onImport={() => setImportOpen(true)}
             onExport={() => setExportOpen(true)}
             onOpenProjectManager={() => setProjectManagerOpen(true)}
+            onOpenPresets={openPresetPicker}
             collapsed={sidebarCollapsed}
             onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
           />
@@ -644,6 +669,7 @@ export default function EditorShell({
 
         <EditorMobilePanels
           activeTool={activeTool}
+          activePresetLabel={activePresetLabel}
           draftPathActive={mobileDraftPathState.active}
           draftPathClosed={mobileDraftPathState.closed}
           draftPathLength={mobileDraftPathState.length}
@@ -743,6 +769,11 @@ export default function EditorShell({
           onSelectTool={(tool) => {
             setSelection([]);
             setMobileMultiSelectEnabled(false);
+            if (tool === "preset") {
+              setMobileToolsOpen(false);
+              setPresetPickerOpen(true);
+              return;
+            }
             setMobilePathBuilderPinnedOpen(tool === "polyline");
             setActiveTool(tool);
             setMobileToolsOpen(false);
@@ -839,6 +870,19 @@ export default function EditorShell({
         restorePoints={restorePoints}
         activeDesignId={design.id}
         activeRestorePointId={activeRestorePointId ?? undefined}
+      />
+      <LayoutPresetPicker
+        open={presetPickerOpen && !isMobile}
+        onOpenChange={setPresetPickerOpen}
+        selectedPresetId={activePresetId}
+        onSelectPreset={handlePresetSelect}
+      />
+      <LayoutPresetPicker
+        mobile
+        open={presetPickerOpen && isMobile}
+        onOpenChange={setPresetPickerOpen}
+        selectedPresetId={activePresetId}
+        onSelectPreset={handlePresetSelect}
       />
       {developerModeEnabled ? <PerformanceHud /> : null}
     </>

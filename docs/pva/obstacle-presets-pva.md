@@ -2,6 +2,8 @@
 
 Date: March 20, 2026
 
+Status: first pass shipped
+
 ## Purpose
 
 This document defines the plan of approach for `Obstacle presets` before implementation starts. The earlier prototype direction did not yet feel right as a product experience. The goal here is to remove ambiguity around scope, UX shape, and technical boundaries before any new build work begins.
@@ -64,16 +66,14 @@ Based on the current product shape, the previous implementation was probably uns
 
 The next iteration should bias much harder toward simplicity.
 
-## First-Release Scope
+## Shipped First-Pass Scope
 
-The first release should include only curated presets that save real setup time:
+The shipped first pass includes a deliberately small curated set:
 
 - Start/finish setup
 - Straight gate run
 - Slalom run
 - Ladder section
-- Dive gate combination
-- Small training layout
 
 Each preset should support:
 
@@ -93,6 +93,12 @@ Why:
 - keeps the feature close to normal placement
 - avoids introducing a second browsing model
 - makes presets feel like an accelerated form of object insertion
+
+Current implementation shape:
+
+- desktop exposes `Presets` as its own tool entry in the main sidebar
+- mobile gives `Presets` a separate section above ordinary drawing tools
+- both desktop and mobile open a dedicated preset picker before placement mode begins
 
 ### Browsing Model
 
@@ -205,7 +211,7 @@ The feature is successful if:
 
 ### Phase 1
 
-- Ship 4 to 6 curated presets
+- Ship 4 curated presets
 - Desktop and mobile placement
 - Normal insertion and selection behavior
 
@@ -224,10 +230,10 @@ The feature is successful if:
 
 ## Recommendation
 
-Do not build presets again until the answers above are locked.
+Keep the first pass small and polish-heavy.
 
-The implementation should start only after:
+The right next steps are:
 
-- the first curated preset list is agreed
-- the browse-and-place UX is chosen
-- the team explicitly commits to `presets as insertion`, not `presets as persistent special objects`
+- improve placement guidance while preset mode is active
+- evaluate whether the current four presets are genuinely useful before adding more
+- move on to selection grouping instead of widening the preset catalog too quickly
