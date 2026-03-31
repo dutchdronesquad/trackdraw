@@ -85,21 +85,23 @@ Scope:
 
 - Obstacle presets for reusable groupings and common race-building patterns
 - Selection grouping for repeated layout sections
-- Venue-aware field templates and starter fields
+- Starter layouts for faster blank-project starts
 
 Current state:
 
 - Obstacle presets now ship in first-pass form
 - The current curated set is intentionally small: start/finish setup, straight gate run, slalom run, and ladder section
 - Desktop and mobile both use a lightweight preset picker that inserts ordinary editable shapes
-- Selection grouping remains the next meaningful follow-up
+- Selection grouping now also ships in first-pass form
+- Groups are project-local, can be duplicated and ungrouped, and can carry an optional group name across desktop and mobile selection flows
+- Starter layouts are now the next planned slice in this track
 
 Next slices:
 
-- Obstacle-pack presets for common race-building patterns
-- Selection grouping with duplicate/move as one unit
+- Preset and grouping polish based on real use
 - Starter layouts before venue-aware templates
-- Template browser only after preset content and grouping are proven useful
+  First pass should stay small: three curated starters surfaced from onboarding or new-project flow.
+- Shared template libraries only after optional-account ownership is clear
 
 ### 3. Share Lifecycle Follow-up (`Account-backed`, `Blocked`)
 

@@ -26,17 +26,15 @@ Labels used below:
 ## Priority 1
 
 - [ ] Layout acceleration (`No account required`)
-      Add reusable building blocks such as obstacle presets, starter layouts, selection grouping, and venue-aware field templates.
+      Add reusable building blocks such as obstacle presets, selection grouping, and starter layouts.
       Keep this account-free for curated and project-local acceleration only. Shared libraries, sync, and team template management belong on the optional-account side.
-      Sequence: obstacle presets, selection grouping, starter layouts, then a broader template browser only if needed.
+      Current sequence: obstacle presets and selection grouping are shipped first-pass slices; starter layouts are the next planned build target.
   - [x] Obstacle-pack presets first pass
         A first curated preset picker now ships on desktop and mobile with four presets: Start/finish setup, Straight gate run, Slalom run, and Ladder section. Presets expand into ordinary editable shapes after placement.
-  - [ ] Selection grouping
-        Let repeated layout sections be grouped, duplicated, and moved as one unit.
+  - [x] Selection grouping first pass
+        Selected shapes can now be grouped, duplicated, moved, ungrouped, and named as one project-local section. Group controls are available from the context menu, inspector, and mobile multi-select flow.
   - [ ] Starter layouts
-        Add a small set of ready-to-edit layouts before moving to broader venue-aware templates.
-  - [ ] Template browser
-        Add a dedicated browsing/apply surface only after preset content and grouping prove useful.
+        Add a small set of ready-to-edit starting layouts. Recommended first pass: three curated starters surfaced in onboarding or new-project flow, not as a full template browser.
 
 - [ ] Race-day communication and briefing (`No account required`)
       Turn existing export, read-only, and fly-through capabilities into better pilot briefing, marshal pack, and numbered handoff workflows.
@@ -68,6 +66,8 @@ Labels used below:
         Define how local projects, cloud-backed projects, published shares, and local-first feature fallbacks should relate without confusing users, with optional sign-in and no login wall for core design use.
   - [ ] Authentication and storage recommendation
         Decide whether TrackDraw should remain local-first only, add optional auth-backed sync for ownership and cross-device management, or stop before account work entirely. Current technical direction to evaluate first: `Auth.js`.
+  - [ ] Shared template libraries
+        Revisit broader template browsing only once accounts can support personal, club, or team-owned template libraries with clear ownership and management.
 
 - [x] Cloudflare production rollout validation
       Development and production Cloudflare domains are now live, and the release-gated production deploy path has been validated with the final GitHub environment secrets and domains.

@@ -33,9 +33,12 @@ function Inspector({
   );
   const removeShapes = useEditor((state) => state.removeShapes);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
+  const groupSelection = useEditor((state) => state.groupSelection);
   const joinPolylines = useEditor((state) => state.joinPolylines);
   const closePolyline = useEditor((state) => state.closePolyline);
+  const setGroupName = useEditor((state) => state.setGroupName);
   const setSelection = useEditor((state) => state.setSelection);
+  const ungroupSelection = useEditor((state) => state.ungroupSelection);
   const updateField = useEditor((state) => state.updateField);
   const updateDesignMeta = useEditor((state) => state.updateDesignMeta);
   const setHoveredShapeId = useEditor((state) => state.setHoveredShapeId);
@@ -52,6 +55,9 @@ function Inspector({
     panelOverride === "selection" && selectionDisabled
       ? defaultPanel
       : (panelOverride ?? defaultPanel);
+  const activeTabIndicatorLayoutId = mobileInline
+    ? "inspector-active-tab-mobile"
+    : "inspector-active-tab-desktop";
 
   let selectionView = (
     <div className="flex h-full items-center justify-center px-6 text-center">
@@ -71,9 +77,12 @@ function Inspector({
         selectedShapes={selectedShapes}
         selection={selection}
         duplicateShapes={duplicateShapes}
+        groupSelection={groupSelection}
         joinPolylines={joinPolylines}
         removeShapes={removeShapes}
+        setGroupName={setGroupName}
         setSelection={setSelection}
+        ungroupSelection={ungroupSelection}
       />
     );
   } else if (count === 1) {
@@ -91,7 +100,9 @@ function Inspector({
         closePolyline={closePolyline}
         duplicateShapes={duplicateShapes}
         removeShapes={removeShapes}
+        setGroupName={setGroupName}
         setSelection={setSelection}
+        ungroupSelection={ungroupSelection}
         setHoveredWaypoint={setHoveredWaypoint}
         onResumeSelectedPath={onResumeSelectedPath}
       />
@@ -137,7 +148,7 @@ function Inspector({
             >
               {panel === item.id ? (
                 <motion.span
-                  layoutId="inspector-active-tab"
+                  layoutId={activeTabIndicatorLayoutId}
                   className="bg-foreground absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full"
                   transition={{
                     type: "spring",

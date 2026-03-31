@@ -6,7 +6,7 @@ Status: first pass shipped
 
 ## Purpose
 
-This document defines the plan of approach for `Obstacle presets` before implementation starts. The earlier prototype direction did not yet feel right as a product experience. The goal here is to remove ambiguity around scope, UX shape, and technical boundaries before any new build work begins.
+This document defines the shipped product shape for `Obstacle presets` and records the reasoning behind the first pass. The earlier prototype direction did not yet feel right as a product experience. The goal here is to keep scope, UX shape, and technical boundaries clear now that the first pass is live.
 
 ## Problem
 
@@ -75,14 +75,14 @@ The shipped first pass includes a deliberately small curated set:
 - Slalom run
 - Ladder section
 
-Each preset should support:
+Each preset supports:
 
 - placement from the tools flow
 - one obvious anchor point
 - rotation before or after placement
 - normal editing after insertion
 
-## UX Proposal
+## UX Shape
 
 ### Entry Point
 
@@ -113,7 +113,7 @@ The first release should avoid categories deeper than one level. A flat curated 
 
 ### Placement Flow
 
-Recommended flow:
+Current flow:
 
 1. User opens `Presets`
 2. User selects a preset card
@@ -138,7 +138,7 @@ After insertion:
 
 This keeps the model understandable and avoids long-term preset complexity.
 
-## Technical Proposal
+## Technical Shape
 
 ## Data Model
 

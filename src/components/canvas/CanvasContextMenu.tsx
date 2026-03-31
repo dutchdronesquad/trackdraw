@@ -5,6 +5,7 @@ import {
   ArrowUp,
   Copy,
   GitMerge,
+  Group,
   Lock,
   PencilLine,
   RotateCcw,
@@ -12,6 +13,7 @@ import {
   Scan,
   Trash2,
   Unlock,
+  Ungroup,
 } from "lucide-react";
 import {
   ContextMenuContent,
@@ -26,8 +28,11 @@ import {
 } from "@/components/ui/context-menu";
 
 export interface ContextMenuData {
+  canGroup: boolean;
   closablePolylineId: string | null;
   editablePolylineId: string | null;
+  groupLabel: string | null;
+  hasGroupedShapes: boolean;
   ids: string[];
   joinablePolylineIds: string[];
   label: string;
@@ -41,11 +46,13 @@ interface CanvasContextMenuContentProps {
   onContinueEditing: (polylineId: string) => void;
   onClosePolyline: (id: string) => void;
   onDuplicate: (ids: string[]) => void;
+  onGroupSelection: (ids: string[]) => void;
   onJoinPolylines: (ids: string[]) => void;
   onToggleLock: (ids: string[], locked: boolean) => void;
   onBringForward: (id: string) => void;
   onSendBackward: (id: string) => void;
   onRotate: (ids: string[], delta: number) => void;
+  onUngroupSelection: (ids: string[]) => void;
   onDelete: (ids: string[]) => void;
 }
 
@@ -55,11 +62,13 @@ export function CanvasContextMenuContent({
   onContinueEditing,
   onClosePolyline,
   onDuplicate,
+  onGroupSelection,
   onJoinPolylines,
   onToggleLock,
   onBringForward,
   onSendBackward,
   onRotate,
+  onUngroupSelection,
   onDelete,
 }: CanvasContextMenuContentProps) {
   return (
@@ -70,9 +79,11 @@ export function CanvasContextMenuContent({
             {contextMenu.label}
           </div>
           <div className="text-muted-foreground text-[11px]">
-            {contextMenu.ids.length === 1
-              ? "Quick actions"
-              : `${contextMenu.ids.length} selected`}
+            {contextMenu.groupLabel
+              ? contextMenu.groupLabel
+              : contextMenu.ids.length === 1
+                ? "Quick actions"
+                : `${contextMenu.ids.length} selected`}
           </div>
         </ContextMenuLabel>
         {contextMenu.editablePolylineId && (
@@ -107,6 +118,28 @@ export function CanvasContextMenuContent({
           Duplicate
           <ContextMenuShortcut>Ctrl/Cmd+D</ContextMenuShortcut>
         </ContextMenuItem>
+        {contextMenu.canGroup && !contextMenu.hasGroupedShapes && (
+          <ContextMenuItem
+            onClick={() => {
+              onGroupSelection(contextMenu.ids);
+              onClose();
+            }}
+          >
+            <Group className="size-3.5" />
+            Group selection
+          </ContextMenuItem>
+        )}
+        {!contextMenu.canGroup && contextMenu.hasGroupedShapes && (
+          <ContextMenuItem
+            onClick={() => {
+              onUngroupSelection(contextMenu.ids);
+              onClose();
+            }}
+          >
+            <Ungroup className="size-3.5" />
+            Ungroup selection
+          </ContextMenuItem>
+        )}
         {contextMenu.joinablePolylineIds.length >= 2 && (
           <ContextMenuItem
             onClick={() => {

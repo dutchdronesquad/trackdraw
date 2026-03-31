@@ -3,6 +3,7 @@
 import ElevationChart from "@/components/inspector/ElevationChart";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
+import { getShapeGroupId, getShapeGroupName } from "@/lib/shape-groups";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   Copy,
@@ -14,6 +15,7 @@ import {
   PlusCircle,
   Scan,
   Trash2,
+  Ungroup,
   X,
 } from "lucide-react";
 import {
@@ -52,7 +54,9 @@ export interface SingleInspectorViewProps {
   closePolyline: (id: string) => boolean;
   duplicateShapes: (ids: string[]) => void;
   removeShapes: (ids: string[]) => void;
+  setGroupName: (ids: string[], name: string) => void;
   setSelection: (ids: string[]) => void;
+  ungroupSelection: (ids: string[]) => void;
   setHoveredWaypoint: (
     waypoint: { shapeId: string; idx: number } | null
   ) => void;
@@ -72,7 +76,9 @@ export function SingleInspectorView({
   closePolyline,
   duplicateShapes,
   removeShapes,
+  setGroupName,
   setSelection,
+  ungroupSelection,
   setHoveredWaypoint,
   onResumeSelectedPath,
   mobileInline = false,
@@ -97,6 +103,8 @@ export function SingleInspectorView({
         }
       : { x: shape.x, y: shape.y };
   const shapeDisplayName = shape.name?.trim() || shapeKindLabels[shape.kind];
+  const groupId = getShapeGroupId(shape);
+  const groupName = getShapeGroupName(shape) ?? "";
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -108,6 +116,7 @@ export function SingleInspectorView({
             meta={[
               shapeKindLabels[shape.kind],
               `${fmt(anchorPosition.x)}, ${fmt(anchorPosition.y)}`,
+              ...(groupId ? [groupName || "grouped"] : []),
               shape.locked ? "locked" : "editable",
             ]}
           />
@@ -142,6 +151,36 @@ export function SingleInspectorView({
               <Trash2 className="size-3" />
             </IconBtn>
           </div>
+          {groupId && (
+            <Section title="Group">
+              <Row label="Group name">
+                <Input
+                  value={groupName}
+                  onFocus={startBatch}
+                  onBlur={finishBatch}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.currentTarget.blur();
+                    }
+                  }}
+                  onChange={(event) =>
+                    setGroupName([shape.id], event.target.value)
+                  }
+                  placeholder="Optional group name"
+                  className="bg-muted/50 border-border/70 focus-visible:border-primary/50 focus-visible:ring-primary/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
+                />
+              </Row>
+              <div className="pt-1">
+                <IconBtn
+                  onClick={() => ungroupSelection([shape.id])}
+                  title="Ungroup"
+                  label="Ungroup"
+                >
+                  <Ungroup className="size-3" />
+                </IconBtn>
+              </div>
+            </Section>
+          )}
           <Section title="Transform">
             <Row label="Name">
               <Input
