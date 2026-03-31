@@ -13,16 +13,20 @@ import {
 } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "FPV Race Track Planner",
-  description: `${SITE_DESCRIPTION} Built for race directors.`,
+  title: {
+    absolute: "TrackDraw | Drone Race Track Planner",
+  },
+  description:
+    "TrackDraw is a drone race track planner for FPV race directors. Design tracks to scale, review track flow in 3D, and share read-only race-day layouts.",
   keywords: SITE_KEYWORDS,
   authors: [SITE_AUTHOR],
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "TrackDraw | FPV Race Track Planner",
-    description: SITE_DESCRIPTION,
+    title: "TrackDraw | Drone Race Track Planner",
+    description:
+      "Plan drone race tracks to scale, review FPV track flow in 3D, and share read-only race-day layouts.",
     url: "/",
     images: [
       {
@@ -34,8 +38,9 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    title: "TrackDraw | FPV Race Track Planner",
-    description: SITE_DESCRIPTION,
+    title: "TrackDraw | Drone Race Track Planner",
+    description:
+      "Plan drone race tracks to scale, review FPV track flow in 3D, and share read-only race-day layouts.",
     images: [DEFAULT_SOCIAL_IMAGE],
   },
 };
@@ -153,7 +158,7 @@ const features = [
     surface: "from-emerald-500/[0.13] via-emerald-500/[0.035] to-transparent",
     glow: "#34d399",
     title: "Elevation-aware planning",
-    text: "Add height to the race line while you plan so vertical problems show up before anyone starts setting the course.",
+    text: "Add height to the race line while you plan so vertical problems show up before anyone starts setting the track.",
   },
   {
     icon: Share2,
@@ -189,32 +194,28 @@ const features = [
 
 const faq = [
   {
-    q: "Is TrackDraw only for large events?",
-    a: "Not at all. Whether it's a club weekend, a training day or a championship round, if you want pilots and crew on the same plan, TrackDraw fits.",
+    q: "What is the best way to plan an FPV race track?",
+    a: "Start with a scale-accurate field, place the obstacles you actually have, review the track flow in 3D, then share the same layout with pilots and crew. TrackDraw is built around that workflow.",
   },
   {
-    q: "Can pilots review the track without editing?",
-    a: "Yes. Every shared link opens in read-only mode, no account or app needed. Drop it in the group chat and every pilot has the plan on their screen.",
-  },
-  {
-    q: "Can we make changes between heats?",
-    a: "Yes. TrackDraw saves as you work. Move a gate, hit Share, copy the new link. The updated plan is in the group chat before the next round starts.",
-  },
-  {
-    q: "What exactly gets exported?",
-    a: "PDF (A4, portrait or landscape, with title and field dimensions), PNG (2× high-res, light or dark background), SVG (vector for Illustrator or Inkscape), and a JSON project file you can re-import at any time. 2D exports can also include obstacle numbering for briefing use.",
+    q: "Can pilots review a track layout without editing it?",
+    a: "Yes. Shared links open in read-only mode, with no account or app required. Pilots, judges, and crew can all open the same current layout on desktop or mobile.",
   },
   {
     q: "Can I use TrackDraw on a tablet at the venue?",
-    a: "Yes. The read-only view works on any device, and the editor now supports practical mobile and tablet use as well. For heavier editing, a tablet or laptop is still the most comfortable.",
+    a: "Yes. The read-only view works on any device, and the editor supports practical tablet and mobile use for quick changes on site.",
   },
   {
-    q: "Do I need an account to start designing?",
-    a: "No. You can open the studio and start designing immediately in the browser. The goal is to keep planning fast, especially when you just need to sketch, revise or share a course.",
+    q: "What can I export from a track layout?",
+    a: "You can export PDF, PNG, SVG, and JSON. That covers race-day briefs, print assets, image exports, and reusable project files.",
   },
   {
-    q: "Can I reuse an older track layout later?",
-    a: "Yes. Export the project as JSON and import it again whenever you want to base a new event on an older design.",
+    q: "Do I need an account to design a drone race track?",
+    a: "No. You can open the studio and start designing immediately in the browser, which keeps planning fast when you need to sketch, revise, or share a layout quickly.",
+  },
+  {
+    q: "Can I reuse a track layout for a future event?",
+    a: "Yes. Export the project as JSON and import it again whenever you want to build a new event on an older layout.",
   },
 ];
 
@@ -327,10 +328,10 @@ export default function Home() {
 
               <Reveal delay={0.13} className="mt-5">
                 <p className="text-muted-foreground max-w-sm text-[15px] leading-7">
-                  A browser-based track designer for FPV race directors. Build
-                  the track to scale, review the flow in 3D, share a read-only
-                  layout with pilots and crew, and make quick changes from
-                  desktop or mobile.
+                  TrackDraw is a browser-based drone race track planner for FPV
+                  race directors. Build tracks to scale, review the flow in 3D,
+                  share a read-only layout with pilots and crew, and make quick
+                  edits from desktop or mobile.
                 </p>
               </Reveal>
 
@@ -396,9 +397,9 @@ export default function Home() {
                 Plan, review, and hand off.
               </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-                TrackDraw gives you a clean base to design a course properly:
-                real field dimensions, the right obstacle set, and enough
-                structure to map the lap before anyone starts building.
+                TrackDraw gives FPV race directors a clean way to design a track
+                properly: real field dimensions, the right obstacle set, and
+                enough structure to map the lap before anyone starts building.
               </p>
             </Reveal>
 
@@ -446,9 +447,9 @@ export default function Home() {
                 From first layout to team hand-off.
               </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-                The tool works best as a sequence: map the course in 2D, check
-                it in 3D, make practical edits when reality changes, then hand
-                the same plan to pilots and crew.
+                The tool works best as a sequence: map the drone race track in
+                2D, check it in 3D, make practical edits when reality changes,
+                then hand the same plan to pilots and crew.
               </p>
             </Reveal>
 
@@ -457,7 +458,7 @@ export default function Home() {
                 <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
                   <Screenshot
                     src="/assets/screenshots/editor-element-library.png"
-                    alt="TrackDraw 2D layout editor with obstacle library and course plan"
+                    alt="TrackDraw 2D layout editor with obstacle library and track plan"
                     className="order-last lg:order-first"
                   />
                   <div className="order-first lg:order-last">
@@ -465,7 +466,7 @@ export default function Home() {
                       <Route className="size-3" /> 2D Layout
                     </div>
                     <h3 className="mt-4 text-xl font-semibold tracking-tight">
-                      Build the course on a field that matches reality.
+                      Build the track on a field that matches reality.
                     </h3>
                     <p className="text-muted-foreground mt-3 text-sm leading-7">
                       Start with the field dimensions, then place the elements
@@ -537,7 +538,7 @@ export default function Home() {
                 <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
                   <Screenshot
                     src="/assets/screenshots/editor-3d-flythroug.png"
-                    alt="TrackDraw 3D preview showing the course flow and elevation"
+                    alt="TrackDraw 3D preview showing track flow and elevation"
                     className="order-last lg:order-first"
                   />
                   <div className="order-first lg:order-last">
@@ -545,7 +546,7 @@ export default function Home() {
                       <Orbit className="size-3" /> 3D Preview
                     </div>
                     <h3 className="mt-4 text-xl font-semibold tracking-tight">
-                      Walk the course before you build it.
+                      Walk the track before you build it.
                     </h3>
                     <p className="text-muted-foreground mt-3 text-sm leading-7">
                       One click switches from the flat 2D plan to a live 3D

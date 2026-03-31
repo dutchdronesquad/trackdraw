@@ -29,7 +29,7 @@ Starter layouts should feel like a practical launch point, not like a locked tem
 The shipped first pass remains:
 
 - curated by TrackDraw
-- account-free
+- usable without an account
 - intentionally small
 - fully editable after creation
 
