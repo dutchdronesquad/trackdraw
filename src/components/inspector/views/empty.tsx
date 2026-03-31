@@ -7,7 +7,7 @@ import {
   getInventoryComparison,
   inventoryKinds,
   normalizeInventoryProfile,
-} from "@/lib/inventory";
+} from "@/lib/planning/inventory";
 import type {
   FieldSpec,
   InventoryShapeKind,

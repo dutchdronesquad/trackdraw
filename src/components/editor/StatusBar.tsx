@@ -4,8 +4,8 @@ import { useEditor } from "@/store/editor";
 import { selectShapeRecordMap } from "@/store/selectors";
 import VersionTag from "@/components/VersionTag";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
-import { getLayoutPresetById } from "@/lib/layout-presets";
-import { getShapeGroupId, getShapeGroupName } from "@/lib/shape-groups";
+import { getLayoutPresetById } from "@/lib/planning/layout-presets";
+import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 
 const toolLabel: Record<string, string> = {
   select: "Select",

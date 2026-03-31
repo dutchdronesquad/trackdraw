@@ -1,5 +1,5 @@
-import { getDesignShapeById, getDesignShapes } from "@/lib/design";
-import { getDesignPolylineZRange } from "@/lib/polyline-derived";
+import { getDesignShapeById, getDesignShapes } from "@/lib/track/design";
+import { getDesignPolylineZRange } from "@/lib/track/polyline-derived";
 import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
 import type { useEditor } from "@/store/editor";
 

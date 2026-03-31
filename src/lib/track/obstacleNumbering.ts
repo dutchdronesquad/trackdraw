@@ -1,6 +1,6 @@
-import { getDesignShapes } from "@/lib/design";
-import { distance2D } from "@/lib/geometry";
-import { getPolyline2DDerived } from "@/lib/polyline-derived";
+import { getDesignShapes } from "@/lib/track/design";
+import { distance2D } from "@/lib/track/geometry";
+import { getPolyline2DDerived } from "@/lib/track/polyline-derived";
 import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
 
 const NUMBERED_KINDS = new Set<Shape["kind"]>(["gate", "ladder", "divegate"]);

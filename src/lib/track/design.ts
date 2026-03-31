@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { normalizeInventoryProfile } from "@/lib/inventory";
+import { normalizeInventoryProfile } from "@/lib/planning/inventory";
 import type {
   PolylineShape,
   SerializedTrackDesign,

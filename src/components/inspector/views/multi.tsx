@@ -8,7 +8,7 @@ import {
   getShapeGroupId,
   getShapeGroupName,
   selectionHasGroupedShapes,
-} from "@/lib/shape-groups";
+} from "@/lib/track/shape-groups";
 import type { Shape } from "@/lib/types";
 import { Copy, GitMerge, Group, Trash2, Ungroup } from "lucide-react";
 import {

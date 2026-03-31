@@ -5,8 +5,8 @@ import {
   getGate2DShape,
   getLadder2DShape,
   getStartFinish2DShape,
-} from "@/lib/shape2d";
-import { getPolylineBounds } from "@/lib/polyline-derived";
+} from "@/lib/track/shape2d";
+import { getPolylineBounds } from "@/lib/track/polyline-derived";
 import type { Shape } from "@/lib/types";
 
 export function getShapeLocalBounds(shape: Shape, ppm: number) {

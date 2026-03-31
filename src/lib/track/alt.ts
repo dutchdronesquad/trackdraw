@@ -1,5 +1,5 @@
 import { getDesignPolylineZRange } from "./polyline-derived";
-import type { TrackDesign } from "./types";
+import type { TrackDesign } from "../types";
 
 export function zToColor(z: number, zmin: number, zmax: number): string {
   const t = zmax === zmin ? 0 : (z - zmin) / (zmax - zmin);

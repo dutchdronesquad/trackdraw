@@ -11,7 +11,7 @@ import {
   getLayoutPresetShapeCount,
   layoutPresets,
   type LayoutPreset,
-} from "@/lib/layout-presets";
+} from "@/lib/planning/layout-presets";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import { cn } from "@/lib/utils";
 

@@ -8,7 +8,7 @@
  *   trackdraw-restore-{id}   — JSON: SerializedTrackDesign
  */
 
-import { parseDesign, serializeDesign } from "@/lib/design";
+import { parseDesign, serializeDesign } from "@/lib/track/design";
 import type { TrackDesign } from "@/lib/types";
 import { nanoid } from "nanoid";
 

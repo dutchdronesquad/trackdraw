@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Kbd } from "@/components/ui/kbd";
 import type { ProjectMeta, RestorePointMeta } from "@/lib/projects";
-import { starterLayouts } from "@/lib/starter-layouts";
+import { starterLayouts } from "@/lib/planning/starter-layouts";
 
 interface ProjectManagerDialogProps {
   open: boolean;

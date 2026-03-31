@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Box, ChevronRight } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
-import { starterLayouts } from "@/lib/starter-layouts";
+import { starterLayouts } from "@/lib/planning/starter-layouts";
 import { cn } from "@/lib/utils";
 
 export const STARTER_STEPS = [

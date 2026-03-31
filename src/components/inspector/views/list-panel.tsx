@@ -4,7 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
-import { getObstacleNumberMap } from "@/lib/obstacleNumbering";
+import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
 import type { Shape, TrackDesign } from "@/lib/types";
 import { X } from "lucide-react";
 import { fmt, Section } from "@/components/inspector/shared";

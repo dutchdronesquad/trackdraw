@@ -1,4 +1,4 @@
-import type { PolylinePoint, PolylineShape } from "./types";
+import type { PolylinePoint, PolylineShape } from "../types";
 
 export function distance2D(
   a: { x: number; y: number },

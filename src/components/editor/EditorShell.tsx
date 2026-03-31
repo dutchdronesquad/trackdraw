@@ -32,15 +32,15 @@ import type {
   TrackPreview3DHandle,
   TrackPreview3DProps,
 } from "@/components/canvas/TrackPreview3D";
-import { createDefaultDesign } from "@/lib/design";
+import { createDefaultDesign } from "@/lib/track/design";
 import { shapeKindLabels } from "@/lib/editor-tools";
-import { getLayoutPresetById } from "@/lib/layout-presets";
+import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import {
   getShapeGroupId,
   getShapeGroupName,
   selectionHasGroupedShapes,
-} from "@/lib/shape-groups";
-import { createStarterLayoutDesign } from "@/lib/starter-layouts";
+} from "@/lib/track/shape-groups";
+import { createStarterLayoutDesign } from "@/lib/planning/starter-layouts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";

@@ -14,7 +14,7 @@ import {
   type ProjectMeta,
   type RestorePointMeta,
 } from "@/lib/projects";
-import { parseDesign } from "@/lib/design";
+import { parseDesign } from "@/lib/track/design";
 import { decodeDesign } from "@/lib/share";
 import { recordPerfSample } from "@/lib/perf";
 import { useEditor } from "@/store/editor";

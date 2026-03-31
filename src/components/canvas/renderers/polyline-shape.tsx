@@ -9,9 +9,9 @@ import {
   getPolylineRouteWarningSegmentVisuals,
   getPolylineSmoothSegmentPointsPx,
   getPolylineSmoothPointsPx,
-} from "@/lib/polyline-derived";
-import { zToColor } from "@/lib/alt";
-import { m2px, px2m } from "@/lib/units";
+} from "@/lib/track/polyline-derived";
+import { zToColor } from "@/lib/track/alt";
+import { m2px, px2m } from "@/lib/track/units";
 import type { PolylinePoint, PolylineShape } from "@/lib/types";
 import { useEditor } from "@/store/editor";
 import { selectPrimaryPolyline } from "@/store/selectors";
