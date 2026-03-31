@@ -10,13 +10,16 @@ import type {
   LadderShape,
   DiveGateShape,
 } from "../types";
-import { getDesignShapes } from "../design";
-import { getObstacleNumberMap, isNumberedObstacle } from "../obstacleNumbering";
+import { getDesignShapes } from "../track/design";
+import {
+  getObstacleNumberMap,
+  isNumberedObstacle,
+} from "../track/obstacleNumbering";
 import {
   getPolyline2DDerived,
   getPolylineRouteWarningSegmentVisuals,
   getPolylineSmoothSegmentPointsPx,
-} from "../polyline-derived";
+} from "../track/polyline-derived";
 import {
   getCone2DShape,
   getDiveGate2DShape,
@@ -24,7 +27,7 @@ import {
   getGate2DShape,
   getLadder2DShape,
   getStartFinish2DShape,
-} from "../shape2d";
+} from "../track/shape2d";
 
 function m(v: number, ppm: number) {
   return v * ppm;

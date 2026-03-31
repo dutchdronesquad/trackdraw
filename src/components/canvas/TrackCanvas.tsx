@@ -37,15 +37,15 @@ import {
   selectDesignPolylineZRange,
   selectShapeRecordMap,
 } from "@/store/selectors";
-import { m2px } from "@/lib/units";
+import { m2px } from "@/lib/track/units";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
-import { distance2D, getPolyline2DPoints } from "@/lib/geometry";
-import { getObstacleNumberMap } from "@/lib/obstacleNumbering";
+import { distance2D, getPolyline2DPoints } from "@/lib/track/geometry";
+import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
 import {
   getShapeGroupId,
   getShapeGroupName,
   selectionHasGroupedShapes,
-} from "@/lib/shape-groups";
+} from "@/lib/track/shape-groups";
 import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/use-mobile";

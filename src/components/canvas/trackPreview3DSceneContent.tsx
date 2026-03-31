@@ -19,7 +19,7 @@ import {
   getPolylineRouteWarningSegmentVisuals,
   getPolylinePreview3DPoints,
   getPolylineSmoothSegmentPoints3D,
-} from "@/lib/polyline-derived";
+} from "@/lib/track/polyline-derived";
 import type {
   ConeShape,
   DiveGateShape,

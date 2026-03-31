@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { createDefaultDesign, nowIso } from "@/lib/design";
+import { createDefaultDesign, nowIso } from "@/lib/track/design";
 import type { ShapeDraft, TrackDesign } from "@/lib/types";
 
 export interface StarterLayout {

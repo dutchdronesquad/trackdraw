@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { parseDesign } from "@/lib/design";
+import { parseDesign } from "@/lib/track/design";
 import { createShare } from "@/lib/server/shares";
 import { buildStoredSharePath } from "@/lib/share";
 import { parseEditorView } from "@/lib/view";

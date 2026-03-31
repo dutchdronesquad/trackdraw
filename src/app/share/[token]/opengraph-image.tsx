@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getDesignShapes } from "@/lib/design";
+import { getDesignShapes } from "@/lib/track/design";
 import { getShareDescription, getShareTitle } from "@/lib/share";
 import { resolveShareView } from "@/lib/server/share-resolution";
 import { SITE_NAME } from "@/lib/seo";

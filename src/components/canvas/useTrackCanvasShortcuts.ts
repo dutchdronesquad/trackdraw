@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { isPolylineShape } from "@/lib/shape-utils";
+import { isPolylineShape } from "@/lib/track/shape-utils";
 import type { EditorTool } from "@/lib/editor-tools";
 import type { Shape, ShapeDraft } from "@/lib/types";
 import {

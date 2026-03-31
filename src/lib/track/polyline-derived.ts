@@ -8,7 +8,7 @@ import {
   smoothPolyline3D,
 } from "./geometry";
 import { getDesignShapes } from "./design";
-import type { PolylinePoint, PolylineShape, TrackDesign } from "./types";
+import type { PolylinePoint, PolylineShape, TrackDesign } from "../types";
 import { m2px } from "./units";
 
 type PolylineCurve3Data = {

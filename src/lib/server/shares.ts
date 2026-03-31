@@ -5,7 +5,7 @@ import {
   getDesignShapes,
   normalizeDesign,
   serializeDesign,
-} from "@/lib/design";
+} from "@/lib/track/design";
 import { getShareDescription, getShareTitle } from "@/lib/share";
 import type { SerializedTrackDesign, TrackDesign } from "@/lib/types";
 import { getDatabase } from "@/lib/server/db";

@@ -2,7 +2,7 @@ import { shapeKindLabels } from "@/lib/editor-tools";
 import {
   getObstacleNumberMap,
   isNumberedObstacle,
-} from "@/lib/obstacleNumbering";
+} from "@/lib/track/obstacleNumbering";
 import type { Shape, TrackDesign } from "@/lib/types";
 
 type SetupComplexity = "light" | "standard" | "heavy";

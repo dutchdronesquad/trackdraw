@@ -1,5 +1,5 @@
 import LZString from "lz-string";
-import { normalizeDesign, serializeDesign } from "@/lib/design";
+import { normalizeDesign, serializeDesign } from "@/lib/track/design";
 import type { TrackDesign } from "./types";
 import type { EditorView } from "./view";
 

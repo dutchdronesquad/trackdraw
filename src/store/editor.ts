@@ -19,10 +19,13 @@ import {
   normalizeDesign,
   nowIso,
   serializeDesign,
-} from "@/lib/design";
+} from "@/lib/track/design";
 import type { EditorTool } from "@/lib/editor-tools";
-import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/layout-presets";
-import { expandGroupedSelection, getShapeGroupId } from "@/lib/shape-groups";
+import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/planning/layout-presets";
+import {
+  expandGroupedSelection,
+  getShapeGroupId,
+} from "@/lib/track/shape-groups";
 import type { DraftPoint, RectLike } from "@/components/canvas/shared";
 
 export type { EditorTool } from "@/lib/editor-tools";

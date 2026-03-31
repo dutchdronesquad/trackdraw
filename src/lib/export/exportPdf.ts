@@ -3,8 +3,8 @@ import { jsPDF } from "@/lib/vendor/jspdf";
 import {
   getInventoryComparison,
   getRequiredInventoryCounts,
-} from "@/lib/inventory";
-import { buildSetupPlan } from "@/lib/setup-estimate";
+} from "@/lib/planning/inventory";
+import { buildSetupPlan } from "@/lib/planning/setup-estimate";
 import type { TrackDesign } from "../types";
 import {
   designToSvg,

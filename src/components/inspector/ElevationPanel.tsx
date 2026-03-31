@@ -4,7 +4,7 @@ import { useEditor } from "@/store/editor";
 import {
   getPolylineElevationSamples,
   getPolylineTotalLength2D,
-} from "@/lib/polyline-derived";
+} from "@/lib/track/polyline-derived";
 import { selectPrimaryPolyline } from "@/store/selectors";
 
 const W = 260;

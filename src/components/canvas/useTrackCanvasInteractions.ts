@@ -5,9 +5,12 @@ import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 import type { Vector2d } from "konva/lib/types";
 import { createShapeForTool, type EditorTool } from "@/lib/editor-tools";
-import { getLayoutPresetById, placeLayoutPreset } from "@/lib/layout-presets";
-import { distance2D } from "@/lib/geometry";
-import { px2m } from "@/lib/units";
+import {
+  getLayoutPresetById,
+  placeLayoutPreset,
+} from "@/lib/planning/layout-presets";
+import { distance2D } from "@/lib/track/geometry";
+import { px2m } from "@/lib/track/units";
 import {
   MIN_MARQUEE_SIZE,
   normalizeRect,

@@ -5,7 +5,7 @@ import { Group, Rect } from "react-konva";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Vector2d } from "konva/lib/types";
-import { m2px, px2m } from "@/lib/units";
+import { m2px, px2m } from "@/lib/track/units";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   renderLockedIndicator,

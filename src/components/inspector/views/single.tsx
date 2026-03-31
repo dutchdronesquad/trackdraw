@@ -3,7 +3,7 @@
 import ElevationChart from "@/components/inspector/ElevationChart";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
-import { getShapeGroupId, getShapeGroupName } from "@/lib/shape-groups";
+import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   Copy,

@@ -8,7 +8,7 @@ import {
   Shape as KonvaShape,
   Text,
 } from "react-konva";
-import { m2px } from "@/lib/units";
+import { m2px } from "@/lib/track/units";
 import {
   getCone2DShape,
   getDiveGate2DShape,
@@ -16,7 +16,7 @@ import {
   getGate2DShape,
   getLadder2DShape,
   getStartFinish2DShape,
-} from "@/lib/shape2d";
+} from "@/lib/track/shape2d";
 import type {
   ConeShape,
   DiveGateShape,
