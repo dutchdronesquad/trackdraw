@@ -4,8 +4,7 @@ type PlaceablePresetShape = Exclude<Shape, PolylineShape>;
 
 export type LayoutPresetShapeDraft = Omit<
   PlaceablePresetShape,
-  "id" |
-  "x" | "y" | "rotation"
+  "id" | "x" | "y" | "rotation"
 > & {
   x: number;
   y: number;
