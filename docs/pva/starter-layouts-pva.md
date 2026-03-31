@@ -2,13 +2,15 @@
 
 Date: March 31, 2026
 
-Status: proposed next slice
+Status: first pass shipped
 
 ## Purpose
 
 This document defines the first meaningful product shape for `Starter layouts`.
 
 Obstacle presets now solve repeated insertion. Selection grouping now solves repeated manipulation. The remaining layout-acceleration friction is starting from an empty canvas when the user only needs a reasonable first draft to react to.
+
+The first pass is now shipped, so this document should be read as a current product boundary and refinement guide rather than as a pre-build proposal.
 
 ## Product Goal
 
@@ -24,7 +26,7 @@ Starter layouts should feel like a practical launch point, not like a locked tem
 
 ## Core Boundary
 
-The first pass should remain:
+The shipped first pass remains:
 
 - curated by TrackDraw
 - account-free
@@ -51,9 +53,9 @@ They do not solve:
 
 Starter layouts should solve that specific problem and not try to become a general template browser.
 
-## Recommended First Pass
+## Shipped First Pass
 
-Ship a very small curated set of starter drafts:
+TrackDraw now ships a very small curated set of starter drafts:
 
 - Open practice
 - Compact race start
@@ -66,11 +68,21 @@ Each starter should:
 - stay generic enough for many fields
 - give users a visible early flow without implying venue compliance
 
+Current entry points:
+
+- onboarding / first-use starter flow
+- new-project flow in the Projects dialog
+
+Current surfacing:
+
+- onboarding keeps starter layouts as one option alongside the guided gate-first path and a plain blank-canvas start
+- the Projects dialog keeps `Start fresh` as the primary blank action and surfaces starter layouts as compact alternate starts
+
 ## UX Shape
 
 Starter layouts should appear where a blank project decision already happens.
 
-Recommended entry points:
+Shipped entry points:
 
 1. onboarding / first-use starter flow
 2. new-project flow
@@ -84,6 +96,7 @@ Reason:
 
 - starter layouts are about how a project begins
 - users should encounter them at project creation time, not mixed into ordinary shape placement
+- they should read as lightweight launch points, not as a second preset browser inside the editor
 
 ## Editing Model
 
@@ -111,35 +124,28 @@ Each starter should define:
 
 The simplest version should likely ship obstacle drafts first and postpone starter paths unless a route meaningfully improves the starting experience.
 
-## First Build Recommendation
+## Next Iteration Guidance
 
-Build the smallest slice that proves the product value:
+Keep the next work small and evidence-driven:
 
 ### Phase 1
 
-- 3 curated starter layouts
-- shown in onboarding or new-project flow
-- choosing one creates a normal editable project
-
-### Phase 2
-
-- polish preview cards and copy
+- polish preview cards, copy, and layout density
 - learn which starters are actually chosen
 - add or replace starters based on real use, not speculation
 
-### Phase 3
+### Phase 2
 
 - only then decide whether starter layouts deserve broader surfacing outside new-project entry
 
 ## Open Questions
 
 - Should the first starters include a path, or only obstacle drafts?
-- Should starter layouts replace the current design immediately, or open behind the existing new-project confirmation step?
 - Should each starter assume one default field size, or adapt to the current field dimensions?
 
 ## Recommendation
 
-Treat `Starter layouts` as the next narrow acceleration slice.
+Treat `Starter layouts` as a shipped narrow acceleration slice that should now be refined carefully.
 
 Do not introduce a template browser yet.
 

@@ -2,7 +2,7 @@
 
 Date: March 31, 2026
 
-Status: obstacle presets and selection grouping first pass shipped
+Status: obstacle presets, selection grouping, and starter layouts first pass shipped
 
 ## Purpose
 
@@ -113,7 +113,15 @@ Grouping now exists as project-local editor behavior and remains intentionally s
 
 Use starter layouts to solve blank-canvas hesitation.
 
-Starter layouts should be:
+Shipped first pass:
+
+- Open practice
+- Compact race start
+- Technical ladder line
+- surfaced from onboarding and new-project flow
+- created as ordinary editable projects, not as template objects
+
+Starter layouts should stay:
 
 - small in number
 - clearly editable
@@ -208,17 +216,16 @@ This strengthens repeatability inside real projects without introducing accounts
 
 ## Recommended Next Build Target
 
-The next layout-acceleration slice should now be `Starter layouts`.
+The next layout-acceleration work should now be polish rather than a new category.
 
 Reason:
 
-- presets and grouping already cover insertion and manipulation
-- starter layouts now address the remaining blank-canvas friction
-- it keeps the acceleration work account-free and editor-first
+- presets, grouping, and starter layouts now cover insertion, manipulation, and blank-canvas entry
+- the main remaining questions are about which starters get used and what deserves refinement
+- this keeps the acceleration work account-free and avoids inventing a broader template surface too early
 
 ## Open Questions
 
-- Should starter layouts live in onboarding, new-project flow, or the normal tool flow?
 - Should the first starter layouts include a route, or only obstacle drafts?
 - At what point does “starter layout” become a venue template and therefore a different product category?
 
@@ -231,5 +238,6 @@ Treat it as a sequence of narrowly defined accelerators:
 1. presets for insertion
 2. grouping for manipulation
 3. starter layouts for blank-canvas entry
-4. shared template libraries later, likely on the account-backed side
-5. venue-aware templates later, likely near the optional-account boundary
+4. starter-layout and preset polish based on real use
+5. shared template libraries later, likely on the account-backed side
+6. venue-aware templates later, likely near the optional-account boundary

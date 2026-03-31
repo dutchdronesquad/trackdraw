@@ -40,6 +40,7 @@ import {
   getShapeGroupName,
   selectionHasGroupedShapes,
 } from "@/lib/shape-groups";
+import { createStarterLayoutDesign } from "@/lib/starter-layouts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -389,6 +390,29 @@ export default function EditorShell({
     [handleTabChange, replaceDesign, resetGuidedHints, setActiveTool]
   );
 
+  const applyStarterLayout = useCallback(
+    (layoutId: string) => {
+      const nextDesign = createStarterLayoutDesign(layoutId);
+      if (!nextDesign) return;
+
+      replaceDesign(nextDesign);
+      setStarterDismissed(true);
+      setStarterMode(null);
+      setSelection([]);
+      setMobileMultiSelectEnabled(false);
+      setMobilePathBuilderPinnedOpen(false);
+      setProjectManagerOpen(false);
+      setMobileToolsOpen(false);
+      handleTabChange("2d");
+      setActiveTool("select");
+
+      window.requestAnimationFrame(() => {
+        canvasRef.current?.fitToWindow();
+      });
+    },
+    [handleTabChange, replaceDesign, setActiveTool, setSelection]
+  );
+
   const openPresetPicker = useCallback(() => {
     setPresetPickerOpen(true);
   }, []);
@@ -495,6 +519,7 @@ export default function EditorShell({
                     }}
                     title="Welcome to TrackDraw"
                     subtitle="Place a few gates, draw the route, check 3D, then share when the track is ready."
+                    contentClassName="max-h-[96dvh]"
                     bodyClassName="space-y-5 pt-3 pb-4"
                   >
                     <StarterSteps mobile />
@@ -502,21 +527,22 @@ export default function EditorShell({
                       mobile
                       onPath={() => applyStarterDesign("gate")}
                       onBlank={() => applyStarterDesign("blank")}
+                      onStarterLayout={applyStarterLayout}
                     />
                   </MobileDrawer>
                 ) : null}
                 {shouldShowStarter && !isMobile ? (
                   <div className="absolute inset-0 z-20 hidden items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm lg:flex">
                     <div className="border-border/50 bg-card/97 pointer-events-auto w-full max-w-xl rounded-4xl border px-8 py-8 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
+                      <div className="relative">
+                        <div className="pr-10">
                           <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
                             Studio
                           </p>
                           <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
                             Welcome to TrackDraw
                           </p>
-                          <p className="text-muted-foreground mt-2 max-w-sm text-sm leading-relaxed">
+                          <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
                             Design the layout in 2D, review elevation in 3D, and
                             share a read-only link when the track is ready.
                           </p>
@@ -524,7 +550,7 @@ export default function EditorShell({
                         <button
                           type="button"
                           onClick={() => setStarterDismissed(true)}
-                          className="text-muted-foreground/75 hover:text-foreground hover:bg-muted rounded-full p-1.5 transition-colors"
+                          className="text-muted-foreground/75 hover:text-foreground hover:bg-muted absolute top-0 right-0 cursor-pointer rounded-full p-1.5 transition-colors"
                           aria-label="Dismiss starter dialog"
                         >
                           <X className="size-4" />
@@ -536,6 +562,7 @@ export default function EditorShell({
                         <StarterActions
                           onPath={() => applyStarterDesign("gate")}
                           onBlank={() => applyStarterDesign("blank")}
+                          onStarterLayout={applyStarterLayout}
                         />
                       </div>
                     </div>
@@ -893,15 +920,15 @@ export default function EditorShell({
         hasContent={Boolean(design.title.trim() || designShapes.length)}
         onNewProject={() => {
           snapshotCurrentDesign();
-          replaceDesign(createFirstUseBlankDesign());
+          applyStarterDesign("blank");
           setProjectManagerOpen(false);
           setMobileToolsOpen(false);
-          setStarterDismissed(false);
         }}
         onBackupProject={() => {
           setProjectManagerOpen(false);
           setExportOpen(true);
         }}
+        onStartStarterLayout={applyStarterLayout}
         onOpenProject={handleOpenProject}
         onDeleteProject={handleDeleteProject}
         onRenameProject={handleRenameProject}
