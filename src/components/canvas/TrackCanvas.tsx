@@ -109,9 +109,7 @@ const TrackCanvas = memo(
     const addShape = useEditor((state) => state.addShape);
     const addShapes = useEditor((state) => state.addShapes);
     const activeTool = useEditor((state) => state.transient.activeTool);
-    const activePresetId = useEditor(
-      (state) => state.transient.activePresetId
-    );
+    const activePresetId = useEditor((state) => state.transient.activePresetId);
     const vertexSel = useEditor((state) => state.transient.vertexSelection);
     const draftPath = useEditor((state) => state.transient.draftPath);
     const draftForceClosed = useEditor(

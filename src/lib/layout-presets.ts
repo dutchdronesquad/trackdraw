@@ -1,6 +1,9 @@
 import type { ShapeDraft, ShapeKind } from "@/lib/types";
 
-export type LayoutPresetShapeDraft = Omit<ShapeDraft, "x" | "y" | "rotation"> & {
+export type LayoutPresetShapeDraft = Omit<
+  ShapeDraft,
+  "x" | "y" | "rotation"
+> & {
   x: number;
   y: number;
   rotation?: number;
@@ -78,24 +81,22 @@ export const layoutPresets: LayoutPreset[] = [
   {
     id: "start-finish-setup",
     name: "Start / Finish Setup",
-    description: "Launch pads with two side flags and a first gate to start the run.",
-    shapes: [
-      startFinish(0, 0),
-      gate(0, 5),
-      flag(-2.8, 0, 180),
-      flag(2.8, 0),
-    ],
+    description:
+      "Launch pads with two side flags and a first gate to start the run.",
+    shapes: [startFinish(0, 0), gate(0, 5), flag(-2.8, 0, 180), flag(2.8, 0)],
   },
   {
     id: "straight-gate-run",
     name: "Straight Gate Run",
-    description: "A compact four-gate straight for quick speed sections or early lap shaping.",
+    description:
+      "A compact four-gate straight for quick speed sections or early lap shaping.",
     shapes: [gate(0, 0), gate(0, 5), gate(0, 10), gate(0, 15)],
   },
   {
     id: "slalom-run",
     name: "Slalom Run",
-    description: "Five alternating flags for a readable slalom section with clear lateral movement.",
+    description:
+      "Five alternating flags for a readable slalom section with clear lateral movement.",
     shapes: [
       flag(0, 0),
       flag(2.6, 4.5, 180),
@@ -107,7 +108,8 @@ export const layoutPresets: LayoutPreset[] = [
   {
     id: "ladder-section",
     name: "Ladder Section",
-    description: "Two ladders in sequence to add a tall technical section without extra setup work.",
+    description:
+      "Two ladders in sequence to add a tall technical section without extra setup work.",
     shapes: [ladder(0, 0), ladder(0, 8)],
   },
 ];

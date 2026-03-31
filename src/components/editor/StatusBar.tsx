@@ -43,9 +43,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       aria-live="polite"
       className="border-border bg-sidebar text-muted-foreground hidden items-center gap-3 border-t px-3 py-1.5 font-mono text-xs select-none lg:flex"
     >
-      <span className="text-foreground/80 shrink-0">
-        {activeToolLabel}
-      </span>
+      <span className="text-foreground/80 shrink-0">{activeToolLabel}</span>
       <span className="text-muted-foreground/45">·</span>
 
       {/* Zoom */}

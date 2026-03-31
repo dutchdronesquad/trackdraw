@@ -86,7 +86,9 @@ export default function Toolbar({
     else onExport();
   }
 
-  function handleToolSelect(tool: (typeof toolbarToolGroups)[number]["tools"][number]["id"]) {
+  function handleToolSelect(
+    tool: (typeof toolbarToolGroups)[number]["tools"][number]["id"]
+  ) {
     setSelection([]);
     if (tool === "preset") {
       onOpenPresets();
@@ -153,9 +155,9 @@ export default function Toolbar({
                       whileTap={{ scale: 0.985 }}
                       transition={{ duration: 0.16, ease: "easeOut" }}
                     >
-                        <SidebarMenuButton
-                          isActive={active}
-                          onClick={() => handleToolSelect(tool.id)}
+                      <SidebarMenuButton
+                        isActive={active}
+                        onClick={() => handleToolSelect(tool.id)}
                         className={cn(
                           "relative h-8 overflow-hidden rounded-lg border transition-all duration-150",
                           collapsed ? "justify-center px-0" : "gap-2.5",

@@ -160,11 +160,13 @@ function LayoutPresetPickerBody({
                     {preset.description}
                   </p>
                 </div>
-                <span className="bg-muted text-muted-foreground inline-flex shrink-0 self-start whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-medium uppercase">
+                <span className="bg-muted text-muted-foreground inline-flex shrink-0 self-start rounded-full px-2 py-1 text-[10px] font-medium whitespace-nowrap uppercase">
                   {itemCount} items
                 </span>
               </div>
-              <p className="text-muted-foreground text-[11px]">{countSummary}</p>
+              <p className="text-muted-foreground text-[11px]">
+                {countSummary}
+              </p>
             </div>
           </button>
         );
@@ -208,7 +210,7 @@ export function LayoutPresetPicker({
         pinnedContent={
           <>
             <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-4">
-              <div className="rounded-xl border border-border/50 bg-muted/18 px-4 py-3">
+              <div className="border-border/50 bg-muted/18 rounded-xl border px-4 py-3">
                 <p className="text-foreground text-sm font-medium">
                   {selectedSummary}
                 </p>
@@ -281,7 +283,7 @@ export function LayoutPresetPicker({
               Placement
             </p>
             <div className="space-y-2.5">
-              <div className="rounded-xl border border-border/60 bg-muted/18 px-4 py-3">
+              <div className="border-border/60 bg-muted/18 rounded-xl border px-4 py-3">
                 <p className="text-foreground text-sm font-medium">
                   {selectedSummary}
                 </p>
@@ -289,7 +291,7 @@ export function LayoutPresetPicker({
                   {selectedDescription}
                 </p>
               </div>
-              <div className="rounded-xl border border-border/40 border-dashed px-4 py-3">
+              <div className="border-border/40 rounded-xl border border-dashed px-4 py-3">
                 <p className="text-foreground text-xs font-medium">
                   How it works
                 </p>
