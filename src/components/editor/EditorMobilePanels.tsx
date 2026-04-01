@@ -357,12 +357,6 @@ export function EditorMobilePanels({
     action();
   };
 
-  const runAfterClosingToolsDrawer = (action: () => void) => {
-    blurActiveControl();
-    onSetMobileToolsOpen(false);
-    window.setTimeout(action, 0);
-  };
-
   useEffect(() => {
     const mediaQuery = window.matchMedia(
       "(max-width: 1023px) and (orientation: landscape)"

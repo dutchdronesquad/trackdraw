@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import AccountMenu from "@/components/editor/AccountMenu";
 import { toolbarToolGroups } from "@/components/editor/tool-icons";
@@ -28,7 +27,7 @@ import {
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
-import { Download, FilePlus, FolderOpen, Import } from "lucide-react";
+import { Download, FolderOpen, Import } from "lucide-react";
 
 function TrackDrawIcon({ className }: { className?: string }) {
   return (
@@ -75,7 +74,6 @@ export default function Toolbar({
   onOpenPresets,
   collapsed,
 }: ToolbarProps) {
-  const [footerHydrated, setFooterHydrated] = useState(false);
   const activeTool = useEditor((state) => state.transient.activeTool);
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setSelection = useEditor((state) => state.setSelection);
@@ -91,10 +89,6 @@ export default function Toolbar({
     }
     setActiveTool(tool);
   }
-
-  useEffect(() => {
-    setFooterHydrated(true);
-  }, []);
 
   function renderFooterAction({
     key,
@@ -299,31 +293,27 @@ export default function Toolbar({
 
         <SidebarFooter className="border-border/60 gap-0 border-t p-2">
           <SidebarMenu className="space-y-1" key="projects-footer-v3">
-            {footerHydrated ? (
-              <>
-                {renderFooterAction({
-                  key: "projects",
-                  label: "Projects",
-                  tooltip: "Manage projects",
-                  icon: <FolderOpen className="size-3.5" />,
-                  onClick: onOpenProjectManager,
-                })}
-                {renderFooterAction({
-                  key: "import",
-                  label: "Import",
-                  tooltip: "Import JSON",
-                  icon: <Import className="size-3.5" />,
-                  onClick: onImport,
-                })}
-                {renderFooterAction({
-                  key: "export",
-                  label: "Export",
-                  tooltip: "Export track",
-                  icon: <Download className="size-3.5" />,
-                  onClick: onExport,
-                })}
-              </>
-            ) : null}
+            {renderFooterAction({
+              key: "projects",
+              label: "Projects",
+              tooltip: "Manage projects",
+              icon: <FolderOpen className="size-3.5" />,
+              onClick: onOpenProjectManager,
+            })}
+            {renderFooterAction({
+              key: "import",
+              label: "Import",
+              tooltip: "Import JSON",
+              icon: <Import className="size-3.5" />,
+              onClick: onImport,
+            })}
+            {renderFooterAction({
+              key: "export",
+              label: "Export",
+              tooltip: "Export track",
+              icon: <Download className="size-3.5" />,
+              onClick: onExport,
+            })}
           </SidebarMenu>
           <div className="border-border/70 mt-3 border-t pt-3">
             <AccountMenu

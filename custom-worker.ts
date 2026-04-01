@@ -24,7 +24,7 @@ type WorkerExecutionContext = {
   waitUntil(promise: Promise<unknown>): void;
 };
 
-export default {
+const worker = {
   ...handler,
 
   async scheduled(
@@ -35,3 +35,5 @@ export default {
     ctx.waitUntil(cleanupExpiredShares(env.DB));
   },
 };
+
+export default worker;

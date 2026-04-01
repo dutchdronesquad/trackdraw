@@ -172,11 +172,9 @@ function useDevSession() {
 
 export const authClient = {
   useSession() {
-    if (isDevAuthShimEnabled()) {
-      return useDevSession();
-    }
-
-    return betterAuthClient.useSession();
+    const devSession = useDevSession();
+    const authSession = betterAuthClient.useSession();
+    return isDevAuthShimEnabled() ? devSession : authSession;
   },
   signIn: {
     async magicLink(options: MagicLinkSignInOptions) {
