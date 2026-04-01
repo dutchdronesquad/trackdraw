@@ -5,7 +5,6 @@ import { useState } from "react";
 import {
   Download,
   FolderOpen,
-  FilePlus,
   Import,
   LogIn,
   LogOut,
@@ -26,7 +25,6 @@ import {
 import { authClient } from "@/lib/auth-client";
 
 type MobileAppMenuProps = {
-  onOpenNewProject: () => void;
   onOpenProjects: () => void;
   onImport: () => void;
   onExport: () => void;
@@ -117,7 +115,6 @@ function MenuSection({
 }
 
 export default function MobileAppMenu({
-  onOpenNewProject,
   onOpenProjects,
   onImport,
   onExport,
@@ -233,12 +230,6 @@ export default function MobileAppMenu({
                 ) : null}
 
                 <MenuSection title="Projects">
-                  <MenuRow
-                    icon={<FilePlus className="size-4" />}
-                    label="New project"
-                    description="Start fresh or pick a starter layout"
-                    onClick={() => closeAndRun(onOpenNewProject)}
-                  />
                   <MenuRow
                     icon={<FolderOpen className="size-4" />}
                     label="Projects"

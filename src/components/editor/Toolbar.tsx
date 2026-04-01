@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import AccountMenu from "@/components/editor/AccountMenu";
 import { toolbarToolGroups } from "@/components/editor/tool-icons";
@@ -61,7 +62,6 @@ function TrackDrawIcon({ className }: { className?: string }) {
 interface ToolbarProps {
   onImport: () => void;
   onExport: () => void;
-  onOpenNewProject: () => void;
   onOpenProjectManager: () => void;
   onOpenPresets: () => void;
   collapsed: boolean;
@@ -71,11 +71,11 @@ interface ToolbarProps {
 export default function Toolbar({
   onImport,
   onExport,
-  onOpenNewProject,
   onOpenProjectManager,
   onOpenPresets,
   collapsed,
 }: ToolbarProps) {
+  const [footerHydrated, setFooterHydrated] = useState(false);
   const activeTool = useEditor((state) => state.transient.activeTool);
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setSelection = useEditor((state) => state.setSelection);
@@ -92,36 +92,63 @@ export default function Toolbar({
     setActiveTool(tool);
   }
 
-  const footerActions = [
-    {
-      key: "new",
-      label: "New",
-      tooltip: "Start a new project",
-      icon: <FilePlus className="size-3.5" />,
-      onClick: onOpenNewProject,
-    },
-    {
-      key: "projects",
-      label: "Projects",
-      tooltip: "Manage projects",
-      icon: <FolderOpen className="size-3.5" />,
-      onClick: onOpenProjectManager,
-    },
-    {
-      key: "import",
-      label: "Import",
-      tooltip: "Import JSON",
-      icon: <Import className="size-3.5" />,
-      onClick: onImport,
-    },
-    {
-      key: "export",
-      label: "Export",
-      tooltip: "Export track",
-      icon: <Download className="size-3.5" />,
-      onClick: onExport,
-    },
-  ] as const;
+  useEffect(() => {
+    setFooterHydrated(true);
+  }, []);
+
+  function renderFooterAction({
+    key,
+    label,
+    tooltip,
+    icon,
+    onClick,
+  }: {
+    key: string;
+    label: string;
+    tooltip: string;
+    icon: React.ReactNode;
+    onClick: () => void;
+  }) {
+    const btn = (
+      <motion.div
+        whileTap={{ scale: 0.985 }}
+        transition={{ duration: 0.16, ease: "easeOut" }}
+      >
+        <SidebarMenuButton
+          onClick={onClick}
+          className={cn(
+            "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-9 rounded-xl border border-transparent transition-all duration-200",
+            collapsed ? "justify-center px-0" : "gap-2.5"
+          )}
+        >
+          <span className="flex size-4 shrink-0 items-center justify-center">
+            {icon}
+          </span>
+          {!collapsed && <span className="text-[13px]">{label}</span>}
+        </SidebarMenuButton>
+      </motion.div>
+    );
+
+    return (
+      <SidebarMenuItem key={key}>
+        {collapsed ? (
+          <Tooltip>
+            <TooltipTrigger
+              onClick={onClick}
+              className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-9 w-full items-center justify-center rounded-xl border border-transparent transition-colors"
+            >
+              {icon}
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              {tooltip}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          btn
+        )}
+      </SidebarMenuItem>
+    );
+  }
 
   return (
     <SidebarProvider
@@ -271,47 +298,32 @@ export default function Toolbar({
         </SidebarContent>
 
         <SidebarFooter className="border-border/60 gap-0 border-t p-2">
-          <SidebarMenu className="space-y-1">
-            {footerActions.map(({ key, label, tooltip, icon, onClick }) => {
-              const btn = (
-                <motion.div
-                  whileTap={{ scale: 0.985 }}
-                  transition={{ duration: 0.16, ease: "easeOut" }}
-                >
-                  <SidebarMenuButton
-                    onClick={onClick}
-                    className={cn(
-                      "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-9 rounded-xl border border-transparent transition-all duration-200",
-                      collapsed ? "justify-center px-0" : "gap-2.5"
-                    )}
-                  >
-                    <span className="flex size-4 shrink-0 items-center justify-center">
-                      {icon}
-                    </span>
-                    {!collapsed && <span className="text-[13px]">{label}</span>}
-                  </SidebarMenuButton>
-                </motion.div>
-              );
-              return (
-                <SidebarMenuItem key={key}>
-                  {collapsed ? (
-                    <Tooltip>
-                      <TooltipTrigger
-                        onClick={onClick}
-                        className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-9 w-full items-center justify-center rounded-xl border border-transparent transition-colors"
-                      >
-                        {icon}
-                      </TooltipTrigger>
-                      <TooltipContent side="right" sideOffset={8}>
-                        {tooltip}
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : (
-                    btn
-                  )}
-                </SidebarMenuItem>
-              );
-            })}
+          <SidebarMenu className="space-y-1" key="projects-footer-v3">
+            {footerHydrated ? (
+              <>
+                {renderFooterAction({
+                  key: "projects",
+                  label: "Projects",
+                  tooltip: "Manage projects",
+                  icon: <FolderOpen className="size-3.5" />,
+                  onClick: onOpenProjectManager,
+                })}
+                {renderFooterAction({
+                  key: "import",
+                  label: "Import",
+                  tooltip: "Import JSON",
+                  icon: <Import className="size-3.5" />,
+                  onClick: onImport,
+                })}
+                {renderFooterAction({
+                  key: "export",
+                  label: "Export",
+                  tooltip: "Export track",
+                  icon: <Download className="size-3.5" />,
+                  onClick: onExport,
+                })}
+              </>
+            ) : null}
           </SidebarMenu>
           <div className="border-border/70 mt-3 border-t pt-3">
             <AccountMenu

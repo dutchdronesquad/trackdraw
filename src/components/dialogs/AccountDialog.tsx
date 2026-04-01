@@ -59,7 +59,7 @@ export default function AccountDialog({
     setSuccess(null);
     try {
       await authClient.updateProfileName(normalizedName);
-      setSuccess("Profile updated.");
+      onOpenChange(false);
     } catch (saveError) {
       setError(
         saveError instanceof Error

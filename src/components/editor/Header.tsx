@@ -19,6 +19,7 @@ import {
   Eye,
   Cloud,
   CloudOff,
+  CloudUpload,
   Download,
   Keyboard,
   LoaderCircle,
@@ -38,7 +39,6 @@ interface HeaderProps {
   onTabChange: (t: "2d" | "3d") => void;
   onShare: () => void;
   onExport?: () => void;
-  onOpenNewProject?: () => void;
   onImport?: () => void;
   onOpenProjectManager?: () => void;
   onSaveSnapshot?: () => void;
@@ -51,7 +51,7 @@ interface HeaderProps {
   studioHref?: string;
   lastSavedLabel?: string;
   statusLabel?: string;
-  statusTone?: "default" | "syncing" | "success" | "error";
+  statusTone?: "default" | "pending" | "syncing" | "success" | "error";
   selectionLabel?: string;
   showObstacleNumbers?: boolean;
   onToggleObstacleNumbers?: () => void;
@@ -62,7 +62,6 @@ export default function Header({
   onTabChange,
   onShare,
   onExport,
-  onOpenNewProject,
   onImport,
   onOpenProjectManager,
   onSaveSnapshot,
@@ -84,6 +83,8 @@ export default function Header({
   const statusIcon =
     statusTone === "error" ? (
       <CloudOff className="size-3.5" />
+    ) : statusTone === "pending" ? (
+      <CloudUpload className="size-3.5" />
     ) : statusTone === "syncing" ? (
       <LoaderCircle className="size-3.5 animate-spin" />
     ) : (
@@ -92,9 +93,11 @@ export default function Header({
   const statusWord =
     statusTone === "error"
       ? "Failed"
-      : statusTone === "syncing"
-        ? "Syncing"
-        : "Synced";
+      : statusTone === "pending"
+        ? "Pending"
+        : statusTone === "syncing"
+          ? "Syncing"
+          : "Synced";
 
   const viewToggle = (
     <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
@@ -359,11 +362,13 @@ export default function Header({
                       "hidden items-center gap-1 text-[10px] lg:inline-flex",
                       statusTone === "error"
                         ? "text-destructive/85"
-                        : statusTone === "success"
-                          ? "text-primary/80"
-                          : statusTone === "syncing"
-                            ? "text-foreground/65"
-                            : "text-muted-foreground/80"
+                        : statusTone === "pending"
+                          ? "text-foreground/80"
+                          : statusTone === "success"
+                            ? "text-primary/80"
+                            : statusTone === "syncing"
+                              ? "text-foreground/65"
+                              : "text-muted-foreground/80"
                     )}
                     aria-label={statusLabel}
                   >
@@ -409,7 +414,6 @@ export default function Header({
 
         {!readOnly && onImport && onExport && onOpenProjectManager ? (
           <MobileAppMenu
-            onOpenNewProject={onOpenNewProject ?? (() => {})}
             onOpenProjects={onOpenProjectManager}
             onImport={onImport}
             onExport={onExport}

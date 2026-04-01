@@ -237,14 +237,16 @@ export function SidebarDialog({
               </motion.div>
             </AnimatePresence>
           </div>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="text-muted-foreground/60 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-            aria-label="Close"
-          >
-            <X className="size-4" />
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="text-muted-foreground/60 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
+              aria-label="Close"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
         </div>
 
         <div className="border-border/30 min-h-0 flex-1 overflow-y-auto border-t px-7 py-6">

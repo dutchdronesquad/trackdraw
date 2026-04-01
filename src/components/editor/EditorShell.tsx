@@ -13,7 +13,6 @@ import {
 import { EditorMobilePanels } from "@/components/editor/EditorMobilePanels";
 import { LayoutPresetPicker } from "@/components/editor/LayoutPresetPicker";
 import Header from "./Header";
-import Toolbar from "./Toolbar";
 import Inspector from "@/components/inspector/Inspector";
 import StatusBar from "./StatusBar";
 import { ContextOverlayCard } from "./ContextOverlayCard";
@@ -22,9 +21,11 @@ import ExportDialog from "@/components/dialogs/ExportDialog";
 import ImportDialog from "@/components/dialogs/ImportDialog";
 import KeyboardShortcutsDialog from "@/components/dialogs/KeyboardShortcutsDialog";
 import CompleteProfileDialog from "@/components/dialogs/CompleteProfileDialog";
+import ProjectVersionConflictDialog from "@/components/dialogs/ProjectVersionConflictDialog";
 import PerformanceHud from "./PerformanceHud";
 import ProjectManagerDialog from "@/components/dialogs/ProjectManagerDialog";
 import NewProjectDialog from "@/components/dialogs/NewProjectDialog";
+import { useAccountProjectSync } from "./useAccountProjectSync";
 import { Button } from "@/components/ui/button";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import TrackCanvas, {
@@ -35,7 +36,6 @@ import type {
   TrackPreview3DProps,
 } from "@/components/canvas/TrackPreview3D";
 import { createDefaultDesign } from "@/lib/track/design";
-import { getDesignShapes } from "@/lib/track/design";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import {
@@ -44,12 +44,6 @@ import {
   selectionHasGroupedShapes,
 } from "@/lib/track/shape-groups";
 import { createStarterLayoutDesign } from "@/lib/planning/starter-layouts";
-import {
-  listProjects,
-  listRestorePointsForProject,
-  loadProject,
-  saveProject,
-} from "@/lib/projects";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -72,7 +66,6 @@ import {
 } from "@/store/selectors";
 import { authClient } from "@/lib/auth-client";
 import { Box, Route, X } from "lucide-react";
-import { toast } from "sonner";
 
 function createFirstUseBlankDesign() {
   const design = createDefaultDesign();
@@ -97,6 +90,10 @@ const TrackPreview3D = dynamic<TrackPreview3DProps>(
   TrackPreview3DProps & RefAttributes<TrackPreview3DHandle>
 >;
 
+const Toolbar = dynamic(() => import("./Toolbar"), {
+  ssr: false,
+});
+
 export default function EditorShell({
   readOnly = false,
   seedToken,
@@ -108,19 +105,6 @@ export default function EditorShell({
   initialTab?: EditorView;
   studioHref?: string;
 }) {
-  type AccountProjectListItem = {
-    id: string;
-    title: string;
-    updatedAt: string;
-    shapeCount: number;
-  };
-
-  type ProjectSyncMeta = {
-    status: "local-only" | "pending" | "syncing" | "synced" | "failed";
-    lastSyncedAt?: string | null;
-    error?: string | null;
-  };
-
   usePerfMetric("render:EditorShell");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const { enabled: developerModeEnabled, toggle: toggleDeveloperMode } =
@@ -192,7 +176,6 @@ export default function EditorShell({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const designRef = useRef(design);
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -225,17 +208,6 @@ export default function EditorShell({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [projectManagerOpen, setProjectManagerOpen] = useState(false);
-  const [accountProjects, setAccountProjects] = useState<
-    AccountProjectListItem[]
-  >([]);
-  const [accountProjectsLoading, setAccountProjectsLoading] = useState(false);
-  const [accountProjectsError, setAccountProjectsError] = useState<
-    string | null
-  >(null);
-  const [syncingProjectId, setSyncingProjectId] = useState<string | null>(null);
-  const [projectSyncMetaById, setProjectSyncMetaById] = useState<
-    Record<string, ProjectSyncMeta>
-  >({});
   const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
   const [completeProfileDismissed, setCompleteProfileDismissed] =
     useState(false);
@@ -247,8 +219,6 @@ export default function EditorShell({
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
   const mobileProjectManagerOpenTimerRef = useRef<number | null>(null);
-  const lastAccountSyncSignatureRef = useRef<string | null>(null);
-  const syncInFlightByIdRef = useRef<Record<string, boolean>>({});
 
   const {
     projects,
@@ -298,10 +268,6 @@ export default function EditorShell({
   }, [initialTab]);
 
   useEffect(() => {
-    designRef.current = design;
-  }, [design]);
-
-  useEffect(() => {
     if (readOnly || !authUser?.id) {
       setCompleteProfileOpen(false);
       setCompleteProfileDismissed(false);
@@ -333,381 +299,43 @@ export default function EditorShell({
     await authClient.updateProfileName(name);
     setCompleteProfileDismissed(false);
   }, []);
-
-  const refreshAccountProjects = useCallback(async () => {
-    if (!authUser?.id || readOnly) {
-      setAccountProjects([]);
-      setAccountProjectsError(null);
-      setAccountProjectsLoading(false);
-      setProjectSyncMetaById({});
-      return;
-    }
-
-    setAccountProjectsLoading(true);
-    setAccountProjectsError(null);
-
-    try {
-      const response = await fetch("/api/projects", { method: "GET" });
-      const payload = (await response.json()) as {
-        ok: boolean;
-        error?: string;
-        projects?: Array<{
-          id: string;
-          title: string;
-          updatedAt: string;
-          shapeCount: number;
-        }>;
-      };
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.error ?? "Failed to load account projects");
-      }
-
-      const nextProjects = (payload.projects ?? []).map((project) => ({
-        id: project.id,
-        title: project.title,
-        updatedAt: project.updatedAt,
-        shapeCount: project.shapeCount,
-      }));
-
-      setAccountProjects(nextProjects);
-      setProjectSyncMetaById((previous) => {
-        const nextMeta = { ...previous };
-
-        for (const project of nextProjects) {
-          const previousMeta = previous[project.id];
-          nextMeta[project.id] =
-            previousMeta?.status === "syncing"
-              ? {
-                  ...previousMeta,
-                  lastSyncedAt: project.updatedAt,
-                }
-              : {
-                  status: "synced",
-                  lastSyncedAt: project.updatedAt,
-                  error: null,
-                };
-        }
-
-        return nextMeta;
-      });
-    } catch (error) {
-      setAccountProjectsError(
-        error instanceof Error
-          ? error.message
-          : "Failed to load account projects"
-      );
-    } finally {
-      setAccountProjectsLoading(false);
-    }
-  }, [authUser?.id, readOnly]);
-
-  useEffect(() => {
-    if (!projectManagerOpen || !authUser?.id || readOnly) return;
-    void refreshAccountProjects();
-  }, [authUser?.id, projectManagerOpen, readOnly, refreshAccountProjects]);
-
-  const upsertAccountProject = useCallback((targetDesign: typeof design) => {
-    setAccountProjects((previous) => {
-      const nextProject: AccountProjectListItem = {
-        id: targetDesign.id,
-        title: targetDesign.title || "Untitled",
-        updatedAt: new Date().toISOString(),
-        shapeCount: getDesignShapes(targetDesign).length,
-      };
-
-      const existingIndex = previous.findIndex(
-        (project) => project.id === targetDesign.id
-      );
-
-      if (existingIndex === -1) {
-        return [nextProject, ...previous].sort((a, b) =>
-          b.updatedAt.localeCompare(a.updatedAt)
-        );
-      }
-
-      const nextProjects = [...previous];
-      nextProjects[existingIndex] = nextProject;
-      return nextProjects.sort((a, b) =>
-        b.updatedAt.localeCompare(a.updatedAt)
-      );
-    });
-  }, []);
-
-  const syncDesignToAccount = useCallback(
-    async (
-      targetDesign: typeof design,
-      options?: {
-        showToast?: boolean;
-        updateStatusLabel?: boolean;
-      }
-    ) => {
-      if (syncInFlightByIdRef.current[targetDesign.id]) {
-        return;
-      }
-
-      syncInFlightByIdRef.current[targetDesign.id] = true;
-      setProjectSyncMetaById((previous) => ({
-        ...previous,
-        [targetDesign.id]: {
-          status: "syncing",
-          lastSyncedAt: previous[targetDesign.id]?.lastSyncedAt ?? null,
-          error: null,
-        },
-      }));
-
-      try {
-        const response = await fetch("/api/projects", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            projectId: targetDesign.id,
-            title: targetDesign.title || "Untitled",
-            design: targetDesign,
-          }),
-        });
-
-        const payload = (await response.json()) as {
-          ok: boolean;
-          error?: string;
-        };
-
-        if (!response.ok || !payload.ok) {
-          throw new Error(payload.error ?? "Failed to sync project");
-        }
-
-        lastAccountSyncSignatureRef.current = `${targetDesign.id}:${targetDesign.updatedAt}`;
-        upsertAccountProject(targetDesign);
-        setProjectSyncMetaById((previous) => ({
-          ...previous,
-          [targetDesign.id]: {
-            status: "synced",
-            lastSyncedAt: new Date().toISOString(),
-            error: null,
-          },
-        }));
-
-        if (options?.updateStatusLabel) {
-          const time = new Intl.DateTimeFormat(undefined, {
-            hour: "2-digit",
-            minute: "2-digit",
-          }).format(new Date());
-          setSaveStatusLabel(`Synced to account at ${time}`);
-        }
-
-        if (options?.showToast) {
-          toast.success("Project synced", {
-            description: `"${targetDesign.title || "Untitled"}" is now available from your account.`,
-          });
-        }
-      } finally {
-        syncInFlightByIdRef.current[targetDesign.id] = false;
-      }
-    },
-    [setSaveStatusLabel, upsertAccountProject]
-  );
-
-  const handleSyncProject = useCallback(
-    async (projectId: string) => {
-      if (!authUser?.id) {
-        toast.error("Sign in to sync this project");
-        return;
-      }
-
-      const activeDesignId = designRef.current.id;
-      const targetDesign =
-        projectId === activeDesignId
-          ? designRef.current
-          : loadProject(projectId);
-
-      if (!targetDesign) {
-        toast.error("Could not load local project");
-        return;
-      }
-
-      setSyncingProjectId(projectId);
-
-      try {
-        await syncDesignToAccount(targetDesign, {
-          showToast: true,
-          updateStatusLabel: projectId === activeDesignId,
-        });
-      } catch (error) {
-        setProjectSyncMetaById((previous) => ({
-          ...previous,
-          [projectId]: {
-            status: "failed",
-            lastSyncedAt: previous[projectId]?.lastSyncedAt ?? null,
-            error:
-              error instanceof Error ? error.message : "Could not sync project",
-          },
-        }));
-        toast.error("Could not sync project", {
-          description:
-            error instanceof Error ? error.message : "Please try again.",
-        });
-      } finally {
-        setSyncingProjectId(null);
-      }
-    },
-    [authUser?.id, syncDesignToAccount]
-  );
-
-  const currentDesignId = design.id;
-  const currentProjectIsAccountBacked = Boolean(
-    authUser?.id &&
-    accountProjects.some((project) => project.id === currentDesignId)
-  );
-  const currentProjectSyncMeta = projectSyncMetaById[currentDesignId];
-  const currentProjectSyncSignature = `${currentDesignId}:${design.updatedAt}`;
-  const currentProjectHasPendingChanges =
-    currentProjectIsAccountBacked &&
-    lastAccountSyncSignatureRef.current !== currentProjectSyncSignature;
-
-  const headerStatus = readOnly
-    ? {
-        label: "Read-only shared view",
-        tone: "default" as const,
-      }
-    : currentProjectIsAccountBacked
-      ? currentProjectSyncMeta?.status === "failed"
-        ? {
-            label: "Sync failed",
-            tone: "error" as const,
-          }
-        : currentProjectSyncMeta?.status === "syncing"
-          ? {
-              label: "Syncing…",
-              tone: "syncing" as const,
-            }
-          : currentProjectHasPendingChanges
-            ? {
-                label: "Changes pending",
-                tone: "syncing" as const,
-              }
-            : currentProjectSyncMeta?.lastSyncedAt
-              ? {
-                  label: `Synced ${new Intl.DateTimeFormat(undefined, {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(new Date(currentProjectSyncMeta.lastSyncedAt))}`,
-                  tone: "success" as const,
-                }
-              : {
-                  label: "Synced project",
-                  tone: "success" as const,
-                }
-      : {
-          label: saveStatusLabel,
-          tone: "default" as const,
-        };
-
-  useEffect(() => {
-    if (
-      readOnly ||
-      !authUser?.id ||
-      !currentProjectIsAccountBacked ||
-      historyPaused ||
-      interactionSessionDepth > 0
-    ) {
-      return;
-    }
-
-    const signature = currentProjectSyncSignature;
-    if (lastAccountSyncSignatureRef.current === signature) {
-      return;
-    }
-
-    setProjectSyncMetaById((previous) => ({
-      ...previous,
-      [currentDesignId]: {
-        status: "pending",
-        lastSyncedAt: previous[currentDesignId]?.lastSyncedAt ?? null,
-        error: null,
-      },
-    }));
-
-    const timeoutId = window.setTimeout(() => {
-      void syncDesignToAccount(designRef.current, {
-        updateStatusLabel: true,
-      }).catch((error) => {
-        setProjectSyncMetaById((previous) => ({
-          ...previous,
-          [currentDesignId]: {
-            status: "failed",
-            lastSyncedAt: previous[currentDesignId]?.lastSyncedAt ?? null,
-            error: error instanceof Error ? error.message : "Cloud sync failed",
-          },
-        }));
-        setSaveStatusLabel("Cloud sync failed");
-        console.error("[TrackDraw autosync]", error);
-      });
-    }, 2500);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [
-    authUser?.id,
-    currentDesignId,
-    currentProjectSyncSignature,
-    currentProjectIsAccountBacked,
+  const {
+    accountProjects,
+    accountProjectsLoading,
+    accountProjectsError,
+    syncingProjectId,
+    projectSyncMetaById,
+    headerStatus,
+    syncDesignToAccount,
+    markProjectSyncFailed,
+    handleSyncProject,
+    handleOpenAccountProject,
+    projectVersionConflict,
+    handleKeepLocalConflictCopy,
+    handleOpenCloudConflictVersion,
+  } = useAccountProjectSync({
+    authUserId: authUser?.id ?? null,
+    readOnly,
+    design,
+    projectManagerOpen,
     historyPaused,
     interactionSessionDepth,
-    readOnly,
+    snapshotCurrentDesign,
+    replaceDesign,
+    setProjects,
+    setRestorePoints,
+    setActiveRestorePointId,
     setSaveStatusLabel,
-    syncDesignToAccount,
-  ]);
+  });
 
-  const handleOpenAccountProject = useCallback(
+  const handleOpenAccountProjectFromDialog = useCallback(
     async (projectId: string) => {
-      if (!authUser?.id) {
-        toast.error("Sign in to open account projects");
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/projects/${projectId}`, {
-          method: "GET",
-        });
-        const payload = (await response.json()) as {
-          ok: boolean;
-          error?: string;
-          project?: {
-            design: typeof design;
-          };
-        };
-
-        if (!response.ok || !payload.ok || !payload.project) {
-          throw new Error(payload.error ?? "Failed to open project");
-        }
-
-        snapshotCurrentDesign();
-        replaceDesign(payload.project.design);
-        saveProject(payload.project.design);
-        setProjects(listProjects());
-        setRestorePoints(
-          listRestorePointsForProject(payload.project.design.id)
-        );
-        setActiveRestorePointId(null);
-        setSaveStatusLabel("Project opened from account");
+      const opened = await handleOpenAccountProject(projectId);
+      if (opened) {
         setProjectManagerOpen(false);
-      } catch (error) {
-        toast.error("Could not open project", {
-          description:
-            error instanceof Error ? error.message : "Please try again.",
-        });
       }
     },
-    [
-      authUser?.id,
-      replaceDesign,
-      setActiveRestorePointId,
-      setProjects,
-      setRestorePoints,
-      setSaveStatusLabel,
-      snapshotCurrentDesign,
-    ]
+    [handleOpenAccountProject]
   );
 
   const handleTabChange = useCallback(
@@ -853,15 +481,10 @@ export default function EditorShell({
         void syncDesignToAccount(nextDesign, {
           updateStatusLabel: true,
         }).catch((error) => {
-          setProjectSyncMetaById((previous) => ({
-            ...previous,
-            [nextDesign.id]: {
-              status: "failed",
-              lastSyncedAt: previous[nextDesign.id]?.lastSyncedAt ?? null,
-              error:
-                error instanceof Error ? error.message : "Cloud sync failed",
-            },
-          }));
+          markProjectSyncFailed(
+            nextDesign.id,
+            error instanceof Error ? error.message : "Cloud sync failed"
+          );
           setSaveStatusLabel("Cloud sync failed");
           console.error("[TrackDraw new-project sync]", error);
         });
@@ -902,15 +525,10 @@ export default function EditorShell({
         void syncDesignToAccount(nextDesign, {
           updateStatusLabel: true,
         }).catch((error) => {
-          setProjectSyncMetaById((previous) => ({
-            ...previous,
-            [nextDesign.id]: {
-              status: "failed",
-              lastSyncedAt: previous[nextDesign.id]?.lastSyncedAt ?? null,
-              error:
-                error instanceof Error ? error.message : "Cloud sync failed",
-            },
-          }));
+          markProjectSyncFailed(
+            nextDesign.id,
+            error instanceof Error ? error.message : "Cloud sync failed"
+          );
           setSaveStatusLabel("Cloud sync failed");
           console.error("[TrackDraw starter-layout sync]", error);
         });
@@ -951,7 +569,6 @@ export default function EditorShell({
           <Toolbar
             onImport={() => setImportOpen(true)}
             onExport={() => setExportOpen(true)}
-            onOpenNewProject={() => setNewProjectOpen(true)}
             onOpenProjectManager={() => setProjectManagerOpen(true)}
             onOpenPresets={openPresetPicker}
             collapsed={sidebarCollapsed}
@@ -967,7 +584,6 @@ export default function EditorShell({
             onTabChange={handleTabChange}
             onShare={() => setShareOpen(true)}
             onExport={() => setExportOpen(true)}
-            onOpenNewProject={openNewProjectDialog}
             onImport={() => setImportOpen(true)}
             onOpenProjectManager={() => setProjectManagerOpen(true)}
             onSaveSnapshot={readOnly ? undefined : handleSaveSnapshot}
@@ -979,8 +595,8 @@ export default function EditorShell({
             title={design.title || "Untitled track"}
             studioHref={studioHref}
             lastSavedLabel={readOnly ? undefined : saveStatusLabel}
-            statusLabel={headerStatus.label}
-            statusTone={headerStatus.tone}
+            statusLabel={headerStatus?.label}
+            statusTone={headerStatus?.tone}
             showObstacleNumbers={showObstacleNumbers}
             onToggleObstacleNumbers={() =>
               setShowObstacleNumbers((current) => !current)
@@ -1446,8 +1062,9 @@ export default function EditorShell({
       <ProjectManagerDialog
         open={projectManagerOpen}
         onOpenChange={setProjectManagerOpen}
+        onOpenNewProject={openNewProjectDialog}
         onOpenProject={handleOpenProject}
-        onOpenAccountProject={handleOpenAccountProject}
+        onOpenAccountProject={handleOpenAccountProjectFromDialog}
         onSyncProject={authUser ? handleSyncProject : undefined}
         onDeleteProject={handleDeleteProject}
         onRenameProject={handleRenameProject}
@@ -1483,6 +1100,19 @@ export default function EditorShell({
         currentName={authUser?.name ?? ""}
         mobile={isMobile}
         onSave={handleCompleteProfileSave}
+      />
+      <ProjectVersionConflictDialog
+        open={Boolean(projectVersionConflict)}
+        mobile={isMobile}
+        title={projectVersionConflict?.title ?? "Untitled"}
+        localUpdatedAt={
+          projectVersionConflict?.localUpdatedAt ?? design.updatedAt
+        }
+        cloudUpdatedAt={
+          projectVersionConflict?.cloudUpdatedAt ?? design.updatedAt
+        }
+        onOpenCloudVersion={handleOpenCloudConflictVersion}
+        onKeepLocalCopy={handleKeepLocalConflictCopy}
       />
       {developerModeEnabled ? <PerformanceHud /> : null}
     </>

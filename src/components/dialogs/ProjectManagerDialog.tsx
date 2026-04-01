@@ -6,6 +6,7 @@ import {
   Cloud,
   CloudUpload,
   Clock,
+  FilePlus,
   FolderOpen,
   LoaderCircle,
   Pencil,
@@ -22,6 +23,7 @@ import { SidebarDialog } from "@/components/SidebarDialog";
 interface ProjectManagerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenNewProject?: () => void;
   onOpenProject?: (id: string) => void;
   onOpenAccountProject?: (id: string) => void;
   onSyncProject?: (id: string) => void;
@@ -41,7 +43,13 @@ interface ProjectManagerDialogProps {
   projectSyncMetaById?: Record<
     string,
     {
-      status: "local-only" | "pending" | "syncing" | "synced" | "failed";
+      status:
+        | "local-only"
+        | "pending"
+        | "syncing"
+        | "synced"
+        | "failed"
+        | "conflict";
       lastSyncedAt?: string | null;
       error?: string | null;
     }
@@ -157,6 +165,7 @@ function CurrentBadge({ label = "current" }: { label?: string }) {
 export default function ProjectManagerDialog({
   open,
   onOpenChange,
+  onOpenNewProject,
   onOpenProject,
   onOpenAccountProject,
   onSyncProject,
@@ -206,6 +215,12 @@ export default function ProjectManagerDialog({
     setRenamingId(null);
   }
 
+  function handleOpenNewProject() {
+    if (!onOpenNewProject) return;
+    onOpenChange(false);
+    window.setTimeout(onOpenNewProject, 0);
+  }
+
   // ─── Local project card ──────────────────────────────────────────────────
 
   function LocalProjectCard({ p }: { p: ProjectMeta }) {
@@ -218,24 +233,36 @@ export default function ProjectManagerDialog({
       sortedAccountProjects.some((project) => project.id === p.id);
     const isSyncing =
       syncingProjectId === p.id || syncMeta?.status === "syncing";
+    const hasConflict = syncMeta?.status === "conflict";
     const hasSyncFailure = syncMeta?.status === "failed";
     const hasPendingChanges = syncMeta?.status === "pending";
     const syncLabel = isSyncing
       ? "Syncing"
-      : hasPendingChanges
-        ? "Pending"
-        : hasSyncFailure
-          ? "Sync failed"
-          : isSynced
-            ? "Synced"
-            : "Local only";
-    const syncDetail = hasSyncFailure
-      ? (syncMeta?.error ?? "Could not sync this project")
-      : hasPendingChanges
-        ? "Local changes are waiting to sync"
-        : syncMeta?.lastSyncedAt
-          ? `Last synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
+      : hasConflict
+        ? "Review needed"
+        : hasPendingChanges
+          ? "Pending"
+          : hasSyncFailure
+            ? "Sync failed"
+            : isSynced
+              ? "Synced"
+              : "Local only";
+    const syncDetail = hasConflict
+      ? (syncMeta?.error ?? "This project changed on another device")
+      : hasSyncFailure
+        ? (syncMeta?.error ?? "Could not sync this project")
+        : hasPendingChanges
+          ? "Local changes are waiting to sync"
           : null;
+    const metaLine = hasConflict
+      ? syncDetail
+      : hasSyncFailure
+        ? syncDetail
+        : hasPendingChanges
+          ? `${itemLabel(p.shapeCount)} · waiting to sync`
+          : isSynced && syncMeta?.lastSyncedAt
+            ? `${itemLabel(p.shapeCount)} · synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
+            : `${itemLabel(p.shapeCount)} · ${formatRelativeTime(p.updatedAt)}`;
 
     return (
       <div
@@ -248,7 +275,7 @@ export default function ProjectManagerDialog({
             : undefined
         }
         className={cn(
-          "group relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-150",
+          "group relative flex items-start gap-3 overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-150",
           isCurrent
             ? "border-primary/20 bg-primary/5"
             : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
@@ -269,46 +296,47 @@ export default function ProjectManagerDialog({
               className="text-foreground border-border/60 w-full border-b bg-transparent pb-0.5 text-sm font-medium outline-none"
             />
           ) : (
-            <div className="flex min-w-0 items-center gap-1.5">
+            <>
               <p className="text-foreground truncate text-sm font-medium">
                 {p.title || "Untitled"}
               </p>
-              {isCurrent && <CurrentBadge />}
               {!isRenaming && !isConfirming ? (
-                <span
-                  className={cn(
-                    "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
-                    isSyncing
-                      ? "bg-primary/10 text-primary/80"
-                      : hasPendingChanges
-                        ? "bg-muted text-foreground/75"
-                        : hasSyncFailure
+                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                  {isCurrent ? <CurrentBadge /> : null}
+                  <span
+                    className={cn(
+                      "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
+                      isSyncing
+                        ? "bg-primary/10 text-primary/80"
+                        : hasConflict
                           ? "bg-destructive/10 text-destructive/80"
-                          : isSynced
-                            ? "bg-primary/10 text-primary/80"
-                            : "bg-muted text-muted-foreground/75"
-                  )}
-                >
-                  {syncLabel}
-                </span>
+                          : hasPendingChanges
+                            ? "bg-muted text-foreground/75"
+                            : hasSyncFailure
+                              ? "bg-destructive/10 text-destructive/80"
+                              : isSynced
+                                ? "bg-primary/10 text-primary/80"
+                                : "bg-muted text-muted-foreground/75"
+                    )}
+                  >
+                    {syncLabel}
+                  </span>
+                </div>
+              ) : isCurrent ? (
+                <div className="mt-1">
+                  <CurrentBadge />
+                </div>
               ) : null}
-            </div>
+            </>
           )}
-          <p className="text-muted-foreground mt-0.5 text-[11px]">
-            {itemLabel(p.shapeCount)} · {formatRelativeTime(p.updatedAt)}
+          <p
+            className={cn(
+              "mt-1 text-[11px]",
+              hasSyncFailure ? "text-destructive/80" : "text-muted-foreground"
+            )}
+          >
+            {metaLine}
           </p>
-          {syncDetail ? (
-            <p
-              className={cn(
-                "mt-0.5 text-[11px]",
-                hasSyncFailure
-                  ? "text-destructive/80"
-                  : "text-muted-foreground/80"
-              )}
-            >
-              {syncDetail}
-            </p>
-          ) : null}
         </div>
         {/* Action buttons */}
         <div
@@ -328,17 +356,22 @@ export default function ProjectManagerDialog({
               {onSyncProject && !isRenaming && !isConfirming ? (
                 <button
                   onClick={() => onSyncProject(p.id)}
+                  disabled={hasConflict}
                   className={cn(
                     "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
                     !isMobile &&
-                      "opacity-0 transition-opacity group-hover:opacity-100"
+                      "opacity-0 transition-opacity group-hover:opacity-100",
+                    hasConflict &&
+                      "cursor-not-allowed opacity-35 hover:bg-transparent hover:text-current"
                   )}
                   title={
-                    hasSyncFailure
-                      ? "Retry sync"
-                      : isSynced || hasPendingChanges
-                        ? "Update account copy"
-                        : "Sync to account"
+                    hasConflict
+                      ? "Resolve the version conflict first"
+                      : hasSyncFailure
+                        ? "Retry sync"
+                        : isSynced || hasPendingChanges
+                          ? "Update account copy"
+                          : "Sync to account"
                   }
                 >
                   {isSyncing ? (
@@ -423,6 +456,18 @@ export default function ProjectManagerDialog({
 
   const deviceContent = (
     <div className="space-y-2">
+      {onOpenNewProject ? (
+        <div className="flex justify-end pb-1">
+          <button
+            type="button"
+            onClick={handleOpenNewProject}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition-colors"
+          >
+            <FilePlus className="size-3.5" />
+            <span>New project</span>
+          </button>
+        </div>
+      ) : null}
       {sortedProjects.length > 0 ? (
         sortedProjects.map((p) => <LocalProjectCard key={p.id} p={p} />)
       ) : (
@@ -460,9 +505,18 @@ export default function ProjectManagerDialog({
             const syncMeta = projectSyncMetaById[proj.id];
             const isSyncing =
               syncingProjectId === proj.id || syncMeta?.status === "syncing";
+            const hasConflict = syncMeta?.status === "conflict";
             const hasSyncFailure = syncMeta?.status === "failed";
             const hasPendingChanges = syncMeta?.status === "pending";
             const lastSyncedAt = syncMeta?.lastSyncedAt ?? proj.updatedAt;
+            const metaLine = hasConflict
+              ? (syncMeta?.error ??
+                "This project changed on another device while you were signed out")
+              : hasSyncFailure
+                ? (syncMeta?.error ?? "Could not sync the latest changes")
+                : hasPendingChanges
+                  ? `${itemLabel(proj.shapeCount)} · waiting to sync`
+                  : `${itemLabel(proj.shapeCount)} · synced ${formatRelativeTime(lastSyncedAt)}`;
             return (
               <div
                 key={proj.id}
@@ -475,7 +529,7 @@ export default function ProjectManagerDialog({
                     : undefined
                 }
                 className={cn(
-                  "flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all duration-150",
+                  "flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-all duration-150",
                   isCurrent
                     ? "border-primary/20 bg-primary/5"
                     : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
@@ -483,49 +537,45 @@ export default function ProjectManagerDialog({
               >
                 <ProjectAvatar id={proj.id} title={proj.title || "?"} />
                 <div className="min-w-0 flex-1">
-                  <div className="flex min-w-0 items-center gap-1.5">
-                    <p className="text-foreground truncate text-sm font-medium">
-                      {proj.title || "Untitled"}
-                    </p>
-                    {isCurrent && <CurrentBadge />}
+                  <p className="text-foreground truncate text-sm font-medium">
+                    {proj.title || "Untitled"}
+                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {isCurrent ? <CurrentBadge /> : null}
                     <span
                       className={cn(
                         "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
                         isSyncing
                           ? "bg-primary/10 text-primary/80"
-                          : hasPendingChanges
-                            ? "bg-muted text-foreground/75"
-                            : hasSyncFailure
-                              ? "bg-destructive/10 text-destructive/80"
-                              : "bg-primary/10 text-primary/80"
+                          : hasConflict
+                            ? "bg-destructive/10 text-destructive/80"
+                            : hasPendingChanges
+                              ? "bg-muted text-foreground/75"
+                              : hasSyncFailure
+                                ? "bg-destructive/10 text-destructive/80"
+                                : "bg-primary/10 text-primary/80"
                       )}
                     >
                       {isSyncing
                         ? "Syncing"
-                        : hasPendingChanges
-                          ? "Pending"
-                          : hasSyncFailure
-                            ? "Sync failed"
-                            : "Synced"}
+                        : hasConflict
+                          ? "Review needed"
+                          : hasPendingChanges
+                            ? "Pending"
+                            : hasSyncFailure
+                              ? "Sync failed"
+                              : "Synced"}
                     </span>
                   </div>
-                  <p className="text-muted-foreground mt-0.5 text-[11px]">
-                    {itemLabel(proj.shapeCount)} ·{" "}
-                    {formatRelativeTime(proj.updatedAt)}
-                  </p>
                   <p
                     className={cn(
-                      "mt-0.5 text-[11px]",
+                      "mt-1 text-[11px]",
                       hasSyncFailure
                         ? "text-destructive/80"
-                        : "text-muted-foreground/80"
+                        : "text-muted-foreground"
                     )}
                   >
-                    {hasSyncFailure
-                      ? (syncMeta?.error ?? "Could not sync the latest changes")
-                      : hasPendingChanges
-                        ? "Local changes are waiting to sync"
-                        : `Last synced ${formatRelativeTime(lastSyncedAt)}`}
+                    {metaLine}
                   </p>
                 </div>
                 <div
@@ -534,15 +584,23 @@ export default function ProjectManagerDialog({
                 >
                   {onSyncProject &&
                   isCurrent &&
-                  (hasSyncFailure || hasPendingChanges) ? (
+                  (hasConflict || hasSyncFailure || hasPendingChanges) ? (
                     <button
-                      onClick={() => onSyncProject(proj.id)}
+                      onClick={() => {
+                        if (!hasConflict) {
+                          onSyncProject(proj.id);
+                        }
+                      }}
                       className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                       title={
-                        hasSyncFailure ? "Retry sync" : "Sync pending changes"
+                        hasConflict
+                          ? "Resolve the version conflict first"
+                          : hasSyncFailure
+                            ? "Retry sync"
+                            : "Sync pending changes"
                       }
                     >
-                      {hasSyncFailure ? (
+                      {hasConflict || hasSyncFailure ? (
                         <CloudUpload className="size-3.5" />
                       ) : (
                         <Cloud className="size-3.5" />
