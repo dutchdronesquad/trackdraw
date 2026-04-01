@@ -26,6 +26,8 @@ import PerformanceHud from "./PerformanceHud";
 import ProjectManagerDialog from "@/components/dialogs/ProjectManagerDialog";
 import NewProjectDialog from "@/components/dialogs/NewProjectDialog";
 import { useAccountProjectSync } from "./useAccountProjectSync";
+import { useEditorDialogs } from "./useEditorDialogs";
+import { useStarterExperience } from "./useStarterExperience";
 import { Button } from "@/components/ui/button";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import TrackCanvas, {
@@ -36,25 +38,19 @@ import type {
   TrackPreview3DProps,
 } from "@/components/canvas/TrackPreview3D";
 import { createDefaultDesign } from "@/lib/track/design";
-import { shapeKindLabels } from "@/lib/editor-tools";
+import { shapeKindLabels, type EditorTool } from "@/lib/editor-tools";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import {
   getShapeGroupId,
   getShapeGroupName,
   selectionHasGroupedShapes,
 } from "@/lib/track/shape-groups";
-import { createStarterLayoutDesign } from "@/lib/planning/starter-layouts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
-import { useEditorHints } from "@/hooks/useEditorHints";
-import {
-  StarterSteps,
-  StarterActions,
-  shouldShowStarterForDesign,
-} from "@/components/editor/StarterFlow";
+import { StarterSteps, StarterActions } from "@/components/editor/StarterFlow";
 import type { EditorView } from "@/lib/view";
 import { useEditor } from "@/store/editor";
 import {
@@ -178,10 +174,6 @@ export default function EditorShell({
   const searchParams = useSearchParams();
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [tab, setTab] = useState<"2d" | "3d">(initialTab);
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
     null
@@ -206,19 +198,31 @@ export default function EditorShell({
   const [mobilePathBuilderPinnedOpen, setMobilePathBuilderPinnedOpen] =
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [newProjectOpen, setNewProjectOpen] = useState(false);
-  const [projectManagerOpen, setProjectManagerOpen] = useState(false);
   const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
   const [completeProfileDismissed, setCompleteProfileDismissed] =
     useState(false);
-  const [presetPickerOpen, setPresetPickerOpen] = useState(false);
-  const [starterDismissed, setStarterDismissed] = useState(false);
-  const [starterMode, setStarterMode] = useState<"guided" | "blank" | null>(
-    null
-  );
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
-  const mobileProjectManagerOpenTimerRef = useRef<number | null>(null);
+  const {
+    shareOpen,
+    setShareOpen,
+    exportOpen,
+    setExportOpen,
+    importOpen,
+    setImportOpen,
+    shortcutsOpen,
+    setShortcutsOpen,
+    newProjectOpen,
+    setNewProjectOpen,
+    projectManagerOpen,
+    setProjectManagerOpen,
+    presetPickerOpen,
+    setPresetPickerOpen,
+    openNewProjectDialog,
+  } = useEditorDialogs({
+    isMobile,
+    setMobileToolsOpen,
+  });
 
   const {
     projects,
@@ -246,21 +250,6 @@ export default function EditorShell({
     interactionSessionDepth,
     replaceDesign,
   });
-
-  const {
-    gateHintDismissed,
-    desktopPathHintDismissed,
-    desktopPreviewHintDismissed,
-    review3DHintDismissed,
-    postPathNudgeDismissed,
-    showPostPathNudge,
-    dismissGateHint,
-    dismissDesktopPathHint,
-    dismissDesktopPreviewHint,
-    dismissReview3DHint,
-    dismissPostPathNudge,
-    resetGuidedHints,
-  } = useEditorHints({ readOnly, hasPath });
 
   // Sync tab when initialTab prop changes (e.g. ShareViewer navigates ?view=3d via Link)
   useEffect(() => {
@@ -335,7 +324,7 @@ export default function EditorShell({
         setProjectManagerOpen(false);
       }
     },
-    [handleOpenAccountProject]
+    [handleOpenAccountProject, setProjectManagerOpen]
   );
 
   const handleTabChange = useCallback(
@@ -350,31 +339,56 @@ export default function EditorShell({
     [pathname, router, searchParams]
   );
 
-  const openNewProjectDialog = useCallback(() => {
-    if (!isMobile) {
-      setNewProjectOpen(true);
-      return;
-    }
+  const setActiveEditorTool = useCallback(
+    (tool: string) => {
+      setActiveTool(tool as EditorTool);
+    },
+    [setActiveTool]
+  );
 
-    setMobileToolsOpen(false);
+  const {
+    setStarterDismissed,
+    starterMode,
+    shouldShowStarter: starterShouldShow,
+    gateHintDismissed,
+    desktopPathHintDismissed,
+    desktopPreviewHintDismissed,
+    review3DHintDismissed,
+    postPathNudgeDismissed,
+    showPostPathNudge,
+    dismissGateHint,
+    dismissDesktopPathHint,
+    dismissDesktopPreviewHint,
+    dismissReview3DHint,
+    dismissPostPathNudge,
+    applyStarterDesign,
+    applyStarterLayout,
+  } = useStarterExperience({
+    readOnly,
+    authUserId: authUser?.id ?? null,
+    design,
+    designShapeCount: designShapes.length,
+    hasPath,
+    syncDesignToAccount,
+    markProjectSyncFailed,
+    setSaveStatusLabel,
+    replaceDesign,
+    handleTabChange: (nextTab) => handleTabChange(nextTab),
+    resetSelectionState: () => {
+      setSelection([]);
+      setMobileMultiSelectEnabled(false);
+      setMobilePathBuilderPinnedOpen(false);
+    },
+    setActiveTool: setActiveEditorTool,
+    fitCanvas: () => canvasRef.current?.fitToWindow(),
+    closeProjectAndToolSurfaces: () => {
+      setProjectManagerOpen(false);
+      setMobileToolsOpen(false);
+    },
+    createBlankDesign: createFirstUseBlankDesign,
+  });
 
-    if (mobileProjectManagerOpenTimerRef.current !== null) {
-      window.clearTimeout(mobileProjectManagerOpenTimerRef.current);
-    }
-
-    mobileProjectManagerOpenTimerRef.current = window.setTimeout(() => {
-      setNewProjectOpen(true);
-      mobileProjectManagerOpenTimerRef.current = null;
-    }, 180);
-  }, [isMobile]);
-
-  useEffect(() => {
-    return () => {
-      if (mobileProjectManagerOpenTimerRef.current !== null) {
-        window.clearTimeout(mobileProjectManagerOpenTimerRef.current);
-      }
-    };
-  }, []);
+  const shouldShowStarter = initialized && starterShouldShow;
 
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
@@ -448,106 +462,9 @@ export default function EditorShell({
     [handleTabChange]
   );
 
-  const shouldShowStarter =
-    initialized &&
-    !readOnly &&
-    !starterDismissed &&
-    shouldShowStarterForDesign({
-      title: design.title,
-      shapeCount: designShapes.length,
-    });
-
-  const applyStarterDesign = useCallback(
-    (kind: "blank" | "gate") => {
-      const nextDesign = createFirstUseBlankDesign();
-      replaceDesign(nextDesign);
-      setStarterDismissed(true);
-      handleTabChange("2d");
-
-      if (kind === "gate") {
-        setStarterMode("guided");
-        resetGuidedHints();
-        setActiveTool("gate");
-      } else {
-        setStarterMode("blank");
-        setActiveTool("select");
-      }
-
-      window.requestAnimationFrame(() => {
-        canvasRef.current?.fitToWindow();
-      });
-
-      if (authUser?.id) {
-        void syncDesignToAccount(nextDesign, {
-          updateStatusLabel: true,
-        }).catch((error) => {
-          markProjectSyncFailed(
-            nextDesign.id,
-            error instanceof Error ? error.message : "Cloud sync failed"
-          );
-          setSaveStatusLabel("Cloud sync failed");
-          console.error("[TrackDraw new-project sync]", error);
-        });
-      }
-    },
-    [
-      authUser?.id,
-      handleTabChange,
-      replaceDesign,
-      resetGuidedHints,
-      setActiveTool,
-      setSaveStatusLabel,
-      syncDesignToAccount,
-    ]
-  );
-
-  const applyStarterLayout = useCallback(
-    (layoutId: string) => {
-      const nextDesign = createStarterLayoutDesign(layoutId);
-      if (!nextDesign) return;
-
-      replaceDesign(nextDesign);
-      setStarterDismissed(true);
-      setStarterMode(null);
-      setSelection([]);
-      setMobileMultiSelectEnabled(false);
-      setMobilePathBuilderPinnedOpen(false);
-      setProjectManagerOpen(false);
-      setMobileToolsOpen(false);
-      handleTabChange("2d");
-      setActiveTool("select");
-
-      window.requestAnimationFrame(() => {
-        canvasRef.current?.fitToWindow();
-      });
-
-      if (authUser?.id) {
-        void syncDesignToAccount(nextDesign, {
-          updateStatusLabel: true,
-        }).catch((error) => {
-          markProjectSyncFailed(
-            nextDesign.id,
-            error instanceof Error ? error.message : "Cloud sync failed"
-          );
-          setSaveStatusLabel("Cloud sync failed");
-          console.error("[TrackDraw starter-layout sync]", error);
-        });
-      }
-    },
-    [
-      authUser?.id,
-      handleTabChange,
-      replaceDesign,
-      setActiveTool,
-      setSelection,
-      setSaveStatusLabel,
-      syncDesignToAccount,
-    ]
-  );
-
   const openPresetPicker = useCallback(() => {
     setPresetPickerOpen(true);
-  }, []);
+  }, [setPresetPickerOpen]);
 
   const handlePresetSelect = useCallback(
     (presetId: string) => {
@@ -559,7 +476,7 @@ export default function EditorShell({
       setMobileToolsOpen(false);
       setPresetPickerOpen(false);
     },
-    [setActivePresetId, setActiveTool, setSelection]
+    [setActivePresetId, setActiveTool, setPresetPickerOpen, setSelection]
   );
 
   return (
