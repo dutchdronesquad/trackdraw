@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type CompleteProfileDialogProps = {
   open: boolean;
@@ -19,9 +20,9 @@ export default function CompleteProfileDialog({
   onOpenChange,
   email,
   currentName,
-  mobile = false,
   onSave,
 }: CompleteProfileDialogProps) {
+  const isMobile = useIsMobile();
   const [name, setName] = useState(currentName ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +74,7 @@ export default function CompleteProfileDialog({
           id="complete-profile-name"
           type="text"
           autoComplete="name"
+          autoFocus
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Your name"
@@ -80,16 +82,16 @@ export default function CompleteProfileDialog({
         />
       </div>
 
-      <p className="text-muted-foreground text-sm leading-relaxed">
-        This is the name TrackDraw will show for cloud projects and shared
-        layouts{email ? ` on ${email}` : ""}.
-      </p>
-
       {error ? (
         <div className="rounded-xl border border-rose-500/20 bg-rose-500/8 px-3.5 py-3 text-sm text-rose-600 dark:text-rose-300">
           {error}
         </div>
       ) : null}
+
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        This is the name TrackDraw will show for cloud projects and shared
+        layouts{email ? ` on ${email}` : ""}.
+      </p>
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
@@ -98,7 +100,7 @@ export default function CompleteProfileDialog({
           onClick={() => onOpenChange(false)}
           disabled={saving}
         >
-          Not now
+          Skip
         </Button>
         <Button
           type="button"
@@ -111,7 +113,7 @@ export default function CompleteProfileDialog({
     </div>
   );
 
-  if (mobile) {
+  if (isMobile) {
     return (
       <MobileDrawer
         open={open}

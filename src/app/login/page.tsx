@@ -3,18 +3,14 @@
 import { FormEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Cloud,
-  KeyRound,
-  MailCheck,
-  ShieldCheck,
-} from "lucide-react";
+import { Cloud, KeyRound, MailCheck, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -46,13 +42,12 @@ export default function LoginPage() {
     <main className="bg-background text-foreground relative min-h-screen overflow-hidden">
       <div className="bg-brand-primary/10 absolute top-16 left-1/2 hidden h-72 w-72 -translate-x-[135%] rounded-full blur-3xl sm:block" />
       <div className="bg-brand-secondary/10 absolute right-0 bottom-10 hidden h-80 w-80 translate-x-1/4 rounded-full blur-3xl sm:block" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),transparent_28%,transparent_72%,rgba(255,255,255,0.02))]" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-6 sm:px-8 lg:px-10">
         <header className="flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center rounded-xs opacity-90 transition-opacity hover:opacity-100"
+            className="flex items-center rounded-sm opacity-90 transition-opacity hover:opacity-100"
             aria-label="Go to homepage"
           >
             <span className="relative block h-8 w-36 sm:h-9 sm:w-40">
@@ -75,11 +70,11 @@ export default function LoginPage() {
             </span>
           </Link>
 
-          <Link href="/studio">
-            <Button variant="ghost" size="sm" className="gap-1.5">
-              <span>Back to Studio</span>
-              <ArrowRight className="size-3.5" />
-            </Button>
+          <Link
+            href="/studio"
+            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+          >
+            Back to Studio
           </Link>
         </header>
 
@@ -127,12 +122,8 @@ export default function LoginPage() {
               </div>
             </section>
 
-            <section className="border-border/70 bg-card/92 relative rounded-[1.5rem] border p-5 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:rounded-[1.75rem] sm:p-8">
+            <section className="border-border/70 bg-card/92 relative rounded-3xl border p-6 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:rounded-[1.75rem] sm:p-8">
               <div className="space-y-2">
-                <p className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] uppercase lg:hidden">
-                  <span className="bg-muted-foreground/50 size-1 rounded-full" />
-                  TrackDraw account
-                </p>
                 <h2 className="text-2xl font-semibold tracking-tight">
                   Sign in
                 </h2>
@@ -143,7 +134,7 @@ export default function LoginPage() {
               </div>
 
               {success ? (
-                <div className="mt-6 space-y-4 sm:mt-7">
+                <div className="mt-6 space-y-4 sm:mt-7" role="status">
                   <div className="border-border/60 bg-background/55 rounded-2xl border px-4 py-4">
                     <div className="flex items-start gap-3">
                       <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
@@ -177,7 +168,6 @@ export default function LoginPage() {
 
                   <Button
                     type="button"
-                    variant="outline"
                     className="h-11 w-full"
                     onClick={() => {
                       setSuccess(null);
@@ -188,48 +178,52 @@ export default function LoginPage() {
                   </Button>
                 </div>
               ) : (
-                <>
-                  <form
-                    className="mt-6 space-y-4 sm:mt-7"
-                    onSubmit={handleMagicLinkSignIn}
-                  >
-                    <label className="block space-y-1.5">
-                      <span className="text-sm font-medium">Email</span>
-                      <input
-                        type="email"
-                        autoComplete="email"
-                        required
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        className="border-input bg-background/80 ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring h-11 w-full rounded-xl border px-3.5 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                        placeholder="you@example.com"
-                      />
+                <form
+                  className="mt-6 space-y-4 sm:mt-7"
+                  onSubmit={handleMagicLinkSignIn}
+                >
+                  <div className="space-y-1.5">
+                    <label htmlFor="email" className="text-sm font-medium">
+                      Email
                     </label>
-
-                    <Button
-                      type="submit"
-                      className="h-11 w-full"
-                      disabled={pending}
-                    >
-                      {pending ? "Sending link…" : "Email me a sign-in link"}
-                    </Button>
-                  </form>
-
-                  <div className="border-border/60 bg-background/55 mt-4 rounded-2xl border px-3.5 py-3">
-                    <p className="text-foreground text-sm font-medium">
-                      How magic link sign-in works
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                      We send a one-time link to your inbox. Open that link on
-                      the same device or another device and TrackDraw signs you
-                      in directly.
-                    </p>
+                    <Input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        if (emailError) setEmailError(false);
+                      }}
+                      onBlur={(event) =>
+                        setEmailError(
+                          event.target.value.length > 0 &&
+                            !event.target.validity.valid
+                        )
+                      }
+                      aria-invalid={emailError || undefined}
+                      className="dark:bg-background/80 h-11 rounded-xl px-3.5"
+                      placeholder="you@example.com"
+                    />
                   </div>
-                </>
+
+                  <Button
+                    type="submit"
+                    className="h-11 w-full"
+                    disabled={pending}
+                    aria-busy={pending}
+                  >
+                    {pending ? "Sending link…" : "Email me a sign-in link"}
+                  </Button>
+                </form>
               )}
 
               {error ? (
-                <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/8 px-3.5 py-3 text-sm text-rose-600 dark:text-rose-300">
+                <div
+                  role="alert"
+                  className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/8 px-3.5 py-3 text-sm text-rose-600 dark:text-rose-300"
+                >
                   {error}
                 </div>
               ) : null}

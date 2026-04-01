@@ -21,6 +21,42 @@ interface MobileDrawerProps {
   contentClassName?: string;
 }
 
+interface MobileDrawerHeaderProps {
+  title: string;
+  subtitle?: string;
+  className?: string;
+  headerClassName?: string;
+}
+
+export function MobileDrawerHeader({
+  title,
+  subtitle,
+  className,
+  headerClassName,
+}: MobileDrawerHeaderProps) {
+  return (
+    <div
+      className={cn(
+        "border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs",
+        className
+      )}
+    >
+      <DrawerHeader className={cn("px-4 pt-3 pb-3 text-left", headerClassName)}>
+        <div className="min-w-0">
+          <DrawerTitle className="text-foreground/88 text-[13px] font-medium tracking-[0.01em]">
+            {title}
+          </DrawerTitle>
+          {subtitle ? (
+            <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[11px] leading-relaxed">
+              {subtitle}
+            </DrawerDescription>
+          ) : null}
+        </div>
+      </DrawerHeader>
+    </div>
+  );
+}
+
 export function MobileDrawer({
   open,
   onOpenChange,
@@ -35,27 +71,11 @@ export function MobileDrawer({
     <Drawer open={open} direction="bottom" modal onOpenChange={onOpenChange}>
       <DrawerContent
         className={cn(
-          "border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden [&>div:first-child]:hidden",
+          "border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden",
           contentClassName
         )}
       >
-        <div className="border-border/40 bg-card/96 shrink-0 border-b backdrop-blur-xs">
-          <div className="flex items-center justify-center pt-2.5 pb-1.5">
-            <div className="bg-primary/20 h-1 w-10 rounded-full" />
-          </div>
-          <DrawerHeader className="px-4 pt-0 pb-3 text-left">
-            <div className="min-w-0">
-              <DrawerTitle className="text-foreground/88 text-[13px] font-medium tracking-[0.01em]">
-                {title}
-              </DrawerTitle>
-              {subtitle ? (
-                <DrawerDescription className="text-muted-foreground/80 pt-0.5 text-[11px] leading-relaxed">
-                  {subtitle}
-                </DrawerDescription>
-              ) : null}
-            </div>
-          </DrawerHeader>
-        </div>
+        <MobileDrawerHeader title={title} subtitle={subtitle} />
         {pinnedContent}
         <div
           className={cn("flex-1 overflow-y-auto px-4 pt-3 pb-6", bodyClassName)}

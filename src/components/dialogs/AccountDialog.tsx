@@ -15,8 +15,6 @@ function getDisplayName(
 type AccountDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** @deprecated SidebarDialog detects mobile automatically — prop kept for
-   *  backward compatibility but has no effect. */
   mobile?: boolean;
 };
 
@@ -34,7 +32,6 @@ export default function AccountDialog({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -43,7 +40,6 @@ export default function AccountDialog({
     setSaving(false);
     setDeleting(false);
     setError(null);
-    setSuccess(null);
     setView("profile");
   }, [open, user?.name]);
 
@@ -51,12 +47,10 @@ export default function AccountDialog({
     const normalizedName = name.trim();
     if (!normalizedName) {
       setError("Please enter the name you want TrackDraw to show.");
-      setSuccess(null);
       return;
     }
     setSaving(true);
     setError(null);
-    setSuccess(null);
     try {
       await authClient.updateProfileName(normalizedName);
       onOpenChange(false);
@@ -74,12 +68,10 @@ export default function AccountDialog({
   const handleDeleteUser = async () => {
     if (deleteConfirmation.trim().toUpperCase() !== "DELETE") {
       setError("Type DELETE to confirm account deletion.");
-      setSuccess(null);
       return;
     }
     setDeleting(true);
     setError(null);
-    setSuccess(null);
     try {
       await authClient.deleteUser();
       window.location.href = "/studio";
@@ -93,8 +85,6 @@ export default function AccountDialog({
       setDeleting(false);
     }
   };
-
-  // ─── Not signed in ───────────────────────────────────────────────────────
 
   const notSignedIn = (
     <div className="border-border/60 bg-background/70 rounded-2xl border p-5">
@@ -113,15 +103,12 @@ export default function AccountDialog({
     </div>
   );
 
-  // ─── Profile view ────────────────────────────────────────────────────────
-
   const profileContent = isPending ? (
     <p className="text-muted-foreground text-sm">Loading account…</p>
   ) : !user ? (
     notSignedIn
   ) : (
     <div className="space-y-6">
-      {/* Avatar + identity */}
       <div className="flex items-center gap-4">
         <span className="bg-foreground text-background flex size-12 shrink-0 items-center justify-center rounded-full text-sm font-medium">
           {user?.name?.trim()?.[0]?.toUpperCase() ??
@@ -138,7 +125,6 @@ export default function AccountDialog({
         </div>
       </div>
 
-      {/* Fields */}
       <div className="border-border/60 space-y-4 border-t pt-5">
         <label className="block space-y-1.5">
           <span className="text-sm font-medium">Display name</span>
@@ -163,19 +149,12 @@ export default function AccountDialog({
         </label>
       </div>
 
-      {/* Feedback */}
       {error && (
         <div className="rounded-xl border border-rose-500/20 bg-rose-500/8 px-3.5 py-3 text-sm text-rose-600 dark:text-rose-300">
           {error}
         </div>
       )}
-      {success && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-3.5 py-3 text-sm text-emerald-700 dark:text-emerald-300">
-          {success}
-        </div>
-      )}
 
-      {/* Actions */}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
           type="button"
@@ -183,9 +162,8 @@ export default function AccountDialog({
           onClick={() => {
             setName(user.name ?? "");
             setError(null);
-            setSuccess(null);
           }}
-          disabled={saving}
+          disabled={saving || name.trim() === (user.name ?? "").trim()}
         >
           Reset
         </Button>
@@ -199,8 +177,6 @@ export default function AccountDialog({
       </div>
     </div>
   );
-
-  // ─── Danger zone view ────────────────────────────────────────────────────
 
   const dangerContent = isPending ? (
     <p className="text-muted-foreground text-sm">Loading account…</p>
@@ -247,8 +223,6 @@ export default function AccountDialog({
     </div>
   );
 
-  // ─── Nav items ───────────────────────────────────────────────────────────
-
   const navItems = [
     {
       id: "profile" as View,
@@ -294,7 +268,6 @@ export default function AccountDialog({
       onItemChange={(id) => {
         setView(id as View);
         setError(null);
-        setSuccess(null);
       }}
       contentTitle={current.title}
       contentDescription={current.description}

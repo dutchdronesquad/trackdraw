@@ -39,6 +39,7 @@ import type {
 } from "@/components/canvas/TrackPreview3D";
 import { createDefaultDesign } from "@/lib/track/design";
 import { shapeKindLabels, type EditorTool } from "@/lib/editor-tools";
+import { loadProject } from "@/lib/projects";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import {
   getShapeGroupId,
@@ -985,6 +986,25 @@ export default function EditorShell({
         onSyncProject={authUser ? handleSyncProject : undefined}
         onDeleteProject={handleDeleteProject}
         onRenameProject={handleRenameProject}
+        onExportProject={(projectId) => {
+          const exportDesign =
+            projectId === design.id ? design : loadProject(projectId);
+          if (!exportDesign) return;
+
+          const baseName = (exportDesign.title.trim() || "track").replace(
+            /[^a-z0-9-_]+/gi,
+            "_"
+          );
+          const blob = new Blob([JSON.stringify(exportDesign, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = `${baseName}.json`;
+          anchor.click();
+          URL.revokeObjectURL(url);
+        }}
         onRestorePoint={handleRestorePoint}
         onDeleteRestorePoint={handleDeleteRestorePoint}
         projects={projects}
@@ -996,6 +1016,7 @@ export default function EditorShell({
         restorePoints={restorePoints}
         activeDesignId={design.id}
         activeRestorePointId={activeRestorePointId ?? undefined}
+        onResolveConflict={() => setProjectManagerOpen(false)}
       />
       <LayoutPresetPicker
         open={presetPickerOpen && !isMobile}
@@ -1015,7 +1036,6 @@ export default function EditorShell({
         onOpenChange={handleCompleteProfileOpenChange}
         email={authUser?.email ?? null}
         currentName={authUser?.name ?? ""}
-        mobile={isMobile}
         onSave={handleCompleteProfileSave}
       />
       <ProjectVersionConflictDialog
