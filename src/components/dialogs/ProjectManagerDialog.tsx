@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Cloud,
-  CloudAlert,
   CloudUpload,
   Clock,
   FolderOpen,
+  LoaderCircle,
   Pencil,
   RotateCcw,
   Trash2,
@@ -22,12 +22,11 @@ import { SidebarDialog } from "@/components/SidebarDialog";
 interface ProjectManagerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  hasCurrentContent: boolean;
   onOpenProject?: (id: string) => void;
   onOpenAccountProject?: (id: string) => void;
+  onSyncProject?: (id: string) => void;
   onDeleteProject?: (id: string) => void;
   onRenameProject?: (id: string, title: string) => void;
-  onSyncCurrentProject?: () => void;
   onRestorePoint?: (id: string) => void;
   onDeleteRestorePoint?: (id: string) => void;
   projects?: ProjectMeta[];
@@ -39,8 +38,15 @@ interface ProjectManagerDialogProps {
   }>;
   accountProjectsLoading?: boolean;
   accountProjectsError?: string | null;
-  currentProjectInAccount?: boolean;
-  syncingCurrentProject?: boolean;
+  projectSyncMetaById?: Record<
+    string,
+    {
+      status: "local-only" | "pending" | "syncing" | "synced" | "failed";
+      lastSyncedAt?: string | null;
+      error?: string | null;
+    }
+  >;
+  syncingProjectId?: string | null;
   restorePoints?: RestorePointMeta[];
   activeDesignId?: string;
   activeRestorePointId?: string;
@@ -140,7 +146,7 @@ function EmptyState({
 
 function CurrentBadge({ label = "current" }: { label?: string }) {
   return (
-    <span className="bg-primary/10 text-primary/80 shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+    <span className="bg-primary/10 text-primary/80 inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide">
       {label}
     </span>
   );
@@ -151,20 +157,19 @@ function CurrentBadge({ label = "current" }: { label?: string }) {
 export default function ProjectManagerDialog({
   open,
   onOpenChange,
-  hasCurrentContent,
   onOpenProject,
   onOpenAccountProject,
+  onSyncProject,
   onDeleteProject,
   onRenameProject,
-  onSyncCurrentProject,
   onRestorePoint,
   onDeleteRestorePoint,
   projects = [],
   accountProjects = [],
   accountProjectsLoading = false,
   accountProjectsError = null,
-  currentProjectInAccount = false,
-  syncingCurrentProject = false,
+  projectSyncMetaById = {},
+  syncingProjectId = null,
   restorePoints = [],
   activeDesignId,
   activeRestorePointId,
@@ -182,7 +187,13 @@ export default function ProjectManagerDialog({
     b.updatedAt.localeCompare(a.updatedAt)
   );
 
-  const hasAccountSection = !!onSyncCurrentProject;
+  const hasAccountSection = Boolean(onSyncProject);
+
+  useEffect(() => {
+    if (view === "account" && !hasAccountSection) {
+      setView("device");
+    }
+  }, [hasAccountSection, view]);
 
   function startRename(p: ProjectMeta) {
     setRenamingId(p.id);
@@ -201,6 +212,30 @@ export default function ProjectManagerDialog({
     const isCurrent = p.id === activeDesignId;
     const isRenaming = renamingId === p.id;
     const isConfirming = confirmDeleteId === p.id;
+    const syncMeta = projectSyncMetaById[p.id];
+    const isSynced =
+      syncMeta?.status === "synced" ||
+      sortedAccountProjects.some((project) => project.id === p.id);
+    const isSyncing =
+      syncingProjectId === p.id || syncMeta?.status === "syncing";
+    const hasSyncFailure = syncMeta?.status === "failed";
+    const hasPendingChanges = syncMeta?.status === "pending";
+    const syncLabel = isSyncing
+      ? "Syncing"
+      : hasPendingChanges
+        ? "Pending"
+        : hasSyncFailure
+          ? "Sync failed"
+          : isSynced
+            ? "Synced"
+            : "Local only";
+    const syncDetail = hasSyncFailure
+      ? (syncMeta?.error ?? "Could not sync this project")
+      : hasPendingChanges
+        ? "Local changes are waiting to sync"
+        : syncMeta?.lastSyncedAt
+          ? `Last synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
+          : null;
 
     return (
       <div
@@ -239,11 +274,41 @@ export default function ProjectManagerDialog({
                 {p.title || "Untitled"}
               </p>
               {isCurrent && <CurrentBadge />}
+              {!isRenaming && !isConfirming ? (
+                <span
+                  className={cn(
+                    "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
+                    isSyncing
+                      ? "bg-primary/10 text-primary/80"
+                      : hasPendingChanges
+                        ? "bg-muted text-foreground/75"
+                        : hasSyncFailure
+                          ? "bg-destructive/10 text-destructive/80"
+                          : isSynced
+                            ? "bg-primary/10 text-primary/80"
+                            : "bg-muted text-muted-foreground/75"
+                  )}
+                >
+                  {syncLabel}
+                </span>
+              ) : null}
             </div>
           )}
           <p className="text-muted-foreground mt-0.5 text-[11px]">
             {itemLabel(p.shapeCount)} · {formatRelativeTime(p.updatedAt)}
           </p>
+          {syncDetail ? (
+            <p
+              className={cn(
+                "mt-0.5 text-[11px]",
+                hasSyncFailure
+                  ? "text-destructive/80"
+                  : "text-muted-foreground/80"
+              )}
+            >
+              {syncDetail}
+            </p>
+          ) : null}
         </div>
         {/* Action buttons */}
         <div
@@ -260,6 +325,33 @@ export default function ProjectManagerDialog({
             </button>
           ) : (
             <>
+              {onSyncProject && !isRenaming && !isConfirming ? (
+                <button
+                  onClick={() => onSyncProject(p.id)}
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
+                    !isMobile &&
+                      "opacity-0 transition-opacity group-hover:opacity-100"
+                  )}
+                  title={
+                    hasSyncFailure
+                      ? "Retry sync"
+                      : isSynced || hasPendingChanges
+                        ? "Update account copy"
+                        : "Sync to account"
+                  }
+                >
+                  {isSyncing ? (
+                    <LoaderCircle className="size-3.5 animate-spin" />
+                  ) : hasSyncFailure ? (
+                    <CloudUpload className="size-3.5" />
+                  ) : isSynced ? (
+                    <Cloud className="size-3.5" />
+                  ) : (
+                    <CloudUpload className="size-3.5" />
+                  )}
+                </button>
+              ) : null}
               {onRenameProject && (
                 <button
                   onClick={() => startRename(p)}
@@ -345,38 +437,6 @@ export default function ProjectManagerDialog({
 
   const accountContent = (
     <div className="space-y-4">
-      {/* Sync action */}
-      {hasCurrentContent && onSyncCurrentProject && (
-        <button
-          type="button"
-          onClick={onSyncCurrentProject}
-          disabled={syncingCurrentProject}
-          className={cn(
-            "border-border/60 hover:bg-muted/40 bg-background/80 flex w-full cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-colors",
-            syncingCurrentProject && "cursor-default opacity-60"
-          )}
-        >
-          <div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-xl">
-            {accountProjectsError ? (
-              <CloudAlert className="text-primary size-4" />
-            ) : (
-              <CloudUpload className="text-primary size-4" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">
-              {currentProjectInAccount
-                ? "Update account copy"
-                : "Sync current project"}
-            </p>
-            <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
-              {currentProjectInAccount
-                ? "Push the latest version to your account."
-                : "Make this project available on all your devices."}
-            </p>
-          </div>
-        </button>
-      )}
       {/* Account projects list */}
       {accountProjectsLoading ? (
         <div className="space-y-1.5">
@@ -397,6 +457,12 @@ export default function ProjectManagerDialog({
         <div className="space-y-1.5">
           {sortedAccountProjects.map((proj) => {
             const isCurrent = proj.id === activeDesignId;
+            const syncMeta = projectSyncMetaById[proj.id];
+            const isSyncing =
+              syncingProjectId === proj.id || syncMeta?.status === "syncing";
+            const hasSyncFailure = syncMeta?.status === "failed";
+            const hasPendingChanges = syncMeta?.status === "pending";
+            const lastSyncedAt = syncMeta?.lastSyncedAt ?? proj.updatedAt;
             return (
               <div
                 key={proj.id}
@@ -422,13 +488,70 @@ export default function ProjectManagerDialog({
                       {proj.title || "Untitled"}
                     </p>
                     {isCurrent && <CurrentBadge />}
+                    <span
+                      className={cn(
+                        "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
+                        isSyncing
+                          ? "bg-primary/10 text-primary/80"
+                          : hasPendingChanges
+                            ? "bg-muted text-foreground/75"
+                            : hasSyncFailure
+                              ? "bg-destructive/10 text-destructive/80"
+                              : "bg-primary/10 text-primary/80"
+                      )}
+                    >
+                      {isSyncing
+                        ? "Syncing"
+                        : hasPendingChanges
+                          ? "Pending"
+                          : hasSyncFailure
+                            ? "Sync failed"
+                            : "Synced"}
+                    </span>
                   </div>
                   <p className="text-muted-foreground mt-0.5 text-[11px]">
                     {itemLabel(proj.shapeCount)} ·{" "}
                     {formatRelativeTime(proj.updatedAt)}
                   </p>
+                  <p
+                    className={cn(
+                      "mt-0.5 text-[11px]",
+                      hasSyncFailure
+                        ? "text-destructive/80"
+                        : "text-muted-foreground/80"
+                    )}
+                  >
+                    {hasSyncFailure
+                      ? (syncMeta?.error ?? "Could not sync the latest changes")
+                      : hasPendingChanges
+                        ? "Local changes are waiting to sync"
+                        : `Last synced ${formatRelativeTime(lastSyncedAt)}`}
+                  </p>
                 </div>
-                <Cloud className="text-muted-foreground/40 size-3.5 shrink-0" />
+                <div
+                  className="flex shrink-0 items-center gap-0.5"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {onSyncProject &&
+                  isCurrent &&
+                  (hasSyncFailure || hasPendingChanges) ? (
+                    <button
+                      onClick={() => onSyncProject(proj.id)}
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                      title={
+                        hasSyncFailure ? "Retry sync" : "Sync pending changes"
+                      }
+                    >
+                      {hasSyncFailure ? (
+                        <CloudUpload className="size-3.5" />
+                      ) : (
+                        <Cloud className="size-3.5" />
+                      )}
+                    </button>
+                  ) : (
+                    <Cloud className="text-muted-foreground/40 size-3.5 shrink-0" />
+                  )}
+                </div>
               </div>
             );
           })}
@@ -559,13 +682,13 @@ export default function ProjectManagerDialog({
     device: {
       label: "On this device",
       description:
-        "Projects saved in this browser. Open, rename, or delete them here.",
+        "Projects saved in this browser. Open them here and bring them into account sync when needed.",
       content: deviceContent,
     },
     account: {
       label: "Account projects",
       description:
-        "Projects synced to your account, available on all your signed-in devices.",
+        "Projects already synced to your account and available on your signed-in devices.",
       content: accountContent,
     },
     restore: {

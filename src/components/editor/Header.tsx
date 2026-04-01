@@ -17,8 +17,11 @@ import {
   Redo2,
   Share2,
   Eye,
+  Cloud,
+  CloudOff,
   Download,
   Keyboard,
+  LoaderCircle,
   PanelLeftClose,
   PanelLeftOpen,
   Save,
@@ -48,6 +51,7 @@ interface HeaderProps {
   studioHref?: string;
   lastSavedLabel?: string;
   statusLabel?: string;
+  statusTone?: "default" | "syncing" | "success" | "error";
   selectionLabel?: string;
   showObstacleNumbers?: boolean;
   onToggleObstacleNumbers?: () => void;
@@ -69,11 +73,28 @@ export default function Header({
   title = "Untitled",
   studioHref = "/studio",
   lastSavedLabel,
+  statusLabel,
+  statusTone = "default",
   showObstacleNumbers = false,
   onToggleObstacleNumbers,
 }: HeaderProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
+
+  const statusIcon =
+    statusTone === "error" ? (
+      <CloudOff className="size-3.5" />
+    ) : statusTone === "syncing" ? (
+      <LoaderCircle className="size-3.5 animate-spin" />
+    ) : (
+      <Cloud className="size-3.5" />
+    );
+  const statusWord =
+    statusTone === "error"
+      ? "Failed"
+      : statusTone === "syncing"
+        ? "Syncing"
+        : "Synced";
 
   const viewToggle = (
     <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
@@ -329,6 +350,30 @@ export default function Header({
                 <TooltipContent>Keyboard shortcuts</TooltipContent>
               </Tooltip>
             )}
+            {statusLabel ? (
+              <>
+                <div className="bg-border/80 mx-1 hidden h-4 w-px lg:block" />
+                <Tooltip>
+                  <TooltipTrigger
+                    className={cn(
+                      "hidden items-center gap-1 text-[10px] lg:inline-flex",
+                      statusTone === "error"
+                        ? "text-destructive/85"
+                        : statusTone === "success"
+                          ? "text-primary/80"
+                          : statusTone === "syncing"
+                            ? "text-foreground/65"
+                            : "text-muted-foreground/80"
+                    )}
+                    aria-label={statusLabel}
+                  >
+                    {statusIcon}
+                    <span>{statusWord}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>{statusLabel}</TooltipContent>
+                </Tooltip>
+              </>
+            ) : null}
           </div>
         )}
 
