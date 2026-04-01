@@ -24,6 +24,7 @@ import KeyboardShortcutsDialog from "@/components/dialogs/KeyboardShortcutsDialo
 import CompleteProfileDialog from "@/components/dialogs/CompleteProfileDialog";
 import PerformanceHud from "./PerformanceHud";
 import ProjectManagerDialog from "@/components/dialogs/ProjectManagerDialog";
+import NewProjectDialog from "@/components/dialogs/NewProjectDialog";
 import { Button } from "@/components/ui/button";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import TrackCanvas, {
@@ -42,6 +43,11 @@ import {
   selectionHasGroupedShapes,
 } from "@/lib/track/shape-groups";
 import { createStarterLayoutDesign } from "@/lib/planning/starter-layouts";
+import {
+  listProjects,
+  listRestorePointsForProject,
+  saveProject,
+} from "@/lib/projects";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -64,6 +70,7 @@ import {
 } from "@/store/selectors";
 import { authClient } from "@/lib/auth-client";
 import { Box, Route, X } from "lucide-react";
+import { toast } from "sonner";
 
 function createFirstUseBlankDesign() {
   const design = createDefaultDesign();
@@ -99,6 +106,13 @@ export default function EditorShell({
   initialTab?: EditorView;
   studioHref?: string;
 }) {
+  type AccountProjectListItem = {
+    id: string;
+    title: string;
+    updatedAt: string;
+    shapeCount: number;
+  };
+
   usePerfMetric("render:EditorShell");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const { enabled: developerModeEnabled, toggle: toggleDeveloperMode } =
@@ -200,7 +214,16 @@ export default function EditorShell({
   const [mobilePathBuilderPinnedOpen, setMobilePathBuilderPinnedOpen] =
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [projectManagerOpen, setProjectManagerOpen] = useState(false);
+  const [accountProjects, setAccountProjects] = useState<
+    AccountProjectListItem[]
+  >([]);
+  const [accountProjectsLoading, setAccountProjectsLoading] = useState(false);
+  const [accountProjectsError, setAccountProjectsError] = useState<
+    string | null
+  >(null);
+  const [syncingCurrentProject, setSyncingCurrentProject] = useState(false);
   const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
   const [completeProfileDismissed, setCompleteProfileDismissed] =
     useState(false);
@@ -215,9 +238,13 @@ export default function EditorShell({
 
   const {
     projects,
+    setProjects,
     restorePoints,
+    setRestorePoints,
     activeRestorePointId,
+    setActiveRestorePointId,
     saveStatusLabel,
+    setSaveStatusLabel,
     initialized,
     handleSaveSnapshot,
     handleOpenProject,
@@ -289,6 +316,160 @@ export default function EditorShell({
     setCompleteProfileDismissed(false);
   }, []);
 
+  const refreshAccountProjects = useCallback(async () => {
+    if (!authUser?.id || readOnly) {
+      setAccountProjects([]);
+      setAccountProjectsError(null);
+      setAccountProjectsLoading(false);
+      return;
+    }
+
+    setAccountProjectsLoading(true);
+    setAccountProjectsError(null);
+
+    try {
+      const response = await fetch("/api/projects", { method: "GET" });
+      const payload = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        projects?: Array<{
+          id: string;
+          title: string;
+          updatedAt: string;
+          shapeCount: number;
+        }>;
+      };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "Failed to load account projects");
+      }
+
+      setAccountProjects(
+        (payload.projects ?? []).map((project) => ({
+          id: project.id,
+          title: project.title,
+          updatedAt: project.updatedAt,
+          shapeCount: project.shapeCount,
+        }))
+      );
+    } catch (error) {
+      setAccountProjectsError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load account projects"
+      );
+    } finally {
+      setAccountProjectsLoading(false);
+    }
+  }, [authUser?.id, readOnly]);
+
+  useEffect(() => {
+    if (!projectManagerOpen || !authUser?.id || readOnly) return;
+    void refreshAccountProjects();
+  }, [authUser?.id, projectManagerOpen, readOnly, refreshAccountProjects]);
+
+  const handleSyncCurrentProject = useCallback(async () => {
+    if (!authUser?.id) {
+      toast.error("Sign in to sync this project");
+      return;
+    }
+
+    setSyncingCurrentProject(true);
+
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectId: design.id,
+          title: design.title || "Untitled",
+          design,
+        }),
+      });
+
+      const payload = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "Failed to sync project");
+      }
+
+      const time = new Intl.DateTimeFormat(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date());
+
+      setSaveStatusLabel(`Synced to account at ${time}`);
+      toast.success("Project synced", {
+        description: "This project is now available from your account.",
+      });
+      await refreshAccountProjects();
+    } catch (error) {
+      toast.error("Could not sync project", {
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setSyncingCurrentProject(false);
+    }
+  }, [authUser?.id, design, refreshAccountProjects, setSaveStatusLabel]);
+
+  const handleOpenAccountProject = useCallback(
+    async (projectId: string) => {
+      if (!authUser?.id) {
+        toast.error("Sign in to open account projects");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/projects/${projectId}`, {
+          method: "GET",
+        });
+        const payload = (await response.json()) as {
+          ok: boolean;
+          error?: string;
+          project?: {
+            design: typeof design;
+          };
+        };
+
+        if (!response.ok || !payload.ok || !payload.project) {
+          throw new Error(payload.error ?? "Failed to open project");
+        }
+
+        snapshotCurrentDesign();
+        replaceDesign(payload.project.design);
+        saveProject(payload.project.design);
+        setProjects(listProjects());
+        setRestorePoints(
+          listRestorePointsForProject(payload.project.design.id)
+        );
+        setActiveRestorePointId(null);
+        setSaveStatusLabel("Project opened from account");
+        setProjectManagerOpen(false);
+      } catch (error) {
+        toast.error("Could not open project", {
+          description:
+            error instanceof Error ? error.message : "Please try again.",
+        });
+      }
+    },
+    [
+      authUser?.id,
+      design,
+      replaceDesign,
+      setActiveRestorePointId,
+      setProjects,
+      setRestorePoints,
+      setSaveStatusLabel,
+      snapshotCurrentDesign,
+    ]
+  );
+
   const handleTabChange = useCallback(
     (nextTab: EditorView) => {
       setTab(nextTab);
@@ -315,6 +496,24 @@ export default function EditorShell({
 
     mobileProjectManagerOpenTimerRef.current = window.setTimeout(() => {
       setProjectManagerOpen(true);
+      mobileProjectManagerOpenTimerRef.current = null;
+    }, 180);
+  }, [isMobile]);
+
+  const openNewProjectDialog = useCallback(() => {
+    if (!isMobile) {
+      setNewProjectOpen(true);
+      return;
+    }
+
+    setMobileToolsOpen(false);
+
+    if (mobileProjectManagerOpenTimerRef.current !== null) {
+      window.clearTimeout(mobileProjectManagerOpenTimerRef.current);
+    }
+
+    mobileProjectManagerOpenTimerRef.current = window.setTimeout(() => {
+      setNewProjectOpen(true);
       mobileProjectManagerOpenTimerRef.current = null;
     }, 180);
   }, [isMobile]);
@@ -477,6 +676,7 @@ export default function EditorShell({
           <Toolbar
             onImport={() => setImportOpen(true)}
             onExport={() => setExportOpen(true)}
+            onOpenNewProject={() => setNewProjectOpen(true)}
             onOpenProjectManager={() => setProjectManagerOpen(true)}
             onOpenPresets={openPresetPicker}
             collapsed={sidebarCollapsed}
@@ -492,6 +692,7 @@ export default function EditorShell({
             onTabChange={handleTabChange}
             onShare={() => setShareOpen(true)}
             onExport={() => setExportOpen(true)}
+            onOpenNewProject={openNewProjectDialog}
             onImport={() => setImportOpen(true)}
             onOpenProjectManager={() => setProjectManagerOpen(true)}
             onSaveSnapshot={readOnly ? undefined : handleSaveSnapshot}
@@ -956,27 +1157,44 @@ export default function EditorShell({
         open={shortcutsOpen}
         onOpenChange={setShortcutsOpen}
       />
-      <ProjectManagerDialog
-        open={projectManagerOpen}
-        onOpenChange={setProjectManagerOpen}
+      <NewProjectDialog
+        open={newProjectOpen}
+        onOpenChange={setNewProjectOpen}
         hasContent={Boolean(design.title.trim() || designShapes.length)}
         onNewProject={() => {
           snapshotCurrentDesign();
           applyStarterDesign("blank");
-          setProjectManagerOpen(false);
+          setNewProjectOpen(false);
           setMobileToolsOpen(false);
         }}
         onBackupProject={() => {
-          setProjectManagerOpen(false);
+          setNewProjectOpen(false);
           setExportOpen(true);
         }}
-        onStartStarterLayout={applyStarterLayout}
+        onStartStarterLayout={(layoutId) => {
+          applyStarterLayout(layoutId);
+          setNewProjectOpen(false);
+        }}
+      />
+      <ProjectManagerDialog
+        open={projectManagerOpen}
+        onOpenChange={setProjectManagerOpen}
+        hasCurrentContent={Boolean(design.title.trim() || designShapes.length)}
         onOpenProject={handleOpenProject}
+        onOpenAccountProject={handleOpenAccountProject}
         onDeleteProject={handleDeleteProject}
         onRenameProject={handleRenameProject}
+        onSyncCurrentProject={authUser ? handleSyncCurrentProject : undefined}
         onRestorePoint={handleRestorePoint}
         onDeleteRestorePoint={handleDeleteRestorePoint}
         projects={projects}
+        accountProjects={accountProjects}
+        accountProjectsLoading={accountProjectsLoading}
+        accountProjectsError={accountProjectsError}
+        currentProjectInAccount={accountProjects.some(
+          (p) => p.id === design.id
+        )}
+        syncingCurrentProject={syncingCurrentProject}
         restorePoints={restorePoints}
         activeDesignId={design.id}
         activeRestorePointId={activeRestorePointId ?? undefined}

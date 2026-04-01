@@ -1,42 +1,53 @@
 "use client";
 
 import { useState } from "react";
-import { DesktopModal } from "@/components/DesktopModal";
-import { MobileDrawer } from "@/components/MobileDrawer";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Box,
-  FilePlus,
-  Download,
+  Cloud,
+  CloudAlert,
+  CloudUpload,
+  Clock,
+  FolderOpen,
   Pencil,
   RotateCcw,
   Trash2,
-  ChevronRight,
-  X,
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Kbd } from "@/components/ui/kbd";
 import type { ProjectMeta, RestorePointMeta } from "@/lib/projects";
-import { starterLayouts } from "@/lib/planning/starter-layouts";
+import { SidebarDialog } from "@/components/SidebarDialog";
 
 interface ProjectManagerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onNewProject: () => void;
-  onStartStarterLayout?: (layoutId: string) => void;
-  onBackupProject?: () => void;
+  hasCurrentContent: boolean;
   onOpenProject?: (id: string) => void;
+  onOpenAccountProject?: (id: string) => void;
   onDeleteProject?: (id: string) => void;
   onRenameProject?: (id: string, title: string) => void;
+  onSyncCurrentProject?: () => void;
   onRestorePoint?: (id: string) => void;
   onDeleteRestorePoint?: (id: string) => void;
-  hasContent: boolean;
   projects?: ProjectMeta[];
+  accountProjects?: Array<{
+    id: string;
+    title: string;
+    updatedAt: string;
+    shapeCount: number;
+  }>;
+  accountProjectsLoading?: boolean;
+  accountProjectsError?: string | null;
+  currentProjectInAccount?: boolean;
+  syncingCurrentProject?: boolean;
   restorePoints?: RestorePointMeta[];
   activeDesignId?: string;
   activeRestorePointId?: string;
 }
+
+// Shared view state for both mobile and desktop
+type View = "device" | "account" | "restore";
 
 function formatRelativeTime(iso: string): string {
   try {
@@ -57,21 +68,103 @@ function itemLabel(count: number): string {
   return count === 1 ? "1 item" : `${count} items`;
 }
 
-type Tab = "projects" | "restore";
+// ─── Avatar ──────────────────────────────────────────────────────────────────
+
+const AVATAR_COLORS = [
+  "bg-blue-500/15 text-blue-400",
+  "bg-violet-500/15 text-violet-400",
+  "bg-emerald-500/15 text-emerald-400",
+  "bg-amber-500/15 text-amber-400",
+  "bg-rose-500/15 text-rose-400",
+  "bg-cyan-500/15 text-cyan-400",
+];
+
+function avatarColor(id: string): string {
+  const hash = id.split("").reduce((sum, c) => sum + c.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length] ?? AVATAR_COLORS[0]!;
+}
+
+function ProjectAvatar({ id, title }: { id: string; title: string }) {
+  const letter = (title || "?")[0]?.toUpperCase() ?? "?";
+  return (
+    <div
+      className={cn(
+        "flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-semibold",
+        avatarColor(id)
+      )}
+    >
+      {letter}
+    </div>
+  );
+}
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SkeletonCard() {
+  return (
+    <div className="border-border/40 bg-background/60 flex animate-pulse items-center gap-3 rounded-xl border px-3 py-2.5">
+      <div className="bg-muted/70 size-9 shrink-0 rounded-xl" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="bg-muted/70 h-3.5 w-28 rounded-md" />
+        <div className="bg-muted/50 h-2.5 w-16 rounded-md" />
+      </div>
+    </div>
+  );
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
+function EmptyState({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: React.ReactNode;
+}) {
+  return (
+    <div className="border-border/40 flex flex-col items-center gap-2.5 rounded-xl border border-dashed px-4 py-8 text-center">
+      <div className="text-muted-foreground/35">{icon}</div>
+      <div>
+        <p className="text-muted-foreground text-sm font-medium">{title}</p>
+        <p className="text-muted-foreground/60 mt-0.5 text-[11px] leading-relaxed">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Shared "current" badge ───────────────────────────────────────────────────
+
+function CurrentBadge({ label = "current" }: { label?: string }) {
+  return (
+    <span className="bg-primary/10 text-primary/80 shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+      {label}
+    </span>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ProjectManagerDialog({
   open,
   onOpenChange,
-  onNewProject,
-  onStartStarterLayout,
-  onBackupProject,
+  hasCurrentContent,
   onOpenProject,
+  onOpenAccountProject,
   onDeleteProject,
   onRenameProject,
+  onSyncCurrentProject,
   onRestorePoint,
   onDeleteRestorePoint,
-  hasContent,
   projects = [],
+  accountProjects = [],
+  accountProjectsLoading = false,
+  accountProjectsError = null,
+  currentProjectInAccount = false,
+  syncingCurrentProject = false,
   restorePoints = [],
   activeDesignId,
   activeRestorePointId,
@@ -80,11 +173,16 @@ export default function ProjectManagerDialog({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("projects");
+  const [view, setView] = useState<View>("device");
 
   const sortedProjects = [...projects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
+  const sortedAccountProjects = [...accountProjects].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt)
+  );
+
+  const hasAccountSection = !!onSyncCurrentProject;
 
   function startRename(p: ProjectMeta) {
     setRenamingId(p.id);
@@ -97,447 +195,408 @@ export default function ProjectManagerDialog({
     setRenamingId(null);
   }
 
-  const actionRowClass =
-    "border-border/60 hover:bg-muted/35 flex w-full cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors";
+  // ─── Local project card ──────────────────────────────────────────────────
 
-  // Pinned new-project block (blank canvas + optional export, no starters)
-  const newProjectBlock = (
-    <div className="space-y-2.5">
-      {hasContent ? (
-        <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
-          <p className="text-foreground text-sm font-medium">
-            Current track will be saved first
-          </p>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            A snapshot is kept in Saved projects and Restore points before the
-            canvas is cleared.
-          </p>
-        </div>
-      ) : null}
+  function LocalProjectCard({ p }: { p: ProjectMeta }) {
+    const isCurrent = p.id === activeDesignId;
+    const isRenaming = renamingId === p.id;
+    const isConfirming = confirmDeleteId === p.id;
 
-      <button onClick={onNewProject} className={actionRowClass}>
-        <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-          <FilePlus className="size-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-foreground text-sm font-medium">Start fresh</p>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            An empty field where you place your first gate and build from there.
-          </p>
-        </div>
-        <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
-      </button>
-
-      {hasContent && onBackupProject ? (
-        <button onClick={onBackupProject} className={actionRowClass}>
-          <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-            <Download className="size-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">Export first</p>
-            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              Save a JSON backup before replacing the current project.
-            </p>
-          </div>
-          <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
-        </button>
-      ) : null}
-    </div>
-  );
-
-  // Starter layouts strip (desktop: horizontal grid; mobile: vertical list)
-  const starterStrip = onStartStarterLayout ? (
-    <div className="space-y-2.5">
-      {starterLayouts.map((layout) => (
-        <button
-          key={layout.id}
-          type="button"
-          onClick={() => onStartStarterLayout(layout.id)}
-          className={actionRowClass}
-        >
-          <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-            <Box className="size-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">{layout.name}</p>
-            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              {layout.description}
-            </p>
-          </div>
-          <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
-        </button>
-      ))}
-    </div>
-  ) : null;
-
-  // Tab bar
-  const tabBar = (mobile = false) => (
-    <div
-      className={cn(
-        "flex",
-        mobile
-          ? "border-border/30 gap-4 border-b"
-          : "border-border/30 gap-4 border-b"
-      )}
-    >
-      <button
-        type="button"
-        onClick={() => setTab("projects")}
-        className={cn(
-          "cursor-pointer pb-2.5 text-[11px] font-semibold tracking-widest uppercase transition-colors",
-          tab === "projects"
-            ? "text-foreground border-foreground/70 -mb-px border-b-2"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        Projects
-        {sortedProjects.length > 0 ? (
-          <span className="ml-1.5 font-normal tracking-normal normal-case">
-            ({sortedProjects.length})
-          </span>
-        ) : null}
-      </button>
-      <button
-        type="button"
-        onClick={() => setTab("restore")}
-        className={cn(
-          "cursor-pointer pb-2.5 text-[11px] font-semibold tracking-widest uppercase transition-colors",
-          tab === "restore"
-            ? "text-foreground border-foreground/70 -mb-px border-b-2"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        Snapshots
-        {restorePoints.length > 0 ? (
-          <span className="ml-1.5 font-normal tracking-normal normal-case">
-            ({restorePoints.length})
-          </span>
-        ) : null}
-      </button>
-    </div>
-  );
-
-  // Projects list
-  const projectsList =
-    sortedProjects.length > 0 ? (
-      <div className="space-y-1.5">
-        {sortedProjects.map((p) => {
-          const isCurrent = p.id === activeDesignId;
-          const isRenaming = renamingId === p.id;
-          return (
-            <div
-              key={p.id}
-              onClick={
-                onOpenProject && !isCurrent
-                  ? () => {
-                      onOpenProject(p.id);
-                      onOpenChange(false);
-                    }
-                  : undefined
+    return (
+      <div
+        onClick={
+          onOpenProject && !isCurrent && !isRenaming && !isConfirming
+            ? () => {
+                onOpenProject(p.id);
+                onOpenChange(false);
               }
-              className={cn(
-                "flex items-center gap-2 rounded-xl border px-3 py-2.5",
-                isCurrent
-                  ? "border-primary/25 bg-primary/4"
-                  : "border-border/60 hover:bg-muted/35 cursor-pointer transition-colors"
-              )}
-            >
-              <div className="min-w-0 flex-1">
-                {isRenaming ? (
-                  <input
-                    autoFocus
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") commitRename(p.id);
-                      if (e.key === "Escape") setRenamingId(null);
-                    }}
-                    onBlur={() => commitRename(p.id)}
-                    className="text-foreground border-border/60 w-full border-b bg-transparent pb-0.5 text-sm font-medium outline-none"
-                  />
-                ) : (
-                  <div className="flex items-center gap-1.5 truncate">
-                    <p className="text-foreground truncate text-sm font-medium">
-                      {p.title || "Untitled"}
-                    </p>
-                    {isCurrent ? (
-                      <span className="text-primary/70 bg-primary/8 shrink-0 rounded px-1 py-px text-[9px] font-semibold tracking-wide uppercase">
-                        current
-                      </span>
-                    ) : null}
-                  </div>
-                )}
-                <p className="text-muted-foreground mt-0.5 text-[11px]">
-                  {itemLabel(p.shapeCount)} · {formatRelativeTime(p.updatedAt)}
-                </p>
-              </div>
-              <div
-                className="flex shrink-0 items-center gap-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {isRenaming ? (
-                  <button
-                    onClick={() => commitRename(p.id)}
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
-                    title="Confirm rename"
-                  >
-                    <Check className="size-3.5" />
-                  </button>
-                ) : (
-                  <>
-                    {onRenameProject ? (
-                      <button
-                        onClick={() => startRename(p)}
-                        className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
-                        title="Rename project"
-                      >
-                        <Pencil className="size-3.5" />
-                      </button>
-                    ) : null}
-                    {onDeleteProject && !isCurrent ? (
-                      confirmDeleteId === p.id ? (
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => {
-                              onDeleteProject(p.id);
-                              setConfirmDeleteId(null);
-                            }}
-                            className="text-destructive hover:bg-destructive/10 cursor-pointer rounded-lg px-2 py-1 text-[11px] font-medium transition-colors"
-                          >
-                            Delete
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
-                          >
-                            <X className="size-3.5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmDeleteId(p.id)}
-                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer rounded-lg p-1.5 transition-colors"
-                          title="Delete project"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      )
-                    ) : null}
-                  </>
-                )}
-              </div>
+            : undefined
+        }
+        className={cn(
+          "group relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-150",
+          isCurrent
+            ? "border-primary/20 bg-primary/5"
+            : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
+        )}
+      >
+        <ProjectAvatar id={p.id} title={p.title || "?"} />
+        <div className="min-w-0 flex-1">
+          {isRenaming ? (
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitRename(p.id);
+                if (e.key === "Escape") setRenamingId(null);
+              }}
+              onBlur={() => commitRename(p.id)}
+              className="text-foreground border-border/60 w-full border-b bg-transparent pb-0.5 text-sm font-medium outline-none"
+            />
+          ) : (
+            <div className="flex min-w-0 items-center gap-1.5">
+              <p className="text-foreground truncate text-sm font-medium">
+                {p.title || "Untitled"}
+              </p>
+              {isCurrent && <CurrentBadge />}
             </div>
-          );
-        })}
+          )}
+          <p className="text-muted-foreground mt-0.5 text-[11px]">
+            {itemLabel(p.shapeCount)} · {formatRelativeTime(p.updatedAt)}
+          </p>
+        </div>
+        {/* Action buttons */}
+        <div
+          className="flex shrink-0 items-center gap-0.5"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {isRenaming ? (
+            <button
+              onClick={() => commitRename(p.id)}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+              title="Confirm rename"
+            >
+              <Check className="size-3.5" />
+            </button>
+          ) : (
+            <>
+              {onRenameProject && (
+                <button
+                  onClick={() => startRename(p)}
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
+                    !isMobile &&
+                      "opacity-0 transition-opacity group-hover:opacity-100"
+                  )}
+                  title="Rename"
+                >
+                  <Pencil className="size-3.5" />
+                </button>
+              )}
+              {onDeleteProject && !isCurrent && (
+                <button
+                  onClick={() => setConfirmDeleteId(p.id)}
+                  className={cn(
+                    "text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
+                    !isMobile &&
+                      "opacity-0 transition-opacity group-hover:opacity-100"
+                  )}
+                  title="Delete"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              )}
+            </>
+          )}
+        </div>
+        {/* Delete confirmation overlay */}
+        <AnimatePresence>
+          {isConfirming && (
+            <motion.div
+              className="bg-background/97 absolute inset-0 flex items-center justify-between gap-2 rounded-xl px-3 backdrop-blur-sm"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-destructive truncate text-sm font-medium">
+                Delete permanently?
+              </p>
+              <div className="flex shrink-0 items-center gap-1">
+                <button
+                  onClick={() => {
+                    onDeleteProject!(p.id);
+                    setConfirmDeleteId(null);
+                  }}
+                  className="bg-destructive/10 hover:bg-destructive/20 text-destructive cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="text-muted-foreground hover:text-foreground cursor-pointer rounded-lg px-2 py-1.5 text-xs transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    ) : (
-      <p className="text-muted-foreground/50 text-xs">No saved projects yet.</p>
     );
+  }
 
-  // Restore points list
-  const restoreList =
-    restorePoints.length > 0 ? (
-      <div className="space-y-1.5">
-        {restorePoints.map((r) => {
+  // ─── View content ─────────────────────────────────────────────────────────
+
+  const deviceContent = (
+    <div className="space-y-2">
+      {sortedProjects.length > 0 ? (
+        sortedProjects.map((p) => <LocalProjectCard key={p.id} p={p} />)
+      ) : (
+        <EmptyState
+          icon={<FolderOpen className="size-6" />}
+          title="No saved projects"
+          description="Projects you save will appear here."
+        />
+      )}
+    </div>
+  );
+
+  const accountContent = (
+    <div className="space-y-4">
+      {/* Sync action */}
+      {hasCurrentContent && onSyncCurrentProject && (
+        <button
+          type="button"
+          onClick={onSyncCurrentProject}
+          disabled={syncingCurrentProject}
+          className={cn(
+            "border-border/60 hover:bg-muted/40 bg-background/80 flex w-full cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-colors",
+            syncingCurrentProject && "cursor-default opacity-60"
+          )}
+        >
+          <div className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-xl">
+            {accountProjectsError ? (
+              <CloudAlert className="text-primary size-4" />
+            ) : (
+              <CloudUpload className="text-primary size-4" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground text-sm font-medium">
+              {currentProjectInAccount
+                ? "Update account copy"
+                : "Sync current project"}
+            </p>
+            <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
+              {currentProjectInAccount
+                ? "Push the latest version to your account."
+                : "Make this project available on all your devices."}
+            </p>
+          </div>
+        </button>
+      )}
+      {/* Account projects list */}
+      {accountProjectsLoading ? (
+        <div className="space-y-1.5">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : accountProjectsError ? (
+        <div className="border-destructive/20 bg-destructive/8 rounded-xl border px-4 py-3">
+          <p className="text-foreground text-sm font-medium">
+            Could not load account projects
+          </p>
+          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+            {accountProjectsError}
+          </p>
+        </div>
+      ) : sortedAccountProjects.length > 0 ? (
+        <div className="space-y-1.5">
+          {sortedAccountProjects.map((proj) => {
+            const isCurrent = proj.id === activeDesignId;
+            return (
+              <div
+                key={proj.id}
+                onClick={
+                  onOpenAccountProject && !isCurrent
+                    ? () => {
+                        onOpenAccountProject(proj.id);
+                        onOpenChange(false);
+                      }
+                    : undefined
+                }
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all duration-150",
+                  isCurrent
+                    ? "border-primary/20 bg-primary/5"
+                    : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
+                )}
+              >
+                <ProjectAvatar id={proj.id} title={proj.title || "?"} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <p className="text-foreground truncate text-sm font-medium">
+                      {proj.title || "Untitled"}
+                    </p>
+                    {isCurrent && <CurrentBadge />}
+                  </div>
+                  <p className="text-muted-foreground mt-0.5 text-[11px]">
+                    {itemLabel(proj.shapeCount)} ·{" "}
+                    {formatRelativeTime(proj.updatedAt)}
+                  </p>
+                </div>
+                <Cloud className="text-muted-foreground/40 size-3.5 shrink-0" />
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyState
+          icon={<Cloud className="size-6" />}
+          title="No account projects"
+          description="Sync a project to make it available across devices."
+        />
+      )}
+    </div>
+  );
+
+  const restoreContent = (
+    <div className="space-y-2">
+      {restorePoints.length > 0 ? (
+        restorePoints.map((r) => {
           const isActive = r.id === activeRestorePointId;
           return (
             <div
               key={r.id}
               className={cn(
-                "flex items-center gap-2 rounded-xl border px-3 py-2.5",
-                isActive ? "border-primary/25 bg-primary/4" : "border-border/60"
+                "flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all duration-150",
+                isActive
+                  ? "border-primary/20 bg-primary/5"
+                  : "border-border/60 bg-background/70"
               )}
             >
+              <div className="bg-muted/50 flex size-9 shrink-0 items-center justify-center rounded-xl">
+                <Clock className="text-muted-foreground/60 size-4" />
+              </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 truncate">
+                <div className="flex min-w-0 items-center gap-1.5">
                   <p className="text-foreground truncate text-sm font-medium">
                     {r.designTitle || "Untitled"}
                   </p>
-                  {isActive ? (
-                    <span className="text-primary/70 bg-primary/8 shrink-0 rounded px-1 py-px text-[9px] font-semibold tracking-wide uppercase">
-                      active
-                    </span>
-                  ) : null}
+                  {isActive && <CurrentBadge label="active" />}
                 </div>
                 <p className="text-muted-foreground mt-0.5 text-[11px]">
                   {itemLabel(r.shapeCount)} · {formatRelativeTime(r.savedAt)}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-1">
-                {onRestorePoint ? (
+              <div className="flex shrink-0 items-center gap-0.5">
+                {onRestorePoint && (
                   <button
                     onClick={() => {
                       onRestorePoint(r.id);
                       onOpenChange(false);
                     }}
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                     title="Restore this snapshot"
                   >
                     <RotateCcw className="size-3.5" />
                   </button>
-                ) : null}
-                {onDeleteRestorePoint ? (
+                )}
+                {onDeleteRestorePoint && (
                   <button
                     onClick={() => onDeleteRestorePoint(r.id)}
-                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer rounded-lg p-1.5 transition-colors"
-                    title="Delete restore point"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                    title="Delete snapshot"
                   >
                     <Trash2 className="size-3.5" />
                   </button>
-                ) : null}
+                )}
               </div>
             </div>
           );
-        })}
-      </div>
-    ) : (
-      <div className="border-border/40 rounded-xl border border-dashed px-4 py-5 text-center">
-        <p className="text-muted-foreground text-xs font-medium">
-          No snapshots yet
-        </p>
-        <p className="text-muted-foreground/50 mt-1 text-[11px] leading-relaxed">
-          {isMobile ? (
-            "Snapshots are created automatically when you open or replace a project."
-          ) : (
-            <>
-              Press <Kbd>⌘S</Kbd> / <Kbd>Ctrl S</Kbd> or use the save button in
-              the header.
-            </>
-          )}
-        </p>
-      </div>
-    );
+        })
+      ) : (
+        <EmptyState
+          icon={<Clock className="size-6" />}
+          title="No snapshots yet"
+          description={
+            isMobile ? (
+              "Snapshots are created automatically when you open or replace a project."
+            ) : (
+              <>
+                Press <Kbd>⌘S</Kbd> / <Kbd>Ctrl S</Kbd> or use the save button
+                in the header.
+              </>
+            )
+          }
+        />
+      )}
+    </div>
+  );
 
-  if (isMobile) {
-    return (
-      <MobileDrawer
-        open={open}
-        onOpenChange={onOpenChange}
-        title="Projects"
-        subtitle="Switch between saved projects or restore a snapshot."
-        contentClassName="h-[82dvh] max-h-[92dvh] min-h-[72dvh]"
-        pinnedContent={
-          <>
-            <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-4">
-              {newProjectBlock}
-            </div>
-            {onStartStarterLayout ? (
-              <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-3">
-                <p className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-widest uppercase">
-                  Starter layouts
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {starterLayouts.map((layout) => (
-                    <button
-                      key={layout.id}
-                      type="button"
-                      onClick={() => onStartStarterLayout(layout.id)}
-                      className="border-border/60 bg-card hover:bg-muted/35 text-muted-foreground hover:text-foreground cursor-pointer rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors"
-                    >
-                      {layout.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            <div className="border-border/30 shrink-0 border-b px-4 pt-3">
-              {tabBar(true)}
-            </div>
-          </>
-        }
-        bodyClassName="pt-4 pb-4"
-      >
-        {tab === "projects" ? projectsList : restoreList}
-      </MobileDrawer>
-    );
-  }
+  // ─── Shared nav items (used by both mobile and desktop) ──────────────────
+
+  type NavItem = {
+    id: View;
+    label: string;
+    icon: React.ReactNode;
+    count: number;
+  };
+  const navItems: NavItem[] = [
+    {
+      id: "device",
+      label: "This device",
+      icon: <FolderOpen className="size-4" />,
+      count: sortedProjects.length,
+    },
+    ...(hasAccountSection
+      ? ([
+          {
+            id: "account",
+            label: "Account",
+            icon: <Cloud className="size-4" />,
+            count: sortedAccountProjects.length,
+          },
+        ] as NavItem[])
+      : []),
+    {
+      id: "restore",
+      label: "Snapshots",
+      icon: <Clock className="size-4" />,
+      count: restorePoints.length,
+    },
+  ];
+
+  // ─── View metadata ────────────────────────────────────────────────────────
+
+  const viewMeta: Record<
+    View,
+    { label: string; description: string; content: React.ReactNode }
+  > = {
+    device: {
+      label: "On this device",
+      description:
+        "Projects saved in this browser. Open, rename, or delete them here.",
+      content: deviceContent,
+    },
+    account: {
+      label: "Account projects",
+      description:
+        "Projects synced to your account, available on all your signed-in devices.",
+      content: accountContent,
+    },
+    restore: {
+      label: "Snapshots",
+      description:
+        "Earlier saved states of the current project. Restore any point to roll back changes.",
+      content: restoreContent,
+    },
+  };
+
+  const current = viewMeta[view];
 
   return (
-    <DesktopModal
+    <SidebarDialog
       open={open}
       onOpenChange={onOpenChange}
+      eyebrow="Studio"
       title="Projects"
-      headerless
-      maxWidth="max-w-3xl"
-      panelClassName="flex flex-col overflow-hidden rounded-4xl p-0"
+      mobileSubtitle="Open, rename, sync or restore."
+      navItems={navItems.map((item) => ({
+        id: item.id,
+        label: item.label,
+        icon: item.icon,
+        badge: item.count,
+      }))}
+      activeItem={view}
+      onItemChange={(id) => setView(id as View)}
+      contentTitle={current.label}
+      contentDescription={current.description}
     >
-      {/* Header */}
-      <div className="shrink-0 px-8 pt-8 pb-5">
-        <div className="flex items-start gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-              Studio
-            </p>
-            <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
-              Projects
-            </p>
-            <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              Open a saved track, start fresh, or begin with one of the starter
-              layouts.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-            aria-label="Close"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Two-column body */}
-      <div className="border-border/30 grid min-h-0 grid-cols-2 overflow-hidden border-t">
-        {/* Left: new project */}
-        <div className="border-border/30 overflow-y-auto border-r px-6 py-6">
-          <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
-            New project
-          </p>
-          {newProjectBlock}
-        </div>
-
-        {/* Right: tabs + lists */}
-        <div className="flex min-h-0 flex-col overflow-hidden">
-          <div className="shrink-0 px-8 pt-5">{tabBar()}</div>
-          <div className="max-h-80 overflow-y-auto px-8 py-4">
-            {tab === "projects" ? projectsList : restoreList}
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom: starter layouts strip */}
-      {starterStrip ? (
-        <div className="border-border/30 shrink-0 border-t px-6 py-5">
-          <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
-            Start from a layout
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {starterLayouts.map((layout) => (
-              <button
-                key={layout.id}
-                type="button"
-                onClick={() => onStartStarterLayout!(layout.id)}
-                className="border-border/60 hover:bg-muted/35 flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-colors"
-              >
-                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <Box className="size-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate text-xs font-medium">
-                    {layout.name}
-                  </p>
-                  <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
-                    {layout.description}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="shrink-0 pb-2" />
-    </DesktopModal>
+      {current.content}
+    </SidebarDialog>
   );
 }

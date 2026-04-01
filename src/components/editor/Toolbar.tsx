@@ -4,10 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import AccountMenu from "@/components/editor/AccountMenu";
-import {
-  bottomActions,
-  toolbarToolGroups,
-} from "@/components/editor/tool-icons";
+import { toolbarToolGroups } from "@/components/editor/tool-icons";
 import { useTheme } from "@/hooks/useTheme";
 import {
   Tooltip,
@@ -30,6 +27,7 @@ import {
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
+import { Download, FilePlus, FolderOpen, Import } from "lucide-react";
 
 function TrackDrawIcon({ className }: { className?: string }) {
   return (
@@ -63,6 +61,7 @@ function TrackDrawIcon({ className }: { className?: string }) {
 interface ToolbarProps {
   onImport: () => void;
   onExport: () => void;
+  onOpenNewProject: () => void;
   onOpenProjectManager: () => void;
   onOpenPresets: () => void;
   collapsed: boolean;
@@ -72,6 +71,7 @@ interface ToolbarProps {
 export default function Toolbar({
   onImport,
   onExport,
+  onOpenNewProject,
   onOpenProjectManager,
   onOpenPresets,
   collapsed,
@@ -80,12 +80,6 @@ export default function Toolbar({
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setSelection = useEditor((state) => state.setSelection);
   const theme = useTheme();
-
-  function handleAction(action: "new" | "import" | "export") {
-    if (action === "new") onOpenProjectManager();
-    else if (action === "import") onImport();
-    else onExport();
-  }
 
   function handleToolSelect(
     tool: (typeof toolbarToolGroups)[number]["tools"][number]["id"]
@@ -97,6 +91,37 @@ export default function Toolbar({
     }
     setActiveTool(tool);
   }
+
+  const footerActions = [
+    {
+      key: "new",
+      label: "New",
+      tooltip: "Start a new project",
+      icon: <FilePlus className="size-3.5" />,
+      onClick: onOpenNewProject,
+    },
+    {
+      key: "projects",
+      label: "Projects",
+      tooltip: "Manage projects",
+      icon: <FolderOpen className="size-3.5" />,
+      onClick: onOpenProjectManager,
+    },
+    {
+      key: "import",
+      label: "Import",
+      tooltip: "Import JSON",
+      icon: <Import className="size-3.5" />,
+      onClick: onImport,
+    },
+    {
+      key: "export",
+      label: "Export",
+      tooltip: "Export track",
+      icon: <Download className="size-3.5" />,
+      onClick: onExport,
+    },
+  ] as const;
 
   return (
     <SidebarProvider
@@ -247,14 +272,14 @@ export default function Toolbar({
 
         <SidebarFooter className="border-border/60 gap-0 border-t p-2">
           <SidebarMenu className="space-y-1">
-            {bottomActions.map(({ label, tooltip, icon, action }) => {
+            {footerActions.map(({ key, label, tooltip, icon, onClick }) => {
               const btn = (
                 <motion.div
                   whileTap={{ scale: 0.985 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
                 >
                   <SidebarMenuButton
-                    onClick={() => handleAction(action)}
+                    onClick={onClick}
                     className={cn(
                       "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-9 rounded-xl border border-transparent transition-all duration-200",
                       collapsed ? "justify-center px-0" : "gap-2.5"
@@ -268,11 +293,11 @@ export default function Toolbar({
                 </motion.div>
               );
               return (
-                <SidebarMenuItem key={label}>
+                <SidebarMenuItem key={key}>
                   {collapsed ? (
                     <Tooltip>
                       <TooltipTrigger
-                        onClick={() => handleAction(action)}
+                        onClick={onClick}
                         className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-9 w-full items-center justify-center rounded-xl border border-transparent transition-colors"
                       >
                         {icon}
@@ -289,7 +314,10 @@ export default function Toolbar({
             })}
           </SidebarMenu>
           <div className="border-border/70 mt-3 border-t pt-3">
-            <AccountMenu collapsed={collapsed} />
+            <AccountMenu
+              collapsed={collapsed}
+              onOpenProjects={onOpenProjectManager}
+            />
           </div>
         </SidebarFooter>
       </Sidebar>

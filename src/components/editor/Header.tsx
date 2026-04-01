@@ -35,6 +35,7 @@ interface HeaderProps {
   onTabChange: (t: "2d" | "3d") => void;
   onShare: () => void;
   onExport?: () => void;
+  onOpenNewProject?: () => void;
   onImport?: () => void;
   onOpenProjectManager?: () => void;
   onSaveSnapshot?: () => void;
@@ -57,6 +58,7 @@ export default function Header({
   onTabChange,
   onShare,
   onExport,
+  onOpenNewProject,
   onImport,
   onOpenProjectManager,
   onSaveSnapshot,
@@ -362,6 +364,7 @@ export default function Header({
 
         {!readOnly && onImport && onExport && onOpenProjectManager ? (
           <MobileAppMenu
+            onOpenNewProject={onOpenNewProject ?? (() => {})}
             onOpenProjects={onOpenProjectManager}
             onImport={onImport}
             onExport={onExport}

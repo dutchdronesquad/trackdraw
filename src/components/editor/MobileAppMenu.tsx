@@ -5,6 +5,7 @@ import { useState } from "react";
 import {
   Download,
   FolderOpen,
+  FilePlus,
   Import,
   LogIn,
   LogOut,
@@ -25,6 +26,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 
 type MobileAppMenuProps = {
+  onOpenNewProject: () => void;
   onOpenProjects: () => void;
   onImport: () => void;
   onExport: () => void;
@@ -95,7 +97,27 @@ function MenuRow({
   );
 }
 
+function MenuSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2.5">
+      <p className="text-muted-foreground px-1 text-[11px] font-semibold tracking-widest uppercase">
+        {title}
+      </p>
+      <div className="border-border/60 bg-card rounded-3xl border p-1.5">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function MobileAppMenu({
+  onOpenNewProject,
   onOpenProjects,
   onImport,
   onExport,
@@ -198,39 +220,53 @@ export default function MobileAppMenu({
                 )}
               </div>
 
-              <div className="border-border/60 bg-card mt-3 rounded-3xl border p-1.5">
+              <div className="mt-3 space-y-3">
                 {user ? (
-                  <MenuRow
-                    icon={<UserRound className="size-4" />}
-                    label="Profile"
-                    description="Name and account details"
-                    onClick={openAccount}
-                  />
+                  <MenuSection title="Account">
+                    <MenuRow
+                      icon={<UserRound className="size-4" />}
+                      label="Profile"
+                      description="Name and account details"
+                      onClick={openAccount}
+                    />
+                  </MenuSection>
                 ) : null}
-                <MenuRow
-                  icon={<FolderOpen className="size-4" />}
-                  label="Projects"
-                  description="Open, start and manage local projects"
-                  onClick={() => closeAndRun(onOpenProjects)}
-                />
-                <MenuRow
-                  icon={<Import className="size-4" />}
-                  label="Import"
-                  description="Bring in a JSON project file"
-                  onClick={() => closeAndRun(onImport)}
-                />
-                <MenuRow
-                  icon={<Download className="size-4" />}
-                  label="Export"
-                  description="Download PNG, PDF, SVG or JSON"
-                  onClick={() => closeAndRun(onExport)}
-                />
-                <MenuRow
-                  icon={<Share2 className="size-4" />}
-                  label="Share"
-                  description="Publish a read-only link for this track"
-                  onClick={() => closeAndRun(onShare)}
-                />
+
+                <MenuSection title="Projects">
+                  <MenuRow
+                    icon={<FilePlus className="size-4" />}
+                    label="New project"
+                    description="Start fresh or pick a starter layout"
+                    onClick={() => closeAndRun(onOpenNewProject)}
+                  />
+                  <MenuRow
+                    icon={<FolderOpen className="size-4" />}
+                    label="Projects"
+                    description="Open and manage saved projects"
+                    onClick={() => closeAndRun(onOpenProjects)}
+                  />
+                </MenuSection>
+
+                <MenuSection title="Share and transfer">
+                  <MenuRow
+                    icon={<Share2 className="size-4" />}
+                    label="Share"
+                    description="Publish a read-only link for this track"
+                    onClick={() => closeAndRun(onShare)}
+                  />
+                  <MenuRow
+                    icon={<Import className="size-4" />}
+                    label="Import"
+                    description="Bring in a JSON project file"
+                    onClick={() => closeAndRun(onImport)}
+                  />
+                  <MenuRow
+                    icon={<Download className="size-4" />}
+                    label="Export"
+                    description="Download PNG, PDF, SVG or JSON"
+                    onClick={() => closeAndRun(onExport)}
+                  />
+                </MenuSection>
               </div>
             </div>
 

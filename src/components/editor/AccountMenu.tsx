@@ -69,9 +69,13 @@ const accountMenuItemClassName =
 
 interface AccountMenuProps {
   collapsed?: boolean;
+  onOpenProjects?: () => void;
 }
 
-export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
+export default function AccountMenu({
+  collapsed = false,
+  onOpenProjects,
+}: AccountMenuProps) {
   const { data, isPending } = authClient.useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -180,11 +184,18 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
             </span>
             <span className="flex-1">Profile</span>
           </button>
-          <button type="button" className={accountMenuItemClassName}>
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen(false);
+              onOpenProjects?.();
+            }}
+            className={accountMenuItemClassName}
+          >
             <span className="text-muted-foreground flex size-4 shrink-0 items-center justify-center">
               <FolderKanban className="size-4" />
             </span>
-            <span className="flex-1">Cloud projects</span>
+            <span className="flex-1">Projects</span>
           </button>
         </div>
         <div className="border-border/60 border-t p-1.5">
