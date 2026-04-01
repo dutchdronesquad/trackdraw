@@ -39,7 +39,7 @@ function getAllowedAuthHosts() {
     "https://trackdraw.home.arpa",
     configuredSiteUrl,
     ...additionalTrustedOrigins.split(",").map((value) => value.trim()),
-  ].filter(Boolean);
+  ].filter((value): value is string => Boolean(value));
 
   return Array.from(
     new Set(
