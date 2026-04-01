@@ -158,7 +158,7 @@ Why:
 
 - they are closer to venue records than to lightweight acceleration
 - they imply constraints, dimensions, and recurring field context
-- they are much more likely to benefit from ownership and optional accounts
+- they are much more likely to benefit from ownership and accounts
 
 Treat them as a bridge toward the later venue library roadmap item, not as part of the first preset/grouping release.
 
@@ -207,7 +207,7 @@ This strengthens repeatability inside real projects without introducing accounts
 
 ### Phase 4: Revisit shared libraries later
 
-- only revisit broader template browsing once optional accounts can support ownership
+- only revisit broader template browsing once accounts can support ownership
 - treat personal or shared template libraries as a separate account-backed track
 
 ### Phase 5: Revisit venue-aware templates

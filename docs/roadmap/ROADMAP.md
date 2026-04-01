@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. The roadmap should now focus primarily on workflow depth, race-day outputs, and faster layout building rather than on foundation work.
+This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. The roadmap should now focus primarily on ownership boundaries, workflow depth, and the next product surfaces that build cleanly on the shipped v1.1.0 release.
 
 ## Current Focus
 
@@ -14,10 +14,10 @@ TrackDraw is now strong in these areas:
 
 The most useful next product moves are:
 
-- A clearer decision on optional accounts, ownership, and cross-device persistence
-- Better design feedback before a layout reaches the field
-- More deliberate outputs for race-day communication and presentation
-- Better lifecycle controls around published shares
+- A sharper decision on how far account-backed continuity should go after the first auth slice
+- A clearer separation between local-first workflows and account-backed follow-up
+- Better lifecycle controls around published shares once ownership is defined
+- Deliberate follow-up on race-day outputs after the ownership boundary is settled
 
 ## Product Principles
 
@@ -28,7 +28,7 @@ The most useful next product moves are:
 - Race-day deliverables should extend the editor, not become a separate product surface
 - Sharing should feel intentional and publishable, not like a side effect of editor state
 - Local-first workflows should remain usable without requiring sign-in
-- Optional accounts should only appear where sync, ownership, identity, or shared administration clearly improve the workflow
+- Accounts should only appear where sync, ownership, identity, or shared administration clearly improve the workflow
 
 ## Active Roadmap
 
@@ -39,38 +39,63 @@ Labels used below:
 - `Research`: still primarily exploratory
 - `Blocked`: depends on another roadmap decision or capability first
 
-### 1. Race-Day Communication And Briefing (`No account required`)
+### 1. Accounts And Ownership Model (`Research`)
 
-Turn existing export and read-only capabilities into more deliberate communication outputs.
+TrackDraw now has the first account foundation in place through Better Auth, magic-link sign-in, profile management, and account-aware UI in Studio. The next question is how far account-backed continuity should go beyond that first slice.
+
+Supporting product-shape document:
+
+- `docs/pva/accounts-project-sync-pva.md`
 
 Why now:
 
-- The product already has export breadth and a read-only view, but briefing workflows still need a more deliberate output surface
-- This is the clearest next step now that the v1 planning loop is stable
+- More roadmap items now depend on durable ownership and cross-device persistence
+- Share management, venue records, inventory profiles, and future review features all become clearer once the account boundary is defined
+- The first auth layer is now shipped enough that the next decision is about scope, not whether accounts exist at all
 
-Scope:
+Focus:
 
-- Obstacle numbering
-- Pilot briefing output
-- Race-director-oriented Race Pack pages
-- Race Pack outputs tuned for briefing, print, and mobile review
+- Validate the first account value around cross-device continuation, especially moving from home planning to race-day mobile review or adjustment
+- Treat stronger ownership and share control as the second immediate account value, so published tracks are easier to revisit, manage, and trust over time
+- Define the first clear project model: what stays local by default, what becomes account-backed, and how a user should move between those two states without ambiguity
+- Clarify how cross-device continuation should work in practice, especially from desktop planning into mobile venue-side review or adjustments
+- Clarify ownership for shares, venue records, and future shared race-day metadata
+- Decide what the next implementation slice should be instead of treating "accounts" as an open-ended platform project
 
-Next slices:
+Key product-model questions:
 
-- Race Pack foundation with title, field dimensions, obstacle summary, stock status, and build guidance
-- Race director page once TrackDraw can capture practical start-area metadata such as director position, timing/start box position, cable run, and related ops notes
+- Should projects remain local by default and only become account-backed when a user explicitly saves them to their account?
+- How should TrackDraw present account-backed projects inside Studio so they feel like continuity, not a second separate product?
+- How should a user reopen the same project on another device without creating confusing merge or overwrite behavior between local and account-backed copies?
+- Should published shares belong primarily to an account, to a specific project, or to both?
+- Which workflows should remain clean without an account, including local projects, JSON export/import, and one-off share publishing?
 
-Current first pass:
+Current product direction to carry forward:
 
-- PDF export now includes a dedicated Race Pack variant
-- The Race Pack now ships as a multi-page race-day document with a cover page, track map, material list, inventory/buildability status, setup sequence, and initial timing/build guidance
+- Keep the product language simple: TrackDraw should talk about `projects`, not separate local versus cloud project types
+- Logged-out users work with ordinary device-local projects
+- Signed-in users should expect projects to sync with their account by default, because cross-device continuity is the main reason to sign in at all
+- For signed-in users, cloud state should be treated as the canonical project state, while local browser data acts as the working copy, cache, and resilience layer
+- Sign-out should end account sync but should not automatically clear ordinary local project data from the device
 
-Important boundary:
+Important unresolved transition:
 
-- The Race Pack is now the handoff document for briefing, print, and sharing
-- A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
+- Existing local projects on a device should not be silently absorbed into an account the moment a user signs in
+- TrackDraw should keep those projects visible, make their sync state understandable, and provide an explicit follow-up path to bring them into account-backed sync
+- For signed-in users, the project management surface should likely emphasize account-backed projects first, with device-only projects presented separately rather than mixed into one ambiguous list
 
-### 2. Share Lifecycle Follow-up (`Account-backed`, `Blocked`)
+Current shipped foundation:
+
+- Better Auth with email magic-link sign-in
+- In-app profile management and account deletion
+- Account-aware desktop and mobile shell entry points
+- Initial account-backed schema and project/share ownership groundwork
+
+### 2. Account-Backed Follow-up (`Account-backed`, `Blocked`)
+
+These items remain intentionally blocked until the ownership model is defined.
+
+#### Share Lifecycle Follow-up
 
 Keep refining published links now that stored share publishing is the default model.
 
@@ -79,41 +104,16 @@ Focus:
 - Better published-link management for repeated use in Studio
 - Keep local-first publish flows simple for unauthenticated use
 - Decide how much share administration should live in the product UI
-- Revisit any replace/regenerate flow only once optional-account ownership is properly defined
+- Revisit any replace/regenerate flow only once account ownership is properly defined
 
-### 3. Heatmap And Flow Analysis (`No account required`)
-
-Add lightweight visual feedback for rhythm, density, and bottlenecks once the v1 validation basics are in place.
-
-Suggested first slices:
-
-- Density overlay
-- Suspicious spacing cues
-- Route rhythm cues
-
-### 4. Optional Accounts And Ownership Model (`Research`)
-
-Decide sooner how far TrackDraw should go with optional identity, sync, and ownership.
-
-Why now:
-
-- More roadmap items now depend on durable ownership and cross-device persistence
-- Share management, venue records, inventory profiles, and future review features all become clearer once the account boundary is defined
-
-Focus:
-
-- Validate whether users actually need cloud-backed continuity badly enough to justify optional accounts
-- Define how local-first projects and cloud-backed projects should coexist
-- Clarify ownership for shares, venue records, and future shared race-day metadata
-
-### 5. Comments And Review Mode (`Account-backed`, `Blocked`)
+#### Comments And Review Mode
 
 Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
 
 Why later:
 
 - Simple local-first notes are still plausible without accounts
-- But richer review workflows become much clearer once optional identity, ownership, and shared project models are better defined
+- But richer review workflows become much clearer once account identity, ownership, and shared project models are better defined
 
 Suggested first slices:
 
@@ -124,15 +124,47 @@ Suggested first slices:
 - Richer threaded comments only if simple anchored notes prove useful
   and an account-backed identity model exists
 
-### 6. Research Tracks (`Research`)
+### 3. Race-Day Follow-up (`No account required`)
+
+TrackDraw now has a real Race Pack and numbering handoff. The next work here is follow-up, not the main roadmap driver.
+
+Current first pass:
+
+- PDF export now includes a dedicated Race Pack variant
+- The Race Pack now ships as a multi-page race-day document with a cover page, track map, material list, inventory/buildability status, setup sequence, and initial timing/build guidance
+
+Later slices:
+
+- Race director page once TrackDraw can capture practical start-area metadata such as director position, timing/start box position, cable run, and related ops notes
+
+Important boundary:
+
+- The Race Pack is now the handoff document for briefing, print, and sharing
+- A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
+
+### 4. Backlog And Research Tracks
+
+These remain valuable, but they are not the current build target.
+
+#### Heatmap And Flow Analysis (`No account required`)
+
+Add lightweight visual feedback for rhythm, density, and bottlenecks once it returns from backlog.
+
+Suggested first slices:
+
+- Density overlay
+- Suspicious spacing cues
+- Route rhythm cues
+
+#### Research Tracks (`Research`)
 
 - Velocidrone export compatibility
 - Desktop and mobile wrapper evaluation
 - PWA evaluation
 
-### 7. Accounts Boundary
+### 5. Accounts Boundary
 
-Be deliberate about what should stay usable without an account versus what actually benefits from optional identity.
+Be deliberate about what should stay usable without an account versus what actually benefits from account identity and continuity.
 
 Keep these usable without an account where possible:
 
@@ -478,7 +510,7 @@ Research outcome:
 - add a narrow installable PWA layer
 - or expand into a stronger offline/app-shell strategy later
 
-### H. Optional Accounts And Cross-Device Projects
+### H. Accounts And Cross-Device Projects
 
 Evaluate whether optional user accounts should unlock cloud-backed project storage, project management, and cross-device continuation.
 
@@ -492,7 +524,7 @@ Research outcome:
 
 - stay fully local-first
 - add optional cloud backup only
-- add optional account-linked project libraries and sync
+- add account-linked project libraries and sync
 - or later expand toward broader team workflows
 
 ### 13. Map And Field Overlay
@@ -531,4 +563,3 @@ This sequence keeps the roadmap focused on extending workflow depth rather than 
 - [Snapshots And Layout Variants Design](../pva/snapshots-layout-variants-design.md)
 - [Wrapper Evaluation](../research/wrapper-evaluation.md)
 - [PWA Evaluation](../research/pwa-evaluation.md)
-- [Accounts And Cross-Device Evaluation](../research/accounts-and-cross-device-evaluation.md)
