@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import AccountMenu from "@/components/editor/AccountMenu";
 import {
   bottomActions,
   toolbarToolGroups,
@@ -102,7 +103,7 @@ export default function Toolbar({
       className="hidden h-full min-h-0! w-auto! shrink-0 lg:flex"
       style={
         {
-          "--sidebar-width": collapsed ? "3.5rem" : "11.5rem",
+          "--sidebar-width": collapsed ? "3.5rem" : "12.5rem",
         } as React.CSSProperties
       }
     >
@@ -141,7 +142,7 @@ export default function Toolbar({
                 (collapsed ? (
                   <SidebarSeparator className="my-2" />
                 ) : group.title ? (
-                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-7 text-[11px] tracking-widest uppercase">
+                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-8 text-[11px] tracking-widest uppercase">
                     {group.title}
                   </SidebarGroupLabel>
                 ) : (
@@ -159,7 +160,7 @@ export default function Toolbar({
                         isActive={active}
                         onClick={() => handleToolSelect(tool.id)}
                         className={cn(
-                          "relative h-8 overflow-hidden rounded-lg border transition-all duration-150",
+                          "relative h-9 overflow-hidden rounded-xl border transition-all duration-150",
                           collapsed ? "justify-center px-0" : "gap-2.5",
                           active
                             ? "border-brand-primary/30 bg-brand-primary/14 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
@@ -214,7 +215,7 @@ export default function Toolbar({
                           <TooltipTrigger
                             onClick={() => handleToolSelect(tool.id)}
                             className={cn(
-                              "flex h-8 w-full items-center justify-center rounded-lg border transition-colors duration-150",
+                              "flex h-9 w-full items-center justify-center rounded-xl border transition-colors duration-150",
                               active
                                 ? "border-brand-primary/30 bg-brand-primary/14 text-brand-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                                 : "text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
@@ -255,7 +256,7 @@ export default function Toolbar({
                   <SidebarMenuButton
                     onClick={() => handleAction(action)}
                     className={cn(
-                      "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-8 rounded-lg border border-transparent transition-all duration-200",
+                      "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-9 rounded-xl border border-transparent transition-all duration-200",
                       collapsed ? "justify-center px-0" : "gap-2.5"
                     )}
                   >
@@ -272,7 +273,7 @@ export default function Toolbar({
                     <Tooltip>
                       <TooltipTrigger
                         onClick={() => handleAction(action)}
-                        className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-8 w-full items-center justify-center rounded-lg border border-transparent transition-colors"
+                        className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-9 w-full items-center justify-center rounded-xl border border-transparent transition-colors"
                       >
                         {icon}
                       </TooltipTrigger>
@@ -287,6 +288,9 @@ export default function Toolbar({
               );
             })}
           </SidebarMenu>
+          <div className="border-border/70 mt-3 border-t pt-3">
+            <AccountMenu collapsed={collapsed} />
+          </div>
         </SidebarFooter>
       </Sidebar>
     </SidebarProvider>

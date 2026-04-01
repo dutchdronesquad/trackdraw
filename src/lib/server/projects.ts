@@ -136,7 +136,10 @@ export async function saveProjectForUser(
   return saved;
 }
 
-export async function getProjectForUser(projectId: string, ownerUserId: string) {
+export async function getProjectForUser(
+  projectId: string,
+  ownerUserId: string
+) {
   const db = await getDatabase();
   const row = await db
     .prepare(

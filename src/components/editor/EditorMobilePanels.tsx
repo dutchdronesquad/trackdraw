@@ -9,9 +9,6 @@ import {
   ArrowRight,
   ArrowUp,
   Copy,
-  Download,
-  FilePlus,
-  FolderOpen,
   Group,
   LayoutGrid,
   Lock,
@@ -99,12 +96,9 @@ interface EditorMobilePanelsProps {
   onSetGroupName?: (name: string) => void;
   onStartFlyThrough: () => void;
   studioHref?: string;
-  onStartNewProject: () => void;
   onUngroupSelection: () => void;
   onUndo: () => void;
   onUndoPathPoint: () => void;
-  onImport: () => void;
-  onExport: () => void;
   onTabChange: (tab: EditorViewportTab) => void;
   canRedo: boolean;
   canUngroupSelection: boolean;
@@ -318,12 +312,9 @@ export function EditorMobilePanels({
   onShare,
   onSetGroupName,
   onStartFlyThrough,
-  onStartNewProject,
   onUngroupSelection,
   onUndo,
   onUndoPathPoint,
-  onImport,
-  onExport,
   onTabChange,
   canRedo,
   canUngroupSelection,
@@ -887,33 +878,6 @@ export function EditorMobilePanels({
                 </div>
               </div>
             )}
-            <div>
-              <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-                Project
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { label: "Projects", action: onStartNewProject },
-                  { label: "Import", action: onImport },
-                  { label: "Export", action: onExport },
-                ].map((actionItem, index) => (
-                  <button
-                    key={actionItem.label}
-                    onClick={() =>
-                      runAfterClosingToolsDrawer(actionItem.action)
-                    }
-                    className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
-                  >
-                    {index === 0 ? <FolderOpen className="size-5" /> : null}
-                    {index === 1 ? <FilePlus className="size-5" /> : null}
-                    {index === 2 ? <Download className="size-5" /> : null}
-                    <span className="text-[11px] leading-none font-medium">
-                      {actionItem.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </>
         </MobileDrawer>
       )}

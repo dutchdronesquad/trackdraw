@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getProjectForUser } from "@/lib/server/projects";
 import { createShare } from "@/lib/server/shares";
 import { buildStoredSharePath } from "@/lib/share";
 import { parseEditorView } from "@/lib/view";
@@ -8,6 +10,7 @@ import { parseEditorView } from "@/lib/view";
 const createShareRequestSchema = z.object({
   design: z.unknown(),
   view: z.string().optional(),
+  projectId: z.string().min(1).optional(),
   expiresInDays: z
     .union([z.literal(7), z.literal(30), z.literal(90)])
     .optional(),
@@ -16,6 +19,7 @@ const createShareRequestSchema = z.object({
 export async function POST(request: Request) {
   try {
     const body = createShareRequestSchema.parse(await request.json());
+    const user = await getCurrentUserFromHeaders(request.headers);
 
     const design = parseDesign(body.design);
     if (!design) {
@@ -25,8 +29,30 @@ export async function POST(request: Request) {
       );
     }
 
+    if (body.projectId && !user) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Project-linked publish requires an authenticated user",
+        },
+        { status: 401 }
+      );
+    }
+
+    if (body.projectId && user) {
+      const project = await getProjectForUser(body.projectId, user.id);
+      if (!project) {
+        return NextResponse.json(
+          { ok: false, error: "Project not found" },
+          { status: 404 }
+        );
+      }
+    }
+
     const share = await createShare(design, {
       expiresInDays: body.expiresInDays ?? 90,
+      ownerUserId: user?.id ?? null,
+      projectId: body.projectId ?? null,
     });
     const path = buildStoredSharePath(
       share.token,
@@ -39,6 +65,8 @@ export async function POST(request: Request) {
         token: share.token,
         path,
         expiresAt: share.expiresAt,
+        ownerUserId: share.ownerUserId,
+        projectId: share.projectId,
       },
     });
   } catch (error) {

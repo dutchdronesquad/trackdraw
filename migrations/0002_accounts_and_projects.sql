@@ -1,46 +1,49 @@
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
-  email TEXT UNIQUE,
   name TEXT,
+  email TEXT NOT NULL UNIQUE,
+  emailVerified INTEGER NOT NULL DEFAULT 0,
   image TEXT,
-  email_verified_at TEXT,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS accounts (
-  user_id TEXT NOT NULL,
-  provider TEXT NOT NULL,
-  provider_account_id TEXT NOT NULL,
-  type TEXT NOT NULL,
-  refresh_token TEXT,
-  access_token TEXT,
-  expires_at INTEGER,
-  token_type TEXT,
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  accountId TEXT NOT NULL,
+  providerId TEXT NOT NULL,
+  accessToken TEXT,
+  refreshToken TEXT,
+  accessTokenExpiresAt TEXT,
+  refreshTokenExpiresAt TEXT,
   scope TEXT,
-  id_token TEXT,
-  session_state TEXT,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  PRIMARY KEY (provider, provider_account_id),
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  idToken TEXT,
+  password TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
-  session_token TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  expires_at TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  token TEXT NOT NULL UNIQUE,
+  expiresAt TEXT NOT NULL,
+  ipAddress TEXT,
+  userAgent TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS verification_tokens (
+CREATE TABLE IF NOT EXISTS verifications (
+  id TEXT PRIMARY KEY,
   identifier TEXT NOT NULL,
-  token TEXT NOT NULL,
-  expires_at TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  PRIMARY KEY (identifier, token)
+  value TEXT NOT NULL,
+  expiresAt TEXT NOT NULL,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS projects (
@@ -62,9 +65,12 @@ ALTER TABLE shares ADD COLUMN owner_user_id TEXT REFERENCES users(id);
 ALTER TABLE shares ADD COLUMN project_id TEXT REFERENCES projects(id);
 
 CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);
-CREATE INDEX IF NOT EXISTS accounts_user_id_idx ON accounts(user_id);
-CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id);
-CREATE INDEX IF NOT EXISTS sessions_expires_at_idx ON sessions(expires_at);
+CREATE UNIQUE INDEX IF NOT EXISTS accounts_provider_account_idx ON accounts(providerId, accountId);
+CREATE INDEX IF NOT EXISTS accounts_user_id_idx ON accounts(userId);
+CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(userId);
+CREATE INDEX IF NOT EXISTS sessions_expires_at_idx ON sessions(expiresAt);
+CREATE INDEX IF NOT EXISTS verifications_identifier_idx ON verifications(identifier);
+CREATE INDEX IF NOT EXISTS verifications_expires_at_idx ON verifications(expiresAt);
 CREATE INDEX IF NOT EXISTS projects_owner_user_id_idx ON projects(owner_user_id);
 CREATE INDEX IF NOT EXISTS projects_updated_at_idx ON projects(updated_at);
 CREATE INDEX IF NOT EXISTS shares_owner_user_id_idx ON shares(owner_user_id);

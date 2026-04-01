@@ -21,6 +21,7 @@ import ShareDialog from "@/components/dialogs/ShareDialog";
 import ExportDialog from "@/components/dialogs/ExportDialog";
 import ImportDialog from "@/components/dialogs/ImportDialog";
 import KeyboardShortcutsDialog from "@/components/dialogs/KeyboardShortcutsDialog";
+import CompleteProfileDialog from "@/components/dialogs/CompleteProfileDialog";
 import PerformanceHud from "./PerformanceHud";
 import ProjectManagerDialog from "@/components/dialogs/ProjectManagerDialog";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ import {
   selectSelectionLocked,
   selectShapeRecordMap,
 } from "@/store/selectors";
+import { authClient } from "@/lib/auth-client";
 import { Box, Route, X } from "lucide-react";
 
 function createFirstUseBlankDesign() {
@@ -163,6 +165,8 @@ export default function EditorShell({
     !singleSelectedShape.locked
   );
   const isMobile = useIsMobile();
+  const { data: authSession } = authClient.useSession();
+  const authUser = authSession?.user ?? null;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -197,6 +201,9 @@ export default function EditorShell({
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [projectManagerOpen, setProjectManagerOpen] = useState(false);
+  const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
+  const [completeProfileDismissed, setCompleteProfileDismissed] =
+    useState(false);
   const [presetPickerOpen, setPresetPickerOpen] = useState(false);
   const [starterDismissed, setStarterDismissed] = useState(false);
   const [starterMode, setStarterMode] = useState<"guided" | "blank" | null>(
@@ -248,6 +255,39 @@ export default function EditorShell({
   useEffect(() => {
     setTab(initialTab);
   }, [initialTab]);
+
+  useEffect(() => {
+    if (readOnly || !authUser?.id) {
+      setCompleteProfileOpen(false);
+      setCompleteProfileDismissed(false);
+      return;
+    }
+
+    if (authUser.name?.trim()) {
+      setCompleteProfileOpen(false);
+      setCompleteProfileDismissed(false);
+      return;
+    }
+
+    if (!completeProfileDismissed) {
+      setCompleteProfileOpen(true);
+    }
+  }, [authUser?.id, authUser?.name, completeProfileDismissed, readOnly]);
+
+  const handleCompleteProfileOpenChange = useCallback(
+    (open: boolean) => {
+      setCompleteProfileOpen(open);
+      if (!open && authUser && !authUser.name?.trim()) {
+        setCompleteProfileDismissed(true);
+      }
+    },
+    [authUser]
+  );
+
+  const handleCompleteProfileSave = useCallback(async (name: string) => {
+    await authClient.updateProfileName(name);
+    setCompleteProfileDismissed(false);
+  }, []);
 
   const handleTabChange = useCallback(
     (nextTab: EditorView) => {
@@ -452,6 +492,8 @@ export default function EditorShell({
             onTabChange={handleTabChange}
             onShare={() => setShareOpen(true)}
             onExport={() => setExportOpen(true)}
+            onImport={() => setImportOpen(true)}
+            onOpenProjectManager={() => setProjectManagerOpen(true)}
             onSaveSnapshot={readOnly ? undefined : handleSaveSnapshot}
             onOpenShortcuts={() => setShortcutsOpen(true)}
             readOnly={readOnly}
@@ -951,6 +993,14 @@ export default function EditorShell({
         onOpenChange={setPresetPickerOpen}
         selectedPresetId={activePresetId}
         onSelectPreset={handlePresetSelect}
+      />
+      <CompleteProfileDialog
+        open={completeProfileOpen}
+        onOpenChange={handleCompleteProfileOpenChange}
+        email={authUser?.email ?? null}
+        currentName={authUser?.name ?? ""}
+        mobile={isMobile}
+        onSave={handleCompleteProfileSave}
       />
       {developerModeEnabled ? <PerformanceHud /> : null}
     </>
