@@ -53,6 +53,7 @@ import {
   Check,
   CheckCircle2,
   ClipboardCheck,
+  Minus,
   Orbit,
   Route,
   Share2,
@@ -192,30 +193,39 @@ const features = [
   },
 ];
 
+const compareRows = [
+  { label: "Full track designer", guest: true, account: true },
+  { label: "2D & 3D preview", guest: true, account: true },
+  { label: "PDF, SVG, PNG & JSON export", guest: true, account: true },
+  { label: "Read-only share links", guest: true, account: true },
+  { label: "Cloud-synced projects", guest: false, account: true },
+  { label: "Access across devices", guest: false, account: true },
+];
+
 const faq = [
   {
     q: "What is the best way to plan an FPV race track?",
-    a: "Start with a scale-accurate field, place the obstacles you actually have, review the track flow in 3D, then share the same layout with pilots and crew. TrackDraw is built around that workflow.",
+    a: "Start with the field dimensions, drop in the obstacles you actually have, then review the flow in 3D. TrackDraw is built around that exact sequence — from first sketch to team hand-off.",
   },
   {
-    q: "Can pilots review a track layout without editing it?",
-    a: "Yes. Shared links open in read-only mode, with no account or app required. Pilots, judges, and crew can all open the same current layout on desktop or mobile.",
+    q: "Can pilots review the layout without an account?",
+    a: "Yes. Share links open in read-only mode on any device, no account or app needed. Send it to pilots, judges, or crew and everyone sees the same current version.",
   },
   {
-    q: "Can I use TrackDraw on a tablet at the venue?",
-    a: "Yes. The read-only view works on any device, and the editor supports practical tablet and mobile use for quick changes on site.",
+    q: "Does it work on a tablet at the venue?",
+    a: "Yes. The editor is touch-friendly, so quick adjustments on a phone or tablet are practical when the real venue forces a change.",
   },
   {
-    q: "What can I export from a track layout?",
-    a: "You can export PDF, PNG, SVG, and JSON. That covers race-day briefs, print assets, image exports, and reusable project files.",
+    q: "What export formats are available?",
+    a: "PDF, PNG, SVG, and JSON. That covers printed race briefs, image exports, and reusable project files you can import for future events.",
   },
   {
-    q: "Do I need an account to design a drone race track?",
-    a: "No. You can open the studio and start designing immediately in the browser, which keeps planning fast when you need to sketch, revise, or share a layout quickly.",
+    q: "Do I need an account to get started?",
+    a: "No. Open the studio and start designing right away. Creating an account adds cloud storage so your projects are accessible from any device.",
   },
   {
-    q: "Can I reuse a track layout for a future event?",
-    a: "Yes. Export the project as JSON and import it again whenever you want to build a new event on an older layout.",
+    q: "Can I reuse a layout for a future event?",
+    a: "Yes. Export the project as JSON and import it whenever you want to build on an older layout.",
   },
 ];
 
@@ -274,6 +284,12 @@ export default function Home() {
               className="hover:text-foreground transition-colors"
             >
               In depth
+            </a>
+            <a
+              href="#plans"
+              className="hover:text-foreground transition-colors"
+            >
+              Pricing
             </a>
             <a href="#faq" className="hover:text-foreground transition-colors">
               FAQ
@@ -617,13 +633,117 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── Compare ──────────────────────────────────────── */}
+        <section id="plans" className="border-border/40 border-t">
+          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
+            <Reveal className="mb-12">
+              <Eyebrow>Pricing</Eyebrow>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+                Start now, sign up when it matters.
+              </h2>
+              <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
+                TrackDraw works without an account. Sign up to keep your
+                projects in the cloud — accessible on any device, always there
+                when you need them.
+              </p>
+            </Reveal>
+
+            <div className="mx-auto grid max-w-2xl gap-4 sm:grid-cols-2">
+              {/* Guest */}
+              <Reveal>
+                <div className="border-border/50 bg-card/20 flex h-full flex-col rounded-2xl border p-6">
+                  <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
+                    Without account
+                  </p>
+                  <p className="mt-2 text-xl font-semibold">Guest</p>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Open the studio and start immediately.
+                  </p>
+                  <Link
+                    href="/studio"
+                    className="border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full border px-5 text-sm transition"
+                  >
+                    Open Studio <ArrowRight className="size-3.5" />
+                  </Link>
+                  <ul className="mt-6 space-y-2.5">
+                    {compareRows.map((row) => (
+                      <li
+                        key={row.label}
+                        className="flex items-center gap-2.5 text-sm"
+                      >
+                        {row.guest ? (
+                          <Check className="text-brand-primary size-3.5 shrink-0" />
+                        ) : (
+                          <Minus className="text-muted-foreground/40 size-3.5 shrink-0" />
+                        )}
+                        <span
+                          className={
+                            row.guest
+                              ? "text-foreground"
+                              : "text-muted-foreground/40"
+                          }
+                        >
+                          {row.label}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+
+              {/* Account */}
+              <Reveal delay={0.07}>
+                <div className="border-brand-primary/25 bg-brand-primary/5 from-brand-primary/8 relative flex h-full flex-col overflow-hidden rounded-2xl border bg-linear-to-br to-transparent p-6">
+                  <div className="pointer-events-none absolute -top-10 -right-10 size-36 rounded-full bg-[#1E93DB] opacity-[0.12] blur-2xl" />
+                  <p className="text-brand-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
+                    With account
+                  </p>
+                  <p className="mt-2 text-xl font-semibold">Free</p>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Cloud storage, any device, always safe.
+                  </p>
+                  <Link
+                    href="/login"
+                    className="mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-5 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/25 transition hover:brightness-110"
+                  >
+                    Create account <ArrowRight className="size-3.5" />
+                  </Link>
+                  <ul className="mt-6 space-y-2.5">
+                    {compareRows.map((row) => (
+                      <li
+                        key={row.label}
+                        className="flex items-center gap-2.5 text-sm"
+                      >
+                        {row.account ? (
+                          <Check className="text-brand-primary size-3.5 shrink-0" />
+                        ) : (
+                          <Minus className="text-muted-foreground/40 size-3.5 shrink-0" />
+                        )}
+                        <span
+                          className={
+                            row.account
+                              ? "text-foreground"
+                              : "text-muted-foreground/40"
+                          }
+                        >
+                          {row.label}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
         {/* ── FAQ ──────────────────────────────────────────── */}
         <section id="faq" className="border-border/40 border-t">
           <div className="mx-auto w-full max-w-2xl px-6 py-14 sm:py-20">
             <Reveal className="mb-10">
               <Eyebrow>FAQ</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-                Common questions.
+                Good to know.
               </h2>
             </Reveal>
             <FaqAccordion items={faq} />
