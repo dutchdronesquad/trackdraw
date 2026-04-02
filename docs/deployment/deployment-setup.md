@@ -40,6 +40,14 @@ Minimum local setup depends on what you are validating:
 - for local Cloudflare preview with D1-backed routes: run `npm run migrate:local`
 - for local auth validation in preview: set `BETTER_AUTH_SECRET` in `.dev.vars`
 
+Generate `BETTER_AUTH_SECRET` as a long random string, for example:
+
+```bash
+openssl rand -base64 32
+```
+
+Use a different secret for each environment (`local`, `development`, and `production`). Store it in `.dev.vars` for local preview and in Cloudflare Worker secrets for deployed environments. Do not commit it to the repository.
+
 Local development and preview do not require Plunk. Magic-link URLs are written to the local preview server log.
 
 `npm run preview` uses Wrangler's local D1 state, backed by a local SQLite database under Wrangler's local data directory. That gives you a deploy-like database path for share and account-backed API testing without touching Cloudflare development or production data.
@@ -75,6 +83,14 @@ For account auth and real magic-link delivery on deployed environments, `dev.tra
 - `PLUNK_FROM_EMAIL` (recommended, use a verified sender such as `hello@trackdraw.app`)
 - `PLUNK_FROM_NAME` (optional, defaults to `TrackDraw`)
 - `PLUNK_REPLY_TO_EMAIL` (optional, only if replies should go to a different mailbox)
+
+Generate a separate `BETTER_AUTH_SECRET` for each deployed environment. Example:
+
+```bash
+openssl rand -base64 32
+```
+
+Add deployed auth and mail secrets to Cloudflare Worker secrets for the matching environment, not to the repository.
 
 ## Migrations
 
