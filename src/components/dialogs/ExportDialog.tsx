@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/canvas/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
 
-interface ExportDialogProps {
+export interface ExportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   canvasRef: React.RefObject<TrackCanvasHandle | null>;

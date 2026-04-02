@@ -17,7 +17,6 @@ import Inspector from "@/components/inspector/Inspector";
 import StatusBar from "./StatusBar";
 import { ContextOverlayCard } from "./ContextOverlayCard";
 import ShareDialog from "@/components/dialogs/ShareDialog";
-import ExportDialog from "@/components/dialogs/ExportDialog";
 import ImportDialog from "@/components/dialogs/ImportDialog";
 import KeyboardShortcutsDialog from "@/components/dialogs/KeyboardShortcutsDialog";
 import CompleteProfileDialog from "@/components/dialogs/CompleteProfileDialog";
@@ -30,9 +29,11 @@ import { useEditorDialogs } from "./useEditorDialogs";
 import { useStarterExperience } from "./useStarterExperience";
 import { Button } from "@/components/ui/button";
 import { MobileDrawer } from "@/components/MobileDrawer";
-import TrackCanvas, {
-  type TrackCanvasHandle,
+import type {
+  TrackCanvasHandle,
+  TrackCanvasProps,
 } from "@/components/canvas/TrackCanvas";
+import type { ExportDialogProps } from "@/components/dialogs/ExportDialog";
 import type {
   TrackPreview3DHandle,
   TrackPreview3DProps,
@@ -90,6 +91,16 @@ const TrackPreview3D = dynamic<TrackPreview3DProps>(
 const Toolbar = dynamic(() => import("./Toolbar"), {
   ssr: false,
 });
+
+const TrackCanvas = dynamic<TrackCanvasProps>(
+  () => import("@/components/canvas/TrackCanvas"),
+  { ssr: false }
+) as ForwardRefExoticComponent<TrackCanvasProps & RefAttributes<TrackCanvasHandle>>;
+
+const ExportDialog = dynamic<ExportDialogProps>(
+  () => import("@/components/dialogs/ExportDialog"),
+  { ssr: false }
+);
 
 export default function EditorShell({
   readOnly = false,
