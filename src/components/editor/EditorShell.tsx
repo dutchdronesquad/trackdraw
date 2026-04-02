@@ -95,7 +95,9 @@ const Toolbar = dynamic(() => import("./Toolbar"), {
 const TrackCanvas = dynamic<TrackCanvasProps>(
   () => import("@/components/canvas/TrackCanvas"),
   { ssr: false }
-) as ForwardRefExoticComponent<TrackCanvasProps & RefAttributes<TrackCanvasHandle>>;
+) as ForwardRefExoticComponent<
+  TrackCanvasProps & RefAttributes<TrackCanvasHandle>
+>;
 
 const ExportDialog = dynamic<ExportDialogProps>(
   () => import("@/components/dialogs/ExportDialog"),
