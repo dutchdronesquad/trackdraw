@@ -1,20 +1,12 @@
-import * as THREE from "three";
 import {
-  getAdaptiveCurveSegments,
   getPolyline2DPoints,
   getPolylineSegment2DPoints,
   getPolylineSegment3DPoints,
   getPolylineArrowMarkers,
-  smoothPolyline3D,
 } from "./geometry";
 import { getDesignShapes } from "./design";
 import type { PolylinePoint, PolylineShape, TrackDesign } from "../types";
 import { m2px } from "./units";
-
-type PolylineCurve3Data = {
-  curve: THREE.CatmullRomCurve3;
-  segmentCount: number;
-};
 
 const POLYLINE_2D_SAMPLES_PER_SEGMENT = 18;
 
@@ -32,29 +24,18 @@ type Cached2DPolylineMetrics = {
   totalLength2D: number;
 };
 
-type Cached3DPolylineMetrics = {
-  curveData: PolylineCurve3Data | null;
-  previewPoints: [number, number, number][];
-};
-
-type PolylineDerivedCache = {
-  metrics2D: Map<string, Cached2DPolylineMetrics>;
-  metrics3D: Map<string, Cached3DPolylineMetrics>;
-};
-
-const polylineDerivedCache = new WeakMap<
+const polyline2DCache = new WeakMap<
   PolylinePoint[],
-  PolylineDerivedCache
+  Map<string, Cached2DPolylineMetrics>
 >();
 
-function getPolylineCache(points: PolylinePoint[]): PolylineDerivedCache {
-  let cached = polylineDerivedCache.get(points);
+function get2DCache(
+  points: PolylinePoint[]
+): Map<string, Cached2DPolylineMetrics> {
+  let cached = polyline2DCache.get(points);
   if (!cached) {
-    cached = {
-      metrics2D: new Map(),
-      metrics3D: new Map(),
-    };
-    polylineDerivedCache.set(points, cached);
+    cached = new Map();
+    polyline2DCache.set(points, cached);
   }
   return cached;
 }
@@ -63,28 +44,12 @@ function get2DCacheKey(path: PolylineShape) {
   return `${path.closed ? 1 : 0}|${path.showArrows ? 1 : 0}|${path.arrowSpacing ?? 15}`;
 }
 
-function get3DCacheKey(
-  path: PolylineShape,
-  options?: {
-    heightOffset?: number;
-    samplesPerSegment?: number;
-    density?: number;
-  }
-) {
-  return [
-    path.closed ? 1 : 0,
-    options?.heightOffset ?? 0,
-    options?.samplesPerSegment ?? 18,
-    options?.density ?? 12,
-  ].join("|");
-}
-
 export function getPolyline2DDerived(
   path: PolylineShape
 ): Cached2DPolylineMetrics {
-  const cache = getPolylineCache(path.points);
+  const cache = get2DCache(path.points);
   const cacheKey = get2DCacheKey(path);
-  const cached = cache.metrics2D.get(cacheKey);
+  const cached = cache.get(cacheKey);
   if (cached) return cached;
 
   let totalLength2D = 0;
@@ -125,7 +90,7 @@ export function getPolyline2DDerived(
     smoothSegmentPxByPpm: new Map(),
     totalLength2D,
   };
-  cache.metrics2D.set(cacheKey, next);
+  cache.set(cacheKey, next);
   return next;
 }
 
@@ -197,77 +162,6 @@ export function getPolylineBounds(path: PolylineShape, ppm: number) {
   };
   metrics.boundsByPpm.set(ppm, bounds);
   return bounds;
-}
-
-export function getPolylineCurve3Derived(
-  path: PolylineShape,
-  options?: {
-    heightOffset?: number;
-    samplesPerSegment?: number;
-    density?: number;
-  }
-): PolylineCurve3Data | null {
-  const cache = getPolylineCache(path.points);
-  const cacheKey = get3DCacheKey(path, options);
-  const cached = cache.metrics3D.get(cacheKey);
-  if (cached) return cached.curveData;
-
-  if (path.points.length < 2) {
-    cache.metrics3D.set(cacheKey, {
-      curveData: null,
-      previewPoints: [],
-    });
-    return null;
-  }
-
-  const closed = path.closed ?? false;
-  const heightOffset = options?.heightOffset ?? 0;
-  const samplesPerSegment = options?.samplesPerSegment ?? 18;
-  const density = options?.density ?? 12;
-  const smoothPoints = smoothPolyline3D(path.points, {
-    closed,
-    samplesPerSegment,
-  });
-  const baseVectors = smoothPoints.map(
-    (point) =>
-      new THREE.Vector3(point.x, Math.max(point.z, 0) + heightOffset, point.y)
-  );
-  const baseCurve = new THREE.CatmullRomCurve3(
-    baseVectors,
-    closed,
-    "centripetal"
-  );
-  const segmentCount = getAdaptiveCurveSegments(smoothPoints, density);
-  const spacedPoints = baseCurve.getSpacedPoints(segmentCount);
-  const curve = new THREE.CatmullRomCurve3(spacedPoints, closed, "centripetal");
-  curve.arcLengthDivisions = Math.max(240, segmentCount * 3);
-
-  const next = {
-    curveData: {
-      curve,
-      segmentCount,
-    },
-    previewPoints: path.points.map((point) => [
-      point.x,
-      Math.max(point.z ?? 0, 0) + heightOffset,
-      point.y,
-    ]) as [number, number, number][],
-  };
-  cache.metrics3D.set(cacheKey, next);
-  return next.curveData;
-}
-
-export function getPolylinePreview3DPoints(
-  path: PolylineShape,
-  heightOffset = 0
-): [number, number, number][] {
-  const cache = getPolylineCache(path.points);
-  const cacheKey = get3DCacheKey(path, { heightOffset });
-  const cached = cache.metrics3D.get(cacheKey);
-  if (cached) return cached.previewPoints;
-
-  getPolylineCurve3Derived(path, { heightOffset });
-  return cache.metrics3D.get(cacheKey)?.previewPoints ?? [];
 }
 
 export function getPolylineSmoothSegmentPoints3D(

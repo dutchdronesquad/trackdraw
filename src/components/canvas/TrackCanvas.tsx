@@ -69,7 +69,7 @@ export interface TrackCanvasHandle {
   resumePolylineEditing: (shapeId: string) => void;
 }
 
-interface TrackCanvasProps {
+export interface TrackCanvasProps {
   onCursorChange?: (pos: { x: number; y: number } | null) => void;
   onDraftPathStateChange?: (state: {
     active: boolean;

@@ -15,11 +15,13 @@ import {
 } from "react";
 import * as THREE from "three";
 import {
-  getPolylineCurve3Derived,
   getPolylineRouteWarningSegmentVisuals,
-  getPolylinePreview3DPoints,
   getPolylineSmoothSegmentPoints3D,
 } from "@/lib/track/polyline-derived";
+import {
+  getPolylineCurve3Derived,
+  getPolylinePreview3DPoints,
+} from "@/lib/track/polyline-derived-3d";
 import type {
   ConeShape,
   DiveGateShape,
