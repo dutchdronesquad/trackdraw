@@ -9,6 +9,7 @@ function StudioContent() {
   const searchParams = useSearchParams();
   const seedToken = searchParams.get("token") ?? undefined;
   const initialTab = parseEditorView(searchParams.get("view")) ?? "2d";
+
   return (
     <main className="h-screen">
       <EditorShell seedToken={seedToken} initialTab={initialTab} />

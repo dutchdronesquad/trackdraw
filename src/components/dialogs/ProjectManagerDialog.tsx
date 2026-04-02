@@ -1,42 +1,78 @@
 "use client";
 
 import { useState } from "react";
-import { DesktopModal } from "@/components/DesktopModal";
-import { MobileDrawer } from "@/components/MobileDrawer";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Box,
-  FilePlus,
+  Cloud,
+  CloudUpload,
+  Clock,
   Download,
+  FilePlus,
+  FolderOpen,
+  LoaderCircle,
+  MoreHorizontal,
   Pencil,
   RotateCcw,
   Trash2,
-  ChevronRight,
-  X,
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Kbd } from "@/components/ui/kbd";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { ProjectMeta, RestorePointMeta } from "@/lib/projects";
-import { starterLayouts } from "@/lib/planning/starter-layouts";
+import { MobileDrawerHeader } from "@/components/MobileDrawer";
+import { SidebarDialog } from "@/components/SidebarDialog";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 
 interface ProjectManagerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onNewProject: () => void;
-  onStartStarterLayout?: (layoutId: string) => void;
-  onBackupProject?: () => void;
+  onOpenNewProject?: () => void;
   onOpenProject?: (id: string) => void;
+  onOpenAccountProject?: (id: string) => void;
+  onSyncProject?: (id: string) => void;
   onDeleteProject?: (id: string) => void;
   onRenameProject?: (id: string, title: string) => void;
+  onExportProject?: (id: string) => void;
   onRestorePoint?: (id: string) => void;
   onDeleteRestorePoint?: (id: string) => void;
-  hasContent: boolean;
+  onResolveConflict?: (id: string) => void;
   projects?: ProjectMeta[];
+  accountProjects?: Array<{
+    id: string;
+    title: string;
+    updatedAt: string;
+    shapeCount: number;
+  }>;
+  accountProjectsLoading?: boolean;
+  accountProjectsError?: string | null;
+  projectSyncMetaById?: Record<
+    string,
+    {
+      status:
+        | "local-only"
+        | "pending"
+        | "syncing"
+        | "synced"
+        | "failed"
+        | "conflict";
+      lastSyncedAt?: string | null;
+      error?: string | null;
+    }
+  >;
+  syncingProjectId?: string | null;
   restorePoints?: RestorePointMeta[];
   activeDesignId?: string;
   activeRestorePointId?: string;
 }
+
+// Shared view state for both mobile and desktop
+type View = "device" | "account" | "restore";
 
 function formatRelativeTime(iso: string): string {
   try {
@@ -57,21 +93,122 @@ function itemLabel(count: number): string {
   return count === 1 ? "1 item" : `${count} items`;
 }
 
-type Tab = "projects" | "restore";
+// ─── Avatar ──────────────────────────────────────────────────────────────────
+
+const AVATAR_COLORS = [
+  "bg-blue-500/15 text-blue-400",
+  "bg-violet-500/15 text-violet-400",
+  "bg-emerald-500/15 text-emerald-400",
+  "bg-amber-500/15 text-amber-400",
+  "bg-rose-500/15 text-rose-400",
+  "bg-cyan-500/15 text-cyan-400",
+];
+
+function avatarColor(id: string): string {
+  const hash = id.split("").reduce((sum, c) => sum + c.charCodeAt(0), 0);
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length] ?? AVATAR_COLORS[0]!;
+}
+
+function ProjectAvatar({ id, title }: { id: string; title: string }) {
+  const letter = (title || "?")[0]?.toUpperCase() ?? "?";
+  return (
+    <div
+      className={cn(
+        "flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-semibold",
+        avatarColor(id)
+      )}
+    >
+      {letter}
+    </div>
+  );
+}
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SkeletonCard() {
+  return (
+    <div className="border-border/40 bg-background/60 flex animate-pulse items-center gap-3 rounded-xl border px-3 py-2.5">
+      <div className="bg-muted/70 size-9 shrink-0 rounded-xl" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="bg-muted/70 h-3.5 w-28 rounded-md" />
+        <div className="bg-muted/50 h-2.5 w-16 rounded-md" />
+      </div>
+    </div>
+  );
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
+function EmptyState({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: React.ReactNode;
+}) {
+  return (
+    <div className="border-border/40 flex flex-col items-center gap-2.5 rounded-xl border border-dashed px-4 py-8 text-center">
+      <div className="text-muted-foreground/35">{icon}</div>
+      <div>
+        <p className="text-muted-foreground text-sm font-medium">{title}</p>
+        <p className="text-muted-foreground/60 mt-0.5 text-[11px] leading-relaxed">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Shared "current" badge ───────────────────────────────────────────────────
+
+function CurrentBadge({ label = "current" }: { label?: string }) {
+  return (
+    <span className="bg-primary/10 text-primary/80 inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide">
+      {label}
+    </span>
+  );
+}
+
+function DesktopActionTooltip({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>{children}</TooltipTrigger>
+      <TooltipContent side="top" sideOffset={6}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ProjectManagerDialog({
   open,
   onOpenChange,
-  onNewProject,
-  onStartStarterLayout,
-  onBackupProject,
+  onOpenNewProject,
   onOpenProject,
+  onOpenAccountProject,
+  onSyncProject,
   onDeleteProject,
   onRenameProject,
+  onExportProject,
   onRestorePoint,
   onDeleteRestorePoint,
-  hasContent,
+  onResolveConflict,
   projects = [],
+  accountProjects = [],
+  accountProjectsLoading = false,
+  accountProjectsError = null,
+  projectSyncMetaById = {},
+  syncingProjectId = null,
   restorePoints = [],
   activeDesignId,
   activeRestorePointId,
@@ -80,11 +217,19 @@ export default function ProjectManagerDialog({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("projects");
+  const [confirmRestoreId, setConfirmRestoreId] = useState<string | null>(null);
+  const [mobileActionsId, setMobileActionsId] = useState<string | null>(null);
+  const [mobileDeleteConfirm, setMobileDeleteConfirm] = useState(false);
+  const [view, setView] = useState<View>("device");
 
   const sortedProjects = [...projects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
+  const sortedAccountProjects = [...accountProjects].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt)
+  );
+
+  const hasAccountSection = Boolean(onSyncProject);
 
   function startRename(p: ProjectMeta) {
     setRenamingId(p.id);
@@ -97,447 +242,832 @@ export default function ProjectManagerDialog({
     setRenamingId(null);
   }
 
-  const actionRowClass =
-    "border-border/60 hover:bg-muted/35 flex w-full cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors";
+  function closeMobileActions() {
+    setMobileActionsId(null);
+    setMobileDeleteConfirm(false);
+  }
 
-  // Pinned new-project block (blank canvas + optional export, no starters)
-  const newProjectBlock = (
-    <div className="space-y-2.5">
-      {hasContent ? (
-        <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
-          <p className="text-foreground text-sm font-medium">
-            Current track will be saved first
-          </p>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            A snapshot is kept in Saved projects and Restore points before the
-            canvas is cleared.
-          </p>
-        </div>
-      ) : null}
+  function handleOpenNewProject() {
+    if (!onOpenNewProject) return;
+    onOpenChange(false);
+    window.setTimeout(onOpenNewProject, 0);
+  }
 
-      <button onClick={onNewProject} className={actionRowClass}>
-        <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-          <FilePlus className="size-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-foreground text-sm font-medium">Start fresh</p>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            An empty field where you place your first gate and build from there.
-          </p>
-        </div>
-        <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
-      </button>
+  // ─── Local project card ──────────────────────────────────────────────────
 
-      {hasContent && onBackupProject ? (
-        <button onClick={onBackupProject} className={actionRowClass}>
-          <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-            <Download className="size-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">Export first</p>
-            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              Save a JSON backup before replacing the current project.
-            </p>
-          </div>
-          <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
-        </button>
-      ) : null}
-    </div>
-  );
+  function LocalProjectCard({ p }: { p: ProjectMeta }) {
+    const isCurrent = p.id === activeDesignId;
+    const isRenaming = renamingId === p.id;
+    const isConfirming = confirmDeleteId === p.id;
+    const syncMeta = projectSyncMetaById[p.id];
+    const isSynced =
+      syncMeta?.status === "synced" ||
+      sortedAccountProjects.some((project) => project.id === p.id);
+    const isSyncing =
+      syncingProjectId === p.id || syncMeta?.status === "syncing";
+    const hasConflict = syncMeta?.status === "conflict";
+    const hasSyncFailure = syncMeta?.status === "failed";
+    const hasPendingChanges = syncMeta?.status === "pending";
+    const syncLabel = isSyncing
+      ? "Syncing"
+      : hasConflict
+        ? "Review needed"
+        : hasPendingChanges
+          ? "Pending"
+          : hasSyncFailure
+            ? "Sync failed"
+            : isSynced
+              ? "Synced"
+              : "Local only";
+    const syncDetail = hasConflict
+      ? (syncMeta?.error ?? "This project changed on another device")
+      : hasSyncFailure
+        ? (syncMeta?.error ?? "Could not sync this project")
+        : hasPendingChanges
+          ? "Local changes are waiting to sync"
+          : null;
+    const metaLine = hasConflict
+      ? syncDetail
+      : hasSyncFailure
+        ? syncDetail
+        : hasPendingChanges
+          ? `${itemLabel(p.shapeCount)} · waiting to sync`
+          : isSynced && syncMeta?.lastSyncedAt
+            ? `${itemLabel(p.shapeCount)} · synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
+            : `${itemLabel(p.shapeCount)} · ${formatRelativeTime(p.updatedAt)}`;
 
-  // Starter layouts strip (desktop: horizontal grid; mobile: vertical list)
-  const starterStrip = onStartStarterLayout ? (
-    <div className="space-y-2.5">
-      {starterLayouts.map((layout) => (
-        <button
-          key={layout.id}
-          type="button"
-          onClick={() => onStartStarterLayout(layout.id)}
-          className={actionRowClass}
-        >
-          <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-            <Box className="size-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">{layout.name}</p>
-            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              {layout.description}
-            </p>
-          </div>
-          <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
-        </button>
-      ))}
-    </div>
-  ) : null;
-
-  // Tab bar
-  const tabBar = (mobile = false) => (
-    <div
-      className={cn(
-        "flex",
-        mobile
-          ? "border-border/30 gap-4 border-b"
-          : "border-border/30 gap-4 border-b"
-      )}
-    >
-      <button
-        type="button"
-        onClick={() => setTab("projects")}
-        className={cn(
-          "cursor-pointer pb-2.5 text-[11px] font-semibold tracking-widest uppercase transition-colors",
-          tab === "projects"
-            ? "text-foreground border-foreground/70 -mb-px border-b-2"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        Projects
-        {sortedProjects.length > 0 ? (
-          <span className="ml-1.5 font-normal tracking-normal normal-case">
-            ({sortedProjects.length})
-          </span>
-        ) : null}
-      </button>
-      <button
-        type="button"
-        onClick={() => setTab("restore")}
-        className={cn(
-          "cursor-pointer pb-2.5 text-[11px] font-semibold tracking-widest uppercase transition-colors",
-          tab === "restore"
-            ? "text-foreground border-foreground/70 -mb-px border-b-2"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        Snapshots
-        {restorePoints.length > 0 ? (
-          <span className="ml-1.5 font-normal tracking-normal normal-case">
-            ({restorePoints.length})
-          </span>
-        ) : null}
-      </button>
-    </div>
-  );
-
-  // Projects list
-  const projectsList =
-    sortedProjects.length > 0 ? (
-      <div className="space-y-1.5">
-        {sortedProjects.map((p) => {
-          const isCurrent = p.id === activeDesignId;
-          const isRenaming = renamingId === p.id;
-          return (
-            <div
-              key={p.id}
-              onClick={
-                onOpenProject && !isCurrent
-                  ? () => {
-                      onOpenProject(p.id);
-                      onOpenChange(false);
-                    }
-                  : undefined
+    return (
+      <div
+        onClick={
+          onOpenProject && !isCurrent && !isRenaming && !isConfirming
+            ? () => {
+                onOpenProject(p.id);
+                onOpenChange(false);
               }
-              className={cn(
-                "flex items-center gap-2 rounded-xl border px-3 py-2.5",
-                isCurrent
-                  ? "border-primary/25 bg-primary/4"
-                  : "border-border/60 hover:bg-muted/35 cursor-pointer transition-colors"
-              )}
-            >
-              <div className="min-w-0 flex-1">
-                {isRenaming ? (
-                  <input
-                    autoFocus
-                    value={renameValue}
-                    onChange={(e) => setRenameValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") commitRename(p.id);
-                      if (e.key === "Escape") setRenamingId(null);
-                    }}
-                    onBlur={() => commitRename(p.id)}
-                    className="text-foreground border-border/60 w-full border-b bg-transparent pb-0.5 text-sm font-medium outline-none"
-                  />
-                ) : (
-                  <div className="flex items-center gap-1.5 truncate">
-                    <p className="text-foreground truncate text-sm font-medium">
-                      {p.title || "Untitled"}
-                    </p>
-                    {isCurrent ? (
-                      <span className="text-primary/70 bg-primary/8 shrink-0 rounded px-1 py-px text-[9px] font-semibold tracking-wide uppercase">
-                        current
-                      </span>
-                    ) : null}
-                  </div>
-                )}
-                <p className="text-muted-foreground mt-0.5 text-[11px]">
-                  {itemLabel(p.shapeCount)} · {formatRelativeTime(p.updatedAt)}
-                </p>
-              </div>
-              <div
-                className="flex shrink-0 items-center gap-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {isRenaming ? (
-                  <button
-                    onClick={() => commitRename(p.id)}
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
-                    title="Confirm rename"
+            : undefined
+        }
+        className={cn(
+          "group relative flex items-start gap-3 overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-150",
+          isCurrent
+            ? "border-primary/20 bg-primary/5"
+            : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
+        )}
+      >
+        <ProjectAvatar id={p.id} title={p.title || "?"} />
+        <div className="min-w-0 flex-1">
+          {isRenaming ? (
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitRename(p.id);
+                if (e.key === "Escape") setRenamingId(null);
+              }}
+              onBlur={() => commitRename(p.id)}
+              className="text-foreground border-border/60 w-full border-b bg-transparent pb-0.5 text-sm font-medium outline-none"
+            />
+          ) : (
+            <>
+              <p className="text-foreground truncate text-sm font-medium">
+                {p.title || "Untitled"}
+              </p>
+              {!isRenaming && !isConfirming ? (
+                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                  {isCurrent ? <CurrentBadge /> : null}
+                  <span
+                    className={cn(
+                      "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
+                      isSyncing
+                        ? "bg-primary/10 text-primary/80"
+                        : hasConflict
+                          ? "bg-destructive/10 text-destructive/80"
+                          : hasPendingChanges
+                            ? "bg-muted text-foreground/75"
+                            : hasSyncFailure
+                              ? "bg-destructive/10 text-destructive/80"
+                              : isSynced
+                                ? "bg-primary/10 text-primary/80"
+                                : "bg-muted text-muted-foreground/75"
+                    )}
                   >
-                    <Check className="size-3.5" />
+                    {syncLabel}
+                  </span>
+                </div>
+              ) : isCurrent ? (
+                <div className="mt-1">
+                  <CurrentBadge />
+                </div>
+              ) : null}
+            </>
+          )}
+          <p
+            className={cn(
+              "mt-1 text-[11px]",
+              hasSyncFailure ? "text-destructive/80" : "text-muted-foreground"
+            )}
+          >
+            {metaLine}
+          </p>
+        </div>
+        <div
+          className="flex shrink-0 items-center gap-0.5"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {isRenaming ? (
+            <button
+              onClick={() => commitRename(p.id)}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+              title="Confirm rename"
+            >
+              <Check className="size-3.5" />
+            </button>
+          ) : (
+            <>
+              {onSyncProject && !isConfirming && !isMobile ? (
+                <DesktopActionTooltip
+                  label={
+                    hasConflict
+                      ? "Resolve version conflict"
+                      : hasSyncFailure
+                        ? "Retry sync"
+                        : isSynced || hasPendingChanges
+                          ? "Update account copy"
+                          : "Sync to account"
+                  }
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (hasConflict) {
+                        onResolveConflict?.(p.id);
+                        onOpenChange(false);
+                      } else {
+                        onSyncProject(p.id);
+                      }
+                    }}
+                    className={cn(
+                      "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
+                      !isMobile &&
+                        "opacity-0 transition-opacity group-hover:opacity-100"
+                    )}
+                  >
+                    {isSyncing ? (
+                      <LoaderCircle className="size-3.5 animate-spin" />
+                    ) : isSynced && !hasConflict && !hasSyncFailure ? (
+                      <Cloud className="size-3.5" />
+                    ) : (
+                      <CloudUpload className="size-3.5" />
+                    )}
                   </button>
-                ) : (
-                  <>
-                    {onRenameProject ? (
+                </DesktopActionTooltip>
+              ) : null}
+              {onExportProject && !isConfirming && !isMobile ? (
+                <DesktopActionTooltip label="Export JSON">
+                  <button
+                    type="button"
+                    onClick={() => onExportProject(p.id)}
+                    className={cn(
+                      "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
+                      !isMobile &&
+                        "opacity-0 transition-opacity group-hover:opacity-100"
+                    )}
+                  >
+                    <Download className="size-3.5" />
+                  </button>
+                </DesktopActionTooltip>
+              ) : null}
+              {isMobile ? (
+                onSyncProject ||
+                onExportProject ||
+                onRenameProject ||
+                (onDeleteProject && !isCurrent) ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileActionsId(p.id);
+                      setMobileDeleteConfirm(false);
+                    }}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                    title="More actions"
+                    aria-label={`Manage ${p.title || "project"}`}
+                  >
+                    <MoreHorizontal className="size-3.5" />
+                  </button>
+                ) : isCurrent ? (
+                  <CurrentBadge label="open" />
+                ) : null
+              ) : (
+                <>
+                  {onRenameProject && (
+                    <DesktopActionTooltip label="Rename">
                       <button
                         onClick={() => startRename(p)}
-                        className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
-                        title="Rename project"
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100"
                       >
                         <Pencil className="size-3.5" />
                       </button>
-                    ) : null}
-                    {onDeleteProject && !isCurrent ? (
-                      confirmDeleteId === p.id ? (
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => {
-                              onDeleteProject(p.id);
-                              setConfirmDeleteId(null);
-                            }}
-                            className="text-destructive hover:bg-destructive/10 cursor-pointer rounded-lg px-2 py-1 text-[11px] font-medium transition-colors"
-                          >
-                            Delete
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
-                          >
-                            <X className="size-3.5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmDeleteId(p.id)}
-                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer rounded-lg p-1.5 transition-colors"
-                          title="Delete project"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
-                      )
-                    ) : null}
-                  </>
-                )}
+                    </DesktopActionTooltip>
+                  )}
+                  {onDeleteProject && !isCurrent && (
+                    <DesktopActionTooltip label="Delete">
+                      <button
+                        onClick={() => setConfirmDeleteId(p.id)}
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </DesktopActionTooltip>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+        {/* Delete confirmation overlay */}
+        <AnimatePresence>
+          {isConfirming && (
+            <motion.div
+              className="bg-background/97 absolute inset-0 flex items-center justify-between gap-2 rounded-xl px-3 backdrop-blur-sm"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-destructive truncate text-sm font-medium">
+                Delete permanently?
+              </p>
+              <div className="flex shrink-0 items-center gap-1">
+                <button
+                  onClick={() => {
+                    onDeleteProject!(p.id);
+                    setConfirmDeleteId(null);
+                  }}
+                  className="bg-destructive/10 hover:bg-destructive/20 text-destructive cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="text-muted-foreground hover:text-foreground cursor-pointer rounded-lg px-2 py-1.5 text-xs transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
-            </div>
-          );
-        })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    ) : (
-      <p className="text-muted-foreground/50 text-xs">No saved projects yet.</p>
     );
+  }
 
-  // Restore points list
-  const restoreList =
-    restorePoints.length > 0 ? (
-      <div className="space-y-1.5">
-        {restorePoints.map((r) => {
+  // ─── View content ─────────────────────────────────────────────────────────
+
+  const deviceContent = (
+    <div className="space-y-2">
+      {onOpenNewProject ? (
+        <button
+          type="button"
+          onClick={handleOpenNewProject}
+          className="border-border/60 text-foreground hover:bg-muted mb-3 flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border text-[13px] font-medium transition-colors"
+        >
+          <FilePlus className="size-3.5" />
+          <span>New project</span>
+        </button>
+      ) : null}
+      {sortedProjects.length > 0 ? (
+        sortedProjects.map((p) => <LocalProjectCard key={p.id} p={p} />)
+      ) : (
+        <EmptyState
+          icon={<FolderOpen className="size-6" />}
+          title="No saved projects"
+          description="Projects you save will appear here."
+        />
+      )}
+    </div>
+  );
+
+  const accountContent = (
+    <div className="space-y-4">
+      {/* Account projects list */}
+      {accountProjectsLoading ? (
+        <div className="space-y-1.5">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : accountProjectsError ? (
+        <div className="border-destructive/20 bg-destructive/8 rounded-xl border px-4 py-3">
+          <p className="text-foreground text-sm font-medium">
+            Could not load account projects
+          </p>
+          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+            {accountProjectsError}
+          </p>
+        </div>
+      ) : sortedAccountProjects.length > 0 ? (
+        <div className="space-y-1.5">
+          {sortedAccountProjects.map((proj) => {
+            const isCurrent = proj.id === activeDesignId;
+            const syncMeta = projectSyncMetaById[proj.id];
+            const isSyncing =
+              syncingProjectId === proj.id || syncMeta?.status === "syncing";
+            const hasConflict = syncMeta?.status === "conflict";
+            const hasSyncFailure = syncMeta?.status === "failed";
+            const hasPendingChanges = syncMeta?.status === "pending";
+            const lastSyncedAt = syncMeta?.lastSyncedAt ?? proj.updatedAt;
+            const metaLine = hasConflict
+              ? (syncMeta?.error ??
+                "This project changed on another device while you were signed out")
+              : hasSyncFailure
+                ? (syncMeta?.error ?? "Could not sync the latest changes")
+                : hasPendingChanges
+                  ? `${itemLabel(proj.shapeCount)} · waiting to sync`
+                  : `${itemLabel(proj.shapeCount)} · synced ${formatRelativeTime(lastSyncedAt)}`;
+            return (
+              <div
+                key={proj.id}
+                onClick={
+                  onOpenAccountProject && !isCurrent
+                    ? () => {
+                        onOpenAccountProject(proj.id);
+                        onOpenChange(false);
+                      }
+                    : undefined
+                }
+                className={cn(
+                  "flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-all duration-150",
+                  isCurrent
+                    ? "border-primary/20 bg-primary/5"
+                    : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
+                )}
+              >
+                <ProjectAvatar id={proj.id} title={proj.title || "?"} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground truncate text-sm font-medium">
+                    {proj.title || "Untitled"}
+                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {isCurrent ? <CurrentBadge /> : null}
+                    <span
+                      className={cn(
+                        "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
+                        isSyncing
+                          ? "bg-primary/10 text-primary/80"
+                          : hasConflict
+                            ? "bg-destructive/10 text-destructive/80"
+                            : hasPendingChanges
+                              ? "bg-muted text-foreground/75"
+                              : hasSyncFailure
+                                ? "bg-destructive/10 text-destructive/80"
+                                : "bg-primary/10 text-primary/80"
+                      )}
+                    >
+                      {isSyncing
+                        ? "Syncing"
+                        : hasConflict
+                          ? "Review needed"
+                          : hasPendingChanges
+                            ? "Pending"
+                            : hasSyncFailure
+                              ? "Sync failed"
+                              : "Synced"}
+                    </span>
+                  </div>
+                  <p
+                    className={cn(
+                      "mt-1 text-[11px]",
+                      hasSyncFailure
+                        ? "text-destructive/80"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {metaLine}
+                  </p>
+                </div>
+                <div
+                  className="flex shrink-0 items-center gap-0.5"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  {onSyncProject &&
+                  isCurrent &&
+                  (hasConflict || hasSyncFailure || hasPendingChanges) ? (
+                    <button
+                      onClick={() => {
+                        if (!hasConflict) {
+                          onSyncProject(proj.id);
+                        }
+                      }}
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                      title={
+                        hasConflict
+                          ? "Resolve the version conflict first"
+                          : hasSyncFailure
+                            ? "Retry sync"
+                            : "Sync pending changes"
+                      }
+                    >
+                      {hasConflict || hasSyncFailure ? (
+                        <CloudUpload className="size-3.5" />
+                      ) : (
+                        <Cloud className="size-3.5" />
+                      )}
+                    </button>
+                  ) : (
+                    <Cloud className="text-muted-foreground/40 size-3.5 shrink-0" />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyState
+          icon={<Cloud className="size-6" />}
+          title="No account projects"
+          description="Sync a project to make it available across devices."
+        />
+      )}
+    </div>
+  );
+
+  const restoreContent = (
+    <div className="space-y-2">
+      {restorePoints.length > 0 ? (
+        restorePoints.map((r) => {
           const isActive = r.id === activeRestorePointId;
           return (
             <div
               key={r.id}
               className={cn(
-                "flex items-center gap-2 rounded-xl border px-3 py-2.5",
-                isActive ? "border-primary/25 bg-primary/4" : "border-border/60"
+                "relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-150",
+                isActive
+                  ? "border-primary/20 bg-primary/5"
+                  : "border-border/60 bg-background/70"
               )}
             >
+              <div className="bg-muted/50 flex size-9 shrink-0 items-center justify-center rounded-xl">
+                <Clock className="text-muted-foreground/60 size-4" />
+              </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 truncate">
+                <div className="flex min-w-0 items-center gap-1.5">
                   <p className="text-foreground truncate text-sm font-medium">
                     {r.designTitle || "Untitled"}
                   </p>
-                  {isActive ? (
-                    <span className="text-primary/70 bg-primary/8 shrink-0 rounded px-1 py-px text-[9px] font-semibold tracking-wide uppercase">
-                      active
-                    </span>
-                  ) : null}
+                  {isActive && <CurrentBadge label="active" />}
                 </div>
                 <p className="text-muted-foreground mt-0.5 text-[11px]">
                   {itemLabel(r.shapeCount)} · {formatRelativeTime(r.savedAt)}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-1">
-                {onRestorePoint ? (
+              <div className="flex shrink-0 items-center gap-0.5">
+                {onRestorePoint && (
                   <button
-                    onClick={() => {
-                      onRestorePoint(r.id);
-                      onOpenChange(false);
-                    }}
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg p-1.5 transition-colors"
+                    onClick={() => setConfirmRestoreId(r.id)}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                     title="Restore this snapshot"
                   >
                     <RotateCcw className="size-3.5" />
                   </button>
-                ) : null}
-                {onDeleteRestorePoint ? (
+                )}
+                {onDeleteRestorePoint && (
                   <button
                     onClick={() => onDeleteRestorePoint(r.id)}
-                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer rounded-lg p-1.5 transition-colors"
-                    title="Delete restore point"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                    title="Delete snapshot"
                   >
                     <Trash2 className="size-3.5" />
                   </button>
-                ) : null}
+                )}
               </div>
+              <AnimatePresence>
+                {confirmRestoreId === r.id && (
+                  <motion.div
+                    className="bg-background/97 absolute inset-0 flex items-center justify-between gap-2 rounded-xl px-3 backdrop-blur-sm"
+                    initial={{ x: "100%", opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: "100%", opacity: 0 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <p className="text-foreground truncate text-sm font-medium">
+                      Restore this snapshot?
+                    </p>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        onClick={() => {
+                          onRestorePoint!(r.id);
+                          setConfirmRestoreId(null);
+                          onOpenChange(false);
+                        }}
+                        className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                      >
+                        Restore
+                      </button>
+                      <button
+                        onClick={() => setConfirmRestoreId(null)}
+                        className="text-muted-foreground hover:text-foreground cursor-pointer rounded-lg px-2 py-1.5 text-xs transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
-        })}
-      </div>
-    ) : (
-      <div className="border-border/40 rounded-xl border border-dashed px-4 py-5 text-center">
-        <p className="text-muted-foreground text-xs font-medium">
-          No snapshots yet
-        </p>
-        <p className="text-muted-foreground/50 mt-1 text-[11px] leading-relaxed">
-          {isMobile ? (
-            "Snapshots are created automatically when you open or replace a project."
-          ) : (
-            <>
-              Press <Kbd>⌘S</Kbd> / <Kbd>Ctrl S</Kbd> or use the save button in
-              the header.
-            </>
-          )}
-        </p>
-      </div>
-    );
+        })
+      ) : (
+        <EmptyState
+          icon={<Clock className="size-6" />}
+          title="No snapshots yet"
+          description={
+            isMobile ? (
+              "Snapshots are created automatically when you open or replace a project."
+            ) : (
+              <>
+                Press <Kbd>⌘S</Kbd> / <Kbd>Ctrl S</Kbd> or use the save button
+                in the header.
+              </>
+            )
+          }
+        />
+      )}
+    </div>
+  );
 
-  if (isMobile) {
-    return (
-      <MobileDrawer
-        open={open}
-        onOpenChange={onOpenChange}
-        title="Projects"
-        subtitle="Switch between saved projects or restore a snapshot."
-        contentClassName="h-[82dvh] max-h-[92dvh] min-h-[72dvh]"
-        pinnedContent={
-          <>
-            <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-4">
-              {newProjectBlock}
-            </div>
-            {onStartStarterLayout ? (
-              <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-3">
-                <p className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-widest uppercase">
-                  Starter layouts
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {starterLayouts.map((layout) => (
-                    <button
-                      key={layout.id}
-                      type="button"
-                      onClick={() => onStartStarterLayout(layout.id)}
-                      className="border-border/60 bg-card hover:bg-muted/35 text-muted-foreground hover:text-foreground cursor-pointer rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors"
-                    >
-                      {layout.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            <div className="border-border/30 shrink-0 border-b px-4 pt-3">
-              {tabBar(true)}
-            </div>
-          </>
-        }
-        bodyClassName="pt-4 pb-4"
-      >
-        {tab === "projects" ? projectsList : restoreList}
-      </MobileDrawer>
-    );
-  }
+  // ─── Shared nav items (used by both mobile and desktop) ──────────────────
+
+  type NavItem = {
+    id: View;
+    label: string;
+    icon: React.ReactNode;
+    count: number;
+  };
+  const navItems: NavItem[] = [
+    {
+      id: "device",
+      label: "This device",
+      icon: <FolderOpen className="size-4" />,
+      count: sortedProjects.length,
+    },
+    ...(hasAccountSection
+      ? ([
+          {
+            id: "account",
+            label: "Account",
+            icon: <Cloud className="size-4" />,
+            count: sortedAccountProjects.length,
+          },
+        ] as NavItem[])
+      : []),
+    {
+      id: "restore",
+      label: "Snapshots",
+      icon: <Clock className="size-4" />,
+      count: restorePoints.length,
+    },
+  ];
+
+  // ─── View metadata ────────────────────────────────────────────────────────
+
+  const viewMeta: Record<
+    View,
+    { label: string; description: string; content: React.ReactNode }
+  > = {
+    device: {
+      label: "On this device",
+      description:
+        "Projects saved in this browser. Open them here and bring them into account sync when needed.",
+      content: deviceContent,
+    },
+    account: {
+      label: "Account projects",
+      description:
+        "Projects already synced to your account and available on your signed-in devices.",
+      content: accountContent,
+    },
+    restore: {
+      label: "Snapshots",
+      description:
+        "Earlier saved states of the current project. Restore any point to roll back changes.",
+      content: restoreContent,
+    },
+  };
+
+  const activeView = view === "account" && !hasAccountSection ? "device" : view;
+  const current = viewMeta[activeView];
+  const mobileActionProject =
+    mobileActionsId == null
+      ? null
+      : (sortedProjects.find((project) => project.id === mobileActionsId) ??
+        null);
+  const mobileActionSyncMeta = mobileActionProject
+    ? projectSyncMetaById[mobileActionProject.id]
+    : null;
+  const mobileActionHasConflict = mobileActionSyncMeta?.status === "conflict";
+  const mobileActionHasSyncFailure = mobileActionSyncMeta?.status === "failed";
+  const mobileActionHasPendingChanges =
+    mobileActionSyncMeta?.status === "pending";
+  const mobileActionIsSynced = mobileActionProject
+    ? mobileActionSyncMeta?.status === "synced" ||
+      sortedAccountProjects.some(
+        (project) => project.id === mobileActionProject.id
+      )
+    : false;
+  const mobileActionSyncTitle = mobileActionHasConflict
+    ? "Resolve sync conflict"
+    : mobileActionHasSyncFailure
+      ? "Retry sync"
+      : mobileActionIsSynced || mobileActionHasPendingChanges
+        ? "Update account copy"
+        : "Sync to account";
+  const mobileActionSyncDescription = mobileActionHasConflict
+    ? "This project changed on another device. Review the version before continuing."
+    : mobileActionHasSyncFailure
+      ? "The last sync failed. Try sending the latest local version again."
+      : mobileActionHasPendingChanges
+        ? "Push the latest local changes to your account."
+        : mobileActionIsSynced
+          ? "Replace the synced account copy with this device version."
+          : "Make this project available on your signed-in devices.";
 
   return (
-    <DesktopModal
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Projects"
-      headerless
-      maxWidth="max-w-3xl"
-      panelClassName="flex flex-col overflow-hidden rounded-4xl p-0"
-    >
-      {/* Header */}
-      <div className="shrink-0 px-8 pt-8 pb-5">
-        <div className="flex items-start gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-              Studio
-            </p>
-            <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
-              Projects
-            </p>
-            <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              Open a saved track, start fresh, or begin with one of the starter
-              layouts.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-            aria-label="Close"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-      </div>
+    <>
+      <SidebarDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        eyebrow="Studio"
+        title="Projects"
+        mobileSubtitle="Open, rename, sync or restore."
+        navItems={navItems.map((item) => ({
+          id: item.id,
+          label: item.label,
+          icon: item.icon,
+          badge: item.count,
+        }))}
+        activeItem={activeView}
+        onItemChange={(id) => setView(id as View)}
+        contentTitle={current.label}
+        contentDescription={current.description}
+      >
+        {current.content}
+      </SidebarDialog>
 
-      {/* Two-column body */}
-      <div className="border-border/30 grid min-h-0 grid-cols-2 overflow-hidden border-t">
-        {/* Left: new project */}
-        <div className="border-border/30 overflow-y-auto border-r px-6 py-6">
-          <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
-            New project
-          </p>
-          {newProjectBlock}
-        </div>
+      {isMobile ? (
+        <Drawer
+          open={Boolean(mobileActionProject)}
+          onOpenChange={(next) => !next && closeMobileActions()}
+        >
+          <DrawerContent className="border-border/70 bg-background data-[vaul-drawer-direction=bottom]:max-h-[78dvh]">
+            {mobileActionProject ? (
+              <div className="pb-5">
+                <MobileDrawerHeader
+                  title={mobileActionProject.title || "Untitled"}
+                  subtitle={`${itemLabel(mobileActionProject.shapeCount)} on this device`}
+                  className="bg-background"
+                />
 
-        {/* Right: tabs + lists */}
-        <div className="flex min-h-0 flex-col overflow-hidden">
-          <div className="shrink-0 px-8 pt-5">{tabBar()}</div>
-          <div className="max-h-80 overflow-y-auto px-8 py-4">
-            {tab === "projects" ? projectsList : restoreList}
-          </div>
-        </div>
-      </div>
+                <div className="space-y-2 px-4 pt-4">
+                  {onSyncProject ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (mobileActionHasConflict) {
+                          onResolveConflict?.(mobileActionProject.id);
+                          onOpenChange(false);
+                        } else {
+                          onSyncProject(mobileActionProject.id);
+                        }
+                        closeMobileActions();
+                      }}
+                      className="border-border/60 hover:bg-muted flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
+                    >
+                      <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
+                        {mobileActionHasConflict ||
+                        mobileActionHasSyncFailure ||
+                        !mobileActionIsSynced ? (
+                          <CloudUpload className="size-4" />
+                        ) : (
+                          <Cloud className="size-4" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="text-foreground block text-sm font-medium">
+                          {mobileActionSyncTitle}
+                        </span>
+                        <span className="text-muted-foreground block pt-0.5 text-[11px] leading-relaxed">
+                          {mobileActionSyncDescription}
+                        </span>
+                      </span>
+                    </button>
+                  ) : null}
 
-      {/* Bottom: starter layouts strip */}
-      {starterStrip ? (
-        <div className="border-border/30 shrink-0 border-t px-6 py-5">
-          <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
-            Start from a layout
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {starterLayouts.map((layout) => (
-              <button
-                key={layout.id}
-                type="button"
-                onClick={() => onStartStarterLayout!(layout.id)}
-                className="border-border/60 hover:bg-muted/35 flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-colors"
-              >
-                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <Box className="size-3.5" />
+                  {onExportProject ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onExportProject(mobileActionProject.id);
+                        closeMobileActions();
+                      }}
+                      className="border-border/60 hover:bg-muted flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
+                    >
+                      <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
+                        <Download className="size-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="text-foreground block text-sm font-medium">
+                          Export JSON
+                        </span>
+                        <span className="text-muted-foreground block pt-0.5 text-[11px] leading-relaxed">
+                          Download this project as a reusable TrackDraw file.
+                        </span>
+                      </span>
+                    </button>
+                  ) : null}
+
+                  {onRenameProject ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        startRename(mobileActionProject);
+                        closeMobileActions();
+                      }}
+                      className="border-border/60 hover:bg-muted flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
+                    >
+                      <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
+                        <Pencil className="size-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="text-foreground block text-sm font-medium">
+                          Rename
+                        </span>
+                        <span className="text-muted-foreground block pt-0.5 text-[11px] leading-relaxed">
+                          Give this project a clearer name.
+                        </span>
+                      </span>
+                    </button>
+                  ) : null}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate text-xs font-medium">
-                    {layout.name}
-                  </p>
-                  <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
-                    {layout.description}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+
+                {onDeleteProject &&
+                mobileActionProject.id !== activeDesignId ? (
+                  <div className="border-border/50 mx-4 mt-4 border-t pt-4">
+                    {mobileDeleteConfirm ? (
+                      <div className="border-destructive/20 bg-destructive/6 rounded-2xl border px-3 py-3">
+                        <p className="text-destructive text-sm font-medium">
+                          Delete permanently?
+                        </p>
+                        <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
+                          This only removes the local project from this browser.
+                        </p>
+                        <div className="mt-3 flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onDeleteProject(mobileActionProject.id);
+                              closeMobileActions();
+                            }}
+                            className="bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-lg px-3 py-2 text-xs font-medium transition-colors"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMobileDeleteConfirm(false)}
+                            className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg px-3 py-2 text-xs transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setMobileDeleteConfirm(true)}
+                        className="text-destructive hover:bg-destructive/10 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors"
+                      >
+                        <span className="bg-destructive/10 text-destructive flex size-9 shrink-0 items-center justify-center rounded-xl">
+                          <Trash2 className="size-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-medium">
+                            Delete
+                          </span>
+                          <span className="text-destructive/75 block pt-0.5 text-[11px] leading-relaxed">
+                            Remove this local project from the device.
+                          </span>
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </DrawerContent>
+        </Drawer>
       ) : null}
-
-      <div className="shrink-0 pb-2" />
-    </DesktopModal>
+    </>
   );
 }

@@ -13,7 +13,6 @@ import {
 import { EditorMobilePanels } from "@/components/editor/EditorMobilePanels";
 import { LayoutPresetPicker } from "@/components/editor/LayoutPresetPicker";
 import Header from "./Header";
-import Toolbar from "./Toolbar";
 import Inspector from "@/components/inspector/Inspector";
 import StatusBar from "./StatusBar";
 import { ContextOverlayCard } from "./ContextOverlayCard";
@@ -21,8 +20,14 @@ import ShareDialog from "@/components/dialogs/ShareDialog";
 import ExportDialog from "@/components/dialogs/ExportDialog";
 import ImportDialog from "@/components/dialogs/ImportDialog";
 import KeyboardShortcutsDialog from "@/components/dialogs/KeyboardShortcutsDialog";
+import CompleteProfileDialog from "@/components/dialogs/CompleteProfileDialog";
+import ProjectVersionConflictDialog from "@/components/dialogs/ProjectVersionConflictDialog";
 import PerformanceHud from "./PerformanceHud";
 import ProjectManagerDialog from "@/components/dialogs/ProjectManagerDialog";
+import NewProjectDialog from "@/components/dialogs/NewProjectDialog";
+import { useAccountProjectSync } from "./useAccountProjectSync";
+import { useEditorDialogs } from "./useEditorDialogs";
+import { useStarterExperience } from "./useStarterExperience";
 import { Button } from "@/components/ui/button";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import TrackCanvas, {
@@ -33,25 +38,20 @@ import type {
   TrackPreview3DProps,
 } from "@/components/canvas/TrackPreview3D";
 import { createDefaultDesign } from "@/lib/track/design";
-import { shapeKindLabels } from "@/lib/editor-tools";
+import { shapeKindLabels, type EditorTool } from "@/lib/editor-tools";
+import { loadProject } from "@/lib/projects";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import {
   getShapeGroupId,
   getShapeGroupName,
   selectionHasGroupedShapes,
 } from "@/lib/track/shape-groups";
-import { createStarterLayoutDesign } from "@/lib/planning/starter-layouts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
-import { useEditorHints } from "@/hooks/useEditorHints";
-import {
-  StarterSteps,
-  StarterActions,
-  shouldShowStarterForDesign,
-} from "@/components/editor/StarterFlow";
+import { StarterSteps, StarterActions } from "@/components/editor/StarterFlow";
 import type { EditorView } from "@/lib/view";
 import { useEditor } from "@/store/editor";
 import {
@@ -61,6 +61,7 @@ import {
   selectSelectionLocked,
   selectShapeRecordMap,
 } from "@/store/selectors";
+import { authClient } from "@/lib/auth-client";
 import { Box, Route, X } from "lucide-react";
 
 function createFirstUseBlankDesign() {
@@ -85,6 +86,10 @@ const TrackPreview3D = dynamic<TrackPreview3DProps>(
 ) as ForwardRefExoticComponent<
   TrackPreview3DProps & RefAttributes<TrackPreview3DHandle>
 >;
+
+const Toolbar = dynamic(() => import("./Toolbar"), {
+  ssr: false,
+});
 
 export default function EditorShell({
   readOnly = false,
@@ -163,15 +168,13 @@ export default function EditorShell({
     !singleSelectedShape.locked
   );
   const isMobile = useIsMobile();
+  const { data: authSession } = authClient.useSession();
+  const authUser = authSession?.user ?? null;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [tab, setTab] = useState<"2d" | "3d">(initialTab);
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
     null
@@ -196,21 +199,41 @@ export default function EditorShell({
   const [mobilePathBuilderPinnedOpen, setMobilePathBuilderPinnedOpen] =
     useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [projectManagerOpen, setProjectManagerOpen] = useState(false);
-  const [presetPickerOpen, setPresetPickerOpen] = useState(false);
-  const [starterDismissed, setStarterDismissed] = useState(false);
-  const [starterMode, setStarterMode] = useState<"guided" | "blank" | null>(
-    null
-  );
+  const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
+  const [completeProfileDismissed, setCompleteProfileDismissed] =
+    useState(false);
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
-  const mobileProjectManagerOpenTimerRef = useRef<number | null>(null);
+  const {
+    shareOpen,
+    setShareOpen,
+    exportOpen,
+    setExportOpen,
+    importOpen,
+    setImportOpen,
+    shortcutsOpen,
+    setShortcutsOpen,
+    newProjectOpen,
+    setNewProjectOpen,
+    projectManagerOpen,
+    setProjectManagerOpen,
+    presetPickerOpen,
+    setPresetPickerOpen,
+    openNewProjectDialog,
+  } = useEditorDialogs({
+    isMobile,
+    setMobileToolsOpen,
+  });
 
   const {
     projects,
+    setProjects,
     restorePoints,
+    setRestorePoints,
     activeRestorePointId,
+    setActiveRestorePointId,
     saveStatusLabel,
+    setSaveStatusLabel,
     initialized,
     handleSaveSnapshot,
     handleOpenProject,
@@ -229,25 +252,81 @@ export default function EditorShell({
     replaceDesign,
   });
 
-  const {
-    gateHintDismissed,
-    desktopPathHintDismissed,
-    desktopPreviewHintDismissed,
-    review3DHintDismissed,
-    postPathNudgeDismissed,
-    showPostPathNudge,
-    dismissGateHint,
-    dismissDesktopPathHint,
-    dismissDesktopPreviewHint,
-    dismissReview3DHint,
-    dismissPostPathNudge,
-    resetGuidedHints,
-  } = useEditorHints({ readOnly, hasPath });
-
   // Sync tab when initialTab prop changes (e.g. ShareViewer navigates ?view=3d via Link)
   useEffect(() => {
     setTab(initialTab);
   }, [initialTab]);
+
+  useEffect(() => {
+    if (readOnly || !authUser?.id) {
+      setCompleteProfileOpen(false);
+      setCompleteProfileDismissed(false);
+      return;
+    }
+
+    if (authUser.name?.trim()) {
+      setCompleteProfileOpen(false);
+      setCompleteProfileDismissed(false);
+      return;
+    }
+
+    if (!completeProfileDismissed) {
+      setCompleteProfileOpen(true);
+    }
+  }, [authUser?.id, authUser?.name, completeProfileDismissed, readOnly]);
+
+  const handleCompleteProfileOpenChange = useCallback(
+    (open: boolean) => {
+      setCompleteProfileOpen(open);
+      if (!open && authUser && !authUser.name?.trim()) {
+        setCompleteProfileDismissed(true);
+      }
+    },
+    [authUser]
+  );
+
+  const handleCompleteProfileSave = useCallback(async (name: string) => {
+    await authClient.updateProfileName(name);
+    setCompleteProfileDismissed(false);
+  }, []);
+  const {
+    accountProjects,
+    accountProjectsLoading,
+    accountProjectsError,
+    syncingProjectId,
+    projectSyncMetaById,
+    headerStatus,
+    syncDesignToAccount,
+    markProjectSyncFailed,
+    handleSyncProject,
+    handleOpenAccountProject,
+    projectVersionConflict,
+    handleKeepLocalConflictCopy,
+    handleOpenCloudConflictVersion,
+  } = useAccountProjectSync({
+    authUserId: authUser?.id ?? null,
+    readOnly,
+    design,
+    projectManagerOpen,
+    historyPaused,
+    interactionSessionDepth,
+    snapshotCurrentDesign,
+    replaceDesign,
+    setProjects,
+    setRestorePoints,
+    setActiveRestorePointId,
+    setSaveStatusLabel,
+  });
+
+  const handleOpenAccountProjectFromDialog = useCallback(
+    async (projectId: string) => {
+      const opened = await handleOpenAccountProject(projectId);
+      if (opened) {
+        setProjectManagerOpen(false);
+      }
+    },
+    [handleOpenAccountProject, setProjectManagerOpen]
+  );
 
   const handleTabChange = useCallback(
     (nextTab: EditorView) => {
@@ -261,31 +340,56 @@ export default function EditorShell({
     [pathname, router, searchParams]
   );
 
-  const openProjectManager = useCallback(() => {
-    if (!isMobile) {
-      setProjectManagerOpen(true);
-      return;
-    }
+  const setActiveEditorTool = useCallback(
+    (tool: string) => {
+      setActiveTool(tool as EditorTool);
+    },
+    [setActiveTool]
+  );
 
-    setMobileToolsOpen(false);
+  const {
+    setStarterDismissed,
+    starterMode,
+    shouldShowStarter: starterShouldShow,
+    gateHintDismissed,
+    desktopPathHintDismissed,
+    desktopPreviewHintDismissed,
+    review3DHintDismissed,
+    postPathNudgeDismissed,
+    showPostPathNudge,
+    dismissGateHint,
+    dismissDesktopPathHint,
+    dismissDesktopPreviewHint,
+    dismissReview3DHint,
+    dismissPostPathNudge,
+    applyStarterDesign,
+    applyStarterLayout,
+  } = useStarterExperience({
+    readOnly,
+    authUserId: authUser?.id ?? null,
+    design,
+    designShapeCount: designShapes.length,
+    hasPath,
+    syncDesignToAccount,
+    markProjectSyncFailed,
+    setSaveStatusLabel,
+    replaceDesign,
+    handleTabChange: (nextTab) => handleTabChange(nextTab),
+    resetSelectionState: () => {
+      setSelection([]);
+      setMobileMultiSelectEnabled(false);
+      setMobilePathBuilderPinnedOpen(false);
+    },
+    setActiveTool: setActiveEditorTool,
+    fitCanvas: () => canvasRef.current?.fitToWindow(),
+    closeProjectAndToolSurfaces: () => {
+      setProjectManagerOpen(false);
+      setMobileToolsOpen(false);
+    },
+    createBlankDesign: createFirstUseBlankDesign,
+  });
 
-    if (mobileProjectManagerOpenTimerRef.current !== null) {
-      window.clearTimeout(mobileProjectManagerOpenTimerRef.current);
-    }
-
-    mobileProjectManagerOpenTimerRef.current = window.setTimeout(() => {
-      setProjectManagerOpen(true);
-      mobileProjectManagerOpenTimerRef.current = null;
-    }, 180);
-  }, [isMobile]);
-
-  useEffect(() => {
-    return () => {
-      if (mobileProjectManagerOpenTimerRef.current !== null) {
-        window.clearTimeout(mobileProjectManagerOpenTimerRef.current);
-      }
-    };
-  }, []);
+  const shouldShowStarter = initialized && starterShouldShow;
 
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
@@ -359,63 +463,9 @@ export default function EditorShell({
     [handleTabChange]
   );
 
-  const shouldShowStarter =
-    initialized &&
-    !readOnly &&
-    !starterDismissed &&
-    shouldShowStarterForDesign({
-      title: design.title,
-      shapeCount: designShapes.length,
-    });
-
-  const applyStarterDesign = useCallback(
-    (kind: "blank" | "gate") => {
-      replaceDesign(createFirstUseBlankDesign());
-      setStarterDismissed(true);
-      handleTabChange("2d");
-
-      if (kind === "gate") {
-        setStarterMode("guided");
-        resetGuidedHints();
-        setActiveTool("gate");
-      } else {
-        setStarterMode("blank");
-        setActiveTool("select");
-      }
-
-      window.requestAnimationFrame(() => {
-        canvasRef.current?.fitToWindow();
-      });
-    },
-    [handleTabChange, replaceDesign, resetGuidedHints, setActiveTool]
-  );
-
-  const applyStarterLayout = useCallback(
-    (layoutId: string) => {
-      const nextDesign = createStarterLayoutDesign(layoutId);
-      if (!nextDesign) return;
-
-      replaceDesign(nextDesign);
-      setStarterDismissed(true);
-      setStarterMode(null);
-      setSelection([]);
-      setMobileMultiSelectEnabled(false);
-      setMobilePathBuilderPinnedOpen(false);
-      setProjectManagerOpen(false);
-      setMobileToolsOpen(false);
-      handleTabChange("2d");
-      setActiveTool("select");
-
-      window.requestAnimationFrame(() => {
-        canvasRef.current?.fitToWindow();
-      });
-    },
-    [handleTabChange, replaceDesign, setActiveTool, setSelection]
-  );
-
   const openPresetPicker = useCallback(() => {
     setPresetPickerOpen(true);
-  }, []);
+  }, [setPresetPickerOpen]);
 
   const handlePresetSelect = useCallback(
     (presetId: string) => {
@@ -427,7 +477,7 @@ export default function EditorShell({
       setMobileToolsOpen(false);
       setPresetPickerOpen(false);
     },
-    [setActivePresetId, setActiveTool, setSelection]
+    [setActivePresetId, setActiveTool, setPresetPickerOpen, setSelection]
   );
 
   return (
@@ -452,6 +502,8 @@ export default function EditorShell({
             onTabChange={handleTabChange}
             onShare={() => setShareOpen(true)}
             onExport={() => setExportOpen(true)}
+            onImport={() => setImportOpen(true)}
+            onOpenProjectManager={() => setProjectManagerOpen(true)}
             onSaveSnapshot={readOnly ? undefined : handleSaveSnapshot}
             onOpenShortcuts={() => setShortcutsOpen(true)}
             readOnly={readOnly}
@@ -461,7 +513,8 @@ export default function EditorShell({
             title={design.title || "Untitled track"}
             studioHref={studioHref}
             lastSavedLabel={readOnly ? undefined : saveStatusLabel}
-            statusLabel={readOnly ? "Read-only shared view" : saveStatusLabel}
+            statusLabel={headerStatus?.label}
+            statusTone={headerStatus?.tone}
             showObstacleNumbers={showObstacleNumbers}
             onToggleObstacleNumbers={() =>
               setShowObstacleNumbers((current) => !current)
@@ -853,18 +906,9 @@ export default function EditorShell({
             setMobileViewOpen(false);
             setPendingFlyThroughStart(true);
           }}
-          onStartNewProject={openProjectManager}
           onUngroupSelection={() => {
             if (!selection.length) return;
             ungroupSelection(selection);
-          }}
-          onImport={() => {
-            setImportOpen(true);
-            setMobileToolsOpen(false);
-          }}
-          onExport={() => {
-            setExportOpen(true);
-            setMobileToolsOpen(false);
           }}
           onTabChange={(nextTab) => {
             handleTabChange(nextTab);
@@ -914,30 +958,65 @@ export default function EditorShell({
         open={shortcutsOpen}
         onOpenChange={setShortcutsOpen}
       />
-      <ProjectManagerDialog
-        open={projectManagerOpen}
-        onOpenChange={setProjectManagerOpen}
+      <NewProjectDialog
+        open={newProjectOpen}
+        onOpenChange={setNewProjectOpen}
         hasContent={Boolean(design.title.trim() || designShapes.length)}
         onNewProject={() => {
           snapshotCurrentDesign();
           applyStarterDesign("blank");
-          setProjectManagerOpen(false);
+          setNewProjectOpen(false);
           setMobileToolsOpen(false);
         }}
         onBackupProject={() => {
-          setProjectManagerOpen(false);
+          setNewProjectOpen(false);
           setExportOpen(true);
         }}
-        onStartStarterLayout={applyStarterLayout}
+        onStartStarterLayout={(layoutId) => {
+          applyStarterLayout(layoutId);
+          setNewProjectOpen(false);
+        }}
+      />
+      <ProjectManagerDialog
+        open={projectManagerOpen}
+        onOpenChange={setProjectManagerOpen}
+        onOpenNewProject={openNewProjectDialog}
         onOpenProject={handleOpenProject}
+        onOpenAccountProject={handleOpenAccountProjectFromDialog}
+        onSyncProject={authUser ? handleSyncProject : undefined}
         onDeleteProject={handleDeleteProject}
         onRenameProject={handleRenameProject}
+        onExportProject={(projectId) => {
+          const exportDesign =
+            projectId === design.id ? design : loadProject(projectId);
+          if (!exportDesign) return;
+
+          const baseName = (exportDesign.title.trim() || "track").replace(
+            /[^a-z0-9-_]+/gi,
+            "_"
+          );
+          const blob = new Blob([JSON.stringify(exportDesign, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = `${baseName}.json`;
+          anchor.click();
+          URL.revokeObjectURL(url);
+        }}
         onRestorePoint={handleRestorePoint}
         onDeleteRestorePoint={handleDeleteRestorePoint}
         projects={projects}
+        accountProjects={accountProjects}
+        accountProjectsLoading={accountProjectsLoading}
+        accountProjectsError={accountProjectsError}
+        projectSyncMetaById={projectSyncMetaById}
+        syncingProjectId={syncingProjectId}
         restorePoints={restorePoints}
         activeDesignId={design.id}
         activeRestorePointId={activeRestorePointId ?? undefined}
+        onResolveConflict={() => setProjectManagerOpen(false)}
       />
       <LayoutPresetPicker
         open={presetPickerOpen && !isMobile}
@@ -951,6 +1030,26 @@ export default function EditorShell({
         onOpenChange={setPresetPickerOpen}
         selectedPresetId={activePresetId}
         onSelectPreset={handlePresetSelect}
+      />
+      <CompleteProfileDialog
+        open={completeProfileOpen}
+        onOpenChange={handleCompleteProfileOpenChange}
+        email={authUser?.email ?? null}
+        currentName={authUser?.name ?? ""}
+        onSave={handleCompleteProfileSave}
+      />
+      <ProjectVersionConflictDialog
+        open={Boolean(projectVersionConflict)}
+        mobile={isMobile}
+        title={projectVersionConflict?.title ?? "Untitled"}
+        localUpdatedAt={
+          projectVersionConflict?.localUpdatedAt ?? design.updatedAt
+        }
+        cloudUpdatedAt={
+          projectVersionConflict?.cloudUpdatedAt ?? design.updatedAt
+        }
+        onOpenCloudVersion={handleOpenCloudConflictVersion}
+        onKeepLocalCopy={handleKeepLocalConflictCopy}
       />
       {developerModeEnabled ? <PerformanceHud /> : null}
     </>

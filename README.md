@@ -30,7 +30,7 @@
   &middot;
   <a href="https://trackdraw.app/studio"><strong>Open Studio</strong></a>
   &middot;
-  <a href="docs/roadmap/ROADMAP.md"><strong>Roadmap</strong></a>
+  <a href="https://github.com/dutchdronesquad/trackdraw/discussions/106"><strong>Roadmap</strong></a>
 </p>
 
 <p align="center">
@@ -46,27 +46,20 @@
 
 TrackDraw covers the core workflow across desktop, shared read-only viewing, and practical mobile use. It is built around layout design first, then route review, then race-day handoff through export and sharing.
 
-See [docs/roadmap/ROADMAP.md](docs/roadmap/ROADMAP.md) for the current roadmap assessment.
+See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw/discussions/106) for the current roadmap assessment.
+
+For local development, contributor setup, and runtime-specific testing, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What you can do
 
 - 🏁 **Design layouts to scale** - place obstacles on a real-scale canvas with field dimensions that map cleanly to the real world
 - ⚡ **Start and iterate faster** - use obstacle presets, selection grouping, and starter layouts to get from blank canvas to a workable draft quickly
+- 💾 **Manage projects safely** - keep multiple local projects, reopen older layouts, rename or export them, and roll back through restore points and snapshots
 - 🎥 **Review route flow in 3D** - use the live 3D preview and elevation tools to check how the layout reads before race day
 - 📋 **Prepare a race-day handoff** - export a dedicated Race Pack PDF with map, numbering, material list, stock status, setup sequence, and initial build guidance
 - 📦 **Check buildability early** - compare the current layout against available obstacle stock before the gear leaves the van
 - 🔗 **Share and export cleanly** - publish a read-only link or export PNG, SVG, PDF, 3D screenshots, and JSON project files from the same design
-
-## Getting started
-
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000). The studio is at `/studio`.
-
-Shared links open at `/share/[token]`.
+- 🔐 **Sign in to keep projects in sync** - use an email magic link, manage your profile in-app, and prepare TrackDraw for account-backed ownership and cross-device work
 
 ## How it works
 
@@ -75,8 +68,9 @@ Shared links open at `/share/[token]`.
 3. **Use the inspector panel** on the right to fine-tune size, rotation, colour and other shape properties
 4. **Group or duplicate sections** when parts of the layout should move or repeat together
 5. **Toggle the 3D panel** to preview your layout from above or in perspective, and use the elevation and route review tools to check flow
-6. **Hit Share** to get a URL you can send directly to pilots or co-organisers
-7. **Use Export** when you need a Race Pack, printable assets, a 3D screenshot, or a JSON project backup
+6. **Open Projects** when you want to switch layouts, restore an earlier state, sync to your account, or export a specific project as JSON
+7. **Hit Share** to get a URL you can send directly to pilots or co-organisers
+8. **Use Export** when you need a Race Pack, printable assets, a 3D screenshot, or a JSON project backup
 
 ## Tech stack
 
@@ -95,7 +89,7 @@ Shared links open at `/share/[token]`.
 
 ```
 src/
-├── app/              # Next.js pages (/, /studio, /share/[token])
+├── app/              # Next.js routes (/, /studio, /login, /share/[token], /api)
 ├── components/       # React components
 │   ├── canvas/       # TrackCanvas (2D editor), TrackPreview3D
 │   ├── dialogs/      # Export, Import, Share, ProjectManager, KeyboardShortcuts
@@ -106,11 +100,14 @@ src/
 ├── store/
 │   └── editor.ts     # Zustand store with temporal undo history
 ├── hooks/            # useUndoRedo, useTheme, useShareUrl
+├── types/            # Shared TypeScript types
 └── lib/
-    ├── geometry.ts   # Distance, Catmull-Rom smoothing, elevation sampling
-    ├── share.ts      # LZ-string encode/decode
+    ├── planning/     # Presets, starter layouts, inventory, setup estimates
+    ├── server/       # Auth, D1 access, project/share persistence helpers
+    ├── track/        # Track geometry, design normalization, numbering, shape helpers
+    ├── share.ts      # Share encoding and decoding helpers
     ├── export/       # PNG / SVG / PDF export
-    └── types.ts      # Shape union types, TrackDesign, FieldSpec
+    └── vendor/       # Third-party integration helpers
 ```
 
 ## Scripts
@@ -127,10 +124,11 @@ npm run lint   # ESLint
 npm run type   # TypeScript check
 ```
 
-Use `npm run dev` for fast local UI work.
-Use `npm run preview` to validate behavior against the Cloudflare/OpenNext runtime, especially for D1-backed share flows.
+TrackDraw remains local-first by default. Local projects, import/export, sharing, restore points, and project recovery work without an account. Signing in adds account-backed continuity for projects across devices.
 
-Deployment, Cloudflare, and D1 environment setup live in [docs/deployment/deployment-setup.md](docs/deployment/deployment-setup.md).
+Authentication uses Better Auth with email magic links. Use `npm run dev` for normal UI work and `npm run preview` when you need to validate account-backed APIs or stored-share behavior against the Cloudflare/OpenNext runtime.
+
+Deployment, auth, and Cloudflare/D1 setup live in [docs/deployment/deployment-setup.md](docs/deployment/deployment-setup.md).
 
 The current deployment model is:
 

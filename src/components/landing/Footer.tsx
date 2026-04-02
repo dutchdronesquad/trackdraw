@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Flag } from "lucide-react";
+import { Bug, Coffee, Flag, Heart } from "lucide-react";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -92,9 +92,32 @@ export function Footer() {
                   href="https://github.com/dutchdronesquad/trackdraw/issues"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                 >
+                  <Bug className="size-4 shrink-0" />
                   Report an issue
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/sponsors/klaasnicolaas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                >
+                  <Heart className="size-4 shrink-0" />
+                  GitHub Sponsors
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://ko-fi.com/klaasnicolaas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                >
+                  <Coffee className="size-4 shrink-0" />
+                  Ko-fi
                 </a>
               </li>
             </ul>

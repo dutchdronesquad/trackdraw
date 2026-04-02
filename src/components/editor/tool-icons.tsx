@@ -6,6 +6,7 @@ import {
   Flag,
   FolderOpen,
   Hand,
+  Import,
   MousePointer2,
   Spline,
   Target,
@@ -104,6 +105,13 @@ export type ToolGroup = {
   tools: ToolEntry[];
 };
 
+export type BottomAction = {
+  label: string;
+  tooltip: string;
+  icon: ReactNode;
+  action: "new" | "projects" | "import" | "export";
+};
+
 function buildToolEntry(tool: EditorTool, iconClassName: string): ToolEntry {
   return {
     id: tool,
@@ -154,17 +162,23 @@ export const mobileToolEntries: ToolEntry[] = [
   buildToolEntry("polyline", "size-5"),
 ];
 
-export const bottomActions = [
+export const bottomActions: BottomAction[] = [
+  {
+    label: "New",
+    tooltip: "Start a new project",
+    icon: <FilePlus className="size-3.5" />,
+    action: "new" as const,
+  },
   {
     label: "Projects",
     tooltip: "Manage projects",
     icon: <FolderOpen className="size-3.5" />,
-    action: "new" as const,
+    action: "projects" as const,
   },
   {
     label: "Import",
     tooltip: "Import JSON",
-    icon: <FilePlus className="size-3.5" />,
+    icon: <Import className="size-3.5" />,
     action: "import" as const,
   },
   {

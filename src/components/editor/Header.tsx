@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
+import MobileAppMenu from "@/components/editor/MobileAppMenu";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -16,12 +17,17 @@ import {
   Redo2,
   Share2,
   Eye,
+  Cloud,
+  CloudOff,
+  CloudUpload,
   Download,
   Keyboard,
+  LoaderCircle,
   PanelLeftClose,
   PanelLeftOpen,
   Save,
-  ListOrdered,
+  Hash,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
@@ -33,6 +39,8 @@ interface HeaderProps {
   onTabChange: (t: "2d" | "3d") => void;
   onShare: () => void;
   onExport?: () => void;
+  onImport?: () => void;
+  onOpenProjectManager?: () => void;
   onSaveSnapshot?: () => void;
   onOpenShortcuts?: () => void;
   readOnly?: boolean;
@@ -43,6 +51,7 @@ interface HeaderProps {
   studioHref?: string;
   lastSavedLabel?: string;
   statusLabel?: string;
+  statusTone?: "default" | "pending" | "syncing" | "success" | "error";
   selectionLabel?: string;
   showObstacleNumbers?: boolean;
   onToggleObstacleNumbers?: () => void;
@@ -53,6 +62,8 @@ export default function Header({
   onTabChange,
   onShare,
   onExport,
+  onImport,
+  onOpenProjectManager,
   onSaveSnapshot,
   onOpenShortcuts,
   readOnly = false,
@@ -61,11 +72,32 @@ export default function Header({
   title = "Untitled",
   studioHref = "/studio",
   lastSavedLabel,
+  statusLabel,
+  statusTone = "default",
   showObstacleNumbers = false,
   onToggleObstacleNumbers,
 }: HeaderProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
+
+  const statusIcon =
+    statusTone === "error" ? (
+      <CloudOff className="size-3.5" />
+    ) : statusTone === "pending" ? (
+      <CloudUpload className="size-3.5" />
+    ) : statusTone === "syncing" ? (
+      <LoaderCircle className="size-3.5 animate-spin" />
+    ) : (
+      <Cloud className="size-3.5" />
+    );
+  const statusWord =
+    statusTone === "error"
+      ? "Failed"
+      : statusTone === "pending"
+        ? "Pending"
+        : statusTone === "syncing"
+          ? "Syncing"
+          : "Synced";
 
   const viewToggle = (
     <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
@@ -212,7 +244,11 @@ export default function Header({
                   : "Show obstacle numbers"
               }
             >
-              <ListOrdered className="size-3.5" />
+              {showObstacleNumbers ? (
+                <Hash className="size-3.5" />
+              ) : (
+                <Tag className="size-3.5" />
+              )}
             </TooltipTrigger>
             <TooltipContent>
               {showObstacleNumbers
@@ -317,6 +353,32 @@ export default function Header({
                 <TooltipContent>Keyboard shortcuts</TooltipContent>
               </Tooltip>
             )}
+            {statusLabel ? (
+              <>
+                <div className="bg-border/80 mx-1 hidden h-4 w-px lg:block" />
+                <Tooltip>
+                  <TooltipTrigger
+                    className={cn(
+                      "hidden items-center gap-1 text-[10px] lg:inline-flex",
+                      statusTone === "error"
+                        ? "text-destructive/85"
+                        : statusTone === "pending"
+                          ? "text-foreground/80"
+                          : statusTone === "success"
+                            ? "text-primary/80"
+                            : statusTone === "syncing"
+                              ? "text-foreground/65"
+                              : "text-muted-foreground/80"
+                    )}
+                    aria-label={statusLabel}
+                  >
+                    {statusIcon}
+                    <span>{statusWord}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>{statusLabel}</TooltipContent>
+                </Tooltip>
+              </>
+            ) : null}
           </div>
         )}
 
@@ -331,11 +393,11 @@ export default function Header({
             onClick={onExport}
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
-              "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"
+              "hidden h-8 gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5"
             )}
           >
             <Download className="size-3.5" />
-            <span className="hidden sm:inline">Export</span>
+            <span>Export</span>
           </button>
         )}
 
@@ -343,15 +405,26 @@ export default function Header({
           onClick={onShare}
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
-            "h-8 gap-1.5 px-2 text-xs sm:h-7 sm:px-2.5"
+            "hidden h-8 gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5"
           )}
         >
           <Share2 className="size-3.5" />
-          <span className="hidden sm:inline">Share</span>
+          <span>Share</span>
         </button>
 
-        <div className="bg-border/80 mx-1 h-5 w-px sm:h-4" />
-        <ThemeToggle />
+        {!readOnly && onImport && onExport && onOpenProjectManager ? (
+          <MobileAppMenu
+            onOpenProjects={onOpenProjectManager}
+            onImport={onImport}
+            onExport={onExport}
+            onShare={onShare}
+          />
+        ) : null}
+
+        <div className="bg-border/80 mx-1 hidden h-5 w-px lg:block lg:h-4" />
+        <div className="hidden lg:block">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

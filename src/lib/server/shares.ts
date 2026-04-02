@@ -29,6 +29,8 @@ type ShareRow = {
   published_at: string;
   expires_at: string;
   revoked_at: string | null;
+  owner_user_id: string | null;
+  project_id: string | null;
 };
 
 export type StoredShare = {
@@ -45,6 +47,8 @@ export type StoredShare = {
   publishedAt: string;
   expiresAt: string;
   revokedAt: string | null;
+  ownerUserId: string | null;
+  projectId: string | null;
 };
 
 export type StoredShareResolution =
@@ -84,6 +88,8 @@ function mapShareRow(row: ShareRow): StoredShare {
     publishedAt: row.published_at,
     expiresAt: row.expires_at,
     revokedAt: row.revoked_at,
+    ownerUserId: row.owner_user_id,
+    projectId: row.project_id,
   };
 }
 
@@ -107,7 +113,9 @@ export async function resolveStoredShare(
           updated_at,
           published_at,
           expires_at,
-          revoked_at
+          revoked_at,
+          owner_user_id,
+          project_id
         from shares
         where token = ?
         limit 1
@@ -153,6 +161,8 @@ export async function revokeShare(token: string) {
 
 type CreateShareOptions = {
   expiresInDays?: number;
+  ownerUserId?: string | null;
+  projectId?: string | null;
 };
 
 function isUniqueViolation(error: unknown) {
@@ -173,6 +183,8 @@ export async function createShare(
   const description = getShareDescription(normalized);
   const shapeCount = getDesignShapes(normalized).length;
   const expiresInDays = options.expiresInDays ?? 90;
+  const ownerUserId = options.ownerUserId ?? null;
+  const projectId = options.projectId ?? null;
   const db = await getDatabase();
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -198,9 +210,11 @@ export async function createShare(
               updated_at,
               published_at,
               expires_at,
-              revoked_at
+              revoked_at,
+              owner_user_id,
+              project_id
             )
-            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `
         )
         .bind(
@@ -216,7 +230,9 @@ export async function createShare(
           now,
           now,
           expiresAt,
-          null
+          null,
+          ownerUserId,
+          projectId
         )
         .run();
 
@@ -234,6 +250,8 @@ export async function createShare(
         publishedAt: now,
         expiresAt,
         revokedAt: null,
+        ownerUserId,
+        projectId,
       };
     } catch (error) {
       if (attempt < 2 && isUniqueViolation(error)) {
