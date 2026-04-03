@@ -1,93 +1,141 @@
-# Contributing
+# Contributing to TrackDraw
 
-TrackDraw accepts contributions through forks and pull requests. Create your own fork, make a feature branch for the change, push that branch to GitHub, and open a pull request back to this repository when the work is ready for review. The project is local-first, so most changes can be developed and tested entirely on your own fork before you open the PR.
+Thanks for contributing to TrackDraw. This repo powers a browser-based drone race track planner with a marketing site, a full editor, and read-only shared views. The product is already feature-rich, so small, safe changes are usually better than broad refactors.
 
-## Quick start
+## Product boundaries
+
+- Core surfaces are `/`, `/studio`, and `/share/[token]`.
+- Editing, autosave, import/export, recovery, and sharing should stay usable without requiring an account.
+- Mobile is a supported product surface.
+- Shared links should keep working on the canonical `/share/[token]` route in read-only mode.
+
+If your change touches editor interactions, sharing, export, serialization, or mobile UI, assume regressions are expensive and validate accordingly.
+
+## Stack and structure
+
+TrackDraw is a Next.js 16 app built with React 19 and Tailwind CSS 4. The editor uses Zustand for state, Konva for the 2D canvas, and Three.js for 3D preview. Auth runs through Better Auth, and the deployed runtime uses OpenNext on Cloudflare with D1.
+
+```text
+src/
+├── app/         Routes, API handlers, metadata
+├── components/  Landing page, editor, dialogs, canvas, inspector
+├── lib/         Geometry, export, sharing, auth/server helpers
+├── store/       Zustand state, undo/redo, autosave, persistence
+└── types/       Shared TypeScript types
+docs/            Planning, deployment, research
+public/          Static assets
+migrations/      D1 migrations
+```
+
+## Setup
+
+Prerequisites:
+
+- Node.js 20+
+- npm
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+For most work, use:
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:3000` and work in `/studio`.
-Shared read-only links open at `/share/[token]`.
+This is the default mode for landing-page work, editor UI, local project behavior, import/export work that does not depend on Cloudflare runtime services, and responsive/mobile checks.
 
-Before opening a pull request, run:
-
-```bash
-npm run lint
-npm run build
-```
-
-## Local testing modes
-
-Use the mode that matches the part of the product you are changing.
-
-### `npm run dev`
-
-Use plain Next.js development for:
-
-- landing page work
-- editor UI and interactions
-- local autosave behavior
-- import/export flows that do not depend on Cloudflare runtime services
-- most mobile and responsive checks
-
-This is the default contributor workflow.
-
-No env file is required for ordinary `npm run dev`.
-
-### `npm run preview`
-
-Use Cloudflare/OpenNext preview when your change touches:
-
-- stored share publishing and readback
-- D1-backed server routes
-- cloud-project APIs
-- Worker-specific runtime behavior
-
-Typical preview workflow:
+Use preview mode when you need D1, Worker runtime behavior, or real auth-backed flows:
 
 ```bash
 npm run migrate:local
 npm run preview
 ```
 
-Wrangler creates and uses a local D1-backed SQLite state for preview validation, so this mode is the right place to test Cloudflare-specific reads and writes without deploying anything.
+## Auth preview
 
-If preview mode cannot find a D1 binding, check `wrangler.jsonc` and the local migration state first.
+For local Better Auth validation:
 
-## Auth and magic links
+1. Copy `.dev.vars.example` to `.dev.vars`
+2. Generate a secret:
 
-TrackDraw now uses Better Auth for cloud-project and ownership flows.
+```bash
+openssl rand -base64 32
+```
 
-Local auth setup:
+3. Set `BETTER_AUTH_SECRET` in `.dev.vars`
+4. Run `npm run migrate:local`
+5. Run `npm run preview`
+6. Open `/login`
+7. Request a magic link
+8. Use the URL printed in the preview server log
 
-- copy `.dev.vars.example` to `.dev.vars`
-- set `BETTER_AUTH_SECRET`
+Use `npm run dev` when you are only changing auth UI. Use `npm run preview` when you need real sessions, authenticated APIs, share ownership, or account-backed projects.
 
-Development behavior:
+## Common commands
 
-- magic-link URLs are written to the local preview server log
-- authenticated cloud-project routes rely on a real Better Auth session
+```bash
+npm run dev
+npm run preview
+npm run build
+npm run lint
+npm run type
+npm run format
+npm run format:check
+npm run migrate:local
+npm run migrate:up:dev
+npm run migrate:up:production
+```
 
-Contributors do not need any Plunk env vars for local development or preview validation.
+## Working guidelines
 
-Use `npm run preview` when validating sign-in, cloud projects, share ownership, or any D1-backed auth behavior.
+- Prefer minimal, targeted changes.
+- Preserve the existing visual language unless redesign is the explicit goal.
+- Reuse existing helpers and types before adding new abstractions.
+- Keep TypeScript strictness intact.
+- Do not break import/export, autosave, recovery, sharing, or read-only viewing while changing adjacent features.
 
-Use `npm run dev` when iterating on auth UI only. It now provides a local client-side auth shim for faster header and login-page styling work, but it does not validate real Better Auth sessions or authenticated API routes.
+Pay extra attention to these areas:
 
-Quick local auth check:
+- Landing page work should preserve SEO metadata, structured data, and clear routes into `/studio`.
+- Editor changes should be checked on both desktop and mobile before you change component contracts.
+- Share-flow work should preserve token compatibility and fail safely on invalid or oversized payloads.
+- Export and serialization work should treat backward compatibility as the default.
 
-1. `npm run migrate:local`
-2. `npm run preview`
-3. open `/login`
-4. request a magic link
-5. copy the URL from the preview server log
-6. confirm Studio shows the signed-in state
+## Verification
+
+Baseline checks:
+
+```bash
+npm run lint
+npm run type
+```
+
+For larger changes, also run:
+
+```bash
+npm run build
+```
+
+Also verify the relevant user flow, especially for `/studio`, `/share/[token]`, mobile editing, import/export, recovery, and preview-mode auth/share behavior.
 
 ## Pull requests
 
-- Keep changes targeted and avoid broad refactors.
-- Preserve local-first behavior, export/import, share flows, and mobile support.
-- Update docs when scripts, routes, or contributor-facing setup meaningfully change.
+- Keep PRs focused on one feature, fix, or documentation change.
+- Explain the user-facing effect.
+- Reference related issues or discussions when relevant.
+- Mention which validation you ran.
+
+## Documentation
+
+- `README.md`: product-facing overview
+- `CONTRIBUTING.md`: contributor workflow and setup
+- `docs/`: planning, deployment, deeper internal references
+- `CHANGELOG.md`: shipped, user-visible changes only
+
+## Need help?
+
+Start with [README.md](README.md), then [docs/README.md](docs/README.md). If product direction is unclear, open an issue or discussion before making a larger change.

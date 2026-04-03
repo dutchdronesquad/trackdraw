@@ -48,8 +48,6 @@ TrackDraw covers the core workflow across desktop, shared read-only viewing, and
 
 See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw/discussions/106) for the current roadmap assessment.
 
-For local development, contributor setup, and runtime-specific testing, see [CONTRIBUTING.md](CONTRIBUTING.md).
-
 ## What you can do
 
 - 🏁 **Design layouts to scale** - place obstacles on a real-scale canvas with field dimensions that map cleanly to the real world
@@ -63,80 +61,30 @@ For local development, contributor setup, and runtime-specific testing, see [CON
 
 ## How it works
 
-1. **Pick a tool** from the toolbar (gate, cone, flag, etc.)
-2. **Click on the canvas** to place obstacles, or start from a preset or starter layout when you do not want to begin from scratch
-3. **Use the inspector panel** on the right to fine-tune size, rotation, colour and other shape properties
-4. **Group or duplicate sections** when parts of the layout should move or repeat together
-5. **Toggle the 3D panel** to preview your layout from above or in perspective, and use the elevation and route review tools to check flow
-6. **Open Projects** when you want to switch layouts, restore an earlier state, sync to your account, or export a specific project as JSON
-7. **Hit Share** to get a URL you can send directly to pilots or co-organisers
-8. **Use Export** when you need a Race Pack, printable assets, a 3D screenshot, or a JSON project backup
+1. **Start from scratch or from a head start** with a blank canvas, a preset, or a starter layout.
+2. **Build the course visually** by placing obstacles, adjusting them in the inspector, and grouping sections that belong together.
+3. **Review how the layout will ride** with the live 3D preview, elevation tools, and route-flow checks before race day.
+4. **Turn the design into a handoff** by saving it locally, syncing it to your account, publishing a read-only share link, or exporting the assets you need.
 
-## Tech stack
+TrackDraw works without an account. You can create, manage, share, recover, import, and export projects in the browser, while signing in adds continuity across devices.
 
-| Layer      | Library                                                   |
-| ---------- | --------------------------------------------------------- |
-| Framework  | Next.js 16 (App Router, Turbopack)                        |
-| UI         | React 19, Tailwind CSS 4, shadcn/ui v4 (`@base-ui/react`) |
-| 2D canvas  | Konva 10 + react-konva                                    |
-| 3D preview | Three.js 0.183 + @react-three/fiber + drei                |
-| State      | Zustand 5 + zundo 2 (temporal) + Immer                    |
-| Export     | jsPDF, shared 2D shape definitions, Konva stage snapshots |
-| Sharing    | Stored share publishing on Cloudflare D1                  |
-| Icons      | Lucide React                                              |
+## Sponsors
 
-## Project structure
+If TrackDraw helps your club, event, or race-day workflow, you can help fund continued development and maintenance.
 
-```
-src/
-├── app/              # Next.js routes (/, /studio, /login, /share/[token], /api)
-├── components/       # React components
-│   ├── canvas/       # TrackCanvas (2D editor), TrackPreview3D
-│   ├── dialogs/      # Export, Import, Share, ProjectManager/ (subdir), KeyboardShortcuts
-│   ├── editor/       # EditorShell, Header, Toolbar, StatusBar, StarterFlow
-│   ├── inspector/    # Inspector, ElevationChart, ElevationPanel
-│   ├── landing/      # Marketing page components
-│   └── ui/           # @base-ui/react wrappers
-├── store/
-│   └── editor.ts     # Zustand store with temporal undo history
-├── hooks/            # useUndoRedo, useTheme, useShareUrl
-├── types/            # Shared TypeScript types
-└── lib/
-    ├── planning/     # Presets, starter layouts, inventory, setup estimates
-    ├── server/       # Auth, D1 access, project/share persistence helpers
-    ├── track/        # Track geometry, design normalization, numbering, shape helpers
-    ├── share.ts      # Share encoding and decoding helpers
-    ├── export/       # PNG / SVG / PDF export
-    └── vendor/       # Third-party integration helpers
-```
+- Support the project through [GitHub Sponsors](https://github.com/sponsors/klaasnicolaas)
+- Send a one-off contribution through [Ko-fi](https://ko-fi.com/klaasnicolaas)
 
-## Scripts
+Sponsorship helps cover ongoing development, infrastructure, and the polish that keeps TrackDraw practical for real race use.
 
-```bash
-npm run dev    # Development server (Turbopack)
-npm run build  # Production build
-npm run start  # Production server
-npm run preview # Local Cloudflare/OpenNext preview with Wrangler
-npm run migrate:local # Apply local D1 migrations for preview/dev
-npm run migrate:up:dev   # Apply development D1 migrations
-npm run migrate:up:production   # Apply production D1 migrations
-npm run lint   # ESLint
-npm run type   # TypeScript check
-```
+## Contributing
 
-TrackDraw remains local-first by default. Local projects, import/export, sharing, restore points, and project recovery work without an account. Signing in adds account-backed continuity for projects across devices.
+You are welcome to contribute to TrackDraw. You can find a guide on how to contribute in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Authentication uses Better Auth with email magic links. Use `npm run dev` for normal UI work and `npm run preview` when you need to validate account-backed APIs or stored-share behavior against the Cloudflare/OpenNext runtime.
-
-Deployment, auth, and Cloudflare/D1 setup live in [docs/deployment/deployment-setup.md](docs/deployment/deployment-setup.md).
-
-The current deployment model is:
-
-- Vercel for pull request previews
-- Cloudflare `development` for the main branch
-- Cloudflare production on `release.published`
-- GitHub Environments `cf-dev` and `cf-prod` for the Cloudflare deploy workflows
+<a href="https://github.com/dutchdronesquad/trackdraw/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=dutchdronesquad/trackdraw" alt="Contributors" />
+</a>
 
 ## License
 
-Distributed under the **LGPL-3.0-or-later** License. See [`LICENSE`](LICENSE) for more information.
+Distributed under the **LGPL-3.0-or-later** License - see [LICENSE](LICENSE) for details.

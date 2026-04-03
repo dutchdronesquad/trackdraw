@@ -6,6 +6,8 @@ These instructions apply to files under `src/components/editor`.
 
 This folder contains interaction-heavy editor UI, including mobile panels, tool affordances, and flow-specific controls. Changes here can easily cause regressions that are not obvious from static review.
 
+Follow the repository-level guidance in the root `AGENTS.md` and keep contributor workflow details in `CONTRIBUTING.md` rather than duplicating setup notes here.
+
 ## Priorities
 
 - Keep core editing actions fast and legible on small screens.
