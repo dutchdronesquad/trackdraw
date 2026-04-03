@@ -29,6 +29,8 @@ Agents working in this repo should optimize for product safety over broad refact
 - Preserve existing visual language and interaction patterns unless the task explicitly asks for redesign.
 - Keep TypeScript strictness intact. Avoid `any` unless there is a clear boundary reason.
 - Reuse existing helpers and types before adding parallel abstractions.
+- Be precise with existing filenames, imports, and variable names. Do not rename, substitute, or remove identifiers unless the change is intentional and verified against actual usage.
+- When fixing lint or type errors, match the exact file path and reported symbol before editing, and prefer the smallest correction that resolves the reported issue.
 - Do not break import/export, autosave, share publish/read flows, or read-only viewing while changing editor features.
 
 ## Files And Responsibilities

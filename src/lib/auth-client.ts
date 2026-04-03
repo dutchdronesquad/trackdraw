@@ -62,7 +62,7 @@ const betterAuthClient = createAuthClient({
   plugins: [magicLinkClient()],
 });
 
-function isDevAuthShimEnabled() {
+export function isDevAuthShimEnabled() {
   return process.env.NODE_ENV === "development";
 }
 

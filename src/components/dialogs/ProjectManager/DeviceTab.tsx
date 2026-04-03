@@ -46,6 +46,7 @@ interface ProjectManagerDeviceTabProps {
   onOpenNewProject?: () => void;
   onSyncProject?: (id: string) => void;
   onDeleteProject?: (id: string) => void;
+  onDeleteProjects?: (ids: string[]) => void;
   onRenameProject?: (id: string, title: string) => void;
   onExportProject?: (id: string) => void;
   onResolveConflict?: (id: string) => void;
@@ -62,6 +63,7 @@ export function ProjectManagerDeviceTab({
   onOpenNewProject,
   onSyncProject,
   onDeleteProject,
+  onDeleteProjects,
   onRenameProject,
   onExportProject,
   onResolveConflict,
@@ -71,12 +73,19 @@ export function ProjectManagerDeviceTab({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmDeleteOldProjects, setConfirmDeleteOldProjects] =
+    useState(false);
   const [mobileActionsId, setMobileActionsId] = useState<string | null>(null);
   const [mobileDeleteConfirm, setMobileDeleteConfirm] = useState(false);
 
   const sorted = [...projects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
+  const deletableOldProjectIds = sorted
+    .filter((project) => project.id !== activeDesignId)
+    .map((project) => project.id);
+  const showDeleteOldProjectsConfirm =
+    confirmDeleteOldProjects && deletableOldProjectIds.length > 0;
 
   function startRename(p: ProjectMeta) {
     setRenamingId(p.id);
@@ -401,15 +410,128 @@ export function ProjectManagerDeviceTab({
   return (
     <>
       <div className="space-y-2">
-        {onOpenNewProject ? (
-          <button
-            type="button"
-            onClick={handleOpenNewProject}
-            className="border-border/60 text-foreground hover:bg-muted mb-3 flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border text-[13px] font-medium transition-colors"
-          >
-            <FilePlus className="size-3.5" />
-            <span>New project</span>
-          </button>
+        {onOpenNewProject ||
+        (onDeleteProjects && deletableOldProjectIds.length > 0) ? (
+          <div className="mb-3">
+            <div
+              className={cn(
+                isMobile ? "flex items-center gap-2" : "flex items-center gap-2"
+              )}
+            >
+              {onOpenNewProject ? (
+                <button
+                  type="button"
+                  onClick={handleOpenNewProject}
+                  className={cn(
+                    "flex w-full cursor-pointer items-center gap-3 text-left transition-colors",
+                    isMobile
+                      ? "border-border/60 bg-background/70 hover:bg-muted/40 flex-1 rounded-xl border px-3 py-3"
+                      : "border-border/60 bg-background/70 hover:bg-muted/35 flex-1 rounded-xl border px-3 py-2.5"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex shrink-0 items-center justify-center rounded-xl",
+                      isMobile
+                        ? "bg-primary/10 text-primary size-9"
+                        : "bg-primary/10 text-primary size-8"
+                    )}
+                  >
+                    <FilePlus className={isMobile ? "size-4" : "size-3.5"} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="text-foreground block text-sm font-medium">
+                      New project
+                    </span>
+                    <span
+                      className={cn(
+                        "text-muted-foreground block pt-0.5 text-[11px] leading-relaxed",
+                        isMobile && "hidden"
+                      )}
+                    >
+                      Start a fresh track or use a starter layout.
+                    </span>
+                  </span>
+                </button>
+              ) : null}
+              {onDeleteProjects && deletableOldProjectIds.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeleteOldProjects(true)}
+                  className={cn(
+                    "flex w-full cursor-pointer items-center gap-3 text-left transition-colors",
+                    isMobile
+                      ? "border-border/60 bg-background/70 hover:bg-destructive/10 flex-1 rounded-xl border px-3 py-3"
+                      : "border-destructive/20 bg-background/70 hover:bg-destructive/6 flex-1 rounded-xl border px-3 py-2.5"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex shrink-0 items-center justify-center rounded-xl",
+                      isMobile
+                        ? "bg-destructive/10 text-destructive size-9"
+                        : "bg-destructive/10 text-destructive size-8"
+                    )}
+                  >
+                    <Trash2 className={isMobile ? "size-4" : "size-3.5"} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="text-destructive block text-sm font-medium">
+                      Clean up local
+                    </span>
+                    <span
+                      className={cn(
+                        "text-muted-foreground block pt-0.5 text-[11px] leading-relaxed",
+                        isMobile && "hidden"
+                      )}
+                    >
+                      Remove older copies from this device only.
+                    </span>
+                  </span>
+                </button>
+              ) : null}
+            </div>
+            {onDeleteProjects &&
+            deletableOldProjectIds.length > 0 &&
+            showDeleteOldProjectsConfirm ? (
+              <motion.div
+                className="border-border/60 bg-background/80 mt-2 flex items-center gap-3 rounded-xl border px-3 py-2.5"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground text-[12px] font-medium">
+                    Remove {deletableOldProjectIds.length} local project
+                    {deletableOldProjectIds.length === 1 ? "" : "s"}?
+                  </p>
+                  <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
+                    Account-synced copies stay available in your account.
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDeleteOldProjects(false)}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg px-2.5 py-1.5 text-xs transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDeleteProjects(deletableOldProjectIds);
+                      setConfirmDeleteOldProjects(false);
+                    }}
+                    className="bg-destructive/10 hover:bg-destructive/20 text-destructive cursor-pointer rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </motion.div>
+            ) : null}
+          </div>
         ) : null}
         {sorted.length > 0 ? (
           sorted.map((p) => <ProjectCard key={p.id} p={p} />)
