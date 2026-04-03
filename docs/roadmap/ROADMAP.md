@@ -99,11 +99,17 @@ These items remain intentionally blocked until the ownership model is defined.
 
 Keep refining published links now that stored share publishing is the default model.
 
+Shipped:
+
+- Share ownership enforced: `DELETE /api/shares/[token]` now requires the authenticated owner; anonymous shares expire naturally and cannot be revoked
+- `GET /api/shares` endpoint returns the signed-in user's active shares
+- Shares published by signed-in users are always linked to the active account project via `project_id`
+- Shares tab added to the Projects dialog: lists active shares with copy-link, open-in-tab, and revoke actions
+- Revoke button in ShareDialog hidden for unauthenticated sessions
+
 Focus:
 
-- Better published-link management for repeated use in Studio
 - Keep local-first publish flows simple for unauthenticated use
-- Decide how much share administration should live in the product UI
 - Revisit any replace/regenerate flow only once account ownership is properly defined
 
 #### Comments And Review Mode
@@ -413,6 +419,7 @@ Sub-items:
       Further reduce complexity in large rendering surfaces, persistence flow, and state-heavy editor paths.
 - [ ] File structure and large-file decomposition pass
       Revisit folder structure, introduce more focused subdirectories, and split oversized components and modules into smaller ownership boundaries.
+      Shipped: `ProjectManagerDialog` split into `src/components/dialogs/ProjectManager/` with separate `DeviceTab`, `AccountTab`, `RestoreTab`, `SharesTab`, and `shared` modules.
 
 Why:
 

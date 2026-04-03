@@ -48,8 +48,8 @@ Labels used below:
           The current product direction is now considered good enough for v1: logged-out users keep ordinary device-local projects, signed-in users get account-backed continuity, and the management surface makes that distinction understandable without turning TrackDraw into an auth-first tool.
     - [x] Cross-device continuation flow
           The first cross-device continuation flow is now in place through the account-backed project list, explicit sync follow-up for pre-existing local projects, and visible sync/conflict states in project management.
-    - [ ] Share ownership model
-          Move share ownership and management into its own follow-up track. This should define how published shares attach to an account and optionally to a project without making one-off local publishing feel heavier.
+    - [x] Share ownership model
+          Published shares now attach to the authenticated owner and to the active account project. `DELETE /api/shares/[token]` requires the owner; anonymous shares expire naturally. `GET /api/shares` lists the signed-in user's active shares. A Shares tab in the Projects dialog lets users copy, open, and revoke their links. The revoke button in ShareDialog is hidden for unauthenticated sessions.
     - [x] Local-first fallback behavior
           The local-first fallback is now clear enough for the first account release: local projects, JSON export/import, and one-off share publishing remain usable without an account, while account-backed continuity is presented as follow-up value rather than a login wall.
     - [x] First product-model recommendation
@@ -62,7 +62,7 @@ Labels used below:
 ## Blocked Follow-up
 
 - [ ] Share lifecycle management follow-up (`Account-backed`, `Blocked`)
-      Expiry, retention cleanup, calmer publish-link behavior, and local revoke are now in place. Remaining work is clearer repeated-use management in Studio and a cleaner ownership model once accounts are evaluated. Local-first publish flows should stay simple for one-off use.
+      Expiry, retention cleanup, calmer publish-link behavior, local revoke, and account-owned share management in Studio are now in place. Remaining work is the replace/regenerate flow and any further share administration UI. Local-first publish flows should stay simple for one-off use.
 
 - [ ] Comments and review mode (`Account-backed`, `Blocked`)
       Anchor feedback to specific obstacles or route sections without requiring live collaboration first. This now sits behind the account-model decision because richer review workflows become much clearer once identity and ownership are better defined.

@@ -58,7 +58,7 @@ For local development, contributor setup, and runtime-specific testing, see [CON
 - 🎥 **Review route flow in 3D** - use the live 3D preview and elevation tools to check how the layout reads before race day
 - 📋 **Prepare a race-day handoff** - export a dedicated Race Pack PDF with map, numbering, material list, stock status, setup sequence, and initial build guidance
 - 📦 **Check buildability early** - compare the current layout against available obstacle stock before the gear leaves the van
-- 🔗 **Share and export cleanly** - publish a read-only link or export PNG, SVG, PDF, 3D screenshots, and JSON project files from the same design
+- 🔗 **Share and export cleanly** - publish a read-only link, manage and revoke published shares from the Projects dialog when signed in, or export PNG, SVG, PDF, 3D screenshots, and JSON project files from the same design
 - 🔐 **Sign in to keep projects in sync** - use an email magic link, manage your profile in-app, and prepare TrackDraw for account-backed ownership and cross-device work
 
 ## How it works
@@ -92,7 +92,7 @@ src/
 ├── app/              # Next.js routes (/, /studio, /login, /share/[token], /api)
 ├── components/       # React components
 │   ├── canvas/       # TrackCanvas (2D editor), TrackPreview3D
-│   ├── dialogs/      # Export, Import, Share, ProjectManager, KeyboardShortcuts
+│   ├── dialogs/      # Export, Import, Share, ProjectManager/ (subdir), KeyboardShortcuts
 │   ├── editor/       # EditorShell, Header, Toolbar, StatusBar, StarterFlow
 │   ├── inspector/    # Inspector, ElevationChart, ElevationPanel
 │   ├── landing/      # Marketing page components
