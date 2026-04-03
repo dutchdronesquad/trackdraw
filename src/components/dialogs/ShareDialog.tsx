@@ -15,6 +15,7 @@ import {
   Copy,
   Check,
   ExternalLink,
+  RefreshCw,
   Share2,
   Link2,
   Boxes,
@@ -42,7 +43,9 @@ interface ShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   hasPath?: boolean;
+  projectId?: string | null;
   onExportJson?: () => void;
+  onSharePublished?: () => void;
 }
 
 function getShareTokenFromUrl(url: string | null) {
@@ -64,12 +67,16 @@ function getShareTokenFromUrl(url: string | null) {
 function ShareContent({
   onClose,
   hasPath = false,
+  projectId = null,
   onExportJson,
+  onSharePublished,
   mobile = false,
 }: {
   onClose: () => void;
   hasPath?: boolean;
+  projectId?: string | null;
   onExportJson?: () => void;
+  onSharePublished?: () => void;
   mobile?: boolean;
 }) {
   const design = useEditor((s) => s.design);
@@ -202,6 +209,7 @@ function ShareContent({
       return publishedShareUrl;
     }
 
+    const previousToken = activeShareToken;
     setPublishing(true);
 
     try {
@@ -214,6 +222,7 @@ function ShareContent({
           design,
           view: currentView,
           expiresInDays,
+          ...(projectId ? { projectId } : {}),
         }),
       });
 
@@ -238,6 +247,18 @@ function ShareContent({
         sourceToken: currentToken,
         expiresInDays,
       });
+
+      // Silently revoke the previous share when replacing — only possible for
+      // authenticated owners. Failure is non-blocking; the new link is already live.
+      if (force && previousToken && isAuthenticated) {
+        fetch(`/api/shares/${encodeURIComponent(previousToken)}`, {
+          method: "DELETE",
+        }).catch(() => {
+          /* ignore */
+        });
+      }
+
+      onSharePublished?.();
       return url;
     } finally {
       setPublishing(false);
@@ -460,6 +481,17 @@ function ShareContent({
             </Button>
             {publishedShareUrl && isAuthenticated ? (
               <div className="grid grid-cols-1 gap-2">
+                {!shareNeedsRefresh ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePublish(true)}
+                    disabled={publishing || revoking}
+                    className="w-full"
+                  >
+                    <RefreshCw className="size-4" />
+                    Regenerate link
+                  </Button>
+                ) : null}
                 <Button
                   variant="outline"
                   onClick={handleRevoke}
@@ -812,7 +844,9 @@ export default function ShareDialog({
   open,
   onOpenChange,
   hasPath = false,
+  projectId = null,
   onExportJson,
+  onSharePublished,
 }: ShareDialogProps) {
   const isMobile = useIsMobile();
 
@@ -829,7 +863,9 @@ export default function ShareDialog({
         <ShareContent
           onClose={() => onOpenChange(false)}
           hasPath={hasPath}
+          projectId={projectId}
           onExportJson={onExportJson}
+          onSharePublished={onSharePublished}
           mobile
         />
       </MobileDrawer>
@@ -848,7 +884,9 @@ export default function ShareDialog({
       <ShareContent
         onClose={() => onOpenChange(false)}
         hasPath={hasPath}
+        projectId={projectId}
         onExportJson={onExportJson}
+        onSharePublished={onSharePublished}
       />
     </DesktopModal>
   );

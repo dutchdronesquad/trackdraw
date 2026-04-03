@@ -22,6 +22,15 @@ export type AccountProjectListItem = {
   shapeCount: number;
 };
 
+export type AccountShareItem = {
+  token: string;
+  title: string;
+  shapeCount: number;
+  createdAt: string;
+  expiresAt: string;
+  projectId: string | null;
+};
+
 export type ProjectSyncMeta = {
   status:
     | "local-only"
@@ -96,6 +105,10 @@ export function useAccountProjectSync({
   const openedFromAccountSignatureRef = useRef<string | null>(null);
   const previousAuthUserIdRef = useRef<string | null>(authUserId);
   const pendingReentryConflictCheckRef = useRef(false);
+
+  const [accountShares, setAccountShares] = useState<AccountShareItem[]>([]);
+  const [accountSharesLoading, setAccountSharesLoading] = useState(false);
+  const accountSharesFetchedForUserRef = useRef<string | null>(null);
 
   useEffect(() => {
     designRef.current = design;
@@ -180,6 +193,74 @@ export function useAccountProjectSync({
     if (!projectManagerOpen || !authUserId || readOnly) return;
     void refreshAccountProjects();
   }, [authUserId, projectManagerOpen, readOnly, refreshAccountProjects]);
+
+  const refreshAccountShares = useCallback(
+    async (force = false) => {
+      if (!authUserId || readOnly) {
+        setAccountShares([]);
+        accountSharesFetchedForUserRef.current = null;
+        return;
+      }
+
+      if (!force && accountSharesFetchedForUserRef.current === authUserId)
+        return;
+      accountSharesFetchedForUserRef.current = null;
+
+      setAccountSharesLoading(true);
+      try {
+        const response = await fetch("/api/shares", { method: "GET" });
+        const payload = (await response.json()) as {
+          ok: boolean;
+          error?: string;
+          shares?: AccountShareItem[];
+        };
+
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error ?? "Failed to load shares");
+        }
+
+        setAccountShares(payload.shares ?? []);
+        accountSharesFetchedForUserRef.current = authUserId;
+      } catch {
+        // silently ignore — shares tab will show empty
+      } finally {
+        setAccountSharesLoading(false);
+      }
+    },
+    [authUserId, readOnly]
+  );
+
+  useEffect(() => {
+    if (!projectManagerOpen || !authUserId || readOnly) return;
+    void refreshAccountShares();
+  }, [authUserId, projectManagerOpen, readOnly, refreshAccountShares]);
+
+  const handleRevokeShare = useCallback(async (token: string) => {
+    try {
+      const response = await fetch(`/api/shares/${encodeURIComponent(token)}`, {
+        method: "DELETE",
+      });
+      const data = (await response.json()) as
+        | { ok: true }
+        | { ok: false; error?: string };
+
+      if (!response.ok || !data.ok) {
+        throw new Error(
+          data.ok
+            ? "Failed to revoke share"
+            : (data.error ?? "Failed to revoke share")
+        );
+      }
+
+      setAccountShares((prev) => prev.filter((s) => s.token !== token));
+      accountSharesFetchedForUserRef.current = null;
+      toast.success("Share revoked");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to revoke share"
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (
@@ -417,21 +498,21 @@ export function useAccountProjectSync({
   );
 
   const currentDesignId = design.id;
-  const currentProjectIsAccountBacked = Boolean(
+  const isAccountProject = Boolean(
     authUserId &&
     accountProjects.some((project) => project.id === currentDesignId)
   );
   const currentProjectSyncMeta = projectSyncMetaById[currentDesignId];
   const currentProjectSyncSignature = `${currentDesignId}:${design.updatedAt}`;
   const currentProjectHasPendingChanges =
-    currentProjectIsAccountBacked &&
+    isAccountProject &&
     currentProjectSyncMeta?.status !== "conflict" &&
     openedFromAccountSignatureRef.current !== currentProjectSyncSignature &&
     lastAccountSyncSignatureRef.current !== currentProjectSyncSignature;
 
   const headerStatus: HeaderStatus = readOnly
     ? { label: "Read-only shared view", tone: "default" }
-    : currentProjectIsAccountBacked
+    : isAccountProject
       ? currentProjectSyncMeta?.status === "failed"
         ? { label: "Sync failed", tone: "error" }
         : currentProjectSyncMeta?.status === "conflict"
@@ -455,7 +536,7 @@ export function useAccountProjectSync({
     if (
       readOnly ||
       !authUserId ||
-      !currentProjectIsAccountBacked ||
+      !isAccountProject ||
       currentProjectSyncMeta?.status === "conflict" ||
       historyPaused ||
       interactionSessionDepth > 0
@@ -494,7 +575,7 @@ export function useAccountProjectSync({
   }, [
     authUserId,
     currentDesignId,
-    currentProjectIsAccountBacked,
+    isAccountProject,
     currentProjectSyncMeta?.status,
     currentProjectSyncSignature,
     historyPaused,
@@ -623,15 +704,20 @@ export function useAccountProjectSync({
     accountProjects,
     accountProjectsLoading,
     accountProjectsError,
+    accountShares,
+    accountSharesLoading,
     syncingProjectId,
     projectSyncMetaById,
     headerStatus,
+    isAccountProject,
     syncDesignToAccount,
+    handleRevokeShare,
     markProjectSyncFailed,
     handleSyncProject,
     handleOpenAccountProject,
     projectVersionConflict,
     handleKeepLocalConflictCopy,
     handleOpenCloudConflictVersion,
+    refreshAccountShares,
   };
 }
