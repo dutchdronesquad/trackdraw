@@ -59,7 +59,7 @@ For local development, contributor setup, and runtime-specific testing, see [CON
 - 📋 **Prepare a race-day handoff** - export a dedicated Race Pack PDF with map, numbering, material list, stock status, setup sequence, and initial build guidance
 - 📦 **Check buildability early** - compare the current layout against available obstacle stock before the gear leaves the van
 - 🔗 **Share and export cleanly** - publish a read-only link, manage and revoke published shares from the Projects dialog when signed in, or export PNG, SVG, PDF, 3D screenshots, and JSON project files from the same design
-- 🔐 **Sign in to keep projects in sync** - use an email magic link, manage your profile in-app, and prepare TrackDraw for account-backed ownership and cross-device work
+- 🔐 **Sign in to keep projects in sync** - use an email magic link, manage your profile in-app, change your account email safely, and prepare TrackDraw for account-backed ownership and cross-device work
 
 ## How it works
 

@@ -55,6 +55,7 @@ export default function LoginPage() {
                 src="/assets/brand/trackdraw-logo-mono-lightbg.svg"
                 alt="TrackDraw"
                 fill
+                priority
                 unoptimized
                 className="object-contain dark:hidden"
                 draggable={false}
@@ -63,6 +64,7 @@ export default function LoginPage() {
                 src="/assets/brand/trackdraw-logo-mono-darkbg.svg"
                 alt="TrackDraw"
                 fill
+                priority
                 unoptimized
                 className="hidden object-contain dark:block"
                 draggable={false}
