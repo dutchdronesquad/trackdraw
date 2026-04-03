@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   createRestorePoint,
   deleteProject,
+  deleteProjects,
   deleteRestorePoint,
   listProjects,
   listRestorePointsForProject,
@@ -198,10 +199,27 @@ export function useEditorProjects({
     [design, designShapesLength, replaceDesign]
   );
 
-  const handleDeleteProject = useCallback((id: string) => {
-    deleteProject(id);
-    setProjects(listProjects());
-  }, []);
+  const handleDeleteProject = useCallback(
+    (id: string) => {
+      deleteProject(id);
+      setProjects(listProjects());
+      if (id === design.id) {
+        setRestorePoints([]);
+      }
+    },
+    [design.id]
+  );
+
+  const handleDeleteProjects = useCallback(
+    (ids: string[]) => {
+      deleteProjects(ids);
+      setProjects(listProjects());
+      if (ids.includes(design.id)) {
+        setRestorePoints([]);
+      }
+    },
+    [design.id]
+  );
 
   const handleRenameProject = useCallback(
     (id: string, title: string) => {
@@ -263,6 +281,7 @@ export function useEditorProjects({
     handleSaveSnapshot,
     handleOpenProject,
     handleDeleteProject,
+    handleDeleteProjects,
     handleRenameProject,
     handleRestorePoint,
     handleDeleteRestorePoint,

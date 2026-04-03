@@ -13,6 +13,7 @@ import {
   type ProjectMeta,
   type RestorePointMeta,
 } from "@/lib/projects";
+import { isDevAuthShimEnabled } from "@/lib/auth-client";
 import type { TrackDesign } from "@/lib/types";
 
 export type AccountProjectListItem = {
@@ -84,6 +85,11 @@ export function useAccountProjectSync({
   setActiveRestorePointId,
   setSaveStatusLabel,
 }: UseAccountProjectSyncOptions) {
+  const cloudProjectsAvailable = !isDevAuthShimEnabled();
+  const cloudProjectsUnavailableReason =
+    authUserId && !cloudProjectsAvailable
+      ? "Cloud projects are unavailable in `npm run dev`. Use `npm run preview` to test account-backed sync."
+      : null;
   const designRef = useRef(design);
   const [accountProjects, setAccountProjects] = useState<
     AccountProjectListItem[]
@@ -126,7 +132,7 @@ export function useAccountProjectSync({
 
       if (canUseCachedResult) return;
 
-      if (!authUserId || readOnly) {
+      if (!authUserId || readOnly || !cloudProjectsAvailable) {
         setAccountProjects([]);
         setAccountProjectsError(null);
         setAccountProjectsLoading(false);
@@ -186,7 +192,7 @@ export function useAccountProjectSync({
         setAccountProjectsLoading(false);
       }
     },
-    [authUserId, readOnly]
+    [authUserId, cloudProjectsAvailable, readOnly]
   );
 
   useEffect(() => {
@@ -196,7 +202,7 @@ export function useAccountProjectSync({
 
   const refreshAccountShares = useCallback(
     async (force = false) => {
-      if (!authUserId || readOnly) {
+      if (!authUserId || readOnly || !cloudProjectsAvailable) {
         setAccountShares([]);
         accountSharesFetchedForUserRef.current = null;
         return;
@@ -227,7 +233,7 @@ export function useAccountProjectSync({
         setAccountSharesLoading(false);
       }
     },
-    [authUserId, readOnly]
+    [authUserId, cloudProjectsAvailable, readOnly]
   );
 
   useEffect(() => {
@@ -393,6 +399,13 @@ export function useAccountProjectSync({
       targetDesign: TrackDesign,
       options?: { showToast?: boolean; updateStatusLabel?: boolean }
     ) => {
+      if (!cloudProjectsAvailable) {
+        throw new Error(
+          cloudProjectsUnavailableReason ??
+            "Cloud projects are unavailable in this environment."
+        );
+      }
+
       if (syncInFlightByIdRef.current[targetDesign.id]) return;
 
       syncInFlightByIdRef.current[targetDesign.id] = true;
@@ -453,13 +466,25 @@ export function useAccountProjectSync({
         syncInFlightByIdRef.current[targetDesign.id] = false;
       }
     },
-    [setSaveStatusLabel, upsertAccountProject]
+    [
+      cloudProjectsAvailable,
+      cloudProjectsUnavailableReason,
+      setSaveStatusLabel,
+      upsertAccountProject,
+    ]
   );
 
   const handleSyncProject = useCallback(
     async (projectId: string) => {
       if (!authUserId) {
         toast.error("Sign in to sync this project");
+        return;
+      }
+
+      if (!cloudProjectsAvailable) {
+        toast.error("Cloud sync unavailable", {
+          description: cloudProjectsUnavailableReason ?? undefined,
+        });
         return;
       }
 
@@ -494,7 +519,13 @@ export function useAccountProjectSync({
         setSyncingProjectId(null);
       }
     },
-    [authUserId, markProjectSyncFailed, syncDesignToAccount]
+    [
+      authUserId,
+      cloudProjectsAvailable,
+      cloudProjectsUnavailableReason,
+      markProjectSyncFailed,
+      syncDesignToAccount,
+    ]
   );
 
   const currentDesignId = design.id;
@@ -593,6 +624,13 @@ export function useAccountProjectSync({
         return false;
       }
 
+      if (!cloudProjectsAvailable) {
+        toast.error("Cloud projects unavailable", {
+          description: cloudProjectsUnavailableReason ?? undefined,
+        });
+        return false;
+      }
+
       try {
         const response = await fetch(`/api/projects/${projectId}`, {
           method: "GET",
@@ -638,6 +676,8 @@ export function useAccountProjectSync({
     },
     [
       authUserId,
+      cloudProjectsAvailable,
+      cloudProjectsUnavailableReason,
       replaceDesign,
       setActiveRestorePointId,
       setProjects,
@@ -704,6 +744,8 @@ export function useAccountProjectSync({
     accountProjects,
     accountProjectsLoading,
     accountProjectsError,
+    cloudProjectsAvailable,
+    cloudProjectsUnavailableReason,
     accountShares,
     accountSharesLoading,
     syncingProjectId,

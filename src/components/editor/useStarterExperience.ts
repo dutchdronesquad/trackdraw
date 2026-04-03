@@ -9,6 +9,7 @@ import type { TrackDesign } from "@/lib/types";
 type UseStarterExperienceOptions = {
   readOnly: boolean;
   authUserId: string | null;
+  cloudProjectsAvailable: boolean;
   design: TrackDesign;
   designShapeCount: number;
   hasPath: boolean;
@@ -30,6 +31,7 @@ type UseStarterExperienceOptions = {
 export function useStarterExperience({
   readOnly,
   authUserId,
+  cloudProjectsAvailable,
   design,
   designShapeCount,
   hasPath,
@@ -74,7 +76,7 @@ export function useStarterExperience({
 
   const syncStarterDesign = useCallback(
     (nextDesign: TrackDesign, logLabel: string) => {
-      if (!authUserId) return;
+      if (!authUserId || !cloudProjectsAvailable) return;
 
       void syncDesignToAccount(nextDesign, {
         updateStatusLabel: true,
@@ -87,7 +89,13 @@ export function useStarterExperience({
         console.error(logLabel, error);
       });
     },
-    [authUserId, markProjectSyncFailed, setSaveStatusLabel, syncDesignToAccount]
+    [
+      authUserId,
+      cloudProjectsAvailable,
+      markProjectSyncFailed,
+      setSaveStatusLabel,
+      syncDesignToAccount,
+    ]
   );
 
   const applyStarterDesign = useCallback(

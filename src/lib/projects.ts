@@ -103,9 +103,31 @@ export function loadProject(id: string): TrackDesign | null {
 }
 
 export function deleteProject(id: string): void {
-  const list = listProjects().filter((p) => p.id !== id);
+  deleteProjects([id]);
+}
+
+export function deleteProjects(ids: string[]): void {
+  if (ids.length === 0) return;
+
+  const idSet = new Set(ids);
+  const list = listProjects().filter((p) => !idSet.has(p.id));
   writeJson(PROJECT_LIST_KEY, list);
-  removeKey(`trackdraw-project-${id}`);
+
+  for (const id of idSet) {
+    removeKey(`trackdraw-project-${id}`);
+  }
+
+  const restorePoints = listRestorePoints();
+  const remainingRestorePoints = restorePoints.filter(
+    (restorePoint) => !idSet.has(restorePoint.designId)
+  );
+  writeJson(RESTORE_LIST_KEY, remainingRestorePoints);
+
+  for (const restorePoint of restorePoints) {
+    if (idSet.has(restorePoint.designId)) {
+      removeKey(`trackdraw-restore-${restorePoint.id}`);
+    }
+  }
 }
 
 export function renameProject(id: string, title: string): void {

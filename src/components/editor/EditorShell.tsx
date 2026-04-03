@@ -251,6 +251,7 @@ export default function EditorShell({
     handleSaveSnapshot,
     handleOpenProject,
     handleDeleteProject,
+    handleDeleteProjects,
     handleRenameProject,
     handleRestorePoint,
     handleDeleteRestorePoint,
@@ -306,6 +307,8 @@ export default function EditorShell({
     accountProjects,
     accountProjectsLoading,
     accountProjectsError,
+    cloudProjectsAvailable,
+    cloudProjectsUnavailableReason,
     accountShares,
     accountSharesLoading,
     syncingProjectId,
@@ -385,6 +388,7 @@ export default function EditorShell({
   } = useStarterExperience({
     readOnly,
     authUserId: authUser?.id ?? null,
+    cloudProjectsAvailable,
     design,
     designShapeCount: designShapes.length,
     hasPath,
@@ -1002,9 +1006,16 @@ export default function EditorShell({
         onOpenChange={setProjectManagerOpen}
         onOpenNewProject={openNewProjectDialog}
         onOpenProject={handleOpenProject}
-        onOpenAccountProject={handleOpenAccountProjectFromDialog}
-        onSyncProject={authUser ? handleSyncProject : undefined}
+        onOpenAccountProject={
+          authUser && cloudProjectsAvailable
+            ? handleOpenAccountProjectFromDialog
+            : undefined
+        }
+        onSyncProject={
+          authUser && cloudProjectsAvailable ? handleSyncProject : undefined
+        }
         onDeleteProject={handleDeleteProject}
+        onDeleteProjects={handleDeleteProjects}
         onRenameProject={handleRenameProject}
         onExportProject={(projectId) => {
           const exportDesign =
