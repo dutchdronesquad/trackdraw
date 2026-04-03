@@ -3,9 +3,32 @@ import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth";
 import { getProjectForUser } from "@/lib/server/projects";
-import { createShare } from "@/lib/server/shares";
+import { createShare, getSharesByUserId } from "@/lib/server/shares";
 import { buildStoredSharePath } from "@/lib/share";
 import { parseEditorView } from "@/lib/view";
+
+export async function GET(request: Request) {
+  try {
+    const user = await getCurrentUserFromHeaders(request.headers);
+    if (!user) {
+      return NextResponse.json(
+        { ok: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const shares = await getSharesByUserId(user.id);
+    return NextResponse.json({ ok: true, shares });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error instanceof Error ? error.message : "Failed to list shares",
+      },
+      { status: 500 }
+    );
+  }
+}
 
 const createShareRequestSchema = z.object({
   design: z.unknown(),

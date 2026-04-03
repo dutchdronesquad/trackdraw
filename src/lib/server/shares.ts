@@ -143,6 +143,56 @@ export async function getShareByToken(token: string) {
   return resolved.status === "available" ? resolved.share : null;
 }
 
+type UserShareRow = {
+  token: string;
+  title: string | null;
+  shape_count: number;
+  created_at: string;
+  expires_at: string;
+  project_id: string | null;
+};
+
+export type UserShare = {
+  token: string;
+  title: string;
+  shapeCount: number;
+  createdAt: string;
+  expiresAt: string;
+  projectId: string | null;
+};
+
+export async function getSharesByUserId(
+  userId: string,
+  { limit = 20 }: { limit?: number } = {}
+): Promise<UserShare[]> {
+  const db = await getDatabase();
+  const now = new Date().toISOString();
+
+  const rows = await db
+    .prepare(
+      `
+        select token, title, shape_count, created_at, expires_at, project_id
+        from shares
+        where owner_user_id = ?
+          and revoked_at is null
+          and expires_at > ?
+        order by created_at desc
+        limit ?
+      `
+    )
+    .bind(userId, now, limit)
+    .all<UserShareRow>();
+
+  return (rows.results ?? []).map((row) => ({
+    token: row.token,
+    title: row.title ?? "Untitled track",
+    shapeCount: row.shape_count,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    projectId: row.project_id,
+  }));
+}
+
 export async function revokeShare(token: string) {
   const db = await getDatabase();
   const now = new Date().toISOString();

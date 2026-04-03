@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { revokeShare } from "@/lib/server/shares";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { resolveStoredShare, revokeShare } from "@/lib/server/shares";
 
 type ShareTokenRouteContext = {
   params: Promise<{
@@ -8,7 +9,7 @@ type ShareTokenRouteContext = {
 };
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   context: ShareTokenRouteContext
 ) {
   try {
@@ -18,6 +19,39 @@ export async function DELETE(
       return NextResponse.json(
         { ok: false, error: "Missing share token" },
         { status: 400 }
+      );
+    }
+
+    const resolved = await resolveStoredShare(token);
+    if (resolved.status === "missing") {
+      return NextResponse.json(
+        { ok: false, error: "Share not found" },
+        { status: 404 }
+      );
+    }
+
+    const { share } = resolved;
+
+    // Only the authenticated owner can revoke a share.
+    // Anonymous shares (no owner) expire naturally and cannot be revoked.
+    if (!share.ownerUserId) {
+      return NextResponse.json(
+        { ok: false, error: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
+    const user = await getCurrentUserFromHeaders(request.headers);
+    if (!user) {
+      return NextResponse.json(
+        { ok: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    if (user.id !== share.ownerUserId) {
+      return NextResponse.json(
+        { ok: false, error: "Forbidden" },
+        { status: 403 }
       );
     }
 
