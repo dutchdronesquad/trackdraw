@@ -10,6 +10,7 @@ import { selectDesignShapeCount } from "@/store/selectors";
 import { encodeDesign } from "@/lib/share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { parseEditorView } from "@/lib/view";
+import { authClient } from "@/lib/auth-client";
 import {
   Copy,
   Check,
@@ -74,6 +75,8 @@ function ShareContent({
   const design = useEditor((s) => s.design);
   const shapeCount = useEditor(selectDesignShapeCount);
   const searchParams = useSearchParams();
+  const { data: session } = authClient.useSession();
+  const isAuthenticated = !!session?.user;
   const [copied, setCopied] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [revoking, setRevoking] = useState(false);
@@ -455,7 +458,7 @@ function ShareContent({
               <PrimaryActionIcon className="size-4" />
               {primaryActionLabel}
             </Button>
-            {publishedShareUrl ? (
+            {publishedShareUrl && isAuthenticated ? (
               <div className="grid grid-cols-1 gap-2">
                 <Button
                   variant="outline"
