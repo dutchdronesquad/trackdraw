@@ -66,7 +66,10 @@ export async function sendPlunkMail(options: SendPlunkMailOptions) {
   }
 
   const errorText = await response.text();
+  const plunkHint = errorText.includes("public key")
+    ? " Use a Plunk secret/server API key for PLUNK_API_KEY, not a public/browser key."
+    : "";
   throw new Error(
-    `Plunk send failed with ${response.status}: ${errorText || "unknown error"}`
+    `Plunk send failed with ${response.status}: ${errorText || "unknown error"}${plunkHint}`
   );
 }

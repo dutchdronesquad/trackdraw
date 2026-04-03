@@ -196,6 +196,12 @@ export async function getAuth() {
     },
     basePath: "/api/auth",
     trustedOrigins: getTrustedOrigins(),
+    advanced: {
+      trustedProxyHeaders: true,
+      ipAddress: {
+        ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for", "x-real-ip"],
+      },
+    },
     user: {
       modelName: "users",
       changeEmail: {
