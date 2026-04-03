@@ -199,11 +199,7 @@ export async function getAuth() {
     advanced: {
       trustedProxyHeaders: true,
       ipAddress: {
-        ipAddressHeaders: [
-          "cf-connecting-ip",
-          "x-forwarded-for",
-          "x-real-ip",
-        ],
+        ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for", "x-real-ip"],
       },
     },
     user: {
