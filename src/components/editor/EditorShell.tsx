@@ -309,6 +309,7 @@ export default function EditorShell({
     syncingProjectId,
     projectSyncMetaById,
     headerStatus,
+    isAccountProject,
     syncDesignToAccount,
     markProjectSyncFailed,
     handleSyncProject,
@@ -943,6 +944,7 @@ export default function EditorShell({
         open={shareOpen}
         onOpenChange={setShareOpen}
         hasPath={hasPath}
+        projectId={isAccountProject ? design.id : null}
         onExportJson={() => {
           setShareOpen(false);
           setExportOpen(true);

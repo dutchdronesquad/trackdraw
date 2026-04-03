@@ -417,21 +417,21 @@ export function useAccountProjectSync({
   );
 
   const currentDesignId = design.id;
-  const currentProjectIsAccountBacked = Boolean(
+  const isAccountProject = Boolean(
     authUserId &&
     accountProjects.some((project) => project.id === currentDesignId)
   );
   const currentProjectSyncMeta = projectSyncMetaById[currentDesignId];
   const currentProjectSyncSignature = `${currentDesignId}:${design.updatedAt}`;
   const currentProjectHasPendingChanges =
-    currentProjectIsAccountBacked &&
+    isAccountProject &&
     currentProjectSyncMeta?.status !== "conflict" &&
     openedFromAccountSignatureRef.current !== currentProjectSyncSignature &&
     lastAccountSyncSignatureRef.current !== currentProjectSyncSignature;
 
   const headerStatus: HeaderStatus = readOnly
     ? { label: "Read-only shared view", tone: "default" }
-    : currentProjectIsAccountBacked
+    : isAccountProject
       ? currentProjectSyncMeta?.status === "failed"
         ? { label: "Sync failed", tone: "error" }
         : currentProjectSyncMeta?.status === "conflict"
@@ -455,7 +455,7 @@ export function useAccountProjectSync({
     if (
       readOnly ||
       !authUserId ||
-      !currentProjectIsAccountBacked ||
+      !isAccountProject ||
       currentProjectSyncMeta?.status === "conflict" ||
       historyPaused ||
       interactionSessionDepth > 0
@@ -494,7 +494,7 @@ export function useAccountProjectSync({
   }, [
     authUserId,
     currentDesignId,
-    currentProjectIsAccountBacked,
+    isAccountProject,
     currentProjectSyncMeta?.status,
     currentProjectSyncSignature,
     historyPaused,
@@ -626,6 +626,7 @@ export function useAccountProjectSync({
     syncingProjectId,
     projectSyncMetaById,
     headerStatus,
+    isAccountProject,
     syncDesignToAccount,
     markProjectSyncFailed,
     handleSyncProject,

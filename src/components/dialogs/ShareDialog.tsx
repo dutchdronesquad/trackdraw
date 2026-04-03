@@ -42,6 +42,7 @@ interface ShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   hasPath?: boolean;
+  projectId?: string | null;
   onExportJson?: () => void;
 }
 
@@ -64,11 +65,13 @@ function getShareTokenFromUrl(url: string | null) {
 function ShareContent({
   onClose,
   hasPath = false,
+  projectId = null,
   onExportJson,
   mobile = false,
 }: {
   onClose: () => void;
   hasPath?: boolean;
+  projectId?: string | null;
   onExportJson?: () => void;
   mobile?: boolean;
 }) {
@@ -214,6 +217,7 @@ function ShareContent({
           design,
           view: currentView,
           expiresInDays,
+          ...(projectId ? { projectId } : {}),
         }),
       });
 
@@ -812,6 +816,7 @@ export default function ShareDialog({
   open,
   onOpenChange,
   hasPath = false,
+  projectId = null,
   onExportJson,
 }: ShareDialogProps) {
   const isMobile = useIsMobile();
@@ -829,6 +834,7 @@ export default function ShareDialog({
         <ShareContent
           onClose={() => onOpenChange(false)}
           hasPath={hasPath}
+          projectId={projectId}
           onExportJson={onExportJson}
           mobile
         />
@@ -848,6 +854,7 @@ export default function ShareDialog({
       <ShareContent
         onClose={() => onOpenChange(false)}
         hasPath={hasPath}
+        projectId={projectId}
         onExportJson={onExportJson}
       />
     </DesktopModal>
