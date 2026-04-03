@@ -80,7 +80,7 @@ For account auth and real account email delivery on deployed environments, `dev.
 - `BETTER_AUTH_SECRET`
 - `BETTER_AUTH_TRUSTED_ORIGINS` only if you need additional allowed origins beyond `NEXT_PUBLIC_SITE_URL`
 - `PLUNK_API_KEY` (required for magic links, email verification, and change-email confirmation mails; must be a secret/server key, not a public/browser key)
-- `PLUNK_FROM_EMAIL` (recommended, use a verified sender such as `hello@trackdraw.app`)
+- `PLUNK_FROM_EMAIL` (required for TrackDraw's current transactional mail flow; use a verified sender such as `hello@trackdraw.app`)
 - `PLUNK_FROM_NAME` (optional, defaults to `TrackDraw`)
 - `PLUNK_REPLY_TO_EMAIL` (optional, only if replies should go to a different mailbox)
 
