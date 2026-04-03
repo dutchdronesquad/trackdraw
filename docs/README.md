@@ -2,6 +2,9 @@
 
 TrackDraw documentation is grouped into a few focused areas:
 
+- [Contributing](../CONTRIBUTING.md)
+  Contributor setup, development modes, commands, and validation guidance.
+
 - [Roadmap](./roadmap/ROADMAP.md)
   Product direction, sequencing, and roadmap tracking.
 

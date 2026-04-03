@@ -6,11 +6,13 @@ This repository contains TrackDraw, a browser-based FPV race track designer buil
 
 Agents working in this repo should optimize for product safety over broad refactors. The editor is already feature-rich, and small regressions in selection, transforms, sharing, export, or mobile flows are expensive.
 
+Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md` for contributor workflow, commands, runtime modes, and validation expectations. Keep those documents aligned rather than duplicating technical setup details across files.
+
 ## Product Context
 
 - The main app surfaces are the landing page at `/`, the editor at `/studio`, and read-only shared views at `/share/[token]`.
-- The product is local-first. Editing, autosave, import/export, and published sharing are all core behavior.
-- Mobile support is intentional product scope, not a degraded desktop fallback.
+- The product must remain usable without an account for core editing, autosave, import/export, and published sharing behavior.
+- Mobile is a supported product surface, not a desktop fallback.
 - Shared links must open cleanly in read-only mode and remain compatible with the canonical `/share/[token]` route.
 
 ## Stack
@@ -49,7 +51,7 @@ Agents working in this repo should optimize for product safety over broad refact
 - `npm run type`
 - `npm run build`
 
-Run `npm run lint` and `npm run type` after non-trivial code changes when the environment allows it.
+Run `npm run lint` and `npm run type` after non-trivial code changes when the environment allows it. Use `npm run preview` when validating D1-backed, auth-backed, or Cloudflare-runtime behavior.
 
 ## Change Heuristics
 
@@ -60,4 +62,15 @@ Run `npm run lint` and `npm run type` after non-trivial code changes when the en
 
 ## Documentation Updates
 
-Update `README.md` or files in `docs/` when behavior, routes, scripts, or roadmap status materially changes.
+Update `README.md`, `CONTRIBUTING.md`, or files in `docs/` when behavior, routes, scripts, or roadmap status materially changes.
+
+- Keep `README.md` product-facing and lightweight.
+- Keep contributor setup, commands, runtime notes, and validation guidance in `CONTRIBUTING.md`.
+- Keep longer planning, deployment, and research material in `docs/`.
+
+When updating `CHANGELOG.md`:
+
+- document shipped or release-bound user-facing changes, not roadmap ideas or internal planning
+- keep entries compact and product-facing rather than deeply technical
+- prefer grouping small related changes into one stronger user-facing theme instead of listing low-signal implementation details
+- avoid padding the changelog with dependency bumps, refactors, or internal cleanup unless they have a clear user-visible effect

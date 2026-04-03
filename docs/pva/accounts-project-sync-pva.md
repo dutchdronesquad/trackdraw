@@ -2,7 +2,7 @@
 
 Date: April 1, 2026
 
-Status: first account foundation shipped; project and sync model to define next
+Status: first account foundation shipped; authentication and storage recommendation defined
 
 ## Purpose
 
@@ -232,3 +232,120 @@ The target product state should look like this:
 - publish and share workflows become easier to manage because they are tied to real project ownership
 
 This is the account model that best matches TrackDraw's actual product value: continuity, ownership, and calmer project management rather than auth for its own sake.
+
+## Authentication And Storage Recommendation
+
+TrackDraw should continue as a local-first product with account-backed sync and ownership for signed-in users.
+
+This is the recommended product and storage model:
+
+- logged out: device-local projects remain the default and fully usable
+- signed in: projects sync to the user's account by default in practice
+- local browser storage remains the working copy, offline buffer, and resilience layer
+- the account-backed project record is the canonical durable state for signed-in users
+
+This means TrackDraw should not choose either extreme:
+
+- not local-only forever, because that weakens the main value of signing in and leaves cross-device continuation too fragile
+- not cloud-only, because that breaks the product's local-first safety and makes venue-side use less dependable
+
+## Why This Recommendation Fits TrackDraw
+
+### 1. It matches the product's real reason for accounts
+
+TrackDraw is not trying to become a generic team workspace.
+
+The clearest user value from authentication is:
+
+- reopen the same project on another device
+- keep ownership attached to the right person
+- manage published shares and future account-backed records with less ambiguity
+
+If signing in does not materially improve continuity and ownership, the auth layer adds complexity without enough return.
+
+### 2. It preserves the local-first safety model
+
+Track planning often happens in imperfect environments:
+
+- unstable venue connectivity
+- device switching close to race day
+- users who want quick use without account setup
+
+Keeping a device-local working copy protects TrackDraw from feeling brittle when network access, auth state, or sync reliability is imperfect.
+
+### 3. It keeps the UI simple
+
+Users should not need to choose between:
+
+- local mode
+- cloud mode
+- backup mode
+
+The product stays simpler if TrackDraw presents one `project` concept and lets account state determine the storage behavior behind the scenes.
+
+## Explicit Product Boundary
+
+TrackDraw should adopt this boundary for the near term:
+
+### In scope
+
+- device-local projects without sign-in
+- automatic account-backed continuity for signed-in users
+- explicit sync follow-up for local projects that existed before sign-in
+- visible sync/conflict/error states in project management
+- account ownership for published shares
+
+### Out of scope for now
+
+- mandatory login before editing
+- a user-facing split between separate local and cloud project types
+- manual per-project cloud-save toggles as the default model
+- multi-user live collaboration
+- team workspaces, clubs, or shared libraries as part of the first account decision
+
+## Recommended Technical Posture
+
+The technical recommendation should stay aligned with the product model:
+
+- Better Auth remains the current authentication layer
+- email magic-link stays the default sign-in method for now
+- passkeys are a reasonable follow-up improvement, not a prerequisite for the product model
+- browser-local persistence remains required even for signed-in sessions
+- sync logic should treat the server copy as canonical for signed-in users, while preserving local resilience and explicit conflict handling
+
+This keeps the architecture proportional to the product:
+
+- enough backend state for continuity and ownership
+- enough local state for safety and usability
+- no need yet for a heavier collaboration-first sync architecture
+
+## Decision Outcome
+
+The roadmap recommendation should therefore be:
+
+- do not stop at the first auth foundation
+- do not expand accounts into a broad collaboration platform yet
+- continue with a bounded account-backed continuity model
+
+That gives TrackDraw a clear next-stage position:
+
+- local-first by default
+- account-backed when signed in
+- ownership-aware where it matters
+- still lightweight enough to use without ceremony
+
+## Recommended Next Slices After This Decision
+
+Once this recommendation is accepted, the next work should focus on depth within the same model rather than reopening the auth question again.
+
+Priority follow-up:
+
+- tighten sync trust and recovery, especially around failed sync, conflict resolution, and last-known-good local fallback
+- refine account project management so account-backed and device-only items stay understandable without feeling like two separate products
+- continue share lifecycle improvements around account ownership and project attachment
+
+Defer until the above feels solid:
+
+- comments and review mode
+- venue library and constraints
+- shared template libraries
