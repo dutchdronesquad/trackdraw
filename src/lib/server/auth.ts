@@ -114,6 +114,75 @@ function buildMagicLinkEmail(url: string) {
   };
 }
 
+function buildEmailVerificationEmail(url: string, email: string) {
+  const escapedUrl = escapeHtml(url);
+  const escapedEmail = escapeHtml(email);
+
+  return {
+    subject: "Verify your TrackDraw email",
+    htmlBody: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
+        <h2 style="margin: 0 0 16px;">Verify your email</h2>
+        <p style="margin: 0 0 16px;">
+          Confirm <strong>${escapedEmail}</strong> to finish setting up your TrackDraw account.
+        </p>
+        <p style="margin: 0 0 20px;">
+          <a
+            href="${escapedUrl}"
+            style="display: inline-block; padding: 10px 16px; background: #111827; color: #ffffff; text-decoration: none; border-radius: 8px;"
+          >
+            Verify email
+          </a>
+        </p>
+        <p style="margin: 0 0 8px;">If the button does not work, use this link:</p>
+        <p style="margin: 0; word-break: break-all;">
+          <a href="${escapedUrl}">${escapedUrl}</a>
+        </p>
+      </div>
+    `.trim(),
+    textBody:
+      `Verify your TrackDraw email\n\n` +
+      `Confirm ${email} by opening this link:\n${url}`,
+  };
+}
+
+function buildChangeEmailConfirmationEmail(
+  url: string,
+  currentEmail: string,
+  newEmail: string
+) {
+  const escapedUrl = escapeHtml(url);
+  const escapedCurrentEmail = escapeHtml(currentEmail);
+  const escapedNewEmail = escapeHtml(newEmail);
+
+  return {
+    subject: "Confirm your TrackDraw email change",
+    htmlBody: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
+        <h2 style="margin: 0 0 16px;">Confirm your email change</h2>
+        <p style="margin: 0 0 16px;">
+          We received a request to change your TrackDraw email from <strong>${escapedCurrentEmail}</strong> to <strong>${escapedNewEmail}</strong>.
+        </p>
+        <p style="margin: 0 0 20px;">
+          <a
+            href="${escapedUrl}"
+            style="display: inline-block; padding: 10px 16px; background: #111827; color: #ffffff; text-decoration: none; border-radius: 8px;"
+          >
+            Confirm email change
+          </a>
+        </p>
+        <p style="margin: 0 0 8px;">If the button does not work, use this link:</p>
+        <p style="margin: 0; word-break: break-all;">
+          <a href="${escapedUrl}">${escapedUrl}</a>
+        </p>
+      </div>
+    `.trim(),
+    textBody:
+      `Confirm your TrackDraw email change\n\n` +
+      `Change ${currentEmail} to ${newEmail} by opening this link:\n${url}`,
+  };
+}
+
 export async function getAuth() {
   const database = await getDatabase();
 
@@ -129,6 +198,47 @@ export async function getAuth() {
     trustedOrigins: getTrustedOrigins(),
     user: {
       modelName: "users",
+      changeEmail: {
+        enabled: true,
+        sendChangeEmailConfirmation: async ({ user, newEmail, url, token }) => {
+          const currentEmail = user.email;
+
+          if (!currentEmail) {
+            throw new Error(
+              "Cannot send email change confirmation without a current email."
+            );
+          }
+
+          console.info("[TrackDraw auth] sendChangeEmailConfirmation", {
+            recipient: currentEmail,
+            newEmail,
+            plunkConfigured: isPlunkConfigured(),
+            nodeEnv: process.env.NODE_ENV,
+            appEnv: process.env.NEXT_PUBLIC_APP_ENV,
+          });
+
+          if (isLocalAuthDeliveryFallbackAllowed() && !isPlunkConfigured()) {
+            console.info(
+              `[TrackDraw auth] Change email confirmation for ${currentEmail} to ${newEmail}: ${url} (token: ${token})`
+            );
+            return;
+          }
+
+          const emailContent = buildChangeEmailConfirmationEmail(
+            url,
+            currentEmail,
+            newEmail
+          );
+          await sendPlunkMail({
+            to: {
+              address: currentEmail,
+            },
+            subject: emailContent.subject,
+            htmlBody: emailContent.htmlBody,
+            textBody: emailContent.textBody,
+          });
+        },
+      },
       deleteUser: {
         enabled: true,
       },
@@ -141,6 +251,49 @@ export async function getAuth() {
     },
     verification: {
       modelName: "verifications",
+    },
+    emailVerification: {
+      autoSignInAfterVerification: true,
+      sendVerificationEmail: async ({ user, url, token }) => {
+        const recipient = user.email;
+
+        if (!recipient) {
+          throw new Error(
+            "Cannot send verification email without a recipient."
+          );
+        }
+
+        console.info("[TrackDraw auth] sendVerificationEmail", {
+          recipient,
+          plunkConfigured: isPlunkConfigured(),
+          nodeEnv: process.env.NODE_ENV,
+          appEnv: process.env.NEXT_PUBLIC_APP_ENV,
+        });
+
+        if (isPlunkConfigured()) {
+          const emailContent = buildEmailVerificationEmail(url, recipient);
+          await sendPlunkMail({
+            to: {
+              address: recipient,
+            },
+            subject: emailContent.subject,
+            htmlBody: emailContent.htmlBody,
+            textBody: emailContent.textBody,
+          });
+          return;
+        }
+
+        if (isLocalAuthDeliveryFallbackAllowed()) {
+          console.info(
+            `[TrackDraw auth] Verification email for ${recipient}: ${url} (token: ${token})`
+          );
+          return;
+        }
+
+        throw new Error(
+          `Verification email delivery is not configured for production. Set PLUNK_API_KEY for ${recipient}.`
+        );
+      },
     },
     plugins: [
       magicLink({

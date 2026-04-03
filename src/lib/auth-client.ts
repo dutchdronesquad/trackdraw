@@ -38,8 +38,14 @@ let devSessionCache: AuthSessionData | null = null;
 let devSessionCacheLoaded = false;
 
 type DevAuthProfileRecord = {
+  id: string;
   email: string;
   name: string | null;
+};
+
+type ChangeEmailOptions = {
+  newEmail: string;
+  callbackURL?: string;
 };
 
 function getAuthBaseUrl() {
@@ -91,7 +97,8 @@ function buildDevSession(options: MagicLinkSignInOptions): AuthSessionData {
   const normalizedEmail = normalizeEmail(options.email);
   const profiles = readDevAuthProfiles();
   const existingProfile = profiles[normalizedEmail];
-  const idSource = normalizedEmail || "dev-user";
+  const userId =
+    existingProfile?.id || `dev-user-${normalizedEmail || "dev-user"}`;
   const name = options.name?.trim() || existingProfile?.name || null;
 
   return {
@@ -99,7 +106,7 @@ function buildDevSession(options: MagicLinkSignInOptions): AuthSessionData {
       id: `dev-session-${Date.now()}`,
     },
     user: {
-      id: `dev-user-${idSource}`,
+      id: userId,
       email: normalizedEmail,
       name,
       image: null,
@@ -239,6 +246,7 @@ export const authClient = {
       const profiles = readDevAuthProfiles();
       if (session.user.email) {
         profiles[normalizeEmail(session.user.email)] = {
+          id: session.user.id,
           email: session.user.email,
           name: normalizedName,
         };
@@ -251,5 +259,79 @@ export const authClient = {
     await betterAuthClient.updateUser({
       name: normalizedName,
     });
+  },
+  async changeEmail(options: ChangeEmailOptions) {
+    const normalizedEmail = normalizeEmail(options.newEmail);
+
+    if (!normalizedEmail) {
+      throw new Error("Please enter a valid email address.");
+    }
+
+    if (isDevAuthShimEnabled()) {
+      const session = readDevSession();
+
+      if (!session) {
+        throw new Error("No local dev session is available.");
+      }
+
+      const currentEmail = normalizeEmail(session.user.email ?? "");
+
+      if (!currentEmail) {
+        throw new Error("This account does not have an email address.");
+      }
+
+      if (normalizedEmail === currentEmail) {
+        throw new Error("Email is the same.");
+      }
+
+      const profiles = readDevAuthProfiles();
+      const existingProfile = profiles[normalizedEmail];
+
+      if (existingProfile && existingProfile.id !== session.user.id) {
+        throw new Error("An account with that email already exists.");
+      }
+
+      const currentProfile = profiles[currentEmail];
+      delete profiles[currentEmail];
+      profiles[normalizedEmail] = {
+        id: currentProfile?.id ?? session.user.id,
+        email: normalizedEmail,
+        name: currentProfile?.name ?? session.user.name ?? null,
+      };
+      writeDevAuthProfiles(profiles);
+      writeDevSession({
+        ...session,
+        user: {
+          ...session.user,
+          email: normalizedEmail,
+        },
+      });
+      return;
+    }
+
+    const response = await fetch(new URL("/change-email", getAuthBaseUrl()), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        newEmail: normalizedEmail,
+        callbackURL: options.callbackURL ?? "/studio",
+      }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as {
+      error?: { message?: string } | string;
+      message?: string;
+    } | null;
+
+    if (!response.ok) {
+      const errorMessage =
+        typeof payload?.error === "string"
+          ? payload.error
+          : payload?.error?.message || payload?.message;
+      throw new Error(errorMessage ?? "Failed to change email.");
+    }
   },
 };

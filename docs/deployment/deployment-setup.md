@@ -75,11 +75,11 @@ For real Cloudflare development or production deployment, you need:
 - real `database_id` values filled into [`wrangler.jsonc`](../../wrangler.jsonc)
 - GitHub Environment secrets configured for the deploy workflows
 
-For account auth and real magic-link delivery on deployed environments, `dev.trackdraw.app` and `trackdraw.app` should also provide:
+For account auth and real account email delivery on deployed environments, `dev.trackdraw.app` and `trackdraw.app` should also provide:
 
 - `BETTER_AUTH_SECRET`
 - `BETTER_AUTH_TRUSTED_ORIGINS` only if you need additional allowed origins beyond `NEXT_PUBLIC_SITE_URL`
-- `PLUNK_API_KEY` (required)
+- `PLUNK_API_KEY` (required for magic links, email verification, and change-email confirmation mails)
 - `PLUNK_FROM_EMAIL` (recommended, use a verified sender such as `hello@trackdraw.app`)
 - `PLUNK_FROM_NAME` (optional, defaults to `TrackDraw`)
 - `PLUNK_REPLY_TO_EMAIL` (optional, only if replies should go to a different mailbox)

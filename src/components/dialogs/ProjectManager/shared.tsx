@@ -101,11 +101,11 @@ export function DesktopActionTooltip({
   children,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: React.ReactElement;
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger>{children}</TooltipTrigger>
+      <TooltipTrigger render={children} />
       <TooltipContent side="top" sideOffset={6}>
         {label}
       </TooltipContent>

@@ -152,7 +152,10 @@ export default function MobileAppMenu({
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={(event) => {
+          event.currentTarget.blur();
+          setOpen(true);
+        }}
         className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-lg transition-colors lg:hidden"
         aria-label="Open app menu"
       >
@@ -174,7 +177,10 @@ export default function MobileAppMenu({
                 {user ? (
                   <button
                     type="button"
-                    onClick={openAccount}
+                    onClick={(event) => {
+                      event.currentTarget.blur();
+                      openAccount();
+                    }}
                     className="hover:bg-muted/70 flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left transition-colors"
                   >
                     <span className="bg-foreground text-background flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-medium">

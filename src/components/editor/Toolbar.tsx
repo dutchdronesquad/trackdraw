@@ -316,10 +316,7 @@ export default function Toolbar({
             })}
           </SidebarMenu>
           <div className="border-border/70 mt-3 border-t pt-3">
-            <AccountMenu
-              collapsed={collapsed}
-              onOpenProjects={onOpenProjectManager}
-            />
+            <AccountMenu collapsed={collapsed} />
           </div>
         </SidebarFooter>
       </Sidebar>

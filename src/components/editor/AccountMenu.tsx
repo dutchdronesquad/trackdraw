@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { FolderKanban, LogIn, LogOut, UserRound } from "lucide-react";
+import { LogIn, LogOut, UserRound } from "lucide-react";
 import AccountDialog from "@/components/dialogs/AccountDialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -71,13 +71,9 @@ const accountMenuItemClassName =
 
 interface AccountMenuProps {
   collapsed?: boolean;
-  onOpenProjects?: () => void;
 }
 
-export default function AccountMenu({
-  collapsed = false,
-  onOpenProjects,
-}: AccountMenuProps) {
+export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
   const { data, isPending } = authClient.useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -156,28 +152,19 @@ export default function AccountMenu({
         className="border-border/70 bg-popover w-64 gap-0 rounded-2xl border p-0 shadow-[0_18px_40px_rgba(15,23,42,0.10)]"
       >
         <div className="px-3 py-2.5">
-          <button
-            type="button"
-            onClick={() => {
-              setMenuOpen(false);
-              window.setTimeout(() => setAccountOpen(true), 0);
-            }}
-            className="w-full"
-          >
-            <PopoverHeader className="hover:bg-muted flex-row items-center gap-3 rounded-xl px-1 py-0.5 transition-colors">
-              <span className="bg-foreground text-background flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-medium">
-                {getAvatarLabel(user)}
-              </span>
-              <div className="min-w-0 flex-1 text-left">
-                <PopoverTitle className="text-foreground truncate text-[12px] font-medium">
-                  {getUserDisplayName(user)}
-                </PopoverTitle>
-                <PopoverDescription className="truncate pt-0.5 text-[11px]">
-                  {user?.email ?? "TrackDraw account"}
-                </PopoverDescription>
-              </div>
-            </PopoverHeader>
-          </button>
+          <PopoverHeader className="flex-row items-center gap-3 rounded-xl px-1 py-0.5">
+            <span className="bg-foreground text-background flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-medium">
+              {getAvatarLabel(user)}
+            </span>
+            <div className="min-w-0 flex-1 text-left">
+              <PopoverTitle className="text-foreground truncate text-[12px] font-medium">
+                {getUserDisplayName(user)}
+              </PopoverTitle>
+              <PopoverDescription className="truncate pt-0.5 text-[11px]">
+                {user?.email ?? "TrackDraw account"}
+              </PopoverDescription>
+            </div>
+          </PopoverHeader>
         </div>
         <div className="p-1.5">
           <button
@@ -194,19 +181,6 @@ export default function AccountMenu({
               <UserRound className="size-4" />
             </span>
             <span className="flex-1">Profile</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMenuOpen(false);
-              onOpenProjects?.();
-            }}
-            className={accountMenuItemClassName}
-          >
-            <span className="text-muted-foreground flex size-4 shrink-0 items-center justify-center">
-              <FolderKanban className="size-4" />
-            </span>
-            <span className="flex-1">Projects</span>
           </button>
         </div>
         <div className="border-border/60 border-t p-1.5">
