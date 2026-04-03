@@ -194,37 +194,41 @@ export function useAccountProjectSync({
     void refreshAccountProjects();
   }, [authUserId, projectManagerOpen, readOnly, refreshAccountProjects]);
 
-  const refreshAccountShares = useCallback(async (force = false) => {
-    if (!authUserId || readOnly) {
-      setAccountShares([]);
-      accountSharesFetchedForUserRef.current = null;
-      return;
-    }
-
-    if (!force && accountSharesFetchedForUserRef.current === authUserId) return;
-    accountSharesFetchedForUserRef.current = null;
-
-    setAccountSharesLoading(true);
-    try {
-      const response = await fetch("/api/shares", { method: "GET" });
-      const payload = (await response.json()) as {
-        ok: boolean;
-        error?: string;
-        shares?: AccountShareItem[];
-      };
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(payload.error ?? "Failed to load shares");
+  const refreshAccountShares = useCallback(
+    async (force = false) => {
+      if (!authUserId || readOnly) {
+        setAccountShares([]);
+        accountSharesFetchedForUserRef.current = null;
+        return;
       }
 
-      setAccountShares(payload.shares ?? []);
-      accountSharesFetchedForUserRef.current = authUserId;
-    } catch {
-      // silently ignore — shares tab will show empty
-    } finally {
-      setAccountSharesLoading(false);
-    }
-  }, [authUserId, readOnly]);
+      if (!force && accountSharesFetchedForUserRef.current === authUserId)
+        return;
+      accountSharesFetchedForUserRef.current = null;
+
+      setAccountSharesLoading(true);
+      try {
+        const response = await fetch("/api/shares", { method: "GET" });
+        const payload = (await response.json()) as {
+          ok: boolean;
+          error?: string;
+          shares?: AccountShareItem[];
+        };
+
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error ?? "Failed to load shares");
+        }
+
+        setAccountShares(payload.shares ?? []);
+        accountSharesFetchedForUserRef.current = authUserId;
+      } catch {
+        // silently ignore — shares tab will show empty
+      } finally {
+        setAccountSharesLoading(false);
+      }
+    },
+    [authUserId, readOnly]
+  );
 
   useEffect(() => {
     if (!projectManagerOpen || !authUserId || readOnly) return;

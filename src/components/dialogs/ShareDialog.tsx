@@ -253,7 +253,9 @@ function ShareContent({
       if (force && previousToken && isAuthenticated) {
         fetch(`/api/shares/${encodeURIComponent(previousToken)}`, {
           method: "DELETE",
-        }).catch(() => {/* ignore */});
+        }).catch(() => {
+          /* ignore */
+        });
       }
 
       onSharePublished?.();
