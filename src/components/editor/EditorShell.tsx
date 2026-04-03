@@ -22,7 +22,7 @@ import KeyboardShortcutsDialog from "@/components/dialogs/KeyboardShortcutsDialo
 import CompleteProfileDialog from "@/components/dialogs/CompleteProfileDialog";
 import ProjectVersionConflictDialog from "@/components/dialogs/ProjectVersionConflictDialog";
 import PerformanceHud from "./PerformanceHud";
-import ProjectManagerDialog from "@/components/dialogs/ProjectManagerDialog";
+import ProjectManagerDialog from "@/components/dialogs/ProjectManager";
 import NewProjectDialog from "@/components/dialogs/NewProjectDialog";
 import { useAccountProjectSync } from "./useAccountProjectSync";
 import { useEditorDialogs } from "./useEditorDialogs";
@@ -306,11 +306,14 @@ export default function EditorShell({
     accountProjects,
     accountProjectsLoading,
     accountProjectsError,
+    accountShares,
+    accountSharesLoading,
     syncingProjectId,
     projectSyncMetaById,
     headerStatus,
     isAccountProject,
     syncDesignToAccount,
+    handleRevokeShare,
     markProjectSyncFailed,
     handleSyncProject,
     handleOpenAccountProject,
@@ -1026,6 +1029,9 @@ export default function EditorShell({
         accountProjects={accountProjects}
         accountProjectsLoading={accountProjectsLoading}
         accountProjectsError={accountProjectsError}
+        accountShares={accountShares}
+        accountSharesLoading={accountSharesLoading}
+        onRevokeShare={handleRevokeShare}
         projectSyncMetaById={projectSyncMetaById}
         syncingProjectId={syncingProjectId}
         restorePoints={restorePoints}
