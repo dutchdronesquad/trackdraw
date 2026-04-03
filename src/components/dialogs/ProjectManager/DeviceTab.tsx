@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -84,12 +84,8 @@ export function ProjectManagerDeviceTab({
   const deletableOldProjectIds = sorted
     .filter((project) => project.id !== activeDesignId)
     .map((project) => project.id);
-
-  useEffect(() => {
-    if (deletableOldProjectIds.length === 0) {
-      setConfirmDeleteOldProjects(false);
-    }
-  }, [deletableOldProjectIds.length]);
+  const showDeleteOldProjectsConfirm =
+    confirmDeleteOldProjects && deletableOldProjectIds.length > 0;
 
   function startRename(p: ProjectMeta) {
     setRenamingId(p.id);
@@ -497,7 +493,7 @@ export function ProjectManagerDeviceTab({
             </div>
             {onDeleteProjects &&
             deletableOldProjectIds.length > 0 &&
-            confirmDeleteOldProjects ? (
+            showDeleteOldProjectsConfirm ? (
               <motion.div
                 className="border-border/60 bg-background/80 mt-2 flex items-center gap-3 rounded-xl border px-3 py-2.5"
                 initial={{ opacity: 0, y: -6 }}

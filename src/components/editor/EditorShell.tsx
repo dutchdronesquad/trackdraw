@@ -308,7 +308,6 @@ export default function EditorShell({
     accountProjectsLoading,
     accountProjectsError,
     cloudProjectsAvailable,
-    cloudProjectsUnavailableReason,
     accountShares,
     accountSharesLoading,
     syncingProjectId,
