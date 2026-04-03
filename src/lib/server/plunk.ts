@@ -1,6 +1,6 @@
 import "server-only";
 
-const PLUNK_API_URL = "https://api.useplunk.com/v1/send";
+const PLUNK_API_URL = "https://next-api.useplunk.com/v1/send";
 
 type PlunkRecipient = {
   address: string;
@@ -29,13 +29,19 @@ function getPlunkConfig() {
 }
 
 export function isPlunkConfigured() {
-  return Boolean(getPlunkConfig().apiKey);
+  const config = getPlunkConfig();
+  return Boolean(config.apiKey && config.fromEmail);
 }
 
 export async function sendPlunkMail(options: SendPlunkMailOptions) {
   const config = getPlunkConfig();
   if (!config.apiKey) {
     throw new Error("Missing Plunk configuration. Set PLUNK_API_KEY.");
+  }
+  if (!config.fromEmail) {
+    throw new Error(
+      "Missing Plunk sender configuration. Set PLUNK_FROM_EMAIL to a verified sender address."
+    );
   }
 
   const payload = {
