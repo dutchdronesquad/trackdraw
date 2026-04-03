@@ -61,8 +61,8 @@ Labels used below:
 
 ## Blocked Follow-up
 
-- [ ] Share lifecycle management follow-up (`Account-backed`, `Blocked`)
-      Expiry, retention cleanup, calmer publish-link behavior, local revoke, and account-owned share management in Studio are now in place. Remaining work is the replace/regenerate flow and any further share administration UI. Local-first publish flows should stay simple for one-off use.
+- [x] Share lifecycle management follow-up (`Account-backed`)
+      Expiry, retention cleanup, calmer publish-link behavior, local revoke, account-owned share management in the Projects dialog, and replace/regenerate flow are all in place. Updating or regenerating a link silently revokes the previous share for authenticated owners. Local-first publish flows remain simple for one-off use.
 
 - [ ] Comments and review mode (`Account-backed`, `Blocked`)
       Anchor feedback to specific obstacles or route sections without requiring live collaboration first. This now sits behind the account-model decision because richer review workflows become much clearer once identity and ownership are better defined.

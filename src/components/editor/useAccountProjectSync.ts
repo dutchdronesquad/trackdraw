@@ -194,14 +194,15 @@ export function useAccountProjectSync({
     void refreshAccountProjects();
   }, [authUserId, projectManagerOpen, readOnly, refreshAccountProjects]);
 
-  const refreshAccountShares = useCallback(async () => {
+  const refreshAccountShares = useCallback(async (force = false) => {
     if (!authUserId || readOnly) {
       setAccountShares([]);
       accountSharesFetchedForUserRef.current = null;
       return;
     }
 
-    if (accountSharesFetchedForUserRef.current === authUserId) return;
+    if (!force && accountSharesFetchedForUserRef.current === authUserId) return;
+    accountSharesFetchedForUserRef.current = null;
 
     setAccountSharesLoading(true);
     try {
@@ -713,5 +714,6 @@ export function useAccountProjectSync({
     projectVersionConflict,
     handleKeepLocalConflictCopy,
     handleOpenCloudConflictVersion,
+    refreshAccountShares,
   };
 }

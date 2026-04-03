@@ -320,6 +320,7 @@ export default function EditorShell({
     projectVersionConflict,
     handleKeepLocalConflictCopy,
     handleOpenCloudConflictVersion,
+    refreshAccountShares,
   } = useAccountProjectSync({
     authUserId: authUser?.id ?? null,
     readOnly,
@@ -948,6 +949,7 @@ export default function EditorShell({
         onOpenChange={setShareOpen}
         hasPath={hasPath}
         projectId={isAccountProject ? design.id : null}
+        onSharePublished={() => void refreshAccountShares(true)}
         onExportJson={() => {
           setShareOpen(false);
           setExportOpen(true);
