@@ -98,6 +98,36 @@ openssl rand -base64 32
 Add deployed auth and mail secrets to Cloudflare Worker secrets for the matching environment, not to the repository.
 Keep non-secret mail configuration in [`wrangler.jsonc`](../../wrangler.jsonc) so GitHub-driven deploys do not drift from dashboard-only vars.
 
+## Mail deliverability
+
+If magic-link emails arrive in spam, treat that as a deliverability problem rather than a template problem.
+
+For `trackdraw.app`, verify all of the following:
+
+- `PLUNK_FROM_EMAIL` uses a verified sender or verified sending domain in Plunk
+- `SPF` exists for `trackdraw.app` and passes for the sending provider
+- `DKIM` records from Plunk are present and pass
+- `DMARC` exists for `_dmarc.trackdraw.app`
+- `From` and `Reply-To` stay on the same domain when possible to reduce trust and alignment friction
+
+Recommended DMARC starting point:
+
+```txt
+v=DMARC1; p=none; rua=mailto:info@trackdraw.app; adkim=s; aspf=s
+```
+
+Notes:
+
+- there must be only one SPF record on the root domain
+- Plunk-provided DKIM records must be copied exactly
+- Cloudflare mail-related `CNAME`, `TXT`, and `MX` records should stay `DNS only`
+- passing SPF, DKIM, and DMARC does not guarantee inbox placement immediately; new domains can still have low reputation for a while
+
+When validating auth email delivery, test both:
+
+- whether the message is delivered at all
+- whether it lands in the inbox instead of spam in Gmail and Outlook
+
 ## Migrations
 
 Local D1 migrations:

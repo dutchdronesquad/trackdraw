@@ -201,6 +201,7 @@ export async function getAuth() {
     },
     plugins: [
       magicLink({
+        expiresIn: 600,
         sendMagicLink: async ({ email: recipient, url, token }) => {
           console.info("[TrackDraw auth] sendMagicLink", {
             recipient,
