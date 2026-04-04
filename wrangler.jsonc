@@ -29,6 +29,8 @@
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://trackdraw.app",
     "NEXT_PUBLIC_APP_ENV": "production",
+    "PLUNK_FROM_EMAIL": "noreply@trackdraw.app",
+    "PLUNK_REPLY_TO_EMAIL": "info@dutchdronesquad.nl",
   },
   "env": {
     "dev": {
