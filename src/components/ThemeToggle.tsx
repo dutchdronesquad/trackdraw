@@ -8,11 +8,11 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import {
-  parseThemePreference,
+  applyResolvedThemeToDocument,
+  getThemePreferenceFromSources,
+  persistThemePreference,
   resolveTheme,
-  RESOLVED_THEME_COOKIE,
-  THEME_COOKIE,
-  THEME_COOKIE_MAX_AGE,
+  THEME_EVENT,
   THEME_STORAGE_KEY,
   type ThemePreference,
 } from "@/lib/theme";
@@ -27,23 +27,21 @@ const LABEL: Record<ThemePreference, string> = {
   dark: "Dark",
   system: "System",
 };
-const EVENT = "trackdraw-theme";
-
 function subscribe(cb: () => void) {
-  window.addEventListener(EVENT, cb);
+  window.addEventListener(THEME_EVENT, cb);
   window.addEventListener("storage", cb);
   return () => {
-    window.removeEventListener(EVENT, cb);
+    window.removeEventListener(THEME_EVENT, cb);
     window.removeEventListener("storage", cb);
   };
 }
 
 function getSnapshot(): ThemePreference {
   try {
-    const stored = parseThemePreference(
-      localStorage.getItem(THEME_STORAGE_KEY)
+    return getThemePreferenceFromSources(
+      localStorage.getItem(THEME_STORAGE_KEY),
+      null
     );
-    if (stored) return stored;
   } catch {}
   return "system";
 }
@@ -53,14 +51,9 @@ function applyTheme(theme: ThemePreference) {
     theme,
     window.matchMedia("(prefers-color-scheme: dark)").matches
   );
-  document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
-  document.documentElement.style.colorScheme = resolvedTheme;
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {}
-  document.cookie = `${THEME_COOKIE}=${theme}; Max-Age=${THEME_COOKIE_MAX_AGE}; Path=/; SameSite=Lax`;
-  document.cookie = `${RESOLVED_THEME_COOKIE}=${resolvedTheme}; Max-Age=${THEME_COOKIE_MAX_AGE}; Path=/; SameSite=Lax`;
-  window.dispatchEvent(new Event(EVENT));
+  applyResolvedThemeToDocument(resolvedTheme);
+  persistThemePreference(theme, resolvedTheme);
+  window.dispatchEvent(new Event(THEME_EVENT));
 }
 
 const getServerSnapshot = (): ThemePreference => "system";

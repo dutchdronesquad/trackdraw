@@ -18,12 +18,9 @@ import {
   getSiteUrl,
 } from "@/lib/seo";
 import {
-  parseResolvedTheme,
-  parseThemePreference,
   RESOLVED_THEME_COOKIE,
-  resolveTheme,
   THEME_COOKIE,
-  type ResolvedTheme,
+  getInitialResolvedTheme,
 } from "@/lib/theme";
 
 const geistSans = Geist({
@@ -102,33 +99,22 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c0f14" },
-  ],
-};
+export async function generateViewport(): Promise<Viewport> {
+  const cookieStore = await cookies();
+  const initialTheme = getInitialTheme(
+    cookieStore.get(THEME_COOKIE)?.value,
+    cookieStore.get(RESOLVED_THEME_COOKIE)?.value
+  );
 
-function getInitialTheme(
-  preferenceCookie: string | undefined,
-  resolvedCookie: string | undefined
-): ResolvedTheme {
-  const preference = parseThemePreference(preferenceCookie);
-  const resolved = parseResolvedTheme(resolvedCookie);
-
-  if (preference === "light" || preference === "dark") {
-    return preference;
-  }
-
-  if (resolved) {
-    return resolved;
-  }
-
-  return resolveTheme("system", false);
+  return {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
+    themeColor: initialTheme === "dark" ? "#0c0f14" : "#f8fafc",
+  };
 }
+
+const getInitialTheme = getInitialResolvedTheme;
 
 export default async function RootLayout({
   children,

@@ -39,12 +39,26 @@ export default function manifest(): MetadataRoute.Manifest {
         short_name: "Studio",
         description: `${SITE_TAGLINE} editor`,
         url: "/studio",
+        icons: [
+          {
+            src: "/assets/pwa/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+        ],
       },
       {
         name: "View Site",
         short_name: "Site",
         description: "Open the TrackDraw landing page",
         url: "/",
+        icons: [
+          {
+            src: "/assets/pwa/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+        ],
       },
     ],
   };
