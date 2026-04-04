@@ -40,12 +40,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   applicationName: SITE_NAME,
+  manifest: "/manifest.webmanifest",
   title: { default: SITE_TITLE, template: "%s · TrackDraw" },
   description: SITE_DESCRIPTION,
   keywords: SITE_KEYWORDS,
   authors: [SITE_AUTHOR],
   creator: SITE_AUTHOR.name,
   publisher: SITE_AUTHOR.name,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: SITE_NAME,
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -72,14 +78,38 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      {
+        url: "/assets/pwa/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/assets/pwa/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: "/assets/pwa/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0c0c0f",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c0f14" },
+  ],
 };
 
 function getInitialTheme(

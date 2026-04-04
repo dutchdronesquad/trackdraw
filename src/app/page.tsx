@@ -648,91 +648,93 @@ export default function Home() {
               </p>
             </Reveal>
 
-            <div className="mx-auto grid max-w-2xl gap-4 sm:grid-cols-2">
-              {/* Guest */}
-              <Reveal>
-                <div className="border-border/50 bg-card/20 flex h-full flex-col rounded-2xl border p-6">
-                  <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
-                    Without account
-                  </p>
-                  <p className="mt-2 text-xl font-semibold">Guest</p>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Open the studio and start immediately.
-                  </p>
-                  <Link
-                    href="/studio"
-                    className="border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full border px-5 text-sm transition"
-                  >
-                    Open Studio <ArrowRight className="size-3.5" />
-                  </Link>
-                  <ul className="mt-6 space-y-2.5">
-                    {compareRows.map((row) => (
-                      <li
-                        key={row.label}
-                        className="flex items-center gap-2.5 text-sm"
-                      >
-                        {row.guest ? (
-                          <Check className="text-brand-primary size-3.5 shrink-0" />
-                        ) : (
-                          <Minus className="text-muted-foreground/40 size-3.5 shrink-0" />
-                        )}
-                        <span
-                          className={
-                            row.guest
-                              ? "text-foreground"
-                              : "text-muted-foreground/40"
-                          }
+            <div className="-mx-6 overflow-x-auto px-6 pb-2 sm:mx-auto sm:max-w-2xl sm:overflow-visible sm:px-0 sm:pb-0">
+              <div className="flex snap-x snap-mandatory gap-4 sm:grid sm:grid-cols-2">
+                {/* Guest */}
+                <Reveal>
+                  <div className="border-border/50 bg-card/20 flex h-full max-w-[19.5rem] min-w-[18.5rem] snap-start flex-col rounded-2xl border p-6 sm:max-w-none sm:min-w-0">
+                    <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
+                      Without account
+                    </p>
+                    <p className="mt-2 text-xl font-semibold">Guest</p>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      Open the studio and start immediately.
+                    </p>
+                    <Link
+                      href="/studio"
+                      className="border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full border px-5 text-sm transition"
+                    >
+                      Open Studio <ArrowRight className="size-3.5" />
+                    </Link>
+                    <ul className="mt-6 space-y-2.5">
+                      {compareRows.map((row) => (
+                        <li
+                          key={row.label}
+                          className="flex items-center gap-2.5 text-sm"
                         >
-                          {row.label}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
+                          {row.guest ? (
+                            <Check className="text-brand-primary size-3.5 shrink-0" />
+                          ) : (
+                            <Minus className="text-muted-foreground/40 size-3.5 shrink-0" />
+                          )}
+                          <span
+                            className={
+                              row.guest
+                                ? "text-foreground"
+                                : "text-muted-foreground/40"
+                            }
+                          >
+                            {row.label}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
 
-              {/* Account */}
-              <Reveal delay={0.07}>
-                <div className="border-brand-primary/25 bg-brand-primary/5 from-brand-primary/8 relative flex h-full flex-col overflow-hidden rounded-2xl border bg-linear-to-br to-transparent p-6">
-                  <div className="pointer-events-none absolute -top-10 -right-10 size-36 rounded-full bg-[#1E93DB] opacity-[0.12] blur-2xl" />
-                  <p className="text-brand-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
-                    With account
-                  </p>
-                  <p className="mt-2 text-xl font-semibold">Free</p>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    Cloud storage, any device, always safe.
-                  </p>
-                  <Link
-                    href="/login"
-                    className="mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-5 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/25 transition hover:brightness-110"
-                  >
-                    Create account <ArrowRight className="size-3.5" />
-                  </Link>
-                  <ul className="mt-6 space-y-2.5">
-                    {compareRows.map((row) => (
-                      <li
-                        key={row.label}
-                        className="flex items-center gap-2.5 text-sm"
-                      >
-                        {row.account ? (
-                          <Check className="text-brand-primary size-3.5 shrink-0" />
-                        ) : (
-                          <Minus className="text-muted-foreground/40 size-3.5 shrink-0" />
-                        )}
-                        <span
-                          className={
-                            row.account
-                              ? "text-foreground"
-                              : "text-muted-foreground/40"
-                          }
+                {/* Account */}
+                <Reveal delay={0.07}>
+                  <div className="border-brand-primary/25 bg-brand-primary/5 from-brand-primary/8 relative flex h-full max-w-[19.5rem] min-w-[18.5rem] snap-start flex-col overflow-hidden rounded-2xl border bg-linear-to-br to-transparent p-6 sm:max-w-none sm:min-w-0">
+                    <div className="pointer-events-none absolute -top-10 -right-10 size-36 rounded-full bg-[#1E93DB] opacity-[0.12] blur-2xl" />
+                    <p className="text-brand-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
+                      With account
+                    </p>
+                    <p className="mt-2 text-xl font-semibold">Free</p>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                      Cloud storage, any device, always safe.
+                    </p>
+                    <Link
+                      href="/login"
+                      className="mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-5 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/25 transition hover:brightness-110"
+                    >
+                      Create account <ArrowRight className="size-3.5" />
+                    </Link>
+                    <ul className="mt-6 space-y-2.5">
+                      {compareRows.map((row) => (
+                        <li
+                          key={row.label}
+                          className="flex items-center gap-2.5 text-sm"
                         >
-                          {row.label}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
+                          {row.account ? (
+                            <Check className="text-brand-primary size-3.5 shrink-0" />
+                          ) : (
+                            <Minus className="text-muted-foreground/40 size-3.5 shrink-0" />
+                          )}
+                          <span
+                            className={
+                              row.account
+                                ? "text-foreground"
+                                : "text-muted-foreground/40"
+                            }
+                          >
+                            {row.label}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Reveal>
+              </div>
             </div>
           </div>
         </section>
