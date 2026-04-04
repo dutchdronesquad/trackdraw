@@ -3,6 +3,11 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins";
 import { getSiteUrl } from "@/lib/seo";
+import {
+  buildChangeEmailConfirmationEmail,
+  buildEmailVerificationEmail,
+  buildMagicLinkEmail,
+} from "@/lib/server/auth-email";
 import { getDatabase } from "@/lib/server/db";
 import { isPlunkConfigured, sendPlunkMail } from "@/lib/server/plunk";
 
@@ -74,113 +79,6 @@ function getTrustedOrigins() {
     configuredSiteUrl,
     ...additionalTrustedOrigins,
   ].filter((value): value is string => Boolean(value));
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function buildMagicLinkEmail(url: string) {
-  const escapedUrl = escapeHtml(url);
-
-  return {
-    subject: "Your TrackDraw sign-in link",
-    htmlBody: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
-        <h2 style="margin: 0 0 16px;">Sign in to TrackDraw</h2>
-        <p style="margin: 0 0 16px;">
-          Use the link below to sign in and access your cloud projects.
-        </p>
-        <p style="margin: 0 0 20px;">
-          <a
-            href="${escapedUrl}"
-            style="display: inline-block; padding: 10px 16px; background: #111827; color: #ffffff; text-decoration: none; border-radius: 8px;"
-          >
-            Open TrackDraw
-          </a>
-        </p>
-        <p style="margin: 0 0 8px;">If the button does not work, use this link:</p>
-        <p style="margin: 0; word-break: break-all;">
-          <a href="${escapedUrl}">${escapedUrl}</a>
-        </p>
-      </div>
-    `.trim(),
-    textBody: `Sign in to TrackDraw\n\nOpen this link to sign in:\n${url}`,
-  };
-}
-
-function buildEmailVerificationEmail(url: string, email: string) {
-  const escapedUrl = escapeHtml(url);
-  const escapedEmail = escapeHtml(email);
-
-  return {
-    subject: "Verify your TrackDraw email",
-    htmlBody: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
-        <h2 style="margin: 0 0 16px;">Verify your email</h2>
-        <p style="margin: 0 0 16px;">
-          Confirm <strong>${escapedEmail}</strong> to finish setting up your TrackDraw account.
-        </p>
-        <p style="margin: 0 0 20px;">
-          <a
-            href="${escapedUrl}"
-            style="display: inline-block; padding: 10px 16px; background: #111827; color: #ffffff; text-decoration: none; border-radius: 8px;"
-          >
-            Verify email
-          </a>
-        </p>
-        <p style="margin: 0 0 8px;">If the button does not work, use this link:</p>
-        <p style="margin: 0; word-break: break-all;">
-          <a href="${escapedUrl}">${escapedUrl}</a>
-        </p>
-      </div>
-    `.trim(),
-    textBody:
-      `Verify your TrackDraw email\n\n` +
-      `Confirm ${email} by opening this link:\n${url}`,
-  };
-}
-
-function buildChangeEmailConfirmationEmail(
-  url: string,
-  currentEmail: string,
-  newEmail: string
-) {
-  const escapedUrl = escapeHtml(url);
-  const escapedCurrentEmail = escapeHtml(currentEmail);
-  const escapedNewEmail = escapeHtml(newEmail);
-
-  return {
-    subject: "Confirm your TrackDraw email change",
-    htmlBody: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #111827;">
-        <h2 style="margin: 0 0 16px;">Confirm your email change</h2>
-        <p style="margin: 0 0 16px;">
-          We received a request to change your TrackDraw email from <strong>${escapedCurrentEmail}</strong> to <strong>${escapedNewEmail}</strong>.
-        </p>
-        <p style="margin: 0 0 20px;">
-          <a
-            href="${escapedUrl}"
-            style="display: inline-block; padding: 10px 16px; background: #111827; color: #ffffff; text-decoration: none; border-radius: 8px;"
-          >
-            Confirm email change
-          </a>
-        </p>
-        <p style="margin: 0 0 8px;">If the button does not work, use this link:</p>
-        <p style="margin: 0; word-break: break-all;">
-          <a href="${escapedUrl}">${escapedUrl}</a>
-        </p>
-      </div>
-    `.trim(),
-    textBody:
-      `Confirm your TrackDraw email change\n\n` +
-      `Change ${currentEmail} to ${newEmail} by opening this link:\n${url}`,
-  };
 }
 
 export async function getAuth() {
