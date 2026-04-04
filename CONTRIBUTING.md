@@ -75,6 +75,8 @@ openssl rand -base64 32
 
 Use `npm run dev` when you are only changing auth UI. Use `npm run preview` when you need real sessions, authenticated APIs, share ownership, or account-backed projects.
 
+For email template styling work on non-production environments, use `/dev/email-preview` to preview the current auth mail variants without sending a real message.
+
 ## Common commands
 
 ```bash
