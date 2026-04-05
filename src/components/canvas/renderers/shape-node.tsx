@@ -23,6 +23,7 @@ import { getShapeLocalBounds } from "./shape-bounds";
 
 export interface TrackShapeNodeProps {
   allowInteraction: boolean;
+  contentDragActiveRef: React.RefObject<boolean>;
   designPpm: number;
   dragBound: (pos: Vector2d) => Vector2d;
   dragSnapRef: React.RefObject<boolean>;
@@ -46,7 +47,6 @@ export interface TrackShapeNodeProps {
   shape: Shape;
   shapeRef: (node: KonvaGroup | null) => void;
   resolveShapeDragPosition: (pos: Vector2d, snapEnabled: boolean) => Vector2d;
-  waypointDragBound: (pos: Vector2d) => Vector2d;
   resolveWaypointDragPosition: (
     pos: Vector2d,
     snapEnabled: boolean
@@ -68,6 +68,7 @@ function sameOffset(
 
 function TrackShapeNodeComponent({
   allowInteraction,
+  contentDragActiveRef,
   designPpm,
   dragBound,
   dragSnapRef,
@@ -89,7 +90,6 @@ function TrackShapeNodeComponent({
   shape,
   shapeRef,
   resolveShapeDragPosition,
-  waypointDragBound,
   resolveWaypointDragPosition,
   setPolylinePoints,
   updateShape,
@@ -115,6 +115,7 @@ function TrackShapeNodeComponent({
     : null;
 
   const handleDragStart = (event: KonvaEventObject<DragEvent>) => {
+    contentDragActiveRef.current = true;
     if (longPressTimerRef.current !== null) {
       window.clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
@@ -139,6 +140,7 @@ function TrackShapeNodeComponent({
   };
 
   const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
+    contentDragActiveRef.current = false;
     const resolved = resolveShapeDragPosition(
       event.currentTarget.position(),
       dragSnapRef.current
@@ -166,6 +168,11 @@ function TrackShapeNodeComponent({
     });
   };
 
+  const handleDragCancel = () => {
+    contentDragActiveRef.current = false;
+    setDragSnapPreview(null);
+  };
+
   const clearLongPress = () => {
     if (longPressTimerRef.current !== null) {
       window.clearTimeout(longPressTimerRef.current);
@@ -173,7 +180,14 @@ function TrackShapeNodeComponent({
     }
   };
 
-  useEffect(() => clearLongPress, []);
+  useEffect(
+    () => () => {
+      clearLongPress();
+      contentDragActiveRef.current = false;
+      setDragSnapPreview(null);
+    },
+    [contentDragActiveRef, setDragSnapPreview]
+  );
 
   return (
     <Group
@@ -201,6 +215,7 @@ function TrackShapeNodeComponent({
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
       onMouseDown={(event) => {
         if (!allowInteraction) return;
         event.cancelBubble = true;
@@ -285,7 +300,6 @@ function TrackShapeNodeComponent({
           <PolylineShapeContent
             allowInteraction={allowInteraction}
             designPpm={designPpm}
-            dragBound={waypointDragBound}
             dragSnapRef={dragSnapRef}
             effectiveVertexSel={effectiveVertexSel}
             hoveredWaypoint={hoveredWaypoint}

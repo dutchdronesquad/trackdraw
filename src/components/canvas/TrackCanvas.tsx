@@ -182,6 +182,7 @@ const TrackCanvas = memo(
     const lastTouchStagePointRef = useRef<{ x: number; y: number } | null>(
       null
     );
+    const contentDragActiveRef = useRef(false);
     const touchMovedRef = useRef(false);
     const suppressTapRef = useRef(false);
     const touchInteractionModeRef = useRef<
@@ -634,11 +635,6 @@ const TrackCanvas = memo(
       [openContextMenuForSelection]
     );
 
-    const waypointDragBound = useCallback(
-      (pos: Vector2d): Vector2d => clampWaypointDragPosition(pos),
-      [clampWaypointDragPosition]
-    );
-
     const fitFieldToViewport = useCallback(() => {
       const stage = stageRef.current;
       if (!stage || viewportSize.width <= 0 || viewportSize.height <= 0) return;
@@ -768,6 +764,7 @@ const TrackCanvas = memo(
 
     useTrackCanvasViewport({
       containerRef,
+      contentDragActiveRef,
       fitFieldToViewport,
       hasManualViewRef,
       setManualView,
@@ -796,6 +793,7 @@ const TrackCanvas = memo(
       activePresetId,
       addShape,
       addShapes,
+      contentDragActiveRef,
       designField: design.field,
       designShapes,
       disableTouchGestures: rotationSession !== null,
@@ -1350,6 +1348,7 @@ const TrackCanvas = memo(
                     <TrackShapeNode
                       key={shape.id}
                       allowInteraction={allowInteraction}
+                      contentDragActiveRef={contentDragActiveRef}
                       designPpm={design.field.ppm}
                       dragBound={dragBound}
                       dragSnapRef={dragSnapRef}
@@ -1382,7 +1381,6 @@ const TrackCanvas = memo(
                       }}
                       setDragSnapPreview={setDragSnapPreview}
                       resolveShapeDragPosition={resolveShapeDragPosition}
-                      waypointDragBound={waypointDragBound}
                       resolveWaypointDragPosition={resolveWaypointDragPosition}
                       setPolylinePoints={setPolylinePoints}
                       updateShape={updateShape}
