@@ -145,7 +145,6 @@ export default function EditorShell({
   );
   const designShapes = useEditor(selectDesignShapes);
   const hasPath = useEditor(selectHasPath);
-  const hasSelectedPolyline = useEditor(selectHasSelectedPolyline);
   const shapeById = useEditor(selectShapeRecordMap);
   const selectionLocked = useEditor(selectSelectionLocked);
   const segmentSelection = useEditor(

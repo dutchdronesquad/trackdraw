@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ElevationChart from "@/components/inspector/ElevationChart";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -9,7 +9,6 @@ import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   Copy,
-  FlipHorizontal2,
   Lock,
   LockOpen,
   PencilLine,
@@ -86,7 +85,9 @@ export function SingleInspectorView({
   mobileInline = false,
 }: SingleInspectorViewProps) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
-  const [directionReversed, setDirectionReversed] = useState(false);
+  const [directionReversedByShape, setDirectionReversedByShape] = useState<
+    Record<string, boolean>
+  >({});
   const defaultColor = shape.color ?? "#3b82f6";
   const polylineAnchor =
     shape.kind === "polyline" && shape.points.length
@@ -108,10 +109,7 @@ export function SingleInspectorView({
   const shapeDisplayName = shape.name?.trim() || shapeKindLabels[shape.kind];
   const groupId = getShapeGroupId(shape);
   const groupName = getShapeGroupName(shape) ?? "";
-
-  useEffect(() => {
-    setDirectionReversed(false);
-  }, [shape.id]);
+  const directionReversed = Boolean(directionReversedByShape[shape.id]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -483,7 +481,10 @@ export function SingleInspectorView({
                       checked={directionReversed}
                       onCheckedChange={(checked) => {
                         reversePolylinePoints(shape.id);
-                        setDirectionReversed(checked);
+                        setDirectionReversedByShape((current) => ({
+                          ...current,
+                          [shape.id]: checked,
+                        }));
                       }}
                     />
                     <span className="text-muted-foreground text-[11px]">
