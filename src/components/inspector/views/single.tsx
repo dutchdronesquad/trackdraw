@@ -112,7 +112,8 @@ export function SingleInspectorView({
   const directionReversed = Boolean(directionReversedByShape[shape.id]);
   const showPathActions =
     shape.kind === "polyline" &&
-    (Boolean(onResumeSelectedPath) || (!shape.closed && shape.points.length >= 3));
+    (Boolean(onResumeSelectedPath) ||
+      (!shape.closed && shape.points.length >= 3));
   const actionBtnClass =
     "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
   const actionBtnPrimaryClass =
@@ -288,7 +289,7 @@ export function SingleInspectorView({
               <div className="flex items-center gap-2">
                 <label className="group relative block cursor-pointer">
                   <span
-                    className="border-border/45 shadow-xs block size-9 rounded-lg border transition-transform group-hover:scale-[1.03] lg:size-7"
+                    className="border-border/45 block size-9 rounded-lg border shadow-xs transition-transform group-hover:scale-[1.03] lg:size-7"
                     style={{
                       background: `linear-gradient(135deg, ${defaultColor} 0%, color-mix(in oklab, ${defaultColor} 72%, black) 100%)`,
                     }}

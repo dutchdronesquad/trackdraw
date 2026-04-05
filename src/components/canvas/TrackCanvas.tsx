@@ -1315,7 +1315,7 @@ const TrackCanvas = memo(
 
     return (
       <ContextMenu onOpenChange={(open) => !open && setContextMenu(null)}>
-      <ContextMenuTrigger
+        <ContextMenuTrigger
           ref={containerRef}
           className="relative h-full w-full overflow-hidden"
           style={{ cursor: cursorStyle, touchAction: "none" }}
@@ -2004,7 +2004,6 @@ const TrackCanvas = memo(
               />
             </>
           )}
-
         </ContextMenuTrigger>
 
         {contextMenu && (
