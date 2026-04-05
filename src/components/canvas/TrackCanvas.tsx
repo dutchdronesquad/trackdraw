@@ -635,11 +635,6 @@ const TrackCanvas = memo(
       [openContextMenuForSelection]
     );
 
-    const waypointDragBound = useCallback(
-      (pos: Vector2d): Vector2d => clampWaypointDragPosition(pos),
-      [clampWaypointDragPosition]
-    );
-
     const fitFieldToViewport = useCallback(() => {
       const stage = stageRef.current;
       if (!stage || viewportSize.width <= 0 || viewportSize.height <= 0) return;
