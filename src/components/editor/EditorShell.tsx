@@ -58,7 +58,6 @@ import { useEditor } from "@/store/editor";
 import {
   selectDesignShapes,
   selectHasPath,
-  selectHasSelectedPolyline,
   selectSelectionLocked,
   selectShapeRecordMap,
 } from "@/store/selectors";
