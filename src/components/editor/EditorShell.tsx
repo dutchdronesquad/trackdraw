@@ -58,7 +58,6 @@ import { useEditor } from "@/store/editor";
 import {
   selectDesignShapes,
   selectHasPath,
-  selectHasSelectedPolyline,
   selectSelectionLocked,
   selectShapeRecordMap,
 } from "@/store/selectors";
@@ -125,15 +124,19 @@ export default function EditorShell({
   const activePresetId = useEditor((state) => state.transient.activePresetId);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
   const groupSelection = useEditor((state) => state.groupSelection);
+  const insertPolylinePoint = useEditor((state) => state.insertPolylinePoint);
   const nudgeShapes = useEditor((state) => state.nudgeShapes);
   const removeShapes = useEditor((state) => state.removeShapes);
+  const removePolylinePoint = useEditor((state) => state.removePolylinePoint);
   const replaceDesign = useEditor((state) => state.replaceDesign);
   const rotateShapes = useEditor((state) => state.rotateShapes);
   const setGroupName = useEditor((state) => state.setGroupName);
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setActivePresetId = useEditor((state) => state.setActivePresetId);
+  const setSegmentSelection = useEditor((state) => state.setSegmentSelection);
   const setSelection = useEditor((state) => state.setSelection);
   const setShapesLocked = useEditor((state) => state.setShapesLocked);
+  const setVertexSelection = useEditor((state) => state.setVertexSelection);
   const ungroupSelection = useEditor((state) => state.ungroupSelection);
   const historyPaused = useEditor((state) => state.historyPaused);
   const interactionSessionDepth = useEditor(
@@ -141,9 +144,12 @@ export default function EditorShell({
   );
   const designShapes = useEditor(selectDesignShapes);
   const hasPath = useEditor(selectHasPath);
-  const hasSelectedPolyline = useEditor(selectHasSelectedPolyline);
   const shapeById = useEditor(selectShapeRecordMap);
   const selectionLocked = useEditor(selectSelectionLocked);
+  const segmentSelection = useEditor(
+    (state) => state.transient.segmentSelection
+  );
+  const vertexSelection = useEditor((state) => state.transient.vertexSelection);
   const singleSelectedShape =
     selection.length === 1 ? (shapeById[selection[0]] ?? null) : null;
   const selectedShapes = selection.map((id) => shapeById[id]).filter(Boolean);
@@ -168,6 +174,22 @@ export default function EditorShell({
   const singleSelectedShapeLabel = singleSelectedShape
     ? shapeKindLabels[singleSelectedShape.kind]
     : null;
+  const selectedPolylineSegment =
+    singleSelectedShape?.kind === "polyline" &&
+    segmentSelection?.shapeId === singleSelectedShape.id
+      ? segmentSelection
+      : null;
+  const selectedPolylineVertex =
+    singleSelectedShape?.kind === "polyline" &&
+    vertexSelection?.shapeId === singleSelectedShape.id
+      ? vertexSelection
+      : null;
+  const canAddSelectedPolylineWaypoint = Boolean(
+    selectedPolylineSegment && !singleSelectedShape?.locked
+  );
+  const canDeleteSelectedPolylineWaypoint = Boolean(
+    selectedPolylineVertex && !singleSelectedShape?.locked
+  );
   const mobilePrecisionStep = Math.min(design.field.gridStep, 0.1);
   const activePreset = getLayoutPresetById(activePresetId);
   const activePresetLabel = activePreset?.name ?? null;
@@ -478,10 +500,12 @@ export default function EditorShell({
 
   const handleResumeSelectedPath = useCallback(
     (shapeId: string) => {
+      const shape = shapeById[shapeId];
+      if (!shape || shape.kind !== "polyline" || shape.locked) return;
       handleTabChange("2d");
       canvasRef.current?.resumePolylineEditing(shapeId);
     },
-    [handleTabChange]
+    [handleTabChange, shapeById]
   );
 
   const openPresetPicker = useCallback(() => {
@@ -803,7 +827,6 @@ export default function EditorShell({
           draftPathLength={mobileDraftPathState.length}
           draftPathPointCount={mobileDraftPathState.pointCount}
           hasPath={hasPath}
-          hasSelectedPolyline={hasSelectedPolyline}
           pathBuilderPinnedOpen={mobilePathBuilderPinnedOpen}
           mobileInspectorOpen={mobileInspectorOpen}
           mobileToolsOpen={mobileToolsOpen}
@@ -823,7 +846,15 @@ export default function EditorShell({
             singleSelectedShape && !selectionLocked
           )}
           singleSelectionCanQuickAdjust={Boolean(
-            singleSelectedShape && singleSelectedShape.kind !== "polyline"
+            singleSelectedShape &&
+            (!singleSelectedShape.locked ||
+              singleSelectedShape.kind !== "polyline")
+          )}
+          canAddWaypoint={canAddSelectedPolylineWaypoint}
+          canDeleteWaypoint={canDeleteSelectedPolylineWaypoint}
+          canResumePathEditing={Boolean(
+            singleSelectedShape?.kind === "polyline" &&
+            !singleSelectedShape.locked
           )}
           singleSelectionCanRotate={singleSelectionCanRotate}
           selectionLocked={selectionLocked}
@@ -870,6 +901,29 @@ export default function EditorShell({
             if (!selection.length) return;
             removeShapes(selection);
           }}
+          onAddWaypoint={() => {
+            const shape = singleSelectedShape;
+            const target = selectedPolylineSegment;
+            if (!shape || shape.kind !== "polyline" || !target) return;
+            const start = shape.points[target.segmentIndex];
+            const nextIndex =
+              target.segmentIndex === shape.points.length - 1
+                ? 0
+                : target.segmentIndex + 1;
+            const end = shape.points[nextIndex];
+            if (!start || !end) return;
+            const insertIndex =
+              shape.closed && target.segmentIndex === shape.points.length - 1
+                ? shape.points.length
+                : target.segmentIndex + 1;
+            insertPolylinePoint(shape.id, insertIndex, {
+              x: +target.point.x.toFixed(2),
+              y: +target.point.y.toFixed(2),
+              z: +(((start.z ?? 0) + (end.z ?? 0)) / 2).toFixed(2),
+            });
+            setSegmentSelection(null);
+            setVertexSelection({ shapeId: shape.id, idx: insertIndex });
+          }}
           onGroupSelection={() => {
             if (selection.length < 2) return;
             groupSelection(selection);
@@ -877,6 +931,13 @@ export default function EditorShell({
           onDuplicateSelection={() => {
             if (!selection.length) return;
             duplicateShapes(selection);
+          }}
+          onDeleteWaypoint={() => {
+            const shape = singleSelectedShape;
+            const target = selectedPolylineVertex;
+            if (!shape || shape.kind !== "polyline" || !target) return;
+            removePolylinePoint(shape.id, target.idx);
+            setVertexSelection(null);
           }}
           onUndo={undo}
           onRedo={redo}

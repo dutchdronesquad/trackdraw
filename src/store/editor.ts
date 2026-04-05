@@ -37,6 +37,11 @@ interface EditorTransientState {
   panOffset: { x: number; y: number };
   hoveredShapeId: string | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
+  segmentSelection: {
+    shapeId: string;
+    segmentIndex: number;
+    point: { x: number; y: number };
+  } | null;
   vertexSelection: { shapeId: string; idx: number } | null;
   draftPath: DraftPoint[];
   draftForceClosed: boolean;
@@ -100,6 +105,26 @@ interface EditorState {
   setPanOffset: (offset: { x: number; y: number }) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
   setHoveredWaypoint: (w: { shapeId: string; idx: number } | null) => void;
+  setSegmentSelection: (
+    value:
+      | {
+          shapeId: string;
+          segmentIndex: number;
+          point: { x: number; y: number };
+        }
+      | null
+      | ((
+          previous: {
+            shapeId: string;
+            segmentIndex: number;
+            point: { x: number; y: number };
+          } | null
+        ) => {
+          shapeId: string;
+          segmentIndex: number;
+          point: { x: number; y: number };
+        } | null)
+  ) => void;
   setVertexSelection: (
     value:
       | { shapeId: string; idx: number }
@@ -365,6 +390,7 @@ export const useEditor = create<EditorState>()(
         panOffset: { x: 0, y: 0 },
         hoveredShapeId: null,
         hoveredWaypoint: null,
+        segmentSelection: null,
         vertexSelection: null,
         draftPath: [],
         draftForceClosed: false,
@@ -521,6 +547,7 @@ export const useEditor = create<EditorState>()(
           const shape = draft.design.shapeById[id];
           if (!shape || shape.kind !== "polyline") return;
           shape.points.splice(index, 0, point);
+          draft.transient.segmentSelection = null;
           draft.design.updatedAt = nowIso();
         }),
 
@@ -531,6 +558,7 @@ export const useEditor = create<EditorState>()(
           if (shape.points.length <= 2) return;
           if (index < 0 || index >= shape.points.length) return;
           shape.points.splice(index, 1);
+          draft.transient.segmentSelection = null;
           draft.design.updatedAt = nowIso();
         }),
 
@@ -799,6 +827,10 @@ export const useEditor = create<EditorState>()(
       setSelection: (ids) =>
         set((draft) => {
           draft.selection = expandGroupedSelection(draft.design, ids);
+          draft.transient.segmentSelection = null;
+          if (draft.selection.length !== 1) {
+            draft.transient.vertexSelection = null;
+          }
         }),
 
       setActiveTool: (tool) =>
@@ -840,6 +872,7 @@ export const useEditor = create<EditorState>()(
           draft.transient.activeTool = "select";
           draft.transient.hoveredShapeId = null;
           draft.transient.hoveredWaypoint = null;
+          draft.transient.segmentSelection = null;
           draft.transient.vertexSelection = null;
           draft.transient.draftPath = [];
           draft.transient.draftForceClosed = false;
@@ -864,12 +897,26 @@ export const useEditor = create<EditorState>()(
           draft.transient.hoveredWaypoint = w;
         }),
 
+      setSegmentSelection: (value) =>
+        set((draft) => {
+          draft.transient.segmentSelection =
+            typeof value === "function"
+              ? value(draft.transient.segmentSelection)
+              : value;
+          if (draft.transient.segmentSelection) {
+            draft.transient.vertexSelection = null;
+          }
+        }),
+
       setVertexSelection: (value) =>
         set((draft) => {
           draft.transient.vertexSelection =
             typeof value === "function"
               ? value(draft.transient.vertexSelection)
               : value;
+          if (draft.transient.vertexSelection) {
+            draft.transient.segmentSelection = null;
+          }
         }),
 
       setDraftPath: (value) =>
@@ -929,6 +976,7 @@ export const useEditor = create<EditorState>()(
           draft.transient.panOffset = { x: 0, y: 0 };
           draft.transient.hoveredShapeId = null;
           draft.transient.hoveredWaypoint = null;
+          draft.transient.segmentSelection = null;
           draft.transient.vertexSelection = null;
           draft.transient.draftPath = [];
           draft.transient.draftForceClosed = false;

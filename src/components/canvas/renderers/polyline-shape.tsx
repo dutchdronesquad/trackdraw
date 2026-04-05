@@ -25,7 +25,10 @@ export interface PolylineShapeContentProps {
   hoveredWaypoint: { shapeId: string; idx: number } | null;
   isMobile: boolean;
   isSelected: boolean;
+  onPathContextMenu?: (segmentIndex: number) => void;
   path: PolylineShape;
+  selectedSegmentIndex: number | null;
+  selectedSegmentPoint: { x: number; y: number } | null;
   resolveWaypointDragPosition: (
     pos: Vector2d,
     snapEnabled: boolean
@@ -34,6 +37,13 @@ export interface PolylineShapeContentProps {
   setDragSnapPreview: React.Dispatch<
     React.SetStateAction<{ x: number; y: number } | null>
   >;
+  setSegmentSelection: (
+    value: {
+      shapeId: string;
+      segmentIndex: number;
+      point: { x: number; y: number };
+    } | null
+  ) => void;
   setVertexSel: (value: { shapeId: string; idx: number } | null) => void;
   setPolylinePoints: (id: string, points: PolylinePoint[]) => void;
   zmax: number;
@@ -48,10 +58,14 @@ export function PolylineShapeContent({
   hoveredWaypoint,
   isMobile,
   isSelected,
+  onPathContextMenu,
   path,
+  selectedSegmentIndex,
+  selectedSegmentPoint,
   resolveWaypointDragPosition,
   setSelection,
   setDragSnapPreview,
+  setSegmentSelection,
   setVertexSel,
   setPolylinePoints,
   zmax,
@@ -123,11 +137,15 @@ export function PolylineShapeContent({
     () => getPolylineSmoothPointsPx(displayPath, designPpm),
     [designPpm, displayPath]
   );
+  const shouldRenderPerSegment =
+    (showWarningVisuals && warningSegments.length > 0) ||
+    (isSelected && selectedSegmentIndex !== null);
   const arrowMarkers = polylineMetrics.arrowMarkers;
   const color = displayPath.color ?? "#3b82f6";
   const waypointRadius = Math.max(4, m2px(0.08, designPpm));
+  const waypointDesktopHitRadius = Math.max(10, waypointRadius * 2.35);
   const waypointTouchRadius = isMobile
-    ? Math.max(14, waypointRadius * 2.75)
+    ? Math.max(22, waypointRadius * 3.6)
     : waypointRadius;
   const buildPreviewPoints = useCallback(
     (points: PolylinePoint[], index: number, resolved: Vector2d) =>
@@ -141,6 +159,46 @@ export function PolylineShapeContent({
           : candidate
       ),
     [designPpm]
+  );
+
+  const resolveClosestPointOnPolyline = useCallback(
+    (points: number[], pointer: Vector2d) => {
+      let bestPoint = { x: pointer.x, y: pointer.y };
+      let bestDistanceSq = Number.POSITIVE_INFINITY;
+
+      for (let index = 0; index <= points.length - 4; index += 2) {
+        const startX = points[index];
+        const startY = points[index + 1];
+        const endX = points[index + 2];
+        const endY = points[index + 3];
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const lengthSq = dx * dx + dy * dy;
+        const t =
+          lengthSq > 0
+            ? Math.max(
+                0,
+                Math.min(
+                  1,
+                  ((pointer.x - startX) * dx + (pointer.y - startY) * dy) /
+                    lengthSq
+                )
+              )
+            : 0;
+        const projectedX = startX + dx * t;
+        const projectedY = startY + dy * t;
+        const distanceSq =
+          (pointer.x - projectedX) ** 2 + (pointer.y - projectedY) ** 2;
+
+        if (distanceSq < bestDistanceSq) {
+          bestDistanceSq = distanceSq;
+          bestPoint = { x: projectedX, y: projectedY };
+        }
+      }
+
+      return bestPoint;
+    },
+    []
   );
 
   const clientToStagePoint = useCallback(
@@ -357,8 +415,130 @@ export function PolylineShapeContent({
   ) => {
     event.cancelBubble = true;
     setSelection([path.id]);
+    setSegmentSelection(null);
     setVertexSel(null);
   };
+
+  const selectNearestSegment = useCallback(
+    (pointer: Vector2d) => {
+      if (path.points.length < 2) return null;
+
+      let bestSegmentIndex = 0;
+      let bestPointPx = { x: pointer.x, y: pointer.y };
+      let bestDistanceSq = Number.POSITIVE_INFINITY;
+      const lastIndex = displayPath.points.length - 1;
+      const segmentCount = path.closed ? displayPath.points.length : lastIndex;
+
+      for (let index = 0; index < segmentCount; index += 1) {
+        const nextIndex = index === lastIndex ? 0 : index + 1;
+        const start = displayPath.points[index];
+        const end = displayPath.points[nextIndex];
+        if (!start || !end) continue;
+
+        const closestPoint =
+          smoothSegmentPx[index]?.length >= 4
+            ? resolveClosestPointOnPolyline(smoothSegmentPx[index], pointer)
+            : resolveClosestPointOnPolyline(
+                [
+                  m2px(start.x, designPpm),
+                  m2px(start.y, designPpm),
+                  m2px(end.x, designPpm),
+                  m2px(end.y, designPpm),
+                ],
+                pointer
+              );
+        const distanceSq =
+          (pointer.x - closestPoint.x) ** 2 + (pointer.y - closestPoint.y) ** 2;
+
+        if (distanceSq < bestDistanceSq) {
+          bestDistanceSq = distanceSq;
+          bestSegmentIndex = index;
+          bestPointPx = closestPoint;
+        }
+      }
+
+      return { segmentIndex: bestSegmentIndex, pointPx: bestPointPx };
+    },
+    [
+      designPpm,
+      displayPath.points,
+      path.closed,
+      path.points.length,
+      resolveClosestPointOnPolyline,
+      smoothSegmentPx,
+    ]
+  );
+
+  const handleSegmentSelection = useCallback(
+    (event: KonvaEventObject<MouseEvent | TouchEvent>) => {
+      const stage = event.target.getStage();
+      const pointer = stage?.getRelativePointerPosition();
+      if (!pointer) return;
+      const selection = selectNearestSegment(pointer);
+      if (!selection) return;
+
+      event.cancelBubble = true;
+      setSelection([path.id]);
+      setSegmentSelection({
+        shapeId: path.id,
+        segmentIndex: selection.segmentIndex,
+        point: {
+          x: px2m(selection.pointPx.x, designPpm),
+          y: px2m(selection.pointPx.y, designPpm),
+        },
+      });
+      setVertexSel(null);
+    },
+    [
+      designPpm,
+      path.id,
+      selectNearestSegment,
+      setSegmentSelection,
+      setSelection,
+      setVertexSel,
+    ]
+  );
+
+  const handleMobileSegmentTouchEnd = useCallback(
+    (event: KonvaEventObject<TouchEvent>) => {
+      if (!isMobile || !isSelected) return;
+      handleSegmentSelection(event);
+    },
+    [handleSegmentSelection, isMobile, isSelected]
+  );
+
+  const handlePathContextMenu = useCallback(
+    (event: KonvaEventObject<PointerEvent>) => {
+      event.evt.preventDefault();
+      const stage = event.target.getStage();
+      const pointer = stage?.getRelativePointerPosition();
+      if (!pointer) return;
+      const selection = selectNearestSegment(pointer);
+      if (!selection) return;
+
+      event.cancelBubble = true;
+      setSelection([path.id]);
+      setSegmentSelection({
+        shapeId: path.id,
+        segmentIndex: selection.segmentIndex,
+        point: {
+          x: px2m(selection.pointPx.x, designPpm),
+          y: px2m(selection.pointPx.y, designPpm),
+        },
+      });
+      setVertexSel(null);
+      onPathContextMenu?.(selection.segmentIndex);
+    },
+    [
+      designPpm,
+      onPathContextMenu,
+      path.id,
+      selectNearestSegment,
+      setSegmentSelection,
+      setSelection,
+      setVertexSel,
+    ]
+  );
 
   if (!pointsPxMemo.length) return null;
 
@@ -373,7 +553,10 @@ export function PolylineShapeContent({
           lineCap="round"
           lineJoin="round"
           onMouseDown={handlePathSelect}
-          onTap={handlePathSelect}
+          onMouseUp={handleSegmentSelection}
+          onTouchEnd={handleMobileSegmentTouchEnd}
+          onTap={handleSegmentSelection}
+          onContextMenu={handlePathContextMenu}
         />
       )}
       {isSelected && (
@@ -388,19 +571,20 @@ export function PolylineShapeContent({
         />
       )}
       <Group listening={false}>
-        {showWarningVisuals && warningSegments.length ? (
+        {shouldRenderPerSegment ? (
           smoothSegmentPx.map((points, segmentIndex) => {
             if (!points || points.length < 4) return null;
             const warningKind = warningKindBySegment.get(segmentIndex);
-            const stroke = !warningKind
-              ? path.color
-                ? color
-                : zToColor(path.points.at(0)?.z ?? 0, zmin, zmax)
-              : warningKind === "close-points"
+            const baseStroke = path.color
+              ? color
+              : zToColor(path.points.at(0)?.z ?? 0, zmin, zmax);
+            const stroke = warningKind
+              ? warningKind === "close-points"
                 ? "#ef4444"
                 : warningKind === "steep"
                   ? "#f97316"
-                  : "#fbbf24";
+                  : "#fbbf24"
+              : baseStroke;
 
             return (
               <Line
@@ -459,6 +643,35 @@ export function PolylineShapeContent({
         })}
       </Group>
       {allowInteraction &&
+        isMobile &&
+        !path.locked &&
+        selectedSegmentIndex !== null &&
+        selectedSegmentPoint &&
+        (() => {
+          const mx = m2px(selectedSegmentPoint.x, designPpm);
+          const my = m2px(selectedSegmentPoint.y, designPpm);
+          return (
+            <Group listening={false}>
+              <Circle
+                x={mx}
+                y={my}
+                radius={Math.max(9, waypointRadius * 2.2)}
+                fill="#3b82f6"
+                opacity={0.18}
+              />
+              <Circle
+                x={mx}
+                y={my}
+                radius={Math.max(5.5, waypointRadius * 1.2)}
+                fill="#ffffff"
+                stroke="#3b82f6"
+                strokeWidth={1.5}
+                opacity={0.96}
+              />
+            </Group>
+          );
+        })()}
+      {allowInteraction &&
         !path.locked &&
         displayPath.points.map((point, index) => {
           const x = m2px(point.x, designPpm);
@@ -476,6 +689,7 @@ export function PolylineShapeContent({
           ) => {
             event.cancelBubble = true;
             setSelection([path.id]);
+            setSegmentSelection(null);
             setVertexSel({ shapeId: path.id, idx: index });
             const stage = event.target.getStage();
             if (!stage) return;
@@ -514,11 +728,13 @@ export function PolylineShapeContent({
               onMouseDown={handlePointerDown}
               onTouchStart={handlePointerDown}
             >
-              {isMobile && (
+              {(isMobile || allowInteraction) && (
                 <Circle
-                  x={0}
-                  y={0}
-                  radius={waypointTouchRadius}
+                  x={isMobile ? 0 : x}
+                  y={isMobile ? 0 : y}
+                  radius={
+                    isMobile ? waypointTouchRadius : waypointDesktopHitRadius
+                  }
                   fill="#000000"
                   opacity={0.001}
                 />
