@@ -1386,7 +1386,6 @@ const TrackCanvas = memo(
                       }}
                       setDragSnapPreview={setDragSnapPreview}
                       resolveShapeDragPosition={resolveShapeDragPosition}
-                      waypointDragBound={waypointDragBound}
                       resolveWaypointDragPosition={resolveWaypointDragPosition}
                       setPolylinePoints={setPolylinePoints}
                       updateShape={updateShape}

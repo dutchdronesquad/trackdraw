@@ -47,7 +47,6 @@ export interface TrackShapeNodeProps {
   shape: Shape;
   shapeRef: (node: KonvaGroup | null) => void;
   resolveShapeDragPosition: (pos: Vector2d, snapEnabled: boolean) => Vector2d;
-  waypointDragBound: (pos: Vector2d) => Vector2d;
   resolveWaypointDragPosition: (
     pos: Vector2d,
     snapEnabled: boolean
@@ -91,7 +90,6 @@ function TrackShapeNodeComponent({
   shape,
   shapeRef,
   resolveShapeDragPosition,
-  waypointDragBound,
   resolveWaypointDragPosition,
   setPolylinePoints,
   updateShape,
