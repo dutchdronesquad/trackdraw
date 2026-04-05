@@ -151,9 +151,8 @@ export default function LoginPage() {
                           <span className="text-foreground font-medium">
                             {email}
                           </span>
-                          . Open it on this device, or another one, to
-                          continue. If it does not show up soon, check your
-                          spam folder.
+                          . Open it on this device, or another one, to continue.
+                          If it does not show up soon, check your spam folder.
                         </p>
                       </div>
                     </div>
