@@ -147,12 +147,12 @@ export default function LoginPage() {
                           Check your inbox
                         </p>
                         <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                          We sent a one-time sign-in link to{" "}
+                          Your one-time sign-in link was sent to{" "}
                           <span className="text-foreground font-medium">
                             {email}
                           </span>
-                          . Open it on this device or another device to
-                          continue.
+                          . Open it on this device, or another one, to continue.
+                          If it does not show up soon, check your spam folder.
                         </p>
                       </div>
                     </div>
