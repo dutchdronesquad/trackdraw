@@ -7,11 +7,11 @@ import {
   Copy,
   GitMerge,
   Group,
+  Link2,
   Lock,
   PencilLine,
   RotateCcw,
   RotateCw,
-  Scan,
   Trash2,
   Unlock,
   Ungroup,
@@ -162,8 +162,8 @@ export function CanvasContextMenuContent({
                 onClose();
               }}
             >
-              <Scan className="size-3.5" />
-              Close loop
+              <Link2 className="size-3.5" />
+              Connect ends
             </ContextMenuItem>
           )}
         </ContextMenuGroup>

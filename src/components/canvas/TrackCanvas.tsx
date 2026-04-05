@@ -56,6 +56,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { Kbd } from "@/components/ui/kbd";
 import { CanvasContextMenuContent } from "@/components/canvas/CanvasContextMenu";
 import { Scan } from "lucide-react";
 
@@ -1320,22 +1321,63 @@ const TrackCanvas = memo(
           style={{ cursor: cursorStyle, touchAction: "none" }}
         >
           <div
-            className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 items-center gap-2 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
+            className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 flex max-w-[min(32rem,calc(100vw-7rem))] flex-col gap-1 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
             style={{
               top: RULER_SIZE + 6,
               left: RULER_SIZE + 6,
               display: showDesktopCanvasChrome ? "flex" : "none",
             }}
           >
-            <span>
-              {design.field.width}m × {design.field.height}m
-            </span>
-            <span className="text-border">·</span>
-            <span>Grid {design.field.gridStep}m</span>
-            <span className="text-border">·</span>
-            <span>
-              {activeTool === "polyline" ? "Smart snap" : "Grid snap"}
-            </span>
+            {draftPath.length > 0 ? (
+              <div className="text-foreground/80 flex flex-wrap items-center gap-1.5">
+                <span className="bg-primary/8 text-primary rounded-full px-1.5 py-0.5 font-medium">
+                  Path editing
+                </span>
+                <span className="text-muted-foreground/60">Add points</span>
+                <span className="text-border/80">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-[4px] px-1 text-[10px] shadow-none">
+                    Enter
+                  </Kbd>
+                  <span className="text-muted-foreground/70">finish</span>
+                </span>
+                <span className="text-border/80">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-[4px] px-1 text-[10px] shadow-none">
+                    Esc
+                  </Kbd>
+                  <span className="text-muted-foreground/70">cancel</span>
+                </span>
+                {draftCloseTarget && (
+                  <>
+                    <span className="text-border/80">·</span>
+                    <span className="rounded-full bg-amber-500/12 px-1.5 py-0.5 text-amber-600 dark:text-amber-300">
+                      Click to connect ends
+                    </span>
+                  </>
+                )}
+                {draftLengthWithCursor > 0 && (
+                  <>
+                    <span className="text-border/80">·</span>
+                    <span className="text-foreground/70 font-medium tabular-nums">
+                      {draftLengthWithCursor.toFixed(1)} m
+                    </span>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span>
+                  {design.field.width}m × {design.field.height}m
+                </span>
+                <span className="text-border">·</span>
+                <span>Grid {design.field.gridStep}m</span>
+                <span className="text-border">·</span>
+                <span>
+                  {activeTool === "polyline" ? "Smart snap" : "Grid snap"}
+                </span>
+              </div>
+            )}
           </div>
           <div
             className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-10.5 right-2 z-20 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
@@ -1961,28 +2003,6 @@ const TrackCanvas = memo(
                 }}
               />
             </>
-          )}
-
-          {/* Status overlay */}
-          {draftPath.length > 0 && !isMobile && (
-            <div className="text-primary/70 bg-background/80 border-border/40 pointer-events-none absolute inset-x-0 bottom-0 border-t px-3 py-2 text-[11px]">
-              {isMobile ? "Tap" : "Click"} to add points ·{" "}
-              {isMobile ? "double-tap" : "double-click"} or{" "}
-              <span className="text-foreground/60 font-medium">Enter</span> to
-              finish ·{" "}
-              <span className="text-foreground/60 font-medium">Esc</span> to
-              cancel
-              {draftCloseTarget && (
-                <span className="ml-3 text-amber-500/90">
-                  Release to close loop
-                </span>
-              )}
-              {draftLengthWithCursor > 0 && (
-                <span className="text-muted-foreground/60 ml-3">
-                  {draftLengthWithCursor.toFixed(1)} m
-                </span>
-              )}
-            </div>
           )}
         </ContextMenuTrigger>
 

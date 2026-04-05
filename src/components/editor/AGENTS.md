@@ -34,6 +34,8 @@ Follow the repository-level guidance in the root `AGENTS.md` and keep contributo
 - Prefer deriving button disabled state from existing props rather than duplicating eligibility logic locally.
 - Keep transient UI state local only when it is purely presentational, such as temporary panel expansion.
 - If a component grows more complex, extract small focused subcomponents instead of adding deeply nested conditionals.
+- Never solve editor layout by nesting one card-like surface inside another card-like surface. Prefer spacing, dividers, typography, or grouping within a single surface before adding extra bordered containers.
+- The reason is product clarity: card-in-card layouts make hierarchy feel muddy, add unnecessary density, and can make action groups look bolted on instead of intentionally integrated.
 
 ## Verification Checklist
 
