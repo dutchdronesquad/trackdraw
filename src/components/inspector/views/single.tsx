@@ -9,12 +9,12 @@ import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   Copy,
+  Link2,
   Lock,
   LockOpen,
   PencilLine,
   Plus,
   PlusCircle,
-  Scan,
   Trash2,
   Ungroup,
   X,
@@ -110,6 +110,13 @@ export function SingleInspectorView({
   const groupId = getShapeGroupId(shape);
   const groupName = getShapeGroupName(shape) ?? "";
   const directionReversed = Boolean(directionReversedByShape[shape.id]);
+  const showPathActions =
+    shape.kind === "polyline" &&
+    (Boolean(onResumeSelectedPath) || (!shape.closed && shape.points.length >= 3));
+  const actionBtnClass =
+    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+  const actionBtnPrimaryClass =
+    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/25 bg-primary/8 px-2.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -125,36 +132,76 @@ export function SingleInspectorView({
               shape.locked ? "locked" : "editable",
             ]}
           />
-          <div className="flex flex-wrap items-center gap-1.5">
-            <IconBtn
-              onClick={() => setShapesLocked([shape.id], !shape.locked)}
-              title={shape.locked ? "Unlock" : "Lock"}
-              label={shape.locked ? "Unlock" : "Lock"}
-            >
-              {shape.locked ? (
-                <Lock className="size-3 text-amber-400" />
-              ) : (
-                <LockOpen className="size-3" />
-              )}
-            </IconBtn>
-            <IconBtn
-              onClick={() => duplicateShapes([shape.id])}
-              title="Duplicate"
-              label="Duplicate"
-            >
-              <Copy className="size-3" />
-            </IconBtn>
-            <IconBtn
-              onClick={() => {
-                removeShapes([shape.id]);
-                setSelection([]);
-              }}
-              title="Delete"
-              danger
-              label="Delete"
-            >
-              <Trash2 className="size-3" />
-            </IconBtn>
+          <div className="space-y-2.5">
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setShapesLocked([shape.id], !shape.locked)}
+                title={shape.locked ? "Unlock" : "Lock"}
+                aria-label={shape.locked ? "Unlock" : "Lock"}
+                className={actionBtnClass}
+              >
+                {shape.locked ? (
+                  <Lock className="size-3 text-amber-400" />
+                ) : (
+                  <LockOpen className="size-3" />
+                )}
+                <span>{shape.locked ? "Unlock" : "Lock"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => duplicateShapes([shape.id])}
+                title="Duplicate"
+                aria-label="Duplicate"
+                className={actionBtnClass}
+              >
+                <Copy className="size-3" />
+                <span>Duplicate</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  removeShapes([shape.id]);
+                  setSelection([]);
+                }}
+                title="Delete"
+                aria-label="Delete"
+                className={`${actionBtnClass} border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
+              >
+                <Trash2 className="size-3" />
+                <span>Delete</span>
+              </button>
+            </div>
+            {showPathActions ? (
+              <div className="grid grid-cols-2 gap-1.5">
+                {onResumeSelectedPath ? (
+                  <button
+                    type="button"
+                    onClick={() => onResumeSelectedPath(shape.id)}
+                    title="Continue editing"
+                    aria-label="Continue editing"
+                    disabled={shape.locked}
+                    className={`${actionBtnPrimaryClass} w-full`}
+                  >
+                    <PencilLine className="size-3" />
+                    <span>Continue editing</span>
+                  </button>
+                ) : null}
+                {!shape.closed && shape.points.length >= 3 ? (
+                  <button
+                    type="button"
+                    onClick={() => closePolyline(shape.id)}
+                    title="Connect ends"
+                    aria-label="Connect ends"
+                    disabled={shape.locked}
+                    className={`${actionBtnClass} w-full`}
+                  >
+                    <Link2 className="size-3" />
+                    <span>Connect ends</span>
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           {groupId && (
             <Section title="Group">
@@ -204,20 +251,30 @@ export function SingleInspectorView({
                 className="bg-muted/50 border-border/70 focus-visible:border-primary/50 focus-visible:ring-primary/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
               />
             </Row>
-            <Row label="X">
-              <Num
-                value={fmt(anchorPosition.x)}
-                onChange={(value) => updateShape(shape.id, { x: value })}
-              />
-            </Row>
-            <Row label="Y">
-              <Num
-                value={fmt(anchorPosition.y)}
-                onChange={(value) => updateShape(shape.id, { y: value })}
-              />
+            <Row label="Position">
+              <div className="grid grid-cols-2 gap-2">
+                <label className="min-w-0">
+                  <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
+                    X (m)
+                  </span>
+                  <Num
+                    value={fmt(anchorPosition.x)}
+                    onChange={(value) => updateShape(shape.id, { x: value })}
+                  />
+                </label>
+                <label className="min-w-0">
+                  <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
+                    Y (m)
+                  </span>
+                  <Num
+                    value={fmt(anchorPosition.y)}
+                    onChange={(value) => updateShape(shape.id, { y: value })}
+                  />
+                </label>
+              </div>
             </Row>
             {shape.kind !== "cone" && (
-              <Row label="Rotation">
+              <Row label="Rotation (deg)">
                 <Num
                   value={shape.rotation}
                   onChange={(value) =>
@@ -229,17 +286,27 @@ export function SingleInspectorView({
             )}
             <Row label="Color">
               <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  className="border-border/40 size-9 cursor-pointer rounded-md border bg-transparent lg:size-6 lg:rounded"
-                  value={defaultColor}
-                  onFocus={startBatch}
-                  onBlur={finishBatch}
-                  onChange={(event) =>
-                    updateShape(shape.id, { color: event.target.value })
-                  }
-                />
-                <span className="text-muted-foreground font-mono text-[11px]">
+                <label className="group relative block cursor-pointer">
+                  <span
+                    className="border-border/45 shadow-xs block size-9 rounded-lg border transition-transform group-hover:scale-[1.03] lg:size-7"
+                    style={{
+                      background: `linear-gradient(135deg, ${defaultColor} 0%, color-mix(in oklab, ${defaultColor} 72%, black) 100%)`,
+                    }}
+                  />
+                  <span className="absolute inset-0 rounded-lg ring-1 ring-white/18 ring-inset" />
+                  <input
+                    type="color"
+                    className="absolute inset-0 cursor-pointer opacity-0"
+                    value={defaultColor}
+                    onFocus={startBatch}
+                    onBlur={finishBatch}
+                    onChange={(event) =>
+                      updateShape(shape.id, { color: event.target.value })
+                    }
+                    aria-label="Pick color"
+                  />
+                </label>
+                <span className="border-border/45 bg-muted/35 text-foreground/78 inline-flex h-8 items-center rounded-lg border px-2.5 font-mono text-[11px] lg:h-7">
                   {defaultColor}
                 </span>
               </div>
@@ -248,7 +315,7 @@ export function SingleInspectorView({
 
           {shape.kind === "gate" && (
             <Section title="Gate">
-              <Row label="Width">
+              <Row label="Width (m)">
                 <Num
                   value={shape.width}
                   onChange={(value) => updateShape(shape.id, { width: value })}
@@ -256,7 +323,7 @@ export function SingleInspectorView({
                   min={0.5}
                 />
               </Row>
-              <Row label="Height">
+              <Row label="Height (m)">
                 <Num
                   value={shape.height}
                   onChange={(value) => updateShape(shape.id, { height: value })}
@@ -264,7 +331,7 @@ export function SingleInspectorView({
                   min={0.5}
                 />
               </Row>
-              <Row label="Thickness">
+              <Row label="Thickness (m)">
                 <Num
                   value={shape.thick ?? 0.2}
                   onChange={(value) => updateShape(shape.id, { thick: value })}
@@ -277,7 +344,7 @@ export function SingleInspectorView({
 
           {shape.kind === "flag" && (
             <Section title="Flag">
-              <Row label="Radius">
+              <Row label="Radius (m)">
                 <Num
                   value={shape.radius}
                   onChange={(value) => updateShape(shape.id, { radius: value })}
@@ -285,7 +352,7 @@ export function SingleInspectorView({
                   min={0.05}
                 />
               </Row>
-              <Row label="Pole height">
+              <Row label="Pole height (m)">
                 <Num
                   value={shape.poleHeight ?? 3.5}
                   onChange={(value) =>
@@ -300,7 +367,7 @@ export function SingleInspectorView({
 
           {shape.kind === "cone" && (
             <Section title="Cone">
-              <Row label="Radius">
+              <Row label="Radius (m)">
                 <Num
                   value={shape.radius}
                   onChange={(value) => updateShape(shape.id, { radius: value })}
@@ -325,7 +392,7 @@ export function SingleInspectorView({
                   }
                 />
               </Row>
-              <Row label="Font size">
+              <Row label="Font size (px)">
                 <Num
                   value={shape.fontSize ?? 18}
                   onChange={(value) =>
@@ -356,7 +423,7 @@ export function SingleInspectorView({
 
           {shape.kind === "startfinish" && (
             <Section title="Start Pads">
-              <Row label="Width">
+              <Row label="Width (m)">
                 <Num
                   value={shape.width}
                   onChange={(value) => updateShape(shape.id, { width: value })}
@@ -424,7 +491,7 @@ export function SingleInspectorView({
                   min={0.1}
                 />
               </Row>
-              <Row label="Thickness">
+              <Row label="Thickness (m)">
                 <Num
                   value={shape.thick ?? 0.2}
                   onChange={(value) => updateShape(shape.id, { thick: value })}
@@ -432,7 +499,7 @@ export function SingleInspectorView({
                   min={0.05}
                 />
               </Row>
-              <Row label="Tilt (°)">
+              <Row label="Tilt (deg)">
                 <Num
                   value={shape.tilt ?? 0}
                   onChange={(value) =>
@@ -449,7 +516,7 @@ export function SingleInspectorView({
 
           {shape.kind === "polyline" && (
             <Section title="Race Line">
-              <Row label="Stroke">
+              <Row label="Stroke width (m)">
                 <Num
                   value={shape.strokeWidth ?? 0.26}
                   onChange={(value) =>
@@ -494,7 +561,7 @@ export function SingleInspectorView({
                 </Row>
               )}
               {shape.showArrows && (
-                <Row label="Every (m)">
+                <Row label="Arrow spacing (m)">
                   <Num
                     value={shape.arrowSpacing ?? 15}
                     onChange={(value) =>
@@ -507,31 +574,6 @@ export function SingleInspectorView({
                   />
                 </Row>
               )}
-              <div className="border-border/15 mt-3 border-t pt-3">
-                <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-0.5">
-                  {onResumeSelectedPath ? (
-                    <button
-                      className="border-border/35 bg-primary/6 text-primary hover:bg-primary/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-7"
-                      disabled={shape.locked}
-                      onClick={() => onResumeSelectedPath(shape.id)}
-                    >
-                      <PencilLine className="size-3" />
-                      Continue editing
-                    </button>
-                  ) : null}
-                  {!shape.closed && shape.points.length >= 3 && (
-                    <button
-                      className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-7"
-                      disabled={shape.locked}
-                      onClick={() => closePolyline(shape.id)}
-                    >
-                      <Scan className="size-3" />
-                      Close loop
-                    </button>
-                  )}
-                </div>
-              </div>
-
               <InspectorFooterMobile>
                 <ElevationChart />
               </InspectorFooterMobile>

@@ -29,6 +29,8 @@ Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md`
 
 - Prefer minimal, targeted changes over architectural churn.
 - Preserve existing visual language and interaction patterns unless the task explicitly asks for redesign.
+- Do not introduce `card in card` UI patterns. Avoid placing a smaller bordered or elevated card inside another card-like container unless there is a truly exceptional product reason.
+  From a UI/UX perspective this weakens hierarchy, creates visual clutter, and makes it less clear which surface is primary versus merely grouped content.
 - Keep TypeScript strictness intact. Avoid `any` unless there is a clear boundary reason.
 - Reuse existing helpers and types before adding parallel abstractions.
 - Be precise with existing filenames, imports, and variable names. Do not rename, substitute, or remove identifiers unless the change is intentional and verified against actual usage.
@@ -72,5 +74,7 @@ When updating `CHANGELOG.md`:
 
 - document shipped or release-bound user-facing changes, not roadmap ideas or internal planning
 - keep entries compact and product-facing rather than deeply technical
+- write for end users first: lead with what they can now do or what feels better, not internal architecture or product-strategy framing
+- prefer plain product language over internal labels such as "continuity story", "first slice", "model", or implementation terminology
 - prefer grouping small related changes into one stronger user-facing theme instead of listing low-signal implementation details
 - avoid padding the changelog with dependency bumps, refactors, or internal cleanup unless they have a clear user-visible effect

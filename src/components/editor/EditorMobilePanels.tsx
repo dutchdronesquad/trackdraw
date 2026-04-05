@@ -11,6 +11,7 @@ import {
   Copy,
   Group,
   LayoutGrid,
+  Link2,
   Lock,
   PencilLine,
   Play,
@@ -641,8 +642,8 @@ export function EditorMobilePanels({
                 disabled={draftPathPointCount < 3 || draftPathClosed}
                 className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
               >
-                <PencilLine className="size-4" />
-                <span>Close loop</span>
+                <Link2 className="size-4" />
+                <span>Connect ends</span>
               </button>
               <button
                 onClick={onFinishPath}
