@@ -29,6 +29,8 @@ export interface TrackShapeNodeProps {
   dragSnapRef: React.RefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
+  selectedSegmentIndex: number | null;
+  selectedSegmentPoint: { x: number; y: number } | null;
   isHovered: boolean;
   isMobile: boolean;
   mobileMultiSelectEnabled?: boolean;
@@ -38,11 +40,21 @@ export interface TrackShapeNodeProps {
   onMobileMultiSelectStart?: (shapeId: string) => void;
   onSelectOnly: (shapeId: string) => void;
   onToggleSelection: (shapeId: string) => void;
-  onShapeContextMenu?: (shape: Shape) => void;
+  onShapeContextMenu?: (
+    shape: Shape,
+    options?: { segmentIndex?: number | null }
+  ) => void;
   setSelection: (ids: string[]) => void;
   setDragSnapPreview: React.Dispatch<
     React.SetStateAction<{ x: number; y: number } | null>
   >;
+  setSegmentSelection: (
+    value: {
+      shapeId: string;
+      segmentIndex: number;
+      point: { x: number; y: number };
+    } | null
+  ) => void;
   setVertexSel: (value: { shapeId: string; idx: number } | null) => void;
   shape: Shape;
   shapeRef: (node: KonvaGroup | null) => void;
@@ -74,6 +86,8 @@ function TrackShapeNodeComponent({
   dragSnapRef,
   effectiveVertexSel,
   hoveredWaypoint,
+  selectedSegmentIndex,
+  selectedSegmentPoint,
   isHovered,
   isMobile,
   mobileMultiSelectEnabled = false,
@@ -86,6 +100,7 @@ function TrackShapeNodeComponent({
   onShapeContextMenu,
   setSelection,
   setDragSnapPreview,
+  setSegmentSelection,
   setVertexSel,
   shape,
   shapeRef,
@@ -205,6 +220,7 @@ function TrackShapeNodeComponent({
       draggable={
         allowInteraction &&
         !shape.locked &&
+        !(isMobile && shape.kind === "polyline") &&
         !(selected && selectionCount > 1) &&
         (!isMobile ||
           !mobileMultiSelectEnabled ||
@@ -225,6 +241,8 @@ function TrackShapeNodeComponent({
         } else if (selected && selectionCount > 1) {
           // Preserve an existing multiselect when starting a drag from within it.
           return;
+        } else if (selected && selectionCount === 1) {
+          return;
         } else {
           onSelectOnly(shape.id);
         }
@@ -242,6 +260,9 @@ function TrackShapeNodeComponent({
         }
         if (isMobile && mobileMultiSelectEnabled) {
           onToggleSelection(shape.id);
+          return;
+        }
+        if (selected && selectionCount === 1) {
           return;
         }
         onSelectOnly(shape.id);
@@ -305,10 +326,16 @@ function TrackShapeNodeComponent({
             hoveredWaypoint={hoveredWaypoint}
             isMobile={isMobile}
             isSelected={highlighted}
+            onPathContextMenu={(segmentIndex) =>
+              onShapeContextMenu?.(shape, { segmentIndex })
+            }
             path={shape}
+            selectedSegmentIndex={selectedSegmentIndex}
+            selectedSegmentPoint={selectedSegmentPoint}
             resolveWaypointDragPosition={resolveWaypointDragPosition}
             setSelection={setSelection}
             setDragSnapPreview={setDragSnapPreview}
+            setSegmentSelection={setSegmentSelection}
             setVertexSel={setVertexSel}
             setPolylinePoints={setPolylinePoints}
             zmax={zmax}

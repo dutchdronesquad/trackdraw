@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Plus,
   ArrowDown,
   ArrowUp,
   Copy,
@@ -28,8 +29,10 @@ import {
 } from "@/components/ui/context-menu";
 
 export interface ContextMenuData {
+  addWaypointSegmentIndex: number | null;
   canGroup: boolean;
   closablePolylineId: string | null;
+  deleteWaypointIndex: number | null;
   editablePolylineId: string | null;
   groupLabel: string | null;
   hasGroupedShapes: boolean;
@@ -42,6 +45,7 @@ export interface ContextMenuData {
 
 interface CanvasContextMenuContentProps {
   contextMenu: ContextMenuData;
+  onAddWaypoint: (shapeId: string, segmentIndex: number) => void;
   onClose: () => void;
   onContinueEditing: (polylineId: string) => void;
   onClosePolyline: (id: string) => void;
@@ -54,10 +58,12 @@ interface CanvasContextMenuContentProps {
   onRotate: (ids: string[], delta: number) => void;
   onUngroupSelection: (ids: string[]) => void;
   onDelete: (ids: string[]) => void;
+  onDeleteWaypoint: (shapeId: string, waypointIndex: number) => void;
 }
 
 export function CanvasContextMenuContent({
   contextMenu,
+  onAddWaypoint,
   onClose,
   onContinueEditing,
   onClosePolyline,
@@ -70,7 +76,23 @@ export function CanvasContextMenuContent({
   onRotate,
   onUngroupSelection,
   onDelete,
+  onDeleteWaypoint,
 }: CanvasContextMenuContentProps) {
+  const pathSelectionDetail =
+    contextMenu.addWaypointSegmentIndex !== null
+      ? "Segment selected"
+      : contextMenu.deleteWaypointIndex !== null
+        ? "Waypoint selected"
+        : null;
+  const hasPathActions =
+    Boolean(contextMenu.editablePolylineId) ||
+    Boolean(contextMenu.closablePolylineId);
+  const hasWaypointActions =
+    (contextMenu.editablePolylineId &&
+      contextMenu.addWaypointSegmentIndex !== null) ||
+    (contextMenu.editablePolylineId &&
+      contextMenu.deleteWaypointIndex !== null);
+
   return (
     <ContextMenuContent sideOffset={6} className="min-w-56">
       <ContextMenuGroup>
@@ -79,35 +101,75 @@ export function CanvasContextMenuContent({
             {contextMenu.label}
           </div>
           <div className="text-muted-foreground text-[11px]">
-            {contextMenu.groupLabel
-              ? contextMenu.groupLabel
-              : contextMenu.ids.length === 1
-                ? "Quick actions"
-                : `${contextMenu.ids.length} selected`}
+            {pathSelectionDetail
+              ? pathSelectionDetail
+              : contextMenu.groupLabel
+                ? contextMenu.groupLabel
+                : contextMenu.ids.length === 1
+                  ? "Quick actions"
+                  : `${contextMenu.ids.length} selected`}
           </div>
         </ContextMenuLabel>
-        {contextMenu.editablePolylineId && (
-          <ContextMenuItem
-            onClick={() => {
-              onContinueEditing(contextMenu.editablePolylineId!);
-              onClose();
-            }}
-          >
-            <PencilLine className="size-3.5" />
-            Continue editing
-          </ContextMenuItem>
-        )}
-        {contextMenu.closablePolylineId && (
-          <ContextMenuItem
-            onClick={() => {
-              onClosePolyline(contextMenu.closablePolylineId!);
-              onClose();
-            }}
-          >
-            <Scan className="size-3.5" />
-            Close loop
-          </ContextMenuItem>
-        )}
+      </ContextMenuGroup>
+      {hasPathActions && (
+        <ContextMenuGroup>
+          {contextMenu.editablePolylineId &&
+            contextMenu.addWaypointSegmentIndex !== null && (
+              <ContextMenuItem
+                onClick={() => {
+                  onAddWaypoint(
+                    contextMenu.editablePolylineId!,
+                    contextMenu.addWaypointSegmentIndex!
+                  );
+                  onClose();
+                }}
+              >
+                <Plus className="size-3.5" />
+                Add waypoint
+              </ContextMenuItem>
+            )}
+          {contextMenu.editablePolylineId &&
+            contextMenu.deleteWaypointIndex !== null && (
+              <ContextMenuItem
+                onClick={() => {
+                  onDeleteWaypoint(
+                    contextMenu.editablePolylineId!,
+                    contextMenu.deleteWaypointIndex!
+                  );
+                  onClose();
+                }}
+              >
+                <Trash2 className="size-3.5" />
+                Delete waypoint
+              </ContextMenuItem>
+            )}
+          {hasWaypointActions && hasPathActions && <ContextMenuSeparator />}
+          {contextMenu.editablePolylineId && (
+            <ContextMenuItem
+              onClick={() => {
+                onContinueEditing(contextMenu.editablePolylineId!);
+                onClose();
+              }}
+            >
+              <PencilLine className="size-3.5" />
+              Continue editing
+            </ContextMenuItem>
+          )}
+          {contextMenu.closablePolylineId && (
+            <ContextMenuItem
+              onClick={() => {
+                onClosePolyline(contextMenu.closablePolylineId!);
+                onClose();
+              }}
+            >
+              <Scan className="size-3.5" />
+              Close loop
+            </ContextMenuItem>
+          )}
+        </ContextMenuGroup>
+      )}
+      {hasPathActions && <ContextMenuSeparator />}
+      <ContextMenuGroup>
         <ContextMenuItem
           onClick={() => {
             onDuplicate(contextMenu.ids);

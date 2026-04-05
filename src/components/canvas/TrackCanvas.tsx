@@ -109,12 +109,14 @@ const TrackCanvas = memo(
     const setSelection = useEditor((state) => state.setSelection);
     const updateShape = useEditor((state) => state.updateShape);
     const setShapesLocked = useEditor((state) => state.setShapesLocked);
+    const insertPolylinePoint = useEditor((state) => state.insertPolylinePoint);
     const setPolylinePoints = useEditor((state) => state.setPolylinePoints);
     const removePolylinePoint = useEditor((state) => state.removePolylinePoint);
     const addShape = useEditor((state) => state.addShape);
     const addShapes = useEditor((state) => state.addShapes);
     const activeTool = useEditor((state) => state.transient.activeTool);
     const activePresetId = useEditor((state) => state.transient.activePresetId);
+    const segmentSel = useEditor((state) => state.transient.segmentSelection);
     const vertexSel = useEditor((state) => state.transient.vertexSelection);
     const draftPath = useEditor((state) => state.transient.draftPath);
     const draftForceClosed = useEditor(
@@ -131,6 +133,7 @@ const TrackCanvas = memo(
       (state) => state.transient.groupDragPreview
     );
     const setActiveTool = useEditor((state) => state.setActiveTool);
+    const setSegmentSel = useEditor((state) => state.setSegmentSelection);
     const setVertexSel = useEditor((state) => state.setVertexSelection);
     const setDraftPath = useEditor((state) => state.setDraftPath);
     const setDraftForceClosed = useEditor((state) => state.setDraftForceClosed);
@@ -220,8 +223,10 @@ const TrackCanvas = memo(
       scale: 1,
     });
     const [contextMenu, setContextMenu] = useState<{
+      addWaypointSegmentIndex: number | null;
       canGroup: boolean;
       closablePolylineId: string | null;
+      deleteWaypointIndex: number | null;
       editablePolylineId: string | null;
       groupLabel: string | null;
       hasGroupedShapes: boolean;
@@ -536,7 +541,11 @@ const TrackCanvas = memo(
     );
 
     const openContextMenuForSelection = useCallback(
-      (ids: string[], clickedShape?: Shape) => {
+      (
+        ids: string[],
+        clickedShape?: Shape,
+        options?: { segmentIndex?: number | null }
+      ) => {
         if (activeTool !== "select" || readOnly || ids.length === 0) return;
 
         const nextSelection =
@@ -587,18 +596,35 @@ const TrackCanvas = memo(
               })()
             : null;
         setContextMenu({
+          addWaypointSegmentIndex:
+            nextSelection.length === 1 &&
+            primaryShape?.kind === "polyline" &&
+            (options?.segmentIndex ?? null) !== null
+              ? (options?.segmentIndex ?? null)
+              : segmentSel?.shapeId === primaryShape.id
+                ? segmentSel.segmentIndex
+                : null,
           canGroup:
             nextSelection.length > 1 &&
             !selectionHasGroupedShapes(selectedShapes),
           closablePolylineId:
             nextSelection.length === 1 &&
             primaryShape?.kind === "polyline" &&
+            !primaryShape.locked &&
             !primaryShape.closed &&
             primaryShape.points.length >= 3
               ? primaryShape.id
               : null,
+          deleteWaypointIndex:
+            nextSelection.length === 1 &&
+            primaryShape?.kind === "polyline" &&
+            effectiveVertexSel?.shapeId === primaryShape.id
+              ? effectiveVertexSel.idx
+              : null,
           editablePolylineId:
-            nextSelection.length === 1 && primaryShape?.kind === "polyline"
+            nextSelection.length === 1 &&
+            primaryShape?.kind === "polyline" &&
+            !primaryShape.locked
               ? primaryShape.id
               : null,
           groupLabel,
@@ -621,18 +647,68 @@ const TrackCanvas = memo(
           rotatableIds,
         });
       },
-      [activeTool, readOnly, setSelection, shapeById]
+      [
+        activeTool,
+        effectiveVertexSel,
+        readOnly,
+        segmentSel,
+        setSelection,
+        shapeById,
+      ]
     );
 
     const openShapeContextMenu = useCallback(
-      (clickedShape: Shape) => {
+      (clickedShape: Shape, options?: { segmentIndex?: number | null }) => {
         const currentSelection = selectionRef.current;
         const ids = currentSelection.includes(clickedShape.id)
           ? currentSelection
           : [clickedShape.id];
-        openContextMenuForSelection(ids, clickedShape);
+        openContextMenuForSelection(ids, clickedShape, options);
       },
       [openContextMenuForSelection]
+    );
+
+    const addWaypointToSelectedSegment = useCallback(
+      (shapeId: string, segmentIndex: number) => {
+        const shape = shapeById[shapeId];
+        if (!shape || shape.kind !== "polyline") return;
+        const start = shape.points[segmentIndex];
+        const nextIndex =
+          segmentIndex === shape.points.length - 1 ? 0 : segmentIndex + 1;
+        const end = shape.points[nextIndex];
+        if (!start || !end) return;
+        const insertIndex =
+          shape.closed && segmentIndex === shape.points.length - 1
+            ? shape.points.length
+            : segmentIndex + 1;
+        const insertPoint =
+          segmentSel?.shapeId === shape.id &&
+          segmentSel.segmentIndex === segmentIndex
+            ? {
+                x: +segmentSel.point.x.toFixed(2),
+                y: +segmentSel.point.y.toFixed(2),
+                z: +(((start.z ?? 0) + (end.z ?? 0)) / 2).toFixed(2),
+              }
+            : {
+                x: +((start.x + end.x) / 2).toFixed(2),
+                y: +((start.y + end.y) / 2).toFixed(2),
+                z: +(((start.z ?? 0) + (end.z ?? 0)) / 2).toFixed(2),
+              };
+        insertPolylinePoint(shape.id, insertIndex, {
+          ...insertPoint,
+        });
+        setSegmentSel(null);
+        setVertexSel({ shapeId: shape.id, idx: insertIndex });
+      },
+      [insertPolylinePoint, segmentSel, setSegmentSel, setVertexSel, shapeById]
+    );
+
+    const deleteSelectedWaypoint = useCallback(
+      (shapeId: string, waypointIndex: number) => {
+        removePolylinePoint(shapeId, waypointIndex);
+        setVertexSel(null);
+      },
+      [removePolylinePoint, setVertexSel]
     );
 
     const fitFieldToViewport = useCallback(() => {
@@ -1374,6 +1450,17 @@ const TrackCanvas = memo(
                       onSelectOnly={selectOnlyShape}
                       onToggleSelection={toggleShapeSelection}
                       setSelection={setSelection}
+                      selectedSegmentIndex={
+                        segmentSel?.shapeId === shape.id
+                          ? segmentSel.segmentIndex
+                          : null
+                      }
+                      selectedSegmentPoint={
+                        segmentSel?.shapeId === shape.id
+                          ? segmentSel.point
+                          : null
+                      }
+                      setSegmentSelection={setSegmentSel}
                       setVertexSel={setVertexSel}
                       shape={displayShape}
                       shapeRef={(node) => {
@@ -1902,6 +1989,7 @@ const TrackCanvas = memo(
         {contextMenu && (
           <CanvasContextMenuContent
             contextMenu={contextMenu}
+            onAddWaypoint={addWaypointToSelectedSegment}
             onClose={() => setContextMenu(null)}
             onContinueEditing={handleContinueEditing}
             onClosePolyline={closePolyline}
@@ -1914,6 +2002,7 @@ const TrackCanvas = memo(
             onRotate={rotateShapes}
             onUngroupSelection={ungroupSelection}
             onDelete={removeShapes}
+            onDeleteWaypoint={deleteSelectedWaypoint}
           />
         )}
       </ContextMenu>

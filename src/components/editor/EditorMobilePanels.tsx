@@ -14,6 +14,7 @@ import {
   Lock,
   PencilLine,
   Play,
+  Plus,
   Redo2,
   RotateCcw,
   RotateCw,
@@ -44,7 +45,6 @@ interface EditorMobilePanelsProps {
   draftPathLength: number;
   draftPathPointCount: number;
   hasPath: boolean;
-  hasSelectedPolyline: boolean;
   pathBuilderPinnedOpen: boolean;
   mobileInspectorOpen: boolean;
   mobileMultiSelectEnabled: boolean;
@@ -61,6 +61,9 @@ interface EditorMobilePanelsProps {
   singleSelectedShapeLabel: string | null;
   singleSelectionCanNudge: boolean;
   singleSelectionCanQuickAdjust: boolean;
+  canAddWaypoint?: boolean;
+  canDeleteWaypoint?: boolean;
+  canResumePathEditing?: boolean;
   singleSelectionCanRotate: boolean;
   selectionLocked: boolean;
   selectedCount: number;
@@ -70,10 +73,12 @@ interface EditorMobilePanelsProps {
   onCloseInspector: () => void;
   onFitView: () => void;
   onDeleteSelection: () => void;
+  onAddWaypoint?: () => void;
   onGroupSelection: () => void;
   onCancelPath: () => void;
   onCloseLoop: () => void;
   onDuplicateSelection: () => void;
+  onDeleteWaypoint?: () => void;
   onExitMobileMultiSelect: () => void;
   onFinishPath: () => void;
   onRedo: () => void;
@@ -107,28 +112,40 @@ interface EditorMobilePanelsProps {
 
 function MobileQuickActionsOverlay({
   className,
+  canResumePathEditing = false,
   mobilePrecisionStep,
   mobilePrecisionStepLabel,
   onDeleteSelection,
+  onAddWaypoint,
+  onResumeSelectedPath,
   onDuplicateSelection,
+  onDeleteWaypoint,
   onNudgeSelection,
   onRotateSelection,
   onToggleSelectionLock,
   selectionLocked,
   singleSelectedShapeLabel,
+  canAddWaypoint = false,
+  canDeleteWaypoint = false,
   singleSelectionCanNudge,
   singleSelectionCanRotate,
 }: {
   className: string;
+  canResumePathEditing?: boolean;
   mobilePrecisionStep: number;
   mobilePrecisionStepLabel: string;
   onDeleteSelection: () => void;
+  onAddWaypoint?: () => void;
+  onResumeSelectedPath?: () => void;
   onDuplicateSelection: () => void;
+  onDeleteWaypoint?: () => void;
   onNudgeSelection: (dx: number, dy: number) => void;
   onRotateSelection: (delta: number) => void;
   onToggleSelectionLock: () => void;
   selectionLocked: boolean;
   singleSelectedShapeLabel: string | null;
+  canAddWaypoint?: boolean;
+  canDeleteWaypoint?: boolean;
   singleSelectionCanNudge: boolean;
   singleSelectionCanRotate: boolean;
 }) {
@@ -146,21 +163,44 @@ function MobileQuickActionsOverlay({
             {expanded ? "Adjust" : "Quick actions"}
           </p>
           <p className="truncate text-[11px] text-white/70">
-            {singleSelectedShapeLabel ?? "Selection"} ·{" "}
-            {mobilePrecisionStepLabel} step
+            {canAddWaypoint
+              ? "Add point on selected segment"
+              : canDeleteWaypoint
+                ? "Delete selected waypoint"
+                : canResumePathEditing
+                  ? "Resume or adjust this path"
+                  : `${singleSelectedShapeLabel ?? "Selection"} · ${mobilePrecisionStepLabel} step`}
           </p>
         </div>
       </div>
 
       {!expanded ? (
         <div className="grid grid-cols-4 gap-1.5">
-          <button
-            onClick={onDuplicateSelection}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <Copy className="size-4" />
-            <span>Duplicate</span>
-          </button>
+          {canAddWaypoint ? (
+            <button
+              onClick={onAddWaypoint}
+              className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <Plus className="size-4" />
+              <span>Add point</span>
+            </button>
+          ) : canResumePathEditing ? (
+            <button
+              onClick={onResumeSelectedPath}
+              className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <PencilLine className="size-4" />
+              <span>Edit path</span>
+            </button>
+          ) : (
+            <button
+              onClick={onDuplicateSelection}
+              className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <Copy className="size-4" />
+              <span>Duplicate</span>
+            </button>
+          )}
           <button
             onClick={onToggleSelectionLock}
             className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
@@ -173,11 +213,11 @@ function MobileQuickActionsOverlay({
             <span>{selectionLocked ? "Unlock" : "Lock"}</span>
           </button>
           <button
-            onClick={onDeleteSelection}
+            onClick={canDeleteWaypoint ? onDeleteWaypoint : onDeleteSelection}
             className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
           >
             <Trash2 className="size-4" />
-            <span>Delete</span>
+            <span>{canDeleteWaypoint ? "Delete point" : "Delete"}</span>
           </button>
           <button
             onClick={() => setExpanded(true)}
@@ -256,12 +296,17 @@ function MobileQuickActionsOverlay({
 export function EditorMobilePanels({
   activeTool,
   activePresetLabel,
+  canAddWaypoint = false,
+  canDeleteWaypoint = false,
+  canResumePathEditing = false,
+  canRedo,
+  canUngroupSelection,
+  canUndo,
   draftPathActive,
   draftPathClosed,
   draftPathLength,
   draftPathPointCount,
   hasPath,
-  hasSelectedPolyline,
   pathBuilderPinnedOpen,
   mobileInspectorOpen,
   mobileMultiSelectEnabled,
@@ -285,7 +330,9 @@ export function EditorMobilePanels({
   saveStatusLabel,
   tab,
   onCloseInspector,
+  onAddWaypoint,
   onDeleteSelection,
+  onDeleteWaypoint,
   onGroupSelection,
   onCancelPath,
   onCloseLoop,
@@ -316,9 +363,6 @@ export function EditorMobilePanels({
   onUndo,
   onUndoPathPoint,
   onTabChange,
-  canRedo,
-  canUngroupSelection,
-  canUndo,
   studioHref = "/studio",
 }: EditorMobilePanelsProps) {
   const mobileOverlaySurfaceClassName =
@@ -389,12 +433,6 @@ export function EditorMobilePanels({
     tab === "2d" &&
     activeTool === "polyline" &&
     (pathBuilderPinnedOpen || draftPathActive);
-  const showResumePathButton =
-    !readOnly &&
-    tab === "2d" &&
-    hasSelectedPolyline &&
-    !showPathBuilderOverlay &&
-    !mobileMultiSelectEnabled;
   const mobileStatusTitle = mobileMultiSelectEnabled ? "Multi" : "Tool";
   const mobileStatusValue =
     selectedCount > 0
@@ -420,8 +458,7 @@ export function EditorMobilePanels({
     selectedCount === 1 &&
     singleSelectionCanQuickAdjust &&
     !mobileMultiSelectEnabled &&
-    !showPathBuilderOverlay &&
-    !showResumePathButton;
+    !showPathBuilderOverlay;
 
   return (
     <>
@@ -531,45 +568,6 @@ export function EditorMobilePanels({
         </div>
       )}
 
-      {showResumePathButton && (
-        <div
-          className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
-          style={{
-            bottom: isLandscapeMobile
-              ? "calc(4.55rem + env(safe-area-inset-bottom))"
-              : "calc(5.05rem + env(safe-area-inset-bottom))",
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="pointer-events-auto w-full max-w-sm"
-          >
-            <button
-              onClick={onResumeSelectedPath}
-              className="flex w-full items-center justify-between rounded-[1.15rem] border border-white/10 bg-slate-950/86 px-3 py-2.5 text-left text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur transition-colors hover:bg-white/10"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8">
-                  <PencilLine className="size-4 text-white/85" />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
-                    Path
-                  </p>
-                  <p className="truncate text-[11px] text-white/62">
-                    Continue editing selected line
-                  </p>
-                </div>
-              </div>
-              <span className="rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-[11px] font-medium text-white/72">
-                Edit
-              </span>
-            </button>
-          </motion.div>
-        </div>
-      )}
-
       {showQuickAdjustOverlay && (
         <div
           className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
@@ -581,9 +579,15 @@ export function EditorMobilePanels({
         >
           <MobileQuickActionsOverlay
             className={mobileOverlaySurfaceClassName}
+            canResumePathEditing={canResumePathEditing}
             mobilePrecisionStep={mobilePrecisionStep}
             mobilePrecisionStepLabel={mobilePrecisionStepLabel}
+            canAddWaypoint={canAddWaypoint}
+            canDeleteWaypoint={canDeleteWaypoint}
+            onAddWaypoint={onAddWaypoint}
+            onResumeSelectedPath={onResumeSelectedPath}
             onDeleteSelection={onDeleteSelection}
+            onDeleteWaypoint={onDeleteWaypoint}
             onDuplicateSelection={onDuplicateSelection}
             onNudgeSelection={onNudgeSelection}
             onRotateSelection={onRotateSelection}

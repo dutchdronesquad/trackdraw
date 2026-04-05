@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import ElevationChart from "@/components/inspector/ElevationChart";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import type { PolylinePoint, Shape } from "@/lib/types";
@@ -84,6 +86,7 @@ export function SingleInspectorView({
   mobileInline = false,
 }: SingleInspectorViewProps) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
+  const [directionReversed, setDirectionReversed] = useState(false);
   const defaultColor = shape.color ?? "#3b82f6";
   const polylineAnchor =
     shape.kind === "polyline" && shape.points.length
@@ -105,6 +108,10 @@ export function SingleInspectorView({
   const shapeDisplayName = shape.name?.trim() || shapeKindLabels[shape.kind];
   const groupId = getShapeGroupId(shape);
   const groupName = getShapeGroupName(shape) ?? "";
+
+  useEffect(() => {
+    setDirectionReversed(false);
+  }, [shape.id]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -456,21 +463,35 @@ export function SingleInspectorView({
               </Row>
               <Row label="Flow">
                 <label className="flex h-full cursor-pointer items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="accent-foreground size-4 lg:size-3"
+                  <Switch
                     checked={Boolean(shape.showArrows)}
-                    onChange={(event) =>
+                    onCheckedChange={(checked) =>
                       updateShape(shape.id, {
-                        showArrows: event.target.checked,
+                        showArrows: checked,
                       })
                     }
                   />
                   <span className="text-muted-foreground text-[11px]">
-                    show direction
+                    {shape.showArrows ? "visible" : "hidden"}
                   </span>
                 </label>
               </Row>
+              {shape.showArrows && (
+                <Row label="Direction">
+                  <div className="flex h-full items-center gap-2">
+                    <Switch
+                      checked={directionReversed}
+                      onCheckedChange={(checked) => {
+                        reversePolylinePoints(shape.id);
+                        setDirectionReversed(checked);
+                      }}
+                    />
+                    <span className="text-muted-foreground text-[11px]">
+                      {directionReversed ? "reversed" : "default"}
+                    </span>
+                  </div>
+                </Row>
+              )}
               {shape.showArrows && (
                 <Row label="Every (m)">
                   <Num
@@ -489,25 +510,18 @@ export function SingleInspectorView({
                 <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-0.5">
                   {onResumeSelectedPath ? (
                     <button
-                      className="border-border/35 bg-primary/6 text-primary hover:bg-primary/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors lg:h-7"
+                      className="border-border/35 bg-primary/6 text-primary hover:bg-primary/10 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-7"
+                      disabled={shape.locked}
                       onClick={() => onResumeSelectedPath(shape.id)}
                     >
                       <PencilLine className="size-3" />
                       Continue editing
                     </button>
                   ) : null}
-                  <button
-                    className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors lg:h-7"
-                    onClick={() => {
-                      reversePolylinePoints(shape.id);
-                    }}
-                  >
-                    <FlipHorizontal2 className="size-3" />
-                    Flip path
-                  </button>
                   {!shape.closed && shape.points.length >= 3 && (
                     <button
-                      className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors lg:h-7"
+                      className="border-border/35 hover:bg-muted/10 text-foreground/75 inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-7"
+                      disabled={shape.locked}
                       onClick={() => closePolyline(shape.id)}
                     >
                       <Scan className="size-3" />
@@ -570,6 +584,7 @@ export function SingleInspectorView({
                           title="Elevation (m)"
                           className="text-foreground/90 focus:bg-primary/6 focus:text-foreground hover:border-border/25 focus:border-primary/30 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-hidden"
                           value={point.z ?? 0}
+                          disabled={shape.locked}
                           onFocus={startBatch}
                           onBlur={finishBatch}
                           onKeyDown={(event) => {
@@ -587,7 +602,8 @@ export function SingleInspectorView({
                           {index < shape.points.length - 1 && (
                             <button
                               title="Insert point after"
-                              className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors"
+                              disabled={shape.locked}
+                              className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
                               onClick={() => {
                                 const current = shape.points[index];
                                 const next = shape.points[index + 1];
@@ -611,7 +627,8 @@ export function SingleInspectorView({
                           )}
                           <button
                             title="Remove point"
-                            className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors"
+                            disabled={shape.locked}
+                            className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
                             onClick={() => {
                               removePolylinePoint(shape.id, index);
                             }}
@@ -624,7 +641,8 @@ export function SingleInspectorView({
                   </div>
 
                   <button
-                    className="border-border/15 text-muted-foreground/55 hover:text-foreground hover:bg-muted/6 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors lg:h-auto lg:text-[11px]"
+                    className="border-border/15 text-muted-foreground/55 hover:text-foreground hover:bg-muted/6 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-auto lg:text-[11px]"
+                    disabled={shape.locked}
                     onClick={() => {
                       const lastPoint = shape.points[
                         shape.points.length - 1
