@@ -5,6 +5,7 @@ import type { Stage as KonvaStage } from "konva/lib/Stage";
 
 interface TrackCanvasViewportParams {
   containerRef: RefObject<HTMLDivElement | null>;
+  contentDragActiveRef: RefObject<boolean>;
   fitFieldToViewport: () => void;
   hasManualViewRef: RefObject<boolean>;
   setManualView: (value: boolean) => void;
@@ -15,6 +16,7 @@ interface TrackCanvasViewportParams {
 
 export function useTrackCanvasViewport({
   containerRef,
+  contentDragActiveRef,
   fitFieldToViewport,
   hasManualViewRef,
   setManualView,
@@ -53,6 +55,7 @@ export function useTrackCanvasViewport({
 
     const onMouseDown = (event: MouseEvent) => {
       if (event.button !== 1) return;
+      if (contentDragActiveRef.current) return;
       event.preventDefault();
       middlePanActive = true;
       lastPointer = { x: event.clientX, y: event.clientY };
@@ -61,6 +64,7 @@ export function useTrackCanvasViewport({
 
     const onMouseMove = (event: MouseEvent) => {
       if (!middlePanActive) return;
+      if (contentDragActiveRef.current) return;
       const stage = stageRef.current;
       if (!stage) return;
 
@@ -88,5 +92,11 @@ export function useTrackCanvasViewport({
       element.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
     };
-  }, [containerRef, setManualView, stageRef, syncTransform]);
+  }, [
+    containerRef,
+    contentDragActiveRef,
+    setManualView,
+    stageRef,
+    syncTransform,
+  ]);
 }

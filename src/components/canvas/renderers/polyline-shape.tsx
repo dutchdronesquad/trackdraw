@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Arrow, Circle, Group, Line } from "react-konva";
 import type { KonvaEventObject } from "konva/lib/Node";
+import type { Stage as KonvaStage } from "konva/lib/Stage";
 import type { Vector2d } from "konva/lib/types";
 import {
   getPolyline2DDerived,
@@ -19,7 +20,6 @@ import { selectPrimaryPolyline } from "@/store/selectors";
 export interface PolylineShapeContentProps {
   allowInteraction: boolean;
   designPpm: number;
-  dragBound: (pos: Vector2d) => Vector2d;
   dragSnapRef: React.RefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
@@ -43,7 +43,6 @@ export interface PolylineShapeContentProps {
 export function PolylineShapeContent({
   allowInteraction,
   designPpm,
-  dragBound,
   dragSnapRef,
   effectiveVertexSel,
   hoveredWaypoint,
@@ -61,6 +60,19 @@ export function PolylineShapeContent({
   const [previewPoints, setPreviewPoints] = useState<PolylinePoint[] | null>(
     null
   );
+  const waypointDragSessionRef = useRef<{
+    cleanup: (() => void) | null;
+    hasMoved: boolean;
+    idx: number;
+    initialPointPx: Vector2d;
+    lastResolved: Vector2d;
+    latestClient: { x: number; y: number } | null;
+    offset: Vector2d;
+    sourcePoints: PolylinePoint[];
+    stage: KonvaStage;
+    touchIdentifier: number | null;
+  } | null>(null);
+  const dragFrameRef = useRef<number | null>(null);
   const primaryPolyline = useEditor(selectPrimaryPolyline);
   const displayPath = useMemo(
     () =>
@@ -117,6 +129,228 @@ export function PolylineShapeContent({
   const waypointTouchRadius = isMobile
     ? Math.max(14, waypointRadius * 2.75)
     : waypointRadius;
+  const buildPreviewPoints = useCallback(
+    (points: PolylinePoint[], index: number, resolved: Vector2d) =>
+      points.map((candidate, candidateIndex) =>
+        candidateIndex === index
+          ? {
+              ...candidate,
+              x: px2m(resolved.x, designPpm),
+              y: px2m(resolved.y, designPpm),
+            }
+          : candidate
+      ),
+    [designPpm]
+  );
+
+  const clientToStagePoint = useCallback(
+    (stage: KonvaStage, client: { x: number; y: number }) => {
+      const stageBox = stage.container().getBoundingClientRect();
+      const scaleX = stage.scaleX() || 1;
+      const scaleY = stage.scaleY() || 1;
+      return {
+        x: (client.x - stageBox.left - stage.x()) / scaleX,
+        y: (client.y - stageBox.top - stage.y()) / scaleY,
+      };
+    },
+    []
+  );
+
+  const applyWaypointDragFrame = useCallback(() => {
+    const session = waypointDragSessionRef.current;
+    if (!session || !session.latestClient) return;
+
+    const pointer = clientToStagePoint(session.stage, session.latestClient);
+    const rawPosition = {
+      x: pointer.x + session.offset.x,
+      y: pointer.y + session.offset.y,
+    };
+    const resolved = resolveWaypointDragPosition(
+      rawPosition,
+      dragSnapRef.current
+    );
+    session.lastResolved = resolved;
+    session.hasMoved =
+      session.hasMoved ||
+      Math.abs(resolved.x - session.initialPointPx.x) > 0.5 ||
+      Math.abs(resolved.y - session.initialPointPx.y) > 0.5;
+
+    const isSnapping =
+      Math.abs(rawPosition.x - resolved.x) > 0.5 ||
+      Math.abs(rawPosition.y - resolved.y) > 0.5;
+    setDragSnapPreview(isSnapping ? resolved : null);
+    setPreviewPoints(
+      buildPreviewPoints(session.sourcePoints, session.idx, resolved)
+    );
+  }, [
+    buildPreviewPoints,
+    clientToStagePoint,
+    dragSnapRef,
+    resolveWaypointDragPosition,
+    setDragSnapPreview,
+  ]);
+
+  const stopWaypointDrag = useCallback(
+    (commit: boolean) => {
+      const session = waypointDragSessionRef.current;
+      waypointDragSessionRef.current = null;
+      if (dragFrameRef.current !== null) {
+        window.cancelAnimationFrame(dragFrameRef.current);
+        dragFrameRef.current = null;
+      }
+      session?.cleanup?.();
+      setDragSnapPreview(null);
+
+      if (!session) {
+        setPreviewPoints(null);
+        return;
+      }
+
+      if (commit && session.hasMoved) {
+        setPolylinePoints(
+          path.id,
+          buildPreviewPoints(
+            session.sourcePoints,
+            session.idx,
+            session.lastResolved
+          )
+        );
+      }
+      setPreviewPoints(null);
+    },
+    [buildPreviewPoints, path.id, setDragSnapPreview, setPolylinePoints]
+  );
+
+  const startWaypointDrag = useCallback(
+    ({
+      client,
+      index,
+      pointPx,
+      snapEnabled,
+      stage,
+      touchIdentifier,
+    }: {
+      client: { x: number; y: number };
+      index: number;
+      pointPx: Vector2d;
+      snapEnabled: boolean;
+      stage: KonvaStage;
+      touchIdentifier: number | null;
+    }) => {
+      stopWaypointDrag(false);
+      dragSnapRef.current = snapEnabled;
+      const pointer = clientToStagePoint(stage, client);
+      waypointDragSessionRef.current = {
+        cleanup: null,
+        hasMoved: false,
+        idx: index,
+        initialPointPx: pointPx,
+        lastResolved: pointPx,
+        latestClient: client,
+        offset: {
+          x: pointPx.x - pointer.x,
+          y: pointPx.y - pointer.y,
+        },
+        sourcePoints: path.points.map((point) => ({ ...point })),
+        stage,
+        touchIdentifier,
+      };
+      setDragSnapPreview(null);
+
+      const updateLatestClient = (nextClient: { x: number; y: number }) => {
+        const session = waypointDragSessionRef.current;
+        if (!session) return;
+        session.latestClient = nextClient;
+      };
+
+      const tick = () => {
+        applyWaypointDragFrame();
+        if (waypointDragSessionRef.current) {
+          dragFrameRef.current = window.requestAnimationFrame(tick);
+        } else {
+          dragFrameRef.current = null;
+        }
+      };
+      dragFrameRef.current = window.requestAnimationFrame(tick);
+
+      const handleMouseMove = (event: MouseEvent) => {
+        updateLatestClient({ x: event.clientX, y: event.clientY });
+      };
+
+      const handleMouseUp = () => {
+        stopWaypointDrag(true);
+      };
+
+      const handleTouchMove = (event: TouchEvent) => {
+        const session = waypointDragSessionRef.current;
+        if (!session) return;
+        if (event.touches.length !== 1) {
+          stopWaypointDrag(true);
+          return;
+        }
+        const touch = Array.from(event.touches).find(
+          (candidate) => candidate.identifier === session.touchIdentifier
+        );
+        if (!touch) return;
+        if (event.cancelable) event.preventDefault();
+        updateLatestClient({ x: touch.clientX, y: touch.clientY });
+      };
+
+      const handleTouchEnd = (event: TouchEvent) => {
+        const session = waypointDragSessionRef.current;
+        if (!session) return;
+        const didEnd = Array.from(event.changedTouches).some(
+          (touch) => touch.identifier === session.touchIdentifier
+        );
+        if (didEnd) {
+          stopWaypointDrag(true);
+        }
+      };
+
+      const handleTouchCancel = (event: TouchEvent) => {
+        const session = waypointDragSessionRef.current;
+        if (!session) return;
+        const didCancel = Array.from(event.changedTouches).some(
+          (touch) => touch.identifier === session.touchIdentifier
+        );
+        if (didCancel) {
+          stopWaypointDrag(false);
+        }
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp, { once: true });
+      window.addEventListener("touchmove", handleTouchMove, { passive: false });
+      window.addEventListener("touchend", handleTouchEnd);
+      window.addEventListener("touchcancel", handleTouchCancel);
+
+      const session = waypointDragSessionRef.current;
+      if (session) {
+        session.cleanup = () => {
+          window.removeEventListener("mousemove", handleMouseMove);
+          window.removeEventListener("mouseup", handleMouseUp);
+          window.removeEventListener("touchmove", handleTouchMove);
+          window.removeEventListener("touchend", handleTouchEnd);
+          window.removeEventListener("touchcancel", handleTouchCancel);
+        };
+      }
+    },
+    [
+      applyWaypointDragFrame,
+      clientToStagePoint,
+      dragSnapRef,
+      path.points,
+      setDragSnapPreview,
+      stopWaypointDrag,
+    ]
+  );
+
+  useEffect(
+    () => () => {
+      stopWaypointDrag(false);
+    },
+    [stopWaypointDrag]
+  );
 
   const handlePathSelect = (
     event: KonvaEventObject<MouseEvent | TouchEvent>
@@ -226,7 +460,7 @@ export function PolylineShapeContent({
       </Group>
       {allowInteraction &&
         !path.locked &&
-        path.points.map((point, index) => {
+        displayPath.points.map((point, index) => {
           const x = m2px(point.x, designPpm);
           const y = m2px(point.y, designPpm);
           const active =
@@ -237,68 +471,39 @@ export function PolylineShapeContent({
             hoveredWaypoint?.shapeId === path.id &&
             hoveredWaypoint.idx === index;
 
-          const handleDragStart = (event: KonvaEventObject<DragEvent>) => {
-            event.cancelBubble = true;
-            dragSnapRef.current = !(
-              event.evt.altKey ||
-              event.evt.metaKey ||
-              event.evt.shiftKey
-            );
-            setDragSnapPreview(null);
-          };
-
-          const handleDragMove = (event: KonvaEventObject<DragEvent>) => {
-            event.cancelBubble = true;
-            const current = event.target.position();
-            const resolved = resolveWaypointDragPosition(
-              current,
-              dragSnapRef.current
-            );
-            const isSnapping =
-              Math.abs(current.x - resolved.x) > 0.5 ||
-              Math.abs(current.y - resolved.y) > 0.5;
-            setDragSnapPreview(isSnapping ? resolved : null);
-            setPreviewPoints(
-              path.points.map((candidate, candidateIndex) =>
-                candidateIndex === index
-                  ? {
-                      ...candidate,
-                      x: px2m(resolved.x, designPpm),
-                      y: px2m(resolved.y, designPpm),
-                    }
-                  : candidate
-              )
-            );
-          };
-
-          const handleDragEnd = (event: KonvaEventObject<DragEvent>) => {
-            event.cancelBubble = true;
-            const resolved = resolveWaypointDragPosition(
-              event.target.position(),
-              dragSnapRef.current
-            );
-            setDragSnapPreview(null);
-            event.target.position(resolved);
-            const points: PolylinePoint[] = path.points.map(
-              (candidate, candidateIndex) =>
-                candidateIndex === index
-                  ? {
-                      ...candidate,
-                      x: px2m(resolved.x, designPpm),
-                      y: px2m(resolved.y, designPpm),
-                    }
-                  : candidate
-            );
-            setPreviewPoints(null);
-            setPolylinePoints(path.id, points);
-          };
-
           const handlePointerDown = (
             event: KonvaEventObject<MouseEvent | TouchEvent>
           ) => {
             event.cancelBubble = true;
             setSelection([path.id]);
             setVertexSel({ shapeId: path.id, idx: index });
+            const stage = event.target.getStage();
+            if (!stage) return;
+            const client =
+              event.evt instanceof TouchEvent
+                ? {
+                    x: event.evt.touches[0]?.clientX ?? 0,
+                    y: event.evt.touches[0]?.clientY ?? 0,
+                  }
+                : {
+                    x: event.evt.clientX,
+                    y: event.evt.clientY,
+                  };
+            startWaypointDrag({
+              client,
+              index,
+              pointPx: { x, y },
+              snapEnabled: !(
+                event.evt.altKey ||
+                event.evt.metaKey ||
+                event.evt.shiftKey
+              ),
+              stage,
+              touchIdentifier:
+                event.evt instanceof TouchEvent
+                  ? (event.evt.touches[0]?.identifier ?? null)
+                  : null,
+            });
           };
 
           return (
@@ -306,13 +511,8 @@ export function PolylineShapeContent({
               key={`${path.id}-vh-${index}`}
               x={isMobile ? x : 0}
               y={isMobile ? y : 0}
-              draggable={isMobile}
-              dragBoundFunc={isMobile ? dragBound : undefined}
-              onDragStart={isMobile ? handleDragStart : undefined}
-              onDragMove={isMobile ? handleDragMove : undefined}
-              onDragEnd={isMobile ? handleDragEnd : undefined}
               onMouseDown={handlePointerDown}
-              onTap={handlePointerDown}
+              onTouchStart={handlePointerDown}
             >
               {isMobile && (
                 <Circle
@@ -330,13 +530,7 @@ export function PolylineShapeContent({
                 fill={active ? "#3b82f6" : hovered ? "#f59e0b" : "#1e293b"}
                 stroke={active ? "#ffffff" : hovered ? "#ffffff" : "#3b82f6"}
                 strokeWidth={hovered ? 2.5 : 2}
-                draggable={!isMobile}
-                dragBoundFunc={!isMobile ? dragBound : undefined}
-                onDragStart={!isMobile ? handleDragStart : undefined}
-                onDragMove={!isMobile ? handleDragMove : undefined}
-                onDragEnd={!isMobile ? handleDragEnd : undefined}
                 listening={!isMobile}
-                onDragCancel={() => setPreviewPoints(null)}
               />
             </Group>
           );

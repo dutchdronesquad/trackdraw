@@ -26,6 +26,7 @@ interface TrackCanvasInteractionsParams {
   activePresetId: string | null;
   addShape: (shape: ShapeDraft) => string;
   addShapes: (shapes: ShapeDraft[]) => string[];
+  contentDragActiveRef: React.RefObject<boolean>;
   designField: { gridStep: number; ppm: number };
   designShapes: Shape[];
   disableTouchGestures: boolean;
@@ -86,6 +87,7 @@ export function useTrackCanvasInteractions({
   activePresetId,
   addShape,
   addShapes,
+  contentDragActiveRef,
   designField,
   designShapes,
   disableTouchGestures,
@@ -266,6 +268,7 @@ export function useTrackCanvasInteractions({
   const onWheel = useCallback(
     (event: { evt: WheelEvent }) => {
       event.evt.preventDefault();
+      if (contentDragActiveRef.current) return;
       const stage = stageRef.current;
       if (!stage) return;
       setManualView(true);
@@ -340,7 +343,14 @@ export function useTrackCanvasInteractions({
         wheelAnimFrameRef.current = requestAnimationFrame(animate);
       }
     },
-    [isMobile, setManualView, setZoom, stageRef, syncTransform]
+    [
+      contentDragActiveRef,
+      isMobile,
+      setManualView,
+      setZoom,
+      stageRef,
+      syncTransform,
+    ]
   );
 
   const stopActiveCanvasDrags = useCallback(() => {
@@ -355,6 +365,11 @@ export function useTrackCanvasInteractions({
       if (disableTouchGestures) return;
       const stage = stageRef.current;
       if (!stage) return;
+      if (contentDragActiveRef.current) {
+        event.evt.preventDefault();
+        touchInteractionModeRef.current = "content";
+        return;
+      }
 
       if (event.evt.touches.length === 2) {
         event.evt.preventDefault();
@@ -400,6 +415,7 @@ export function useTrackCanvasInteractions({
     },
     [
       activeTool,
+      contentDragActiveRef,
       disableTouchGestures,
       isMobile,
       lastPinchCenterRef,
@@ -419,6 +435,10 @@ export function useTrackCanvasInteractions({
   const onTouchMove = useCallback(
     (event: { evt: TouchEvent }) => {
       if (disableTouchGestures) {
+        event.evt.preventDefault();
+        return;
+      }
+      if (contentDragActiveRef.current) {
         event.evt.preventDefault();
         return;
       }
@@ -505,6 +525,7 @@ export function useTrackCanvasInteractions({
       lastPinchCenterRef.current = center;
     },
     [
+      contentDragActiveRef,
       disableTouchGestures,
       lastPinchCenterRef,
       lastPinchDistRef,
