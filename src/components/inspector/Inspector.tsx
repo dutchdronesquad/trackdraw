@@ -45,6 +45,11 @@ function Inspector({
   const setHoveredWaypoint = useEditor((state) => state.setHoveredWaypoint);
   const designShapes = useEditor(selectDesignShapes);
   const selectedShapes = useEditor(selectSelectedShapes);
+  const liveSelectedShapePatch = useEditor((state) =>
+    state.selection.length === 1
+      ? (state.transient.liveShapePatches[state.selection[0]] ?? null)
+      : null
+  );
   const count = selectedShapes.length;
   const [panelOverride, setPanelOverride] = useState<
     "project" | "layout" | "selection" | null
@@ -89,7 +94,14 @@ function Inspector({
     selectionView = (
       <SingleInspectorView
         mobileInline={mobileInline}
-        shape={selectedShapes[0]}
+        shape={
+          liveSelectedShapePatch
+            ? ({
+                ...selectedShapes[0],
+                ...liveSelectedShapePatch,
+              } as (typeof selectedShapes)[number])
+            : selectedShapes[0]
+        }
         updateShape={updateShape}
         setShapesLocked={setShapesLocked}
         updatePolylinePoint={updatePolylinePoint}

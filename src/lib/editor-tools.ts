@@ -29,7 +29,10 @@ type ToolShapeDefaults = {
   cone: Pick<ConeShape, "radius" | "color">;
   label: Pick<LabelShape, "text" | "fontSize" | "color">;
   startfinish: Pick<StartFinishShape, "width" | "color">;
-  ladder: Pick<LadderShape, "width" | "height" | "rungs" | "color">;
+  ladder: Pick<
+    LadderShape,
+    "width" | "height" | "rungs" | "elevation" | "color"
+  >;
   divegate: Pick<
     DiveGateShape,
     "size" | "thick" | "tilt" | "elevation" | "color"
@@ -80,7 +83,7 @@ const toolShapeDefaults: ToolShapeDefaults = {
   cone: { radius: 0.2, color: "#f97316" },
   label: { text: "Gate A", fontSize: 18, color: "#e2e8f0" },
   startfinish: { width: 3, color: "#f59e0b" },
-  ladder: { width: 2, height: 6, rungs: 3, color: "#14b8a6" },
+  ladder: { width: 2, height: 6, rungs: 3, elevation: 0, color: "#14b8a6" },
   divegate: {
     size: 2.8,
     thick: 0.2,

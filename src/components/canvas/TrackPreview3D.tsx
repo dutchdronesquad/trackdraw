@@ -36,6 +36,7 @@ import {
   DiveGateTiltHandle3D,
   DroneCamera,
   GateRotateHandle3D,
+  LadderElevationHandle3D,
   MemoShape3D,
   PolylineElevationHandles3D,
   ScreenshotHelper,
@@ -102,6 +103,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const endInteraction = useEditor((state) => state.endInteraction);
     const setPolylinePoints = useEditor((state) => state.setPolylinePoints);
     const updateShape = useEditor((state) => state.updateShape);
+    const setLiveShapePatch = useEditor((state) => state.setLiveShapePatch);
+    const clearLiveShapePatch = useEditor((state) => state.clearLiveShapePatch);
     const shapes = useEditor(selectDesignShapes);
     const hasPath = useEditor(selectHasPath);
     const primaryPolyline = useEditor(selectPrimaryPolyline);
@@ -133,9 +136,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       handleCameraCapture,
       handleContainerMouseDownCapture,
       handleElevationDragStart,
+      handleLadderElevationDragStart,
       handleRotateDragStart,
       handleTiltDragStart,
       isMiddleMousePanning,
+      ladderElevationDrag,
+      ladderElevationDragValueRef,
       previewPolyline,
       rotationDrag,
       rotationDragValueRef,
@@ -149,6 +155,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       selectedPolyline: selectedPolyline ?? null,
       setPolylinePoints,
       setSelection,
+      setLiveShapePatch,
+      clearLiveShapePatch,
       shapeById,
       updateShape,
     });
@@ -179,7 +187,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       !flyMode &&
       !elevationDrag &&
       !rotationDrag &&
-      !tiltDrag;
+      !tiltDrag &&
+      !ladderElevationDrag;
 
     useEffect(() => {
       selectionRef.current = selection;
@@ -245,7 +254,9 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             event,
             isMobile ||
               flyMode ||
-              Boolean(elevationDrag || rotationDrag || tiltDrag)
+              Boolean(
+                elevationDrag || rotationDrag || tiltDrag || ladderElevationDrag
+              )
           )
         }
       >
@@ -330,6 +341,11 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               tiltDragRef={
                 tiltDrag?.shapeId === shape.id ? tiltDragValueRef : undefined
               }
+              elevationOverrideRef={
+                ladderElevationDrag?.shapeId === shape.id
+                  ? ladderElevationDragValueRef
+                  : undefined
+              }
             />
           ))}
 
@@ -341,6 +357,34 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               onDragStart={handleElevationDragStart}
             />
           ) : null}
+
+          {!flyMode &&
+            !readOnly &&
+            shapes.map((shape) => {
+              if (
+                !selectedIdSet.has(shape.id) ||
+                shape.locked ||
+                shape.kind !== "ladder"
+              ) {
+                return null;
+              }
+              return (
+                <LadderElevationHandle3D
+                  key={`ladder-elevation-${shape.id}`}
+                  shape={shape}
+                  onDragStart={(event) =>
+                    handleLadderElevationDragStart(
+                      event,
+                      shape.id,
+                      shape.elevation ?? 0
+                    )
+                  }
+                  isDragging={ladderElevationDrag?.shapeId === shape.id}
+                  isMobile={isMobile}
+                  elevationOverrideRef={ladderElevationDragValueRef}
+                />
+              );
+            })}
 
           {!flyMode &&
             !readOnly &&
@@ -408,7 +452,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               !isMobile &&
               !elevationDrag &&
               !rotationDrag &&
-              !tiltDrag
+              !tiltDrag &&
+              !ladderElevationDrag
             }
             minDistance={8}
             maxDistance={Math.max(120, longest * 3)}
@@ -427,7 +472,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             <OrbitControls
               ref={orbitControlsRef}
               makeDefault
-              enabled={!elevationDrag && !rotationDrag && !tiltDrag}
+              enabled={
+                !elevationDrag &&
+                !rotationDrag &&
+                !tiltDrag &&
+                !ladderElevationDrag
+              }
               enableDamping
               dampingFactor={0.08}
               screenSpacePanning
@@ -449,7 +499,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             <OrbitControls
               ref={orbitControlsRef}
               makeDefault
-              enabled={!elevationDrag && !rotationDrag && !tiltDrag}
+              enabled={
+                !elevationDrag &&
+                !rotationDrag &&
+                !tiltDrag &&
+                !ladderElevationDrag
+              }
               enableDamping
               dampingFactor={0.08}
               enableZoom={false}

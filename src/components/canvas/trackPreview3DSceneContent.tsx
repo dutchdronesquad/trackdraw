@@ -37,6 +37,18 @@ import type {
 type WebKitGestureEvent = Event & { scale: number };
 export type QuaternionState = [number, number, number, number];
 
+function assignGroupRef(
+  ref: Ref<THREE.Group> | undefined,
+  node: THREE.Group | null
+) {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(node);
+    return;
+  }
+  ref.current = node;
+}
+
 export function CameraCapture({
   onCamera,
 }: {
@@ -641,25 +653,51 @@ function Ladder3D({
   selected = false,
   shape,
   outerRef,
+  elevationOverrideRef,
 }: {
   selected?: boolean;
   shape: LadderShape;
   outerRef?: Ref<THREE.Group>;
+  elevationOverrideRef?: RefObject<number | null>;
 }) {
   const color = shape.color ?? "#3b82f6";
   const w = shape.width ?? 1.5;
   const totalH = shape.height ?? 4.5;
   const rungs = Math.max(1, shape.rungs ?? 3);
+  const baseY = Math.max(shape.elevation ?? 0, 0);
   const thick = 0.2;
   const gateH = totalH / rungs;
+  const groupRef = useRef<THREE.Group>(null);
+  const lowerBarRef = useRef<THREE.Mesh>(null);
   const rot: [number, number, number] = [
     0,
     (-shape.rotation * Math.PI) / 180,
     0,
   ];
+  const setGroupRefs = useCallback(
+    (node: THREE.Group | null) => {
+      groupRef.current = node;
+      assignGroupRef(outerRef, node);
+    },
+    [outerRef]
+  );
+
+  useFrame(() => {
+    if (!groupRef.current || !elevationOverrideRef) return;
+    const liveElevation = elevationOverrideRef.current;
+    if (liveElevation === null) return;
+    groupRef.current.position.set(shape.x, Math.max(liveElevation, 0), shape.y);
+    if (lowerBarRef.current) {
+      lowerBarRef.current.visible = liveElevation > 0;
+    }
+  });
 
   return (
-    <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={rot}>
+    <group
+      ref={setGroupRefs}
+      position={[shape.x, baseY, shape.y]}
+      rotation={rot}
+    >
       {Array.from({ length: rungs }).map((_, i) => (
         <group key={i} position={[0, i * gateH, 0]}>
           <mesh position={[-(w / 2), gateH / 2, 0]} castShadow>
@@ -686,6 +724,21 @@ function Ladder3D({
               emissiveIntensity={selected ? 0.5 : 0.08}
             />
           </mesh>
+          {i === 0 ? (
+            <mesh
+              ref={lowerBarRef}
+              position={[0, 0, 0]}
+              castShadow
+              visible={baseY > 0}
+            >
+              <boxGeometry args={[w + thick, thick, thick]} />
+              <meshStandardMaterial
+                color={color}
+                emissive={selected ? "#60a5fa" : color}
+                emissiveIntensity={selected ? 0.5 : 0.08}
+              />
+            </mesh>
+          ) : null}
           <mesh position={[0, gateH / 2, 0]}>
             <planeGeometry args={[w, gateH]} />
             <meshBasicMaterial
@@ -697,6 +750,99 @@ function Ladder3D({
           </mesh>
         </group>
       ))}
+    </group>
+  );
+}
+
+export function LadderElevationHandle3D({
+  shape,
+  onDragStart,
+  isDragging,
+  isMobile,
+  elevationOverrideRef,
+}: {
+  shape: LadderShape;
+  onDragStart: (event: ThreeEvent<PointerEvent>) => void;
+  isDragging: boolean;
+  isMobile: boolean;
+  elevationOverrideRef: RefObject<number | null>;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const guideGroupRef = useRef<THREE.Group>(null);
+  const guideHeight = Math.max(shape.height ?? 4.5, 1) + 0.65;
+  const handleY = Math.max(shape.height ?? 4.5, 1) + 0.42;
+  const gripRadius = isMobile
+    ? isDragging
+      ? 0.22
+      : 0.2
+    : isDragging
+      ? 0.18
+      : 0.16;
+  const gripHeight = isMobile
+    ? isDragging
+      ? 0.26
+      : 0.22
+    : isDragging
+      ? 0.2
+      : 0.17;
+  const touchTargetRadius = isMobile ? 0.34 : gripRadius;
+  const touchTargetHeight = isMobile ? 0.58 : gripHeight;
+  const guideColor = isDragging ? "#f59e0b" : hovered ? "#bfdbfe" : "#93c5fd";
+
+  useFrame(() => {
+    if (!guideGroupRef.current) return;
+    guideGroupRef.current.position.set(
+      shape.x,
+      Math.max(elevationOverrideRef.current ?? shape.elevation ?? 0, 0),
+      shape.y
+    );
+  });
+
+  return (
+    <group
+      ref={guideGroupRef}
+      position={[shape.x, Math.max(shape.elevation ?? 0, 0), shape.y]}
+    >
+      <mesh position={[0, guideHeight / 2, 0]}>
+        <cylinderGeometry args={[0.022, 0.022, guideHeight, 12]} />
+        <meshBasicMaterial color={guideColor} transparent opacity={0.5} />
+      </mesh>
+      <mesh
+        position={[0, handleY, 0]}
+        onPointerDown={(event) => {
+          event.stopPropagation();
+          onDragStart(event);
+        }}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+      >
+        <cylinderGeometry
+          args={[touchTargetRadius, touchTargetRadius, touchTargetHeight, 24]}
+        />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, handleY, 0]}>
+        <cylinderGeometry args={[gripRadius, gripRadius, gripHeight, 24]} />
+        <meshStandardMaterial
+          color={isDragging ? "#f59e0b" : hovered ? "#38bdf8" : "#1e293b"}
+          emissive={isDragging ? "#fbbf24" : hovered ? "#7dd3fc" : "#60a5fa"}
+          emissiveIntensity={isDragging ? 1 : hovered ? 0.62 : 0.28}
+          roughness={0.16}
+          metalness={0.14}
+        />
+      </mesh>
+      <mesh position={[0, handleY + gripHeight * 0.26, 0]}>
+        <coneGeometry
+          args={[gripRadius * 0.78, Math.max(gripHeight * 0.6, 0.08), 24]}
+        />
+        <meshStandardMaterial
+          color={isDragging ? "#fff3c4" : hovered ? "#f8fbff" : "#cbd5e1"}
+          emissive={isDragging ? "#fbbf24" : hovered ? "#bae6fd" : "#93c5fd"}
+          emissiveIntensity={isDragging ? 0.7 : hovered ? 0.38 : 0.16}
+          roughness={0.12}
+          metalness={0.08}
+        />
+      </mesh>
     </group>
   );
 }
@@ -997,44 +1143,64 @@ export function PolylineElevationHandles3D({
         const isActive = activeIndex === index;
         const isHovered = hoveredIndex === index;
         const handleY = pointHeight + 0.52;
+        const guideColor = isActive
+          ? "#f59e0b"
+          : isHovered
+            ? "#bfdbfe"
+            : "#93c5fd";
         const gripRadius = isMobile
           ? isActive
-            ? 0.2
-            : 0.18
+            ? 0.23
+            : 0.2
           : isActive
-            ? 0.16
-            : 0.14;
+            ? 0.19
+            : 0.16;
         const gripHeight = isMobile
           ? isActive
-            ? 0.2
-            : 0.18
+            ? 0.24
+            : 0.2
           : isActive
-            ? 0.16
-            : 0.13;
-        const touchTargetRadius = isMobile ? 0.34 : gripRadius;
+            ? 0.18
+            : 0.15;
+        const touchTargetRadius = isMobile ? 0.38 : gripRadius + 0.06;
         const touchTargetHeight = isMobile ? 0.58 : gripHeight;
         return (
           <group key={`${path.id}-elev-${index}`}>
             <mesh position={[point.x, guideHeight / 2, point.y]}>
-              <cylinderGeometry args={[0.02, 0.02, guideHeight, 12]} />
+              <cylinderGeometry args={[0.028, 0.028, guideHeight, 16]} />
               <meshBasicMaterial
-                color={isActive ? "#f59e0b" : isHovered ? "#bfdbfe" : "#93c5fd"}
+                color={guideColor}
                 transparent
-                opacity={isActive ? 0.95 : isHovered ? 0.75 : 0.35}
+                opacity={isActive ? 0.95 : isHovered ? 0.82 : 0.48}
               />
             </mesh>
             <mesh
               position={[point.x, pointHeight + 0.03, point.y]}
               rotation={[-Math.PI / 2, 0, 0]}
             >
-              <ringGeometry args={[0.12, 0.155, 32]} />
+              <ringGeometry args={[0.13, 0.19, 40]} />
               <meshBasicMaterial
                 color={isActive ? "#fbbf24" : "#60a5fa"}
                 transparent
-                opacity={isActive ? 0.9 : isHovered ? 0.5 : 0.24}
+                opacity={isActive ? 0.92 : isHovered ? 0.62 : 0.34}
                 side={THREE.DoubleSide}
               />
             </mesh>
+            {(isActive || isHovered) && (
+              <mesh
+                position={[point.x, pointHeight + 0.031, point.y]}
+                rotation={[-Math.PI / 2, 0, 0]}
+              >
+                <circleGeometry args={[0.24, 36]} />
+                <meshBasicMaterial
+                  color={isActive ? "#fbbf24" : "#93c5fd"}
+                  transparent
+                  opacity={isActive ? 0.14 : 0.09}
+                  side={THREE.DoubleSide}
+                  depthWrite={false}
+                />
+              </mesh>
+            )}
             <mesh
               position={[point.x, handleY, point.y]}
               onPointerDown={(event) => onDragStart(event, index)}
@@ -1060,11 +1226,13 @@ export function PolylineElevationHandles3D({
                 args={[gripRadius, gripRadius, gripHeight, 24]}
               />
               <meshStandardMaterial
-                color={isActive ? "#f59e0b" : isHovered ? "#93c5fd" : "#e2e8f0"}
-                emissive={isActive ? "#fbbf24" : "#60a5fa"}
-                emissiveIntensity={isActive ? 0.85 : isHovered ? 0.38 : 0.18}
-                roughness={0.2}
-                metalness={0.08}
+                color={isActive ? "#f59e0b" : isHovered ? "#38bdf8" : "#1e293b"}
+                emissive={
+                  isActive ? "#fbbf24" : isHovered ? "#7dd3fc" : "#60a5fa"
+                }
+                emissiveIntensity={isActive ? 1 : isHovered ? 0.62 : 0.28}
+                roughness={0.16}
+                metalness={0.14}
               />
             </mesh>
             <mesh position={[point.x, handleY + gripHeight * 0.22, point.y]}>
@@ -1077,16 +1245,18 @@ export function PolylineElevationHandles3D({
                 ]}
               />
               <meshStandardMaterial
-                color={isActive ? "#fde68a" : isHovered ? "#dbeafe" : "#f8fafc"}
-                emissive={isActive ? "#fbbf24" : "#93c5fd"}
-                emissiveIntensity={isActive ? 0.55 : isHovered ? 0.24 : 0.1}
-                roughness={0.16}
-                metalness={0.06}
+                color={isActive ? "#fff3c4" : isHovered ? "#f8fbff" : "#cbd5e1"}
+                emissive={
+                  isActive ? "#fbbf24" : isHovered ? "#bae6fd" : "#93c5fd"
+                }
+                emissiveIntensity={isActive ? 0.7 : isHovered ? 0.38 : 0.16}
+                roughness={0.12}
+                metalness={0.08}
               />
             </mesh>
             {(isActive || isHovered) && (
-              <mesh position={[point.x, handleY + 0.12, point.y]}>
-                <sphereGeometry args={[0.04, 16, 16]} />
+              <mesh position={[point.x, handleY + 0.14, point.y]}>
+                <sphereGeometry args={[0.05, 16, 16]} />
                 <meshBasicMaterial
                   color={isActive ? "#fbbf24" : "#60a5fa"}
                   transparent
@@ -1127,12 +1297,13 @@ export function GateRotateHandle3D({
   );
   const yawRad = (-shape.rotation * Math.PI) / 180;
   const hitR = isMobile ? 0.65 : 0.5;
-  const needleLen = ringRadius * 0.82;
+  const ringThickness = 0.16;
+  const indicatorThickness = ringThickness;
 
-  const ringColor = isDragging ? "#fbbf24" : "#38bdf8";
-  const ringMatRef = useRef<THREE.MeshStandardMaterial>(null);
-  const needleMatRef = useRef<THREE.MeshStandardMaterial>(null);
-  const coneMatRef = useRef<THREE.MeshStandardMaterial>(null);
+  const ringColor = isDragging ? "#fbbf24" : hovered ? "#7dd3fc" : "#38bdf8";
+  const ringMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const needleMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const centerMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const needleGroupRef = useRef<THREE.Group>(null);
   const pulseRef = useRef(0);
 
@@ -1144,40 +1315,31 @@ export function GateRotateHandle3D({
     if (isDragging || hovered) return;
     pulseRef.current += delta * 1.6;
     const t = 0.62 + Math.sin(pulseRef.current) * 0.13;
-    const ei = 0.45 + Math.sin(pulseRef.current) * 0.12;
     if (ringMatRef.current) {
       ringMatRef.current.opacity = t;
-      ringMatRef.current.emissiveIntensity = ei;
     }
     if (needleMatRef.current) {
       needleMatRef.current.opacity = t * 0.88;
-      needleMatRef.current.emissiveIntensity = ei * 0.8;
     }
-    if (coneMatRef.current) {
-      coneMatRef.current.opacity = t * 0.92;
-      coneMatRef.current.emissiveIntensity = ei;
+    if (centerMatRef.current) {
+      centerMatRef.current.opacity = t * 0.92;
     }
   });
 
   const ringOpacity = isDragging ? 0.96 : hovered ? 0.88 : 0.68;
-  const ringEI = isDragging ? 1.1 : hovered ? 0.8 : 0.55;
-  const needleOpacity = isDragging ? 0.98 : hovered ? 0.88 : 0.72;
-  const needleEI = isDragging ? 1.0 : hovered ? 0.75 : 0.45;
+  const needleOpacity = isDragging ? 0.96 : hovered ? 0.88 : 0.68;
 
   return (
     <group>
       <mesh position={[shape.x, 0.07, shape.y]} rotation={[-Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[ringRadius, 0.068, 10, 60]} />
-        <meshStandardMaterial
+        <ringGeometry args={[ringRadius - 0.08, ringRadius + 0.08, 72]} />
+        <meshBasicMaterial
           ref={ringMatRef}
           color={ringColor}
-          emissive={ringColor}
-          emissiveIntensity={ringEI}
           transparent
           opacity={ringOpacity}
-          roughness={0.15}
-          metalness={0.05}
           depthWrite={false}
+          side={THREE.DoubleSide}
         />
       </mesh>
 
@@ -1191,7 +1353,9 @@ export function GateRotateHandle3D({
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
       >
-        <torusGeometry args={[ringRadius, hitR, 8, 60]} />
+        <ringGeometry
+          args={[Math.max(0.2, ringRadius - hitR), ringRadius + hitR, 72]}
+        />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
@@ -1200,34 +1364,45 @@ export function GateRotateHandle3D({
         position={[shape.x, 0, shape.y]}
         rotation={[0, yawRad, 0]}
       >
-        <mesh position={[0, 0.1, needleLen * 0.5]}>
-          <boxGeometry args={[0.055, 0.055, needleLen]} />
-          <meshStandardMaterial
-            ref={needleMatRef}
+        <mesh position={[0, 0.026, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[indicatorThickness / 2, 32]} />
+          <meshBasicMaterial
+            ref={centerMatRef}
             color={ringColor}
-            emissive={ringColor}
-            emissiveIntensity={needleEI}
             transparent
             opacity={needleOpacity}
-            roughness={0.15}
             depthWrite={false}
+            side={THREE.DoubleSide}
           />
         </mesh>
         <mesh
-          position={[0, 0.1, needleLen + 0.12]}
-          rotation={[Math.PI / 2, 0, 0]}
+          position={[0, 0.025, ringRadius / 2]}
+          rotation={[-Math.PI / 2, 0, 0]}
         >
-          <coneGeometry args={[0.13, 0.28, 10]} />
-          <meshStandardMaterial
-            ref={coneMatRef}
+          <planeGeometry args={[indicatorThickness, ringRadius]} />
+          <meshBasicMaterial
+            ref={needleMatRef}
             color={ringColor}
-            emissive={ringColor}
-            emissiveIntensity={needleEI}
             transparent
             opacity={needleOpacity}
-            roughness={0.15}
             depthWrite={false}
+            side={THREE.DoubleSide}
           />
+        </mesh>
+        <mesh
+          position={[0, 0.027, ringRadius / 2]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            onDragStart(event);
+          }}
+          onPointerOver={() => setHovered(true)}
+          onPointerOut={() => setHovered(false)}
+        >
+          <planeGeometry
+            args={[Math.max(hitR * 1.2, 0.5), ringRadius + hitR]}
+          />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
       </group>
     </group>
@@ -1428,7 +1603,12 @@ function SelectionMarker3D({ shape }: { shape: Shape }) {
     label: (shape as LabelShape).project ? 0.8 : 3.1,
     polyline: 0.95,
     startfinish: 0.55,
-    ladder: Math.max((shape as LadderShape).height ?? 4.5, 1.8) + 0.35,
+    ladder:
+      Math.max(
+        ((shape as LadderShape).height ?? 4.5) +
+          ((shape as LadderShape).elevation ?? 0),
+        1.8
+      ) + 0.35,
     divegate: Math.max((shape as DiveGateShape).elevation ?? 3, 1.8) + 0.55,
   };
   const markerY = heightByKind[shape.kind] ?? 1.2;
@@ -1461,6 +1641,7 @@ function Shape3D({
   shape,
   outerRef,
   tiltDragRef,
+  elevationOverrideRef,
 }: {
   isEditing: boolean;
   isPrimaryPolyline: boolean;
@@ -1469,6 +1650,7 @@ function Shape3D({
   shape: Shape;
   outerRef?: Ref<THREE.Group>;
   tiltDragRef?: RefObject<number | null>;
+  elevationOverrideRef?: RefObject<number | null>;
 }) {
   switch (shape.kind) {
     case "gate":
@@ -1521,8 +1703,12 @@ function Shape3D({
     case "ladder":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <Ladder3D shape={shape} selected={isSelected} outerRef={outerRef} />
-          {isSelected && <SelectionMarker3D shape={shape} />}
+          <Ladder3D
+            shape={shape}
+            selected={isSelected}
+            outerRef={outerRef}
+            elevationOverrideRef={elevationOverrideRef}
+          />
         </group>
       );
     case "divegate":
@@ -1551,7 +1737,8 @@ export const MemoShape3D = memo(
     prev.isSelected === next.isSelected &&
     prev.onSelect === next.onSelect &&
     prev.outerRef === next.outerRef &&
-    prev.tiltDragRef === next.tiltDragRef
+    prev.tiltDragRef === next.tiltDragRef &&
+    prev.elevationOverrideRef === next.elevationOverrideRef
 );
 
 export function DroneCamera({

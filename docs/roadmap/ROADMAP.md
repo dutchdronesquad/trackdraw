@@ -37,7 +37,6 @@ Labels used below:
 - `No account required`: should remain meaningfully usable without an account
 - `Account-backed`: depends on ownership, sync, identity, or shared persistence
 - `Research`: still primarily exploratory
-- `Blocked`: depends on another roadmap decision or capability first
 
 ### 1. Accounts And Ownership Model (`Research`)
 
@@ -78,6 +77,15 @@ Current product direction to carry forward:
 - For signed-in users, cloud state should be treated as the canonical project state, while local browser data acts as the working copy, cache, and resilience layer
 - Sign-out should end account sync but should not automatically clear ordinary local project data from the device
 
+Authentication and storage recommendation:
+
+- TrackDraw should remain local-first for logged-out use
+- Signed-in use should continue toward account-backed continuity by default in practice
+- Browser-local persistence remains required as the working copy and resilience layer
+- The account-backed project record should be treated as the canonical durable state for signed-in users
+- The product should not move toward mandatory-auth editing or a cloud-only storage model
+- The product should also not stop at local-only storage, because that would undercut the main value of signing in
+
 Important unresolved transition:
 
 - Existing local projects on a device should not be silently absorbed into an account the moment a user signs in
@@ -91,9 +99,9 @@ Current shipped foundation:
 - Account-aware desktop and mobile shell entry points
 - Initial account-backed schema and project/share ownership groundwork
 
-### 2. Account-Backed Follow-up (`Account-backed`, `Blocked`)
+### 2. Account-Backed Follow-up (`Account-backed`)
 
-These items remain intentionally blocked until the ownership model is defined.
+These items are now follow-up work rather than intentionally blocked. The first ownership model is clear enough that they can move forward when priority allows.
 
 #### Share Lifecycle Follow-up
 
@@ -141,7 +149,7 @@ Current first pass:
 
 Later slices:
 
-- Race director page once TrackDraw can capture practical start-area metadata such as director position, timing/start box position, cable run, and related ops notes
+- Race director page once TrackDraw can extend the existing start/finish foundation with the supporting race-day metadata and ops elements it depends on, including pilot line, director position, timing/start box placement, cable routing, and ops notes
 
 Important boundary:
 
@@ -151,6 +159,19 @@ Important boundary:
 ### 4. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
+
+#### 3D Editor Interaction Polish (`No account required`)
+
+Keep smoothing the direct-manipulation parts of the 3D preview where they noticeably speed up venue-side editing.
+
+Recent shipped progress:
+
+- Floating ladders now have a first practical editing pass through ladder elevation, direct 3D raise/lower handles, clearer handle styling, and live inspector feedback while dragging
+
+Suggested follow-up:
+
+- Keep refining floating ladder placement so the controls stay easy to read and adjust in dense layouts and mobile-sized screens
+- Continue only with narrow, high-confidence 3D controls that improve placement speed without turning the preview into a heavy general-purpose modeling surface
 
 #### Heatmap And Flow Analysis (`No account required`)
 
@@ -165,8 +186,15 @@ Suggested first slices:
 #### Research Tracks (`Research`)
 
 - Velocidrone export compatibility
+  - Experimental `.trk` export proof of concept exists already
+  - Next step is validation and orientation correctness, especially gate front/back direction
 - Desktop and mobile wrapper evaluation
 - PWA evaluation
+- Template library product definition
+  - Determine whether TrackDraw should support reusable personal, club, or team-owned templates at all
+  - Define what a template object actually is: full project, reusable section/group, race-day preset, or something else
+  - Clarify how browse, duplicate, insert, and fork flows should work without overlapping confusingly with starter layouts or ordinary projects
+  - Define ownership and visibility boundaries for private, club, team, or published template libraries
 
 ### 5. Accounts Boundary
 
@@ -372,6 +400,11 @@ Remaining:
 
 Explore whether TrackDraw layouts can be exported into a format that is usable inside Velocidrone's track builder workflow.
 
+Current status:
+
+- A first experimental `.trk` export proof of concept already exists and can be imported into Velocidrone
+- The workflow is still too early to treat as supported or stable
+
 Why:
 
 - Creates a bridge from planning into simulator testing
@@ -387,7 +420,10 @@ Constraints:
 Recommended approach:
 
 - Treat this as a research and compatibility project first
-- Start with format discovery and proof-of-concept export
+- Keep iterating on the current proof-of-concept export instead of restarting discovery from zero
+- Focus next on orientation correctness, especially making gate front/back direction explicit enough that users do not need to manually rotate many gates after import
+- Add clearer front/back affordances in the 2D editor so gate facing is readable before export
+- Add clearer 3D orientation validation so users can confirm gate facing faster before leaving TrackDraw
 - Only promote it to a supported feature if the workflow is stable enough to maintain
 
 ### 11. Heatmap And Flow Analysis

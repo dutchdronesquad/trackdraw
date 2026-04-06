@@ -64,6 +64,7 @@ export interface LadderShape extends BaseShape {
   width: number; // m horizontal span
   height: number; // m gate opening height (3D) / ladder footprint depth (2D top-down)
   rungs: number; // count of rungs
+  elevation?: number; // m bottom clearance above ground (default 0)
 }
 
 export interface DiveGateShape extends BaseShape {

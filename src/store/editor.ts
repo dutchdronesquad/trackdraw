@@ -60,6 +60,7 @@ interface EditorTransientState {
     dx: number;
     dy: number;
   } | null;
+  liveShapePatches: Record<string, Partial<Shape>>;
 }
 
 interface EditorState {
@@ -194,6 +195,8 @@ interface EditorState {
           dy: number;
         } | null)
   ) => void;
+  setLiveShapePatch: (id: string, patch: Partial<Shape>) => void;
+  clearLiveShapePatch: (id: string) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (
     patch: Partial<
@@ -398,6 +401,7 @@ export const useEditor = create<EditorState>()(
         marqueeRect: null,
         rotationSession: null,
         groupDragPreview: null,
+        liveShapePatches: {},
       },
       historyPaused: false,
       historySessionDepth: 0,
@@ -880,6 +884,7 @@ export const useEditor = create<EditorState>()(
           draft.transient.marqueeRect = null;
           draft.transient.rotationSession = null;
           draft.transient.groupDragPreview = null;
+          draft.transient.liveShapePatches = {};
           draft.historyPaused = false;
           draft.historySessionDepth = 0;
           draft.interactionSessionDepth = 0;
@@ -965,6 +970,16 @@ export const useEditor = create<EditorState>()(
             typeof value === "function"
               ? value(draft.transient.groupDragPreview)
               : value;
+        }),
+
+      setLiveShapePatch: (id, patch) =>
+        set((draft) => {
+          draft.transient.liveShapePatches[id] = patch;
+        }),
+
+      clearLiveShapePatch: (id) =>
+        set((draft) => {
+          delete draft.transient.liveShapePatches[id];
         }),
 
       newProject: () => {
