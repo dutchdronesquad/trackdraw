@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useEditor } from "@/store/editor";
 import { exportSvg } from "@/lib/export/exportSvg";
 import { exportPng } from "@/lib/export/exportPng";
+import { exportVelocidroneTrk } from "@/lib/export/exportVelocidroneTrk";
 import { cn } from "@/lib/utils";
 import type { TrackCanvasHandle } from "@/components/canvas/TrackCanvas";
 import { Download, Loader2, Sun, Moon } from "lucide-react";
@@ -340,7 +341,7 @@ export default function ExportDialog({
             </span>
           </button>
         )}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <FormatTile
             ext="PNG"
             label="3D Render"
@@ -386,6 +387,18 @@ export default function ExportDialog({
                 a.click();
                 URL.revokeObjectURL(url);
               })
+            }
+          />
+          <FormatTile
+            ext="TRK"
+            label="Velocidrone (Experimental)"
+            color="bg-lime-500/15 text-lime-400"
+            description="Experimental base export. Final checks in Velocidrone are still recommended."
+            busy={busy === "trk"}
+            onExport={() =>
+              run("trk", () =>
+                exportVelocidroneTrk(design, `${safeName({ view: "2d" })}.trk`)
+              )
             }
           />
         </div>
@@ -556,6 +569,21 @@ export default function ExportDialog({
                     a.click();
                     URL.revokeObjectURL(url);
                   }),
+              },
+              {
+                ext: "TRK",
+                label: "Velocidrone (Experimental)",
+                color: "bg-lime-500/15 text-lime-400",
+                description:
+                  "Experimental base export. Final checks in Velocidrone are still recommended.",
+                id: "trk",
+                onExport: () =>
+                  run("trk", () =>
+                    exportVelocidroneTrk(
+                      design,
+                      `${safeName({ view: "2d" })}.trk`
+                    )
+                  ),
               },
             ] as const
           ).map((f) => {
