@@ -187,12 +187,13 @@ export default function ExportDialog({
     setExportTheme(currentTheme);
   }, [currentTheme]);
 
+  const baseName = (filename.trim() || design.title.trim() || "track").replace(
+    /[^a-z0-9-_]+/gi,
+    "_"
+  );
+
   const safeName = ({ theme, view }: { theme?: Theme; view: "2d" | "3d" }) => {
-    const base = (filename.trim() || design.title.trim() || "track").replace(
-      /[^a-z0-9-_]+/gi,
-      "_"
-    );
-    return [base, view, theme].filter(Boolean).join("_");
+    return [baseName, view, theme].filter(Boolean).join("_");
   };
 
   const run = async <T,>(id: string, fn: () => T | Promise<T>) => {
@@ -409,9 +410,7 @@ export default function ExportDialog({
             description="Experimental base export. Final checks in Velocidrone are still recommended."
             busy={busy === "trk"}
             onExport={() =>
-              run("trk", () =>
-                exportVelocidroneTrk(design, `${safeName({ view: "2d" })}.trk`)
-              )
+              run("trk", () => exportVelocidroneTrk(design, `${baseName}.trk`))
             }
           />
         </div>
@@ -592,10 +591,7 @@ export default function ExportDialog({
                 id: "trk",
                 onExport: () =>
                   run("trk", () =>
-                    exportVelocidroneTrk(
-                      design,
-                      `${safeName({ view: "2d" })}.trk`
-                    )
+                    exportVelocidroneTrk(design, `${baseName}.trk`)
                   ),
               },
             ] as const

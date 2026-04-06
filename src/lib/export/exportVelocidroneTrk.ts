@@ -1,6 +1,7 @@
 import CryptoJS from "crypto-js";
 import { getDesignShapes } from "@/lib/track/design";
 import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
+import { getShapeFacingDegrees } from "@/lib/track/orientation";
 import type {
   ConeShape,
   DiveGateShape,
@@ -60,6 +61,8 @@ export interface VelocidroneExportSummary {
 }
 
 interface ExportTransform {
+  fieldHeight: number;
+  flipZ: boolean;
   offsetX: number;
   offsetZ: number;
   positionScale: number;
@@ -179,6 +182,8 @@ function createExportTransform(
   config: VelocidronePocConfig
 ): ExportTransform {
   return {
+    fieldHeight: design.field.height,
+    flipZ: design.field.origin === "tl",
     offsetX: -design.field.width / 2,
     offsetZ: -design.field.height / 2,
     positionScale: config.positionScale,
@@ -189,12 +194,15 @@ function toVelocidronePosition(
   transform: ExportTransform,
   x: number,
   z: number,
-  y = 0
+  y = 0,
+  options?: { flipZ?: boolean }
 ): [number, number, number] {
+  const shouldFlipZ = options?.flipZ ?? transform.flipZ;
+  const resolvedZ = shouldFlipZ ? transform.fieldHeight - z : z;
   return [
     Math.round((x + transform.offsetX) * transform.positionScale),
     Math.round(y * transform.positionScale),
-    Math.round((z + transform.offsetZ) * transform.positionScale),
+    Math.round((resolvedZ + transform.offsetZ) * transform.positionScale),
   ];
 }
 
@@ -221,7 +229,13 @@ function buildGatePlacement(
 ): VelocidroneGatePlacement {
   return {
     prefab,
-    trans: buildTransform(transform, shape.x, shape.y, shape.rotation, height),
+    trans: buildTransform(
+      transform,
+      shape.x,
+      shape.y,
+      getShapeFacingDegrees(shape),
+      height
+    ),
   };
 }
 
@@ -240,7 +254,7 @@ function buildLadderGatePlacements(
       transform,
       shape.x,
       shape.y,
-      shape.rotation,
+      getShapeFacingDegrees(shape),
       GROUND_HEIGHT - 0.38 + rungHeight * 0.05 + idx * rungSpacing
     ),
   }));
@@ -287,7 +301,7 @@ function buildDiveGateBarrierRecord(
   transform: ExportTransform
 ): VelocidroneBarrierRecord {
   const baseRotation = multiplyQuaternions(
-    axisAngleToQuaternion("y", shape.rotation),
+    axisAngleToQuaternion("y", getShapeFacingDegrees(shape)),
     axisAngleToQuaternion("x", 90)
   );
   const tiltAdjustedRotation = multiplyQuaternions(
@@ -334,7 +348,7 @@ function buildFieldPerimeterBarrierRecords(
     barriers.push({
       prefab: config.perimeterBarrierPrefabId,
       trans: {
-        pos: toVelocidronePosition(transform, x, z, y),
+        pos: toVelocidronePosition(transform, x, z, y, { flipZ: false }),
         rot,
         scale,
       },
