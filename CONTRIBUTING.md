@@ -124,6 +124,8 @@ npm run build
 
 Also verify the relevant user flow, especially for `/studio`, `/share/[token]`, mobile editing, import/export, recovery, and preview-mode auth/share behavior.
 
+For 3D editor interaction work, also sanity-check live inspector feedback and direct-manipulation controls such as path elevation handles, floating ladder placement, and rotation handles.
+
 ## Pull requests
 
 - Keep PRs focused on one feature, fix, or documentation change.
@@ -137,6 +139,7 @@ Also verify the relevant user flow, especially for `/studio`, `/share/[token]`, 
 - `CONTRIBUTING.md`: contributor workflow and setup
 - `docs/`: planning, deployment, deeper internal references
 - `CHANGELOG.md`: shipped, user-visible changes only
+  Write changelog entries for end users first: describe what is new or improved in plain product language, not internal architecture or planning terms.
 
 ## Need help?
 

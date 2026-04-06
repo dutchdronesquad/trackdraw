@@ -12,6 +12,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import type {
   DiveGateShape,
+  LadderShape,
   PolylinePoint,
   PolylineShape,
   Shape,
@@ -30,6 +31,8 @@ interface UseTrackPreview3DInteractionsParams {
   selectedPolyline: PolylineShape | null;
   setPolylinePoints: (id: string, points: PolylinePoint[]) => void;
   setSelection: (ids: string[]) => void;
+  setLiveShapePatch: (id: string, patch: Partial<Shape>) => void;
+  clearLiveShapePatch: (id: string) => void;
   shapeById: Record<string, Shape>;
   updateShape: (id: string, patch: Partial<Shape>) => void;
 }
@@ -42,6 +45,8 @@ export function useTrackPreview3DInteractions({
   selectedPolyline,
   setPolylinePoints,
   setSelection,
+  setLiveShapePatch,
+  clearLiveShapePatch,
   shapeById,
   updateShape,
 }: UseTrackPreview3DInteractionsParams) {
@@ -63,6 +68,11 @@ export function useTrackPreview3DInteractions({
     shapeId: string;
     startTilt: number;
   } | null>(null);
+  const [ladderElevationDrag, setLadderElevationDrag] = useState<{
+    shapeId: string;
+    startClientY: number;
+    startElevation: number;
+  } | null>(null);
   const [isMiddleMousePanning, setIsMiddleMousePanning] = useState(false);
 
   const elevationDragRef = useRef(elevationDrag);
@@ -71,17 +81,21 @@ export function useTrackPreview3DInteractions({
   );
   const rotationDragRef = useRef(rotationDrag);
   const tiltDragRef = useRef(tiltDrag);
+  const ladderElevationDragRef = useRef(ladderElevationDrag);
   const dragAnimationFrameRef = useRef<number | null>(null);
   const rotationDragAnimationFrameRef = useRef<number | null>(null);
   const tiltDragAnimationFrameRef = useRef<number | null>(null);
+  const ladderElevationDragAnimationFrameRef = useRef<number | null>(null);
   const pendingClientYRef = useRef<number | null>(null);
   const pendingRotationClientRef = useRef<{ x: number; y: number } | null>(
     null
   );
   const pendingTiltClientYRef = useRef<number | null>(null);
   const pendingTiltClientXRef = useRef<number | null>(null);
+  const pendingLadderElevationClientYRef = useRef<number | null>(null);
   const rotationDragValueRef = useRef<number | null>(null);
   const tiltDragValueRef = useRef<number | null>(null);
+  const ladderElevationDragValueRef = useRef<number | null>(null);
   const dragRotationGroupRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.Camera | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -101,6 +115,10 @@ export function useTrackPreview3DInteractions({
   useEffect(() => {
     tiltDragRef.current = tiltDrag;
   }, [tiltDrag]);
+
+  useEffect(() => {
+    ladderElevationDragRef.current = ladderElevationDrag;
+  }, [ladderElevationDrag]);
 
   useEffect(() => {
     const stopMiddleMousePanning = () => {
@@ -458,6 +476,51 @@ export function useTrackPreview3DInteractions({
     [beginInteraction, pauseHistory, shapeById]
   );
 
+  const applyLadderElevationDrag = useCallback(
+    (clientY: number) => {
+      const drag = ladderElevationDragRef.current;
+      if (!drag) return;
+      const shape = shapeById[drag.shapeId];
+      if (!shape || shape.kind !== "ladder") return;
+      const deltaMeters = (drag.startClientY - clientY) * 0.035;
+      const nextElevation = Math.max(
+        0,
+        +(drag.startElevation + deltaMeters).toFixed(2)
+      );
+      const currentElevation =
+        ladderElevationDragValueRef.current ??
+        (shape as LadderShape).elevation ??
+        0;
+      if (Math.abs(currentElevation - nextElevation) < 0.01) {
+        return;
+      }
+      ladderElevationDragValueRef.current = nextElevation;
+      setLiveShapePatch(drag.shapeId, { elevation: nextElevation });
+    },
+    [setLiveShapePatch, shapeById]
+  );
+
+  const handleLadderElevationDragStart = useCallback(
+    (
+      event: ThreeEvent<PointerEvent>,
+      shapeId: string,
+      currentElevation: number
+    ) => {
+      event.stopPropagation();
+      const shape = shapeById[shapeId];
+      if (!shape || shape.kind !== "ladder" || shape.locked) return;
+      beginInteraction();
+      pauseHistory();
+      ladderElevationDragValueRef.current = currentElevation;
+      setLadderElevationDrag({
+        shapeId,
+        startClientY: event.nativeEvent.clientY,
+        startElevation: currentElevation,
+      });
+    },
+    [beginInteraction, pauseHistory, shapeById]
+  );
+
   useEffect(() => {
     if (!tiltDrag) return;
 
@@ -528,6 +591,90 @@ export function useTrackPreview3DInteractions({
     };
   }, [applyTiltDrag, endInteraction, resumeHistory, tiltDrag, updateShape]);
 
+  useEffect(() => {
+    if (!ladderElevationDrag) return;
+
+    let finished = false;
+    const cleanupListeners = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", stopDrag);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", stopDrag);
+      window.removeEventListener("touchcancel", stopDrag);
+      if (ladderElevationDragAnimationFrameRef.current !== null) {
+        window.cancelAnimationFrame(
+          ladderElevationDragAnimationFrameRef.current
+        );
+        ladderElevationDragAnimationFrameRef.current = null;
+      }
+    };
+
+    const finishDrag = () => {
+      if (finished) return;
+      finished = true;
+      const drag = ladderElevationDragRef.current;
+      const finalElevation = ladderElevationDragValueRef.current;
+      cleanupListeners();
+      resumeHistory();
+      if (drag && finalElevation !== null) {
+        updateShape(drag.shapeId, { elevation: finalElevation });
+      }
+      if (drag) {
+        clearLiveShapePatch(drag.shapeId);
+      }
+      ladderElevationDragValueRef.current = null;
+      endInteraction();
+      setLadderElevationDrag(null);
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      pendingLadderElevationClientYRef.current = event.clientY;
+      if (ladderElevationDragAnimationFrameRef.current !== null) return;
+      ladderElevationDragAnimationFrameRef.current =
+        window.requestAnimationFrame(() => {
+          ladderElevationDragAnimationFrameRef.current = null;
+          if (pendingLadderElevationClientYRef.current !== null) {
+            applyLadderElevationDrag(pendingLadderElevationClientYRef.current);
+          }
+        });
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!event.touches.length) return;
+      event.preventDefault();
+      pendingLadderElevationClientYRef.current = event.touches[0].clientY;
+      if (ladderElevationDragAnimationFrameRef.current !== null) return;
+      ladderElevationDragAnimationFrameRef.current =
+        window.requestAnimationFrame(() => {
+          ladderElevationDragAnimationFrameRef.current = null;
+          if (pendingLadderElevationClientYRef.current !== null) {
+            applyLadderElevationDrag(pendingLadderElevationClientYRef.current);
+          }
+        });
+    };
+
+    const stopDrag = () => {
+      finishDrag();
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", stopDrag);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", stopDrag);
+    window.addEventListener("touchcancel", stopDrag);
+
+    return () => {
+      finishDrag();
+    };
+  }, [
+    applyLadderElevationDrag,
+    clearLiveShapePatch,
+    endInteraction,
+    ladderElevationDrag,
+    resumeHistory,
+    updateShape,
+  ]);
+
   return {
     cameraRef,
     containerRef,
@@ -536,9 +683,12 @@ export function useTrackPreview3DInteractions({
     handleCameraCapture,
     handleContainerMouseDownCapture,
     handleElevationDragStart,
+    handleLadderElevationDragStart,
     handleRotateDragStart,
     handleTiltDragStart,
     isMiddleMousePanning,
+    ladderElevationDrag,
+    ladderElevationDragValueRef,
     previewPolyline,
     rotationDrag,
     rotationDragValueRef,

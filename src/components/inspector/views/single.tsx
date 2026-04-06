@@ -453,6 +453,18 @@ export function SingleInspectorView({
                   min={0.5}
                 />
               </Row>
+              <Row label="Elevation (m)">
+                <Num
+                  value={shape.elevation ?? 0}
+                  onChange={(value) =>
+                    updateShape(shape.id, {
+                      elevation: Math.max(0, value),
+                    })
+                  }
+                  step={0.1}
+                  min={0}
+                />
+              </Row>
               <Row label="Gates">
                 <Num
                   value={shape.rungs}

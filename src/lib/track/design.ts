@@ -39,6 +39,13 @@ export function normalizeShape(shape: Shape): Shape {
     };
   }
 
+  if (shape.kind === "ladder") {
+    return {
+      ...shape,
+      elevation: shape.elevation ?? 0,
+    };
+  }
+
   return shape;
 }
 
