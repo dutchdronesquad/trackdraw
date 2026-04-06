@@ -24,10 +24,18 @@ Labels used below:
 
 The immediate priority is to close the current account/ownership release cleanly and keep the next research track focused.
 
-- [ ] Velocidrone export compatibility research (`Research`)
-      Investigate whether TrackDraw layouts can export into Velocidrone's track-builder workflow. A first experimental `.trk` export POC already exists.
+- [x] Velocidrone export compatibility research (`Research`)
+      The core compatibility question is now answered: TrackDraw can generate an experimental `.trk` export that imports into Velocidrone.
+- [ ] Velocidrone experimental export follow-up (`No account required`)
+      The remaining work is no longer basic feasibility research, but stabilizing the current export into a dependable best-effort workflow.
+  - [x] First experimental `.trk` export
+        Ship the first importable Velocidrone `.trk` export from TrackDraw.
+  - [x] First object mapping slice
+        Export the core track items into a usable first-pass Velocidrone layout with best-effort prefab mapping.
+  - [x] Experimental product framing
+        Ship the export as an explicitly experimental workflow in the UI and product messaging.
   - [ ] Stabilize the experimental `.trk` export
-        Validate the current proof of concept on more layouts before treating it as a supported workflow.
+        Validate the current export on more layouts before treating it as a supported workflow.
   - [ ] Gate front/back orientation model
         Define gate facing clearly enough that exported gates do not need excessive manual rotation inside Velocidrone when laying out the path.
   - [ ] Clear 2D front/back affordance

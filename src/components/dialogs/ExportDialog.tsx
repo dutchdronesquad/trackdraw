@@ -195,14 +195,27 @@ export default function ExportDialog({
     return [base, view, theme].filter(Boolean).join("_");
   };
 
-  const run = async (id: string, fn: () => void | Promise<void>) => {
+  const run = async <T,>(id: string, fn: () => T | Promise<T>) => {
     setBusy(id);
     try {
-      await fn();
-      toast.success("Exported");
+      const result = await fn();
+      const warningText =
+        !!result &&
+        typeof result === "object" &&
+        "warnings" in result &&
+        Array.isArray((result as { warnings?: unknown }).warnings)
+          ? ((result as { warnings: string[] }).warnings).join(" ")
+          : "";
+
+      toast.success(
+        warningText
+          ? `Exported. ${warningText}`
+          : "Exported"
+      );
       onOpenChange(false);
     } catch (err) {
-      toast.error(`Export failed: ${String(err)}`);
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`Export failed: ${message}`);
     } finally {
       setBusy(null);
     }

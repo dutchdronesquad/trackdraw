@@ -1,5 +1,6 @@
 import CryptoJS from "crypto-js";
-import { getDesignShapes } from "@/lib/design";
+import { getDesignShapes } from "@/lib/track/design";
+import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
 import type {
   ConeShape,
   DiveGateShape,
@@ -50,6 +51,12 @@ interface VelocidroneBarrierRecord {
 interface VelocidroneValueJson {
   gates: VelocidroneGateRecord[];
   barriers: VelocidroneBarrierRecord[];
+}
+
+export interface VelocidroneExportSummary {
+  warnings: string[];
+  gateCount: number;
+  barrierCount: number;
 }
 
 interface ExportTransform {
@@ -242,16 +249,11 @@ function buildLadderGatePlacements(
 function buildBarrierRecord(
   shape: Pick<Shape, "x" | "y" | "rotation">,
   prefab: number,
-  transform: ExportTransform
+  transform: ExportTransform,
+  options?: { sinkIntoGround?: number; rotationOffset?: number }
 ): VelocidroneBarrierRecord {
-  const y =
-    prefab === DEFAULT_CONFIG.flagPrefabId
-      ? GROUND_HEIGHT - 0.22
-      : GROUND_HEIGHT;
-  const rotation =
-    prefab === DEFAULT_CONFIG.flagPrefabId
-      ? shape.rotation + 180
-      : shape.rotation;
+  const y = GROUND_HEIGHT - (options?.sinkIntoGround ?? 0);
+  const rotation = shape.rotation + (options?.rotationOffset ?? 0);
 
   return {
     prefab,
@@ -390,10 +392,23 @@ function buildFieldPerimeterBarrierRecords(
   return barriers;
 }
 
+function assertFiniteNumber(value: number, label: string) {
+  if (!Number.isFinite(value)) {
+    throw new Error(`Velocidrone export found an invalid ${label}.`);
+  }
+}
+
 function assertPocShapes(design: TrackDesign) {
   const shapes = getDesignShapes(design);
   const startShapes = shapes.filter(isVelocidroneStartShape);
   const gates = shapes.filter(isVelocidroneGateShape);
+
+  assertFiniteNumber(design.field.width, "field width");
+  assertFiniteNumber(design.field.height, "field height");
+
+  if (design.field.width <= 0 || design.field.height <= 0) {
+    throw new Error("Velocidrone export needs a field with a positive size.");
+  }
 
   if (startShapes.length !== 1) {
     throw new Error(
@@ -406,6 +421,58 @@ function assertPocShapes(design: TrackDesign) {
       "Velocidrone POC export needs at least 2 gate objects after the start/finish."
     );
   }
+
+  for (const shape of shapes) {
+    assertFiniteNumber(shape.x, `${shape.kind} x position`);
+    assertFiniteNumber(shape.y, `${shape.kind} y position`);
+    assertFiniteNumber(shape.rotation, `${shape.kind} rotation`);
+  }
+}
+
+function getIgnoredShapeWarnings(design: TrackDesign) {
+  const ignoredKinds = new Set(
+    getDesignShapes(design)
+      .filter(
+        (shape: Shape) =>
+          shape.kind === "label" || shape.kind === "polyline"
+      )
+      .map((shape: Shape) => shape.kind)
+  );
+  if (!ignoredKinds.size) return [];
+
+  return [
+    `Ignored non-exported items: ${Array.from(ignoredKinds).join(", ")}.`,
+  ];
+}
+
+function getOrderedGateSourceShapes(design: TrackDesign) {
+  const shapes = getDesignShapes(design);
+  const routeNumbers = getObstacleNumberMap(design);
+
+  return shapes
+    .map((shape: Shape, shapeOrder: number) => ({
+      shape,
+      shapeOrder,
+      routeNumber: routeNumbers.get(shape.id) ?? Number.POSITIVE_INFINITY,
+    }))
+    .filter(
+      (
+        entry
+      ): entry is {
+        shape: GateShape | LadderShape;
+        shapeOrder: number;
+        routeNumber: number;
+      } =>
+        isVelocidroneGateShape(entry.shape) ||
+        isVelocidroneLadderShape(entry.shape)
+    )
+    .sort((a, b) => {
+      if (a.routeNumber !== b.routeNumber) {
+        return a.routeNumber - b.routeNumber;
+      }
+      return a.shapeOrder - b.shapeOrder;
+    })
+    .map((entry) => entry.shape);
 }
 
 function buildGatePlacements(
@@ -413,7 +480,7 @@ function buildGatePlacements(
   config: VelocidronePocConfig,
   transform: ExportTransform
 ): VelocidroneGatePlacement[] {
-  const shapes = getDesignShapes(design);
+  const shapes = getOrderedGateSourceShapes(design);
 
   return shapes.flatMap((shape) => {
     if (isVelocidroneGateShape(shape)) {
@@ -445,17 +512,22 @@ function buildBarrierRecords(
     buildStartGridBarrierRecord(startShape, config, transform),
     ...shapes
       .filter(isVelocidroneFlagShape)
-      .map((shape) =>
-        buildBarrierRecord(shape, config.flagPrefabId, transform)
+      .map((shape: FlagShape) =>
+        buildBarrierRecord(shape, config.flagPrefabId, transform, {
+          sinkIntoGround: 0.22,
+          rotationOffset: 180,
+        })
       ),
     ...shapes
       .filter(isVelocidroneConeShape)
-      .map((shape) =>
+      .map((shape: ConeShape) =>
         buildBarrierRecord(shape, config.conePrefabId, transform)
       ),
     ...shapes
       .filter(isVelocidroneDiveGateShape)
-      .map((shape) => buildDiveGateBarrierRecord(shape, config, transform)),
+      .map((shape: DiveGateShape) =>
+        buildDiveGateBarrierRecord(shape, config, transform)
+      ),
   ];
 }
 
@@ -513,7 +585,8 @@ export function buildVelocidronePayload({
   onlineId: number;
 }) {
   const value = JSON.stringify(valueJson);
-  return `${sceneId}\n${trackName}\n${value}\n${type}\n${onlineId}`;
+  const safeTrackName = trackName.replace(/[\r\n]+/g, " ").trim() || "track";
+  return `${sceneId}\n${safeTrackName}\n${value}\n${type}\n${onlineId}`;
 }
 
 export function encryptVelocidroneTrk(plaintext: string) {
@@ -543,6 +616,14 @@ export async function exportVelocidroneTrk(
 ) {
   const resolvedConfig = getResolvedConfig(config);
   const trackName = filename.replace(/\.trk$/i, "") || "track";
+  const warnings = [
+    ...getIgnoredShapeWarnings(design),
+    ...(getObstacleNumberMap(design).size
+      ? []
+      : [
+          "No route path found, so gate order falls back to canvas order.",
+        ]),
+  ];
   const valueJson = buildVelocidroneValueJson(design, resolvedConfig);
   const plaintext = buildVelocidronePayload({
     sceneId: resolvedConfig.sceneId,
@@ -554,4 +635,10 @@ export async function exportVelocidroneTrk(
   const encrypted = encryptVelocidroneTrk(plaintext);
 
   downloadTextFile(encrypted, filename);
+
+  return {
+    warnings,
+    gateCount: valueJson.gates.length,
+    barrierCount: valueJson.barriers.length,
+  } satisfies VelocidroneExportSummary;
 }

@@ -185,8 +185,8 @@ Suggested first slices:
 
 #### Research Tracks (`Research`)
 
-- Velocidrone export compatibility
-  - Experimental `.trk` export proof of concept exists already
+- Velocidrone experimental export follow-up
+  - The core compatibility question is answered: TrackDraw can already generate an experimental `.trk` file that imports into Velocidrone
   - Next step is validation and orientation correctness, especially gate front/back direction
 - Desktop and mobile wrapper evaluation
 - PWA evaluation
@@ -396,14 +396,17 @@ Remaining:
 - Keep refining the publish dialog around repeated use in Studio without regressing the current flow
 - Revisit any replace/regenerate flow only once account-backed ownership exists
 
-### 10. Velocidrone Export Compatibility (Research)
+### 10. Velocidrone Experimental Export Follow-up (`No account required`)
 
-Explore whether TrackDraw layouts can be exported into a format that is usable inside Velocidrone's track builder workflow.
+TrackDraw can already generate an experimental `.trk` export that imports into Velocidrone. The open work is now turning that proof of concept into a more dependable best-effort workflow.
 
 Current status:
 
-- A first experimental `.trk` export proof of concept already exists and can be imported into Velocidrone
-- The workflow is still too early to treat as supported or stable
+- The core compatibility question is now answered
+- A first experimental `.trk` export already exists and can be imported into Velocidrone
+- A first best-effort object mapping pass already exists for the main track items
+- The workflow is already positioned product-wise as an experimental base export
+- The workflow is still too early to treat as fully supported or stable
 
 Why:
 
@@ -414,17 +417,18 @@ Why:
 Constraints:
 
 - There is no public API or official export documentation to build against
-- This may require reverse engineering of Velocidrone track data or import behavior
+- The reverse engineering phase produced a working export path, but the object mapping still remains approximate in places
 - Legal, maintenance, and breakage risk must be considered before promising user-facing support
 
 Recommended approach:
 
-- Treat this as a research and compatibility project first
+- Treat this as an experimental export follow-up, not as a blank research question
 - Keep iterating on the current proof-of-concept export instead of restarting discovery from zero
+- Treat the current object mapping as a best-effort base layer, then tighten it through validation rather than promising perfect 1:1 conversion
 - Focus next on orientation correctness, especially making gate front/back direction explicit enough that users do not need to manually rotate many gates after import
 - Add clearer front/back affordances in the 2D editor so gate facing is readable before export
 - Add clearer 3D orientation validation so users can confirm gate facing faster before leaving TrackDraw
-- Only promote it to a supported feature if the workflow is stable enough to maintain
+- Keep positioning it as an experimental base export until the workflow is stable enough to maintain
 
 ### 11. Heatmap And Flow Analysis
 
@@ -594,7 +598,7 @@ The v1 scope is complete. All items are done: project workflow, share route depr
 4. Layout acceleration (obstacle presets, selection grouping, venue templates)
 5. Published share lifecycle controls
 6. Comments and review mode
-7. Velocidrone export (research track)
+7. Velocidrone experimental export follow-up
 
 This sequence keeps the roadmap focused on extending workflow depth rather than plugging product gaps.
 
