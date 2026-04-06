@@ -205,14 +205,10 @@ export default function ExportDialog({
         typeof result === "object" &&
         "warnings" in result &&
         Array.isArray((result as { warnings?: unknown }).warnings)
-          ? ((result as { warnings: string[] }).warnings).join(" ")
+          ? (result as { warnings: string[] }).warnings.join(" ")
           : "";
 
-      toast.success(
-        warningText
-          ? `Exported. ${warningText}`
-          : "Exported"
-      );
+      toast.success(warningText ? `Exported. ${warningText}` : "Exported");
       onOpenChange(false);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

@@ -447,8 +447,7 @@ function getIgnoredShapeWarnings(design: TrackDesign) {
   const ignoredKinds = new Set(
     getDesignShapes(design)
       .filter(
-        (shape: Shape) =>
-          shape.kind === "label" || shape.kind === "polyline"
+        (shape: Shape) => shape.kind === "label" || shape.kind === "polyline"
       )
       .map((shape: Shape) => shape.kind)
   );
@@ -524,14 +523,12 @@ function buildBarrierRecords(
   return [
     ...buildFieldPerimeterBarrierRecords(design, config, transform),
     buildStartGridBarrierRecord(startShape, config, transform),
-    ...shapes
-      .filter(isVelocidroneFlagShape)
-      .map((shape: FlagShape) =>
-        buildBarrierRecord(shape, config.flagPrefabId, transform, {
-          sinkIntoGround: 0.22,
-          rotationOffset: 180,
-        })
-      ),
+    ...shapes.filter(isVelocidroneFlagShape).map((shape: FlagShape) =>
+      buildBarrierRecord(shape, config.flagPrefabId, transform, {
+        sinkIntoGround: 0.22,
+        rotationOffset: 180,
+      })
+    ),
     ...shapes
       .filter(isVelocidroneConeShape)
       .map((shape: ConeShape) =>
@@ -634,9 +631,7 @@ export async function exportVelocidroneTrk(
     ...getIgnoredShapeWarnings(design),
     ...(getObstacleNumberMap(design).size
       ? []
-      : [
-          "No route path found, so gate order falls back to canvas order.",
-        ]),
+      : ["No route path found, so gate order falls back to canvas order."]),
   ];
   const valueJson = buildVelocidroneValueJson(design, resolvedConfig);
   const plaintext = buildVelocidronePayload({

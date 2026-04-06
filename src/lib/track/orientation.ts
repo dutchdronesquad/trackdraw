@@ -15,9 +15,7 @@ export type FrontBackShape =
   | LadderShape
   | DiveGateShape;
 
-export function hasFrontBackOrientation(
-  shape: Shape
-): shape is FrontBackShape {
+export function hasFrontBackOrientation(shape: Shape): shape is FrontBackShape {
   return (
     shape.kind === "gate" ||
     shape.kind === "startfinish" ||
