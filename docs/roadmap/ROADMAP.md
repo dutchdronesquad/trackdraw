@@ -405,6 +405,8 @@ Current status:
 - The core compatibility question is now answered
 - A first experimental `.trk` export already exists and can be imported into Velocidrone
 - A first best-effort object mapping pass already exists for the main track items
+- A centralized orientation layer now exists for export plus 2D/3D rotation guides
+- First-pass 2D and 3D front/back validation cues now exist in the editor
 - The workflow is already positioned product-wise as an experimental base export
 - The workflow is still too early to treat as fully supported or stable
 
@@ -425,9 +427,9 @@ Recommended approach:
 - Treat this as an experimental export follow-up, not as a blank research question
 - Keep iterating on the current proof-of-concept export instead of restarting discovery from zero
 - Treat the current object mapping as a best-effort base layer, then tighten it through validation rather than promising perfect 1:1 conversion
-- Focus next on orientation correctness, especially making gate front/back direction explicit enough that users do not need to manually rotate many gates after import
-- Add clearer front/back affordances in the 2D editor so gate facing is readable before export
-- Add clearer 3D orientation validation so users can confirm gate facing faster before leaving TrackDraw
+- Keep refining the new centralized orientation model so per-shape export offsets and editor guides stay aligned
+- Keep improving the 2D front/back affordance now that the first cue is attached to the rotation guide
+- Keep improving the 3D orientation validation now that the first guide pass follows the same orientation mapping
 - Keep positioning it as an experimental base export until the workflow is stable enough to maintain
 
 ### 11. Heatmap And Flow Analysis

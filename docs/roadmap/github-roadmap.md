@@ -35,13 +35,13 @@ The immediate priority is to close the current account/ownership release cleanly
   - [x] Experimental product framing
         Ship the export as an explicitly experimental workflow in the UI and product messaging.
   - [ ] Stabilize the experimental `.trk` export
-        Validate the current export on more layouts before treating it as a supported workflow.
-  - [ ] Gate front/back orientation model
-        Define gate facing clearly enough that exported gates do not need excessive manual rotation inside Velocidrone when laying out the path.
-  - [ ] Clear 2D front/back affordance
-        Make gate front/back direction easier to read in the 2D editor.
-  - [ ] Faster 3D orientation validation
-        Make gate facing easier to validate in 3D before export.
+        Validate the current export on more layouts before treating it as a supported workflow. A centralized orientation layer and first editor cues now exist, but runtime validation is still ongoing.
+  - [x] Gate front/back orientation model
+        Centralize front-facing rules so export, 2D guides, and 3D guides use the same per-shape orientation mapping.
+  - [x] Clear 2D front/back affordance
+        Add a first-pass 2D front indicator by anchoring the `Front` cue to the rotation guide instead of the obstacle itself.
+  - [x] Faster 3D orientation validation
+        Add a first-pass 3D orientation guide pass so rotation handles follow the same central orientation mapping as the exporter.
 
 - [ ] Accounts and cross-device project evaluation (`Research`)
       Better Auth, magic-link sign-in, profile management, and account entry points are now in place. The next decision is how far account-backed continuity should go without turning TrackDraw into an auth-first product.
