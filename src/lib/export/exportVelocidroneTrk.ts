@@ -16,7 +16,10 @@ import type {
 const VELOCIDRONE_KEY = "VelocidrrdicoleV";
 const GROUND_HEIGHT = -0.86;
 const FLOOR_BARRIER_HEIGHT = -0.86;
-const START_GRID_ROTATION: [number, number, number, number] = [-707, 707, 0, 0];
+const START_GRID_YAW_OFFSET_DEG = 90;
+const START_GRID_ROTATION: [number, number, number, number] = [
+  0, 0, -707, -707,
+];
 const PERIMETER_BARRIER_ROTATION_X: [number, number, number, number] = [
   707, 0, 0, 707,
 ];
@@ -280,6 +283,20 @@ function buildStartGridBarrierRecord(
   config: VelocidronePocConfig,
   transform: ExportTransform
 ): VelocidroneBarrierRecord {
+  const yawRotation = axisAngleToQuaternion(
+    "y",
+    getShapeFacingDegrees(shape) + START_GRID_YAW_OFFSET_DEG
+  );
+  const baseRotation: QuaternionTuple = [
+    START_GRID_ROTATION[0] / 1000,
+    START_GRID_ROTATION[1] / 1000,
+    START_GRID_ROTATION[2] / 1000,
+    START_GRID_ROTATION[3] / 1000,
+  ];
+  const startGridRotation = quaternionToStorage(
+    multiplyQuaternions(yawRotation, baseRotation)
+  );
+
   return {
     prefab: config.startGridPrefabId,
     trans: {
@@ -289,7 +306,7 @@ function buildStartGridBarrierRecord(
         shape.y,
         FLOOR_BARRIER_HEIGHT
       ),
-      rot: START_GRID_ROTATION,
+      rot: startGridRotation,
       scale: [100, 100, 100],
     },
   };
