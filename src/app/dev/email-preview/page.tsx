@@ -58,7 +58,8 @@ export default async function EmailPreviewPage({
   const content = getAuthEmailPreviewContent(activeKey);
   const activeItem =
     previewItems.find((item) => item.key === activeKey) ?? previewItems[0];
-  const fromAddress = process.env.PLUNK_FROM_EMAIL ?? "noreply@emails.trackdraw.app";
+  const fromAddress =
+    process.env.PLUNK_FROM_EMAIL ?? "noreply@emails.trackdraw.app";
 
   return (
     <main className="bg-background relative min-h-screen overflow-hidden px-6 py-8">
