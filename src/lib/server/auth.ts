@@ -203,6 +203,10 @@ export async function getAuth() {
     plugins: [
       magicLink({
         expiresIn: 600,
+        rateLimit: {
+          window: 900,
+          max: 3,
+        },
         sendMagicLink: async ({ email: recipient, url, token }) => {
           console.info("[TrackDraw auth] sendMagicLink", {
             recipient,
