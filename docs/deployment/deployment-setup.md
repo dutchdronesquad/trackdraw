@@ -85,9 +85,9 @@ Worker secrets:
 
 Worker vars:
 
-- `PLUNK_FROM_EMAIL` (required for TrackDraw's current transactional mail flow; use a verified sender such as `noreply@trackdraw.app`)
+- `PLUNK_FROM_EMAIL` (required for TrackDraw's current transactional mail flow; use a verified sender on the transactional subdomain, e.g. `noreply@emails.trackdraw.app`)
 - `PLUNK_FROM_NAME` (optional, defaults to `TrackDraw`)
-- `PLUNK_REPLY_TO_EMAIL` (optional, only if replies should go to a different mailbox)
+- `PLUNK_REPLY_TO_EMAIL` (optional; set to a real mailbox such as `info@trackdraw.app` so replies reach a human)
 
 Generate a separate `BETTER_AUTH_SECRET` for each deployed environment. Example:
 
@@ -102,15 +102,17 @@ Keep non-secret mail configuration in [`wrangler.jsonc`](../../wrangler.jsonc) s
 
 If magic-link emails arrive in spam, treat that as a deliverability problem rather than a template problem.
 
-For `trackdraw.app`, verify all of the following:
+Transactional email (magic links, verification, email-change) is sent from `emails.trackdraw.app`. The root domain `trackdraw.app` is reserved for regular mailbox use (e.g. `info@trackdraw.app`). Keeping these on separate subdomains avoids SPF/DKIM/DMARC conflicts.
 
-- `PLUNK_FROM_EMAIL` uses a verified sender or verified sending domain in Plunk
-- `SPF` exists for `trackdraw.app` and passes for the sending provider
-- `DKIM` records from Plunk are present and pass
-- `DMARC` exists for `_dmarc.trackdraw.app`
-- `From` and `Reply-To` stay on the same domain when possible to reduce trust and alignment friction
+For `emails.trackdraw.app`, verify all of the following:
 
-Recommended DMARC starting point:
+- `PLUNK_FROM_EMAIL` uses a verified sender or verified sending domain in Plunk (e.g. `noreply@emails.trackdraw.app`)
+- `SPF` exists for `emails.trackdraw.app` and passes for the sending provider
+- `DKIM` records from Plunk are present and pass on `emails.trackdraw.app`
+- `DMARC` exists for `_dmarc.trackdraw.app` (covers all subdomains via DMARC tree walk; a separate `_dmarc.emails.trackdraw.app` record is only needed for a subdomain-specific policy)
+- `PLUNK_REPLY_TO_EMAIL` is set to `info@trackdraw.app` so replies reach a real mailbox
+
+Recommended DMARC starting point (place on `_dmarc.trackdraw.app`; covers all subdomains including `emails.trackdraw.app`):
 
 ```txt
 v=DMARC1; p=none; rua=mailto:info@trackdraw.app; adkim=s; aspf=s
@@ -118,22 +120,21 @@ v=DMARC1; p=none; rua=mailto:info@trackdraw.app; adkim=s; aspf=s
 
 Notes:
 
-- there must be only one SPF record on the root domain
-- Plunk-provided DKIM records must be copied exactly
+- there must be only one SPF record per subdomain; do not add Plunk's include to the root domain
+- Plunk-provided DKIM records must be copied exactly to `emails.trackdraw.app`
 - Cloudflare mail-related `CNAME`, `TXT`, and `MX` records should stay `DNS only`
-- passing SPF, DKIM, and DMARC does not guarantee inbox placement immediately; new domains can still have low reputation for a while
+- passing SPF, DKIM, and DMARC does not guarantee inbox placement immediately; new subdomains can still have low reputation for a while
 
 ## Sender logo branding
 
-If you want mail clients such as Spark or Apple Mail to show a branded sender logo for `trackdraw.app`, publish a BIMI-compatible logo and add a BIMI DNS record. The repository now exposes a dedicated square logo at:
+If you want mail clients such as Spark or Apple Mail to show a branded sender logo, publish a BIMI-compatible logo and add a BIMI DNS record. The repository exposes a dedicated square logo at:
 
 - `https://trackdraw.app/.well-known/trackdraw-bimi.svg`
 
-Recommended setup for `trackdraw.app`:
+Recommended setup for `emails.trackdraw.app`:
 
-- keep `From` on a verified `trackdraw.app` sender such as `noreply@trackdraw.app`
-- make sure `SPF`, `DKIM`, and `DMARC` all pass first
-- publish a BIMI TXT record on `default._bimi.trackdraw.app`
+- make sure `SPF`, `DKIM`, and `DMARC` all pass on `emails.trackdraw.app` first
+- publish a BIMI TXT record on `default._bimi.emails.trackdraw.app`
 
 Example BIMI record:
 
