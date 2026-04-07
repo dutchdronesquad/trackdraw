@@ -33,6 +33,7 @@ export function normalizeShape(shape: Shape): Shape {
   if (shape.kind === "polyline") {
     return {
       ...normalizePolylinePosition(shape),
+      frontOffsetDeg: shape.frontOffsetDeg ?? 0,
       arrowSpacing: shape.arrowSpacing ?? 15,
       strokeWidth: shape.strokeWidth ?? 0.26,
       smooth: true,
@@ -42,11 +43,15 @@ export function normalizeShape(shape: Shape): Shape {
   if (shape.kind === "ladder") {
     return {
       ...shape,
+      frontOffsetDeg: shape.frontOffsetDeg ?? 0,
       elevation: shape.elevation ?? 0,
     };
   }
 
-  return shape;
+  return {
+    ...shape,
+    frontOffsetDeg: shape.frontOffsetDeg ?? 0,
+  };
 }
 
 function normalizeShapes(shapes: Shape[]) {

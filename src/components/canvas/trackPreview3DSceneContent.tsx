@@ -22,6 +22,7 @@ import {
   getPolylineCurve3Derived,
   getPolylinePreview3DPoints,
 } from "@/lib/track/polyline-derived-3d";
+import { getPreviewRotationGuideDegrees } from "@/lib/track/orientation";
 import type {
   ConeShape,
   DiveGateShape,
@@ -1285,6 +1286,7 @@ export function GateRotateHandle3D({
   rotationOverrideRef: RefObject<number | null>;
 }) {
   const [hovered, setHovered] = useState(false);
+  const guideRotationDeg = getPreviewRotationGuideDegrees(shape);
   const ringRadius = Math.max(
     shape.kind === "gate"
       ? ((shape as GateShape).width ?? 3) / 2 + 0.85
@@ -1295,7 +1297,7 @@ export function GateRotateHandle3D({
           : ((shape as DiveGateShape).size ?? 2.8) / 2 + 0.85,
     1.7
   );
-  const yawRad = (-shape.rotation * Math.PI) / 180;
+  const yawRad = (-guideRotationDeg * Math.PI) / 180;
   const hitR = isMobile ? 0.65 : 0.5;
   const ringThickness = 0.16;
   const indicatorThickness = ringThickness;
@@ -1309,7 +1311,10 @@ export function GateRotateHandle3D({
 
   useFrame((_, delta) => {
     if (isDragging && needleGroupRef.current) {
-      const rot = rotationOverrideRef.current ?? shape.rotation;
+      const rot = getPreviewRotationGuideDegrees({
+        ...shape,
+        rotation: rotationOverrideRef.current ?? shape.rotation,
+      });
       needleGroupRef.current.rotation.y = (-rot * Math.PI) / 180;
     }
     if (isDragging || hovered) return;

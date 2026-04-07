@@ -59,6 +59,10 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 - 🔗 **Share and export cleanly** - publish a read-only link, manage and revoke published shares from the Projects dialog when signed in, or export PNG, SVG, PDF, 3D screenshots, and JSON project files from the same design
 - 🔐 **Sign in to keep projects in sync** - use an email magic link, manage your profile in-app, change your account email safely, and prepare TrackDraw for account-backed ownership and cross-device work
 
+## Experimental
+
+- 🧪 **Velocidrone draft export** - generate an experimental `.trk` export as a starting point for simulator testing
+
 ## How it works
 
 1. **Start from scratch or from a head start** with a blank canvas, a preset, or a starter layout.

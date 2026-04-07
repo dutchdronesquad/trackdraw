@@ -24,6 +24,7 @@ export interface BaseShape {
   x: number; // meters
   y: number; // meters
   rotation: number; // degrees
+  frontOffsetDeg?: number; // optional extra front-facing offset for guides/exports
   locked?: boolean;
   color?: string; // #RRGGBB or CSS color
   meta?: Record<string, unknown>;

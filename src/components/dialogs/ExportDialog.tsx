@@ -7,9 +7,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useEditor } from "@/store/editor";
 import { exportSvg } from "@/lib/export/exportSvg";
 import { exportPng } from "@/lib/export/exportPng";
+import { exportVelocidroneTrk } from "@/lib/export/exportVelocidroneTrk";
 import { cn } from "@/lib/utils";
 import type { TrackCanvasHandle } from "@/components/canvas/TrackCanvas";
-import { Download, Loader2, Sun, Moon } from "lucide-react";
+import { ArrowRight, Download, Loader2, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/canvas/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
@@ -25,144 +26,148 @@ export interface ExportDialogProps {
 
 type Theme = "dark" | "light";
 
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <p className="text-muted-foreground/60 pb-2.5 text-[11px] font-semibold tracking-[0.12em] uppercase select-none">
-      {children}
-    </p>
-  );
-}
-
-function ExportThemeToggle({
-  value,
-  onChange,
-}: {
-  value: Theme;
-  onChange: (v: Theme) => void;
-}) {
-  const options = [
-    { id: "dark" as const, label: "Dark", icon: Moon },
-    { id: "light" as const, label: "Light", icon: Sun },
-  ];
-
-  return (
-    <div className="border-border/60 bg-muted/20 relative grid w-full shrink-0 grid-cols-2 rounded-2xl border p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:w-auto sm:min-w-[12rem]">
-      <div
-        className={cn(
-          "bg-background/96 absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-xl shadow-[0_8px_20px_rgba(15,23,42,0.08),inset_0_0_0_1px_rgba(100,116,139,0.16)] transition-transform duration-250 ease-out",
-          value === "dark" ? "translate-x-0" : "translate-x-full"
-        )}
-        style={{ left: "0.25rem" }}
-        aria-hidden="true"
-      />
-      {options.map((option) => {
-        const Icon = option.icon;
-        const active = value === option.id;
-        return (
-          <button
-            key={option.id}
-            type="button"
-            onClick={() => onChange(option.id)}
-            className={cn(
-              "relative z-10 flex min-w-0 items-center justify-center gap-2 rounded-xl px-3 py-2 text-[11px] font-medium transition-colors duration-200",
-              active
-                ? "text-foreground"
-                : "text-muted-foreground/75 hover:bg-background/35 hover:text-foreground"
-            )}
-            aria-pressed={active}
-          >
-            <span
-              className={cn(
-                "flex size-5 shrink-0 items-center justify-center rounded-md transition-all duration-200",
-                active
-                  ? "bg-foreground/6 text-foreground"
-                  : "text-muted-foreground/70 bg-transparent"
-              )}
-            >
-              <Icon
-                className={cn(
-                  "size-3.5 shrink-0 transition-all duration-200",
-                  active ? "scale-100 opacity-100" : "scale-95 opacity-80"
-                )}
-              />
-            </span>
-            <span
-              className={cn(
-                "transition-all duration-200",
-                active ? "opacity-100" : "opacity-90"
-              )}
-            >
-              {option.label}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function FormatTile({
+function DesktopFormatCard({
   ext,
   label,
   color,
   description,
-  note,
   busy,
   disabled,
+  lockedAction,
   onExport,
 }: {
   ext: string;
   label: string;
   color: string;
   description: string;
-  note?: React.ReactNode;
   busy: boolean;
   disabled?: boolean;
+  lockedAction?: { label: string; onClick: () => void };
   onExport: () => void;
 }) {
+  const isLocked = !!lockedAction;
   const inactive = busy || disabled;
+
   return (
     <div
       role="button"
-      tabIndex={inactive ? -1 : 0}
-      onClick={inactive ? undefined : onExport}
+      tabIndex={inactive || isLocked ? -1 : 0}
+      onClick={inactive || isLocked ? undefined : onExport}
       onKeyDown={
-        inactive
+        inactive || isLocked
           ? undefined
           : (e) => {
               if (e.key === "Enter" || e.key === " ") onExport();
             }
       }
       className={cn(
-        "group border-border/40 flex h-full w-full flex-col gap-3 rounded-xl border p-4 text-left transition-all",
+        "group flex min-h-[148px] w-full flex-col rounded-2xl border p-4 transition-all",
         inactive
-          ? "cursor-not-allowed opacity-40"
-          : "hover:border-border/60 hover:bg-muted/20 cursor-pointer"
+          ? "border-border/20 cursor-not-allowed opacity-40"
+          : isLocked
+            ? "border-border/20 bg-background/10"
+            : "border-border/30 bg-background/15 hover:border-border/50 hover:bg-muted/10 cursor-pointer"
       )}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="mb-3 flex items-start justify-between">
         <span
           className={cn(
-            "rounded-md px-2 py-0.5 font-mono text-[11px] font-bold tracking-wide",
+            "rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold tracking-wide",
+            isLocked ? "opacity-40" : "",
             color
           )}
         >
           {ext}
         </span>
         {busy ? (
-          <Loader2 className="text-muted-foreground/65 size-3.5 shrink-0 animate-spin" />
+          <Loader2 className="text-muted-foreground/60 mt-0.5 size-4 animate-spin" />
         ) : (
-          <Download className="text-muted-foreground/40 group-hover:text-muted-foreground/60 size-3.5 shrink-0 transition-colors" />
+          <Download
+            className={cn(
+              "mt-0.5 size-4 transition-colors",
+              inactive || isLocked
+                ? "text-muted-foreground/20"
+                : "text-muted-foreground/30 group-hover:text-muted-foreground/60"
+            )}
+          />
         )}
       </div>
-      <div className="flex-1">
-        <p className="text-foreground text-sm font-medium">{label}</p>
-        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+      <div className={cn("flex-1", isLocked && "opacity-40")}>
+        <p className="text-foreground text-sm font-semibold">{label}</p>
+        <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
           {description}
         </p>
       </div>
-      {note && <div className="mt-auto">{note}</div>}
+      {lockedAction && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            lockedAction.onClick();
+          }}
+          className="border-border/20 text-muted-foreground/60 hover:text-foreground mt-3 flex items-center gap-1.5 border-t pt-3 text-[11px] font-medium transition-colors"
+        >
+          <ArrowRight className="size-3 shrink-0" />
+          {lockedAction.label}
+        </button>
+      )}
     </div>
+  );
+}
+
+function MobileFormatRow({
+  ext,
+  label,
+  color,
+  description,
+  isBusy,
+  locked,
+  onAction,
+}: {
+  ext: string;
+  label: string;
+  color: string;
+  description: string;
+  isBusy: boolean;
+  locked?: boolean;
+  onAction: () => void;
+}) {
+  const inactive = isBusy || locked;
+  return (
+    <button
+      type="button"
+      disabled={inactive}
+      onClick={onAction}
+      className={cn(
+        "flex w-full items-center gap-4 px-4 py-4 text-left transition-colors",
+        inactive ? "opacity-50" : "active:bg-muted/30"
+      )}
+    >
+      <span
+        className={cn(
+          "w-10 shrink-0 rounded-md py-0.5 text-center font-mono text-[11px] font-bold tracking-wide",
+          color
+        )}
+      >
+        {ext}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-foreground text-sm font-medium">{label}</p>
+        <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
+          {description}
+        </p>
+      </div>
+      {isBusy ? (
+        <Loader2 className="text-muted-foreground/60 size-4 shrink-0 animate-spin" />
+      ) : locked ? (
+        <span className="text-muted-foreground/50 flex shrink-0 items-center gap-1 text-[11px]">
+          <ArrowRight className="size-3" />
+          3D view
+        </span>
+      ) : (
+        <Download className="text-muted-foreground/40 size-4 shrink-0" />
+      )}
+    </button>
   );
 }
 
@@ -186,32 +191,44 @@ export default function ExportDialog({
     setExportTheme(currentTheme);
   }, [currentTheme]);
 
+  const baseName = (filename.trim() || design.title.trim() || "track").replace(
+    /[^a-z0-9-_]+/gi,
+    "_"
+  );
+
   const safeName = ({ theme, view }: { theme?: Theme; view: "2d" | "3d" }) => {
-    const base = (filename.trim() || design.title.trim() || "track").replace(
-      /[^a-z0-9-_]+/gi,
-      "_"
-    );
-    return [base, view, theme].filter(Boolean).join("_");
+    return [baseName, view, theme].filter(Boolean).join("_");
   };
 
-  const run = async (id: string, fn: () => void | Promise<void>) => {
+  const run = async <T,>(id: string, fn: () => T | Promise<T>) => {
     setBusy(id);
     try {
-      await fn();
-      toast.success("Exported");
+      const result = await fn();
+      const warningText =
+        !!result &&
+        typeof result === "object" &&
+        "warnings" in result &&
+        Array.isArray((result as { warnings?: unknown }).warnings)
+          ? (result as { warnings: string[] }).warnings.join(" ")
+          : "";
+
+      toast.success(warningText ? `Exported. ${warningText}` : "Exported");
       onOpenChange(false);
     } catch (err) {
-      toast.error(`Export failed: ${String(err)}`);
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`Export failed: ${message}`);
     } finally {
       setBusy(null);
     }
   };
 
-  const settingsBar = (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
-        <div className="border-border/50 flex min-w-0 flex-1 items-center gap-3 rounded-xl border px-3.5 py-2.5">
-          <span className="text-muted-foreground/60 shrink-0 text-xs font-medium">
+  const desktopContent = (
+    <div className="space-y-6">
+      {/* Settings bar — unified card */}
+      <div className="border-border/35 bg-background/50 divide-border/30 flex min-w-0 items-stretch divide-x overflow-hidden rounded-xl border">
+        {/* Filename */}
+        <label className="flex min-w-0 flex-1 cursor-text flex-col gap-1.5 px-4 py-3">
+          <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
             Filename
           </span>
           <input
@@ -219,54 +236,98 @@ export default function ExportDialog({
             placeholder={design.title.trim() || "track"}
             value={filename}
             onChange={(e) => setFilename(e.target.value)}
-            className="text-foreground placeholder:text-muted-foreground/45 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
+            className="text-foreground placeholder:text-muted-foreground/30 w-full min-w-0 bg-transparent text-sm outline-hidden"
           />
-        </div>
-        <div className="md:shrink-0">
-          <ExportThemeToggle value={exportTheme} onChange={setExportTheme} />
-        </div>
-      </div>
-      <div className="border-border/50 flex min-w-0 flex-1 items-center gap-3 rounded-xl border px-3.5 py-2.5">
-        <div className="min-w-0 flex-1">
-          <p className="text-foreground text-xs font-medium">
-            Include obstacle numbers
-          </p>
-          <p className="text-muted-foreground/70 pt-px text-[11px] leading-snug">
-            Adds route numbers in 2D exports.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIncludeObstacleNumbers((current) => !current)}
-          className={cn(
-            "flex h-6 w-10 shrink-0 items-center rounded-full p-0.5 transition-colors",
-            includeObstacleNumbers
-              ? "bg-foreground/90 justify-end"
-              : "bg-border/80 justify-start"
-          )}
-          aria-pressed={includeObstacleNumbers}
-          aria-label={
-            includeObstacleNumbers
-              ? "Disable obstacle numbers in export"
-              : "Enable obstacle numbers in export"
-          }
-        >
-          <span className="bg-background block size-5 rounded-full shadow-xs" />
-        </button>
-      </div>
-    </div>
-  );
+        </label>
 
-  const desktopGrid = (
-    <div className="space-y-6">
+        {/* Theme */}
+        <div className="flex shrink-0 flex-col gap-1.5 px-4 py-3">
+          <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
+            Theme
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setExportTheme("dark")}
+              aria-pressed={exportTheme === "dark"}
+              className={cn(
+                "flex items-center gap-1.5 text-[11px] font-medium transition-colors",
+                exportTheme === "dark"
+                  ? "text-foreground"
+                  : "text-muted-foreground/40 hover:text-muted-foreground/65"
+              )}
+            >
+              <Moon className="size-3.5 shrink-0" />
+              Dark
+            </button>
+            <button
+              type="button"
+              onClick={() => setExportTheme("light")}
+              aria-pressed={exportTheme === "light"}
+              className={cn(
+                "flex items-center gap-1.5 text-[11px] font-medium transition-colors",
+                exportTheme === "light"
+                  ? "text-foreground"
+                  : "text-muted-foreground/40 hover:text-muted-foreground/65"
+              )}
+            >
+              <Sun
+                className={cn(
+                  "size-3.5 shrink-0",
+                  exportTheme === "light" ? "text-amber-500" : ""
+                )}
+              />
+              Light
+            </button>
+          </div>
+        </div>
+
+        {/* Route numbers */}
+        <div className="flex shrink-0 items-center gap-3 px-4 py-3">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
+              Route numbers
+            </span>
+            <span className="text-muted-foreground/45 text-[10px]">
+              In 2D exports
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIncludeObstacleNumbers((v) => !v)}
+            className={cn(
+              "relative h-5 w-8 shrink-0 rounded-full p-0.5 transition-colors",
+              includeObstacleNumbers ? "bg-foreground/80" : "bg-border/70"
+            )}
+            aria-pressed={includeObstacleNumbers}
+            aria-label={
+              includeObstacleNumbers
+                ? "Disable route numbers in export"
+                : "Enable route numbers in export"
+            }
+          >
+            <span className="bg-background block size-4 rounded-full shadow-xs" />
+          </button>
+        </div>
+      </div>
+
+      {/* 2D exports */}
       <div>
-        <SectionLabel>2D</SectionLabel>
+        <div className="mb-1.5 flex items-center gap-3">
+          <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
+            2D Exports
+          </span>
+          <div className="bg-border/30 h-px flex-1" />
+        </div>
+        <p className="text-muted-foreground mb-4 text-[11px]">
+          Raster, vector, and print-ready files.
+        </p>
         <div className="grid grid-cols-3 gap-3">
-          <FormatTile
+          <DesktopFormatCard
             ext="PNG"
             label="Image"
             color="bg-sky-500/15 text-sky-400"
-            description="High-resolution raster at 2× pixel density. Great for sharing or printing."
+            description="High-resolution PNG at 3× scale, ready for sharing or print."
             busy={busy === "png"}
             onExport={() =>
               run("png", () =>
@@ -280,11 +341,11 @@ export default function ExportDialog({
               )
             }
           />
-          <FormatTile
+          <DesktopFormatCard
             ext="SVG"
             label="Vector"
             color="bg-purple-500/15 text-purple-400"
-            description="Infinitely scalable. Opens in Illustrator, Inkscape, or any browser."
+            description="Infinitely scalable — opens in Illustrator, Inkscape, or Figma."
             busy={busy === "svg"}
             onExport={() =>
               run("svg", () =>
@@ -297,11 +358,11 @@ export default function ExportDialog({
               )
             }
           />
-          <FormatTile
+          <DesktopFormatCard
             ext="PDF"
             label="Race Pack"
             color="bg-red-500/15 text-red-400"
-            description="A multi-page race pack with the track map, material list, build guidance, and numbering context."
+            description="Multi-page: track map, material list, and setup sequence."
             busy={busy === "race-day-pdf"}
             onExport={() =>
               run("race-day-pdf", async () => {
@@ -311,7 +372,7 @@ export default function ExportDialog({
                 await exportPdf(
                   stage,
                   design,
-                  `${(filename.trim() || design.title.trim() || "track").replace(/[^a-z0-9-_]+/gi, "_")}_race_pack.pdf`,
+                  `${baseName}_race_pack.pdf`,
                   exportTheme,
                   {
                     includeObstacleNumbers,
@@ -324,30 +385,29 @@ export default function ExportDialog({
         </div>
       </div>
 
+      {/* Project & Simulator */}
       <div>
-        <SectionLabel>3D &amp; Project</SectionLabel>
-        {activeTab !== "3d" && onRequest3DView && (
-          <button
-            type="button"
-            onClick={onRequest3DView}
-            className="border-border/40 bg-muted/20 hover:bg-muted/35 mb-3 flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors"
-          >
-            <p className="text-muted-foreground text-xs leading-relaxed">
-              Switch to the 3D view to enable the 3D render export.
-            </p>
-            <span className="text-foreground border-border/50 shrink-0 rounded-lg border px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
-              Switch to 3D
-            </span>
-          </button>
-        )}
-        <div className="grid grid-cols-2 gap-3">
-          <FormatTile
+        <div className="mb-1.5 flex items-center gap-3">
+          <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
+            Project &amp; Simulator
+          </span>
+          <div className="bg-border/30 h-px flex-1" />
+        </div>
+        <p className="text-muted-foreground mb-4 text-[11px]">
+          Save your work or fly the track in a simulator.
+        </p>
+        <div className="grid grid-cols-3 gap-3">
+          <DesktopFormatCard
             ext="PNG"
             label="3D Render"
             color="bg-orange-500/15 text-orange-400"
-            description={`Screenshot of the live 3D preview in the current ${currentTheme} theme.`}
-            disabled={activeTab !== "3d"}
+            description="Screenshot of the 3D view at the current camera angle."
             busy={busy === "3d"}
+            lockedAction={
+              activeTab !== "3d" && onRequest3DView
+                ? { label: "Switch to 3D view", onClick: onRequest3DView }
+                : undefined
+            }
             onExport={() =>
               run("3d", () => {
                 const dataUrl = preview3DRef?.current?.screenshot();
@@ -365,11 +425,11 @@ export default function ExportDialog({
               })
             }
           />
-          <FormatTile
+          <DesktopFormatCard
             ext="JSON"
             label="Project File"
             color="bg-emerald-500/15 text-emerald-400"
-            description="Full project backup. Re-import into TrackDraw at any time to continue editing."
+            description="Full project file — share with others or reopen in TrackDraw."
             busy={busy === "json"}
             onExport={() =>
               run("json", () => {
@@ -379,13 +439,20 @@ export default function ExportDialog({
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = `${safeName({
-                  view: "2d",
-                  theme: currentTheme,
-                })}.json`;
+                a.download = `${baseName}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
               })
+            }
+          />
+          <DesktopFormatCard
+            ext="TRK"
+            label="Velocidrone"
+            color="bg-lime-500/15 text-lime-400"
+            description="Experimental format for testing your layout in Velocidrone."
+            busy={busy === "trk"}
+            onExport={() =>
+              run("trk", () => exportVelocidroneTrk(design, `${baseName}.trk`))
             }
           />
         </div>
@@ -394,212 +461,136 @@ export default function ExportDialog({
   );
 
   const mobileList = (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-2">
       <div>
-        <SectionLabel>2D</SectionLabel>
-        <div className="border-border/40 divide-border/30 divide-y overflow-hidden rounded-xl border">
-          {(
-            [
-              {
-                ext: "PNG",
-                label: "Image",
-                color: "bg-sky-500/15 text-sky-400",
-                description: "High-res raster at 2× density",
-                id: "png",
-                onExport: () =>
-                  run("png", () =>
-                    exportPng(
-                      design,
-                      `${safeName({ view: "2d", theme: exportTheme })}.png`,
-                      exportTheme,
-                      3,
-                      { includeObstacleNumbers }
-                    )
-                  ),
-              },
-              {
-                ext: "SVG",
-                label: "Vector",
-                color: "bg-purple-500/15 text-purple-400",
-                description: "Scalable — opens in Illustrator or Inkscape",
-                id: "svg",
-                onExport: () =>
-                  run("svg", () =>
-                    exportSvg(
-                      design,
-                      `${safeName({ view: "2d", theme: exportTheme })}.svg`,
-                      exportTheme,
-                      { includeObstacleNumbers }
-                    )
-                  ),
-              },
-              {
-                ext: "PDF",
-                label: "Race Pack",
-                color: "bg-red-500/15 text-red-400",
-                description:
-                  "Map, material list, build guidance, and stock status",
-                id: "race-day-pdf",
-                onExport: () =>
-                  run("race-day-pdf", async () => {
-                    const stage = canvasRef.current?.getStage();
-                    if (!stage) throw new Error("Canvas not ready");
-                    const { exportPdf } =
-                      await import("@/lib/export/exportPdf");
-                    await exportPdf(
-                      stage,
-                      design,
-                      `${(filename.trim() || design.title.trim() || "track").replace(/[^a-z0-9-_]+/gi, "_")}_race_pack.pdf`,
-                      exportTheme,
-                      {
-                        includeObstacleNumbers,
-                        preset: "race-day",
-                      }
-                    );
-                  }),
-              },
-            ] as const
-          ).map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              disabled={busy === f.id}
-              onClick={f.onExport}
-              className={cn(
-                "group active:bg-muted/40 flex w-full items-center gap-4 px-4 py-4 text-left transition-colors",
-                busy === f.id && "cursor-not-allowed opacity-40"
-              )}
-            >
-              <span
-                className={cn(
-                  "w-10 shrink-0 rounded-md py-0.5 text-center font-mono text-[11px] font-bold tracking-wide",
-                  f.color
-                )}
-              >
-                {f.ext}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground text-sm font-medium">{f.label}</p>
-                <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
-                  {f.description}
-                </p>
-              </div>
-              {busy === f.id ? (
-                <Loader2 className="text-muted-foreground/65 size-4 shrink-0 animate-spin" />
-              ) : (
-                <Download className="text-muted-foreground/50 size-4 shrink-0" />
-              )}
-            </button>
-          ))}
+        <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
+          2D Exports
+        </h3>
+        <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
+          <MobileFormatRow
+            key="png"
+            ext="PNG"
+            label="Image"
+            color="bg-sky-500/15 text-sky-400"
+            description="High-resolution PNG at 3× scale."
+            isBusy={busy === "png"}
+            onAction={() =>
+              run("png", () =>
+                exportPng(
+                  design,
+                  `${safeName({ view: "2d", theme: exportTheme })}.png`,
+                  exportTheme,
+                  3,
+                  { includeObstacleNumbers }
+                )
+              )
+            }
+          />
+          <MobileFormatRow
+            key="svg"
+            ext="SVG"
+            label="Vector"
+            color="bg-purple-500/15 text-purple-400"
+            description="Scalable — Illustrator, Inkscape, or Figma."
+            isBusy={busy === "svg"}
+            onAction={() =>
+              run("svg", () =>
+                exportSvg(
+                  design,
+                  `${safeName({ view: "2d", theme: exportTheme })}.svg`,
+                  exportTheme,
+                  { includeObstacleNumbers }
+                )
+              )
+            }
+          />
+          <MobileFormatRow
+            key="race-day-pdf"
+            ext="PDF"
+            label="Race Pack"
+            color="bg-red-500/15 text-red-400"
+            description="Track map, material list, and setup sequence."
+            isBusy={busy === "race-day-pdf"}
+            onAction={() =>
+              run("race-day-pdf", async () => {
+                const stage = canvasRef.current?.getStage();
+                if (!stage) throw new Error("Canvas not ready");
+                const { exportPdf } = await import("@/lib/export/exportPdf");
+                await exportPdf(
+                  stage,
+                  design,
+                  `${baseName}_race_pack.pdf`,
+                  exportTheme,
+                  {
+                    includeObstacleNumbers,
+                    preset: "race-day",
+                  }
+                );
+              })
+            }
+          />
         </div>
       </div>
 
       <div>
-        <SectionLabel>3D &amp; Project</SectionLabel>
-        {activeTab !== "3d" && onRequest3DView && (
-          <button
-            type="button"
-            onClick={onRequest3DView}
-            className="border-border/40 bg-muted/20 active:bg-muted/35 mb-3 flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors"
-          >
-            <p className="text-muted-foreground text-xs leading-relaxed">
-              Switch to the 3D view to enable the 3D render export.
-            </p>
-            <span className="text-foreground border-border/50 shrink-0 rounded-lg border px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
-              Switch to 3D
-            </span>
-          </button>
-        )}
-        <div className="grid grid-cols-2 gap-3">
-          {(
-            [
-              {
-                ext: "PNG",
-                label: "3D Render",
-                color: "bg-orange-500/15 text-orange-400",
-                description: `Screenshot of the ${currentTheme} 3D view.`,
-                id: "3d",
-                onExport: () =>
-                  run("3d", () => {
-                    const dataUrl = preview3DRef?.current?.screenshot();
-                    if (!dataUrl)
-                      throw new Error(
-                        "3D view not available — open the 3D tab first"
-                      );
-                    const a = document.createElement("a");
-                    a.href = dataUrl;
-                    a.download = `${safeName({
-                      view: "3d",
-                      theme: currentTheme,
-                    })}.png`;
-                    a.click();
-                  }),
-              },
-              {
-                ext: "JSON",
-                label: "Project File",
-                color: "bg-emerald-500/15 text-emerald-400",
-                description: "Full backup. Re-import into TrackDraw anytime.",
-                id: "json",
-                onExport: () =>
-                  run("json", () => {
-                    const blob = new Blob([JSON.stringify(design, null, 2)], {
-                      type: "application/json",
-                    });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `${safeName({
-                      view: "2d",
-                      theme: currentTheme,
-                    })}.json`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }),
-              },
-            ] as const
-          ).map((f) => {
-            const isDisabled = f.id === "3d" && activeTab !== "3d";
-            const isBusy = busy === f.id;
-            return (
-              <button
-                key={f.id}
-                type="button"
-                disabled={isBusy || isDisabled}
-                onClick={f.onExport}
-                className={cn(
-                  "group border-border/40 flex w-full flex-col gap-3 rounded-xl border p-4 text-left transition-colors",
-                  isBusy || isDisabled
-                    ? "cursor-not-allowed opacity-40"
-                    : "active:bg-muted/40"
-                )}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <span
-                    className={cn(
-                      "rounded-md px-2 py-0.5 font-mono text-[11px] font-bold tracking-wide",
-                      f.color
-                    )}
-                  >
-                    {f.ext}
-                  </span>
-                  {isBusy ? (
-                    <Loader2 className="text-muted-foreground/65 size-3.5 shrink-0 animate-spin" />
-                  ) : (
-                    <Download className="text-muted-foreground/50 size-3.5 shrink-0" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-foreground text-sm font-medium">
-                    {f.label}
-                  </p>
-                  <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                    {f.description}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
+        <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
+          Project &amp; Simulator
+        </h3>
+        <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
+          <MobileFormatRow
+            key="3d"
+            ext="PNG"
+            label="3D Render"
+            color="bg-orange-500/15 text-orange-400"
+            description="Screenshot at the current camera angle."
+            isBusy={busy === "3d"}
+            locked={activeTab !== "3d"}
+            onAction={
+              activeTab !== "3d" && onRequest3DView
+                ? onRequest3DView
+                : () =>
+                    run("3d", () => {
+                      const dataUrl = preview3DRef?.current?.screenshot();
+                      if (!dataUrl) throw new Error("3D view not available");
+                      const a = document.createElement("a");
+                      a.href = dataUrl;
+                      a.download = `${safeName({ view: "3d", theme: currentTheme })}.png`;
+                      a.click();
+                    })
+            }
+          />
+          <MobileFormatRow
+            key="json"
+            ext="JSON"
+            label="Project File"
+            color="bg-emerald-500/15 text-emerald-400"
+            description="Full backup — reopen or share in TrackDraw."
+            isBusy={busy === "json"}
+            onAction={() =>
+              run("json", () => {
+                const blob = new Blob([JSON.stringify(design, null, 2)], {
+                  type: "application/json",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${baseName}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              })
+            }
+          />
+          <MobileFormatRow
+            key="trk"
+            ext="TRK"
+            label="Velocidrone"
+            color="bg-lime-500/15 text-lime-400"
+            description="Experimental import for Velocidrone."
+            isBusy={busy === "trk"}
+            onAction={() =>
+              run("trk", () => exportVelocidroneTrk(design, `${baseName}.trk`))
+            }
+          />
         </div>
       </div>
     </div>
@@ -614,9 +605,10 @@ export default function ExportDialog({
         subtitle="Export the current track as a 2D file or 3D render."
         contentClassName="data-[vaul-drawer-direction=bottom]:mt-12 data-[vaul-drawer-direction=bottom]:max-h-[90dvh]"
         pinnedContent={
-          <div className="border-border/40 space-y-3 border-b px-4 py-3">
-            <div className="border-border/50 flex items-center gap-3 rounded-xl border px-3.5 py-2.5">
-              <span className="text-muted-foreground/60 shrink-0 text-xs font-medium">
+          <div className="border-border/40 space-y-2.5 border-b px-4 pt-2 pb-3">
+            {/* Filename */}
+            <label className="border-border/50 bg-muted/25 flex cursor-text items-center gap-2.5 rounded-xl border px-3.5 py-2.5">
+              <span className="text-muted-foreground shrink-0 text-[11px] font-medium select-none">
                 Filename
               </span>
               <input
@@ -626,35 +618,74 @@ export default function ExportDialog({
                 onChange={(e) => setFilename(e.target.value)}
                 className="text-foreground placeholder:text-muted-foreground/45 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
               />
-            </div>
-            <ExportThemeToggle value={exportTheme} onChange={setExportTheme} />
-            <div className="border-border/50 flex items-center gap-3 rounded-xl border px-3.5 py-2.5">
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground text-xs font-medium">
-                  Include obstacle numbers
-                </p>
-                <p className="text-muted-foreground/70 pt-px text-[11px] leading-snug">
-                  Adds route numbers in 2D exports.
-                </p>
+            </label>
+            {/* Theme + Numbers */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setExportTheme("dark")}
+                  aria-pressed={exportTheme === "dark"}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors",
+                    exportTheme === "dark"
+                      ? "border-border/60 bg-muted/35 text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground/80 border-transparent"
+                  )}
+                >
+                  <Moon className="size-3.5 shrink-0" />
+                  Dark
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExportTheme("light")}
+                  aria-pressed={exportTheme === "light"}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors",
+                    exportTheme === "light"
+                      ? "border-border/60 bg-muted/35 text-foreground"
+                      : "text-muted-foreground/60 hover:text-muted-foreground/80 border-transparent"
+                  )}
+                >
+                  <Sun
+                    className={cn(
+                      "size-3.5 shrink-0",
+                      exportTheme === "light" ? "text-amber-500" : ""
+                    )}
+                  />
+                  Light
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIncludeObstacleNumbers((current) => !current)}
-                className={cn(
-                  "flex h-6 w-10 shrink-0 items-center rounded-full p-0.5 transition-colors",
-                  includeObstacleNumbers
-                    ? "bg-foreground/90 justify-end"
-                    : "bg-border/80 justify-start"
-                )}
-                aria-pressed={includeObstacleNumbers}
-                aria-label={
-                  includeObstacleNumbers
-                    ? "Disable obstacle numbers in export"
-                    : "Enable obstacle numbers in export"
-                }
-              >
-                <span className="bg-background block size-5 rounded-full shadow-xs" />
-              </button>
+              <div className="flex items-center gap-2.5">
+                <span className="text-muted-foreground text-[11px] font-medium select-none">
+                  Numbers
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setIncludeObstacleNumbers((current) => !current)
+                  }
+                  className={cn(
+                    "flex h-5 w-8 shrink-0 items-center rounded-full p-0.5 transition-colors",
+                    includeObstacleNumbers
+                      ? "bg-foreground/80 justify-end"
+                      : "bg-border/70 justify-start"
+                  )}
+                  aria-pressed={includeObstacleNumbers}
+                  aria-label={
+                    includeObstacleNumbers
+                      ? "Disable route numbers"
+                      : "Enable route numbers"
+                  }
+                >
+                  <span
+                    className={cn(
+                      "bg-background block size-4 rounded-full shadow-xs transition-transform duration-150",
+                      includeObstacleNumbers ? "translate-x-3" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
             </div>
           </div>
         }
@@ -671,11 +702,9 @@ export default function ExportDialog({
       title="Export"
       subtitle="Export the current track as a 2D file or 3D render."
       maxWidth="max-w-2xl"
+      panelClassName="px-7 py-7"
     >
-      <div className="space-y-5">
-        {settingsBar}
-        {desktopGrid}
-      </div>
+      {desktopContent}
     </DesktopModal>
   );
 }

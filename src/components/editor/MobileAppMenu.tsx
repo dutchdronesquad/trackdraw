@@ -162,7 +162,17 @@ export default function MobileAppMenu({
         <Menu className="size-4" />
       </button>
 
-      <Drawer open={open} direction="right" modal onOpenChange={setOpen}>
+      <Drawer
+        open={open}
+        direction="right"
+        modal
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            (document.activeElement as HTMLElement)?.blur();
+          }
+          setOpen(nextOpen);
+        }}
+      >
         <DrawerContent className="border-border/70 bg-background h-dvh w-[min(85vw,22rem)] max-w-none rounded-none border-l shadow-[0_18px_44px_rgba(15,23,42,0.16)] lg:hidden">
           <div className="flex h-full flex-col">
             <MobileDrawerHeader

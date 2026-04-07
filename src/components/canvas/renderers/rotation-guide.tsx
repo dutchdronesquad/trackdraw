@@ -6,11 +6,13 @@ import type { KonvaEventObject } from "konva/lib/Node";
 export function RotationGuideOverlay({
   isDark,
   onRotateStart,
+  showFrontLabel = false,
   showAngleLabel = false,
   rotationGuide,
 }: {
   isDark: boolean;
   onRotateStart: (event: KonvaEventObject<MouseEvent | TouchEvent>) => void;
+  showFrontLabel?: boolean;
   showAngleLabel?: boolean;
   rotationGuide: {
     angleDeg: number;
@@ -32,6 +34,8 @@ export function RotationGuideOverlay({
     rotationGuide.center.y + Math.sin(angleRad) * (rotationGuide.radius + 14);
   const labelOffsetX = Math.cos(angleRad) * 32;
   const labelOffsetY = Math.sin(angleRad) * 32;
+  const frontLabelOffsetX = Math.cos(angleRad) * 30;
+  const frontLabelOffsetY = Math.sin(angleRad) * 30;
 
   return (
     <>
@@ -88,6 +92,33 @@ export function RotationGuideOverlay({
         opacity={0.95}
         listening={false}
       />
+      {showFrontLabel && (
+        <Group listening={false}>
+          <Rect
+            x={handleOuterX + frontLabelOffsetX - 20}
+            y={handleOuterY + frontLabelOffsetY - 9}
+            width={40}
+            height={18}
+            cornerRadius={999}
+            fill={isDark ? "#08111d" : "#eff6ff"}
+            stroke="#60a5fa"
+            strokeWidth={1}
+            opacity={0.96}
+          />
+          <Text
+            x={handleOuterX + frontLabelOffsetX - 20}
+            y={handleOuterY + frontLabelOffsetY - 9}
+            width={40}
+            height={18}
+            align="center"
+            verticalAlign="middle"
+            text="Front"
+            fontSize={9}
+            fontStyle="bold"
+            fill="#60a5fa"
+          />
+        </Group>
+      )}
       {showAngleLabel && (
         <Group listening={false}>
           <Rect

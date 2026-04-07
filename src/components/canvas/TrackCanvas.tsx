@@ -38,6 +38,10 @@ import {
   selectShapeRecordMap,
 } from "@/store/selectors";
 import { m2px } from "@/lib/track/units";
+import {
+  getCanvasRotationGuideAngleDeg,
+  hasFrontBackOrientation,
+} from "@/lib/track/orientation";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
 import { distance2D, getPolyline2DPoints } from "@/lib/track/geometry";
 import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
@@ -350,7 +354,7 @@ const TrackCanvas = memo(
       };
 
       return {
-        angleDeg: displaySingleSelectedShape.rotation - 90,
+        angleDeg: getCanvasRotationGuideAngleDeg(displaySingleSelectedShape),
         center,
         label: `${Math.round(displaySingleSelectedShape.rotation)}°`,
         radius: estimateRotationGuideRadiusPx(displaySingleSelectedShape),
@@ -1643,6 +1647,10 @@ const TrackCanvas = memo(
               <Layer>
                 <RotationGuideOverlay
                   isDark={isDark}
+                  showFrontLabel={
+                    !!displaySingleSelectedShape &&
+                    hasFrontBackOrientation(displaySingleSelectedShape)
+                  }
                   onRotateStart={(event) => {
                     if (
                       !singleSelectedShape ||
