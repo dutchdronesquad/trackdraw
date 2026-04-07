@@ -123,6 +123,30 @@ Notes:
 - Cloudflare mail-related `CNAME`, `TXT`, and `MX` records should stay `DNS only`
 - passing SPF, DKIM, and DMARC does not guarantee inbox placement immediately; new domains can still have low reputation for a while
 
+## Sender logo branding
+
+If you want mail clients such as Spark or Apple Mail to show a branded sender logo for `trackdraw.app`, publish a BIMI-compatible logo and add a BIMI DNS record. The repository now exposes a dedicated square logo at:
+
+- `https://trackdraw.app/.well-known/trackdraw-bimi.svg`
+
+Recommended setup for `trackdraw.app`:
+
+- keep `From` on a verified `trackdraw.app` sender such as `noreply@trackdraw.app`
+- make sure `SPF`, `DKIM`, and `DMARC` all pass first
+- publish a BIMI TXT record on `default._bimi.trackdraw.app`
+
+Example BIMI record:
+
+```txt
+v=BIMI1; l=https://trackdraw.app/.well-known/trackdraw-bimi.svg; a=
+```
+
+Notes:
+
+- some mailbox providers and clients will not show the logo without stronger DMARC enforcement such as `p=quarantine` or `p=reject`
+- some providers also require a Verified Mark Certificate before they render the logo
+- Spark can still choose its own sender avatar source, so BIMI improves the odds but does not guarantee the same result everywhere
+
 When validating auth email delivery, test both:
 
 - whether the message is delivered at all
