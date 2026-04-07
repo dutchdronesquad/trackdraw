@@ -820,6 +820,7 @@ const TrackCanvas = memo(
       activeTool,
       addShapes,
       cancelDraftPath,
+      containerRef,
       designFieldGridStep: design.field.gridStep,
       shapeById,
       draftPath,

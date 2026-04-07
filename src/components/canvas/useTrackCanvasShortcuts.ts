@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { type RefObject, useEffect, useRef } from "react";
 import { isPolylineShape } from "@/lib/track/shape-utils";
 import type { EditorTool } from "@/lib/editor-tools";
 import type { Shape, ShapeDraft } from "@/lib/types";
@@ -14,6 +14,7 @@ interface TrackCanvasShortcutsParams {
   activeTool: EditorTool;
   addShapes: (shapes: ShapeDraft[]) => string[];
   cancelDraftPath: () => void;
+  containerRef: RefObject<HTMLElement | null>;
   designFieldGridStep: number;
   shapeById: Record<string, Shape>;
   draftPath: DraftPoint[];
@@ -54,6 +55,7 @@ export function useTrackCanvasShortcuts({
   activeTool,
   addShapes,
   cancelDraftPath,
+  containerRef,
   designFieldGridStep,
   shapeById,
   draftPath,
@@ -114,6 +116,14 @@ export function useTrackCanvasShortcuts({
       const target = event.target as HTMLElement | null;
       if (isTypingInInput(target)) return;
 
+      const hasSelectedText =
+        typeof window !== "undefined"
+          ? (window.getSelection()?.toString().trim().length ?? 0) > 0
+          : false;
+      const eventCameFromCanvas = target
+        ? (containerRef.current?.contains(target) ?? false)
+        : false;
+
       const meta = event.ctrlKey || event.metaKey;
 
       if (meta && event.key === "d") {
@@ -123,6 +133,9 @@ export function useTrackCanvasShortcuts({
       }
 
       if (meta && event.key === "c") {
+        if (hasSelectedText && !eventCameFromCanvas) {
+          return;
+        }
         event.preventDefault();
         clipboard.splice(
           0,
@@ -288,6 +301,7 @@ export function useTrackCanvasShortcuts({
     addShapes,
     beginInteraction,
     cancelDraftPath,
+    containerRef,
     designFieldGridStep,
     shapeById,
     draftPath,
