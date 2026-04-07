@@ -58,12 +58,13 @@ export default async function EmailPreviewPage({
   const content = getAuthEmailPreviewContent(activeKey);
   const activeItem =
     previewItems.find((item) => item.key === activeKey) ?? previewItems[0];
-  const fromAddress = process.env.PLUNK_FROM_EMAIL ?? "noreply@trackdraw.app";
+  const fromAddress =
+    process.env.PLUNK_FROM_EMAIL ?? "noreply@emails.trackdraw.app";
 
   return (
     <main className="bg-background relative min-h-screen overflow-hidden px-6 py-8">
-      <div className="bg-brand-primary/8 pointer-events-none absolute top-0 left-[-8rem] h-72 w-72 rounded-full blur-3xl" />
-      <div className="bg-brand-secondary/8 pointer-events-none absolute right-[-6rem] bottom-0 h-80 w-80 rounded-full blur-3xl" />
+      <div className="bg-brand-primary/8 pointer-events-none absolute top-0 -left-32 h-72 w-72 rounded-full blur-3xl" />
+      <div className="bg-brand-secondary/8 pointer-events-none absolute -right-24 bottom-0 h-80 w-80 rounded-full blur-3xl" />
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row">
         <aside className="bg-card/95 border-border/60 w-full shrink-0 overflow-hidden rounded-[1.75rem] border shadow-sm backdrop-blur-xs lg:sticky lg:top-6 lg:w-84 lg:self-start">
