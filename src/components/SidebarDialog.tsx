@@ -53,7 +53,7 @@ function NavButton({
       className={cn(
         "group relative flex h-9 items-center justify-start gap-2.5 overflow-hidden text-left text-sm transition-all duration-150",
         compact
-          ? "shrink-0 rounded-none px-0 py-0"
+          ? "shrink-0 gap-1.5 rounded-none px-3 pb-2.5"
           : "w-full rounded-xl border px-2",
         active
           ? compact
@@ -84,7 +84,7 @@ function NavButton({
       <span
         className={cn(
           "relative z-10 flex shrink-0 items-center justify-center",
-          compact && "hidden",
+          compact && "size-4",
           !active && item.tone === "danger" && "text-current"
         )}
       >
@@ -93,8 +93,7 @@ function NavButton({
       <span
         className={cn(
           "relative z-10 min-w-0 flex-1 truncate text-left text-[13px] font-normal",
-          compact &&
-            "flex items-center gap-1.5 px-3 pb-2.5 text-[12px] font-medium"
+          compact && "flex items-center gap-1.5 text-[12px] font-medium"
         )}
       >
         <span className="truncate">{item.label}</span>

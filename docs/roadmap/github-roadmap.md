@@ -46,15 +46,15 @@ The immediate priority is to close the current account/ownership release cleanly
 - [ ] Accounts and cross-device project evaluation (`Research`)
       Better Auth, magic-link sign-in, profile management, and account entry points are now in place. The next decision is how far account-backed continuity should go without turning TrackDraw into an auth-first product.
       See also: `docs/pva/accounts-project-sync-pva.md`
-  - [ ] Passkey sign-in follow-up
+  - [x] Passkey sign-in follow-up
         Add passkeys as a follow-up to magic-link sign-in once the current account model feels stable.
-    - [ ] Passkey sign-in on the login screen
+    - [x] Passkey sign-in on the login screen
           Add passkey sign-in to the main login flow without replacing magic links.
-    - [ ] Passkey enrollment for existing accounts
+    - [x] Passkey enrollment for existing accounts
           Let signed-in users add a passkey from account settings.
-    - [ ] Passkey management in account settings
+    - [x] Passkey management in account settings
           Support review, rename, and remove flows for registered passkeys.
-    - [ ] Fallback and recovery UX
+    - [x] Fallback and recovery UX
           Keep magic link as the fallback and handle unsupported browsers and failed prompts cleanly.
     - [ ] Cross-device and mobile validation
           Validate the flow across practical desktop and mobile scenarios.

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { betterAuth } from "better-auth";
+import { passkey } from "@better-auth/passkey";
 import { magicLink } from "better-auth/plugins";
 import { getSiteUrl } from "@/lib/seo";
 import {
@@ -234,6 +235,9 @@ export async function getAuth() {
             `Magic link delivery is not configured for production. Set PLUNK_API_KEY for ${recipient}.`
           );
         },
+      }),
+      passkey({
+        rpName: "TrackDraw",
       }),
     ],
   });

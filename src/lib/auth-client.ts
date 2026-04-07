@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { passkeyClient } from "@better-auth/passkey/client";
 import { createAuthClient } from "better-auth/react";
 import { magicLinkClient } from "better-auth/client/plugins";
 
@@ -48,6 +49,20 @@ type ChangeEmailOptions = {
   callbackURL?: string;
 };
 
+export type AuthPasskey = {
+  id: string;
+  name?: string;
+  publicKey: string;
+  userId: string;
+  credentialID: string;
+  counter: number;
+  deviceType: string;
+  backedUp: boolean;
+  transports?: string;
+  createdAt: string | Date;
+  aaguid?: string;
+};
+
 function getAuthBaseUrl() {
   if (typeof window !== "undefined") {
     return new URL("/api/auth", window.location.origin).toString();
@@ -57,9 +72,13 @@ function getAuthBaseUrl() {
   return new URL("/api/auth", siteUrl).toString();
 }
 
+function getAuthEndpointUrl(path: string) {
+  return new URL(path.replace(/^\/+/, ""), `${getAuthBaseUrl()}/`);
+}
+
 const betterAuthClient = createAuthClient({
   baseURL: getAuthBaseUrl(),
-  plugins: [magicLinkClient()],
+  plugins: [magicLinkClient(), passkeyClient()],
 });
 
 export function isDevAuthShimEnabled() {
@@ -197,6 +216,59 @@ export const authClient = {
 
       return betterAuthClient.signIn.magicLink(options);
     },
+    async passkey() {
+      if (isDevAuthShimEnabled()) {
+        throw new Error(
+          "Passkeys are unavailable in npm run dev. Use npm run preview to test the real auth flow."
+        );
+      }
+
+      const clientWithPasskey = betterAuthClient as typeof betterAuthClient & {
+        signIn: typeof betterAuthClient.signIn & {
+          passkey: (options?: {
+            autoFill?: boolean;
+            fetchOptions?: {
+              onSuccess?: () => void;
+              onError?: (context: { error: { message?: string } }) => void;
+            };
+          }) => Promise<{
+            data: unknown;
+            error: { message?: string } | null;
+          }>;
+        };
+      };
+
+      return clientWithPasskey.signIn.passkey();
+    },
+  },
+  async preloadPasskeyAutoFill() {
+    if (
+      isDevAuthShimEnabled() ||
+      typeof window === "undefined" ||
+      typeof PublicKeyCredential === "undefined" ||
+      typeof PublicKeyCredential.isConditionalMediationAvailable !== "function"
+    ) {
+      return;
+    }
+
+    const conditionalUiAvailable =
+      await PublicKeyCredential.isConditionalMediationAvailable().catch(
+        () => false
+      );
+
+    if (!conditionalUiAvailable) {
+      return;
+    }
+
+    const clientWithPasskey = betterAuthClient as typeof betterAuthClient & {
+      signIn: typeof betterAuthClient.signIn & {
+        passkey: (options?: { autoFill?: boolean }) => Promise<unknown>;
+      };
+    };
+
+    await clientWithPasskey.signIn.passkey({
+      autoFill: true,
+    });
   },
   async signOut(options?: SignOutOptions) {
     if (isDevAuthShimEnabled()) {
@@ -309,7 +381,7 @@ export const authClient = {
       return;
     }
 
-    const response = await fetch(new URL("/change-email", getAuthBaseUrl()), {
+    const response = await fetch(getAuthEndpointUrl("/change-email"), {
       method: "POST",
       credentials: "include",
       headers: {
@@ -333,5 +405,135 @@ export const authClient = {
           : payload?.error?.message || payload?.message;
       throw new Error(errorMessage ?? "Failed to change email.");
     }
+  },
+  passkey: {
+    async add(options?: {
+      name?: string;
+      authenticatorAttachment?: "platform" | "cross-platform";
+      useAutoRegister?: boolean;
+    }) {
+      if (isDevAuthShimEnabled()) {
+        throw new Error(
+          "Passkeys are unavailable in npm run dev. Use npm run preview to test the real auth flow."
+        );
+      }
+
+      const clientWithPasskey = betterAuthClient as typeof betterAuthClient & {
+        passkey: {
+          addPasskey: (options?: {
+            name?: string;
+            authenticatorAttachment?: "platform" | "cross-platform";
+            useAutoRegister?: boolean;
+          }) => Promise<{
+            data: AuthPasskey | null;
+            error: { message?: string } | null;
+          }>;
+        };
+      };
+
+      const response = await clientWithPasskey.passkey.addPasskey(options);
+      if (response.error) {
+        throw new Error(response.error.message ?? "Failed to add passkey.");
+      }
+
+      return response.data;
+    },
+    async list() {
+      if (isDevAuthShimEnabled()) {
+        return [] as AuthPasskey[];
+      }
+
+      const response = await fetch(
+        getAuthEndpointUrl("/passkey/list-user-passkeys"),
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      const payload = (await response.json().catch(() => null)) as
+        | AuthPasskey[]
+        | { error?: { message?: string } | string; message?: string }
+        | null;
+
+      if (!response.ok) {
+        const errorMessage = Array.isArray(payload)
+          ? null
+          : typeof payload?.error === "string"
+            ? payload.error
+            : payload?.error?.message || payload?.message;
+        throw new Error(errorMessage ?? "Failed to load passkeys.");
+      }
+
+      return Array.isArray(payload) ? payload : [];
+    },
+    async update(options: { id: string; name: string }) {
+      if (isDevAuthShimEnabled()) {
+        throw new Error(
+          "Passkeys are unavailable in npm run dev. Use npm run preview to test the real auth flow."
+        );
+      }
+
+      const response = await fetch(
+        getAuthEndpointUrl("/passkey/update-passkey"),
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(options),
+        }
+      );
+
+      const payload = (await response.json().catch(() => null)) as {
+        passkey?: AuthPasskey;
+        error?: { message?: string } | string;
+        message?: string;
+      } | null;
+
+      if (!response.ok || !payload?.passkey) {
+        const errorMessage =
+          typeof payload?.error === "string"
+            ? payload.error
+            : payload?.error?.message || payload?.message;
+        throw new Error(errorMessage ?? "Failed to rename passkey.");
+      }
+
+      return payload.passkey;
+    },
+    async remove(id: string) {
+      if (isDevAuthShimEnabled()) {
+        throw new Error(
+          "Passkeys are unavailable in npm run dev. Use npm run preview to test the real auth flow."
+        );
+      }
+
+      const response = await fetch(
+        getAuthEndpointUrl("/passkey/delete-passkey"),
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        }
+      );
+
+      const payload = (await response.json().catch(() => null)) as {
+        status?: boolean;
+        error?: { message?: string } | string;
+        message?: string;
+      } | null;
+
+      if (!response.ok || !payload?.status) {
+        const errorMessage =
+          typeof payload?.error === "string"
+            ? payload.error
+            : payload?.error?.message || payload?.message;
+        throw new Error(errorMessage ?? "Failed to remove passkey.");
+      }
+    },
   },
 };

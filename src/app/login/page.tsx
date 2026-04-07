@@ -1,19 +1,43 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Cloud, KeyRound, MailCheck, ShieldCheck } from "lucide-react";
+import {
+  Cloud,
+  Fingerprint,
+  KeyRound,
+  MailCheck,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
+import { authClient, isDevAuthShimEnabled } from "@/lib/auth-client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState(false);
   const [pending, setPending] = useState(false);
+  const [passkeyPending, setPasskeyPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [passkeySupported, setPasskeySupported] = useState<boolean | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (typeof PublicKeyCredential === "undefined") {
+      setPasskeySupported(false);
+      return;
+    }
+
+    setPasskeySupported(true);
+    void authClient.preloadPasskeyAutoFill().catch(() => {});
+  }, []);
 
   const handleMagicLinkSignIn = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -35,6 +59,40 @@ export default function LoginPage() {
       );
     } finally {
       setPending(false);
+    }
+  };
+
+  const handlePasskeySignIn = async () => {
+    setPasskeyPending(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await authClient.signIn.passkey();
+      if (response?.error) {
+        const rawMessage =
+          typeof response.error.message === "string"
+            ? response.error.message
+            : "";
+        const normalizedMessage = rawMessage.toLowerCase();
+
+        if (normalizedMessage.includes("passkey not found")) {
+          throw new Error(
+            "We couldn’t match that passkey to your TrackDraw account. Try another passkey or use your email sign-in link."
+          );
+        }
+
+        throw new Error(rawMessage || "Failed to sign in.");
+      }
+      window.location.href = "/studio";
+    } catch (authError) {
+      setError(
+        authError instanceof Error
+          ? authError.message
+          : "Failed to sign in with passkey."
+      );
+    } finally {
+      setPasskeyPending(false);
     }
   };
 
@@ -116,9 +174,12 @@ export default function LoginPage() {
                 </div>
                 <div className="border-border/60 bg-card/70 rounded-2xl border px-4 py-4 backdrop-blur-sm">
                   <KeyRound className="text-foreground size-4" />
-                  <p className="mt-3 text-sm font-medium">Magic link only</p>
+                  <p className="mt-3 text-sm font-medium">
+                    Magic link fallback
+                  </p>
                   <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                    No password setup, just a sign-in link sent to your email.
+                    Use a passkey when available, or fall back to a sign-in link
+                    sent to your email.
                   </p>
                 </div>
               </div>
@@ -130,8 +191,8 @@ export default function LoginPage() {
                   Sign in
                 </h2>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Enter your email and we will send you a magic link: a one-time
-                  sign-in link that opens TrackDraw without a password.
+                  Sign in with a passkey on this device, or use your email to
+                  receive a magic link without a password.
                 </p>
               </div>
 
@@ -184,6 +245,33 @@ export default function LoginPage() {
                   className="mt-6 space-y-4 sm:mt-7"
                   onSubmit={handleMagicLinkSignIn}
                 >
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 w-full"
+                    disabled={
+                      passkeyPending ||
+                      pending ||
+                      passkeySupported !== true ||
+                      isDevAuthShimEnabled()
+                    }
+                    aria-busy={passkeyPending}
+                    onClick={handlePasskeySignIn}
+                  >
+                    <Fingerprint className="mr-2 size-4" />
+                    {passkeyPending
+                      ? "Opening passkey…"
+                      : "Sign in with passkey"}
+                  </Button>
+
+                  <div className="flex items-center gap-3">
+                    <div className="bg-border h-px flex-1" />
+                    <span className="text-muted-foreground text-xs font-medium uppercase">
+                      or
+                    </span>
+                    <div className="bg-border h-px flex-1" />
+                  </div>
+
                   <div className="space-y-1.5">
                     <label htmlFor="email" className="text-sm font-medium">
                       Email
@@ -191,7 +279,7 @@ export default function LoginPage() {
                     <Input
                       id="email"
                       type="email"
-                      autoComplete="email"
+                      autoComplete="email webauthn"
                       required
                       value={email}
                       onChange={(event) => {
@@ -213,11 +301,18 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     className="h-11 w-full"
-                    disabled={pending}
+                    disabled={pending || passkeyPending}
                     aria-busy={pending}
                   >
                     {pending ? "Sending link…" : "Email me a sign-in link"}
                   </Button>
+
+                  {passkeySupported === false ? (
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      This browser does not currently support passkeys here, so
+                      use the magic link fallback.
+                    </p>
+                  ) : null}
                 </form>
               )}
 
