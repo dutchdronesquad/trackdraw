@@ -23,9 +23,10 @@ import {
 } from "@/components/canvas/shared";
 import { useTrackCanvasInteractions } from "@/components/canvas/useTrackCanvasInteractions";
 import {
-  FieldLayerContent,
+  FieldOverlayContent,
   getShapeLocalBounds,
   RotationGuideOverlay,
+  StableFieldContent,
   TrackShapeNode,
 } from "@/components/canvas/renderers";
 import { useTrackCanvasShortcuts } from "@/components/canvas/useTrackCanvasShortcuts";
@@ -35,6 +36,7 @@ import { useEditor } from "@/store/editor";
 import {
   selectDesignShapes,
   selectDesignPolylineZRange,
+  selectPrimaryPolyline,
   selectShapeRecordMap,
 } from "@/store/selectors";
 import { m2px } from "@/lib/track/units";
@@ -110,6 +112,9 @@ const TrackCanvas = memo(
     const designShapes = useEditor(selectDesignShapes);
     const [zmin, zmax] = useEditor(selectDesignPolylineZRange);
     const shapeById = useEditor(selectShapeRecordMap);
+    const primaryPolylineId = useEditor(
+      (state) => selectPrimaryPolyline(state)?.id ?? null
+    );
     const selection = useEditor((state) => state.selection);
     const setSelection = useEditor((state) => state.setSelection);
     const updateShape = useEditor((state) => state.updateShape);
@@ -923,7 +928,9 @@ const TrackCanvas = memo(
         .filter((node): node is KonvaGroup => Boolean(node))
         .map((node) => node.getClientRect({ relativeTo: stage }));
       setSelectionFrame(mergeClientRects(rects));
-    }, [selection, designShapes]);
+      // Use selectedShapes (not designShapes) so unrelated shape changes do not
+      // trigger an unnecessary bounding-box measurement pass.
+    }, [selection, selectedShapes]);
 
     // ── Infinite grid ────────────────────────────────────────────
     const grid = useMemo(() => {
@@ -1318,6 +1325,114 @@ const TrackCanvas = memo(
       ]
     );
 
+    // Memoize the shape nodes so that high-frequency local state changes
+    // (cursor position, snap target, stage transform) do not trigger O(n)
+    // JSX re-creation and React reconciliation for every shape on every frame.
+    const shapeNodes = useMemo(
+      () =>
+        designShapes
+          .filter((shape) => shape.id !== draftSourceShapeId)
+          .map((shape) => {
+            const allowInteraction = activeTool === "select" && !readOnly;
+            const displayShape =
+              rotationSession?.shapeId === shape.id
+                ? { ...shape, rotation: rotationSession.previewRotation }
+                : shape;
+            return (
+              <TrackShapeNode
+                key={shape.id}
+                allowInteraction={allowInteraction}
+                contentDragActiveRef={contentDragActiveRef}
+                designPpm={design.field.ppm}
+                dragBound={dragBound}
+                dragSnapRef={dragSnapRef}
+                effectiveVertexSel={effectiveVertexSel}
+                hoveredWaypoint={hoveredWaypoint}
+                isPrimaryPolyline={primaryPolylineId === shape.id}
+                isHovered={hoveredShapeId === shape.id}
+                isMobile={isMobile}
+                mobileMultiSelectEnabled={mobileMultiSelectEnabled}
+                isSelected={
+                  activeTool === "select" && selectionIdSet.has(shape.id)
+                }
+                selectionCount={selection.length}
+                groupDragOffsetPx={
+                  groupDragPreview && groupDragIdSet.has(shape.id)
+                    ? {
+                        x: groupDragPreview.dx,
+                        y: groupDragPreview.dy,
+                      }
+                    : null
+                }
+                onMobileMultiSelectStart={onMobileMultiSelectStart}
+                onShapeContextMenu={openShapeContextMenu}
+                onSelectOnly={selectOnlyShape}
+                onToggleSelection={toggleShapeSelection}
+                setSelection={setSelection}
+                selectedSegmentIndex={
+                  segmentSel?.shapeId === shape.id
+                    ? segmentSel.segmentIndex
+                    : null
+                }
+                selectedSegmentPoint={
+                  segmentSel?.shapeId === shape.id ? segmentSel.point : null
+                }
+                setSegmentSelection={setSegmentSel}
+                setVertexSel={setVertexSel}
+                shape={displayShape}
+                shapeRef={(node) => {
+                  shapeRefs.current[shape.id] = node;
+                }}
+                setDragSnapPreview={setDragSnapPreview}
+                resolveShapeDragPosition={resolveShapeDragPosition}
+                resolveWaypointDragPosition={resolveWaypointDragPosition}
+                setPolylinePoints={setPolylinePoints}
+                updateShape={updateShape}
+                zmax={zmax}
+                zmin={zmin}
+              />
+            );
+          }),
+      // cursor, snapTarget, stageTransform and other high-frequency local state
+      // are intentionally absent — they are not referenced inside the callback.
+      [
+        activeTool,
+        contentDragActiveRef,
+        design.field.ppm,
+        designShapes,
+        dragBound,
+        dragSnapRef,
+        draftSourceShapeId,
+        effectiveVertexSel,
+        groupDragIdSet,
+        groupDragPreview,
+        hoveredShapeId,
+        hoveredWaypoint,
+        isMobile,
+        mobileMultiSelectEnabled,
+        onMobileMultiSelectStart,
+        openShapeContextMenu,
+        primaryPolylineId,
+        readOnly,
+        resolveShapeDragPosition,
+        resolveWaypointDragPosition,
+        rotationSession,
+        segmentSel,
+        selectOnlyShape,
+        selection.length,
+        selectionIdSet,
+        setDragSnapPreview,
+        setPolylinePoints,
+        setSegmentSel,
+        setSelection,
+        setVertexSel,
+        toggleShapeSelection,
+        updateShape,
+        zmax,
+        zmin,
+      ]
+    );
+
     return (
       <ContextMenu onOpenChange={(open) => !open && setContextMenu(null)}>
         <ContextMenuTrigger
@@ -1440,89 +1555,34 @@ const TrackCanvas = memo(
             onMouseLeave={onMouseLeave}
             onMouseUp={onMouseUp}
           >
-            {/* Infinite grid + field boundary layer */}
+            {/* Stable field layer: grid + borders — only redraws on design/theme change */}
             <Layer listening={false}>
-              <FieldLayerContent
+              <StableFieldContent
                 designField={design.field}
-                effectiveSelectionFrame={
-                  selection.length > 1 ? effectiveSelectionFrame : null
-                }
                 grid={grid}
                 heightPx={heightPx}
-                hoverCell={hoverCell}
                 isDark={isDark}
-                marqueeRect={marqueeRect}
                 stepPx={stepPx}
                 widthPx={widthPx}
               />
             </Layer>
 
+            {/* Reactive overlay layer: hoverCell, marquee, selection frame */}
+            <Layer listening={false}>
+              <FieldOverlayContent
+                effectiveSelectionFrame={
+                  selection.length > 1 ? effectiveSelectionFrame : null
+                }
+                hoverCell={hoverCell}
+                isDark={isDark}
+                marqueeRect={marqueeRect}
+                stepPx={stepPx}
+              />
+            </Layer>
+
             {/* Shapes layer */}
             <Layer>
-              {designShapes
-                .filter((shape) => shape.id !== draftSourceShapeId)
-                .map((shape) => {
-                  const allowInteraction = activeTool === "select" && !readOnly;
-                  const displayShape =
-                    rotationSession?.shapeId === shape.id
-                      ? { ...shape, rotation: rotationSession.previewRotation }
-                      : shape;
-                  return (
-                    <TrackShapeNode
-                      key={shape.id}
-                      allowInteraction={allowInteraction}
-                      contentDragActiveRef={contentDragActiveRef}
-                      designPpm={design.field.ppm}
-                      dragBound={dragBound}
-                      dragSnapRef={dragSnapRef}
-                      effectiveVertexSel={effectiveVertexSel}
-                      hoveredWaypoint={hoveredWaypoint}
-                      isHovered={hoveredShapeId === shape.id}
-                      isMobile={isMobile}
-                      mobileMultiSelectEnabled={mobileMultiSelectEnabled}
-                      isSelected={
-                        activeTool === "select" && selectionIdSet.has(shape.id)
-                      }
-                      selectionCount={selection.length}
-                      groupDragOffsetPx={
-                        groupDragPreview && groupDragIdSet.has(shape.id)
-                          ? {
-                              x: groupDragPreview.dx,
-                              y: groupDragPreview.dy,
-                            }
-                          : null
-                      }
-                      onMobileMultiSelectStart={onMobileMultiSelectStart}
-                      onShapeContextMenu={openShapeContextMenu}
-                      onSelectOnly={selectOnlyShape}
-                      onToggleSelection={toggleShapeSelection}
-                      setSelection={setSelection}
-                      selectedSegmentIndex={
-                        segmentSel?.shapeId === shape.id
-                          ? segmentSel.segmentIndex
-                          : null
-                      }
-                      selectedSegmentPoint={
-                        segmentSel?.shapeId === shape.id
-                          ? segmentSel.point
-                          : null
-                      }
-                      setSegmentSelection={setSegmentSel}
-                      setVertexSel={setVertexSel}
-                      shape={displayShape}
-                      shapeRef={(node) => {
-                        shapeRefs.current[shape.id] = node;
-                      }}
-                      setDragSnapPreview={setDragSnapPreview}
-                      resolveShapeDragPosition={resolveShapeDragPosition}
-                      resolveWaypointDragPosition={resolveWaypointDragPosition}
-                      setPolylinePoints={setPolylinePoints}
-                      updateShape={updateShape}
-                      zmax={zmax}
-                      zmin={zmin}
-                    />
-                  );
-                })}
+              {shapeNodes}
               {activeTool === "select" &&
                 !readOnly &&
                 selection.length > 1 &&

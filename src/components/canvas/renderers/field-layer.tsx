@@ -1,35 +1,32 @@
 "use client";
 
+import { memo } from "react";
 import { Group, Line, Rect, Text } from "react-konva";
 import type { RectLike } from "@/components/canvas/shared";
 
-export interface FieldLayerContentProps {
+// ── Stable content (grid + field chrome) ────────────────────────────────────
+// Only re-renders when design, theme, or field dimensions change.
+
+export interface StableFieldContentProps {
   designField: {
     width: number;
     height: number;
     ppm: number;
   };
-  effectiveSelectionFrame: RectLike | null;
   grid: React.JSX.Element[];
   heightPx: number;
-  hoverCell: { x: number; y: number } | null;
   isDark: boolean;
-  marqueeRect: RectLike | null;
   stepPx: number;
   widthPx: number;
 }
 
-export function FieldLayerContent({
+export const StableFieldContent = memo(function StableFieldContent({
   designField,
-  effectiveSelectionFrame,
   grid,
   heightPx,
-  hoverCell,
   isDark,
-  marqueeRect,
-  stepPx,
   widthPx,
-}: FieldLayerContentProps) {
+}: StableFieldContentProps) {
   return (
     <>
       {grid}
@@ -130,6 +127,31 @@ export function FieldLayerContent({
         align="right"
         listening={false}
       />
+    </>
+  );
+});
+
+// ── Reactive overlay content (cursor-reactive overlays) ──────────────────────
+// Changes on mouse move (hoverCell), marquee drag, and selection moves.
+// Kept in a separate Konva layer so the stable grid is never redrawn.
+
+export interface FieldOverlayContentProps {
+  effectiveSelectionFrame: RectLike | null;
+  hoverCell: { x: number; y: number } | null;
+  isDark: boolean;
+  marqueeRect: RectLike | null;
+  stepPx: number;
+}
+
+export function FieldOverlayContent({
+  effectiveSelectionFrame,
+  hoverCell,
+  isDark,
+  marqueeRect,
+  stepPx,
+}: FieldOverlayContentProps) {
+  return (
+    <>
       {hoverCell && (
         <Rect
           x={hoverCell.x}
@@ -166,6 +188,56 @@ export function FieldLayerContent({
           listening={false}
         />
       )}
+    </>
+  );
+}
+
+// ── Legacy combined export (kept for backwards compatibility) ─────────────────
+
+export interface FieldLayerContentProps {
+  designField: {
+    width: number;
+    height: number;
+    ppm: number;
+  };
+  effectiveSelectionFrame: RectLike | null;
+  grid: React.JSX.Element[];
+  heightPx: number;
+  hoverCell: { x: number; y: number } | null;
+  isDark: boolean;
+  marqueeRect: RectLike | null;
+  stepPx: number;
+  widthPx: number;
+}
+
+export function FieldLayerContent({
+  designField,
+  effectiveSelectionFrame,
+  grid,
+  heightPx,
+  hoverCell,
+  isDark,
+  marqueeRect,
+  stepPx,
+  widthPx,
+}: FieldLayerContentProps) {
+  return (
+    <>
+      <StableFieldContent
+        designField={designField}
+        grid={grid}
+        heightPx={heightPx}
+        isDark={isDark}
+        stepPx={stepPx}
+        widthPx={widthPx}
+      />
+      <FieldOverlayContent
+        effectiveSelectionFrame={effectiveSelectionFrame}
+        hoverCell={hoverCell}
+        isDark={isDark}
+        marqueeRect={marqueeRect}
+        stepPx={stepPx}
+      />
     </>
   );
 }

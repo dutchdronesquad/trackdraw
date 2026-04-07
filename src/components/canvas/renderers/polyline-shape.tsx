@@ -14,8 +14,6 @@ import {
 import { zToColor } from "@/lib/track/alt";
 import { m2px, px2m } from "@/lib/track/units";
 import type { PolylinePoint, PolylineShape } from "@/lib/types";
-import { useEditor } from "@/store/editor";
-import { selectPrimaryPolyline } from "@/store/selectors";
 
 export interface PolylineShapeContentProps {
   allowInteraction: boolean;
@@ -23,6 +21,7 @@ export interface PolylineShapeContentProps {
   dragSnapRef: React.RefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
+  isPrimaryPolyline: boolean;
   isMobile: boolean;
   isSelected: boolean;
   onPathContextMenu?: (segmentIndex: number) => void;
@@ -56,6 +55,7 @@ export function PolylineShapeContent({
   dragSnapRef,
   effectiveVertexSel,
   hoveredWaypoint,
+  isPrimaryPolyline,
   isMobile,
   isSelected,
   onPathContextMenu,
@@ -87,7 +87,6 @@ export function PolylineShapeContent({
     touchIdentifier: number | null;
   } | null>(null);
   const dragFrameRef = useRef<number | null>(null);
-  const primaryPolyline = useEditor(selectPrimaryPolyline);
   const displayPath = useMemo(
     () =>
       previewPoints
@@ -121,7 +120,7 @@ export function PolylineShapeContent({
     () => getPolylineSmoothSegmentPointsPx(displayPath, designPpm),
     [designPpm, displayPath]
   );
-  const showWarningVisuals = primaryPolyline?.id === path.id || isSelected;
+  const showWarningVisuals = isPrimaryPolyline || isSelected;
   const pointsPxMemo = useMemo(() => {
     const basePoints =
       displayPath.closed && displayPath.points.length > 1

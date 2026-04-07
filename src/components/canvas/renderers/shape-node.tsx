@@ -29,6 +29,7 @@ export interface TrackShapeNodeProps {
   dragSnapRef: React.RefObject<boolean>;
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
+  isPrimaryPolyline: boolean;
   selectedSegmentIndex: number | null;
   selectedSegmentPoint: { x: number; y: number } | null;
   isHovered: boolean;
@@ -86,6 +87,7 @@ function TrackShapeNodeComponent({
   dragSnapRef,
   effectiveVertexSel,
   hoveredWaypoint,
+  isPrimaryPolyline,
   selectedSegmentIndex,
   selectedSegmentPoint,
   isHovered,
@@ -324,6 +326,7 @@ function TrackShapeNodeComponent({
             dragSnapRef={dragSnapRef}
             effectiveVertexSel={effectiveVertexSel}
             hoveredWaypoint={hoveredWaypoint}
+            isPrimaryPolyline={isPrimaryPolyline}
             isMobile={isMobile}
             isSelected={highlighted}
             onPathContextMenu={(segmentIndex) =>
@@ -373,6 +376,7 @@ export const TrackShapeNode = memo(TrackShapeNodeComponent, (prev, next) => {
     prev.isHovered === next.isHovered &&
     prev.mobileMultiSelectEnabled === next.mobileMultiSelectEnabled &&
     prev.isSelected === next.isSelected &&
+    prev.isPrimaryPolyline === next.isPrimaryPolyline &&
     prev.selectionCount === next.selectionCount &&
     prev.shape === next.shape &&
     prev.zmin === next.zmin &&
