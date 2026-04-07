@@ -648,11 +648,11 @@ export default function Home() {
               </p>
             </Reveal>
 
-            <div className="-mx-6 overflow-x-auto px-6 pb-2 sm:mx-auto sm:max-w-2xl sm:overflow-visible sm:px-0 sm:pb-0">
-              <div className="flex snap-x snap-mandatory gap-4 sm:grid sm:grid-cols-2">
+            <div className="-mx-6 scroll-px-6 overflow-x-auto px-6 pb-2 sm:mx-auto sm:max-w-2xl sm:scroll-px-0 sm:overflow-visible sm:px-0 sm:pb-0">
+              <div className="flex w-max min-w-full snap-x snap-mandatory gap-4 sm:grid sm:w-auto sm:min-w-0 sm:grid-cols-2">
                 {/* Guest */}
                 <Reveal>
-                  <div className="border-border/50 bg-card/20 flex h-full max-w-[19.5rem] min-w-[18.5rem] snap-start flex-col rounded-2xl border p-6 sm:max-w-none sm:min-w-0">
+                  <div className="border-border/50 bg-card/20 flex h-full max-w-78 min-w-74 snap-start flex-col rounded-2xl border p-6 sm:max-w-none sm:min-w-0">
                     <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
                       Without account
                     </p>
@@ -694,7 +694,7 @@ export default function Home() {
 
                 {/* Account */}
                 <Reveal delay={0.07}>
-                  <div className="border-brand-primary/25 bg-brand-primary/5 from-brand-primary/8 relative flex h-full max-w-[19.5rem] min-w-[18.5rem] snap-start flex-col overflow-hidden rounded-2xl border bg-linear-to-br to-transparent p-6 sm:max-w-none sm:min-w-0">
+                  <div className="border-brand-primary/25 bg-brand-primary/5 from-brand-primary/8 relative mr-6 flex h-full max-w-78 min-w-74 snap-start flex-col overflow-hidden rounded-2xl border bg-linear-to-br to-transparent p-6 sm:mr-0 sm:max-w-none sm:min-w-0">
                     <div className="pointer-events-none absolute -top-10 -right-10 size-36 rounded-full bg-[#1E93DB] opacity-[0.12] blur-2xl" />
                     <p className="text-brand-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
                       With account
