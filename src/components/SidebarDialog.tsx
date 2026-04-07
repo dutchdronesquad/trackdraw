@@ -28,6 +28,7 @@ export interface SidebarDialogProps {
   contentTitle: string;
   contentDescription?: string;
   children: React.ReactNode;
+  sidebarFooter?: React.ReactNode;
   maxWidth?: string;
   height?: string;
 }
@@ -124,6 +125,7 @@ export function SidebarDialog({
   contentTitle,
   contentDescription,
   children,
+  sidebarFooter,
   maxWidth = "max-w-4xl",
   height = "h-[34rem]",
 }: SidebarDialogProps) {
@@ -213,6 +215,12 @@ export function SidebarDialog({
             />
           ))}
         </nav>
+
+        {sidebarFooter ? (
+          <div className="border-border/50 mt-4 border-t px-3 pt-4">
+            {sidebarFooter}
+          </div>
+        ) : null}
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
