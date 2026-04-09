@@ -20,56 +20,43 @@ import {
   nowIso,
   serializeDesign,
 } from "@/lib/track/design";
+import {
+  appendPolylinePoint,
+  applyShapePatch,
+  closePolyline,
+  duplicateShapes,
+  insertPolylinePoint,
+  joinPolylineShapes,
+  nudgeShapes,
+  removePolylinePoint,
+  reversePolylinePoints,
+  rotateShapes,
+  setPolylinePoints,
+  updatePolylinePoint,
+} from "@/lib/editor/shape-mutations";
+import {
+  createDefaultEditorSessionState,
+  createDefaultEditorTransientState,
+  resetEditorTransientState,
+  sanitizeEditorTransientState,
+} from "@/lib/editor/store-state";
+import type {
+  EditorSessionState,
+  EditorTransientState,
+} from "@/lib/editor/store-types";
 import type { EditorTool } from "@/lib/editor-tools";
-import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/planning/layout-presets";
 import {
   expandGroupedSelection,
   getShapeGroupId,
 } from "@/lib/track/shape-groups";
-import type { DraftPoint, RectLike } from "@/components/canvas/shared";
+import type { DraftPoint, RectLike } from "@/lib/canvas/shared";
 
 export type { EditorTool } from "@/lib/editor-tools";
 
-interface EditorTransientState {
-  activeTool: EditorTool;
-  activePresetId: string | null;
-  zoom: number;
-  panOffset: { x: number; y: number };
-  hoveredShapeId: string | null;
-  hoveredWaypoint: { shapeId: string; idx: number } | null;
-  segmentSelection: {
-    shapeId: string;
-    segmentIndex: number;
-    point: { x: number; y: number };
-  } | null;
-  vertexSelection: { shapeId: string; idx: number } | null;
-  draftPath: DraftPoint[];
-  draftForceClosed: boolean;
-  draftSourceShapeId: string | null;
-  marqueeRect: RectLike | null;
-  rotationSession: {
-    center: { x: number; y: number };
-    shapeId: string;
-    startAngle: number;
-    startRotation: number;
-    previewRotation: number;
-  } | null;
-  groupDragPreview: {
-    ids: string[];
-    origin: { x: number; y: number };
-    dx: number;
-    dy: number;
-  } | null;
-  liveShapePatches: Record<string, Partial<Shape>>;
-}
-
-interface EditorState {
+interface EditorState extends EditorSessionState {
   design: TrackDesign;
   selection: string[];
   transient: EditorTransientState;
-  historyPaused: boolean;
-  historySessionDepth: number;
-  interactionSessionDepth: number;
 
   addShape: (s: ShapeDraft) => string;
   addShapes: (shapes: ShapeDraft[]) => string[];
@@ -218,13 +205,6 @@ interface EditorState {
   sanitizeHistoryState: () => void;
 }
 
-function reversePolyline(path: PolylineShape): PolylineShape {
-  return {
-    ...path,
-    points: [...path.points].reverse(),
-  };
-}
-
 function addShapeRecord(design: TrackDesign, shape: Shape) {
   design.shapeOrder.push(shape.id);
   design.shapeById[shape.id] = shape;
@@ -251,161 +231,13 @@ function clearTemporalHistory() {
   useEditor.temporal.getState().clear();
 }
 
-function endpointDistance(
-  a: { x: number; y: number },
-  b: { x: number; y: number }
-) {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
-
-function getPolylineAnchor(path: PolylineShape) {
-  if (!path.points.length) {
-    return { x: path.x, y: path.y };
-  }
-
-  const totals = path.points.reduce(
-    (accumulator, point) => ({
-      x: accumulator.x + point.x,
-      y: accumulator.y + point.y,
-    }),
-    { x: 0, y: 0 }
-  );
-
-  return {
-    x: totals.x / path.points.length,
-    y: totals.y / path.points.length,
-  };
-}
-
-function joinPolylineShapes(paths: PolylineShape[]): PolylineShape | null {
-  const openPaths = paths
-    .filter((path) => !path.closed && path.points.length >= 2)
-    .map((path) => ({
-      ...path,
-      x: 0,
-      y: 0,
-      points: path.points.map((point) => ({
-        ...point,
-        x: point.x + path.x,
-        y: point.y + path.y,
-      })),
-    }));
-
-  if (openPaths.length < 2) return null;
-
-  const remaining = [...openPaths];
-  let merged = remaining.shift()!;
-
-  while (remaining.length) {
-    const mergedStart = merged.points[0];
-    const mergedEnd = merged.points.at(-1)!;
-    let bestIndex = 0;
-    let bestCandidate = remaining[0];
-    let bestOrientation: "append" | "prepend" = "append";
-    let bestReverse = false;
-    let bestDistance = Number.POSITIVE_INFINITY;
-
-    remaining.forEach((candidate, index) => {
-      const candidateStart = candidate.points[0];
-      const candidateEnd = candidate.points.at(-1)!;
-      const options = [
-        {
-          distance: endpointDistance(mergedEnd, candidateStart),
-          orientation: "append" as const,
-          reverse: false,
-        },
-        {
-          distance: endpointDistance(mergedEnd, candidateEnd),
-          orientation: "append" as const,
-          reverse: true,
-        },
-        {
-          distance: endpointDistance(mergedStart, candidateEnd),
-          orientation: "prepend" as const,
-          reverse: false,
-        },
-        {
-          distance: endpointDistance(mergedStart, candidateStart),
-          orientation: "prepend" as const,
-          reverse: true,
-        },
-      ];
-
-      for (const option of options) {
-        if (option.distance < bestDistance) {
-          bestDistance = option.distance;
-          bestIndex = index;
-          bestCandidate = candidate;
-          bestOrientation = option.orientation;
-          bestReverse = option.reverse;
-        }
-      }
-    });
-
-    const nextPath = bestReverse
-      ? reversePolyline(bestCandidate)
-      : bestCandidate;
-    const nextPoints =
-      bestOrientation === "append"
-        ? [...merged.points, ...nextPath.points]
-        : [...nextPath.points, ...merged.points];
-
-    const dedupedPoints = nextPoints.filter(
-      (point, index, all) =>
-        index === 0 ||
-        endpointDistance(point, all[index - 1]) > 0.001 ||
-        Math.abs((point.z ?? 0) - (all[index - 1].z ?? 0)) > 0.001
-    );
-
-    merged = {
-      ...merged,
-      points: dedupedPoints,
-      x: 0,
-      y: 0,
-      showArrows: merged.showArrows || nextPath.showArrows,
-      arrowSpacing: Math.min(
-        merged.arrowSpacing ?? 15,
-        nextPath.arrowSpacing ?? 15
-      ),
-      strokeWidth: Math.max(
-        merged.strokeWidth ?? 0.26,
-        nextPath.strokeWidth ?? 0.26
-      ),
-      closed: false,
-      locked: false,
-    };
-
-    remaining.splice(bestIndex, 1);
-  }
-
-  return merged;
-}
-
 export const useEditor = create<EditorState>()(
   temporal(
     immer<EditorState>((set) => ({
       design: createDefaultDesign(),
       selection: [],
-      transient: {
-        activeTool: "select",
-        activePresetId: DEFAULT_LAYOUT_PRESET_ID,
-        zoom: 1,
-        panOffset: { x: 0, y: 0 },
-        hoveredShapeId: null,
-        hoveredWaypoint: null,
-        segmentSelection: null,
-        vertexSelection: null,
-        draftPath: [],
-        draftForceClosed: false,
-        draftSourceShapeId: null,
-        marqueeRect: null,
-        rotationSession: null,
-        groupDragPreview: null,
-        liveShapePatches: {},
-      },
-      historyPaused: false,
-      historySessionDepth: 0,
-      interactionSessionDepth: 0,
+      transient: createDefaultEditorTransientState(),
+      ...createDefaultEditorSessionState(),
 
       addShape: (s) => {
         const id = nanoid();
@@ -434,34 +266,7 @@ export const useEditor = create<EditorState>()(
         set((draft) => {
           const shape = draft.design.shapeById[id];
           if (!shape) return;
-          if (shape.kind === "polyline") {
-            const polyline = shape;
-            const nextPatch = { ...patch } as Partial<Shape>;
-            const currentAnchor = getPolylineAnchor(polyline);
-            const nextX =
-              typeof nextPatch.x === "number" ? nextPatch.x : currentAnchor.x;
-            const nextY =
-              typeof nextPatch.y === "number" ? nextPatch.y : currentAnchor.y;
-
-            if (
-              typeof nextPatch.x === "number" ||
-              typeof nextPatch.y === "number"
-            ) {
-              const dx = nextX - currentAnchor.x;
-              const dy = nextY - currentAnchor.y;
-              polyline.points = polyline.points.map((point) => ({
-                ...point,
-                x: point.x + dx,
-                y: point.y + dy,
-              }));
-              nextPatch.x = 0;
-              nextPatch.y = 0;
-            }
-
-            Object.assign(polyline, nextPatch);
-          } else {
-            Object.assign(shape, patch);
-          }
+          applyShapePatch(shape, patch);
           draft.design.updatedAt = nowIso();
         }),
 
@@ -472,36 +277,7 @@ export const useEditor = create<EditorState>()(
           for (const id of ids) {
             const shape = draft.design.shapeById[id];
             if (!shape) continue;
-
-            if (shape.kind === "polyline") {
-              const polyline = shape;
-              const nextPatch = { ...patch } as Partial<Shape>;
-              const currentAnchor = getPolylineAnchor(polyline);
-              const nextX =
-                typeof nextPatch.x === "number" ? nextPatch.x : currentAnchor.x;
-              const nextY =
-                typeof nextPatch.y === "number" ? nextPatch.y : currentAnchor.y;
-
-              if (
-                typeof nextPatch.x === "number" ||
-                typeof nextPatch.y === "number"
-              ) {
-                const dx = nextX - currentAnchor.x;
-                const dy = nextY - currentAnchor.y;
-                polyline.points = polyline.points.map((point) => ({
-                  ...point,
-                  x: point.x + dx,
-                  y: point.y + dy,
-                }));
-                nextPatch.x = 0;
-                nextPatch.y = 0;
-              }
-
-              Object.assign(polyline, nextPatch);
-            } else {
-              Object.assign(shape, patch);
-            }
-
+            applyShapePatch(shape, patch);
             changed = true;
           }
 
@@ -528,75 +304,47 @@ export const useEditor = create<EditorState>()(
 
       setPolylinePoints: (id, points) =>
         set((draft) => {
-          const shape = draft.design.shapeById[id];
-          if (!shape || shape.kind !== "polyline") return;
-          shape.points = points;
+          if (!setPolylinePoints(draft.design.shapeById[id], points)) return;
           draft.design.updatedAt = nowIso();
         }),
 
       updatePolylinePoint: (id, index, patch) =>
         set((draft) => {
-          const shape = draft.design.shapeById[id];
-          if (!shape || shape.kind !== "polyline") return;
-          if (index < 0 || index >= shape.points.length) return;
-          shape.points[index] = {
-            ...shape.points[index],
-            ...patch,
-          };
+          if (!updatePolylinePoint(draft.design.shapeById[id], index, patch))
+            return;
           draft.design.updatedAt = nowIso();
         }),
 
       insertPolylinePoint: (id, index, point) =>
         set((draft) => {
-          const shape = draft.design.shapeById[id];
-          if (!shape || shape.kind !== "polyline") return;
-          shape.points.splice(index, 0, point);
+          if (!insertPolylinePoint(draft.design.shapeById[id], index, point))
+            return;
           draft.transient.segmentSelection = null;
           draft.design.updatedAt = nowIso();
         }),
 
       removePolylinePoint: (id, index) =>
         set((draft) => {
-          const shape = draft.design.shapeById[id];
-          if (!shape || shape.kind !== "polyline") return;
-          if (shape.points.length <= 2) return;
-          if (index < 0 || index >= shape.points.length) return;
-          shape.points.splice(index, 1);
+          if (!removePolylinePoint(draft.design.shapeById[id], index)) return;
           draft.transient.segmentSelection = null;
           draft.design.updatedAt = nowIso();
         }),
 
       appendPolylinePoint: (id, point) =>
         set((draft) => {
-          const shape = draft.design.shapeById[id];
-          if (!shape || shape.kind !== "polyline") return;
-          shape.points.push(point);
+          if (!appendPolylinePoint(draft.design.shapeById[id], point)) return;
           draft.design.updatedAt = nowIso();
         }),
 
       reversePolylinePoints: (id) =>
         set((draft) => {
-          const shape = draft.design.shapeById[id];
-          if (!shape || shape.kind !== "polyline") return;
-          shape.points.reverse();
+          if (!reversePolylinePoints(draft.design.shapeById[id])) return;
           draft.design.updatedAt = nowIso();
         }),
 
       rotateShapes: (ids, delta) =>
         set((draft) => {
-          let changed = false;
-          for (const id of ids) {
-            const shape = draft.design.shapeById[id];
-            if (!shape) continue;
-            if (
-              shape.kind === "polyline" ||
-              shape.kind === "cone" ||
-              shape.locked
-            )
-              continue;
-            shape.rotation = (((shape.rotation + delta) % 360) + 360) % 360;
-            changed = true;
-          }
+          const changed = rotateShapes(draft.design.shapeById, ids, delta);
           if (changed) {
             draft.design.updatedAt = nowIso();
           }
@@ -612,69 +360,13 @@ export const useEditor = create<EditorState>()(
 
       nudgeShapes: (ids, dx, dy) =>
         set((draft) => {
-          for (const id of ids) {
-            const shape = draft.design.shapeById[id];
-            if (!shape || shape.locked) continue;
-            if (shape.kind === "polyline") {
-              shape.points = shape.points.map((point) => ({
-                ...point,
-                x: point.x + dx,
-                y: point.y + dy,
-              }));
-            } else {
-              shape.x += dx;
-              shape.y += dy;
-            }
-          }
+          if (!nudgeShapes(draft.design.shapeById, ids, dx, dy)) return;
           draft.design.updatedAt = nowIso();
         }),
 
       duplicateShapes: (ids) =>
         set((draft) => {
-          const idSet = new Set(ids);
-          const duplicatedGroupIds = new Map<string, string>();
-          const toDuplicate = draft.design.shapeOrder
-            .filter((id) => idSet.has(id))
-            .map((id) => draft.design.shapeById[id])
-            .filter((shape): shape is Shape => Boolean(shape));
-          const newShapes = toDuplicate.map((sh) =>
-            sh.kind === "polyline"
-              ? {
-                  ...sh,
-                  id: nanoid(),
-                  x: 0,
-                  y: 0,
-                  points: sh.points.map((point) => ({
-                    ...point,
-                    x: point.x + 1,
-                    y: point.y + 1,
-                  })),
-                  meta: (() => {
-                    const groupId = getShapeGroupId(sh);
-                    if (!groupId) return sh.meta;
-                    const nextGroupId =
-                      duplicatedGroupIds.get(groupId) ?? nanoid();
-                    duplicatedGroupIds.set(groupId, nextGroupId);
-                    return { ...sh.meta, groupId: nextGroupId };
-                  })(),
-                  name: sh.name ? `${sh.name} copy` : undefined,
-                }
-              : {
-                  ...sh,
-                  id: nanoid(),
-                  x: sh.x + 1,
-                  y: sh.y + 1,
-                  meta: (() => {
-                    const groupId = getShapeGroupId(sh);
-                    if (!groupId) return sh.meta;
-                    const nextGroupId =
-                      duplicatedGroupIds.get(groupId) ?? nanoid();
-                    duplicatedGroupIds.set(groupId, nextGroupId);
-                    return { ...sh.meta, groupId: nextGroupId };
-                  })(),
-                  name: sh.name ? `${sh.name} copy` : undefined,
-                }
-          );
+          const newShapes = duplicateShapes(draft.design, ids);
           newShapes.forEach((shape) => addShapeRecord(draft.design, shape));
           draft.selection = newShapes.map((s) => s.id);
           draft.design.updatedAt = nowIso();
@@ -810,16 +502,7 @@ export const useEditor = create<EditorState>()(
 
         set((draft) => {
           const shape = getDesignShapeById(draft.design, id);
-
-          if (
-            !shape ||
-            shape.kind !== "polyline" ||
-            shape.closed ||
-            shape.points.length < 3
-          )
-            return;
-
-          shape.closed = true;
+          if (!closePolyline(shape)) return;
           draft.selection = [id];
           draft.design.updatedAt = nowIso();
           closed = true;
@@ -873,21 +556,8 @@ export const useEditor = create<EditorState>()(
         set((draft) => {
           draft.design = normalizeDesign(design);
           draft.selection = [];
-          draft.transient.activeTool = "select";
-          draft.transient.hoveredShapeId = null;
-          draft.transient.hoveredWaypoint = null;
-          draft.transient.segmentSelection = null;
-          draft.transient.vertexSelection = null;
-          draft.transient.draftPath = [];
-          draft.transient.draftForceClosed = false;
-          draft.transient.draftSourceShapeId = null;
-          draft.transient.marqueeRect = null;
-          draft.transient.rotationSession = null;
-          draft.transient.groupDragPreview = null;
-          draft.transient.liveShapePatches = {};
-          draft.historyPaused = false;
-          draft.historySessionDepth = 0;
-          draft.interactionSessionDepth = 0;
+          draft.transient = resetEditorTransientState(draft.transient);
+          Object.assign(draft, createDefaultEditorSessionState());
         });
         clearTemporalHistory();
       },
@@ -986,22 +656,11 @@ export const useEditor = create<EditorState>()(
         set((draft) => {
           draft.design = createDefaultDesign();
           draft.selection = [];
-          draft.transient.activeTool = "select";
-          draft.transient.zoom = 1;
-          draft.transient.panOffset = { x: 0, y: 0 };
-          draft.transient.hoveredShapeId = null;
-          draft.transient.hoveredWaypoint = null;
-          draft.transient.segmentSelection = null;
-          draft.transient.vertexSelection = null;
-          draft.transient.draftPath = [];
-          draft.transient.draftForceClosed = false;
-          draft.transient.draftSourceShapeId = null;
-          draft.transient.marqueeRect = null;
-          draft.transient.rotationSession = null;
-          draft.transient.groupDragPreview = null;
-          draft.historyPaused = false;
-          draft.historySessionDepth = 0;
-          draft.interactionSessionDepth = 0;
+          draft.transient = resetEditorTransientState(draft.transient, {
+            zoom: 1,
+            panOffset: { x: 0, y: 0 },
+          });
+          Object.assign(draft, createDefaultEditorSessionState());
         });
         clearTemporalHistory();
       },
@@ -1075,15 +734,8 @@ export const useEditor = create<EditorState>()(
       sanitizeHistoryState: () => {
         set((draft) => {
           draft.design = normalizeDesign(draft.design);
-          draft.transient.hoveredShapeId = null;
-          draft.transient.hoveredWaypoint = null;
-          draft.transient.vertexSelection = null;
-          draft.transient.marqueeRect = null;
-          draft.transient.rotationSession = null;
-          draft.transient.groupDragPreview = null;
-          draft.historyPaused = false;
-          draft.historySessionDepth = 0;
-          draft.interactionSessionDepth = 0;
+          draft.transient = sanitizeEditorTransientState(draft.transient);
+          Object.assign(draft, createDefaultEditorSessionState());
         });
       },
     })),

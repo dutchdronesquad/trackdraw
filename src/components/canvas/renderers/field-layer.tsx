@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { Group, Line, Rect, Text } from "react-konva";
-import type { RectLike } from "@/components/canvas/shared";
+import type { RectLike } from "@/lib/canvas/shared";
 
 // ── Stable content (grid + field chrome) ────────────────────────────────────
 // Only re-renders when design, theme, or field dimensions change.

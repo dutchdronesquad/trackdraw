@@ -4,21 +4,36 @@ import { useCallback, useMemo, useRef } from "react";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 import type { Vector2d } from "konva/lib/types";
+import {
+  buildCursorState,
+  buildSnapIndex,
+  findNearestSnapTarget,
+  getPinchCenter,
+  getPinchDistance,
+  getPinchZoomState,
+  getCursorStateKey,
+  getNearbySnapCandidates as getNearbySnapCandidatesFromIndex,
+  getSelectedIdsInMarquee,
+  getTouchInteractionMode,
+  getWheelZoomTarget,
+  getZoomedStagePosition,
+  hasExceededTapMoveThreshold,
+  isTrackpadPanGesture,
+  pointerToMeters as pointerToMetersFromCanvas,
+  shouldCloseDraftLoop as shouldCloseDraftLoopForPath,
+  shouldSkipDraftPoint as shouldSkipDraftPointForPath,
+} from "@/lib/canvas/interaction-helpers";
 import { createShapeForTool, type EditorTool } from "@/lib/editor-tools";
 import {
   getLayoutPresetById,
   placeLayoutPreset,
 } from "@/lib/planning/layout-presets";
-import { distance2D } from "@/lib/track/geometry";
-import { px2m } from "@/lib/track/units";
 import {
-  MIN_MARQUEE_SIZE,
   normalizeRect,
-  rectsIntersect,
   type CursorState,
   type DraftPoint,
   type RectLike,
-} from "@/components/canvas/shared";
+} from "@/lib/canvas/shared";
 import type { Shape, ShapeDraft } from "@/lib/types";
 
 interface TrackCanvasInteractionsParams {
@@ -139,36 +154,14 @@ export function useTrackCanvasInteractions({
   const wheelPointerRef = useRef<{ x: number; y: number } | null>(null);
   const wheelAnimFrameRef = useRef<number | null>(null);
   const snapCellSize = Math.max(snapRadiusMeters * 2, designField.gridStep * 4);
-  const snapIndex = useMemo(() => {
-    const index = new Map<string, Shape[]>();
-
-    for (const shape of designShapes) {
-      if (shape.kind === "polyline") continue;
-      const cellX = Math.floor(shape.x / snapCellSize);
-      const cellY = Math.floor(shape.y / snapCellSize);
-      const key = `${cellX}:${cellY}`;
-      const bucket = index.get(key);
-      if (bucket) bucket.push(shape);
-      else index.set(key, [shape]);
-    }
-
-    return index;
-  }, [designShapes, snapCellSize]);
+  const snapIndex = useMemo(
+    () => buildSnapIndex(designShapes, snapCellSize),
+    [designShapes, snapCellSize]
+  );
 
   const getNearbySnapCandidates = useCallback(
     (meters: { x: number; y: number }) => {
-      const baseX = Math.floor(meters.x / snapCellSize);
-      const baseY = Math.floor(meters.y / snapCellSize);
-      const nearby: Shape[] = [];
-
-      for (let dx = -1; dx <= 1; dx += 1) {
-        for (let dy = -1; dy <= 1; dy += 1) {
-          const bucket = snapIndex.get(`${baseX + dx}:${baseY + dy}`);
-          if (bucket) nearby.push(...bucket);
-        }
-      }
-
-      return nearby;
+      return getNearbySnapCandidatesFromIndex(snapIndex, snapCellSize, meters);
     },
     [snapCellSize, snapIndex]
   );
@@ -179,28 +172,15 @@ export function useTrackCanvasInteractions({
       snap = true,
       magnetic = true
     ) => {
-      if (!pointer) return null;
-      const px = snap ? Math.round(pointer.x / stepPx) * stepPx : pointer.x;
-      const py = snap ? Math.round(pointer.y / stepPx) * stepPx : pointer.y;
-      const gridMeters = {
-        x: px2m(px, designField.ppm),
-        y: px2m(py, designField.ppm),
-      };
-      if (!snap) return gridMeters;
-      if (!magnetic) return gridMeters;
-
-      let nearest: { x: number; y: number } | null = null;
-      let minDist = snapRadiusMeters;
-      for (const shape of getNearbySnapCandidates(gridMeters)) {
-        const dist = Math.sqrt(
-          (shape.x - gridMeters.x) ** 2 + (shape.y - gridMeters.y) ** 2
-        );
-        if (dist < minDist) {
-          minDist = dist;
-          nearest = { x: shape.x, y: shape.y };
-        }
-      }
-      return nearest ?? gridMeters;
+      return pointerToMetersFromCanvas({
+        designPpm: designField.ppm,
+        getNearbySnapCandidates,
+        magnetic,
+        pointer,
+        snap,
+        snapRadiusMeters,
+        stepPx,
+      });
     },
     [designField.ppm, getNearbySnapCandidates, snapRadiusMeters, stepPx]
   );
@@ -217,36 +197,33 @@ export function useTrackCanvasInteractions({
 
   const findSnapTarget = useCallback(
     (meters: { x: number; y: number }) => {
-      let nearest: { x: number; y: number; id: string } | null = null;
-      let minDist = snapRadiusMeters;
-      for (const shape of getNearbySnapCandidates(meters)) {
-        const dist = Math.sqrt(
-          (shape.x - meters.x) ** 2 + (shape.y - meters.y) ** 2
-        );
-        if (dist < minDist) {
-          minDist = dist;
-          nearest = { x: shape.x, y: shape.y, id: shape.id };
-        }
-      }
-      return nearest;
+      return findNearestSnapTarget(
+        getNearbySnapCandidates(meters),
+        meters,
+        snapRadiusMeters
+      );
     },
     [getNearbySnapCandidates, snapRadiusMeters]
   );
 
   const shouldCloseDraftLoop = useCallback(
     (meters: { x: number; y: number } | null) => {
-      if (!meters || draftPath.length < 3) return false;
-      return distance2D(meters, draftPath[0]) <= closeLoopRadiusMeters;
+      return shouldCloseDraftLoopForPath({
+        closeLoopRadiusMeters,
+        draftPath,
+        meters,
+      });
     },
     [closeLoopRadiusMeters, draftPath]
   );
 
   const shouldSkipDraftPoint = useCallback(
     (previous: DraftPoint[], nextPoint: { x: number; y: number }) => {
-      const last = previous.at(-1);
-      return Boolean(
-        last && distance2D(last, nextPoint) < minWaypointGapMeters
-      );
+      return shouldSkipDraftPointForPath({
+        minWaypointGapMeters,
+        nextPoint,
+        previous,
+      });
     },
     [minWaypointGapMeters]
   );
@@ -278,15 +255,15 @@ export function useTrackCanvasInteractions({
       if (hasHorizontalScroll) {
         lastHorizontalScrollTimeRef.current = now;
       }
-      const recentHorizontalScroll =
-        now - lastHorizontalScrollTimeRef.current < 400;
-      const isTrackpadPan =
-        isMobile === false &&
-        event.evt.deltaMode === 0 &&
-        !event.evt.ctrlKey &&
-        !event.evt.metaKey &&
-        !event.evt.altKey &&
-        (hasHorizontalScroll || recentHorizontalScroll);
+      const isTrackpadPan = isTrackpadPanGesture({
+        deltaMode: event.evt.deltaMode,
+        hasHorizontalScroll,
+        isMobile,
+        modifierActive:
+          event.evt.ctrlKey || event.evt.metaKey || event.evt.altKey,
+        now,
+        previousHorizontalScrollTime: lastHorizontalScrollTimeRef.current,
+      });
 
       if (isTrackpadPan) {
         stage.position({
@@ -299,13 +276,12 @@ export function useTrackCanvasInteractions({
 
       const pointer = stage.getPointerPosition();
       if (!pointer) return;
-      const zoomIntensity = event.evt.ctrlKey ? 0.006 : 0.0025;
-      const zoomFactor = Math.exp(-event.evt.deltaY * zoomIntensity);
       const currentTarget = wheelTargetScaleRef.current ?? stage.scaleX();
-      wheelTargetScaleRef.current = Math.max(
-        0.2,
-        Math.min(5, currentTarget * zoomFactor)
-      );
+      wheelTargetScaleRef.current = getWheelZoomTarget({
+        ctrlKey: event.evt.ctrlKey,
+        currentTargetScale: currentTarget,
+        deltaY: event.evt.deltaY,
+      });
       wheelPointerRef.current = pointer;
 
       if (!wheelAnimFrameRef.current) {
@@ -321,15 +297,14 @@ export function useTrackCanvasInteractions({
           const next = current + (target - current) * 0.25;
           const settled = Math.abs(target - next) < 0.0005;
           const applied = settled ? target : next;
-          const pointTo = {
-            x: (ptr.x - s.x()) / current,
-            y: (ptr.y - s.y()) / current,
-          };
-          s.scale({ x: applied, y: applied });
-          s.position({
-            x: ptr.x - pointTo.x * applied,
-            y: ptr.y - pointTo.y * applied,
+          const nextPosition = getZoomedStagePosition({
+            currentScale: current,
+            pointer: ptr,
+            stagePosition: { x: s.x(), y: s.y() },
+            targetScale: applied,
           });
+          s.scale({ x: applied, y: applied });
+          s.position(nextPosition);
           setZoom(applied);
           syncTransform();
           if (settled) {
@@ -381,16 +356,10 @@ export function useTrackCanvasInteractions({
         lastTouchStagePointRef.current = null;
         touchMovedRef.current = false;
         const [touch1, touch2] = [event.evt.touches[0], event.evt.touches[1]];
-        lastPinchDistRef.current = Math.hypot(
-          touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY
-        );
+        lastPinchDistRef.current = getPinchDistance(touch1, touch2);
         const stageBox = stage?.container().getBoundingClientRect();
         lastPinchCenterRef.current = stageBox
-          ? {
-              x: (touch1.clientX + touch2.clientX) / 2 - stageBox.left,
-              y: (touch1.clientY + touch2.clientY) / 2 - stageBox.top,
-            }
+          ? getPinchCenter(touch1, touch2, stageBox)
           : null;
       } else if (event.evt.touches.length === 1) {
         const touch = event.evt.touches[0];
@@ -403,11 +372,11 @@ export function useTrackCanvasInteractions({
         lastPinchCenterRef.current = null;
         suppressTapRef.current = false;
         touchMovedRef.current = false;
-        const nextTouchMode =
-          event.target === stage &&
-          (activeTool === "grab" || (isMobile && activeTool === "select"))
-            ? "pan"
-            : "content";
+        const nextTouchMode = getTouchInteractionMode({
+          activeTool,
+          isMobile,
+          targetIsStage: event.target === stage,
+        });
         touchInteractionModeRef.current = nextTouchMode;
         lastTouchStagePointRef.current =
           nextTouchMode === "content" ? touchToStagePoint(touch, stage) : null;
@@ -445,11 +414,12 @@ export function useTrackCanvasInteractions({
 
       if (event.evt.touches.length === 1) {
         const touch = event.evt.touches[0];
-        const start = lastTouchStartClientRef.current;
         if (
-          start &&
-          Math.hypot(touch.clientX - start.x, touch.clientY - start.y) >
-            mobileTapMoveThresholdPx
+          hasExceededTapMoveThreshold({
+            current: { x: touch.clientX, y: touch.clientY },
+            start: lastTouchStartClientRef.current,
+            thresholdPx: mobileTapMoveThresholdPx,
+          })
         ) {
           touchMovedRef.current = true;
           suppressTapRef.current = true;
@@ -483,16 +453,10 @@ export function useTrackCanvasInteractions({
       if (!stage) return;
 
       const [touch1, touch2] = [event.evt.touches[0], event.evt.touches[1]];
-      const dist = Math.hypot(
-        touch2.clientX - touch1.clientX,
-        touch2.clientY - touch1.clientY
-      );
+      const dist = getPinchDistance(touch1, touch2);
       const lastDist = lastPinchDistRef.current;
       const stageBox = stage.container().getBoundingClientRect();
-      const center = {
-        x: (touch1.clientX + touch2.clientX) / 2 - stageBox.left,
-        y: (touch1.clientY + touch2.clientY) / 2 - stageBox.top,
-      };
+      const center = getPinchCenter(touch1, touch2, stageBox);
       const lastCenter = lastPinchCenterRef.current;
 
       if (lastDist === null || !lastCenter) {
@@ -501,26 +465,20 @@ export function useTrackCanvasInteractions({
         return;
       }
 
-      const scaleBy = dist / lastDist;
       lastPinchDistRef.current = dist;
       setManualView(true);
-      const oldScale = stage.scaleX();
-      const newScale = Math.max(0.2, Math.min(5, oldScale * scaleBy));
-      const centerDelta = {
-        x: center.x - lastCenter.x,
-        y: center.y - lastCenter.y,
-      };
-      const pointTo = {
-        x: (center.x - stage.x()) / oldScale,
-        y: (center.y - stage.y()) / oldScale,
-      };
-      stage.scale({ x: newScale, y: newScale });
-      stage.position({
-        x: center.x - pointTo.x * newScale + centerDelta.x,
-        y: center.y - pointTo.y * newScale + centerDelta.y,
+      const nextViewport = getPinchZoomState({
+        center,
+        lastCenter,
+        lastDistance: lastDist,
+        nextDistance: dist,
+        oldScale: stage.scaleX(),
+        stagePosition: { x: stage.x(), y: stage.y() },
       });
+      stage.scale({ x: nextViewport.scale, y: nextViewport.scale });
+      stage.position(nextViewport.position);
       stage.batchDraw();
-      setZoom(newScale);
+      setZoom(nextViewport.scale);
       syncTransform();
       lastPinchCenterRef.current = center;
     },
@@ -775,21 +733,13 @@ export function useTrackCanvasInteractions({
     const rawMeters = pointerToMeters(pointer, false);
     const snappedMeters = pointerToMeters(pointer, true);
     if (rawMeters && snappedMeters) {
-      const nextCursor = {
+      const nextCursor = buildCursorState(
+        pointer,
         rawMeters,
         snappedMeters,
-        rawPx: { x: pointer.x, y: pointer.y },
-        snappedPx: {
-          x: Math.round(pointer.x / stepPx) * stepPx,
-          y: Math.round(pointer.y / stepPx) * stepPx,
-        },
-      };
-      const cursorKey = [
-        nextCursor.rawPx.x.toFixed(2),
-        nextCursor.rawPx.y.toFixed(2),
-        nextCursor.snappedMeters.x.toFixed(2),
-        nextCursor.snappedMeters.y.toFixed(2),
-      ].join("|");
+        stepPx
+      );
+      const cursorKey = getCursorStateKey(nextCursor);
       if (cursorKey !== lastCursorKeyRef.current) {
         lastCursorKeyRef.current = cursorKey;
         setCursor(nextCursor);
@@ -888,15 +838,13 @@ export function useTrackCanvasInteractions({
       const rect = marqueeRect;
       marqueeOriginRef.current = null;
       setMarqueeRect(null);
-      if (rect.width < MIN_MARQUEE_SIZE && rect.height < MIN_MARQUEE_SIZE)
-        return;
-
-      const selectedIds = Object.entries(shapeRefs.current)
-        .filter((entry): entry is [string, KonvaGroup] => Boolean(entry[1]))
-        .filter(([, node]) =>
-          rectsIntersect(rect, node.getClientRect({ relativeTo: stage }))
-        )
-        .map(([id]) => id);
+      const marqueeSelection = getSelectedIdsInMarquee({
+        marqueeRect: rect,
+        shapeRefs: shapeRefs.current,
+        stage,
+      });
+      if (marqueeSelection.tooSmall) return;
+      const selectedIds = marqueeSelection.ids;
 
       if (marqueeAdditiveRef.current) {
         setSelection(Array.from(new Set([...selection, ...selectedIds])));
