@@ -5,7 +5,7 @@ import ElevationChart from "@/components/inspector/ElevationChart";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { shapeKindLabels } from "@/lib/editor-tools";
-import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
+import { getSingleInspectorViewModel } from "@/lib/inspector/single/view-model";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   Copy,
@@ -13,11 +13,8 @@ import {
   Lock,
   LockOpen,
   PencilLine,
-  Plus,
-  PlusCircle,
   Trash2,
   Ungroup,
-  X,
 } from "lucide-react";
 import {
   fmt,
@@ -33,7 +30,7 @@ import {
   InspectorLead,
   InspectorScrollBody,
 } from "./layout";
-import { ListPanel } from "./list-panel";
+import { PolylineWaypointList } from "./polyline/PolylineWaypointList";
 
 export interface SingleInspectorViewProps {
   shape: Shape;
@@ -88,36 +85,21 @@ export function SingleInspectorView({
   const [directionReversedByShape, setDirectionReversedByShape] = useState<
     Record<string, boolean>
   >({});
-  const defaultColor = shape.color ?? "#3b82f6";
-  const polylineAnchor =
-    shape.kind === "polyline" && shape.points.length
-      ? shape.points.reduce(
-          (accumulator, point) => ({
-            x: accumulator.x + point.x,
-            y: accumulator.y + point.y,
-          }),
-          { x: 0, y: 0 }
-        )
-      : null;
-  const anchorPosition =
-    polylineAnchor && shape.kind === "polyline"
-      ? {
-          x: polylineAnchor.x / shape.points.length,
-          y: polylineAnchor.y / shape.points.length,
-        }
-      : { x: shape.x, y: shape.y };
-  const shapeDisplayName = shape.name?.trim() || shapeKindLabels[shape.kind];
-  const groupId = getShapeGroupId(shape);
-  const groupName = getShapeGroupName(shape) ?? "";
+  const {
+    actionBtnClass,
+    actionBtnPrimaryClass,
+    anchorPosition,
+    defaultColor,
+    groupId,
+    groupName,
+    shapeDisplayName,
+    shapeKindLabel,
+    showPathActions: showDefaultPathActions,
+  } = getSingleInspectorViewModel(shape);
   const directionReversed = Boolean(directionReversedByShape[shape.id]);
   const showPathActions =
     shape.kind === "polyline" &&
-    (Boolean(onResumeSelectedPath) ||
-      (!shape.closed && shape.points.length >= 3));
-  const actionBtnClass =
-    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
-  const actionBtnPrimaryClass =
-    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/25 bg-primary/8 px-2.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+    (Boolean(onResumeSelectedPath) || showDefaultPathActions);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -125,9 +107,9 @@ export function SingleInspectorView({
         <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
           <InspectorLead
             title={shapeDisplayName}
-            subtitle={`Editing ${shapeKindLabels[shape.kind].toLowerCase()} properties and placement.`}
+            subtitle={`Editing ${shapeKindLabel.toLowerCase()} properties and placement.`}
             meta={[
-              shapeKindLabels[shape.kind],
+              shapeKindLabel,
               `${fmt(anchorPosition.x)}, ${fmt(anchorPosition.y)}`,
               ...(groupId ? [groupName || "grouped"] : []),
               shape.locked ? "locked" : "editable",
@@ -591,133 +573,16 @@ export function SingleInspectorView({
                 <ElevationChart />
               </InspectorFooterMobile>
 
-              <div className="mt-3">
-                <ListPanel
-                  title="Waypoints"
-                  subtitle="Adjust each point and its elevation."
-                  meta={
-                    <span className="text-muted-foreground/65 text-[11px]">
-                      {shape.points.length}
-                    </span>
-                  }
-                >
-                  <div className="border-border/15 grid grid-cols-[28px_minmax(0,1fr)_56px_44px] items-center gap-2 border-b px-3 py-1.5">
-                    <span className="text-muted-foreground/65 text-[11px] font-medium tracking-[0.08em] uppercase">
-                      #
-                    </span>
-                    <span className="text-muted-foreground/40 text-[9px] font-semibold tracking-wider uppercase">
-                      x, y
-                    </span>
-                    <span className="text-muted-foreground/40 text-right text-[9px] font-semibold tracking-wider uppercase">
-                      elev
-                    </span>
-                    <span className="text-muted-foreground/40 text-right text-[9px] font-semibold tracking-wider uppercase">
-                      edit
-                    </span>
-                  </div>
-                  <div className="max-h-72 overflow-y-auto">
-                    {shape.points.map((point, index) => (
-                      <div
-                        key={index}
-                        className="group/row border-border/10 hover:bg-primary/6 relative grid grid-cols-[28px_minmax(0,1fr)_56px_44px] items-center gap-2 border-b py-2 pr-3 pl-3 transition-colors last:border-b-0 lg:py-1.5 lg:pr-2"
-                        onMouseEnter={() =>
-                          setHoveredWaypoint({ shapeId: shape.id, idx: index })
-                        }
-                        onMouseLeave={() => setHoveredWaypoint(null)}
-                      >
-                        <span className="bg-primary/40 absolute top-0 bottom-0 left-0 w-px opacity-0 transition-opacity group-hover/row:opacity-100" />
-                        <span className="border-border/30 bg-primary/8 text-primary/80 flex h-5 w-5 items-center justify-center rounded-xs border font-mono text-[10px] tabular-nums">
-                          {index}
-                        </span>
-                        <div className="min-w-0">
-                          <span className="text-foreground/85 block font-mono text-[11px] leading-none tabular-nums">
-                            {point.x.toFixed(1)}, {point.y.toFixed(1)}
-                          </span>
-                        </div>
-                        <input
-                          type="number"
-                          step={0.5}
-                          title="Elevation (m)"
-                          className="text-foreground/90 focus:bg-primary/6 focus:text-foreground hover:border-border/25 focus:border-primary/30 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-hidden"
-                          value={point.z ?? 0}
-                          disabled={shape.locked}
-                          onFocus={startBatch}
-                          onBlur={finishBatch}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              event.currentTarget.blur();
-                            }
-                          }}
-                          onChange={(event) => {
-                            updatePolylinePoint(shape.id, index, {
-                              z: +event.target.value,
-                            });
-                          }}
-                        />
-                        <div className="flex items-center justify-end gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover/row:opacity-100">
-                          {index < shape.points.length - 1 && (
-                            <button
-                              title="Insert point after"
-                              disabled={shape.locked}
-                              className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
-                              onClick={() => {
-                                const current = shape.points[index];
-                                const next = shape.points[index + 1];
-                                const midpoint = {
-                                  x: +((current.x + next.x) / 2).toFixed(2),
-                                  y: +((current.y + next.y) / 2).toFixed(2),
-                                  z: +(
-                                    ((current.z ?? 0) + (next.z ?? 0)) /
-                                    2
-                                  ).toFixed(2),
-                                };
-                                insertPolylinePoint(
-                                  shape.id,
-                                  index + 1,
-                                  midpoint
-                                );
-                              }}
-                            >
-                              <PlusCircle className="size-3" />
-                            </button>
-                          )}
-                          <button
-                            title="Remove point"
-                            disabled={shape.locked}
-                            className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
-                            onClick={() => {
-                              removePolylinePoint(shape.id, index);
-                            }}
-                          >
-                            <X className="size-3" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    className="border-border/15 text-muted-foreground/55 hover:text-foreground hover:bg-muted/6 flex h-10 w-full items-center justify-center gap-1.5 border-t py-2 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:h-auto lg:text-[11px]"
-                    disabled={shape.locked}
-                    onClick={() => {
-                      const lastPoint = shape.points[
-                        shape.points.length - 1
-                      ] ?? {
-                        x: 0,
-                        y: 0,
-                        z: 0,
-                      };
-                      appendPolylinePoint(shape.id, {
-                        x: +(lastPoint.x + 1).toFixed(2),
-                        y: +(lastPoint.y + 1).toFixed(2),
-                        z: lastPoint.z ?? 0,
-                      });
-                    }}
-                  >
-                    <Plus className="size-3" /> Add point
-                  </button>
-                </ListPanel>
-              </div>
+              <PolylineWaypointList
+                appendPolylinePoint={appendPolylinePoint}
+                finishBatch={finishBatch}
+                insertPolylinePoint={insertPolylinePoint}
+                removePolylinePoint={removePolylinePoint}
+                setHoveredWaypoint={setHoveredWaypoint}
+                shape={shape}
+                startBatch={startBatch}
+                updatePolylinePoint={updatePolylinePoint}
+              />
             </Section>
           )}
         </div>

@@ -22,42 +22,35 @@ Labels used below:
 
 ## Current Priority
 
-The immediate priority is to close the current account/ownership release cleanly and keep the next research track focused.
-
-- [x] Velocidrone export compatibility research (`Research`)
-      The core compatibility question is now answered: TrackDraw can generate an experimental `.trk` export that imports into Velocidrone.
-- [ ] Velocidrone experimental export follow-up (`No account required`)
-      The remaining work is no longer basic feasibility research, but stabilizing the current export into a dependable best-effort workflow.
-  - [x] First experimental `.trk` export
-        Ship the first importable Velocidrone `.trk` export from TrackDraw.
-  - [x] First object mapping slice
-        Export the core track items into a usable first-pass Velocidrone layout with best-effort prefab mapping.
-  - [x] Experimental product framing
-        Ship the export as an explicitly experimental workflow in the UI and product messaging.
+- [ ] Velocidrone experimental export stabilization (`No account required`)
+      The experimental `.trk` export now ships with best-effort prefab mapping, a centralized orientation model, and 2D/3D editor cues. The remaining work is validating the export across more layouts before treating it as a supported workflow.
   - [ ] Stabilize the experimental `.trk` export
-        Validate the current export on more layouts before treating it as a supported workflow. A centralized orientation layer and first editor cues now exist, but runtime validation is still ongoing.
-  - [x] Gate front/back orientation model
-        Centralize front-facing rules so export, 2D guides, and 3D guides use the same per-shape orientation mapping.
-  - [x] Clear 2D front/back affordance
-        Add a first-pass 2D front indicator by anchoring the `Front` cue to the rotation guide instead of the obstacle itself.
-  - [x] Faster 3D orientation validation
-        Add a first-pass 3D orientation guide pass so rotation handles follow the same central orientation mapping as the exporter.
+        Validate the current export on more layouts and resolve any remaining prefab mapping or orientation edge cases.
 
-- [ ] Accounts and cross-device project evaluation (`Research`)
-      Better Auth, magic-link sign-in, profile management, and account entry points are now in place. The next decision is how far account-backed continuity should go without turning TrackDraw into an auth-first product.
-      See also: `docs/pva/accounts-project-sync-pva.md`
-  - [x] Passkey sign-in follow-up
-        Add passkeys as a follow-up to magic-link sign-in once the current account model feels stable.
-    - [x] Passkey sign-in on the login screen
-          Add passkey sign-in to the main login flow without replacing magic links.
-    - [x] Passkey enrollment for existing accounts
-          Let signed-in users add a passkey from account settings.
-    - [x] Passkey management in account settings
-          Support review, rename, and remove flows for registered passkeys.
-    - [x] Fallback and recovery UX
-          Keep magic link as the fallback and handle unsupported browsers and failed prompts cleanly.
-    - [ ] Cross-device and mobile validation
-          Validate the flow across practical desktop and mobile scenarios.
+- [ ] Map and field overlay (`No account required`)
+      Support venue plans, field maps, or imagery behind the editor canvas.
+
+## Engineering Foundation
+
+- [ ] Test infrastructure
+      Introduce Vitest as the baseline test runner and establish the first test coverage for core business logic and export paths.
+  - [ ] Vitest setup and CI integration
+        Add Vitest to the project and wire it into the CI pipeline so tests run on every pull request.
+  - [ ] Unit tests for store and transforms
+        Cover the core Zustand store actions and geometry/transform utilities.
+  - [ ] Unit tests for export logic
+        Add unit coverage for JSON, Race Pack, and Velocidrone export logic where that can run without a browser.
+  - [ ] Component tests for critical editor paths
+        Add focused component tests for the most fragile editor interactions.
+
+- [x] File structure and module boundary pass
+      Tightened folder ownership and internal API surfaces across the editor store, canvas interaction layer, inspector, editor shell, and mobile editor composition. This first structural pass is complete; follow-up cleanup can now happen incrementally as new features land instead of through one large refactor.
+  - [x] Audit current module boundaries
+        Identified the highest-value boundary problems across the editor store, canvas interactions, inspector, and editor shell, then used that audit to drive the first extraction pass.
+  - [x] Remaining large-file splits
+        Break up any remaining oversized files identified in the audit, especially where editor composition and mobile/desktop orchestration still live together.
+  - [x] Reduce cross-module coupling in editor state
+        Moved shared editor-store state shapes into dedicated types, centralized transient/session reset profiles, and reduced duplicated store wiring so state changes stay more local to the editor boundary.
 
 ## Follow-up
 
@@ -79,6 +72,10 @@ The immediate priority is to close the current account/ownership release cleanly
 
 - [ ] Race-day communication and briefing (`No account required`)
       The first race-day handoff release is shipped. Further work here is follow-up.
+  - [ ] Shared view QR code in Race Pack
+        Embed a QR code linking to the published shared view in the Race Pack PDF, so pilots can scan directly from a printed or on-screen briefing.
+  - [ ] Timing gate markers
+        Let specific gates be marked as timing points so race directors can identify start, finish, and split gates clearly in the layout and Race Pack.
   - [ ] Race director page in Race Pack
         Add a race-director-oriented page to the Race Pack.
     - [ ] Race-day ops elements around the existing start area
@@ -112,8 +109,8 @@ The immediate priority is to close the current account/ownership release cleanly
   - [ ] Route rhythm cues
         Add lightweight route rhythm cues.
 
-- [ ] Map and field overlay (`No account required`)
-      Support venue plans, field maps, or imagery behind the editor canvas.
+- [ ] Competition rule validation (`Research`)
+      Validate a layout against known rule sets such as FAI or MultiGP — minimum gate sizes, minimum obstacle distances, mandatory gate types. Useful for formal competition organizers.
 
 - [ ] Lap simulator (`Research`)
       Estimate route timing and flow after the lighter analysis layers prove useful.
@@ -149,6 +146,46 @@ The immediate priority is to close the current account/ownership release cleanly
         Clarify browse, insert, duplicate, and fork behavior.
   - [ ] Relationship to starter layouts
         Keep templates distinct from starter layouts, project duplication, and saved projects.
+
+## v1.3.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.3.0</summary>
+
+- [x] Velocidrone export compatibility research (`Research`)
+      The core compatibility question is answered: TrackDraw can generate an experimental `.trk` export that imports into Velocidrone.
+
+- [x] Velocidrone experimental export first pass (`No account required`)
+      Ship the first importable Velocidrone `.trk` export with best-effort prefab mapping, a centralized orientation model, and first-pass 2D/3D editor cues.
+  - [x] First experimental `.trk` export
+        Ship the first importable Velocidrone `.trk` export from TrackDraw.
+  - [x] First object mapping slice
+        Export the core track items into a usable first-pass Velocidrone layout with best-effort prefab mapping.
+  - [x] Experimental product framing
+        Ship the export as an explicitly experimental workflow in the UI and product messaging.
+  - [x] Gate front/back orientation model
+        Centralize front-facing rules so export, 2D guides, and 3D guides use the same per-shape orientation mapping.
+  - [x] Clear 2D front/back affordance
+        Add a first-pass 2D front indicator by anchoring the `Front` cue to the rotation guide instead of the obstacle itself.
+  - [x] Faster 3D orientation validation
+        Add a first-pass 3D orientation guide pass so rotation handles follow the same central orientation mapping as the exporter.
+
+- [x] Accounts and cross-device project evaluation (`Research`)
+      Better Auth, magic-link sign-in, profile management, passkeys, and account entry points are now in place. The account model is established and validated across devices.
+  - [x] Passkey sign-in
+        Add passkeys as a follow-up to magic-link sign-in once the current account model feels stable.
+    - [x] Passkey sign-in on the login screen
+          Add passkey sign-in to the main login flow without replacing magic links.
+    - [x] Passkey enrollment for existing accounts
+          Let signed-in users add a passkey from account settings.
+    - [x] Passkey management in account settings
+          Support review, rename, and remove flows for registered passkeys.
+    - [x] Fallback and recovery UX
+          Keep magic link as the fallback and handle unsupported browsers and failed prompts cleanly.
+    - [x] Cross-device and mobile validation
+          Validated the passkey and account flow across practical desktop and mobile scenarios.
+
+</details>
 
 ## v1.2.0 Archive
 

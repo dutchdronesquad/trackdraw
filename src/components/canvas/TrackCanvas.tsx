@@ -20,7 +20,7 @@ import {
   mergeClientRects,
   type CursorState,
   type RectLike,
-} from "@/components/canvas/shared";
+} from "@/lib/canvas/shared";
 import { useTrackCanvasInteractions } from "@/components/canvas/useTrackCanvasInteractions";
 import {
   FieldOverlayContent,

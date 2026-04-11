@@ -8,7 +8,7 @@ import {
   clipboard,
   isTypingInInput,
   type DraftPoint,
-} from "@/components/canvas/shared";
+} from "@/lib/canvas/shared";
 
 interface TrackCanvasShortcutsParams {
   activeTool: EditorTool;

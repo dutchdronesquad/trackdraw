@@ -10,7 +10,7 @@ import {
   type ForwardRefExoticComponent,
   type RefAttributes,
 } from "react";
-import { EditorMobilePanels } from "@/components/editor/EditorMobilePanels";
+import { Panels as EditorMobilePanels } from "@/components/editor/mobile/Panels";
 import { LayoutPresetPicker } from "@/components/editor/LayoutPresetPicker";
 import Header from "./Header";
 import Inspector from "@/components/inspector/Inspector";
@@ -38,15 +38,11 @@ import type {
   TrackPreview3DHandle,
   TrackPreview3DProps,
 } from "@/components/canvas/TrackPreview3D";
+import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
 import { createDefaultDesign } from "@/lib/track/design";
-import { shapeKindLabels, type EditorTool } from "@/lib/editor-tools";
+import { type EditorTool } from "@/lib/editor-tools";
 import { loadProject } from "@/lib/projects";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
-import {
-  getShapeGroupId,
-  getShapeGroupName,
-  selectionHasGroupedShapes,
-} from "@/lib/track/shape-groups";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -150,58 +146,28 @@ export default function EditorShell({
     (state) => state.transient.segmentSelection
   );
   const vertexSelection = useEditor((state) => state.transient.vertexSelection);
-  const singleSelectedShape =
-    selection.length === 1 ? (shapeById[selection[0]] ?? null) : null;
-  const selectedShapes = selection.map((id) => shapeById[id]).filter(Boolean);
-  const canUngroupSelection = selectionHasGroupedShapes(selectedShapes);
-  const selectedGroupNames = Array.from(
-    new Set(
-      selectedShapes
-        .map((shape) => {
-          const groupId = getShapeGroupId(shape);
-          return groupId ? (getShapeGroupName(shape) ?? "") : null;
-        })
-        .filter((value): value is string => value !== null)
-    )
-  );
-  const selectedGroupIds = new Set(
-    selectedShapes
-      .map((shape) => getShapeGroupId(shape))
-      .filter((value): value is string => Boolean(value))
-  );
-  const selectedGroupName =
-    selectedGroupIds.size === 1 ? (selectedGroupNames[0] ?? "") : null;
-  const singleSelectedShapeLabel = singleSelectedShape
-    ? shapeKindLabels[singleSelectedShape.kind]
-    : null;
-  const selectedPolylineSegment =
-    singleSelectedShape?.kind === "polyline" &&
-    segmentSelection?.shapeId === singleSelectedShape.id
-      ? segmentSelection
-      : null;
-  const selectedPolylineVertex =
-    singleSelectedShape?.kind === "polyline" &&
-    vertexSelection?.shapeId === singleSelectedShape.id
-      ? vertexSelection
-      : null;
-  const canAddSelectedPolylineWaypoint = Boolean(
-    selectedPolylineSegment && !singleSelectedShape?.locked
-  );
-  const canDeleteSelectedPolylineWaypoint = Boolean(
-    selectedPolylineVertex && !singleSelectedShape?.locked
-  );
-  const mobilePrecisionStep = Math.min(design.field.gridStep, 0.1);
   const activePreset = getLayoutPresetById(activePresetId);
-  const activePresetLabel = activePreset?.name ?? null;
-  const mobilePrecisionStepLabel = `${mobilePrecisionStep.toFixed(
-    mobilePrecisionStep < 0.1 ? 2 : 1
-  )} m`;
-  const singleSelectionCanRotate = Boolean(
-    singleSelectedShape &&
-    singleSelectedShape.kind !== "polyline" &&
-    singleSelectedShape.kind !== "cone" &&
-    !singleSelectedShape.locked
-  );
+  const {
+    activePresetLabel,
+    canAddSelectedPolylineWaypoint,
+    canDeleteSelectedPolylineWaypoint,
+    canUngroupSelection,
+    mobilePrecisionStep,
+    mobilePrecisionStepLabel,
+    selectedGroupName,
+    selectedPolylineSegment,
+    selectedPolylineVertex,
+    singleSelectedShape,
+    singleSelectedShapeLabel,
+    singleSelectionCanRotate,
+  } = getEditorShellSelectionState({
+    activePresetName: activePreset?.name ?? null,
+    designGridStep: design.field.gridStep,
+    segmentSelection,
+    selection,
+    shapeById,
+    vertexSelection,
+  });
   const isMobile = useIsMobile();
   const { data: authSession } = authClient.useSession();
   const authUser = authSession?.user ?? null;
