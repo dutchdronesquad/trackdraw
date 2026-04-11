@@ -23,7 +23,6 @@ import {
   Trash2,
   Unlock,
   Undo2,
-  X,
 } from "lucide-react";
 import Inspector from "@/components/inspector/Inspector";
 import { MultiSelectOverlay } from "@/components/editor/mobile/MultiSelectOverlay";
