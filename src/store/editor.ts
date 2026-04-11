@@ -502,7 +502,7 @@ export const useEditor = create<EditorState>()(
 
         set((draft) => {
           const shape = getDesignShapeById(draft.design, id);
-          if (!closePolyline(shape)) return;
+          if (!closePolyline(shape ?? undefined)) return;
           draft.selection = [id];
           draft.design.updatedAt = nowIso();
           closed = true;

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeBootstrap from "@/components/ThemeBootstrap";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,17 +24,6 @@ import {
   THEME_COOKIE,
   type ResolvedTheme,
 } from "@/lib/theme";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -119,9 +107,7 @@ export default async function RootLayout({
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
-      >
+      <body className="font-sans antialiased">
         <ThemeBootstrap />
         <TooltipProvider delay={500}>{children}</TooltipProvider>
         <ThemedToaster />

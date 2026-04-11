@@ -3,6 +3,8 @@ import { px2m } from "@/lib/track/units";
 import { MIN_MARQUEE_SIZE, rectsIntersect } from "@/lib/canvas/shared";
 import type { CursorState, DraftPoint } from "@/lib/canvas/shared";
 import type { Shape } from "@/lib/types";
+import type { Group as KonvaGroup } from "konva/lib/Group";
+import type { Stage as KonvaStage } from "konva/lib/Stage";
 
 export function buildSnapIndex(shapes: Shape[], snapCellSize: number) {
   const index = new Map<string, Shape[]>();
@@ -302,18 +304,8 @@ export function getTouchInteractionMode(options: {
 
 export function getSelectedIdsInMarquee(options: {
   marqueeRect: { x: number; y: number; width: number; height: number };
-  shapeRefs: Record<
-    string,
-    {
-      getClientRect: (options: { relativeTo: unknown }) => {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-      };
-    } | null
-  >;
-  stage: unknown;
+  shapeRefs: Record<string, KonvaGroup | null>;
+  stage: KonvaStage;
 }) {
   const { marqueeRect, shapeRefs, stage } = options;
   if (
