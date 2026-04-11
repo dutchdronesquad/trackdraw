@@ -1775,14 +1775,15 @@ export function DroneCamera({
   }, [camera]);
 
   useEffect(() => {
-    if (!(camera instanceof THREE.PerspectiveCamera)) return;
-    const previousFov = camera.fov;
-    camera.fov = FPV_CAMERA_FOV;
-    camera.updateProjectionMatrix();
+    const perspectiveCamera = cameraRef.current;
+    if (!(perspectiveCamera instanceof THREE.PerspectiveCamera)) return;
+    const previousFov = perspectiveCamera.fov;
+    perspectiveCamera.fov = FPV_CAMERA_FOV;
+    perspectiveCamera.updateProjectionMatrix();
 
     return () => {
-      camera.fov = previousFov;
-      camera.updateProjectionMatrix();
+      perspectiveCamera.fov = previousFov;
+      perspectiveCamera.updateProjectionMatrix();
     };
   }, [camera]);
 
