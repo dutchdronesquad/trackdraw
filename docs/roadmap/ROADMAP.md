@@ -284,12 +284,13 @@ Included:
 - Clearer "Open Studio" path from shared links back into editing
 - Native and copy-link sharing improvements
 - JSON project export/import for reusable backups
-- Theme-aware PNG/SVG export, PDF export, and 3D render capture
+- Theme-aware PNG/SVG export, PDF export, 3D render capture, and cinematic FPV WebM export
+- Background progress handling and explicit theme selection for cinematic FPV export
 - Ongoing local persistence for in-browser work
 
 Why it matters:
 
-- TrackDraw now supports both quick sharing and reliable project reuse
+- TrackDraw now supports both quick sharing and reliable project reuse, including a first motion-based handoff path
 - The next roadmap step should be better project structure, not basic file survival
 
 ### Starter Flows And Project Reset First Pass

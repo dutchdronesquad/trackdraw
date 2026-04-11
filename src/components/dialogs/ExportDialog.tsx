@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -8,6 +8,10 @@ import { useEditor } from "@/store/editor";
 import { exportSvg } from "@/lib/export/exportSvg";
 import { exportPng } from "@/lib/export/exportPng";
 import { exportVelocidroneTrk } from "@/lib/export/exportVelocidroneTrk";
+import type {
+  FlythroughProgress,
+  FlythroughTheme,
+} from "@/lib/export/exportFlythrough";
 import { cn } from "@/lib/utils";
 import type { TrackCanvasHandle } from "@/components/canvas/TrackCanvas";
 import { ArrowRight, Download, Loader2, Moon, Sun } from "lucide-react";
@@ -24,7 +28,38 @@ export interface ExportDialogProps {
   onRequest3DView?: () => void;
 }
 
-type Theme = "dark" | "light";
+type Theme = FlythroughTheme;
+
+function formatDuration(seconds: number) {
+  const roundedSeconds = Math.max(0, Math.ceil(seconds));
+  const hours = Math.floor(roundedSeconds / 3600);
+  const minutes = Math.floor((roundedSeconds % 3600) / 60);
+  const secs = roundedSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  }
+
+  return `${minutes}:${String(secs).padStart(2, "0")}`;
+}
+
+function getFlythroughStatusText(
+  progress: FlythroughProgress,
+  startedAt: number | null
+) {
+  const percent = Math.round(progress.progress * 100);
+  if (progress.progress <= 0.01 || startedAt === null) {
+    return `${percent}%`;
+  }
+
+  const elapsedSeconds = (Date.now() - startedAt) / 1000;
+  const remainingSeconds = Math.max(
+    0,
+    (elapsedSeconds / progress.progress) * (1 - progress.progress)
+  );
+
+  return `${percent}% - ${formatDuration(remainingSeconds)} left`;
+}
 
 function DesktopFormatCard({
   ext,
@@ -183,6 +218,11 @@ export default function ExportDialog({
   const currentTheme = useTheme();
   const isMobile = useIsMobile();
   const [busy, setBusy] = useState<string | null>(null);
+  const [webmProgress, setWebmProgress] = useState<FlythroughProgress | null>(
+    null
+  );
+  const webmStartTimeRef = useRef<number | null>(null);
+  const webmToastIdRef = useRef<string | number | null>(null);
   const [exportTheme, setExportTheme] = useState<Theme>("dark");
   const [includeObstacleNumbers, setIncludeObstacleNumbers] = useState(true);
   const [filename, setFilename] = useState("");
@@ -200,8 +240,19 @@ export default function ExportDialog({
     return [baseName, view, theme].filter(Boolean).join("_");
   };
 
-  const run = async <T,>(id: string, fn: () => T | Promise<T>) => {
+  const run = async <T,>(
+    id: string,
+    fn: () => T | Promise<T>,
+    options?: {
+      closeOnStart?: boolean;
+      successMessage?: string;
+      toastId?: string | number;
+    }
+  ) => {
     setBusy(id);
+    if (options?.closeOnStart) {
+      onOpenChange(false);
+    }
     try {
       const result = await fn();
       const warningText =
@@ -212,11 +263,22 @@ export default function ExportDialog({
           ? (result as { warnings: string[] }).warnings.join(" ")
           : "";
 
-      toast.success(warningText ? `Exported. ${warningText}` : "Exported");
-      onOpenChange(false);
+      toast.success(
+        warningText
+          ? `${options?.successMessage ?? "Exported"}. ${warningText}`
+          : (options?.successMessage ?? "Exported"),
+        options?.toastId !== undefined ? { id: options.toastId } : undefined
+      );
+      if (!options?.closeOnStart) {
+        onOpenChange(false);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      toast.error(`Export failed: ${message}`);
+      if (options?.toastId !== undefined) {
+        toast.error(`Export failed: ${message}`, { id: options.toastId });
+      } else {
+        toast.error(`Export failed: ${message}`);
+      }
     } finally {
       setBusy(null);
     }
@@ -396,7 +458,7 @@ export default function ExportDialog({
         <p className="text-muted-foreground mb-4 text-[11px]">
           Save your work or fly the track in a simulator.
         </p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
             ext="PNG"
             label="3D Render"
@@ -423,6 +485,61 @@ export default function ExportDialog({
                 })}.png`;
                 a.click();
               })
+            }
+          />
+          <DesktopFormatCard
+            ext="WebM"
+            label="Cinematic FPV"
+            color="bg-violet-500/15 text-violet-400"
+            description="Fly-through video of your track. One full loop, ready to share."
+            busy={busy === "webm"}
+            onExport={() =>
+              run(
+                "webm",
+                async () => {
+                  const toastId =
+                    webmToastIdRef.current ?? "webm-flythrough-export";
+                  webmToastIdRef.current = toastId;
+                  setWebmProgress(null);
+                  webmStartTimeRef.current = Date.now();
+                  toast.loading(
+                    "Cinematic FPV is rendering in the background…",
+                    {
+                      id: toastId,
+                    }
+                  );
+                  const { exportFlythrough } =
+                    await import("@/lib/export/exportFlythrough");
+                  try {
+                    await exportFlythrough(
+                      design,
+                      `${baseName}_flythrough.webm`,
+                      exportTheme,
+                      (progress) => {
+                        setWebmProgress(progress);
+                        toast.loading(
+                          `Rendering cinematic FPV… ${getFlythroughStatusText(
+                            progress,
+                            webmStartTimeRef.current
+                          )}`,
+                          {
+                            id: toastId,
+                          }
+                        );
+                      }
+                    );
+                  } finally {
+                    setWebmProgress(null);
+                    webmStartTimeRef.current = null;
+                    webmToastIdRef.current = null;
+                  }
+                },
+                {
+                  closeOnStart: true,
+                  successMessage: "Cinematic FPV export ready",
+                  toastId: "webm-flythrough-export",
+                }
+              )
             }
           />
           <DesktopFormatCard
@@ -456,6 +573,28 @@ export default function ExportDialog({
             }
           />
         </div>
+        {webmProgress !== null && (
+          <div className="mt-3 space-y-1.5">
+            <div className="text-muted-foreground flex justify-between text-[10px]">
+              <span>
+                Rendering fly-through… video{" "}
+                {formatDuration(webmProgress.videoDurationSeconds)}
+              </span>
+              <span>
+                {getFlythroughStatusText(
+                  webmProgress,
+                  webmStartTimeRef.current
+                )}
+              </span>
+            </div>
+            <div className="bg-border/30 h-1 w-full overflow-hidden rounded-full">
+              <div
+                className="h-full rounded-full bg-violet-500 transition-all duration-100"
+                style={{ width: `${webmProgress.progress * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -557,6 +696,62 @@ export default function ExportDialog({
                       a.download = `${safeName({ view: "3d", theme: currentTheme })}.png`;
                       a.click();
                     })
+            }
+          />
+          <MobileFormatRow
+            key="webm"
+            ext="WebM"
+            label="Cinematic FPV"
+            color="bg-violet-500/15 text-violet-400"
+            description="Fly-through video. One full loop."
+            isBusy={busy === "webm"}
+            onAction={() =>
+              run(
+                "webm",
+                async () => {
+                  const toastId =
+                    webmToastIdRef.current ?? "webm-flythrough-export";
+                  webmToastIdRef.current = toastId;
+                  setWebmProgress(null);
+                  webmStartTimeRef.current = Date.now();
+                  toast.loading(
+                    "Cinematic FPV is rendering in the background…",
+                    {
+                      id: toastId,
+                    }
+                  );
+                  const { exportFlythrough } =
+                    await import("@/lib/export/exportFlythrough");
+                  try {
+                    await exportFlythrough(
+                      design,
+                      `${baseName}_flythrough.webm`,
+                      exportTheme,
+                      (progress) => {
+                        setWebmProgress(progress);
+                        toast.loading(
+                          `Rendering cinematic FPV… ${getFlythroughStatusText(
+                            progress,
+                            webmStartTimeRef.current
+                          )}`,
+                          {
+                            id: toastId,
+                          }
+                        );
+                      }
+                    );
+                  } finally {
+                    setWebmProgress(null);
+                    webmStartTimeRef.current = null;
+                    webmToastIdRef.current = null;
+                  }
+                },
+                {
+                  closeOnStart: true,
+                  successMessage: "Cinematic FPV export ready",
+                  toastId: "webm-flythrough-export",
+                }
+              )
             }
           />
           <MobileFormatRow
@@ -666,10 +861,10 @@ export default function ExportDialog({
                     setIncludeObstacleNumbers((current) => !current)
                   }
                   className={cn(
-                    "flex h-5 w-8 shrink-0 items-center rounded-full p-0.5 transition-colors",
+                    "flex h-6 w-10 shrink-0 items-center rounded-full p-0.5 transition-colors",
                     includeObstacleNumbers
-                      ? "bg-foreground/80 justify-end"
-                      : "bg-border/70 justify-start"
+                      ? "bg-foreground/90 justify-end"
+                      : "bg-border/80 justify-start"
                   )}
                   aria-pressed={includeObstacleNumbers}
                   aria-label={
@@ -678,12 +873,7 @@ export default function ExportDialog({
                       : "Enable route numbers"
                   }
                 >
-                  <span
-                    className={cn(
-                      "bg-background block size-4 rounded-full shadow-xs transition-transform duration-150",
-                      includeObstacleNumbers ? "translate-x-3" : "translate-x-0"
-                    )}
-                  />
+                  <span className="bg-background block size-5 rounded-full shadow-xs" />
                 </button>
               </div>
             </div>
