@@ -87,6 +87,13 @@ Labels used below:
     - [ ] Race director page layout
           Turn that metadata into a dedicated Race Pack page.
 
+- [x] Cinematic FPV export first pass (`No account required`)
+      Shipped a share-ready cinematic FPV WebM export with theme-aware controls, stronger FPV camera motion, and background progress handling.
+  - [x] FPV camera polish first pass
+        Improved the fly-through camera feel so preview and export both read more like FPV flight instead of a neutral path rail.
+  - [x] Background export handling first pass
+        Moved the export into a background-friendly flow with clearer progress and time-remaining feedback.
+
 - [ ] Build mode / setup sequence (`No account required`)
       Turn a finished layout into a dedicated build/setup surface instead of extending the Race Pack indefinitely.
   - [ ] Dedicated build-mode view
@@ -384,3 +391,7 @@ Labels used below:
         Continue tightening folder ownership and splitting broad components and modules where internal navigation and safe iteration are still harder than they should be.
 
 </details>
+
+---
+
+_Last updated: 11 April 2026_

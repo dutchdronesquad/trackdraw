@@ -34,6 +34,7 @@
     "konva": "^10.0.2",
     "lucide-react": "^1.0.0",
     "lz-string": "^1.5.0",
+    "mediabunny": "^1.40.1",
     "nanoid": "^5.1.6",
     "next": "^16.1.0",
     "postgres": "^3.4.7",

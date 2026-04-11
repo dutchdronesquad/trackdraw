@@ -22,6 +22,12 @@ import {
   getPolylineCurve3Derived,
   getPolylinePreview3DPoints,
 } from "@/lib/track/polyline-derived-3d";
+import {
+  createCurveSampler,
+  FPV_CAMERA_FOV,
+  getFpvCameraPose,
+  getInitialFpvCameraPose,
+} from "@/lib/track/fpvCamera";
 import { getPreviewRotationGuideDegrees } from "@/lib/track/orientation";
 import type {
   ConeShape,
@@ -1769,6 +1775,19 @@ export function DroneCamera({
   }, [camera]);
 
   useEffect(() => {
+    const perspectiveCamera = cameraRef.current;
+    if (!(perspectiveCamera instanceof THREE.PerspectiveCamera)) return;
+    const previousFov = perspectiveCamera.fov;
+    perspectiveCamera.fov = FPV_CAMERA_FOV;
+    perspectiveCamera.updateProjectionMatrix();
+
+    return () => {
+      perspectiveCamera.fov = previousFov;
+      perspectiveCamera.updateProjectionMatrix();
+    };
+  }, [camera]);
+
+  useEffect(() => {
     bankingEnabledRef.current = bankingEnabled;
   }, [bankingEnabled]);
 
@@ -1793,63 +1812,41 @@ export function DroneCamera({
     };
   }, [shapes]);
 
+  const sampleFlightPoint = useMemo(
+    () =>
+      flightPath
+        ? createCurveSampler(flightPath.curve, flightPath.closed, "point")
+        : null,
+    [flightPath]
+  );
+
   const applyCameraPose = useCallback(
     (t: number) => {
-      if (!flightPath) return;
-
-      const samplePoint = (offset: number) => {
-        const nextT = t + offset;
-
-        if (flightPath.closed) {
-          const wrapped = ((nextT % 1) + 1) % 1;
-          return flightPath.curve.getPoint(wrapped);
-        }
-
-        return flightPath.curve.getPoint(
-          THREE.MathUtils.clamp(nextT, 0, 0.9999)
-        );
-      };
-
-      const pos = samplePoint(0);
-      const lookTarget = samplePoint(0.02);
-      const behind = samplePoint(-0.015);
-      const ahead = samplePoint(0.015);
-      const incoming = ahead.clone().sub(behind).setY(0);
-      const outgoing = lookTarget.clone().sub(pos).setY(0);
-
-      let bankTarget = 0;
-      if (incoming.lengthSq() > 1e-6 && outgoing.lengthSq() > 1e-6) {
-        incoming.normalize();
-        outgoing.normalize();
-        const signedTurn = incoming.clone().cross(outgoing).y;
-        bankTarget = THREE.MathUtils.clamp(signedTurn * 1.1, -0.34, 0.34);
-      }
-
-      const resolvedBankTarget = bankingEnabledRef.current ? bankTarget : 0;
-      bankRef.current = THREE.MathUtils.lerp(
-        bankRef.current,
-        resolvedBankTarget,
-        0.14
+      if (!flightPath || !sampleFlightPoint) return;
+      const pose = getFpvCameraPose(
+        sampleFlightPoint,
+        t,
+        bankingEnabledRef.current ? bankRef.current : 0
       );
+      bankRef.current = bankingEnabledRef.current ? pose.bankAngle : 0;
 
-      camera.position.copy(pos);
+      camera.position.copy(pose.position);
       camera.up.copy(worldUpRef.current);
-      camera.lookAt(lookTarget);
+      camera.lookAt(pose.lookTarget);
       camera.rotateZ(bankRef.current);
     },
-    [camera, flightPath]
+    [camera, flightPath, sampleFlightPoint]
   );
 
   useEffect(() => {
-    if (!flightPath) return;
+    if (!flightPath || !sampleFlightPoint) return;
     tRef.current = 0;
     bankRef.current = 0;
-    const start = flightPath.curve.getPoint(0);
-    const ahead = flightPath.curve.getPoint(0.02);
-    cameraRef.current.position.copy(start);
+    const initialPose = getInitialFpvCameraPose(sampleFlightPoint);
+    cameraRef.current.position.copy(initialPose.position);
     cameraRef.current.up.copy(worldUpRef.current);
-    cameraRef.current.lookAt(ahead);
-  }, [flightPath]);
+    cameraRef.current.lookAt(initialPose.lookTarget);
+  }, [flightPath, sampleFlightPoint]);
 
   useFrame((_, delta) => {
     if (!playing || !flightPath) return;

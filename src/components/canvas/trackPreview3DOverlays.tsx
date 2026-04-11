@@ -264,10 +264,10 @@ export function FlyThroughControlsOverlay({
             ? "bg-white/10 text-white/85 hover:bg-white/14"
             : "text-white/45 hover:bg-white/8 hover:text-white/75"
         }`}
-        title="Toggle roll"
+        title="Toggle FPV camera behavior"
         aria-pressed={bankingEnabled}
       >
-        <span>Roll</span>
+        <span>FPV</span>
         <span
           className={`rounded px-1 py-0.5 font-mono text-[9px] ${
             bankingEnabled
