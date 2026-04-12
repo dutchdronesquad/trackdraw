@@ -113,7 +113,9 @@ export interface EditorUiActions {
   setZoom: (zoom: number) => void;
   setPanOffset: (offset: { x: number; y: number }) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
-  setHoveredWaypoint: (waypoint: { shapeId: string; idx: number } | null) => void;
+  setHoveredWaypoint: (
+    waypoint: { shapeId: string; idx: number } | null
+  ) => void;
   setSegmentSelection: (
     value:
       | {

@@ -11,7 +11,9 @@ export function useTrackActions() {
   const insertPolylinePoint = useEditor((state) => state.insertPolylinePoint);
   const removePolylinePoint = useEditor((state) => state.removePolylinePoint);
   const appendPolylinePoint = useEditor((state) => state.appendPolylinePoint);
-  const reversePolylinePoints = useEditor((state) => state.reversePolylinePoints);
+  const reversePolylinePoints = useEditor(
+    (state) => state.reversePolylinePoints
+  );
   const rotateShapes = useEditor((state) => state.rotateShapes);
   const removeShapes = useEditor((state) => state.removeShapes);
   const duplicateShapes = useEditor((state) => state.duplicateShapes);
@@ -89,7 +91,9 @@ export function useUiActions() {
   const setVertexSelection = useEditor((state) => state.setVertexSelection);
   const setDraftPath = useEditor((state) => state.setDraftPath);
   const setDraftForceClosed = useEditor((state) => state.setDraftForceClosed);
-  const setDraftSourceShapeId = useEditor((state) => state.setDraftSourceShapeId);
+  const setDraftSourceShapeId = useEditor(
+    (state) => state.setDraftSourceShapeId
+  );
   const setMarqueeRect = useEditor((state) => state.setMarqueeRect);
   const setRotationSession = useEditor((state) => state.setRotationSession);
   const setGroupDragPreview = useEditor((state) => state.setGroupDragPreview);

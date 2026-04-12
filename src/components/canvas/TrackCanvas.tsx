@@ -159,7 +159,9 @@ const TrackCanvas = memo(
     const vertexSel = useEditor((state) => state.ui.vertexSelection);
     const draftPath = useEditor((state) => state.ui.draftPath);
     const draftForceClosed = useEditor((state) => state.ui.draftForceClosed);
-    const draftSourceShapeId = useEditor((state) => state.ui.draftSourceShapeId);
+    const draftSourceShapeId = useEditor(
+      (state) => state.ui.draftSourceShapeId
+    );
     const marqueeRect = useEditor((state) => state.ui.marqueeRect);
     const rotationSession = useEditor((state) => state.ui.rotationSession);
     const groupDragPreview = useEditor((state) => state.ui.groupDragPreview);

@@ -110,10 +110,10 @@ function removeKey(key: string): void {
 export function hasMeaningfulProjectContent(design: TrackDesign): boolean {
   return Boolean(
     design.shapeOrder.length > 0 ||
-      design.title.trim() ||
-      (design.description ?? "").trim() ||
-      (design.tags ?? []).length > 0 ||
-      (design.authorName ?? "").trim()
+    design.title.trim() ||
+    (design.description ?? "").trim() ||
+    (design.tags ?? []).length > 0 ||
+    (design.authorName ?? "").trim()
   );
 }
 

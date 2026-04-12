@@ -101,8 +101,13 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     usePerfMetric("render:TrackPreview3D");
     const field = useEditor((state) => state.track.design.field);
     const selection = useEditor((state) => state.session.selection);
-    const { setSelection, pauseHistory, resumeHistory, beginInteraction, endInteraction } =
-      useSessionActions();
+    const {
+      setSelection,
+      pauseHistory,
+      resumeHistory,
+      beginInteraction,
+      endInteraction,
+    } = useSessionActions();
     const { setPolylinePoints, updateShape } = useTrackActions();
     const { setLiveShapePatch, clearLiveShapePatch } = useUiActions();
     const shapes = useEditor(selectDesignShapes);

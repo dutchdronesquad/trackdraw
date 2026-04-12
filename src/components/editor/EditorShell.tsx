@@ -136,8 +136,12 @@ export default function EditorShell({
     setShapesLocked,
     ungroupSelection,
   } = useTrackActions();
-  const { setActiveTool, setActivePresetId, setSegmentSelection, setVertexSelection } =
-    useUiActions();
+  const {
+    setActiveTool,
+    setActivePresetId,
+    setSegmentSelection,
+    setVertexSelection,
+  } = useUiActions();
   const { setSelection } = useSessionActions();
   const historyPaused = useEditor((state) => state.session.historyPaused);
   const interactionSessionDepth = useEditor(
@@ -147,9 +151,7 @@ export default function EditorShell({
   const hasPath = useEditor(selectHasPath);
   const shapeById = useEditor(selectShapeRecordMap);
   const selectionLocked = useEditor(selectSelectionLocked);
-  const segmentSelection = useEditor(
-    (state) => state.ui.segmentSelection
-  );
+  const segmentSelection = useEditor((state) => state.ui.segmentSelection);
   const vertexSelection = useEditor((state) => state.ui.vertexSelection);
   const activePreset = getLayoutPresetById(activePresetId);
   const {

@@ -355,13 +355,13 @@ Checklist:
 
 ### Persistence Hierarchy
 
-| Layer | Role | Updated by |
-| --- | --- | --- |
-| Local draft | Crash-recovery working state for the current device/tab | Any committed track-data change once interaction/history sessions settle |
-| Named local project | Deliberate device-side continuity for reopening a project later | Track-data changes for designs with meaningful project content |
-| Restore point | Earlier snapshot of one local/account project state | Manual snapshot, periodic snapshot, or save-before-replace flows |
-| Account-backed project | Authenticated cross-device continuity and ownership | Explicit sync or autosync after committed track-data changes |
-| Published share | Read-only handoff snapshot | Explicit publish action only |
+| Layer                  | Role                                                            | Updated by                                                               |
+| ---------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Local draft            | Crash-recovery working state for the current device/tab         | Any committed track-data change once interaction/history sessions settle |
+| Named local project    | Deliberate device-side continuity for reopening a project later | Track-data changes for designs with meaningful project content           |
+| Restore point          | Earlier snapshot of one local/account project state             | Manual snapshot, periodic snapshot, or save-before-replace flows         |
+| Account-backed project | Authenticated cross-device continuity and ownership             | Explicit sync or autosync after committed track-data changes             |
+| Published share        | Read-only handoff snapshot                                      | Explicit publish action only                                             |
 
 Autosave trigger rules in the current implementation:
 

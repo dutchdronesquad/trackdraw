@@ -259,7 +259,10 @@ export function useTrackCanvasShortcuts({
       if (key === "Enter" && draftPathRef.current.length >= 2) finalizePath();
 
       if (key === "Backspace" || key === "Delete") {
-        if (draftPathRef.current.length && activeToolRef.current === "polyline") {
+        if (
+          draftPathRef.current.length &&
+          activeToolRef.current === "polyline"
+        ) {
           setDraftPath((previous) =>
             previous.slice(0, Math.max(0, previous.length - 1))
           );
@@ -267,7 +270,8 @@ export function useTrackCanvasShortcuts({
         }
 
         if (effectiveVertexSelRef.current) {
-          const shape = shapeByIdRef.current[effectiveVertexSelRef.current.shapeId];
+          const shape =
+            shapeByIdRef.current[effectiveVertexSelRef.current.shapeId];
           if (shape && isPolylineShape(shape)) {
             removePolylinePoint(shape.id, effectiveVertexSelRef.current.idx);
           }

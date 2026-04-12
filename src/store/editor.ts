@@ -157,7 +157,9 @@ export const useEditor = create<EditorState>()(
             ...shape,
             id: ids[index],
           }));
-          nextShapes.forEach((shape) => addShapeRecord(draft.track.design, shape));
+          nextShapes.forEach((shape) =>
+            addShapeRecord(draft.track.design, shape)
+          );
           touchTrackDesign(draft);
         });
         return ids;
@@ -223,7 +225,9 @@ export const useEditor = create<EditorState>()(
 
       insertPolylinePoint: (id, index, point) =>
         set((draft) => {
-          if (!insertPolylinePoint(draft.track.design.shapeById[id], index, point)) {
+          if (
+            !insertPolylinePoint(draft.track.design.shapeById[id], index, point)
+          ) {
             return;
           }
           draft.ui.segmentSelection = null;
@@ -255,7 +259,11 @@ export const useEditor = create<EditorState>()(
 
       rotateShapes: (ids, delta) =>
         set((draft) => {
-          const changed = rotateShapes(draft.track.design.shapeById, ids, delta);
+          const changed = rotateShapes(
+            draft.track.design.shapeById,
+            ids,
+            delta
+          );
           if (changed) {
             touchTrackDesign(draft);
           }
@@ -280,7 +288,9 @@ export const useEditor = create<EditorState>()(
       duplicateShapes: (ids) =>
         set((draft) => {
           const newShapes = duplicateShapes(draft.track.design, ids);
-          newShapes.forEach((shape) => addShapeRecord(draft.track.design, shape));
+          newShapes.forEach((shape) =>
+            addShapeRecord(draft.track.design, shape)
+          );
           draft.session.selection = newShapes.map((s) => s.id);
           touchTrackDesign(draft);
         }),
@@ -648,7 +658,6 @@ export const useEditor = create<EditorState>()(
           draft.ui = sanitizeEditorUiState(draft.ui);
         });
       },
-
     })),
     {
       partialize: (state) => ({

@@ -120,12 +120,7 @@ export function useEditorProjects({
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [
-    design,
-    historyPaused,
-    interactionSessionDepth,
-    readOnly,
-  ]);
+  }, [design, historyPaused, interactionSessionDepth, readOnly]);
 
   // Periodic restore points — every 5 min if the design changed
   useEffect(() => {
