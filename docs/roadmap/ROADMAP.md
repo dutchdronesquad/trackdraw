@@ -120,24 +120,6 @@ Focus:
 - Keep local-first publish flows simple for unauthenticated use
 - Revisit any replace/regenerate flow only once account ownership is properly defined
 
-#### Comments And Review Mode
-
-Allow feedback to be anchored to obstacles or route sections without requiring live collaboration.
-
-Why later:
-
-- Simple local-first notes are still plausible without accounts
-- But richer review workflows become much clearer once account identity, ownership, and shared project models are better defined
-
-Suggested first slices:
-
-- Pinned notes anchored to a selected obstacle as a local-first first pass
-- Pinned notes anchored to a selected obstacle as an initial local-first version
-- Notes anchored to a route waypoint or path segment without requiring identity first
-- Read-only review mode that surfaces notes clearly without exposing editing tools
-- Richer threaded comments only if simple anchored notes prove useful
-  and an account-backed identity model exists
-
 ### 3. Race-Day Follow-up (`No account required`)
 
 TrackDraw now has a real Race Pack and numbering handoff. The next work here is follow-up, not the main roadmap driver.
@@ -156,7 +138,49 @@ Important boundary:
 - The Race Pack is now the handoff document for briefing, print, and sharing
 - A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
 
-### 4. Backlog And Research Tracks
+### 4. Editor State And Persistence Boundary Pass (`No account required`)
+
+Improve the core editor model so TrackDraw stays easier to reason about, project continuity is clearer, and future review or collaboration work does not require a full editor reset.
+
+Suggested first slices:
+
+- Split persistent document state from transient local UI state such as active tools, hover state, marquee state, and drag previews
+- Introduce clearer action boundaries for meaningful editor changes so testing, analysis hooks, and future sync-related work have better integration points
+- Clarify the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares
+- Make undo and redo more intention-aware so drag, rotate, and route editing sessions produce cleaner history
+
+### 5. AR Mode Evaluation (`Research`)
+
+Evaluate whether TrackDraw should support projecting a full track into a real venue through AR, with section-based preview only as a fallback if full placement is not reliable enough.
+
+Suggested first slices:
+
+- Validate Android WebXR feasibility
+- Identify a practical iOS fallback
+- Test whether full-track placement is useful and accurate enough for real venue-side decisions
+
+### 6. Real-Time Collaboration Evaluation (`Research`)
+
+Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
+
+Suggested first slices:
+
+- Define the sync model and conflict handling approach
+- Decide how local-first editing and offline behavior should interact with collaboration
+- Determine the smallest useful collaboration surface, such as cursors, selections, or presence indicators
+- Re-evaluate only after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
+
+### 7. Published Gallery Evaluation (`Research`)
+
+Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
+
+Suggested first slices:
+
+- Define how a project becomes gallery-visible and what opt-in controls are required
+- Clarify attribution, ownership, and visibility boundaries
+- Determine the minimum viable moderation and discovery model
+
+### 8. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 
@@ -182,6 +206,54 @@ Suggested first slices:
 - Density overlay
 - Suspicious spacing cues
 - Route rhythm cues
+
+#### Track DNA And Layout Analysis (`No account required`)
+
+Turn route and layout analysis into clearer reusable signals that help compare tracks, explain style, and support later recommendation or AI-oriented work.
+
+Suggested first slices:
+
+- Compact flow, speed, technical, or complexity scoring
+- Descriptive track tags such as faster, more technical, or more flowy
+- Follow-up flow analysis that expands beyond current warnings into alignment and rhythm-oriented feedback where it stays actionable
+
+#### Track Challenges Evaluation (`Research`)
+
+Evaluate whether recurring design challenges would create meaningful product value without introducing a heavy moderation, identity, or submission-management burden.
+
+Suggested first slices:
+
+- Define how challenge entries are submitted
+- Decide whether accounts are required from day one
+- Test whether lightweight voting, featured picks, or curation is enough
+
+#### Build Mode / Setup Sequence (`No account required`)
+
+Turn a finished layout into a dedicated build/setup surface instead of continuing to expand the Race Pack, but keep it as a later workflow track rather than a near-term roadmap focus.
+
+Suggested first slices:
+
+- Dedicated build-mode view
+- Map-linked setup steps
+- Grouped build phases and check-off flow
+- Crew and venue assumptions
+
+#### Comments And Review Mode (`Account-backed`)
+
+Allow feedback to be anchored to obstacles or route sections, but keep it as a later follow-up behind the more pressing design, handoff, and collaboration research tracks.
+
+Why later:
+
+- Simple note-taking is plausible, but the more meaningful version depends on identity, ownership, and shared project context
+- Richer review workflows are easier to define once collaboration, gallery, and publishing boundaries are clearer
+
+Suggested first slices:
+
+- Pinned notes anchored to a selected obstacle as a local-first first pass
+- Notes anchored to a route waypoint or path segment without requiring identity first
+- Read-only review mode that surfaces notes clearly without exposing editing tools
+- Richer threaded comments only if simple anchored notes prove useful
+  and an account-backed identity model exists
 
 #### Research Tracks (`Research`)
 
@@ -585,9 +657,9 @@ Support background references such as venue plans, field maps, or imagery.
 
 Estimate route timing and flow once lighter analysis tools have proven useful.
 
-### 15. Real-Time Collaboration
+### 15. Real-Time Collaboration Evaluation
 
-Allow multiple users to work on the same design concurrently.
+Evaluate whether TrackDraw should support shared real-time editing, and define the sync, presence, and conflict model before treating collaboration as a committed product surface.
 
 ## Recommended Sequence
 
@@ -600,8 +672,7 @@ The v1 scope is complete. All items are done: project workflow, share route depr
 3. Race-day communication and briefing
 4. Layout acceleration (obstacle presets, selection grouping, venue templates)
 5. Published share lifecycle controls
-6. Comments and review mode
-7. Velocidrone experimental export follow-up
+6. Velocidrone experimental export follow-up
 
 This sequence keeps the roadmap focused on extending workflow depth rather than plugging product gaps.
 
