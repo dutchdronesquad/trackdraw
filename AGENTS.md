@@ -70,6 +70,7 @@ Update `README.md`, `CONTRIBUTING.md`, or files in `docs/` when behavior, routes
 - Keep contributor setup, commands, runtime notes, and validation guidance in `CONTRIBUTING.md`.
 - Keep longer planning, deployment, and research material in `docs/`.
 - Do not update completed roadmap archive sections just to reflect newly shipped work elsewhere. Treat archived release sections as closed snapshots unless a factual correction is genuinely necessary.
+- For larger refactors, architecture passes, or foundation work documented in `docs/research`, describe the work in explicit phases with a clear start and done state for each phase, plus a short top-level checklist that can be ticked off in order.
 
 When updating `CHANGELOG.md`:
 

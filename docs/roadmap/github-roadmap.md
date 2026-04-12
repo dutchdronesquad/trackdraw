@@ -22,6 +22,13 @@ Labels used below:
 
 ## Current Priority
 
+- [ ] Track DNA and layout analysis (`No account required`)
+      Turn route and layout analysis into clearer reusable signals that help compare tracks, understand style, and surface practical follow-up feedback.
+  - [ ] Track DNA first pass
+        Add compact track character scoring and descriptive tags such as faster, more technical, or more flowy.
+  - [ ] Flow analysis follow-up
+        Extend the current warning layer with clearer flow-break, alignment, and rhythm-oriented feedback where that proves actionable.
+
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The experimental `.trk` export now ships with best-effort prefab mapping, a centralized orientation model, and 2D/3D editor cues. The remaining work is validating the export across more layouts before treating it as a supported workflow.
   - [ ] Stabilize the experimental `.trk` export
@@ -31,6 +38,17 @@ Labels used below:
       Support venue plans, field maps, or imagery behind the editor canvas.
 
 ## Engineering Foundation
+
+- [ ] Editor state and persistence boundary pass (`No account required`)
+      Improve core editor boundaries so TrackDraw stays easier to reason about, autosave and project continuity become clearer, and future collaboration or review work does not require a full reset of the editor model.
+  - [ ] Separate document state from transient UI state
+        Split persistent track data more clearly from local interaction state such as tool mode, hover state, drag previews, and temporary selections.
+  - [ ] Introduce clearer editor action boundaries
+        Move toward more explicit editor actions for meaningful changes so undo, testing, analysis hooks, and future sync-related work all have cleaner integration points.
+  - [ ] Clarify persistence layers
+        Tighten the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares so the user model stays easier to understand.
+  - [ ] Make undo and redo more intention-aware
+        Group meaningful edit sessions more deliberately so history feels cleaner during drag, rotate, and route editing work.
 
 - [ ] Test infrastructure
       Introduce Vitest as the baseline test runner and establish the first test coverage for core business logic and export paths.
@@ -54,19 +72,31 @@ Labels used below:
 
 ## Follow-up
 
-- [ ] Comments and review mode (`Account-backed`)
-      Add anchored feedback without requiring live collaboration first.
-  - [ ] Pinned obstacle notes
-        Add simple notes attached to specific obstacles.
-  - [ ] Route-section notes
-        Let notes attach to route waypoints or path segments.
-  - [ ] Read-only review surface
-        Surface anchored notes clearly in read-only review.
-  - [ ] Threaded comments follow-up
-        Consider richer review threads only if simple notes prove useful.
-
 - [ ] Venue library and constraints (`Account-backed`)
       Support reusable venue records with boundaries, constraints, and venue-specific profiles.
+
+- [ ] AR mode evaluation (`Research`)
+      Evaluate whether TrackDraw should support projecting a full track into a real venue through AR, with smaller section previews only as a fallback if full placement is not reliable enough.
+  - [ ] Platform feasibility
+        Validate a practical Android WebXR path and a separate iOS fallback before committing to product work.
+  - [ ] Full-track placement usefulness
+        Test whether full-track venue projection is accurate and useful enough to help real setup decisions without creating misleading precision.
+
+- [ ] Real-time collaboration evaluation (`Research`)
+      Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justifies the editor complexity.
+  - [ ] Sync model and conflict handling
+        Define how collaborative edits, conflict resolution, and offline/local-first behavior should work together.
+  - [ ] Presence and interaction scope
+        Decide what collaboration should include first, such as cursors, selections, presence, or editor locking cues.
+  - [ ] Re-evaluate after editor boundary improvements
+        Only revisit active collaboration investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too.
+
+- [ ] Published gallery evaluation (`Research`)
+      Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
+  - [ ] Publishing and consent model
+        Decide how a private project becomes gallery-visible and what opt-in, attribution, or ownership controls are required.
+  - [ ] Moderation and discovery model
+        Define how gallery content is filtered, featured, searched, or curated without creating an unmanageable moderation burden.
 
 ## Later Product Follow-up
 
@@ -94,17 +124,6 @@ Labels used below:
   - [x] Background export handling first pass
         Moved the export into a background-friendly flow with clearer progress and time-remaining feedback.
 
-- [ ] Build mode / setup sequence (`No account required`)
-      Turn a finished layout into a dedicated build/setup surface instead of extending the Race Pack indefinitely.
-  - [ ] Dedicated build-mode view
-        Add a dedicated build-mode page or mode.
-  - [ ] Map-linked setup steps
-        Show setup steps with the relevant obstacles highlighted on the map.
-  - [ ] Grouped build phases and check-off flow
-        Organize setup into phases with practical check-off flow.
-  - [ ] Crew and venue assumptions
-        Let setup order and timing adapt to crew size and venue constraints.
-
 ## Backlog And Research
 
 - [ ] Heatmap and flow analysis (`No account required`)
@@ -122,8 +141,32 @@ Labels used below:
 - [ ] Lap simulator (`Research`)
       Estimate route timing and flow after the lighter analysis layers prove useful.
 
-- [ ] Real-time collaboration (`Account-backed`)
-      Allow multiple users to work on the same design concurrently.
+- [ ] Track challenges evaluation (`Research`)
+      Evaluate whether TrackDraw should support recurring design challenges, submissions, and lightweight participation loops without creating a heavy moderation or identity burden.
+  - [ ] Submission and voting model
+        Define how challenge entries, featured picks, or community voting would work if this becomes a real product surface.
+
+- [ ] Build mode / setup sequence (`No account required`)
+      Turn a finished layout into a dedicated build/setup surface instead of extending the Race Pack indefinitely, but keep it as a later workflow track rather than a near-term follow-up.
+  - [ ] Dedicated build-mode view
+        Add a dedicated build-mode page or mode.
+  - [ ] Map-linked setup steps
+        Show setup steps with the relevant obstacles highlighted on the map.
+  - [ ] Grouped build phases and check-off flow
+        Organize setup into phases with practical check-off flow.
+  - [ ] Crew and venue assumptions
+        Let setup order and timing adapt to crew size and venue constraints.
+
+- [ ] Comments and review mode (`Account-backed`)
+      Add anchored feedback around obstacles or route sections, but keep it as a later follow-up behind the more pressing design, handoff, and collaboration research tracks.
+  - [ ] Pinned obstacle notes
+        Add simple notes attached to specific obstacles.
+  - [ ] Route-section notes
+        Let notes attach to route waypoints or path segments.
+  - [ ] Read-only review surface
+        Surface anchored notes clearly in read-only review.
+  - [ ] Threaded comments follow-up
+        Consider richer review threads only if simple notes prove useful.
 
 - [ ] Desktop and mobile wrapper evaluation (`Research`)
       Evaluate whether Electron or Capacitor would materially improve local project handling, native file workflows, or offline resilience.

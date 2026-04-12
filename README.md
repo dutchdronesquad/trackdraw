@@ -53,10 +53,10 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 - 🏁 **Design layouts to scale** - place obstacles on a real-scale canvas with field dimensions that map cleanly to the real world
 - ⚡ **Start and iterate faster** - use obstacle presets, selection grouping, and starter layouts to get from blank canvas to a workable draft quickly
 - 💾 **Manage projects safely** - keep multiple local projects, reopen older layouts, rename or export them, and roll back through restore points and snapshots
-- 🎥 **Review route flow in 3D** - use the live 3D preview, elevation tools, and floating ladder placement controls to check how the layout reads before race day
+- 🎥 **Review route flow in 3D** - use the live 3D preview, elevation tools, floating ladder placement controls, and cinematic FPV fly-through review to check how the layout reads before race day
 - 📋 **Prepare a race-day handoff** - export a dedicated Race Pack PDF with map, numbering, material list, stock status, setup sequence, and initial build guidance
 - 📦 **Check buildability early** - compare the current layout against available obstacle stock before the gear leaves the van
-- 🔗 **Share and export cleanly** - publish a read-only link, manage and revoke published shares from the Projects dialog when signed in, or export PNG, SVG, PDF, 3D screenshots, and JSON project files from the same design
+- 🔗 **Share and export cleanly** - publish a read-only link, manage and revoke published shares from the Projects dialog when signed in, or export PNG, SVG, PDF, cinematic FPV WebM videos, 3D screenshots, and JSON project files from the same design
 - 🔐 **Sign in to keep projects in sync** - use a passkey or email magic link, manage your profile in-app, change your account email safely, and keep account-backed work accessible across devices
 
 ## Experimental
@@ -68,7 +68,7 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 1. **Start from scratch or from a head start** with a blank canvas, a preset, or a starter layout.
 2. **Build the course visually** by placing obstacles, adjusting them in the inspector, and grouping sections that belong together.
 3. **Review how the layout will ride** with the live 3D preview, elevation tools, floating ladder placement, and route-flow checks before race day.
-4. **Turn the design into a handoff** by saving it locally, syncing it to your account, publishing a read-only share link, or exporting the assets you need.
+4. **Turn the design into a handoff** by saving it locally, syncing it to your account, publishing a read-only share link, or exporting the assets you need, including race-day documents and cinematic FPV video.
 
 TrackDraw works without an account. You can create, manage, share, recover, import, and export projects in the browser, while signing in adds continuity across devices.
 
