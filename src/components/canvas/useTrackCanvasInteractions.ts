@@ -7,7 +7,6 @@ import type { Vector2d } from "konva/lib/types";
 import {
   buildCursorState,
   buildSnapIndex,
-  findNearestSnapTarget,
   getPinchCenter,
   getPinchDistance,
   getPinchZoomState,
@@ -23,6 +22,7 @@ import {
   shouldCloseDraftLoop as shouldCloseDraftLoopForPath,
   shouldSkipDraftPoint as shouldSkipDraftPointForPath,
 } from "@/lib/canvas/interaction-helpers";
+import { findNearestSnapTarget } from "@/lib/canvas/snap";
 import { createShapeForTool, type EditorTool } from "@/lib/editor-tools";
 import {
   getLayoutPresetById,
@@ -67,6 +67,7 @@ interface TrackCanvasInteractionsParams {
   onCursorChange?: (pos: { x: number; y: number } | null) => void;
   onSnapChange?: (active: boolean) => void;
   readOnly: boolean;
+  snapEnabled: boolean;
   selection: string[];
   setActiveTool: (tool: EditorTool) => void;
   setCursor: React.Dispatch<React.SetStateAction<CursorState | null>>;
@@ -122,6 +123,7 @@ export function useTrackCanvasInteractions({
   onCursorChange,
   onSnapChange,
   readOnly,
+  snapEnabled,
   selection,
   setActiveTool,
   setCursor,
@@ -177,12 +179,18 @@ export function useTrackCanvasInteractions({
         getNearbySnapCandidates,
         magnetic,
         pointer,
-        snap,
+        snap: snapEnabled && snap,
         snapRadiusMeters,
         stepPx,
       });
     },
-    [designField.ppm, getNearbySnapCandidates, snapRadiusMeters, stepPx]
+    [
+      designField.ppm,
+      getNearbySnapCandidates,
+      snapEnabled,
+      snapRadiusMeters,
+      stepPx,
+    ]
   );
 
   const touchToStagePoint = useCallback((touch: Touch, stage: KonvaStage) => {
@@ -197,11 +205,11 @@ export function useTrackCanvasInteractions({
 
   const findSnapTarget = useCallback(
     (meters: { x: number; y: number }) => {
-      return findNearestSnapTarget(
-        getNearbySnapCandidates(meters),
-        meters,
-        snapRadiusMeters
-      );
+      return findNearestSnapTarget({
+        candidates: getNearbySnapCandidates(meters),
+        pos: meters,
+        snapRadiusMeters,
+      });
     },
     [getNearbySnapCandidates, snapRadiusMeters]
   );
@@ -747,7 +755,7 @@ export function useTrackCanvasInteractions({
       onCursorChange?.(rawMeters);
 
       if (activeTool === "polyline") {
-        const target = findSnapTarget(rawMeters);
+        const target = snapEnabled ? findSnapTarget(rawMeters) : null;
         if ((target?.id ?? null) !== lastSnapTargetIdRef.current) {
           lastSnapTargetIdRef.current = target?.id ?? null;
           setSnapTarget(target);
@@ -773,6 +781,7 @@ export function useTrackCanvasInteractions({
     setCursor,
     setMarqueeRect,
     setSnapTarget,
+    snapEnabled,
     snapTarget,
     stageRef,
     stepPx,

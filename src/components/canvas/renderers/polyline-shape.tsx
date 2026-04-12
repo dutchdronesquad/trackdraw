@@ -26,6 +26,7 @@ export interface PolylineShapeContentProps {
   isSelected: boolean;
   onPathContextMenu?: (segmentIndex: number) => void;
   path: PolylineShape;
+  snapEnabled: boolean;
   selectedSegmentIndex: number | null;
   selectedSegmentPoint: { x: number; y: number } | null;
   resolveWaypointDragPosition: (
@@ -60,6 +61,7 @@ export function PolylineShapeContent({
   isSelected,
   onPathContextMenu,
   path,
+  snapEnabled,
   selectedSegmentIndex,
   selectedSegmentPoint,
   resolveWaypointDragPosition,
@@ -708,11 +710,9 @@ export function PolylineShapeContent({
               client,
               index,
               pointPx: { x, y },
-              snapEnabled: !(
-                event.evt.altKey ||
-                event.evt.metaKey ||
-                event.evt.shiftKey
-              ),
+              snapEnabled:
+                snapEnabled &&
+                !(event.evt.altKey || event.evt.metaKey || event.evt.shiftKey),
               stage,
               touchIdentifier:
                 event.evt instanceof TouchEvent

@@ -1,11 +1,14 @@
 "use client";
 
 import { useEditor } from "@/store/editor";
+import { useUiActions } from "@/store/actions";
 import { selectShapeRecordMap } from "@/store/selectors";
 import VersionTag from "@/components/VersionTag";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
+import { Magnet } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const toolLabel: Record<string, string> = {
   select: "Select",
@@ -28,8 +31,10 @@ interface StatusBarProps {
 
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const { enabled, toggle } = useDeveloperMode();
+  const { toggleSnapEnabled } = useUiActions();
   const activeTool = useEditor((state) => state.ui.activeTool);
   const activePresetId = useEditor((state) => state.ui.activePresetId);
+  const snapEnabled = useEditor((state) => state.ui.snapEnabled);
   const field = useEditor((state) => state.track.design.field);
   const selection = useEditor((state) => state.session.selection);
   const selectionCount = selection.length;
@@ -92,12 +97,33 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       </span>
 
       {/* Snap indicator — desktop only */}
-      {snapActive && (
-        <span className="hidden lg:contents">
-          <span className="text-muted-foreground/45">·</span>
-          <span className="text-green-500/70">● snap</span>
+      <span className="text-muted-foreground/45">·</span>
+      <button
+        type="button"
+        onClick={toggleSnapEnabled}
+        className={cn(
+          "pointer-events-auto inline-flex h-5 items-center gap-1 rounded px-1.5 text-[11px] transition-colors",
+          snapEnabled
+            ? "text-foreground/70 hover:bg-muted hover:text-foreground"
+            : "hover:bg-muted text-amber-500/85 hover:text-amber-400"
+        )}
+        title={`Toggle snap (${snapEnabled ? "on" : "off"})`}
+        aria-pressed={snapEnabled}
+      >
+        <Magnet
+          className={cn(
+            "size-3",
+            snapEnabled && snapActive
+              ? "text-green-500/80"
+              : snapEnabled
+                ? "text-foreground/60"
+                : "text-amber-500/85"
+          )}
+        />
+        <span>
+          {snapEnabled ? (snapActive ? "Snap" : "Snap On") : "Snap Off"}
         </span>
-      )}
+      </button>
 
       <div className="flex-1" />
 

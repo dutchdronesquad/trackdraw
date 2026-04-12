@@ -1,6 +1,11 @@
 import { distance2D } from "@/lib/track/geometry";
 import { px2m } from "@/lib/track/units";
 import { MIN_MARQUEE_SIZE, rectsIntersect } from "@/lib/canvas/shared";
+import {
+  findNearestSnapPoint as findNearestSnapPointFromResolver,
+  findNearestSnapTarget as findNearestSnapTargetFromResolver,
+  resolveSnapPosition,
+} from "@/lib/canvas/snap";
 import type { CursorState, DraftPoint } from "@/lib/canvas/shared";
 import type { Shape } from "@/lib/types";
 import type { Group as KonvaGroup } from "konva/lib/Group";
@@ -46,20 +51,11 @@ export function findNearestSnapPoint(
   meters: { x: number; y: number },
   snapRadiusMeters: number
 ) {
-  let nearest: { x: number; y: number } | null = null;
-  let minDist = snapRadiusMeters;
-
-  for (const shape of candidates) {
-    const dist = Math.sqrt(
-      (shape.x - meters.x) ** 2 + (shape.y - meters.y) ** 2
-    );
-    if (dist < minDist) {
-      minDist = dist;
-      nearest = { x: shape.x, y: shape.y };
-    }
-  }
-
-  return nearest;
+  return findNearestSnapPointFromResolver({
+    candidates,
+    pos: meters,
+    snapRadiusMeters,
+  });
 }
 
 export function findNearestSnapTarget(
@@ -67,20 +63,11 @@ export function findNearestSnapTarget(
   meters: { x: number; y: number },
   snapRadiusMeters: number
 ) {
-  let nearest: { x: number; y: number; id: string } | null = null;
-  let minDist = snapRadiusMeters;
-
-  for (const shape of candidates) {
-    const dist = Math.sqrt(
-      (shape.x - meters.x) ** 2 + (shape.y - meters.y) ** 2
-    );
-    if (dist < minDist) {
-      minDist = dist;
-      nearest = { x: shape.x, y: shape.y, id: shape.id };
-    }
-  }
-
-  return nearest;
+  return findNearestSnapTargetFromResolver({
+    candidates,
+    pos: meters,
+    snapRadiusMeters,
+  });
 }
 
 export function pointerToMeters(options: {
@@ -111,13 +98,16 @@ export function pointerToMeters(options: {
   };
   if (!snap || !magnetic) return gridMeters;
 
-  return (
-    findNearestSnapPoint(
-      getNearbySnapCandidates(gridMeters),
-      gridMeters,
-      snapRadiusMeters
-    ) ?? gridMeters
-  );
+  // Pointer placement keeps the existing behavior: round to grid first,
+  // then allow nearby shape snap around that grid-aligned position.
+  return resolveSnapPosition({
+    pos: gridMeters,
+    snapToGrid: false,
+    snapToShapes: true,
+    gridStep: px2m(stepPx, designPpm),
+    magneticRadiusMeters: snapRadiusMeters,
+    candidates: getNearbySnapCandidates(gridMeters),
+  });
 }
 
 export function shouldCloseDraftLoop(options: {

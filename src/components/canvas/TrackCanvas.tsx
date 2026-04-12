@@ -49,8 +49,8 @@ import { m2px, px2m } from "@/lib/track/units";
 import {
   buildSnapIndex,
   getNearbySnapCandidates as getNearbySnapCandidatesFromIndex,
-  findNearestSnapPoint,
 } from "@/lib/canvas/interaction-helpers";
+import { resolveSnapPosition } from "@/lib/canvas/snap";
 import {
   getCanvasRotationGuideAngleDeg,
   hasFrontBackOrientation,
@@ -155,6 +155,7 @@ const TrackCanvas = memo(
     } = useTrackActions();
     const activeTool = useEditor((state) => state.ui.activeTool);
     const activePresetId = useEditor((state) => state.ui.activePresetId);
+    const snapEnabled = useEditor((state) => state.ui.snapEnabled);
     const segmentSel = useEditor((state) => state.ui.segmentSelection);
     const vertexSel = useEditor((state) => state.ui.vertexSelection);
     const draftPath = useEditor((state) => state.ui.draftPath);
@@ -208,6 +209,10 @@ const TrackCanvas = memo(
     const touchInteractionModeRef = useRef<
       "none" | "pan" | "content" | "viewportGesture"
     >("none");
+
+    useEffect(() => {
+      dragSnapRef.current = snapEnabled;
+    }, [snapEnabled]);
     const syncFrameRef = useRef<number | null>(null);
     const rotationSessionRef = useRef(rotationSession);
     const updateShapeRef = useRef(updateShape);
@@ -449,6 +454,42 @@ const TrackCanvas = memo(
       [waypointSnapCellSize, waypointSnapIndex]
     );
 
+    const resolveCanvasSnapPosition = useCallback(
+      (
+        posPx: Vector2d,
+        options: {
+          excludeIds?: Iterable<string>;
+          snapToGrid?: boolean;
+          snapToShapes?: boolean;
+        } = {}
+      ) => {
+        const posMeters = {
+          x: px2m(posPx.x, design.field.ppm),
+          y: px2m(posPx.y, design.field.ppm),
+        };
+        const resolvedMeters = resolveSnapPosition({
+          pos: posMeters,
+          snapToGrid: options.snapToGrid ?? true,
+          snapToShapes: options.snapToShapes ?? true,
+          gridStep: design.field.gridStep,
+          magneticRadiusMeters: waypointSnapRadiusMeters,
+          candidates: getWaypointSnapCandidates(posMeters),
+          excludeIds: options.excludeIds,
+        });
+
+        return {
+          x: m2px(resolvedMeters.x, design.field.ppm),
+          y: m2px(resolvedMeters.y, design.field.ppm),
+        };
+      },
+      [
+        design.field.gridStep,
+        design.field.ppm,
+        getWaypointSnapCandidates,
+        waypointSnapRadiusMeters,
+      ]
+    );
+
     const clampShapeDragPosition = useCallback(
       (pos: Vector2d): Vector2d => ({
         x: clamp(pos.x, -widthPx * 2, widthPx * 3),
@@ -467,27 +508,28 @@ const TrackCanvas = memo(
 
     // Generous bounds — shapes can be placed well outside the field on the infinite canvas
     const resolveShapeDragPosition = useCallback(
-      (pos: Vector2d, snapEnabled: boolean): Vector2d => {
+      (
+        pos: Vector2d,
+        snapEnabled: boolean,
+        draggedShapeId: string
+      ): Vector2d => {
         const bounded = clampShapeDragPosition(pos);
         if (!snapEnabled) return bounded;
-        const snapX = Math.round(bounded.x / stepPx) * stepPx;
-        const snapY = Math.round(bounded.y / stepPx) * stepPx;
-        return {
-          x:
-            Math.abs(bounded.x - snapX) <= magneticSnapRadiusPx
-              ? snapX
-              : bounded.x,
-          y:
-            Math.abs(bounded.y - snapY) <= magneticSnapRadiusPx
-              ? snapY
-              : bounded.y,
-        };
+
+        return resolveCanvasSnapPosition(bounded, {
+          excludeIds: [draggedShapeId],
+        });
       },
-      [clampShapeDragPosition, magneticSnapRadiusPx, stepPx]
+      [clampShapeDragPosition, resolveCanvasSnapPosition]
     );
 
     const resolveGroupDragPosition = useCallback(
-      (pos: Vector2d, frame: RectLike, snapEnabled: boolean) => {
+      (
+        pos: Vector2d,
+        frame: RectLike,
+        snapEnabled: boolean,
+        excludeIds: Iterable<string>
+      ) => {
         const bounded = clampShapeDragPosition(pos);
         const center = {
           x: bounded.x + frame.width / 2,
@@ -503,18 +545,9 @@ const TrackCanvas = memo(
           };
         }
 
-        const snapCenterX = Math.round(center.x / stepPx) * stepPx;
-        const snapCenterY = Math.round(center.y / stepPx) * stepPx;
-        const snappedCenter = {
-          x:
-            Math.abs(center.x - snapCenterX) <= magneticSnapRadiusPx
-              ? snapCenterX
-              : center.x,
-          y:
-            Math.abs(center.y - snapCenterY) <= magneticSnapRadiusPx
-              ? snapCenterY
-              : center.y,
-        };
+        const snappedCenter = resolveCanvasSnapPosition(center, {
+          excludeIds,
+        });
 
         return {
           dragPosition: bounded,
@@ -528,53 +561,16 @@ const TrackCanvas = memo(
             Math.abs(center.y - snappedCenter.y) > 0.5,
         };
       },
-      [clampShapeDragPosition, magneticSnapRadiusPx, stepPx]
+      [clampShapeDragPosition, resolveCanvasSnapPosition]
     );
 
     const resolveWaypointDragPosition = useCallback(
       (pos: Vector2d, snapEnabled: boolean): Vector2d => {
         const bounded = clampWaypointDragPosition(pos);
         if (!snapEnabled) return bounded;
-
-        // Try snap-to-shape first
-        const posMeters = {
-          x: px2m(bounded.x, design.field.ppm),
-          y: px2m(bounded.y, design.field.ppm),
-        };
-        const shapeSnap = findNearestSnapPoint(
-          getWaypointSnapCandidates(posMeters),
-          posMeters,
-          waypointSnapRadiusMeters
-        );
-        if (shapeSnap) {
-          return {
-            x: m2px(shapeSnap.x, design.field.ppm),
-            y: m2px(shapeSnap.y, design.field.ppm),
-          };
-        }
-
-        // Fall back to grid snap
-        const snapX = Math.round(bounded.x / stepPx) * stepPx;
-        const snapY = Math.round(bounded.y / stepPx) * stepPx;
-        return {
-          x:
-            Math.abs(bounded.x - snapX) <= magneticSnapRadiusPx
-              ? snapX
-              : bounded.x,
-          y:
-            Math.abs(bounded.y - snapY) <= magneticSnapRadiusPx
-              ? snapY
-              : bounded.y,
-        };
+        return resolveCanvasSnapPosition(bounded);
       },
-      [
-        clampWaypointDragPosition,
-        design.field.ppm,
-        getWaypointSnapCandidates,
-        magneticSnapRadiusPx,
-        stepPx,
-        waypointSnapRadiusMeters,
-      ]
+      [clampWaypointDragPosition, resolveCanvasSnapPosition]
     );
 
     const dragBound = useCallback(
@@ -958,6 +954,7 @@ const TrackCanvas = memo(
       onSnapChange,
       mobileMultiSelectEnabled,
       readOnly,
+      snapEnabled,
       selection,
       setActiveTool,
       setCursor,
@@ -1422,6 +1419,7 @@ const TrackCanvas = memo(
                 onShapeContextMenu={openShapeContextMenu}
                 onSelectOnly={selectOnlyShape}
                 onToggleSelection={toggleShapeSelection}
+                snapEnabled={snapEnabled}
                 setSelection={setSelection}
                 selectedSegmentIndex={
                   segmentSel?.shapeId === shape.id
@@ -1471,6 +1469,7 @@ const TrackCanvas = memo(
         resolveShapeDragPosition,
         resolveWaypointDragPosition,
         rotationSession,
+        snapEnabled,
         segmentSel,
         selectOnlyShape,
         selection.length,
@@ -1548,7 +1547,11 @@ const TrackCanvas = memo(
                 <span>Grid {design.field.gridStep}m</span>
                 <span className="text-border">·</span>
                 <span>
-                  {activeTool === "polyline" ? "Smart snap" : "Grid snap"}
+                  {snapEnabled
+                    ? activeTool === "polyline"
+                      ? "Smart snap"
+                      : "Grid snap"
+                    : "Snap off"}
                 </span>
               </div>
             )}
@@ -1564,7 +1567,7 @@ const TrackCanvas = memo(
             pan ·{" "}
             <span className="text-foreground/60 font-medium">Right-click</span>{" "}
             menu · <span className="text-foreground/60 font-medium">Alt</span>{" "}
-            free
+            bypass
           </div>
           <div
             className="absolute right-2 z-20"
@@ -1658,11 +1661,13 @@ const TrackCanvas = memo(
                     }}
                     onDragStart={(event) => {
                       event.cancelBubble = true;
-                      dragSnapRef.current = !(
-                        event.evt.altKey ||
-                        event.evt.metaKey ||
-                        event.evt.shiftKey
-                      );
+                      dragSnapRef.current =
+                        snapEnabled &&
+                        !(
+                          event.evt.altKey ||
+                          event.evt.metaKey ||
+                          event.evt.shiftKey
+                        );
                       setDragSnapPreview(null);
                       beginInteraction();
                       setGroupDragPreview({
@@ -1678,7 +1683,8 @@ const TrackCanvas = memo(
                       const resolved = resolveGroupDragPosition(
                         current,
                         selectionFrame,
-                        dragSnapRef.current
+                        dragSnapRef.current,
+                        selectionRef.current
                       );
                       setDragSnapPreview(
                         resolved.snapped ? resolved.snapPoint : null
@@ -1699,7 +1705,8 @@ const TrackCanvas = memo(
                       const resolved = resolveGroupDragPosition(
                         event.currentTarget.position(),
                         selectionFrame,
-                        dragSnapRef.current
+                        dragSnapRef.current,
+                        selectionRef.current
                       );
                       event.currentTarget.position(resolved.finalPosition);
                       setDragSnapPreview(null);

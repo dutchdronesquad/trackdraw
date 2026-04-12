@@ -123,6 +123,7 @@ export default function EditorShell({
   const design = useEditor((state) => state.track.design);
   const activeTool = useEditor((state) => state.ui.activeTool);
   const activePresetId = useEditor((state) => state.ui.activePresetId);
+  const snapEnabled = useEditor((state) => state.ui.snapEnabled);
   const {
     duplicateShapes,
     groupSelection,
@@ -140,6 +141,7 @@ export default function EditorShell({
     setActiveTool,
     setActivePresetId,
     setSegmentSelection,
+    toggleSnapEnabled,
     setVertexSelection,
   } = useUiActions();
   const { setSelection } = useSessionActions();
@@ -804,6 +806,7 @@ export default function EditorShell({
           mobileToolsOpen={mobileToolsOpen}
           mobileViewOpen={mobileViewOpen}
           mobileMultiSelectEnabled={mobileMultiSelectEnabled}
+          snapEnabled={snapEnabled}
           mobileGizmoEnabled={mobileGizmoEnabled}
           mobileObstacleNumbersEnabled={showObstacleNumbers}
           mobileRulersEnabled={mobileRulersEnabled}
@@ -928,6 +931,7 @@ export default function EditorShell({
           onSetMobileGizmoEnabled={setMobileGizmoEnabled}
           onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
           onSetMobileRulersEnabled={setMobileRulersEnabled}
+          onToggleSnapEnabled={toggleSnapEnabled}
           onExitMobileMultiSelect={() => {
             setMobileMultiSelectEnabled(false);
             setSelection([]);
