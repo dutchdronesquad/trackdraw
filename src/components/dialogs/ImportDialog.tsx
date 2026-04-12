@@ -4,7 +4,7 @@ import { useRef, useState, useCallback } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useEditor } from "@/store/editor";
+import { useTrackActions } from "@/store/actions";
 import { cn } from "@/lib/utils";
 import { Upload, FileJson, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { TrackDesign } from "@/lib/types";
@@ -24,7 +24,7 @@ export default function ImportDialog({
   onBackupCurrent,
   onBeforeConfirm,
 }: ImportDialogProps) {
-  const replaceDesign = useEditor((state) => state.replaceDesign);
+  const { replaceDesign } = useTrackActions();
   const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);

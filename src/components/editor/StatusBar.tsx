@@ -28,13 +28,13 @@ interface StatusBarProps {
 
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const { enabled, toggle } = useDeveloperMode();
-  const activeTool = useEditor((state) => state.transient.activeTool);
-  const activePresetId = useEditor((state) => state.transient.activePresetId);
-  const field = useEditor((state) => state.design.field);
-  const selection = useEditor((state) => state.selection);
+  const activeTool = useEditor((state) => state.ui.activeTool);
+  const activePresetId = useEditor((state) => state.ui.activePresetId);
+  const field = useEditor((state) => state.track.design.field);
+  const selection = useEditor((state) => state.session.selection);
   const selectionCount = selection.length;
   const shapeById = useEditor(selectShapeRecordMap);
-  const zoom = useEditor((state) => state.transient.zoom);
+  const zoom = useEditor((state) => state.ui.zoom);
   const activePreset = getLayoutPresetById(activePresetId);
   const selectedShapes = selection.map((id) => shapeById[id]).filter(Boolean);
   const selectedGroupIds = Array.from(

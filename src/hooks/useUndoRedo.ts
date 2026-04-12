@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect } from "react";
+import { useSessionActions } from "@/store/actions";
 import { useEditor } from "@/store/editor";
 import { useStore } from "zustand";
 
 export function useUndoRedo() {
   const { undo, redo, pastStates, futureStates } = useStore(useEditor.temporal);
-  const sanitizeHistoryState = useEditor((state) => state.sanitizeHistoryState);
+  const { sanitizeHistoryState } = useSessionActions();
 
   const runHistoryStep = useCallback(
     (step: () => void) => {

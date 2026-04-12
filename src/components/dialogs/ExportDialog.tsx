@@ -214,7 +214,7 @@ export default function ExportDialog({
   activeTab,
   onRequest3DView,
 }: ExportDialogProps) {
-  const design = useEditor((s) => s.design);
+  const design = useEditor((s) => s.track.design);
   const currentTheme = useTheme();
   const isMobile = useIsMobile();
   const [busy, setBusy] = useState<string | null>(null);

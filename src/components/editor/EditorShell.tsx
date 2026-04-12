@@ -50,6 +50,11 @@ import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
 import { StarterSteps, StarterActions } from "@/components/editor/StarterFlow";
 import type { EditorView } from "@/lib/view";
+import {
+  useSessionActions,
+  useTrackActions,
+  useUiActions,
+} from "@/store/actions";
 import { useEditor } from "@/store/editor";
 import {
   selectDesignShapes,
@@ -114,38 +119,38 @@ export default function EditorShell({
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const { enabled: developerModeEnabled, toggle: toggleDeveloperMode } =
     useDeveloperMode();
-  const selection = useEditor((state) => state.selection);
-  const design = useEditor((state) => state.design);
-  const activeTool = useEditor((state) => state.transient.activeTool);
-  const activePresetId = useEditor((state) => state.transient.activePresetId);
-  const duplicateShapes = useEditor((state) => state.duplicateShapes);
-  const groupSelection = useEditor((state) => state.groupSelection);
-  const insertPolylinePoint = useEditor((state) => state.insertPolylinePoint);
-  const nudgeShapes = useEditor((state) => state.nudgeShapes);
-  const removeShapes = useEditor((state) => state.removeShapes);
-  const removePolylinePoint = useEditor((state) => state.removePolylinePoint);
-  const replaceDesign = useEditor((state) => state.replaceDesign);
-  const rotateShapes = useEditor((state) => state.rotateShapes);
-  const setGroupName = useEditor((state) => state.setGroupName);
-  const setActiveTool = useEditor((state) => state.setActiveTool);
-  const setActivePresetId = useEditor((state) => state.setActivePresetId);
-  const setSegmentSelection = useEditor((state) => state.setSegmentSelection);
-  const setSelection = useEditor((state) => state.setSelection);
-  const setShapesLocked = useEditor((state) => state.setShapesLocked);
-  const setVertexSelection = useEditor((state) => state.setVertexSelection);
-  const ungroupSelection = useEditor((state) => state.ungroupSelection);
-  const historyPaused = useEditor((state) => state.historyPaused);
+  const selection = useEditor((state) => state.session.selection);
+  const design = useEditor((state) => state.track.design);
+  const activeTool = useEditor((state) => state.ui.activeTool);
+  const activePresetId = useEditor((state) => state.ui.activePresetId);
+  const {
+    duplicateShapes,
+    groupSelection,
+    insertPolylinePoint,
+    nudgeShapes,
+    removeShapes,
+    removePolylinePoint,
+    replaceDesign,
+    rotateShapes,
+    setGroupName,
+    setShapesLocked,
+    ungroupSelection,
+  } = useTrackActions();
+  const { setActiveTool, setActivePresetId, setSegmentSelection, setVertexSelection } =
+    useUiActions();
+  const { setSelection } = useSessionActions();
+  const historyPaused = useEditor((state) => state.session.historyPaused);
   const interactionSessionDepth = useEditor(
-    (state) => state.interactionSessionDepth
+    (state) => state.session.interactionSessionDepth
   );
   const designShapes = useEditor(selectDesignShapes);
   const hasPath = useEditor(selectHasPath);
   const shapeById = useEditor(selectShapeRecordMap);
   const selectionLocked = useEditor(selectSelectionLocked);
   const segmentSelection = useEditor(
-    (state) => state.transient.segmentSelection
+    (state) => state.ui.segmentSelection
   );
-  const vertexSelection = useEditor((state) => state.transient.vertexSelection);
+  const vertexSelection = useEditor((state) => state.ui.vertexSelection);
   const activePreset = getLayoutPresetById(activePresetId);
   const {
     activePresetLabel,
@@ -248,7 +253,6 @@ export default function EditorShell({
     readOnly,
     seedToken,
     design,
-    designShapesLength: designShapes.length,
     historyPaused,
     interactionSessionDepth,
     replaceDesign,

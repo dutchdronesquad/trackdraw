@@ -1,18 +1,26 @@
 import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/planning/layout-presets";
+import { createDefaultDesign } from "@/lib/track/design";
 import type {
   EditorSessionState,
-  EditorTransientState,
+  EditorTrackState,
+  EditorUiState,
 } from "@/lib/editor/store-types";
 
-interface EditorTransientResetOptions {
+interface EditorUiResetOptions {
   activePresetId?: string | null;
   zoom?: number;
   panOffset?: { x: number; y: number };
 }
 
-export function createDefaultEditorTransientState(
-  options: EditorTransientResetOptions = {}
-): EditorTransientState {
+export function createDefaultEditorTrackState(): EditorTrackState {
+  return {
+    design: createDefaultDesign(),
+  };
+}
+
+export function createDefaultEditorUiState(
+  options: EditorUiResetOptions = {}
+): EditorUiState {
   return {
     activeTool: "select",
     activePresetId: options.activePresetId ?? DEFAULT_LAYOUT_PRESET_ID,
@@ -32,20 +40,18 @@ export function createDefaultEditorTransientState(
   };
 }
 
-export function resetEditorTransientState(
-  current: EditorTransientState,
-  options: EditorTransientResetOptions = {}
-): EditorTransientState {
-  return createDefaultEditorTransientState({
+export function resetEditorUiState(
+  current: EditorUiState,
+  options: EditorUiResetOptions = {}
+): EditorUiState {
+  return createDefaultEditorUiState({
     activePresetId: options.activePresetId ?? current.activePresetId,
     zoom: options.zoom ?? current.zoom,
     panOffset: options.panOffset ?? current.panOffset,
   });
 }
 
-export function sanitizeEditorTransientState(
-  current: EditorTransientState
-): EditorTransientState {
+export function sanitizeEditorUiState(current: EditorUiState): EditorUiState {
   return {
     ...current,
     hoveredShapeId: null,
@@ -59,6 +65,7 @@ export function sanitizeEditorTransientState(
 
 export function createDefaultEditorSessionState(): EditorSessionState {
   return {
+    selection: [],
     historyPaused: false,
     historySessionDepth: 0,
     interactionSessionDepth: 0,

@@ -9,6 +9,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
+import { useHistorySession } from "@/hooks/useHistorySession";
 import * as THREE from "three";
 import type {
   DiveGateShape,
@@ -74,6 +75,12 @@ export function useTrackPreview3DInteractions({
     startElevation: number;
   } | null>(null);
   const [isMiddleMousePanning, setIsMiddleMousePanning] = useState(false);
+  const { startSession, finishSession, cancelSession } = useHistorySession({
+    beginInteraction,
+    endInteraction,
+    pauseHistory,
+    resumeHistory,
+  });
 
   const elevationDragRef = useRef(elevationDrag);
   const elevationPreviewPointsRef = useRef<PolylinePoint[] | null>(
@@ -162,8 +169,7 @@ export function useTrackPreview3DInteractions({
       event.stopPropagation();
       const point = selectedPolyline?.points[index];
       if (!selectedPolyline || !point) return;
-      beginInteraction();
-      pauseHistory();
+      startSession();
       setSelection([selectedPolyline.id]);
       setElevationPreviewPoints(selectedPolyline.points);
       setElevationDrag({
@@ -173,7 +179,7 @@ export function useTrackPreview3DInteractions({
         startZ: point.z ?? 0,
       });
     },
-    [beginInteraction, pauseHistory, selectedPolyline, setSelection]
+    [selectedPolyline, setSelection, startSession]
   );
 
   const applyElevationDrag = useCallback(
@@ -219,11 +225,10 @@ export function useTrackPreview3DInteractions({
       const drag = elevationDragRef.current;
       const finalPoints = drag ? elevationPreviewPointsRef.current : null;
       cleanupListeners();
-      resumeHistory();
-      if (drag && finalPoints) {
+      finishSession(() => {
+        if (!drag || !finalPoints) return;
         setPolylinePoints(drag.shapeId, finalPoints);
-      }
-      endInteraction();
+      });
       setElevationPreviewPoints(null);
       setElevationDrag(null);
     };
@@ -263,13 +268,19 @@ export function useTrackPreview3DInteractions({
     window.addEventListener("touchcancel", stopDrag);
 
     return () => {
-      finishDrag();
+      if (finished) return;
+      finished = true;
+      cleanupListeners();
+      cancelSession(() => {
+        setElevationPreviewPoints(null);
+        setElevationDrag(null);
+      });
     };
   }, [
     applyElevationDrag,
+    cancelSession,
     elevationDrag,
-    endInteraction,
-    resumeHistory,
+    finishSession,
     setPolylinePoints,
   ]);
 
@@ -328,11 +339,10 @@ export function useTrackPreview3DInteractions({
         );
         if (angle !== null) startAngle = angle;
       }
-      beginInteraction();
-      pauseHistory();
+      startSession();
       setRotationDrag({ shapeId, startAngle, startRotation: currentRotation });
     },
-    [beginInteraction, pauseHistory, shapeById]
+    [shapeById, startSession]
   );
 
   useEffect(() => {
@@ -357,14 +367,13 @@ export function useTrackPreview3DInteractions({
       const drag = rotationDragRef.current;
       const finalRotation = rotationDragValueRef.current;
       cleanupListeners();
-      resumeHistory();
-      if (drag && finalRotation !== null) {
+      finishSession(() => {
+        if (!drag || finalRotation === null) return;
         updateShape(drag.shapeId, {
           rotation: snapRotationDegrees(finalRotation),
         });
-      }
+      });
       rotationDragValueRef.current = null;
-      endInteraction();
       setRotationDrag(null);
     };
 
@@ -408,12 +417,18 @@ export function useTrackPreview3DInteractions({
     window.addEventListener("touchcancel", stopDrag);
 
     return () => {
-      finishDrag();
+      if (finished) return;
+      finished = true;
+      cleanupListeners();
+      rotationDragValueRef.current = null;
+      cancelSession(() => {
+        setRotationDrag(null);
+      });
     };
   }, [
     applyRotationDrag,
-    endInteraction,
-    resumeHistory,
+    cancelSession,
+    finishSession,
     rotationDrag,
     updateShape,
   ]);
@@ -469,11 +484,10 @@ export function useTrackPreview3DInteractions({
       event.stopPropagation();
       const shape = shapeById[shapeId];
       if (!shape || shape.kind !== "divegate" || shape.locked) return;
-      beginInteraction();
-      pauseHistory();
+      startSession();
       setTiltDrag({ shapeId, startTilt: currentTilt });
     },
-    [beginInteraction, pauseHistory, shapeById]
+    [shapeById, startSession]
   );
 
   const applyLadderElevationDrag = useCallback(
@@ -509,8 +523,7 @@ export function useTrackPreview3DInteractions({
       event.stopPropagation();
       const shape = shapeById[shapeId];
       if (!shape || shape.kind !== "ladder" || shape.locked) return;
-      beginInteraction();
-      pauseHistory();
+      startSession();
       ladderElevationDragValueRef.current = currentElevation;
       setLadderElevationDrag({
         shapeId,
@@ -518,7 +531,7 @@ export function useTrackPreview3DInteractions({
         startElevation: currentElevation,
       });
     },
-    [beginInteraction, pauseHistory, shapeById]
+    [shapeById, startSession]
   );
 
   useEffect(() => {
@@ -543,12 +556,11 @@ export function useTrackPreview3DInteractions({
       const drag = tiltDragRef.current;
       const finalTilt = tiltDragValueRef.current;
       cleanupListeners();
-      resumeHistory();
-      if (drag && finalTilt !== null) {
+      finishSession(() => {
+        if (!drag || finalTilt === null) return;
         updateShape(drag.shapeId, { tilt: Math.round(finalTilt) });
-      }
+      });
       tiltDragValueRef.current = null;
-      endInteraction();
       setTiltDrag(null);
     };
 
@@ -587,9 +599,15 @@ export function useTrackPreview3DInteractions({
     window.addEventListener("touchcancel", stopDrag);
 
     return () => {
-      finishDrag();
+      if (finished) return;
+      finished = true;
+      cleanupListeners();
+      tiltDragValueRef.current = null;
+      cancelSession(() => {
+        setTiltDrag(null);
+      });
     };
-  }, [applyTiltDrag, endInteraction, resumeHistory, tiltDrag, updateShape]);
+  }, [applyTiltDrag, cancelSession, finishSession, tiltDrag, updateShape]);
 
   useEffect(() => {
     if (!ladderElevationDrag) return;
@@ -615,15 +633,15 @@ export function useTrackPreview3DInteractions({
       const drag = ladderElevationDragRef.current;
       const finalElevation = ladderElevationDragValueRef.current;
       cleanupListeners();
-      resumeHistory();
-      if (drag && finalElevation !== null) {
-        updateShape(drag.shapeId, { elevation: finalElevation });
-      }
-      if (drag) {
-        clearLiveShapePatch(drag.shapeId);
-      }
+      finishSession(() => {
+        if (drag && finalElevation !== null) {
+          updateShape(drag.shapeId, { elevation: finalElevation });
+        }
+        if (drag) {
+          clearLiveShapePatch(drag.shapeId);
+        }
+      });
       ladderElevationDragValueRef.current = null;
-      endInteraction();
       setLadderElevationDrag(null);
     };
 
@@ -664,14 +682,24 @@ export function useTrackPreview3DInteractions({
     window.addEventListener("touchcancel", stopDrag);
 
     return () => {
-      finishDrag();
+      if (finished) return;
+      finished = true;
+      cleanupListeners();
+      ladderElevationDragValueRef.current = null;
+      cancelSession(() => {
+        const drag = ladderElevationDragRef.current;
+        if (drag) {
+          clearLiveShapePatch(drag.shapeId);
+        }
+        setLadderElevationDrag(null);
+      });
     };
   }, [
     applyLadderElevationDrag,
+    cancelSession,
     clearLiveShapePatch,
-    endInteraction,
+    finishSession,
     ladderElevationDrag,
-    resumeHistory,
     updateShape,
   ]);
 

@@ -9,6 +9,11 @@ import {
 } from "@/components/inspector/views";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { cn } from "@/lib/utils";
+import {
+  useSessionActions,
+  useTrackActions,
+  useUiActions,
+} from "@/store/actions";
 import { useEditor } from "@/store/editor";
 import { selectDesignShapes, selectSelectedShapes } from "@/store/selectors";
 
@@ -20,34 +25,33 @@ function Inspector({
   mobileInline?: boolean;
 }) {
   usePerfMetric("render:Inspector");
-  const design = useEditor((state) => state.design);
-  const selection = useEditor((state) => state.selection);
-  const updateShape = useEditor((state) => state.updateShape);
-  const setShapesLocked = useEditor((state) => state.setShapesLocked);
-  const updatePolylinePoint = useEditor((state) => state.updatePolylinePoint);
-  const insertPolylinePoint = useEditor((state) => state.insertPolylinePoint);
-  const removePolylinePoint = useEditor((state) => state.removePolylinePoint);
-  const appendPolylinePoint = useEditor((state) => state.appendPolylinePoint);
-  const reversePolylinePoints = useEditor(
-    (state) => state.reversePolylinePoints
-  );
-  const removeShapes = useEditor((state) => state.removeShapes);
-  const duplicateShapes = useEditor((state) => state.duplicateShapes);
-  const groupSelection = useEditor((state) => state.groupSelection);
-  const joinPolylines = useEditor((state) => state.joinPolylines);
-  const closePolyline = useEditor((state) => state.closePolyline);
-  const setGroupName = useEditor((state) => state.setGroupName);
-  const setSelection = useEditor((state) => state.setSelection);
-  const ungroupSelection = useEditor((state) => state.ungroupSelection);
-  const updateField = useEditor((state) => state.updateField);
-  const updateDesignMeta = useEditor((state) => state.updateDesignMeta);
-  const setHoveredShapeId = useEditor((state) => state.setHoveredShapeId);
-  const setHoveredWaypoint = useEditor((state) => state.setHoveredWaypoint);
+  const design = useEditor((state) => state.track.design);
+  const selection = useEditor((state) => state.session.selection);
+  const {
+    updateShape,
+    setShapesLocked,
+    updatePolylinePoint,
+    insertPolylinePoint,
+    removePolylinePoint,
+    appendPolylinePoint,
+    reversePolylinePoints,
+    removeShapes,
+    duplicateShapes,
+    groupSelection,
+    joinPolylines,
+    closePolyline,
+    setGroupName,
+    ungroupSelection,
+    updateField,
+    updateDesignMeta,
+  } = useTrackActions();
+  const { setSelection } = useSessionActions();
+  const { setHoveredShapeId, setHoveredWaypoint } = useUiActions();
   const designShapes = useEditor(selectDesignShapes);
   const selectedShapes = useEditor(selectSelectedShapes);
   const liveSelectedShapePatch = useEditor((state) =>
-    state.selection.length === 1
-      ? (state.transient.liveShapePatches[state.selection[0]] ?? null)
+    state.session.selection.length === 1
+      ? (state.ui.liveShapePatches[state.session.selection[0]] ?? null)
       : null
   );
   const count = selectedShapes.length;
