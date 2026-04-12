@@ -83,6 +83,8 @@ export function useSessionActions() {
 export function useUiActions() {
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setActivePresetId = useEditor((state) => state.setActivePresetId);
+  const setSnapEnabled = useEditor((state) => state.setSnapEnabled);
+  const toggleSnapEnabled = useEditor((state) => state.toggleSnapEnabled);
   const setZoom = useEditor((state) => state.setZoom);
   const setPanOffset = useEditor((state) => state.setPanOffset);
   const setHoveredShapeId = useEditor((state) => state.setHoveredShapeId);
@@ -103,6 +105,8 @@ export function useUiActions() {
   return {
     setActiveTool,
     setActivePresetId,
+    setSnapEnabled,
+    toggleSnapEnabled,
     setZoom,
     setPanOffset,
     setHoveredShapeId,

@@ -60,7 +60,7 @@ const shortcutSections = [
       { label: "Fit view to field", keys: ["0"] },
       { label: "Clear selection", keys: ["Escape"] },
       { label: "Pan view", keys: ["Middle Click"] },
-      { label: "Free place / free drag", keys: ["Alt"] },
+      { label: "Temporarily bypass snap", keys: ["Alt"] },
       { label: "Zoom", keys: ["Mouse Wheel"] },
     ],
   },

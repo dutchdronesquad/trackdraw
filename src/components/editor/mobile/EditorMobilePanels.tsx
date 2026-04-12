@@ -13,6 +13,7 @@ import {
   Lock,
   PencilLine,
   Plus,
+  Magnet,
   Redo2,
   RotateCcw,
   RotateCw,
@@ -47,6 +48,7 @@ interface EditorMobilePanelsProps {
   pathBuilderPinnedOpen: boolean;
   mobileInspectorOpen: boolean;
   mobileMultiSelectEnabled: boolean;
+  snapEnabled: boolean;
   mobileGizmoEnabled: boolean;
   mobileObstacleNumbersEnabled: boolean;
   mobileRulersEnabled: boolean;
@@ -92,6 +94,7 @@ interface EditorMobilePanelsProps {
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
+  onToggleSnapEnabled: () => void;
   onSelectTool: (tool: EditorTool) => void;
   onSetMobileToolsOpen: (open: boolean) => void;
   onSetMobileViewOpen: (open: boolean) => void;
@@ -309,6 +312,7 @@ export function EditorMobilePanels({
   pathBuilderPinnedOpen,
   mobileInspectorOpen,
   mobileMultiSelectEnabled,
+  snapEnabled,
   mobileGizmoEnabled,
   mobileObstacleNumbersEnabled,
   mobileRulersEnabled,
@@ -351,6 +355,7 @@ export function EditorMobilePanels({
   onSetMobileRulersEnabled,
   onSetMobileGizmoEnabled,
   onSetMobileObstacleNumbersEnabled,
+  onToggleSnapEnabled,
   onSelectTool,
   onSetMobileToolsOpen,
   onSetMobileViewOpen,
@@ -695,6 +700,39 @@ export function EditorMobilePanels({
                 </button>
               </div>
             </div>
+            {tab === "2d" && (
+              <div>
+                <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
+                  Snap
+                </p>
+                <button
+                  onClick={() => runMobileAction(onToggleSnapEnabled)}
+                  className={cn(
+                    "border-border/50 flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all",
+                    snapEnabled
+                      ? "text-foreground border-emerald-500/30 bg-emerald-500/8"
+                      : "bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">
+                      {snapEnabled ? "Snap on" : "Snap off"}
+                    </p>
+                    <p className="pt-1 text-[11px] leading-relaxed opacity-80">
+                      {snapEnabled
+                        ? "Grid and shape snap stay active until you turn them off."
+                        : "Place and drag freely until you turn snap back on."}
+                    </p>
+                  </div>
+                  <Magnet
+                    className={cn(
+                      "size-4 shrink-0",
+                      snapEnabled ? "text-emerald-500" : "text-muted-foreground"
+                    )}
+                  />
+                </button>
+              </div>
+            )}
             {tab === "2d" && (
               <div>
                 <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">

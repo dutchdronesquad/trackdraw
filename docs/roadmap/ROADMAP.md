@@ -168,10 +168,11 @@ Evaluate whether TrackDraw should support shared real-time editing for race trac
 
 Suggested first slices:
 
-- Define the sync model and conflict handling approach
-- Decide how local-first editing and offline behavior should interact with collaboration
-- Determine the smallest useful collaboration surface, such as cursors, selections, or presence indicators
-- Re-evaluate only after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
+- Decide whether the first live multi-user step should be presence-only, a host-led review session, or true co-editing
+- Define the sync model and conflict handling approach only if a shared editing surface still looks strategically justified
+- Decide how local-first editing and offline behavior should interact with any live session model
+- Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
+- Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
 ### 7. Published Gallery Evaluation (`Research`)
 
@@ -186,6 +187,20 @@ Suggested first slices:
 ### 8. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
+
+#### Snap UX Improvements (`No account required`)
+
+Make snapping more visible, predictable, and mobile-friendly so placement and drag behavior stay consistent across the editor.
+
+Current progress:
+
+- Visible snap toggle first pass is shipped for desktop and mobile, with `Alt` kept as a temporary bypass
+- Shape dragging and grouped dragging now snap to nearby shapes before falling back to the grid
+- Placement, shape drag, group drag, and waypoint drag now share one snap resolver instead of diverging local logic
+
+Suggested follow-up:
+
+- Keep validating the unified snap behavior on dense layouts and mobile-sized interactions before expanding the snapping model further
 
 #### 3D Editor Interaction Polish (`No account required`)
 

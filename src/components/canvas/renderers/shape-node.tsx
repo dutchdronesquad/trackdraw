@@ -59,7 +59,12 @@ export interface TrackShapeNodeProps {
   setVertexSel: (value: { shapeId: string; idx: number } | null) => void;
   shape: Shape;
   shapeRef: (node: KonvaGroup | null) => void;
-  resolveShapeDragPosition: (pos: Vector2d, snapEnabled: boolean) => Vector2d;
+  snapEnabled: boolean;
+  resolveShapeDragPosition: (
+    pos: Vector2d,
+    snapEnabled: boolean,
+    draggedShapeId: string
+  ) => Vector2d;
   resolveWaypointDragPosition: (
     pos: Vector2d,
     snapEnabled: boolean
@@ -106,6 +111,7 @@ function TrackShapeNodeComponent({
   setVertexSel,
   shape,
   shapeRef,
+  snapEnabled,
   resolveShapeDragPosition,
   resolveWaypointDragPosition,
   setPolylinePoints,
@@ -138,18 +144,20 @@ function TrackShapeNodeComponent({
       longPressTimerRef.current = null;
     }
     dragTriggeredRef.current = false;
-    dragSnapRef.current = !(
-      event.evt.altKey ||
-      event.evt.metaKey ||
-      event.evt.shiftKey
-    );
+    dragSnapRef.current =
+      snapEnabled &&
+      !(event.evt.altKey || event.evt.metaKey || event.evt.shiftKey);
     setDragSnapPreview(null);
   };
 
   const handleDragMove = (event: KonvaEventObject<DragEvent>) => {
     dragTriggeredRef.current = true;
     const current = event.currentTarget.position();
-    const resolved = resolveShapeDragPosition(current, dragSnapRef.current);
+    const resolved = resolveShapeDragPosition(
+      current,
+      dragSnapRef.current,
+      shape.id
+    );
     const isSnapping =
       Math.abs(current.x - resolved.x) > 0.5 ||
       Math.abs(current.y - resolved.y) > 0.5;
@@ -160,7 +168,8 @@ function TrackShapeNodeComponent({
     contentDragActiveRef.current = false;
     const resolved = resolveShapeDragPosition(
       event.currentTarget.position(),
-      dragSnapRef.current
+      dragSnapRef.current,
+      shape.id
     );
     setDragSnapPreview(null);
     if (shape.kind === "polyline") {
@@ -333,6 +342,7 @@ function TrackShapeNodeComponent({
               onShapeContextMenu?.(shape, { segmentIndex })
             }
             path={shape}
+            snapEnabled={snapEnabled}
             selectedSegmentIndex={selectedSegmentIndex}
             selectedSegmentPoint={selectedSegmentPoint}
             resolveWaypointDragPosition={resolveWaypointDragPosition}
@@ -377,6 +387,7 @@ export const TrackShapeNode = memo(TrackShapeNodeComponent, (prev, next) => {
     prev.mobileMultiSelectEnabled === next.mobileMultiSelectEnabled &&
     prev.isSelected === next.isSelected &&
     prev.isPrimaryPolyline === next.isPrimaryPolyline &&
+    prev.snapEnabled === next.snapEnabled &&
     prev.selectionCount === next.selectionCount &&
     prev.shape === next.shape &&
     prev.zmin === next.zmin &&

@@ -37,6 +37,15 @@ Labels used below:
 - [ ] Map and field overlay (`No account required`)
       Support venue plans, field maps, or imagery behind the editor canvas.
 
+- [x] Snap UX improvements (`No account required`)
+      Make snapping more visible, predictable, and mobile-friendly so placement and drag behavior stay consistent across the editor.
+  - [x] Visible snap toggle first pass
+        Added a persistent snap toggle in the editor UI for desktop and mobile, with Alt kept as a temporary bypass.
+  - [x] Snap to shapes for shape dragging
+        Let dragging placed obstacles or grouped selections snap to nearby shapes before falling back to the grid.
+  - [x] Unified snap resolver
+        Consolidate the current snap logic into one shared resolver so placement, drag, and waypoint editing follow the same rules.
+
 ## Engineering Foundation
 
 - [x] Editor state and persistence boundary pass (`No account required`)
@@ -84,12 +93,14 @@ Labels used below:
 
 - [ ] Real-time collaboration evaluation (`Research`)
       Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justifies the editor complexity.
+  - [ ] Smallest credible live slice
+        Decide whether the first live multi-user step should be presence-only, a host-led review session, or true co-editing.
+  - [ ] Host-review-first recommendation
+        Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing.
   - [ ] Sync model and conflict handling
-        Define how collaborative edits, conflict resolution, and offline/local-first behavior should work together.
-  - [ ] Presence and interaction scope
-        Decide what collaboration should include first, such as cursors, selections, presence, or editor locking cues.
+        Define how collaborative edits, conflict resolution, and offline/local-first behavior should work together only if shared editing still looks strategically justified.
   - [ ] Re-evaluate after editor boundary improvements
-        Only revisit active collaboration investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too.
+        Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too.
 
 - [ ] Published gallery evaluation (`Research`)
       Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.

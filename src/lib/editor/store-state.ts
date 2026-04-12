@@ -24,6 +24,7 @@ export function createDefaultEditorUiState(
   return {
     activeTool: "select",
     activePresetId: options.activePresetId ?? DEFAULT_LAYOUT_PRESET_ID,
+    snapEnabled: true,
     zoom: options.zoom ?? 1,
     panOffset: options.panOffset ?? { x: 0, y: 0 },
     hoveredShapeId: null,

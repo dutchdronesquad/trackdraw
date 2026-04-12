@@ -16,6 +16,7 @@ export interface EditorTrackState {
 export interface EditorUiState {
   activeTool: EditorTool;
   activePresetId: string | null;
+  snapEnabled: boolean;
   zoom: number;
   panOffset: { x: number; y: number };
   hoveredShapeId: string | null;
@@ -110,6 +111,8 @@ export interface EditorSessionActions {
 export interface EditorUiActions {
   setActiveTool: (tool: EditorTool) => void;
   setActivePresetId: (presetId: string | null) => void;
+  setSnapEnabled: (enabled: boolean) => void;
+  toggleSnapEnabled: () => void;
   setZoom: (zoom: number) => void;
   setPanOffset: (offset: { x: number; y: number }) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
@@ -226,6 +229,7 @@ export const editorStateOwnership = {
   ui: [
     "activeTool",
     "activePresetId",
+    "snapEnabled",
     "zoom",
     "panOffset",
     "hoveredShapeId",
@@ -283,6 +287,8 @@ export const editorActionOwnership = {
   ui: [
     "setActiveTool",
     "setActivePresetId",
+    "setSnapEnabled",
+    "toggleSnapEnabled",
     "setZoom",
     "setPanOffset",
     "setHoveredShapeId",
