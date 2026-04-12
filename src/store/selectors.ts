@@ -41,22 +41,22 @@ function getCachedShapeRecordMap(design: TrackDesign): Record<string, Shape> {
 }
 
 export function selectDesignShapes(state: EditorSnapshot): Shape[] {
-  return getCachedDesignShapes(state.design);
+  return getCachedDesignShapes(state.track.design);
 }
 
 export function selectShapeRecordMap(state: EditorSnapshot) {
-  return getCachedShapeRecordMap(state.design);
+  return getCachedShapeRecordMap(state.track.design);
 }
 
 export function selectDesignShapeCount(state: EditorSnapshot) {
-  return getCachedDesignShapes(state.design).length;
+  return getCachedDesignShapes(state.track.design).length;
 }
 
 export function selectShapeById(
   state: EditorSnapshot,
   id: string
 ): Shape | null {
-  return getDesignShapeById(state.design, id);
+  return getDesignShapeById(state.track.design, id);
 }
 
 export function selectShapesByIds(
@@ -64,30 +64,33 @@ export function selectShapesByIds(
   ids: string[]
 ): Shape[] {
   return ids
-    .map((id) => getDesignShapeById(state.design, id))
+    .map((id) => getDesignShapeById(state.track.design, id))
     .filter((shape): shape is Shape => Boolean(shape));
 }
 
 export function selectSelectedShapes(state: EditorSnapshot): Shape[] {
-  let designCache = selectedShapesCache.get(state.design);
+  let designCache = selectedShapesCache.get(state.track.design);
   if (!designCache) {
     designCache = new WeakMap<string[], Shape[]>();
-    selectedShapesCache.set(state.design, designCache);
+    selectedShapesCache.set(state.track.design, designCache);
   }
 
-  const cached = designCache.get(state.selection);
+  const cached = designCache.get(state.session.selection);
   if (cached) return cached;
 
-  const next = selectShapesByIds(state, state.selection);
-  designCache.set(state.selection, next);
+  const next = selectShapesByIds(state, state.session.selection);
+  designCache.set(state.session.selection, next);
   return next;
 }
 
 export function selectSelectedPolyline(
   state: EditorSnapshot
 ): PolylineShape | null {
-  if (state.selection.length !== 1) return null;
-  const shape = getDesignShapeById(state.design, state.selection[0]);
+  if (state.session.selection.length !== 1) return null;
+  const shape = getDesignShapeById(
+    state.track.design,
+    state.session.selection[0]
+  );
   return shape?.kind === "polyline" ? shape : null;
 }
 
@@ -97,25 +100,27 @@ export function selectPrimaryPolyline(
   const selected = selectSelectedPolyline(state);
   if (selected) return selected;
   return (
-    getCachedDesignShapes(state.design).find(
+    getCachedDesignShapes(state.track.design).find(
       (shape): shape is PolylineShape => shape.kind === "polyline"
     ) ?? null
   );
 }
 
 export function selectDesignPolylineZRange(state: EditorSnapshot) {
-  return getCachedDesignPolylineZRange(state.design);
+  return getCachedDesignPolylineZRange(state.track.design);
 }
 
 export function selectSelectionLocked(state: EditorSnapshot) {
   return (
-    state.selection.length > 0 &&
-    state.selection.every((id) => Boolean(selectShapeById(state, id)?.locked))
+    state.session.selection.length > 0 &&
+    state.session.selection.every((id) =>
+      Boolean(selectShapeById(state, id)?.locked)
+    )
   );
 }
 
 export function selectHasPath(state: EditorSnapshot) {
-  return getCachedDesignShapes(state.design).some(
+  return getCachedDesignShapes(state.track.design).some(
     (shape): shape is PolylineShape =>
       shape.kind === "polyline" && shape.points.length >= 2
   );
@@ -126,49 +131,49 @@ export function selectHasSelectedPolyline(state: EditorSnapshot) {
 }
 
 export function selectActiveTool(state: EditorSnapshot) {
-  return state.transient.activeTool;
+  return state.ui.activeTool;
 }
 
 export function selectZoom(state: EditorSnapshot) {
-  return state.transient.zoom;
+  return state.ui.zoom;
 }
 
 export function selectPanOffset(state: EditorSnapshot) {
-  return state.transient.panOffset;
+  return state.ui.panOffset;
 }
 
 export function selectHoveredShapeId(state: EditorSnapshot) {
-  return state.transient.hoveredShapeId;
+  return state.ui.hoveredShapeId;
 }
 
 export function selectHoveredWaypoint(state: EditorSnapshot) {
-  return state.transient.hoveredWaypoint;
+  return state.ui.hoveredWaypoint;
 }
 
 export function selectVertexSelection(state: EditorSnapshot) {
-  return state.transient.vertexSelection;
+  return state.ui.vertexSelection;
 }
 
 export function selectDraftPath(state: EditorSnapshot) {
-  return state.transient.draftPath;
+  return state.ui.draftPath;
 }
 
 export function selectDraftForceClosed(state: EditorSnapshot) {
-  return state.transient.draftForceClosed;
+  return state.ui.draftForceClosed;
 }
 
 export function selectDraftSourceShapeId(state: EditorSnapshot) {
-  return state.transient.draftSourceShapeId;
+  return state.ui.draftSourceShapeId;
 }
 
 export function selectMarqueeRect(state: EditorSnapshot) {
-  return state.transient.marqueeRect;
+  return state.ui.marqueeRect;
 }
 
 export function selectRotationSession(state: EditorSnapshot) {
-  return state.transient.rotationSession;
+  return state.ui.rotationSession;
 }
 
 export function selectGroupDragPreview(state: EditorSnapshot) {
-  return state.transient.groupDragPreview;
+  return state.ui.groupDragPreview;
 }

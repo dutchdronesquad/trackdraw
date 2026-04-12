@@ -39,15 +39,15 @@ Labels used below:
 
 ## Engineering Foundation
 
-- [ ] Editor state and persistence boundary pass (`No account required`)
+- [x] Editor state and persistence boundary pass (`No account required`)
       Improve core editor boundaries so TrackDraw stays easier to reason about, autosave and project continuity become clearer, and future collaboration or review work does not require a full reset of the editor model.
-  - [ ] Separate document state from transient UI state
+  - [x] Separate document state from local UI state
         Split persistent track data more clearly from local interaction state such as tool mode, hover state, drag previews, and temporary selections.
-  - [ ] Introduce clearer editor action boundaries
+  - [x] Introduce clearer editor action boundaries
         Move toward more explicit editor actions for meaningful changes so undo, testing, analysis hooks, and future sync-related work all have cleaner integration points.
-  - [ ] Clarify persistence layers
+  - [x] Clarify persistence layers
         Tighten the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares so the user model stays easier to understand.
-  - [ ] Make undo and redo more intention-aware
+  - [x] Make undo and redo more intention-aware
         Group meaningful edit sessions more deliberately so history feels cleaner during drag, rotate, and route editing work.
 
 - [ ] Test infrastructure
@@ -68,7 +68,7 @@ Labels used below:
   - [x] Remaining large-file splits
         Break up any remaining oversized files identified in the audit, especially where editor composition and mobile/desktop orchestration still live together.
   - [x] Reduce cross-module coupling in editor state
-        Moved shared editor-store state shapes into dedicated types, centralized transient/session reset profiles, and reduced duplicated store wiring so state changes stay more local to the editor boundary.
+        Moved shared editor-store state shapes into dedicated types, centralized UI/session reset profiles, and reduced duplicated store wiring so state changes stay more local to the editor boundary.
 
 ## Follow-up
 
@@ -434,7 +434,3 @@ Labels used below:
         Continue tightening folder ownership and splitting broad components and modules where internal navigation and safe iteration are still harder than they should be.
 
 </details>
-
----
-
-_Last updated: 11 April 2026_

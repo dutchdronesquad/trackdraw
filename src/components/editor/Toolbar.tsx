@@ -27,6 +27,7 @@ import {
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
+import { useSessionActions, useUiActions } from "@/store/actions";
 import { Download, FolderOpen, Import } from "lucide-react";
 
 function TrackDrawIcon({ className }: { className?: string }) {
@@ -74,9 +75,9 @@ export default function Toolbar({
   onOpenPresets,
   collapsed,
 }: ToolbarProps) {
-  const activeTool = useEditor((state) => state.transient.activeTool);
-  const setActiveTool = useEditor((state) => state.setActiveTool);
-  const setSelection = useEditor((state) => state.setSelection);
+  const activeTool = useEditor((state) => state.ui.activeTool);
+  const { setActiveTool } = useUiActions();
+  const { setSelection } = useSessionActions();
   const theme = useTheme();
 
   function handleToolSelect(

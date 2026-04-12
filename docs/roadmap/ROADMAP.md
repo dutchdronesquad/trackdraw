@@ -142,9 +142,12 @@ Important boundary:
 
 Improve the core editor model so TrackDraw stays easier to reason about, project continuity is clearer, and future review or collaboration work does not require a full editor reset.
 
+Completed.
+The editor store now separates track, session, and local UI state more explicitly, action ownership is clearer in code, local draft versus project versus restore-point persistence is more deliberate, and grouped history sessions now better match drag, rotate, and inspector editing intent.
+
 Suggested first slices:
 
-- Split persistent document state from transient local UI state such as active tools, hover state, marquee state, and drag previews
+- Split persistent document state from local UI state such as active tools, hover state, marquee state, and drag previews
 - Introduce clearer action boundaries for meaningful editor changes so testing, analysis hooks, and future sync-related work have better integration points
 - Clarify the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares
 - Make undo and redo more intention-aware so drag, rotate, and route editing sessions produce cleaner history

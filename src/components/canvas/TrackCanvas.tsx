@@ -31,7 +31,13 @@ import {
 } from "@/components/canvas/renderers";
 import { useTrackCanvasShortcuts } from "@/components/canvas/useTrackCanvasShortcuts";
 import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewport";
+import { useHistorySession } from "@/hooks/useHistorySession";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
+import {
+  useSessionActions,
+  useTrackActions,
+  useUiActions,
+} from "@/store/actions";
 import { useEditor } from "@/store/editor";
 import {
   selectDesignShapes,
@@ -113,70 +119,66 @@ const TrackCanvas = memo(
     ref
   ) {
     usePerfMetric("render:TrackCanvas");
-    const design = useEditor((state) => state.design);
+    const design = useEditor((state) => state.track.design);
     const designShapes = useEditor(selectDesignShapes);
     const [zmin, zmax] = useEditor(selectDesignPolylineZRange);
     const shapeById = useEditor(selectShapeRecordMap);
     const primaryPolylineId = useEditor(
       (state) => selectPrimaryPolyline(state)?.id ?? null
     );
-    const selection = useEditor((state) => state.selection);
-    const setSelection = useEditor((state) => state.setSelection);
-    const updateShape = useEditor((state) => state.updateShape);
-    const setShapesLocked = useEditor((state) => state.setShapesLocked);
-    const insertPolylinePoint = useEditor((state) => state.insertPolylinePoint);
-    const setPolylinePoints = useEditor((state) => state.setPolylinePoints);
-    const removePolylinePoint = useEditor((state) => state.removePolylinePoint);
-    const addShape = useEditor((state) => state.addShape);
-    const addShapes = useEditor((state) => state.addShapes);
-    const activeTool = useEditor((state) => state.transient.activeTool);
-    const activePresetId = useEditor((state) => state.transient.activePresetId);
-    const segmentSel = useEditor((state) => state.transient.segmentSelection);
-    const vertexSel = useEditor((state) => state.transient.vertexSelection);
-    const draftPath = useEditor((state) => state.transient.draftPath);
-    const draftForceClosed = useEditor(
-      (state) => state.transient.draftForceClosed
-    );
+    const selection = useEditor((state) => state.session.selection);
+    const {
+      setSelection,
+      pauseHistory,
+      resumeHistory,
+      beginInteraction,
+      endInteraction,
+    } = useSessionActions();
+    const {
+      updateShape,
+      setShapesLocked,
+      insertPolylinePoint,
+      setPolylinePoints,
+      removePolylinePoint,
+      addShape,
+      addShapes,
+      rotateShapes,
+      removeShapes,
+      duplicateShapes,
+      groupSelection,
+      joinPolylines,
+      closePolyline,
+      nudgeShapes,
+      ungroupSelection,
+      bringForward,
+      sendBackward,
+    } = useTrackActions();
+    const activeTool = useEditor((state) => state.ui.activeTool);
+    const activePresetId = useEditor((state) => state.ui.activePresetId);
+    const segmentSel = useEditor((state) => state.ui.segmentSelection);
+    const vertexSel = useEditor((state) => state.ui.vertexSelection);
+    const draftPath = useEditor((state) => state.ui.draftPath);
+    const draftForceClosed = useEditor((state) => state.ui.draftForceClosed);
     const draftSourceShapeId = useEditor(
-      (state) => state.transient.draftSourceShapeId
+      (state) => state.ui.draftSourceShapeId
     );
-    const marqueeRect = useEditor((state) => state.transient.marqueeRect);
-    const rotationSession = useEditor(
-      (state) => state.transient.rotationSession
-    );
-    const groupDragPreview = useEditor(
-      (state) => state.transient.groupDragPreview
-    );
-    const setActiveTool = useEditor((state) => state.setActiveTool);
-    const setSegmentSel = useEditor((state) => state.setSegmentSelection);
-    const setVertexSel = useEditor((state) => state.setVertexSelection);
-    const setDraftPath = useEditor((state) => state.setDraftPath);
-    const setDraftForceClosed = useEditor((state) => state.setDraftForceClosed);
-    const setDraftSourceShapeId = useEditor(
-      (state) => state.setDraftSourceShapeId
-    );
-    const setMarqueeRect = useEditor((state) => state.setMarqueeRect);
-    const setRotationSession = useEditor((state) => state.setRotationSession);
-    const setGroupDragPreview = useEditor((state) => state.setGroupDragPreview);
-    const rotateShapes = useEditor((state) => state.rotateShapes);
-    const removeShapes = useEditor((state) => state.removeShapes);
-    const duplicateShapes = useEditor((state) => state.duplicateShapes);
-    const groupSelection = useEditor((state) => state.groupSelection);
-    const joinPolylines = useEditor((state) => state.joinPolylines);
-    const closePolyline = useEditor((state) => state.closePolyline);
-    const nudgeShapes = useEditor((state) => state.nudgeShapes);
-    const ungroupSelection = useEditor((state) => state.ungroupSelection);
-    const pauseHistory = useEditor((state) => state.pauseHistory);
-    const resumeHistory = useEditor((state) => state.resumeHistory);
-    const beginInteraction = useEditor((state) => state.beginInteraction);
-    const endInteraction = useEditor((state) => state.endInteraction);
-    const setZoom = useEditor((state) => state.setZoom);
-    const hoveredShapeId = useEditor((state) => state.transient.hoveredShapeId);
-    const hoveredWaypoint = useEditor(
-      (state) => state.transient.hoveredWaypoint
-    );
-    const bringForward = useEditor((state) => state.bringForward);
-    const sendBackward = useEditor((state) => state.sendBackward);
+    const marqueeRect = useEditor((state) => state.ui.marqueeRect);
+    const rotationSession = useEditor((state) => state.ui.rotationSession);
+    const groupDragPreview = useEditor((state) => state.ui.groupDragPreview);
+    const {
+      setActiveTool,
+      setSegmentSelection: setSegmentSel,
+      setVertexSelection: setVertexSel,
+      setDraftPath,
+      setDraftForceClosed,
+      setDraftSourceShapeId,
+      setMarqueeRect,
+      setRotationSession,
+      setGroupDragPreview,
+      setZoom,
+    } = useUiActions();
+    const hoveredShapeId = useEditor((state) => state.ui.hoveredShapeId);
+    const hoveredWaypoint = useEditor((state) => state.ui.hoveredWaypoint);
 
     const estimateRotationGuideRadiusPx = useCallback(
       (shape: Shape) => {
@@ -208,11 +210,19 @@ const TrackCanvas = memo(
     >("none");
     const syncFrameRef = useRef<number | null>(null);
     const rotationSessionRef = useRef(rotationSession);
-    const resumeHistoryRef = useRef(resumeHistory);
     const updateShapeRef = useRef(updateShape);
     const rotationEffectSessionKeyRef = useRef<string | null>(null);
     const rotationEffectCleanupRef = useRef<(() => void) | null>(null);
-    const rotationEffectResumedRef = useRef(false);
+    const {
+      startSession: startRotationHistorySession,
+      finishSession: finishRotationHistorySession,
+      cancelSession: cancelRotationHistorySession,
+    } = useHistorySession({
+      beginInteraction,
+      endInteraction,
+      pauseHistory,
+      resumeHistory,
+    });
 
     const [cursor, setCursor] = useState<CursorState | null>(null);
     const [snapTarget, setSnapTarget] = useState<{
@@ -311,10 +321,6 @@ const TrackCanvas = memo(
     useEffect(() => {
       rotationSessionRef.current = rotationSession;
     }, [rotationSession]);
-
-    useEffect(() => {
-      resumeHistoryRef.current = resumeHistory;
-    }, [resumeHistory]);
 
     useEffect(() => {
       updateShapeRef.current = updateShape;
@@ -1247,7 +1253,6 @@ const TrackCanvas = memo(
       rotationEffectCleanupRef.current?.();
       rotationEffectCleanupRef.current = null;
       rotationEffectSessionKeyRef.current = sessionKey;
-      rotationEffectResumedRef.current = false;
 
       if (!session) return;
 
@@ -1306,16 +1311,12 @@ const TrackCanvas = memo(
 
       const handlePointerUp = () => {
         const activeSession = rotationSessionRef.current;
-        if (!rotationEffectResumedRef.current) {
-          resumeHistoryRef.current();
-          rotationEffectResumedRef.current = true;
-        }
-        if (activeSession) {
+        finishRotationHistorySession(() => {
+          if (!activeSession) return;
           updateShapeRef.current(activeSession.shapeId, {
             rotation: activeSession.previewRotation,
           });
-        }
-        endInteraction();
+        });
         setRotationSession(null);
       };
 
@@ -1326,11 +1327,7 @@ const TrackCanvas = memo(
         window.removeEventListener("touchmove", handleTouchMove);
         window.removeEventListener("touchend", handlePointerUp);
         window.removeEventListener("touchcancel", handlePointerUp);
-        if (!rotationEffectResumedRef.current) {
-          resumeHistoryRef.current();
-          rotationEffectResumedRef.current = true;
-        }
-        endInteraction();
+        cancelRotationHistorySession();
       };
 
       window.addEventListener("mousemove", handleMouseMove);
@@ -1342,7 +1339,11 @@ const TrackCanvas = memo(
       window.addEventListener("touchcancel", handlePointerUp);
 
       rotationEffectCleanupRef.current = cleanup;
-    });
+    }, [
+      cancelRotationHistorySession,
+      finishRotationHistorySession,
+      setRotationSession,
+    ]);
 
     useEffect(
       () => () => {
@@ -1778,8 +1779,7 @@ const TrackCanvas = memo(
                     const stage = stageRef.current;
                     const pointer = stage?.getRelativePointerPosition();
                     if (!pointer) return;
-                    beginInteraction();
-                    pauseHistory();
+                    startRotationHistorySession();
 
                     const startAngle =
                       (Math.atan2(

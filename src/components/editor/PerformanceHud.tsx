@@ -31,7 +31,7 @@ export default function PerformanceHud() {
   const prefersReducedMotion = useReducedMotion();
   const theme = useTheme();
   const activeTool = useEditor(selectActiveTool);
-  const selectionCount = useEditor((state) => state.selection.length);
+  const selectionCount = useEditor((state) => state.session.selection.length);
   const metrics = useSyncExternalStore(
     subscribePerf,
     getPerfSnapshot,

@@ -1,6 +1,7 @@
 "use client";
 
 import { type RefObject, useEffect, useRef } from "react";
+import { useHistorySession } from "@/hooks/useHistorySession";
 import { isPolylineShape } from "@/lib/track/shape-utils";
 import type { EditorTool } from "@/lib/editor-tools";
 import type { Shape, ShapeDraft } from "@/lib/types";
@@ -79,15 +80,46 @@ export function useTrackCanvasShortcuts({
   endInteraction,
 }: TrackCanvasShortcutsParams) {
   const keyboardBatchTimeoutRef = useRef<number | null>(null);
-  const keyboardBatchActiveRef = useRef(false);
+  const activeToolRef = useRef(activeTool);
+  const designFieldGridStepRef = useRef(designFieldGridStep);
+  const shapeByIdRef = useRef(shapeById);
+  const draftPathRef = useRef(draftPath);
+  const selectionRef = useRef(selection);
+  const effectiveVertexSelRef = useRef(effectiveVertexSel);
+  const { startSession, finishSession, cancelSession } = useHistorySession({
+    beginInteraction,
+    endInteraction,
+    pauseHistory,
+    resumeHistory,
+  });
+
+  useEffect(() => {
+    activeToolRef.current = activeTool;
+  }, [activeTool]);
+
+  useEffect(() => {
+    designFieldGridStepRef.current = designFieldGridStep;
+  }, [designFieldGridStep]);
+
+  useEffect(() => {
+    shapeByIdRef.current = shapeById;
+  }, [shapeById]);
+
+  useEffect(() => {
+    draftPathRef.current = draftPath;
+  }, [draftPath]);
+
+  useEffect(() => {
+    selectionRef.current = selection;
+  }, [selection]);
+
+  useEffect(() => {
+    effectiveVertexSelRef.current = effectiveVertexSel;
+  }, [effectiveVertexSel]);
 
   useEffect(() => {
     const beginKeyboardBatch = () => {
-      if (!keyboardBatchActiveRef.current) {
-        keyboardBatchActiveRef.current = true;
-        beginInteraction();
-        pauseHistory();
-      }
+      startSession();
 
       if (keyboardBatchTimeoutRef.current !== null) {
         window.clearTimeout(keyboardBatchTimeoutRef.current);
@@ -95,17 +127,14 @@ export function useTrackCanvasShortcuts({
 
       keyboardBatchTimeoutRef.current = window.setTimeout(() => {
         keyboardBatchTimeoutRef.current = null;
-        if (!keyboardBatchActiveRef.current) return;
-        keyboardBatchActiveRef.current = false;
-        resumeHistory();
-        endInteraction();
+        finishSession();
       }, 220);
     };
 
     const rotateSelection = (delta: number) => {
       beginKeyboardBatch();
-      const rotatableIds = selection.filter((id) => {
-        const shape = shapeById[id];
+      const rotatableIds = selectionRef.current.filter((id) => {
+        const shape = shapeByIdRef.current[id];
         return Boolean(shape && canRotateShape(shape));
       });
       if (rotatableIds.length) {
@@ -128,7 +157,7 @@ export function useTrackCanvasShortcuts({
 
       if (meta && event.key === "d") {
         event.preventDefault();
-        if (selection.length) duplicateShapes(selection);
+        if (selectionRef.current.length) duplicateShapes(selectionRef.current);
         return;
       }
 
@@ -140,8 +169,8 @@ export function useTrackCanvasShortcuts({
         clipboard.splice(
           0,
           clipboard.length,
-          ...selection
-            .map((id) => shapeById[id])
+          ...selectionRef.current
+            .map((id) => shapeByIdRef.current[id])
             .filter((shape): shape is Shape => Boolean(shape))
         );
         return;
@@ -176,12 +205,12 @@ export function useTrackCanvasShortcuts({
         ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(
           event.key
         ) &&
-        selection.length > 0 &&
-        activeTool === "select"
+        selectionRef.current.length > 0 &&
+        activeToolRef.current === "select"
       ) {
         event.preventDefault();
         beginKeyboardBatch();
-        const step = event.altKey ? 0.1 : designFieldGridStep;
+        const step = event.altKey ? 0.1 : designFieldGridStepRef.current;
         const dx =
           event.key === "ArrowLeft"
             ? -step
@@ -194,14 +223,14 @@ export function useTrackCanvasShortcuts({
             : event.key === "ArrowDown"
               ? step
               : 0;
-        nudgeShapes(selection, dx, dy);
+        nudgeShapes(selectionRef.current, dx, dy);
         return;
       }
 
       if (
         ["[", "]", "q", "e", "Q", "E"].includes(event.key) &&
-        selection.length > 0 &&
-        activeTool === "select"
+        selectionRef.current.length > 0 &&
+        activeToolRef.current === "select"
       ) {
         event.preventDefault();
         const step = event.altKey ? 1 : event.shiftKey ? 5 : 15;
@@ -219,7 +248,7 @@ export function useTrackCanvasShortcuts({
 
       const key = event.key;
       if (key === "Escape") {
-        if (draftPath.length) cancelDraftPath();
+        if (draftPathRef.current.length) cancelDraftPath();
         else {
           setSelection([]);
           setVertexSel(null);
@@ -227,26 +256,30 @@ export function useTrackCanvasShortcuts({
         }
       }
 
-      if (key === "Enter" && draftPath.length >= 2) finalizePath();
+      if (key === "Enter" && draftPathRef.current.length >= 2) finalizePath();
 
       if (key === "Backspace" || key === "Delete") {
-        if (draftPath.length && activeTool === "polyline") {
+        if (
+          draftPathRef.current.length &&
+          activeToolRef.current === "polyline"
+        ) {
           setDraftPath((previous) =>
             previous.slice(0, Math.max(0, previous.length - 1))
           );
           return;
         }
 
-        if (effectiveVertexSel) {
-          const shape = shapeById[effectiveVertexSel.shapeId];
+        if (effectiveVertexSelRef.current) {
+          const shape =
+            shapeByIdRef.current[effectiveVertexSelRef.current.shapeId];
           if (shape && isPolylineShape(shape)) {
-            removePolylinePoint(shape.id, effectiveVertexSel.idx);
+            removePolylinePoint(shape.id, effectiveVertexSelRef.current.idx);
           }
           setVertexSel(null);
           return;
         }
 
-        if (selection.length) removeShapes(selection);
+        if (selectionRef.current.length) removeShapes(selectionRef.current);
       }
 
       switch (key.toLowerCase()) {
@@ -290,37 +323,26 @@ export function useTrackCanvasShortcuts({
         window.clearTimeout(keyboardBatchTimeoutRef.current);
         keyboardBatchTimeoutRef.current = null;
       }
-      if (keyboardBatchActiveRef.current) {
-        keyboardBatchActiveRef.current = false;
-        resumeHistory();
-        endInteraction();
-      }
+      cancelSession();
     };
   }, [
-    activeTool,
     addShapes,
-    beginInteraction,
     cancelDraftPath,
+    cancelSession,
     containerRef,
-    designFieldGridStep,
-    shapeById,
-    draftPath,
     duplicateShapes,
-    endInteraction,
-    effectiveVertexSel,
     finalizePath,
+    finishSession,
     fitFieldToViewport,
     nudgeShapes,
-    pauseHistory,
     removeShapes,
     removePolylinePoint,
-    resumeHistory,
     rotateShapes,
-    selection,
     setActiveTool,
     setDraftPath,
     setManualView,
     setSelection,
     setVertexSel,
+    startSession,
   ]);
 }

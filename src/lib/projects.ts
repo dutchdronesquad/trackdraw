@@ -2,15 +2,29 @@
  * Local-first project persistence and restore point management.
  *
  * Storage keys:
- *   trackdraw-project-list   — JSON: ProjectMeta[]
+ *   trackdraw-design         — JSON: SerializedTrackDesign (crash-recovery draft)
+ *   trackdraw-project-list   — JSON: ProjectMeta[] (named local projects)
  *   trackdraw-project-{id}   — JSON: SerializedTrackDesign
- *   trackdraw-restore-list   — JSON: RestorePointMeta[]
+ *   trackdraw-restore-list   — JSON: RestorePointMeta[] (manual/periodic snapshots)
  *   trackdraw-restore-{id}   — JSON: SerializedTrackDesign
  */
 
 import { parseDesign, serializeDesign } from "@/lib/track/design";
 import type { TrackDesign } from "@/lib/types";
 import { nanoid } from "nanoid";
+
+export type PersistenceLayerId =
+  | "local-draft"
+  | "local-project"
+  | "restore-point"
+  | "account-project"
+  | "published-share";
+
+export interface PersistenceLayerDefinition {
+  id: PersistenceLayerId;
+  label: string;
+  role: string;
+}
 
 export interface ProjectMeta {
   id: string;
@@ -29,9 +43,39 @@ export interface RestorePointMeta {
   shapeCount: number;
 }
 
+export const LOCAL_DRAFT_KEY = "trackdraw-design";
 const PROJECT_LIST_KEY = "trackdraw-project-list";
 const RESTORE_LIST_KEY = "trackdraw-restore-list";
 const MAX_RESTORE_POINTS = 7;
+
+export const persistenceLayerDefinitions: readonly PersistenceLayerDefinition[] =
+  [
+    {
+      id: "local-draft",
+      label: "Local draft",
+      role: "Crash-recovery working state for the current tab/device.",
+    },
+    {
+      id: "local-project",
+      label: "Local project",
+      role: "Named project state stored on this device and reopened later.",
+    },
+    {
+      id: "restore-point",
+      label: "Restore point",
+      role: "Deliberate or periodic snapshot of a project's earlier state.",
+    },
+    {
+      id: "account-project",
+      label: "Account project",
+      role: "Authenticated project continuity and sync across devices.",
+    },
+    {
+      id: "published-share",
+      label: "Published share",
+      role: "Read-only snapshot published for sharing, not the working state.",
+    },
+  ] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -61,6 +105,30 @@ function removeKey(key: string): void {
   } catch {
     /* ignore */
   }
+}
+
+export function hasMeaningfulProjectContent(design: TrackDesign): boolean {
+  return Boolean(
+    design.shapeOrder.length > 0 ||
+    design.title.trim() ||
+    (design.description ?? "").trim() ||
+    (design.tags ?? []).length > 0 ||
+    (design.authorName ?? "").trim()
+  );
+}
+
+export function saveLocalDraft(design: TrackDesign): void {
+  writeJson(LOCAL_DRAFT_KEY, serializeDesign(design));
+}
+
+export function loadLocalDraft(): TrackDesign | null {
+  const raw = readJson<unknown>(LOCAL_DRAFT_KEY);
+  if (!raw) return null;
+  return parseDesign(raw);
+}
+
+export function clearLocalDraft(): void {
+  removeKey(LOCAL_DRAFT_KEY);
 }
 
 // ---------------------------------------------------------------------------

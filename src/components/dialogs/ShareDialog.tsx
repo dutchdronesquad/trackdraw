@@ -79,7 +79,7 @@ function ShareContent({
   onSharePublished?: () => void;
   mobile?: boolean;
 }) {
-  const design = useEditor((s) => s.design);
+  const design = useEditor((s) => s.track.design);
   const shapeCount = useEditor(selectDesignShapeCount);
   const searchParams = useSearchParams();
   const { data: session } = authClient.useSession();

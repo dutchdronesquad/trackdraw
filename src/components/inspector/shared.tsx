@@ -1,42 +1,37 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
+import { useHistorySession } from "@/hooks/useHistorySession";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { useEditor } from "@/store/editor";
+import { useSessionActions } from "@/store/actions";
 
 export const fmt = (value: number) => Number(value.toFixed(2));
 
 export function useInspectorInputBatch() {
-  const beginInteraction = useEditor((state) => state.beginInteraction);
-  const endInteraction = useEditor((state) => state.endInteraction);
-  const pauseHistory = useEditor((state) => state.pauseHistory);
-  const resumeHistory = useEditor((state) => state.resumeHistory);
-  const batchActiveRef = useRef(false);
+  const { beginInteraction, endInteraction, pauseHistory, resumeHistory } =
+    useSessionActions();
+  const { startSession, finishSession, cancelSession } = useHistorySession({
+    beginInteraction,
+    endInteraction,
+    pauseHistory,
+    resumeHistory,
+  });
 
   const startBatch = () => {
-    if (batchActiveRef.current) return;
-    batchActiveRef.current = true;
-    beginInteraction();
-    pauseHistory();
+    startSession();
   };
 
   const finishBatch = () => {
-    if (!batchActiveRef.current) return;
-    batchActiveRef.current = false;
-    resumeHistory();
-    endInteraction();
+    finishSession();
   };
 
   useEffect(
     () => () => {
-      if (!batchActiveRef.current) return;
-      batchActiveRef.current = false;
-      resumeHistory();
-      endInteraction();
+      cancelSession();
     },
-    [endInteraction, resumeHistory]
+    [cancelSession]
   );
 
   return {

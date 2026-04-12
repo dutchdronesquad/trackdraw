@@ -31,6 +31,11 @@ import {
 } from "@/store/selectors";
 import { useEditor } from "@/store/editor";
 import {
+  useSessionActions,
+  useTrackActions,
+  useUiActions,
+} from "@/store/actions";
+import {
   CameraAxisTracker,
   CameraCapture,
   DiveGateTiltHandle3D,
@@ -94,17 +99,17 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     ref
   ) {
     usePerfMetric("render:TrackPreview3D");
-    const field = useEditor((state) => state.design.field);
-    const selection = useEditor((state) => state.selection);
-    const setSelection = useEditor((state) => state.setSelection);
-    const pauseHistory = useEditor((state) => state.pauseHistory);
-    const resumeHistory = useEditor((state) => state.resumeHistory);
-    const beginInteraction = useEditor((state) => state.beginInteraction);
-    const endInteraction = useEditor((state) => state.endInteraction);
-    const setPolylinePoints = useEditor((state) => state.setPolylinePoints);
-    const updateShape = useEditor((state) => state.updateShape);
-    const setLiveShapePatch = useEditor((state) => state.setLiveShapePatch);
-    const clearLiveShapePatch = useEditor((state) => state.clearLiveShapePatch);
+    const field = useEditor((state) => state.track.design.field);
+    const selection = useEditor((state) => state.session.selection);
+    const {
+      setSelection,
+      pauseHistory,
+      resumeHistory,
+      beginInteraction,
+      endInteraction,
+    } = useSessionActions();
+    const { setPolylinePoints, updateShape } = useTrackActions();
+    const { setLiveShapePatch, clearLiveShapePatch } = useUiActions();
     const shapes = useEditor(selectDesignShapes);
     const hasPath = useEditor(selectHasPath);
     const primaryPolyline = useEditor(selectPrimaryPolyline);

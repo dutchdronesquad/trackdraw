@@ -6,16 +6,18 @@ import {
   deleteProject,
   deleteProjects,
   deleteRestorePoint,
+  hasMeaningfulProjectContent,
   listProjects,
   listRestorePointsForProject,
+  loadLocalDraft,
   loadProject,
   loadRestorePoint,
   renameProject,
+  saveLocalDraft,
   saveProject,
   type ProjectMeta,
   type RestorePointMeta,
 } from "@/lib/projects";
-import { parseDesign } from "@/lib/track/design";
 import { decodeDesign } from "@/lib/share";
 import { recordPerfSample } from "@/lib/perf";
 import { useEditor } from "@/store/editor";
@@ -26,7 +28,6 @@ export function useEditorProjects({
   readOnly,
   seedToken,
   design,
-  designShapesLength,
   historyPaused,
   interactionSessionDepth,
   replaceDesign,
@@ -34,7 +35,6 @@ export function useEditorProjects({
   readOnly: boolean;
   seedToken?: string;
   design: TrackDesign;
-  designShapesLength: number;
   historyPaused: boolean;
   interactionSessionDepth: number;
   replaceDesign: (design: TrackDesign) => void;
@@ -68,17 +68,14 @@ export function useEditorProjects({
     }
 
     try {
-      const saved = localStorage.getItem("trackdraw-design");
-      if (saved) {
-        const parsed = parseDesign(JSON.parse(saved));
-        if (parsed) {
-          replaceDesign(parsed);
-          setSaveStatusLabel("Restored from local autosave");
-          setProjects(listProjects());
-          setRestorePoints(listRestorePointsForProject(parsed.id));
-          setInitialized(true);
-          return;
-        }
+      const draft = loadLocalDraft();
+      if (draft) {
+        replaceDesign(draft);
+        setSaveStatusLabel("Restored from local draft");
+        setProjects(listProjects());
+        setRestorePoints(listRestorePointsForProject(draft.id));
+        setInitialized(true);
+        return;
       }
       setSaveStatusLabel("Fresh local project");
     } catch {
@@ -102,8 +99,8 @@ export function useEditorProjects({
     const timeoutId = window.setTimeout(() => {
       try {
         const startedAt = performance.now();
-        localStorage.setItem("trackdraw-design", JSON.stringify(design));
-        if (designShapesLength > 0 || design.title.trim()) {
+        saveLocalDraft(design);
+        if (hasMeaningfulProjectContent(design)) {
           saveProject(design);
           setProjects(listProjects());
         }
@@ -123,21 +120,15 @@ export function useEditorProjects({
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [
-    design,
-    designShapesLength,
-    historyPaused,
-    interactionSessionDepth,
-    readOnly,
-  ]);
+  }, [design, historyPaused, interactionSessionDepth, readOnly]);
 
   // Periodic restore points — every 5 min if the design changed
   useEffect(() => {
     if (readOnly) return;
-    let lastUpdatedAt = useEditor.getState().design.updatedAt;
+    let lastUpdatedAt = useEditor.getState().track.design.updatedAt;
     const intervalId = window.setInterval(
       () => {
-        const current = useEditor.getState().design;
+        const current = useEditor.getState().track.design;
         if (current.updatedAt === lastUpdatedAt) return;
         createRestorePoint(current);
         setRestorePoints(listRestorePointsForProject(current.id));
@@ -186,9 +177,10 @@ export function useEditorProjects({
       const loaded = loadProject(id);
       if (!loaded) return;
       // Save current work and snapshot before switching
-      if (designShapesLength > 0 || design.title.trim()) {
+      if (hasMeaningfulProjectContent(design)) {
         saveProject(design);
         createRestorePoint(design);
+        saveLocalDraft(design);
       }
       replaceDesign(loaded);
       setProjects(listProjects());
@@ -196,7 +188,7 @@ export function useEditorProjects({
       setActiveRestorePointId(null);
       setSaveStatusLabel("Project opened");
     },
-    [design, designShapesLength, replaceDesign]
+    [design, replaceDesign]
   );
 
   const handleDeleteProject = useCallback(
@@ -259,13 +251,13 @@ export function useEditorProjects({
   }, []);
 
   const snapshotCurrentDesign = useCallback(() => {
-    if (designShapesLength > 0 || design.title.trim()) {
+    if (hasMeaningfulProjectContent(design)) {
       saveProject(design);
       createRestorePoint(design);
       setProjects(listProjects());
       setRestorePoints(listRestorePointsForProject(design.id));
     }
-  }, [design, designShapesLength]);
+  }, [design]);
 
   return {
     projects,
