@@ -39,7 +39,12 @@ import {
   selectPrimaryPolyline,
   selectShapeRecordMap,
 } from "@/store/selectors";
-import { m2px } from "@/lib/track/units";
+import { m2px, px2m } from "@/lib/track/units";
+import {
+  buildSnapIndex,
+  getNearbySnapCandidates as getNearbySnapCandidatesFromIndex,
+  findNearestSnapPoint,
+} from "@/lib/canvas/interaction-helpers";
 import {
   getCanvasRotationGuideAngleDeg,
   hasFrontBackOrientation,
@@ -416,6 +421,28 @@ const TrackCanvas = memo(
       [stepPx]
     );
 
+    const waypointSnapRadiusMeters = useMemo(
+      () => Math.max(1, design.field.gridStep * 1.5),
+      [design.field.gridStep]
+    );
+    const waypointSnapCellSize = useMemo(
+      () => Math.max(waypointSnapRadiusMeters * 2, design.field.gridStep * 4),
+      [waypointSnapRadiusMeters, design.field.gridStep]
+    );
+    const waypointSnapIndex = useMemo(
+      () => buildSnapIndex(designShapes, waypointSnapCellSize),
+      [designShapes, waypointSnapCellSize]
+    );
+    const getWaypointSnapCandidates = useCallback(
+      (meters: { x: number; y: number }) =>
+        getNearbySnapCandidatesFromIndex(
+          waypointSnapIndex,
+          waypointSnapCellSize,
+          meters
+        ),
+      [waypointSnapCellSize, waypointSnapIndex]
+    );
+
     const clampShapeDragPosition = useCallback(
       (pos: Vector2d): Vector2d => ({
         x: clamp(pos.x, -widthPx * 2, widthPx * 3),
@@ -502,6 +529,25 @@ const TrackCanvas = memo(
       (pos: Vector2d, snapEnabled: boolean): Vector2d => {
         const bounded = clampWaypointDragPosition(pos);
         if (!snapEnabled) return bounded;
+
+        // Try snap-to-shape first
+        const posMeters = {
+          x: px2m(bounded.x, design.field.ppm),
+          y: px2m(bounded.y, design.field.ppm),
+        };
+        const shapeSnap = findNearestSnapPoint(
+          getWaypointSnapCandidates(posMeters),
+          posMeters,
+          waypointSnapRadiusMeters
+        );
+        if (shapeSnap) {
+          return {
+            x: m2px(shapeSnap.x, design.field.ppm),
+            y: m2px(shapeSnap.y, design.field.ppm),
+          };
+        }
+
+        // Fall back to grid snap
         const snapX = Math.round(bounded.x / stepPx) * stepPx;
         const snapY = Math.round(bounded.y / stepPx) * stepPx;
         return {
@@ -515,7 +561,14 @@ const TrackCanvas = memo(
               : bounded.y,
         };
       },
-      [clampWaypointDragPosition, magneticSnapRadiusPx, stepPx]
+      [
+        clampWaypointDragPosition,
+        design.field.ppm,
+        getWaypointSnapCandidates,
+        magneticSnapRadiusPx,
+        stepPx,
+        waypointSnapRadiusMeters,
+      ]
     );
 
     const dragBound = useCallback(

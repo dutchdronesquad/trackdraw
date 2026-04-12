@@ -78,6 +78,7 @@ export function PolylineShapeContent({
     cleanup: (() => void) | null;
     hasMoved: boolean;
     idx: number;
+    initialClient: { x: number; y: number };
     initialPointPx: Vector2d;
     lastResolved: Vector2d;
     latestClient: { x: number; y: number } | null;
@@ -222,15 +223,15 @@ export function PolylineShapeContent({
       x: pointer.x + session.offset.x,
       y: pointer.y + session.offset.y,
     };
+    const hasPhysicallyMoved =
+      Math.abs(session.latestClient.x - session.initialClient.x) > 3 ||
+      Math.abs(session.latestClient.y - session.initialClient.y) > 3;
     const resolved = resolveWaypointDragPosition(
       rawPosition,
-      dragSnapRef.current
+      hasPhysicallyMoved && dragSnapRef.current
     );
     session.lastResolved = resolved;
-    session.hasMoved =
-      session.hasMoved ||
-      Math.abs(resolved.x - session.initialPointPx.x) > 0.5 ||
-      Math.abs(resolved.y - session.initialPointPx.y) > 0.5;
+    session.hasMoved = session.hasMoved || hasPhysicallyMoved;
 
     const isSnapping =
       Math.abs(rawPosition.x - resolved.x) > 0.5 ||
@@ -301,6 +302,7 @@ export function PolylineShapeContent({
         cleanup: null,
         hasMoved: false,
         idx: index,
+        initialClient: client,
         initialPointPx: pointPx,
         lastResolved: pointPx,
         latestClient: client,
