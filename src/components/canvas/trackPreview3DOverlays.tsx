@@ -11,7 +11,7 @@ import {
   RotateCcw,
   Wind,
 } from "lucide-react";
-import type { QuaternionState } from "@/components/canvas/trackPreview3DSceneContent";
+import type { QuaternionState } from "@/components/canvas/trackPreview3DSharedSceneContent";
 
 function CanvasHintPill({
   icon,

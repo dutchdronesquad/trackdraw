@@ -15,6 +15,7 @@ import {
 } from "@/lib/track/fpvCamera";
 import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
 import type { TrackDesign, Shape, PolylineShape } from "@/lib/types";
+import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 
 const FPS = 60;
 const BITRATE = 8_000_000;
@@ -22,15 +23,6 @@ const WIDTH = 1280;
 const HEIGHT = 720;
 // Target drone speed in m/s — determines video duration from track length
 const TARGET_SPEED_MS = 7;
-
-export interface FlythroughProgress {
-  progress: number;
-  encodedFrames: number;
-  totalFrames: number;
-  videoDurationSeconds: number;
-}
-
-export type FlythroughTheme = "dark" | "light";
 
 function getOrderedShapes(design: TrackDesign): Shape[] {
   return design.shapeOrder

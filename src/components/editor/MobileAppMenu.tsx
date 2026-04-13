@@ -22,6 +22,8 @@ type MobileAppMenuProps = {
   onImport: () => void;
   onExport: () => void;
   onShare: () => void;
+  defaultOpen?: boolean;
+  hideTrigger?: boolean;
 };
 
 function getUserDisplayName(
@@ -112,10 +114,12 @@ export default function MobileAppMenu({
   onImport,
   onExport,
   onShare,
+  defaultOpen = false,
+  hideTrigger = false,
 }: MobileAppMenuProps) {
   const { data } = authClient.useSession();
   const [accountOpen, setAccountOpen] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [signingOut, setSigningOut] = useState(false);
   const user = data?.user;
 
@@ -150,17 +154,19 @@ export default function MobileAppMenu({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={(event) => {
-          event.currentTarget.blur();
-          setOpen(true);
-        }}
-        className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-lg transition-colors lg:hidden"
-        aria-label="Open app menu"
-      >
-        <Menu className="size-4" />
-      </button>
+      {!hideTrigger ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.currentTarget.blur();
+            setOpen(true);
+          }}
+          className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-lg transition-colors lg:hidden"
+          aria-label="Open app menu"
+        >
+          <Menu className="size-4" />
+        </button>
+      ) : null}
 
       <Drawer
         open={open}

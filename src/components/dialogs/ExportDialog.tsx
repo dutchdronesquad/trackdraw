@@ -5,15 +5,12 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEditor } from "@/store/editor";
-import type {
-  FlythroughProgress,
-  FlythroughTheme,
-} from "@/lib/export/exportFlythrough";
+import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 import { cn } from "@/lib/utils";
-import type { TrackCanvasHandle } from "@/components/canvas/TrackCanvas";
+import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import { ArrowRight, Download, Loader2, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
-import type { TrackPreview3DHandle } from "@/components/canvas/TrackPreview3D";
+import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
 
 export interface ExportDialogProps {
@@ -117,7 +114,7 @@ function DesktopFormatCard({
             }
       }
       className={cn(
-        "group flex min-h-[148px] w-full flex-col rounded-2xl border p-4 transition-all",
+        "group flex min-h-37 w-full flex-col rounded-2xl border p-4 transition-all",
         inactive
           ? "border-border/20 cursor-not-allowed opacity-40"
           : isLocked

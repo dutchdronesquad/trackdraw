@@ -1,9 +1,8 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import AccountMenu from "@/components/editor/AccountMenu";
 import { toolbarToolGroups } from "@/components/editor/tool-icons";
 import { useTheme } from "@/hooks/useTheme";
 import {
@@ -28,7 +27,12 @@ import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
 import { useSessionActions, useUiActions } from "@/store/actions";
+import { useEffect, useState } from "react";
 import { Download, FolderOpen, Import } from "lucide-react";
+
+const AccountMenu = dynamic(() => import("@/components/editor/AccountMenu"), {
+  ssr: false,
+});
 
 function TrackDrawIcon({ className }: { className?: string }) {
   return (
@@ -68,6 +72,25 @@ interface ToolbarProps {
   onToggleCollapsed: () => void;
 }
 
+function AccountMenuFallback({ collapsed }: { collapsed: boolean }) {
+  return (
+    <div
+      className={cn(
+        "text-sidebar-foreground/50 flex items-center rounded-xl",
+        collapsed
+          ? "h-9 w-full justify-center"
+          : "h-10 w-full gap-2.5 px-2.5 text-[13px]"
+      )}
+      aria-hidden="true"
+    >
+      <span className="bg-muted/70 flex size-6 shrink-0 items-center justify-center rounded-full" />
+      {!collapsed ? (
+        <span className="bg-muted/70 h-3.5 w-20 rounded-full" />
+      ) : null}
+    </div>
+  );
+}
+
 export default function Toolbar({
   onImport,
   onExport,
@@ -79,6 +102,33 @@ export default function Toolbar({
   const { setActiveTool } = useUiActions();
   const { setSelection } = useSessionActions();
   const theme = useTheme();
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+
+  useEffect(() => {
+    if (showAccountMenu) return;
+
+    let timeoutId: ReturnType<typeof globalThis.setTimeout> | null = null;
+    let idleId: number | null = null;
+
+    const enable = () => {
+      setShowAccountMenu(true);
+    };
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(enable, { timeout: 1200 });
+    } else {
+      timeoutId = globalThis.setTimeout(enable, 300);
+    }
+
+    return () => {
+      if (idleId !== null) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        globalThis.clearTimeout(timeoutId);
+      }
+    };
+  }, [showAccountMenu]);
 
   function handleToolSelect(
     tool: (typeof toolbarToolGroups)[number]["tools"][number]["id"]
@@ -105,23 +155,18 @@ export default function Toolbar({
     onClick: () => void;
   }) {
     const btn = (
-      <motion.div
-        whileTap={{ scale: 0.985 }}
-        transition={{ duration: 0.16, ease: "easeOut" }}
+      <SidebarMenuButton
+        onClick={onClick}
+        className={cn(
+          "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-9 rounded-xl border border-transparent transition-all duration-200 active:scale-[0.985]",
+          collapsed ? "justify-center px-0" : "gap-2.5"
+        )}
       >
-        <SidebarMenuButton
-          onClick={onClick}
-          className={cn(
-            "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-9 rounded-xl border border-transparent transition-all duration-200",
-            collapsed ? "justify-center px-0" : "gap-2.5"
-          )}
-        >
-          <span className="flex size-4 shrink-0 items-center justify-center">
-            {icon}
-          </span>
-          {!collapsed && <span className="text-[13px]">{label}</span>}
-        </SidebarMenuButton>
-      </motion.div>
+        <span className="flex size-4 shrink-0 items-center justify-center">
+          {icon}
+        </span>
+        {!collapsed && <span className="text-[13px]">{label}</span>}
+      </SidebarMenuButton>
     );
 
     return (
@@ -199,61 +244,48 @@ export default function Toolbar({
                 {group.tools.map((tool) => {
                   const active = tool.id === activeTool;
                   const btn = (
-                    <motion.div
-                      whileTap={{ scale: 0.985 }}
-                      transition={{ duration: 0.16, ease: "easeOut" }}
+                    <SidebarMenuButton
+                      isActive={active}
+                      onClick={() => handleToolSelect(tool.id)}
+                      className={cn(
+                        "relative h-9 overflow-hidden rounded-xl border transition-all duration-150 active:scale-[0.985]",
+                        collapsed ? "justify-center px-0" : "gap-2.5",
+                        active
+                          ? "border-brand-primary/30 bg-brand-primary/14 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                          : "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
+                      )}
                     >
-                      <SidebarMenuButton
-                        isActive={active}
-                        onClick={() => handleToolSelect(tool.id)}
+                      {active && (
+                        <span className="bg-brand-primary/12 absolute inset-0 rounded-lg" />
+                      )}
+                      <span
                         className={cn(
-                          "relative h-9 overflow-hidden rounded-xl border transition-all duration-150",
-                          collapsed ? "justify-center px-0" : "gap-2.5",
+                          "flex size-4 shrink-0 items-center justify-center transition-colors",
                           active
-                            ? "border-brand-primary/30 bg-brand-primary/14 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                            : "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
+                            ? "text-brand-primary"
+                            : "text-sidebar-foreground/70 group-hover/menu-button:text-foreground"
                         )}
                       >
-                        {active && (
-                          <motion.span
-                            layoutId="toolbar-active-pill"
-                            className="bg-brand-primary/12 absolute inset-0 rounded-lg"
-                            transition={{
-                              type: "spring",
-                              stiffness: 420,
-                              damping: 34,
-                            }}
-                          />
-                        )}
-                        <span
+                        {tool.icon}
+                      </span>
+                      {!collapsed && (
+                        <span className="flex-1 truncate text-[13px]">
+                          {tool.label}
+                        </span>
+                      )}
+                      {!collapsed && tool.shortcut && (
+                        <Kbd
                           className={cn(
-                            "flex size-4 shrink-0 items-center justify-center transition-colors",
+                            "h-4 min-w-4 px-1 font-mono text-[9px] leading-none shadow-none",
                             active
-                              ? "text-brand-primary"
-                              : "text-sidebar-foreground/70 group-hover/menu-button:text-foreground"
+                              ? "bg-brand-primary/10 text-foreground/55"
+                              : "bg-muted/80 text-muted-foreground/55"
                           )}
                         >
-                          {tool.icon}
-                        </span>
-                        {!collapsed && (
-                          <span className="flex-1 truncate text-[13px]">
-                            {tool.label}
-                          </span>
-                        )}
-                        {!collapsed && tool.shortcut && (
-                          <Kbd
-                            className={cn(
-                              "h-4 min-w-4 px-1 font-mono text-[9px] leading-none shadow-none",
-                              active
-                                ? "bg-brand-primary/10 text-foreground/55"
-                                : "bg-muted/80 text-muted-foreground/55"
-                            )}
-                          >
-                            {tool.shortcut}
-                          </Kbd>
-                        )}
-                      </SidebarMenuButton>
-                    </motion.div>
+                          {tool.shortcut}
+                        </Kbd>
+                      )}
+                    </SidebarMenuButton>
                   );
                   return (
                     <SidebarMenuItem key={tool.id}>
@@ -317,7 +349,11 @@ export default function Toolbar({
             })}
           </SidebarMenu>
           <div className="border-border/70 mt-3 border-t pt-3">
-            <AccountMenu collapsed={collapsed} />
+            {showAccountMenu ? (
+              <AccountMenu collapsed={collapsed} />
+            ) : (
+              <AccountMenuFallback collapsed={collapsed} />
+            )}
           </div>
         </SidebarFooter>
       </Sidebar>

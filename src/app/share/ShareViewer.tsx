@@ -11,10 +11,13 @@ import { parseEditorView, type EditorView } from "@/lib/view";
 import { ArrowRight, Eye } from "lucide-react";
 import type { TrackDesign } from "@/lib/types";
 
-const EditorShell = dynamic(() => import("@/components/editor/EditorShell"), {
-  ssr: false,
-  loading: () => <div className="h-dvh" />,
-});
+const EditorShell = dynamic(
+  () => import("@/components/editor/shared/EditorShell"),
+  {
+    ssr: false,
+    loading: () => <div className="h-dvh" />,
+  }
+);
 
 export default function ShareViewer({
   design,
@@ -45,7 +48,6 @@ export default function ShareViewer({
   return (
     <div className="relative h-dvh">
       <EditorShell
-        readOnly={true}
         initialTab={initialTab}
         studioHref={studioHref}
         existingShareMode

@@ -10,7 +10,6 @@ import {
   type ForwardRefExoticComponent,
   type RefAttributes,
 } from "react";
-import Header from "./Header";
 import StatusBar from "./StatusBar";
 import { ContextOverlayCard } from "./ContextOverlayCard";
 import { useAccountProjectSync } from "./useAccountProjectSync";
@@ -21,12 +20,12 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import type {
   TrackCanvasHandle,
   TrackCanvasProps,
-} from "@/components/canvas/TrackCanvas";
+} from "@/components/canvas/editor/TrackCanvas";
 import type { ExportDialogProps } from "@/components/dialogs/ExportDialog";
 import type {
   TrackPreview3DHandle,
   TrackPreview3DProps,
-} from "@/components/canvas/TrackPreview3D";
+} from "@/components/canvas/editor/TrackPreview3D";
 import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
 import { createDefaultDesign } from "@/lib/track/design";
 import { type EditorTool } from "@/lib/editor-tools";
@@ -63,7 +62,7 @@ function createFirstUseBlankDesign() {
 }
 
 const TrackPreview3D = dynamic<TrackPreview3DProps>(
-  () => import("@/components/canvas/TrackPreview3D"),
+  () => import("@/components/canvas/editor/TrackPreview3D"),
   {
     ssr: false,
     loading: () => (
@@ -80,6 +79,14 @@ const Toolbar = dynamic(() => import("./Toolbar"), {
   ssr: false,
 });
 
+const Header = dynamic(() => import("./Header"), {
+  ssr: false,
+});
+
+const SharedHeader = dynamic(() => import("./shared/Header"), {
+  ssr: false,
+});
+
 const Inspector = dynamic(() => import("@/components/inspector/Inspector"), {
   ssr: false,
 });
@@ -89,6 +96,11 @@ const EditorMobilePanels = dynamic(
     import("@/components/editor/mobile/Panels").then((mod) => ({
       default: mod.Panels,
     })),
+  { ssr: false }
+);
+
+const SharedMobilePanels = dynamic(
+  () => import("@/components/editor/shared/MobilePanels"),
   { ssr: false }
 );
 
@@ -121,7 +133,7 @@ const StarterActions = dynamic(
 );
 
 const TrackCanvas = dynamic<TrackCanvasProps>(
-  () => import("@/components/canvas/TrackCanvas"),
+  () => import("@/components/canvas/editor/TrackCanvas"),
   { ssr: false }
 ) as ForwardRefExoticComponent<
   TrackCanvasProps & RefAttributes<TrackCanvasHandle>
@@ -589,36 +601,48 @@ export default function EditorShell({
         {/* ── Main column ────────────────────────────────────── */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           {/* Header */}
-          <Header
-            tab={tab}
-            onTabChange={handleTabChange}
-            onShare={() => setShareOpen(true)}
-            onExport={() => setExportOpen(true)}
-            onImport={() => setImportOpen(true)}
-            onOpenProjectManager={() => setProjectManagerOpen(true)}
-            onSaveSnapshot={readOnly ? undefined : handleSaveSnapshot}
-            onOpenShortcuts={() => setShortcutsOpen(true)}
-            readOnly={readOnly}
-            hideTabsOnMobile
-            collapsed={sidebarCollapsed}
-            onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
-            title={design.title || "Untitled track"}
-            studioHref={studioHref}
-            lastSavedLabel={readOnly ? undefined : saveStatusLabel}
-            statusLabel={headerStatus?.label}
-            statusTone={headerStatus?.tone}
-            showObstacleNumbers={showObstacleNumbers}
-            onToggleObstacleNumbers={() =>
-              setShowObstacleNumbers((current) => !current)
-            }
-            selectionLabel={
-              selection.length > 0
-                ? `${selection.length} selected`
-                : tab === "3d"
-                  ? "3D preview"
-                  : "2D canvas"
-            }
-          />
+          {readOnly ? (
+            <SharedHeader
+              tab={tab}
+              onTabChange={handleTabChange}
+              studioHref={studioHref}
+              showObstacleNumbers={showObstacleNumbers}
+              onToggleObstacleNumbers={() =>
+                setShowObstacleNumbers((current) => !current)
+              }
+            />
+          ) : (
+            <Header
+              tab={tab}
+              onTabChange={handleTabChange}
+              onShare={() => setShareOpen(true)}
+              onExport={() => setExportOpen(true)}
+              onImport={() => setImportOpen(true)}
+              onOpenProjectManager={() => setProjectManagerOpen(true)}
+              onSaveSnapshot={handleSaveSnapshot}
+              onOpenShortcuts={() => setShortcutsOpen(true)}
+              readOnly={false}
+              hideTabsOnMobile
+              collapsed={sidebarCollapsed}
+              onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
+              title={design.title || "Untitled track"}
+              studioHref={studioHref}
+              lastSavedLabel={saveStatusLabel}
+              statusLabel={headerStatus?.label}
+              statusTone={headerStatus?.tone}
+              showObstacleNumbers={showObstacleNumbers}
+              onToggleObstacleNumbers={() =>
+                setShowObstacleNumbers((current) => !current)
+              }
+              selectionLabel={
+                selection.length > 0
+                  ? `${selection.length} selected`
+                  : tab === "3d"
+                    ? "3D preview"
+                    : "2D canvas"
+              }
+            />
+          )}
 
           {/* ── Body ─────────────────────────────────────────── */}
           <div className="relative flex min-h-0 flex-1 overflow-hidden">
@@ -868,7 +892,7 @@ export default function EditorShell({
           </div>
         </div>
 
-        {isMobile ? (
+        {isMobile && !readOnly ? (
           <EditorMobilePanels
             activeTool={activeTool}
             activePresetLabel={activePresetLabel}
@@ -1059,6 +1083,34 @@ export default function EditorShell({
             canUndo={canUndo}
             canRedo={canRedo}
             canUngroupSelection={canUngroupSelection}
+          />
+        ) : null}
+
+        {isMobile && readOnly ? (
+          <SharedMobilePanels
+            hasPath={hasPath}
+            mobileFlyModeActive={mobileFlyModeActive}
+            mobileGizmoEnabled={mobileGizmoEnabled}
+            mobileObstacleNumbersEnabled={showObstacleNumbers}
+            mobileRulersEnabled={mobileRulersEnabled}
+            onFitView={() => canvasRef.current?.fitToWindow()}
+            onSetMobileGizmoEnabled={setMobileGizmoEnabled}
+            onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
+            onSetMobileRulersEnabled={setMobileRulersEnabled}
+            onShare={() => {
+              setShareOpen(true);
+              setReadOnlyMenuOpen(false);
+            }}
+            onStartFlyThrough={() => {
+              handleTabChange("3d");
+              setPendingFlyThroughStart(true);
+            }}
+            onTabChange={handleTabChange}
+            onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
+            readOnlyMenuOpen={readOnlyMenuOpen}
+            saveStatusLabel={saveStatusLabel}
+            studioHref={studioHref}
+            tab={tab}
           />
         ) : null}
 
