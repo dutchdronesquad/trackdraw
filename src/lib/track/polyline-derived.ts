@@ -189,7 +189,10 @@ export type RouteWarningKind =
   | "flat"
   | "steep"
   | "hairpin"
-  | "close-points";
+  | "close-points"
+  | "spacing-shift"
+  | "rhythm-break"
+  | "alignment-drift";
 
 export interface RouteWarning {
   kind: RouteWarningKind;
@@ -219,12 +222,17 @@ export interface RouteWarningSegmentVisual {
  * - steep: segment gradient > 50%
  * - hairpin: interior vertex angle < 45°
  * - close-points: consecutive waypoints < 0.5 m apart
+ * - spacing-shift: abrupt jump from a short segment into a much longer one
+ * - rhythm-break: short corrective segment between longer sections
+ * - alignment-drift: a small kink breaks an otherwise straighter line
  */
 export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
   const pts = path.points;
   if (pts.length < 2) return [{ kind: "stub" }];
 
   const warnings: RouteWarning[] = [];
+  const segmentLengths: number[] = [];
+  const turnAnglesByWaypoint = new Map<number, number>();
 
   const hasElevation = pts.some((p) => (p.z ?? 0) !== 0);
   if (!hasElevation) {
@@ -235,6 +243,7 @@ export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
     const prev = pts[i - 1];
     const curr = pts[i];
     const horizDist = Math.hypot(curr.x - prev.x, curr.y - prev.y);
+    segmentLengths.push(horizDist);
 
     if (horizDist < 0.5) {
       warnings.push({ kind: "close-points", waypointIndex: i });
@@ -263,9 +272,99 @@ export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
       const cos = (ax * bx + ay * by) / (magA * magB);
       const angleDeg =
         Math.acos(Math.max(-1, Math.min(1, cos))) * (180 / Math.PI);
+      turnAnglesByWaypoint.set(i, angleDeg);
       if (angleDeg < 45) {
         warnings.push({ kind: "hairpin", waypointIndex: i });
       }
+    }
+  }
+
+  for (let i = 1; i < pts.length - 1; i += 1) {
+    const previous = pts[i - 1];
+    const current = pts[i];
+    const next = pts[i + 1];
+    const previousLength = segmentLengths[i - 1];
+    const nextLength = segmentLengths[i];
+    const angleDeg = turnAnglesByWaypoint.get(i);
+
+    if (
+      !previous ||
+      !current ||
+      !next ||
+      typeof previousLength !== "number" ||
+      typeof nextLength !== "number" ||
+      typeof angleDeg !== "number"
+    ) {
+      continue;
+    }
+
+    if (previousLength < 2.5 || nextLength < 2.5) continue;
+    if (angleDeg < 150 || angleDeg > 172) continue;
+
+    const baselineLength = Math.hypot(next.x - previous.x, next.y - previous.y);
+    if (baselineLength < 4) continue;
+
+    const offset =
+      Math.abs(
+        (next.x - previous.x) * (previous.y - current.y) -
+          (previous.x - current.x) * (next.y - previous.y)
+      ) / baselineLength;
+
+    if (offset >= 0.35 && offset <= 1.6) {
+      warnings.push({ kind: "alignment-drift", waypointIndex: i });
+    }
+  }
+
+  const spacingShiftWaypoints = new Set<number>();
+  for (let i = 1; i < pts.length - 1; i += 1) {
+    const previousLength = segmentLengths[i - 1];
+    const nextLength = segmentLengths[i];
+    if (
+      typeof previousLength !== "number" ||
+      typeof nextLength !== "number" ||
+      previousLength < 0.5 ||
+      nextLength < 0.5
+    ) {
+      continue;
+    }
+
+    const shorter = Math.min(previousLength, nextLength);
+    const longer = Math.max(previousLength, nextLength);
+    if (shorter <= 1.6 && longer >= 3.8 && longer / shorter >= 2.4) {
+      spacingShiftWaypoints.add(i);
+      warnings.push({ kind: "spacing-shift", waypointIndex: i });
+    }
+  }
+
+  for (
+    let segmentIndex = 1;
+    segmentIndex < segmentLengths.length - 1;
+    segmentIndex += 1
+  ) {
+    const previousLength = segmentLengths[segmentIndex - 1];
+    const currentLength = segmentLengths[segmentIndex];
+    const nextLength = segmentLengths[segmentIndex + 1];
+    const startTurn = turnAnglesByWaypoint.get(segmentIndex);
+    const endTurn = turnAnglesByWaypoint.get(segmentIndex + 1);
+
+    if (
+      typeof startTurn !== "number" ||
+      typeof endTurn !== "number" ||
+      currentLength < 0.5
+    ) {
+      continue;
+    }
+
+    if (
+      currentLength <= 1.8 &&
+      previousLength >= currentLength * 1.9 &&
+      nextLength >= currentLength * 1.9 &&
+      startTurn < 135 &&
+      endTurn < 135 &&
+      !spacingShiftWaypoints.has(segmentIndex) &&
+      !spacingShiftWaypoints.has(segmentIndex + 1)
+    ) {
+      warnings.push({ kind: "rhythm-break", waypointIndex: segmentIndex + 1 });
     }
   }
 
@@ -300,9 +399,25 @@ export function getPolylineRouteWarningVisuals(
 
 const ROUTE_WARNING_PRIORITY: Record<SegmentWarningKind, number> = {
   hairpin: 1,
-  steep: 2,
-  "close-points": 3,
+  "spacing-shift": 2,
+  "alignment-drift": 3,
+  "rhythm-break": 4,
+  steep: 5,
+  "close-points": 6,
 };
+
+export function getRouteWarningSegmentColor(
+  kind: SegmentWarningKind | undefined,
+  defaultColor: string
+) {
+  if (!kind) return defaultColor;
+  if (kind === "close-points") return "#ef4444";
+  if (kind === "steep") return "#f97316";
+  if (kind === "alignment-drift") return "#84cc16";
+  if (kind === "rhythm-break") return "#f59e0b";
+  if (kind === "spacing-shift") return "#eab308";
+  return "#fbbf24";
+}
 
 export function getPolylineRouteWarningSegmentVisuals(
   path: PolylineShape
@@ -336,12 +451,20 @@ export function getPolylineRouteWarningSegmentVisuals(
     if (warning.kind === "flat" || warning.kind === "stub") continue;
     if (typeof warning.waypointIndex !== "number") continue;
 
-    if (warning.kind === "steep" || warning.kind === "close-points") {
+    if (
+      warning.kind === "steep" ||
+      warning.kind === "close-points" ||
+      warning.kind === "spacing-shift"
+    ) {
       assignSegment(warning.waypointIndex - 1, warning.kind);
       continue;
     }
 
-    if (warning.kind === "hairpin") {
+    if (
+      warning.kind === "hairpin" ||
+      warning.kind === "rhythm-break" ||
+      warning.kind === "alignment-drift"
+    ) {
       assignSegment(warning.waypointIndex - 1, warning.kind);
       assignSegment(warning.waypointIndex, warning.kind);
     }

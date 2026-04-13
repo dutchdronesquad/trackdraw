@@ -231,8 +231,9 @@ Turn route and layout analysis into clearer reusable signals that help compare t
 
 Suggested first slices:
 
-- Compact flow, speed, technical, or complexity scoring
-- Descriptive track tags such as faster, more technical, or more flowy
+- Validate whether any compact track-character summary actually helps real layout decisions instead of adding decorative scoring
+- Compact flow, speed, technical, or complexity scoring only if the output stays explainable and actionable
+- Descriptive track tags such as faster, more technical, or more flowy only if they remain stable under normal layout edits
 - Follow-up flow analysis that expands beyond current warnings into alignment and rhythm-oriented feedback where it stays actionable
 
 #### Track Challenges Evaluation (`Research`)

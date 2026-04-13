@@ -7,6 +7,7 @@ import type { Stage as KonvaStage } from "konva/lib/Stage";
 import type { Vector2d } from "konva/lib/types";
 import {
   getPolyline2DDerived,
+  getRouteWarningSegmentColor,
   getPolylineRouteWarningSegmentVisuals,
   getPolylineSmoothSegmentPointsPx,
   getPolylineSmoothPointsPx,
@@ -581,13 +582,7 @@ export function PolylineShapeContent({
             const baseStroke = path.color
               ? color
               : zToColor(path.points.at(0)?.z ?? 0, zmin, zmax);
-            const stroke = warningKind
-              ? warningKind === "close-points"
-                ? "#ef4444"
-                : warningKind === "steep"
-                  ? "#f97316"
-                  : "#fbbf24"
-              : baseStroke;
+            const stroke = getRouteWarningSegmentColor(warningKind, baseStroke);
 
             return (
               <Line

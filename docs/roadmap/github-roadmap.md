@@ -22,12 +22,12 @@ Labels used below:
 
 ## Current Priority
 
-- [ ] Track DNA and layout analysis (`No account required`)
-      Turn route and layout analysis into clearer reusable signals that help compare tracks, understand style, and surface practical follow-up feedback.
-  - [ ] Track DNA first pass
-        Add compact track character scoring and descriptive tags such as faster, more technical, or more flowy.
-  - [ ] Flow analysis follow-up
-        Extend the current warning layer with clearer flow-break, alignment, and rhythm-oriented feedback where that proves actionable.
+- [x] Flow analysis follow-up (`No account required`)
+      Extend the current warning layer with clearer flow-break, spacing, and rhythm-oriented feedback where that proves actionable.
+  - [x] Rhythm and spacing cues first pass
+        Added first route-review cues for abrupt spacing shifts and short rhythm-breaking corrections in the existing route warning layer.
+  - [x] Alignment follow-up
+        Added first alignment-kink cues for small off-line bends in otherwise straighter route sections.
 
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The experimental `.trk` export now ships with best-effort prefab mapping, a centralized orientation model, and 2D/3D editor cues. The remaining work is validating the export across more layouts before treating it as a supported workflow.
@@ -136,6 +136,11 @@ Labels used below:
         Moved the export into a background-friendly flow with clearer progress and time-remaining feedback.
 
 ## Backlog And Research
+
+- [ ] Track DNA and layout analysis (`Research`)
+      Evaluate whether route and layout analysis should become reusable signals that help compare tracks, explain style, and support later recommendation or assistive tooling.
+  - [ ] Product usefulness test
+        Validate whether any track-character summary actually helps decisions instead of adding decorative scoring.
 
 - [ ] Heatmap and flow analysis (`No account required`)
       Add lightweight visual feedback for rhythm, density, and bottlenecks.

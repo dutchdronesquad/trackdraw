@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useEditor } from "@/store/editor";
 import {
   getPolylineElevationSamples,
+  getRouteWarningSegmentColor,
   getPolylineRouteWarningSegmentVisuals,
   getPolylineTotalLength2D,
   getPolylineRouteWarnings,
@@ -27,6 +28,16 @@ const WARNING_LABELS: Record<
     n === 1 ? `Tight turn at waypoint ${first}` : `${n} tight turns`,
   "close-points": (n, first) =>
     n === 1 ? `Close waypoints near ${first}` : `${n} closely spaced waypoints`,
+  "spacing-shift": (n, first) =>
+    n === 1
+      ? `Abrupt spacing shift near waypoint ${first}`
+      : `${n} abrupt spacing shifts`,
+  "rhythm-break": (n, first) =>
+    n === 1 ? `Rhythm break near waypoint ${first}` : `${n} rhythm breaks`,
+  "alignment-drift": (n, first) =>
+    n === 1
+      ? `Small alignment kink near waypoint ${first}`
+      : `${n} small alignment kinks`,
 };
 
 function RouteWarnings({ warnings }: { warnings: RouteWarning[] }) {
@@ -48,7 +59,12 @@ function RouteWarnings({ warnings }: { warnings: RouteWarning[] }) {
   return (
     <div className="mb-2 space-y-1">
       {grouped.map(([kind, { count, first }]) => {
-        const isWarn = kind === "steep" || kind === "close-points";
+        const isWarn =
+          kind === "steep" ||
+          kind === "close-points" ||
+          kind === "spacing-shift" ||
+          kind === "rhythm-break" ||
+          kind === "alignment-drift";
         return (
           <div
             key={kind}
@@ -256,13 +272,10 @@ export default function ElevationChart({ className }: { className?: string }) {
           const previous = samples[index];
           if (!previous) return null;
           const warningKind = warningKindBySegment.get(index);
-          const stroke = !warningKind
-            ? "var(--color-primary)"
-            : warningKind === "close-points"
-              ? "#ef4444"
-              : warningKind === "steep"
-                ? "#f97316"
-                : "#fbbf24";
+          const stroke = getRouteWarningSegmentColor(
+            warningKind,
+            "var(--color-primary)"
+          );
 
           return (
             <path
