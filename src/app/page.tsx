@@ -259,14 +259,10 @@ const softwareApplicationJsonLd = {
   },
 };
 
-function LandingVideo({
-  className = "",
-}: {
-  className?: string;
-}) {
+function LandingVideo({ className = "" }: { className?: string }) {
   return (
     <div className={className}>
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-background/40 shadow-[0_24px_56px_rgba(15,23,42,0.18)] ring-1 ring-white/5 backdrop-blur-[2px]">
+      <div className="bg-background/40 overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_56px_rgba(15,23,42,0.18)] ring-1 ring-white/5 backdrop-blur-[2px]">
         <video
           autoPlay
           muted
@@ -508,7 +504,7 @@ export default function Home() {
                 <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
                   <Screenshot
                     src={getSiteMediaUrl(
-                      "/landing/screenshots/editor-element-library.png",
+                      "/landing/screenshots/editor-element-library.png"
                     )}
                     alt="TrackDraw 2D layout editor with obstacle library and track plan"
                     className="order-last lg:order-first"
@@ -578,7 +574,7 @@ export default function Home() {
                   </div>
                   <Screenshot
                     src={getSiteMediaUrl(
-                      "/landing/screenshots/editor-mobile-settings.png",
+                      "/landing/screenshots/editor-mobile-settings.png"
                     )}
                     alt="TrackDraw mobile editor with settings panel open"
                     aspect="portrait"
@@ -592,7 +588,7 @@ export default function Home() {
                 <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
                   <Screenshot
                     src={getSiteMediaUrl(
-                      "/landing/screenshots/editor-3d-flythroug.png",
+                      "/landing/screenshots/editor-3d-flythroug.png"
                     )}
                     alt="TrackDraw 3D preview showing track flow and elevation"
                     className="order-last lg:order-first"
@@ -662,7 +658,7 @@ export default function Home() {
                   </div>
                   <Screenshot
                     src={getSiteMediaUrl(
-                      "/landing/screenshots/editor-share-readonly-mobile.png",
+                      "/landing/screenshots/editor-share-readonly-mobile.png"
                     )}
                     alt="TrackDraw read-only shared view open on mobile"
                     aspect="portrait"
