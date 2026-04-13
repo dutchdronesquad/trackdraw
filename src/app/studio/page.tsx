@@ -1,9 +1,14 @@
 "use client";
 
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import EditorShell from "@/components/editor/EditorShell";
 import { parseEditorView } from "@/lib/view";
+
+const EditorShell = dynamic(() => import("@/components/editor/EditorShell"), {
+  ssr: false,
+  loading: () => <main className="h-screen" />,
+});
 
 function StudioContent() {
   const searchParams = useSearchParams();

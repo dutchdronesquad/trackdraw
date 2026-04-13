@@ -4,26 +4,15 @@ import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
-  useEffect,
   type ForwardRefExoticComponent,
   type RefAttributes,
 } from "react";
-import { Panels as EditorMobilePanels } from "@/components/editor/mobile/Panels";
-import { LayoutPresetPicker } from "@/components/editor/LayoutPresetPicker";
 import Header from "./Header";
-import Inspector from "@/components/inspector/Inspector";
 import StatusBar from "./StatusBar";
 import { ContextOverlayCard } from "./ContextOverlayCard";
-import ShareDialog from "@/components/dialogs/ShareDialog";
-import ImportDialog from "@/components/dialogs/ImportDialog";
-import KeyboardShortcutsDialog from "@/components/dialogs/KeyboardShortcutsDialog";
-import CompleteProfileDialog from "@/components/dialogs/CompleteProfileDialog";
-import ProjectVersionConflictDialog from "@/components/dialogs/ProjectVersionConflictDialog";
-import PerformanceHud from "./PerformanceHud";
-import ProjectManagerDialog from "@/components/dialogs/ProjectManager";
-import NewProjectDialog from "@/components/dialogs/NewProjectDialog";
 import { useAccountProjectSync } from "./useAccountProjectSync";
 import { useEditorDialogs } from "./useEditorDialogs";
 import { useStarterExperience } from "./useStarterExperience";
@@ -48,7 +37,6 @@ import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
-import { StarterSteps, StarterActions } from "@/components/editor/StarterFlow";
 import type { EditorView } from "@/lib/view";
 import {
   useSessionActions,
@@ -92,6 +80,46 @@ const Toolbar = dynamic(() => import("./Toolbar"), {
   ssr: false,
 });
 
+const Inspector = dynamic(() => import("@/components/inspector/Inspector"), {
+  ssr: false,
+});
+
+const EditorMobilePanels = dynamic(
+  () =>
+    import("@/components/editor/mobile/Panels").then((mod) => ({
+      default: mod.Panels,
+    })),
+  { ssr: false }
+);
+
+const LayoutPresetPicker = dynamic(
+  () =>
+    import("@/components/editor/LayoutPresetPicker").then((mod) => ({
+      default: mod.LayoutPresetPicker,
+    })),
+  { ssr: false }
+);
+
+const PerformanceHud = dynamic(() => import("./PerformanceHud"), {
+  ssr: false,
+});
+
+const StarterSteps = dynamic(
+  () =>
+    import("@/components/editor/StarterFlow").then((mod) => ({
+      default: mod.StarterSteps,
+    })),
+  { ssr: false }
+);
+
+const StarterActions = dynamic(
+  () =>
+    import("@/components/editor/StarterFlow").then((mod) => ({
+      default: mod.StarterActions,
+    })),
+  { ssr: false }
+);
+
 const TrackCanvas = dynamic<TrackCanvasProps>(
   () => import("@/components/canvas/TrackCanvas"),
   { ssr: false }
@@ -101,6 +129,42 @@ const TrackCanvas = dynamic<TrackCanvasProps>(
 
 const ExportDialog = dynamic<ExportDialogProps>(
   () => import("@/components/dialogs/ExportDialog"),
+  { ssr: false }
+);
+
+const ShareDialog = dynamic(() => import("@/components/dialogs/ShareDialog"), {
+  ssr: false,
+});
+
+const ImportDialog = dynamic(
+  () => import("@/components/dialogs/ImportDialog"),
+  {
+    ssr: false,
+  }
+);
+
+const KeyboardShortcutsDialog = dynamic(
+  () => import("@/components/dialogs/KeyboardShortcutsDialog"),
+  { ssr: false }
+);
+
+const CompleteProfileDialog = dynamic(
+  () => import("@/components/dialogs/CompleteProfileDialog"),
+  { ssr: false }
+);
+
+const ProjectVersionConflictDialog = dynamic(
+  () => import("@/components/dialogs/ProjectVersionConflictDialog"),
+  { ssr: false }
+);
+
+const ProjectManagerDialog = dynamic(
+  () => import("@/components/dialogs/ProjectManager"),
+  { ssr: false }
+);
+
+const NewProjectDialog = dynamic(
+  () => import("@/components/dialogs/NewProjectDialog"),
   { ssr: false }
 );
 
@@ -188,6 +252,7 @@ export default function EditorShell({
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
   const [tab, setTab] = useState<"2d" | "3d">(initialTab);
+  const [hasVisited3D, setHasVisited3D] = useState(initialTab === "3d");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
     null
   );
@@ -442,6 +507,12 @@ export default function EditorShell({
   }, [pendingFlyThroughStart, tab]);
 
   useEffect(() => {
+    if (tab === "3d") {
+      setHasVisited3D(true);
+    }
+  }, [tab]);
+
+  useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -574,17 +645,19 @@ export default function EditorShell({
                     showObstacleNumbers={showObstacleNumbers}
                   />
                 </div>
-                <div
-                  className="absolute inset-0"
-                  style={{ display: tab === "3d" ? "block" : "none" }}
-                >
-                  <TrackPreview3D
-                    ref={preview3DRef}
-                    showGizmo={mobileGizmoEnabled}
-                    onFlyModeChange={setMobileFlyModeActive}
-                    readOnly={readOnly}
-                  />
-                </div>
+                {hasVisited3D ? (
+                  <div
+                    className="absolute inset-0"
+                    style={{ display: tab === "3d" ? "block" : "none" }}
+                  >
+                    <TrackPreview3D
+                      ref={preview3DRef}
+                      showGizmo={mobileGizmoEnabled}
+                      onFlyModeChange={setMobileFlyModeActive}
+                      readOnly={readOnly}
+                    />
+                  </div>
+                ) : null}
                 {shouldShowStarter && isMobile ? (
                   <MobileDrawer
                     open={shouldShowStarter}
@@ -787,7 +860,7 @@ export default function EditorShell({
             </div>
 
             {/* Desktop Inspector */}
-            {!readOnly && (
+            {!readOnly && !isMobile && (
               <aside className="border-border/80 bg-card/95 hidden min-h-0 w-85 shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex">
                 <Inspector onResumeSelectedPath={handleResumeSelectedPath} />
               </aside>
@@ -795,336 +868,352 @@ export default function EditorShell({
           </div>
         </div>
 
-        <EditorMobilePanels
-          activeTool={activeTool}
-          activePresetLabel={activePresetLabel}
-          draftPathActive={mobileDraftPathState.active}
-          draftPathClosed={mobileDraftPathState.closed}
-          draftPathLength={mobileDraftPathState.length}
-          draftPathPointCount={mobileDraftPathState.pointCount}
-          hasPath={hasPath}
-          pathBuilderPinnedOpen={mobilePathBuilderPinnedOpen}
-          mobileInspectorOpen={mobileInspectorOpen}
-          mobileToolsOpen={mobileToolsOpen}
-          mobileViewOpen={mobileViewOpen}
-          mobileMultiSelectEnabled={mobileMultiSelectEnabled}
-          snapEnabled={snapEnabled}
-          mobileGizmoEnabled={mobileGizmoEnabled}
-          mobileObstacleNumbersEnabled={showObstacleNumbers}
-          mobileRulersEnabled={mobileRulersEnabled}
-          mobileFlyModeActive={mobileFlyModeActive}
-          mobilePrecisionStep={mobilePrecisionStep}
-          mobilePrecisionStepLabel={mobilePrecisionStepLabel}
-          readOnly={readOnly}
-          readOnlyMenuOpen={readOnlyMenuOpen}
-          studioHref={studioHref}
-          singleSelectedShapeLabel={singleSelectedShapeLabel}
-          singleSelectionCanNudge={Boolean(
-            singleSelectedShape && !selectionLocked
-          )}
-          singleSelectionCanQuickAdjust={Boolean(
-            singleSelectedShape &&
-            (!singleSelectedShape.locked ||
-              singleSelectedShape.kind !== "polyline")
-          )}
-          canAddWaypoint={canAddSelectedPolylineWaypoint}
-          canDeleteWaypoint={canDeleteSelectedPolylineWaypoint}
-          canResumePathEditing={Boolean(
-            singleSelectedShape?.kind === "polyline" &&
-            !singleSelectedShape.locked
-          )}
-          singleSelectionCanRotate={singleSelectionCanRotate}
-          selectionLocked={selectionLocked}
-          selectedCount={selection.length}
-          selectedGroupName={selectedGroupName}
-          saveStatusLabel={saveStatusLabel}
-          tab={tab}
-          onCloseInspector={() => setMobileInspectorOpen(false)}
-          onFitView={() => canvasRef.current?.fitToWindow()}
-          onCancelPath={() => {
-            canvasRef.current?.cancelDraftPath();
-            setMobilePathBuilderPinnedOpen(false);
-            setActiveTool("select");
-          }}
-          onCloseLoop={() => canvasRef.current?.closeDraftLoop()}
-          onFinishPath={() => {
-            canvasRef.current?.finishDraftPath(false);
-            setMobilePathBuilderPinnedOpen(false);
-          }}
-          onOpenInspector={() => {
-            setMobileToolsOpen(false);
-            setMobileInspectorOpen(true);
-          }}
-          onResumeSelectedPath={() => {
-            const selectedShape =
-              selection.length === 1 ? shapeById[selection[0]] : null;
-            if (!selectedShape || selectedShape.kind !== "polyline") return;
-            setMobilePathBuilderPinnedOpen(true);
-            canvasRef.current?.resumePolylineEditing(selectedShape.id);
-          }}
-          onOpenReadOnlyMenu={() => setReadOnlyMenuOpen(true)}
-          onOpenTools={() => {
-            setMobileInspectorOpen(false);
-            setMobileViewOpen(false);
-            setMobileToolsOpen(true);
-          }}
-          onOpenView={() => {
-            setMobileInspectorOpen(false);
-            setMobileToolsOpen(false);
-            setMobileViewOpen(true);
-          }}
-          onUndoPathPoint={() => canvasRef.current?.undoDraftPoint()}
-          onDeleteSelection={() => {
-            if (!selection.length) return;
-            removeShapes(selection);
-          }}
-          onAddWaypoint={() => {
-            const shape = singleSelectedShape;
-            const target = selectedPolylineSegment;
-            if (!shape || shape.kind !== "polyline" || !target) return;
-            const start = shape.points[target.segmentIndex];
-            const nextIndex =
-              target.segmentIndex === shape.points.length - 1
-                ? 0
-                : target.segmentIndex + 1;
-            const end = shape.points[nextIndex];
-            if (!start || !end) return;
-            const insertIndex =
-              shape.closed && target.segmentIndex === shape.points.length - 1
-                ? shape.points.length
-                : target.segmentIndex + 1;
-            insertPolylinePoint(shape.id, insertIndex, {
-              x: +target.point.x.toFixed(2),
-              y: +target.point.y.toFixed(2),
-              z: +(((start.z ?? 0) + (end.z ?? 0)) / 2).toFixed(2),
-            });
-            setSegmentSelection(null);
-            setVertexSelection({ shapeId: shape.id, idx: insertIndex });
-          }}
-          onGroupSelection={() => {
-            if (selection.length < 2) return;
-            groupSelection(selection);
-          }}
-          onDuplicateSelection={() => {
-            if (!selection.length) return;
-            duplicateShapes(selection);
-          }}
-          onDeleteWaypoint={() => {
-            const shape = singleSelectedShape;
-            const target = selectedPolylineVertex;
-            if (!shape || shape.kind !== "polyline" || !target) return;
-            removePolylinePoint(shape.id, target.idx);
-            setVertexSelection(null);
-          }}
-          onUndo={undo}
-          onRedo={redo}
-          onNudgeSelection={(dx, dy) => {
-            if (!selection.length) return;
-            nudgeShapes(selection, dx, dy);
-          }}
-          onRotateSelection={(delta) => {
-            if (!selection.length) return;
-            rotateShapes(selection, delta);
-          }}
-          onToggleSelectionLock={() => {
-            if (!selection.length) return;
-            setShapesLocked(selection, !selectionLocked);
-          }}
-          onSetMobileGizmoEnabled={setMobileGizmoEnabled}
-          onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
-          onSetMobileRulersEnabled={setMobileRulersEnabled}
-          onToggleSnapEnabled={toggleSnapEnabled}
-          onExitMobileMultiSelect={() => {
-            setMobileMultiSelectEnabled(false);
-            setSelection([]);
-          }}
-          onSelectTool={(tool) => {
-            setSelection([]);
-            setMobileMultiSelectEnabled(false);
-            if (tool === "preset") {
-              setMobileToolsOpen(false);
-              setPresetPickerOpen(true);
-              return;
-            }
-            setMobilePathBuilderPinnedOpen(tool === "polyline");
-            setActiveTool(tool);
-            setMobileToolsOpen(false);
-          }}
-          onSetMobileToolsOpen={setMobileToolsOpen}
-          onSetMobileViewOpen={setMobileViewOpen}
-          onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
-          onShare={() => {
-            setShareOpen(true);
-            setReadOnlyMenuOpen(false);
-          }}
-          onSetGroupName={(name) => {
-            if (!selection.length) return;
-            setGroupName(selection, name);
-          }}
-          onStartFlyThrough={() => {
-            handleTabChange("3d");
-            setMobileViewOpen(false);
-            setPendingFlyThroughStart(true);
-          }}
-          onUngroupSelection={() => {
-            if (!selection.length) return;
-            ungroupSelection(selection);
-          }}
-          onTabChange={(nextTab) => {
-            handleTabChange(nextTab);
-            if (nextTab !== "2d") {
+        {isMobile ? (
+          <EditorMobilePanels
+            activeTool={activeTool}
+            activePresetLabel={activePresetLabel}
+            draftPathActive={mobileDraftPathState.active}
+            draftPathClosed={mobileDraftPathState.closed}
+            draftPathLength={mobileDraftPathState.length}
+            draftPathPointCount={mobileDraftPathState.pointCount}
+            hasPath={hasPath}
+            pathBuilderPinnedOpen={mobilePathBuilderPinnedOpen}
+            mobileInspectorOpen={mobileInspectorOpen}
+            mobileToolsOpen={mobileToolsOpen}
+            mobileViewOpen={mobileViewOpen}
+            mobileMultiSelectEnabled={mobileMultiSelectEnabled}
+            snapEnabled={snapEnabled}
+            mobileGizmoEnabled={mobileGizmoEnabled}
+            mobileObstacleNumbersEnabled={showObstacleNumbers}
+            mobileRulersEnabled={mobileRulersEnabled}
+            mobileFlyModeActive={mobileFlyModeActive}
+            mobilePrecisionStep={mobilePrecisionStep}
+            mobilePrecisionStepLabel={mobilePrecisionStepLabel}
+            readOnly={readOnly}
+            readOnlyMenuOpen={readOnlyMenuOpen}
+            studioHref={studioHref}
+            singleSelectedShapeLabel={singleSelectedShapeLabel}
+            singleSelectionCanNudge={Boolean(
+              singleSelectedShape && !selectionLocked
+            )}
+            singleSelectionCanQuickAdjust={Boolean(
+              singleSelectedShape &&
+              (!singleSelectedShape.locked ||
+                singleSelectedShape.kind !== "polyline")
+            )}
+            canAddWaypoint={canAddSelectedPolylineWaypoint}
+            canDeleteWaypoint={canDeleteSelectedPolylineWaypoint}
+            canResumePathEditing={Boolean(
+              singleSelectedShape?.kind === "polyline" &&
+              !singleSelectedShape.locked
+            )}
+            singleSelectionCanRotate={singleSelectionCanRotate}
+            selectionLocked={selectionLocked}
+            selectedCount={selection.length}
+            selectedGroupName={selectedGroupName}
+            saveStatusLabel={saveStatusLabel}
+            tab={tab}
+            onCloseInspector={() => setMobileInspectorOpen(false)}
+            onFitView={() => canvasRef.current?.fitToWindow()}
+            onCancelPath={() => {
+              canvasRef.current?.cancelDraftPath();
               setMobilePathBuilderPinnedOpen(false);
+              setActiveTool("select");
+            }}
+            onCloseLoop={() => canvasRef.current?.closeDraftLoop()}
+            onFinishPath={() => {
+              canvasRef.current?.finishDraftPath(false);
+              setMobilePathBuilderPinnedOpen(false);
+            }}
+            onOpenInspector={() => {
+              setMobileToolsOpen(false);
+              setMobileInspectorOpen(true);
+            }}
+            onResumeSelectedPath={() => {
+              const selectedShape =
+                selection.length === 1 ? shapeById[selection[0]] : null;
+              if (!selectedShape || selectedShape.kind !== "polyline") return;
+              setMobilePathBuilderPinnedOpen(true);
+              canvasRef.current?.resumePolylineEditing(selectedShape.id);
+            }}
+            onOpenReadOnlyMenu={() => setReadOnlyMenuOpen(true)}
+            onOpenTools={() => {
+              setMobileInspectorOpen(false);
+              setMobileViewOpen(false);
+              setMobileToolsOpen(true);
+            }}
+            onOpenView={() => {
+              setMobileInspectorOpen(false);
+              setMobileToolsOpen(false);
+              setMobileViewOpen(true);
+            }}
+            onUndoPathPoint={() => canvasRef.current?.undoDraftPoint()}
+            onDeleteSelection={() => {
+              if (!selection.length) return;
+              removeShapes(selection);
+            }}
+            onAddWaypoint={() => {
+              const shape = singleSelectedShape;
+              const target = selectedPolylineSegment;
+              if (!shape || shape.kind !== "polyline" || !target) return;
+              const start = shape.points[target.segmentIndex];
+              const nextIndex =
+                target.segmentIndex === shape.points.length - 1
+                  ? 0
+                  : target.segmentIndex + 1;
+              const end = shape.points[nextIndex];
+              if (!start || !end) return;
+
+              const insertIndex =
+                shape.closed && target.segmentIndex === shape.points.length - 1
+                  ? shape.points.length
+                  : target.segmentIndex + 1;
+
+              insertPolylinePoint(shape.id, insertIndex, {
+                x: +target.point.x.toFixed(2),
+                y: +target.point.y.toFixed(2),
+                z: +(((start.z ?? 0) + (end.z ?? 0)) / 2).toFixed(2),
+              });
+              setSegmentSelection(null);
+              setVertexSelection({ shapeId: shape.id, idx: insertIndex });
+            }}
+            onGroupSelection={() => {
+              if (selection.length < 2) return;
+              groupSelection(selection);
+            }}
+            onDuplicateSelection={() => {
+              if (!selection.length) return;
+              duplicateShapes(selection);
+            }}
+            onDeleteWaypoint={() => {
+              const shape = singleSelectedShape;
+              const target = selectedPolylineVertex;
+              if (!shape || shape.kind !== "polyline" || !target) return;
+              removePolylinePoint(shape.id, target.idx);
+              setVertexSelection(null);
+            }}
+            onUndo={undo}
+            onRedo={redo}
+            onNudgeSelection={(dx, dy) => {
+              if (!selection.length) return;
+              nudgeShapes(selection, dx, dy);
+            }}
+            onRotateSelection={(delta) => {
+              if (!selection.length) return;
+              rotateShapes(selection, delta);
+            }}
+            onToggleSelectionLock={() => {
+              if (!selection.length) return;
+              setShapesLocked(selection, !selectionLocked);
+            }}
+            onSetMobileGizmoEnabled={setMobileGizmoEnabled}
+            onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
+            onSetMobileRulersEnabled={setMobileRulersEnabled}
+            onToggleSnapEnabled={toggleSnapEnabled}
+            onExitMobileMultiSelect={() => {
+              setMobileMultiSelectEnabled(false);
+              setSelection([]);
+            }}
+            onSelectTool={(tool) => {
+              setSelection([]);
+              setMobileMultiSelectEnabled(false);
+              if (tool === "preset") {
+                setMobileToolsOpen(false);
+                setPresetPickerOpen(true);
+                return;
+              }
+              setMobilePathBuilderPinnedOpen(tool === "polyline");
+              setActiveTool(tool);
+              setMobileToolsOpen(false);
+            }}
+            onSetMobileToolsOpen={setMobileToolsOpen}
+            onSetMobileViewOpen={setMobileViewOpen}
+            onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
+            onShare={() => {
+              setShareOpen(true);
+              setReadOnlyMenuOpen(false);
+            }}
+            onSetGroupName={(name) => {
+              if (!selection.length) return;
+              setGroupName(selection, name);
+            }}
+            onStartFlyThrough={() => {
+              handleTabChange("3d");
+              setMobileViewOpen(false);
+              setPendingFlyThroughStart(true);
+            }}
+            onUngroupSelection={() => {
+              if (!selection.length) return;
+              ungroupSelection(selection);
+            }}
+            onTabChange={(nextTab) => {
+              handleTabChange(nextTab);
+              if (nextTab !== "2d") {
+                setMobilePathBuilderPinnedOpen(false);
+              }
+              setMobileInspectorOpen(false);
+              setMobileToolsOpen(false);
+              setMobileViewOpen(false);
+              setReadOnlyMenuOpen(false);
+            }}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            canUngroupSelection={canUngroupSelection}
+          />
+        ) : null}
+
+        {shareOpen ? (
+          <ShareDialog
+            open={shareOpen}
+            onOpenChange={setShareOpen}
+            hasPath={hasPath}
+            projectId={isAccountProject ? design.id : null}
+            onSharePublished={() => void refreshAccountShares(true)}
+            existingShareMode={existingShareMode}
+            onExportJson={() => {
+              setShareOpen(false);
+              setExportOpen(true);
+            }}
+          />
+        ) : null}
+        {importOpen ? (
+          <ImportDialog
+            open={importOpen}
+            onOpenChange={setImportOpen}
+            onBeforeConfirm={() => {
+              snapshotCurrentDesign();
+            }}
+            onBackupCurrent={() => {
+              setImportOpen(false);
+              setExportOpen(true);
+            }}
+          />
+        ) : null}
+        {exportOpen ? (
+          <ExportDialog
+            open={exportOpen}
+            onOpenChange={setExportOpen}
+            canvasRef={canvasRef}
+            preview3DRef={preview3DRef}
+            activeTab={tab}
+            onRequest3DView={() => handleTabChange("3d")}
+          />
+        ) : null}
+        {shortcutsOpen ? (
+          <KeyboardShortcutsDialog
+            open={shortcutsOpen}
+            onOpenChange={setShortcutsOpen}
+          />
+        ) : null}
+        {newProjectOpen ? (
+          <NewProjectDialog
+            open={newProjectOpen}
+            onOpenChange={setNewProjectOpen}
+            hasContent={Boolean(design.title.trim() || designShapes.length)}
+            onNewProject={() => {
+              snapshotCurrentDesign();
+              applyStarterDesign("blank");
+              setNewProjectOpen(false);
+              setMobileToolsOpen(false);
+            }}
+            onBackupProject={() => {
+              setNewProjectOpen(false);
+              setExportOpen(true);
+            }}
+            onStartStarterLayout={(layoutId) => {
+              applyStarterLayout(layoutId);
+              setNewProjectOpen(false);
+            }}
+          />
+        ) : null}
+        {projectManagerOpen ? (
+          <ProjectManagerDialog
+            open={projectManagerOpen}
+            onOpenChange={setProjectManagerOpen}
+            onOpenNewProject={openNewProjectDialog}
+            onOpenProject={handleOpenProject}
+            onOpenAccountProject={
+              authUser && cloudProjectsAvailable
+                ? handleOpenAccountProjectFromDialog
+                : undefined
             }
-            setMobileInspectorOpen(false);
-            setMobileToolsOpen(false);
-            setMobileViewOpen(false);
-            setReadOnlyMenuOpen(false);
-          }}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          canUngroupSelection={canUngroupSelection}
-        />
+            onSyncProject={
+              authUser && cloudProjectsAvailable ? handleSyncProject : undefined
+            }
+            onDeleteProject={handleDeleteProject}
+            onDeleteProjects={handleDeleteProjects}
+            onRenameProject={handleRenameProject}
+            onExportProject={(projectId) => {
+              const exportDesign =
+                projectId === design.id ? design : loadProject(projectId);
+              if (!exportDesign) return;
+
+              const baseName = (exportDesign.title.trim() || "track").replace(
+                /[^a-z0-9-_]+/gi,
+                "_"
+              );
+              const blob = new Blob([JSON.stringify(exportDesign, null, 2)], {
+                type: "application/json",
+              });
+              const url = URL.createObjectURL(blob);
+              const anchor = document.createElement("a");
+              anchor.href = url;
+              anchor.download = `${baseName}.json`;
+              anchor.click();
+              URL.revokeObjectURL(url);
+            }}
+            onRestorePoint={handleRestorePoint}
+            onDeleteRestorePoint={handleDeleteRestorePoint}
+            projects={projects}
+            accountProjects={accountProjects}
+            accountProjectsLoading={accountProjectsLoading}
+            accountProjectsError={accountProjectsError}
+            accountShares={accountShares}
+            accountSharesLoading={accountSharesLoading}
+            onRevokeShare={handleRevokeShare}
+            projectSyncMetaById={projectSyncMetaById}
+            syncingProjectId={syncingProjectId}
+            restorePoints={restorePoints}
+            activeDesignId={design.id}
+            activeRestorePointId={activeRestorePointId ?? undefined}
+            onResolveConflict={() => setProjectManagerOpen(false)}
+          />
+        ) : null}
+        {presetPickerOpen ? (
+          <LayoutPresetPicker
+            mobile={isMobile}
+            open={presetPickerOpen}
+            onOpenChange={setPresetPickerOpen}
+            selectedPresetId={activePresetId}
+            onSelectPreset={handlePresetSelect}
+          />
+        ) : null}
+        {completeProfileOpen ? (
+          <CompleteProfileDialog
+            open={completeProfileOpen}
+            onOpenChange={handleCompleteProfileOpenChange}
+            email={authUser?.email ?? null}
+            currentName={authUser?.name ?? ""}
+            onSave={handleCompleteProfileSave}
+          />
+        ) : null}
+        {projectVersionConflict ? (
+          <ProjectVersionConflictDialog
+            open={Boolean(projectVersionConflict)}
+            mobile={isMobile}
+            title={projectVersionConflict.title ?? "Untitled"}
+            localUpdatedAt={
+              projectVersionConflict.localUpdatedAt ?? design.updatedAt
+            }
+            cloudUpdatedAt={
+              projectVersionConflict.cloudUpdatedAt ?? design.updatedAt
+            }
+            onOpenCloudVersion={handleOpenCloudConflictVersion}
+            onKeepLocalCopy={handleKeepLocalConflictCopy}
+          />
+        ) : null}
+        {developerModeEnabled ? <PerformanceHud /> : null}
       </div>
-
-      <ShareDialog
-        open={shareOpen}
-        onOpenChange={setShareOpen}
-        hasPath={hasPath}
-        projectId={isAccountProject ? design.id : null}
-        onSharePublished={() => void refreshAccountShares(true)}
-        existingShareMode={existingShareMode}
-        onExportJson={() => {
-          setShareOpen(false);
-          setExportOpen(true);
-        }}
-      />
-      <ImportDialog
-        open={importOpen}
-        onOpenChange={setImportOpen}
-        onBeforeConfirm={() => {
-          snapshotCurrentDesign();
-        }}
-        onBackupCurrent={() => {
-          setImportOpen(false);
-          setExportOpen(true);
-        }}
-      />
-      <ExportDialog
-        open={exportOpen}
-        onOpenChange={setExportOpen}
-        canvasRef={canvasRef}
-        preview3DRef={preview3DRef}
-        activeTab={tab}
-        onRequest3DView={() => handleTabChange("3d")}
-      />
-      <KeyboardShortcutsDialog
-        open={shortcutsOpen}
-        onOpenChange={setShortcutsOpen}
-      />
-      <NewProjectDialog
-        open={newProjectOpen}
-        onOpenChange={setNewProjectOpen}
-        hasContent={Boolean(design.title.trim() || designShapes.length)}
-        onNewProject={() => {
-          snapshotCurrentDesign();
-          applyStarterDesign("blank");
-          setNewProjectOpen(false);
-          setMobileToolsOpen(false);
-        }}
-        onBackupProject={() => {
-          setNewProjectOpen(false);
-          setExportOpen(true);
-        }}
-        onStartStarterLayout={(layoutId) => {
-          applyStarterLayout(layoutId);
-          setNewProjectOpen(false);
-        }}
-      />
-      <ProjectManagerDialog
-        open={projectManagerOpen}
-        onOpenChange={setProjectManagerOpen}
-        onOpenNewProject={openNewProjectDialog}
-        onOpenProject={handleOpenProject}
-        onOpenAccountProject={
-          authUser && cloudProjectsAvailable
-            ? handleOpenAccountProjectFromDialog
-            : undefined
-        }
-        onSyncProject={
-          authUser && cloudProjectsAvailable ? handleSyncProject : undefined
-        }
-        onDeleteProject={handleDeleteProject}
-        onDeleteProjects={handleDeleteProjects}
-        onRenameProject={handleRenameProject}
-        onExportProject={(projectId) => {
-          const exportDesign =
-            projectId === design.id ? design : loadProject(projectId);
-          if (!exportDesign) return;
-
-          const baseName = (exportDesign.title.trim() || "track").replace(
-            /[^a-z0-9-_]+/gi,
-            "_"
-          );
-          const blob = new Blob([JSON.stringify(exportDesign, null, 2)], {
-            type: "application/json",
-          });
-          const url = URL.createObjectURL(blob);
-          const anchor = document.createElement("a");
-          anchor.href = url;
-          anchor.download = `${baseName}.json`;
-          anchor.click();
-          URL.revokeObjectURL(url);
-        }}
-        onRestorePoint={handleRestorePoint}
-        onDeleteRestorePoint={handleDeleteRestorePoint}
-        projects={projects}
-        accountProjects={accountProjects}
-        accountProjectsLoading={accountProjectsLoading}
-        accountProjectsError={accountProjectsError}
-        accountShares={accountShares}
-        accountSharesLoading={accountSharesLoading}
-        onRevokeShare={handleRevokeShare}
-        projectSyncMetaById={projectSyncMetaById}
-        syncingProjectId={syncingProjectId}
-        restorePoints={restorePoints}
-        activeDesignId={design.id}
-        activeRestorePointId={activeRestorePointId ?? undefined}
-        onResolveConflict={() => setProjectManagerOpen(false)}
-      />
-      <LayoutPresetPicker
-        open={presetPickerOpen && !isMobile}
-        onOpenChange={setPresetPickerOpen}
-        selectedPresetId={activePresetId}
-        onSelectPreset={handlePresetSelect}
-      />
-      <LayoutPresetPicker
-        mobile
-        open={presetPickerOpen && isMobile}
-        onOpenChange={setPresetPickerOpen}
-        selectedPresetId={activePresetId}
-        onSelectPreset={handlePresetSelect}
-      />
-      <CompleteProfileDialog
-        open={completeProfileOpen}
-        onOpenChange={handleCompleteProfileOpenChange}
-        email={authUser?.email ?? null}
-        currentName={authUser?.name ?? ""}
-        onSave={handleCompleteProfileSave}
-      />
-      <ProjectVersionConflictDialog
-        open={Boolean(projectVersionConflict)}
-        mobile={isMobile}
-        title={projectVersionConflict?.title ?? "Untitled"}
-        localUpdatedAt={
-          projectVersionConflict?.localUpdatedAt ?? design.updatedAt
-        }
-        cloudUpdatedAt={
-          projectVersionConflict?.cloudUpdatedAt ?? design.updatedAt
-        }
-        onOpenCloudVersion={handleOpenCloudConflictVersion}
-        onKeepLocalCopy={handleKeepLocalConflictCopy}
-      />
-      {developerModeEnabled ? <PerformanceHud /> : null}
     </>
   );
 }

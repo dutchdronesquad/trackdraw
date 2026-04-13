@@ -1,15 +1,20 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
-import EditorShell from "@/components/editor/EditorShell";
 import { ContextOverlayCard } from "@/components/editor/ContextOverlayCard";
 import { getShareTitle } from "@/lib/share";
 import { parseEditorView, type EditorView } from "@/lib/view";
 import { ArrowRight, Eye } from "lucide-react";
 import type { TrackDesign } from "@/lib/types";
+
+const EditorShell = dynamic(() => import("@/components/editor/EditorShell"), {
+  ssr: false,
+  loading: () => <div className="h-dvh" />,
+});
 
 export default function ShareViewer({
   design,

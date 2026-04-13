@@ -5,9 +5,6 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEditor } from "@/store/editor";
-import { exportSvg } from "@/lib/export/exportSvg";
-import { exportPng } from "@/lib/export/exportPng";
-import { exportVelocidroneTrk } from "@/lib/export/exportVelocidroneTrk";
 import type {
   FlythroughProgress,
   FlythroughTheme,
@@ -29,6 +26,30 @@ export interface ExportDialogProps {
 }
 
 type Theme = FlythroughTheme;
+
+async function exportPngFile(
+  ...args: Parameters<typeof import("@/lib/export/exportPng").exportPng>
+) {
+  const { exportPng } = await import("@/lib/export/exportPng");
+  return exportPng(...args);
+}
+
+async function exportSvgFile(
+  ...args: Parameters<typeof import("@/lib/export/exportSvg").exportSvg>
+) {
+  const { exportSvg } = await import("@/lib/export/exportSvg");
+  return exportSvg(...args);
+}
+
+async function exportVelocidroneFile(
+  ...args: Parameters<
+    typeof import("@/lib/export/exportVelocidroneTrk").exportVelocidroneTrk
+  >
+) {
+  const { exportVelocidroneTrk } =
+    await import("@/lib/export/exportVelocidroneTrk");
+  return exportVelocidroneTrk(...args);
+}
 
 function formatDuration(seconds: number) {
   const roundedSeconds = Math.max(0, Math.ceil(seconds));
@@ -393,7 +414,7 @@ export default function ExportDialog({
             busy={busy === "png"}
             onExport={() =>
               run("png", () =>
-                exportPng(
+                exportPngFile(
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.png`,
                   exportTheme,
@@ -411,7 +432,7 @@ export default function ExportDialog({
             busy={busy === "svg"}
             onExport={() =>
               run("svg", () =>
-                exportSvg(
+                exportSvgFile(
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.svg`,
                   exportTheme,
@@ -569,7 +590,7 @@ export default function ExportDialog({
             description="Experimental format for testing your layout in Velocidrone."
             busy={busy === "trk"}
             onExport={() =>
-              run("trk", () => exportVelocidroneTrk(design, `${baseName}.trk`))
+              run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))
             }
           />
         </div>
@@ -615,7 +636,7 @@ export default function ExportDialog({
             isBusy={busy === "png"}
             onAction={() =>
               run("png", () =>
-                exportPng(
+                exportPngFile(
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.png`,
                   exportTheme,
@@ -634,7 +655,7 @@ export default function ExportDialog({
             isBusy={busy === "svg"}
             onAction={() =>
               run("svg", () =>
-                exportSvg(
+                exportSvgFile(
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.svg`,
                   exportTheme,
@@ -783,7 +804,7 @@ export default function ExportDialog({
             description="Experimental import for Velocidrone."
             isBusy={busy === "trk"}
             onAction={() =>
-              run("trk", () => exportVelocidroneTrk(design, `${baseName}.trk`))
+              run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))
             }
           />
         </div>
