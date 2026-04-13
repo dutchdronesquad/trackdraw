@@ -17,6 +17,7 @@ import {
 } from "../track/obstacleNumbering";
 import {
   getPolyline2DDerived,
+  getRouteWarningSegmentColor,
   getPolylineRouteWarningSegmentVisuals,
   getPolylineSmoothSegmentPointsPx,
 } from "../track/polyline-derived";
@@ -112,13 +113,7 @@ function polylineToSvg(
           .map((points, segmentIndex) => {
             if (!points || points.length < 4) return "";
             const warningKind = warningKindBySegment.get(segmentIndex);
-            const stroke = !warningKind
-              ? color
-              : warningKind === "close-points"
-                ? "#ef4444"
-                : warningKind === "steep"
-                  ? "#f97316"
-                  : "#fbbf24";
+            const stroke = getRouteWarningSegmentColor(warningKind, color);
             const segmentPath = points
               .reduce<string[]>((commands, value, index) => {
                 if (index % 2 === 0) {

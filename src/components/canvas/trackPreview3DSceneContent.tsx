@@ -16,6 +16,7 @@ import {
 import * as THREE from "three";
 import {
   getPolylineRouteWarningSegmentVisuals,
+  getRouteWarningSegmentColor,
   getPolylineSmoothSegmentPoints3D,
 } from "@/lib/track/polyline-derived";
 import {
@@ -1090,15 +1091,10 @@ function RaceLine3D({
         segmentedGeometries.map((segmentGeometry, segmentIndex) => {
           if (!segmentGeometry) return null;
           const warningKind = warningKindBySegment.get(segmentIndex);
-          const color = !warningKind
-            ? selected
-              ? "#93c5fd"
-              : (shape.color ?? "#3b82f6")
-            : warningKind === "close-points"
-              ? "#ef4444"
-              : warningKind === "steep"
-                ? "#f97316"
-                : "#fbbf24";
+          const color = getRouteWarningSegmentColor(
+            warningKind,
+            selected ? "#93c5fd" : (shape.color ?? "#3b82f6")
+          );
 
           return (
             <mesh
