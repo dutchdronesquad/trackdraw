@@ -54,6 +54,7 @@ import { resolveSnapPosition } from "@/lib/canvas/snap";
 import {
   getCanvasRotationGuideAngleDeg,
   hasFrontBackOrientation,
+  normalizeRotationDegrees,
 } from "@/lib/track/orientation";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
 import { distance2D, getPolyline2DPoints } from "@/lib/track/geometry";
@@ -1239,11 +1240,13 @@ const TrackCanvas = memo(
       };
     }, [cursor, stepPx, activeTool]);
 
+    const rotationSessionKey = rotationSession
+      ? `${rotationSession.shapeId}:${rotationSession.startAngle}:${rotationSession.startRotation}`
+      : null;
+
     useEffect(() => {
       const session = rotationSessionRef.current;
-      const sessionKey = session
-        ? `${session.shapeId}:${session.startAngle}:${session.startRotation}`
-        : null;
+      const sessionKey = rotationSessionKey;
 
       if (rotationEffectSessionKeyRef.current === sessionKey) return;
 
@@ -1256,6 +1259,7 @@ const TrackCanvas = memo(
       const stage = stageRef.current;
       if (!stage) return;
       const container = stage.container();
+      let finished = false;
       container.style.cursor = "grabbing";
 
       const updateRotationFromEvent = (event: MouseEvent | TouchEvent) => {
@@ -1306,10 +1310,33 @@ const TrackCanvas = memo(
         updateRotationFromEvent(event);
       };
 
+      const cleanupListeners = () => {
+        container.style.cursor = "";
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handlePointerUp);
+        window.removeEventListener("touchmove", handleTouchMove);
+        window.removeEventListener("touchend", handlePointerUp);
+        window.removeEventListener("touchcancel", handlePointerCancel);
+        window.removeEventListener("blur", handlePointerCancel);
+        document.removeEventListener(
+          "visibilitychange",
+          handleVisibilityChange
+        );
+      };
+
       const handlePointerUp = () => {
+        if (finished) return;
+        finished = true;
         const activeSession = rotationSessionRef.current;
+        cleanupListeners();
         finishRotationHistorySession(() => {
           if (!activeSession) return;
+          if (
+            normalizeRotationDegrees(activeSession.previewRotation) ===
+            normalizeRotationDegrees(activeSession.initialRotation)
+          ) {
+            return;
+          }
           updateShapeRef.current(activeSession.shapeId, {
             rotation: activeSession.previewRotation,
           });
@@ -1317,13 +1344,23 @@ const TrackCanvas = memo(
         setRotationSession(null);
       };
 
+      const handlePointerCancel = () => {
+        if (finished) return;
+        finished = true;
+        cleanupListeners();
+        cancelRotationHistorySession();
+        setRotationSession(null);
+      };
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState !== "hidden") return;
+        handlePointerCancel();
+      };
+
       const cleanup = () => {
-        container.style.cursor = "";
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handlePointerUp);
-        window.removeEventListener("touchmove", handleTouchMove);
-        window.removeEventListener("touchend", handlePointerUp);
-        window.removeEventListener("touchcancel", handlePointerUp);
+        if (finished) return;
+        finished = true;
+        cleanupListeners();
         cancelRotationHistorySession();
       };
 
@@ -1333,12 +1370,15 @@ const TrackCanvas = memo(
         passive: false,
       });
       window.addEventListener("touchend", handlePointerUp);
-      window.addEventListener("touchcancel", handlePointerUp);
+      window.addEventListener("touchcancel", handlePointerCancel);
+      window.addEventListener("blur", handlePointerCancel);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
 
       rotationEffectCleanupRef.current = cleanup;
     }, [
       cancelRotationHistorySession,
       finishRotationHistorySession,
+      rotationSessionKey,
       setRotationSession,
     ]);
 
@@ -1786,7 +1826,7 @@ const TrackCanvas = memo(
                     const stage = stageRef.current;
                     const pointer = stage?.getRelativePointerPosition();
                     if (!pointer) return;
-                    startRotationHistorySession();
+                    if (!startRotationHistorySession()) return;
 
                     const startAngle =
                       (Math.atan2(
@@ -1799,6 +1839,7 @@ const TrackCanvas = memo(
                     setRotationSession({
                       center: rotationGuide.center,
                       shapeId: singleSelectedShape.id,
+                      initialRotation: singleSelectedShape.rotation,
                       previewRotation: singleSelectedShape.rotation,
                       startAngle,
                       startRotation: singleSelectedShape.rotation - 90,
