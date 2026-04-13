@@ -11,7 +11,7 @@ import {
   type DraftPoint,
 } from "@/lib/canvas/shared";
 
-interface TrackCanvasShortcutsParams {
+export interface TrackCanvasShortcutsParams {
   activeTool: EditorTool;
   addShapes: (shapes: ShapeDraft[]) => string[];
   cancelDraftPath: () => void;

@@ -4,6 +4,7 @@ import { Grid, OrbitControls } from "@react-three/drei";
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
+  Suspense,
   forwardRef,
   useCallback,
   useEffect,
@@ -38,23 +39,33 @@ import {
 import {
   CameraAxisTracker,
   CameraCapture,
-  DiveGateTiltHandle3D,
-  DroneCamera,
-  GateRotateHandle3D,
-  LadderElevationHandle3D,
   MemoShape3D,
-  PolylineElevationHandles3D,
   ScreenshotHelper,
   WheelBridge,
   type QuaternionState,
-} from "@/components/canvas/trackPreview3DSceneContent";
+} from "@/components/canvas/trackPreview3DSharedSceneContent";
+import {
+  DiveGateTiltHandle3D,
+  GateRotateHandle3D,
+  LadderElevationHandle3D,
+  PolylineElevationHandles3D,
+} from "@/components/canvas/editor/trackPreview3DEditSceneContent";
 import {
   AxisGizmoOverlay,
   FieldWatermark,
   FlyThroughControlsOverlay,
   TrackPreview3DHintOverlays,
 } from "@/components/canvas/trackPreview3DOverlays";
-import { useTrackPreview3DInteractions } from "@/components/canvas/useTrackPreview3DInteractions";
+import { useTrackPreview3DInteractions } from "@/components/canvas/editor/useTrackPreview3DInteractions";
+import dynamic from "next/dynamic";
+
+const DroneCamera = dynamic(
+  () =>
+    import("@/components/canvas/trackPreview3DFlythrough").then((mod) => ({
+      default: mod.DroneCamera,
+    })),
+  { ssr: false }
+);
 
 export interface TrackPreview3DHandle {
   screenshot: () => string;
@@ -467,12 +478,14 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             <CameraAxisTracker onChange={setAxisQuaternion} />
           ) : null}
           {flyMode ? (
-            <DroneCamera
-              shapes={shapes}
-              playing={playing}
-              speed={speed}
-              bankingEnabled={bankingEnabled}
-            />
+            <Suspense fallback={null}>
+              <DroneCamera
+                shapes={shapes}
+                playing={playing}
+                speed={speed}
+                bankingEnabled={bankingEnabled}
+              />
+            </Suspense>
           ) : isMobile ? (
             <OrbitControls
               ref={orbitControlsRef}

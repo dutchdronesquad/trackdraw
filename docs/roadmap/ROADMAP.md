@@ -177,13 +177,14 @@ These remain valuable, but they are not the current build target.
 
 #### Bundle Size Reduction (`No account required`)
 
-TrackDraw is now feature-rich enough that bundle size needs to become a deliberate product-quality concern instead of only an incidental cleanup task. The shipped gzip footprint is still around 3 MB, which is heavier than it should be for mobile starts and slower connections.
+TrackDraw is now feature-rich enough that bundle size needs to be handled as an explicit product-quality track instead of only incidental cleanup. The first startup-focused reductions are already in place, so the next pass should stay measurement-led and target the heaviest remaining Studio, 2D, 3D, and export chunks without adding unnecessary code duplication.
 
 Suggested first slices:
 
-- Audit the current production bundle so the largest gzip contributors are explicit
-- Reduce avoidable client-side weight in editor, 3D, and export paths where those features do not need to ship eagerly
-- Prefer loading strategies and module boundaries that lower startup cost without regressing the core draw-review-share workflow
+- Done: reduce avoidable weight in the main Studio toolbar so secondary controls do not all ship in the first editor load
+- Done: keep separating editor-only interaction code from the base 2D canvas path where that lowers startup cost without risking core editing behavior
+- Done: re-audit the remaining 3D preview chunk and only continue splitting it where a concrete hotspot still justifies the extra module boundary
+- Done: verify that heavier export dependencies remain fully deferred behind the export flow instead of leaking into normal editor or shared-view startup
 
 #### 3D Editor Interaction Polish (`No account required`)
 

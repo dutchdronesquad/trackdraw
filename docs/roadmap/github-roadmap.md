@@ -83,12 +83,16 @@ Labels used below:
 
 ## Backlog And Research
 
-- [ ] Bundle size reduction (`No account required`)
-      Reduce the shipped app size so TrackDraw loads and starts faster, especially on slower mobile connections and lower-powered devices. The current gzip footprint is still around 3 MB, so this should stay visible as a product-quality follow-up, but not ahead of build stability and the more immediate workflow work.
-  - [ ] Identify the largest shipped client-side chunks
-        Audit the current production bundle so the biggest gzip contributors are explicit before making architectural or loading-strategy changes.
-  - [ ] Reduce avoidable client-side weight
-        Trim or defer heavy editor, 3D, or export code where that meaningfully lowers the shipped gzip size without regressing the main design workflow.
+- [x] Bundle size reduction (`No account required`)
+      Keep reducing startup weight now that the first lazy-loading and share-shell splits are in place. The next work here should stay measurement-led and focus on the heaviest remaining client chunks instead of treating bundle size as one broad cleanup bucket.
+  - [x] Studio toolbar chunk reduction
+        Reduce avoidable weight in the main Studio toolbar so rarely used controls or secondary tool surfaces do not all ship in the first editor load.
+  - [x] TrackCanvas editor-only interaction split
+        Keep separating editor-only interaction code from the base 2D rendering path where that meaningfully lowers the Studio startup chunk without regressing drawing and selection behavior.
+  - [x] 3D preview hotspot audit
+        Re-measure the shared 3D preview stack and only keep splitting it further if a specific scene, geometry, or overlay module proves to be a worthwhile remaining hotspot.
+  - [x] Export dependency audit
+        Confirm that heavier export dependencies stay fully behind the export flow and are not leaking back into normal editor or shared-view startup paths.
 
 - [ ] Track DNA and layout analysis (`Research`)
       Evaluate whether route and layout analysis should become reusable signals that help compare tracks, explain style, and support later recommendation or assistive tooling.

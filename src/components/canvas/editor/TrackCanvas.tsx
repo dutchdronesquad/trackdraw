@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import {
   memo,
   useCallback,
@@ -22,14 +23,9 @@ import {
   type RectLike,
 } from "@/lib/canvas/shared";
 import { useTrackCanvasInteractions } from "@/components/canvas/useTrackCanvasInteractions";
-import {
-  FieldOverlayContent,
-  getShapeLocalBounds,
-  RotationGuideOverlay,
-  StableFieldContent,
-  TrackShapeNode,
-} from "@/components/canvas/renderers";
-import { useTrackCanvasShortcuts } from "@/components/canvas/useTrackCanvasShortcuts";
+import { StableFieldContent } from "@/components/canvas/renderers/field-layer";
+import { getShapeLocalBounds } from "@/components/canvas/renderers/shape-bounds";
+import { TrackShapeNode } from "@/components/canvas/renderers/shape-node";
 import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewport";
 import { useHistorySession } from "@/hooks/useHistorySession";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
@@ -75,8 +71,26 @@ import {
 } from "@/components/ui/tooltip";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Kbd } from "@/components/ui/kbd";
-import { CanvasContextMenuContent } from "@/components/canvas/CanvasContextMenu";
+import type { ContextMenuData } from "@/components/canvas/editor/CanvasContextMenu";
 import { Scan } from "lucide-react";
+
+const TrackCanvasShortcuts = dynamic(
+  () => import("@/components/canvas/editor/TrackCanvasShortcuts"),
+  { ssr: false }
+);
+
+const CanvasContextMenuContent = dynamic(
+  () =>
+    import("@/components/canvas/editor/CanvasContextMenu").then((mod) => ({
+      default: mod.CanvasContextMenuContent,
+    })),
+  { ssr: false }
+);
+
+const TrackCanvasEditorOverlays = dynamic(
+  () => import("@/components/canvas/editor/TrackCanvasEditorOverlays"),
+  { ssr: false }
+);
 
 export interface TrackCanvasHandle {
   getStage: () => KonvaStage | null;
@@ -253,20 +267,9 @@ const TrackCanvas = memo(
       y: 0,
       scale: 1,
     });
-    const [contextMenu, setContextMenu] = useState<{
-      addWaypointSegmentIndex: number | null;
-      canGroup: boolean;
-      closablePolylineId: string | null;
-      deleteWaypointIndex: number | null;
-      editablePolylineId: string | null;
-      groupLabel: string | null;
-      hasGroupedShapes: boolean;
-      ids: string[];
-      joinablePolylineIds: string[];
-      label: string;
-      locked: boolean;
-      rotatableIds: string[];
-    } | null>(null);
+    const [contextMenu, setContextMenu] = useState<ContextMenuData | null>(
+      null
+    );
     const hasManualViewRef = useRef(false);
     const isDark = useTheme() === "dark";
     const obstacleNumberMap = useMemo(
@@ -876,34 +879,6 @@ const TrackCanvas = memo(
       setDraftSourceShapeId,
       setSelection,
     ]);
-
-    useTrackCanvasShortcuts({
-      activeTool,
-      addShapes,
-      cancelDraftPath,
-      containerRef,
-      designFieldGridStep: design.field.gridStep,
-      shapeById,
-      draftPath,
-      duplicateShapes,
-      effectiveVertexSel,
-      finalizePath,
-      fitFieldToViewport,
-      beginInteraction,
-      nudgeShapes,
-      pauseHistory,
-      removeShapes,
-      resumeHistory,
-      rotateShapes,
-      selection,
-      setActiveTool,
-      setManualView,
-      setSelection,
-      setDraftPath,
-      setVertexSel,
-      removePolylinePoint,
-      endInteraction,
-    });
 
     useTrackCanvasViewport({
       containerRef,
@@ -1528,6 +1503,35 @@ const TrackCanvas = memo(
 
     return (
       <ContextMenu onOpenChange={(open) => !open && setContextMenu(null)}>
+        {!readOnly ? (
+          <TrackCanvasShortcuts
+            activeTool={activeTool}
+            addShapes={addShapes}
+            cancelDraftPath={cancelDraftPath}
+            containerRef={containerRef}
+            designFieldGridStep={design.field.gridStep}
+            shapeById={shapeById}
+            draftPath={draftPath}
+            duplicateShapes={duplicateShapes}
+            effectiveVertexSel={effectiveVertexSel}
+            finalizePath={finalizePath}
+            fitFieldToViewport={fitFieldToViewport}
+            beginInteraction={beginInteraction}
+            nudgeShapes={nudgeShapes}
+            pauseHistory={pauseHistory}
+            removeShapes={removeShapes}
+            removePolylinePoint={removePolylinePoint}
+            resumeHistory={resumeHistory}
+            rotateShapes={rotateShapes}
+            selection={selection}
+            setActiveTool={setActiveTool}
+            setDraftPath={setDraftPath}
+            setManualView={setManualView}
+            setSelection={setSelection}
+            setVertexSel={setVertexSel}
+            endInteraction={endInteraction}
+          />
+        ) : null}
         <ContextMenuTrigger
           ref={containerRef}
           className="relative h-full w-full overflow-hidden"
@@ -1664,19 +1668,6 @@ const TrackCanvas = memo(
               />
             </Layer>
 
-            {/* Reactive overlay layer: hoverCell, marquee, selection frame */}
-            <Layer listening={false}>
-              <FieldOverlayContent
-                effectiveSelectionFrame={
-                  selection.length > 1 ? effectiveSelectionFrame : null
-                }
-                hoverCell={hoverCell}
-                isDark={isDark}
-                marqueeRect={marqueeRect}
-                stepPx={stepPx}
-              />
-            </Layer>
-
             {/* Shapes layer */}
             <Layer>
               {shapeNodes}
@@ -1805,51 +1796,66 @@ const TrackCanvas = memo(
                 )}
             </Layer>
 
-            {!readOnly && activeTool === "select" && (
-              <Layer>
-                <RotationGuideOverlay
-                  isDark={isDark}
-                  showFrontLabel={
-                    !!displaySingleSelectedShape &&
-                    hasFrontBackOrientation(displaySingleSelectedShape)
+            {!readOnly ? (
+              <TrackCanvasEditorOverlays
+                activeTool={activeTool}
+                cursor={cursor}
+                designPpm={design.field.ppm}
+                draftCloseTarget={draftCloseTarget}
+                draftPointsPx={draftPointsPx}
+                draftPreviewSmoothPx={draftPreviewSmoothPx}
+                dragSnapPreview={dragSnapPreview}
+                effectiveSelectionFrame={
+                  selection.length > 1 ? effectiveSelectionFrame : null
+                }
+                hoverCell={hoverCell}
+                isDark={isDark}
+                magneticSnapRadiusPx={magneticSnapRadiusPx}
+                marqueeRect={marqueeRect}
+                onRotateStart={(event) => {
+                  if (
+                    !singleSelectedShape ||
+                    singleSelectedShape.locked ||
+                    !rotationGuide
+                  ) {
+                    return;
                   }
-                  onRotateStart={(event) => {
-                    if (
-                      !singleSelectedShape ||
-                      singleSelectedShape.locked ||
-                      !rotationGuide
-                    ) {
-                      return;
-                    }
 
-                    event.cancelBubble = true;
-                    const stage = stageRef.current;
-                    const pointer = stage?.getRelativePointerPosition();
-                    if (!pointer) return;
-                    if (!startRotationHistorySession()) return;
+                  event.cancelBubble = true;
+                  const stage = stageRef.current;
+                  const pointer = stage?.getRelativePointerPosition();
+                  if (!pointer) return;
+                  if (!startRotationHistorySession()) return;
 
-                    const startAngle =
-                      (Math.atan2(
-                        pointer.y - rotationGuide.center.y,
-                        pointer.x - rotationGuide.center.x
-                      ) *
-                        180) /
-                      Math.PI;
+                  const startAngle =
+                    (Math.atan2(
+                      pointer.y - rotationGuide.center.y,
+                      pointer.x - rotationGuide.center.x
+                    ) *
+                      180) /
+                    Math.PI;
 
-                    setRotationSession({
-                      center: rotationGuide.center,
-                      shapeId: singleSelectedShape.id,
-                      initialRotation: singleSelectedShape.rotation,
-                      previewRotation: singleSelectedShape.rotation,
-                      startAngle,
-                      startRotation: singleSelectedShape.rotation - 90,
-                    });
-                  }}
-                  rotationGuide={rotationGuide}
-                  showAngleLabel={rotationSession !== null}
-                />
-              </Layer>
-            )}
+                  setRotationSession({
+                    center: rotationGuide.center,
+                    shapeId: singleSelectedShape.id,
+                    initialRotation: singleSelectedShape.rotation,
+                    previewRotation: singleSelectedShape.rotation,
+                    startAngle,
+                    startRotation: singleSelectedShape.rotation - 90,
+                  });
+                }}
+                rotationGuide={rotationGuide}
+                showAngleLabel={rotationSession !== null}
+                showFrontLabel={
+                  !!displaySingleSelectedShape &&
+                  hasFrontBackOrientation(displaySingleSelectedShape)
+                }
+                showRotationGuide={activeTool === "select"}
+                snapRadiusMeters={snapRadiusMeters}
+                snapTarget={snapTarget}
+                stepPx={stepPx}
+              />
+            ) : null}
 
             <Layer>
               {showObstacleNumbers &&
@@ -1925,184 +1931,6 @@ const TrackCanvas = memo(
                       </Group>
                     );
                   })}
-              {dragSnapPreview && (
-                <Group listening={false}>
-                  <Circle
-                    x={dragSnapPreview.x}
-                    y={dragSnapPreview.y}
-                    radius={Math.max(11, magneticSnapRadiusPx + 1)}
-                    fill={isDark ? "#7dd3fc14" : "#0ea5e910"}
-                    strokeEnabled={false}
-                    opacity={0.24}
-                  />
-                  <Circle
-                    x={dragSnapPreview.x}
-                    y={dragSnapPreview.y}
-                    radius={Math.max(7, magneticSnapRadiusPx - 2)}
-                    fill={isDark ? "#e0f2fe10" : "#ffffffa8"}
-                    stroke={isDark ? "#7dd3fc66" : "#0ea5e955"}
-                    strokeWidth={0.8}
-                    opacity={0.42}
-                  />
-                  <Circle
-                    x={dragSnapPreview.x}
-                    y={dragSnapPreview.y}
-                    radius={1.75}
-                    fill={isDark ? "#e0f2fe" : "#0284c7"}
-                    opacity={0.62}
-                  />
-                </Group>
-              )}
-
-              {/* Snap-to-element indicator (polyline drawing mode) */}
-              {snapTarget &&
-                activeTool === "polyline" &&
-                (() => {
-                  const sx = m2px(snapTarget.x, design.field.ppm);
-                  const sy = m2px(snapTarget.y, design.field.ppm);
-                  const r = Math.max(
-                    m2px(snapRadiusMeters * 0.55, design.field.ppm),
-                    14
-                  );
-                  return (
-                    <Group listening={false}>
-                      <Circle
-                        x={sx}
-                        y={sy}
-                        radius={r}
-                        stroke="#22c55e"
-                        strokeWidth={1.5}
-                        dash={[5, 4]}
-                        opacity={0.85}
-                      />
-                      <Circle
-                        x={sx}
-                        y={sy}
-                        radius={4}
-                        fill="#22c55e"
-                        opacity={0.9}
-                      />
-                    </Group>
-                  );
-                })()}
-
-              {/* Draft polyline */}
-              {draftPreviewSmoothPx.length >= 4 && (
-                <>
-                  <Line
-                    points={draftPreviewSmoothPx}
-                    stroke="#60a5fa"
-                    strokeWidth={m2px(0.28, design.field.ppm)}
-                    lineCap="round"
-                    lineJoin="round"
-                    opacity={0.2}
-                  />
-                  <Line
-                    points={draftPreviewSmoothPx}
-                    stroke={snapTarget ? "#22c55e" : "#3b82f6"}
-                    strokeWidth={m2px(0.18, design.field.ppm)}
-                    lineCap="round"
-                    lineJoin="round"
-                    opacity={0.55}
-                  />
-                </>
-              )}
-              {draftPointsPx.length > 0 && (
-                <Line
-                  points={draftPointsPx}
-                  stroke="#93c5fd"
-                  strokeWidth={Math.max(1, m2px(0.08, design.field.ppm))}
-                  dash={[4, 6]}
-                  lineCap="round"
-                  lineJoin="round"
-                  opacity={0.45}
-                />
-              )}
-              {draftPointsPx.length > 0 &&
-                cursor &&
-                (() => {
-                  const endX = snapTarget
-                    ? m2px(snapTarget.x, design.field.ppm)
-                    : cursor.snappedPx.x;
-                  const endY = snapTarget
-                    ? m2px(snapTarget.y, design.field.ppm)
-                    : cursor.snappedPx.y;
-                  const previewX = draftCloseTarget
-                    ? m2px(draftCloseTarget.x, design.field.ppm)
-                    : endX;
-                  const previewY = draftCloseTarget
-                    ? m2px(draftCloseTarget.y, design.field.ppm)
-                    : endY;
-                  return (
-                    <Line
-                      points={[
-                        draftPointsPx[draftPointsPx.length - 2],
-                        draftPointsPx[draftPointsPx.length - 1],
-                        previewX,
-                        previewY,
-                      ]}
-                      stroke={
-                        draftCloseTarget
-                          ? "#f59e0b"
-                          : snapTarget
-                            ? "#22c55e"
-                            : "#60a5fa"
-                      }
-                      strokeWidth={Math.max(1, m2px(0.12, design.field.ppm))}
-                      dash={[4, 6]}
-                      opacity={0.5}
-                      lineCap="round"
-                    />
-                  );
-                })()}
-              {draftCloseTarget && (
-                <Group listening={false}>
-                  <Circle
-                    x={m2px(draftCloseTarget.x, design.field.ppm)}
-                    y={m2px(draftCloseTarget.y, design.field.ppm)}
-                    radius={Math.max(9, m2px(0.28, design.field.ppm))}
-                    stroke="#f59e0b"
-                    strokeWidth={1.5}
-                    dash={[5, 4]}
-                    opacity={0.9}
-                  />
-                  <Circle
-                    x={m2px(draftCloseTarget.x, design.field.ppm)}
-                    y={m2px(draftCloseTarget.y, design.field.ppm)}
-                    radius={3.5}
-                    fill="#f59e0b"
-                    opacity={0.95}
-                  />
-                </Group>
-              )}
-
-              {/* Cursor crosshair */}
-              {cursor && (
-                <Group listening={false}>
-                  <Line
-                    points={[
-                      cursor.snappedPx.x,
-                      cursor.snappedPx.y - 10,
-                      cursor.snappedPx.x,
-                      cursor.snappedPx.y + 10,
-                    ]}
-                    stroke="#4a5568"
-                    strokeWidth={1}
-                    dash={[3, 3]}
-                  />
-                  <Line
-                    points={[
-                      cursor.snappedPx.x - 10,
-                      cursor.snappedPx.y,
-                      cursor.snappedPx.x + 10,
-                      cursor.snappedPx.y,
-                    ]}
-                    stroke="#4a5568"
-                    strokeWidth={1}
-                    dash={[3, 3]}
-                  />
-                </Group>
-              )}
             </Layer>
           </Stage>
 

@@ -1,11 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
-import MobileAppMenu from "@/components/editor/MobileAppMenu";
+import { useState } from "react";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Tooltip,
   TooltipTrigger,
@@ -23,6 +22,7 @@ import {
   Download,
   Keyboard,
   LoaderCircle,
+  Menu,
   PanelLeftClose,
   PanelLeftOpen,
   Save,
@@ -31,6 +31,21 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
+
+const MobileAppMenu = dynamic(
+  () => import("@/components/editor/MobileAppMenu"),
+  {
+    ssr: false,
+  }
+);
+
+const ThemeToggle = dynamic(
+  () =>
+    import("@/components/ThemeToggle").then((mod) => ({
+      default: mod.ThemeToggle,
+    })),
+  { ssr: false }
+);
 
 const INSPECTOR_WIDTH = "21.25rem";
 
@@ -79,6 +94,7 @@ export default function Header({
 }: HeaderProps) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
+  const [showMobileAppMenu, setShowMobileAppMenu] = useState(false);
 
   const statusIcon =
     statusTone === "error" ? (
@@ -133,18 +149,7 @@ export default function Header({
       className="text-foreground inline-flex h-8 min-w-11 items-center justify-center px-2 text-[11px] font-medium"
       aria-label={`Switch to ${tab === "2d" ? "3D" : "2D"} view`}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={tab}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.16, ease: "easeOut" }}
-          className="inline-block"
-        >
-          {tab.toUpperCase()}
-        </motion.span>
-      </AnimatePresence>
+      <span className="inline-block">{tab.toUpperCase()}</span>
     </button>
   );
 
@@ -413,12 +418,28 @@ export default function Header({
         </button>
 
         {!readOnly && onImport && onExport && onOpenProjectManager ? (
-          <MobileAppMenu
-            onOpenProjects={onOpenProjectManager}
-            onImport={onImport}
-            onExport={onExport}
-            onShare={onShare}
-          />
+          showMobileAppMenu ? (
+            <MobileAppMenu
+              defaultOpen
+              hideTrigger
+              onOpenProjects={onOpenProjectManager}
+              onImport={onImport}
+              onExport={onExport}
+              onShare={onShare}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.currentTarget.blur();
+                setShowMobileAppMenu(true);
+              }}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-lg transition-colors lg:hidden"
+              aria-label="Open app menu"
+            >
+              <Menu className="size-4" />
+            </button>
+          )
         ) : null}
 
         <div className="bg-border/80 mx-1 hidden h-5 w-px lg:block lg:h-4" />
