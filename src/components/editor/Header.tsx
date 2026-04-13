@@ -262,7 +262,7 @@ export default function Header({
           <>
             <span className="hidden shrink-0 items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[11px] font-medium text-sky-400 sm:flex">
               <Eye className="size-3" />
-              View only
+              Shared review
             </span>
             <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
             <Link
@@ -272,7 +272,7 @@ export default function Header({
                 "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"
               )}
             >
-              Open Studio
+              Make editable copy
             </Link>
             <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
           </>

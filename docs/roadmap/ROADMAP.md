@@ -17,6 +17,7 @@ The most useful next product moves are:
 - A sharper decision on how far account-backed continuity should go after the first auth slice
 - A clearer separation between local-first workflows and account-backed follow-up
 - Better lifecycle controls around published shares once ownership is defined
+- A stronger shared-view review experience, especially on mobile and in 3D
 - Deliberate follow-up on race-day outputs after the ownership boundary is settled
 
 ## Product Principles
@@ -138,7 +139,23 @@ Important boundary:
 - The Race Pack is now the handoff document for briefing, print, and sharing
 - A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
 
-### 4. Editor State And Persistence Boundary Pass (`No account required`)
+### 4. Share Page Polish (`No account required`)
+
+The shared read-only view is already useful, but it still deserves a more deliberate product pass so it feels like a real review surface instead of Studio running in read-only mode.
+
+Why now:
+
+- Shared links are one of TrackDraw's clearest collaboration and handoff surfaces
+- The mobile and 3D review paths are now valuable enough that rough edges on shared links matter more
+- Recent fixes improved specific collisions, but the full read-only experience still needs a tighter pass
+
+Suggested first slices:
+
+- Mobile 3D control pass so bottom bars, drawers, safe-area spacing, and fly-through controls do not compete
+- Clearer first-load framing so a shared track explains itself faster on mobile and desktop
+- A more intentional Open Studio path that reads as making your own editable copy, not just leaving the share page
+
+### 5. Editor State And Persistence Boundary Pass (`No account required`)
 
 Improve the core editor model so TrackDraw stays easier to reason about, project continuity is clearer, and future review or collaboration work does not require a full editor reset.
 
@@ -152,7 +169,7 @@ Suggested first slices:
 - Clarify the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares
 - Make undo and redo more intention-aware so drag, rotate, and route editing sessions produce cleaner history
 
-### 5. AR Mode Evaluation (`Research`)
+### 6. AR Mode Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support projecting a full track into a real venue through AR, with section-based preview only as a fallback if full placement is not reliable enough.
 
@@ -162,7 +179,7 @@ Suggested first slices:
 - Identify a practical iOS fallback
 - Test whether full-track placement is useful and accurate enough for real venue-side decisions
 
-### 6. Real-Time Collaboration Evaluation (`Research`)
+### 7. Real-Time Collaboration Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
 
@@ -174,7 +191,7 @@ Suggested first slices:
 - Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
 - Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
-### 7. Published Gallery Evaluation (`Research`)
+### 8. Published Gallery Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
 
@@ -184,7 +201,7 @@ Suggested first slices:
 - Clarify attribution, ownership, and visibility boundaries
 - Determine the minimum viable moderation and discovery model
 
-### 8. Backlog And Research Tracks
+### 9. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 
@@ -224,6 +241,15 @@ Suggested first slices:
 - Density overlay
 - Suspicious spacing cues
 - Route rhythm cues
+
+#### Landing Page Proof Follow-up (`No account required`)
+
+Show the strongest shipped review and handoff workflows more directly on the marketing site instead of relying mostly on static product copy.
+
+Suggested first slices:
+
+- Add a stronger cinematic FPV export proof block with room for video or motion-led media
+- Tighten the homepage story around drawing in 2D, reviewing in 3D, and sharing read-only
 
 #### Track DNA And Layout Analysis (`No account required`)
 

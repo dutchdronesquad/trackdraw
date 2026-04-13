@@ -109,11 +109,13 @@ export default function EditorShell({
   seedToken,
   initialTab = "2d",
   studioHref,
+  existingShareMode = false,
 }: {
   readOnly?: boolean;
   seedToken?: string;
   initialTab?: EditorView;
   studioHref?: string;
+  existingShareMode?: boolean;
 }) {
   usePerfMetric("render:EditorShell");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
@@ -990,6 +992,7 @@ export default function EditorShell({
         hasPath={hasPath}
         projectId={isAccountProject ? design.id : null}
         onSharePublished={() => void refreshAccountShares(true)}
+        existingShareMode={existingShareMode}
         onExportJson={() => {
           setShareOpen(false);
           setExportOpen(true);

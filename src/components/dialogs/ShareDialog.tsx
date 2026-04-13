@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/store/editor";
 import { selectDesignShapeCount } from "@/store/selectors";
-import { encodeDesign } from "@/lib/share";
+import { buildStoredSharePath, encodeDesign } from "@/lib/share";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { parseEditorView } from "@/lib/view";
 import { authClient } from "@/lib/auth-client";
@@ -46,6 +46,7 @@ interface ShareDialogProps {
   projectId?: string | null;
   onExportJson?: () => void;
   onSharePublished?: () => void;
+  existingShareMode?: boolean;
 }
 
 function getShareTokenFromUrl(url: string | null) {
@@ -70,6 +71,7 @@ function ShareContent({
   projectId = null,
   onExportJson,
   onSharePublished,
+  existingShareMode = false,
   mobile = false,
 }: {
   onClose: () => void;
@@ -77,6 +79,7 @@ function ShareContent({
   projectId?: string | null;
   onExportJson?: () => void;
   onSharePublished?: () => void;
+  existingShareMode?: boolean;
   mobile?: boolean;
 }) {
   const design = useEditor((s) => s.track.design);
@@ -98,6 +101,8 @@ function ShareContent({
     string | null
   >(null);
   const currentView = parseEditorView(searchParams.get("view")) ?? "2d";
+  const currentShareUrl =
+    typeof window !== "undefined" ? window.location.href : null;
 
   const currentToken = encodeDesign(design);
   const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
@@ -106,6 +111,8 @@ function ShareContent({
     typeof window !== "undefined" ? window.location.host : "trackdraw.app";
 
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const restoredStoredShareForTokenRef = useRef<string | null>(null);
+  const restoredProjectShareForKeyRef = useRef<string | null>(null);
   const storedToken = (() => {
     try {
       return typeof window !== "undefined"
@@ -187,14 +194,18 @@ function ShareContent({
   };
 
   useEffect(() => {
+    if (restoredStoredShareForTokenRef.current !== currentToken) {
+      restoredStoredShareForTokenRef.current = null;
+    }
     if (
       !storedShareState ||
       storedShareState.sourceToken !== currentToken ||
-      storedShareState.expiresInDays !== expiresInDays
+      restoredStoredShareForTokenRef.current === currentToken
     ) {
       return;
     }
 
+    restoredStoredShareForTokenRef.current = currentToken;
     setPublishedShareUrl((current) => current ?? storedShareState.url);
     setPublishedSourceToken(
       (current) => current ?? storedShareState.sourceToken
@@ -202,7 +213,97 @@ function ShareContent({
     setPublishedExpiresInDays(
       (current) => current ?? storedShareState.expiresInDays
     );
-  }, [currentToken, expiresInDays, storedShareState]);
+    setExpiresInDays((current) =>
+      current === storedShareState.expiresInDays
+        ? current
+        : storedShareState.expiresInDays
+    );
+  }, [currentToken, storedShareState]);
+
+  useEffect(() => {
+    const restoreKey =
+      session?.user && projectId ? `${session.user.id}:${projectId}` : null;
+    if (restoredProjectShareForKeyRef.current !== restoreKey) {
+      restoredProjectShareForKeyRef.current = null;
+    }
+    if (
+      existingShareMode ||
+      !session?.user ||
+      !projectId ||
+      publishedShareUrl ||
+      typeof window === "undefined" ||
+      restoredProjectShareForKeyRef.current === restoreKey
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadProjectShare = async () => {
+      try {
+        const response = await fetch("/api/shares", { method: "GET" });
+        const payload = (await response.json()) as {
+          ok: boolean;
+          error?: string;
+          shares?: Array<{
+            token: string;
+            expiresAt: string;
+            projectId: string | null;
+          }>;
+        };
+
+        if (!response.ok || !payload.ok) {
+          return;
+        }
+
+        const existingProjectShare = (payload.shares ?? []).find(
+          (share) => share.projectId === projectId
+        );
+
+        if (!existingProjectShare || cancelled) {
+          return;
+        }
+
+        const nextUrl = new URL(
+          buildStoredSharePath(existingProjectShare.token, currentView),
+          window.location.origin
+        ).toString();
+        const daysRemaining = Math.max(
+          1,
+          Math.ceil(
+            (new Date(existingProjectShare.expiresAt).getTime() - Date.now()) /
+              (24 * 60 * 60 * 1000)
+          )
+        );
+        const inferredExpiry: 7 | 30 | 90 =
+          daysRemaining <= 7 ? 7 : daysRemaining <= 30 ? 30 : 90;
+
+        restoredProjectShareForKeyRef.current = restoreKey;
+        setPublishedShareUrl(nextUrl);
+        setPublishedExpiresInDays(inferredExpiry);
+        setExpiresInDays((current) =>
+          current === inferredExpiry ? current : inferredExpiry
+        );
+        setPublishedSourceToken(currentToken);
+      } catch {
+        /* ignore existing-share lookup failures */
+      }
+    };
+
+    void loadProjectShare();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    currentToken,
+    currentView,
+    existingShareMode,
+    projectId,
+    publishedShareUrl,
+    session?.user,
+    session?.user?.id,
+  ]);
 
   const publishShareUrl = async (force = false) => {
     if (publishedShareUrl && !force && !shareNeedsRefresh) {
@@ -376,6 +477,285 @@ function ShareContent({
         : Copy
     : Link2;
   const PrimaryActionIcon = primaryActionIcon;
+
+  const handleCopyExistingShareUrl = async () => {
+    if (!currentShareUrl) {
+      toast.error("Unable to read the current share link");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(currentShareUrl);
+      setCopied(true);
+      toast.success("Link copied");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
+  const handleNativeShareExistingLink = async () => {
+    if (!currentShareUrl) {
+      toast.error("Unable to read the current share link");
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title: design.title || "TrackDraw",
+        text: `Check out this FPV track: ${design.title || "Untitled"}`,
+        url: currentShareUrl,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name !== "AbortError") {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  if (existingShareMode) {
+    if (mobile) {
+      return (
+        <div className="space-y-4 px-4 pt-3 pb-4">
+          <div>
+            <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
+              Shared track
+            </p>
+            <div className="min-w-0">
+              <p className="text-foreground truncate text-sm font-medium">
+                {shareTitle}
+              </p>
+              <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
+                Share this published read-only link or open Studio to make your
+                own editable copy.
+              </p>
+            </div>
+          </div>
+
+          <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
+            <div className="flex items-center gap-2">
+              <div className="bg-background/70 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/5">
+                <Link2 className="text-muted-foreground size-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-foreground text-sm font-medium">
+                  Current shared link
+                </p>
+                <p className="text-muted-foreground text-[11px]">
+                  Read-only {currentView.toUpperCase()} review on {hostname}
+                </p>
+              </div>
+            </div>
+            {currentShareUrl ? (
+              <input
+                id="share-url-input"
+                readOnly
+                value={currentShareUrl}
+                onFocus={(e) => e.target.select()}
+                className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+              />
+            ) : null}
+            <Button onClick={handleCopyExistingShareUrl} className="w-full">
+              {copied ? (
+                <Check className="size-4" />
+              ) : (
+                <Copy className="size-4" />
+              )}
+              Copy link
+            </Button>
+          </div>
+
+          <div className="border-border/50 overflow-hidden rounded-xl border">
+            {canNativeShare ? (
+              <button
+                onClick={handleNativeShareExistingLink}
+                className="border-border/40 hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors"
+              >
+                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                  <Share2 className="size-3.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground text-sm font-medium">
+                    Share via…
+                  </p>
+                  <p className="text-muted-foreground text-[11px]">
+                    Send this published link to apps or contacts
+                  </p>
+                </div>
+              </button>
+            ) : null}
+            <button
+              onClick={() => {
+                if (!currentShareUrl) return;
+                window.open(currentShareUrl, "_blank", "noopener,noreferrer");
+              }}
+              className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors"
+            >
+              <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                <ExternalLink className="size-3.5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-foreground text-sm font-medium">
+                  Open in tab
+                </p>
+                <p className="text-muted-foreground text-[11px]">
+                  Reopen the current shared link in a new tab
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-start gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
+              Shared track
+            </p>
+            <p className="text-foreground mt-2 text-[1.1rem] font-semibold tracking-[-0.02em]">
+              Share link
+            </p>
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+              Copy or resend this published read-only link, or open Studio to
+              make your own editable copy.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
+            aria-label="Close"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <div className="border-border/60 bg-muted/18 overflow-hidden rounded-xl border">
+              <div className="border-border/50 bg-card/70 flex items-start justify-between gap-3 border-b px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-foreground truncate text-sm font-semibold">
+                    {shareTitle}
+                  </p>
+                  <p className="text-muted-foreground mt-0.5 text-[11px]">
+                    Shared {currentView.toUpperCase()} view
+                  </p>
+                </div>
+                <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
+                  <Share2 className="size-4" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-px bg-white/5">
+                <div className="px-4 py-3">
+                  <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
+                    Field
+                  </p>
+                  <p className="text-foreground mt-1 text-sm font-medium">
+                    {design.field.width}×{design.field.height}m
+                  </p>
+                </div>
+                <div className="px-4 py-3">
+                  <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
+                    Objects
+                  </p>
+                  <p className="text-foreground mt-1 text-sm font-medium">
+                    {shapeCount}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
+              <div className="flex items-center gap-2">
+                <div className="bg-background/70 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/5">
+                  <Link2 className="text-muted-foreground size-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-foreground text-sm font-medium">
+                    Current shared link
+                  </p>
+                  <p className="text-muted-foreground text-[11px]">
+                    Read-only {currentView.toUpperCase()} review on {hostname}
+                  </p>
+                </div>
+              </div>
+              {currentShareUrl ? (
+                <input
+                  id="share-url-input"
+                  readOnly
+                  value={currentShareUrl}
+                  onFocus={(e) => e.target.select()}
+                  className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+                />
+              ) : null}
+              <Button onClick={handleCopyExistingShareUrl} className="w-full">
+                {copied ? (
+                  <Check className="size-4" />
+                ) : (
+                  <Copy className="size-4" />
+                )}
+                Copy link
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="border-border/50 bg-muted/12 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[11px]">
+              <Share2 className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
+              <p className="text-muted-foreground leading-relaxed">
+                This page is already the published read-only review link. Share
+                it as-is, or open Studio if you want an editable copy.
+              </p>
+            </div>
+
+            <div className="border-border/50 overflow-hidden rounded-xl border">
+              {canNativeShare ? (
+                <button
+                  onClick={handleNativeShareExistingLink}
+                  className="border-border/40 hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors"
+                >
+                  <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                    <Share2 className="size-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground text-sm font-medium">
+                      Share via…
+                    </p>
+                    <p className="text-muted-foreground text-[11px]">
+                      Send this published link to apps or contacts
+                    </p>
+                  </div>
+                </button>
+              ) : null}
+              <button
+                onClick={() => {
+                  if (!currentShareUrl) return;
+                  window.open(currentShareUrl, "_blank", "noopener,noreferrer");
+                }}
+                className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors"
+              >
+                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                  <ExternalLink className="size-3.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground text-sm font-medium">
+                    Open in tab
+                  </p>
+                  <p className="text-muted-foreground text-[11px]">
+                    Reopen the current shared link in a new tab
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (mobile) {
     return (
@@ -847,6 +1227,7 @@ export default function ShareDialog({
   projectId = null,
   onExportJson,
   onSharePublished,
+  existingShareMode = false,
 }: ShareDialogProps) {
   const isMobile = useIsMobile();
 
@@ -866,6 +1247,7 @@ export default function ShareDialog({
           projectId={projectId}
           onExportJson={onExportJson}
           onSharePublished={onSharePublished}
+          existingShareMode={existingShareMode}
           mobile
         />
       </MobileDrawer>
@@ -887,6 +1269,7 @@ export default function ShareDialog({
         projectId={projectId}
         onExportJson={onExportJson}
         onSharePublished={onSharePublished}
+        existingShareMode={existingShareMode}
       />
     </DesktopModal>
   );
