@@ -66,16 +66,16 @@ Labels used below:
   - [x] Make undo and redo more intention-aware
         Group meaningful edit sessions more deliberately so history feels cleaner during drag, rotate, and route editing work.
 
-- [ ] Test infrastructure
+- [x] Test infrastructure
       Introduce Vitest as the baseline test runner and establish the first test coverage for core business logic and export paths.
-  - [ ] Vitest setup and CI integration
-        Add Vitest to the project and wire it into the CI pipeline so tests run on every pull request.
-  - [ ] Unit tests for store and transforms
-        Cover the core Zustand store actions and geometry/transform utilities.
-  - [ ] Unit tests for export logic
-        Add unit coverage for JSON, Race Pack, and Velocidrone export logic where that can run without a browser.
-  - [ ] Component tests for critical editor paths
-        Add focused component tests for the most fragile editor interactions.
+  - [x] Vitest setup and CI integration
+        Added Vitest to the project, introduced baseline test scripts, and wired a dedicated GitHub Actions `tests.yaml` workflow so the Vitest suite runs on push and pull request.
+  - [x] Unit tests for store and transforms
+        Added first coverage for core Zustand store actions plus geometry, orientation, shape, planning, and share-related transform helpers.
+  - [x] Unit tests for export logic
+        Added unit coverage for SVG and Velocidrone export builders where that logic can run without a browser runtime.
+  - [x] Component tests for critical editor paths
+        Added first `happy-dom` component coverage for editor shell actions around read-only review framing, tab switching, and undo/redo controls.
 
 - [x] File structure and module boundary pass
       Tightened folder ownership and internal API surfaces across the editor store, canvas interaction layer, inspector, editor shell, and mobile editor composition. This first structural pass is complete; follow-up cleanup can now happen incrementally as new features land instead of through one large refactor.
