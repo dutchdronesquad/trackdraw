@@ -39,7 +39,7 @@ export default function ShareViewer({
         studioHref={studioHref}
       />
       {!introDismissed && (
-        <div className="pointer-events-none absolute inset-x-0 top-14 z-30 flex justify-center px-3">
+        <div className="pointer-events-none absolute inset-x-0 top-[calc(3.75rem+env(safe-area-inset-top))] z-30 flex justify-center px-3 sm:top-14">
           <ContextOverlayCard
             icon={<Eye className="size-3.5" />}
             title={`Shared track · ${currentView.toUpperCase()}`}
