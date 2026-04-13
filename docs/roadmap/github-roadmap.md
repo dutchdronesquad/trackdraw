@@ -69,7 +69,7 @@ Labels used below:
 - [x] Test infrastructure
       Introduce Vitest as the baseline test runner and establish the first test coverage for core business logic and export paths.
   - [x] Vitest setup and CI integration
-        Added Vitest to the project, introduced baseline test scripts, and wired a dedicated GitHub Actions `test.yaml` workflow so the Vitest suite runs on push and pull request.
+        Added Vitest to the project, introduced baseline test scripts, and wired a dedicated GitHub Actions `tests.yaml` workflow so the Vitest suite runs on push and pull request.
   - [x] Unit tests for store and transforms
         Added first coverage for core Zustand store actions plus geometry, orientation, shape, planning, and share-related transform helpers.
   - [x] Unit tests for export logic

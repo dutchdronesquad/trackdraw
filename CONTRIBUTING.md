@@ -85,6 +85,7 @@ npm run preview
 npm run build
 npm run lint
 npm run test
+npm run test:coverage
 npm run type
 npm run format
 npm run format:check
@@ -116,6 +117,12 @@ Baseline checks:
 npm run lint
 npm run test
 npm run type
+```
+
+Coverage report:
+
+```bash
+npm run test:coverage
 ```
 
 Unit, regression, and component tests live under `tests/`. Prefer keeping tests outside `src/` and group them by product area or module so editor, share, export, and UI coverage can grow without mixing test files into shipped code.
