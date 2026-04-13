@@ -53,20 +53,46 @@ export function applyShapePatch(shape: Shape, patch: Partial<Shape>) {
     if (typeof nextPatch.x === "number" || typeof nextPatch.y === "number") {
       const dx = nextX - currentAnchor.x;
       const dy = nextY - currentAnchor.y;
-      polyline.points = polyline.points.map((point) => ({
-        ...point,
-        x: point.x + dx,
-        y: point.y + dy,
-      }));
+      if (dx !== 0 || dy !== 0) {
+        polyline.points = polyline.points.map((point) => ({
+          ...point,
+          x: point.x + dx,
+          y: point.y + dy,
+        }));
+      }
       nextPatch.x = 0;
       nextPatch.y = 0;
     }
 
+    const changed = Object.entries(nextPatch).some(([key, value]) => {
+      if (key === "x") return currentAnchor.x !== nextX;
+      if (key === "y") return currentAnchor.y !== nextY;
+      return !Object.is(polyline[key as keyof PolylineShape], value);
+    });
+
+    if (!changed) return false;
     Object.assign(polyline, nextPatch);
-    return;
+    return true;
   }
 
+  const changed = Object.entries(patch).some(
+    ([key, value]) => !Object.is(shape[key as keyof Shape], value)
+  );
+  if (!changed) return false;
   Object.assign(shape, patch);
+  return true;
+}
+
+function arePolylinePointsEqual(a: PolylinePoint[], b: PolylinePoint[]) {
+  if (a.length !== b.length) return false;
+  return a.every((point, index) => {
+    const other = b[index];
+    return (
+      point.x === other.x &&
+      point.y === other.y &&
+      (point.z ?? 0) === (other.z ?? 0)
+    );
+  });
 }
 
 export function setPolylinePoints(
@@ -74,6 +100,7 @@ export function setPolylinePoints(
   points: PolylinePoint[]
 ) {
   if (!shape || shape.kind !== "polyline") return false;
+  if (arePolylinePointsEqual(shape.points, points)) return false;
   shape.points = points;
   return true;
 }
@@ -85,8 +112,14 @@ export function updatePolylinePoint(
 ) {
   if (!shape || shape.kind !== "polyline") return false;
   if (index < 0 || index >= shape.points.length) return false;
+  const currentPoint = shape.points[index];
+  const changed = Object.entries(patch).some(
+    ([key, value]) =>
+      !Object.is(currentPoint[key as keyof PolylinePoint], value)
+  );
+  if (!changed) return false;
   shape.points[index] = {
-    ...shape.points[index],
+    ...currentPoint,
     ...patch,
   };
   return true;

@@ -171,7 +171,7 @@ export const useEditor = create<EditorState>()(
         set((draft) => {
           const shape = draft.track.design.shapeById[id];
           if (!shape) return;
-          applyShapePatch(shape, patch);
+          if (!applyShapePatch(shape, patch)) return;
           touchTrackDesign(draft);
         }),
 
@@ -182,8 +182,9 @@ export const useEditor = create<EditorState>()(
           for (const id of ids) {
             const shape = draft.track.design.shapeById[id];
             if (!shape) continue;
-            applyShapePatch(shape, patch);
-            changed = true;
+            if (applyShapePatch(shape, patch)) {
+              changed = true;
+            }
           }
 
           if (changed) {

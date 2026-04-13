@@ -34,6 +34,7 @@ export interface EditorUiState {
   rotationSession: {
     center: { x: number; y: number };
     shapeId: string;
+    initialRotation: number;
     startAngle: number;
     startRotation: number;
     previewRotation: number;
@@ -164,6 +165,7 @@ export interface EditorUiActions {
       | {
           center: { x: number; y: number };
           shapeId: string;
+          initialRotation: number;
           startAngle: number;
           startRotation: number;
           previewRotation: number;
@@ -173,6 +175,7 @@ export interface EditorUiActions {
           previous: {
             center: { x: number; y: number };
             shapeId: string;
+            initialRotation: number;
             startAngle: number;
             startRotation: number;
             previewRotation: number;
@@ -180,6 +183,7 @@ export interface EditorUiActions {
         ) => {
           center: { x: number; y: number };
           shapeId: string;
+          initialRotation: number;
           startAngle: number;
           startRotation: number;
           previewRotation: number;

@@ -11,6 +11,7 @@ import {
 import type { ThreeEvent } from "@react-three/fiber";
 import { useHistorySession } from "@/hooks/useHistorySession";
 import * as THREE from "three";
+import { normalizeRotationDegrees } from "@/lib/track/orientation";
 import type {
   DiveGateShape,
   LadderShape,
@@ -169,7 +170,7 @@ export function useTrackPreview3DInteractions({
       event.stopPropagation();
       const point = selectedPolyline?.points[index];
       if (!selectedPolyline || !point) return;
-      startSession();
+      if (!startSession()) return;
       setSelection([selectedPolyline.id]);
       setElevationPreviewPoints(selectedPolyline.points);
       setElevationDrag({
@@ -212,7 +213,9 @@ export function useTrackPreview3DInteractions({
       window.removeEventListener("mouseup", stopDrag);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", stopDrag);
-      window.removeEventListener("touchcancel", stopDrag);
+      window.removeEventListener("touchcancel", cancelDrag);
+      window.removeEventListener("blur", cancelDrag);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (dragAnimationFrameRef.current !== null) {
         window.cancelAnimationFrame(dragAnimationFrameRef.current);
         dragAnimationFrameRef.current = null;
@@ -261,13 +264,7 @@ export function useTrackPreview3DInteractions({
       finishDrag();
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", stopDrag);
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", stopDrag);
-    window.addEventListener("touchcancel", stopDrag);
-
-    return () => {
+    const cancelDrag = () => {
       if (finished) return;
       finished = true;
       cleanupListeners();
@@ -275,6 +272,23 @@ export function useTrackPreview3DInteractions({
         setElevationPreviewPoints(null);
         setElevationDrag(null);
       });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      cancelDrag();
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", stopDrag);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", stopDrag);
+    window.addEventListener("touchcancel", cancelDrag);
+    window.addEventListener("blur", cancelDrag);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelDrag();
     };
   }, [
     applyElevationDrag,
@@ -339,7 +353,7 @@ export function useTrackPreview3DInteractions({
         );
         if (angle !== null) startAngle = angle;
       }
-      startSession();
+      if (!startSession()) return;
       setRotationDrag({ shapeId, startAngle, startRotation: currentRotation });
     },
     [shapeById, startSession]
@@ -354,7 +368,9 @@ export function useTrackPreview3DInteractions({
       window.removeEventListener("mouseup", stopDrag);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", stopDrag);
-      window.removeEventListener("touchcancel", stopDrag);
+      window.removeEventListener("touchcancel", cancelDrag);
+      window.removeEventListener("blur", cancelDrag);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (rotationDragAnimationFrameRef.current !== null) {
         window.cancelAnimationFrame(rotationDragAnimationFrameRef.current);
         rotationDragAnimationFrameRef.current = null;
@@ -369,8 +385,15 @@ export function useTrackPreview3DInteractions({
       cleanupListeners();
       finishSession(() => {
         if (!drag || finalRotation === null) return;
+        const normalizedFinalRotation = snapRotationDegrees(finalRotation);
+        if (
+          normalizeRotationDegrees(normalizedFinalRotation) ===
+          normalizeRotationDegrees(drag.startRotation)
+        ) {
+          return;
+        }
         updateShape(drag.shapeId, {
-          rotation: snapRotationDegrees(finalRotation),
+          rotation: normalizedFinalRotation,
         });
       });
       rotationDragValueRef.current = null;
@@ -410,13 +433,7 @@ export function useTrackPreview3DInteractions({
       finishDrag();
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", stopDrag);
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", stopDrag);
-    window.addEventListener("touchcancel", stopDrag);
-
-    return () => {
+    const cancelDrag = () => {
       if (finished) return;
       finished = true;
       cleanupListeners();
@@ -424,6 +441,23 @@ export function useTrackPreview3DInteractions({
       cancelSession(() => {
         setRotationDrag(null);
       });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      cancelDrag();
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", stopDrag);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", stopDrag);
+    window.addEventListener("touchcancel", cancelDrag);
+    window.addEventListener("blur", cancelDrag);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelDrag();
     };
   }, [
     applyRotationDrag,
@@ -484,7 +518,7 @@ export function useTrackPreview3DInteractions({
       event.stopPropagation();
       const shape = shapeById[shapeId];
       if (!shape || shape.kind !== "divegate" || shape.locked) return;
-      startSession();
+      if (!startSession()) return;
       setTiltDrag({ shapeId, startTilt: currentTilt });
     },
     [shapeById, startSession]
@@ -523,7 +557,7 @@ export function useTrackPreview3DInteractions({
       event.stopPropagation();
       const shape = shapeById[shapeId];
       if (!shape || shape.kind !== "ladder" || shape.locked) return;
-      startSession();
+      if (!startSession()) return;
       ladderElevationDragValueRef.current = currentElevation;
       setLadderElevationDrag({
         shapeId,
@@ -543,7 +577,9 @@ export function useTrackPreview3DInteractions({
       window.removeEventListener("mouseup", stopDrag);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", stopDrag);
-      window.removeEventListener("touchcancel", stopDrag);
+      window.removeEventListener("touchcancel", cancelDrag);
+      window.removeEventListener("blur", cancelDrag);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (tiltDragAnimationFrameRef.current !== null) {
         window.cancelAnimationFrame(tiltDragAnimationFrameRef.current);
         tiltDragAnimationFrameRef.current = null;
@@ -592,13 +628,7 @@ export function useTrackPreview3DInteractions({
       finishDrag();
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", stopDrag);
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", stopDrag);
-    window.addEventListener("touchcancel", stopDrag);
-
-    return () => {
+    const cancelDrag = () => {
       if (finished) return;
       finished = true;
       cleanupListeners();
@@ -606,6 +636,23 @@ export function useTrackPreview3DInteractions({
       cancelSession(() => {
         setTiltDrag(null);
       });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      cancelDrag();
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", stopDrag);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", stopDrag);
+    window.addEventListener("touchcancel", cancelDrag);
+    window.addEventListener("blur", cancelDrag);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelDrag();
     };
   }, [applyTiltDrag, cancelSession, finishSession, tiltDrag, updateShape]);
 
@@ -618,7 +665,9 @@ export function useTrackPreview3DInteractions({
       window.removeEventListener("mouseup", stopDrag);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", stopDrag);
-      window.removeEventListener("touchcancel", stopDrag);
+      window.removeEventListener("touchcancel", cancelDrag);
+      window.removeEventListener("blur", cancelDrag);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (ladderElevationDragAnimationFrameRef.current !== null) {
         window.cancelAnimationFrame(
           ladderElevationDragAnimationFrameRef.current
@@ -675,13 +724,7 @@ export function useTrackPreview3DInteractions({
       finishDrag();
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", stopDrag);
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", stopDrag);
-    window.addEventListener("touchcancel", stopDrag);
-
-    return () => {
+    const cancelDrag = () => {
       if (finished) return;
       finished = true;
       cleanupListeners();
@@ -693,6 +736,23 @@ export function useTrackPreview3DInteractions({
         }
         setLadderElevationDrag(null);
       });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      cancelDrag();
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", stopDrag);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", stopDrag);
+    window.addEventListener("touchcancel", cancelDrag);
+    window.addEventListener("blur", cancelDrag);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelDrag();
     };
   }, [
     applyLadderElevationDrag,
