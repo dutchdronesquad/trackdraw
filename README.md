@@ -39,7 +39,7 @@
 </p>
 
 <p align="center">
-  <img alt="TrackDraw editor showcase" src="https://raw.githubusercontent.com/dutchdronesquad/trackdraw/main/public/assets/screenshot.png" width="800">
+  <img alt="TrackDraw editor showcase" src="https://raw.githubusercontent.com/dutchdronesquad/trackdraw/main/public/assets/social-preview-1920x1080.png" width="800">
 </p>
 
 ## Project status
