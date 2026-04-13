@@ -16,7 +16,7 @@ describe("canvas shared helpers", () => {
     const editable = document.createElement("div");
     editable.contentEditable = "true";
     const child = document.createElement("span");
-    editable.append(child);
+    editable.appendChild(child);
     const plain = document.createElement("button");
 
     expect(isTypingInInput(input)).toBe(true);

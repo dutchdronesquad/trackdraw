@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. The roadmap should now focus primarily on ownership boundaries, workflow depth, and the next product surfaces that build cleanly on the shipped v1.1.0 release.
+This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. Recent release work also strengthened shared review, route warnings, snapping, cinematic FPV export, and the editor foundation. The roadmap should now focus primarily on ownership boundaries, workflow depth, and the next product surfaces that build cleanly on the shipped v1.4.0 release.
 
 ## Current Focus
 
@@ -139,37 +139,7 @@ Important boundary:
 - The Race Pack is now the handoff document for briefing, print, and sharing
 - A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
 
-### 4. Share Page Polish (`No account required`)
-
-The shared read-only view is already useful, but it still deserves a more deliberate product pass so it feels like a real review surface instead of Studio running in read-only mode.
-
-Why now:
-
-- Shared links are one of TrackDraw's clearest collaboration and handoff surfaces
-- The mobile and 3D review paths are now valuable enough that rough edges on shared links matter more
-- Recent fixes improved specific collisions, but the full read-only experience still needs a tighter pass
-
-Suggested first slices:
-
-- Mobile 3D control pass so bottom bars, drawers, safe-area spacing, and fly-through controls do not compete
-- Clearer first-load framing so a shared track explains itself faster on mobile and desktop
-- A more intentional Open Studio path that reads as making your own editable copy, not just leaving the share page
-
-### 5. Editor State And Persistence Boundary Pass (`No account required`)
-
-Improve the core editor model so TrackDraw stays easier to reason about, project continuity is clearer, and future review or collaboration work does not require a full editor reset.
-
-Completed.
-The editor store now separates track, session, and local UI state more explicitly, action ownership is clearer in code, local draft versus project versus restore-point persistence is more deliberate, and grouped history sessions now better match drag, rotate, and inspector editing intent.
-
-Suggested first slices:
-
-- Split persistent document state from local UI state such as active tools, hover state, marquee state, and drag previews
-- Introduce clearer action boundaries for meaningful editor changes so testing, analysis hooks, and future sync-related work have better integration points
-- Clarify the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares
-- Make undo and redo more intention-aware so drag, rotate, and route editing sessions produce cleaner history
-
-### 6. AR Mode Evaluation (`Research`)
+### 4. AR Mode Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support projecting a full track into a real venue through AR, with section-based preview only as a fallback if full placement is not reliable enough.
 
@@ -179,7 +149,7 @@ Suggested first slices:
 - Identify a practical iOS fallback
 - Test whether full-track placement is useful and accurate enough for real venue-side decisions
 
-### 7. Real-Time Collaboration Evaluation (`Research`)
+### 5. Real-Time Collaboration Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
 
@@ -191,7 +161,7 @@ Suggested first slices:
 - Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
 - Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
-### 8. Published Gallery Evaluation (`Research`)
+### 6. Published Gallery Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
 
@@ -201,23 +171,19 @@ Suggested first slices:
 - Clarify attribution, ownership, and visibility boundaries
 - Determine the minimum viable moderation and discovery model
 
-### 9. Backlog And Research Tracks
+### 7. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 
-#### Snap UX Improvements (`No account required`)
+#### Bundle Size Reduction (`No account required`)
 
-Make snapping more visible, predictable, and mobile-friendly so placement and drag behavior stay consistent across the editor.
+TrackDraw is now feature-rich enough that bundle size needs to become a deliberate product-quality concern instead of only an incidental cleanup task. The shipped gzip footprint is still around 3 MB, which is heavier than it should be for mobile starts and slower connections.
 
-Current progress:
+Suggested first slices:
 
-- Visible snap toggle first pass is shipped for desktop and mobile, with `Alt` kept as a temporary bypass
-- Shape dragging and grouped dragging now snap to nearby shapes before falling back to the grid
-- Placement, shape drag, group drag, and waypoint drag now share one snap resolver instead of diverging local logic
-
-Suggested follow-up:
-
-- Keep validating the unified snap behavior on dense layouts and mobile-sized interactions before expanding the snapping model further
+- Audit the current production bundle so the largest gzip contributors are explicit
+- Reduce avoidable client-side weight in editor, 3D, and export paths where those features do not need to ship eagerly
+- Prefer loading strategies and module boundaries that lower startup cost without regressing the core draw-review-share workflow
 
 #### 3D Editor Interaction Polish (`No account required`)
 
@@ -241,15 +207,6 @@ Suggested first slices:
 - Density overlay
 - Suspicious spacing cues
 - Route rhythm cues
-
-#### Landing Page Proof Follow-up (`No account required`)
-
-Show the strongest shipped review and handoff workflows more directly on the marketing site instead of relying mostly on static product copy.
-
-Suggested first slices:
-
-- Add a stronger cinematic FPV export proof block with room for video or motion-led media
-- Tighten the homepage story around drawing in 2D, reviewing in 3D, and sharing read-only
 
 #### Track DNA And Layout Analysis (`No account required`)
 
@@ -313,7 +270,7 @@ Suggested first slices:
   - Clarify how browse, duplicate, insert, and fork flows should work without overlapping confusingly with starter layouts or ordinary projects
   - Define ownership and visibility boundaries for private, club, team, or published template libraries
 
-### 5. Accounts Boundary
+### 8. Accounts Boundary
 
 Be deliberate about what should stay usable without an account versus what actually benefits from account identity and continuity.
 
@@ -329,6 +286,45 @@ Likely account-backed follow-up:
 - Durable ownership and administration of published shares
 - Shared venue or club records, including shared inventory profiles
 - Identity-aware comments, review threads, and future collaboration
+
+## v1.4.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.4.0</summary>
+
+### Shared Review Polish (`No account required`)
+
+The shared read-only experience now has a stronger product pass. Mobile 3D controls are cleaner, first-load review framing is clearer, and the path from a shared link into making an editable Studio copy is more intentional.
+
+### Stronger Route Review Warnings (`No account required`)
+
+The existing warning layer now catches more uneven route sections through first-pass rhythm, spacing, and alignment-oriented cues that help refine a lap before export or sharing.
+
+### Snap UX Improvements (`No account required`)
+
+Snapping is now more visible and more consistent across the editor. Desktop and mobile both expose a persistent snap toggle, shape dragging can snap to nearby shapes, and placement, drag, and waypoint editing now share a unified snap resolver.
+
+### Cinematic FPV Export First Pass (`No account required`)
+
+TrackDraw now ships a share-ready cinematic FPV WebM export with stronger FPV camera motion and clearer background progress handling.
+
+### Landing Page Proof Follow-up (`No account required`)
+
+The marketing site now does a better job of showing the shipped draw-review-share workflow, especially around cinematic FPV export, route review, and read-only sharing.
+
+### Editor State And Persistence Boundary Pass (`No account required`)
+
+The editor store now separates track, session, and local UI state more explicitly, action ownership is clearer in code, local draft versus project versus restore-point persistence is more deliberate, and grouped history sessions now better match drag, rotate, and inspector editing intent.
+
+### Test Infrastructure
+
+Vitest is now established as the baseline test runner, with first coverage for store behavior, transforms, export builders, and critical editor-shell component flows.
+
+### File Structure And Module Boundary Pass
+
+Folder ownership and internal module boundaries are now tighter across the editor store, canvas interaction layer, inspector, editor shell, and mobile editor composition, making future follow-up work easier to do incrementally.
+
+</details>
 
 ## v1.1.0 Archive
 

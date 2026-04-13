@@ -121,17 +121,16 @@ describe("editor selectors", () => {
     state.setZoom(2.5);
     state.setPanOffset({ x: 120, y: 80 });
     state.setHoveredShapeId(gateId);
-    state.setVertexSelection({ shapeId: gateId, index: 1 });
+    state.setVertexSelection({ shapeId: gateId, idx: 1 });
     state.setDraftPath([{ x: 1, y: 2, z: 3 }]);
     state.setMarqueeRect({ x: 10, y: 12, width: 30, height: 20 });
     state.setRotationSession({
-      shapeIds: [gateId],
       center: { x: 5, y: 6 },
-      startPointerAngle: 15,
-      startRotations: { [gateId]: 0 },
+      shapeId: gateId,
       initialRotation: 0,
-      historyDepth: 1,
-      sessionKey: 1,
+      startAngle: 15,
+      startRotation: 0,
+      previewRotation: 0,
     });
 
     const snapshot = useEditor.getState();
@@ -143,7 +142,7 @@ describe("editor selectors", () => {
     expect(selectHoveredShapeId(snapshot)).toBe(gateId);
     expect(selectVertexSelection(snapshot)).toEqual({
       shapeId: gateId,
-      index: 1,
+      idx: 1,
     });
     expect(selectDraftPath(snapshot)).toEqual([{ x: 1, y: 2, z: 3 }]);
     expect(selectMarqueeRect(snapshot)).toEqual({
@@ -153,8 +152,8 @@ describe("editor selectors", () => {
       height: 20,
     });
     expect(selectRotationSession(snapshot)).toMatchObject({
-      shapeIds: [gateId],
-      sessionKey: 1,
+      shapeId: gateId,
+      startAngle: 15,
     });
   });
 });

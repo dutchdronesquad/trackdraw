@@ -22,69 +22,15 @@ Labels used below:
 
 ## Current Priority
 
-- [x] Share page polish (`No account required`)
-      Give the shared read-only track view a more deliberate mobile and 3D review experience so it feels like a real review surface, not just Studio in read-only mode.
-  - [x] Mobile 3D control pass
-        Bottom bars, drawers, safe-area spacing, and fly-through controls now behave more cleanly on shared links, including the mobile fly-through start flow.
-  - [x] Clearer read-only review framing
-        Shared tracks now explain themselves faster with stronger first-load context, persistent shared-track context, and a clearer editable-copy path into Studio.
-
-- [x] Flow analysis follow-up (`No account required`)
-      Extend the current warning layer with clearer flow-break, spacing, and rhythm-oriented feedback where that proves actionable.
-  - [x] Rhythm and spacing cues first pass
-        Added first route-review cues for abrupt spacing shifts and short rhythm-breaking corrections in the existing route warning layer.
-  - [x] Alignment follow-up
-        Added first alignment-kink cues for small off-line bends in otherwise straighter route sections.
-
 - [ ] Velocidrone experimental export stabilization (`No account required`)
-      The experimental `.trk` export now ships with best-effort prefab mapping, a centralized orientation model, and 2D/3D editor cues. The remaining work is validating the export across more layouts before treating it as a supported workflow.
-  - [ ] Stabilize the experimental `.trk` export
-        Validate the current export on more layouts and resolve any remaining prefab mapping or orientation edge cases.
+      The first experimental `.trk` export is already shipped. The remaining work here is narrowing the gap between "importable" and "dependable" by validating more real layouts and tightening the remaining prefab mapping and orientation edge cases before this can be treated as a more supported workflow.
+  - [ ] Validate the current `.trk` export on more layouts
+        Test the shipped export across a wider range of real track layouts so the current best-effort mapping is grounded in repeatable validation instead of one-off success cases.
+  - [ ] Resolve remaining mapping and orientation edge cases
+        Tighten the current export where prefab substitutions, facing direction, or rotation assumptions still produce avoidable cleanup work after import.
 
 - [ ] Map and field overlay (`No account required`)
       Support venue plans, field maps, or imagery behind the editor canvas.
-
-- [x] Snap UX improvements (`No account required`)
-      Make snapping more visible, predictable, and mobile-friendly so placement and drag behavior stay consistent across the editor.
-  - [x] Visible snap toggle first pass
-        Added a persistent snap toggle in the editor UI for desktop and mobile, with Alt kept as a temporary bypass.
-  - [x] Snap to shapes for shape dragging
-        Let dragging placed obstacles or grouped selections snap to nearby shapes before falling back to the grid.
-  - [x] Unified snap resolver
-        Consolidate the current snap logic into one shared resolver so placement, drag, and waypoint editing follow the same rules.
-
-## Engineering Foundation
-
-- [x] Editor state and persistence boundary pass (`No account required`)
-      Improve core editor boundaries so TrackDraw stays easier to reason about, autosave and project continuity become clearer, and future collaboration or review work does not require a full reset of the editor model.
-  - [x] Separate document state from local UI state
-        Split persistent track data more clearly from local interaction state such as tool mode, hover state, drag previews, and temporary selections.
-  - [x] Introduce clearer editor action boundaries
-        Move toward more explicit editor actions for meaningful changes so undo, testing, analysis hooks, and future sync-related work all have cleaner integration points.
-  - [x] Clarify persistence layers
-        Tighten the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares so the user model stays easier to understand.
-  - [x] Make undo and redo more intention-aware
-        Group meaningful edit sessions more deliberately so history feels cleaner during drag, rotate, and route editing work.
-
-- [x] Test infrastructure
-      Introduce Vitest as the baseline test runner and establish the first test coverage for core business logic and export paths.
-  - [x] Vitest setup and CI integration
-        Added Vitest to the project, introduced baseline test scripts, and wired a dedicated GitHub Actions `tests.yaml` workflow so the Vitest suite runs on push and pull request.
-  - [x] Unit tests for store and transforms
-        Added first coverage for core Zustand store actions plus geometry, orientation, shape, planning, and share-related transform helpers.
-  - [x] Unit tests for export logic
-        Added unit coverage for SVG and Velocidrone export builders where that logic can run without a browser runtime.
-  - [x] Component tests for critical editor paths
-        Added first `happy-dom` component coverage for editor shell actions around read-only review framing, tab switching, and undo/redo controls.
-
-- [x] File structure and module boundary pass
-      Tightened folder ownership and internal API surfaces across the editor store, canvas interaction layer, inspector, editor shell, and mobile editor composition. This first structural pass is complete; follow-up cleanup can now happen incrementally as new features land instead of through one large refactor.
-  - [x] Audit current module boundaries
-        Identified the highest-value boundary problems across the editor store, canvas interactions, inspector, and editor shell, then used that audit to drive the first extraction pass.
-  - [x] Remaining large-file splits
-        Break up any remaining oversized files identified in the audit, especially where editor composition and mobile/desktop orchestration still live together.
-  - [x] Reduce cross-module coupling in editor state
-        Moved shared editor-store state shapes into dedicated types, centralized UI/session reset profiles, and reduced duplicated store wiring so state changes stay more local to the editor boundary.
 
 ## Follow-up
 
@@ -118,13 +64,6 @@ Labels used below:
 
 ## Later Product Follow-up
 
-- [x] Landing page proof follow-up (`No account required`)
-      Show the strongest shipped review and handoff workflows more directly on the marketing site, especially cinematic FPV export, route review, and the draw-review-share loop.
-  - [x] Cinematic proof block
-        Added a stronger homepage FPV export proof section with a dedicated visual slot that can later take video or motion-led media.
-  - [x] Core workflow framing
-        Tightened the homepage story around draw in 2D, review in 3D, and share read-only.
-
 - [ ] Race-day communication and briefing (`No account required`)
       The first race-day handoff release is shipped. Further work here is follow-up.
   - [ ] Shared view QR code in Race Pack
@@ -142,14 +81,14 @@ Labels used below:
     - [ ] Race director page layout
           Turn that metadata into a dedicated Race Pack page.
 
-- [x] Cinematic FPV export first pass (`No account required`)
-      Shipped a share-ready cinematic FPV WebM export with theme-aware controls, stronger FPV camera motion, and background progress handling.
-  - [x] FPV camera polish first pass
-        Improved the fly-through camera feel so preview and export both read more like FPV flight instead of a neutral path rail.
-  - [x] Background export handling first pass
-        Moved the export into a background-friendly flow with clearer progress and time-remaining feedback.
-
 ## Backlog And Research
+
+- [ ] Bundle size reduction (`No account required`)
+      Reduce the shipped app size so TrackDraw loads and starts faster, especially on slower mobile connections and lower-powered devices. The current gzip footprint is still around 3 MB, so this should stay visible as a product-quality follow-up, but not ahead of build stability and the more immediate workflow work.
+  - [ ] Identify the largest shipped client-side chunks
+        Audit the current production bundle so the biggest gzip contributors are explicit before making architectural or loading-strategy changes.
+  - [ ] Reduce avoidable client-side weight
+        Trim or defer heavy editor, 3D, or export code where that meaningfully lowers the shipped gzip size without regressing the main design workflow.
 
 - [ ] Track DNA and layout analysis (`Research`)
       Evaluate whether route and layout analysis should become reusable signals that help compare tracks, explain style, and support later recommendation or assistive tooling.
@@ -227,6 +166,81 @@ Labels used below:
   - [ ] Relationship to starter layouts
         Keep templates distinct from starter layouts, project duplication, and saved projects.
 
+## v1.4.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.4.0</summary>
+
+- [x] Share page polish (`No account required`)
+      Give the shared read-only track view a more deliberate mobile and 3D review experience so it feels like a real review surface, not just Studio in read-only mode.
+  - [x] Mobile 3D control pass
+        Bottom bars, drawers, safe-area spacing, and fly-through controls now behave more cleanly on shared links, including the mobile fly-through start flow.
+  - [x] Clearer read-only review framing
+        Shared tracks now explain themselves faster with stronger first-load context, persistent shared-track context, and a clearer editable-copy path into Studio.
+
+- [x] Flow analysis follow-up (`No account required`)
+      Extend the current warning layer with clearer flow-break, spacing, and rhythm-oriented feedback where that proves actionable.
+  - [x] Rhythm and spacing cues first pass
+        Added first route-review cues for abrupt spacing shifts and short rhythm-breaking corrections in the existing route warning layer.
+  - [x] Alignment follow-up
+        Added first alignment-kink cues for small off-line bends in otherwise straighter route sections.
+
+- [x] Snap UX improvements (`No account required`)
+      Make snapping more visible, predictable, and mobile-friendly so placement and drag behavior stay consistent across the editor.
+  - [x] Visible snap toggle first pass
+        Added a persistent snap toggle in the editor UI for desktop and mobile, with Alt kept as a temporary bypass.
+  - [x] Snap to shapes for shape dragging
+        Let dragging placed obstacles or grouped selections snap to nearby shapes before falling back to the grid.
+  - [x] Unified snap resolver
+        Consolidate the current snap logic into one shared resolver so placement, drag, and waypoint editing follow the same rules.
+
+- [x] Landing page proof follow-up (`No account required`)
+      Show the strongest shipped review and handoff workflows more directly on the marketing site, especially cinematic FPV export, route review, and the draw-review-share loop.
+  - [x] Cinematic proof block
+        Added a stronger homepage FPV export proof section with a dedicated visual slot that can later take video or motion-led media.
+  - [x] Core workflow framing
+        Tightened the homepage story around draw in 2D, review in 3D, and share read-only.
+
+- [x] Cinematic FPV export first pass (`No account required`)
+      Shipped a share-ready cinematic FPV WebM export with theme-aware controls, stronger FPV camera motion, and background progress handling.
+  - [x] FPV camera polish first pass
+        Improved the fly-through camera feel so preview and export both read more like FPV flight instead of a neutral path rail.
+  - [x] Background export handling first pass
+        Moved the export into a background-friendly flow with clearer progress and time-remaining feedback.
+
+- [x] Editor state and persistence boundary pass (`No account required`)
+      Improve core editor boundaries so TrackDraw stays easier to reason about, autosave and project continuity become clearer, and future collaboration or review work does not require a full reset of the editor model.
+  - [x] Separate document state from local UI state
+        Split persistent track data more clearly from local interaction state such as tool mode, hover state, drag previews, and temporary selections.
+  - [x] Introduce clearer editor action boundaries
+        Move toward more explicit editor actions for meaningful changes so undo, testing, analysis hooks, and future sync-related work all have cleaner integration points.
+  - [x] Clarify persistence layers
+        Tighten the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares so the user model stays easier to understand.
+  - [x] Make undo and redo more intention-aware
+        Group meaningful edit sessions more deliberately so history feels cleaner during drag, rotate, and route editing work.
+
+- [x] Test infrastructure
+      Introduce Vitest as the baseline test runner and establish the first test coverage for core business logic and export paths.
+  - [x] Vitest setup and CI integration
+        Added Vitest to the project, introduced baseline test scripts, and wired a dedicated GitHub Actions `tests.yaml` workflow so the Vitest suite runs on push and pull request.
+  - [x] Unit tests for store and transforms
+        Added first coverage for core Zustand store actions plus geometry, orientation, shape, planning, and share-related transform helpers.
+  - [x] Unit tests for export logic
+        Added unit coverage for SVG and Velocidrone export builders where that logic can run without a browser runtime.
+  - [x] Component tests for critical editor paths
+        Added first `happy-dom` component coverage for editor shell actions around read-only review framing, tab switching, and undo/redo controls.
+
+- [x] File structure and module boundary pass
+      Tightened folder ownership and internal API surfaces across the editor store, canvas interaction layer, inspector, editor shell, and mobile editor composition. This first structural pass is complete; follow-up cleanup can now happen incrementally as new features land instead of through one large refactor.
+  - [x] Audit current module boundaries
+        Identified the highest-value boundary problems across the editor store, canvas interactions, inspector, and editor shell, then used that audit to drive the first extraction pass.
+  - [x] Remaining large-file splits
+        Break up any remaining oversized files identified in the audit, especially where editor composition and mobile/desktop orchestration still live together.
+  - [x] Reduce cross-module coupling in editor state
+        Moved shared editor-store state shapes into dedicated types, centralized UI/session reset profiles, and reduced duplicated store wiring so state changes stay more local to the editor boundary.
+
+</details>
+
 ## v1.3.0 Archive
 
 <details>
@@ -264,203 +278,5 @@ Labels used below:
           Keep magic link as the fallback and handle unsupported browsers and failed prompts cleanly.
     - [x] Cross-device and mobile validation
           Validated the passkey and account flow across practical desktop and mobile scenarios.
-
-</details>
-
-## v1.2.0 Archive
-
-<details>
-<summary>Completed release work archived with v1.2.0</summary>
-
-- [x] Accounts and cross-device first pass (`Research`)
-      Better Auth, magic-link sign-in, profile management, and account-backed projects now ship as the first account layer.
-  - [x] First account foundation
-        Ship email magic-link sign-in, profile management, account deletion, and account-aware Studio entry points.
-  - [x] Account-backed project list first pass
-        Show account-backed projects in the Projects dialog and support reopening them across devices.
-  - [x] Existing local projects after sign-in first pass
-        Keep existing device-local projects visible after sign-in without silently migrating them.
-  - [x] Project visibility split first pass
-        Separate account-backed projects from device-local projects in project management.
-  - [x] Sync status visibility first pass
-        Show sync states such as synced, device-only, syncing, conflict, and sync failed.
-  - [x] Sign-out keeps local projects
-        Keep ordinary device-local projects available after sign-out.
-  - [x] Product model evaluation
-        Establish the first working account/project model for v1.
-    - [x] Shipped first-pass behavior
-          Ship a first usable account-backed continuation flow.
-    - [x] Local project vs account project model
-          Clarify the first local-project vs account-project model.
-    - [x] Cross-device continuation flow
-          Ship the first cross-device continuation flow.
-    - [x] Share ownership model
-          Attach shares to the authenticated owner and active account project.
-    - [x] Local-first fallback behavior
-          Keep local-first editing, import/export, and one-off sharing usable without an account.
-    - [x] First product-model recommendation
-          Use that first recommendation as the working product model.
-  - [x] Authentication and storage recommendation
-        Keep TrackDraw local-first while treating the account-backed project as the signed-in durable state.
-
-- [x] Share lifecycle management follow-up (`Account-backed`)
-      Add account-owned share management, retention cleanup, local revoke, and replace/regenerate behavior.
-
-</details>
-
-## v1.1.0 Archive
-
-<details>
-<summary>Completed release work archived with v1.1.0</summary>
-
-- [x] Layout acceleration (`No account required`)
-      Ship obstacle presets, selection grouping, and starter layouts as the first layout acceleration pass.
-  - [x] Obstacle-pack presets
-        Ship the first curated obstacle-pack presets on desktop and mobile.
-  - [x] Selection grouping
-        Support grouping, moving, duplicating, naming, and ungrouping selections.
-  - [x] Starter layouts
-        Ship curated starter layouts in onboarding and new-project flow.
-
-- [x] Cloudflare production rollout validation
-      Validate the development and production Cloudflare rollout.
-
-- [x] Obstacle inventory and setup estimate (`No account required`)
-      Ship local inventory entry, buildability checks, and Race Pack setup estimates.
-  - [x] My inventory
-        Let users record available obstacle stock locally.
-  - [x] Required vs available comparison
-        Compare current layout counts against saved inventory.
-  - [x] Buildability warnings
-        Flag missing stock and simple buildable vs short status.
-  - [x] Setup estimate summary
-        Add a clearer Race Pack setup estimate summary.
-  - [x] Rough setup complexity cues
-        Add rough setup timing ranges and complexity cues.
-
-- [x] Race-day communication and briefing first pass (`No account required`)
-      Ship the first race-day handoff release.
-  - [x] Obstacle numbering overlay in 2D
-        Add route-driven obstacle numbering in 2D.
-  - [x] Obstacle numbering in export/read-only surfaces
-        Carry obstacle numbering into export and read-only surfaces.
-  - [x] Race Pack export foundation
-        Add the first dedicated multi-page Race Pack export.
-
-</details>
-
-## v1.0.0 Archive
-
-<details>
-<summary>Completed v1 foundation work</summary>
-
-## Recently Completed
-
-- [x] Mobile editor UX foundation
-      Added a dedicated mobile action flow, clearer inspector behavior, and cleaner small-screen editor chrome.
-
-- [x] Mobile gesture model
-      Improved one-finger editing, two-finger navigation, and touch interaction consistency.
-
-- [x] Mobile multi-select and quick actions
-      Added long-press multi-select, group movement, and contextual duplicate, lock, and delete actions.
-
-- [x] Mobile venue editing first pass
-      Added faster single-selection venue-side actions, compact mobile adjust controls, and undo/redo access in the mobile tools flow.
-
-- [x] 2D drag and snap refinement
-      Improved pointer-following drag behavior and made snap feedback more readable.
-
-- [x] Shared view and read-only polish
-      Improved the share dialog, read-only entry experience, and the return path into Studio.
-
-- [x] Path authoring first pass
-      Strengthened polyline editing, resume/close flows, inspector support, and the connection between route planning, elevation, and 3D preview.
-
-- [x] Export and project portability
-      Support now includes PNG, SVG, PDF, 3D render capture, and JSON project export/import.
-
-## Release Cleanup
-
-- [x] Share route deprecation before v1
-      Removed legacy `/share?d=...` redirect and its query-param token normalization. `/share/[token]` is now the sole canonical read-only route.
-
-## Priority 1
-
-- [x] Project workflow and recovery
-      Added a local project list, restore points, manual snapshots (Cmd+S + save button), periodic auto-snapshots, and a Projects dialog for managing and restoring saved states.
-  - [x] Project list, restore points, and safer recovery first pass
-        Added a local project list, automatic save-before-replace on new project, open, and import, restore points with open/delete, and a project manager dialog in the welcome style with inline rename support.
-  - [x] Cmd+S shortcut for manual snapshots
-        Cmd+S (or Ctrl+S) creates a restore point snapshot of the current design. A save button in the desktop header provides the same action. Last-save time is shown subtly under the title in the header.
-  - [x] Periodic restore points
-        A restore point is automatically created every 5 minutes during an active editing session if the design has changed since the last periodic snapshot.
-
-- [x] Share and publish workflow
-      Move sharing toward intentional published states with clearer invalid-link handling, better separation from working state, and a cleaner long-term share model.
-  - [x] Distinct error pages for invalid vs oversized share links
-        Oversized tokens now show a dedicated error page with JSON export guidance instead of a generic 404. Invalid or corrupt tokens still return 404 with a focused not-found page.
-  - [x] Read-only view UX polish
-        Improved overlay copy and title. View switching via the overlay now deep-links correctly without re-encoding the token. Fit-to-window is available in the read-only desktop view. The "draw a route in 2D" hint is suppressed in read-only mode. The mobile view drawer now matches the studio drawer style with active tab indicators, fly-through access, and a working Open Studio link.
-
-- [x] Path and flow review
-      Lightweight warnings and route-review cues on top of the current path, elevation, and 3D tooling.
-  - [x] Route-review cues in the elevation panel
-        Added lightweight warnings to the elevation profile panel: flat path (no elevation data set), steep grades, tight turns, and closely spaced waypoints. Warnings appear in the ElevationChart footer on desktop and inline above the waypoints list on mobile.
-  - [x] 3D obstacle orientation controls
-        Gates, ladders, and dive gates get interactive handles in the 3D view: a ring puck at ground level to drag-rotate (yaw) and, for dive gates, an orange puck at the top corner of the frame to drag-tilt. OrbitControls disable during drag; history is batched per gesture for clean undo.
-  - [x] Path stub warning
-        Paths with fewer than 2 waypoints now emit a "stub" route warning. The elevation panel shows "Path needs at least 2 waypoints to form a route" instead of silently producing no output.
-
-- [x] Studio onboarding and starter flows
-      First-use starter surface, contextual hints (gate, path, preview, 3D review, post-path nudge), and new-project confirmation flow. Starter field presets descoped — the guided StarterFlow provides enough direction without prescribing a specific field layout.
-  - [x] First-use starter flow and project reset first pass
-        Added first-use starter guidance, a clearer blank-canvas entry path, and a dedicated new-project confirmation flow that works across desktop and mobile.
-  - [x] Contextual hints
-        Dismissible hints for gate placement, path drawing, 3D preview, 3D review, and a post-path nudge toward 3D preview — all localStorage-persisted.
-
-## Priority 2
-
-- [x] Runtime and deployment migration
-      Move TrackDraw off GitHub Pages and onto a real app runtime that supports dynamic routes, OG image generation, and backend-backed share flows.
-  - [x] Hybrid runtime setup
-        Keep Vercel for pull request previews, deploy `main` to a Cloudflare development environment, and deploy production on `release.published`.
-  - [x] Cloudflare/OpenNext integration
-        Add the configuration and workflows needed to run the existing Next.js app on Cloudflare Workers without breaking the current review flow.
-  - [x] Backend portability guardrails
-        Introduce the backend-facing share/publish layer in a way that keeps the first storage choice replaceable rather than turning Cloudflare D1 into a permanent platform assumption.
-  - [x] Workers-to-database connectivity decision
-        Replace the earlier home-hosted PostgreSQL plan with a Cloudflare-native D1 setup that removes private network connectivity from the share storage path.
-
-- [x] Stable share links and share storage
-      Move from payload-in-URL sharing toward durable stored share objects while preserving `/share/[token]` as the canonical public route.
-  - [x] Persisted share object model
-        Define the first database-backed share model for publish/read flows, using Cloudflare D1 initially.
-  - [x] Legacy share retirement plan
-        Retired URL-embedded share payload support. Older links now fail through a deliberate fallback screen that asks the sender to publish a fresh link or provide a JSON export.
-  - [x] Share metadata and OG storage integration
-        Move share metadata and social image generation onto stored share state instead of URL payload decoding.
-  - [x] Local revoke control
-        Published links can now be revoked from the current Studio session. This is intentionally scoped to local publish management, not account-backed share administration.
-
-- [x] Adaptive mobile UI
-      Let portrait and landscape diverge where that clearly improves editing and navigation.
-  - [x] Mobile dialog-to-drawer conversion pass
-        Convert the remaining desktop-style dialogs that still feel awkward on phones into bottom-drawer flows where that improves reach, focus handling, and small-screen usability.
-        Targets:
-        `ExportDialog`, `ImportDialog`, and the studio keyboard-shortcuts dialog should move to the newer modal style on desktop and bottom-drawer presentation on mobile.
-
-- [x] Codebase architecture and performance refactor
-      Continue improving maintainability, state-flow clarity, and runtime efficiency as the editor grows, without turning the effort into a rewrite.
-  - [x] Lightweight performance instrumentation
-        Add internal render and autosave instrumentation so editor hotspots can be observed during development without introducing heavyweight profiling infrastructure.
-  - [x] Targeted editor and canvas modularisation
-        Split large interaction and rendering responsibilities into more focused hooks and modules around the editor shell, track canvas, selectors, and performance utilities.
-  - [x] Complete targeted maintainability and state-flow refactor pass
-        Continue refining internal boundaries, large rendering surfaces, persistence flow, and editor state structure.
-  - [x] Initial file structure and oversized-file split pass
-        Moved 16 root-level components into canvas/, editor/, inspector/, and a new dialogs/ folder. Split canvas/renderers.tsx and inspector/views.tsx into per-responsibility modules. Root components reduced from 19 files to 3.
-  - [x] Remaining file structure and large-file decomposition pass
-        Continue tightening folder ownership and splitting broad components and modules where internal navigation and safe iteration are still harder than they should be.
 
 </details>
