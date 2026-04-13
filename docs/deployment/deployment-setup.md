@@ -98,6 +98,22 @@ openssl rand -base64 32
 Add deployed auth and mail secrets to Cloudflare Worker secrets for the matching environment, not to the repository.
 Keep non-secret mail configuration in [`wrangler.jsonc`](../../wrangler.jsonc) so GitHub-driven deploys do not drift from dashboard-only vars.
 
+### R2-backed public site media
+
+If a landing-page or other public site asset is too large for `public/`, store it in a public R2 bucket and expose it through the fixed site media host `https://media.trackdraw.app`.
+
+Typical flow:
+
+1. create a bucket, for example `trackdraw-media`
+2. upload the asset under a stable path such as `landing/video-demo.webm`
+3. expose the bucket through the public/custom domain `media.trackdraw.app`
+
+Example URL shape used by the site code:
+
+- base URL: `https://media.trackdraw.app`
+- asset path: `/landing/video-demo.webm`
+- resolved asset URL: `https://media.trackdraw.app/landing/video-demo.webm`
+
 ## Mail deliverability
 
 If magic-link emails arrive in spam, treat that as a deliverability problem rather than a template problem.

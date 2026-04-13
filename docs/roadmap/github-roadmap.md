@@ -118,12 +118,12 @@ Labels used below:
 
 ## Later Product Follow-up
 
-- [ ] Landing page proof follow-up (`No account required`)
+- [x] Landing page proof follow-up (`No account required`)
       Show the strongest shipped review and handoff workflows more directly on the marketing site, especially cinematic FPV export, route review, and the draw-review-share loop.
-  - [ ] Cinematic proof block
-        Add a stronger FPV export proof section with room for video or motion-led media.
-  - [ ] Core workflow framing
-        Tighten the homepage story around draw in 2D, review in 3D, and share read-only.
+  - [x] Cinematic proof block
+        Added a stronger homepage FPV export proof section with a dedicated visual slot that can later take video or motion-led media.
+  - [x] Core workflow framing
+        Tightened the homepage story around draw in 2D, review in 3D, and share read-only.
 
 - [ ] Race-day communication and briefing (`No account required`)
       The first race-day handoff release is shipped. Further work here is follow-up.

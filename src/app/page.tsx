@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import {
+  DEFAULT_LANDING_DEMO_POSTER,
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_SOCIAL_IMAGE,
   DEFAULT_SOCIAL_IMAGE_HEIGHT,
@@ -9,6 +10,8 @@ import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
+  getLandingDemoVideoUrl,
+  getSiteMediaUrl,
   getSiteUrl,
 } from "@/lib/seo";
 
@@ -138,7 +141,7 @@ const features = [
       "from-brand-primary/[0.12] via-brand-primary/[0.03] to-transparent",
     glow: "#1E93DB",
     title: "True-to-scale canvas",
-    text: "Set field dimensions, drop elements and snap to a real-scale grid. What you design is what the crew builds.",
+    text: "Set the field size, place elements to scale, and work on a grid that matches the real venue.",
   },
   {
     icon: FileText,
@@ -149,7 +152,7 @@ const features = [
       "from-brand-secondary/[0.13] via-brand-secondary/[0.035] to-transparent",
     glow: "#F0761D",
     title: "Built-in obstacle set",
-    text: "Design with the elements race crews actually use: gates, flags, cones, start pads, ladders, dive gates, labels and race lines.",
+    text: "Design with the obstacles race crews actually use, from gates and flags to ladders, dive gates, and race lines.",
   },
   {
     icon: Waves,
@@ -159,7 +162,7 @@ const features = [
     surface: "from-emerald-500/[0.13] via-emerald-500/[0.035] to-transparent",
     glow: "#34d399",
     title: "Elevation-aware planning",
-    text: "Add height to the race line while you plan so vertical problems show up before anyone starts setting the track.",
+    text: "Add height to the race line while you plan so vertical problems show up before build day.",
   },
   {
     icon: Share2,
@@ -169,7 +172,7 @@ const features = [
     surface: "from-violet-500/[0.13] via-violet-500/[0.035] to-transparent",
     glow: "#a855f7",
     title: "Shared review links",
-    text: "Send one current plan to pilots, judges and crew without asking anyone to install or log in first.",
+    text: "Share one current layout with pilots and crew in read-only mode, no install or login required.",
   },
   {
     icon: ClipboardCheck,
@@ -179,7 +182,7 @@ const features = [
     surface: "from-sky-500/[0.13] via-sky-500/[0.035] to-transparent",
     glow: "#38bdf8",
     title: "Venue-ready mobile use",
-    text: "Handle practical touch edits on phones and tablets when the real venue forces a quick change.",
+    text: "Make practical touch edits on phones and tablets when the venue forces a last-minute change.",
   },
   {
     icon: FileText,
@@ -189,7 +192,7 @@ const features = [
     surface: "from-rose-500/[0.13] via-rose-500/[0.035] to-transparent",
     glow: "#fb7185",
     title: "Portable deliverables",
-    text: "Turn the design into briefing files, print assets and reusable project data without rebuilding it elsewhere.",
+    text: "Export briefing files, print assets, and reusable project data from the same layout.",
   },
 ];
 
@@ -205,7 +208,7 @@ const compareRows = [
 const faq = [
   {
     q: "What is the best way to plan an FPV race track?",
-    a: "Start with the field dimensions, drop in the obstacles you actually have, then review the flow in 3D. TrackDraw is built around that exact sequence — from first sketch to team hand-off.",
+    a: "Start with the field dimensions, place the obstacles you actually have, then review the route in 3D before sharing or exporting the plan. TrackDraw is built around that exact sequence.",
   },
   {
     q: "Can pilots review the layout without an account?",
@@ -217,7 +220,7 @@ const faq = [
   },
   {
     q: "What export formats are available?",
-    a: "PDF, PNG, SVG, and JSON. That covers printed race briefs, image exports, and reusable project files you can import for future events.",
+    a: "PDF, PNG, SVG, JSON, and a cinematic FPV video export. That covers printed race briefs, shareable visuals, reusable project files, and motion-led route review.",
   },
   {
     q: "Do I need an account to get started?",
@@ -227,7 +230,14 @@ const faq = [
     q: "Can I reuse a layout for a future event?",
     a: "Yes. Export the project as JSON and import it whenever you want to build on an older layout.",
   },
+  {
+    q: "Can TrackDraw help catch route problems before race day?",
+    a: "Yes. The 3D preview and route review warnings help surface uneven spacing, rhythm breaks, and alignment issues before you share the layout or start building it.",
+  },
 ];
+
+const landingDemoVideoSrc = getLandingDemoVideoUrl();
+const landingDemoPosterSrc = DEFAULT_LANDING_DEMO_POSTER;
 
 const softwareApplicationJsonLd = {
   "@context": "https://schema.org",
@@ -248,6 +258,33 @@ const softwareApplicationJsonLd = {
     priceCurrency: "EUR",
   },
 };
+
+function LandingVideo({
+  className = "",
+}: {
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-background/40 shadow-[0_24px_56px_rgba(15,23,42,0.18)] ring-1 ring-white/5 backdrop-blur-[2px]">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          controls
+          controlsList="nodownload"
+          disablePictureInPicture
+          preload="metadata"
+          poster={landingDemoPosterSrc}
+          className="block h-auto w-full bg-black"
+        >
+          <source src={landingDemoVideoSrc} type="video/webm" />
+        </video>
+      </div>
+    </div>
+  );
+}
 
 // ── Page ────────────────────────────────────────────────────────
 export default function Home() {
@@ -345,9 +382,9 @@ export default function Home() {
               <Reveal delay={0.13} className="mt-5">
                 <p className="text-muted-foreground max-w-sm text-[15px] leading-7">
                   TrackDraw is a browser-based drone race track planner for FPV
-                  race directors. Build tracks to scale, review the flow in 3D,
-                  share a read-only layout with pilots and crew, and make quick
-                  edits from desktop or mobile.
+                  race directors. Draw to scale in 2D, review the flow in 3D,
+                  share a read-only layout with pilots and crew, and keep the
+                  plan usable from desktop or mobile.
                 </p>
               </Reveal>
 
@@ -391,13 +428,9 @@ export default function Home() {
               </Reveal>
             </div>
 
-            {/* Right: screenshot */}
+            {/* Right: product demo */}
             <Reveal delay={0.12}>
-              <Screenshot
-                src="/assets/screenshots/editor-project-workflow.png"
-                alt="TrackDraw editor overview with active canvas and inspector"
-                className="min-h-90"
-              />
+              <LandingVideo className="sm:min-h-90" />
             </Reveal>
           </div>
         </section>
@@ -413,9 +446,10 @@ export default function Home() {
                 Plan, review, and hand off.
               </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-                TrackDraw gives FPV race directors a clean way to design a track
-                properly: real field dimensions, the right obstacle set, and
-                enough structure to map the lap before anyone starts building.
+                TrackDraw gives FPV race directors a practical way to design
+                tracks properly: real field dimensions, the right obstacle set,
+                and one workflow that carries the same plan from layout to
+                review to team hand-off.
               </p>
             </Reveal>
 
@@ -473,7 +507,9 @@ export default function Home() {
               <Reveal>
                 <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
                   <Screenshot
-                    src="/assets/screenshots/editor-element-library.png"
+                    src={getSiteMediaUrl(
+                      "/landing/screenshots/editor-element-library.png",
+                    )}
                     alt="TrackDraw 2D layout editor with obstacle library and track plan"
                     className="order-last lg:order-first"
                   />
@@ -541,7 +577,9 @@ export default function Home() {
                     </ul>
                   </div>
                   <Screenshot
-                    src="/assets/screenshots/editor-mobile-settings.png"
+                    src={getSiteMediaUrl(
+                      "/landing/screenshots/editor-mobile-settings.png",
+                    )}
                     alt="TrackDraw mobile editor with settings panel open"
                     aspect="portrait"
                     accentClassName="bg-emerald-500/16"
@@ -553,7 +591,9 @@ export default function Home() {
               <Reveal>
                 <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
                   <Screenshot
-                    src="/assets/screenshots/editor-3d-flythroug.png"
+                    src={getSiteMediaUrl(
+                      "/landing/screenshots/editor-3d-flythroug.png",
+                    )}
                     alt="TrackDraw 3D preview showing track flow and elevation"
                     className="order-last lg:order-first"
                   />
@@ -621,7 +661,9 @@ export default function Home() {
                     </ul>
                   </div>
                   <Screenshot
-                    src="/assets/screenshots/editor-share-readonly-mobile.png"
+                    src={getSiteMediaUrl(
+                      "/landing/screenshots/editor-share-readonly-mobile.png",
+                    )}
                     alt="TrackDraw read-only shared view open on mobile"
                     aspect="portrait"
                     accentClassName="bg-brand-secondary/18"
