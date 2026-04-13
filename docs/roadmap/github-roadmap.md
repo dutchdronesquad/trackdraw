@@ -22,6 +22,13 @@ Labels used below:
 
 ## Current Priority
 
+- [x] Share page polish (`No account required`)
+      Give the shared read-only track view a more deliberate mobile and 3D review experience so it feels like a real review surface, not just Studio in read-only mode.
+  - [x] Mobile 3D control pass
+        Bottom bars, drawers, safe-area spacing, and fly-through controls now behave more cleanly on shared links, including the mobile fly-through start flow.
+  - [x] Clearer read-only review framing
+        Shared tracks now explain themselves faster with stronger first-load context, persistent shared-track context, and a clearer editable-copy path into Studio.
+
 - [x] Flow analysis follow-up (`No account required`)
       Extend the current warning layer with clearer flow-break, spacing, and rhythm-oriented feedback where that proves actionable.
   - [x] Rhythm and spacing cues first pass
@@ -110,6 +117,13 @@ Labels used below:
         Define how gallery content is filtered, featured, searched, or curated without creating an unmanageable moderation burden.
 
 ## Later Product Follow-up
+
+- [ ] Landing page proof follow-up (`No account required`)
+      Show the strongest shipped review and handoff workflows more directly on the marketing site, especially cinematic FPV export, route review, and the draw-review-share loop.
+  - [ ] Cinematic proof block
+        Add a stronger FPV export proof section with room for video or motion-led media.
+  - [ ] Core workflow framing
+        Tighten the homepage story around draw in 2D, review in 3D, and share read-only.
 
 - [ ] Race-day communication and briefing (`No account required`)
       The first race-day handoff release is shipped. Further work here is follow-up.

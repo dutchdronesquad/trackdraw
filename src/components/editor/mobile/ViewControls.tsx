@@ -85,23 +85,31 @@ export function ViewControls({
   studioHref = "/studio",
   tab,
 }: EditorMobileViewControlsProps) {
+  const modeDescription = !readOnly
+    ? `${inspectorHint}. ${saveStatusLabel}.`
+    : tab === "3d"
+      ? hasPath
+        ? "Read-only 3D review with fly-through available for this shared track."
+        : "Read-only 3D review for this shared track. No route is available for fly-through."
+      : hasPath
+        ? "Read-only 2D review for this shared track. Switch to 3D to use fly-through."
+        : "Read-only 2D review for this shared track.";
+
   return (
     <>
-      {!readOnly ? (
-        <div>
-          <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            Current mode
+      <div>
+        <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
+          {readOnly ? "Shared review" : "Current mode"}
+        </p>
+        <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
+          <p className="text-foreground text-sm font-medium">
+            {tab === "2d" ? "2D canvas" : "3D preview"}
           </p>
-          <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
-            <p className="text-foreground text-sm font-medium">
-              {tab === "2d" ? "2D canvas" : "3D preview"}
-            </p>
-            <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
-              {inspectorHint}. {saveStatusLabel}.
-            </p>
-          </div>
+          <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
+            {modeDescription}
+          </p>
         </div>
-      ) : null}
+      </div>
       <div>
         <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
           View mode
@@ -157,7 +165,10 @@ export function ViewControls({
         ) : (
           <>
             <button
-              onClick={onStartFlyThrough}
+              onClick={() => {
+                closePanel?.();
+                onStartFlyThrough();
+              }}
               disabled={!hasPath}
               className={cn(
                 "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
@@ -199,7 +210,7 @@ export function ViewControls({
             >
               <ArrowRight className="size-4" />
               <span className="text-[11px] leading-none font-medium">
-                Open Studio
+                Editable copy
               </span>
             </Link>
             <button
