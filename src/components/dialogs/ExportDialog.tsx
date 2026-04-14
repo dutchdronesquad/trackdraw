@@ -114,12 +114,12 @@ function DesktopFormatCard({
             }
       }
       className={cn(
-        "group flex min-h-37 w-full flex-col rounded-2xl border p-4 transition-all",
+        "group flex w-full flex-col rounded-2xl border px-4 py-3.5 transition-all",
         inactive
-          ? "border-border/20 cursor-not-allowed opacity-40"
+          ? "border-border/35 cursor-not-allowed opacity-40"
           : isLocked
-            ? "border-border/20 bg-background/10"
-            : "border-border/30 bg-background/15 hover:border-border/50 hover:bg-muted/10 cursor-pointer"
+            ? "border-border/45 bg-background/10"
+            : "border-border/55 bg-background/15 hover:border-border/80 hover:bg-muted/10 cursor-pointer"
       )}
     >
       <div className="mb-3 flex items-start justify-between">
@@ -145,9 +145,9 @@ function DesktopFormatCard({
           />
         )}
       </div>
-      <div className={cn("flex-1", isLocked && "opacity-40")}>
+      <div className={cn("space-y-1.5", isLocked && "opacity-40")}>
         <p className="text-foreground text-sm font-semibold">{label}</p>
-        <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
+        <p className="text-muted-foreground text-[11px] leading-relaxed">
           {description}
         </p>
       </div>
@@ -158,7 +158,7 @@ function DesktopFormatCard({
             e.stopPropagation();
             lockedAction.onClick();
           }}
-          className="border-border/20 text-muted-foreground/60 hover:text-foreground mt-3 flex items-center gap-1.5 border-t pt-3 text-[11px] font-medium transition-colors"
+          className="border-border/20 text-muted-foreground/60 hover:text-foreground mt-3 flex items-center gap-1.5 border-t pt-2.5 text-[11px] font-medium transition-colors"
         >
           <ArrowRight className="size-3 shrink-0" />
           {lockedAction.label}
@@ -391,16 +391,16 @@ export default function ExportDialog({
         </div>
       </div>
 
-      {/* 2D exports */}
+      {/* Visual exports */}
       <div>
         <div className="mb-1.5 flex items-center gap-3">
           <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
-            2D Exports
+            Visual Exports
           </span>
           <div className="bg-border/30 h-px flex-1" />
         </div>
         <p className="text-muted-foreground mb-4 text-[11px]">
-          Raster, vector, and print-ready files.
+          Still images and view captures for sharing or quick review.
         </p>
         <div className="grid grid-cols-3 gap-3">
           <DesktopFormatCard
@@ -439,45 +439,6 @@ export default function ExportDialog({
             }
           />
           <DesktopFormatCard
-            ext="PDF"
-            label="Race Pack"
-            color="bg-red-500/15 text-red-400"
-            description="Multi-page: track map, material list, and setup sequence."
-            busy={busy === "race-day-pdf"}
-            onExport={() =>
-              run("race-day-pdf", async () => {
-                const stage = canvasRef.current?.getStage();
-                if (!stage) throw new Error("Canvas not ready");
-                const { exportPdf } = await import("@/lib/export/exportPdf");
-                await exportPdf(
-                  stage,
-                  design,
-                  `${baseName}_race_pack.pdf`,
-                  exportTheme,
-                  {
-                    includeObstacleNumbers,
-                    preset: "race-day",
-                  }
-                );
-              })
-            }
-          />
-        </div>
-      </div>
-
-      {/* Project & Simulator */}
-      <div>
-        <div className="mb-1.5 flex items-center gap-3">
-          <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
-            Project &amp; Simulator
-          </span>
-          <div className="bg-border/30 h-px flex-1" />
-        </div>
-        <p className="text-muted-foreground mb-4 text-[11px]">
-          Save your work or fly the track in a simulator.
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <DesktopFormatCard
             ext="PNG"
             label="3D Render"
             color="bg-orange-500/15 text-orange-400"
@@ -505,6 +466,80 @@ export default function ExportDialog({
               })
             }
           />
+        </div>
+      </div>
+
+      {/* Project & handoff */}
+      <div>
+        <div className="mb-1.5 flex items-center gap-3">
+          <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
+            Project &amp; Handoff
+          </span>
+          <div className="bg-border/30 h-px flex-1" />
+        </div>
+        <p className="text-muted-foreground mb-4 text-[11px]">
+          Files for reopening the layout or handing it to others.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <DesktopFormatCard
+            ext="JSON"
+            label="Project File"
+            color="bg-emerald-500/15 text-emerald-400"
+            description="Full project file — share with others or reopen in TrackDraw."
+            busy={busy === "json"}
+            onExport={() =>
+              run("json", () => {
+                const blob = new Blob([JSON.stringify(design, null, 2)], {
+                  type: "application/json",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${baseName}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              })
+            }
+          />
+          <DesktopFormatCard
+            ext="PDF"
+            label="Race Pack"
+            color="bg-red-500/15 text-red-400"
+            description="Multi-page: track map, material list, and setup sequence."
+            busy={busy === "race-day-pdf"}
+            onExport={() =>
+              run("race-day-pdf", async () => {
+                const stage = canvasRef.current?.getStage();
+                if (!stage) throw new Error("Canvas not ready");
+                const { exportPdf } = await import("@/lib/export/exportPdf");
+                await exportPdf(
+                  stage,
+                  design,
+                  `${baseName}_race_pack.pdf`,
+                  exportTheme,
+                  {
+                    includeObstacleNumbers,
+                    preset: "race-day",
+                  }
+                );
+              })
+            }
+          />
+        </div>
+      </div>
+
+      {/* Simulator & motion */}
+      <div>
+        <div className="mb-1.5 flex items-center gap-3">
+          <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
+            Simulator &amp; Motion
+          </span>
+          <div className="bg-border/30 h-px flex-1" />
+        </div>
+        <p className="text-muted-foreground mb-4 text-[11px]">
+          Animated review and external simulator formats.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
             ext="WebM"
             label="Cinematic FPV"
@@ -561,26 +596,6 @@ export default function ExportDialog({
             }
           />
           <DesktopFormatCard
-            ext="JSON"
-            label="Project File"
-            color="bg-emerald-500/15 text-emerald-400"
-            description="Full project file — share with others or reopen in TrackDraw."
-            busy={busy === "json"}
-            onExport={() =>
-              run("json", () => {
-                const blob = new Blob([JSON.stringify(design, null, 2)], {
-                  type: "application/json",
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${baseName}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-              })
-            }
-          />
-          <DesktopFormatCard
             ext="TRK"
             label="Velocidrone"
             color="bg-lime-500/15 text-lime-400"
@@ -621,7 +636,7 @@ export default function ExportDialog({
     <div className="space-y-5 pb-2">
       <div>
         <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          2D Exports
+          Visual Exports
         </h3>
         <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
           <MobileFormatRow
@@ -662,6 +677,57 @@ export default function ExportDialog({
             }
           />
           <MobileFormatRow
+            key="3d"
+            ext="PNG"
+            label="3D Render"
+            color="bg-orange-500/15 text-orange-400"
+            description="Screenshot at the current camera angle."
+            isBusy={busy === "3d"}
+            locked={activeTab !== "3d"}
+            onAction={
+              activeTab !== "3d" && onRequest3DView
+                ? onRequest3DView
+                : () =>
+                    run("3d", () => {
+                      const dataUrl = preview3DRef?.current?.screenshot();
+                      if (!dataUrl) throw new Error("3D view not available");
+                      const a = document.createElement("a");
+                      a.href = dataUrl;
+                      a.download = `${safeName({ view: "3d", theme: currentTheme })}.png`;
+                      a.click();
+                    })
+            }
+          />
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
+          Project &amp; Handoff
+        </h3>
+        <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
+          <MobileFormatRow
+            key="json"
+            ext="JSON"
+            label="Project File"
+            color="bg-emerald-500/15 text-emerald-400"
+            description="Full backup — reopen or share in TrackDraw."
+            isBusy={busy === "json"}
+            onAction={() =>
+              run("json", () => {
+                const blob = new Blob([JSON.stringify(design, null, 2)], {
+                  type: "application/json",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${baseName}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              })
+            }
+          />
+          <MobileFormatRow
             key="race-day-pdf"
             ext="PDF"
             label="Race Pack"
@@ -691,31 +757,9 @@ export default function ExportDialog({
 
       <div>
         <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          Project &amp; Simulator
+          Simulator &amp; Motion
         </h3>
         <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
-          <MobileFormatRow
-            key="3d"
-            ext="PNG"
-            label="3D Render"
-            color="bg-orange-500/15 text-orange-400"
-            description="Screenshot at the current camera angle."
-            isBusy={busy === "3d"}
-            locked={activeTab !== "3d"}
-            onAction={
-              activeTab !== "3d" && onRequest3DView
-                ? onRequest3DView
-                : () =>
-                    run("3d", () => {
-                      const dataUrl = preview3DRef?.current?.screenshot();
-                      if (!dataUrl) throw new Error("3D view not available");
-                      const a = document.createElement("a");
-                      a.href = dataUrl;
-                      a.download = `${safeName({ view: "3d", theme: currentTheme })}.png`;
-                      a.click();
-                    })
-            }
-          />
           <MobileFormatRow
             key="webm"
             ext="WebM"
@@ -773,27 +817,6 @@ export default function ExportDialog({
             }
           />
           <MobileFormatRow
-            key="json"
-            ext="JSON"
-            label="Project File"
-            color="bg-emerald-500/15 text-emerald-400"
-            description="Full backup — reopen or share in TrackDraw."
-            isBusy={busy === "json"}
-            onAction={() =>
-              run("json", () => {
-                const blob = new Blob([JSON.stringify(design, null, 2)], {
-                  type: "application/json",
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${baseName}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-              })
-            }
-          />
-          <MobileFormatRow
             key="trk"
             ext="TRK"
             label="Velocidrone"
@@ -815,7 +838,7 @@ export default function ExportDialog({
         open={open}
         onOpenChange={onOpenChange}
         title="Export"
-        subtitle="Export the current track as a 2D file or 3D render."
+        subtitle="Export the current track as visual assets, project handoff files, or simulator-ready outputs."
         contentClassName="data-[vaul-drawer-direction=bottom]:mt-12 data-[vaul-drawer-direction=bottom]:max-h-[90dvh]"
         pinnedContent={
           <div className="border-border/40 space-y-2.5 border-b px-4 pt-2 pb-3">
@@ -908,7 +931,7 @@ export default function ExportDialog({
       open={open}
       onOpenChange={onOpenChange}
       title="Export"
-      subtitle="Export the current track as a 2D file or 3D render."
+      subtitle="Export the current track as visual assets, project handoff files, or simulator-ready outputs."
       maxWidth="max-w-2xl"
       panelClassName="px-7 py-7"
     >
