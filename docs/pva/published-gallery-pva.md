@@ -4,6 +4,34 @@ Date: April 14, 2026
 
 Status: proposed
 
+## Decision Summary
+
+Recommended decision:
+
+- approve continued product-definition work
+- do not approve implementation yet
+- treat gallery as a small, opt-in, account-backed discovery surface if it moves forward
+
+This document is meant to be concrete enough to decide whether the gallery deserves implementation planning at all.
+
+## Approval Recommendation
+
+TrackDraw should approve the gallery for a later build only if the team accepts this product shape:
+
+- signed-in owners only
+- opt-in on top of a published share
+- discovery-first, not social-first
+- Featured and Recent as the first browse model
+- owner unlist plus admin hide as the minimum control model
+
+TrackDraw should not approve implementation yet if the team expects any of these in v1:
+
+- comments
+- likes
+- public profiles
+- open anonymous gallery publishing
+- broad search/ranking/social behavior
+
 ## Delivery Checklist
 
 - [ ] Phase 0: lock the gallery model
@@ -11,6 +39,22 @@ Status: proposed
 - [ ] Phase 2: define gallery entry fields and browse surface
 - [ ] Phase 3: define moderation and control minimum
 - [ ] Phase 4: decide whether to build or keep parked
+
+## Go / No-Go Criteria
+
+Go for implementation planning if:
+
+- the team accepts that gallery visibility is a second decision after share publishing
+- account-backed ownership is a hard requirement
+- minimum moderation is considered non-optional
+- the product is comfortable with a very small first browse surface
+
+No-go or keep parked if:
+
+- TrackDraw wants anonymous gallery entries
+- moderation ownership is still unclear
+- attribution rules are still unresolved
+- the team expects a social product rather than a narrow discovery surface
 
 ## Purpose
 
@@ -316,6 +360,16 @@ Recommended first gallery-facing fields:
 - `gallery_published_at`
 - `gallery_hidden_at` or equivalent moderation state
 
+## Required Preconditions Before Build
+
+Before implementation starts, TrackDraw should lock:
+
+- exact owner flow from `publish share` to `gallery visible`
+- minimum metadata fields required for a gallery entry
+- visible author field source
+- admin hide/remove behavior
+- whether gallery entries need manual featuring tools from day one
+
 Avoid first-pass fields that imply a larger social model:
 
 - likes count
@@ -511,6 +565,18 @@ Done:
 - TrackDraw either commits to a small gallery build
 - or keeps the idea parked until demand, moderation readiness, or ownership surfaces become stronger
 
+## First Engineering Slice
+
+If TrackDraw chooses to build this later, the first engineering slice should be:
+
+1. add gallery visibility state to the publish model
+2. add owner controls in the share flow
+3. add a tiny browse surface with Featured and Recent
+4. route cards into the existing shared view
+5. support owner unlist and admin hide
+
+That is the smallest slice that proves whether the gallery adds value without dragging in a larger community platform.
+
 ## Recommended Next Build Target
 
 The next work should remain product-definition work, but it should now be concrete rather than abstract.
@@ -535,3 +601,13 @@ If TrackDraw decides to build this, the smallest credible version is:
 - admin can hide entries
 
 Anything larger than that should require a second product decision rather than silently expanding the first release.
+
+## Success Criteria
+
+The first version is successful if:
+
+- gallery participation feels clearly separate from ordinary sharing
+- users can understand how a track becomes browseable
+- the browse surface contains enough quality to justify itself
+- moderation remains operationally manageable
+- the gallery helps discovery without creating pressure for full social features
