@@ -1205,12 +1205,9 @@ export default function EditorShell({
                 /[^a-z0-9-_]+/gi,
                 "_"
               );
-              const blob = new Blob(
-                [JSON.stringify(serialized, null, 2)],
-                {
-                  type: "application/json",
-                }
-              );
+              const blob = new Blob([JSON.stringify(serialized, null, 2)], {
+                type: "application/json",
+              });
               const url = URL.createObjectURL(blob);
               const anchor = document.createElement("a");
               anchor.href = url;

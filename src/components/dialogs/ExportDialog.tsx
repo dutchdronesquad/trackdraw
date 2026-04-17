@@ -491,12 +491,9 @@ export default function ExportDialog({
             onExport={() =>
               run("json", () => {
                 const serialized = serializeDesign(design);
-                const blob = new Blob(
-                  [JSON.stringify(serialized, null, 2)],
-                  {
-                    type: "application/json",
-                  }
-                );
+                const blob = new Blob([JSON.stringify(serialized, null, 2)], {
+                  type: "application/json",
+                });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
@@ -721,12 +718,9 @@ export default function ExportDialog({
             onAction={() =>
               run("json", () => {
                 const serialized = serializeDesign(design);
-                const blob = new Blob(
-                  [JSON.stringify(serialized, null, 2)],
-                  {
-                    type: "application/json",
-                  }
-                );
+                const blob = new Blob([JSON.stringify(serialized, null, 2)], {
+                  type: "application/json",
+                });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
