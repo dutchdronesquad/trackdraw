@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { serializeDesign } from "@/lib/track/design";
 import { useEditor } from "@/store/editor";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 import { cn } from "@/lib/utils";
@@ -489,7 +490,8 @@ export default function ExportDialog({
             busy={busy === "json"}
             onExport={() =>
               run("json", () => {
-                const blob = new Blob([JSON.stringify(design, null, 2)], {
+                const serialized = serializeDesign(design);
+                const blob = new Blob([JSON.stringify(serialized, null, 2)], {
                   type: "application/json",
                 });
                 const url = URL.createObjectURL(blob);
@@ -715,7 +717,8 @@ export default function ExportDialog({
             isBusy={busy === "json"}
             onAction={() =>
               run("json", () => {
-                const blob = new Blob([JSON.stringify(design, null, 2)], {
+                const serialized = serializeDesign(design);
+                const blob = new Blob([JSON.stringify(serialized, null, 2)], {
                   type: "application/json",
                 });
                 const url = URL.createObjectURL(blob);
