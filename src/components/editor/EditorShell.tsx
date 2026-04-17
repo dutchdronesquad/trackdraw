@@ -27,7 +27,7 @@ import type {
   TrackPreview3DProps,
 } from "@/components/canvas/editor/TrackPreview3D";
 import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
-import { createDefaultDesign } from "@/lib/track/design";
+import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
 import { type EditorTool } from "@/lib/editor-tools";
 import { loadProject } from "@/lib/projects";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
@@ -1199,14 +1199,18 @@ export default function EditorShell({
               const exportDesign =
                 projectId === design.id ? design : loadProject(projectId);
               if (!exportDesign) return;
+              const serialized = serializeDesign(exportDesign);
 
               const baseName = (exportDesign.title.trim() || "track").replace(
                 /[^a-z0-9-_]+/gi,
                 "_"
               );
-              const blob = new Blob([JSON.stringify(exportDesign, null, 2)], {
-                type: "application/json",
-              });
+              const blob = new Blob(
+                [JSON.stringify(serialized, null, 2)],
+                {
+                  type: "application/json",
+                }
+              );
               const url = URL.createObjectURL(blob);
               const anchor = document.createElement("a");
               anchor.href = url;

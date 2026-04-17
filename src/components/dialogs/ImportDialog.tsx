@@ -4,6 +4,7 @@ import { useRef, useState, useCallback } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { parseDesign } from "@/lib/track/design";
 import { useTrackActions } from "@/store/actions";
 import { cn } from "@/lib/utils";
 import { Upload, FileJson, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -39,11 +40,11 @@ export default function ImportDialog({
   const tryParse = useCallback((text: string) => {
     try {
       const data = JSON.parse(text);
-      if (!data || typeof data !== "object" || !Array.isArray(data.shapes))
-        throw new Error();
+      const design = parseDesign(data);
+      if (!design) throw new Error();
       setParsed({
-        design: data as TrackDesign,
-        shapeCount: data.shapes.length,
+        design,
+        shapeCount: design.shapeOrder.length,
       });
       setError(null);
     } catch {
