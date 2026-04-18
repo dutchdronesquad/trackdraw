@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
@@ -49,6 +50,7 @@ export default function CompleteProfileDialog({
 
     try {
       await onSave(normalizedName);
+      toast.success("Profile updated");
       onOpenChange(false);
     } catch (saveError) {
       setError(

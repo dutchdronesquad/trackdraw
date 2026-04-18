@@ -422,6 +422,11 @@ export default function Header({
             <MobileAppMenu
               defaultOpen
               hideTrigger
+              onMenuOpenChange={(open) => {
+                if (!open) {
+                  setShowMobileAppMenu(false);
+                }
+              }}
               onOpenProjects={onOpenProjectManager}
               onImport={onImport}
               onExport={onExport}
@@ -434,7 +439,7 @@ export default function Header({
                 event.currentTarget.blur();
                 setShowMobileAppMenu(true);
               }}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-lg transition-colors lg:hidden"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-md transition-colors lg:hidden"
               aria-label="Open app menu"
             >
               <Menu className="size-4" />

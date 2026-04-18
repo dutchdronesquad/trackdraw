@@ -41,5 +41,9 @@ export default function StudioLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <div style={{ "--radius": "0.375rem" } as React.CSSProperties}>
+      {children}
+    </div>
+  );
 }

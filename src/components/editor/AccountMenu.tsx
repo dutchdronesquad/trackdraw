@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LogIn, LogOut, UserRound } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut, UserRound } from "lucide-react";
 import AccountDialog from "@/components/dialogs/AccountDialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -15,6 +15,15 @@ import {
 } from "@/components/ui/popover";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+
+function canAccessDashboard(user: unknown): boolean {
+  return (
+    typeof user === "object" &&
+    user !== null &&
+    "role" in user &&
+    (user.role === "admin" || user.role === "moderator")
+  );
+}
 
 function getUserDisplayName(
   user:
@@ -182,6 +191,18 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
             </span>
             <span className="flex-1">Profile</span>
           </button>
+          {canAccessDashboard(user) ? (
+            <Link
+              href="/dashboard"
+              onClick={() => setMenuOpen(false)}
+              className={accountMenuItemClassName}
+            >
+              <span className="text-muted-foreground flex size-4 shrink-0 items-center justify-center">
+                <LayoutDashboard className="size-4" />
+              </span>
+              <span className="flex-1">Dashboard</span>
+            </Link>
+          ) : null}
         </div>
         <div className="border-border/60 border-t p-1.5">
           <Button

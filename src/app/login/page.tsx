@@ -10,6 +10,7 @@ import {
   MailCheck,
   ShieldCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient, isDevAuthShimEnabled } from "@/lib/auth-client";
@@ -20,7 +21,7 @@ export default function LoginPage() {
   const [pending, setPending] = useState(false);
   const [passkeyPending, setPasskeyPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   const [passkeySupported, setPasskeySupported] = useState<boolean | null>(
     null
   );
@@ -43,7 +44,7 @@ export default function LoginPage() {
     event.preventDefault();
     setPending(true);
     setError(null);
-    setSuccess(null);
+    setEmailSent(false);
 
     try {
       await authClient.signIn.magicLink({
@@ -52,7 +53,8 @@ export default function LoginPage() {
         newUserCallbackURL: "/studio",
       });
 
-      setSuccess("Check your email for a sign-in link.");
+      toast.success("Check your email for a sign-in link.");
+      setEmailSent(true);
     } catch (authError) {
       setError(
         authError instanceof Error ? authError.message : "Failed to sign in"
@@ -65,7 +67,7 @@ export default function LoginPage() {
   const handlePasskeySignIn = async () => {
     setPasskeyPending(true);
     setError(null);
-    setSuccess(null);
+    setEmailSent(false);
 
     try {
       const response = await authClient.signIn.passkey();
@@ -196,11 +198,11 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {success ? (
+              {emailSent ? (
                 <div className="mt-6 space-y-4 sm:mt-7" role="status">
                   <div className="border-border/60 bg-background/55 rounded-2xl border px-4 py-4">
                     <div className="flex items-start gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+                      <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
                         <MailCheck className="size-4" />
                       </span>
                       <div className="min-w-0">
@@ -233,7 +235,7 @@ export default function LoginPage() {
                     type="button"
                     className="h-11 w-full"
                     onClick={() => {
-                      setSuccess(null);
+                      setEmailSent(false);
                       setError(null);
                     }}
                   >
