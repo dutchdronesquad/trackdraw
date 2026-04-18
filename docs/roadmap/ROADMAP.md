@@ -16,7 +16,9 @@ The most useful next product moves are:
 
 - A sharper decision on how far account-backed continuity should go after the first auth slice
 - A clearer separation between local-first workflows and account-backed follow-up
+- More deliberate editor workflow follow-up around route readability, numbering confidence, and precision placement
 - Better lifecycle controls around published shares once ownership is defined
+- A stronger embeddable share surface that extends published read-only viewing beyond TrackDraw itself
 - A stronger shared-view review experience, especially on mobile and in 3D
 - Deliberate follow-up on race-day outputs after the ownership boundary is settled
 
@@ -139,17 +141,47 @@ Important boundary:
 - The Race Pack is now the handoff document for briefing, print, and sharing
 - A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
 
-### 4. AR Mode Evaluation (`Research`)
+### 4. Editor Workflow Follow-up (`No account required`)
 
-Evaluate whether TrackDraw should support projecting a full track into a real venue through AR, with section-based preview only as a fallback if full placement is not reliable enough.
+TrackDraw already ships visible snapping, route numbering in export and Race Pack handoff, and stronger route warnings. The next editor pass should build on that foundation with tighter in-canvas guidance instead of introducing a separate analysis-heavy workflow.
+
+Focus:
+
+- Add clearer obstacle-numbering validation and controls on top of the shipped route-driven numbering model
+- Surface missing route references or numbering gaps as clear editor warnings instead of leaving numbering issues to export-time review
+- Add an advanced snapping follow-up on top of the shipped grid-and-shape snap baseline
+- Keep all of this toggleable and non-intrusive on both desktop and mobile
 
 Suggested first slices:
 
-- Validate Android WebXR feasibility
-- Identify a practical iOS fallback
-- Test whether full-track placement is useful and accurate enough for real venue-side decisions
+- Numbering follow-up that keeps the current derived route-order model but adds clearer issue states, editor controls, and confidence cues
+- Flow-aware and alignment-aware snapping follow-up for route-line alignment, stronger nearby-object guides, and useful angle targets, with grid snapping remaining available as the simpler fallback
+- Performance guardrails so richer snapping and overlays do not degrade drag responsiveness on larger layouts
 
-### 5. Real-Time Collaboration Evaluation (`Research`)
+### 5. Embeddable Shared Views (`No account required`)
+
+Published shares should be able to travel beyond TrackDraw links when a club, organizer, or venue wants to place a read-only layout directly on another site.
+
+Why now:
+
+- Published sharing is already a core product surface
+- An embed flow increases reuse and visibility without requiring collaborative editing or a public gallery first
+- The safest implementation path can build on the existing read-only share model instead of introducing a second viewer stack
+
+Focus:
+
+- Add an embed option to the share flow with copyable iframe code and a clear preview
+- Keep embeds read-only, lightweight, and compatible with the canonical published share route
+- Preserve pan, zoom, and basic route review interaction without exposing editing controls
+- Treat sandboxing, performance, and invalid-share failure states as product requirements, not implementation details
+
+Suggested first slices:
+
+- Lightweight embed page that reuses the current share resolution and read-only viewer foundations
+- Share dialog follow-up that exposes iframe code generation alongside the existing share link actions
+- Validation of mobile and desktop behavior for embeds on third-party pages with constrained container sizes
+
+### 6. Real-Time Collaboration Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
 
@@ -161,7 +193,7 @@ Suggested first slices:
 - Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
 - Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
-### 6. Published Gallery Evaluation (`Research`)
+### 7. Published Gallery Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
 
@@ -171,7 +203,7 @@ Suggested first slices:
 - Clarify attribution, ownership, and visibility boundaries
 - Determine the minimum viable moderation and discovery model
 
-### 7. Backlog And Research Tracks
+### 8. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 
@@ -209,6 +241,16 @@ Suggested first slices:
 - Suspicious spacing cues
 - Route rhythm cues
 
+#### AR Mode Evaluation (`Research`)
+
+Keep AR parked as a later research track until real product pull appears from users or venue-side workflows. It remains an exciting possible direction, but it should not compete with nearer-term product work until there is clearer demand.
+
+Suggested first slices if interest appears:
+
+- Validate Android WebXR feasibility
+- Identify a practical iOS fallback
+- Test whether full-track placement is useful and accurate enough for real venue-side decisions
+
 #### Track DNA And Layout Analysis (`No account required`)
 
 Turn route and layout analysis into clearer reusable signals that help compare tracks, explain style, and support later recommendation or AI-oriented work.
@@ -216,8 +258,10 @@ Turn route and layout analysis into clearer reusable signals that help compare t
 Suggested first slices:
 
 - Validate whether any compact track-character summary actually helps real layout decisions instead of adding decorative scoring
+- Rule-based pattern recognition for shapes such as S-turns, hairpins, or figure-8 sections if the output can be labeled clearly and kept stable under normal edits
 - Compact flow, speed, technical, or complexity scoring only if the output stays explainable and actionable
 - Descriptive track tags such as faster, more technical, or more flowy only if they remain stable under normal layout edits
+- Derived section tags or labels from detected route patterns only if they make review faster without creating noisy false positives
 - Follow-up flow analysis that expands beyond current warnings into alignment and rhythm-oriented feedback where it stays actionable
 
 #### Track Challenges Evaluation (`Research`)

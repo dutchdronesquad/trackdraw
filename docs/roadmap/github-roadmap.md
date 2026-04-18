@@ -29,20 +29,29 @@ Labels used below:
   - [ ] Resolve remaining mapping and orientation edge cases
         Tighten the current export where prefab substitutions, facing direction, or rotation assumptions still produce avoidable cleanup work after import.
 
+- [ ] Editor workflow follow-up (`No account required`)
+      Build on the shipped snapping, route warnings, and numbering handoff with stronger in-canvas guidance that stays lightweight, derived, and safe across desktop and mobile.
+  - [ ] Obstacle numbering validation and controls
+        Build on the shipped route-derived numbering with clearer issue states, missing-route/gap warnings, and explicit editor controls without replacing the current derived model.
+  - [ ] Advanced snapping follow-up
+        Build on the shipped grid-and-shape snap baseline with route-line alignment, stronger object-alignment guides, and useful angle targets while preserving drag responsiveness on larger layouts.
+
 - [ ] Map and field overlay (`No account required`)
       Support venue plans, field maps, or imagery behind the editor canvas.
 
 ## Follow-up
 
+- [ ] Embeddable shared views (`No account required`)
+      Let published layouts be embedded on external sites through a lightweight read-only viewer that reuses the current share model instead of introducing a separate viewing stack.
+  - [ ] Embed code in share flow
+        Add a share-dialog path for iframe embed code with copy-to-clipboard and preview.
+  - [ ] Lightweight embed viewer
+        Reuse the existing share resolution and read-only viewer foundations so embeds keep pan, zoom, and basic route review without exposing editing controls.
+  - [ ] Constrained-container validation
+        Validate desktop and mobile behavior for embeds inside real third-party page containers, including sandboxing and failure states.
+
 - [ ] Venue library and constraints (`Account-backed`)
       Support reusable venue records with boundaries, constraints, and venue-specific profiles.
-
-- [ ] AR mode evaluation (`Research`)
-      Evaluate whether TrackDraw should support projecting a full track into a real venue through AR, with smaller section previews only as a fallback if full placement is not reliable enough.
-  - [ ] Platform feasibility
-        Validate a practical Android WebXR path and a separate iOS fallback before committing to product work.
-  - [ ] Full-track placement usefulness
-        Test whether full-track venue projection is accurate and useful enough to help real setup decisions without creating misleading precision.
 
 - [ ] Real-time collaboration evaluation (`Research`)
       Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justifies the editor complexity.
@@ -98,6 +107,10 @@ Labels used below:
       Evaluate whether route and layout analysis should become reusable signals that help compare tracks, explain style, and support later recommendation or assistive tooling.
   - [ ] Product usefulness test
         Validate whether any track-character summary actually helps decisions instead of adding decorative scoring.
+  - [ ] Rule-based pattern recognition
+        Detect route patterns such as S-turns, hairpins, or figure-8 sections only if the labels stay explainable and stable under normal edits.
+  - [ ] Derived section tags
+        Turn useful detected patterns into lightweight route tags or labels only if they speed up review without creating noisy false positives.
 
 - [ ] Heatmap and flow analysis (`No account required`)
       Add lightweight visual feedback for rhythm, density, and bottlenecks.
@@ -108,11 +121,15 @@ Labels used below:
   - [ ] Route rhythm cues
         Add lightweight route rhythm cues.
 
+- [ ] AR mode evaluation (`Research`)
+      Keep AR parked as a later research track until real product demand appears from venue-side workflows or user feedback.
+  - [ ] Platform feasibility if demand appears
+        Validate a practical Android WebXR path and a separate iOS fallback before committing to product work.
+  - [ ] Full-track placement usefulness if demand appears
+        Test whether full-track venue projection is accurate and useful enough to help real setup decisions without creating misleading precision.
+
 - [ ] Competition rule validation (`Research`)
       Validate a layout against known rule sets such as FAI or MultiGP — minimum gate sizes, minimum obstacle distances, mandatory gate types. Useful for formal competition organizers.
-
-- [ ] Lap simulator (`Research`)
-      Estimate route timing and flow after the lighter analysis layers prove useful.
 
 - [ ] Track challenges evaluation (`Research`)
       Evaluate whether TrackDraw should support recurring design challenges, submissions, and lightweight participation loops without creating a heavy moderation or identity burden.

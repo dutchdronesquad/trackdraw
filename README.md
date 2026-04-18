@@ -91,4 +91,4 @@ You are welcome to contribute to TrackDraw. You can find a guide on how to contr
 
 ## License
 
-Distributed under the **LGPL-3.0-or-later** License - see [LICENSE](LICENSE) for details.
+Distributed under the **LGPL-3.0-only** License - see [LICENSE](LICENSE) for details.
