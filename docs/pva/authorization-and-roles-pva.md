@@ -866,7 +866,7 @@ Done when: the `role` column exists in all environments and all existing account
 In [src/lib/server/auth.ts](../../src/lib/server/auth.ts), extend the `CurrentUser` type:
 
 ```ts
-export type AccountRole = 'user' | 'moderator' | 'admin';
+export type AccountRole = "user" | "moderator" | "admin";
 
 export type CurrentUser = {
   id: string;
@@ -882,7 +882,7 @@ Update `getCurrentUserFromHeaders()` to query the role from D1 after resolving t
 ```ts
 const db = await getDatabase();
 const record = await db
-  .prepare('SELECT role FROM user WHERE id = ?')
+  .prepare("SELECT role FROM user WHERE id = ?")
   .bind(session.user.id)
   .first<{ role: AccountRole }>();
 
@@ -891,7 +891,7 @@ return {
   email: session.user.email ?? null,
   name: session.user.name ?? null,
   image: session.user.image ?? null,
-  role: record?.role ?? 'user',
+  role: record?.role ?? "user",
 };
 ```
 
@@ -920,7 +920,7 @@ In [src/lib/auth-client.ts](../../src/lib/auth-client.ts):
 To switch roles locally, run in the browser console and re-sign in:
 
 ```js
-localStorage.setItem('trackdraw-dev-auth-role', 'admin');
+localStorage.setItem("trackdraw-dev-auth-role", "admin");
 ```
 
 Done when: the dev shim returns a `role` field and switching roles via localStorage works in `npm run dev`.
