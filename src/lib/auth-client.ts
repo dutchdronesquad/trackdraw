@@ -47,12 +47,10 @@ const DEV_AUTH_EVENT = "trackdraw-dev-auth-change";
 let devSessionCache: AuthSessionData | null = null;
 let devSessionCacheLoaded = false;
 let resolvedRoleCache: { userId: string; role: AccountRole } | null = null;
-let resolvedRoleRequest:
-  | {
-      userId: string;
-      promise: Promise<AccountRole>;
-    }
-  | null = null;
+let resolvedRoleRequest: {
+  userId: string;
+  promise: Promise<AccountRole>;
+} | null = null;
 
 type DevAuthProfileRecord = {
   id: string;
