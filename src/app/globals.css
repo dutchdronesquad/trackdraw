@@ -9,7 +9,7 @@
    Near-pure black background, high contrast, zero decoration.
 ───────────────────────────────────────────────────────────── */
 :root {
-  --radius: 0.375rem;
+  --radius: 0.625rem;
   --brand-primary: #1e93db;
   --brand-secondary: #f0761d;
   --brand-primary-rgb: 30 147 219;
@@ -116,6 +116,10 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  [data-slot="input"] {
+    border-radius: var(--radius-md) !important;
   }
 }
 

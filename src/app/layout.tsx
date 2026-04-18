@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
 import ThemeBootstrap from "@/components/ThemeBootstrap";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import ThemedToaster from "@/components/ThemedToaster";
 import {
   DEFAULT_SOCIAL_IMAGE,
   DEFAULT_SOCIAL_IMAGE_HEIGHT,
@@ -110,7 +110,7 @@ export default async function RootLayout({
       <body className="font-sans antialiased">
         <ThemeBootstrap />
         <TooltipProvider delay={500}>{children}</TooltipProvider>
-        <ThemedToaster />
+        <Toaster position="bottom-right" richColors />
       </body>
     </html>
   );

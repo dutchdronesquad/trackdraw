@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { isResourceOwner } from "@/lib/server/authorization";
 import { resolveStoredShare, revokeShare } from "@/lib/server/shares";
 
 type ShareTokenRouteContext = {
@@ -48,7 +49,7 @@ export async function DELETE(
         { status: 401 }
       );
     }
-    if (user.id !== share.ownerUserId) {
+    if (!isResourceOwner(user, share.ownerUserId)) {
       return NextResponse.json(
         { ok: false, error: "Forbidden" },
         { status: 403 }

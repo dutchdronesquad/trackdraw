@@ -684,6 +684,19 @@ Checklist:
 - [ ] Define where reported entries are reviewed operationally
 - [ ] Confirm that authority assignment depends on the separate roles/authorization foundation
 - [ ] Confirm featuring is manual only in v1
+- [ ] Confirm whether owners may move an entry from `link_only` to `gallery_visible`
+- [ ] Confirm whether owners may move an entry from `gallery_visible` back to `link_only`
+- [ ] Confirm whether moderators may move an entry from `gallery_visible` to `featured`
+- [ ] Confirm whether moderators may move an entry from `featured` back to `gallery_visible`
+- [ ] Confirm whether moderators may move an entry from `gallery_visible` or `featured` to `hidden`
+- [ ] Confirm whether moderators may restore an entry from `hidden` to `gallery_visible`
+- [ ] Confirm owners cannot self-feature in v1
+- [ ] Confirm owners cannot unhide a moderator-hidden entry in v1
+- [ ] Confirm moderation state overrides normal owner gallery visibility controls while active
+- [ ] Confirm report creation is open to the intended actor type for v1
+- [ ] Confirm report resolution is moderator-or-admin only
+- [ ] Confirm a moderator may review a report without necessarily changing gallery state
+- [ ] Confirm a moderator may unfeature without hiding when policy requires it
 
 ### Phase 4: Decide whether to build or keep parked
 

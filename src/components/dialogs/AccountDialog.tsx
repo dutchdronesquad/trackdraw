@@ -13,6 +13,7 @@ import {
   Trash2,
   UserRound,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   authClient,
@@ -49,6 +50,7 @@ export default function AccountDialog({
   const { data, isPending } = authClient.useSession();
   const isMobile = useIsMobile();
   const user = data?.user ?? null;
+  const userId = user?.id ?? null;
   const [view, setView] = useState<View>("profile");
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
@@ -58,9 +60,9 @@ export default function AccountDialog({
   const [changingEmail, setChangingEmail] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [emailNotice, setEmailNotice] = useState<string | null>(null);
   const [passkeys, setPasskeys] = useState<AuthPasskey[]>([]);
   const [passkeysLoading, setPasskeysLoading] = useState(false);
+  const [passkeysLoaded, setPasskeysLoaded] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [editingPasskeyId, setEditingPasskeyId] = useState<string | null>(null);
   const [passkeyDraftNames, setPasskeyDraftNames] = useState<
@@ -80,9 +82,9 @@ export default function AccountDialog({
     setChangingEmail(false);
     setDeleting(false);
     setError(null);
-    setEmailNotice(null);
     setPasskeys([]);
     setPasskeysLoading(false);
+    setPasskeysLoaded(false);
     setPasskeyLoading(false);
     setEditingPasskeyId(null);
     setPasskeyDraftNames({});
@@ -91,7 +93,7 @@ export default function AccountDialog({
   }, [open, user?.email, user?.name]);
 
   useEffect(() => {
-    if (!open || !user) return;
+    if (!open || !userId || view !== "security" || passkeysLoaded) return;
 
     let cancelled = false;
 
@@ -101,6 +103,7 @@ export default function AccountDialog({
         const items = await authClient.passkey.list();
         if (cancelled) return;
         setPasskeys(items);
+        setPasskeysLoaded(true);
         setPasskeyDraftNames(
           Object.fromEntries(items.map((item) => [item.id, item.name ?? ""]))
         );
@@ -123,7 +126,7 @@ export default function AccountDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, user]);
+  }, [open, passkeysLoaded, userId, view]);
 
   const handleSave = async () => {
     const normalizedName = name.trim();
@@ -135,6 +138,7 @@ export default function AccountDialog({
     setError(null);
     try {
       await authClient.updateProfileName(normalizedName);
+      toast.success("Profile updated");
       onOpenChange(false);
     } catch (saveError) {
       setError(
@@ -184,7 +188,6 @@ export default function AccountDialog({
 
     setChangingEmail(true);
     setError(null);
-    setEmailNotice(null);
 
     try {
       await authClient.changeEmail({
@@ -192,7 +195,7 @@ export default function AccountDialog({
         callbackURL: "/studio",
       });
       setEmailEditOpen(false);
-      setEmailNotice(
+      toast.success(
         "Check your inbox to complete the email change. You may need to confirm from your current email first and then verify the new one."
       );
     } catch (changeEmailError) {
@@ -213,7 +216,6 @@ export default function AccountDialog({
   const handleAddPasskey = async () => {
     setPasskeyLoading(true);
     setError(null);
-    setEmailNotice(null);
 
     try {
       const createdPasskey = await authClient.passkey.add({
@@ -232,7 +234,7 @@ export default function AccountDialog({
           nextPasskeys.map((item) => [item.id, item.name ?? ""])
         )
       );
-      setEmailNotice("Passkey added. You can rename or remove it below.");
+      toast.success("Passkey added. You can rename or remove it below.");
     } catch (passkeyError) {
       setError(
         passkeyError instanceof Error
@@ -263,6 +265,7 @@ export default function AccountDialog({
         current.map((item) => (item.id === passkeyId ? updated : item))
       );
       setEditingPasskeyId(null);
+      toast.success("Passkey renamed");
     } catch (passkeyError) {
       setError(
         passkeyError instanceof Error
@@ -292,7 +295,7 @@ export default function AccountDialog({
       setEditingPasskeyId((current) =>
         current === passkeyId ? null : current
       );
-      setEmailNotice(
+      toast.success(
         "Passkey removed from your TrackDraw account. It may still appear on this device until you remove it from your password manager or device settings."
       );
     } catch (passkeyError) {
@@ -398,12 +401,6 @@ export default function AccountDialog({
           {error}
         </div>
       )}
-
-      {emailNotice && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-3.5 py-3 text-sm text-emerald-700 dark:text-emerald-300">
-          {emailNotice}
-        </div>
-      )}
     </div>
   );
 
@@ -479,7 +476,6 @@ export default function AccountDialog({
               onClick={() => {
                 setEmailEditOpen(true);
                 setError(null);
-                setEmailNotice(null);
               }}
               className={cn(isMobile && "h-11 w-full")}
             >
@@ -698,12 +694,6 @@ export default function AccountDialog({
       {error && (
         <div className="rounded-xl border border-rose-500/20 bg-rose-500/8 px-3.5 py-3 text-sm text-rose-600 dark:text-rose-300">
           {error}
-        </div>
-      )}
-
-      {emailNotice && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-3.5 py-3 text-sm text-emerald-700 dark:text-emerald-300">
-          {emailNotice}
         </div>
       )}
     </div>

@@ -14,7 +14,7 @@ TrackDraw is now strong in these areas:
 
 The most useful next product moves are:
 
-- A sharper decision on how far account-backed continuity should go after the first auth slice
+- A sharper decision on how far account-backed project continuity should go after the shipped account and authorization foundation
 - A clearer separation between local-first workflows and account-backed follow-up
 - More deliberate editor workflow follow-up around route readability, numbering confidence, and precision placement
 - Better lifecycle controls around published shares once ownership is defined
@@ -43,7 +43,7 @@ Labels used below:
 
 ### 1. Accounts And Ownership Model (`Research`)
 
-TrackDraw now has the first account foundation in place through Better Auth, magic-link sign-in, profile management, and account-aware UI in Studio. The next question is how far account-backed continuity should go beyond that first slice.
+TrackDraw now has the first account foundation in place through sign-in, profile management, role-aware dashboard access, and internal role management. The next question is how far account-backed project continuity should go beyond that shipped foundation.
 
 Supporting product-shape document:
 
@@ -53,7 +53,7 @@ Why now:
 
 - More roadmap items now depend on durable ownership and cross-device persistence
 - Share management, venue records, inventory profiles, and future review features all become clearer once the account boundary is defined
-- The first auth layer is now shipped enough that the next decision is about scope, not whether accounts exist at all
+- The account layer is now shipped enough that the next decision is about product scope, not whether the basic foundation exists at all
 
 Focus:
 
@@ -97,9 +97,10 @@ Important unresolved transition:
 
 Current shipped foundation:
 
-- Better Auth with email magic-link sign-in
+- Email magic-link sign-in
 - In-app profile management and account deletion
 - Account-aware desktop and mobile shell entry points
+- Role-aware dashboard access and internal role management
 - Initial account-backed schema and project/share ownership groundwork
 
 ### 2. Account-Backed Follow-up (`Account-backed`)

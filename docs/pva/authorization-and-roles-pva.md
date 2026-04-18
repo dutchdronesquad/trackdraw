@@ -10,10 +10,16 @@ Recommended decision:
 
 - approve separate product-definition work for roles, authorization, and moderation
 - do not treat gallery moderation as an isolated special case
-- define a small account-role model now so future public and administrative features share one foundation
+- define a small account-role model now so future public and internal dashboard features share one foundation
 - treat ownership and role-based authority as separate concerns
 
 This document is intended to frame roles and authorization as a platform decision, not just a gallery implementation detail.
+
+Decision outcome:
+
+- approve the authorization foundation
+- implement it alongside the first gallery moderation and featuring work
+- keep the first release narrow: global roles, server-side helpers, and basic role assignment only
 
 ## Approval Recommendation
 
@@ -39,6 +45,24 @@ TrackDraw should not approve this work yet if the team expects any of these in v
 - [x] Phase 3: define storage and role-assignment approach
 - [x] Phase 4: decide whether to implement now or later — **implement now**
 
+## Implementation Boundary
+
+Approve and implement now:
+
+- one persisted global role per account
+- centralized server-side authorization helpers
+- moderator authority for gallery hide, unhide, feature, unfeature, and report review
+- admin-only role assignment
+- lightweight auditability for role changes and moderation-sensitive actions
+- a shared internal dashboard shell later, with module visibility driven by role and capability
+
+Do not expand v1 into:
+
+- organization or club roles
+- custom per-user permission editors
+- public moderator applications
+- broad dashboard modules before the protected actions exist
+
 ## Go / No-Go Criteria
 
 Go for implementation planning if:
@@ -63,10 +87,48 @@ The immediate trigger may be gallery moderation and featuring, but the underlyin
 - moderation authority
 - featured content curation
 - platform support tools later
-- future admin-only settings or operations
+- future dashboard-only settings or operations
 - potential project, account, or public-surface controls beyond the gallery
 
 This should be handled as a reusable product foundation rather than as a narrow one-off rule set.
+
+The intended internal surface should be a shared `dashboard`, not an admin-only destination. Admins and moderators may both enter that shell, while routes, modules, and actions remain permission-gated.
+
+## Scope Boundary
+
+This PVA owns the authorization foundation only.
+
+It should define:
+
+- global roles
+- capability naming
+- trusted server-side enforcement boundaries
+- dashboard access posture
+- role assignment and audit expectations
+
+It should not become the delivery document for gallery product behavior itself.
+
+That means:
+
+- gallery states, reporting UX, moderation workflows, featuring policy, and gallery operator decisions belong in the gallery PVA
+- this document may name the authorization capabilities that gallery work will consume
+- this document may define the enforcement model those gallery routes must use
+- this document should not become the source of truth for gallery feature sequencing, UI behavior, or gallery-specific acceptance criteria
+
+Practical rule:
+
+- if a section answers `who may do this and where is that enforced?`, it belongs here
+- if a section answers `how should gallery moderation behave as a product workflow?`, it belongs in the gallery PVA
+
+## Why Now
+
+The foundation is worth implementing now because multiple approved or likely product directions already depend on it:
+
+- gallery moderation and featuring need non-owner authority
+- account-backed project ownership needs a clear distinction between owner actions and platform intervention
+- future live review rooms benefit from explicit host, guest, and platform authority boundaries even if room roles stay separate from account roles
+
+Deferring this work would likely create short-term special cases in the gallery and account surfaces that would then need to be replaced once platform authority grows.
 
 ## Product Goal
 
@@ -76,6 +138,7 @@ TrackDraw should gain a clear and durable authorization model that:
 - supports elevated moderation and platform actions cleanly
 - avoids scattered `isAdmin` checks becoming the long-term architecture
 - remains small enough to implement without becoming a permissions platform
+- supports a shared privileged dashboard without implying that every privileged user is an admin
 
 ## Core Product Position
 
@@ -142,14 +205,26 @@ TrackDraw does not need a user-facing custom-permissions system, but it should t
 
 Example capability direction:
 
+- `dashboard.overview.read`
 - `gallery.entry.hide`
 - `gallery.entry.feature`
 - `gallery.report.review`
 - `account.role.assign`
+- `admin.users.read`
+- `admin.users.update`
+- `audit.read`
 
 Roles then map to capabilities.
 
 This keeps server-side authorization readable and extensible.
+
+The same capability model should drive internal dashboard visibility:
+
+- `moderator` and `admin` may both reach the dashboard shell
+- dashboard modules should appear only when the actor has at least one relevant capability
+- visible modules may still contain actions that are further restricted
+
+This keeps the route structure stable even if role-to-capability mapping changes later.
 
 ## Recommended V1 Mapping
 
@@ -183,45 +258,45 @@ Expected authority:
 
 Admin should remain meaningfully broader than moderator.
 
+## Dashboard Direction
+
+TrackDraw should treat the privileged internal UI as a `dashboard` rather than an `admin page`.
+
+Recommended first direction:
+
+- `/dashboard` is the shared internal shell for privileged users
+- `moderator` and `admin` may both enter that shell
+- the shell, navigation, and layout are shared
+- visibility of modules and actions inside the dashboard is capability-driven
+
+Recommended first dashboard module direction:
+
+- overview
+- users
+- audit
+- reports / moderation queue later, once gallery moderation needs a real internal surface
+
+Recommended first access posture:
+
+- `moderator` sees overview first, with moderation modules added only when a real moderation flow exists
+- `admin` sees broader platform modules like users and audit
+- `user` does not enter the privileged dashboard
+
+This keeps product language accurate:
+
+- moderators are not admins
+- moderators can still use the internal dashboard
+- admin-only controls remain clearly separated
+
 ## First Protected Actions To Model
 
 The first implementation-worthy actions are likely:
 
-- owner unlist own gallery entry
-- moderator hide gallery entry
-- moderator feature gallery entry
-- moderator review gallery report
+- moderator enter the dashboard
+- admin assign or revoke elevated role
 - admin assign or revoke elevated role later
 
 If the team cannot define these actions clearly, the broader model is not ready yet.
-
-## Gallery-State-Aware Protected Actions
-
-The gallery PVA now assumes the following first state direction:
-
-- `link_only`
-- `gallery_visible`
-- `featured`
-- `hidden`
-
-The authorization model should be able to express who may move an entry between those states.
-
-Recommended first action direction:
-
-- owner may move own entry from `link_only` to `gallery_visible`
-- owner may move own entry from `gallery_visible` to `link_only`
-- moderator may move entry from `gallery_visible` to `featured`
-- moderator may move entry from `featured` back to `gallery_visible`
-- moderator may move entry from `gallery_visible` or `featured` to `hidden`
-- moderator may restore entry from `hidden` to `gallery_visible`
-
-Recommended first rule:
-
-- owner should not be able to self-feature
-- owner should not be able to unhide a moderator-hidden entry
-- moderation state should override normal owner gallery visibility controls while the moderation action remains active
-
-This keeps curation and moderation distinct from normal ownership actions.
 
 ## First Capability Matrix
 
@@ -229,6 +304,7 @@ The first useful capability set should map directly to the gallery actions alrea
 
 Recommended first internal capabilities:
 
+- `dashboard.overview.read`
 - `gallery.entry.publish`
 - `gallery.entry.unlist_own`
 - `gallery.entry.hide`
@@ -237,28 +313,40 @@ Recommended first internal capabilities:
 - `gallery.entry.unfeature`
 - `gallery.report.create`
 - `gallery.report.review`
+- `moderation.reports.read`
+- `moderation.reports.resolve`
+- `admin.users.read`
+- `admin.users.update`
 - `account.role.assign`
+- `audit.read`
 
 Recommended first role mapping:
 
 - `user`
+  - no privileged dashboard access
   - `gallery.entry.publish` on owned eligible shares only
   - `gallery.entry.unlist_own`
   - `gallery.report.create`
 - `moderator`
+  - `dashboard.overview.read`
   - `gallery.entry.hide`
   - `gallery.entry.unhide`
   - `gallery.entry.feature`
   - `gallery.entry.unfeature`
   - `gallery.report.review`
+  - `moderation.reports.read`
+  - `moderation.reports.resolve`
 - `admin`
   - everything a moderator can do
+  - `admin.users.read`
+  - `admin.users.update`
   - `account.role.assign`
+  - `audit.read`
 
 Ownership should still gate user actions:
 
-- a normal user can only publish or unlist their own gallery entry
-- a normal user cannot affect another user's gallery state
+- a normal user can only perform ownership-scoped actions on their own resources
+- a normal user cannot affect another user's platform-controlled state
 
 ## Resource-Centric Action Matrix
 
@@ -299,63 +387,14 @@ Primary rule:
 Expected actions:
 
 - owner can create, update, revoke, and republish own share
-- owner can keep a share `link_only` or opt it into gallery visibility if eligible
+- owner can opt into additional product surfaces only when the relevant feature model allows it
 - moderator does not automatically gain authority to revoke someone else's share in v1
 - admin may need broader share intervention later, but that should be treated as a separate platform action
 
 Recommended first boundary:
 
-- gallery moderation acts on gallery visibility first
+- public-surface moderation should act on the public-surface representation first
 - share revocation remains a distinct and heavier action
-
-### Gallery Entry
-
-Primary rule:
-
-- gallery entries combine ownership actions with moderation and curation actions
-
-Expected owner actions:
-
-- publish own eligible share into gallery visibility
-- unlist own gallery entry back to `link_only`
-- update own gallery-facing metadata when not blocked by moderation state
-
-Expected moderator actions:
-
-- hide or unhide gallery entry
-- feature or unfeature gallery entry
-- review entry in response to reports
-
-Expected admin actions:
-
-- everything a moderator can do
-- broader intervention if TrackDraw later needs stronger public-surface control
-
-Recommended first boundary:
-
-- owner controls participation
-- moderator controls discoverability and curation
-- admin controls the authority model itself
-
-### Gallery Report
-
-Primary rule:
-
-- reports are open to ordinary signed-in users
-- resolution is moderator-or-admin only
-
-Expected actions:
-
-- signed-in user can create report
-- report author does not gain moderation authority over the entry
-- moderator can review, resolve, and close reports
-- moderator can take a related entry action such as hide or unfeature
-- admin can do everything a moderator can do
-
-Recommended first boundary:
-
-- report creation is lightweight
-- report resolution is a protected moderation action
 
 ### Account Role
 
@@ -380,48 +419,30 @@ The first model should be understandable in a simple matrix.
 
 Recommended first direction:
 
-- `gallery.entry.publish`
-  - actor: owner of eligible share
-  - resource: own gallery entry / share
-- `gallery.entry.unlist_own`
-  - actor: owner
-  - resource: own gallery entry
-- `gallery.entry.hide`
+- `dashboard.overview.read`
   - actor: moderator or admin
-  - resource: any gallery entry
-- `gallery.entry.unhide`
+  - resource: dashboard shell
+- `moderation.reports.read`
   - actor: moderator or admin
-  - resource: any hidden gallery entry
-- `gallery.entry.feature`
+  - resource: moderation queue
+- `moderation.reports.resolve`
   - actor: moderator or admin
-  - resource: any gallery-visible entry
-- `gallery.entry.unfeature`
-  - actor: moderator or admin
-  - resource: any featured entry
-- `gallery.report.create`
-  - actor: signed-in user
-  - resource: any gallery entry
-- `gallery.report.review`
-  - actor: moderator or admin
-  - resource: any gallery report
+  - resource: moderation queue item
+- `admin.users.read`
+  - actor: admin
+  - resource: dashboard users module
+- `admin.users.update`
+  - actor: admin
+  - resource: dashboard users module
 - `account.role.assign`
   - actor: admin
   - resource: any account role assignment target
+- `audit.read`
+  - actor: admin
+  - resource: dashboard audit module
 
-This is not a complete future matrix for the whole product. It is the first concrete slice that makes the current gallery and moderation decisions enforceable.
+This is not a complete future matrix for the whole product. Feature-specific matrices such as gallery state transitions and report handling should stay in their own PVAs and consume this capability layer rather than redefining it here.
 
-## Gallery Moderation And Report Handling
-
-The gallery PVA defines the following minimum report reasons:
-
-- `inappropriate`
-- `spam`
-- `copyright / stolen`
-- `broken / low quality`
-
-The authorization model should support at least these operational actions:
-
-- user creates a report on a gallery entry
 - moderator reviews the report
 - moderator leaves the entry visible
 - moderator hides the entry
@@ -528,7 +549,7 @@ This keeps elevated authority intentional and accountable.
 
 ## Role Assignment Workflow Recommendation
 
-The first role-assignment workflow does not need a polished end-user admin console, but it does need a real operational model.
+The first role-assignment workflow does not need a polished end-user dashboard module, but it does need a real operational model.
 
 Recommended first workflow:
 
@@ -539,8 +560,8 @@ Recommended first workflow:
 
 Possible first implementation surfaces:
 
-- a simple internal admin tool
-- an admin-only route later
+- a simple internal dashboard tool
+- an admin-only route or module later
 - a temporary server-side operational script if needed
 
 The important product rule is not the UI polish. The important rule is that assignment is explicit, intentional, and server-controlled.
@@ -552,16 +573,22 @@ Once the role migration has run, promoting the first admin is a direct database 
 **Production**: run the following SQL via the Cloudflare D1 dashboard.
 
 ```sql
-UPDATE user SET role = 'admin' WHERE email = 'your@email.com';
+UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
 ```
 
-**Preview** (`npm run preview`, uses remote `trackdraw-dev`):
+**Local preview** (`npm run preview`, uses local Wrangler D1 state):
 
 ```bash
-wrangler d1 execute DB --remote --env dev --command "UPDATE user SET role = 'admin' WHERE email = 'your@email.com';"
+wrangler d1 execute DB --local --env dev --command "UPDATE users SET role = 'admin' WHERE email = 'your@email.com';"
 ```
 
-All subsequent admin or moderator promotions go through the normal role assignment workflow once an admin-facing tool exists.
+**Remote development**:
+
+```bash
+wrangler d1 execute DB --remote --env dev --command "UPDATE users SET role = 'admin' WHERE email = 'your@email.com';"
+```
+
+All subsequent admin or moderator promotions go through the normal role assignment workflow once a dashboard-facing role-management tool exists.
 
 This is a one-time operational step, not a product feature.
 
@@ -631,7 +658,7 @@ That would make later platform needs harder to fit cleanly.
 
 ### 1. The Model Is Too Small
 
-If TrackDraw collapses everything into `admin`, it may create unnecessary power concentration and make later moderation separation awkward.
+If TrackDraw collapses everything into `admin`, it may create unnecessary power concentration and make later dashboard separation awkward.
 
 Mitigation:
 
@@ -713,7 +740,7 @@ Checklist:
 - [x] Define what ordinary users may do through ownership alone
 - [x] Define what moderators may do that ordinary users may not
 - [x] Define what admins may do beyond moderators
-- [x] Name the first internal capabilities needed for gallery and adjacent admin actions
+- [x] Name the first internal capabilities needed for gallery and adjacent dashboard actions
 - [x] Confirm the first gallery capability set maps to publish, unlist, hide, unhide, feature, unfeature, and report review
 - [x] Confirm roles remain small and globally understandable
 
@@ -769,15 +796,15 @@ Start:
 Done:
 
 - TrackDraw either commits to implementing authorization foundations
-- or keeps this parked until another public/admin feature makes it urgent
+- or keeps this parked until another public/dashboard feature makes it urgent
 
 Checklist:
 
-- [ ] Re-evaluate whether gallery and other planned features justify this foundation now
-- [ ] Re-evaluate whether the role model is small enough to implement safely
-- [ ] Re-evaluate whether the protected actions are concrete enough for engineering work
-- [ ] Re-evaluate whether the team can support elevated-role operations responsibly
-- [ ] Decide `implement now`, `prepare later`, or `keep parked`
+- [x] Re-evaluate whether gallery and other planned features justify this foundation now
+- [x] Re-evaluate whether the role model is small enough to implement safely
+- [x] Re-evaluate whether the protected actions are concrete enough for engineering work
+- [x] Re-evaluate whether the team can support elevated-role operations responsibly
+- [x] Decide `implement now`, `prepare later`, or `keep parked` — **implement now**
 
 ## Smallest Credible V1
 
@@ -788,6 +815,35 @@ If TrackDraw builds this in the near term, the smallest credible version is:
 - centralized server-side helpers for protected actions
 - moderator control over gallery hide, feature, and report review
 - admin reserved for broader platform authority
+- a shared dashboard shell can sit on top of the model without changing the underlying authorization design
+
+This should ship as platform plumbing in support of user-facing moderation and gallery controls, not as a standalone dashboard feature push.
+
+## Dependencies And Sequencing
+
+This PVA is downstream of the current accounts foundation and upstream of gallery moderation.
+
+Recommended sequence:
+
+1. keep the Better Auth account model and project ownership shape from [accounts-project-sync.md](../research/accounts-project-sync.md)
+2. add the persisted role field and server-side authorization helpers
+3. use those helpers in the first gallery moderation and featuring routes
+4. add any minimal dashboard surface or operational script only after the enforcement layer exists
+
+Important dependency rules:
+
+- do not block ordinary local-first editing on signed-in role work
+- do not make account roles a prerequisite for core project editing, autosave, import/export, or share publishing
+- do require account roles for non-owner public-surface interventions such as hide, feature, and report review
+
+## Open Product Questions
+
+These questions do not block the foundation decision, but they should be answered before implementation starts:
+
+- should `gallery.report.create` require sign-in, or is there still a product case for anonymous reporting later?
+- does TrackDraw want a distinct `support` role later for account or project intervention without full admin authority?
+- should moderation actions write a single generic audit record table, or separate role-change and moderation-event records?
+- which minimal internal surface will exist first for assigning roles: script-only, route-only, or lightweight dashboard UI?
 
 ## Codebase Anchor
 
@@ -833,129 +889,195 @@ All existing accounts automatically receive `user`. The first admin is promoted 
 
 Recommended approach: extend the shim with a separate localStorage key for the simulated role, for example `trackdraw-dev-auth-role`. The shim reads this key when constructing the simulated session and falls back to `user` if absent.
 
-This allows switching between roles during development without touching D1, and lets you test both normal user flows and admin/moderator flows in `npm run dev`.
+This allows switching between roles during development without touching D1, and lets you test both normal user flows and dashboard-role flows in `npm run dev`.
 
-For `npm run preview`, the real Better-Auth login is used against the remote `trackdraw-dev` D1 database. Use the Wrangler command in the bootstrap section above to promote an account to admin there.
+For `npm run preview`, the real Better-Auth login is used with local Wrangler/OpenNext preview and local D1 state. Use the local preview bootstrap command above when you need admin access there. Use the remote command only when validating against the shared development environment.
 
 ### Existing Authorization Pattern
 
 Ownership checks today are done via SQL `WHERE owner_user_id = ?` in query helpers such as `getProjectForUser()` in [src/lib/server/projects.ts](../../src/lib/server/projects.ts). This pattern should remain for ownership checks. Role-based checks should go through the new authorization helpers, not inline SQL conditions.
 
-## Build Phases
+## Execution Phases
 
-### Phase 1: Database Migration
+This section is the concrete implementation checklist. Each phase has a status, explicit deliverables, and a strict done state so the PVA can double as an execution board.
 
-Create `migrations/0004_user_roles.sql`:
+### Phase Checklist
 
-```sql
-ALTER TABLE user ADD COLUMN role TEXT NOT NULL DEFAULT 'user';
-```
+- [x] Phase 1: role persistence and auth enrichment
+- [x] Phase 2: authorization helper layer
+- [x] Phase 3: shared dashboard shell and gated users module
+- [x] Phase 4: audit read-side and audit dashboard module
+- [x] Phase 5: operational readiness across environments
 
-Run against each environment:
+Deferred for now:
 
-```bash
-npm run migrate:local          # local
-npm run migrate:up:dev         # remote trackdraw-dev
-npm run migrate:up:production  # production
-```
+- reports queue and moderation workflow in the dashboard
+- gallery capability enforcement on real resources
 
-Done when: the `role` column exists in all environments and all existing accounts have `user`.
+### Phase 1: Role Persistence And Auth Enrichment
 
-### Phase 2: Extend CurrentUser With Role
+Status: `done`
 
-In [src/lib/server/auth.ts](../../src/lib/server/auth.ts), extend the `CurrentUser` type:
+Objective:
 
-```ts
-export type AccountRole = "user" | "moderator" | "admin";
+- persist one global account role per user
+- expose the resolved role on trusted server-side user resolution
 
-export type CurrentUser = {
-  id: string;
-  email: string | null;
-  name: string | null;
-  image: string | null;
-  role: AccountRole;
-};
-```
+Concrete checklist:
 
-Update `getCurrentUserFromHeaders()` to query the role from D1 after resolving the session:
+- [x] Add a non-nullable `role` field with default `user`
+- [x] Define a shared `AccountRole` type
+- [x] Parse unknown stored values safely back to `user`
+- [x] Extend `CurrentUser` with `role`
+- [x] Return `role` from `getCurrentUserFromHeaders()`
+- [x] Expose session role data to the client-facing account session endpoint
 
-```ts
-const db = await getDatabase();
-const record = await db
-  .prepare("SELECT role FROM user WHERE id = ?")
-  .bind(session.user.id)
-  .first<{ role: AccountRole }>();
+Code anchors:
 
-return {
-  id: session.user.id,
-  email: session.user.email ?? null,
-  name: session.user.name ?? null,
-  image: session.user.image ?? null,
-  role: record?.role ?? "user",
-};
-```
+- [migrations/0004_user_roles_and_audit_events.sql](../../migrations/0004_user_roles_and_audit_events.sql)
+- [src/lib/account-roles.ts](../../src/lib/account-roles.ts)
+- [src/lib/server/auth.ts](../../src/lib/server/auth.ts)
+- [src/app/api/account/session/route.ts](../../src/app/api/account/session/route.ts)
 
-Done when: every caller of `getCurrentUserFromHeaders` receives a `role` field.
+Done when:
 
-### Phase 3: Authorization Helper Layer
+- every authenticated server request resolves a trusted `role`
+- every account has exactly one persisted role
 
-Create `src/lib/server/authorization.ts` with the core helpers:
+### Phase 2: Authorization Helper Layer
 
-- `hasCapability(actor, capability)` — checks whether the actor's role grants the given capability
-- `isResourceOwner(actor, ownerUserId)` — checks whether the actor owns the resource
-- `canTransitionGalleryState(actor, entry, nextState)` — encodes the full gallery state-transition rules from the PVA
+Status: `done`
 
-The role-to-capability mapping should follow the First Capability Matrix defined above.
+Objective:
 
-Done when: helpers are importable from any API route or server action.
+- centralize role-to-capability decisions and dashboard visibility rules
 
-### Phase 4: Dev Auth Shim Role Support
+Concrete checklist:
 
-In [src/lib/auth-client.ts](../../src/lib/auth-client.ts):
+- [x] Add a central capability union
+- [x] Add role-to-capability mapping
+- [x] Add `hasCapability(role, capability)`
+- [x] Add `canAccessDashboard(role)`
+- [x] Add `getVisibleDashboardModules(role)`
+- [x] Add role-assignment guard helper for admin-only changes
+- [x] Add `isResourceOwner(actor, ownerUserId)` helper for non-dashboard resource checks
 
-- Add `const DEV_AUTH_ROLE_KEY = 'trackdraw-dev-auth-role'`
-- Add `role` to the `AuthUser` type
-- Read the role from localStorage in `buildDevSession()`, falling back to `'user'` if absent
+Code anchors:
 
-To switch roles locally, run in the browser console and re-sign in:
+- [src/lib/server/authorization.ts](../../src/lib/server/authorization.ts)
 
-```js
-localStorage.setItem("trackdraw-dev-auth-role", "admin");
-```
+Done when:
 
-Done when: the dev shim returns a `role` field and switching roles via localStorage works in `npm run dev`.
+- all privileged dashboard access decisions go through the helper layer
+- generic ownership-aware routes can reuse helpers instead of inventing local rules
 
-### Phase 5: Bootstrap First Admin
+### Phase 3: Shared Dashboard Shell And Gated Users Module
 
-After Phase 1 is deployed, promote your account in each environment.
+Status: `done`
 
-**Local** (Wrangler local SQLite file):
+Objective:
 
-```bash
-wrangler d1 execute DB --local --env dev --command "UPDATE user SET role = 'admin' WHERE email = 'your@email.com';"
-```
+- ship the shared privileged `/dashboard` shell for moderators and admins
+- prove the capability model through one real admin-only module
 
-**Preview and production** — run in the Cloudflare D1 dashboard for the respective database:
+Concrete checklist:
 
-```sql
-UPDATE user SET role = 'admin' WHERE email = 'your@email.com';
-```
+- [x] Create `/dashboard` layout with trusted server-side route gating
+- [x] Gate shell access so `user` cannot enter
+- [x] Show only capability-allowed modules in the sidebar
+- [x] Implement `/dashboard` overview
+- [x] Implement `/dashboard/users`
+- [x] Add `/api/dashboard/users` read endpoint
+- [x] Add `/api/dashboard/users/[userId]` role update endpoint
+- [x] Restrict role assignment to admin
+- [x] Remove legacy `/admin` pages and `/api/admin` compatibility layer
 
-Done when: your account resolves to `admin` in each environment.
+Code anchors:
 
-### Build Phase Checklist
+- [src/app/dashboard/layout.tsx](../../src/app/dashboard/layout.tsx)
+- [src/app/dashboard/page.tsx](../../src/app/dashboard/page.tsx)
+- [src/app/dashboard/users/page.tsx](../../src/app/dashboard/users/page.tsx)
+- [src/app/api/dashboard/users/route.ts](../../src/app/api/dashboard/users/route.ts)
+- [src/app/api/dashboard/users/[userId]/route.ts](../../src/app/api/dashboard/users/[userId]/route.ts)
+- [src/components/dashboard/](../../src/components/dashboard)
 
-- [ ] Phase 1 complete: `role` column exists in all environments
-- [ ] Phase 2 complete: `getCurrentUserFromHeaders` returns `role` on every resolved user
-- [ ] Phase 3 complete: `hasCapability`, `isResourceOwner`, and `canTransitionGalleryState` are implemented
-- [ ] Phase 4 complete: dev auth shim exposes `role` and responds to `trackdraw-dev-auth-role`
-- [ ] Phase 5 complete: first admin promoted in each environment
+Done when:
+
+- moderators and admins share the same shell
+- admin-only modules stay server-protected
+- no `/admin` route or API compatibility layer remains
+
+### Phase 4: Audit Read-Side And Audit Dashboard Module
+
+Status: `done`
+
+Objective:
+
+- move audit from write-only plumbing to usable internal tooling
+
+Concrete checklist:
+
+- [x] Add audit read helper(s) in `src/lib/server/audit.ts`
+- [x] Define the first audit query shape and filters
+- [x] Keep the page server-rendered for now, so no `/api/dashboard/audit` endpoint is needed yet
+- [x] Replace the placeholder audit page with real event data
+- [x] Show at least role-change events first
+- [x] Gate access with `audit.read`
+
+Done when:
+
+- admin can open `/dashboard/audit` and inspect real audit events
+
+### Phase 5: Operational Readiness Across Environments
+
+Status: `done`
+
+Objective:
+
+- make the model usable beyond local code completion
+
+Concrete checklist:
+
+- [x] Document first-admin bootstrap
+- [x] Add dev-shim role support
+- [x] Verify role promotion flow in every active environment
+- [x] Verify moderator and admin dashboard access end-to-end in preview/runtime
+- [x] Confirm audit writes in preview/runtime
+- [x] Add any missing contributor runbook notes if commands or flows changed
+
+Code anchors:
+
+- [src/lib/auth-client.ts](../../src/lib/auth-client.ts)
+- [CONTRIBUTING.md](../../CONTRIBUTING.md)
+
+Done when:
+
+- the team can reliably test `user`, `moderator`, and `admin` flows in the environments they actually use
+
+Verification note:
+
+- manually verified in active development/runtime flows: ordinary `user` is blocked from `/dashboard`, elevated roles can enter the expected dashboard surfaces, role changes persist, and audit writes are visible in the audit module
 
 ### Note On Existing Routes
 
-The authorization helpers built here are ready to use but not yet wired into any routes, because the gallery feature that consumes them has not been built yet. When building the gallery, import from `src/lib/server/authorization.ts` and call `hasCapability` or `canTransitionGalleryState` in the relevant API handlers.
+The dashboard foundation is now wired into real routes and APIs for role management. The remaining missing work is no longer the shell itself, but the resource-specific moderation flows that should consume the same authorization helpers.
 
-Existing ownership checks in routes like [src/lib/server/projects.ts](../../src/lib/server/projects.ts) use `WHERE owner_user_id = ?` directly and do not need to change.
+Existing ownership checks in routes like [src/lib/server/projects.ts](../../src/lib/server/projects.ts) still use `WHERE owner_user_id = ?` directly and do not need to change until a resource genuinely needs non-owner platform authority.
+
+## Relationship To The Gallery PVA
+
+This document should stay upstream of the gallery PVA, not absorb it.
+
+Recommended division:
+
+- this PVA defines roles, capabilities, helper boundaries, dashboard gating, and privileged enforcement posture
+- the gallery PVA defines gallery states, report reasons, moderation policy, featuring rules, and user-visible workflow
+
+When implementing gallery work:
+
+- read the gallery PVA for product behavior
+- read this PVA for authorization and enforcement shape
+- do not resolve gallery product ambiguity inside this document
 
 ## Success Criteria
 
@@ -963,5 +1085,5 @@ This foundation is successful if:
 
 - feature teams stop needing one-off elevated-access logic
 - moderation and featuring actions feel principled rather than improvised
-- TrackDraw can add later public/admin features without redesigning authority from scratch
+- TrackDraw can add later public/dashboard features without redesigning authority from scratch
 - ordinary user ownership remains simple and predictable

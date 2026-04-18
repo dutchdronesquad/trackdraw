@@ -39,6 +39,11 @@ Labels used below:
 - [ ] Map and field overlay (`No account required`)
       Support venue plans, field maps, or imagery behind the editor canvas.
 
+## Shipped Foundation
+
+- [x] Account and authorization foundation (`Account-backed`)
+      The first account foundation is now in place, including sign-in, profile management, role-aware dashboard access, and internal role management.
+
 ## Follow-up
 
 - [ ] Embeddable shared views (`No account required`)
