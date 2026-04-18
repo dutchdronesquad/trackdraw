@@ -1,15 +1,17 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { createAuthClient } from "better-auth/react";
 import { magicLinkClient } from "better-auth/client/plugins";
+import { parseAccountRole, type AccountRole } from "@/lib/account-roles";
 
 type AuthUser = {
   id: string;
   email: string | null;
   name: string | null;
-  image: string | null;
+  image?: string | null;
+  role?: AccountRole;
 };
 
 type AuthSessionData = {
@@ -17,6 +19,12 @@ type AuthSessionData = {
     id: string;
   };
   user: AuthUser;
+};
+
+type SessionHookResult = {
+  data: AuthSessionData | null;
+  isPending: boolean;
+  error: Error | null;
 };
 
 type MagicLinkSignInOptions = {
@@ -34,9 +42,17 @@ type SignOutOptions = {
 
 const DEV_AUTH_SESSION_KEY = "trackdraw-dev-auth-session";
 const DEV_AUTH_PROFILES_KEY = "trackdraw-dev-auth-profiles";
+const DEV_AUTH_ROLE_KEY = "trackdraw-dev-auth-role";
 const DEV_AUTH_EVENT = "trackdraw-dev-auth-change";
 let devSessionCache: AuthSessionData | null = null;
 let devSessionCacheLoaded = false;
+let resolvedRoleCache: { userId: string; role: AccountRole } | null = null;
+let resolvedRoleRequest:
+  | {
+      userId: string;
+      promise: Promise<AccountRole>;
+    }
+  | null = null;
 
 type DevAuthProfileRecord = {
   id: string;
@@ -85,6 +101,14 @@ export function isDevAuthShimEnabled() {
   return process.env.NODE_ENV === "development";
 }
 
+function readDevAuthRole() {
+  if (typeof window === "undefined") {
+    return "user" satisfies AccountRole;
+  }
+
+  return parseAccountRole(window.localStorage.getItem(DEV_AUTH_ROLE_KEY));
+}
+
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
@@ -119,6 +143,7 @@ function buildDevSession(options: MagicLinkSignInOptions): AuthSessionData {
   const userId =
     existingProfile?.id || `dev-user-${normalizedEmail || "dev-user"}`;
   const name = options.name?.trim() || existingProfile?.name || null;
+  const role = readDevAuthRole();
 
   return {
     session: {
@@ -129,6 +154,7 @@ function buildDevSession(options: MagicLinkSignInOptions): AuthSessionData {
       email: normalizedEmail,
       name,
       image: null,
+      role,
     },
   };
 }
@@ -144,8 +170,19 @@ function readDevSession(): AuthSessionData | null {
 
   try {
     const rawValue = window.localStorage.getItem(DEV_AUTH_SESSION_KEY);
-    devSessionCache = rawValue
+    const parsedSession = rawValue
       ? (JSON.parse(rawValue) as AuthSessionData)
+      : null;
+    const nextRole = readDevAuthRole();
+
+    devSessionCache = parsedSession
+      ? {
+          ...parsedSession,
+          user: {
+            ...parsedSession.user,
+            role: nextRole,
+          },
+        }
       : null;
     devSessionCacheLoaded = true;
     return devSessionCache;
@@ -182,6 +219,44 @@ function subscribeToDevSession(callback: () => void) {
   };
 }
 
+async function resolveSessionRole(userId: string) {
+  if (resolvedRoleCache?.userId === userId) {
+    return resolvedRoleCache.role;
+  }
+
+  if (resolvedRoleRequest?.userId === userId) {
+    return resolvedRoleRequest.promise;
+  }
+
+  const promise = fetch("/api/account/session", {
+    credentials: "same-origin",
+    cache: "no-store",
+  })
+    .then(async (response) => {
+      const payload = (await response.json()) as {
+        ok: boolean;
+        user?: { role?: AccountRole } | null;
+        error?: string;
+      };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? "Failed to resolve account session");
+      }
+
+      const role = parseAccountRole(payload.user?.role);
+      resolvedRoleCache = { userId, role };
+      return role;
+    })
+    .finally(() => {
+      if (resolvedRoleRequest?.userId === userId) {
+        resolvedRoleRequest = null;
+      }
+    });
+
+  resolvedRoleRequest = { userId, promise };
+  return promise;
+}
+
 function useDevSession() {
   const data = useSyncExternalStore(
     subscribeToDevSession,
@@ -196,10 +271,87 @@ function useDevSession() {
   };
 }
 
+function useResolvedAuthSession(): SessionHookResult {
+  const authSession = betterAuthClient.useSession();
+  const [resolvedRole, setResolvedRole] = useState<AccountRole | null>(null);
+  const [rolePending, setRolePending] = useState(false);
+  const [roleError, setRoleError] = useState<Error | null>(null);
+
+  const userId = authSession.data?.user?.id ?? null;
+
+  useEffect(() => {
+    if (!userId) {
+      setResolvedRole(null);
+      setRolePending(false);
+      setRoleError(null);
+      return;
+    }
+
+    if (resolvedRoleCache?.userId === userId) {
+      setResolvedRole(resolvedRoleCache.role);
+      setRolePending(false);
+      setRoleError(null);
+      return;
+    }
+
+    const currentUserId = userId;
+    let cancelled = false;
+
+    async function resolveRole() {
+      setRolePending(true);
+      setRoleError(null);
+
+      try {
+        const role = await resolveSessionRole(currentUserId);
+
+        if (!cancelled) {
+          setResolvedRole(role);
+        }
+      } catch (caughtError) {
+        if (!cancelled) {
+          setRoleError(
+            caughtError instanceof Error
+              ? caughtError
+              : new Error("Failed to resolve account role")
+          );
+          setResolvedRole(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setRolePending(false);
+        }
+      }
+    }
+
+    void resolveRole();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const data =
+    authSession.data?.user && resolvedRole
+      ? {
+          ...authSession.data,
+          user: {
+            ...authSession.data.user,
+            role: resolvedRole,
+          },
+        }
+      : authSession.data;
+
+  return {
+    data,
+    isPending: authSession.isPending || rolePending,
+    error: authSession.error ?? roleError,
+  };
+}
+
 export const authClient = {
   useSession() {
     const devSession = useDevSession();
-    const authSession = betterAuthClient.useSession();
+    const authSession = useResolvedAuthSession();
     return isDevAuthShimEnabled() ? devSession : authSession;
   },
   signIn: {
@@ -277,6 +429,9 @@ export const authClient = {
       return;
     }
 
+    resolvedRoleCache = null;
+    resolvedRoleRequest = null;
+
     return betterAuthClient.signOut(options);
   },
   async deleteUser() {
@@ -290,6 +445,9 @@ export const authClient = {
       writeDevSession(null);
       return;
     }
+
+    resolvedRoleCache = null;
+    resolvedRoleRequest = null;
 
     const clientWithDeleteUser = betterAuthClient as typeof betterAuthClient & {
       deleteUser: (input?: { callbackURL?: string }) => Promise<unknown>;

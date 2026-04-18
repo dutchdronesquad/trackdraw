@@ -3,6 +3,7 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { passkey } from "@better-auth/passkey";
 import { magicLink } from "better-auth/plugins";
+import { parseAccountRole, type AccountRole } from "@/lib/account-roles";
 import { getSiteUrl } from "@/lib/seo";
 import {
   buildChangeEmailConfirmationEmail,
@@ -17,6 +18,11 @@ export type CurrentUser = {
   email: string | null;
   name: string | null;
   image: string | null;
+  role: AccountRole;
+};
+
+type UserRoleRow = {
+  role: string | null;
 };
 
 function getAuthSecret() {
@@ -264,10 +270,24 @@ export async function getCurrentUserFromHeaders(
     return null;
   }
 
+  const database = await getDatabase();
+  const userRole = await database
+    .prepare(
+      `
+        select role
+        from users
+        where id = ?
+        limit 1
+      `
+    )
+    .bind(session.user.id)
+    .first<UserRoleRow>();
+
   return {
     id: session.user.id,
     email: session.user.email ?? null,
     name: session.user.name ?? null,
     image: session.user.image ?? null,
+    role: parseAccountRole(userRole?.role),
   };
 }
