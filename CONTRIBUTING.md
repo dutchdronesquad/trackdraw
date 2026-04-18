@@ -77,6 +77,64 @@ Use `npm run dev` when you are only changing auth UI. Use `npm run preview` when
 
 For email template styling work on non-production environments, use `/dev/email-preview` to preview the current auth mail variants without sending a real message.
 
+## Roles and dashboard verification
+
+Use the auth/roles dashboard work in two modes:
+
+- `npm run dev` for fast UI work with the local dev auth shim
+- `npm run preview` for real Better Auth sessions and D1-backed authorization behavior
+
+### Local role switching in `npm run dev`
+
+The dev auth shim stores the simulated role in localStorage under `trackdraw-dev-auth-role`.
+
+Use the browser console:
+
+```js
+localStorage.setItem("trackdraw-dev-auth-role", "moderator");
+```
+
+Valid values are `user`, `moderator`, and `admin`.
+
+After changing it, refresh the page. The local dev session will resolve with that role on the next load.
+
+To clear the override:
+
+```js
+localStorage.removeItem("trackdraw-dev-auth-role");
+```
+
+### First admin bootstrap
+
+After the role migration has run, promote the first admin directly in D1.
+
+Local preview database:
+
+```bash
+wrangler d1 execute DB --local --env dev --command "UPDATE users SET role = 'admin' WHERE email = 'your@email.com';"
+```
+
+Remote development database:
+
+```bash
+wrangler d1 execute DB --remote --env dev --command "UPDATE users SET role = 'admin' WHERE email = 'your@email.com';"
+```
+
+Production database:
+
+Run the equivalent `UPDATE users ...` statement in the Cloudflare D1 dashboard or via Wrangler against production.
+
+### Authorization verification checklist
+
+For local preview or deployed runtime checks:
+
+1. Sign in with a normal `user` account and confirm `/dashboard` is not accessible.
+2. Promote an account to `moderator` and confirm `/dashboard` loads but admin-only modules such as `/dashboard/users` and `/dashboard/audit` stay inaccessible.
+3. Promote an account to `admin` and confirm `/dashboard/users` and `/dashboard/audit` both load.
+4. Change another user's role from `/dashboard/users` and confirm a new `account.role.changed` entry appears in `/dashboard/audit`.
+
+Use `npm run preview` when you need the real Better Auth and D1-backed version of this flow.
+
 ## Common commands
 
 ```bash

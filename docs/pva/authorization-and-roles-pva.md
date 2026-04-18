@@ -94,6 +94,32 @@ This should be handled as a reusable product foundation rather than as a narrow 
 
 The intended internal surface should be a shared `dashboard`, not an admin-only destination. Admins and moderators may both enter that shell, while routes, modules, and actions remain permission-gated.
 
+## Scope Boundary
+
+This PVA owns the authorization foundation only.
+
+It should define:
+
+- global roles
+- capability naming
+- trusted server-side enforcement boundaries
+- dashboard access posture
+- role assignment and audit expectations
+
+It should not become the delivery document for gallery product behavior itself.
+
+That means:
+
+- gallery states, reporting UX, moderation workflows, featuring policy, and gallery operator decisions belong in the gallery PVA
+- this document may name the authorization capabilities that gallery work will consume
+- this document may define the enforcement model those gallery routes must use
+- this document should not become the source of truth for gallery feature sequencing, UI behavior, or gallery-specific acceptance criteria
+
+Practical rule:
+
+- if a section answers `who may do this and where is that enforced?`, it belongs here
+- if a section answers `how should gallery moderation behave as a product workflow?`, it belongs in the gallery PVA
+
 ## Why Now
 
 The foundation is worth implementing now because multiple approved or likely product directions already depend on it:
@@ -246,14 +272,14 @@ Recommended first direction:
 Recommended first dashboard module direction:
 
 - overview
-- reports / moderation queue
 - users
 - audit
+- reports / moderation queue later, once gallery moderation needs a real internal surface
 
 Recommended first access posture:
 
-- `moderator` sees overview and moderation-relevant modules only
-- `admin` sees moderation modules plus broader platform modules like users and audit
+- `moderator` sees overview first, with moderation modules added only when a real moderation flow exists
+- `admin` sees broader platform modules like users and audit
 - `user` does not enter the privileged dashboard
 
 This keeps product language accurate:
@@ -266,41 +292,11 @@ This keeps product language accurate:
 
 The first implementation-worthy actions are likely:
 
-- owner unlist own gallery entry
-- moderator hide gallery entry
-- moderator feature gallery entry
-- moderator review gallery report
+- moderator enter the dashboard
+- admin assign or revoke elevated role
 - admin assign or revoke elevated role later
 
 If the team cannot define these actions clearly, the broader model is not ready yet.
-
-## Gallery-State-Aware Protected Actions
-
-The gallery PVA now assumes the following first state direction:
-
-- `link_only`
-- `gallery_visible`
-- `featured`
-- `hidden`
-
-The authorization model should be able to express who may move an entry between those states.
-
-Recommended first action direction:
-
-- owner may move own entry from `link_only` to `gallery_visible`
-- owner may move own entry from `gallery_visible` to `link_only`
-- moderator may move entry from `gallery_visible` to `featured`
-- moderator may move entry from `featured` back to `gallery_visible`
-- moderator may move entry from `gallery_visible` or `featured` to `hidden`
-- moderator may restore entry from `hidden` to `gallery_visible`
-
-Recommended first rule:
-
-- owner should not be able to self-feature
-- owner should not be able to unhide a moderator-hidden entry
-- moderation state should override normal owner gallery visibility controls while the moderation action remains active
-
-This keeps curation and moderation distinct from normal ownership actions.
 
 ## First Capability Matrix
 
@@ -349,8 +345,8 @@ Recommended first role mapping:
 
 Ownership should still gate user actions:
 
-- a normal user can only publish or unlist their own gallery entry
-- a normal user cannot affect another user's gallery state
+- a normal user can only perform ownership-scoped actions on their own resources
+- a normal user cannot affect another user's platform-controlled state
 
 ## Resource-Centric Action Matrix
 
@@ -391,63 +387,14 @@ Primary rule:
 Expected actions:
 
 - owner can create, update, revoke, and republish own share
-- owner can keep a share `link_only` or opt it into gallery visibility if eligible
+- owner can opt into additional product surfaces only when the relevant feature model allows it
 - moderator does not automatically gain authority to revoke someone else's share in v1
 - admin may need broader share intervention later, but that should be treated as a separate platform action
 
 Recommended first boundary:
 
-- gallery moderation acts on gallery visibility first
+- public-surface moderation should act on the public-surface representation first
 - share revocation remains a distinct and heavier action
-
-### Gallery Entry
-
-Primary rule:
-
-- gallery entries combine ownership actions with moderation and curation actions
-
-Expected owner actions:
-
-- publish own eligible share into gallery visibility
-- unlist own gallery entry back to `link_only`
-- update own gallery-facing metadata when not blocked by moderation state
-
-Expected moderator actions:
-
-- hide or unhide gallery entry
-- feature or unfeature gallery entry
-- review entry in response to reports
-
-Expected admin actions:
-
-- everything a moderator can do
-- broader intervention if TrackDraw later needs stronger public-surface control
-
-Recommended first boundary:
-
-- owner controls participation
-- moderator controls discoverability and curation
-- admin controls the authority model itself
-
-### Gallery Report
-
-Primary rule:
-
-- reports are open to ordinary signed-in users
-- resolution is moderator-or-admin only
-
-Expected actions:
-
-- signed-in user can create report
-- report author does not gain moderation authority over the entry
-- moderator can review, resolve, and close reports
-- moderator can take a related entry action such as hide or unfeature
-- admin can do everything a moderator can do
-
-Recommended first boundary:
-
-- report creation is lightweight
-- report resolution is a protected moderation action
 
 ### Account Role
 
@@ -475,30 +422,6 @@ Recommended first direction:
 - `dashboard.overview.read`
   - actor: moderator or admin
   - resource: dashboard shell
-- `gallery.entry.publish`
-  - actor: owner of eligible share
-  - resource: own gallery entry / share
-- `gallery.entry.unlist_own`
-  - actor: owner
-  - resource: own gallery entry
-- `gallery.entry.hide`
-  - actor: moderator or admin
-  - resource: any gallery entry
-- `gallery.entry.unhide`
-  - actor: moderator or admin
-  - resource: any hidden gallery entry
-- `gallery.entry.feature`
-  - actor: moderator or admin
-  - resource: any gallery-visible entry
-- `gallery.entry.unfeature`
-  - actor: moderator or admin
-  - resource: any featured entry
-- `gallery.report.create`
-  - actor: signed-in user
-  - resource: any gallery entry
-- `gallery.report.review`
-  - actor: moderator or admin
-  - resource: any gallery report
 - `moderation.reports.read`
   - actor: moderator or admin
   - resource: moderation queue
@@ -518,20 +441,8 @@ Recommended first direction:
   - actor: admin
   - resource: dashboard audit module
 
-This is not a complete future matrix for the whole product. It is the first concrete slice that makes the current gallery and moderation decisions enforceable.
+This is not a complete future matrix for the whole product. Feature-specific matrices such as gallery state transitions and report handling should stay in their own PVAs and consume this capability layer rather than redefining it here.
 
-## Gallery Moderation And Report Handling
-
-The gallery PVA defines the following minimum report reasons:
-
-- `inappropriate`
-- `spam`
-- `copyright / stolen`
-- `broken / low quality`
-
-The authorization model should support at least these operational actions:
-
-- user creates a report on a gallery entry
 - moderator reviews the report
 - moderator leaves the entry visible
 - moderator hides the entry
@@ -662,13 +573,19 @@ Once the role migration has run, promoting the first admin is a direct database 
 **Production**: run the following SQL via the Cloudflare D1 dashboard.
 
 ```sql
-UPDATE user SET role = 'admin' WHERE email = 'your@email.com';
+UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
 ```
 
-**Preview** (`npm run preview`, uses remote `trackdraw-dev`):
+**Local preview** (`npm run preview`, uses local Wrangler D1 state):
 
 ```bash
-wrangler d1 execute DB --remote --env dev --command "UPDATE user SET role = 'admin' WHERE email = 'your@email.com';"
+wrangler d1 execute DB --local --env dev --command "UPDATE users SET role = 'admin' WHERE email = 'your@email.com';"
+```
+
+**Remote development**:
+
+```bash
+wrangler d1 execute DB --remote --env dev --command "UPDATE users SET role = 'admin' WHERE email = 'your@email.com';"
 ```
 
 All subsequent admin or moderator promotions go through the normal role assignment workflow once a dashboard-facing role-management tool exists.
@@ -974,144 +891,193 @@ Recommended approach: extend the shim with a separate localStorage key for the s
 
 This allows switching between roles during development without touching D1, and lets you test both normal user flows and dashboard-role flows in `npm run dev`.
 
-For `npm run preview`, the real Better-Auth login is used against the remote `trackdraw-dev` D1 database. Use the Wrangler command in the bootstrap section above to promote an account to admin there.
+For `npm run preview`, the real Better-Auth login is used with local Wrangler/OpenNext preview and local D1 state. Use the local preview bootstrap command above when you need admin access there. Use the remote command only when validating against the shared development environment.
 
 ### Existing Authorization Pattern
 
 Ownership checks today are done via SQL `WHERE owner_user_id = ?` in query helpers such as `getProjectForUser()` in [src/lib/server/projects.ts](../../src/lib/server/projects.ts). This pattern should remain for ownership checks. Role-based checks should go through the new authorization helpers, not inline SQL conditions.
 
-## Build Phases
+## Execution Phases
 
-### Phase 1: Database Migration
+This section is the concrete implementation checklist. Each phase has a status, explicit deliverables, and a strict done state so the PVA can double as an execution board.
 
-Create `migrations/0004_user_roles.sql`:
+### Phase Checklist
 
-```sql
-ALTER TABLE user ADD COLUMN role TEXT NOT NULL DEFAULT 'user';
-```
+- [x] Phase 1: role persistence and auth enrichment
+- [x] Phase 2: authorization helper layer
+- [x] Phase 3: shared dashboard shell and gated users module
+- [x] Phase 4: audit read-side and audit dashboard module
+- [x] Phase 5: operational readiness across environments
 
-Run against each environment:
+Deferred for now:
 
-```bash
-npm run migrate:local          # local
-npm run migrate:up:dev         # remote trackdraw-dev
-npm run migrate:up:production  # production
-```
+- reports queue and moderation workflow in the dashboard
+- gallery capability enforcement on real resources
 
-Done when: the `role` column exists in all environments and all existing accounts have `user`.
+### Phase 1: Role Persistence And Auth Enrichment
 
-### Phase 2: Extend CurrentUser With Role
+Status: `done`
 
-In [src/lib/server/auth.ts](../../src/lib/server/auth.ts), extend the `CurrentUser` type:
+Objective:
 
-```ts
-export type AccountRole = "user" | "moderator" | "admin";
+- persist one global account role per user
+- expose the resolved role on trusted server-side user resolution
 
-export type CurrentUser = {
-  id: string;
-  email: string | null;
-  name: string | null;
-  image: string | null;
-  role: AccountRole;
-};
-```
+Concrete checklist:
 
-Update `getCurrentUserFromHeaders()` to query the role from D1 after resolving the session:
+- [x] Add a non-nullable `role` field with default `user`
+- [x] Define a shared `AccountRole` type
+- [x] Parse unknown stored values safely back to `user`
+- [x] Extend `CurrentUser` with `role`
+- [x] Return `role` from `getCurrentUserFromHeaders()`
+- [x] Expose session role data to the client-facing account session endpoint
 
-```ts
-const db = await getDatabase();
-const record = await db
-  .prepare("SELECT role FROM user WHERE id = ?")
-  .bind(session.user.id)
-  .first<{ role: AccountRole }>();
+Code anchors:
 
-return {
-  id: session.user.id,
-  email: session.user.email ?? null,
-  name: session.user.name ?? null,
-  image: session.user.image ?? null,
-  role: record?.role ?? "user",
-};
-```
+- [migrations/0004_user_roles_and_audit_events.sql](../../migrations/0004_user_roles_and_audit_events.sql)
+- [src/lib/account-roles.ts](../../src/lib/account-roles.ts)
+- [src/lib/server/auth.ts](../../src/lib/server/auth.ts)
+- [src/app/api/account/session/route.ts](../../src/app/api/account/session/route.ts)
 
-Done when: every caller of `getCurrentUserFromHeaders` receives a `role` field.
+Done when:
 
-### Phase 3: Authorization Helper Layer
+- every authenticated server request resolves a trusted `role`
+- every account has exactly one persisted role
 
-Create `src/lib/server/authorization.ts` with the core helpers:
+### Phase 2: Authorization Helper Layer
 
-- `hasCapability(actor, capability)` — checks whether the actor's role grants the given capability
-- `isResourceOwner(actor, ownerUserId)` — checks whether the actor owns the resource
-- `canTransitionGalleryState(actor, entry, nextState)` — encodes the full gallery state-transition rules from the PVA
-- `canAccessDashboard(actor)` — checks whether the actor has any privileged dashboard entry capability
-- `getVisibleDashboardModules(actor)` — derives which dashboard modules should be visible for the actor
+Status: `done`
 
-The role-to-capability mapping should follow the First Capability Matrix defined above.
+Objective:
 
-Done when: helpers are importable from any API route or server action.
+- centralize role-to-capability decisions and dashboard visibility rules
 
-### Phase 4: Dev Auth Shim Role Support
+Concrete checklist:
 
-In [src/lib/auth-client.ts](../../src/lib/auth-client.ts):
+- [x] Add a central capability union
+- [x] Add role-to-capability mapping
+- [x] Add `hasCapability(role, capability)`
+- [x] Add `canAccessDashboard(role)`
+- [x] Add `getVisibleDashboardModules(role)`
+- [x] Add role-assignment guard helper for admin-only changes
+- [x] Add `isResourceOwner(actor, ownerUserId)` helper for non-dashboard resource checks
 
-- Add `const DEV_AUTH_ROLE_KEY = 'trackdraw-dev-auth-role'`
-- Add `role` to the `AuthUser` type
-- Read the role from localStorage in `buildDevSession()`, falling back to `'user'` if absent
+Code anchors:
 
-To switch roles locally, run in the browser console and re-sign in:
+- [src/lib/server/authorization.ts](../../src/lib/server/authorization.ts)
 
-```js
-localStorage.setItem("trackdraw-dev-auth-role", "admin");
-```
+Done when:
 
-Done when: the dev shim returns a `role` field and switching roles via localStorage works in `npm run dev`.
+- all privileged dashboard access decisions go through the helper layer
+- generic ownership-aware routes can reuse helpers instead of inventing local rules
 
-### Phase 5: Dashboard Shell And Route Gating
+### Phase 3: Shared Dashboard Shell And Gated Users Module
 
-Create the shared internal shell as `/dashboard` rather than treating the whole surface as admin-only.
+Status: `done`
 
-Recommended first direction:
+Objective:
 
-- `user` does not enter `/dashboard`
-- `moderator` and `admin` may enter `/dashboard`
-- the overview route requires `dashboard.overview.read`
-- moderation modules require moderation capabilities
-- user-management and audit modules remain admin-only
+- ship the shared privileged `/dashboard` shell for moderators and admins
+- prove the capability model through one real admin-only module
 
-Done when: route access, sidebar visibility, and page actions all derive from capabilities rather than hard-coded role-name UI checks.
+Concrete checklist:
 
-### Phase 6: Bootstrap First Admin
+- [x] Create `/dashboard` layout with trusted server-side route gating
+- [x] Gate shell access so `user` cannot enter
+- [x] Show only capability-allowed modules in the sidebar
+- [x] Implement `/dashboard` overview
+- [x] Implement `/dashboard/users`
+- [x] Add `/api/dashboard/users` read endpoint
+- [x] Add `/api/dashboard/users/[userId]` role update endpoint
+- [x] Restrict role assignment to admin
+- [x] Remove legacy `/admin` pages and `/api/admin` compatibility layer
 
-After Phase 1 is deployed, promote your account in each environment.
+Code anchors:
 
-**Local** (Wrangler local SQLite file):
+- [src/app/dashboard/layout.tsx](../../src/app/dashboard/layout.tsx)
+- [src/app/dashboard/page.tsx](../../src/app/dashboard/page.tsx)
+- [src/app/dashboard/users/page.tsx](../../src/app/dashboard/users/page.tsx)
+- [src/app/api/dashboard/users/route.ts](../../src/app/api/dashboard/users/route.ts)
+- [src/app/api/dashboard/users/[userId]/route.ts](../../src/app/api/dashboard/users/[userId]/route.ts)
+- [src/components/dashboard/](../../src/components/dashboard)
 
-```bash
-wrangler d1 execute DB --local --env dev --command "UPDATE user SET role = 'admin' WHERE email = 'your@email.com';"
-```
+Done when:
 
-**Preview and production** — run in the Cloudflare D1 dashboard for the respective database:
+- moderators and admins share the same shell
+- admin-only modules stay server-protected
+- no `/admin` route or API compatibility layer remains
 
-```sql
-UPDATE user SET role = 'admin' WHERE email = 'your@email.com';
-```
+### Phase 4: Audit Read-Side And Audit Dashboard Module
 
-Done when: your account resolves to `admin` in each environment.
+Status: `done`
 
-### Build Phase Checklist
+Objective:
 
-- [ ] Phase 1 complete: `role` column exists in all environments
-- [ ] Phase 2 complete: `getCurrentUserFromHeaders` returns `role` on every resolved user
-- [ ] Phase 3 complete: `hasCapability`, `isResourceOwner`, `canTransitionGalleryState`, and dashboard visibility helpers are implemented
-- [ ] Phase 4 complete: dev auth shim exposes `role` and responds to `trackdraw-dev-auth-role`
-- [ ] Phase 5 complete: `/dashboard` access and modules are capability-gated
-- [ ] Phase 6 complete: first admin promoted in each environment
+- move audit from write-only plumbing to usable internal tooling
+
+Concrete checklist:
+
+- [x] Add audit read helper(s) in `src/lib/server/audit.ts`
+- [x] Define the first audit query shape and filters
+- [x] Keep the page server-rendered for now, so no `/api/dashboard/audit` endpoint is needed yet
+- [x] Replace the placeholder audit page with real event data
+- [x] Show at least role-change events first
+- [x] Gate access with `audit.read`
+
+Done when:
+
+- admin can open `/dashboard/audit` and inspect real audit events
+
+### Phase 5: Operational Readiness Across Environments
+
+Status: `done`
+
+Objective:
+
+- make the model usable beyond local code completion
+
+Concrete checklist:
+
+- [x] Document first-admin bootstrap
+- [x] Add dev-shim role support
+- [x] Verify role promotion flow in every active environment
+- [x] Verify moderator and admin dashboard access end-to-end in preview/runtime
+- [x] Confirm audit writes in preview/runtime
+- [x] Add any missing contributor runbook notes if commands or flows changed
+
+Code anchors:
+
+- [src/lib/auth-client.ts](../../src/lib/auth-client.ts)
+- [CONTRIBUTING.md](../../CONTRIBUTING.md)
+
+Done when:
+
+- the team can reliably test `user`, `moderator`, and `admin` flows in the environments they actually use
+
+Verification note:
+
+- manually verified in active development/runtime flows: ordinary `user` is blocked from `/dashboard`, elevated roles can enter the expected dashboard surfaces, role changes persist, and audit writes are visible in the audit module
 
 ### Note On Existing Routes
 
-The authorization helpers built here are ready to use but not yet wired into any routes, because the gallery feature that consumes them has not been built yet. When building the gallery, import from `src/lib/server/authorization.ts` and call `hasCapability` or `canTransitionGalleryState` in the relevant API handlers.
+The dashboard foundation is now wired into real routes and APIs for role management. The remaining missing work is no longer the shell itself, but the resource-specific moderation flows that should consume the same authorization helpers.
 
-Existing ownership checks in routes like [src/lib/server/projects.ts](../../src/lib/server/projects.ts) use `WHERE owner_user_id = ?` directly and do not need to change.
+Existing ownership checks in routes like [src/lib/server/projects.ts](../../src/lib/server/projects.ts) still use `WHERE owner_user_id = ?` directly and do not need to change until a resource genuinely needs non-owner platform authority.
+
+## Relationship To The Gallery PVA
+
+This document should stay upstream of the gallery PVA, not absorb it.
+
+Recommended division:
+
+- this PVA defines roles, capabilities, helper boundaries, dashboard gating, and privileged enforcement posture
+- the gallery PVA defines gallery states, report reasons, moderation policy, featuring rules, and user-visible workflow
+
+When implementing gallery work:
+
+- read the gallery PVA for product behavior
+- read this PVA for authorization and enforcement shape
+- do not resolve gallery product ambiguity inside this document
 
 ## Success Criteria
 
