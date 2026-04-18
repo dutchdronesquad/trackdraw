@@ -1,8 +1,17 @@
-# AR Mode PVA
+# AR Mode Product Shape
 
 Date: April 16, 2026
 
-Status: proposed
+Status: proposed — no build commitment yet. See also `ar-mode-evaluation.md` for the technical feasibility analysis.
+
+## Decision Summary
+
+Recommended decision:
+
+- do not build yet
+- treat Android-first WebXR as the first credible prototype path if build is approved
+- full-track venue projection as the primary use case
+- Phase 4 (decide whether to build or keep parked) is the current position
 
 ## Delivery Checklist
 
@@ -12,18 +21,19 @@ Status: proposed
 - [ ] Phase 3: define iOS fallback path
 - [ ] Phase 4: decide whether to build or keep parked
 
-## Purpose
+## Go / No-Go Criteria
 
-This document defines the intended product shape for `AR mode`.
+Go for implementation if:
 
-TrackDraw already has a meaningful 3D model of the track through:
+- the team wants to invest in an Android-first AR prototype
+- full-track venue projection is considered worth the alignment UX complexity
+- AR Quick Look or equivalent is an acceptable iOS fallback
 
-- obstacle geometry
-- route geometry
-- scale-aware scene logic
-- in-app 3D review
+No-go or keep parked if:
 
-That makes AR plausible, but not automatic. The product still needs a concrete answer to what AR is actually for.
+- AR remains nice-to-have without clear demand
+- the placement and anchoring experience seems too fragile
+- the team prefers to strengthen 3D review before adding AR
 
 ## Product Goal
 
@@ -55,7 +65,7 @@ The strongest first direction is:
 
 The primary product promise should be:
 
-- “see the whole planned layout in the real venue”
+- "see the whole planned layout in the real venue"
 
 That is stronger than a section-only preview and better aligned with TrackDraw's planning workflow.
 
@@ -74,7 +84,7 @@ That keeps the product honest about platform reality.
 
 ### 3. AR Is A Separate Review Surface
 
-AR should not be treated as “the normal 3D preview, but floating in camera view”.
+AR should not be treated as "the normal 3D preview, but floating in camera view".
 
 It needs:
 
@@ -90,7 +100,7 @@ AR could help with a few real problems:
 2. validate rough orientation and spacing against real walls, boundaries, or landmarks
 3. spot obvious layout problems earlier before crew setup starts
 
-The first version should solve those “fit and orientation” questions before promising fine-grained precision.
+The first version should solve those "fit and orientation" questions before promising fine-grained precision.
 
 ## Recommended First-Version Rules
 
@@ -202,8 +212,6 @@ Avoid copy that overpromises:
 - `Survey venue`
 - `Auto-align track`
 
-Those phrases imply precision the first version likely cannot guarantee.
-
 ## Data And Scene Direction
 
 The first AR model should reuse TrackDraw's existing geometry and route knowledge, but not the whole editor scene unchanged.
@@ -254,8 +262,6 @@ Recommended first boundary:
 - no AR-specific share route
 - no AR-backed persistence model beyond the ordinary project
 
-This keeps the work focused on scene reuse, platform support, and placement UX.
-
 ## Out Of Scope For The First Version
 
 Keep these out of scope:
@@ -272,66 +278,6 @@ Keep these out of scope:
 - iOS and Android may diverge enough that the product feels uneven
 - anchoring and alignment may be harder than the rendering itself
 - AR may distract from stronger, lower-risk review tools if the prototype does not prove useful quickly
-
-## Recommended Delivery Sequence
-
-### Phase 0: Lock the AR product goal
-
-Start:
-
-- AR exists only as a broad research idea
-
-Done:
-
-- full-track venue projection is the primary goal
-- TrackDraw treats AR as a review surface, not an editor mode
-- Android-first prototype direction is explicit
-
-### Phase 1: Define the smallest credible Android prototype
-
-Start:
-
-- product goal is fixed
-
-Done:
-
-- Android WebXR prototype scope is concrete
-- AR-ready scene contents are defined
-- success criteria for usefulness are explicit
-
-### Phase 2: Define anchoring and alignment flow
-
-Start:
-
-- scene scope is clear enough
-
-Done:
-
-- origin placement model is explicit
-- rotation and scale flow are explicit
-- TrackDraw can test whether alignment is good enough to be useful
-
-### Phase 3: Define iOS fallback path
-
-Start:
-
-- Android path is believable enough to compare against
-
-Done:
-
-- iOS fallback is explicitly chosen or rejected
-- parity expectations are documented honestly
-
-### Phase 4: Decide whether to build or keep parked
-
-Start:
-
-- the product shape is specific enough to judge honestly
-
-Done:
-
-- TrackDraw either commits to an Android-first AR prototype
-- or keeps AR parked until demand and platform confidence justify it
 
 ## Smallest Credible V1
 

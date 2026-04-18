@@ -1,8 +1,8 @@
-# Real-Time Collaboration PVA
+# Real-Time Collaboration Product Shape
 
 Date: April 16, 2026
 
-Status: proposed
+Status: proposed — no build commitment yet. See also `real-time-collaboration-evaluation.md` for the technical architecture analysis.
 
 ## Decision Summary
 
@@ -11,8 +11,6 @@ Recommended decision:
 - approve collaboration only as a host-review product direction
 - do not approve true co-editing
 - do not build until the team explicitly wants a live review surface badly enough to pay for the room/session architecture
-
-This document is intended to make that product call more concrete, not to default TrackDraw into building collaboration.
 
 ## Approval Recommendation
 
@@ -54,24 +52,6 @@ No-go or keep parked if:
 - the team really wants co-editing rather than host review
 - live review is still nice-to-have rather than clearly valuable
 - the room/session model still feels like too much product surface for the current roadmap
-
-## Purpose
-
-This document defines the intended product shape for `Real-time collaboration`.
-
-TrackDraw already has:
-
-- local-first editing
-- account-backed project continuity
-- published read-only shares
-
-Those are strong foundations for solo design and handoff. They are not yet a shared editing model.
-
-This document exists to turn collaboration from a broad research idea into a more concrete product decision:
-
-- what kind of collaboration TrackDraw should support first
-- what should remain out of scope
-- whether a first live session feature is justified at all
 
 ## Product Goal
 
@@ -136,7 +116,7 @@ Presence can support the experience through:
 - where the host is looking
 - maybe guest cursors or focus states later
 
-But the product value should come from a review room, not from “someone else is online”.
+But the product value should come from a review room, not from "someone else is online".
 
 ## Problem Framing
 
@@ -278,8 +258,6 @@ Avoid first-pass copy that overpromises:
 - `Collaborative editing`
 - `Shared canvas`
 
-Those imply a stronger document model than the first release actually supports.
-
 ## Data Model Direction
 
 The first collaboration model should introduce a room/session concept separate from projects and shares.
@@ -363,68 +341,6 @@ Keep these out of scope:
 - live review may still require more architecture work than expected if document fan-out is tightly coupled to the current store
 - a weak presence-only experience may under-deliver and feel like demo-ware
 - guests may expect editing power if the product language is too loose
-
-## Recommended Delivery Sequence
-
-### Phase 0: Lock the collaboration model
-
-Start:
-
-- collaboration exists only as a broad roadmap idea
-
-Done:
-
-- TrackDraw chooses host review as the first credible collaboration slice
-- account-only room direction is explicit
-- co-editing is explicitly deferred
-
-### Phase 1: Define room, role, and session boundaries
-
-Start:
-
-- host review is chosen directionally
-
-Done:
-
-- room model is concrete
-- host and guest permissions are explicit
-- relationship between project, room, and share is clear
-
-### Phase 2: Define the smallest credible live review slice
-
-Start:
-
-- room and role model are clear
-
-Done:
-
-- entry points are defined
-- join flow is defined
-- first shared state scope is defined
-- first live review UX is mockable or implementable
-
-### Phase 3: Define persistence and undo behavior
-
-Start:
-
-- room UX is concrete enough
-
-Done:
-
-- host-only document authority is explicit
-- undo expectations are explicit
-- room lifecycle and session-end behavior are explicit
-
-### Phase 4: Decide whether to build host review or keep parked
-
-Start:
-
-- the product shape is specific enough to judge honestly
-
-Done:
-
-- TrackDraw either commits to a host-review build
-- or keeps collaboration parked until the architecture and demand justify it
 
 ## First Engineering Slice
 

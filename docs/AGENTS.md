@@ -8,48 +8,39 @@ Do not place credentials, secret names with values, DNS configuration details, o
 
 ### `pva/`
 
-Product Vision and Action documents. Each PVA defines the intended product shape for a specific feature or foundation area before implementation begins.
+Plan of Action documents. Each PVA is a concrete implementation plan for a specific feature. A PVA is approved before build starts and stays lean: it covers what was decided, go/no-go criteria, a codebase anchor with relevant files and technical model, and a phased build checklist.
 
-A PVA covers:
-
-- the decision being made and whether it is approved
-- the product model: what the feature is, what it is not, and why
-- go/no-go criteria
-- a phased delivery checklist for both product-definition and implementation work
-
-PVAs are living documents. Update the status and check off phases as decisions are made and work progresses.
+A PVA is not a product evaluation or research document. Product-shape analysis, UX direction, and trade-off comparisons belong in `research/`.
 
 Current PVAs:
 
 - `authorization-and-roles-pva.md` — account roles, ownership, capability-based authorization
 - `published-gallery-pva.md` — opt-in gallery discovery surface built on top of published shares
-- `live-race-overlay-pva.md` — real-time race overlay feature
-- `real-time-collaboration-pva.md` — collaborative editing
-- `ar-mode-pva.md` — augmented reality field overlay
-- `map-field-overlay-pva.md` — map-based field placement
-- `accounts-project-sync-pva.md` — account-backed project sync
-- `obstacle-presets-pva.md` — obstacle preset library
-- `starter-layouts-pva.md` — starter layout templates
-- `layout-acceleration-pva.md` — layout acceleration tools
-- `snapshots-layout-variants-design.md` — layout snapshot and variant design notes
-- `project-manager-reset-notes.md` — project manager reset behavior notes
+- `live-race-overlay-pva.md` — real-time race overlay integration with `rh-stream-overlays`
+- `map-field-overlay-pva.md` — map-based field placement with hybrid asset storage
 
 ### `research/`
 
-Exploratory and evaluation documents written before or during product decisions. Research documents inform PVAs but are not themselves decision records.
+Exploratory and evaluation documents written before or during product decisions. Research documents inform PVAs but are not themselves decision records or build plans.
 
 A research document may cover:
 
 - technology evaluation
+- product-shape analysis and trade-off comparisons
 - feasibility analysis
-- trade-off comparisons
 - prior-art review
+- shipped product direction notes
 
 Current research documents:
 
 - `published-gallery-evaluation.md` — gallery concept evaluation
-- `real-time-collaboration-evaluation.md` — collaboration approach evaluation
-- `ar-mode-evaluation.md` — AR mode feasibility
+- `real-time-collaboration-evaluation.md` — collaboration architecture evaluation
+- `real-time-collaboration-product-shape.md` — host-review product model and go/no-go criteria
+- `ar-mode-evaluation.md` — AR mode technical feasibility
+- `ar-mode-product-shape.md` — AR product model and go/no-go criteria
+- `live-race-overlay-evaluation.md` — race overlay product model and technical analysis
+- `map-field-overlay-evaluation.md` — field overlay product model and UX analysis
+- `accounts-project-sync.md` — shipped product direction for accounts and project sync
 
 ### `deployment/`
 
