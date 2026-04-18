@@ -118,56 +118,7 @@ Example URL shape used by the site code:
 
 If magic-link emails arrive in spam, treat that as a deliverability problem rather than a template problem.
 
-Transactional email (magic links, verification, email-change) is sent from `emails.trackdraw.app`. The root domain `trackdraw.app` is reserved for regular mailbox use (e.g. `info@trackdraw.app`). Keeping these on separate subdomains avoids SPF/DKIM/DMARC conflicts.
-
-For `emails.trackdraw.app`, verify all of the following:
-
-- `PLUNK_FROM_EMAIL` uses a verified sender or verified sending domain in Plunk (e.g. `noreply@emails.trackdraw.app`)
-- `SPF` exists for `emails.trackdraw.app` and passes for the sending provider
-- `DKIM` records from Plunk are present and pass on `emails.trackdraw.app`
-- `DMARC` exists for `_dmarc.trackdraw.app` (covers all subdomains via DMARC tree walk; a separate `_dmarc.emails.trackdraw.app` record is only needed for a subdomain-specific policy)
-- `PLUNK_REPLY_TO_EMAIL` is set to `info@trackdraw.app` so replies reach a real mailbox
-
-Recommended DMARC starting point (place on `_dmarc.trackdraw.app`; covers all subdomains including `emails.trackdraw.app`):
-
-```txt
-v=DMARC1; p=none; rua=mailto:info@trackdraw.app; adkim=s; aspf=s
-```
-
-Notes:
-
-- there must be only one SPF record per subdomain; do not add Plunk's include to the root domain
-- Plunk-provided DKIM records must be copied exactly to `emails.trackdraw.app`
-- Cloudflare mail-related `CNAME`, `TXT`, and `MX` records should stay `DNS only`
-- passing SPF, DKIM, and DMARC does not guarantee inbox placement immediately; new subdomains can still have low reputation for a while
-
-## Sender logo branding
-
-If you want mail clients such as Spark or Apple Mail to show a branded sender logo, publish a BIMI-compatible logo and add a BIMI DNS record. The repository exposes a dedicated square logo at:
-
-- `https://trackdraw.app/.well-known/trackdraw-bimi.svg`
-
-Recommended setup for `emails.trackdraw.app`:
-
-- make sure `SPF`, `DKIM`, and `DMARC` all pass on `emails.trackdraw.app` first
-- publish a BIMI TXT record on `default._bimi.emails.trackdraw.app`
-
-Example BIMI record:
-
-```txt
-v=BIMI1; l=https://trackdraw.app/.well-known/trackdraw-bimi.svg; a=
-```
-
-Notes:
-
-- some mailbox providers and clients will not show the logo without stronger DMARC enforcement such as `p=quarantine` or `p=reject`
-- some providers also require a Verified Mark Certificate before they render the logo
-- Spark can still choose its own sender avatar source, so BIMI improves the odds but does not guarantee the same result everywhere
-
-When validating auth email delivery, test both:
-
-- whether the message is delivered at all
-- whether it lands in the inbox instead of spam in Gmail and Outlook
+Transactional email uses a dedicated sending subdomain separate from the root domain to avoid SPF/DKIM/DMARC conflicts. DNS and sender configuration are managed outside this repository.
 
 ## Migrations
 
@@ -234,13 +185,11 @@ The Worker runs a daily cron cleanup and removes:
 - revoked shares
 - shares that have been expired for more than 30 days
 
-The current cron runs daily at `03:17 UTC`.
-
-To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
+The cron schedule is configured in `wrangler.jsonc`. To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
 
 ```bash
 npx wrangler dev --env dev --test-scheduled
-curl "http://localhost:8787/__scheduled?cron=17+3+*+*+*"
+curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
 ```
 
 Cloudflare documents `--test-scheduled` and the local `__scheduled` route for scheduled handler testing:

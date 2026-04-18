@@ -2,7 +2,7 @@
 
 Date: April 18, 2026
 
-Status: proposed
+Status: approved
 
 ## Decision Summary
 
@@ -33,11 +33,11 @@ TrackDraw should not approve this work yet if the team expects any of these in v
 
 ## Delivery Checklist
 
-- [ ] Phase 0: lock the conceptual model
-- [ ] Phase 1: define roles, ownership, and capabilities
-- [ ] Phase 2: define first protected actions and enforcement rules
-- [ ] Phase 3: define storage and role-assignment approach
-- [ ] Phase 4: decide whether to implement now or later
+- [x] Phase 0: lock the conceptual model
+- [x] Phase 1: define roles, ownership, and capabilities
+- [x] Phase 2: define first protected actions and enforcement rules
+- [x] Phase 3: define storage and role-assignment approach
+- [x] Phase 4: decide whether to implement now or later — **implement now**
 
 ## Go / No-Go Criteria
 
@@ -487,13 +487,19 @@ Why this is the right first storage model:
 
 This should be treated as a deliberate first model, not as a throwaway shortcut.
 
+### Schema And Migration Behavior
+
+The role field should be non-nullable with a default of `user`.
+
+- do not use nullable to represent the default role — that creates two ways to express the same state
+- all existing accounts receive `user` as their role when the migration runs
+- the allowlisted bootstrap account receives `admin` in the same migration or a follow-up migration immediately after
+
+This keeps the field simple: every account always has exactly one role.
+
 ## Temporary Bridge Versus Real Product Model
 
-TrackDraw may still choose to use a temporary implementation bridge in early development, but the distinction should stay explicit.
-
-Acceptable temporary bridge:
-
-- a server-side allowlist of trusted emails or user IDs that resolves to `moderator` or `admin`
+Because the role field is added via a migration from the start, there is no need for a temporary allowlist or environment variable bridge in production.
 
 Not acceptable as the long-term product model:
 
@@ -501,13 +507,7 @@ Not acceptable as the long-term product model:
 - client-side role assumptions
 - feature-specific hidden allowlists spread through multiple routes
 
-If a temporary allowlist is used, it should behave as a bootstrap path into the same authorization helpers that will later read persisted account roles.
-
-That keeps the system evolvable:
-
-- implementation bridge now
-- durable role storage later
-- same permission checks either way
+If a bridge is needed during local development before the migration is applied, it should behave as a short-lived local shortcut only — never deployed to production.
 
 ## Role Assignment Direction
 
@@ -547,29 +547,23 @@ The important product rule is not the UI polish. The important rule is that assi
 
 ### First Admin Bootstrap
 
-The workflow above assumes an existing admin. The first admin cannot be assigned through the same workflow.
+Once the role migration has run, promoting the first admin is a direct database operation.
 
-For TrackDraw specifically, accounts already exist in production before role storage is implemented. The bootstrap question is therefore not who gets the role at first deployment, but how the first admin is deliberately identified among existing accounts.
+**Production**: run the following SQL via the Cloudflare D1 dashboard.
 
-Recommended bootstrap approach:
+```sql
+UPDATE user SET role = 'admin' WHERE email = 'your@email.com';
+```
 
-- identify the target account by user ID or email before implementing role storage
-- add that identifier to the server-side allowlist described in the temporary bridge section
-- the server resolves the allowlisted account to `admin` using the same authorization helpers that will later read persisted roles
-- once role storage is in place, run a one-time migration that writes the `admin` role to the account record for each allowlisted account
-- remove the allowlist entry after the persisted role is confirmed
+**Preview** (`npm run preview`, uses remote `trackdraw-dev`):
 
-This means the allowlist serves a dual purpose: it is both the temporary bridge for early development and the bootstrap mechanism for the first real admin promotion.
+```bash
+wrangler d1 execute DB --remote --env dev --command "UPDATE user SET role = 'admin' WHERE email = 'your@email.com';"
+```
 
-Recommended first policy:
+All subsequent admin or moderator promotions go through the normal role assignment workflow once an admin-facing tool exists.
 
-- the allowlist should name accounts by stable identifier, not by a runtime-resolvable property such as account creation order
-- the bootstrap path should not remain active after the persisted role is confirmed
-- the system should not silently promote accounts based on environment variables in production without an explicit record of why
-
-Once the first admin exists, all subsequent admin promotions follow the normal role assignment workflow: an existing admin assigns the `admin` role to another account through the standard server-side path.
-
-This is a deployment concern, not a product feature, but it should be part of the first implementation plan rather than left as an afterthought.
+This is a one-time operational step, not a product feature.
 
 ## Auditability Recommendation
 
@@ -676,11 +670,11 @@ Mitigation:
 
 ### Top-Level Checklist
 
-- [ ] Phase 0 complete: ownership, role, and capability are clearly separated
-- [ ] Phase 1 complete: first roles and core capabilities are defined
-- [ ] Phase 2 complete: protected actions and enforcement rules are explicit
-- [ ] Phase 3 complete: role storage and assignment approach are defined
-- [ ] Phase 4 complete: TrackDraw has a clear implement-now or later decision
+- [x] Phase 0 complete: ownership, role, and capability are clearly separated
+- [x] Phase 1 complete: first roles and core capabilities are defined
+- [x] Phase 2 complete: protected actions and enforcement rules are explicit
+- [x] Phase 3 complete: role storage and assignment approach are defined
+- [x] Phase 4 complete: TrackDraw has a clear implement-now or later decision
 
 ### Phase 0: Lock The Conceptual Model
 
@@ -695,11 +689,11 @@ Done:
 
 Checklist:
 
-- [ ] Confirm ownership is the primary authority for ordinary user resources
-- [ ] Confirm elevated roles are only for non-owner platform actions
-- [ ] Confirm capability thinking is the internal enforcement model
-- [ ] Confirm this foundation is not gallery-specific
-- [ ] Confirm TrackDraw wants one reusable authorization model rather than feature-by-feature exceptions
+- [x] Confirm ownership is the primary authority for ordinary user resources
+- [x] Confirm elevated roles are only for non-owner platform actions
+- [x] Confirm capability thinking is the internal enforcement model
+- [x] Confirm this foundation is not gallery-specific
+- [x] Confirm TrackDraw wants one reusable authorization model rather than feature-by-feature exceptions
 
 ### Phase 1: Define Roles, Ownership, And Capabilities
 
@@ -715,13 +709,13 @@ Done:
 
 Checklist:
 
-- [ ] Confirm the first role set is `user`, `moderator`, `admin`
-- [ ] Define what ordinary users may do through ownership alone
-- [ ] Define what moderators may do that ordinary users may not
-- [ ] Define what admins may do beyond moderators
-- [ ] Name the first internal capabilities needed for gallery and adjacent admin actions
-- [ ] Confirm the first gallery capability set maps to publish, unlist, hide, unhide, feature, unfeature, and report review
-- [ ] Confirm roles remain small and globally understandable
+- [x] Confirm the first role set is `user`, `moderator`, `admin`
+- [x] Define what ordinary users may do through ownership alone
+- [x] Define what moderators may do that ordinary users may not
+- [x] Define what admins may do beyond moderators
+- [x] Name the first internal capabilities needed for gallery and adjacent admin actions
+- [x] Confirm the first gallery capability set maps to publish, unlist, hide, unhide, feature, unfeature, and report review
+- [x] Confirm roles remain small and globally understandable
 
 ### Phase 2: Define First Protected Actions And Enforcement Rules
 
@@ -736,14 +730,14 @@ Done:
 
 Checklist:
 
-- [ ] Define the first protected actions that must be enforced server-side
-- [ ] Confirm which actions are ownership checks versus role checks
-- [ ] Confirm moderators can hide, unhide, feature, and review reports
-- [ ] Confirm which actors may move entries between `link_only`, `gallery_visible`, `featured`, and `hidden`
-- [ ] Confirm moderation state overrides ordinary owner self-service state changes when needed
-- [ ] Confirm admins retain broader authority than moderators
-- [ ] Confirm clients only reflect permissions for UX and do not enforce them
-- [ ] Confirm the need for centralized authorization helpers
+- [x] Define the first protected actions that must be enforced server-side
+- [x] Confirm which actions are ownership checks versus role checks
+- [x] Confirm moderators can hide, unhide, feature, and review reports
+- [x] Confirm which actors may move entries between `link_only`, `gallery_visible`, `featured`, and `hidden`
+- [x] Confirm moderation state overrides ordinary owner self-service state changes when needed
+- [x] Confirm admins retain broader authority than moderators
+- [x] Confirm clients only reflect permissions for UX and do not enforce them
+- [x] Confirm the need for centralized authorization helpers
 
 ### Phase 3: Define Storage And Role Assignment
 
@@ -759,12 +753,12 @@ Done:
 
 Checklist:
 
-- [ ] Decide whether v1 uses a persisted single role field on the account record
-- [ ] Decide whether any temporary allowlist is allowed as an implementation bridge
-- [ ] Decide who may assign or revoke `moderator` and `admin`
-- [ ] Confirm that role changes need basic auditability from the start
-- [ ] Confirm route handlers and server helpers are the enforcement boundary
-- [ ] Confirm no client-only role source is trusted
+- [x] Decide whether v1 uses a persisted single role field on the account record
+- [x] Decide whether any temporary allowlist is allowed as an implementation bridge
+- [x] Decide who may assign or revoke `moderator` and `admin`
+- [x] Confirm that role changes need basic auditability from the start
+- [x] Confirm route handlers and server helpers are the enforcement boundary
+- [x] Confirm no client-only role source is trusted
 
 ### Phase 4: Decide Whether To Implement Now Or Later
 
@@ -794,6 +788,174 @@ If TrackDraw builds this in the near term, the smallest credible version is:
 - centralized server-side helpers for protected actions
 - moderator control over gallery hide, feature, and report review
 - admin reserved for broader platform authority
+
+## Codebase Anchor
+
+This section maps the abstract model to the concrete TrackDraw codebase so implementation can start without a separate discovery phase.
+
+### Tech Stack
+
+- **Auth**: Better-Auth with Magic Link and Passkey, configured in [src/lib/server/auth.ts](../../src/lib/server/auth.ts)
+- **Database**: Cloudflare D1 (SQLite), raw SQL via D1 API — no ORM
+- **Migrations**: plain SQL files in [migrations/](../../migrations/)
+
+### Current User Model
+
+The `user` table is defined in [migrations/0002_accounts_and_projects.sql](../../migrations/0002_accounts_and_projects.sql).
+
+Current fields: `id`, `name`, `email`, `emailVerified`, `image`, `createdAt`, `updatedAt`.
+
+No `role` field exists yet.
+
+### How The Authenticated User Is Resolved
+
+`getCurrentUserFromHeaders()` in [src/lib/server/auth.ts](../../src/lib/server/auth.ts) is the single entry point for resolving the current user in API routes and server actions. It returns a `CurrentUser` type with `id`, `email`, `name`, and `image`.
+
+This is where role resolution should be added. Either extend `CurrentUser` to include `role`, or introduce a wrapper that enriches the result with the persisted role before returning it to callers.
+
+### What Needs To Be Built
+
+**Migration**: add a `role` column to the `user` table.
+
+```sql
+ALTER TABLE user ADD COLUMN role TEXT NOT NULL DEFAULT 'user';
+```
+
+All existing accounts automatically receive `user`. The first admin is promoted directly via a SQL UPDATE in the Cloudflare D1 dashboard or Wrangler CLI after the migration runs.
+
+**Extended type**: add `role` to the `CurrentUser` type and ensure `getCurrentUserFromHeaders()` returns it.
+
+**Authorization helpers**: create a new file, for example `src/lib/server/authorization.ts`, with the core helpers described in the Recommended Helper Layer Direction section.
+
+### Role In The Dev Auth Shim
+
+`npm run dev` uses a localStorage-based auth shim (`isDevAuthShimEnabled()` in [src/lib/auth-client.ts](../../src/lib/auth-client.ts)) that bypasses Better-Auth entirely. Once role storage exists in D1, the shim has no way to read it.
+
+Recommended approach: extend the shim with a separate localStorage key for the simulated role, for example `trackdraw-dev-auth-role`. The shim reads this key when constructing the simulated session and falls back to `user` if absent.
+
+This allows switching between roles during development without touching D1, and lets you test both normal user flows and admin/moderator flows in `npm run dev`.
+
+For `npm run preview`, the real Better-Auth login is used against the remote `trackdraw-dev` D1 database. Use the Wrangler command in the bootstrap section above to promote an account to admin there.
+
+### Existing Authorization Pattern
+
+Ownership checks today are done via SQL `WHERE owner_user_id = ?` in query helpers such as `getProjectForUser()` in [src/lib/server/projects.ts](../../src/lib/server/projects.ts). This pattern should remain for ownership checks. Role-based checks should go through the new authorization helpers, not inline SQL conditions.
+
+## Build Phases
+
+### Phase 1: Database Migration
+
+Create `migrations/0004_user_roles.sql`:
+
+```sql
+ALTER TABLE user ADD COLUMN role TEXT NOT NULL DEFAULT 'user';
+```
+
+Run against each environment:
+
+```bash
+npm run migrate:local          # local
+npm run migrate:up:dev         # remote trackdraw-dev
+npm run migrate:up:production  # production
+```
+
+Done when: the `role` column exists in all environments and all existing accounts have `user`.
+
+### Phase 2: Extend CurrentUser With Role
+
+In [src/lib/server/auth.ts](../../src/lib/server/auth.ts), extend the `CurrentUser` type:
+
+```ts
+export type AccountRole = 'user' | 'moderator' | 'admin';
+
+export type CurrentUser = {
+  id: string;
+  email: string | null;
+  name: string | null;
+  image: string | null;
+  role: AccountRole;
+};
+```
+
+Update `getCurrentUserFromHeaders()` to query the role from D1 after resolving the session:
+
+```ts
+const db = await getDatabase();
+const record = await db
+  .prepare('SELECT role FROM user WHERE id = ?')
+  .bind(session.user.id)
+  .first<{ role: AccountRole }>();
+
+return {
+  id: session.user.id,
+  email: session.user.email ?? null,
+  name: session.user.name ?? null,
+  image: session.user.image ?? null,
+  role: record?.role ?? 'user',
+};
+```
+
+Done when: every caller of `getCurrentUserFromHeaders` receives a `role` field.
+
+### Phase 3: Authorization Helper Layer
+
+Create `src/lib/server/authorization.ts` with the core helpers:
+
+- `hasCapability(actor, capability)` — checks whether the actor's role grants the given capability
+- `isResourceOwner(actor, ownerUserId)` — checks whether the actor owns the resource
+- `canTransitionGalleryState(actor, entry, nextState)` — encodes the full gallery state-transition rules from the PVA
+
+The role-to-capability mapping should follow the First Capability Matrix defined above.
+
+Done when: helpers are importable from any API route or server action.
+
+### Phase 4: Dev Auth Shim Role Support
+
+In [src/lib/auth-client.ts](../../src/lib/auth-client.ts):
+
+- Add `const DEV_AUTH_ROLE_KEY = 'trackdraw-dev-auth-role'`
+- Add `role` to the `AuthUser` type
+- Read the role from localStorage in `buildDevSession()`, falling back to `'user'` if absent
+
+To switch roles locally, run in the browser console and re-sign in:
+
+```js
+localStorage.setItem('trackdraw-dev-auth-role', 'admin');
+```
+
+Done when: the dev shim returns a `role` field and switching roles via localStorage works in `npm run dev`.
+
+### Phase 5: Bootstrap First Admin
+
+After Phase 1 is deployed, promote your account in each environment.
+
+**Local** (Wrangler local SQLite file):
+
+```bash
+wrangler d1 execute DB --local --env dev --command "UPDATE user SET role = 'admin' WHERE email = 'your@email.com';"
+```
+
+**Preview and production** — run in the Cloudflare D1 dashboard for the respective database:
+
+```sql
+UPDATE user SET role = 'admin' WHERE email = 'your@email.com';
+```
+
+Done when: your account resolves to `admin` in each environment.
+
+### Build Phase Checklist
+
+- [ ] Phase 1 complete: `role` column exists in all environments
+- [ ] Phase 2 complete: `getCurrentUserFromHeaders` returns `role` on every resolved user
+- [ ] Phase 3 complete: `hasCapability`, `isResourceOwner`, and `canTransitionGalleryState` are implemented
+- [ ] Phase 4 complete: dev auth shim exposes `role` and responds to `trackdraw-dev-auth-role`
+- [ ] Phase 5 complete: first admin promoted in each environment
+
+### Note On Existing Routes
+
+The authorization helpers built here are ready to use but not yet wired into any routes, because the gallery feature that consumes them has not been built yet. When building the gallery, import from `src/lib/server/authorization.ts` and call `hasCapability` or `canTransitionGalleryState` in the relevant API handlers.
+
+Existing ownership checks in routes like [src/lib/server/projects.ts](../../src/lib/server/projects.ts) use `WHERE owner_user_id = ?` directly and do not need to change.
 
 ## Success Criteria
 
