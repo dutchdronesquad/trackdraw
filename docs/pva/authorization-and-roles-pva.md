@@ -549,16 +549,25 @@ The important product rule is not the UI polish. The important rule is that assi
 
 The workflow above assumes an existing admin. The first admin cannot be assigned through the same workflow.
 
-Recommended first bootstrap approach:
+For TrackDraw specifically, accounts already exist in production before role storage is implemented. The bootstrap question is therefore not who gets the role at first deployment, but how the first admin is deliberately identified among existing accounts.
 
-- the first admin account is promoted through a one-time server-side operation, such as a migration script or a trusted operational command
-- this should happen once during initial setup and never be automated as a self-service path
-- the temporary allowlist described in the bridge section can serve as the bootstrap mechanism: the first listed account resolves to `admin` until a persisted role takes over
+Recommended bootstrap approach:
+
+- identify the target account by user ID or email before implementing role storage
+- add that identifier to the server-side allowlist described in the temporary bridge section
+- the server resolves the allowlisted account to `admin` using the same authorization helpers that will later read persisted roles
+- once role storage is in place, run a one-time migration that writes the `admin` role to the account record for each allowlisted account
+- remove the allowlist entry after the persisted role is confirmed
+
+This means the allowlist serves a dual purpose: it is both the temporary bridge for early development and the bootstrap mechanism for the first real admin promotion.
 
 Recommended first policy:
 
-- the bootstrap path should not remain accessible after initial setup
+- the allowlist should name accounts by stable identifier, not by a runtime-resolvable property such as account creation order
+- the bootstrap path should not remain active after the persisted role is confirmed
 - the system should not silently promote accounts based on environment variables in production without an explicit record of why
+
+Once the first admin exists, all subsequent admin promotions follow the normal role assignment workflow: an existing admin assigns the `admin` role to another account through the standard server-side path.
 
 This is a deployment concern, not a product feature, but it should be part of the first implementation plan rather than left as an afterthought.
 
