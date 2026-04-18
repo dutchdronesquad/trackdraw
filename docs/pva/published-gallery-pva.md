@@ -1,6 +1,6 @@
 # Published Gallery Evaluation PVA
 
-Date: April 14, 2026
+Date: April 18, 2026
 
 Status: proposed
 
@@ -11,6 +11,7 @@ Recommended decision:
 - approve continued product-definition work
 - do not approve implementation yet
 - treat gallery as a small, opt-in, account-backed discovery surface if it moves forward
+- treat roles, moderation authority, and platform authorization as a separate foundation decision
 
 This document is meant to be concrete enough to decide whether the gallery deserves implementation planning at all.
 
@@ -21,8 +22,10 @@ TrackDraw should approve the gallery for a later build only if the team accepts 
 - signed-in owners only
 - opt-in on top of a published share
 - discovery-first, not social-first
-- Featured and Recent as the first browse model
-- owner unlist plus admin hide as the minimum control model
+- example discovery is the primary goal
+- Featured as the primary browse model
+- Recent is also part of v1, but remains visually secondary to Featured
+- owner unlist plus moderator or admin hide as the minimum control model
 
 TrackDraw should not approve implementation yet if the team expects any of these in v1:
 
@@ -48,6 +51,7 @@ Go for implementation planning if:
 - account-backed ownership is a hard requirement
 - minimum moderation is considered non-optional
 - the product is comfortable with a very small first browse surface
+- the team accepts that gallery curation depends on a separate roles/authorization model
 
 No-go or keep parked if:
 
@@ -83,6 +87,8 @@ That means:
 - moderation remains small but real
 - the gallery opens published tracks, not editable project state
 - the first version stays discovery-first rather than community-first
+
+More specifically, the gallery should help users discover beautiful, useful example tracks.
 
 ## Core Product Position
 
@@ -151,6 +157,9 @@ A track can become gallery-visible only if:
 - the project has a valid published share
 - the share is not expired
 - the project has a non-empty title
+- the project has a short description or summary
+- the share has a usable preview image
+- the account has a visible display name
 - the user explicitly opts in to gallery visibility
 
 Optional later rules:
@@ -171,6 +180,19 @@ The first gallery entry should include only the fields needed for believable dis
 - shape count
 - publish date
 - token or share reference
+
+Required for gallery opt-in in v1:
+
+- track title
+- short description or summary
+- author display name
+- published preview image
+
+Derived rather than separately entered:
+
+- field size
+- shape count
+- publish date
 
 Optional later fields:
 
@@ -308,7 +330,7 @@ The first gallery should be small and structured.
 Recommended first browse groups:
 
 - Featured
-- Recent
+- Recent as a clearly secondary group in v1
 
 Recommended first browse card contents:
 
@@ -327,6 +349,25 @@ Do not start with:
 - heavy search
 - ranking algorithms
 - public remix trees
+
+## Showcase Positioning Recommendation
+
+The gallery should be positioned more like a curated example showcase than a broad public publishing feed.
+
+That means:
+
+- quality matters more than volume
+- not every published share needs to be gallery-worthy
+- browse should feel intentional rather than noisy
+- cards should help users quickly find inspiring layouts rather than exhaustively index every public track
+
+This positioning should shape product decisions throughout the feature:
+
+- Featured matters more than Recent
+- Featured is manually curated
+- metadata should stay compact and useful
+- social mechanics should stay out
+- moderation should protect quality and trust, not just policy compliance
 
 ## Data Model Direction
 
@@ -353,12 +394,41 @@ Recommended first gallery-facing fields:
 
 - `share_token`
 - `owner_user_id`
-- `gallery_visible`
+- `gallery_state`
 - `gallery_title`
 - `gallery_description`
 - `gallery_preview_image`
 - `gallery_published_at`
 - `gallery_hidden_at` or equivalent moderation state
+
+Recommended first state direction:
+
+- `link_only`
+- `gallery_visible`
+- `featured`
+- `hidden`
+
+Intent:
+
+- `link_only` means the share exists but is not browseable in the gallery
+- `gallery_visible` means the entry is browseable in the normal gallery surface
+- `featured` means the entry is still gallery-visible and also selected for the primary curated section
+- `hidden` means the entry is removed from gallery discovery through moderation state
+
+### Share Revocation And Expiry Behavior
+
+If the underlying share is revoked or expires while a gallery entry is active, gallery visibility should not survive independently.
+
+Recommended first direction:
+
+- a revoked share removes gallery visibility immediately
+- an expired share removes gallery visibility at the point of expiry
+- the gallery entry record may be kept for auditability, but should not be surfaced in browse results
+- the owner does not need to separately unlist before revoking
+
+This means gallery visibility is always contingent on an active, non-expired share. A gallery entry without a valid underlying share is not a valid gallery entry.
+
+Do not allow a gallery entry to remain browseable after its share has been revoked or expired. That would break the core promise that a gallery card opens a working track view.
 
 ## Required Preconditions Before Build
 
@@ -367,8 +437,9 @@ Before implementation starts, TrackDraw should lock:
 - exact owner flow from `publish share` to `gallery visible`
 - minimum metadata fields required for a gallery entry
 - visible author field source
-- admin hide/remove behavior
+- gallery-specific owner/admin controls
 - whether gallery entries need manual featuring tools from day one
+- dependency on a separate roles and authorization model
 
 Avoid first-pass fields that imply a larger social model:
 
@@ -395,7 +466,7 @@ Expected public operations:
 - list recent gallery entries
 - open an entry through its canonical shared view
 
-Expected moderation operations later:
+Expected moderation operations:
 
 - hide gallery entry
 - remove gallery entry from browse surfaces
@@ -429,8 +500,15 @@ Even a very small gallery needs explicit moderation.
 The first version should define:
 
 - owner can unlist own entry
-- admin can hide or remove an entry
+- moderator or admin can hide an entry
 - user can report an entry
+
+Recommended minimum report reasons:
+
+- `inappropriate`
+- `spam`
+- `copyright / stolen`
+- `broken / low quality`
 
 The first version does not need:
 
@@ -446,8 +524,12 @@ But it does need a clear operational answer to:
 
 Recommended first behavior:
 
-- admin hide removes the item from gallery discovery
+- moderator or admin hide removes the item from gallery discovery
 - underlying share may remain active unless separately revoked
+
+The gallery PVA intentionally does not define how admin or moderator authority is assigned.
+
+That should be handled in a separate roles and authorization decision, because it is broader than the gallery itself.
 
 ## Operational Assumptions
 
@@ -505,6 +587,14 @@ If TrackDraw ever wants those later, they should come after the gallery proves u
 
 ## Recommended Delivery Sequence
 
+### Top-Level Checklist
+
+- [ ] Phase 0 complete: gallery model and showcase positioning are locked
+- [ ] Phase 1 complete: publish-to-gallery state transitions are defined
+- [ ] Phase 2 complete: gallery metadata and browse surface are concrete
+- [ ] Phase 3 complete: owner/admin/report controls are defined
+- [ ] Phase 4 complete: TrackDraw has a clear build-or-park decision
+
 ### Phase 0: Lock the gallery model
 
 Start:
@@ -517,6 +607,15 @@ Done:
 - account requirement for gallery visibility is explicit
 - opt-in gallery visibility is explicit
 
+Checklist:
+
+- [ ] Confirm the gallery is a discovery/showcase surface, not a social publishing feed
+- [ ] Confirm gallery visibility is always a second decision after share publishing
+- [ ] Confirm signed-in ownership is required for gallery eligibility
+- [ ] Confirm `Featured` is the primary browse model
+- [ ] Confirm `Recent` ships in v1 as a secondary browse group
+- [ ] Confirm gallery entry and published share remain distinct concepts
+
 ### Phase 1: Define publish and gallery visibility states
 
 Start:
@@ -528,6 +627,16 @@ Done:
 - the user flow from share publish to gallery opt-in is concrete
 - TrackDraw defines what `link only` versus `gallery visible` means
 - removing a gallery entry without deleting the share is supported by the model
+
+Checklist:
+
+- [ ] Define the exact state model for `link only`, `gallery visible`, and optional `featured`
+- [ ] Lock the first state direction for `link_only`, `gallery_visible`, `featured`, and `hidden`
+- [ ] Define whether a revoked or expired share can remain gallery-visible
+- [ ] Define whether republishing updates the existing gallery entry or changes only its share snapshot
+- [ ] Define where the owner sees gallery status in the share flow
+- [ ] Define the explicit confirmation step for `Show in gallery`
+- [ ] Define the owner action for `Remove from gallery` without revoking the share
 
 ### Phase 2: Define gallery entry fields and browse surface
 
@@ -542,6 +651,18 @@ Done:
 - the open path into the shared viewer is fixed
 - the first version is concrete enough to mock or implement
 
+Checklist:
+
+- [ ] Lock the minimum required gallery metadata fields
+- [ ] Confirm title, short description, author display name, and preview image are required for opt-in
+- [ ] Confirm whether preview image generation is automatic in v1
+- [ ] Confirm the visible author field source
+- [ ] Confirm the exact gallery card contents
+- [ ] Confirm the browse route structure
+- [ ] Confirm `Recent` ships in v1 as a secondary group
+- [ ] Confirm cards always open the canonical share view
+- [ ] Confirm landing-page exposure is launch-day or later
+
 ### Phase 3: Define moderation and control minimum
 
 Start:
@@ -554,6 +675,16 @@ Done:
 - admin hide/remove behavior is defined
 - minimum report flow is defined
 
+Checklist:
+
+- [ ] Define owner unlist behavior and resulting gallery state
+- [ ] Define moderator or admin hide behavior and whether the underlying share stays active
+- [ ] Define whether moderator remove differs from moderator or admin hide in v1
+- [ ] Lock the minimum report reasons exposed to users
+- [ ] Define where reported entries are reviewed operationally
+- [ ] Confirm that authority assignment depends on the separate roles/authorization foundation
+- [ ] Confirm featuring is manual only in v1
+
 ### Phase 4: Decide whether to build or keep parked
 
 Start:
@@ -564,6 +695,14 @@ Done:
 
 - TrackDraw either commits to a small gallery build
 - or keeps the idea parked until demand, moderation readiness, or ownership surfaces become stronger
+
+Checklist:
+
+- [ ] Re-evaluate whether the gallery still feels meaningfully different from ordinary sharing
+- [ ] Re-evaluate whether the browse surface is strong enough to justify public discovery
+- [ ] Re-evaluate whether moderation remains small enough to operate manually
+- [ ] Re-evaluate whether the separate roles/authorization work is sufficiently ready
+- [ ] Decide `build next`, `build later`, or `keep parked`
 
 ## First Engineering Slice
 
@@ -577,17 +716,17 @@ If TrackDraw chooses to build this later, the first engineering slice should be:
 
 That is the smallest slice that proves whether the gallery adds value without dragging in a larger community platform.
 
-## Recommended Next Build Target
+## Next Steps After A Go Decision
 
-The next work should remain product-definition work, but it should now be concrete rather than abstract.
+If Phase 4 resolves to `build next`, the first implementation work should follow the engineering slice defined above.
 
-The strongest next slice is:
+Before starting implementation, confirm that:
 
-- define the exact owner flow from `published share` to `gallery visible`
-- define the required gallery entry fields
-- define the minimum owner/admin controls
+- the roles and authorization foundation has been approved and is either implemented or ready to implement alongside the gallery
+- the share flow supports gallery visibility state without a second disconnected publish surface
+- the preview image generation approach is settled
 
-If those three pieces still feel awkward or heavy, the gallery should remain a later product surface rather than moving into implementation prematurely.
+If any of those dependencies are unclear, the gallery should remain parked until they are resolved.
 
 ## Smallest Credible V1
 
@@ -595,10 +734,11 @@ If TrackDraw decides to build this, the smallest credible version is:
 
 - signed-in owners only
 - one published share can optionally become one gallery entry
-- gallery has `Featured` and `Recent`
+- gallery has `Featured`
+- `Recent` ships in v1 but is visually secondary to Featured
 - cards open the existing share view
 - owner can unlist without revoking the share
-- admin can hide entries
+- moderator or admin can hide entries
 
 Anything larger than that should require a second product decision rather than silently expanding the first release.
 
