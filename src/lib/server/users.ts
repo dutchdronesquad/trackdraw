@@ -97,34 +97,39 @@ export async function getAdminUserById(
 
 export async function countUsersByRole(role: AccountRole) {
   const db = await getDatabase();
-  const row = await db
+  const result = await db
     .prepare(
       `
-        select count(*) as count
+        select 1
         from users
         where role = ?
+        limit 2
       `
     )
     .bind(role)
-    .first<{ count: number | string }>();
+    .all<Record<string, never>>();
 
-  return Number(row?.count ?? 0);
+  return result.results.length;
 }
 
-export async function updateUserRole(userId: string, role: AccountRole) {
+export async function updateUserRole(
+  userId: string,
+  role: AccountRole
+): Promise<AdminUser | null> {
   const db = await getDatabase();
   const now = new Date().toISOString();
 
-  await db
+  const row = await db
     .prepare(
       `
         update users
         set role = ?, updatedAt = ?
         where id = ?
+        returning id, name, email, image, role, createdAt, updatedAt
       `
     )
     .bind(role, now, userId)
-    .run();
+    .first<AdminUserRow>();
 
-  return getAdminUserById(userId);
+  return row ? mapAdminUser(row) : null;
 }
