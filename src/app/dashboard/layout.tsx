@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import DashboardAppSidebar from "@/components/dashboard/DashboardAppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import {
   canAccessDashboard,
   getVisibleDashboardModules,
@@ -32,7 +32,6 @@ export default async function DashboardLayout({
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
           "--header-height": "calc(var(--spacing) * 12)",
           "--radius": "0.625rem",
         } as React.CSSProperties
@@ -46,7 +45,7 @@ export default async function DashboardLayout({
         }}
         visibleModules={getVisibleDashboardModules(user.role)}
       />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset className="ml-0!">{children}</SidebarInset>
     </SidebarProvider>
   );
 }

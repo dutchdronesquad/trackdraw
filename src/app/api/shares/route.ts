@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { getProjectForUser } from "@/lib/server/projects";
 import { createShare, getSharesByUserId } from "@/lib/server/shares";
 import { buildStoredSharePath } from "@/lib/share";

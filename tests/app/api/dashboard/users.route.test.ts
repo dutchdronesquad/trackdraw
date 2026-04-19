@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/server/auth", () => ({
+vi.mock("@/lib/server/auth-session", () => ({
   getCurrentUserFromHeaders: vi.fn(),
 }));
 
@@ -24,7 +24,7 @@ import { GET } from "@/app/api/dashboard/users/route";
 import { PATCH } from "@/app/api/dashboard/users/[userId]/route";
 import type { AdminUser } from "@/lib/admin-users";
 import { createAuditEvent } from "@/lib/server/audit";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import {
   canAssignAccountRole,
   hasCapability,

@@ -9,6 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 
@@ -18,13 +19,11 @@ type DashboardSiteHeaderProps = {
     href: string;
   };
   title: string;
-  description?: string;
 };
 
 export default function DashboardSiteHeader({
   parent,
   title,
-  description,
 }: DashboardSiteHeaderProps) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -61,11 +60,9 @@ export default function DashboardSiteHeader({
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        {description ? (
-          <p className="text-muted-foreground ml-auto hidden text-xs lg:block">
-            {description}
-          </p>
-        ) : null}
+        <div className="ml-auto flex items-center">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

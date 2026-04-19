@@ -3,27 +3,16 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { passkey } from "@better-auth/passkey";
 import { magicLink } from "better-auth/plugins";
-import { parseAccountRole, type AccountRole } from "@/lib/account-roles";
 import { getSiteUrl } from "@/lib/seo";
-import {
-  buildChangeEmailConfirmationEmail,
-  buildEmailVerificationEmail,
-  buildMagicLinkEmail,
-} from "@/lib/server/auth-email";
 import { getDatabase } from "@/lib/server/db";
-import { isPlunkConfigured, sendPlunkMail } from "@/lib/server/plunk";
 
-export type CurrentUser = {
-  id: string;
-  email: string | null;
-  name: string | null;
-  image: string | null;
-  role: AccountRole;
-};
+async function loadAuthEmailModule() {
+  return import("@/lib/server/auth-email");
+}
 
-type UserRoleRow = {
-  role: string | null;
-};
+async function loadPlunkModule() {
+  return import("@/lib/server/plunk");
+}
 
 function getAuthSecret() {
   return process.env.BETTER_AUTH_SECRET ?? process.env.AUTH_SECRET ?? null;
@@ -120,6 +109,11 @@ export async function getAuth() {
             );
           }
 
+          const [
+            { buildChangeEmailConfirmationEmail },
+            { isPlunkConfigured, sendPlunkMail },
+          ] = await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
+
           console.info("[TrackDraw auth] sendChangeEmailConfirmation", {
             recipient: currentEmail,
             newEmail,
@@ -174,6 +168,11 @@ export async function getAuth() {
           );
         }
 
+        const [
+          { buildEmailVerificationEmail },
+          { isPlunkConfigured, sendPlunkMail },
+        ] = await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
+
         console.info("[TrackDraw auth] sendVerificationEmail", {
           recipient,
           plunkConfigured: isPlunkConfigured(),
@@ -214,6 +213,11 @@ export async function getAuth() {
           max: 3,
         },
         sendMagicLink: async ({ email: recipient, url, token }) => {
+          const [
+            { buildMagicLinkEmail },
+            { isPlunkConfigured, sendPlunkMail },
+          ] = await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
+
           console.info("[TrackDraw auth] sendMagicLink", {
             recipient,
             plunkConfigured: isPlunkConfigured(),
@@ -251,43 +255,4 @@ export async function getAuth() {
       }),
     ],
   });
-}
-
-export async function getCurrentUserFromHeaders(
-  requestHeaders: Headers
-): Promise<CurrentUser | null> {
-  if (!isAuthConfigured()) {
-    return null;
-  }
-
-  const session = await (
-    await getAuth()
-  ).api.getSession({
-    headers: requestHeaders,
-  });
-
-  if (!session?.user?.id) {
-    return null;
-  }
-
-  const database = await getDatabase();
-  const userRole = await database
-    .prepare(
-      `
-        select role
-        from users
-        where id = ?
-        limit 1
-      `
-    )
-    .bind(session.user.id)
-    .first<UserRoleRow>();
-
-  return {
-    id: session.user.id,
-    email: session.user.email ?? null,
-    name: session.user.name ?? null,
-    image: session.user.image ?? null,
-    role: parseAccountRole(userRole?.role),
-  };
 }

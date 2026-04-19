@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { accountRoles } from "@/lib/account-roles";
 import { createAuditEvent } from "@/lib/server/audit";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { canAssignAccountRole } from "@/lib/server/authorization";
 import {
   countUsersByRole,
