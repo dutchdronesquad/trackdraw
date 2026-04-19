@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import DashboardSiteHeader from "@/components/dashboard/DashboardSiteHeader";
 import DashboardUsersManager from "@/components/dashboard/DashboardUsersManager";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 import { listUsersForAdmin } from "@/lib/server/users";
 
@@ -30,7 +30,6 @@ export default async function DashboardUsersPage() {
       <DashboardSiteHeader
         parent={{ label: "Dashboard", href: "/dashboard" }}
         title="Users"
-        description="Manage roles and account access"
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <DashboardUsersManager

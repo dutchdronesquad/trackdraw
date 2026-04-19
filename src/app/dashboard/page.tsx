@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import DashboardOverviewCards from "@/components/dashboard/DashboardOverviewCards";
 import DashboardSiteHeader from "@/components/dashboard/DashboardSiteHeader";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import {
   getVisibleDashboardModules,
   hasCapability,
@@ -21,7 +21,14 @@ const moduleConfig = {
     description: "Platform-sensitive history and role changes.",
     href: "/dashboard/audit",
   },
+  "email-preview": {
+    title: "Email Preview",
+    description: "Review auth email templates without sending a real message.",
+    href: "/dashboard/email-preview",
+  },
 } as const;
+
+type OverviewModule = keyof typeof moduleConfig;
 
 export default async function DashboardPage() {
   const requestHeaders = new Headers(await headers());
@@ -31,9 +38,13 @@ export default async function DashboardPage() {
     notFound();
   }
 
-  const visibleModules = getVisibleDashboardModules(actor.role).filter(
-    (m): m is keyof typeof moduleConfig => m !== "overview"
-  );
+  const visibleModules: OverviewModule[] = getVisibleDashboardModules(
+    actor.role
+  ).flatMap((module) => (module === "overview" ? [] : [module]));
+  const visibleEntries: OverviewModule[] =
+    actor.role === "admin"
+      ? [...visibleModules, "email-preview"]
+      : visibleModules;
   const canReadUsers = hasCapability(actor.role, "admin.users.read");
 
   const users = canReadUsers ? await listUsersForAdmin() : [];
@@ -44,10 +55,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <DashboardSiteHeader
-        title="Overview"
-        description="Workspace summary and quick entry points"
-      />
+      <DashboardSiteHeader title="Overview" />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <DashboardOverviewCards
           role={actor.role}
@@ -57,9 +65,9 @@ export default async function DashboardPage() {
           moderatorCount={moderatorCount}
         />
 
-        {visibleModules.length > 0 && (
+        {visibleEntries.length > 0 && (
           <div className="divide-y border-t">
-            {visibleModules.map((module) => {
+            {visibleEntries.map((module) => {
               const config = moduleConfig[module];
               return (
                 <div

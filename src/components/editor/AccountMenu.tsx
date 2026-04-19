@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { LayoutDashboard, LogIn, LogOut, UserRound } from "lucide-react";
 import AccountDialog from "@/components/dialogs/AccountDialog";
+import UserAvatar from "@/components/UserAvatar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Popover,
@@ -53,26 +54,6 @@ function getUserSecondaryLabel(
     return "No display name set";
   }
   return "Signed in";
-}
-
-function getAvatarLabel(
-  user:
-    | {
-        email?: string | null;
-        name?: string | null;
-      }
-    | null
-    | undefined
-) {
-  const source = user?.name?.trim() || user?.email?.trim() || "T";
-  const parts = source
-    .split(/[\s@._-]+/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .slice(0, 2);
-
-  const initials = parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
-  return initials || "T";
 }
 
 const accountMenuItemClassName =
@@ -142,9 +123,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
             : "text-sidebar-foreground/80 hover:bg-muted hover:text-foreground flex h-10 w-full items-center gap-2.5 rounded-xl px-2.5 text-[13px] transition-colors"
         )}
       >
-        <span className="bg-foreground text-background flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-medium">
-          {getAvatarLabel(user)}
-        </span>
+        <UserAvatar name={user?.name} email={user?.email} className="size-6 text-[10px]" />
         {!collapsed && (
           <span className="min-w-0 flex-1 text-left">
             <span className="text-foreground block truncate text-[12px] font-medium">
@@ -162,9 +141,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
       >
         <div className="px-3 py-2.5">
           <PopoverHeader className="flex-row items-center gap-3 rounded-xl px-1 py-0.5">
-            <span className="bg-foreground text-background flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-medium">
-              {getAvatarLabel(user)}
-            </span>
+            <UserAvatar name={user?.name} email={user?.email} className="size-8 text-xs" />
             <div className="min-w-0 flex-1 text-left">
               <PopoverTitle className="text-foreground truncate text-[12px] font-medium">
                 {getUserDisplayName(user)}

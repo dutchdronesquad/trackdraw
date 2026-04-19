@@ -66,12 +66,20 @@ jobs:
         run: npx opennextjs-cloudflare build
       - name: Check worker size
         run: |
-          SIZE=$(wc -c < .open-next/server-functions/default/handler.mjs)
-          LIMIT=$((9 * 1024 * 1024))
-          echo "handler.mjs: $(( SIZE / 1024 / 1024 )).$((SIZE / 1024 % 1024 / 100)) MiB (limit 9 MiB)"
-          if [ "$SIZE" -gt "$LIMIT" ]; then
-            echo "::error::Worker handler exceeds 9 MiB — bundle too large to deploy safely"
+          RAW_SIZE=$(wc -c < .open-next/server-functions/default/handler.mjs)
+          GZIP_SIZE=$(gzip -c .open-next/server-functions/default/handler.mjs | wc -c)
+          RAW_HARD_LIMIT=$((9 * 1024 * 1024))
+          GZIP_RISK_LIMIT=$((2200 * 1024))
+          echo "handler.mjs raw: $RAW_SIZE bytes"
+          echo "handler.mjs gzip: $GZIP_SIZE bytes"
+          echo "Worker raw hard limit: $RAW_HARD_LIMIT bytes (9 MiB)"
+          echo "Worker gzip risk threshold: $GZIP_RISK_LIMIT bytes (~2.15 MiB)"
+          if [ "$RAW_SIZE" -gt "$RAW_HARD_LIMIT" ]; then
+            echo "::error::Worker handler raw size exceeds the 9 MiB guardrail"
             exit 1
+          fi
+          if [ "$GZIP_SIZE" -gt "$GZIP_RISK_LIMIT" ]; then
+            echo "::warning::Worker handler gzip size is in the recent high-risk range for Cloudflare deploys"
           fi
       - name: Deploy development build
         env:

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 import { listUsersForAdmin } from "@/lib/server/users";
 

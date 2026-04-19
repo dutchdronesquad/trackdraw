@@ -13,7 +13,7 @@ import {
 import DashboardSiteHeader from "@/components/dashboard/DashboardSiteHeader";
 import { getAccountRoleLabel, parseAccountRole } from "@/lib/account-roles";
 import { listAuditEvents } from "@/lib/server/audit";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 
 export const metadata: Metadata = {
@@ -92,7 +92,6 @@ export default async function DashboardAuditPage() {
       <DashboardSiteHeader
         parent={{ label: "Dashboard", href: "/dashboard" }}
         title="Audit"
-        description="Platform-sensitive history with role changes first"
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="grid auto-rows-min gap-4 md:grid-cols-3">

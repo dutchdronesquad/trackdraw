@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUserFromHeaders } from "@/lib/server/auth";
+import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isResourceOwner } from "@/lib/server/authorization";
 import { resolveStoredShare, revokeShare } from "@/lib/server/shares";
 

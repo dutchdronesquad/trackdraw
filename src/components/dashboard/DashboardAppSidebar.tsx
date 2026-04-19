@@ -1,21 +1,22 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, LayoutDashboard, Shield, Users } from "lucide-react";
+import { Bell, LayoutDashboard, Mail, Users } from "lucide-react";
 import DashboardNavUser from "@/components/dashboard/DashboardNavUser";
+import { useTheme } from "@/hooks/useTheme";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import type { DashboardModule } from "@/lib/server/authorization";
 
@@ -37,6 +38,36 @@ type NavItem = {
   disabled?: boolean;
 };
 
+function TrackDrawMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M69.1143 154.352C71.111 164.983 66.655 174.763 61 180C52.2997 188.056 38 200 38 200H113.167C125.739 189.061 129.7 170.101 123.485 154.352C118.093 140.688 122.123 130.029 134.216 125.911C135.157 125.591 137 125.319 137 125.319L137 108C132.179 109.165 137 108 123.078 111.35C120.173 112.049 93.8158 118.051 80.5256 127.04C72.0136 132.798 67.1177 143.72 69.1143 154.352Z"
+        fill="currentColor"
+      />
+      <path
+        d="M143 48C156.807 48 168 59.1929 168 73V149C168 151.209 166.209 153 164 153H147C144.791 153 143 151.209 143 149V89C143 80.1634 135.837 73 127 73H74C65.1634 73 58 80.1634 58 89V149C58 151.209 56.2091 153 54 153H37C34.7909 153 33 151.209 33 149V73C33 59.1929 44.1929 48 58 48H143Z"
+        fill="currentColor"
+      />
+      <rect
+        x="4"
+        y="4"
+        width="192"
+        height="192"
+        rx="31"
+        stroke="currentColor"
+        strokeWidth="8"
+      />
+    </svg>
+  );
+}
+
 const navItems: NavItem[] = [
   {
     title: "Overview",
@@ -56,6 +87,12 @@ const navItems: NavItem[] = [
     href: "/dashboard/audit",
     icon: Bell,
     activePrefix: "/dashboard/audit",
+  },
+  {
+    title: "Email Preview",
+    href: "/dashboard/email-preview",
+    icon: Mail,
+    activePrefix: "/dashboard/email-preview",
   },
 ] as const;
 
@@ -79,6 +116,7 @@ export default function DashboardAppSidebar({
   visibleModules,
 }: DashboardAppSidebarProps) {
   const currentPath = usePathname();
+  const theme = useTheme();
   const filteredNavItems = navItems.filter((item) => {
     if (item.title === "Overview") {
       return visibleModules.includes("overview");
@@ -92,6 +130,10 @@ export default function DashboardAppSidebar({
       return visibleModules.includes("audit");
     }
 
+    if (item.title === "Email Preview") {
+      return currentUser.role === "admin";
+    }
+
     return true;
   });
 
@@ -100,18 +142,24 @@ export default function DashboardAppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <Shield className="size-4" />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  TrackDraw Dashboard
+            <SidebarMenuButton
+              size="lg"
+              render={<Link href="/dashboard" />}
+              className="hover:bg-transparent active:bg-transparent"
+            >
+              <div className="flex flex-1 items-center group-data-[collapsible=icon]:justify-center">
+                <span className="relative block h-8 w-42 group-data-[collapsible=icon]:hidden">
+                  <Image
+                    src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+                    alt="TrackDraw"
+                    fill
+                    unoptimized
+                    className="object-contain"
+                    draggable={false}
+                  />
                 </span>
-                <span className="truncate text-xs">
-                  {currentUser.role === "admin"
-                    ? "Platform controls"
-                    : "Moderation workspace"}
+                <span className="text-foreground hidden size-8 items-center justify-center group-data-[collapsible=icon]:flex">
+                  <TrackDrawMark className="size-6" />
                 </span>
               </div>
             </SidebarMenuButton>
@@ -122,39 +170,38 @@ export default function DashboardAppSidebar({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
-          <SidebarMenu>
-            {filteredNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = isItemActive(currentPath, item);
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1">
+              {filteredNavItems.map((item) => {
+                const isActive = isItemActive(currentPath, item);
+                const Icon = item.icon;
 
-              return (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    isActive={isActive}
-                    disabled={item.disabled}
-                    tooltip={item.title}
-                    render={
-                      <Link
-                        href={item.href}
-                        aria-current={isActive ? "page" : undefined}
-                      />
-                    }
-                  >
-                    <Icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      isActive={isActive}
+                      className="hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground"
+                      render={
+                        <Link
+                          href={item.href}
+                          aria-current={isActive ? "page" : undefined}
+                        />
+                      }
+                    >
+                      <Icon />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarSeparator className="mx-2 w-auto" />
       <SidebarFooter>
         <DashboardNavUser user={currentUser} />
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }
