@@ -63,11 +63,11 @@ Instead, it requires stronger publishing, ownership, and moderation boundaries â
 
 Three distinct concepts that must stay separate:
 
-| Concept | Description |
-|---|---|
-| Project | editable working state, private by default |
+| Concept         | Description                                  |
+| --------------- | -------------------------------------------- |
+| Project         | editable working state, private by default   |
 | Published share | read-only snapshot accessible by direct link |
-| Gallery entry | intentionally browseable published share |
+| Gallery entry   | intentionally browseable published share     |
 
 Key rules:
 

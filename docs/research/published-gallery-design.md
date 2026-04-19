@@ -5,6 +5,7 @@ Date: April 18, 2026
 Status: draft, pending approval
 
 Related documents:
+
 - [Published Gallery PVA](../pva/published-gallery-pva.md)
 - [Published Gallery Evaluation](published-gallery-evaluation.md)
 

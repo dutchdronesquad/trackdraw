@@ -50,6 +50,7 @@ Out of scope for v1:
 Start: gallery is still framed as evaluation work
 
 Done:
+
 - TrackDraw has accepted the first gallery product shape
 - roles and authorization is treated as shipped foundation, not open design work
 
@@ -66,31 +67,32 @@ Checklist:
 Start: TrackDraw has stored published shares but no gallery state attached to them
 
 Done:
+
 - the `gallery_entry` record shape is defined and migrated
 - the state model is explicit and stored
 - the R2 key structure and cleanup lifecycle for preview images are defined
 
 State model:
 
-| State | Meaning |
-|---|---|
-| `link_only` | share exists, not browseable in the gallery |
-| `gallery_visible` | entry is browseable in the normal gallery surface |
-| `featured` | gallery-visible and selected for the primary curated section |
-| `hidden` | removed from gallery discovery through moderation |
+| State             | Meaning                                                      |
+| ----------------- | ------------------------------------------------------------ |
+| `link_only`       | share exists, not browseable in the gallery                  |
+| `gallery_visible` | entry is browseable in the normal gallery surface            |
+| `featured`        | gallery-visible and selected for the primary curated section |
+| `hidden`          | removed from gallery discovery through moderation            |
 
 `gallery_entry` fields:
 
-| Field | Source |
-|---|---|
-| `share_token` | the linked published share |
-| `owner_user_id` | the account that opted in |
-| `gallery_state` | `link_only` \| `gallery_visible` \| `featured` \| `hidden` |
-| `gallery_title` | user-entered at opt-in, pre-filled from project title |
-| `gallery_description` | user-entered at opt-in, pre-filled from project description |
-| `gallery_preview_image` | R2 object key, generated at opt-in |
-| `gallery_published_at` | set when state first moves to `gallery_visible` |
-| `moderation_hidden_at` | set when a moderator moves state to `hidden` |
+| Field                   | Source                                                      |
+| ----------------------- | ----------------------------------------------------------- |
+| `share_token`           | the linked published share                                  |
+| `owner_user_id`         | the account that opted in                                   |
+| `gallery_state`         | `link_only` \| `gallery_visible` \| `featured` \| `hidden`  |
+| `gallery_title`         | user-entered at opt-in, pre-filled from project title       |
+| `gallery_description`   | user-entered at opt-in, pre-filled from project description |
+| `gallery_preview_image` | R2 object key, generated at opt-in                          |
+| `gallery_published_at`  | set when state first moves to `gallery_visible`             |
+| `moderation_hidden_at`  | set when a moderator moves state to `hidden`                |
 
 Derived fields (not stored on `gallery_entry`, read from the share or project at query time):
 
@@ -209,6 +211,7 @@ Checklist:
 Start: gallery entries can become public
 
 Done:
+
 - TrackDraw has the minimum believable control model for public discovery
 - operators can see and act on all gallery entries through the admin dashboard
 
@@ -228,16 +231,16 @@ Minimum report reasons:
 
 State transition matrix:
 
-| Actor | From | To | Allowed |
-|---|---|---|---|
-| Owner | `link_only` | `gallery_visible` | Yes |
-| Owner | `gallery_visible` | `link_only` | Yes |
-| Owner | `gallery_visible` | `hidden` | No |
-| Owner | `hidden` | `gallery_visible` | No |
-| Moderator / Admin | `gallery_visible` | `featured` | Yes |
-| Moderator / Admin | `featured` | `gallery_visible` | Yes |
-| Moderator / Admin | `gallery_visible` or `featured` | `hidden` | Yes |
-| Moderator / Admin | `hidden` | `gallery_visible` | Yes |
+| Actor             | From                            | To                | Allowed |
+| ----------------- | ------------------------------- | ----------------- | ------- |
+| Owner             | `link_only`                     | `gallery_visible` | Yes     |
+| Owner             | `gallery_visible`               | `link_only`       | Yes     |
+| Owner             | `gallery_visible`               | `hidden`          | No      |
+| Owner             | `hidden`                        | `gallery_visible` | No      |
+| Moderator / Admin | `gallery_visible`               | `featured`        | Yes     |
+| Moderator / Admin | `featured`                      | `gallery_visible` | Yes     |
+| Moderator / Admin | `gallery_visible` or `featured` | `hidden`          | Yes     |
+| Moderator / Admin | `hidden`                        | `gallery_visible` | Yes     |
 
 Rules: owners cannot self-feature. Owners cannot reverse a moderator hide. Moderation state overrides owner controls while `hidden`.
 
