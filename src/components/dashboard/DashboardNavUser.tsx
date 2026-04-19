@@ -19,11 +19,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { getAccountRoleLabel, type AccountRole } from "@/lib/account-roles";
-import {
-  ChevronsUpDownIcon,
-  LogOutIcon,
-  HomeIcon,
-} from "lucide-react";
+import { ChevronsUpDownIcon, LogOutIcon, HomeIcon } from "lucide-react";
 
 type DashboardNavUserProps = {
   user: {
@@ -64,7 +60,11 @@ export default function DashboardNavUser({ user }: DashboardNavUserProps) {
               <SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
             }
           >
-            <UserAvatar name={user.name} email={user.email} className="size-8 text-xs" />
+            <UserAvatar
+              name={user.name}
+              email={user.email}
+              className="size-8 text-xs"
+            />
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
               <span className="truncate text-xs">{roleLabel}</span>
@@ -78,7 +78,11 @@ export default function DashboardNavUser({ user }: DashboardNavUserProps) {
             sideOffset={4}
           >
             <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
-              <UserAvatar name={user.name} email={user.email} className="size-8 text-xs" />
+              <UserAvatar
+                name={user.name}
+                email={user.email}
+                className="size-8 text-xs"
+              />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="text-muted-foreground truncate text-xs">

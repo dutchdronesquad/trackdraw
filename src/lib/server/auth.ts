@@ -109,8 +109,10 @@ export async function getAuth() {
             );
           }
 
-          const [{ buildChangeEmailConfirmationEmail }, { isPlunkConfigured, sendPlunkMail }] =
-            await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
+          const [
+            { buildChangeEmailConfirmationEmail },
+            { isPlunkConfigured, sendPlunkMail },
+          ] = await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
 
           console.info("[TrackDraw auth] sendChangeEmailConfirmation", {
             recipient: currentEmail,
@@ -166,8 +168,10 @@ export async function getAuth() {
           );
         }
 
-        const [{ buildEmailVerificationEmail }, { isPlunkConfigured, sendPlunkMail }] =
-          await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
+        const [
+          { buildEmailVerificationEmail },
+          { isPlunkConfigured, sendPlunkMail },
+        ] = await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
 
         console.info("[TrackDraw auth] sendVerificationEmail", {
           recipient,
@@ -209,8 +213,10 @@ export async function getAuth() {
           max: 3,
         },
         sendMagicLink: async ({ email: recipient, url, token }) => {
-          const [{ buildMagicLinkEmail }, { isPlunkConfigured, sendPlunkMail }] =
-            await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
+          const [
+            { buildMagicLinkEmail },
+            { isPlunkConfigured, sendPlunkMail },
+          ] = await Promise.all([loadAuthEmailModule(), loadPlunkModule()]);
 
           console.info("[TrackDraw auth] sendMagicLink", {
             recipient,

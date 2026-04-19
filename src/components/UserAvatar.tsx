@@ -16,7 +16,11 @@ function getInitials(name?: string | null, email?: string | null): string {
   return parts.map((p) => p[0]?.toUpperCase() ?? "").join("") || "T";
 }
 
-export default function UserAvatar({ name, email, className }: UserAvatarProps) {
+export default function UserAvatar({
+  name,
+  email,
+  className,
+}: UserAvatarProps) {
   return (
     <span
       className={cn(
