@@ -14,7 +14,6 @@ A PVA is not a product evaluation or research document. Product-shape analysis, 
 
 Current PVAs:
 
-- `authorization-and-roles-pva.md` — account roles, ownership, capability-based authorization
 - `published-gallery-pva.md` — opt-in gallery discovery surface built on top of published shares
 - `live-race-overlay-pva.md` — real-time race overlay integration with `rh-stream-overlays`
 - `map-field-overlay-pva.md` — map-based field placement with hybrid asset storage
