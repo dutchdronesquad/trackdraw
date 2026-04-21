@@ -19,7 +19,8 @@ Locked decisions:
 - preview images are generated automatically at gallery opt-in time and stored in R2 object storage
 - the opt-in flow lives in the existing share dialog, not a separate publishing surface
 - opting into the gallery pins the underlying share — passive expiry is suspended as long as the entry is gallery-visible; the owner can still manually revoke the share at any time
-- removing an entry from the gallery does not reinstate a share expiry; the share remains active until manually revoked
+- removing an entry from the gallery returns the share to normal expiry-based retention
+- a moderator hide also returns the share to normal expiry-based retention; hidden entries are removed from gallery discovery, but direct share links continue to work until the share expires or is revoked
 - the roles and authorization foundation is already shipped and should be consumed here, not redesigned
 - v1 stays discovery-first: no comments, likes, profiles, or social behavior
 - gallery entries are managed through the admin dashboard
@@ -103,20 +104,23 @@ R2 preview image:
 
 - key structure: `gallery/previews/{gallery_entry_id}.webp`
 - generated at opt-in using the same 3D render pipeline as the existing share preview
-- cleanup: delete the R2 object when the entry is permanently removed; keep the object when the entry is hidden (in case the hide is reversed); delete when the entry is soft-deleted or the share is permanently revoked
+- cleanup: delete the R2 object when the entry is permanently removed; keep the object when the entry is hidden (in case the hide is reversed); delete when the share is permanently revoked or eventually cleaned up after expiry
 
-Share pinning: when an entry moves to `gallery_visible` or `featured`, the underlying share's `expires_at` is set to `null`. This suspends passive expiry for as long as the entry remains in the gallery. The owner can still revoke the share explicitly at any time, which also removes gallery visibility. Removing from the gallery does not restore a share expiry — the share stays active until the owner manually revokes it.
+Share pinning: when an entry moves to `gallery_visible` or `featured`, the underlying share's `expires_at` is set to `null`. This suspends passive expiry for as long as the entry remains in the gallery. The owner can still revoke the share explicitly at any time, which also removes gallery visibility.
+
+Retention outside the gallery: when an entry moves from `gallery_visible` or `featured` to `link_only` or `hidden`, the underlying share returns to normal expiry-based retention. The direct `/share/[token]` link remains available until that share expires or is manually revoked.
 
 Gallery visibility rule: an entry is surfaced in browse results if its `gallery_state` is `gallery_visible` or `featured` AND the underlying share has not been manually revoked.
 
 Checklist:
 
-- [ ] Define and migrate the `gallery_entry` table
-- [ ] Confirm the state model: `link_only`, `gallery_visible`, `featured`, `hidden`
-- [ ] Confirm gallery visibility is removed when the share is manually revoked
+- [x] Define and migrate the `gallery_entry` table
+- [x] Confirm the state model: `link_only`, `gallery_visible`, `featured`, `hidden`
+- [x] Confirm gallery visibility is removed when the share is manually revoked
 - [ ] Confirm that passive share expiry is suspended (set `expires_at` to `null`) when an entry becomes gallery-visible
-- [ ] Confirm that removing from the gallery does not restore an expiry on the share
-- [ ] Define the R2 key structure: `gallery/previews/{gallery_entry_id}.webp`
+- [ ] Confirm that removing from the gallery returns the share to normal expiry-based retention
+- [ ] Confirm that moderator hide also returns the share to normal expiry-based retention
+- [x] Define the R2 key structure: `gallery/previews/{gallery_entry_id}.webp`
 - [ ] Define R2 cleanup lifecycle: delete on permanent removal, keep on hide, delete on share revocation
 - [ ] Confirm derived fields (field size, obstacle count) are read at query time, not stored
 
@@ -157,7 +161,7 @@ Checklist:
 - [ ] Set share `expires_at` to `null` on opt-in (pin the share)
 - [ ] Implement `Remove from gallery` action in the share dialog with confirmation
 - [ ] Confirm revoking the underlying share also removes gallery visibility
-- [ ] Confirm that removing from the gallery does not reinstate a share expiry
+- [ ] Confirm that removing from the gallery starts normal expiry-based retention again
 - [ ] Show `View in gallery →` link in the share dialog after successful opt-in
 
 ### Phase 3: Public Gallery Browse Surface
@@ -218,7 +222,7 @@ Done:
 Minimum moderation controls:
 
 - owner can remove their entry from the gallery (state → `link_only`) without revoking the share
-- moderator or admin can hide an entry (state → `hidden`); underlying share remains active
+- moderator or admin can hide an entry (state → `hidden`); the entry is removed from gallery discovery and the direct share link remains active until the share expires or is revoked
 - moderator or admin can feature (state → `featured`) or unfeature (state → `gallery_visible`) an entry
 - user can report an entry
 
@@ -243,6 +247,8 @@ State transition matrix:
 | Moderator / Admin | `hidden`                        | `gallery_visible` | Yes     |
 
 Rules: owners cannot self-feature. Owners cannot reverse a moderator hide. Moderation state overrides owner controls while `hidden`.
+
+Lifecycle rule: only `gallery_visible` and `featured` suspend passive expiry. `link_only` and `hidden` follow the normal share-retention path.
 
 Dashboard gallery module:
 
