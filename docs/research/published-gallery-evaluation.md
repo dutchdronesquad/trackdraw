@@ -143,6 +143,13 @@ Gallery entries are managed through the admin dashboard. Operators see all entri
 
 Report reasons: `inappropriate`, `spam`, `copyright / stolen`, `broken / low quality`
 
+Recommended gallery state names:
+
+- `unlisted`: share exists, but is not shown in the gallery
+- `listed`: standard gallery-visible state
+- `featured`: gallery-visible and curated
+- `hidden`: removed from gallery discovery through moderation
+
 ### 5. Public gallery browse surface
 
 A public page at `/gallery` with a Featured section (manually curated, primary) and a Recent section (secondary, load more in batches of 12). Cards link to `/share/[token]`. The page is server-rendered, publicly accessible, and indexable. See the [Published Gallery Design](published-gallery-design.md) for the full page structure and card specs.
