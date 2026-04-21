@@ -34,7 +34,7 @@ jobs:
           ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
           fetch-depth: 0
       - name: Setup Node.js ${{ env.DEFAULT_NODE }}
-        uses: actions/setup-node@v6.3.0
+        uses: actions/setup-node@v6.4.0
         with:
           node-version: ${{ env.DEFAULT_NODE }}
           cache: npm
@@ -62,7 +62,7 @@ jobs:
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "short_sha=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
       - name: Setup Node.js ${{ env.DEFAULT_NODE }}
-        uses: actions/setup-node@v6.3.0
+        uses: actions/setup-node@v6.4.0
         with:
           node-version: ${{ env.DEFAULT_NODE }}
           cache: npm
