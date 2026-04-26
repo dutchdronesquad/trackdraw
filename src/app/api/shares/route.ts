@@ -3,7 +3,11 @@ import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { getProjectForUser } from "@/lib/server/projects";
-import { createShare, getSharesByUserId } from "@/lib/server/shares";
+import {
+  createShare,
+  getShareByProjectIdForUser,
+  getSharesByUserId,
+} from "@/lib/server/shares";
 import { buildStoredSharePath } from "@/lib/share";
 import { parseEditorView } from "@/lib/view";
 
@@ -15,6 +19,14 @@ export async function GET(request: Request) {
         { ok: false, error: "Authentication required" },
         { status: 401 }
       );
+    }
+
+    const requestUrl = new URL(request.url);
+    const projectId = requestUrl.searchParams.get("projectId")?.trim();
+
+    if (projectId) {
+      const share = await getShareByProjectIdForUser(user.id, projectId);
+      return NextResponse.json({ ok: true, share });
     }
 
     const shares = await getSharesByUserId(user.id);
