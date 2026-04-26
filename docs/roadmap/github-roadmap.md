@@ -29,12 +29,12 @@ Labels used below:
   - [ ] Resolve remaining mapping and orientation edge cases
         Tighten the current export where prefab substitutions, facing direction, or rotation assumptions still produce avoidable cleanup work after import.
 
-- [ ] Editor workflow follow-up (`No account required`)
-      Build on the shipped snapping, route warnings, and numbering handoff with stronger in-canvas guidance that stays lightweight, derived, and safe across desktop and mobile.
+- [x] Editor workflow follow-up (`No account required`)
+      Shipped route-derived numbering validation, route-line and waypoint-aware snapping, x/y object-alignment snapping, and lightweight inspector cues without replacing the current derived workflow model.
   - [x] Obstacle numbering validation and controls
         Added shared route-derived numbering validation, layout inspector status, missing-route/off-route issue states, and item-list cues without replacing the current derived model.
-  - [ ] Advanced snapping follow-up
-        Build on the shipped grid-and-shape snap baseline with route-line alignment, stronger object-alignment guides, and useful angle targets while preserving drag responsiveness on larger layouts.
+  - [x] Advanced snapping follow-up
+        Added route-line snapping, x/y object-alignment snapping, and kept the existing angle/grid behavior on the same lightweight snap resolver.
 
 - [ ] Map and field overlay (`No account required`)
       Support venue plans, field maps, or imagery behind the editor canvas.

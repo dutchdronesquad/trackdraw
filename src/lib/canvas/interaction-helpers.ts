@@ -7,7 +7,7 @@ import {
   resolveSnapPosition,
 } from "@/lib/canvas/snap";
 import type { CursorState, DraftPoint } from "@/lib/canvas/shared";
-import type { Shape } from "@/lib/types";
+import type { PolylineShape, Shape } from "@/lib/types";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 
@@ -75,6 +75,7 @@ export function pointerToMeters(options: {
   getNearbySnapCandidates: (meters: { x: number; y: number }) => Shape[];
   magnetic?: boolean;
   pointer: { x: number; y: number } | null;
+  routeCandidates?: PolylineShape[];
   snap?: boolean;
   snapRadiusMeters: number;
   stepPx: number;
@@ -84,6 +85,7 @@ export function pointerToMeters(options: {
     getNearbySnapCandidates,
     magnetic = true,
     pointer,
+    routeCandidates,
     snap = true,
     snapRadiusMeters,
     stepPx,
@@ -107,6 +109,7 @@ export function pointerToMeters(options: {
     gridStep: px2m(stepPx, designPpm),
     magneticRadiusMeters: snapRadiusMeters,
     candidates: getNearbySnapCandidates(gridMeters),
+    routeCandidates,
   });
 }
 

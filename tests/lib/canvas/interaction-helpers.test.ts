@@ -103,6 +103,24 @@ describe("canvas interaction helpers", () => {
     ).toEqual({ x: 1.35, y: 2.15 });
   });
 
+  it("snaps pointer placement to path waypoints", () => {
+    const route = shapes.find((shape) => shape.kind === "polyline");
+    expect(route?.kind).toBe("polyline");
+
+    const snapped = pointerToMeters({
+      designPpm: 20,
+      getNearbySnapCandidates: () => [],
+      pointer: { x: 24, y: 22 },
+      routeCandidates: route?.kind === "polyline" ? [route] : [],
+      snap: true,
+      magnetic: true,
+      snapRadiusMeters: 1,
+      stepPx: 20,
+    });
+
+    expect(snapped).toEqual({ x: 1, y: 1 });
+  });
+
   it("handles draft-loop and cursor state helpers", () => {
     expect(
       shouldCloseDraftLoop({

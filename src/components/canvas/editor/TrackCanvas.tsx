@@ -448,6 +448,14 @@ const TrackCanvas = memo(
       () => buildSnapIndex(designShapes, waypointSnapCellSize),
       [designShapes, waypointSnapCellSize]
     );
+    const routeSnapCandidates = useMemo(
+      () =>
+        designShapes.filter(
+          (shape): shape is PolylineShape =>
+            shape.kind === "polyline" && shape.points.length >= 2
+        ),
+      [designShapes]
+    );
     const getWaypointSnapCandidates = useCallback(
       (meters: { x: number; y: number }) =>
         getNearbySnapCandidatesFromIndex(
@@ -464,6 +472,8 @@ const TrackCanvas = memo(
         options: {
           excludeIds?: Iterable<string>;
           snapToGrid?: boolean;
+          snapToRouteLines?: boolean;
+          snapToRouteWaypoints?: boolean;
           snapToShapes?: boolean;
         } = {}
       ) => {
@@ -478,6 +488,9 @@ const TrackCanvas = memo(
           gridStep: design.field.gridStep,
           magneticRadiusMeters: waypointSnapRadiusMeters,
           candidates: getWaypointSnapCandidates(posMeters),
+          routeCandidates: routeSnapCandidates,
+          snapToRouteLines: options.snapToRouteLines,
+          snapToRouteWaypoints: options.snapToRouteWaypoints,
           excludeIds: options.excludeIds,
         });
 
@@ -490,6 +503,7 @@ const TrackCanvas = memo(
         design.field.gridStep,
         design.field.ppm,
         getWaypointSnapCandidates,
+        routeSnapCandidates,
         waypointSnapRadiusMeters,
       ]
     );
@@ -569,10 +583,18 @@ const TrackCanvas = memo(
     );
 
     const resolveWaypointDragPosition = useCallback(
-      (pos: Vector2d, snapEnabled: boolean): Vector2d => {
+      (
+        pos: Vector2d,
+        snapEnabled: boolean,
+        sourcePathId?: string
+      ): Vector2d => {
         const bounded = clampWaypointDragPosition(pos);
         if (!snapEnabled) return bounded;
-        return resolveCanvasSnapPosition(bounded);
+        return resolveCanvasSnapPosition(bounded, {
+          excludeIds: sourcePathId ? [sourcePathId] : undefined,
+          snapToRouteLines: false,
+          snapToRouteWaypoints: true,
+        });
       },
       [clampWaypointDragPosition, resolveCanvasSnapPosition]
     );
@@ -1590,13 +1612,7 @@ const TrackCanvas = memo(
                 <span className="text-border">·</span>
                 <span>Grid {design.field.gridStep}m</span>
                 <span className="text-border">·</span>
-                <span>
-                  {snapEnabled
-                    ? activeTool === "polyline"
-                      ? "Smart snap"
-                      : "Grid snap"
-                    : "Snap off"}
-                </span>
+                <span>{snapEnabled ? "Smart snap" : "Snap off"}</span>
               </div>
             )}
           </div>

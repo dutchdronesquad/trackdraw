@@ -32,7 +32,8 @@ export interface PolylineShapeContentProps {
   selectedSegmentPoint: { x: number; y: number } | null;
   resolveWaypointDragPosition: (
     pos: Vector2d,
-    snapEnabled: boolean
+    snapEnabled: boolean,
+    sourcePathId?: string
   ) => Vector2d;
   setSelection: (ids: string[]) => void;
   setDragSnapPreview: React.Dispatch<
@@ -231,7 +232,8 @@ export function PolylineShapeContent({
       Math.abs(session.latestClient.y - session.initialClient.y) > 3;
     const resolved = resolveWaypointDragPosition(
       rawPosition,
-      hasPhysicallyMoved && dragSnapRef.current
+      hasPhysicallyMoved && dragSnapRef.current,
+      path.id
     );
     session.lastResolved = resolved;
     session.hasMoved = session.hasMoved || hasPhysicallyMoved;
@@ -247,6 +249,7 @@ export function PolylineShapeContent({
     buildPreviewPoints,
     clientToStagePoint,
     dragSnapRef,
+    path.id,
     resolveWaypointDragPosition,
     setDragSnapPreview,
   ]);

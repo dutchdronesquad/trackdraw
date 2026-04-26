@@ -22,7 +22,7 @@ import {
   shouldCloseDraftLoop as shouldCloseDraftLoopForPath,
   shouldSkipDraftPoint as shouldSkipDraftPointForPath,
 } from "@/lib/canvas/interaction-helpers";
-import { findNearestSnapTarget } from "@/lib/canvas/snap";
+import { findNearestSnapTargetWithRoutes } from "@/lib/canvas/snap";
 import { createShapeForTool, type EditorTool } from "@/lib/editor-tools";
 import {
   getLayoutPresetById,
@@ -34,7 +34,7 @@ import {
   type DraftPoint,
   type RectLike,
 } from "@/lib/canvas/shared";
-import type { Shape, ShapeDraft } from "@/lib/types";
+import type { PolylineShape, Shape, ShapeDraft } from "@/lib/types";
 
 interface TrackCanvasInteractionsParams {
   activeTool: EditorTool;
@@ -160,6 +160,14 @@ export function useTrackCanvasInteractions({
     () => buildSnapIndex(designShapes, snapCellSize),
     [designShapes, snapCellSize]
   );
+  const routeSnapCandidates = useMemo(
+    () =>
+      designShapes.filter(
+        (shape): shape is PolylineShape =>
+          shape.kind === "polyline" && shape.points.length >= 2
+      ),
+    [designShapes]
+  );
 
   const getNearbySnapCandidates = useCallback(
     (meters: { x: number; y: number }) => {
@@ -179,6 +187,7 @@ export function useTrackCanvasInteractions({
         getNearbySnapCandidates,
         magnetic,
         pointer,
+        routeCandidates: routeSnapCandidates,
         snap: snapEnabled && snap,
         snapRadiusMeters,
         stepPx,
@@ -187,6 +196,7 @@ export function useTrackCanvasInteractions({
     [
       designField.ppm,
       getNearbySnapCandidates,
+      routeSnapCandidates,
       snapEnabled,
       snapRadiusMeters,
       stepPx,
@@ -205,13 +215,14 @@ export function useTrackCanvasInteractions({
 
   const findSnapTarget = useCallback(
     (meters: { x: number; y: number }) => {
-      return findNearestSnapTarget({
+      return findNearestSnapTargetWithRoutes({
         candidates: getNearbySnapCandidates(meters),
         pos: meters,
+        routeCandidates: routeSnapCandidates,
         snapRadiusMeters,
       });
     },
-    [getNearbySnapCandidates, snapRadiusMeters]
+    [getNearbySnapCandidates, routeSnapCandidates, snapRadiusMeters]
   );
 
   const shouldCloseDraftLoop = useCallback(
