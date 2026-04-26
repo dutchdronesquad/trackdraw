@@ -81,6 +81,7 @@ const storedShare = {
   revokedAt: null,
   ownerUserId: "owner-1",
   projectId: "project-1",
+  shareType: "published",
 } as unknown as StoredShare;
 
 function patchRequest(action: string) {

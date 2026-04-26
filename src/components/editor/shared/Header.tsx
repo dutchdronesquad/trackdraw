@@ -10,6 +10,7 @@ import { useTheme } from "@/hooks/useTheme";
 interface HeaderProps {
   tab: "2d" | "3d";
   onTabChange: (tab: "2d" | "3d") => void;
+  embedMode?: boolean;
   studioHref?: string;
   showObstacleNumbers?: boolean;
   onToggleObstacleNumbers?: () => void;
@@ -18,6 +19,7 @@ interface HeaderProps {
 export default function Header({
   tab,
   onTabChange,
+  embedMode = false,
   studioHref = "/studio",
   showObstacleNumbers = false,
   onToggleObstacleNumbers,
@@ -127,18 +129,22 @@ export default function Header({
         <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
         <span className="hidden shrink-0 items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[11px] font-medium text-sky-400 sm:flex">
           <Eye className="size-3" />
-          Shared review
+          {embedMode ? "Embed" : "Shared review"}
         </span>
-        <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
-        <Link
-          href={studioHref}
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"
-          )}
-        >
-          Make editable copy
-        </Link>
+        {!embedMode ? (
+          <>
+            <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
+            <Link
+              href={studioHref}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"
+              )}
+            >
+              Make editable copy
+            </Link>
+          </>
+        ) : null}
       </div>
     </header>
   );

@@ -10,7 +10,11 @@ import {
 } from "@/components/SidebarDialog";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/store/editor";
-import { buildStoredSharePath, encodeDesign } from "@/lib/share";
+import {
+  buildStoredEmbedPath,
+  buildStoredSharePath,
+  encodeDesign,
+} from "@/lib/share";
 import { parseEditorView } from "@/lib/view";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -35,6 +39,9 @@ import {
   EyeOff,
   Sparkles,
   Trash2,
+  Code2,
+  Route,
+  Orbit,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -52,13 +59,14 @@ type GalleryState = "unlisted" | "listed" | "featured" | "hidden";
 type ActiveShare = {
   url: string;
   shareToken: string;
+  shareType: "temporary" | "published";
   expiresInDays: 7 | 30 | 90 | null;
   galleryState: GalleryState;
   galleryTitle: string;
   galleryDescription: string;
 };
 
-type Tab = "share" | "gallery" | "actions";
+type Tab = "share" | "embed" | "gallery" | "actions";
 
 const SHARE_EXPIRY_OPTIONS = [
   { value: 7 as const, label: "7 days" },
@@ -129,8 +137,12 @@ function clearAnonShare() {
 
 function getLifetimeCopy(hostname: string, expiresInDays: 7 | 30 | 90 | null) {
   return expiresInDays === null
-    ? `Read-only snapshot on ${hostname} with no expiry`
+    ? `Published link on ${hostname}, stays live until revoked`
     : `Read-only snapshot on ${hostname}, expires in ${expiresInDays} days`;
+}
+
+function buildIframeCode(embedUrl: string) {
+  return `<iframe src="${embedUrl}" title="TrackDraw track embed" loading="lazy" style="width:100%;height:600px;border:0;" allowfullscreen></iframe>`;
 }
 
 const PREVIEW_MAX_W = 960;
@@ -210,6 +222,8 @@ export default function ShareDialog({
   const [revoking, setRevoking] = useState(false);
   const [galleryUpdating, setGalleryUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
+  const [embedView, setEmbedView] = useState<"2d" | "3d">(currentView);
   const [showGalleryForm, setShowGalleryForm] = useState(false);
   const [confirmRemoveFromGallery, setConfirmRemoveFromGallery] =
     useState(false);
@@ -223,13 +237,30 @@ export default function ShareDialog({
 
   const shareNeedsRefresh =
     share !== null &&
-    ((publishedDesignToken !== null &&
-      publishedDesignToken !== currentDesignToken) ||
-      (share.expiresInDays !== null && expiresInDays !== share.expiresInDays));
+    publishedDesignToken !== null &&
+    publishedDesignToken !== currentDesignToken;
+  const expiryNeedsRefresh =
+    share !== null &&
+    share.shareType === "temporary" &&
+    share.expiresInDays !== null &&
+    expiresInDays !== share.expiresInDays;
+  const linkNeedsRefresh = shareNeedsRefresh || expiryNeedsRefresh;
+  const showExpirySelector = !isAuthenticated;
+  const embedUrl =
+    share?.shareType === "published"
+      ? new URL(
+          buildStoredEmbedPath(share.shareToken, embedView),
+          typeof window !== "undefined"
+            ? window.location.origin
+            : "https://trackdraw.app"
+        ).toString()
+      : null;
+  const iframeCode = embedUrl ? buildIframeCode(embedUrl) : null;
 
   const isGalleryVisible =
     share?.galleryState === "listed" || share?.galleryState === "featured";
   const blockedByModeration = share?.galleryState === "hidden";
+  const showEmbedSection = isAuthenticated && !existingShareMode;
   const showGallerySection = isAuthenticated && !!projectId;
 
   const galleryTitleValid = isGalleryTitleValid(galleryTitleInput);
@@ -290,6 +321,7 @@ export default function ShareDialog({
             share?: {
               token: string;
               expiresAt: string | null;
+              shareType: "temporary" | "published";
               galleryState: string | null;
               galleryTitle: string | null;
               galleryDescription: string | null;
@@ -307,6 +339,7 @@ export default function ShareDialog({
                 window.location.origin
               ).toString(),
               shareToken: s.token,
+              shareType: s.shareType,
               expiresInDays: expiry,
               galleryState: parseGalleryState(s.galleryState),
               galleryTitle: s.galleryTitle ?? "",
@@ -322,6 +355,7 @@ export default function ShareDialog({
             setShare({
               url: stored.url,
               shareToken: stored.shareToken,
+              shareType: "temporary",
               expiresInDays: stored.expiresInDays,
               galleryState: "unlisted",
               galleryTitle: "",
@@ -371,14 +405,19 @@ export default function ShareDialog({
         body: JSON.stringify({
           design,
           view: currentView,
-          expiresInDays,
+          ...(!isAuthenticated ? { expiresInDays } : {}),
           ...(projectId ? { projectId } : {}),
         }),
       });
       const data = (await res.json()) as
         | {
             ok: true;
-            share: { token: string; path: string; expiresAt: string | null };
+            share: {
+              token: string;
+              path: string;
+              expiresAt: string | null;
+              shareType: "temporary" | "published";
+            };
           }
         | { ok: false; error?: string };
 
@@ -386,9 +425,12 @@ export default function ShareDialog({
         throw new Error(data.error ?? "Failed to create share link");
 
       const url = new URL(data.share.path, window.location.origin).toString();
-      const expiry = inferExpiryDays(data.share.expiresAt) ?? expiresInDays;
+      const expiry =
+        data.share.shareType === "published"
+          ? null
+          : (inferExpiryDays(data.share.expiresAt) ?? expiresInDays);
 
-      if (force && share) {
+      if (force && share && share.shareToken !== data.share.token) {
         fetch(`/api/shares/${encodeURIComponent(share.shareToken)}`, {
           method: "DELETE",
         }).catch(() => {
@@ -399,6 +441,7 @@ export default function ShareDialog({
       const newShare: ActiveShare = {
         url,
         shareToken: data.share.token,
+        shareType: data.share.shareType,
         expiresInDays: expiry,
         galleryState: "unlisted",
         galleryTitle: design.title.trim(),
@@ -437,9 +480,9 @@ export default function ShareDialog({
   const handleCopy = async () => {
     try {
       const url =
-        share && !shareNeedsRefresh
+        share && !linkNeedsRefresh
           ? share.url
-          : await doPublish(shareNeedsRefresh);
+          : await doPublish(linkNeedsRefresh);
       await navigator.clipboard.writeText(url);
       setCopied(true);
       toast.success("Link copied");
@@ -452,9 +495,9 @@ export default function ShareDialog({
   const handleNativeShare = async () => {
     try {
       const url =
-        share && !shareNeedsRefresh
+        share && !linkNeedsRefresh
           ? share.url
-          : await doPublish(shareNeedsRefresh);
+          : await doPublish(linkNeedsRefresh);
       await navigator.share({
         title: design.title || "TrackDraw",
         text: `Check out this FPV track: ${design.title || "Untitled"}`,
@@ -470,9 +513,9 @@ export default function ShareDialog({
   const handleOpenInTab = async () => {
     try {
       const url =
-        share && !shareNeedsRefresh
+        share && !linkNeedsRefresh
           ? share.url
-          : await doPublish(shareNeedsRefresh);
+          : await doPublish(linkNeedsRefresh);
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (err) {
       toast.error(
@@ -500,6 +543,18 @@ export default function ShareDialog({
       toast.error(err instanceof Error ? err.message : "Failed to revoke link");
     } finally {
       setRevoking(false);
+    }
+  };
+
+  const handleCopyEmbed = async () => {
+    if (!iframeCode) return;
+    try {
+      await navigator.clipboard.writeText(iframeCode);
+      setCopiedEmbed(true);
+      toast.success("Embed code copied");
+      setTimeout(() => setCopiedEmbed(false), 2000);
+    } catch {
+      toast.error("Failed to copy embed code");
     }
   };
 
@@ -677,19 +732,19 @@ export default function ShareDialog({
   };
 
   const primaryActionLabel = share
-    ? shareNeedsRefresh
+    ? linkNeedsRefresh
       ? "Update link"
       : "Copy link"
     : "Create link";
   const PrimaryIcon = share
-    ? shareNeedsRefresh
+    ? linkNeedsRefresh
       ? Link2
       : copied
         ? Check
         : Copy
     : Link2;
   const primaryAction = share
-    ? shareNeedsRefresh
+    ? linkNeedsRefresh
       ? () => handlePublish(true)
       : handleCopy
     : () => handlePublish();
@@ -713,7 +768,7 @@ export default function ShareDialog({
       : share?.galleryState === "listed"
         ? "Visible in the public gallery."
         : share?.galleryState === "hidden"
-          ? "Hidden by moderation. The direct link still works until expiry or revoke."
+          ? "Hidden by moderation. The direct link still works until it is revoked."
           : share
             ? "Direct link only. Not visible in the public gallery."
             : "Create a share link first.";
@@ -731,9 +786,11 @@ export default function ShareDialog({
             : "No link";
   const galleryShareLinkValue = !share
     ? "No link"
-    : share.expiresInDays === null
-      ? "No expiry"
-      : `Expires in ${share.expiresInDays} days`;
+    : share.shareType === "published"
+      ? "Published"
+      : share.expiresInDays === null
+        ? "No expiry"
+        : `Expires in ${share.expiresInDays} days`;
   const GalleryStatusIcon = !loadDone
     ? Loader2
     : share?.galleryState === "featured"
@@ -768,6 +825,15 @@ export default function ShareDialog({
       ]
     : [
         { id: "share", label: "Share", icon: <Link2 className="size-4" /> },
+        ...(showEmbedSection
+          ? [
+              {
+                id: "embed",
+                label: "Embed",
+                icon: <Code2 className="size-4" />,
+              },
+            ]
+          : []),
         ...(showGallerySection
           ? [
               {
@@ -794,12 +860,19 @@ export default function ShareDialog({
       title: "Share link",
       description: existingShareMode
         ? "Copy or resend this published read-only link, or open Studio to make your own editable copy."
-        : "Create a read-only snapshot link and control how long it stays active.",
+        : isAuthenticated
+          ? "Publish a durable read-only link that stays live until revoked."
+          : "Create a temporary read-only snapshot link and control how long it stays active.",
     },
     gallery: {
       title: "Gallery visibility",
       description:
         "Manage how this published link appears in the public gallery.",
+    },
+    embed: {
+      title: "Embed",
+      description:
+        "Copy iframe code for an account-published track that stays live until revoked.",
     },
     actions: {
       title: "Actions",
@@ -863,32 +936,44 @@ export default function ShareDialog({
               </div>
             ) : (
               <>
-                <div className="space-y-3">
-                  <div>
+                {showExpirySelector ? (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-foreground text-sm font-medium">
+                        Link expires after
+                      </p>
+                      <p className="text-muted-foreground mt-1 text-[11px]">
+                        Temporary snapshots stay available until they expire.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {SHARE_EXPIRY_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setExpiresInDays(option.value)}
+                          className={cn(
+                            "border-border/60 bg-background/65 text-foreground hover:bg-muted/40 cursor-pointer rounded-lg border px-3 py-2 text-xs transition-colors",
+                            expiresInDays === option.value &&
+                              "border-primary bg-primary/10 text-primary"
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-border/60 bg-muted/18 rounded-xl border px-3 py-3">
                     <p className="text-foreground text-sm font-medium">
-                      Link expires after
+                      Published account link
                     </p>
-                    <p className="text-muted-foreground mt-1 text-[11px]">
-                      Published snapshots stay available until they expire.
+                    <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
+                      Account shares stay live until you revoke them. The same
+                      published track can also be embedded.
                     </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {SHARE_EXPIRY_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setExpiresInDays(option.value)}
-                        className={cn(
-                          "border-border/60 bg-background/65 text-foreground hover:bg-muted/40 cursor-pointer rounded-lg border px-3 py-2 text-xs transition-colors",
-                          expiresInDays === option.value &&
-                            "border-primary bg-primary/10 text-primary"
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                )}
 
                 <div className="border-border/60 space-y-3 border-t pt-4">
                   <div className="flex items-center gap-2">
@@ -897,12 +982,20 @@ export default function ShareDialog({
                     </div>
                     <div className="min-w-0">
                       <p className="text-foreground text-sm font-medium">
-                        {share ? "Published link" : "No published link yet"}
+                        {share
+                          ? share.shareType === "published"
+                            ? "Published link"
+                            : "Temporary link"
+                          : isAuthenticated
+                            ? "No published link yet"
+                            : "No temporary link yet"}
                       </p>
                       <p className="text-muted-foreground text-[11px]">
                         {share
                           ? getLifetimeCopy(hostname, share.expiresInDays)
-                          : "Choose when it expires and create a read-only snapshot."}
+                          : isAuthenticated
+                            ? "Create a durable read-only track that can be shared or embedded."
+                            : "Choose when it expires and create a read-only snapshot."}
                       </p>
                     </div>
                   </div>
@@ -915,12 +1008,13 @@ export default function ShareDialog({
                       className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
                     />
                   ) : null}
-                  {shareNeedsRefresh ? (
+                  {linkNeedsRefresh ? (
                     <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
                       <Share2 className="mt-0.5 size-3.5 shrink-0" />
                       <span className="leading-relaxed">
-                        This link no longer reflects the latest design or expiry
-                        selection.
+                        {shareNeedsRefresh
+                          ? "This link no longer reflects the latest design."
+                          : "This link no longer reflects the latest expiry selection."}
                       </span>
                     </div>
                   ) : null}
@@ -929,7 +1023,7 @@ export default function ShareDialog({
                       "grid grid-cols-1 gap-2",
                       share &&
                         isAuthenticated &&
-                        (shareNeedsRefresh
+                        (linkNeedsRefresh
                           ? "min-[520px]:grid-cols-2"
                           : "min-[520px]:grid-cols-3")
                     )}
@@ -944,7 +1038,7 @@ export default function ShareDialog({
                     </Button>
                     {share && isAuthenticated ? (
                       <>
-                        {!shareNeedsRefresh ? (
+                        {!linkNeedsRefresh ? (
                           <Button
                             variant="outline"
                             onClick={() => handlePublish(true)}
@@ -952,7 +1046,7 @@ export default function ShareDialog({
                             className="w-full"
                           >
                             <RefreshCw className="size-4" />
-                            Regenerate link
+                            Update link
                           </Button>
                         ) : null}
                         <Button
@@ -970,6 +1064,189 @@ export default function ShareDialog({
                 </div>
               </>
             )}
+          </div>
+        )}
+
+        {resolvedTab === "embed" && (
+          <div className="space-y-4">
+            {!loadDone ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="text-muted-foreground size-4 animate-spin" />
+                <p className="text-muted-foreground text-sm">
+                  Loading embed state…
+                </p>
+              </div>
+            ) : !share ? (
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-lg">
+                    <Code2 className="text-muted-foreground size-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-foreground text-sm font-medium">
+                      Publish before embedding
+                    </p>
+                    <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
+                      Embeds use the durable account-published link, so create
+                      the published link before copying iframe code.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => handlePublish()}
+                  disabled={busy}
+                  className="w-full"
+                >
+                  {publishing ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Link2 className="size-4" />
+                  )}
+                  Create published link
+                </Button>
+              </div>
+            ) : share.shareType !== "published" ? (
+              <div className="space-y-2">
+                <p className="text-foreground text-sm font-medium">
+                  Temporary links cannot be embedded
+                </p>
+                <p className="text-muted-foreground text-[12px] leading-relaxed">
+                  Sign in and publish this track from your account to create a
+                  durable embed.
+                </p>
+              </div>
+            ) : linkNeedsRefresh ? (
+              <div className="space-y-3">
+                <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
+                  <Share2 className="mt-0.5 size-3.5 shrink-0" />
+                  <span className="leading-relaxed">
+                    Update the published link first so the embed uses the latest
+                    design.
+                  </span>
+                </div>
+                <Button
+                  onClick={() => handlePublish(true)}
+                  disabled={busy}
+                  className="w-full"
+                >
+                  {publishing ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-4" />
+                  )}
+                  Update link
+                </Button>
+              </div>
+            ) : iframeCode ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                    <Code2 className="text-muted-foreground size-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-foreground text-sm font-medium">
+                      Embed code
+                    </p>
+                    <p className="text-muted-foreground text-[11px]">
+                      Account-published tracks can be embedded on club or event
+                      sites.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-muted-foreground text-[11px] font-medium">
+                    Initial view
+                  </p>
+                  <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
+                    {(
+                      [
+                        {
+                          view: "2d",
+                          label: "2D layout",
+                          description: "Open as the flat field plan",
+                          icon: Route,
+                        },
+                        {
+                          view: "3d",
+                          label: "3D preview",
+                          description: "Open in the orbit review",
+                          icon: Orbit,
+                        },
+                      ] as const
+                    ).map((option) => {
+                      const Icon = option.icon;
+                      return (
+                        <button
+                          key={option.view}
+                          type="button"
+                          onClick={() => {
+                            setEmbedView(option.view);
+                            setCopiedEmbed(false);
+                          }}
+                          className={cn(
+                            "border-border/60 bg-background/65 flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-left transition-colors",
+                            embedView === option.view
+                              ? "border-primary/50 bg-primary/10 text-primary"
+                              : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                          )}
+                        >
+                          <Icon className="mt-0.5 size-3.5 shrink-0" />
+                          <span className="min-w-0">
+                            <span className="block text-xs font-medium">
+                              {option.label}
+                            </span>
+                            <span
+                              className={cn(
+                                "mt-0.5 block text-[10px] leading-snug",
+                                embedView === option.view
+                                  ? "text-primary/75"
+                                  : "text-muted-foreground"
+                              )}
+                            >
+                              {option.description}
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex flex-col gap-2 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between">
+                    <div>
+                      <p className="text-muted-foreground text-[11px] font-medium">
+                        Iframe code
+                      </p>
+                      <p className="text-muted-foreground/75 mt-0.5 text-[10px]">
+                        Includes the selected initial view.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopyEmbed}
+                      className="w-full min-[520px]:w-auto"
+                    >
+                      {copiedEmbed ? (
+                        <Check className="size-4" />
+                      ) : (
+                        <Copy className="size-4" />
+                      )}
+                      Copy code
+                    </Button>
+                  </div>
+                  <textarea
+                    readOnly
+                    value={iframeCode}
+                    rows={3}
+                    onFocus={(e) => e.target.select()}
+                    className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 resize-none rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -1043,8 +1320,7 @@ export default function ShareDialog({
                 </p>
                 <p className="text-destructive text-[11px] leading-relaxed">
                   This track is hidden from the gallery by moderation. The
-                  direct share link can still work until it expires or is
-                  revoked.
+                  direct share link can still work until it is revoked.
                 </p>
               </div>
             ) : showGalleryForm ? (
@@ -1221,8 +1497,7 @@ export default function ShareDialog({
                         <div className="border-border/60 flex flex-col gap-2 border-t pt-3">
                           <p className="text-muted-foreground text-[11px] leading-relaxed">
                             Remove from the public gallery? The share link
-                            itself will continue to work until it expires or is
-                            revoked.
+                            itself will continue to work until it is revoked.
                           </p>
                           <div className="flex flex-col-reverse gap-2 min-[380px]:flex-row min-[380px]:justify-end">
                             <Button
@@ -1272,22 +1547,24 @@ export default function ShareDialog({
                           its own title, description and preview.
                         </p>
                       </div>
-                      <Button
-                        onClick={() => {
-                          setConfirmRemoveFromGallery(false);
-                          setShowGalleryForm(true);
-                        }}
-                        disabled={busy || shareNeedsRefresh}
-                        className="w-full"
-                      >
-                        Add to gallery
-                      </Button>
                       {shareNeedsRefresh ? (
                         <p className="text-muted-foreground text-[11px] leading-relaxed">
                           Update the share link first so the gallery uses the
                           latest snapshot.
                         </p>
                       ) : null}
+                      <div className="border-border/60 flex border-t pt-3 min-[520px]:justify-end">
+                        <Button
+                          onClick={() => {
+                            setConfirmRemoveFromGallery(false);
+                            setShowGalleryForm(true);
+                          }}
+                          disabled={busy || shareNeedsRefresh}
+                          className="w-full min-[520px]:w-auto"
+                        >
+                          Add to gallery
+                        </Button>
+                      </div>
                     </>
                   )}
                 </div>

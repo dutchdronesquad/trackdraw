@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     }
 
     const share = await createShare(design, {
-      expiresInDays: body.expiresInDays ?? 90,
+      expiresInDays: user ? undefined : (body.expiresInDays ?? 90),
       ownerUserId: user?.id ?? null,
       projectId: body.projectId ?? null,
     });
@@ -102,6 +102,7 @@ export async function POST(request: Request) {
         expiresAt: share.expiresAt,
         ownerUserId: share.ownerUserId,
         projectId: share.projectId,
+        shareType: share.shareType,
       },
     });
   } catch (error) {

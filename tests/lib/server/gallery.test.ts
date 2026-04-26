@@ -120,19 +120,12 @@ describe("gallery server helpers", () => {
     ]);
   });
 
-  it("pins shares when entries become listed or featured", async () => {
+  it("updates only gallery state when entries become listed or featured", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
     const listStatement = createStatement();
-    const listShareStatement = createStatement();
     const featureStatement = createStatement();
-    const featureShareStatement = createStatement();
-    installStatements([
-      listStatement,
-      listShareStatement,
-      featureStatement,
-      featureShareStatement,
-    ]);
+    installStatements([listStatement, featureStatement]);
 
     await moveGalleryEntryToListed("share-1");
     await moveGalleryEntryToFeatured("share-2");
@@ -142,47 +135,29 @@ describe("gallery server helpers", () => {
       "2026-04-25T12:00:00.000Z",
       "share-1"
     );
-    expect(listShareStatement.bind).toHaveBeenCalledWith(
-      null,
+    expect(featureStatement.bind).toHaveBeenCalledWith(
       "2026-04-25T12:00:00.000Z",
-      "share-1"
-    );
-    expect(featureShareStatement.bind).toHaveBeenCalledWith(
-      null,
       "2026-04-25T12:00:00.000Z",
       "share-2"
     );
   });
 
-  it("restores finite share expiry when entries are hidden or unlisted", async () => {
+  it("updates only gallery state when entries are hidden or unlisted", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
     const hiddenStatement = createStatement();
-    const hiddenShareStatement = createStatement();
     const unlistedStatement = createStatement();
-    const unlistedShareStatement = createStatement();
-    installStatements([
-      hiddenStatement,
-      hiddenShareStatement,
-      unlistedStatement,
-      unlistedShareStatement,
-    ]);
+    installStatements([hiddenStatement, unlistedStatement]);
 
-    await moveGalleryEntryToHidden("share-1", { retentionDays: 7 });
-    await moveGalleryEntryToUnlisted("share-2", { retentionDays: 30 });
+    await moveGalleryEntryToHidden("share-1");
+    await moveGalleryEntryToUnlisted("share-2");
 
     expect(hiddenStatement.bind).toHaveBeenCalledWith(
       "2026-04-25T12:00:00.000Z",
       "2026-04-25T12:00:00.000Z",
       "share-1"
     );
-    expect(hiddenShareStatement.bind).toHaveBeenCalledWith(
-      "2026-05-02T12:00:00.000Z",
-      "2026-04-25T12:00:00.000Z",
-      "share-1"
-    );
-    expect(unlistedShareStatement.bind).toHaveBeenCalledWith(
-      "2026-05-25T12:00:00.000Z",
+    expect(unlistedStatement.bind).toHaveBeenCalledWith(
       "2026-04-25T12:00:00.000Z",
       "share-2"
     );
@@ -207,21 +182,15 @@ describe("gallery server helpers", () => {
       },
     });
     const deleteStatement = createStatement();
-    const shareStatement = createStatement();
-    installStatements([entryStatement, deleteStatement, shareStatement]);
+    installStatements([entryStatement, deleteStatement]);
 
-    await deleteGalleryEntry("share-1", { retentionDays: 7 });
+    await deleteGalleryEntry("share-1");
 
     expect(mocks.deleteGalleryPreviewImage).toHaveBeenCalledWith(
       "gallery/previews/entry-1.webp"
     );
     expect(deleteStatement.sql).toContain("delete from gallery_entries");
     expect(deleteStatement.bind).toHaveBeenCalledWith("share-1");
-    expect(shareStatement.bind).toHaveBeenCalledWith(
-      "2026-05-02T12:00:00.000Z",
-      "2026-04-25T12:00:00.000Z",
-      "share-1"
-    );
   });
 
   it("aggregates gallery overview stats by state", async () => {

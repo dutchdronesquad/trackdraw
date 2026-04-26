@@ -11,8 +11,13 @@ export async function cleanupExpiredShares(db: D1Database) {
     .prepare(
       `
       delete from shares
-      where revoked_at is not null
+      where (
+           revoked_at is not null
+           and datetime(revoked_at) < datetime('now', '-30 days')
+         )
          or (
+           share_type = 'temporary'
+           and
            expires_at is not null
            and datetime(expires_at) < datetime('now', '-30 days')
          )

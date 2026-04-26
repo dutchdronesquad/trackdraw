@@ -160,6 +160,8 @@ const compareRows = [
   { label: "2D & 3D preview", guest: true, account: true },
   { label: "PDF, SVG, PNG & JSON export", guest: true, account: true },
   { label: "Read-only share links", guest: true, account: true },
+  { label: "Durable published links", guest: false, account: true },
+  { label: "Embeddable track views", guest: false, account: true },
   { label: "Publish tracks in the gallery", guest: false, account: true },
   { label: "Cloud-synced projects", guest: false, account: true },
   { label: "Open projects on any device", guest: false, account: true },
@@ -605,8 +607,8 @@ export default function Home() {
               </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
                 Open TrackDraw and start designing right away. Create an account
-                to sync projects across devices and publish layouts to the
-                gallery.
+                to sync projects across devices, keep published links live, and
+                embed layouts on club or event sites.
               </p>
             </Reveal>
 
@@ -620,7 +622,8 @@ export default function Home() {
                     </p>
                     <p className="mt-2 text-xl font-semibold">Guest</p>
                     <p className="text-muted-foreground mt-1 text-sm">
-                      Open the studio and start designing right away.
+                      Open the studio, share temporary links, and export your
+                      work.
                     </p>
                     <Link
                       href="/studio"
@@ -663,7 +666,8 @@ export default function Home() {
                     </p>
                     <p className="mt-2 text-xl font-semibold">Free</p>
                     <p className="text-muted-foreground mt-1 text-sm">
-                      Cloud sync, multi-device access, and publishing.
+                      Cloud sync, durable published links, embeds, and gallery
+                      publishing.
                     </p>
                     <Link
                       href="/login"

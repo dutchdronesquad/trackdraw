@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildShareUrl,
+  buildStoredEmbedPath,
   buildStoredSharePath,
   decodeDesign,
   decodeDesignWithReason,
@@ -38,6 +39,7 @@ describe("share helpers", () => {
     });
 
     expect(buildStoredSharePath("abc", "3d")).toBe("/share/abc?view=3d");
+    expect(buildStoredEmbedPath("abc", "2d")).toBe("/embed/abc?view=2d");
     expect(buildShareUrl(design, "2d")).toContain("/share/");
     expect(buildShareUrl(design, "2d")).toContain("view=2d");
   });

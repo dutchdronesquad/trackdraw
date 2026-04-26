@@ -57,10 +57,12 @@ const MobilePanels = dynamic(() => import("./MobilePanels"), { ssr: false });
 
 export default function EditorShell({
   initialTab = "2d",
+  embedMode = false,
   studioHref,
   existingShareMode = false,
 }: {
   initialTab?: EditorView;
+  embedMode?: boolean;
   studioHref?: string;
   existingShareMode?: boolean;
 }) {
@@ -130,6 +132,7 @@ export default function EditorShell({
           <Header
             tab={tab}
             onTabChange={handleTabChange}
+            embedMode={embedMode}
             studioHref={studioHref}
             showObstacleNumbers={showObstacleNumbers}
             onToggleObstacleNumbers={() =>
@@ -178,6 +181,7 @@ export default function EditorShell({
             mobileGizmoEnabled={mobileGizmoEnabled}
             mobileObstacleNumbersEnabled={showObstacleNumbers}
             mobileRulersEnabled={mobileRulersEnabled}
+            embedMode={embedMode}
             onFitView={() => canvasRef.current?.fitToWindow()}
             onSetMobileGizmoEnabled={setMobileGizmoEnabled}
             onSetMobileObstacleNumbersEnabled={setShowObstacleNumbers}
@@ -193,14 +197,14 @@ export default function EditorShell({
             onTabChange={handleTabChange}
             onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
             readOnlyMenuOpen={readOnlyMenuOpen}
-            saveStatusLabel="Shared review"
+            saveStatusLabel={embedMode ? "Embedded track" : "Shared review"}
             studioHref={studioHref}
             tab={tab}
           />
         ) : null}
       </div>
 
-      {shareOpen ? (
+      {shareOpen && !embedMode ? (
         <ShareDialog
           open={shareOpen}
           onOpenChange={setShareOpen}

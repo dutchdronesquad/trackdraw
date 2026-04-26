@@ -19,6 +19,7 @@ interface EditorMobileViewControlsProps {
   onStartFlyThrough: () => void;
   onTabChange: (tab: EditorViewportTab) => void;
   saveStatusLabel: string;
+  showShareActions?: boolean;
   studioHref?: string;
   tab: EditorViewportTab;
   closePanel?: () => void;
@@ -82,6 +83,7 @@ export function ViewControls({
   onTabChange,
   readOnly = false,
   saveStatusLabel,
+  showShareActions = true,
   studioHref = "/studio",
   tab,
 }: EditorMobileViewControlsProps) {
@@ -99,7 +101,7 @@ export function ViewControls({
     <>
       <div>
         <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-          {readOnly ? "Shared review" : "Current mode"}
+          {readOnly ? saveStatusLabel : "Current mode"}
         </p>
         <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
           <p className="text-foreground text-sm font-medium">
@@ -198,7 +200,7 @@ export function ViewControls({
           </>
         )}
       </div>
-      {readOnly ? (
+      {readOnly && showShareActions ? (
         <div>
           <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
             Share
