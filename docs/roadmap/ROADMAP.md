@@ -10,12 +10,12 @@ TrackDraw is now strong in these areas:
 - Track path authoring with elevation-aware planning and a live 3D preview
 - Share-first collaboration through read-only links
 - Public gallery discovery through opt-in published shares
+- Account-published embeds through a dedicated read-only `/embed/[token]` route
 - Practical mobile editing for quick venue-side changes
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 
 The most useful next product moves are:
 
-- A stronger embeddable share surface that extends published read-only viewing beyond TrackDraw itself
 - A sharper decision on how far account-backed project continuity should go after the shipped account and authorization foundation
 - A clearer separation between local-first workflows and account-backed follow-up
 - Versioned publish history for account-backed shares
@@ -44,29 +44,20 @@ Labels used below:
 - `Account-backed`: depends on ownership, sync, identity, or shared persistence
 - `Research`: still primarily exploratory
 
-### 1. Embeddable Shared Views (`No account required`)
+### 1. Embeddable Shared Views (`Account-backed`) ✓
 
-Published shares should be able to travel beyond TrackDraw links when a club, organizer, or venue wants to place a read-only layout directly on another site.
+Account-backed published shares can now travel beyond TrackDraw links when a club, organizer, or venue wants to place a read-only layout directly on another site.
 
-Why now:
+Shipped:
 
-- Published sharing is already a core product surface
-- The gallery now gives TrackDraw a stronger public discovery surface, but external club and event sites still need a way to show a specific track directly
-- An embed flow increases reuse and visibility without requiring collaborative editing, social features, or a separate gallery detail model
-- The safest implementation path can build on the existing read-only share model instead of introducing a second viewer stack
-
-Focus:
-
-- Add an embed option to the share flow with copyable iframe code and a clear preview
-- Keep embeds read-only, lightweight, and compatible with the canonical published share route
-- Preserve pan, zoom, and basic route review interaction without exposing editing controls
-- Treat sandboxing, performance, and invalid-share failure states as product requirements, not implementation details
-
-Suggested first slices:
-
-- Lightweight embed page that reuses the current share resolution and read-only viewer foundations
-- Share dialog follow-up that exposes iframe code generation alongside the existing share link actions
-- Validation of mobile and desktop behavior for embeds on third-party pages with constrained container sizes
+- Added `/embed/[token]`, a lightweight read-only embed route that reuses stored share resolution and the shared viewer foundation
+- Made embeds account-only: only active `published` shares render track data in embed context
+- Kept anonymous shares temporary and non-embeddable, including when someone manually constructs an `/embed/[token]` URL
+- Added clear unavailable states for temporary, expired, revoked, and missing embeds
+- Added a dedicated Embed section in ShareDialog with copyable iframe code, 2D layout / 3D preview initial view selection, and a larger default iframe height
+- Kept gallery discovery separate from share lifecycle, so listing, unlisting, featuring, and hiding do not change share expiry
+- Added automated coverage for share lifecycle, embed authorization, gallery expiry independence, and cleanup targeting
+- Validated the current embed container behavior for mobile and desktop, including iframe sizing and compact mobile controls
 
 ### 2. Accounts And Ownership Model (`Research`)
 
@@ -145,11 +136,16 @@ Shipped:
 - Shares published by signed-in users are always linked to the active account project via `project_id`
 - Shares tab added to the Projects dialog: lists active shares with copy-link, open-in-tab, and revoke actions
 - Revoke button in ShareDialog hidden for unauthenticated sessions
+- Share lifecycle is explicit: anonymous shares are temporary and always expire; account-backed shares are published and stay live until revoked
+- Account project publishing reuses the active published share token instead of creating unbounded duplicate shares
+- Gallery visibility is decoupled from share expiry; list, unlist, feature, and hide only change gallery state
+- Account-published shares are automatically embeddable through `/embed/[token]`; anonymous, expired, revoked, and missing embeds never render track data
+- ShareDialog has a dedicated Embed section with 2D layout / 3D preview initial view selection and copyable iframe code
 
 Focus:
 
 - Keep local-first publish flows simple for unauthenticated use
-- Revisit any replace/regenerate flow only once account ownership is properly defined
+- Improve operator visibility for temporary, published, revoked, gallery-linked, and embedded share states before adding deeper share administration
 
 #### Share Version History
 
@@ -409,12 +405,13 @@ Keep these usable without an account where possible:
 
 - Core editing, preview, import/export, and local project work
 - Local inventory, venue setup, and lightweight notes in their initial versions
-- One-off share publishing and local revoke from the current Studio session
+- One-off temporary share publishing with explicit expiry
 
 Likely account-backed follow-up:
 
 - Cross-device project sync and cloud-backed project libraries
 - Durable ownership and administration of published shares
+- Durable published embeds
 - Version history for account-backed published shares
 - Operator-controlled gallery visibility through feature, hide, restore, and delete actions
 - Curated gallery collections

@@ -56,7 +56,6 @@ import {
   Check,
   CheckCircle2,
   ClipboardCheck,
-  Minus,
   Orbit,
   Route,
   Share2,
@@ -65,6 +64,7 @@ import {
 } from "lucide-react";
 import { Screenshot } from "@/components/landing/Screenshot";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
+import { PricingSection } from "@/components/landing/PricingSection";
 import {
   Reveal,
   RevealStagger,
@@ -131,7 +131,7 @@ const features = [
     surface: "from-violet-500/[0.13] via-violet-500/[0.035] to-transparent",
     glow: "#a855f7",
     title: "Shared review links",
-    text: "Share one current layout with pilots and crew in read-only mode, no install or login required.",
+    text: "Share a read-only layout with pilots and crew. Guest links are temporary; account-published links can stay live until revoked.",
   },
   {
     icon: ClipboardCheck,
@@ -155,16 +155,6 @@ const features = [
   },
 ];
 
-const compareRows = [
-  { label: "Full track designer", guest: true, account: true },
-  { label: "2D & 3D preview", guest: true, account: true },
-  { label: "PDF, SVG, PNG & JSON export", guest: true, account: true },
-  { label: "Read-only share links", guest: true, account: true },
-  { label: "Publish tracks in the gallery", guest: false, account: true },
-  { label: "Cloud-synced projects", guest: false, account: true },
-  { label: "Open projects on any device", guest: false, account: true },
-];
-
 const faq = [
   {
     q: "What is the best way to plan an FPV race track?",
@@ -172,7 +162,7 @@ const faq = [
   },
   {
     q: "Can pilots review the layout without an account?",
-    a: "Yes. Share links open in read-only mode on any device, no account or app needed. Send it to pilots, judges, or crew and everyone sees the same current version.",
+    a: "Yes. Share links open in read-only mode on any device, no account or app needed. Send it to pilots, judges, or crew and everyone sees the same published version.",
   },
   {
     q: "Does it work on a tablet at the venue?",
@@ -184,7 +174,7 @@ const faq = [
   },
   {
     q: "Do I need an account to get started?",
-    a: "No. Open the studio and start designing right away. Creating an account adds cloud storage so your projects are accessible from any device.",
+    a: "No. Open the studio and start designing right away. Creating an account adds cloud storage, durable published links, gallery publishing, and embeds.",
   },
   {
     q: "Can I reuse a layout for a future event?",
@@ -595,111 +585,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Compare ──────────────────────────────────────── */}
-        <section id="plans" className="border-border/40 border-t">
-          <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
-            <Reveal className="mb-12">
-              <Eyebrow>Pricing</Eyebrow>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Start now, sign up when you need more.
-              </h2>
-              <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-                Open TrackDraw and start designing right away. Create an account
-                to sync projects across devices and publish layouts to the
-                gallery.
-              </p>
-            </Reveal>
-
-            <div className="-mx-6 scroll-px-6 overflow-x-auto px-6 pb-2 sm:mx-auto sm:max-w-2xl sm:scroll-px-0 sm:overflow-visible sm:px-0 sm:pb-0">
-              <div className="flex w-max min-w-full snap-x snap-mandatory gap-4 sm:grid sm:w-auto sm:min-w-0 sm:grid-cols-2">
-                {/* Guest */}
-                <Reveal>
-                  <div className="border-border/50 bg-card/20 flex h-full max-w-78 min-w-74 snap-start flex-col rounded-2xl border p-6 sm:max-w-none sm:min-w-0">
-                    <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
-                      No sign-up
-                    </p>
-                    <p className="mt-2 text-xl font-semibold">Guest</p>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      Open the studio and start designing right away.
-                    </p>
-                    <Link
-                      href="/studio"
-                      className="border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full border px-5 text-sm transition"
-                    >
-                      Open Studio <ArrowRight className="size-3.5" />
-                    </Link>
-                    <ul className="mt-6 space-y-2.5">
-                      {compareRows.map((row) => (
-                        <li
-                          key={row.label}
-                          className="flex items-center gap-2.5 text-sm"
-                        >
-                          {row.guest ? (
-                            <Check className="text-brand-primary size-3.5 shrink-0" />
-                          ) : (
-                            <Minus className="text-muted-foreground/40 size-3.5 shrink-0" />
-                          )}
-                          <span
-                            className={
-                              row.guest
-                                ? "text-foreground"
-                                : "text-muted-foreground/40"
-                            }
-                          >
-                            {row.label}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </Reveal>
-
-                {/* Account */}
-                <Reveal delay={0.07}>
-                  <div className="border-brand-primary/25 bg-brand-primary/5 from-brand-primary/8 relative mr-6 flex h-full max-w-78 min-w-74 snap-start flex-col overflow-hidden rounded-2xl border bg-linear-to-br to-transparent p-6 sm:mr-0 sm:max-w-none sm:min-w-0">
-                    <div className="pointer-events-none absolute -top-10 -right-10 size-36 rounded-full bg-[#1E93DB] opacity-[0.12] blur-2xl" />
-                    <p className="text-brand-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
-                      With account
-                    </p>
-                    <p className="mt-2 text-xl font-semibold">Free</p>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      Cloud sync, multi-device access, and publishing.
-                    </p>
-                    <Link
-                      href="/login"
-                      className="mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-5 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/25 transition hover:brightness-110"
-                    >
-                      Create account <ArrowRight className="size-3.5" />
-                    </Link>
-                    <ul className="mt-6 space-y-2.5">
-                      {compareRows.map((row) => (
-                        <li
-                          key={row.label}
-                          className="flex items-center gap-2.5 text-sm"
-                        >
-                          {row.account ? (
-                            <Check className="text-brand-primary size-3.5 shrink-0" />
-                          ) : (
-                            <Minus className="text-muted-foreground/40 size-3.5 shrink-0" />
-                          )}
-                          <span
-                            className={
-                              row.account
-                                ? "text-foreground"
-                                : "text-muted-foreground/40"
-                            }
-                          >
-                            {row.label}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </Reveal>
-              </div>
-            </div>
-          </div>
-        </section>
+        <PricingSection />
 
         {/* ── FAQ ──────────────────────────────────────────── */}
         <section id="faq" className="border-border/40 border-t">

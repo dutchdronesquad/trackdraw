@@ -12,7 +12,7 @@ import {
 } from "./shared";
 
 function formatExpiresIn(iso: string | null): string {
-  if (!iso) return "no expiry";
+  if (!iso) return "published";
   const days = Math.ceil(
     (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
@@ -81,7 +81,9 @@ export function ProjectManagerSharesTab({
               </p>
               <p className="text-muted-foreground mt-0.5 text-[11px]">
                 {itemLabel(share.shapeCount)} ·{" "}
-                {formatExpiresIn(share.expiresAt)}
+                {share.shareType === "published"
+                  ? "published until revoked"
+                  : formatExpiresIn(share.expiresAt)}
               </p>
             </div>
             <div

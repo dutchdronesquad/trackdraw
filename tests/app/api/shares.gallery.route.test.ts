@@ -22,7 +22,6 @@ vi.mock("@/lib/server/gallery", () => ({
 
 vi.mock("@/lib/server/shares", () => ({
   getOrCreateGalleryEntryForShare: vi.fn(),
-  getShareExpiresAtByToken: vi.fn(),
   resolveStoredShare: vi.fn(),
   revokeShare: vi.fn(),
 }));
@@ -40,7 +39,6 @@ import {
 } from "@/lib/server/gallery";
 import {
   getOrCreateGalleryEntryForShare,
-  getShareExpiresAtByToken,
   resolveStoredShare,
 } from "@/lib/server/shares";
 import type { StoredShare } from "@/lib/server/shares";
@@ -74,6 +72,7 @@ const share = {
   revokedAt: null,
   ownerUserId: owner.id,
   projectId: "project-1",
+  shareType: "published",
 } as unknown as StoredShare;
 
 const entry = {
@@ -112,7 +111,6 @@ describe("owner share gallery API route", () => {
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(owner);
     vi.mocked(isResourceOwner).mockReturnValue(true);
     vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue(entry);
-    vi.mocked(getShareExpiresAtByToken).mockResolvedValue(null);
     vi.mocked(getGalleryEntryByShareToken).mockResolvedValue({
       ...entry,
       galleryState: "listed",
@@ -141,7 +139,8 @@ describe("owner share gallery API route", () => {
       ok: true,
       share: {
         token: share.token,
-        expiresAt: null,
+        expiresAt: share.expiresAt,
+        shareType: "published",
         galleryState: "listed",
         galleryTitle: "Public title",
         galleryDescription: "Public description",

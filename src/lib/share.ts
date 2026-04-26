@@ -53,6 +53,12 @@ export function buildStoredSharePath(token: string, view?: EditorView) {
   return `${path}?view=${view}`;
 }
 
+export function buildStoredEmbedPath(token: string, view?: EditorView) {
+  const path = `/embed/${encodeURIComponent(token)}`;
+  if (!view) return path;
+  return `${path}?view=${view}`;
+}
+
 export function isShareSafe(design: TrackDesign): boolean {
   return encodeDesign(design).length <= MAX_SAFE_TOKEN_LENGTH;
 }

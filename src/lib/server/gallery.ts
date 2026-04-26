@@ -108,16 +108,6 @@ export type GalleryOverviewStats = {
   unlisted: number;
 };
 
-type TransitionOptions = {
-  retentionDays?: number;
-};
-
-const DEFAULT_SHARE_RETENTION_DAYS = 90;
-
-function toIsoDateAfterDays(days: number) {
-  return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-}
-
 export function parseGalleryState(value: string | null): GalleryState {
   if (!value) return "unlisted";
   if (value === "link_only") return "unlisted";
@@ -174,25 +164,6 @@ function mapPublicGalleryEntryRow(
         : Number.parseFloat(String(row.field_height)),
     shapeCount: row.shape_count ?? 0,
   };
-}
-
-async function setShareExpiryState(params: {
-  shareToken: string;
-  expiresAt: string | null;
-}) {
-  const db = await getDatabase();
-  const now = new Date().toISOString();
-
-  await db
-    .prepare(
-      `
-        update shares
-        set expires_at = ?, updated_at = ?
-        where token = ? and revoked_at is null
-      `
-    )
-    .bind(params.expiresAt, now, params.shareToken)
-    .run();
 }
 
 export async function getGalleryEntryByShareToken(shareToken: string) {
@@ -392,10 +363,7 @@ export async function createUnlistedGalleryEntry(params: {
   return getGalleryEntryByShareToken(params.shareToken);
 }
 
-export async function moveGalleryEntryToUnlisted(
-  shareToken: string,
-  options: TransitionOptions & { restoreShareExpiry?: boolean } = {}
-) {
+export async function moveGalleryEntryToUnlisted(shareToken: string) {
   const db = await getDatabase();
   const now = new Date().toISOString();
 
@@ -412,21 +380,9 @@ export async function moveGalleryEntryToUnlisted(
     )
     .bind(now, shareToken)
     .run();
-
-  if (options.restoreShareExpiry !== false) {
-    await setShareExpiryState({
-      shareToken,
-      expiresAt: toIsoDateAfterDays(
-        options.retentionDays ?? DEFAULT_SHARE_RETENTION_DAYS
-      ),
-    });
-  }
 }
 
-export async function deleteGalleryEntry(
-  shareToken: string,
-  options: TransitionOptions & { restoreShareExpiry?: boolean } = {}
-) {
+export async function deleteGalleryEntry(shareToken: string) {
   const db = await getDatabase();
   const existing = await getGalleryEntryByShareToken(shareToken);
 
@@ -443,15 +399,6 @@ export async function deleteGalleryEntry(
     )
     .bind(shareToken)
     .run();
-
-  if (options.restoreShareExpiry !== false) {
-    await setShareExpiryState({
-      shareToken,
-      expiresAt: toIsoDateAfterDays(
-        options.retentionDays ?? DEFAULT_SHARE_RETENTION_DAYS
-      ),
-    });
-  }
 }
 
 export async function moveGalleryEntryToListed(shareToken: string) {
@@ -472,11 +419,6 @@ export async function moveGalleryEntryToListed(shareToken: string) {
     )
     .bind(now, now, shareToken)
     .run();
-
-  await setShareExpiryState({
-    shareToken,
-    expiresAt: null,
-  });
 }
 
 export async function updateGalleryEntryMetadata(params: {
@@ -541,17 +483,9 @@ export async function moveGalleryEntryToFeatured(shareToken: string) {
     )
     .bind(now, now, shareToken)
     .run();
-
-  await setShareExpiryState({
-    shareToken,
-    expiresAt: null,
-  });
 }
 
-export async function moveGalleryEntryToHidden(
-  shareToken: string,
-  options: TransitionOptions = {}
-) {
+export async function moveGalleryEntryToHidden(shareToken: string) {
   const db = await getDatabase();
   const now = new Date().toISOString();
 
@@ -568,11 +502,4 @@ export async function moveGalleryEntryToHidden(
     )
     .bind(now, now, shareToken)
     .run();
-
-  await setShareExpiryState({
-    shareToken,
-    expiresAt: toIsoDateAfterDays(
-      options.retentionDays ?? DEFAULT_SHARE_RETENTION_DAYS
-    ),
-  });
 }

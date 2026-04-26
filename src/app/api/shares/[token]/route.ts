@@ -11,7 +11,6 @@ import {
   updateGalleryEntryMetadata,
 } from "@/lib/server/gallery";
 import {
-  getShareExpiresAtByToken,
   getOrCreateGalleryEntryForShare,
   resolveStoredShare,
   revokeShare,
@@ -216,14 +215,14 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
       await deleteGalleryEntry(authorized.token);
     }
 
-    const expiresAt = await getShareExpiresAtByToken(authorized.token);
     const updatedEntry = await getGalleryEntryByShareToken(authorized.token);
 
     return NextResponse.json({
       ok: true,
       share: {
         token: authorized.token,
-        expiresAt,
+        expiresAt: authorized.share.expiresAt,
+        shareType: authorized.share.shareType,
         galleryState: updatedEntry?.galleryState ?? null,
         galleryTitle: updatedEntry?.galleryTitle ?? null,
         galleryDescription: updatedEntry?.galleryDescription ?? null,

@@ -31,6 +31,7 @@ export type AccountShareItem = {
   createdAt: string;
   expiresAt: string | null;
   projectId: string | null;
+  shareType: "temporary" | "published";
   galleryState: "unlisted" | "listed" | "featured" | "hidden" | null;
   galleryTitle: string | null;
   galleryDescription: string | null;

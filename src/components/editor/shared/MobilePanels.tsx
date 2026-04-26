@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Scan, Share2 } from "lucide-react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { ViewControls } from "@/components/editor/mobile/ViewControls";
+import { cn } from "@/lib/utils";
 
 export interface MobilePanelsProps {
   hasPath: boolean;
@@ -11,6 +12,7 @@ export interface MobilePanelsProps {
   mobileGizmoEnabled: boolean;
   mobileObstacleNumbersEnabled: boolean;
   mobileRulersEnabled: boolean;
+  embedMode?: boolean;
   onFitView: () => void;
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
@@ -26,6 +28,7 @@ export interface MobilePanelsProps {
 }
 
 export default function MobilePanels({
+  embedMode = false,
   hasPath,
   mobileFlyModeActive,
   mobileGizmoEnabled,
@@ -54,28 +57,44 @@ export default function MobilePanels({
         className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden"
         style={{ bottom: "calc(0.55rem + env(safe-area-inset-bottom))" }}
       >
-        <div className="pointer-events-auto flex w-full max-w-sm items-center gap-1 rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-1.5 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur">
+        <div
+          className={cn(
+            "pointer-events-auto flex items-center gap-1 border border-white/10 bg-slate-950/86 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur",
+            embedMode
+              ? "rounded-full p-1"
+              : "w-full max-w-sm rounded-[1.35rem] p-1.5"
+          )}
+        >
           <button
             onClick={() => onSetReadOnlyMenuOpen(true)}
-            className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            className={cn(
+              "flex min-w-0 items-center font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white",
+              embedMode
+                ? "gap-1.5 rounded-full px-3 py-2 text-xs"
+                : "flex-1 flex-col gap-1 rounded-2xl px-2 py-2 text-[11px]"
+            )}
           >
             <Scan className="size-3.5" />
-            <span>Review</span>
+            <span>{embedMode ? "View" : "Review"}</span>
           </button>
-          <button
-            onClick={onShare}
-            className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <Share2 className="size-3.5" />
-            <span>Share</span>
-          </button>
-          <Link
-            href={studioHref}
-            className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <ArrowRight className="size-3.5" />
-            <span>Edit copy</span>
-          </Link>
+          {!embedMode ? (
+            <button
+              onClick={onShare}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <Share2 className="size-3.5" />
+              <span>Share</span>
+            </button>
+          ) : null}
+          {!embedMode ? (
+            <Link
+              href={studioHref}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <ArrowRight className="size-3.5" />
+              <span>Edit copy</span>
+            </Link>
+          ) : null}
         </div>
       </div>
 
@@ -103,6 +122,7 @@ export default function MobilePanels({
           studioHref={studioHref}
           closePanel={() => onSetReadOnlyMenuOpen(false)}
           readOnly
+          showShareActions={!embedMode}
           tab={tab}
         />
       </MobileDrawer>
