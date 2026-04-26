@@ -4,7 +4,11 @@ import { useMemo, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
-import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
+import {
+  getObstacleNumberingReport,
+  isNumberedObstacle,
+  type ObstacleNumberingReport,
+} from "@/lib/track/obstacleNumbering";
 import type { Shape, TrackDesign } from "@/lib/types";
 import { X } from "lucide-react";
 import { fmt, Section } from "@/components/inspector/shared";
@@ -71,6 +75,7 @@ export function ItemOverviewList({
   removeShapes,
   setHoveredShapeId,
   grow = false,
+  obstacleNumberingReport,
 }: {
   design: TrackDesign;
   shapes: Shape[];
@@ -78,6 +83,7 @@ export function ItemOverviewList({
   removeShapes: (ids: string[]) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
   grow?: boolean;
+  obstacleNumberingReport?: ObstacleNumberingReport;
 }) {
   const [query, setQuery] = useState("");
   const filteredShapes = useMemo(() => {
@@ -98,9 +104,23 @@ export function ItemOverviewList({
     () => new Map(shapes.map((shape, index) => [shape.id, index + 1] as const)),
     [shapes]
   );
-  const obstacleNumberMap = useMemo(
-    () => getObstacleNumberMap(design),
-    [design]
+  const numberingReport = useMemo(
+    () => obstacleNumberingReport ?? getObstacleNumberingReport(design),
+    [design, obstacleNumberingReport]
+  );
+  const unmappedObstacleIds = useMemo(
+    () =>
+      new Set(
+        shapes
+          .filter(
+            (shape) =>
+              isNumberedObstacle(shape) &&
+              !numberingReport.obstacleNumberMap.has(shape.id) &&
+              numberingReport.primaryPolylineId
+          )
+          .map((shape) => shape.id)
+      ),
+    [numberingReport, shapes]
   );
 
   return (
@@ -185,9 +205,14 @@ export function ItemOverviewList({
                         </p>
                       </div>
                     </div>
-                    {typeof obstacleNumberMap.get(shape.id) === "number" ? (
+                    {typeof numberingReport.obstacleNumberMap.get(shape.id) ===
+                    "number" ? (
                       <span className="border-primary/20 bg-primary/8 text-primary/90 flex h-5 w-12 shrink-0 items-center justify-center rounded-md border font-mono text-[10px]">
-                        #{obstacleNumberMap.get(shape.id)}
+                        #{numberingReport.obstacleNumberMap.get(shape.id)}
+                      </span>
+                    ) : unmappedObstacleIds.has(shape.id) ? (
+                      <span className="flex h-5 w-12 shrink-0 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 font-mono text-[10px] font-medium text-amber-500">
+                        off
                       </span>
                     ) : (
                       <span className="text-muted-foreground/30 flex h-5 w-12 shrink-0 items-center justify-center font-mono text-[10px]">

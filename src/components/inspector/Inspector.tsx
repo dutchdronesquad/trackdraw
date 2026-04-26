@@ -3,8 +3,8 @@
 import { memo, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  EmptyInspectorView,
   MultiInspectorView,
+  ProjectLayoutInspectorView,
   SingleInspectorView,
 } from "@/components/inspector/views";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
@@ -187,7 +187,7 @@ function Inspector({
         className={cn(mobileInline ? "" : "min-h-0 flex-1 overflow-hidden")}
       >
         {panel === "project" || panel === "layout" ? (
-          <EmptyInspectorView
+          <ProjectLayoutInspectorView
             mobileInline={mobileInline}
             panel={panel}
             design={design}

@@ -258,18 +258,17 @@ Suggested first slices:
 
 ### 5. Editor Workflow Follow-up (`No account required`)
 
-TrackDraw already ships visible snapping, route numbering in export and Race Pack handoff, and stronger route warnings. The next editor pass should build on that foundation with tighter in-canvas guidance instead of introducing a separate analysis-heavy workflow.
+TrackDraw already ships visible snapping, route numbering in export and Race Pack handoff, stronger route warnings, and first editor-visible numbering validation. The next editor pass should keep building on that foundation with tighter in-canvas guidance instead of introducing a separate analysis-heavy workflow.
 
 Focus:
 
-- Add clearer obstacle-numbering validation and controls on top of the shipped route-driven numbering model
-- Surface missing route references or numbering gaps as clear editor warnings instead of leaving numbering issues to export-time review
+- Continue from the shipped obstacle-numbering validation with any extra confidence cues or control polish that proves useful in real layouts
 - Add an advanced snapping follow-up on top of the shipped grid-and-shape snap baseline
 - Keep all of this toggleable and non-intrusive on both desktop and mobile
 
 Suggested first slices:
 
-- Numbering follow-up that keeps the current derived route-order model but adds clearer issue states, editor controls, and confidence cues
+- Shipped: numbering follow-up that keeps the current derived route-order model but adds clearer issue states and layout-level confidence cues
 - Flow-aware and alignment-aware snapping follow-up for route-line alignment, stronger nearby-object guides, and useful angle targets, with grid snapping remaining available as the simpler fallback
 - Performance guardrails so richer snapping and overlays do not degrade drag responsiveness on larger layouts
 

@@ -31,8 +31,8 @@ Labels used below:
 
 - [ ] Editor workflow follow-up (`No account required`)
       Build on the shipped snapping, route warnings, and numbering handoff with stronger in-canvas guidance that stays lightweight, derived, and safe across desktop and mobile.
-  - [ ] Obstacle numbering validation and controls
-        Build on the shipped route-derived numbering with clearer issue states, missing-route/gap warnings, and explicit editor controls without replacing the current derived model.
+  - [x] Obstacle numbering validation and controls
+        Added shared route-derived numbering validation, layout inspector status, missing-route/off-route issue states, and item-list cues without replacing the current derived model.
   - [ ] Advanced snapping follow-up
         Build on the shipped grid-and-shape snap baseline with route-line alignment, stronger object-alignment guides, and useful angle targets while preserving drag responsiveness on larger layouts.
 
