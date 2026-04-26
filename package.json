@@ -67,7 +67,7 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.184.0",
     "@vitest/coverage-v8": "^4.1.4",
-    "eslint": "^9",
+    "eslint": "^10.0.0",
     "eslint-config-next": "^16.1.0",
     "eslint-config-prettier": "^10.1.8",
     "happy-dom": "^20.8.9",
