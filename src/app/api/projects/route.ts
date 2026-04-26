@@ -9,6 +9,7 @@ const saveProjectRequestSchema = z.object({
   projectId: z.string().min(1).optional(),
   title: z.string().trim().min(1).optional(),
   description: z.string().optional(),
+  forceWrite: z.boolean().optional(),
 });
 
 function unauthorizedResponse() {
@@ -29,7 +30,14 @@ export async function GET(request: Request) {
       return unauthorizedResponse();
     }
 
-    const projects = await listProjectsForUser(user.id);
+    const projects = (await listProjectsForUser(user.id)).map((project) => ({
+      id: project.id,
+      title: project.title,
+      updatedAt: project.updatedAt,
+      designUpdatedAt: project.designUpdatedAt,
+      shapeCount: project.shapeCount,
+    }));
+
     return NextResponse.json({ ok: true, projects });
   } catch (error) {
     return NextResponse.json(
@@ -63,6 +71,7 @@ export async function POST(request: Request) {
       projectId: body.projectId,
       title: body.title,
       description: body.description,
+      forceWrite: body.forceWrite,
     });
 
     return NextResponse.json({ ok: true, project });

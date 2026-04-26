@@ -26,9 +26,13 @@ describe("authorization helpers", () => {
     expect(canAccessDashboard("admin")).toBe(true);
 
     expect(getVisibleDashboardModules("user")).toEqual([]);
-    expect(getVisibleDashboardModules("moderator")).toEqual(["overview"]);
+    expect(getVisibleDashboardModules("moderator")).toEqual([
+      "overview",
+      "gallery",
+    ]);
     expect(getVisibleDashboardModules("admin")).toEqual([
       "overview",
+      "gallery",
       "users",
       "audit",
     ]);

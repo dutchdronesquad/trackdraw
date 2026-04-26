@@ -45,6 +45,9 @@ export function useEditorProjects({
     string | null
   >(null);
   const [saveStatusLabel, setSaveStatusLabel] = useState("Saving locally…");
+  const [lastSnapshotLabel, setLastSnapshotLabel] = useState<string | null>(
+    null
+  );
   const [initialized, setInitialized] = useState(false);
 
   // Load persisted design on mount
@@ -147,30 +150,13 @@ export function useEditorProjects({
       hour: "2-digit",
       minute: "2-digit",
     }).format(new Date());
-    setSaveStatusLabel(`Snapshot saved at ${time}`);
+    const nextSnapshotLabel = `Snapshot saved at ${time}`;
+    setSaveStatusLabel(nextSnapshotLabel);
+    setLastSnapshotLabel(nextSnapshotLabel);
     toast.success("Snapshot saved", {
       description: `Restore point created at ${time}`,
     });
   }, [design]);
-
-  // Cmd+S / Ctrl+S → manual snapshot
-  useEffect(() => {
-    if (readOnly) return;
-    const handler = (e: KeyboardEvent) => {
-      if (!(e.metaKey || e.ctrlKey) || e.key !== "s") return;
-      const target = e.target as HTMLElement | null;
-      if (
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable
-      )
-        return;
-      e.preventDefault();
-      handleSaveSnapshot();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [readOnly, handleSaveSnapshot]);
 
   const handleOpenProject = useCallback(
     (id: string) => {
@@ -267,6 +253,7 @@ export function useEditorProjects({
     activeRestorePointId,
     setActiveRestorePointId,
     saveStatusLabel,
+    lastSnapshotLabel,
     setSaveStatusLabel,
     initialized,
     setInitialized,

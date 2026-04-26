@@ -6,15 +6,21 @@ import type { CurrentUser } from "@/lib/server/auth-session";
 
 export type AuthorizationCapability =
   | "dashboard.overview.read"
+  | "gallery.entries.read"
+  | "gallery.entries.update"
+  | "gallery.entries.delete"
   | "admin.users.read"
   | "admin.users.update"
   | "audit.read"
   | "account.role.assign";
 
-export type DashboardModule = "overview" | "users" | "audit";
+export type DashboardModule = "overview" | "gallery" | "users" | "audit";
 
 const capabilityRoles: Record<AuthorizationCapability, AccountRole[]> = {
   "dashboard.overview.read": ["moderator", "admin"],
+  "gallery.entries.read": ["moderator", "admin"],
+  "gallery.entries.update": ["moderator", "admin"],
+  "gallery.entries.delete": ["moderator", "admin"],
   "admin.users.read": ["admin"],
   "admin.users.update": ["admin"],
   "audit.read": ["admin"],
@@ -39,6 +45,10 @@ export function getVisibleDashboardModules(
 
   if (hasCapability(role, "dashboard.overview.read")) {
     modules.push("overview");
+  }
+
+  if (hasCapability(role, "gallery.entries.read")) {
+    modules.push("gallery");
   }
 
   if (hasCapability(role, "admin.users.read")) {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import UserAvatar from "@/components/UserAvatar";
 import {
   DropdownMenu,
@@ -19,7 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { getAccountRoleLabel, type AccountRole } from "@/lib/account-roles";
-import { ChevronsUpDownIcon, LogOutIcon, HomeIcon } from "lucide-react";
+import { ChevronsUpDownIcon, LogOutIcon } from "lucide-react";
 
 type DashboardNavUserProps = {
   user: {
@@ -31,7 +30,6 @@ type DashboardNavUserProps = {
 
 export default function DashboardNavUser({ user }: DashboardNavUserProps) {
   const { isMobile } = useSidebar();
-  const router = useRouter();
   const [signingOut, setSigningOut] = useState(false);
   const roleLabel = getAccountRoleLabel(user.role);
 
@@ -90,13 +88,6 @@ export default function DashboardNavUser({ user }: DashboardNavUserProps) {
                 </span>
               </div>
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => router.push("/studio")}>
-                <HomeIcon />
-                Back to studio
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => void handleSignOut()}>

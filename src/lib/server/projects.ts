@@ -28,6 +28,7 @@ export type StoredProject = {
   title: string;
   description: string;
   design: TrackDesign;
+  designUpdatedAt: string;
   fieldWidth: number | null;
   fieldHeight: number | null;
   shapeCount: number;
@@ -40,6 +41,7 @@ type SaveProjectOptions = {
   projectId?: string;
   title?: string;
   description?: string | null;
+  forceWrite?: boolean;
 };
 
 function mapProjectRow(row: ProjectRow): StoredProject {
@@ -55,6 +57,7 @@ function mapProjectRow(row: ProjectRow): StoredProject {
     title: row.title,
     description: row.description ?? "",
     design,
+    designUpdatedAt: design.updatedAt,
     fieldWidth:
       row.field_width === null
         ? null
@@ -83,6 +86,20 @@ export async function saveProjectForUser(
   const title = options.title ?? normalized.title ?? "Untitled";
   const description = options.description ?? normalized.description ?? "";
   const shapeCount = getDesignShapes(normalized).length;
+  const existingProject = options.projectId
+    ? await getProjectForUser(projectId, ownerUserId)
+    : null;
+
+  if (existingProject && !options.forceWrite) {
+    const existingSerializedJson = JSON.stringify(
+      serializeDesign(existingProject.design)
+    );
+
+    if (existingSerializedJson === serializedJson) {
+      return existingProject;
+    }
+  }
+
   const db = await getDatabase();
 
   await db

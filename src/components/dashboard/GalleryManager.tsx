@@ -1,0 +1,664 @@
+"use client";
+
+import { useState } from "react";
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  ArrowUpDown,
+  Eye,
+  EyeOff,
+  Loader2,
+  MoreHorizontal,
+  Sparkles,
+  StarOff,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { AccountRole } from "@/lib/account-roles";
+import type {
+  DashboardGalleryEntry,
+  GalleryState,
+  StoredGalleryEntry,
+} from "@/lib/server/gallery";
+
+type DashboardGalleryManagerProps = {
+  currentUserRole: AccountRole;
+  initialEntries: DashboardGalleryEntry[];
+};
+
+type GalleryUpdateAction = "feature" | "unfeature" | "hide" | "restore";
+type GalleryStateFilter = "all" | GalleryState;
+
+const galleryManagerRoles: AccountRole[] = ["moderator", "admin"];
+const stateFilters: { value: GalleryStateFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "listed", label: "Listed" },
+  { value: "featured", label: "Featured" },
+  { value: "hidden", label: "Hidden" },
+];
+
+function getOwnerLabel(entry: DashboardGalleryEntry) {
+  return (
+    entry.ownerName?.trim() || entry.ownerEmail?.trim() || entry.ownerUserId
+  );
+}
+
+function getTrackSecondaryLabel(entry: DashboardGalleryEntry) {
+  const shareTitle = entry.shareTitle?.trim();
+  if (
+    shareTitle &&
+    shareTitle.toLowerCase() !== entry.galleryTitle.trim().toLowerCase()
+  ) {
+    return shareTitle;
+  }
+
+  return entry.shareToken;
+}
+
+function getStateVariant(state: GalleryState): "default" | "muted" | "outline" {
+  if (state === "featured") return "default";
+  if (state === "hidden") return "muted";
+  return "outline";
+}
+
+function getStateLabel(state: GalleryState) {
+  switch (state) {
+    case "listed":
+      return "Listed";
+    case "featured":
+      return "Featured";
+    case "hidden":
+      return "Hidden";
+    default:
+      return "Unlisted";
+  }
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "—";
+
+  try {
+    return new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+    }).format(new Date(value));
+  } catch {
+    return value;
+  }
+}
+
+function ActionTooltip({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactElement;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger render={children} />
+      <TooltipContent side="top" sideOffset={6}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+export default function DashboardGalleryManager({
+  currentUserRole,
+  initialEntries,
+}: DashboardGalleryManagerProps) {
+  const [entries, setEntries] = useState(initialEntries);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [pendingShareToken, setPendingShareToken] = useState<string | null>(
+    null
+  );
+  const [stateFilter, setStateFilter] = useState<GalleryStateFilter>("all");
+  const [deleteCandidate, setDeleteCandidate] =
+    useState<DashboardGalleryEntry | null>(null);
+
+  const canManageGallery = galleryManagerRoles.includes(currentUserRole);
+
+  const updateEntry = async (
+    shareToken: string,
+    action: GalleryUpdateAction
+  ) => {
+    if (!canManageGallery) {
+      toast.error("Only moderators and admins can update gallery entries.");
+      return;
+    }
+
+    setPendingShareToken(shareToken);
+
+    try {
+      const response = await fetch(
+        `/api/dashboard/gallery/${encodeURIComponent(shareToken)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action }),
+        }
+      );
+
+      const payload = (await response.json()) as
+        | { ok: true; entry: StoredGalleryEntry }
+        | { ok: false; error?: string };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(
+          payload.ok
+            ? "Failed to update gallery entry"
+            : (payload.error ?? "Failed to update gallery entry")
+        );
+      }
+
+      setEntries((previous) =>
+        previous.map((entry) =>
+          entry.shareToken === payload.entry.shareToken
+            ? { ...entry, ...payload.entry }
+            : entry
+        )
+      );
+
+      toast.success(`Gallery entry ${action}d.`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to update gallery entry."
+      );
+    } finally {
+      setPendingShareToken(null);
+    }
+  };
+
+  const deleteEntry = async (shareToken: string) => {
+    if (!canManageGallery) {
+      toast.error("Only moderators and admins can delete gallery entries.");
+      return;
+    }
+
+    setPendingShareToken(shareToken);
+
+    try {
+      const response = await fetch(
+        `/api/dashboard/gallery/${encodeURIComponent(shareToken)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const payload = (await response.json()) as
+        | { ok: true }
+        | { ok: false; error?: string };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(
+          payload.ok
+            ? "Failed to delete gallery entry"
+            : (payload.error ?? "Failed to delete gallery entry")
+        );
+      }
+
+      setEntries((previous) =>
+        previous.filter((entry) => entry.shareToken !== shareToken)
+      );
+      setDeleteCandidate(null);
+      toast.success("Gallery entry deleted.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete gallery entry."
+      );
+    } finally {
+      setPendingShareToken(null);
+    }
+  };
+
+  function getFeatureAction(entry: DashboardGalleryEntry) {
+    return entry.galleryState !== "featured"
+      ? {
+          action: "feature" as const,
+          label: "Feature",
+          icon: Sparkles,
+        }
+      : {
+          action: "unfeature" as const,
+          label: "Unfeature",
+          icon: StarOff,
+        };
+  }
+
+  function getVisibilityAction(entry: DashboardGalleryEntry) {
+    return entry.galleryState !== "hidden"
+      ? {
+          action: "hide" as const,
+          label: "Hide",
+          icon: EyeOff,
+        }
+      : {
+          action: "restore" as const,
+          label: "Restore",
+          icon: Eye,
+        };
+  }
+
+  const columns: ColumnDef<DashboardGalleryEntry>[] = [
+    {
+      id: "track",
+      accessorFn: (row) => row.galleryTitle,
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-3 h-8"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Track
+          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">
+            {row.original.galleryTitle}
+          </p>
+          <p className="text-muted-foreground truncate text-xs">
+            {getTrackSecondaryLabel(row.original)}
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "owner",
+      accessorFn: (row) => getOwnerLabel(row),
+      header: "Owner",
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          <p className="truncate text-sm">{getOwnerLabel(row.original)}</p>
+          <p className="text-muted-foreground truncate text-xs">
+            {row.original.ownerEmail ?? row.original.ownerUserId}
+          </p>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "galleryState",
+      header: "State",
+      cell: ({ row }) => (
+        <Badge variant={getStateVariant(row.original.galleryState)}>
+          {getStateLabel(row.original.galleryState)}
+        </Badge>
+      ),
+    },
+    {
+      id: "published",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-3 h-8"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Published
+          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
+        </Button>
+      ),
+      accessorFn: (row) => row.galleryPublishedAt ?? row.updatedAt,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-xs">
+          {formatDate(row.original.galleryPublishedAt)}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      meta: { className: "w-32 text-right" },
+      cell: ({ row }) => {
+        const entry = row.original;
+        const isPending = pendingShareToken === entry.shareToken;
+        const featureAction = getFeatureAction(entry);
+        const FeatureIcon = featureAction.icon;
+        const visibilityAction = getVisibilityAction(entry);
+        const VisibilityIcon = visibilityAction.icon;
+
+        return (
+          <div className="flex justify-end">
+            <div className="hidden items-center justify-end gap-1 md:flex">
+              <ActionTooltip label={featureAction.label}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  disabled={isPending || !canManageGallery}
+                  aria-label={`${featureAction.label} ${entry.galleryTitle}`}
+                  onClick={() =>
+                    void updateEntry(entry.shareToken, featureAction.action)
+                  }
+                >
+                  {isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <FeatureIcon className="size-4" />
+                  )}
+                </Button>
+              </ActionTooltip>
+              <ActionTooltip label={visibilityAction.label}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  disabled={isPending || !canManageGallery}
+                  aria-label={`${visibilityAction.label} ${entry.galleryTitle}`}
+                  onClick={() =>
+                    void updateEntry(entry.shareToken, visibilityAction.action)
+                  }
+                >
+                  <VisibilityIcon className="size-4" />
+                </Button>
+              </ActionTooltip>
+              <ActionTooltip label="Delete">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-destructive hover:text-destructive"
+                  disabled={isPending || !canManageGallery}
+                  aria-label={`Delete ${entry.galleryTitle}`}
+                  onClick={() => setDeleteCandidate(entry)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </ActionTooltip>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground ml-auto size-8 p-0 md:hidden"
+                    disabled={isPending || !canManageGallery}
+                    aria-label="Open gallery entry actions"
+                  />
+                }
+              >
+                {isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <MoreHorizontal className="size-4" />
+                )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-44">
+                <DropdownMenuItem
+                  onClick={() =>
+                    void updateEntry(entry.shareToken, featureAction.action)
+                  }
+                >
+                  <FeatureIcon className="size-4" />
+                  {featureAction.label}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    void updateEntry(entry.shareToken, visibilityAction.action)
+                  }
+                >
+                  <VisibilityIcon className="size-4" />
+                  {visibilityAction.label}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setDeleteCandidate(entry)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="size-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
+    },
+  ];
+
+  const table = useReactTable({
+    data: entries,
+    columns,
+    state: { globalFilter, sorting },
+    onGlobalFilterChange: setGlobalFilter,
+    onSortingChange: setSorting,
+    globalFilterFn: (row, _columnId, filterValue: string) => {
+      const entry = row.original;
+      const q = filterValue.toLowerCase();
+      return (
+        entry.galleryTitle.toLowerCase().includes(q) ||
+        entry.galleryDescription.toLowerCase().includes(q) ||
+        getOwnerLabel(entry).toLowerCase().includes(q)
+      );
+    },
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  const rowsForCurrentSearch = table.getRowModel().rows;
+  const filteredRows = rowsForCurrentSearch.filter((row) =>
+    stateFilter === "all" ? true : row.original.galleryState === stateFilter
+  );
+  const emptyMessage =
+    entries.length === 0
+      ? "No gallery entries yet."
+      : "No gallery entries match the current filters.";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <Input
+          value={globalFilter}
+          onChange={(event) => setGlobalFilter(event.target.value)}
+          placeholder="Search title, description or owner…"
+          className="max-w-md"
+        />
+        <Tabs
+          value={stateFilter}
+          onValueChange={(value) => setStateFilter(value as GalleryStateFilter)}
+          className="w-full md:w-auto"
+        >
+          <TabsList className="grid w-full grid-cols-4 md:inline-flex md:w-auto md:grid-cols-none">
+            {stateFilters.map((filter) => (
+              <TabsTrigger
+                key={filter.value}
+                value={filter.value}
+                className="min-w-0 px-3 text-xs md:min-w-20"
+              >
+                <span className="truncate">{filter.label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <p className="text-muted-foreground text-xs">
+        Changes apply immediately to the public gallery.
+      </p>
+
+      <div className="overflow-hidden rounded-xl border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className={[
+                      "px-2.5 py-2",
+                      (
+                        header.column.columnDef.meta as
+                          | { className?: string }
+                          | undefined
+                      )?.className,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {filteredRows.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="text-muted-foreground py-8 text-center text-sm"
+                >
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredRows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={[
+                        "px-2.5 py-2",
+                        (
+                          cell.column.columnDef.meta as
+                            | { className?: string }
+                            | undefined
+                        )?.className,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <p className="text-muted-foreground text-xs">
+        Showing {filteredRows.length} of {entries.length} gallery entries.
+      </p>
+
+      <Dialog
+        open={deleteCandidate !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteCandidate(null);
+        }}
+      >
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>Delete gallery entry?</DialogTitle>
+            <DialogDescription>
+              This removes the gallery record for{" "}
+              <span className="text-foreground font-medium">
+                {deleteCandidate?.galleryTitle ?? "this track"}
+              </span>
+              . The public gallery card disappears, while the underlying share
+              link remains governed by the share record.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="text-muted-foreground space-y-2 text-sm">
+            <p>
+              Owner:{" "}
+              <span className="text-foreground">
+                {deleteCandidate ? getOwnerLabel(deleteCandidate) : "Unknown"}
+              </span>
+            </p>
+          </div>
+
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>
+              Cancel
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={
+                !deleteCandidate ||
+                pendingShareToken === deleteCandidate.shareToken ||
+                !canManageGallery
+              }
+              onClick={() => {
+                if (!deleteCandidate) return;
+                void deleteEntry(deleteCandidate.shareToken);
+              }}
+            >
+              {deleteCandidate &&
+              pendingShareToken === deleteCandidate.shareToken ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                "Delete entry"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

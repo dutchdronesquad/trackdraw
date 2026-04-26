@@ -1,11 +1,16 @@
 import "server-only";
 
+import { cache } from "react";
 import { parseAccountRole, type AccountRole } from "@/lib/account-roles";
 import type { AdminUser } from "@/lib/admin-users";
 import { getDatabase } from "@/lib/server/db";
 
 type UserRoleRow = {
   role: string | null;
+};
+
+type CountRow = {
+  count: number;
 };
 
 type AdminUserRow = {
@@ -68,6 +73,20 @@ export async function listUsersForAdmin(): Promise<AdminUser[]> {
 
   return result.results.map(mapAdminUser);
 }
+
+export const countUsersForAdmin = cache(async function countUsersForAdmin() {
+  const db = await getDatabase();
+  const row = await db
+    .prepare(
+      `
+        select count(*) as count
+        from users
+      `
+    )
+    .first<CountRow>();
+
+  return Number(row?.count ?? 0);
+});
 
 export async function getAdminUserById(
   userId: string

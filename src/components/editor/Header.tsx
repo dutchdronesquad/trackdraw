@@ -64,7 +64,7 @@ interface HeaderProps {
   onToggleCollapsed?: () => void;
   title?: string;
   studioHref?: string;
-  lastSavedLabel?: string;
+  lastSnapshotLabel?: string | null;
   statusLabel?: string;
   statusTone?: "default" | "pending" | "syncing" | "success" | "error";
   selectionLabel?: string;
@@ -86,7 +86,7 @@ export default function Header({
   onToggleCollapsed,
   title = "Untitled",
   studioHref = "/studio",
-  lastSavedLabel,
+  lastSnapshotLabel,
   statusLabel,
   statusTone = "default",
   showObstacleNumbers = false,
@@ -340,8 +340,8 @@ export default function Header({
                     Save snapshot{" "}
                     <span className="font-mono text-[11px] opacity-65">⌘S</span>
                   </span>
-                  {lastSavedLabel && (
-                    <span className="opacity-60">{lastSavedLabel}</span>
+                  {lastSnapshotLabel && (
+                    <span className="opacity-60">{lastSnapshotLabel}</span>
                   )}
                 </TooltipContent>
               </Tooltip>

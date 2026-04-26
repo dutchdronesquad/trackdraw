@@ -1,16 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { DesktopModal } from "@/components/DesktopModal";
-import { MobileDrawer } from "@/components/MobileDrawer";
+import {
+  SidebarDialog,
+  type SidebarDialogNavItem,
+} from "@/components/SidebarDialog";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/store/editor";
-import { selectDesignShapeCount } from "@/store/selectors";
 import { buildStoredSharePath, encodeDesign } from "@/lib/share";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { parseEditorView } from "@/lib/view";
 import { authClient } from "@/lib/auth-client";
+import {
+  GALLERY_DESCRIPTION_MAX_LENGTH,
+  GALLERY_DESCRIPTION_MIN_LENGTH,
+  canSubmitGalleryListing as canSubmitGalleryListingForm,
+  canSubmitGalleryMetadataUpdate as canSubmitGalleryMetadataUpdateForm,
+  isGalleryDescriptionValid,
+  isGalleryTitleValid,
+} from "@/lib/gallery-validation";
 import {
   Copy,
   Check,
@@ -19,24 +29,139 @@ import {
   Share2,
   Link2,
   Boxes,
-  X,
+  ImageIcon,
   Ban,
+  Loader2,
+  EyeOff,
+  Sparkles,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const LAST_SHARE_TOKEN_KEY = "trackdraw-last-share-token";
-const LAST_SHARE_STATE_KEY = "trackdraw-last-share-state";
-const SHARE_EXPIRY_OPTIONS = [
-  { value: 7, label: "7 days" },
-  { value: 30, label: "30 days" },
-  { value: 90, label: "90 days" },
-] as const;
+const GalleryPreviewRenderer = dynamic(
+  () =>
+    import("@/components/gallery/GalleryPreviewRenderer").then(
+      (mod) => mod.GalleryPreviewRenderer
+    ),
+  { ssr: false }
+);
 
-interface StoredShareState {
-  sourceToken: string;
-  expiresInDays: 7 | 30 | 90;
+type GalleryState = "unlisted" | "listed" | "featured" | "hidden";
+
+type ActiveShare = {
   url: string;
+  shareToken: string;
+  expiresInDays: 7 | 30 | 90 | null;
+  galleryState: GalleryState;
+  galleryTitle: string;
+  galleryDescription: string;
+};
+
+type Tab = "share" | "gallery" | "actions";
+
+const SHARE_EXPIRY_OPTIONS = [
+  { value: 7 as const, label: "7 days" },
+  { value: 30 as const, label: "30 days" },
+  { value: 90 as const, label: "90 days" },
+];
+
+const LS_ANON_SHARE_KEY = "trackdraw-anon-share";
+
+function inferExpiryDays(expiresAt: string | null): 7 | 30 | 90 | null {
+  if (!expiresAt) return null;
+  const days = Math.max(
+    1,
+    Math.ceil(
+      (new Date(expiresAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)
+    )
+  );
+  return days <= 7 ? 7 : days <= 30 ? 30 : 90;
+}
+
+function parseGalleryState(raw: string | null | undefined): GalleryState {
+  if (raw === "listed" || raw === "featured" || raw === "hidden") return raw;
+  return "unlisted";
+}
+
+type AnonShare = {
+  url: string;
+  shareToken: string;
+  designToken: string;
+  expiresInDays: 7 | 30 | 90 | null;
+};
+
+function readAnonShare(): AnonShare | null {
+  try {
+    const raw =
+      typeof window !== "undefined"
+        ? localStorage.getItem(LS_ANON_SHARE_KEY)
+        : null;
+    if (!raw) return null;
+    const p = JSON.parse(raw) as Partial<AnonShare>;
+    if (
+      typeof p.url !== "string" ||
+      typeof p.shareToken !== "string" ||
+      typeof p.designToken !== "string"
+    )
+      return null;
+    return p as AnonShare;
+  } catch {
+    return null;
+  }
+}
+
+function writeAnonShare(share: AnonShare) {
+  try {
+    localStorage.setItem(LS_ANON_SHARE_KEY, JSON.stringify(share));
+  } catch {
+    /* quota */
+  }
+}
+
+function clearAnonShare() {
+  try {
+    localStorage.removeItem(LS_ANON_SHARE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function getLifetimeCopy(hostname: string, expiresInDays: 7 | 30 | 90 | null) {
+  return expiresInDays === null
+    ? `Read-only snapshot on ${hostname} with no expiry`
+    : `Read-only snapshot on ${hostname}, expires in ${expiresInDays} days`;
+}
+
+const PREVIEW_MAX_W = 960;
+const PREVIEW_MAX_H = 540;
+const PREVIEW_QUALITY = 0.72;
+
+async function convertPngToWebp(dataUrl: string): Promise<string> {
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const el = new Image();
+    el.onload = () => resolve(el);
+    el.onerror = () => reject(new Error("Failed to load preview image"));
+    el.src = dataUrl;
+  });
+
+  const canvas = document.createElement("canvas");
+  const sw = img.naturalWidth || img.width;
+  const sh = img.naturalHeight || img.height;
+  const scale = Math.min(1, PREVIEW_MAX_W / sw, PREVIEW_MAX_H / sh);
+  canvas.width = Math.max(1, Math.round(sw * scale));
+  canvas.height = Math.max(1, Math.round(sh * scale));
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas unavailable");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  const webp = canvas.toDataURL("image/webp", PREVIEW_QUALITY);
+  if (!webp.startsWith("data:image/webp"))
+    throw new Error("WebP encoding failed");
+  return webp;
 }
 
 interface ShareDialogProps {
@@ -49,276 +174,200 @@ interface ShareDialogProps {
   existingShareMode?: boolean;
 }
 
-function getShareTokenFromUrl(url: string | null) {
-  if (!url) return null;
-
-  try {
-    const parsed = new URL(url);
-    const segments = parsed.pathname.split("/").filter(Boolean);
-    if (segments[0] !== "share" || !segments[1]) {
-      return null;
-    }
-
-    return decodeURIComponent(segments[1]);
-  } catch {
-    return null;
-  }
-}
-
-function ShareContent({
-  onClose,
+export default function ShareDialog({
+  open,
+  onOpenChange,
   hasPath = false,
   projectId = null,
   onExportJson,
   onSharePublished,
   existingShareMode = false,
-  mobile = false,
-}: {
-  onClose: () => void;
-  hasPath?: boolean;
-  projectId?: string | null;
-  onExportJson?: () => void;
-  onSharePublished?: () => void;
-  existingShareMode?: boolean;
-  mobile?: boolean;
-}) {
+}: ShareDialogProps) {
   const design = useEditor((s) => s.track.design);
-  const shapeCount = useEditor(selectDesignShapeCount);
   const searchParams = useSearchParams();
   const { data: session } = authClient.useSession();
-  const isAuthenticated = !!session?.user;
-  const [copied, setCopied] = useState(false);
-  const [publishing, setPublishing] = useState(false);
-  const [revoking, setRevoking] = useState(false);
-  const [publishedShareUrl, setPublishedShareUrl] = useState<string | null>(
-    null
-  );
-  const [expiresInDays, setExpiresInDays] = useState<7 | 30 | 90>(90);
-  const [publishedExpiresInDays, setPublishedExpiresInDays] = useState<
-    7 | 30 | 90 | null
-  >(null);
-  const [publishedSourceToken, setPublishedSourceToken] = useState<
-    string | null
-  >(null);
-  const currentView = parseEditorView(searchParams.get("view")) ?? "2d";
-  const currentShareUrl =
-    typeof window !== "undefined" ? window.location.href : null;
 
-  const currentToken = encodeDesign(design);
-  const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
-  const shareTitle = design.title.trim() || "Untitled track";
+  const isAuthenticated = !!session?.user;
+  const userId = session?.user?.id ?? null;
+  const displayName = session?.user?.name?.trim() ?? "";
+  const displayNameValid = displayName.length > 0;
+  const currentView = parseEditorView(searchParams.get("view")) ?? "2d";
+  const currentDesignToken = encodeDesign(design);
   const hostname =
     typeof window !== "undefined" ? window.location.host : "trackdraw.app";
+  const currentShareUrl =
+    typeof window !== "undefined" ? window.location.href : null;
+  const canNativeShare = typeof navigator !== "undefined" && !!navigator.share;
 
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
-  const restoredStoredShareForTokenRef = useRef<string | null>(null);
-  const restoredProjectShareForKeyRef = useRef<string | null>(null);
-  const storedToken = (() => {
-    try {
-      return typeof window !== "undefined"
-        ? localStorage.getItem(LAST_SHARE_TOKEN_KEY)
-        : null;
-    } catch {
-      return null;
-    }
-  })();
-  const storedShareState = (() => {
-    try {
-      if (typeof window === "undefined") {
-        return null;
-      }
+  const [activeTab, setActiveTab] = useState<Tab>("share");
+  const [share, setShare] = useState<ActiveShare | null>(null);
+  const [loadDone, setLoadDone] = useState(false);
+  const [publishedDesignToken, setPublishedDesignToken] = useState<
+    string | null
+  >(null);
+  const [expiresInDays, setExpiresInDays] = useState<7 | 30 | 90>(90);
+  const [publishing, setPublishing] = useState(false);
+  const [revoking, setRevoking] = useState(false);
+  const [galleryUpdating, setGalleryUpdating] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showGalleryForm, setShowGalleryForm] = useState(false);
+  const [confirmRemoveFromGallery, setConfirmRemoveFromGallery] =
+    useState(false);
+  const [galleryTitleInput, setGalleryTitleInput] = useState("");
+  const [galleryDescriptionInput, setGalleryDescriptionInput] = useState("");
+  const [galleryPreviewDataUrl, setGalleryPreviewDataUrl] = useState<
+    string | null
+  >(null);
 
-      const raw = localStorage.getItem(LAST_SHARE_STATE_KEY);
+  const abortRef = useRef<AbortController | null>(null);
 
-      if (!raw) {
-        return null;
-      }
-
-      const parsed = JSON.parse(raw) as Partial<StoredShareState>;
-
-      if (
-        typeof parsed.url !== "string" ||
-        typeof parsed.sourceToken !== "string" ||
-        (parsed.expiresInDays !== 7 &&
-          parsed.expiresInDays !== 30 &&
-          parsed.expiresInDays !== 90)
-      ) {
-        return null;
-      }
-
-      return parsed as StoredShareState;
-    } catch {
-      return null;
-    }
-  })();
-  const lastShareToken = sessionToken ?? storedToken;
-  const hasChangedSinceShare =
-    lastShareToken !== null && lastShareToken !== currentToken;
   const shareNeedsRefresh =
-    (!!publishedShareUrl && publishedSourceToken !== currentToken) ||
-    (!!publishedShareUrl &&
-      publishedExpiresInDays !== null &&
-      publishedExpiresInDays !== expiresInDays);
-  const canUseShareActions = !!publishedShareUrl;
-  const showOutdatedNotice = publishedShareUrl && hasChangedSinceShare;
-  const showRefreshNotice = publishedShareUrl && shareNeedsRefresh;
-  const activeShareToken = getShareTokenFromUrl(publishedShareUrl);
+    share !== null &&
+    ((publishedDesignToken !== null &&
+      publishedDesignToken !== currentDesignToken) ||
+      (share.expiresInDays !== null && expiresInDays !== share.expiresInDays));
 
-  const writeLastShareToken = () => {
-    try {
-      localStorage.setItem(LAST_SHARE_TOKEN_KEY, currentToken);
-      setSessionToken(currentToken);
-    } catch {
-      /* ignore quota errors */
-    }
-  };
+  const isGalleryVisible =
+    share?.galleryState === "listed" || share?.galleryState === "featured";
+  const blockedByModeration = share?.galleryState === "hidden";
+  const showGallerySection = isAuthenticated && !!projectId;
 
-  const persistPublishedShare = (nextState: StoredShareState) => {
-    try {
-      localStorage.setItem(LAST_SHARE_STATE_KEY, JSON.stringify(nextState));
-    } catch {
-      /* ignore quota errors */
-    }
-  };
+  const galleryTitleValid = isGalleryTitleValid(galleryTitleInput);
+  const galleryDescriptionValid = isGalleryDescriptionValid(
+    galleryDescriptionInput
+  );
+  const hasGalleryMetadataChanges =
+    share !== null &&
+    (galleryTitleInput.trim() !== share.galleryTitle.trim() ||
+      galleryDescriptionInput.trim() !== share.galleryDescription.trim());
+  const canSubmitGalleryListing = canSubmitGalleryListingForm({
+    title: galleryTitleInput,
+    description: galleryDescriptionInput,
+    displayNameValid,
+    shareNeedsRefresh,
+    hasShare: share !== null,
+    previewReady: galleryPreviewDataUrl !== null,
+  });
+  const canSubmitGalleryMetadataUpdate = canSubmitGalleryMetadataUpdateForm({
+    title: galleryTitleInput,
+    description: galleryDescriptionInput,
+    hasShare: share !== null,
+    hasMetadataChanges: hasGalleryMetadataChanges,
+  });
 
-  const clearPublishedShare = () => {
-    setPublishedShareUrl(null);
-    setPublishedSourceToken(null);
-    setPublishedExpiresInDays(null);
-
-    try {
-      localStorage.removeItem(LAST_SHARE_STATE_KEY);
-    } catch {
-      /* ignore quota errors */
-    }
-  };
+  const busy = publishing || revoking || galleryUpdating;
 
   useEffect(() => {
-    if (restoredStoredShareForTokenRef.current !== currentToken) {
-      restoredStoredShareForTokenRef.current = null;
-    }
-    if (
-      !storedShareState ||
-      storedShareState.sourceToken !== currentToken ||
-      restoredStoredShareForTokenRef.current === currentToken
-    ) {
+    if (!open) return;
+
+    setShare(null);
+    setLoadDone(false);
+    setPublishedDesignToken(null);
+    setShowGalleryForm(false);
+    setConfirmRemoveFromGallery(false);
+    setGalleryPreviewDataUrl(null);
+
+    if (existingShareMode) {
+      setLoadDone(true);
       return;
     }
 
-    restoredStoredShareForTokenRef.current = currentToken;
-    setPublishedShareUrl((current) => current ?? storedShareState.url);
-    setPublishedSourceToken(
-      (current) => current ?? storedShareState.sourceToken
-    );
-    setPublishedExpiresInDays(
-      (current) => current ?? storedShareState.expiresInDays
-    );
-    setExpiresInDays((current) =>
-      current === storedShareState.expiresInDays
-        ? current
-        : storedShareState.expiresInDays
-    );
-  }, [currentToken, storedShareState]);
+    const ac = new AbortController();
+    abortRef.current?.abort();
+    abortRef.current = ac;
 
-  useEffect(() => {
-    const restoreKey =
-      session?.user && projectId ? `${session.user.id}:${projectId}` : null;
-    if (restoredProjectShareForKeyRef.current !== restoreKey) {
-      restoredProjectShareForKeyRef.current = null;
-    }
-    if (
-      existingShareMode ||
-      !session?.user ||
-      !projectId ||
-      publishedShareUrl ||
-      typeof window === "undefined" ||
-      restoredProjectShareForKeyRef.current === restoreKey
-    ) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadProjectShare = async () => {
+    const doLoad = async () => {
       try {
-        const response = await fetch("/api/shares", { method: "GET" });
-        const payload = (await response.json()) as {
-          ok: boolean;
-          error?: string;
-          shares?: Array<{
-            token: string;
-            expiresAt: string;
-            projectId: string | null;
-          }>;
-        };
+        if (userId && projectId) {
+          const res = await fetch(
+            `/api/shares?projectId=${encodeURIComponent(projectId)}`,
+            { signal: ac.signal }
+          );
+          if (ac.signal.aborted) return;
 
-        if (!response.ok || !payload.ok) {
-          return;
+          const data = (await res.json()) as {
+            ok: boolean;
+            share?: {
+              token: string;
+              expiresAt: string | null;
+              galleryState: string | null;
+              galleryTitle: string | null;
+              galleryDescription: string | null;
+            } | null;
+          };
+
+          if (ac.signal.aborted) return;
+
+          if (data.ok && data.share) {
+            const s = data.share;
+            const expiry = inferExpiryDays(s.expiresAt);
+            setShare({
+              url: new URL(
+                buildStoredSharePath(s.token, currentView),
+                window.location.origin
+              ).toString(),
+              shareToken: s.token,
+              expiresInDays: expiry,
+              galleryState: parseGalleryState(s.galleryState),
+              galleryTitle: s.galleryTitle ?? "",
+              galleryDescription: s.galleryDescription ?? "",
+            });
+            if (expiry !== null) {
+              setExpiresInDays(expiry);
+            }
+          }
+        } else {
+          const stored = readAnonShare();
+          if (stored && stored.designToken === currentDesignToken) {
+            setShare({
+              url: stored.url,
+              shareToken: stored.shareToken,
+              expiresInDays: stored.expiresInDays,
+              galleryState: "unlisted",
+              galleryTitle: "",
+              galleryDescription: "",
+            });
+            setPublishedDesignToken(stored.designToken);
+            if (stored.expiresInDays) setExpiresInDays(stored.expiresInDays);
+          }
         }
-
-        const existingProjectShare = (payload.shares ?? []).find(
-          (share) => share.projectId === projectId
-        );
-
-        if (!existingProjectShare || cancelled) {
-          return;
-        }
-
-        const nextUrl = new URL(
-          buildStoredSharePath(existingProjectShare.token, currentView),
-          window.location.origin
-        ).toString();
-        const daysRemaining = Math.max(
-          1,
-          Math.ceil(
-            (new Date(existingProjectShare.expiresAt).getTime() - Date.now()) /
-              (24 * 60 * 60 * 1000)
-          )
-        );
-        const inferredExpiry: 7 | 30 | 90 =
-          daysRemaining <= 7 ? 7 : daysRemaining <= 30 ? 30 : 90;
-
-        restoredProjectShareForKeyRef.current = restoreKey;
-        setPublishedShareUrl(nextUrl);
-        setPublishedExpiresInDays(inferredExpiry);
-        setExpiresInDays((current) =>
-          current === inferredExpiry ? current : inferredExpiry
-        );
-        setPublishedSourceToken(currentToken);
-      } catch {
-        /* ignore existing-share lookup failures */
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") return;
+      } finally {
+        if (!ac.signal.aborted) setLoadDone(true);
       }
     };
 
-    void loadProjectShare();
-
+    void doLoad();
     return () => {
-      cancelled = true;
+      ac.abort();
+      if (abortRef.current === ac) abortRef.current = null;
     };
   }, [
-    currentToken,
-    currentView,
+    open,
     existingShareMode,
+    userId,
     projectId,
-    publishedShareUrl,
-    session?.user,
-    session?.user?.id,
+    currentView,
+    currentDesignToken,
   ]);
 
-  const publishShareUrl = async (force = false) => {
-    if (publishedShareUrl && !force && !shareNeedsRefresh) {
-      return publishedShareUrl;
-    }
+  useEffect(() => {
+    if (!showGalleryForm) return;
+    setGalleryTitleInput(share?.galleryTitle || design.title.trim());
+    setGalleryDescriptionInput(
+      share?.galleryDescription || design.description?.trim() || ""
+    );
+    setGalleryPreviewDataUrl(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showGalleryForm]);
 
-    const previousToken = activeShareToken;
+  const doPublish = async (force = false): Promise<string> => {
     setPublishing(true);
-
     try {
-      const response = await fetch("/api/shares", {
+      const res = await fetch("/api/shares", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           design,
           view: currentView,
@@ -326,36 +375,44 @@ function ShareContent({
           ...(projectId ? { projectId } : {}),
         }),
       });
-
-      const data = (await response.json()) as
-        | { ok: true; share: { path: string } }
+      const data = (await res.json()) as
+        | {
+            ok: true;
+            share: { token: string; path: string; expiresAt: string | null };
+          }
         | { ok: false; error?: string };
 
-      if (!response.ok || !data.ok) {
-        throw new Error(
-          data.ok
-            ? "Failed to create share link"
-            : (data.error ?? "Failed to create share link")
-        );
-      }
+      if (!data.ok)
+        throw new Error(data.error ?? "Failed to create share link");
 
       const url = new URL(data.share.path, window.location.origin).toString();
-      setPublishedShareUrl(url);
-      setPublishedSourceToken(currentToken);
-      setPublishedExpiresInDays(expiresInDays);
-      persistPublishedShare({
-        url,
-        sourceToken: currentToken,
-        expiresInDays,
-      });
+      const expiry = inferExpiryDays(data.share.expiresAt) ?? expiresInDays;
 
-      // Silently revoke the previous share when replacing — only possible for
-      // authenticated owners. Failure is non-blocking; the new link is already live.
-      if (force && previousToken && isAuthenticated) {
-        fetch(`/api/shares/${encodeURIComponent(previousToken)}`, {
+      if (force && share) {
+        fetch(`/api/shares/${encodeURIComponent(share.shareToken)}`, {
           method: "DELETE",
         }).catch(() => {
           /* ignore */
+        });
+      }
+
+      const newShare: ActiveShare = {
+        url,
+        shareToken: data.share.token,
+        expiresInDays: expiry,
+        galleryState: "unlisted",
+        galleryTitle: design.title.trim(),
+        galleryDescription: design.description?.trim() ?? "",
+      };
+      setShare(newShare);
+      setPublishedDesignToken(currentDesignToken);
+
+      if (!userId || !projectId) {
+        writeAnonShare({
+          url,
+          shareToken: data.share.token,
+          designToken: currentDesignToken,
+          expiresInDays: expiry,
         });
       }
 
@@ -368,122 +425,232 @@ function ShareContent({
 
   const handlePublish = async (force = false) => {
     try {
-      await publishShareUrl(force);
-      writeLastShareToken();
+      await doPublish(force);
       toast.success(force ? "Link updated" : "Link created");
-    } catch (error) {
+    } catch (err) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create share link"
+        err instanceof Error ? err.message : "Failed to create share link"
       );
     }
   };
 
   const handleCopy = async () => {
     try {
-      const url = await publishShareUrl(shareNeedsRefresh);
+      const url =
+        share && !shareNeedsRefresh
+          ? share.url
+          : await doPublish(shareNeedsRefresh);
       await navigator.clipboard.writeText(url);
-      writeLastShareToken();
       setCopied(true);
       toast.success("Link copied");
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create share link"
-      );
-      const input =
-        document.querySelector<HTMLInputElement>("#share-url-input");
-      input?.select();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to copy link");
     }
   };
 
   const handleNativeShare = async () => {
     try {
-      const url = await publishShareUrl(shareNeedsRefresh);
+      const url =
+        share && !shareNeedsRefresh
+          ? share.url
+          : await doPublish(shareNeedsRefresh);
       await navigator.share({
         title: design.title || "TrackDraw",
         text: `Check out this FPV track: ${design.title || "Untitled"}`,
         url,
       });
-      writeLastShareToken();
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        toast.error(err.message);
       }
-      /* user cancelled */
     }
   };
 
-  const revokePublishedShare = async () => {
-    if (!activeShareToken) {
-      throw new Error("Missing published share token");
-    }
-
-    setRevoking(true);
-
+  const handleOpenInTab = async () => {
     try {
-      const response = await fetch(
-        `/api/shares/${encodeURIComponent(activeShareToken)}`,
-        {
-          method: "DELETE",
-        }
+      const url =
+        share && !shareNeedsRefresh
+          ? share.url
+          : await doPublish(shareNeedsRefresh);
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to create share link"
       );
+    }
+  };
 
-      const data = (await response.json()) as
-        | { ok: true }
-        | { ok: false; error?: string };
+  const handleRevoke = async () => {
+    if (!share) return;
+    setRevoking(true);
+    try {
+      const res = await fetch(
+        `/api/shares/${encodeURIComponent(share.shareToken)}`,
+        { method: "DELETE" }
+      );
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (!data.ok) throw new Error(data.error ?? "Failed to revoke link");
 
-      if (!response.ok || !data.ok) {
-        throw new Error(
-          data.ok
-            ? "Failed to revoke share link"
-            : (data.error ?? "Failed to revoke share link")
-        );
-      }
-
-      clearPublishedShare();
+      setShare(null);
+      setPublishedDesignToken(null);
+      clearAnonShare();
+      toast.success("Link revoked");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to revoke link");
     } finally {
       setRevoking(false);
     }
   };
 
-  const handleRevoke = async () => {
+  const handleListInGallery = async () => {
+    if (!share || !galleryPreviewDataUrl) return;
     try {
-      await revokePublishedShare();
-      toast.success("Link revoked");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to revoke share link"
+      const webpDataUrl = await convertPngToWebp(galleryPreviewDataUrl);
+
+      setGalleryUpdating(true);
+      const res = await fetch(
+        `/api/shares/${encodeURIComponent(share.shareToken)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "list",
+            title: galleryTitleInput.trim(),
+            description: galleryDescriptionInput.trim(),
+            previewDataUrl: webpDataUrl,
+          }),
+        }
       );
+      const data = (await res.json()) as
+        | {
+            ok: true;
+            share: {
+              expiresAt: string | null;
+              galleryState: string | null;
+              galleryTitle: string | null;
+              galleryDescription: string | null;
+            };
+          }
+        | { ok: false; error?: string };
+
+      if (!data.ok) throw new Error(data.error ?? "Failed to list in gallery");
+
+      setShare({
+        ...share,
+        expiresInDays: inferExpiryDays(data.share.expiresAt),
+        galleryState: parseGalleryState(data.share.galleryState),
+        galleryTitle: data.share.galleryTitle ?? galleryTitleInput.trim(),
+        galleryDescription:
+          data.share.galleryDescription ?? galleryDescriptionInput.trim(),
+      });
+      setShowGalleryForm(false);
+      toast.success("Track listed in gallery");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to list in gallery"
+      );
+    } finally {
+      setGalleryUpdating(false);
     }
   };
 
-  const publishedLifetimeLabel =
-    publishedExpiresInDays === null ? null : `${publishedExpiresInDays} days`;
-  const primaryActionLabel = publishedShareUrl
-    ? shareNeedsRefresh
-      ? "Update link"
-      : "Copy link"
-    : "Create link";
-  const primaryAction = publishedShareUrl
-    ? shareNeedsRefresh
-      ? () => handlePublish(true)
-      : handleCopy
-    : () => handlePublish();
-  const primaryActionIcon = publishedShareUrl
-    ? shareNeedsRefresh
-      ? Link2
-      : copied
-        ? Check
-        : Copy
-    : Link2;
-  const PrimaryActionIcon = primaryActionIcon;
+  const handleUnlistFromGallery = async () => {
+    if (!share) return;
+    setGalleryUpdating(true);
+    try {
+      const res = await fetch(
+        `/api/shares/${encodeURIComponent(share.shareToken)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "unlist" }),
+        }
+      );
+      const data = (await res.json()) as
+        | {
+            ok: true;
+            share: { expiresAt: string | null; galleryState: string | null };
+          }
+        | { ok: false; error?: string };
 
-  const handleCopyExistingShareUrl = async () => {
+      if (!data.ok)
+        throw new Error(data.error ?? "Failed to remove from gallery");
+
+      setShare({
+        ...share,
+        expiresInDays:
+          inferExpiryDays(data.share.expiresAt) ?? share.expiresInDays,
+        galleryState: parseGalleryState(data.share.galleryState),
+      });
+      setConfirmRemoveFromGallery(false);
+      toast.success("Track removed from gallery");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to remove from gallery"
+      );
+    } finally {
+      setGalleryUpdating(false);
+    }
+  };
+
+  const handleUpdateGalleryMetadata = async () => {
+    if (!share) return;
+    setGalleryUpdating(true);
+    try {
+      const res = await fetch(
+        `/api/shares/${encodeURIComponent(share.shareToken)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "update",
+            title: galleryTitleInput.trim(),
+            description: galleryDescriptionInput.trim(),
+          }),
+        }
+      );
+      const data = (await res.json()) as
+        | {
+            ok: true;
+            share: {
+              expiresAt: string | null;
+              galleryState: string | null;
+              galleryTitle: string | null;
+              galleryDescription: string | null;
+            };
+          }
+        | { ok: false; error?: string };
+
+      if (!data.ok) {
+        throw new Error(data.error ?? "Failed to update gallery details");
+      }
+
+      setShare({
+        ...share,
+        expiresInDays:
+          inferExpiryDays(data.share.expiresAt) ?? share.expiresInDays,
+        galleryState: parseGalleryState(data.share.galleryState),
+        galleryTitle: data.share.galleryTitle ?? galleryTitleInput.trim(),
+        galleryDescription:
+          data.share.galleryDescription ?? galleryDescriptionInput.trim(),
+      });
+      setShowGalleryForm(false);
+      toast.success("Gallery details updated");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update gallery details"
+      );
+    } finally {
+      setGalleryUpdating(false);
+    }
+  };
+
+  const handleCopyCurrentUrl = async () => {
     if (!currentShareUrl) {
       toast.error("Unable to read the current share link");
       return;
     }
-
     try {
       await navigator.clipboard.writeText(currentShareUrl);
       setCopied(true);
@@ -494,228 +661,663 @@ function ShareContent({
     }
   };
 
-  const handleNativeShareExistingLink = async () => {
-    if (!currentShareUrl) {
-      toast.error("Unable to read the current share link");
-      return;
-    }
-
+  const handleNativeShareCurrentUrl = async () => {
+    if (!currentShareUrl) return;
     try {
       await navigator.share({
         title: design.title || "TrackDraw",
         text: `Check out this FPV track: ${design.title || "Untitled"}`,
         url: currentShareUrl,
       });
-    } catch (error) {
-      if (error instanceof Error && error.name !== "AbortError") {
-        toast.error(error.message);
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        toast.error(err.message);
       }
     }
   };
 
-  if (existingShareMode) {
-    if (mobile) {
-      return (
-        <div className="space-y-4 px-4 pt-3 pb-4">
-          <div>
-            <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-              Shared track
-            </p>
-            <div className="min-w-0">
-              <p className="text-foreground truncate text-sm font-medium">
-                {shareTitle}
-              </p>
-              <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
-                Share this published read-only link or open Studio to make your
-                own editable copy.
-              </p>
-            </div>
-          </div>
+  const primaryActionLabel = share
+    ? shareNeedsRefresh
+      ? "Update link"
+      : "Copy link"
+    : "Create link";
+  const PrimaryIcon = share
+    ? shareNeedsRefresh
+      ? Link2
+      : copied
+        ? Check
+        : Copy
+    : Link2;
+  const primaryAction = share
+    ? shareNeedsRefresh
+      ? () => handlePublish(true)
+      : handleCopy
+    : () => handlePublish();
 
-          <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
-            <div className="flex items-center gap-2">
-              <div className="bg-background/70 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/5">
-                <Link2 className="text-muted-foreground size-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-foreground text-sm font-medium">
-                  Current shared link
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  Read-only {currentView.toUpperCase()} review on {hostname}
-                </p>
-              </div>
-            </div>
-            {currentShareUrl ? (
-              <input
-                id="share-url-input"
-                readOnly
-                value={currentShareUrl}
-                onFocus={(e) => e.target.select()}
-                className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
-              />
-            ) : null}
-            <Button onClick={handleCopyExistingShareUrl} className="w-full">
-              {copied ? (
-                <Check className="size-4" />
-              ) : (
-                <Copy className="size-4" />
-              )}
-              Copy link
-            </Button>
-          </div>
+  const galleryStateLabel = !loadDone
+    ? "Loading current state"
+    : share?.galleryState === "featured"
+      ? "Featured in gallery"
+      : share?.galleryState === "listed"
+        ? "Listed in gallery"
+        : share?.galleryState === "hidden"
+          ? "Hidden by moderation"
+          : share
+            ? "Link only"
+            : "No published link";
 
-          <div className="border-border/50 overflow-hidden rounded-xl border">
-            {canNativeShare ? (
-              <button
-                onClick={handleNativeShareExistingLink}
-                className="border-border/40 hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors"
-              >
-                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <Share2 className="size-3.5" />
+  const galleryStateDesc = !loadDone
+    ? "Checking the current gallery status."
+    : share?.galleryState === "featured"
+      ? "Visible in the public gallery and pinned near the top."
+      : share?.galleryState === "listed"
+        ? "Visible in the public gallery."
+        : share?.galleryState === "hidden"
+          ? "Hidden by moderation. The direct link still works until expiry or revoke."
+          : share
+            ? "Direct link only. Not visible in the public gallery."
+            : "Create a share link first.";
+
+  const galleryVisibilityValue = !loadDone
+    ? "Checking"
+    : share?.galleryState === "featured"
+      ? "Featured"
+      : share?.galleryState === "listed"
+        ? "Listed"
+        : share?.galleryState === "hidden"
+          ? "Hidden"
+          : share
+            ? "Link only"
+            : "No link";
+  const galleryShareLinkValue = !share
+    ? "No link"
+    : share.expiresInDays === null
+      ? "No expiry"
+      : `Expires in ${share.expiresInDays} days`;
+  const GalleryStatusIcon = !loadDone
+    ? Loader2
+    : share?.galleryState === "featured"
+      ? Sparkles
+      : share?.galleryState === "listed"
+        ? ImageIcon
+        : share?.galleryState === "hidden"
+          ? EyeOff
+          : Link2;
+  const galleryStatusTone = !loadDone
+    ? "bg-muted text-muted-foreground"
+    : share?.galleryState === "featured"
+      ? "bg-amber-500/10 text-amber-500"
+      : share?.galleryState === "listed"
+        ? "bg-primary/10 text-primary"
+        : share?.galleryState === "hidden"
+          ? "bg-destructive/10 text-destructive"
+          : "bg-muted text-muted-foreground";
+
+  const navItems: SidebarDialogNavItem[] = existingShareMode
+    ? [
+        {
+          id: "share",
+          label: "Share link",
+          icon: <Link2 className="size-4" />,
+        },
+        {
+          id: "actions",
+          label: "Actions",
+          icon: <ExternalLink className="size-4" />,
+        },
+      ]
+    : [
+        { id: "share", label: "Share", icon: <Link2 className="size-4" /> },
+        ...(showGallerySection
+          ? [
+              {
+                id: "gallery",
+                label: "Gallery",
+                icon: <ImageIcon className="size-4" />,
+              },
+            ]
+          : []),
+        {
+          id: "actions",
+          label: "Actions",
+          icon: <ExternalLink className="size-4" />,
+        },
+      ];
+
+  const validTabs = navItems.map((i) => i.id);
+  const resolvedTab: Tab = (
+    validTabs.includes(activeTab) ? activeTab : "share"
+  ) as Tab;
+
+  const contentMeta: Record<Tab, { title: string; description: string }> = {
+    share: {
+      title: "Share link",
+      description: existingShareMode
+        ? "Copy or resend this published read-only link, or open Studio to make your own editable copy."
+        : "Create a read-only snapshot link and control how long it stays active.",
+    },
+    gallery: {
+      title: "Gallery visibility",
+      description:
+        "Manage how this published link appears in the public gallery.",
+    },
+    actions: {
+      title: "Actions",
+      description: existingShareMode
+        ? "Use the current published link in other apps or reopen it in a new tab."
+        : "Open, resend, revoke, or export this share without changing the track itself.",
+    },
+  };
+
+  return (
+    <>
+      {showGallerySection && showGalleryForm && !isGalleryVisible && (
+        <GalleryPreviewRenderer onCapture={setGalleryPreviewDataUrl} />
+      )}
+
+      <SidebarDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        eyebrow={existingShareMode ? "Shared track" : "Studio"}
+        title="Share"
+        mobileSubtitle="Share a read-only review link for this track"
+        navItems={navItems}
+        activeItem={resolvedTab}
+        onItemChange={(id) => setActiveTab(id as Tab)}
+        contentTitle={contentMeta[resolvedTab].title}
+        contentDescription={contentMeta[resolvedTab].description}
+      >
+        {resolvedTab === "share" && (
+          <div className="space-y-4">
+            {existingShareMode ? (
+              <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-background/70 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/5">
+                    <Link2 className="text-muted-foreground size-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-foreground text-sm font-medium">
+                      Current shared link
+                    </p>
+                    <p className="text-muted-foreground text-[11px]">
+                      Read-only {currentView.toUpperCase()} review on {hostname}
+                    </p>
+                  </div>
+                </div>
+                {currentShareUrl ? (
+                  <input
+                    readOnly
+                    value={currentShareUrl}
+                    onFocus={(e) => e.target.select()}
+                    className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+                  />
+                ) : null}
+                <Button onClick={handleCopyCurrentUrl} className="w-full">
+                  {copied ? (
+                    <Check className="size-4" />
+                  ) : (
+                    <Copy className="size-4" />
+                  )}
+                  Copy link
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-foreground text-sm font-medium">
+                      Link expires after
+                    </p>
+                    <p className="text-muted-foreground mt-1 text-[11px]">
+                      Published snapshots stay available until they expire.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {SHARE_EXPIRY_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setExpiresInDays(option.value)}
+                        className={cn(
+                          "border-border/60 bg-background/65 text-foreground hover:bg-muted/40 cursor-pointer rounded-lg border px-3 py-2 text-xs transition-colors",
+                          expiresInDays === option.value &&
+                            "border-primary bg-primary/10 text-primary"
+                        )}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-border/60 space-y-3 border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-background/70 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/5">
+                      <Link2 className="text-muted-foreground size-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-foreground text-sm font-medium">
+                        {share ? "Published link" : "No published link yet"}
+                      </p>
+                      <p className="text-muted-foreground text-[11px]">
+                        {share
+                          ? getLifetimeCopy(hostname, share.expiresInDays)
+                          : "Choose when it expires and create a read-only snapshot."}
+                      </p>
+                    </div>
+                  </div>
+                  {share ? (
+                    <input
+                      id="share-url-input"
+                      readOnly
+                      value={share.url}
+                      onFocus={(e) => e.target.select()}
+                      className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+                    />
+                  ) : null}
+                  {shareNeedsRefresh ? (
+                    <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
+                      <Share2 className="mt-0.5 size-3.5 shrink-0" />
+                      <span className="leading-relaxed">
+                        This link no longer reflects the latest design or expiry
+                        selection.
+                      </span>
+                    </div>
+                  ) : null}
+                  <div
+                    className={cn(
+                      "grid grid-cols-1 gap-2",
+                      share &&
+                        isAuthenticated &&
+                        (shareNeedsRefresh
+                          ? "min-[520px]:grid-cols-2"
+                          : "min-[520px]:grid-cols-3")
+                    )}
+                  >
+                    <Button
+                      onClick={primaryAction}
+                      disabled={busy}
+                      className="w-full"
+                    >
+                      <PrimaryIcon className="size-4" />
+                      {primaryActionLabel}
+                    </Button>
+                    {share && isAuthenticated ? (
+                      <>
+                        {!shareNeedsRefresh ? (
+                          <Button
+                            variant="outline"
+                            onClick={() => handlePublish(true)}
+                            disabled={busy}
+                            className="w-full"
+                          >
+                            <RefreshCw className="size-4" />
+                            Regenerate link
+                          </Button>
+                        ) : null}
+                        <Button
+                          variant="destructive"
+                          onClick={handleRevoke}
+                          disabled={busy}
+                          className="w-full"
+                        >
+                          <Ban className="size-4" />
+                          Revoke
+                        </Button>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {resolvedTab === "gallery" && (
+          <div className="space-y-4">
+            <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
+              <div className="flex items-start gap-3">
+                <div
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-lg",
+                    galleryStatusTone
+                  )}
+                >
+                  <GalleryStatusIcon
+                    className={cn("size-4", !loadDone && "animate-spin")}
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-foreground text-sm font-medium">
-                    Share via…
+                    {galleryStateLabel}
                   </p>
-                  <p className="text-muted-foreground text-[11px]">
-                    Send this published link to apps or contacts
+                  <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
+                    {galleryStateDesc}
                   </p>
                 </div>
-              </button>
-            ) : null}
-            <button
-              onClick={() => {
-                if (!currentShareUrl) return;
-                window.open(currentShareUrl, "_blank", "noopener,noreferrer");
-              }}
-              className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors"
-            >
-              <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                <ExternalLink className="size-3.5" />
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground text-sm font-medium">
-                  Open in tab
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  Reopen the current shared link in a new tab
-                </p>
-              </div>
-            </button>
-          </div>
-        </div>
-      );
-    }
 
-    return (
-      <div className="space-y-4">
-        <div className="flex items-start gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-              Shared track
-            </p>
-            <p className="text-foreground mt-2 text-[1.1rem] font-semibold tracking-[-0.02em]">
-              Share link
-            </p>
-            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              Copy or resend this published read-only link, or open Studio to
-              make your own editable copy.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-            aria-label="Close"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <div className="border-border/60 bg-muted/18 overflow-hidden rounded-xl border">
-              <div className="border-border/50 bg-card/70 flex items-start justify-between gap-3 border-b px-4 py-3">
-                <div className="min-w-0">
-                  <p className="text-foreground truncate text-sm font-semibold">
-                    {shareTitle}
+              <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
+                <div className="bg-background/55 rounded-lg px-3 py-2">
+                  <p className="text-muted-foreground text-[10px] font-medium tracking-[0.12em] uppercase">
+                    Visibility
                   </p>
-                  <p className="text-muted-foreground mt-0.5 text-[11px]">
-                    Shared {currentView.toUpperCase()} view
+                  <p className="text-foreground mt-0.5 text-xs font-medium">
+                    {galleryVisibilityValue}
                   </p>
                 </div>
-                <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                  <Share2 className="size-4" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-px bg-white/5">
-                <div className="px-4 py-3">
-                  <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
-                    Field
+                <div className="bg-background/55 rounded-lg px-3 py-2">
+                  <p className="text-muted-foreground text-[10px] font-medium tracking-[0.12em] uppercase">
+                    Share link
                   </p>
-                  <p className="text-foreground mt-1 text-sm font-medium">
-                    {design.field.width}×{design.field.height}m
-                  </p>
-                </div>
-                <div className="px-4 py-3">
-                  <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
-                    Objects
-                  </p>
-                  <p className="text-foreground mt-1 text-sm font-medium">
-                    {shapeCount}
+                  <p className="text-foreground mt-0.5 text-xs font-medium">
+                    {galleryShareLinkValue}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
-              <div className="flex items-center gap-2">
-                <div className="bg-background/70 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/5">
-                  <Link2 className="text-muted-foreground size-4" />
-                </div>
-                <div className="min-w-0">
+            {!loadDone ? null : !share ? (
+              <div className="border-border/60 bg-muted/12 space-y-3 rounded-xl border p-3">
+                <div>
                   <p className="text-foreground text-sm font-medium">
-                    Current shared link
+                    Publish before listing
                   </p>
-                  <p className="text-muted-foreground text-[11px]">
-                    Read-only {currentView.toUpperCase()} review on {hostname}
+                  <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
+                    The gallery uses the current published snapshot, so a share
+                    link is required before this track can be listed.
                   </p>
                 </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setActiveTab("share")}
+                  className="w-full"
+                >
+                  Create share link first
+                </Button>
               </div>
-              {currentShareUrl ? (
-                <input
-                  id="share-url-input"
-                  readOnly
-                  value={currentShareUrl}
-                  onFocus={(e) => e.target.select()}
-                  className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
-                />
-              ) : null}
-              <Button onClick={handleCopyExistingShareUrl} className="w-full">
-                {copied ? (
-                  <Check className="size-4" />
-                ) : (
-                  <Copy className="size-4" />
-                )}
-                Copy link
-              </Button>
-            </div>
-          </div>
+            ) : blockedByModeration ? (
+              <div className="border-destructive/25 bg-destructive/8 space-y-1.5 rounded-xl border p-3">
+                <p className="text-destructive text-sm font-medium">
+                  Moderation lock
+                </p>
+                <p className="text-destructive text-[11px] leading-relaxed">
+                  This track is hidden from the gallery by moderation. The
+                  direct share link can still work until it expires or is
+                  revoked.
+                </p>
+              </div>
+            ) : showGalleryForm ? (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-foreground text-sm font-medium">
+                    {isGalleryVisible ? "Gallery details" : "List in gallery"}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
+                    {isGalleryVisible
+                      ? "Update the title and description shown on the public gallery card."
+                      : "Add a title, description and generated preview for public browsing."}
+                  </p>
+                </div>
 
-          <div className="space-y-3">
+                <label className="block">
+                  <span className="text-muted-foreground mb-1.5 block text-[11px] font-medium">
+                    Title
+                  </span>
+                  <input
+                    value={galleryTitleInput}
+                    onChange={(e) => setGalleryTitleInput(e.target.value)}
+                    className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
+                    placeholder="Track title"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-muted-foreground mb-1.5 block text-[11px] font-medium">
+                    Description
+                  </span>
+                  <textarea
+                    value={galleryDescriptionInput}
+                    onChange={(e) => setGalleryDescriptionInput(e.target.value)}
+                    maxLength={GALLERY_DESCRIPTION_MAX_LENGTH}
+                    rows={3}
+                    className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 resize-none rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
+                    placeholder="Short description for the gallery card"
+                  />
+                  <span className="text-muted-foreground mt-1 block text-right text-[10px]">
+                    {galleryDescriptionInput.length}/
+                    {GALLERY_DESCRIPTION_MAX_LENGTH}
+                  </span>
+                </label>
+
+                {!isGalleryVisible ? (
+                  <div className="space-y-2">
+                    <p className="text-muted-foreground text-[11px]">
+                      Author:{" "}
+                      <span
+                        className={displayNameValid ? "" : "text-destructive"}
+                      >
+                        {displayNameValid ? displayName : "no display name set"}
+                      </span>
+                    </p>
+
+                    <div className="flex items-center gap-2">
+                      {galleryPreviewDataUrl === null ? (
+                        <>
+                          <Loader2 className="text-muted-foreground size-3.5 animate-spin" />
+                          <span className="text-muted-foreground text-[11px]">
+                            Generating preview…
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="size-3.5 text-emerald-500" />
+                          <span className="text-muted-foreground text-[11px]">
+                            Preview ready
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+
+                {!isGalleryVisible && shareNeedsRefresh ? (
+                  <p className="text-muted-foreground text-[11px]">
+                    Update the share link first so the gallery uses the latest
+                    snapshot.
+                  </p>
+                ) : !galleryTitleValid ? (
+                  <p className="text-destructive text-[11px]">
+                    Add a title before saving.
+                  </p>
+                ) : !galleryDescriptionValid ? (
+                  <p className="text-destructive text-[11px]">
+                    Use {GALLERY_DESCRIPTION_MIN_LENGTH}-
+                    {GALLERY_DESCRIPTION_MAX_LENGTH} characters for the
+                    description.
+                  </p>
+                ) : !isGalleryVisible && !displayNameValid ? (
+                  <p className="text-destructive text-[11px]">
+                    Set an account display name first.
+                  </p>
+                ) : isGalleryVisible && !hasGalleryMetadataChanges ? (
+                  <p className="text-muted-foreground text-[11px]">
+                    Update the title or description to save changes.
+                  </p>
+                ) : null}
+
+                <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowGalleryForm(false)}
+                    disabled={busy}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={
+                      isGalleryVisible
+                        ? handleUpdateGalleryMetadata
+                        : handleListInGallery
+                    }
+                    disabled={
+                      busy ||
+                      (isGalleryVisible
+                        ? !canSubmitGalleryMetadataUpdate
+                        : !canSubmitGalleryListing)
+                    }
+                  >
+                    {isGalleryVisible ? "Save changes" : "Add to gallery"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  {isGalleryVisible ? (
+                    <>
+                      <div>
+                        <p className="text-foreground text-sm font-medium">
+                          Gallery card
+                        </p>
+                        <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
+                          Review or update the public title and description for
+                          this track.
+                        </p>
+                      </div>
+                      <dl className="space-y-2 text-[12px]">
+                        <div className="space-y-0.5 min-[420px]:grid min-[420px]:grid-cols-[4.5rem_1fr] min-[420px]:gap-3 min-[420px]:space-y-0">
+                          <dt className="text-muted-foreground">Title</dt>
+                          <dd className="text-foreground truncate font-medium">
+                            {share.galleryTitle || design.title || "Untitled"}
+                          </dd>
+                        </div>
+                        <div className="space-y-0.5 min-[420px]:grid min-[420px]:grid-cols-[4.5rem_1fr] min-[420px]:gap-3 min-[420px]:space-y-0">
+                          <dt className="text-muted-foreground">Description</dt>
+                          <dd className="text-muted-foreground line-clamp-2 leading-relaxed">
+                            {share.galleryDescription ||
+                              "No gallery description set."}
+                          </dd>
+                        </div>
+                      </dl>
+                      <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
+                        <Button
+                          onClick={() => {
+                            setConfirmRemoveFromGallery(false);
+                            setShowGalleryForm(true);
+                          }}
+                          disabled={busy}
+                        >
+                          Edit details
+                        </Button>
+                        <Button
+                          variant="outline"
+                          render={<Link href="/gallery" />}
+                        >
+                          View gallery
+                        </Button>
+                      </div>
+                      {confirmRemoveFromGallery ? (
+                        <div className="border-border/60 flex flex-col gap-2 border-t pt-3">
+                          <p className="text-muted-foreground text-[11px] leading-relaxed">
+                            Remove from the public gallery? The share link
+                            itself will continue to work until it expires or is
+                            revoked.
+                          </p>
+                          <div className="flex flex-col-reverse gap-2 min-[380px]:flex-row min-[380px]:justify-end">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full min-[380px]:w-auto"
+                              onClick={() => setConfirmRemoveFromGallery(false)}
+                              disabled={busy}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="w-full min-[380px]:w-auto"
+                              onClick={handleUnlistFromGallery}
+                              disabled={busy}
+                            >
+                              <Trash2 className="size-4" />
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="border-border/60 flex justify-end border-t pt-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setConfirmRemoveFromGallery(true)}
+                            disabled={busy}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="size-4" />
+                            Remove from gallery
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <p className="text-foreground text-sm font-medium">
+                          Ready to list
+                        </p>
+                        <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
+                          Add this published snapshot to the public gallery with
+                          its own title, description and preview.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setConfirmRemoveFromGallery(false);
+                          setShowGalleryForm(true);
+                        }}
+                        disabled={busy || shareNeedsRefresh}
+                        className="w-full"
+                      >
+                        Add to gallery
+                      </Button>
+                      {shareNeedsRefresh ? (
+                        <p className="text-muted-foreground text-[11px] leading-relaxed">
+                          Update the share link first so the gallery uses the
+                          latest snapshot.
+                        </p>
+                      ) : null}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {resolvedTab === "actions" && (
+          <div className="space-y-4">
             <div className="border-border/50 bg-muted/12 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[11px]">
               <Share2 className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
               <p className="text-muted-foreground leading-relaxed">
-                This page is already the published read-only review link. Share
-                it as-is, or open Studio if you want an editable copy.
+                {existingShareMode
+                  ? "This page is already the published read-only review link. Share it as-is, or open Studio if you want an editable copy."
+                  : hasPath
+                    ? `Shared links open as read-only review pages. This link opens straight into ${currentView.toUpperCase()} review, and the route is ready for fly-through.`
+                    : "Shared links open as read-only review pages. Add a path first if you want reviewers to use fly-through and elevation review."}
               </p>
             </div>
 
             <div className="border-border/50 overflow-hidden rounded-xl border">
-              {canNativeShare ? (
+              {canNativeShare &&
+              (existingShareMode ? !!currentShareUrl : !!share) ? (
                 <button
-                  onClick={handleNativeShareExistingLink}
+                  onClick={
+                    existingShareMode
+                      ? handleNativeShareCurrentUrl
+                      : handleNativeShare
+                  }
                   className="border-border/40 hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors"
                 >
                   <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
@@ -726,551 +1328,70 @@ function ShareContent({
                       Share via…
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      Send this published link to apps or contacts
+                      Send to apps or contacts
                     </p>
                   </div>
                 </button>
               ) : null}
-              <button
-                onClick={() => {
-                  if (!currentShareUrl) return;
-                  window.open(currentShareUrl, "_blank", "noopener,noreferrer");
-                }}
-                className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors"
-              >
-                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <ExternalLink className="size-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground text-sm font-medium">
-                    Open in tab
-                  </p>
-                  <p className="text-muted-foreground text-[11px]">
-                    Reopen the current shared link in a new tab
-                  </p>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
-  if (mobile) {
-    return (
-      <div className="space-y-4 px-4 pt-3 pb-4">
-        <div>
-          <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            Current track
-          </p>
-          <div className="min-w-0">
-            <p className="text-foreground truncate text-sm font-medium">
-              {shareTitle}
-            </p>
-            <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
-              Create a read-only snapshot link for this track and choose how
-              long it stays active.
-            </p>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <div className="border-border/40 bg-background/65 text-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs">
-              <span className="text-muted-foreground">Field</span>
-              <span className="font-medium">
-                {design.field.width}×{design.field.height}m
-              </span>
-            </div>
-            <div className="border-border/40 bg-background/65 text-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs">
-              <span className="text-muted-foreground">Objects</span>
-              <span className="font-medium">{shapeCount}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
-            Link lifetime
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {SHARE_EXPIRY_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setExpiresInDays(option.value)}
-                className={cn(
-                  "border-border/60 bg-background/65 text-foreground hover:bg-muted/40 cursor-pointer rounded-lg border px-3 py-2 text-xs transition-colors",
-                  expiresInDays === option.value &&
-                    "border-primary bg-primary/10 text-primary"
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
-          <div className="flex items-center gap-2">
-            <div className="bg-background/70 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/5">
-              <Link2 className="text-muted-foreground size-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-foreground text-sm font-medium">
-                {publishedShareUrl ? "Published link" : "No published link yet"}
-              </p>
-              <p className="text-muted-foreground text-[11px]">
-                {publishedShareUrl
-                  ? `Read-only snapshot on ${hostname}, expires in ${publishedLifetimeLabel}`
-                  : `Create a read-only snapshot in ${currentView.toUpperCase()} review.`}
-              </p>
-            </div>
-          </div>
-          {publishedShareUrl ? (
-            <input
-              id="share-url-input"
-              readOnly
-              value={publishedShareUrl}
-              onFocus={(e) => e.target.select()}
-              className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
-            />
-          ) : null}
-          {showRefreshNotice ? (
-            <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
-              <Share2 className="mt-0.5 size-3.5 shrink-0" />
-              <span className="leading-relaxed">
-                This link no longer reflects the latest design or expiry
-                selection.
-              </span>
-            </div>
-          ) : showOutdatedNotice ? (
-            <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
-              <Share2 className="mt-0.5 size-3.5 shrink-0" />
-              <span className="leading-relaxed">
-                This track changed after the current link was created.
-              </span>
-            </div>
-          ) : null}
-          <div className="grid grid-cols-1 gap-2">
-            <Button
-              onClick={primaryAction}
-              disabled={publishing || revoking}
-              className="w-full"
-            >
-              <PrimaryActionIcon className="size-4" />
-              {primaryActionLabel}
-            </Button>
-            {publishedShareUrl && isAuthenticated ? (
-              <div className="grid grid-cols-1 gap-2">
-                {!shareNeedsRefresh ? (
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePublish(true)}
-                    disabled={publishing || revoking}
-                    className="w-full"
-                  >
-                    <RefreshCw className="size-4" />
-                    Regenerate link
-                  </Button>
-                ) : null}
-                <Button
-                  variant="outline"
-                  onClick={handleRevoke}
-                  disabled={publishing || revoking}
-                  className="w-full"
-                >
-                  <Ban className="size-4" />
-                  Revoke
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Read-only notice */}
-        <div className="border-border/50 bg-muted/12 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[11px]">
-          <Share2 className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
-          <p className="text-muted-foreground leading-relaxed">
-            Shared links open as read-only review pages.{" "}
-            {hasPath
-              ? `This link opens straight into ${currentView.toUpperCase()} review, and the route is ready for fly-through.`
-              : "Add a path first if you want reviewers to use fly-through and elevation review."}
-          </p>
-        </div>
-
-        {/* Action list */}
-        <div className="border-border/50 overflow-hidden rounded-xl border">
-          {canNativeShare && canUseShareActions && (
-            <button
-              onClick={handleNativeShare}
-              className="border-border/40 hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors"
-            >
-              <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                <Share2 className="size-3.5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground text-sm font-medium">
-                  Share via…
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  Send to apps or contacts
-                </p>
-              </div>
-            </button>
-          )}
-          {canUseShareActions ? (
-            <button
-              onClick={async () => {
-                try {
-                  const url = await publishShareUrl(shareNeedsRefresh);
-                  window.open(url, "_blank", "noopener,noreferrer");
-                  writeLastShareToken();
-                } catch (error) {
-                  toast.error(
-                    error instanceof Error
-                      ? error.message
-                      : "Failed to create share link"
-                  );
-                }
-              }}
-              className={cn(
-                "hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors",
-                onExportJson ? "border-border/40 border-b" : ""
-              )}
-            >
-              <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                <ExternalLink className="size-3.5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground text-sm font-medium">
-                  Open in tab
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  Preview the share link in a new window
-                </p>
-              </div>
-            </button>
-          ) : null}
-          {onExportJson && (
-            <button
-              onClick={onExportJson}
-              className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors"
-            >
-              <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                <Boxes className="size-3.5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-foreground text-sm font-medium">
-                  Export JSON instead
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  Reliable long-term backup, not URL-dependent
-                </p>
-              </div>
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Desktop: 2-column layout
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-            Studio
-          </p>
-          <p className="text-foreground mt-2 text-[1.1rem] font-semibold tracking-[-0.02em]">
-            Publish Share
-          </p>
-          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-            Create a read-only snapshot link you can send to others.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-          aria-label="Close"
-        >
-          <X className="size-4" />
-        </button>
-      </div>
-
-      {/* Full-width warnings */}
-      {(showRefreshNotice || showOutdatedNotice) && (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
-          <Share2 className="mt-0.5 size-3.5 shrink-0" />
-          <span className="leading-relaxed">
-            {showRefreshNotice
-              ? "This link no longer reflects the latest design or expiry selection."
-              : "This track changed after the current link was created."}
-          </span>
-        </div>
-      )}
-      {/* 2-column grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Left: design card + link */}
-        <div className="space-y-3">
-          {/* Design card */}
-          <div className="border-border/60 bg-muted/18 overflow-hidden rounded-xl border">
-            <div className="border-border/50 bg-card/70 flex items-start justify-between gap-3 border-b px-4 py-3">
-              <div className="min-w-0">
-                <p className="text-foreground truncate text-sm font-semibold">
-                  {shareTitle}
-                </p>
-                <p className="text-muted-foreground mt-0.5 text-[11px]">
-                  {currentView.toUpperCase()} view
-                </p>
-              </div>
-              <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-                <Share2 className="size-4" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-px bg-white/5">
-              <div className="px-4 py-3">
-                <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
-                  Field
-                </p>
-                <p className="text-foreground mt-1 text-sm font-medium">
-                  {design.field.width}×{design.field.height}m
-                </p>
-              </div>
-              <div className="px-4 py-3">
-                <p className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.12em] uppercase">
-                  Objects
-                </p>
-                <p className="text-foreground mt-1 text-sm font-medium">
-                  {shapeCount}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
-            <div>
-              <p className="text-foreground text-sm font-medium">
-                Link expires after
-              </p>
-              <p className="text-muted-foreground mt-1 text-[11px]">
-                Published snapshots stay available until they expire.
-              </p>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {SHARE_EXPIRY_OPTIONS.map((option) => (
+              {(existingShareMode ? !!currentShareUrl : !!share) ? (
                 <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setExpiresInDays(option.value)}
+                  onClick={
+                    existingShareMode
+                      ? () =>
+                          currentShareUrl &&
+                          window.open(
+                            currentShareUrl,
+                            "_blank",
+                            "noopener,noreferrer"
+                          )
+                      : handleOpenInTab
+                  }
                   className={cn(
-                    "border-border/60 bg-background/65 text-foreground hover:bg-muted/40 cursor-pointer rounded-lg border px-3 py-2 text-xs transition-colors",
-                    expiresInDays === option.value &&
-                      "border-primary bg-primary/10 text-primary"
+                    "hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors",
+                    !existingShareMode && onExportJson
+                      ? "border-border/40 border-b"
+                      : ""
                   )}
                 >
-                  {option.label}
+                  <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                    <ExternalLink className="size-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground text-sm font-medium">
+                      Open in tab
+                    </p>
+                    <p className="text-muted-foreground text-[11px]">
+                      {existingShareMode
+                        ? "Reopen the current shared link in a new tab"
+                        : "Preview the share link in a new window"}
+                    </p>
+                  </div>
                 </button>
-              ))}
-            </div>
-          </div>
+              ) : null}
 
-          <div className="border-border/60 bg-muted/18 space-y-3 rounded-xl border p-3">
-            <div className="flex items-center gap-2">
-              <div className="bg-background/70 flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/5">
-                <Link2 className="text-muted-foreground size-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-foreground text-sm font-medium">
-                  {publishedShareUrl
-                    ? "Published link"
-                    : "No published link yet"}
-                </p>
-                <p className="text-muted-foreground text-[11px]">
-                  {publishedShareUrl
-                    ? `Read-only snapshot on ${hostname}, expires in ${publishedLifetimeLabel}`
-                    : "Choose a lifetime and create a read-only snapshot."}
-                </p>
-              </div>
-            </div>
-            {publishedShareUrl ? (
-              <input
-                id="share-url-input"
-                readOnly
-                value={publishedShareUrl}
-                onFocus={(e) => e.target.select()}
-                className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
-              />
-            ) : null}
-            <div className="grid grid-cols-1 gap-2">
-              <Button
-                onClick={primaryAction}
-                disabled={publishing || revoking}
-                className="w-full"
-              >
-                <PrimaryActionIcon className="size-4" />
-                {primaryActionLabel}
-              </Button>
-              {publishedShareUrl ? (
-                <div className="grid grid-cols-1 gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleRevoke}
-                    disabled={publishing || revoking}
-                    className="w-full"
-                  >
-                    <Ban className="size-4" />
-                    Revoke
-                  </Button>
-                </div>
+              {!existingShareMode && onExportJson ? (
+                <button
+                  onClick={onExportJson}
+                  className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors"
+                >
+                  <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                    <Boxes className="size-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground text-sm font-medium">
+                      Export JSON instead
+                    </p>
+                    <p className="text-muted-foreground text-[11px]">
+                      Reliable long-term backup, not URL-dependent
+                    </p>
+                  </div>
+                </button>
               ) : null}
             </div>
           </div>
-        </div>
-
-        {/* Right: notices + actions */}
-        <div className="space-y-3">
-          {/* Read-only notice */}
-          <div className="border-border/50 bg-muted/12 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[11px]">
-            <Share2 className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
-            <p className="text-muted-foreground leading-relaxed">
-              Shared links open as read-only review pages.{" "}
-              {hasPath
-                ? `This link opens straight into ${currentView.toUpperCase()} review, and the route is ready for fly-through.`
-                : "Add a path first if you want reviewers to use fly-through and elevation review."}
-            </p>
-          </div>
-
-          {/* Action list */}
-          <div className="border-border/50 overflow-hidden rounded-xl border">
-            {canNativeShare && canUseShareActions && (
-              <button
-                onClick={handleNativeShare}
-                className="border-border/40 hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left transition-colors"
-              >
-                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <Share2 className="size-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground text-sm font-medium">
-                    Share via…
-                  </p>
-                  <p className="text-muted-foreground text-[11px]">
-                    Send to apps or contacts
-                  </p>
-                </div>
-              </button>
-            )}
-            {canUseShareActions ? (
-              <button
-                onClick={async () => {
-                  try {
-                    const url = await publishShareUrl(shareNeedsRefresh);
-                    window.open(url, "_blank", "noopener,noreferrer");
-                    writeLastShareToken();
-                  } catch (error) {
-                    toast.error(
-                      error instanceof Error
-                        ? error.message
-                        : "Failed to create share link"
-                    );
-                  }
-                }}
-                className={cn(
-                  "hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors",
-                  onExportJson ? "border-border/40 border-b" : ""
-                )}
-              >
-                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <ExternalLink className="size-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground text-sm font-medium">
-                    Open in tab
-                  </p>
-                  <p className="text-muted-foreground text-[11px]">
-                    Preview the share link in a new window
-                  </p>
-                </div>
-              </button>
-            ) : null}
-            {onExportJson && (
-              <button
-                onClick={onExportJson}
-                className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors"
-              >
-                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <Boxes className="size-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground text-sm font-medium">
-                    Export JSON instead
-                  </p>
-                  <p className="text-muted-foreground text-[11px]">
-                    Reliable long-term backup, not URL-dependent
-                  </p>
-                </div>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function ShareDialog({
-  open,
-  onOpenChange,
-  hasPath = false,
-  projectId = null,
-  onExportJson,
-  onSharePublished,
-  existingShareMode = false,
-}: ShareDialogProps) {
-  const isMobile = useIsMobile();
-
-  if (isMobile) {
-    return (
-      <MobileDrawer
-        open={open}
-        onOpenChange={onOpenChange}
-        title="Share"
-        subtitle="Share a read-only review link for this track"
-        contentClassName="border-border/60 bg-background shadow-[0_-18px_40px_rgba(0,0,0,0.18)] data-[vaul-drawer-direction=bottom]:mt-12 data-[vaul-drawer-direction=bottom]:max-h-[90dvh]"
-        bodyClassName="bg-background min-h-0 p-0"
-      >
-        <ShareContent
-          onClose={() => onOpenChange(false)}
-          hasPath={hasPath}
-          projectId={projectId}
-          onExportJson={onExportJson}
-          onSharePublished={onSharePublished}
-          existingShareMode={existingShareMode}
-          mobile
-        />
-      </MobileDrawer>
-    );
-  }
-
-  return (
-    <DesktopModal
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Share"
-      headerless
-      maxWidth="max-w-2xl"
-      panelClassName="rounded-3xl p-6"
-    >
-      <ShareContent
-        onClose={() => onOpenChange(false)}
-        hasPath={hasPath}
-        projectId={projectId}
-        onExportJson={onExportJson}
-        onSharePublished={onSharePublished}
-        existingShareMode={existingShareMode}
-      />
-    </DesktopModal>
+        )}
+      </SidebarDialog>
+    </>
   );
 }

@@ -19,7 +19,8 @@ These points are locked and treated as current product direction:
 - preview generation uses a fixed 3D camera — a stable, slightly angled, product-defined viewpoint consistent across all entries
 - the opt-in flow lives inside the existing share dialog, not a separate publish surface
 - opting into the gallery pins the underlying share: passive expiry is suspended as long as the entry is gallery-visible; the owner can still manually revoke the share at any time
-- removing an entry from the gallery does not reinstate a share expiry — the share stays active until manually revoked
+- removing an entry from the gallery returns the share to normal expiry-based retention
+- moderator hide removes the entry from gallery discovery, but the direct share link remains available until the share expires or is revoked
 - the first version stays narrow: no comments, likes, profiles, or social behavior
 - the shipped roles and authorization foundation is consumed here, not redesigned
 - gallery items are managed through the admin dashboard with full operator visibility and moderation actions
@@ -76,7 +77,8 @@ Key rules:
 - a gallery card always opens the canonical `/share/[token]` route
 - gallery visibility is removed when the owner manually revokes the underlying share
 - opting into the gallery suspends passive share expiry — the share is pinned active for as long as the entry is gallery-visible
-- removing from the gallery does not reinstate a share expiry
+- removing from the gallery returns the share to normal expiry-based retention
+- hidden entries are removed from gallery discovery, but their direct share links remain available until expiry or revocation
 
 ## Gallery vs Social Platform Positioning
 
@@ -140,6 +142,13 @@ Derived, read at query time from the share or project:
 Gallery entries are managed through the admin dashboard. Operators see all entries, their state, owner, and report count, and can feature, unfeature, hide, restore, or permanently remove entries. Owners can remove their own entries. Users can report entries.
 
 Report reasons: `inappropriate`, `spam`, `copyright / stolen`, `broken / low quality`
+
+Recommended gallery state names:
+
+- `unlisted`: share exists, but is not shown in the gallery
+- `listed`: standard gallery-visible state
+- `featured`: gallery-visible and curated
+- `hidden`: removed from gallery discovery through moderation
 
 ### 5. Public gallery browse surface
 

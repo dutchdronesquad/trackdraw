@@ -9,6 +9,7 @@ const config = [
     ignores: [
       ".next/**",
       ".open-next/**",
+      "coverage/**",
       "cloudflare-env.d.ts",
       "src/components/ui/**",
     ],

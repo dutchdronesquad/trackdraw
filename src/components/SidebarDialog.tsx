@@ -154,7 +154,7 @@ export function SidebarDialog({
         onOpenChange={onOpenChange}
         title={title}
         subtitle={mobileSubtitle}
-        contentClassName="h-[82dvh] max-h-[92dvh] min-h-[72dvh]"
+        contentClassName="max-h-[92dvh]"
         pinnedContent={
           <div className="border-border/30 shrink-0 border-b">{mobileNav}</div>
         }
