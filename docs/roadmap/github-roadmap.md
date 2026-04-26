@@ -44,6 +44,9 @@ Labels used below:
 - [x] Account and authorization foundation (`Account-backed`)
       The first account foundation is now in place, including sign-in, profile management, role-aware dashboard access, and internal role management.
 
+- [x] Published gallery (`Account-backed`)
+      TrackDraw now has an opt-in public gallery at `/gallery` built on published shares. Signed-in owners can list and remove gallery entries, visitors can browse community tracks, and moderators/admins can manage gallery visibility from the dashboard.
+
 ## Follow-up
 
 - [ ] Embeddable shared views (`No account required`)
@@ -68,13 +71,6 @@ Labels used below:
         Define how collaborative edits, conflict resolution, and offline/local-first behavior should work together only if shared editing still looks strategically justified.
   - [ ] Re-evaluate after editor boundary improvements
         Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too.
-
-- [ ] Published gallery evaluation (`Research`)
-      Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
-  - [ ] Publishing and consent model
-        Decide how a private project becomes gallery-visible and what opt-in, attribution, or ownership controls are required.
-  - [ ] Moderation and discovery model
-        Define how gallery content is filtered, featured, searched, or curated without creating an unmanageable moderation burden.
 
 ## Later Product Follow-up
 

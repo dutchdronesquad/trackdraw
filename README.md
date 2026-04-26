@@ -30,6 +30,8 @@
   &middot;
   <a href="https://trackdraw.app/studio"><strong>Open Studio</strong></a>
   &middot;
+  <a href="https://trackdraw.app/gallery"><strong>Gallery</strong></a>
+  &middot;
   <a href="https://github.com/dutchdronesquad/trackdraw/discussions/106"><strong>Roadmap</strong></a>
 </p>
 
@@ -56,8 +58,13 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 - 🎥 **Review route flow in 3D** - use the live 3D preview, elevation tools, floating ladder placement controls, and cinematic FPV fly-through review to check how the layout reads before race day
 - 📋 **Prepare a race-day handoff** - export a dedicated Race Pack PDF with map, numbering, material list, stock status, setup sequence, and initial build guidance
 - 📦 **Check buildability early** - compare the current layout against available obstacle stock before the gear leaves the van
-- 🔗 **Share and export cleanly** - publish a read-only link, manage and revoke published shares from the Projects dialog when signed in, or export PNG, SVG, PDF, cinematic FPV WebM videos, 3D screenshots, and JSON project files from the same design
-- 🔐 **Sign in to keep projects in sync** - use a passkey or email magic link, manage your profile in-app, change your account email safely, and keep account-backed work accessible across devices
+- 🔗 **Share and export cleanly** - publish a read-only link, browse community gallery tracks, or export PNG, SVG, PDF, cinematic FPV WebM videos, 3D screenshots, and JSON project files from the same design
+
+### With an account
+
+- 🖼️ **Publish gallery tracks** - opt published shares into the public gallery so visitors can discover them and open the canonical read-only share view
+- 💾 **Sync projects across devices** - keep account-backed work accessible from another browser or device while local-first editing stays available without signing in
+- 🔐 **Manage your account and shares** - use a passkey or email magic link, update your profile, change your account email safely, and manage or revoke published shares from the Projects dialog
 
 ## Experimental
 
@@ -68,7 +75,7 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 1. **Start from scratch or from a head start** with a blank canvas, a preset, or a starter layout.
 2. **Build the course visually** by placing obstacles, adjusting them in the inspector, and grouping sections that belong together.
 3. **Review how the layout will ride** with the live 3D preview, elevation tools, floating ladder placement, and route-flow checks before race day.
-4. **Turn the design into a handoff** by saving it locally, syncing it to your account, publishing a read-only share link, or exporting the assets you need, including race-day documents and cinematic FPV video.
+4. **Turn the design into a handoff** by saving it locally, syncing it to your account, publishing a read-only share link, listing it in the gallery, or exporting the assets you need, including race-day documents and cinematic FPV video.
 
 TrackDraw works without an account. You can create, manage, share, recover, import, and export projects in the browser, while signing in adds continuity across devices.
 

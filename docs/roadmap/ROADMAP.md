@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. Recent release work also strengthened shared review, route warnings, snapping, cinematic FPV export, and the editor foundation. The roadmap should now focus primarily on ownership boundaries, workflow depth, and the next product surfaces that build cleanly on the shipped v1.4.0 release.
+This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, public gallery discovery, practical mobile use, and export/share handoff. Recent release work also strengthened shared review, route warnings, snapping, cinematic FPV export, and the editor foundation. The roadmap should now focus primarily on workflow depth and the next product surfaces that build cleanly on the shipped foundation.
 
 ## Current Focus
 
@@ -9,6 +9,7 @@ TrackDraw is now strong in these areas:
 - Core 2D editing with real-scale placement, snapping, transforms, and undo/redo
 - Track path authoring with elevation-aware planning and a live 3D preview
 - Share-first collaboration through read-only links
+- Public gallery discovery through opt-in published shares
 - Practical mobile editing for quick venue-side changes
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 
@@ -17,7 +18,7 @@ The most useful next product moves are:
 - A sharper decision on how far account-backed project continuity should go after the shipped account and authorization foundation
 - A clearer separation between local-first workflows and account-backed follow-up
 - More deliberate editor workflow follow-up around route readability, numbering confidence, and precision placement
-- Better lifecycle controls around published shares once ownership is defined
+- Follow-up polish around published share and gallery lifecycle controls
 - A stronger embeddable share surface that extends published read-only viewing beyond TrackDraw itself
 - A stronger shared-view review experience, especially on mobile and in 3D
 - Deliberate follow-up on race-day outputs after the ownership boundary is settled
@@ -166,7 +167,7 @@ Published shares should be able to travel beyond TrackDraw links when a club, or
 Why now:
 
 - Published sharing is already a core product surface
-- An embed flow increases reuse and visibility without requiring collaborative editing or a public gallery first
+- An embed flow increases reuse and visibility without requiring collaborative editing or a separate gallery detail model
 - The safest implementation path can build on the existing read-only share model instead of introducing a second viewer stack
 
 Focus:
@@ -194,17 +195,7 @@ Suggested first slices:
 - Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
 - Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
-### 7. Published Gallery Evaluation (`Research`)
-
-Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
-
-Suggested first slices:
-
-- Define how a project becomes gallery-visible and what opt-in controls are required
-- Clarify attribution, ownership, and visibility boundaries
-- Determine the minimum viable moderation and discovery model
-
-### 8. Backlog And Research Tracks
+### 7. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 
@@ -293,7 +284,7 @@ Allow feedback to be anchored to obstacles or route sections, but keep it as a l
 Why later:
 
 - Simple note-taking is plausible, but the more meaningful version depends on identity, ownership, and shared project context
-- Richer review workflows are easier to define once collaboration, gallery, and publishing boundaries are clearer
+- Richer review workflows are easier to define once collaboration and publishing boundaries are clearer
 
 Suggested first slices:
 
@@ -330,8 +321,28 @@ Likely account-backed follow-up:
 
 - Cross-device project sync and cloud-backed project libraries
 - Durable ownership and administration of published shares
+- Gallery listing management and moderation
 - Shared venue or club records, including shared inventory profiles
 - Identity-aware comments, review threads, and future collaboration
+
+## v1.5.0 Archive
+
+<details>
+<summary>Completed gallery work archived with v1.5.0</summary>
+
+### Published Gallery (`Account-backed`)
+
+TrackDraw now has a public gallery at `/gallery` for opt-in published tracks. Gallery entries remain tied to canonical `/share/[token]` links, so browsing does not introduce a second read-only destination.
+
+Included:
+
+- Signed-in owners can add a published share to the gallery from the share dialog
+- Owners can update gallery title and description, remove an entry from the gallery, or revoke the underlying share
+- Gallery preview images are generated and stored as public media
+- The public gallery includes featured and recent entries, empty and failure states, public metadata, and sitemap coverage
+- Moderators and admins can view, feature, hide, restore, and delete gallery entries from the dashboard
+
+</details>
 
 ## v1.4.0 Archive
 
