@@ -46,7 +46,7 @@ export interface RestorePointMeta {
 export const LOCAL_DRAFT_KEY = "trackdraw-design";
 const PROJECT_LIST_KEY = "trackdraw-project-list";
 const RESTORE_LIST_KEY = "trackdraw-restore-list";
-const MAX_RESTORE_POINTS = 7;
+const MAX_RESTORE_POINTS = 10;
 
 export const persistenceLayerDefinitions: readonly PersistenceLayerDefinition[] =
   [

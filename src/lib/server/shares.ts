@@ -6,6 +6,12 @@ import {
   normalizeDesign,
   serializeDesign,
 } from "@/lib/track/design";
+import {
+  createUnlistedGalleryEntry,
+  deleteGalleryEntry,
+  getGalleryEntryByShareToken,
+  parseGalleryState,
+} from "@/lib/server/gallery";
 import { getShareDescription, getShareTitle } from "@/lib/share";
 import type { SerializedTrackDesign, TrackDesign } from "@/lib/types";
 import { getDatabase } from "@/lib/server/db";
@@ -14,6 +20,8 @@ const createShareToken = customAlphabet(
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
   16
 );
+
+export const DEFAULT_SHARE_EXPIRY_DAYS = 90;
 
 type ShareRow = {
   id: string;
@@ -27,7 +35,7 @@ type ShareRow = {
   created_at: string;
   updated_at: string;
   published_at: string;
-  expires_at: string;
+  expires_at: string | null;
   revoked_at: string | null;
   owner_user_id: string | null;
   project_id: string | null;
@@ -45,7 +53,7 @@ export type StoredShare = {
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
-  expiresAt: string;
+  expiresAt: string | null;
   revokedAt: string | null;
   ownerUserId: string | null;
   projectId: string | null;
@@ -57,8 +65,51 @@ export type StoredShareResolution =
   | { status: "revoked"; share: StoredShare }
   | { status: "missing" };
 
+const SHARE_SELECT = `
+  id,
+  token,
+  design_json,
+  title,
+  description,
+  field_width,
+  field_height,
+  shape_count,
+  created_at,
+  updated_at,
+  published_at,
+  expires_at,
+  revoked_at,
+  owner_user_id,
+  project_id
+`;
+
+const USER_SHARE_SELECT = `
+  s.token,
+  s.title,
+  s.shape_count,
+  s.created_at,
+  s.expires_at,
+  s.project_id,
+  g.gallery_state,
+  g.gallery_title,
+  g.gallery_description
+`;
+
+const ACTIVE_USER_SHARE_WHERE = `
+  s.revoked_at is null
+  and (s.expires_at is null or s.expires_at > ?)
+`;
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
 function toIsoDateAfterDays(days: number) {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+}
+
+function parseNullableNumber(value: number | null) {
+  return value === null ? null : Number.parseFloat(String(value));
 }
 
 function mapShareRow(row: ShareRow): StoredShare {
@@ -75,14 +126,8 @@ function mapShareRow(row: ShareRow): StoredShare {
     title: row.title ?? getShareTitle(design),
     description: row.description ?? getShareDescription(design),
     shapeCount: row.shape_count,
-    fieldWidth:
-      row.field_width === null
-        ? null
-        : Number.parseFloat(String(row.field_width)),
-    fieldHeight:
-      row.field_height === null
-        ? null
-        : Number.parseFloat(String(row.field_height)),
+    fieldWidth: parseNullableNumber(row.field_width),
+    fieldHeight: parseNullableNumber(row.field_height),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     publishedAt: row.published_at,
@@ -90,6 +135,20 @@ function mapShareRow(row: ShareRow): StoredShare {
     revokedAt: row.revoked_at,
     ownerUserId: row.owner_user_id,
     projectId: row.project_id,
+  };
+}
+
+function mapUserShareRow(row: UserShareRow): UserShare {
+  return {
+    token: row.token,
+    title: row.title ?? "Untitled track",
+    shapeCount: row.shape_count,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    projectId: row.project_id,
+    galleryState: parseGalleryState(row.gallery_state),
+    galleryTitle: row.gallery_title,
+    galleryDescription: row.gallery_description,
   };
 }
 
@@ -101,21 +160,7 @@ export async function resolveStoredShare(
     .prepare(
       `
         select
-          id,
-          token,
-          design_json,
-          title,
-          description,
-          field_width,
-          field_height,
-          shape_count,
-          created_at,
-          updated_at,
-          published_at,
-          expires_at,
-          revoked_at,
-          owner_user_id,
-          project_id
+          ${SHARE_SELECT}
         from shares
         where token = ?
         limit 1
@@ -131,7 +176,7 @@ export async function resolveStoredShare(
     return { status: "revoked", share };
   }
 
-  if (new Date(share.expiresAt).getTime() <= Date.now()) {
+  if (share.expiresAt && new Date(share.expiresAt).getTime() <= Date.now()) {
     return { status: "expired", share };
   }
 
@@ -143,13 +188,37 @@ export async function getShareByToken(token: string) {
   return resolved.status === "available" ? resolved.share : null;
 }
 
+type ShareExpiresAtRow = {
+  expires_at: string | null;
+};
+
+export async function getShareExpiresAtByToken(token: string) {
+  const db = await getDatabase();
+  const row = await db
+    .prepare(
+      `
+        select expires_at
+        from shares
+        where token = ?
+        limit 1
+      `
+    )
+    .bind(token)
+    .first<ShareExpiresAtRow>();
+
+  return row?.expires_at ?? null;
+}
+
 type UserShareRow = {
   token: string;
   title: string | null;
   shape_count: number;
   created_at: string;
-  expires_at: string;
+  expires_at: string | null;
   project_id: string | null;
+  gallery_state: string | null;
+  gallery_title: string | null;
+  gallery_description: string | null;
 };
 
 export type UserShare = {
@@ -157,8 +226,11 @@ export type UserShare = {
   title: string;
   shapeCount: number;
   createdAt: string;
-  expiresAt: string;
+  expiresAt: string | null;
   projectId: string | null;
+  galleryState: "unlisted" | "listed" | "featured" | "hidden" | null;
+  galleryTitle: string | null;
+  galleryDescription: string | null;
 };
 
 export async function getSharesByUserId(
@@ -166,36 +238,69 @@ export async function getSharesByUserId(
   { limit = 20 }: { limit?: number } = {}
 ): Promise<UserShare[]> {
   const db = await getDatabase();
-  const now = new Date().toISOString();
+  const now = nowIso();
 
   const rows = await db
     .prepare(
       `
-        select token, title, shape_count, created_at, expires_at, project_id
-        from shares
-        where owner_user_id = ?
-          and revoked_at is null
-          and expires_at > ?
-        order by created_at desc
+        select
+          ${USER_SHARE_SELECT}
+        from shares s
+        left join gallery_entries g on g.share_token = s.token
+        where s.owner_user_id = ?
+          and ${ACTIVE_USER_SHARE_WHERE}
+        order by s.created_at desc
         limit ?
       `
     )
     .bind(userId, now, limit)
     .all<UserShareRow>();
 
-  return (rows.results ?? []).map((row) => ({
-    token: row.token,
-    title: row.title ?? "Untitled track",
-    shapeCount: row.shape_count,
-    createdAt: row.created_at,
-    expiresAt: row.expires_at,
-    projectId: row.project_id,
-  }));
+  return (rows.results ?? []).map(mapUserShareRow);
+}
+
+export async function getShareByProjectIdForUser(
+  userId: string,
+  projectId: string
+): Promise<UserShare | null> {
+  const db = await getDatabase();
+  const now = nowIso();
+
+  const row = await db
+    .prepare(
+      `
+        select
+          ${USER_SHARE_SELECT}
+        from shares s
+        left join gallery_entries g on g.share_token = s.token
+        where s.owner_user_id = ?
+          and s.project_id = ?
+          and ${ACTIVE_USER_SHARE_WHERE}
+        order by
+          case g.gallery_state
+            when 'featured' then 0
+            when 'listed' then 1
+            when 'hidden' then 2
+            when 'unlisted' then 3
+            else 4
+          end,
+          s.created_at desc
+        limit 1
+      `
+    )
+    .bind(userId, projectId, now)
+    .first<UserShareRow>();
+
+  if (!row) {
+    return null;
+  }
+
+  return mapUserShareRow(row);
 }
 
 export async function revokeShare(token: string) {
   const db = await getDatabase();
-  const now = new Date().toISOString();
+  const now = nowIso();
 
   await db
     .prepare(
@@ -207,6 +312,10 @@ export async function revokeShare(token: string) {
     )
     .bind(now, now, token)
     .run();
+
+  await deleteGalleryEntry(token, {
+    restoreShareExpiry: false,
+  });
 }
 
 type CreateShareOptions = {
@@ -232,7 +341,7 @@ export async function createShare(
   const title = getShareTitle(normalized);
   const description = getShareDescription(normalized);
   const shapeCount = getDesignShapes(normalized).length;
-  const expiresInDays = options.expiresInDays ?? 90;
+  const expiresInDays = options.expiresInDays ?? DEFAULT_SHARE_EXPIRY_DAYS;
   const ownerUserId = options.ownerUserId ?? null;
   const projectId = options.projectId ?? null;
   const db = await getDatabase();
@@ -240,7 +349,7 @@ export async function createShare(
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const id = crypto.randomUUID();
     const token = createShareToken();
-    const now = new Date().toISOString();
+    const now = nowIso();
     const expiresAt = toIsoDateAfterDays(expiresInDays);
 
     try {
@@ -286,7 +395,7 @@ export async function createShare(
         )
         .run();
 
-      return {
+      const share = {
         id,
         token,
         design: normalized,
@@ -303,6 +412,17 @@ export async function createShare(
         ownerUserId,
         projectId,
       };
+
+      if (ownerUserId) {
+        await createUnlistedGalleryEntry({
+          shareToken: token,
+          ownerUserId,
+          title,
+          description,
+        });
+      }
+
+      return share;
     } catch (error) {
       if (attempt < 2 && isUniqueViolation(error)) {
         continue;
@@ -313,4 +433,22 @@ export async function createShare(
   }
 
   throw new Error("Failed to generate a unique share token");
+}
+
+export async function getOrCreateGalleryEntryForShare(share: StoredShare) {
+  if (!share.ownerUserId) {
+    return null;
+  }
+
+  const existing = await getGalleryEntryByShareToken(share.token);
+  if (existing) {
+    return existing;
+  }
+
+  return createUnlistedGalleryEntry({
+    shareToken: share.token,
+    ownerUserId: share.ownerUserId,
+    title: share.title,
+    description: share.description,
+  });
 }
