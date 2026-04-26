@@ -114,6 +114,8 @@ Example URL shape used by the site code:
 - asset path: `/landing/video-demo.webm`
 - resolved asset URL: `https://media.trackdraw.app/landing/video-demo.webm`
 
+Gallery previews use the same public media host. For gallery opt-in to upload preview images from the app runtime, add a Cloudflare R2 binding named `MEDIA_BUCKET` that points at the public media bucket exposed on `media.trackdraw.app`.
+
 ## Mail deliverability
 
 If magic-link emails arrive in spam, treat that as a deliverability problem rather than a template problem.

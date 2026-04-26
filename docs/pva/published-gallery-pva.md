@@ -38,11 +38,11 @@ Out of scope for v1:
 ## Delivery Checklist
 
 - [x] Phase 0: lock the gallery model
-- [ ] Phase 1: gallery entry record and storage
-- [ ] Phase 2: owner-facing gallery controls and opt-in flow
-- [ ] Phase 3: public gallery browse surface
+- [x] Phase 1: gallery entry record and storage
+- [x] Phase 2: owner-facing gallery controls and opt-in flow
+- [x] Phase 3: public gallery browse surface
 - [ ] Phase 4: moderation and dashboard management
-- [ ] Phase 5: launch-readiness pass
+- [x] Phase 5: launch-readiness pass
 
 ## Build Sequence
 
@@ -156,7 +156,7 @@ Checklist:
 - [x] Confirm that removing from the gallery returns the share to normal expiry-based retention
 - [x] Confirm that moderator hide also returns the share to normal expiry-based retention
 - [x] Confirm the normal expiry window reused after gallery removal or hide
-- [ ] Make `shares.expires_at` nullable so pinned gallery entries can be represented directly
+- [x] Make `shares.expires_at` nullable so pinned gallery entries can be represented directly
 - [x] Define the R2 key structure: `gallery/previews/{gallery_entry_id}.webp`
 - [x] Define R2 cleanup lifecycle: delete on permanent removal, keep on hide, delete on share revocation
 - [x] Confirm derived fields (field size, obstacle count) are read at query time, not stored
@@ -196,16 +196,16 @@ Share dialog changes:
 
 Checklist:
 
-- [ ] Add `Share visibility` radio group to the share dialog
-- [ ] Implement the gallery opt-in confirmation step (title, description, display name review)
-- [ ] Validate title, description (min 10 chars), and display name before allowing opt-in
-- [ ] Trigger preview image generation and R2 upload on opt-in
-- [ ] Set share `expires_at` to `null` on opt-in (pin the share)
-- [ ] Implement `Remove from gallery` action in the share dialog with confirmation
+- [x] Add `Share visibility` radio group to the share dialog
+- [x] Implement the gallery opt-in confirmation step (title, description, display name review)
+- [x] Validate title, description (min 10 chars), and display name before allowing opt-in
+- [x] Trigger preview image generation and R2 upload on opt-in
+- [x] Set share `expires_at` to `null` on opt-in (pin the share)
+- [x] Implement `Remove from gallery` action in the share dialog with confirmation
 - [x] Confirm revoking the underlying share also removes gallery visibility
 - [x] Confirm that removing from the gallery starts normal expiry-based retention again
 - [x] Confirm that removing from the gallery sets a fresh expiry from the time of removal
-- [ ] Show `View in gallery →` link in the share dialog after successful opt-in
+- [x] Show `View in gallery →` link in the share dialog after successful opt-in
 
 ### Phase 3: Public Gallery Browse Surface
 
@@ -243,15 +243,15 @@ SEO:
 
 Checklist:
 
-- [ ] Implement the `/gallery` route and page layout
-- [ ] Add `Gallery` link to the landing page navigation
-- [ ] Implement the `GalleryCard` component with preview image, title, author, metadata row, Featured badge
-- [ ] Implement the Featured section (hidden if no featured entries)
-- [ ] Implement the Recent section with `Load more` (12 per page)
-- [ ] Implement the empty state
-- [ ] Implement the low-content state (no section labels if fewer than 3 entries)
-- [ ] Implement preview image fallback (TrackDraw mark placeholder on load failure)
-- [ ] Add page metadata and canonical tag
+- [x] Implement the `/gallery` route and page layout
+- [x] Add `Gallery` link to the landing page navigation
+- [x] Implement the `GalleryCard` component with preview image, title, author, metadata row, Featured badge
+- [x] Implement the Featured section (hidden if no featured entries)
+- [x] Implement the Recent section with `Load more` (12 per page)
+- [x] Implement the empty state
+- [x] Implement the low-content state (no section labels if fewer than 3 entries)
+- [x] Implement preview image fallback (TrackDraw mark placeholder on load failure)
+- [x] Add page metadata and canonical tag
 
 ### Phase 4: Moderation and Dashboard Management
 
@@ -267,14 +267,6 @@ Minimum moderation controls:
 - owner can remove their entry from the gallery (state → `unlisted`) without revoking the share
 - moderator or admin can hide an entry (state → `hidden`); the entry is removed from gallery discovery and the direct share link remains active until the share expires or is revoked
 - moderator or admin can feature (state → `featured`) or unfeature (state → `listed`) an entry
-- user can report an entry
-
-Minimum report reasons:
-
-- `inappropriate`
-- `spam`
-- `copyright / stolen`
-- `broken / low quality`
 
 State transition matrix:
 
@@ -297,10 +289,9 @@ Moderation retention rule: `hidden` does not create a separate storage-retention
 
 Dashboard gallery module:
 
-- list all gallery entries with state, owner, title, publish date, and report count
+- list all gallery entries with state, owner, title, and publish date
 - filter by state: listed, featured, hidden
-- actions per entry: feature, unfeature, hide, restore, view reports, remove
-- report queue for reviewing flagged entries with report reason and reporter info
+- actions per entry: feature, unfeature, hide, restore, remove
 
 Audit visibility:
 
@@ -309,16 +300,14 @@ Audit visibility:
 
 Checklist:
 
-- [ ] Implement owner remove from gallery (state → `unlisted`) in the share dialog
-- [ ] Implement user report flow with minimum report reasons
-- [ ] Implement moderator hide (state → `hidden`) and restore (state → `listed`)
-- [ ] Implement moderator feature and unfeature
+- [x] Implement owner remove from gallery (state → `unlisted`) in the share dialog
+- [x] Implement moderator hide (state → `hidden`) and restore (state → `listed`)
+- [x] Implement moderator feature and unfeature
 - [x] Confirm that moderator hide sets a fresh expiry from the time of hide
 - [x] Confirm that moderator restore clears expiry again by pinning the share
-- [ ] Add gallery entries module to the admin dashboard (list, filter, actions)
-- [ ] Add report queue to the admin dashboard
+- [x] Add gallery entries module to the admin dashboard (list, filter, actions)
 - [ ] Confirm state transition matrix is enforced in the API
-- [ ] Confirm moderation actions produce audit events
+- [x] Confirm moderation actions produce audit events
 
 ### Phase 5: Launch-Readiness Pass
 
@@ -328,12 +317,16 @@ Done: TrackDraw knows whether the first gallery is safe and coherent enough to e
 
 Checklist:
 
-- [ ] Re-check attribution: confirm account display name is shown consistently and correctly
-- [ ] Re-check empty-state and low-content browse experience
-- [ ] Decide: add a `Gallery` or `Showcase` section to the landing page, or keep the gallery quieter at launch
-- [ ] Re-check moderation and operator burden — is manual curation sustainable at expected scale?
-- [ ] Confirm preview image quality across a sample of real track designs
-- [ ] Decide: `launch now`, `keep dark`, or `refine before launch`
+- [x] Re-check attribution: confirm account display name is shown consistently and correctly
+- [x] Re-check empty-state and low-content browse experience
+- [x] Decide: add a `Gallery` or `Showcase` section to the landing page, or keep the gallery quieter at launch
+- [x] Re-check moderation and operator burden — is manual curation sustainable at expected scale?
+- [x] Confirm preview image quality across a sample of real track designs
+- [x] Decide: `launch now`, `keep dark`, or `refine before launch`
+
+Launch decision: launch now. The gallery is reachable through the public
+navigation and dashboard, without adding a larger landing-page showcase section
+for v1.
 
 ## Go / No-Go Criteria
 
