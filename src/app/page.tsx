@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import {
   DEFAULT_LANDING_DEMO_POSTER,
   DEFAULT_OG_IMAGE_ALT,
@@ -49,6 +48,7 @@ export const metadata: Metadata = {
 };
 import Link from "next/link";
 import { Footer } from "@/components/landing/Footer";
+import { PublicSiteHeader } from "@/components/landing/PublicSiteHeader";
 import VersionTag from "@/components/VersionTag";
 
 import {
@@ -65,52 +65,11 @@ import {
 } from "lucide-react";
 import { Screenshot } from "@/components/landing/Screenshot";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Reveal,
   RevealStagger,
   RevealStaggerItem,
 } from "@/components/landing/Motion";
-
-// ── Brand logo ──────────────────────────────────────────────────
-function BrandLogo({
-  mono = false,
-  className = "h-8 w-auto",
-}: {
-  mono?: boolean;
-  className?: string;
-}) {
-  const light = mono
-    ? "/assets/brand/trackdraw-logo-mono-lightbg.svg"
-    : "/assets/brand/trackdraw-logo-color-lightbg.svg";
-  const dark = mono
-    ? "/assets/brand/trackdraw-logo-mono-darkbg.svg"
-    : "/assets/brand/trackdraw-logo-color-darkbg.svg";
-  return (
-    <span className={`inline-flex ${className}`}>
-      <span className="relative block aspect-17/4 h-full dark:hidden">
-        <Image
-          src={light}
-          alt="TrackDraw"
-          fill
-          priority
-          unoptimized
-          className="object-contain"
-        />
-      </span>
-      <span className="relative hidden aspect-17/4 h-full dark:block">
-        <Image
-          src={dark}
-          alt="TrackDraw"
-          fill
-          priority
-          unoptimized
-          className="object-contain"
-        />
-      </span>
-    </span>
-  );
-}
 
 // ── Eyebrow label ───────────────────────────────────────────────
 function Eyebrow({
@@ -201,8 +160,9 @@ const compareRows = [
   { label: "2D & 3D preview", guest: true, account: true },
   { label: "PDF, SVG, PNG & JSON export", guest: true, account: true },
   { label: "Read-only share links", guest: true, account: true },
+  { label: "Publish tracks in the gallery", guest: false, account: true },
   { label: "Cloud-synced projects", guest: false, account: true },
-  { label: "Access across devices", guest: false, account: true },
+  { label: "Open projects on any device", guest: false, account: true },
 ];
 
 const faq = [
@@ -297,50 +257,7 @@ export default function Home() {
         }}
       />
       {/* ── Nav ─────────────────────────────────────────────── */}
-      <header className="border-border/40 bg-background/75 sticky top-0 z-50 border-b backdrop-blur-xl backdrop-saturate-150">
-        <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center">
-            <BrandLogo className="h-8 w-auto sm:h-9" />
-          </Link>
-          <div className="text-muted-foreground hidden items-center gap-7 text-sm sm:flex">
-            <a href="#top" className="hover:text-foreground transition-colors">
-              Home
-            </a>
-            <a
-              href="#features"
-              className="hover:text-foreground transition-colors"
-            >
-              Features
-            </a>
-            <a
-              href="#in-depth"
-              className="hover:text-foreground transition-colors"
-            >
-              In depth
-            </a>
-            <a
-              href="#plans"
-              className="hover:text-foreground transition-colors"
-            >
-              Pricing
-            </a>
-            <a href="#faq" className="hover:text-foreground transition-colors">
-              FAQ
-            </a>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:block">
-              <ThemeToggle />
-            </div>
-            <Link
-              href="/studio"
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/30 transition hover:brightness-110"
-            >
-              Open Studio <ArrowRight className="size-3.5" />
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <PublicSiteHeader currentPage="home" />
 
       {/* ── Hero ────────────────────────────────────────────── */}
       <div className="relative overflow-hidden">
@@ -655,6 +572,13 @@ export default function Home() {
                         </li>
                       ))}
                     </ul>
+                    <Link
+                      href="/gallery"
+                      className="text-brand-secondary hover:text-brand-secondary/85 mt-6 inline-flex items-center gap-2 text-sm font-medium transition-colors"
+                    >
+                      Browse the gallery for inspiration
+                      <ArrowRight className="size-3.5" />
+                    </Link>
                   </div>
                   <Screenshot
                     src={getSiteMediaUrl(
@@ -677,12 +601,12 @@ export default function Home() {
             <Reveal className="mb-12">
               <Eyebrow>Pricing</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Start now, sign up when it matters.
+                Start now, sign up when you need more.
               </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-                TrackDraw works without an account. Sign up to keep your
-                projects in the cloud — accessible on any device, always there
-                when you need them.
+                Open TrackDraw and start designing right away. Create an account
+                to sync projects across devices and publish layouts to the
+                gallery.
               </p>
             </Reveal>
 
@@ -692,11 +616,11 @@ export default function Home() {
                 <Reveal>
                   <div className="border-border/50 bg-card/20 flex h-full max-w-78 min-w-74 snap-start flex-col rounded-2xl border p-6 sm:max-w-none sm:min-w-0">
                     <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
-                      Without account
+                      No sign-up
                     </p>
                     <p className="mt-2 text-xl font-semibold">Guest</p>
                     <p className="text-muted-foreground mt-1 text-sm">
-                      Open the studio and start immediately.
+                      Open the studio and start designing right away.
                     </p>
                     <Link
                       href="/studio"
@@ -739,7 +663,7 @@ export default function Home() {
                     </p>
                     <p className="mt-2 text-xl font-semibold">Free</p>
                     <p className="text-muted-foreground mt-1 text-sm">
-                      Cloud storage, any device, always safe.
+                      Cloud sync, multi-device access, and publishing.
                     </p>
                     <Link
                       href="/login"
