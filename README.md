@@ -53,6 +53,7 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 ## What you can do
 
 - 🏁 **Design layouts to scale** - place obstacles on a real-scale canvas with field dimensions that map cleanly to the real world
+- 🗺️ **Line up with real venues** - add an editor-only satellite map reference, search or choose the field center, and align it with rotation and opacity controls
 - ⚡ **Start and iterate faster** - use obstacle presets, selection grouping, and starter layouts to get from blank canvas to a workable draft quickly
 - 💾 **Manage projects safely** - keep multiple local projects, reopen older layouts, rename or export them, and roll back through restore points and snapshots
 - 🎥 **Review route flow in 3D** - use the live 3D preview, elevation tools, floating ladder placement controls, and cinematic FPV fly-through review to check how the layout reads before race day

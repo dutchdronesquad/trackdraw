@@ -4,7 +4,7 @@ import { customAlphabet } from "nanoid";
 import {
   getDesignShapes,
   normalizeDesign,
-  serializeDesign,
+  serializeDesignForShare,
 } from "@/lib/track/design";
 import {
   createUnlistedGalleryEntry,
@@ -329,7 +329,7 @@ export async function createShare(
   options: CreateShareOptions = {}
 ) {
   const normalized = normalizeDesign(design);
-  const serialized = serializeDesign(normalized);
+  const serialized = serializeDesignForShare(normalized);
   const serializedJson = JSON.stringify(serialized);
   const title = getShareTitle(normalized);
   const description = getShareDescription(normalized);

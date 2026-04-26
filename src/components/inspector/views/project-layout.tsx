@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Eye, EyeOff, MapPinned, Trash2 } from "lucide-react";
 import ElevationChart from "@/components/inspector/ElevationChart";
+import { MapReferenceDialog } from "@/components/map-reference/MapReferenceDialog";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import {
@@ -13,6 +15,7 @@ import { getObstacleNumberingReport } from "@/lib/track/obstacleNumbering";
 import type {
   FieldSpec,
   InventoryShapeKind,
+  MapReference,
   Shape,
   TrackDesign,
 } from "@/lib/types";
@@ -33,6 +36,128 @@ import { type DesignMetaPatch, ItemOverviewList } from "./list-panel";
 
 function getShapeDisplayName(shape: Shape, index: number) {
   return shape.name?.trim() || `${shapeKindLabels[shape.kind]} ${index + 1}`;
+}
+
+function MapReferenceSection({
+  design,
+  setMapReference,
+  clearMapReference,
+  setMapReferenceVisibility,
+  setMapReferenceOpacity,
+  setMapReferenceRotation,
+}: {
+  design: TrackDesign;
+  setMapReference: (reference: MapReference) => void;
+  clearMapReference: () => void;
+  setMapReferenceVisibility: (visible: boolean) => void;
+  setMapReferenceOpacity: (opacity: number) => void;
+  setMapReferenceRotation: (rotationDeg: number) => void;
+}) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const reference = design.mapReference ?? null;
+  const actionBtnClass =
+    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+  const actionBtnPrimaryClass =
+    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/25 bg-primary/8 px-2.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+
+  return (
+    <Section title="Map reference">
+      <div className="space-y-3">
+        {reference ? (
+          <>
+            <Row label="Opacity">
+              <div className="flex min-w-0 items-center gap-2">
+                <input
+                  type="range"
+                  min={0.05}
+                  max={1}
+                  step={0.05}
+                  value={reference.opacity}
+                  onChange={(event) =>
+                    setMapReferenceOpacity(Number(event.target.value))
+                  }
+                  className="accent-primary h-2 min-w-0 flex-1"
+                />
+                <span className="text-muted-foreground/70 w-9 text-right text-[10px] font-medium tabular-nums">
+                  {Math.round(reference.opacity * 100)}%
+                </span>
+              </div>
+            </Row>
+            <Row label="Rotation">
+              <Num
+                value={reference.rotationDeg}
+                onChange={setMapReferenceRotation}
+                step={1}
+                min={0}
+              />
+            </Row>
+          </>
+        ) : null}
+
+        <div
+          className={reference ? "grid grid-cols-3 gap-1.5" : "grid gap-1.5"}
+        >
+          <button
+            type="button"
+            title={reference ? "Edit map reference" : "Add map reference"}
+            aria-label={reference ? "Edit map reference" : "Add map reference"}
+            className={actionBtnPrimaryClass}
+            onClick={() => setDialogOpen(true)}
+          >
+            <MapPinned className="size-3" />
+            <span>{reference ? "Edit" : "Add map"}</span>
+          </button>
+          {reference ? (
+            <>
+              <button
+                type="button"
+                title={
+                  reference.visible === false
+                    ? "Show map reference"
+                    : "Hide map reference"
+                }
+                aria-label={
+                  reference.visible === false
+                    ? "Show map reference"
+                    : "Hide map reference"
+                }
+                className={actionBtnClass}
+                onClick={() =>
+                  setMapReferenceVisibility(reference.visible === false)
+                }
+              >
+                {reference.visible === false ? (
+                  <Eye className="size-3" />
+                ) : (
+                  <EyeOff className="size-3" />
+                )}
+                <span>{reference.visible === false ? "Show" : "Hide"}</span>
+              </button>
+              <button
+                type="button"
+                title="Remove map reference"
+                aria-label="Remove map reference"
+                className={`${actionBtnClass} border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
+                onClick={clearMapReference}
+              >
+                <Trash2 className="size-3" />
+                <span>Remove</span>
+              </button>
+            </>
+          ) : null}
+        </div>
+        {dialogOpen ? (
+          <MapReferenceDialog
+            field={design.field}
+            initialReference={reference}
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onConfirm={setMapReference}
+          />
+        ) : null}
+      </div>
+    </Section>
+  );
 }
 
 function RouteNumberingOverview({
@@ -139,6 +264,11 @@ export interface ProjectLayoutInspectorViewProps {
   setSelection: (ids: string[]) => void;
   updateField: (patch: Partial<FieldSpec>) => void;
   updateDesignMeta: (patch: DesignMetaPatch) => void;
+  setMapReference: (reference: MapReference) => void;
+  clearMapReference: () => void;
+  setMapReferenceVisibility: (visible: boolean) => void;
+  setMapReferenceOpacity: (opacity: number) => void;
+  setMapReferenceRotation: (rotationDeg: number) => void;
   removeShapes: (ids: string[]) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
   mobileInline?: boolean;
@@ -151,6 +281,11 @@ export function ProjectLayoutInspectorView({
   setSelection,
   updateField,
   updateDesignMeta,
+  setMapReference,
+  clearMapReference,
+  setMapReferenceVisibility,
+  setMapReferenceOpacity,
+  setMapReferenceRotation,
   removeShapes,
   setHoveredShapeId,
   mobileInline = false,
@@ -317,6 +452,14 @@ export function ProjectLayoutInspectorView({
           />
         </Row>
       </Section>
+      <MapReferenceSection
+        design={design}
+        setMapReference={setMapReference}
+        clearMapReference={clearMapReference}
+        setMapReferenceVisibility={setMapReferenceVisibility}
+        setMapReferenceOpacity={setMapReferenceOpacity}
+        setMapReferenceRotation={setMapReferenceRotation}
+      />
       {inventoryContent}
     </>
   );

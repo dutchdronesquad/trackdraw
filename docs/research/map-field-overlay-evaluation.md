@@ -1,366 +1,279 @@
-# Map And Field Overlay Evaluation
+# Map Field Reference Evaluation
 
-This document evaluates the product shape and UX approach for a map and field overlay feature in TrackDraw.
+This document evaluates the product shape and UX approach for adding real venue context behind a TrackDraw layout.
 
-Status: proposed. See `docs/pva/map-field-overlay-pva.md` for the implementation plan once approved.
+Status: v1 map-first implementation shipped. Arbitrary image upload remains out of scope.
 
-## Purpose
+## Decision
 
-TrackDraw already lets users build layouts on a clean field with precise scale, snapping, and route editing. The missing layer is real venue context. Users sometimes want to draft on top of:
+The first meaningful version should use a map or satellite picker instead of arbitrary image upload.
 
-- a field map
-- a satellite or drone image
-- a floor plan
-- a club venue sketch
+Users should not need to understand calibration, pixel scale, image dimensions, or georeferencing. The preferred UX is:
 
-The goal is to add that context without turning TrackDraw into a GIS tool, image editor, or calibration-heavy mapping product.
+1. Open `Add map reference`.
+2. Search, pan, or zoom the map.
+3. Click the center point of the field.
+4. TrackDraw draws the project field rectangle using `field.width` and `field.height`.
+5. The user adjusts rotation if needed.
+6. Confirm, then continue editing normally.
+
+This is a better first product shape because map tiles already have real-world scale. TrackDraw can use the project field dimensions to determine the correct size, so the user only needs to choose the location and direction.
 
 ## Product Goal
 
-Map and field overlay should make it easier to position a layout against real venue context.
+Map field reference should make it easy to line a TrackDraw project up with a real venue without making the editor feel like a mapping tool.
 
 That means:
 
-- users can place one background image behind the editor canvas
-- the image can be positioned and scaled until it roughly matches the TrackDraw field
-- the overlay helps placement decisions without becoming the source of truth for measurement accuracy
-- the feature remains practical on desktop and mobile
+- the user chooses a location, not an image scale
+- TrackDraw derives the field footprint from the existing project dimensions
+- the reference stays secondary to the track design
+- normal editing remains clean, readable, and fast
+- no account is required for the core flow
 
-## Core Boundary
+This is not a branding/customization feature. Replacing the TrackDraw logo with a club or event logo is a separate publishing concern.
 
-The first meaningful version should remain:
+## Why Not Image Upload In V1
 
-- usable without an account
-- local-first
-- project-bound rather than library-bound
+Loose image upload creates product and UX problems:
 
-Keep it in scope for the first release:
+- a photo, screenshot, floor plan, or sketch has no reliable scale on its own
+- asking users to calibrate every image adds setup friction
+- quick-fit can look plausible while being wrong
+- arbitrary images increase storage, sync, copyright, and privacy concerns immediately
+- the 2D editor can become visually noisy without actually improving measurement confidence
 
-- one overlay image per project
-- image import from the current device
-- position, scale, opacity, visibility, and lock state
-- editor-only overlay support first
+Image upload can remain a later fallback for floor plans or indoor venues, but it should not define the first version.
 
-Keep it out of scope for now:
+## Recommended V1 Model
 
-- multiple layered overlays
-- perspective correction
-- image warping
-- georeferencing
-- account-backed venue libraries
-- collaborative overlay annotation
+### 1. Map Reference, Not Overlay Image
 
-## Problem Framing
+Each project can optionally store one map reference.
 
-TrackDraw currently asks users to translate real venue context mentally.
+Recommended concept:
 
-That causes friction in a few common cases:
+- `centerLat`
+- `centerLng`
+- `rotationDeg`
+- `zoom` or tile resolution metadata
+- `mapStyle: "satellite" | "map"`
+- `opacity`
+- `visible`
+- `locked`
 
-1. Outdoor field planning against a real grass area or park boundary
-2. Indoor layout work against a hall floor plan
-3. Club reuse of a familiar venue where obstacle placement depends on known landmarks
+The TrackDraw field dimensions remain the source of truth for width and height.
 
-The first version should solve those cases through a simple visual underlay, not through advanced mapping tools.
+### 2. Center-First Setup
 
-## Recommended Product Model
+The user should only need to answer one main question:
 
-### 1. One Project-Level Overlay
+- Where is the center of the field?
 
-Each project can optionally carry one overlay image.
+TrackDraw handles:
 
-That keeps the model simple:
+- converting project field dimensions into a map footprint
+- drawing the field rectangle
+- fitting the map reference behind the layout
+- keeping scale tied to the map source instead of user-entered image dimensions
 
-- no overlay gallery
-- no overlay stack
-- no ambiguity about which image is active
+The only likely manual adjustment is rotation, because fields are rarely aligned exactly north/south.
 
-If TrackDraw needs richer overlay behavior later, that should be a follow-up.
+### 3. Rotation As The Main Adjustment
 
-### 2. Overlay Is Context, Not Measurement Truth
-
-The TrackDraw field dimensions remain the measurement model.
-
-The overlay helps align the design visually, but the product should not imply:
-
-- survey-grade accuracy
-- automatic real-world calibration
-- rules validation from the image alone
-
-This needs to stay explicit in the UX.
-
-### 3. Overlay Asset Handling Needs A Chosen Direction
-
-Map and field overlay is straightforward as an editor feature, but less straightforward as a storage feature.
-
-The main product question is:
-
-- should overlay images remain device-local only
-- or should signed-in account-backed projects sync overlay assets across devices
-
-This document recommends choosing the second path for v1. See Storage Options below.
-
-## UX Direction
-
-The feature should feel like a practical editor aid:
-
-- add overlay
-- align it roughly
-- lower opacity if needed
-- lock it
-- keep building normally
-
-The overlay should not compete with obstacle editing for attention.
+After choosing the center, the user should see the field rectangle over the map and adjust orientation.
 
 Recommended controls:
 
-- add or replace overlay
-- show or hide overlay
-- opacity slider
-- lock or unlock overlay interaction
-- reset transform
-- remove overlay
-
-Recommended interaction behavior:
-
-- overlay sits behind normal shapes and route content
-- when unlocked, it can be moved and scaled
-- when locked, it cannot intercept normal editor actions
-
-## Recommended Entry Points
-
-The first version should expose overlay controls inside the normal editor workflow rather than as a separate project-management feature.
-
-Recommended entry points:
-
-- editor toolbar or contextual canvas controls: `Add overlay`
-- inspector or canvas settings panel: overlay controls when an overlay exists
-- replacement action from the same overlay control area
-
-Recommended persistent controls once an overlay exists:
-
-- show or hide
-- lock or unlock
+- rotate left/right or drag a heading handle
+- snap rotation to common angles if useful
+- reset north-up
 - opacity
-- replace image
-- remove overlay
+- confirm
 
-Do not start with:
+Avoid exposing width/height scaling controls in the primary map flow. If the field size is wrong, the user should edit project field dimensions instead.
 
-- a dedicated venue-management screen
-- account-level overlay libraries
-- multi-step setup wizards before the first image can even be placed
+### 4. Editor Visibility
 
-## Screen-Level V1 Flow
+The reference should be available without permanently making the 2D editor busy.
 
-### 1. Add Overlay
+Recommended behavior:
 
-The user chooses `Add overlay` from the editor.
+- visible after setup, at low opacity
+- locked by default
+- quick show/hide toggle
+- `Edit map reference` opens the picker/adjustment view again
+- reference does not intercept object selection, route editing, snapping, or drag behavior
 
-The first version should support:
+The map reference should sit behind the field chrome and shapes, not inside a nested card or floating preview.
 
-- choosing an image from the current device
+## UX Flow
 
-After import:
+### Add Map Reference
 
-- the overlay appears behind the field
-- it starts visible and unlocked
-- TrackDraw surfaces the main transform controls immediately
+Entry point:
 
-### 2. Align Overlay
+- Project inspector: `Map reference`
+- Canvas or toolbar action: `Add map`
 
-The user should then be able to:
+Flow:
 
-- move the overlay
-- scale the overlay
-- reduce opacity
-- lock it once it is roughly aligned
+1. Desktop dialog or mobile drawer opens with map/satellite view.
+2. User searches, uses current location, or pans to venue.
+3. User clicks the center of the field.
+4. TrackDraw overlays the project field rectangle.
+5. User adjusts rotation if needed.
+6. User confirms.
 
-This step should feel lightweight. The product should support rough alignment, not force precision calibration.
+### Edit Map Reference
 
-### 3. Edit With Overlay
+Flow:
 
-Once locked:
+1. User opens `Edit map`.
+2. Dialog reopens at the current reference location.
+3. User moves center or adjusts rotation.
+4. Confirm updates the reference.
 
-- normal obstacle and route editing stays primary
-- the overlay remains visible as context
-- the overlay should not intercept selection or drag actions
+### Normal Editing
 
-### 4. Replace Or Remove Overlay
+Once confirmed:
 
-The user should be able to:
+- map reference renders beneath the layout when visible
+- field dimensions continue to come from TrackDraw
+- route and obstacle editing behave normally
+- opacity and visibility are available from the Project inspector
 
-- replace the image without deleting the rest of the project
-- remove the overlay entirely
-- restore a cleaner editor state without side effects on the design
+## Suggested UI Copy
 
-## Suggested V1 UI Copy Direction
+Use simple placement language:
 
-The feature should use practical, non-technical language:
-
-- `Add overlay`
-- `Replace overlay`
-- `Hide overlay`
-- `Lock overlay`
+- `Add map`
+- `Map reference`
+- `Choose field center`
+- `Align field`
+- `Show map`
+- `Hide map`
+- `Edit map`
+- `Remove map`
 - `Opacity`
-- `Reset overlay`
-- `Remove overlay`
 
-Avoid copy that implies advanced mapping behavior, such as:
+Avoid technical language in the main flow:
 
+- `Georeference`
 - `Calibrate map`
-- `Georeference image`
-- `Anchor to world`
+- `Set projection`
+- `Tile resolution`
 
-That would overpromise what the first version actually does.
+## 2D And 3D Behavior
 
-## Editor Behavior Recommendation
+### 2D
 
-### First Pass Controls
+V1 should start with 2D because the map reference is primarily a placement aid.
 
-The first version should support:
+Rules:
 
-- move
-- uniform scale
-- opacity
-- lock
-- visibility toggle
+- draw the map behind shapes and route content
+- keep opacity conservative by default
+- keep a fast visibility toggle
+- do not let the map participate in selection
 
-Do not require rotation in the first pass unless implementation turns out to be very cheap. Most real value comes from rough position and scale.
+### 3D
 
-### Mobile Recommendation
+3D can use the same reference later as a ground texture once the 2D placement model works.
 
-Mobile should support overlay visibility and lock state cleanly from ordinary controls.
+Do not block the first version on 3D. Validate 3D separately because ground textures add rendering and readability questions.
 
-Direct transform manipulation on mobile is acceptable only if it remains reliable and does not conflict with canvas pan/zoom. If needed, the first mobile pass can bias toward:
+## Technical Direction
 
-- visibility toggle
-- opacity
-- lock
-- simpler slider-based scale adjustment
+The first prototype should not accept arbitrary image uploads.
 
-That is better than forcing desktop-style transform handles into a cramped mobile interaction model.
+Recommended implementation direction:
 
-## Suggested Desktop Interaction Model
+- use a map provider that supports browser rendering and a suitable usage policy
+- store only reference metadata in the project
+- keep tile/image cache out of `TrackDesign`
+- use a dedicated tile picker dialog for field center selection
+- render confirmed editor imagery with a dedicated non-interactive Konva tile layer
+- keep share/export unaware of map references in v1
 
-The first desktop pass should support direct manipulation.
+Potential metadata:
 
-Recommended controls:
+- `type: "map"`
+- `centerLat: number`
+- `centerLng: number`
+- `rotationDeg: number`
+- `mapStyle: "satellite" | "map"`
+- `opacity: number`
+- `visible: boolean`
+- `locked: boolean`
+- `provider: string`
 
-- drag to move
-- handles or a simple focused control to scale uniformly
-- opacity slider in a side panel or compact control strip
-- lock toggle to exit overlay-adjustment mode cleanly
+Open provider questions:
 
-Desktop can carry the richer interaction model first because it has more room and lower gesture conflict.
+- provider licensing and attribution
+- allowed tile caching or snapshot behavior
+- API key handling
+- offline behavior
+- local development fallback
 
-## Suggested Mobile Interaction Model
+## Editor Renderer Decision
 
-The first mobile pass should favor safety and clarity over gesture richness.
+Use the tile picker for setup, not for the editor background.
 
-Recommended first direction:
+The editor should render the confirmed map reference inside Konva. A live DOM map underneath the Konva stage is tempting for a prototype, but it creates a second camera and gesture system that must stay in sync with TrackDraw's stage transform.
 
-- visibility toggle
-- opacity slider
-- lock toggle
-- simple scale control
-- optional reposition mode only if it remains reliable
+Konva rendering is the better production path because:
 
-If mobile direct manipulation feels fragile, it is acceptable for v1 mobile to be more limited than desktop as long as the overlay remains usable.
+- it follows existing canvas pan and zoom automatically
+- it can be `listening={false}` so normal editing remains safe
+- clipping, opacity, z-order, and dark/light field chrome stay predictable
+- mobile gestures stay owned by the editor
+- export and share boundaries remain explicit
 
-## Storage Options
+The renderer should calculate the required provider tiles from `centerLat`, `centerLng`, `rotationDeg`, field dimensions, and provider style, then draw those tiles as images behind the layout. The editor render should derive its tile detail from project scale and latitude; the picker zoom is only a navigation aid and must not change the saved field scale.
 
-The first overlay implementation needs a concrete storage answer before the rest of the feature is locked.
+## Storage And Sync
 
-TrackDraw already has existing media-oriented infrastructure and available bucket capacity through the current media path. That makes account-backed overlay sync a realistic option, but it still should not be treated as free.
+Because map references can be represented by metadata, v1 can avoid project asset storage.
 
-### Option A: Device-Local Only
+Recommended v1 behavior:
 
-Model:
+- project stores center, rotation, style, opacity, and provider metadata
+- logged-out users can save the reference with local project JSON
+- signed-in users can sync the same metadata with account-backed projects
+- no uploaded image blobs are needed
 
-- overlay image stays on the current device
-- project stores overlay metadata plus a local asset reference
-- opening the same project on another device may not restore the image
-
-Pros:
-
-- smallest implementation slice
-- no backend dependency
-- easier to ship quickly
-
-Cons:
-
-- weak cross-device continuity
-- signed-in users may reasonably expect the overlay to follow the project
-- the feature may feel incomplete for home-planning to race-day-mobile workflows
-
-### Option B: Hybrid Model With Signed-In Asset Sync
-
-Model:
-
-- logged-out projects keep overlay assets on-device
-- signed-in account-backed projects store overlay assets through the existing media/storage path
-- project metadata stores transform state plus an asset reference
-- opening the same signed-in project on another device restores the overlay if sync succeeded
-
-Pros:
-
-- matches the value proposition of account-backed projects better
-- supports real cross-device venue workflows
-- avoids treating overlay as a throwaway local-only aid for signed-in users
-
-Cons:
-
-- adds upload, replace, cleanup, and sync-state complexity immediately
-- requires payload limits, accepted format rules, and failure-state UX from day one
-- increases the implementation scope from editor feature to editor-plus-asset-sync feature
-
-### Chosen V1 Direction
-
-V1 should use the hybrid model.
-
-That means:
-
-- logged-out projects keep overlay assets on-device
-- signed-in account-backed projects sync overlay assets through the existing media/storage path
-- project metadata stores transform state plus an asset reference
-- export/share inclusion stays out of scope for v1
-
-This is the strongest product direction because the feature is meant to support:
-
-- desktop planning at home
-- mobile reopening on site
-- continuity across devices for signed-in projects
+This is simpler than image upload and aligns better with cross-device project continuity.
 
 ## Export And Share Behavior
 
-Even if the first version keeps overlays out of export and share by default, the editor should explain that cleanly.
+V1 should keep map references out of export and share output unless explicitly revisited.
 
-Recommended first behavior:
+Reasons:
 
-- overlay is visible in the editor
-- standard exports and shares continue to represent the TrackDraw design itself
-- TrackDraw does not silently include venue imagery in published output
+- venue imagery may have licensing or privacy implications
+- published shares should remain focused on the authored TrackDraw layout
+- map provider terms may restrict exported imagery
 
-This avoids:
+Future export inclusion should be a deliberate per-export option, not a silent side effect of editor visibility.
 
-- surprising users with accidental third-party imagery in exports
-- copyright and privacy questions from published venue images
-- turning a practical editor aid into a publishing commitment immediately
+## Future Image Upload Fallback
 
-If the product later revisits export inclusion, that should be a separate user decision per export path.
+Image upload may still be useful later for:
 
-## Risks
+- indoor floor plans
+- venue sketches
+- drone orthophotos
+- custom field diagrams
 
-- Users may over-trust visual alignment and assume real-world accuracy that the app does not guarantee
-- Image payload handling may create local-storage pressure if the implementation stores large overlays directly in project state
-- Mobile transform behavior may become frustrating if overlay gestures fight canvas gestures
-- Export/share expectations may become confused if the overlay appears in the editor but disappears elsewhere without clear messaging
+If added later, it should be a separate `Image reference` path with explicit limitations and optional known-distance calibration. It should not share the simple map-center UX because it cannot derive scale from a location alone.
 
 ## Success Criteria
 
 The first version is successful if:
 
-- a user can align an overlay quickly without fighting the editor
-- a signed-in user can reopen the same project on another device and still see the overlay
-- overlay failures do not block project open
-- the feature helps placement decisions without confusing users about measurement accuracy
+- a user can add a useful map reference by choosing a field center and rotation
+- TrackDraw sizes the reference from project field dimensions without user scale controls
+- normal 2D editing remains readable and responsive
+- the same project reference can reopen from saved metadata
+- users do not confuse map reference visibility with authoritative survey-grade measurement

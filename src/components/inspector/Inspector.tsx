@@ -44,6 +44,11 @@ function Inspector({
     ungroupSelection,
     updateField,
     updateDesignMeta,
+    setMapReference,
+    clearMapReference,
+    setMapReferenceVisibility,
+    setMapReferenceOpacity,
+    setMapReferenceRotation,
   } = useTrackActions();
   const { setSelection } = useSessionActions();
   const { setHoveredShapeId, setHoveredWaypoint } = useUiActions();
@@ -195,6 +200,11 @@ function Inspector({
             setSelection={setSelection}
             updateField={updateField}
             updateDesignMeta={updateDesignMeta}
+            setMapReference={setMapReference}
+            clearMapReference={clearMapReference}
+            setMapReferenceVisibility={setMapReferenceVisibility}
+            setMapReferenceOpacity={setMapReferenceOpacity}
+            setMapReferenceRotation={setMapReferenceRotation}
             removeShapes={removeShapes}
             setHoveredShapeId={setHoveredShapeId}
           />

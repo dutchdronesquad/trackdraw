@@ -1,5 +1,5 @@
 import LZString from "lz-string";
-import { normalizeDesign, serializeDesign } from "@/lib/track/design";
+import { normalizeDesign, serializeDesignForShare } from "@/lib/track/design";
 import type { TrackDesign } from "./types";
 import type { EditorView } from "./view";
 
@@ -15,7 +15,7 @@ function normalizeShareToken(token: string): string {
 }
 
 export function encodeDesign(design: TrackDesign): string {
-  const json = JSON.stringify(serializeDesign(design));
+  const json = JSON.stringify(serializeDesignForShare(design));
   return LZString.compressToEncodedURIComponent(json);
 }
 
