@@ -88,7 +88,7 @@ export default async function GalleryPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
 
-      <div className="bg-background min-h-screen">
+      <div className="bg-background min-h-screen overflow-x-clip">
         <PublicSiteHeader currentPage="gallery" />
 
         <main>
