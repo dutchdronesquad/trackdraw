@@ -17,7 +17,12 @@ import { MetaPill } from "./layout";
 export type DesignMetaPatch = Partial<
   Pick<
     TrackDesign,
-    "title" | "description" | "authorName" | "tags" | "inventory"
+    | "title"
+    | "description"
+    | "authorName"
+    | "tags"
+    | "inventory"
+    | "mapReference"
   >
 >;
 

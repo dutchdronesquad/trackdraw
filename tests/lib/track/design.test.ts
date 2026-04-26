@@ -5,6 +5,7 @@ import {
   normalizeDesign,
   normalizeShape,
   parseDesign,
+  serializeDesignForShare,
   serializeDesign,
 } from "@/lib/track/design";
 import type { PolylineShape, SerializedTrackDesign } from "@/lib/types";
@@ -109,6 +110,42 @@ describe("track design helpers", () => {
 
     expect(serialized.shapes).toHaveLength(1);
     expect(serialized.shapes[0]?.id).toBe("gate-1");
+  });
+
+  it("keeps map references in project serialization and strips them from share serialization", () => {
+    const design = normalizeDesign({
+      id: "design-map",
+      version: 1,
+      title: "Layout",
+      description: "",
+      tags: [],
+      authorName: "",
+      inventory,
+      field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
+      mapReference: {
+        type: "map",
+        provider: "esri-world-imagery",
+        mapStyle: "satellite",
+        centerLat: 52.1,
+        centerLng: 5.2,
+        zoom: 18,
+        rotationDeg: 370,
+        opacity: 2,
+        visible: true,
+        locked: false,
+      },
+      shapes: [],
+      createdAt: "2026-04-13T10:00:00.000Z",
+      updatedAt: "2026-04-13T10:00:00.000Z",
+    });
+
+    expect(design.mapReference?.centerLat).toBe(52.1);
+    expect(design.mapReference?.centerLng).toBeCloseTo(5.2, 6);
+    expect(design.mapReference?.rotationDeg).toBe(10);
+    expect(design.mapReference?.opacity).toBe(1);
+    expect(design.mapReference?.locked).toBe(true);
+    expect(serializeDesign(design).mapReference?.centerLat).toBe(52.1);
+    expect(serializeDesignForShare(design).mapReference).toBeNull();
   });
 
   it("parses valid design-like values and rejects invalid ones", () => {

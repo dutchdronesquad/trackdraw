@@ -24,6 +24,7 @@ import {
 } from "@/lib/canvas/shared";
 import { useTrackCanvasInteractions } from "@/components/canvas/useTrackCanvasInteractions";
 import { StableFieldContent } from "@/components/canvas/renderers/field-layer";
+import { MapReferenceLayer } from "@/components/canvas/renderers/map-reference-layer";
 import { getShapeLocalBounds } from "@/components/canvas/renderers/shape-bounds";
 import { TrackShapeNode } from "@/components/canvas/renderers/shape-node";
 import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewport";
@@ -1674,6 +1675,12 @@ const TrackCanvas = memo(
           >
             {/* Stable field layer: grid + borders — only redraws on design/theme change */}
             <Layer listening={false}>
+              <MapReferenceLayer
+                field={design.field}
+                heightPx={heightPx}
+                mapReference={design.mapReference ?? null}
+                widthPx={widthPx}
+              />
               <StableFieldContent
                 designField={design.field}
                 grid={grid}

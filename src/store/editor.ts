@@ -5,6 +5,8 @@ import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
 import { nanoid } from "nanoid";
 import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
+import { normalizeMapReference } from "@/lib/map-reference/geometry";
+import { clamp } from "@/lib/canvas/shared";
 import {
   getDesignShapeById,
   normalizeDesign,
@@ -74,6 +76,11 @@ interface EditorState {
   nudgeShapes: EditorTrackActions["nudgeShapes"];
   updateField: EditorTrackActions["updateField"];
   updateDesignMeta: EditorTrackActions["updateDesignMeta"];
+  setMapReference: EditorTrackActions["setMapReference"];
+  clearMapReference: EditorTrackActions["clearMapReference"];
+  setMapReferenceVisibility: EditorTrackActions["setMapReferenceVisibility"];
+  setMapReferenceOpacity: EditorTrackActions["setMapReferenceOpacity"];
+  setMapReferenceRotation: EditorTrackActions["setMapReferenceRotation"];
   replaceDesign: EditorTrackActions["replaceDesign"];
   newProject: EditorTrackActions["newProject"];
   bringForward: EditorTrackActions["bringForward"];
@@ -488,6 +495,41 @@ export const useEditor = create<EditorState>()(
       updateDesignMeta: (patch) =>
         set((draft) => {
           Object.assign(draft.track.design, patch);
+          touchTrackDesign(draft);
+        }),
+
+      setMapReference: (reference) =>
+        set((draft) => {
+          draft.track.design.mapReference = normalizeMapReference(reference);
+          touchTrackDesign(draft);
+        }),
+
+      clearMapReference: () =>
+        set((draft) => {
+          if (!draft.track.design.mapReference) return;
+          draft.track.design.mapReference = null;
+          touchTrackDesign(draft);
+        }),
+
+      setMapReferenceVisibility: (visible) =>
+        set((draft) => {
+          if (!draft.track.design.mapReference) return;
+          draft.track.design.mapReference.visible = visible;
+          touchTrackDesign(draft);
+        }),
+
+      setMapReferenceOpacity: (opacity) =>
+        set((draft) => {
+          if (!draft.track.design.mapReference) return;
+          draft.track.design.mapReference.opacity = clamp(opacity, 0.05, 1);
+          touchTrackDesign(draft);
+        }),
+
+      setMapReferenceRotation: (rotationDeg) =>
+        set((draft) => {
+          if (!draft.track.design.mapReference) return;
+          draft.track.design.mapReference.rotationDeg =
+            ((rotationDeg % 360) + 360) % 360;
           touchTrackDesign(draft);
         }),
 

@@ -25,6 +25,17 @@ export function useTrackActions() {
   const nudgeShapes = useEditor((state) => state.nudgeShapes);
   const updateField = useEditor((state) => state.updateField);
   const updateDesignMeta = useEditor((state) => state.updateDesignMeta);
+  const setMapReference = useEditor((state) => state.setMapReference);
+  const clearMapReference = useEditor((state) => state.clearMapReference);
+  const setMapReferenceVisibility = useEditor(
+    (state) => state.setMapReferenceVisibility
+  );
+  const setMapReferenceOpacity = useEditor(
+    (state) => state.setMapReferenceOpacity
+  );
+  const setMapReferenceRotation = useEditor(
+    (state) => state.setMapReferenceRotation
+  );
   const replaceDesign = useEditor((state) => state.replaceDesign);
   const newProject = useEditor((state) => state.newProject);
   const bringForward = useEditor((state) => state.bringForward);
@@ -53,6 +64,11 @@ export function useTrackActions() {
     nudgeShapes,
     updateField,
     updateDesignMeta,
+    setMapReference,
+    clearMapReference,
+    setMapReferenceVisibility,
+    setMapReferenceOpacity,
+    setMapReferenceRotation,
     replaceDesign,
     newProject,
     bringForward,

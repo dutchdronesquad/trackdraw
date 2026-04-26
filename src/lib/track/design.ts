@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import { normalizeMapReference } from "@/lib/map-reference/geometry";
 import { normalizeInventoryProfile } from "@/lib/planning/inventory";
 import type {
   PolylineShape,
@@ -113,7 +114,10 @@ export function getDesignShapeById(design: TrackDesign, id: string) {
   return null;
 }
 
-export function serializeDesign(design: TrackDesign): SerializedTrackDesign {
+export function serializeDesign(
+  design: TrackDesign,
+  options: { includeMapReference?: boolean } = {}
+): SerializedTrackDesign {
   return {
     id: design.id,
     version: design.version,
@@ -123,10 +127,20 @@ export function serializeDesign(design: TrackDesign): SerializedTrackDesign {
     authorName: design.authorName,
     inventory: normalizeInventoryProfile(design.inventory),
     field: design.field,
+    mapReference:
+      options.includeMapReference === false
+        ? null
+        : normalizeMapReference(design.mapReference),
     shapes: getDesignShapes(design),
     createdAt: design.createdAt,
     updatedAt: design.updatedAt,
   };
+}
+
+export function serializeDesignForShare(
+  design: TrackDesign
+): SerializedTrackDesign {
+  return serializeDesign(design, { includeMapReference: false });
 }
 
 export function normalizeDesign(
@@ -138,6 +152,9 @@ export function normalizeDesign(
     version: 1,
     inventory: normalizeInventoryProfile(
       (design as Partial<TrackDesign>).inventory
+    ),
+    mapReference: normalizeMapReference(
+      (design as Partial<TrackDesign>).mapReference
     ),
     shapeById,
     shapeOrder,
@@ -155,6 +172,7 @@ export function createDefaultDesign(): TrackDesign {
     authorName: "",
     inventory: normalizeInventoryProfile(),
     field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
+    mapReference: null,
     shapeOrder: [],
     shapeById: {},
     createdAt: timestamp,

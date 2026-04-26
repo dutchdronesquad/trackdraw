@@ -1,5 +1,6 @@
 import type {
   FieldSpec,
+  MapReference,
   PolylinePoint,
   SerializedTrackDesign,
   Shape,
@@ -89,10 +90,20 @@ export interface EditorTrackActions {
     patch: Partial<
       Pick<
         TrackDesign,
-        "title" | "description" | "authorName" | "tags" | "inventory"
+        | "title"
+        | "description"
+        | "authorName"
+        | "tags"
+        | "inventory"
+        | "mapReference"
       >
     >
   ) => void;
+  setMapReference: (reference: MapReference) => void;
+  clearMapReference: () => void;
+  setMapReferenceVisibility: (visible: boolean) => void;
+  setMapReferenceOpacity: (opacity: number) => void;
+  setMapReferenceRotation: (rotationDeg: number) => void;
   replaceDesign: (design: TrackDesign | SerializedTrackDesign) => void;
   newProject: () => void;
   bringForward: (id: string) => void;

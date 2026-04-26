@@ -114,6 +114,19 @@ export interface FieldSpec {
   ppm: number; // pixels per meter
 }
 
+export interface MapReference {
+  type: "map";
+  provider: "esri-world-imagery";
+  mapStyle: "satellite";
+  centerLat: number;
+  centerLng: number;
+  zoom: number;
+  rotationDeg: number;
+  opacity: number;
+  visible: boolean;
+  locked: boolean;
+}
+
 export interface TrackDesign {
   id: UUID;
   version: 1;
@@ -123,6 +136,7 @@ export interface TrackDesign {
   authorName?: string;
   inventory: InventoryProfile;
   field: FieldSpec;
+  mapReference?: MapReference | null;
   shapeOrder: UUID[];
   shapeById: Record<UUID, Shape>;
   createdAt: string; // ISO-8601
@@ -138,6 +152,7 @@ export interface SerializedTrackDesign {
   authorName?: string;
   inventory: InventoryProfile;
   field: FieldSpec;
+  mapReference?: MapReference | null;
   shapes: Shape[];
   createdAt: string;
   updatedAt: string;

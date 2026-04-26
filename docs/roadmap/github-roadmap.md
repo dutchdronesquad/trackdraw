@@ -36,8 +36,14 @@ Labels used below:
   - [x] Advanced snapping follow-up
         Added route-line snapping, x/y object-alignment snapping, and kept the existing angle/grid behavior on the same lightweight snap resolver.
 
-- [ ] Map and field overlay (`No account required`)
-      Support venue plans, field maps, or imagery behind the editor canvas.
+- [x] Map field reference (`No account required`)
+      Shipped an editor-only satellite map reference for lining a project up with a real venue. Users can search for a location, choose the field center, align rotation, adjust opacity, and render the saved reference behind the 2D layout through a non-interactive Konva tile layer. Project JSON keeps map metadata, while share/export payloads stay free of map imagery and location data.
+  - [x] Map picker and field footprint
+        Added a desktop dialog and mobile drawer with Esri World Imagery tiles, typeahead location search, current-location jump, center selection, touch/pointer panning, pinch/wheel zoom, and a field footprint derived from project dimensions.
+  - [x] Editor rendering and inspector controls
+        Added a locked, non-interactive Konva tile renderer plus Project inspector controls for add/edit, show/hide, opacity, rotation, and remove.
+  - [x] Persistence and share/export boundary
+        Persisted map reference metadata in project JSON and stripped it from share/export serialization so public outputs do not expose map references in v1.
 
 ## Shipped Foundation
 
