@@ -4,16 +4,16 @@ Thanks for contributing to TrackDraw. This repo powers a browser-based drone rac
 
 ## Product boundaries
 
-- Core surfaces are `/`, `/studio`, and `/share/[token]`.
+- Core surfaces are `/`, `/studio`, `/gallery`, and `/share/[token]`.
 - Editing, autosave, import/export, recovery, and sharing should stay usable without requiring an account.
 - Mobile is a supported product surface.
-- Shared links should keep working on the canonical `/share/[token]` route in read-only mode.
+- Shared links should keep working on the canonical `/share/[token]` route in read-only mode. Gallery entries should continue to open through that route rather than a separate detail page.
 
 If your change touches editor interactions, sharing, export, serialization, or mobile UI, assume regressions are expensive and validate accordingly.
 
 ## Stack and structure
 
-TrackDraw is a Next.js 16 app built with React 19 and Tailwind CSS 4. The editor uses Zustand for state, Konva for the 2D canvas, and Three.js for 3D preview. Auth runs through Better Auth, and the deployed runtime uses OpenNext on Cloudflare with D1.
+TrackDraw is a Next.js 16 app built with React 19 and Tailwind CSS 4. The editor uses Zustand for state, Konva for the 2D canvas, and Three.js for 3D preview. Auth runs through Better Auth, and the deployed runtime uses OpenNext on Cloudflare with D1 and R2-backed gallery preview media.
 
 ```text
 src/
@@ -73,7 +73,7 @@ openssl rand -base64 32
 7. Request a magic link
 8. Use the URL printed in the preview server log
 
-Use `npm run dev` when you are only changing auth UI. Use `npm run preview` when you need real sessions, authenticated APIs, share ownership, or account-backed projects.
+Use `npm run dev` when you are only changing auth UI. Use `npm run preview` when you need real sessions, authenticated APIs, share ownership, gallery publishing, moderation, or account-backed projects.
 
 For email template styling work on non-production environments, use `/dev/email-preview` to preview the current auth mail variants without sending a real message.
 
@@ -164,7 +164,7 @@ Pay extra attention to these areas:
 
 - Landing page work should preserve SEO metadata, structured data, and clear routes into `/studio`.
 - Editor changes should be checked on both desktop and mobile before you change component contracts.
-- Share-flow work should preserve token compatibility and fail safely on invalid or oversized payloads.
+- Share-flow and gallery work should preserve token compatibility, keep gallery cards pointed at `/share/[token]`, and fail safely on invalid or oversized payloads.
 - Export and serialization work should treat backward compatibility as the default.
 
 ## Verification

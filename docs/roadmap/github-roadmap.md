@@ -22,6 +22,15 @@ Labels used below:
 
 ## Current Priority
 
+- [ ] Embeddable shared views (`No account required`)
+      Let published layouts be embedded on external sites through a lightweight read-only viewer that reuses the current share model instead of introducing a separate viewing stack.
+  - [ ] Embed code in share flow
+        Add a share-dialog path for iframe embed code with copy-to-clipboard and preview.
+  - [ ] Lightweight embed viewer
+        Reuse the existing share resolution and read-only viewer foundations so embeds keep pan, zoom, and basic route review without exposing editing controls.
+  - [ ] Constrained-container validation
+        Validate desktop and mobile behavior for embeds inside real third-party page containers, including sandboxing and failure states.
+
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The first experimental `.trk` export is already shipped. The remaining work here is narrowing the gap between "importable" and "dependable" by validating more real layouts and tightening the remaining prefab mapping and orientation edge cases before this can be treated as a more supported workflow.
   - [ ] Validate the current `.trk` export on more layouts
@@ -44,19 +53,36 @@ Labels used below:
 - [x] Account and authorization foundation (`Account-backed`)
       The first account foundation is now in place, including sign-in, profile management, role-aware dashboard access, and internal role management.
 
-## Follow-up
+- [x] Published gallery (`Account-backed`)
+      TrackDraw now has an opt-in public gallery at `/gallery` built on published shares. Signed-in owners can list and remove gallery entries, visitors can browse community tracks, and moderators/admins can manage gallery visibility from the dashboard.
 
-- [ ] Embeddable shared views (`No account required`)
-      Let published layouts be embedded on external sites through a lightweight read-only viewer that reuses the current share model instead of introducing a separate viewing stack.
-  - [ ] Embed code in share flow
-        Add a share-dialog path for iframe embed code with copy-to-clipboard and preview.
-  - [ ] Lightweight embed viewer
-        Reuse the existing share resolution and read-only viewer foundations so embeds keep pan, zoom, and basic route review without exposing editing controls.
-  - [ ] Constrained-container validation
-        Validate desktop and mobile behavior for embeds inside real third-party page containers, including sandboxing and failure states.
+## Follow-up
 
 - [ ] Venue library and constraints (`Account-backed`)
       Support reusable venue records with boundaries, constraints, and venue-specific profiles.
+
+- [ ] Share version history (`Account-backed`)
+      Let owners update published shares while keeping clear version history and rollback options for account-backed projects.
+  - [ ] Published version snapshots
+        Store each deliberate publish/update as a named or timestamped version instead of silently replacing the visible share state.
+  - [ ] Rollback and current-version controls
+        Let owners inspect previous published versions and restore one when a shared track was updated by mistake.
+
+- [ ] Gallery featured collections (`Account-backed`)
+      Let admins curate small gallery collections such as indoor practice, beginner friendly, technical layouts, and race-day examples without adding social feeds or voting.
+  - [ ] Collection management
+        Add dashboard controls for creating, ordering, and publishing curated gallery collections.
+  - [ ] Public collection sections
+        Surface curated collections on `/gallery` while keeping individual gallery cards pointed at `/share/[token]`.
+
+- [ ] Admin dashboard operations follow-up (`Account-backed`)
+      Improve operator visibility for shipped account, share, and gallery surfaces without adding public reporting flows for now.
+  - [ ] Gallery management filters
+        Add practical dashboard filters for gallery state, featured entries, hidden entries, and recent updates.
+  - [ ] Share lifecycle visibility
+        Give operators a clearer view of active, expired, revoked, and gallery-linked shares for support and debugging.
+  - [ ] Audit log usability
+        Add filters and detail views that make account, role, share, and gallery actions easier to inspect.
 
 - [ ] Real-time collaboration evaluation (`Research`)
       Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justifies the editor complexity.
@@ -69,13 +95,6 @@ Labels used below:
   - [ ] Re-evaluate after editor boundary improvements
         Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too.
 
-- [ ] Published gallery evaluation (`Research`)
-      Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
-  - [ ] Publishing and consent model
-        Decide how a private project becomes gallery-visible and what opt-in, attribution, or ownership controls are required.
-  - [ ] Moderation and discovery model
-        Define how gallery content is filtered, featured, searched, or curated without creating an unmanageable moderation burden.
-
 ## Later Product Follow-up
 
 - [ ] Race-day communication and briefing (`No account required`)
@@ -83,7 +102,7 @@ Labels used below:
   - [ ] Shared view QR code in Race Pack
         Embed a QR code linking to the published shared view in the Race Pack PDF, so pilots can scan directly from a printed or on-screen briefing.
   - [ ] Timing gate markers
-        Let specific gates be marked as timing points so race directors can identify start, finish, and split gates clearly in the layout and Race Pack.
+        Let specific gates be marked as start/finish or split timing points so race directors can identify timing hardware placement clearly in the editor, Race Pack, and future overlay preparation.
   - [ ] Race director page in Race Pack
         Add a race-director-oriented page to the Race Pack.
     - [ ] Race-day ops elements around the existing start area
@@ -94,6 +113,19 @@ Labels used below:
           Define how race-day ops metadata lives in the project model.
     - [ ] Race director page layout
           Turn that metadata into a dedicated Race Pack page.
+
+- [ ] Live race overlay preparation (`No account required`)
+      Prepare TrackDraw projects for a future `rh-stream-overlays` minimap integration without making TrackDraw the live OBS overlay runtime.
+  - [ ] Active race route marker
+        Let a project identify which polyline is the race route instead of relying on the current first-polyline fallback.
+  - [ ] Timing role metadata
+        Reuse the race-day timing marker model for overlay preparation, including start/finish and split timing identifiers on relevant shapes.
+  - [ ] Timing setup validation
+        Warn or block overlay-oriented export when the race route is missing, timing roles are duplicated, or marked timing points cannot be mapped onto route progress.
+  - [ ] TrackDraw JSON contract pass
+        Keep the existing serialized project JSON as the first integration format and document the fields `rh-stream-overlays` should consume.
+  - [ ] Overlay package export decision
+        Only add a dedicated overlay package export if the RH plugin proves the full project JSON is too broad or ambiguous.
 
 ## Backlog And Research
 

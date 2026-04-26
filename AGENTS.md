@@ -10,10 +10,10 @@ Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md`
 
 ## Product Context
 
-- The main app surfaces are the landing page at `/`, the editor at `/studio`, and read-only shared views at `/share/[token]`.
+- The main app surfaces are the landing page at `/`, the editor at `/studio`, the public gallery at `/gallery`, and read-only shared views at `/share/[token]`.
 - The product must remain usable without an account for core editing, autosave, import/export, and published sharing behavior.
 - Mobile is a supported product surface, not a desktop fallback.
-- Shared links must open cleanly in read-only mode and remain compatible with the canonical `/share/[token]` route.
+- Shared links must open cleanly in read-only mode and remain compatible with the canonical `/share/[token]` route. Gallery cards must keep using that canonical share destination.
 
 ## Stack
 

@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, practical mobile use, and export/share handoff. Recent release work also strengthened shared review, route warnings, snapping, cinematic FPV export, and the editor foundation. The roadmap should now focus primarily on ownership boundaries, workflow depth, and the next product surfaces that build cleanly on the shipped v1.4.0 release.
+This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, public gallery discovery, practical mobile use, and export/share handoff. Recent release work also strengthened shared review, route warnings, snapping, cinematic FPV export, and the editor foundation. The roadmap should now focus primarily on workflow depth and the next product surfaces that build cleanly on the shipped foundation.
 
 ## Current Focus
 
@@ -9,16 +9,19 @@ TrackDraw is now strong in these areas:
 - Core 2D editing with real-scale placement, snapping, transforms, and undo/redo
 - Track path authoring with elevation-aware planning and a live 3D preview
 - Share-first collaboration through read-only links
+- Public gallery discovery through opt-in published shares
 - Practical mobile editing for quick venue-side changes
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 
 The most useful next product moves are:
 
+- A stronger embeddable share surface that extends published read-only viewing beyond TrackDraw itself
 - A sharper decision on how far account-backed project continuity should go after the shipped account and authorization foundation
 - A clearer separation between local-first workflows and account-backed follow-up
+- Versioned publish history for account-backed shares
+- Curated gallery collections that improve discovery without social mechanics
 - More deliberate editor workflow follow-up around route readability, numbering confidence, and precision placement
-- Better lifecycle controls around published shares once ownership is defined
-- A stronger embeddable share surface that extends published read-only viewing beyond TrackDraw itself
+- Operator-facing dashboard polish for published share and gallery lifecycle visibility
 - A stronger shared-view review experience, especially on mobile and in 3D
 - Deliberate follow-up on race-day outputs after the ownership boundary is settled
 
@@ -41,7 +44,31 @@ Labels used below:
 - `Account-backed`: depends on ownership, sync, identity, or shared persistence
 - `Research`: still primarily exploratory
 
-### 1. Accounts And Ownership Model (`Research`)
+### 1. Embeddable Shared Views (`No account required`)
+
+Published shares should be able to travel beyond TrackDraw links when a club, organizer, or venue wants to place a read-only layout directly on another site.
+
+Why now:
+
+- Published sharing is already a core product surface
+- The gallery now gives TrackDraw a stronger public discovery surface, but external club and event sites still need a way to show a specific track directly
+- An embed flow increases reuse and visibility without requiring collaborative editing, social features, or a separate gallery detail model
+- The safest implementation path can build on the existing read-only share model instead of introducing a second viewer stack
+
+Focus:
+
+- Add an embed option to the share flow with copyable iframe code and a clear preview
+- Keep embeds read-only, lightweight, and compatible with the canonical published share route
+- Preserve pan, zoom, and basic route review interaction without exposing editing controls
+- Treat sandboxing, performance, and invalid-share failure states as product requirements, not implementation details
+
+Suggested first slices:
+
+- Lightweight embed page that reuses the current share resolution and read-only viewer foundations
+- Share dialog follow-up that exposes iframe code generation alongside the existing share link actions
+- Validation of mobile and desktop behavior for embeds on third-party pages with constrained container sizes
+
+### 2. Accounts And Ownership Model (`Research`)
 
 TrackDraw now has the first account foundation in place through sign-in, profile management, role-aware dashboard access, and internal role management. The next question is how far account-backed project continuity should go beyond that shipped foundation.
 
@@ -103,7 +130,7 @@ Current shipped foundation:
 - Role-aware dashboard access and internal role management
 - Initial account-backed schema and project/share ownership groundwork
 
-### 2. Account-Backed Follow-up (`Account-backed`)
+### 3. Account-Backed Follow-up (`Account-backed`)
 
 These items are now follow-up work rather than intentionally blocked. The first ownership model is clear enough that they can move forward when priority allows.
 
@@ -124,7 +151,59 @@ Focus:
 - Keep local-first publish flows simple for unauthenticated use
 - Revisit any replace/regenerate flow only once account ownership is properly defined
 
-### 3. Race-Day Follow-up (`No account required`)
+#### Share Version History
+
+Account-backed shares should eventually support deliberate publish history so owners can update a published track without making existing links feel mysterious.
+
+Why:
+
+- Published links are increasingly reused through share pages, gallery cards, and future embeds
+- Owners need a safer way to update a published track without losing the last known-good public version
+- Version history fits account-backed shares better than anonymous one-off shares, because rollback and ownership need durable identity
+
+Focus:
+
+- Store each deliberate publish or update as a timestamped published version
+- Make the current public version explicit in the share management UI
+- Let owners inspect previous versions and restore one if a published update was a mistake
+- Keep anonymous shares simple and expiry-based; do not add version management to logged-out publishing
+
+#### Gallery Featured Collections
+
+The gallery can become more useful through curated collections without becoming a social feed.
+
+Why:
+
+- Featured entries are useful, but one global featured bucket will get blunt as the gallery grows
+- Collections can guide visitors toward practical examples such as indoor practice, beginner friendly, technical layouts, or race-day examples
+- Admin-curated collections reuse the existing dashboard and gallery foundations without adding voting, comments, or reporting
+
+Focus:
+
+- Add dashboard controls for creating, ordering, and publishing gallery collections
+- Let admins assign listed or featured gallery entries to one or more collections
+- Surface selected collections on `/gallery` while keeping every card destination on `/share/[token]`
+- Keep collection pages or deep collection routing out of the first slice unless the gallery needs it later
+
+#### Admin Dashboard Operations Follow-up
+
+Now that the admin dashboard exists, the next dashboard work should improve operator visibility and support workflows without turning the gallery into a social platform.
+
+Current boundary:
+
+- Public reporting flows are out of scope for now
+- Gallery safety remains operator-driven through existing feature, hide, restore, and delete controls
+- Dashboard follow-up should make existing account, share, audit, and gallery state easier to inspect before adding new moderation models
+
+Focus:
+
+- Add practical gallery filters for state, featured entries, hidden entries, and recent updates
+- Improve share lifecycle visibility for active, expired, revoked, and gallery-linked shares
+- Make the audit log easier to inspect with filters and action detail views
+- Support curated gallery collection management once collections become a build target
+- Consider a lightweight user/support lookup only if it helps resolve account, role, or share ownership issues
+
+### 4. Race-Day Follow-up (`No account required`)
 
 TrackDraw now has a real Race Pack and numbering handoff. The next work here is follow-up, not the main roadmap driver.
 
@@ -135,14 +214,53 @@ Current first pass:
 
 Later slices:
 
-- Race director page once TrackDraw can extend the existing start/finish foundation with the supporting race-day metadata and ops elements it depends on, including pilot line, director position, timing/start box placement, cable routing, and ops notes
+- Timing gate markers for identifying start/finish and split hardware placement directly in the editor, Race Pack, and future race director views
+- Race director page once TrackDraw can extend the existing start/finish and timing-marker foundation with the supporting race-day metadata and ops elements it depends on, including pilot line, director position, timing/start box placement, cable routing, and ops notes
+- Live race overlay preparation once the `rh-stream-overlays` side is ready to consume TrackDraw-authored route and timing metadata
 
 Important boundary:
 
 - The Race Pack is now the handoff document for briefing, print, and sharing
 - A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
+- Live race overlay rendering, OBS presentation, RotorHazard event handling, and position estimation should stay in `rh-stream-overlays`, not in TrackDraw
 
-### 4. Editor Workflow Follow-up (`No account required`)
+#### Live Race Overlay Preparation
+
+TrackDraw's role in the live race overlay work is course preparation, not live broadcast rendering.
+The same start/finish and split timing markers should first serve TrackDraw's own race-day planning surfaces, then become overlay preparation metadata when `rh-stream-overlays` consumes the project.
+
+Current state:
+
+- Stable project JSON export/import already exists through `serializeDesign()` and `parseDesign()`
+- The existing project JSON is the preferred first integration format for `rh-stream-overlays`
+- TrackDraw still lacks explicit race-route and timing-role authoring, so overlay preparation is not yet release-ready from this repo alone
+
+TrackDraw scope:
+
+- Identify the active race route instead of relying on the first polyline fallback
+- Reuse the race-day timing marker model, likely `shape.meta.timing`, for start/finish and split points
+- Provide editor controls for assigning timing roles to relevant shapes in a way that also improves Race Pack and race director output
+- Validate missing race route, duplicate timing roles, missing timing identifiers, and timing-marked shapes that cannot be mapped onto route progress
+- Document the TrackDraw JSON fields that `rh-stream-overlays` should consume for the first minimap prototype
+
+Out of TrackDraw scope:
+
+- OBS-facing minimap rendering
+- RotorHazard event ingestion
+- estimated pilot position logic
+- stale, reconnect, and race-state behavior
+- live race control or timing dashboard UX
+
+Suggested first slices:
+
+- Add explicit active race route metadata to the project model
+- Add typed timing metadata helpers and normalization for `shape.meta.timing`
+- Add inspector controls for `start_finish` and `split` roles on relevant gates or timing shapes
+- Surface timing markers in Race Pack and race director-oriented output before treating them as overlay-only metadata
+- Add overlay-preparation validation that can be reused by export and future setup UI
+- Keep using full TrackDraw project JSON until the RH plugin proves a dedicated overlay package is necessary
+
+### 5. Editor Workflow Follow-up (`No account required`)
 
 TrackDraw already ships visible snapping, route numbering in export and Race Pack handoff, and stronger route warnings. The next editor pass should build on that foundation with tighter in-canvas guidance instead of introducing a separate analysis-heavy workflow.
 
@@ -159,29 +277,6 @@ Suggested first slices:
 - Flow-aware and alignment-aware snapping follow-up for route-line alignment, stronger nearby-object guides, and useful angle targets, with grid snapping remaining available as the simpler fallback
 - Performance guardrails so richer snapping and overlays do not degrade drag responsiveness on larger layouts
 
-### 5. Embeddable Shared Views (`No account required`)
-
-Published shares should be able to travel beyond TrackDraw links when a club, organizer, or venue wants to place a read-only layout directly on another site.
-
-Why now:
-
-- Published sharing is already a core product surface
-- An embed flow increases reuse and visibility without requiring collaborative editing or a public gallery first
-- The safest implementation path can build on the existing read-only share model instead of introducing a second viewer stack
-
-Focus:
-
-- Add an embed option to the share flow with copyable iframe code and a clear preview
-- Keep embeds read-only, lightweight, and compatible with the canonical published share route
-- Preserve pan, zoom, and basic route review interaction without exposing editing controls
-- Treat sandboxing, performance, and invalid-share failure states as product requirements, not implementation details
-
-Suggested first slices:
-
-- Lightweight embed page that reuses the current share resolution and read-only viewer foundations
-- Share dialog follow-up that exposes iframe code generation alongside the existing share link actions
-- Validation of mobile and desktop behavior for embeds on third-party pages with constrained container sizes
-
 ### 6. Real-Time Collaboration Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
@@ -194,17 +289,7 @@ Suggested first slices:
 - Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
 - Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
-### 7. Published Gallery Evaluation (`Research`)
-
-Evaluate whether TrackDraw should support a browsable gallery of published user-made tracks, and define the ownership, moderation, and discovery model before exposing that surface publicly.
-
-Suggested first slices:
-
-- Define how a project becomes gallery-visible and what opt-in controls are required
-- Clarify attribution, ownership, and visibility boundaries
-- Determine the minimum viable moderation and discovery model
-
-### 8. Backlog And Research Tracks
+### 7. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 
@@ -293,7 +378,7 @@ Allow feedback to be anchored to obstacles or route sections, but keep it as a l
 Why later:
 
 - Simple note-taking is plausible, but the more meaningful version depends on identity, ownership, and shared project context
-- Richer review workflows are easier to define once collaboration, gallery, and publishing boundaries are clearer
+- Richer review workflows are easier to define once collaboration and publishing boundaries are clearer
 
 Suggested first slices:
 
@@ -330,8 +415,30 @@ Likely account-backed follow-up:
 
 - Cross-device project sync and cloud-backed project libraries
 - Durable ownership and administration of published shares
+- Version history for account-backed published shares
+- Operator-controlled gallery visibility through feature, hide, restore, and delete actions
+- Curated gallery collections
 - Shared venue or club records, including shared inventory profiles
 - Identity-aware comments, review threads, and future collaboration
+
+## v1.5.0 Archive
+
+<details>
+<summary>Completed gallery work archived with v1.5.0</summary>
+
+### Published Gallery (`Account-backed`)
+
+TrackDraw now has a public gallery at `/gallery` for opt-in published tracks. Gallery entries remain tied to canonical `/share/[token]` links, so browsing does not introduce a second read-only destination.
+
+Included:
+
+- Signed-in owners can add a published share to the gallery from the share dialog
+- Owners can update gallery title and description, remove an entry from the gallery, or revoke the underlying share
+- Gallery preview images are generated and stored as public media
+- The public gallery includes featured and recent entries, empty and failure states, public metadata, and sitemap coverage
+- Moderators and admins can view, feature, hide, restore, and delete gallery entries from the dashboard
+
+</details>
 
 ## v1.4.0 Archive
 

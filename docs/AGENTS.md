@@ -14,7 +14,6 @@ A PVA is not a product evaluation or research document. Product-shape analysis, 
 
 Current PVAs:
 
-- `published-gallery-pva.md` — opt-in gallery discovery surface built on top of published shares
 - `live-race-overlay-pva.md` — real-time race overlay integration with `rh-stream-overlays`
 - `map-field-overlay-pva.md` — map-based field placement with hybrid asset storage
 
@@ -32,7 +31,6 @@ A research document may cover:
 
 Current research documents:
 
-- `published-gallery-evaluation.md` — gallery concept evaluation
 - `real-time-collaboration-evaluation.md` — collaboration architecture evaluation
 - `real-time-collaboration-product-shape.md` — host-review product model and go/no-go criteria
 - `ar-mode-evaluation.md` — AR mode technical feasibility
