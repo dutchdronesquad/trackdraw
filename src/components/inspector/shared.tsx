@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useId, useState } from "react";
 import type { ReactNode } from "react";
 import { useHistorySession } from "@/hooks/useHistorySession";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useSessionActions } from "@/store/actions";
+import { ChevronDown } from "lucide-react";
 
 export const fmt = (value: number) => Number(value.toFixed(2));
 
@@ -78,25 +79,57 @@ export function Section({
   title,
   children,
   className,
+  collapsible = true,
+  defaultOpen = true,
 }: {
   title: string;
   children: ReactNode;
   className?: string;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
 }) {
+  const contentId = useId();
+  const [open, setOpen] = useState(defaultOpen);
+  const isOpen = !collapsible || open;
+
+  useEffect(() => {
+    setOpen(defaultOpen);
+  }, [defaultOpen]);
+
   return (
     <div
       className={cn(
         "border-border/20 border-t pt-3 first:border-t-0 first:pt-0",
-        className
+        isOpen && className
       )}
     >
-      <p className="text-muted-foreground/75 mb-2 shrink-0 text-[11px] font-medium tracking-[0.12em] uppercase">
-        {title}
-      </p>
+      {collapsible ? (
+        <button
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={isOpen}
+          aria-controls={contentId}
+          className="text-muted-foreground/75 hover:text-foreground focus-visible:ring-ring/40 mb-2 flex min-h-6 w-full shrink-0 items-center justify-between gap-3 rounded-sm text-left text-[11px] font-medium tracking-[0.12em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
+        >
+          <span>{title}</span>
+          <ChevronDown
+            className={cn(
+              "size-3.5 shrink-0 transition-transform",
+              !isOpen && "-rotate-90"
+            )}
+          />
+        </button>
+      ) : (
+        <p className="text-muted-foreground/75 mb-2 shrink-0 text-[11px] font-medium tracking-[0.12em] uppercase">
+          {title}
+        </p>
+      )}
       <div
+        id={contentId}
+        hidden={!isOpen}
         className={cn(
           "space-y-1 lg:space-y-0.5",
-          className && "flex min-h-0 flex-1 flex-col"
+          isOpen && className && "flex min-h-0 flex-1 flex-col"
         )}
       >
         {children}

@@ -67,7 +67,8 @@ export interface TrackShapeNodeProps {
   ) => Vector2d;
   resolveWaypointDragPosition: (
     pos: Vector2d,
-    snapEnabled: boolean
+    snapEnabled: boolean,
+    sourcePathId?: string
   ) => Vector2d;
   setPolylinePoints: (id: string, points: PolylinePoint[]) => void;
   updateShape: (id: string, patch: Partial<Shape>) => void;
