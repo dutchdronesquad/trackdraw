@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import DashboardSiteHeader from "@/components/dashboard/DashboardSiteHeader";
+import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getAccountRoleLabel, parseAccountRole } from "@/lib/account-roles";
 import { listAuditEvents } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -122,10 +122,12 @@ export default async function DashboardAuditPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Event</TableHead>
-                <TableHead>Actor</TableHead>
-                <TableHead>Target</TableHead>
-                <TableHead className="text-right">When</TableHead>
+                <TableHead className="h-9 px-2.5 py-2">Event</TableHead>
+                <TableHead className="h-9 px-2.5 py-2">Actor</TableHead>
+                <TableHead className="h-9 px-2.5 py-2">Target</TableHead>
+                <TableHead className="h-9 px-2.5 py-2 text-right">
+                  When
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -135,7 +137,7 @@ export default async function DashboardAuditPage() {
 
                   return (
                     <TableRow key={event.id}>
-                      <TableCell>
+                      <TableCell className="px-2.5 py-2">
                         <div className="min-w-0">
                           <p className="text-sm font-medium">Role changed</p>
                           <div className="mt-1 flex items-center gap-2">
@@ -146,7 +148,7 @@ export default async function DashboardAuditPage() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-2.5 py-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
                             {getUserLabel(event.actor)}
@@ -158,7 +160,7 @@ export default async function DashboardAuditPage() {
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-2.5 py-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
                             {getUserLabel(event.target)}
@@ -170,7 +172,7 @@ export default async function DashboardAuditPage() {
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right text-xs whitespace-nowrap">
+                      <TableCell className="px-2.5 py-2 text-right text-xs whitespace-nowrap">
                         {formatDateTime(event.createdAt)}
                       </TableCell>
                     </TableRow>

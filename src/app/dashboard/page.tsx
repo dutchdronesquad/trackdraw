@@ -1,16 +1,22 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import DashboardOverviewCards from "@/components/dashboard/DashboardOverviewCards";
-import DashboardSiteHeader from "@/components/dashboard/DashboardSiteHeader";
+import DashboardOverviewCards from "@/components/dashboard/OverviewCards";
+import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import {
   getVisibleDashboardModules,
   hasCapability,
 } from "@/lib/server/authorization";
-import { countUsersByRole, listUsersForAdmin } from "@/lib/server/users";
+import { getGalleryOverviewStats } from "@/lib/server/gallery";
+import { countUsersForAdmin } from "@/lib/server/users";
 
 const moduleConfig = {
+  gallery: {
+    title: "Gallery",
+    description: "Review listed tracks and moderate featured or hidden states.",
+    href: "/dashboard/gallery",
+  },
   users: {
     title: "Users",
     description: "Manage access roles and inspect account presence.",
@@ -47,22 +53,18 @@ export default async function DashboardPage() {
       : visibleModules;
   const canReadUsers = hasCapability(actor.role, "admin.users.read");
 
-  const users = canReadUsers ? await listUsersForAdmin() : [];
-  const adminCount = canReadUsers ? await countUsersByRole("admin") : null;
-  const moderatorCount = canReadUsers
-    ? await countUsersByRole("moderator")
-    : null;
+  const [galleryStats, totalUsers] = await Promise.all([
+    getGalleryOverviewStats(),
+    canReadUsers ? countUsersForAdmin() : Promise.resolve(null),
+  ]);
 
   return (
     <>
       <DashboardSiteHeader title="Overview" />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <DashboardOverviewCards
-          role={actor.role}
-          visibleModuleCount={visibleModules.length}
-          totalUsers={canReadUsers ? users.length : null}
-          adminCount={adminCount}
-          moderatorCount={moderatorCount}
+          galleryStats={galleryStats}
+          totalUsers={totalUsers}
         />
 
         {visibleEntries.length > 0 && (

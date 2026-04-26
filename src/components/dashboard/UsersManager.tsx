@@ -270,12 +270,9 @@ export default function DashboardUsersManager({
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="w-full sm:max-w-xs"
           />
-          <span className="text-muted-foreground text-xs">
-            {table.getFilteredRowModel().rows.length} of {users.length} accounts
-          </span>
         </div>
 
-        <div className="rounded-md border">
+        <div className="overflow-hidden rounded-md border">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -283,13 +280,16 @@ export default function DashboardUsersManager({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className={
+                      className={[
+                        "h-9 px-2.5 py-2",
                         (
                           header.column.columnDef.meta as
                             | { className?: string }
                             | undefined
-                        )?.className
-                      }
+                        )?.className,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                     >
                       {header.isPlaceholder
                         ? null
@@ -309,13 +309,16 @@ export default function DashboardUsersManager({
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className={
+                        className={[
+                          "px-2.5 py-2",
                           (
                             cell.column.columnDef.meta as
                               | { className?: string }
                               | undefined
-                          )?.className
-                        }
+                          )?.className,
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -338,6 +341,11 @@ export default function DashboardUsersManager({
             </TableBody>
           </Table>
         </div>
+
+        <p className="text-muted-foreground mt-3 text-xs">
+          Showing {table.getFilteredRowModel().rows.length} of {users.length}{" "}
+          accounts.
+        </p>
       </div>
     </div>
   );

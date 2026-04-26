@@ -11,7 +11,8 @@ import {
   SkeletonCard,
 } from "./shared";
 
-function formatExpiresIn(iso: string): string {
+function formatExpiresIn(iso: string | null): string {
+  if (!iso) return "no expiry";
   const days = Math.ceil(
     (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );

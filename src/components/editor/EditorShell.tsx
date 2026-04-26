@@ -14,6 +14,7 @@ import StatusBar from "./StatusBar";
 import { ContextOverlayCard } from "./ContextOverlayCard";
 import { useAccountProjectSync } from "./useAccountProjectSync";
 import { useEditorDialogs } from "./useEditorDialogs";
+import { useManualProjectSave } from "./useManualProjectSave";
 import { useStarterExperience } from "./useStarterExperience";
 import { Button } from "@/components/ui/button";
 import { MobileDrawer } from "@/components/MobileDrawer";
@@ -322,6 +323,7 @@ export default function EditorShell({
     activeRestorePointId,
     setActiveRestorePointId,
     saveStatusLabel,
+    lastSnapshotLabel,
     setSaveStatusLabel,
     initialized,
     handleSaveSnapshot,
@@ -410,6 +412,17 @@ export default function EditorShell({
     setProjects,
     setRestorePoints,
     setActiveRestorePointId,
+    setSaveStatusLabel,
+  });
+  const currentProjectSyncMeta = projectSyncMetaById[design.id];
+  const { handleManualSave } = useManualProjectSave({
+    readOnly,
+    design,
+    isAccountProject,
+    currentProjectSyncMeta,
+    handleSaveSnapshot,
+    syncDesignToAccount,
+    markProjectSyncFailed,
     setSaveStatusLabel,
   });
 
@@ -619,7 +632,7 @@ export default function EditorShell({
               onExport={() => setExportOpen(true)}
               onImport={() => setImportOpen(true)}
               onOpenProjectManager={() => setProjectManagerOpen(true)}
-              onSaveSnapshot={handleSaveSnapshot}
+              onSaveSnapshot={() => void handleManualSave()}
               onOpenShortcuts={() => setShortcutsOpen(true)}
               readOnly={false}
               hideTabsOnMobile
@@ -627,7 +640,7 @@ export default function EditorShell({
               onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
               title={design.title || "Untitled track"}
               studioHref={studioHref}
-              lastSavedLabel={saveStatusLabel}
+              lastSnapshotLabel={lastSnapshotLabel}
               statusLabel={headerStatus?.label}
               statusTone={headerStatus?.tone}
               showObstacleNumbers={showObstacleNumbers}

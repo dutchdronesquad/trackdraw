@@ -3,8 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, LayoutDashboard, Mail, Users } from "lucide-react";
-import DashboardNavUser from "@/components/dashboard/DashboardNavUser";
+import {
+  Bell,
+  Home,
+  Image as ImageIcon,
+  LayoutDashboard,
+  Mail,
+  PenLine,
+  Users,
+} from "lucide-react";
+import DashboardNavUser from "@/components/dashboard/NavUser";
 import { useTheme } from "@/hooks/useTheme";
 import {
   Sidebar,
@@ -15,10 +23,15 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import type { DashboardModule } from "@/lib/server/authorization";
+import { cn } from "@/lib/utils";
+
+type SidebarNavKey = DashboardModule | "email-preview";
 
 type DashboardAppSidebarProps = {
   currentUser: {
@@ -27,9 +40,11 @@ type DashboardAppSidebarProps = {
     role: "user" | "moderator" | "admin";
   };
   visibleModules: DashboardModule[];
+  itemBadges?: Partial<Record<SidebarNavKey, number>>;
 };
 
 type NavItem = {
+  key: SidebarNavKey;
   title: string;
   href: string;
   icon: typeof LayoutDashboard;
@@ -70,6 +85,7 @@ function TrackDrawMark({ className }: { className?: string }) {
 
 const navItems: NavItem[] = [
   {
+    key: "overview",
     title: "Overview",
     href: "/dashboard",
     icon: LayoutDashboard,
@@ -77,24 +93,49 @@ const navItems: NavItem[] = [
     exact: true,
   },
   {
+    key: "gallery",
+    title: "Gallery",
+    href: "/dashboard/gallery",
+    icon: ImageIcon,
+    activePrefix: "/dashboard/gallery",
+  },
+  {
+    key: "users",
     title: "Users",
     href: "/dashboard/users",
     icon: Users,
     activePrefix: "/dashboard/users",
   },
   {
+    key: "audit",
     title: "Audit",
     href: "/dashboard/audit",
     icon: Bell,
     activePrefix: "/dashboard/audit",
   },
   {
+    key: "email-preview",
     title: "Email Preview",
     href: "/dashboard/email-preview",
     icon: Mail,
     activePrefix: "/dashboard/email-preview",
   },
 ] as const;
+
+const footerNavItems: NavItem[] = [
+  {
+    key: "overview",
+    title: "Open Studio",
+    href: "/studio",
+    icon: PenLine,
+  },
+  {
+    key: "overview",
+    title: "Public Site",
+    href: "/",
+    icon: Home,
+  },
+];
 
 function isItemActive(pathname: string, item: NavItem) {
   if (!item.activePrefix) {
@@ -111,26 +152,35 @@ function isItemActive(pathname: string, item: NavItem) {
   );
 }
 
+function formatSidebarBadge(value: number) {
+  return value > 99 ? "99+" : String(value);
+}
+
 export default function DashboardAppSidebar({
   currentUser,
   visibleModules,
+  itemBadges = {},
 }: DashboardAppSidebarProps) {
   const currentPath = usePathname();
   const theme = useTheme();
   const filteredNavItems = navItems.filter((item) => {
-    if (item.title === "Overview") {
+    if (item.key === "overview") {
       return visibleModules.includes("overview");
     }
 
-    if (item.title === "Users") {
+    if (item.key === "users") {
       return visibleModules.includes("users");
     }
 
-    if (item.title === "Audit") {
+    if (item.key === "gallery") {
+      return visibleModules.includes("gallery");
+    }
+
+    if (item.key === "audit") {
       return visibleModules.includes("audit");
     }
 
-    if (item.title === "Email Preview") {
+    if (item.key === "email-preview") {
       return currentUser.role === "admin";
     }
 
@@ -175,13 +225,17 @@ export default function DashboardAppSidebar({
               {filteredNavItems.map((item) => {
                 const isActive = isItemActive(currentPath, item);
                 const Icon = item.icon;
+                const badge = itemBadges[item.key];
 
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       tooltip={item.title}
                       isActive={isActive}
-                      className="hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground"
+                      className={cn(
+                        "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground",
+                        typeof badge === "number" && "pr-9"
+                      )}
                       render={
                         <Link
                           href={item.href}
@@ -192,6 +246,11 @@ export default function DashboardAppSidebar({
                       <Icon />
                       <span>{item.title}</span>
                     </SidebarMenuButton>
+                    {typeof badge === "number" ? (
+                      <SidebarMenuBadge className="bg-muted text-muted-foreground">
+                        {formatSidebarBadge(badge)}
+                      </SidebarMenuBadge>
+                    ) : null}
                   </SidebarMenuItem>
                 );
               })}
@@ -200,6 +259,25 @@ export default function DashboardAppSidebar({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
+        <SidebarMenu className="gap-1">
+          {footerNavItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  tooltip={item.title}
+                  className="hover:bg-muted/80 hover:text-foreground"
+                  render={<Link href={item.href} />}
+                >
+                  <Icon className="group-data-[collapsible=icon]:size-4.5" />
+                  <span>{item.title}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+        <SidebarSeparator className="bg-border my-1 h-px group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:w-8" />
         <DashboardNavUser user={currentUser} />
       </SidebarFooter>
     </Sidebar>

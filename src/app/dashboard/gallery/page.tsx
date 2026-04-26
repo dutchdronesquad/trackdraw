@@ -1,40 +1,43 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import DashboardGalleryManager from "@/components/dashboard/GalleryManager";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
-import DashboardUsersManager from "@/components/dashboard/UsersManager";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
-import { listUsersForAdmin } from "@/lib/server/users";
+import { listGalleryEntriesForDashboard } from "@/lib/server/gallery";
 
 export const metadata: Metadata = {
-  title: "Dashboard Users",
+  title: "Dashboard Gallery",
   robots: {
     index: false,
     follow: false,
   },
 };
 
-export default async function DashboardUsersPage() {
+export default async function DashboardGalleryPage() {
   const requestHeaders = new Headers(await headers());
   const currentUser = await getCurrentUserFromHeaders(requestHeaders);
 
-  if (!currentUser || !hasCapability(currentUser.role, "admin.users.read")) {
+  if (
+    !currentUser ||
+    !hasCapability(currentUser.role, "gallery.entries.read")
+  ) {
     notFound();
   }
 
-  const users = await listUsersForAdmin();
+  const entries = await listGalleryEntriesForDashboard();
 
   return (
     <>
       <DashboardSiteHeader
         parent={{ label: "Dashboard", href: "/dashboard" }}
-        title="Users"
+        title="Gallery"
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <DashboardUsersManager
-          currentUserId={currentUser.id}
-          initialUsers={users}
+        <DashboardGalleryManager
+          currentUserRole={currentUser.role}
+          initialEntries={entries}
         />
       </div>
     </>

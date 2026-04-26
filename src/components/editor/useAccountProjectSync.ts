@@ -20,6 +20,7 @@ export type AccountProjectListItem = {
   id: string;
   title: string;
   updatedAt: string;
+  designUpdatedAt: string;
   shapeCount: number;
 };
 
@@ -28,8 +29,11 @@ export type AccountShareItem = {
   title: string;
   shapeCount: number;
   createdAt: string;
-  expiresAt: string;
+  expiresAt: string | null;
   projectId: string | null;
+  galleryState: "unlisted" | "listed" | "featured" | "hidden" | null;
+  galleryTitle: string | null;
+  galleryDescription: string | null;
 };
 
 export type ProjectSyncMeta = {
@@ -161,6 +165,7 @@ export function useAccountProjectSync({
           id: project.id,
           title: project.title,
           updatedAt: project.updatedAt,
+          designUpdatedAt: project.designUpdatedAt,
           shapeCount: project.shapeCount,
         }));
 
@@ -196,9 +201,9 @@ export function useAccountProjectSync({
   );
 
   useEffect(() => {
-    if (!projectManagerOpen || !authUserId || readOnly) return;
+    if (!authUserId || readOnly) return;
     void refreshAccountProjects();
-  }, [authUserId, projectManagerOpen, readOnly, refreshAccountProjects]);
+  }, [authUserId, readOnly, refreshAccountProjects]);
 
   const refreshAccountShares = useCallback(
     async (force = false) => {
@@ -318,7 +323,7 @@ export function useAccountProjectSync({
     }
 
     const localSignature = `${currentDesign.id}:${currentDesign.updatedAt}`;
-    const cloudSignature = `${matchingAccountProject.id}:${matchingAccountProject.updatedAt}`;
+    const cloudSignature = `${matchingAccountProject.id}:${matchingAccountProject.designUpdatedAt}`;
 
     if (localSignature === cloudSignature) {
       lastAccountSyncSignatureRef.current = cloudSignature;
@@ -340,7 +345,7 @@ export function useAccountProjectSync({
       projectId: currentDesign.id,
       title: currentDesign.title || matchingAccountProject.title || "Untitled",
       localUpdatedAt: currentDesign.updatedAt,
-      cloudUpdatedAt: matchingAccountProject.updatedAt,
+      cloudUpdatedAt: matchingAccountProject.designUpdatedAt,
     });
     setProjectSyncMetaById((previous) => ({
       ...previous,
@@ -353,32 +358,80 @@ export function useAccountProjectSync({
     pendingReentryConflictCheckRef.current = false;
   }, [accountProjects, accountProjectsLoading, authUserId, readOnly]);
 
-  const upsertAccountProject = useCallback((targetDesign: TrackDesign) => {
-    setAccountProjects((previous) => {
-      const nextProject: AccountProjectListItem = {
-        id: targetDesign.id,
-        title: targetDesign.title || "Untitled",
-        updatedAt: new Date().toISOString(),
-        shapeCount: getDesignShapes(targetDesign).length,
-      };
+  useEffect(() => {
+    if (readOnly || !authUserId || accountProjectsLoading) {
+      return;
+    }
 
-      const existingIndex = previous.findIndex(
-        (project) => project.id === targetDesign.id
-      );
+    const currentDesign = designRef.current;
+    const matchingAccountProject = accountProjects.find(
+      (project) => project.id === currentDesign.id
+    );
 
-      if (existingIndex === -1) {
-        return [nextProject, ...previous].sort((a, b) =>
+    if (!matchingAccountProject) {
+      return;
+    }
+
+    const localSignature = `${currentDesign.id}:${currentDesign.updatedAt}`;
+    const cloudSignature = `${matchingAccountProject.id}:${matchingAccountProject.designUpdatedAt}`;
+
+    if (localSignature !== cloudSignature) {
+      return;
+    }
+
+    lastAccountSyncSignatureRef.current = cloudSignature;
+    openedFromAccountSignatureRef.current = cloudSignature;
+    setProjectSyncMetaById((previous) => ({
+      ...previous,
+      [currentDesign.id]: {
+        status: "synced",
+        lastSyncedAt: matchingAccountProject.updatedAt,
+        error: null,
+      },
+    }));
+  }, [accountProjects, accountProjectsLoading, authUserId, readOnly]);
+
+  const upsertAccountProject = useCallback(
+    (
+      targetDesign: TrackDesign,
+      projectOverride?: {
+        id: string;
+        title: string;
+        updatedAt: string;
+        designUpdatedAt: string;
+        shapeCount: number;
+      }
+    ) => {
+      setAccountProjects((previous) => {
+        const nextProject: AccountProjectListItem = {
+          id: projectOverride?.id ?? targetDesign.id,
+          title: projectOverride?.title ?? targetDesign.title ?? "Untitled",
+          updatedAt: projectOverride?.updatedAt ?? new Date().toISOString(),
+          designUpdatedAt:
+            projectOverride?.designUpdatedAt ?? targetDesign.updatedAt,
+          shapeCount:
+            projectOverride?.shapeCount ?? getDesignShapes(targetDesign).length,
+        };
+
+        const existingIndex = previous.findIndex(
+          (project) => project.id === targetDesign.id
+        );
+
+        if (existingIndex === -1) {
+          return [nextProject, ...previous].sort((a, b) =>
+            b.updatedAt.localeCompare(a.updatedAt)
+          );
+        }
+
+        const nextProjects = [...previous];
+        nextProjects[existingIndex] = nextProject;
+        return nextProjects.sort((a, b) =>
           b.updatedAt.localeCompare(a.updatedAt)
         );
-      }
-
-      const nextProjects = [...previous];
-      nextProjects[existingIndex] = nextProject;
-      return nextProjects.sort((a, b) =>
-        b.updatedAt.localeCompare(a.updatedAt)
-      );
-    });
-  }, []);
+      });
+    },
+    []
+  );
 
   const markProjectSyncFailed = useCallback(
     (projectId: string, error: string) => {
@@ -397,7 +450,11 @@ export function useAccountProjectSync({
   const syncDesignToAccount = useCallback(
     async (
       targetDesign: TrackDesign,
-      options?: { showToast?: boolean; updateStatusLabel?: boolean }
+      options?: {
+        showToast?: boolean;
+        updateStatusLabel?: boolean;
+        forceCloudWrite?: boolean;
+      }
     ) => {
       if (!cloudProjectsAvailable) {
         throw new Error(
@@ -426,12 +483,20 @@ export function useAccountProjectSync({
             projectId: targetDesign.id,
             title: targetDesign.title || "Untitled",
             design: targetDesign,
+            forceWrite: options?.forceCloudWrite,
           }),
         });
 
         const payload = (await response.json()) as {
           ok: boolean;
           error?: string;
+          project?: {
+            id: string;
+            title: string;
+            updatedAt: string;
+            designUpdatedAt: string;
+            shapeCount: number;
+          };
         };
 
         if (!response.ok || !payload.ok) {
@@ -439,12 +504,13 @@ export function useAccountProjectSync({
         }
 
         lastAccountSyncSignatureRef.current = `${targetDesign.id}:${targetDesign.updatedAt}`;
-        upsertAccountProject(targetDesign);
+        upsertAccountProject(targetDesign, payload.project);
+        const syncedAt = payload.project?.updatedAt ?? new Date().toISOString();
         setProjectSyncMetaById((previous) => ({
           ...previous,
           [targetDesign.id]: {
             status: "synced",
-            lastSyncedAt: new Date().toISOString(),
+            lastSyncedAt: syncedAt,
             error: null,
           },
         }));
@@ -453,7 +519,7 @@ export function useAccountProjectSync({
           const time = new Intl.DateTimeFormat(undefined, {
             hour: "2-digit",
             minute: "2-digit",
-          }).format(new Date());
+          }).format(new Date(syncedAt));
           setSaveStatusLabel(`Synced to account at ${time}`);
         }
 

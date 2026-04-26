@@ -3,7 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { AuthEmailPreviewFrame } from "@/components/dev/AuthEmailPreviewFrame";
-import DashboardSiteHeader from "@/components/dashboard/DashboardSiteHeader";
+import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import {
   getAuthEmailPreviewContent,
