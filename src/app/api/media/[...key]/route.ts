@@ -6,9 +6,22 @@ type MediaRouteContext = {
   }>;
 };
 
+type R2ObjectBody = {
+  body: BodyInit;
+  httpEtag: string;
+  httpMetadata?: {
+    cacheControl?: string;
+  };
+  writeHttpMetadata(headers: Headers): void;
+};
+
+type R2BucketBinding = {
+  get(key: string): Promise<R2ObjectBody | null>;
+};
+
 type CloudflareContextWithMediaBucket = {
   env: {
-    MEDIA_BUCKET?: R2Bucket;
+    MEDIA_BUCKET?: R2BucketBinding;
   };
 };
 
