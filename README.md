@@ -63,10 +63,11 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 ### With an account
 
 - 🖼️ **Publish gallery tracks** - opt published shares into the public gallery so visitors can discover them and open the canonical read-only share view
+- 🌐 **Embed published tracks** - copy iframe embed code for account-published tracks so clubs and event sites can show a live read-only layout
 - 💾 **Sync projects across devices** - keep account-backed work accessible from another browser or device while local-first editing stays available without signing in
 - 🔐 **Manage your account and shares** - use a passkey or email magic link, update your profile, change your account email safely, and manage or revoke published shares from the Projects dialog
 
-## Experimental
+### Experimental
 
 - 🧪 **Velocidrone draft export** - generate an experimental `.trk` export as a starting point for simulator testing
 
@@ -77,7 +78,7 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 3. **Review how the layout will ride** with the live 3D preview, elevation tools, floating ladder placement, and route-flow checks before race day.
 4. **Turn the design into a handoff** by saving it locally, syncing it to your account, publishing a read-only share link, listing it in the gallery, or exporting the assets you need, including race-day documents and cinematic FPV video.
 
-TrackDraw works without an account. You can create, manage, share, recover, import, and export projects in the browser, while signing in adds continuity across devices.
+TrackDraw works without an account. You can create, manage, temporarily share, recover, import, and export projects in the browser, while signing in adds continuity across devices, durable published links, gallery publishing, and embeds.
 
 ## Sponsors
 

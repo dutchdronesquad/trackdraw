@@ -22,15 +22,6 @@ Labels used below:
 
 ## Current Priority
 
-- [ ] Embeddable shared views (`No account required`)
-      Let published layouts be embedded on external sites through a lightweight read-only viewer that reuses the current share model instead of introducing a separate viewing stack.
-  - [ ] Embed code in share flow
-        Add a share-dialog path for iframe embed code with copy-to-clipboard and preview.
-  - [ ] Lightweight embed viewer
-        Reuse the existing share resolution and read-only viewer foundations so embeds keep pan, zoom, and basic route review without exposing editing controls.
-  - [ ] Constrained-container validation
-        Validate desktop and mobile behavior for embeds inside real third-party page containers, including sandboxing and failure states.
-
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The first experimental `.trk` export is already shipped. The remaining work here is narrowing the gap between "importable" and "dependable" by validating more real layouts and tightening the remaining prefab mapping and orientation edge cases before this can be treated as a more supported workflow.
   - [ ] Validate the current `.trk` export on more layouts
@@ -55,6 +46,19 @@ Labels used below:
 
 - [x] Published gallery (`Account-backed`)
       TrackDraw now has an opt-in public gallery at `/gallery` built on published shares. Signed-in owners can list and remove gallery entries, visitors can browse community tracks, and moderators/admins can manage gallery visibility from the dashboard.
+
+- [x] Embeddable shared views (`Account-backed`)
+      Account-backed published layouts can now be embedded on external sites through a lightweight read-only viewer that reuses the current share model.
+  - [x] Account-only durable share lifecycle
+        Account-backed shares are durable published links that stay live until revoked, while anonymous shares remain temporary with explicit expiry.
+  - [x] Embed code in share flow
+        The Share dialog has a dedicated Embed section with iframe code, copy-to-clipboard, and 2D layout / 3D preview initial view selection.
+  - [x] Lightweight embed viewer
+        `/embed/[token]` reuses stored share resolution and only renders active published shares; temporary, expired, revoked, and missing embeds show unavailable states.
+  - [x] Gallery lifecycle independence
+        Gallery visibility is decoupled from share expiry, so listing, unlisting, featuring, and hiding do not change whether the share or embed stays live.
+  - [x] Embed container validation
+        Desktop and mobile embed behavior is validated for the current iframe sizing, compact mobile controls, and unavailable states.
 
 ## Follow-up
 
