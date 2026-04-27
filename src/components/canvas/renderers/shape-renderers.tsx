@@ -17,6 +17,7 @@ import {
   getLadder2DShape,
   getStartFinish2DShape,
 } from "@/lib/track/shape2d";
+import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
 import type {
   ConeShape,
   DiveGateShape,
@@ -113,7 +114,10 @@ export function renderHoverIndicator(shape: Shape, ppm: number) {
 }
 
 export function renderGate(shape: GateShape, selected: boolean, ppm: number) {
-  const { color, depth, radius, width } = getGate2DShape(shape, ppm);
+  const marker = getShapeTimingMarker(shape);
+  const base = getGate2DShape(shape, ppm);
+  const color = marker ? getTimingMarkerColor(marker) : base.color;
+  const { depth, radius, width } = base;
   return (
     <>
       {selected && (
@@ -144,7 +148,7 @@ export function renderGate(shape: GateShape, selected: boolean, ppm: number) {
         offsetX={width / 2}
         offsetY={depth / 2}
         stroke={color}
-        strokeWidth={2}
+        strokeWidth={marker ? 3 : 2}
         cornerRadius={radius}
       />
     </>
@@ -268,10 +272,10 @@ export function renderStartFinish(
   selected: boolean,
   ppm: number
 ) {
-  const { color, padDepth, padWidth, pads, totalWidth } = getStartFinish2DShape(
-    shape,
-    ppm
-  );
+  const marker = getShapeTimingMarker(shape);
+  const base = getStartFinish2DShape(shape, ppm);
+  const color = marker ? getTimingMarkerColor(marker) : base.color;
+  const { padDepth, padWidth, pads, totalWidth } = base;
   return (
     <>
       {selected && (
@@ -305,7 +309,7 @@ export function renderStartFinish(
               offsetX={padWidth / 2}
               offsetY={padDepth / 2}
               stroke={color}
-              strokeWidth={1.5}
+              strokeWidth={marker ? 2.4 : 1.5}
               cornerRadius={2}
             />
             <Text

@@ -6,6 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import { getSingleInspectorViewModel } from "@/lib/inspector/single/view-model";
+import {
+  getShapeTimingMarker,
+  getTimingMarkerMeta,
+  isTimingMarkerShape,
+  type TimingRole,
+} from "@/lib/track/timing";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   Copy,
@@ -100,6 +106,26 @@ export function SingleInspectorView({
   const showPathActions =
     shape.kind === "polyline" &&
     (Boolean(onResumeSelectedPath) || showDefaultPathActions);
+  const timingMarker = getShapeTimingMarker(shape);
+  const canSetTimingMarker = isTimingMarkerShape(shape);
+  const timingRoleOptions: Array<{
+    label: string;
+    role: TimingRole | "none";
+  }> = [
+    { label: "Off", role: "none" },
+    { label: "Start", role: "start_finish" },
+    { label: "Split", role: "split" },
+  ];
+  const updateTimingMarker = (
+    marker: {
+      role: TimingRole;
+      timingId?: string;
+    } | null
+  ) => {
+    updateShape(shape.id, {
+      meta: getTimingMarkerMeta(shape.meta, marker),
+    } as Partial<Shape>);
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -111,6 +137,13 @@ export function SingleInspectorView({
             meta={[
               shapeKindLabel,
               `${fmt(anchorPosition.x)}, ${fmt(anchorPosition.y)}`,
+              ...(timingMarker
+                ? [
+                    timingMarker.role === "start_finish"
+                      ? "timing: start"
+                      : `timing: ${timingMarker.timingId || "split"}`,
+                  ]
+                : []),
               ...(groupId ? [groupName || "grouped"] : []),
               shape.locked ? "locked" : "editable",
             ]}
@@ -295,6 +328,73 @@ export function SingleInspectorView({
               </div>
             </Row>
           </Section>
+
+          {canSetTimingMarker && (
+            <Section title="Race timing">
+              <Row label="Role">
+                <div
+                  className="border-border/50 bg-background grid grid-cols-3 overflow-hidden rounded-md border p-0.5"
+                  role="group"
+                  aria-label="Timing role"
+                >
+                  {timingRoleOptions.map((option) => {
+                    const active =
+                      (timingMarker?.role ?? "none") === option.role;
+                    return (
+                      <button
+                        key={option.role}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => {
+                          if (option.role === "none") {
+                            updateTimingMarker(null);
+                            return;
+                          }
+
+                          updateTimingMarker({
+                            role: option.role,
+                            timingId:
+                              option.role === "split"
+                                ? timingMarker?.timingId
+                                : undefined,
+                          });
+                        }}
+                        className={`min-h-9 rounded-[5px] px-2 text-[11px] font-semibold transition-colors lg:min-h-7 ${
+                          active
+                            ? "bg-foreground text-background shadow-xs"
+                            : "text-muted-foreground hover:bg-muted/55 hover:text-foreground"
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </Row>
+              {timingMarker?.role === "split" ? (
+                <Row label="Split ID">
+                  <Input
+                    value={timingMarker.timingId ?? ""}
+                    onFocus={startBatch}
+                    onBlur={finishBatch}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.currentTarget.blur();
+                      }
+                    }}
+                    onChange={(event) =>
+                      updateTimingMarker({
+                        role: timingMarker.role,
+                        timingId: event.target.value,
+                      })
+                    }
+                    placeholder="split-1"
+                    className="bg-muted/50 border-border/70 focus-visible:border-primary/50 focus-visible:ring-primary/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
+                  />
+                </Row>
+              ) : null}
+            </Section>
+          )}
 
           {shape.kind === "gate" && (
             <Section title="Gate">

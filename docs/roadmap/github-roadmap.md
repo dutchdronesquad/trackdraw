@@ -26,7 +26,7 @@ Labels used below:
       Build on the shipped Race Pack, published shares, and editor numbering work with small release-sized improvements that make briefing and setup easier without turning TrackDraw into a race-control product.
   - [x] Shared view QR code in Race Pack
         Embed a QR code linking to the canonical published shared view in the Race Pack PDF, so pilots and crew can scan directly from a printed or on-screen briefing.
-  - [ ] Timing gate markers
+  - [x] Timing gate markers
         Let specific gates be marked as start/finish or split timing points so race directors can identify timing hardware placement clearly in the editor, Race Pack, and future overlay preparation.
 
 ## Follow-up

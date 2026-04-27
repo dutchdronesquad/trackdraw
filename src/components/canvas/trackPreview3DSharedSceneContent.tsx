@@ -22,6 +22,7 @@ import {
   getPolylineCurve3Derived,
   getPolylinePreview3DPoints,
 } from "@/lib/track/polyline-derived-3d";
+import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
 import type {
   ConeShape,
   DiveGateShape,
@@ -320,7 +321,10 @@ function Gate3D({
   shape: GateShape;
   outerRef?: Ref<THREE.Group>;
 }) {
-  const color = shape.color ?? "#3b82f6";
+  const marker = getShapeTimingMarker(shape);
+  const color = marker
+    ? getTimingMarkerColor(marker)
+    : (shape.color ?? "#3b82f6");
   const thick = shape.thick ?? 0.2;
   const h = shape.height ?? 2;
   const w = shape.width ?? 3;
@@ -554,7 +558,10 @@ function StartFinish3D({
   selected?: boolean;
   shape: StartFinishShape;
 }) {
-  const color = shape.color ?? "#f59e0b";
+  const marker = getShapeTimingMarker(shape);
+  const color = marker
+    ? getTimingMarkerColor(marker)
+    : (shape.color ?? "#f59e0b");
   const totalW = shape.width ?? 3.0;
   const spacing = totalW / 4;
   const podW = spacing * 0.72;

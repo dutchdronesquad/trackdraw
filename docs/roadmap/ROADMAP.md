@@ -18,7 +18,7 @@ TrackDraw is now strong in these areas:
 The most useful next product moves are:
 
 - Race Pack QR codes that connect printed or on-screen briefings back to canonical shared views
-- Timing gate markers that improve Race Pack, race director planning, and future overlay preparation
+- Timing marker follow-ups that build on the shipped editor and Race Pack markers for race director planning and future overlay preparation
 - A sharper decision on how far account-backed project continuity should go after the shipped account and authorization foundation
 - A clearer separation between local-first workflows and account-backed follow-up
 - Versioned publish history for account-backed shares
@@ -50,14 +50,14 @@ The next release-sized work should build on the shipped Race Pack, published sha
 
 Focus:
 
-- Add timing gate markers for start/finish and split hardware placement
-- Surface timing markers in the editor and Race Pack before treating them as overlay metadata
+- Shipped timing gate markers for start/finish and split hardware placement
+- Keep future overlay metadata work behind the shipped editor and Race Pack timing marker foundation
 - Keep the future race director page behind these smaller foundations
 
 Suggested first slices:
 
 - Shipped: shared view QR code in Race Pack, tied to an active published account-project share with a clear no-share fallback
-- Timing gate markers
+- Shipped: timing gate markers for start/finish and split hardware placement, surfaced in the editor and Race Pack
 
 ### 2. Accounts And Ownership Model (`Research`)
 

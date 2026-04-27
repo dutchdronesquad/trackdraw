@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
 import { normalizeMapReference } from "@/lib/map-reference/geometry";
 import { normalizeInventoryProfile } from "@/lib/planning/inventory";
+import { normalizeShapeTimingMeta } from "@/lib/track/timing";
 import type {
   PolylineShape,
   SerializedTrackDesign,
@@ -32,27 +33,27 @@ function normalizePolylinePosition(shape: PolylineShape): PolylineShape {
 
 export function normalizeShape(shape: Shape): Shape {
   if (shape.kind === "polyline") {
-    return {
+    return normalizeShapeTimingMeta({
       ...normalizePolylinePosition(shape),
       frontOffsetDeg: shape.frontOffsetDeg ?? 0,
       arrowSpacing: shape.arrowSpacing ?? 15,
       strokeWidth: shape.strokeWidth ?? 0.26,
       smooth: true,
-    };
+    });
   }
 
   if (shape.kind === "ladder") {
-    return {
+    return normalizeShapeTimingMeta({
       ...shape,
       frontOffsetDeg: shape.frontOffsetDeg ?? 0,
       elevation: shape.elevation ?? 0,
-    };
+    });
   }
 
-  return {
+  return normalizeShapeTimingMeta({
     ...shape,
     frontOffsetDeg: shape.frontOffsetDeg ?? 0,
-  };
+  });
 }
 
 function normalizeShapes(shapes: Shape[]) {
