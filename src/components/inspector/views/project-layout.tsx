@@ -452,14 +452,6 @@ export function ProjectLayoutInspectorView({
           />
         </Row>
       </Section>
-      <MapReferenceSection
-        design={design}
-        setMapReference={setMapReference}
-        clearMapReference={clearMapReference}
-        setMapReferenceVisibility={setMapReferenceVisibility}
-        setMapReferenceOpacity={setMapReferenceOpacity}
-        setMapReferenceRotation={setMapReferenceRotation}
-      />
       {inventoryContent}
     </>
   );
@@ -475,7 +467,7 @@ export function ProjectLayoutInspectorView({
             ? "buildable"
             : `short ${totalMissing} item${totalMissing === 1 ? "" : "s"}`,
           kindsMissing > 0
-            ? `${kindsMissing} obstacle type${kindsMissing === 1 ? "" : "s"} missing`
+            ? `${kindsMissing} type${kindsMissing === 1 ? "" : "s"} short`
             : "stock covered",
           obstacleNumberingReport.status === "ready"
             ? `${obstacleNumberingReport.mappedObstacleCount} numbered`
@@ -485,27 +477,37 @@ export function ProjectLayoutInspectorView({
               : "numbering needs review",
         ]}
       />
-      <RouteNumberingOverview design={design} shapes={shapes} />
-      {shapes.length > 0 ? (
-        <ItemOverviewList
+      <div className="space-y-4">
+        <MapReferenceSection
           design={design}
-          shapes={shapes}
-          setSelection={setSelection}
-          removeShapes={removeShapes}
-          setHoveredShapeId={setHoveredShapeId}
-          obstacleNumberingReport={obstacleNumberingReport}
+          setMapReference={setMapReference}
+          clearMapReference={clearMapReference}
+          setMapReferenceVisibility={setMapReferenceVisibility}
+          setMapReferenceOpacity={setMapReferenceOpacity}
+          setMapReferenceRotation={setMapReferenceRotation}
         />
-      ) : (
-        <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
-          <p className="text-foreground/75 text-[11px] font-medium">
-            No items placed yet
-          </p>
-          <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
-            Add a few objects on the canvas to review the layout and compare it
-            against your inventory.
-          </p>
-        </div>
-      )}
+        <RouteNumberingOverview design={design} shapes={shapes} />
+        {shapes.length > 0 ? (
+          <ItemOverviewList
+            design={design}
+            shapes={shapes}
+            setSelection={setSelection}
+            removeShapes={removeShapes}
+            setHoveredShapeId={setHoveredShapeId}
+            obstacleNumberingReport={obstacleNumberingReport}
+          />
+        ) : (
+          <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
+            <p className="text-foreground/75 text-[11px] font-medium">
+              No items placed yet
+            </p>
+            <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
+              Add a few objects on the canvas to review the layout and compare
+              it against your inventory.
+            </p>
+          </div>
+        )}
+      </div>
     </>
   );
 
