@@ -1162,6 +1162,7 @@ export default function EditorShell({
             preview3DRef={preview3DRef}
             activeTab={tab}
             onRequest3DView={() => handleTabChange("3d")}
+            projectId={isAccountProject ? design.id : null}
           />
         ) : null}
         {shortcutsOpen ? (

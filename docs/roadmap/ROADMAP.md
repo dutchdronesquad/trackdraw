@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, public gallery discovery, practical mobile use, and export/share handoff. Recent release work also strengthened shared review, route warnings, snapping, cinematic FPV export, and the editor foundation. The roadmap should now focus primarily on workflow depth and the next product surfaces that build cleanly on the shipped foundation.
+This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, public gallery discovery, practical mobile use, venue-aligned editing, account-published embeds, and export/share handoff. The roadmap should now focus primarily on workflow depth and small product surfaces that build cleanly on the shipped foundation.
 
 ## Current Focus
 
@@ -11,19 +11,19 @@ TrackDraw is now strong in these areas:
 - Share-first collaboration through read-only links
 - Public gallery discovery through opt-in published shares
 - Account-published embeds through a dedicated read-only `/embed/[token]` route
+- Real venue alignment through editor-only satellite map references
 - Practical mobile editing for quick venue-side changes
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 
 The most useful next product moves are:
 
+- Race Pack QR codes that connect printed or on-screen briefings back to canonical shared views
+- Timing gate markers that improve Race Pack, race director planning, and future overlay preparation
 - A sharper decision on how far account-backed project continuity should go after the shipped account and authorization foundation
 - A clearer separation between local-first workflows and account-backed follow-up
 - Versioned publish history for account-backed shares
 - Curated gallery collections that improve discovery without social mechanics
-- More deliberate editor workflow follow-up around route readability, numbering confidence, and precision placement
 - Operator-facing dashboard polish for published share and gallery lifecycle visibility
-- A stronger shared-view review experience, especially on mobile and in 3D
-- Deliberate follow-up on race-day outputs after the ownership boundary is settled
 
 ## Product Principles
 
@@ -44,20 +44,20 @@ Labels used below:
 - `Account-backed`: depends on ownership, sync, identity, or shared persistence
 - `Research`: still primarily exploratory
 
-### 1. Embeddable Shared Views (`Account-backed`) ✓
+### 1. Race-Day Handoff Next Slice (`No account required`)
 
-Account-backed published shares can now travel beyond TrackDraw links when a club, organizer, or venue wants to place a read-only layout directly on another site.
+The next release-sized work should build on the shipped Race Pack, published shares, map/reference work, and route numbering without turning TrackDraw into a race-control product.
 
-Shipped:
+Focus:
 
-- Added `/embed/[token]`, a lightweight read-only embed route that reuses stored share resolution and the shared viewer foundation
-- Made embeds account-only: only active `published` shares render track data in embed context
-- Kept anonymous shares temporary and non-embeddable, including when someone manually constructs an `/embed/[token]` URL
-- Added clear unavailable states for temporary, expired, revoked, and missing embeds
-- Added a dedicated Embed section in ShareDialog with copyable iframe code, 2D layout / 3D preview initial view selection, and a larger default iframe height
-- Kept gallery discovery separate from share lifecycle, so listing, unlisting, featuring, and hiding do not change share expiry
-- Added automated coverage for share lifecycle, embed authorization, gallery expiry independence, and cleanup targeting
-- Validated the current embed container behavior for mobile and desktop, including iframe sizing and compact mobile controls
+- Add timing gate markers for start/finish and split hardware placement
+- Surface timing markers in the editor and Race Pack before treating them as overlay metadata
+- Keep the future race director page behind these smaller foundations
+
+Suggested first slices:
+
+- Shipped: shared view QR code in Race Pack, tied to an active published account-project share with a clear no-share fallback
+- Timing gate markers
 
 ### 2. Accounts And Ownership Model (`Research`)
 
@@ -201,7 +201,7 @@ Focus:
 
 ### 4. Race-Day Follow-up (`No account required`)
 
-TrackDraw now has a real Race Pack and numbering handoff. The next work here is follow-up, not the main roadmap driver.
+TrackDraw now has a real Race Pack and numbering handoff. The immediate QR/timing-marker slice is tracked at the top of the active roadmap; the remaining work here is broader race-day operations follow-up.
 
 Current first pass:
 
@@ -210,7 +210,6 @@ Current first pass:
 
 Later slices:
 
-- Timing gate markers for identifying start/finish and split hardware placement directly in the editor, Race Pack, and future race director views
 - Race director page once TrackDraw can extend the existing start/finish and timing-marker foundation with the supporting race-day metadata and ops elements it depends on, including pilot line, director position, timing/start box placement, cable routing, and ops notes
 - Live race overlay preparation once the `rh-stream-overlays` side is ready to consume TrackDraw-authored route and timing metadata
 
@@ -256,23 +255,7 @@ Suggested first slices:
 - Add overlay-preparation validation that can be reused by export and future setup UI
 - Keep using full TrackDraw project JSON until the RH plugin proves a dedicated overlay package is necessary
 
-### 5. Editor Workflow Follow-up (`No account required`)
-
-TrackDraw now ships the editor workflow follow-up: visible snapping, route-aware object snapping, smaller waypoint-aware snap targets, route numbering in export and Race Pack handoff, stronger route warnings, and editor-visible numbering validation.
-
-Focus:
-
-- Keep any future follow-up limited to real-world polish found during layout authoring
-- Preserve the derived route-order model until explicit race-route metadata becomes necessary
-- Keep advanced guidance non-intrusive on both desktop and mobile
-
-Suggested first slices:
-
-- Shipped: numbering follow-up that keeps the current derived route-order model but adds clearer issue states and layout-level confidence cues
-- Shipped: flow-aware and alignment-aware snapping follow-up for route-line alignment, path-waypoint snapping, and nearby-object x/y alignment, with grid snapping remaining available as the fallback
-- Performance guardrails so richer snapping and overlays do not degrade drag responsiveness on larger layouts
-
-### 6. Real-Time Collaboration Evaluation (`Research`)
+### 5. Real-Time Collaboration Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
 
@@ -284,20 +267,9 @@ Suggested first slices:
 - Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
 - Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
-### 7. Backlog And Research Tracks
+### 6. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
-
-#### Bundle Size Reduction (`No account required`)
-
-TrackDraw is now feature-rich enough that bundle size needs to be handled as an explicit product-quality track instead of only incidental cleanup. The first startup-focused reductions are already in place, so the next pass should stay measurement-led and target the heaviest remaining Studio, 2D, 3D, and export chunks without adding unnecessary code duplication.
-
-Suggested first slices:
-
-- Done: reduce avoidable weight in the main Studio toolbar so secondary controls do not all ship in the first editor load
-- Done: keep separating editor-only interaction code from the base 2D canvas path where that lowers startup cost without risking core editing behavior
-- Done: re-audit the remaining 3D preview chunk and only continue splitting it where a concrete hotspot still justifies the extra module boundary
-- Done: verify that heavier export dependencies remain fully deferred behind the export flow instead of leaking into normal editor or shared-view startup
 
 #### 3D Editor Interaction Polish (`No account required`)
 
@@ -396,7 +368,7 @@ Suggested first slices:
   - Clarify how browse, duplicate, insert, and fork flows should work without overlapping confusingly with starter layouts or ordinary projects
   - Define ownership and visibility boundaries for private, club, team, or published template libraries
 
-### 8. Accounts Boundary
+### 7. Accounts Boundary
 
 Be deliberate about what should stay usable without an account versus what actually benefits from account identity and continuity.
 
@@ -420,7 +392,7 @@ Likely account-backed follow-up:
 ## v1.5.0 Archive
 
 <details>
-<summary>Completed gallery work archived with v1.5.0</summary>
+<summary>Completed release work archived with v1.5.0</summary>
 
 ### Published Gallery (`Account-backed`)
 
@@ -433,6 +405,55 @@ Included:
 - Gallery preview images are generated and stored as public media
 - The public gallery includes featured and recent entries, empty and failure states, public metadata, and sitemap coverage
 - Moderators and admins can view, feature, hide, restore, and delete gallery entries from the dashboard
+
+### Durable Shares And Embeds (`Account-backed`)
+
+Account-backed published shares now stay live until revoked, while anonymous shares remain temporary. Published account shares can also travel beyond TrackDraw links through a lightweight embed viewer.
+
+Included:
+
+- Explicit temporary versus published share lifecycle
+- Account project publishing reuses the active published share token instead of creating unbounded duplicate shares
+- Anonymous shares keep explicit expiry and are never embeddable
+- `/embed/[token]` renders only active published shares and shows unavailable states for temporary, expired, revoked, or missing embeds
+- The Share dialog includes a dedicated Embed section with iframe code and 2D layout / 3D preview start modes
+- Gallery visibility is independent from share expiry, so listing, unlisting, featuring, and hiding do not change whether a share or embed stays live
+
+### Editor Workflow Follow-up (`No account required`)
+
+Route editing and layout review now have clearer editor feedback without replacing the current lightweight workflow.
+
+Included:
+
+- Route-derived obstacle numbering validation and layout inspector status
+- Missing-route, off-route, and partial-numbering cues in the layout review surface
+- Route-line snapping, waypoint-aware snapping, and x/y object-alignment snapping
+- Smaller waypoint snap targets so route editing stays precise
+- Inspector cleanup that keeps project settings, layout review, and selection editing easier to scan
+
+### Map Field Reference (`No account required`)
+
+TrackDraw now supports an editor-only satellite map reference for lining a project up with a real venue.
+
+Included:
+
+- Desktop dialog and mobile drawer for choosing the field center
+- Esri World Imagery tiles, typeahead location search, current-location jump, touch/pointer panning, and wheel/pinch zoom
+- A field footprint derived from project dimensions
+- Non-interactive Konva tile rendering behind the 2D layout
+- Layout inspector controls for add/edit, show/hide, opacity, rotation, and remove
+- Project JSON keeps map reference metadata, while public shares and share/export payloads strip map imagery and location data
+
+### Bundle Size Reduction (`No account required`)
+
+TrackDraw now keeps more heavy code behind the workflows that need it instead of loading everything with the first editor surface.
+
+Included:
+
+- Reduced avoidable weight in the main Studio toolbar so secondary controls do not all ship in the first editor load
+- Kept editor-only interaction code separated from the base 2D canvas path where that lowers startup cost without risking core viewing behavior
+- Re-measured the shared 3D preview stack and kept further splitting limited to concrete hotspots
+- Confirmed that heavier export dependencies stay fully deferred behind export flows
 
 </details>
 

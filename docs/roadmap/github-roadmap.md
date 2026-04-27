@@ -22,51 +22,21 @@ Labels used below:
 
 ## Current Priority
 
+- [ ] Race-day handoff next slice (`No account required`)
+      Build on the shipped Race Pack, published shares, and editor numbering work with small release-sized improvements that make briefing and setup easier without turning TrackDraw into a race-control product.
+  - [x] Shared view QR code in Race Pack
+        Embed a QR code linking to the canonical published shared view in the Race Pack PDF, so pilots and crew can scan directly from a printed or on-screen briefing.
+  - [ ] Timing gate markers
+        Let specific gates be marked as start/finish or split timing points so race directors can identify timing hardware placement clearly in the editor, Race Pack, and future overlay preparation.
+
+## Follow-up
+
 - [ ] Velocidrone experimental export stabilization (`No account required`)
-      The first experimental `.trk` export is already shipped. The remaining work here is narrowing the gap between "importable" and "dependable" by validating more real layouts and tightening the remaining prefab mapping and orientation edge cases before this can be treated as a more supported workflow.
+      The first experimental `.trk` export is already shipped. Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping and orientation edge cases.
   - [ ] Validate the current `.trk` export on more layouts
         Test the shipped export across a wider range of real track layouts so the current best-effort mapping is grounded in repeatable validation instead of one-off success cases.
   - [ ] Resolve remaining mapping and orientation edge cases
         Tighten the current export where prefab substitutions, facing direction, or rotation assumptions still produce avoidable cleanup work after import.
-
-- [x] Editor workflow follow-up (`No account required`)
-      Shipped route-derived numbering validation, route-line and waypoint-aware snapping, x/y object-alignment snapping, and lightweight inspector cues without replacing the current derived workflow model.
-  - [x] Obstacle numbering validation and controls
-        Added shared route-derived numbering validation, layout inspector status, missing-route/off-route issue states, and item-list cues without replacing the current derived model.
-  - [x] Advanced snapping follow-up
-        Added route-line snapping, x/y object-alignment snapping, and kept the existing angle/grid behavior on the same lightweight snap resolver.
-
-- [x] Map field reference (`No account required`)
-      Shipped an editor-only satellite map reference for lining a project up with a real venue. Users can search for a location, choose the field center, align rotation, adjust opacity, and render the saved reference behind the 2D layout through a non-interactive Konva tile layer. Project JSON keeps map metadata, while share/export payloads stay free of map imagery and location data.
-  - [x] Map picker and field footprint
-        Added a desktop dialog and mobile drawer with Esri World Imagery tiles, typeahead location search, current-location jump, center selection, touch/pointer panning, pinch/wheel zoom, and a field footprint derived from project dimensions.
-  - [x] Editor rendering and inspector controls
-        Added a locked, non-interactive Konva tile renderer plus Project inspector controls for add/edit, show/hide, opacity, rotation, and remove.
-  - [x] Persistence and share/export boundary
-        Persisted map reference metadata in project JSON and stripped it from share/export serialization so public outputs do not expose map references in v1.
-
-## Shipped Foundation
-
-- [x] Account and authorization foundation (`Account-backed`)
-      The first account foundation is now in place, including sign-in, profile management, role-aware dashboard access, and internal role management.
-
-- [x] Published gallery (`Account-backed`)
-      TrackDraw now has an opt-in public gallery at `/gallery` built on published shares. Signed-in owners can list and remove gallery entries, visitors can browse community tracks, and moderators/admins can manage gallery visibility from the dashboard.
-
-- [x] Embeddable shared views (`Account-backed`)
-      Account-backed published layouts can now be embedded on external sites through a lightweight read-only viewer that reuses the current share model.
-  - [x] Account-only durable share lifecycle
-        Account-backed shares are durable published links that stay live until revoked, while anonymous shares remain temporary with explicit expiry.
-  - [x] Embed code in share flow
-        The Share dialog has a dedicated Embed section with iframe code, copy-to-clipboard, and 2D layout / 3D preview initial view selection.
-  - [x] Lightweight embed viewer
-        `/embed/[token]` reuses stored share resolution and only renders active published shares; temporary, expired, revoked, and missing embeds show unavailable states.
-  - [x] Gallery lifecycle independence
-        Gallery visibility is decoupled from share expiry, so listing, unlisting, featuring, and hiding do not change whether the share or embed stays live.
-  - [x] Embed container validation
-        Desktop and mobile embed behavior is validated for the current iframe sizing, compact mobile controls, and unavailable states.
-
-## Follow-up
 
 - [ ] Venue library and constraints (`Account-backed`)
       Support reusable venue records with boundaries, constraints, and venue-specific profiles.
@@ -108,11 +78,7 @@ Labels used below:
 ## Later Product Follow-up
 
 - [ ] Race-day communication and briefing (`No account required`)
-      The first race-day handoff release is shipped. Further work here is follow-up.
-  - [ ] Shared view QR code in Race Pack
-        Embed a QR code linking to the published shared view in the Race Pack PDF, so pilots can scan directly from a printed or on-screen briefing.
-  - [ ] Timing gate markers
-        Let specific gates be marked as start/finish or split timing points so race directors can identify timing hardware placement clearly in the editor, Race Pack, and future overlay preparation.
+      The first Race Pack release is shipped, and the immediate QR/timing-marker slice now lives in Current Priority. The remaining work here is larger race-day operations follow-up.
   - [ ] Race director page in Race Pack
         Add a race-director-oriented page to the Race Pack.
     - [ ] Race-day ops elements around the existing start area
@@ -138,17 +104,6 @@ Labels used below:
         Only add a dedicated overlay package export if the RH plugin proves the full project JSON is too broad or ambiguous.
 
 ## Backlog And Research
-
-- [x] Bundle size reduction (`No account required`)
-      Keep reducing startup weight now that the first lazy-loading and share-shell splits are in place. The next work here should stay measurement-led and focus on the heaviest remaining client chunks instead of treating bundle size as one broad cleanup bucket.
-  - [x] Studio toolbar chunk reduction
-        Reduce avoidable weight in the main Studio toolbar so rarely used controls or secondary tool surfaces do not all ship in the first editor load.
-  - [x] TrackCanvas editor-only interaction split
-        Keep separating editor-only interaction code from the base 2D rendering path where that meaningfully lowers the Studio startup chunk without regressing drawing and selection behavior.
-  - [x] 3D preview hotspot audit
-        Re-measure the shared 3D preview stack and only keep splitting it further if a specific scene, geometry, or overlay module proves to be a worthwhile remaining hotspot.
-  - [x] Export dependency audit
-        Confirm that heavier export dependencies stay fully behind the export flow and are not leaking back into normal editor or shared-view startup paths.
 
 - [ ] Track DNA and layout analysis (`Research`)
       Evaluate whether route and layout analysis should become reusable signals that help compare tracks, explain style, and support later recommendation or assistive tooling.
@@ -234,6 +189,46 @@ Labels used below:
   - [ ] Relationship to starter layouts
         Keep templates distinct from starter layouts, project duplication, and saved projects.
 
+## v1.5.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.5.0</summary>
+
+- [x] Published gallery (`Account-backed`)
+      Shipped opt-in public gallery discovery for account-published tracks, including owner-managed listings and moderator/admin dashboard controls.
+
+- [x] Embeddable shared views (`Account-backed`)
+      Shipped account-only published embeds through `/embed/[token]`, including iframe copy, 2D/3D start modes, unavailable states, and lifecycle rules that keep anonymous shares temporary and non-embeddable.
+
+- [x] Editor workflow follow-up (`No account required`)
+      Shipped route-derived numbering validation, route-line and waypoint-aware snapping, x/y object-alignment snapping, and lightweight inspector cues without replacing the current derived workflow model.
+  - [x] Obstacle numbering validation and controls
+        Added shared route-derived numbering validation, layout inspector status, missing-route/off-route issue states, and item-list cues without replacing the current derived model.
+  - [x] Advanced snapping follow-up
+        Added route-line snapping, waypoint-aware snapping, x/y object-alignment snapping, and kept the existing angle/grid behavior on the same lightweight snap resolver.
+
+- [x] Map field reference (`No account required`)
+      Shipped an editor-only satellite map reference for lining a project up with a real venue. Users can search for a location, choose the field center, align rotation, adjust opacity, and render the saved reference behind the 2D layout through a non-interactive Konva tile layer.
+  - [x] Map picker and field footprint
+        Added a desktop dialog and mobile drawer with Esri World Imagery tiles, typeahead location search, current-location jump, center selection, touch/pointer panning, pinch/wheel zoom, and a field footprint derived from project dimensions.
+  - [x] Editor rendering and inspector controls
+        Added a locked, non-interactive Konva tile renderer plus Layout inspector controls for add/edit, show/hide, opacity, rotation, and remove.
+  - [x] Persistence and share/export boundary
+        Persisted map reference metadata in project JSON and stripped it from share/export serialization so public outputs do not expose map references in v1.
+
+- [x] Bundle size reduction (`No account required`)
+      Shipped measured startup-weight reductions and verified that heavier editor, 3D, and export paths stay behind the workflows that need them.
+  - [x] Studio toolbar chunk reduction
+        Reduced avoidable weight in the main Studio toolbar so secondary controls do not all ship in the first editor load.
+  - [x] TrackCanvas editor-only interaction split
+        Kept editor-only interaction code separated from the base 2D canvas path where that lowers startup cost without risking core viewing behavior.
+  - [x] 3D preview hotspot audit
+        Re-measured the shared 3D preview stack and kept further splitting limited to concrete hotspots.
+  - [x] Export dependency audit
+        Confirmed that heavier export dependencies stay fully deferred behind export flows.
+
+</details>
+
 ## v1.4.0 Archive
 
 <details>
@@ -306,45 +301,5 @@ Labels used below:
         Break up any remaining oversized files identified in the audit, especially where editor composition and mobile/desktop orchestration still live together.
   - [x] Reduce cross-module coupling in editor state
         Moved shared editor-store state shapes into dedicated types, centralized UI/session reset profiles, and reduced duplicated store wiring so state changes stay more local to the editor boundary.
-
-</details>
-
-## v1.3.0 Archive
-
-<details>
-<summary>Completed release work archived with v1.3.0</summary>
-
-- [x] Velocidrone export compatibility research (`Research`)
-      The core compatibility question is answered: TrackDraw can generate an experimental `.trk` export that imports into Velocidrone.
-
-- [x] Velocidrone experimental export first pass (`No account required`)
-      Ship the first importable Velocidrone `.trk` export with best-effort prefab mapping, a centralized orientation model, and first-pass 2D/3D editor cues.
-  - [x] First experimental `.trk` export
-        Ship the first importable Velocidrone `.trk` export from TrackDraw.
-  - [x] First object mapping slice
-        Export the core track items into a usable first-pass Velocidrone layout with best-effort prefab mapping.
-  - [x] Experimental product framing
-        Ship the export as an explicitly experimental workflow in the UI and product messaging.
-  - [x] Gate front/back orientation model
-        Centralize front-facing rules so export, 2D guides, and 3D guides use the same per-shape orientation mapping.
-  - [x] Clear 2D front/back affordance
-        Add a first-pass 2D front indicator by anchoring the `Front` cue to the rotation guide instead of the obstacle itself.
-  - [x] Faster 3D orientation validation
-        Add a first-pass 3D orientation guide pass so rotation handles follow the same central orientation mapping as the exporter.
-
-- [x] Accounts and cross-device project evaluation (`Research`)
-      Better Auth, magic-link sign-in, profile management, passkeys, and account entry points are now in place. The account model is established and validated across devices.
-  - [x] Passkey sign-in
-        Add passkeys as a follow-up to magic-link sign-in once the current account model feels stable.
-    - [x] Passkey sign-in on the login screen
-          Add passkey sign-in to the main login flow without replacing magic links.
-    - [x] Passkey enrollment for existing accounts
-          Let signed-in users add a passkey from account settings.
-    - [x] Passkey management in account settings
-          Support review, rename, and remove flows for registered passkeys.
-    - [x] Fallback and recovery UX
-          Keep magic link as the fallback and handle unsupported browsers and failed prompts cleanly.
-    - [x] Cross-device and mobile validation
-          Validated the passkey and account flow across practical desktop and mobile scenarios.
 
 </details>
