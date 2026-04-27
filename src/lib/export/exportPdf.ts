@@ -5,12 +5,17 @@ import {
   getRequiredInventoryCounts,
 } from "@/lib/planning/inventory";
 import { buildSetupPlan } from "@/lib/planning/setup-estimate";
+import { createQrCode } from "@/lib/qr-code";
 import type { TrackDesign } from "../types";
 import {
   designToSvg,
   type Export2DOptions,
   type ExportTheme,
 } from "./exportSvg";
+
+export type ExportPdfOptions = Export2DOptions & {
+  shareUrl?: string | null;
+};
 
 const PRINT_BG: [number, number, number] = [255, 255, 255];
 const INK: [number, number, number] = [24, 39, 60];
@@ -168,6 +173,110 @@ function drawInfoCard(
   pdf.text(value, x + 4, y + 14);
 }
 
+function drawQrCode(
+  pdf: jsPDF,
+  {
+    size,
+    url,
+    x,
+    y,
+  }: {
+    size: number;
+    url: string;
+    x: number;
+    y: number;
+  }
+) {
+  const quietZoneModules = 4;
+  const qr = createQrCode(url);
+  const totalModules = qr.size + quietZoneModules * 2;
+  const moduleSize = size / totalModules;
+
+  pdf.setFillColor(255, 255, 255);
+  pdf.rect(x, y, size, size, "F");
+  pdf.setFillColor(...INK);
+
+  qr.modules.forEach((row, rowIndex) => {
+    row.forEach((dark, columnIndex) => {
+      if (!dark) return;
+      pdf.rect(
+        x + (columnIndex + quietZoneModules) * moduleSize,
+        y + (rowIndex + quietZoneModules) * moduleSize,
+        moduleSize,
+        moduleSize,
+        "F"
+      );
+    });
+  });
+}
+
+function drawSharedViewBlock(
+  pdf: jsPDF,
+  {
+    shareUrl,
+    w,
+    x,
+    y,
+  }: {
+    shareUrl?: string | null;
+    w: number;
+    x: number;
+    y: number;
+  }
+) {
+  const h = 35;
+  const qrSize = 25;
+
+  pdf.setFillColor(...PANEL);
+  pdf.setDrawColor(...BORDER);
+  pdf.setLineWidth(0.25);
+  pdf.roundedRect(x, y, w, h, 3, 3, "FD");
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(8);
+  pdf.setTextColor(...MUTED);
+  pdf.text("SHARED VIEW", x + 4, y + 6.5);
+
+  if (shareUrl) {
+    try {
+      drawQrCode(pdf, {
+        size: qrSize,
+        url: shareUrl,
+        x: x + w - qrSize - 4,
+        y: y + 5,
+      });
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(11);
+      pdf.setTextColor(...INK);
+      pdf.text("Scan to open the track", x + 4, y + 14);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.2);
+      pdf.setTextColor(...MUTED);
+      const lines = pdf.splitTextToSize(
+        "Opens the canonical TrackDraw share link for mobile review and briefing.",
+        w - qrSize - 13
+      );
+      pdf.text(lines, x + 4, y + 20);
+      return;
+    } catch {
+      /* fall through to the no-QR text below */
+    }
+  }
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(10);
+  pdf.setTextColor(...INK);
+  pdf.text("No published share linked", x + 4, y + 14);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7.5);
+  pdf.setTextColor(...MUTED);
+  const lines = pdf.splitTextToSize(
+    "Publish this project first if you want the Race Pack to include a scan code.",
+    w - 8
+  );
+  pdf.text(lines, x + 4, y + 20);
+}
+
 function buildRacePackContext(design: TrackDesign, options?: Export2DOptions) {
   const required = getRequiredInventoryCounts(design);
   const inventoryComparison = getInventoryComparison(design);
@@ -199,7 +308,8 @@ function drawRacePackCover(
   design: TrackDesign,
   logoDataUrl: string,
   dateText: string,
-  context: ReturnType<typeof buildRacePackContext>
+  context: ReturnType<typeof buildRacePackContext>,
+  options?: ExportPdfOptions
 ) {
   setPageBackground(pdf);
   const pageW = pdf.internal.pageSize.getWidth();
@@ -300,6 +410,14 @@ function drawRacePackCover(
       : "This layout is currently buildable with the saved inventory profile. Use the following pages as the race-day setup and handoff reference.";
   const summaryLines = pdf.splitTextToSize(summary, pageW - margin * 2);
   pdf.text(summaryLines, margin, y);
+  y += summaryLines.length * 5 + 10;
+
+  drawSharedViewBlock(pdf, {
+    shareUrl: options?.shareUrl ?? null,
+    w: pageW - margin * 2,
+    x: margin,
+    y,
+  });
 }
 
 function drawRacePackMapPage(
@@ -530,7 +648,7 @@ async function exportRacePackPdf(
   design: TrackDesign,
   filename: string,
   theme: ExportTheme,
-  options?: Export2DOptions
+  options?: ExportPdfOptions
 ) {
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const dateText = new Date().toLocaleDateString("en-GB", {
@@ -545,7 +663,7 @@ async function exportRacePackPdf(
   }
 
   const context = buildRacePackContext(design, options);
-  drawRacePackCover(pdf, design, logoDataUrl, dateText, context);
+  drawRacePackCover(pdf, design, logoDataUrl, dateText, context, options);
   drawRacePackMapPage(pdf, design, mapDataUrl, logoDataUrl, dateText, context);
   drawRacePackBuildSheet(pdf, design, logoDataUrl, dateText, context);
 
@@ -635,7 +753,7 @@ export async function exportPdf(
   design: TrackDesign,
   filename = "track.pdf",
   theme: ExportTheme = "dark",
-  options?: Export2DOptions
+  options?: ExportPdfOptions
 ): Promise<void> {
   void stage;
   if ((options?.preset ?? "standard") === "race-day") {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { buildStoredSharePath } from "@/lib/share";
 import { serializeDesign } from "@/lib/track/design";
 import { useEditor } from "@/store/editor";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
@@ -21,6 +22,7 @@ export interface ExportDialogProps {
   preview3DRef?: React.RefObject<TrackPreview3DHandle | null>;
   activeTab?: "2d" | "3d";
   onRequest3DView?: () => void;
+  projectId?: string | null;
 }
 
 type Theme = FlythroughTheme;
@@ -232,6 +234,7 @@ export default function ExportDialog({
   preview3DRef,
   activeTab,
   onRequest3DView,
+  projectId = null,
 }: ExportDialogProps) {
   const design = useEditor((s) => s.track.design);
   const currentTheme = useTheme();
@@ -257,6 +260,38 @@ export default function ExportDialog({
 
   const safeName = ({ theme, view }: { theme?: Theme; view: "2d" | "3d" }) => {
     return [baseName, view, theme].filter(Boolean).join("_");
+  };
+
+  const getRacePackShareUrl = async () => {
+    if (!projectId) return null;
+
+    try {
+      const response = await fetch(
+        `/api/shares?projectId=${encodeURIComponent(projectId)}`
+      );
+      const payload = (await response.json()) as {
+        ok: boolean;
+        share?: {
+          shareType: "temporary" | "published";
+          token: string;
+        } | null;
+      };
+
+      if (
+        !response.ok ||
+        !payload.ok ||
+        payload.share?.shareType !== "published"
+      ) {
+        return null;
+      }
+
+      return new URL(
+        buildStoredSharePath(payload.share.token, "2d"),
+        window.location.origin
+      ).toString();
+    } catch {
+      return null;
+    }
   };
 
   const run = async <T,>(
@@ -514,6 +549,7 @@ export default function ExportDialog({
                 const stage = canvasRef.current?.getStage();
                 if (!stage) throw new Error("Canvas not ready");
                 const { exportPdf } = await import("@/lib/export/exportPdf");
+                const shareUrl = await getRacePackShareUrl();
                 await exportPdf(
                   stage,
                   design,
@@ -522,6 +558,7 @@ export default function ExportDialog({
                   {
                     includeObstacleNumbers,
                     preset: "race-day",
+                    shareUrl,
                   }
                 );
               })
@@ -742,6 +779,7 @@ export default function ExportDialog({
                 const stage = canvasRef.current?.getStage();
                 if (!stage) throw new Error("Canvas not ready");
                 const { exportPdf } = await import("@/lib/export/exportPdf");
+                const shareUrl = await getRacePackShareUrl();
                 await exportPdf(
                   stage,
                   design,
@@ -750,6 +788,7 @@ export default function ExportDialog({
                   {
                     includeObstacleNumbers,
                     preset: "race-day",
+                    shareUrl,
                   }
                 );
               })
