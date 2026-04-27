@@ -81,6 +81,52 @@ describe("track design helpers", () => {
     expect(normalized.shapeById["gate-1"]?.kind).toBe("gate");
   });
 
+  it("normalizes timing marker metadata on supported shapes", () => {
+    const design = normalizeDesign({
+      id: "design-timing",
+      version: 1,
+      title: "Layout",
+      description: "",
+      tags: [],
+      authorName: "",
+      inventory,
+      field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
+      shapes: [
+        {
+          id: "gate-1",
+          kind: "gate",
+          x: 10,
+          y: 8,
+          rotation: 0,
+          width: 2,
+          height: 2,
+          meta: {
+            timing: { role: "split", timingId: " split-a " },
+          },
+        },
+        {
+          id: "flag-1",
+          kind: "flag",
+          x: 12,
+          y: 8,
+          rotation: 0,
+          radius: 0.25,
+          meta: {
+            timing: { role: "split", timingId: "bad" },
+          },
+        },
+      ],
+      createdAt: "2026-04-13T10:00:00.000Z",
+      updatedAt: "2026-04-13T10:00:00.000Z",
+    });
+
+    expect(design.shapeById["gate-1"]?.meta?.timing).toEqual({
+      role: "split",
+      timingId: "split-a",
+    });
+    expect(design.shapeById["flag-1"]?.meta).toBeUndefined();
+  });
+
   it("serializes normalized designs back to shape arrays", () => {
     const design = normalizeDesign({
       id: "design-2",

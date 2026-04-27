@@ -6,6 +6,7 @@ import {
 } from "@/lib/planning/inventory";
 import { buildSetupPlan } from "@/lib/planning/setup-estimate";
 import { createQrCode } from "@/lib/qr-code";
+import { getDesignTimingMarkers, timingRoleLabels } from "@/lib/track/timing";
 import type { TrackDesign } from "../types";
 import {
   designToSvg,
@@ -288,6 +289,7 @@ function buildRacePackContext(design: TrackDesign, options?: Export2DOptions) {
   );
   const numberingEnabled = options?.includeObstacleNumbers !== false;
   const setupPlan = buildSetupPlan(design);
+  const timingMarkers = getDesignTimingMarkers(design);
 
   return {
     inventoryComparison,
@@ -298,6 +300,7 @@ function buildRacePackContext(design: TrackDesign, options?: Export2DOptions) {
     setupCrewAssumption: setupPlan.crewAssumption,
     setupComplexityLabel: setupPlan.complexityLabel,
     setupSummary: setupPlan.summary,
+    timingMarkers,
     totalMissing,
     totalRequired,
   };
@@ -387,7 +390,7 @@ function drawRacePackCover(
 
   const contents = [
     "1. Track map and field overview",
-    "2. Material list and stock check",
+    "2. Material list, stock check, and timing points",
     "3. Setup sequence and race-day notes",
   ];
   pdf.setFont("helvetica", "normal");
@@ -560,6 +563,39 @@ function drawRacePackBuildSheet(
     pdf.text(String(item.missing), margin + 148, y, { align: "right" });
     y += 5.5;
   });
+
+  y += 8;
+  drawSectionTitle(pdf, "Timing points", margin, y, contentW);
+  y += 10;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8.5);
+  if (context.timingMarkers.length) {
+    context.timingMarkers.forEach((item) => {
+      const title = item.marker.timingId
+        ? `${item.title} (${item.marker.timingId})`
+        : item.title;
+      const detail = `${timingRoleLabels[item.marker.role]} · ${item.shape.name?.trim() || item.shape.kind} · ${item.shape.x.toFixed(1)}, ${item.shape.y.toFixed(1)} m`;
+      ensurePageSpace(12, "Timing points");
+      pdf.setTextColor(...INK);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(item.badgeText, margin, y);
+      pdf.text(title, margin + 16, y);
+      y += 4.5;
+      pdf.setTextColor(...MUTED);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(detail, margin + 16, y);
+      y += 6;
+    });
+  } else {
+    const lines = pdf.splitTextToSize(
+      "No timing points are assigned yet. Mark a gate as start/finish or split in the inspector before race-day handoff.",
+      contentW
+    );
+    pdf.setTextColor(...MUTED);
+    pdf.text(lines, margin, y);
+    y += lines.length * 4.5 + 2;
+  }
 
   y += 8;
   drawSectionTitle(pdf, "Setup sequence", margin, y, contentW);

@@ -90,4 +90,38 @@ describe("exportSvg", () => {
     expect(withNumbers).toContain(`<circle cx="`);
     expect(withoutNumbers).not.toContain(`font-weight="700" fill="#f8fafc"`);
   });
+
+  it("colors timing point gates independently from obstacle numbers", () => {
+    const design = normalizeDesign({
+      id: "design-svg-timing",
+      version: 1,
+      title: "Timing points",
+      description: "",
+      tags: [],
+      authorName: "",
+      inventory,
+      field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
+      shapes: [
+        {
+          id: "gate-timing",
+          kind: "gate",
+          x: 12,
+          y: 15,
+          rotation: 0,
+          width: 2,
+          height: 2,
+          meta: { timing: { role: "start_finish" } },
+        },
+      ],
+      createdAt: "2026-04-13T10:00:00.000Z",
+      updatedAt: "2026-04-13T10:00:00.000Z",
+    });
+
+    const svg = designToSvg(design, "light", {
+      includeObstacleNumbers: false,
+    });
+
+    expect(svg).toContain(`stroke="#f59e0b" stroke-width="3"`);
+    expect(svg).not.toContain(`>SF</text>`);
+  });
 });

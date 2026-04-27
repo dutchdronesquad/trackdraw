@@ -15,6 +15,7 @@ import {
   getObstacleNumberMap,
   isNumberedObstacle,
 } from "../track/obstacleNumbering";
+import { getShapeTimingMarker, getTimingMarkerColor } from "../track/timing";
 import {
   getPolyline2DDerived,
   getRouteWarningSegmentColor,
@@ -45,12 +46,15 @@ function escapeXml(str: string): string {
 function gateToSvg(s: GateShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
-  const { color, depth, radius, width } = getGate2DShape(s, ppm);
+  const marker = getShapeTimingMarker(s);
+  const base = getGate2DShape(s, ppm);
+  const color = marker ? getTimingMarkerColor(marker) : base.color;
+  const { depth, radius, width } = base;
   const rot = s.rotation;
 
   return `<g transform="translate(${cx},${cy}) rotate(${rot})">
     <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="${color}" fill-opacity="0.15" rx="${radius}"/>
-    <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="none" stroke="${color}" stroke-width="2" rx="${radius}"/>
+    <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="none" stroke="${color}" stroke-width="${marker ? 3 : 2}" rx="${radius}"/>
   </g>`;
 }
 
@@ -142,13 +146,16 @@ function polylineToSvg(
 function startfinishToSvg(s: StartFinishShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
-  const { color, padDepth, padWidth, pads } = getStartFinish2DShape(s, ppm);
+  const marker = getShapeTimingMarker(s);
+  const base = getStartFinish2DShape(s, ppm);
+  const color = marker ? getTimingMarkerColor(marker) : base.color;
+  const { padDepth, padWidth, pads } = base;
   const padMarkup = pads
     .map(({ index, x }) => {
       const fontSize = Math.max(7, padWidth * 0.45);
       return `<g transform="translate(${x},0)">
         <rect x="${-padWidth / 2}" y="${-padDepth / 2}" width="${padWidth}" height="${padDepth}" fill="${color}" fill-opacity="0.25" rx="2"/>
-        <rect x="${-padWidth / 2}" y="${-padDepth / 2}" width="${padWidth}" height="${padDepth}" fill="none" stroke="${color}" stroke-width="1.5" rx="2"/>
+        <rect x="${-padWidth / 2}" y="${-padDepth / 2}" width="${padWidth}" height="${padDepth}" fill="none" stroke="${color}" stroke-width="${marker ? 2.4 : 1.5}" rx="2"/>
         <text x="0" y="${fontSize * 0.35}" font-size="${fontSize}" fill="${color}" fill-opacity="0.7" text-anchor="middle">${index + 1}</text>
       </g>`;
     })
@@ -357,7 +364,6 @@ export function designToSvg(
     options?.includeObstacleNumbers === false
       ? ""
       : obstacleNumbersToSvg(design, ppm, theme);
-
   const titleText = design.title.trim() || "Untitled Track";
   const sizeText = `${width}×${height} m`;
   const dateText = new Date().toLocaleDateString("en-GB", {
