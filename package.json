@@ -74,7 +74,7 @@
     "node-pg-migrate": "^8.0.3",
     "pg": "^8.20.0",
     "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
+    "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwindcss": "^4",
     "typescript": "^6.0.0",
     "typescript-eslint": "^8.59.0",
