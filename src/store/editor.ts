@@ -727,3 +727,23 @@ export const useEditor = create<EditorState>()(
     }
   )
 );
+
+if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+  const HMR_KEY = "__td_editor_track__";
+  const win = window as unknown as Record<string, unknown>;
+
+  const snapshot = win[HMR_KEY];
+  if (
+    snapshot &&
+    typeof snapshot === "object" &&
+    "design" in (snapshot as object)
+  ) {
+    useEditor.setState((s) => ({
+      track: { ...s.track, ...(snapshot as typeof s.track) },
+    }));
+  }
+
+  useEditor.subscribe((state) => {
+    win[HMR_KEY] = state.track;
+  });
+}
