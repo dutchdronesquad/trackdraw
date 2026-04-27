@@ -101,22 +101,22 @@ export function useEditorProjects({
 
     const timeoutId = window.setTimeout(() => {
       try {
-        const startedAt = performance.now();
-        saveLocalDraft(design);
         if (hasMeaningfulProjectContent(design)) {
+          const startedAt = performance.now();
+          saveLocalDraft(design);
           saveProject(design);
           setProjects(listProjects());
+          recordPerfSample(
+            "autosave:localStorage",
+            performance.now() - startedAt
+          );
+          setSaveStatusLabel(
+            `Saved locally at ${new Intl.DateTimeFormat(undefined, {
+              hour: "2-digit",
+              minute: "2-digit",
+            }).format(new Date())}`
+          );
         }
-        recordPerfSample(
-          "autosave:localStorage",
-          performance.now() - startedAt
-        );
-        setSaveStatusLabel(
-          `Saved locally at ${new Intl.DateTimeFormat(undefined, {
-            hour: "2-digit",
-            minute: "2-digit",
-          }).format(new Date())}`
-        );
       } catch {
         /* ignore */
       }
