@@ -37,7 +37,8 @@ describe("createQrCode", () => {
   });
 
   it("throws when the payload is too large for the Race Pack QR", () => {
-    expect(() => createQrCode(`https://trackdraw.app/share/${"x".repeat(120)}`))
-      .toThrowError("QR payload is too large");
+    expect(() =>
+      createQrCode(`https://trackdraw.app/share/${"x".repeat(120)}`)
+    ).toThrowError("QR payload is too large");
   });
 });

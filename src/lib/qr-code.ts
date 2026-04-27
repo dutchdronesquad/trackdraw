@@ -86,7 +86,9 @@ function reedSolomonRemainder(data: number[], degree: number) {
 }
 
 function selectVersion(byteLength: number): VersionConfig {
-  const config = VERSION_CONFIGS.find((item) => byteLength <= item.byteCapacity);
+  const config = VERSION_CONFIGS.find(
+    (item) => byteLength <= item.byteCapacity
+  );
   if (!config) throw new Error("QR payload is too large");
   return config;
 }
@@ -114,7 +116,10 @@ function encodeDataCodewords(text: string, config: VersionConfig) {
 }
 
 function createMatrix(size: number, value: boolean) {
-  return Array.from({ length: size }, () => Array(size).fill(value) as boolean[]);
+  return Array.from(
+    { length: size },
+    () => Array(size).fill(value) as boolean[]
+  );
 }
 
 function setModule(
