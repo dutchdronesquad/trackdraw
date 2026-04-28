@@ -358,8 +358,8 @@ Option A: attach timing metadata to existing shapes through `meta`
 
 Example uses:
 
-- mark a `startfinish` shape as the active `start_finish` timing point
-- mark a gate or other obstacle as a `split`
+- mark a gate as the active `start_finish` timing point
+- mark a gate as a `split`
 - attach a RotorHazard timing identifier to that shape
 
 Example shape concept:
@@ -367,11 +367,12 @@ Example shape concept:
 ```json
 {
   "id": "shape_start_1",
-  "kind": "startfinish",
+  "kind": "gate",
   "x": 12,
   "y": 8,
   "rotation": 90,
   "width": 2.4,
+  "height": 1.8,
   "meta": {
     "timing": {
       "role": "start_finish",
@@ -443,12 +444,12 @@ Why this is the best first move:
 
 - the repo already supports `meta` on shapes
 - it keeps changes additive and low-risk
-- it allows the team to mark an existing `startfinish` shape or selected gate as a timing point without first inventing a new editor subsystem
+- it allows the team to mark selected gates as timing points without first inventing a new editor subsystem
 
 This is especially attractive for:
 
-- `startfinish` shapes marked as `start_finish`
-- gates or other deliberate track features marked as `split`
+- gates marked as `start_finish`
+- gates marked as `split`
 
 ### Route Mapping
 

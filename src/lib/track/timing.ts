@@ -1,9 +1,4 @@
-import type {
-  GateShape,
-  Shape,
-  StartFinishShape,
-  TrackDesign,
-} from "@/lib/types";
+import type { GateShape, Shape, TrackDesign } from "@/lib/types";
 
 export const TIMING_ROLES = ["start_finish", "split"] as const;
 
@@ -14,7 +9,7 @@ export interface ShapeTimingMarker {
   timingId?: string;
 }
 
-export type TimingMarkerShape = GateShape | StartFinishShape;
+export type TimingMarkerShape = GateShape;
 
 export interface DesignTimingMarker {
   badgeText: string;
@@ -33,10 +28,7 @@ export const timingRoleColors: Record<TimingRole, string> = {
   split: "#0ea5e9",
 };
 
-const TIMING_MARKER_SHAPE_KINDS = new Set<Shape["kind"]>([
-  "gate",
-  "startfinish",
-]);
+const TIMING_MARKER_SHAPE_KINDS = new Set<Shape["kind"]>(["gate"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

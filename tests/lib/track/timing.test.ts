@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getDesignTimingMarkers,
   getTimingMarkerMeta,
+  isTimingMarkerShape,
   normalizeTimingMarker,
 } from "@/lib/track/timing";
 import { normalizeDesign } from "@/lib/track/design";
@@ -88,5 +89,31 @@ describe("track timing markers", () => {
     expect(
       getDesignTimingMarkers(design).map((marker) => marker.title)
     ).toEqual(["Start / finish", "Split 1"]);
+  });
+
+  it("only allows gates to act as timing marker shapes", () => {
+    expect(
+      isTimingMarkerShape({
+        id: "gate-1",
+        kind: "gate",
+        x: 10,
+        y: 8,
+        rotation: 0,
+        width: 2,
+        height: 2,
+      })
+    ).toBe(true);
+
+    expect(
+      isTimingMarkerShape({
+        id: "start-1",
+        kind: "startfinish",
+        x: 10,
+        y: 8,
+        rotation: 0,
+        width: 3,
+        meta: { timing: { role: "start_finish" } },
+      })
+    ).toBe(false);
   });
 });
