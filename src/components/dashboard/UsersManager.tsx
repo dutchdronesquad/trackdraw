@@ -18,6 +18,8 @@ import {
   type AccountRole,
 } from "@/lib/account-roles";
 import type { AdminUser } from "@/lib/admin-users";
+import DataTableFacetFilter from "@/components/dashboard/tables/DataTableFacetFilter";
+import DataTableToolbar from "@/components/dashboard/tables/DataTableToolbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +29,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -74,6 +75,7 @@ export default function DashboardUsersManager({
   const [users, setUsers] = useState(initialUsers);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [selectedRoles, setSelectedRoles] = useState<AccountRole[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [draftRoles, setDraftRoles] = useState<Record<string, AccountRole>>(
     Object.fromEntries(initialUsers.map((u) => [u.id, u.role]))
@@ -259,18 +261,35 @@ export default function DashboardUsersManager({
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
+  const rowsForCurrentSearch = table.getRowModel().rows;
+  const filteredRows = rowsForCurrentSearch.filter((row) =>
+    selectedRoles.length === 0
+      ? true
+      : selectedRoles.includes(row.original.role)
+  );
+  const roleFilterOptions = accountRoles.map((role) => ({
+    label: getAccountRoleLabel(role),
+    value: role,
+    count: rowsForCurrentSearch.filter((row) => row.original.role === role)
+      .length,
+  }));
 
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div>
-        <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:items-center sm:justify-between">
-          <Input
-            placeholder="Search by name or email…"
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="w-full sm:max-w-xs"
+        <DataTableToolbar
+          searchValue={globalFilter}
+          onSearchChange={setGlobalFilter}
+          searchPlaceholder="Search by name or email..."
+          className="pb-3"
+        >
+          <DataTableFacetFilter
+            title="Role"
+            selected={selectedRoles}
+            options={roleFilterOptions}
+            onChange={setSelectedRoles}
           />
-        </div>
+        </DataTableToolbar>
 
         <div className="overflow-hidden rounded-md border">
           <Table>
@@ -303,8 +322,8 @@ export default function DashboardUsersManager({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
+              {filteredRows.length ? (
+                filteredRows.map((row) => (
                   <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
@@ -343,8 +362,7 @@ export default function DashboardUsersManager({
         </div>
 
         <p className="text-muted-foreground mt-3 text-xs">
-          Showing {table.getFilteredRowModel().rows.length} of {users.length}{" "}
-          accounts.
+          Showing {filteredRows.length} of {users.length} accounts.
         </p>
       </div>
     </div>

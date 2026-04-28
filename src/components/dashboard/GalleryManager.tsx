@@ -39,7 +39,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -48,12 +47,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import DataTableFacetFilter from "@/components/dashboard/tables/DataTableFacetFilter";
+import DataTableToolbar from "@/components/dashboard/tables/DataTableToolbar";
 import type { AccountRole } from "@/lib/account-roles";
 import type {
   DashboardGalleryEntry,
@@ -67,14 +67,18 @@ type DashboardGalleryManagerProps = {
 };
 
 type GalleryUpdateAction = "feature" | "unfeature" | "hide" | "restore";
-type GalleryStateFilter = "all" | GalleryState;
+type ShareLifecycleState = "active" | "expired" | "revoked";
 
 const galleryManagerRoles: AccountRole[] = ["moderator", "admin"];
-const stateFilters: { value: GalleryStateFilter; label: string }[] = [
-  { value: "all", label: "All" },
+const stateFilters: { value: GalleryState; label: string }[] = [
   { value: "listed", label: "Listed" },
   { value: "featured", label: "Featured" },
   { value: "hidden", label: "Hidden" },
+];
+const shareFilters: { value: ShareLifecycleState; label: string }[] = [
+  { value: "active", label: "Active" },
+  { value: "expired", label: "Expired" },
+  { value: "revoked", label: "Revoked" },
 ];
 
 function getOwnerLabel(entry: DashboardGalleryEntry) {
@@ -114,6 +118,38 @@ function getStateLabel(state: GalleryState) {
   }
 }
 
+function getShareLifecycleState(
+  entry: DashboardGalleryEntry
+): ShareLifecycleState {
+  if (entry.shareRevokedAt) return "revoked";
+  if (
+    entry.shareExpiresAt &&
+    new Date(entry.shareExpiresAt).getTime() <= Date.now()
+  ) {
+    return "expired";
+  }
+
+  return "active";
+}
+
+function getShareLifecycleLabel(state: ShareLifecycleState) {
+  switch (state) {
+    case "active":
+      return "Active";
+    case "expired":
+      return "Expired";
+    case "revoked":
+      return "Revoked";
+  }
+}
+
+function getShareLifecycleVariant(
+  state: ShareLifecycleState
+): "default" | "muted" | "outline" {
+  if (state === "active") return "outline";
+  return "muted";
+}
+
 function formatDate(value: string | null) {
   if (!value) return "—";
 
@@ -124,6 +160,15 @@ function formatDate(value: string | null) {
   } catch {
     return value;
   }
+}
+
+function getShareLifecycleDetail(entry: DashboardGalleryEntry) {
+  const state = getShareLifecycleState(entry);
+  if (state === "revoked") return `Revoked ${formatDate(entry.shareRevokedAt)}`;
+  if (state === "expired") return `Expired ${formatDate(entry.shareExpiresAt)}`;
+  if (entry.shareExpiresAt)
+    return `Expires ${formatDate(entry.shareExpiresAt)}`;
+  return "No expiry";
 }
 
 function ActionTooltip({
@@ -153,7 +198,12 @@ export default function DashboardGalleryManager({
   const [pendingShareToken, setPendingShareToken] = useState<string | null>(
     null
   );
-  const [stateFilter, setStateFilter] = useState<GalleryStateFilter>("all");
+  const [selectedGalleryStates, setSelectedGalleryStates] = useState<
+    GalleryState[]
+  >([]);
+  const [selectedShareLifecycles, setSelectedShareLifecycles] = useState<
+    ShareLifecycleState[]
+  >([]);
   const [deleteCandidate, setDeleteCandidate] =
     useState<DashboardGalleryEntry | null>(null);
 
@@ -335,6 +385,25 @@ export default function DashboardGalleryManager({
       ),
     },
     {
+      id: "shareLifecycle",
+      header: "Share",
+      accessorFn: (row) => getShareLifecycleState(row),
+      cell: ({ row }) => {
+        const lifecycleState = getShareLifecycleState(row.original);
+
+        return (
+          <div className="min-w-0">
+            <Badge variant={getShareLifecycleVariant(lifecycleState)}>
+              {getShareLifecycleLabel(lifecycleState)}
+            </Badge>
+            <p className="text-muted-foreground mt-1 truncate text-xs">
+              {getShareLifecycleDetail(row.original)}
+            </p>
+          </div>
+        );
+      },
+    },
+    {
       id: "published",
       header: ({ column }) => (
         <Button
@@ -487,9 +556,44 @@ export default function DashboardGalleryManager({
   });
 
   const rowsForCurrentSearch = table.getRowModel().rows;
-  const filteredRows = rowsForCurrentSearch.filter((row) =>
-    stateFilter === "all" ? true : row.original.galleryState === stateFilter
+  const stateFilteredRows = rowsForCurrentSearch.filter((row) =>
+    selectedGalleryStates.length === 0
+      ? true
+      : selectedGalleryStates.includes(row.original.galleryState)
   );
+  const filteredRows = stateFilteredRows.filter((row) =>
+    selectedShareLifecycles.length === 0
+      ? true
+      : selectedShareLifecycles.includes(getShareLifecycleState(row.original))
+  );
+  const stateFacetRows = rowsForCurrentSearch.filter((row) =>
+    selectedShareLifecycles.length === 0
+      ? true
+      : selectedShareLifecycles.includes(getShareLifecycleState(row.original))
+  );
+  const shareFacetRows = rowsForCurrentSearch.filter((row) =>
+    selectedGalleryStates.length === 0
+      ? true
+      : selectedGalleryStates.includes(row.original.galleryState)
+  );
+  const stateFilterOptions = stateFilters.map((filter) => ({
+    ...filter,
+    count: stateFacetRows.filter(
+      (row) => row.original.galleryState === filter.value
+    ).length,
+  }));
+  const shareFilterOptions = shareFilters.map((filter) => ({
+    ...filter,
+    count: shareFacetRows.filter(
+      (row) => getShareLifecycleState(row.original) === filter.value
+    ).length,
+  }));
+  const expiredShareCount = entries.filter(
+    (entry) => getShareLifecycleState(entry) === "expired"
+  ).length;
+  const revokedShareCount = entries.filter(
+    (entry) => getShareLifecycleState(entry) === "revoked"
+  ).length;
   const emptyMessage =
     entries.length === 0
       ? "No gallery entries yet."
@@ -497,34 +601,29 @@ export default function DashboardGalleryManager({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <Input
-          value={globalFilter}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          placeholder="Search title, description or owner…"
-          className="max-w-md"
+      <DataTableToolbar
+        searchValue={globalFilter}
+        onSearchChange={setGlobalFilter}
+        searchPlaceholder="Search title, description or owner..."
+      >
+        <DataTableFacetFilter
+          title="State"
+          selected={selectedGalleryStates}
+          options={stateFilterOptions}
+          onChange={setSelectedGalleryStates}
         />
-        <Tabs
-          value={stateFilter}
-          onValueChange={(value) => setStateFilter(value as GalleryStateFilter)}
-          className="w-full md:w-auto"
-        >
-          <TabsList className="grid w-full grid-cols-4 md:inline-flex md:w-auto md:grid-cols-none">
-            {stateFilters.map((filter) => (
-              <TabsTrigger
-                key={filter.value}
-                value={filter.value}
-                className="min-w-0 px-3 text-xs md:min-w-20"
-              >
-                <span className="truncate">{filter.label}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+        <DataTableFacetFilter
+          title="Share"
+          selected={selectedShareLifecycles}
+          options={shareFilterOptions}
+          onChange={setSelectedShareLifecycles}
+        />
+      </DataTableToolbar>
 
       <p className="text-muted-foreground text-xs">
-        Changes apply immediately to the public gallery.
+        Changes apply immediately to the public gallery. {expiredShareCount}{" "}
+        expired and {revokedShareCount} revoked linked shares are visible here
+        for operator cleanup.
       </p>
 
       <div className="overflow-hidden rounded-xl border">

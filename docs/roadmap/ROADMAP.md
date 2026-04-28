@@ -194,8 +194,8 @@ Current boundary:
 Focus:
 
 - Add practical gallery filters for state, featured entries, hidden entries, and recent updates
-- Improve share lifecycle visibility for active, expired, revoked, and gallery-linked shares
-- Make the audit log easier to inspect with filters and action detail views
+- Shipped: improve gallery dashboard share lifecycle visibility for active, expired, revoked, and gallery-linked shares
+- Shipped: make the audit log easier to inspect with account/gallery filters and action detail views
 - Support curated gallery collection management once collections become a build target
 - Consider a lightweight user/support lookup only if it helps resolve account, role, or share ownership issues
 
