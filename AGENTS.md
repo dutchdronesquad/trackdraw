@@ -56,6 +56,14 @@ Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md`
 
 Run `npm run lint` and `npm run type` after non-trivial code changes when the environment allows it. Use `npm run preview` when validating D1-backed, auth-backed, or Cloudflare-runtime behavior.
 
+## Pull Requests
+
+- Use Conventional Commit-style PR titles, such as `feat: Improve map reference controls` or `fix: Restore map reference wheel zoom`.
+- Keep PR bodies compact and product-facing. Prefer one or two short paragraphs or a short bullet list that explains what changed and how it was validated.
+- Use `SSIA` only for very small PRs where the title fully explains the change.
+- Apply the `enhancement` label for product/code improvements and the `dependencies` label for dependency-only PRs.
+- When this workflow matures, prefer an agentic PR template with consistent sections for intent, changes, validation, risk, and follow-up instead of ad hoc prose.
+
 ## Change Heuristics
 
 - For landing-page work, protect SEO metadata, structured data, and conversion paths into `/studio`.

@@ -82,6 +82,29 @@ function dispatchPointer(
   });
 }
 
+function dispatchWheel(
+  target: HTMLElement,
+  init: {
+    ctrlKey?: boolean;
+    deltaMode?: number;
+    deltaX?: number;
+    deltaY?: number;
+  }
+) {
+  act(() => {
+    target.dispatchEvent(
+      new WheelEvent("wheel", {
+        bubbles: true,
+        cancelable: true,
+        ctrlKey: init.ctrlKey ?? false,
+        deltaMode: init.deltaMode ?? 0,
+        deltaX: init.deltaX ?? 0,
+        deltaY: init.deltaY ?? 0,
+      })
+    );
+  });
+}
+
 function PickerGestureHarness({
   centerRef,
   rotationRef,
@@ -240,5 +263,33 @@ describe("usePickerGesture", () => {
     expect(syncCenter).toHaveBeenCalled();
     expect(syncZoom).toHaveBeenCalled();
     expect(syncZoom.mock.calls.at(-1)?.[0]).toBeGreaterThan(10);
+  });
+
+  it("zooms with a mouse wheel", async () => {
+    const { picker, syncCenter, syncZoom } = renderPickerGestureHarness();
+    await act(async () => {});
+
+    dispatchWheel(picker, {
+      deltaMode: 1,
+      deltaY: 3,
+    });
+
+    expect(syncZoom).toHaveBeenCalledTimes(1);
+    expect(syncZoom.mock.calls[0]?.[0]).toBeLessThan(10);
+    expect(syncCenter).not.toHaveBeenCalled();
+  });
+
+  it("keeps horizontal trackpad wheel movement as map pan", async () => {
+    const { picker, syncCenter, syncZoom } = renderPickerGestureHarness();
+    await act(async () => {});
+
+    dispatchWheel(picker, {
+      deltaMode: 0,
+      deltaX: 20,
+      deltaY: 5,
+    });
+
+    expect(syncCenter).toHaveBeenCalledTimes(1);
+    expect(syncZoom).not.toHaveBeenCalled();
   });
 });

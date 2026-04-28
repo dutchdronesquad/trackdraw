@@ -15,6 +15,7 @@ const WHEEL_LINE_HEIGHT_PX = 16;
 const WHEEL_PAGE_HEIGHT_PX = 420;
 const WHEEL_PAN_FACTOR = 0.65;
 const PINCH_ZOOM_FACTOR = 0.008;
+const TRACKPAD_HORIZONTAL_SCROLL_WINDOW_MS = 400;
 
 interface PointerPosition {
   x: number;
@@ -95,6 +96,7 @@ export function usePickerGesture({
   });
   const tileLayerRef = useRef<HTMLDivElement | null>(null);
   const gestureScaleRef = useRef(1);
+  const lastHorizontalWheelTimeRef = useRef(0);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [pickerElement, setPickerElement] = useState<HTMLDivElement | null>(
     null
@@ -151,8 +153,21 @@ export function usePickerGesture({
 
       const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode);
       const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode);
+      const hasHorizontalScroll = Math.abs(event.deltaX) > 0.01;
+      const now = Date.now();
+      if (hasHorizontalScroll) {
+        lastHorizontalWheelTimeRef.current = now;
+      }
+      const isTrackpadPan =
+        event.deltaMode === 0 &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        (hasHorizontalScroll ||
+          now - lastHorizontalWheelTimeRef.current <
+            TRACKPAD_HORIZONTAL_SCROLL_WINDOW_MS);
 
-      if (event.ctrlKey) {
+      if (!isTrackpadPan) {
         syncZoom(zoomRef.current - deltaY * PINCH_ZOOM_FACTOR);
         return;
       }
