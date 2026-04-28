@@ -59,9 +59,9 @@ Labels used below:
       Improve operator visibility for shipped account, share, and gallery surfaces without adding public reporting flows for now.
   - [ ] Gallery management filters
         Add practical dashboard filters for gallery state, featured entries, hidden entries, and recent updates.
-  - [ ] Share lifecycle visibility
+  - [x] Share lifecycle visibility
         Give operators a clearer view of active, expired, revoked, and gallery-linked shares for support and debugging.
-  - [ ] Audit log usability
+  - [x] Audit log usability
         Add filters and detail views that make account, role, share, and gallery actions easier to inspect.
 
 - [ ] Real-time collaboration evaluation (`Research`)
