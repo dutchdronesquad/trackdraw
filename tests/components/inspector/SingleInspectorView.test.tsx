@@ -5,7 +5,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SingleInspectorView } from "@/components/inspector/views/single";
-import type { GateShape, Shape } from "@/lib/types";
+import type { GateShape, Shape, StartFinishShape } from "@/lib/types";
 
 const gate: GateShape = {
   id: "gate-1",
@@ -15,6 +15,15 @@ const gate: GateShape = {
   rotation: 0,
   width: 2,
   height: 2,
+};
+
+const startPad: StartFinishShape = {
+  id: "start-1",
+  kind: "startfinish",
+  x: 10,
+  y: 8,
+  rotation: 0,
+  width: 3,
 };
 
 function renderSingleInspector(
@@ -82,5 +91,13 @@ describe("SingleInspectorView race timing controls", () => {
     ).toBe("true");
     expect(screen.queryByPlaceholderText("split-1")).toBeNull();
     expect(screen.getByText("timing: start")).toBeTruthy();
+  });
+
+  it("does not show race timing controls for start pads", () => {
+    renderSingleInspector(startPad);
+
+    expect(screen.queryByText("Race timing")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Start" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Split" })).toBeNull();
   });
 });

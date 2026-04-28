@@ -115,6 +115,17 @@ describe("track design helpers", () => {
             timing: { role: "split", timingId: "bad" },
           },
         },
+        {
+          id: "start-1",
+          kind: "startfinish",
+          x: 14,
+          y: 8,
+          rotation: 0,
+          width: 3,
+          meta: {
+            timing: { role: "start_finish" },
+          },
+        },
       ],
       createdAt: "2026-04-13T10:00:00.000Z",
       updatedAt: "2026-04-13T10:00:00.000Z",
@@ -125,6 +136,7 @@ describe("track design helpers", () => {
       timingId: "split-a",
     });
     expect(design.shapeById["flag-1"]?.meta).toBeUndefined();
+    expect(design.shapeById["start-1"]?.meta).toBeUndefined();
   });
 
   it("serializes normalized designs back to shape arrays", () => {
