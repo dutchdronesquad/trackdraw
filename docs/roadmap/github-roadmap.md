@@ -103,10 +103,10 @@ The v1.6.0 release-sized work is archived below. The remaining active work stays
 - [ ] Live race overlay preparation (`No account required`)
       Prepare TrackDraw projects for a future `rh-stream-overlays` minimap integration without making TrackDraw the live OBS overlay runtime.
   - [ ] Active race route marker
-        Let a project identify which polyline is the race route instead of relying on the current first-polyline fallback.
-  - [ ] Timing role metadata
+        Add only if multi-polyline overlay support becomes necessary; current overlay prep blocks ambiguous multi-route designs.
+  - [x] Timing role metadata
         Reuse the race-day timing marker model for overlay preparation, including start/finish and split timing identifiers on relevant shapes.
-  - [ ] Timing setup validation
+  - [x] Timing setup validation
         Warn or block overlay-oriented export when the race route is missing, timing roles are duplicated, or marked timing points cannot be mapped onto route progress.
   - [ ] TrackDraw JSON contract pass
         Document the compact REST overlay package and the fields `rh-stream-overlays` should consume.

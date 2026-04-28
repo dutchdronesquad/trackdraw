@@ -33,6 +33,7 @@ Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md`
   From a UI/UX perspective this weakens hierarchy, creates visual clutter, and makes it less clear which surface is primary versus merely grouped content.
 - Keep TypeScript strictness intact. Avoid `any` unless there is a clear boundary reason.
 - Reuse existing helpers and types before adding parallel abstractions.
+- Make deliberate file naming and folder placement decisions while coding. Follow existing ownership boundaries, and split large files into focused modules/components/hooks when that lowers complexity or improves maintainability without creating churn.
 - Be precise with existing filenames, imports, and variable names. Do not rename, substitute, or remove identifiers unless the change is intentional and verified against actual usage.
 - When fixing lint or type errors, match the exact file path and reported symbol before editing, and prefer the smallest correction that resolves the reported issue.
 - Treat `src/components/ui/*` as a design-system boundary. Do not modify shared UI primitive/component files unless the task explicitly asks for a design-system change or there is no safer alternative.

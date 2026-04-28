@@ -376,8 +376,7 @@ Example shape concept:
   "meta": {
     "timing": {
       "role": "start_finish",
-      "timingPointId": "holeshot",
-      "label": "Holeshot"
+      "timingId": "holeshot"
     }
   }
 }
@@ -405,14 +404,14 @@ Example concept:
     {
       "id": "tp_start",
       "role": "start_finish",
-      "timingPointId": "holeshot",
+      "timingId": "holeshot",
       "label": "Holeshot",
       "distanceAlongRoute": 0
     },
     {
       "id": "tp_split_1",
       "role": "split",
-      "timingPointId": "split-1",
+      "timingId": "split-1",
       "label": "Split 1",
       "distanceAlongRoute": 47.2
     }
@@ -467,26 +466,28 @@ The first integration can derive route anchors from shapes. A later phase may pe
 
 ### Recommended V1 Contract Shape
 
-For the first cross-repo integration, the minimum useful contract should be:
+For the first cross-repo integration, the minimum useful contract should be `trackdraw.overlay.v1`:
 
-- existing TrackDraw JSON project file
-- one primary route polyline
-- field dimensions
-- shape list
-- optional timing metadata on relevant shapes via `meta.timing`
+- `schema`: `trackdraw.overlay.v1`
+- `contractVersion`: `1`
+- `generatedAt`: ISO timestamp
+- `coordinateSystem`: field origin and meter-based route/field units
+- `design`: serialized TrackDraw project JSON with map references stripped by default
+- `overlayPrep`: validation and route-progress mapping data
 
 Expected `meta.timing` fields:
 
 - `role`: `start_finish` or `split`
-- `timingPointId`: string identifier used by the overlay side
-- `label`: optional human-readable label
+- `timingId`: string identifier used by the overlay side
 
 The overlay side should initially be responsible for:
 
-- reading the TrackDraw JSON
-- finding the primary route polyline
-- extracting timing-marked shapes
-- resolving those timing points onto route distance
+- reading the `trackdraw.overlay.v1` payload
+- rejecting `overlayPrep.status = blocked`
+- rendering the serialized TrackDraw route and shapes
+- using `overlayPrep.timingPoints` for route distance/progress anchors
+
+TrackDraw should expose this as a separate Live Overlay package export rather than merging it into normal project JSON. Project JSON remains the TrackDraw backup/import format; the overlay package is the external runtime contract.
 
 ### When To Graduate To A Dedicated Overlay Schema
 

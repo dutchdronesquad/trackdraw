@@ -1,14 +1,15 @@
 # Live Race Overlay PVA
 
 Date: April 17, 2026
+Updated: April 28, 2026
 
-Status: proposed
+Status: TrackDraw-side preparation complete; external overlay runtime work remains
 
 ## Decision Summary
 
 Recommended decision:
 
-- approve `Live race overlay` for implementation planning
+- proceed with `Live race overlay` implementation on the overlay-runtime side
 - treat the first version as a TrackDraw-to-`rh-stream-overlays` integration, not a TrackDraw-owned overlay runtime
 - model drone position as estimated route progress from timing events, not exact spatial tracking
 - require real RotorHazard race data for the actual feature
@@ -173,14 +174,14 @@ Done state:
 
 Start state:
 
-- the contract exists
-- TrackDraw still lacks timing-role authoring support
+- TrackDraw has a first `trackdraw.overlay.v1` contract builder
+- TrackDraw has basic timing-role authoring support, but the overlay runtime import path is not finalized
 
 Work:
 
-- define timing-role data structures
-- add validation for missing or conflicting anchors
-- define or implement setup UX for assigning timing roles to route positions or marked obstacles
+- keep timing-role data structures normalized under `shape.meta.timing`
+- reuse overlay-preparation validation for missing or conflicting anchors
+- keep setup UX focused on assigning timing roles to marked obstacles unless multi-route support creates a need for explicit route selection
 
 Done state:
 
@@ -204,6 +205,13 @@ Done state:
 
 - the overlay runtime can display TrackDraw-authored course data
 - the visual surface is validated separately from live race estimation
+- missing, invalid, or blocked packages produce a clear setup state instead of a broken overlay
+
+Recommended first visual surface:
+
+- `race-overview`: full-scene overview with minimap plus compact race panel
+- `minimap`: small transparent corner overlay that can be layered over existing scenes
+- both variants reuse the same imported route renderer and theme tokens
 
 ### Phase 4: Connect RotorHazard Live Data And Harden Estimation
 
@@ -214,8 +222,13 @@ Start state:
 
 Work:
 
-- connect RotorHazard live race data through the overlay/plugin stack
-- improve movement estimation between split anchors
+- add a race adapter that listens to RotorHazard race lifecycle and lap events
+- map RotorHazard pilot/node data into a small overlay state: pilot id, node, callsign, color, lap, last timing anchor, last event time, estimated route progress, and confidence
+- start with start/finish lap events as the reliable v1 signal
+- enable split anchors only when RotorHazard event data or plugin configuration can map a source timing event to a TrackDraw `timingId`
+- broadcast overlay state through the existing Socket.IO-driven overlay update path
+- estimate movement between confirmed anchors with simple deterministic interpolation
+- snap/correct pilot dots to confirmed anchors when new timing events arrive
 - add stale-state and disconnect handling
 - refine label density, readability, and safe-area behavior for OBS
 - validate the overlay with real or replayed race sessions
@@ -224,10 +237,20 @@ Done state:
 
 - the overlay is stable enough for practical livestream use
 - failure states are understandable instead of misleading
+- the UI clearly communicates estimated route progress rather than exact drone location
+
+Recommended v1 behavior:
+
+- before race start: show the imported track and pilot lineup, no moving dots
+- race start: place all active pilots at the start/finish anchor
+- lap recorded: confirm a pilot at start/finish and advance lap/progress state
+- split recorded, if supported: confirm a pilot at the matching split anchor
+- stale pilot: fade or pulse the dot and stop advancing once the confidence window expires
+- race finish/stop: freeze final positions and keep the result panel readable for OBS
 
 ## Validation Expectations
 
-Before TrackDraw treats this as implementation-ready, validate at least:
+Before the overlay-runtime work is implementation-ready, validate at least:
 
 - REST overlay package output on at least one real TrackDraw course
 - schema validation behavior for missing or bad timing markers
@@ -235,7 +258,7 @@ Before TrackDraw treats this as implementation-ready, validate at least:
 - multi-pilot visibility on crowded layouts
 - race-state behavior under delayed, missing, or stale updates
 
-Before TrackDraw treats this as release-ready, validate at least:
+Before the live race overview is release-ready, validate at least:
 
 - one real or replayed RotorHazard-driven race session
 - disconnect and reconnect handling

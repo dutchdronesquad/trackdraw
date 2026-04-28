@@ -224,11 +224,11 @@ Current state:
 
 TrackDraw scope:
 
-- Identify the active race route instead of relying on the first polyline fallback
-- Reuse the race-day timing marker model, likely `shape.meta.timing`, for start/finish and split points
-- Provide editor controls for assigning timing roles to relevant shapes in a way that also improves Race Pack and race director output
-- Validate missing race route, duplicate timing roles, missing timing identifiers, and timing-marked shapes that cannot be mapped onto route progress
-- Document the TrackDraw JSON fields that `rh-stream-overlays` should consume for the first minimap prototype
+- Treat a design with exactly one polyline as overlay-prep eligible and block ambiguous multi-route designs until an explicit route model is needed
+- Reuse the race-day timing marker model, `shape.meta.timing`, for start/finish and split points
+- Keep editor controls for assigning timing roles on relevant shapes in a way that also improves Race Pack and race director output
+- Reuse overlay-preparation validation for missing race route, duplicate timing roles, missing timing identifiers, and timing-marked shapes that cannot be mapped onto route progress
+- Use the `trackdraw.overlay.v1` contract builder as the TrackDraw-side source for the first minimap prototype
 
 Out of TrackDraw scope:
 
@@ -240,12 +240,14 @@ Out of TrackDraw scope:
 
 Suggested first slices:
 
-- Add explicit active race route metadata to the project model
-- Add typed timing metadata helpers and normalization for `shape.meta.timing`
-- Add inspector controls for `start_finish` and `split` roles on relevant gates or timing shapes
-- Surface timing markers in Race Pack and race director-oriented output before treating them as overlay-only metadata
-- Add overlay-preparation validation that can be reused by export and future setup UI
-- Keep using full TrackDraw project JSON until the RH plugin proves a dedicated overlay package is necessary
+- Shipped: typed timing metadata helpers and normalization for `shape.meta.timing`
+- Shipped: inspector controls for `start_finish` and `split` roles on relevant gates or timing shapes
+- Shipped: timing markers surfaced in editor, 3D, Race Pack, and race director-oriented output before treating them as overlay-only metadata
+- Shipped: overlay-preparation validation and route-progress mapping helper for future export/setup UI
+- Shipped: `trackdraw.overlay.v1` contract builder with serialized design data, coordinate-system metadata, and overlay-preparation report
+- Shipped: Live Overlay package export in the existing export dialog, blocked until overlay-preparation validation passes
+- Add explicit active race route metadata only if multi-polyline overlay support becomes necessary
+- Keep the contract additive around serialized TrackDraw project JSON until external overlay runtimes prove a smaller dedicated package is necessary
 
 ### 4. Real-Time Collaboration Evaluation (`Research`)
 
