@@ -102,7 +102,7 @@ export default async function GalleryPage() {
                 </p>
                 <h1 className="mt-4 text-[clamp(34px,9vw,56px)] leading-[1.02] font-semibold tracking-[-0.04em] text-balance sm:leading-[1.08]">
                   <span className="block">Discover layouts that shape</span>
-                  <span className="from-brand-primary mt-1.5 block bg-linear-to-r to-sky-300 bg-clip-text text-transparent sm:mt-0">
+                  <span className="from-brand-primary mt-1.5 block bg-linear-to-r to-sky-300 bg-clip-text pb-1 leading-[1.12] text-transparent sm:mt-0">
                     your next track design.
                   </span>
                 </h1>

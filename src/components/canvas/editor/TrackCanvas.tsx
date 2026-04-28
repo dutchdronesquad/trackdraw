@@ -120,6 +120,205 @@ export interface TrackCanvasProps {
   showObstacleNumbers?: boolean;
 }
 
+function MobileShapeHitTarget({
+  contentDragActiveRef,
+  designPpm,
+  dragBound,
+  dragSnapRef,
+  groupDragOffsetPx,
+  isSelected,
+  mobileMultiSelectEnabled,
+  onMobileMultiSelectStart,
+  onSelectOnly,
+  onToggleSelection,
+  resolveShapeDragPosition,
+  selectionCount,
+  setDragSnapPreview,
+  shape,
+  shapeRefs,
+  snapEnabled,
+  updateShape,
+  viewportScale,
+}: {
+  contentDragActiveRef: React.RefObject<boolean>;
+  designPpm: number;
+  dragBound: (pos: Vector2d) => Vector2d;
+  dragSnapRef: React.RefObject<boolean>;
+  groupDragOffsetPx?: { x: number; y: number } | null;
+  isSelected: boolean;
+  mobileMultiSelectEnabled: boolean;
+  onMobileMultiSelectStart?: (shapeId: string) => void;
+  onSelectOnly: (shapeId: string) => void;
+  onToggleSelection: (shapeId: string) => void;
+  resolveShapeDragPosition: (
+    pos: Vector2d,
+    snapEnabled: boolean,
+    draggedShapeId: string
+  ) => Vector2d;
+  selectionCount: number;
+  setDragSnapPreview: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number } | null>
+  >;
+  shape: Exclude<Shape, PolylineShape>;
+  shapeRefs: React.RefObject<Record<string, KonvaGroup | null>>;
+  snapEnabled: boolean;
+  updateShape: (id: string, patch: Partial<Shape>) => void;
+  viewportScale: number;
+}) {
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTriggeredRef = useRef(false);
+  const dragTriggeredRef = useRef(false);
+  const bounds = getShapeLocalBounds(shape, designPpm)!;
+  const touchTargetMinScreenPx = shape.kind === "gate" ? 44 : 32;
+  const minCanvasPx = touchTargetMinScreenPx / Math.max(viewportScale, 0.1);
+  const hitRect = {
+    x: bounds.x - Math.max(0, minCanvasPx - bounds.width) / 2,
+    y: bounds.y - Math.max(0, minCanvasPx - bounds.height) / 2,
+    width: Math.max(bounds.width, minCanvasPx),
+    height: Math.max(bounds.height, minCanvasPx),
+  };
+  const canDrag =
+    !shape.locked &&
+    !(isSelected && selectionCount > 1) &&
+    (!mobileMultiSelectEnabled || isSelected);
+
+  const clearLongPress = useCallback(() => {
+    if (longPressTimerRef.current !== null) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(
+    () => () => {
+      clearLongPress();
+      contentDragActiveRef.current = false;
+      setDragSnapPreview(null);
+    },
+    [clearLongPress, contentDragActiveRef, setDragSnapPreview]
+  );
+
+  const handleSelect = useCallback(() => {
+    if (mobileMultiSelectEnabled) {
+      onToggleSelection(shape.id);
+      return;
+    }
+    if (isSelected && selectionCount === 1) return;
+    onSelectOnly(shape.id);
+  }, [
+    isSelected,
+    mobileMultiSelectEnabled,
+    onSelectOnly,
+    onToggleSelection,
+    selectionCount,
+    shape.id,
+  ]);
+
+  return (
+    <Group
+      x={m2px(shape.x, designPpm) + (groupDragOffsetPx?.x ?? 0)}
+      y={m2px(shape.y, designPpm) + (groupDragOffsetPx?.y ?? 0)}
+      rotation={shape.rotation}
+      draggable={canDrag}
+      dragBoundFunc={dragBound}
+      onDragStart={(event) => {
+        event.cancelBubble = true;
+        contentDragActiveRef.current = true;
+        if (!mobileMultiSelectEnabled && !isSelected) {
+          onSelectOnly(shape.id);
+        }
+        clearLongPress();
+        dragTriggeredRef.current = false;
+        dragSnapRef.current =
+          snapEnabled &&
+          !(event.evt.altKey || event.evt.metaKey || event.evt.shiftKey);
+        setDragSnapPreview(null);
+      }}
+      onDragMove={(event) => {
+        event.cancelBubble = true;
+        dragTriggeredRef.current = true;
+        const current = event.currentTarget.position();
+        const resolved = resolveShapeDragPosition(
+          current,
+          dragSnapRef.current,
+          shape.id
+        );
+        event.currentTarget.position(resolved);
+        // Mirror the resolved position onto the visual shape node so it
+        // follows the drag instead of staying at the original position.
+        const shapeNode = shapeRefs.current[shape.id];
+        if (shapeNode) {
+          shapeNode.position(resolved);
+          shapeNode.getLayer()?.batchDraw();
+        }
+        const isSnapping =
+          Math.abs(current.x - resolved.x) > 0.5 ||
+          Math.abs(current.y - resolved.y) > 0.5;
+        setDragSnapPreview(isSnapping ? resolved : null);
+      }}
+      onDragEnd={(event) => {
+        event.cancelBubble = true;
+        contentDragActiveRef.current = false;
+        const resolved = resolveShapeDragPosition(
+          event.currentTarget.position(),
+          dragSnapRef.current,
+          shape.id
+        );
+        event.currentTarget.position(resolved);
+        setDragSnapPreview(null);
+        updateShape(shape.id, {
+          x: px2m(resolved.x, designPpm),
+          y: px2m(resolved.y, designPpm),
+        });
+      }}
+      onMouseDown={(event) => {
+        event.cancelBubble = true;
+        if (mobileMultiSelectEnabled) return;
+        handleSelect();
+      }}
+      onTap={(event) => {
+        event.cancelBubble = true;
+        if (longPressTriggeredRef.current) {
+          longPressTriggeredRef.current = false;
+          return;
+        }
+        if (dragTriggeredRef.current) {
+          dragTriggeredRef.current = false;
+          return;
+        }
+        handleSelect();
+      }}
+      onTouchStart={() => {
+        if (
+          mobileMultiSelectEnabled ||
+          !onMobileMultiSelectStart ||
+          shape.locked
+        ) {
+          return;
+        }
+        clearLongPress();
+        longPressTriggeredRef.current = false;
+        longPressTimerRef.current = window.setTimeout(() => {
+          longPressTriggeredRef.current = true;
+          onMobileMultiSelectStart(shape.id);
+          clearLongPress();
+        }, 320);
+      }}
+      onTouchMove={clearLongPress}
+      onTouchEnd={clearLongPress}
+    >
+      <Rect
+        x={hitRect.x}
+        y={hitRect.y}
+        width={hitRect.width}
+        height={hitRect.height}
+        fill="#000000"
+        opacity={0.001}
+      />
+    </Group>
+  );
+}
+
 const TrackCanvas = memo(
   forwardRef<TrackCanvasHandle, TrackCanvasProps>(function TrackCanvas(
     {
@@ -472,6 +671,7 @@ const TrackCanvas = memo(
         posPx: Vector2d,
         options: {
           excludeIds?: Iterable<string>;
+          snapToAxisAlignment?: boolean;
           snapToGrid?: boolean;
           snapToRouteLines?: boolean;
           snapToRouteWaypoints?: boolean;
@@ -486,6 +686,7 @@ const TrackCanvas = memo(
           pos: posMeters,
           snapToGrid: options.snapToGrid ?? true,
           snapToShapes: options.snapToShapes ?? true,
+          snapToAxisAlignment: options.snapToAxisAlignment,
           gridStep: design.field.gridStep,
           magneticRadiusMeters: waypointSnapRadiusMeters,
           candidates: getWaypointSnapCandidates(posMeters),
@@ -537,6 +738,7 @@ const TrackCanvas = memo(
 
         return resolveCanvasSnapPosition(bounded, {
           excludeIds: [draggedShapeId],
+          snapToAxisAlignment: false,
         });
       },
       [clampShapeDragPosition, resolveCanvasSnapPosition]
@@ -1418,72 +1620,81 @@ const TrackCanvas = memo(
     // (cursor position, snap target, stage transform) do not trigger O(n)
     // JSX re-creation and React reconciliation for every shape on every frame.
     const shapeNodes = useMemo(
-      () =>
-        designShapes
-          .filter((shape) => shape.id !== draftSourceShapeId)
-          .map((shape) => {
-            const allowInteraction = activeTool === "select" && !readOnly;
-            const displayShape =
-              rotationSession?.shapeId === shape.id
-                ? { ...shape, rotation: rotationSession.previewRotation }
-                : shape;
-            return (
-              <TrackShapeNode
-                key={shape.id}
-                allowInteraction={allowInteraction}
-                contentDragActiveRef={contentDragActiveRef}
-                designPpm={design.field.ppm}
-                dragBound={dragBound}
-                dragSnapRef={dragSnapRef}
-                effectiveVertexSel={effectiveVertexSel}
-                hoveredWaypoint={hoveredWaypoint}
-                isPrimaryPolyline={primaryPolylineId === shape.id}
-                isHovered={hoveredShapeId === shape.id}
-                isMobile={isMobile}
-                mobileMultiSelectEnabled={mobileMultiSelectEnabled}
-                isSelected={
-                  activeTool === "select" && selectionIdSet.has(shape.id)
-                }
-                selectionCount={selection.length}
-                groupDragOffsetPx={
-                  groupDragPreview && groupDragIdSet.has(shape.id)
-                    ? {
-                        x: groupDragPreview.dx,
-                        y: groupDragPreview.dy,
-                      }
-                    : null
-                }
-                onMobileMultiSelectStart={onMobileMultiSelectStart}
-                onShapeContextMenu={openShapeContextMenu}
-                onSelectOnly={selectOnlyShape}
-                onToggleSelection={toggleShapeSelection}
-                snapEnabled={snapEnabled}
-                setSelection={setSelection}
-                selectedSegmentIndex={
-                  segmentSel?.shapeId === shape.id
-                    ? segmentSel.segmentIndex
-                    : null
-                }
-                selectedSegmentPoint={
-                  segmentSel?.shapeId === shape.id ? segmentSel.point : null
-                }
-                setSegmentSelection={setSegmentSel}
-                setVertexSel={setVertexSel}
-                shape={displayShape}
-                shapeRef={(node) => {
-                  shapeRefs.current[shape.id] = node;
-                }}
-                setDragSnapPreview={setDragSnapPreview}
-                resolveShapeDragPosition={resolveShapeDragPosition}
-                resolveWaypointDragPosition={resolveWaypointDragPosition}
-                setPolylinePoints={setPolylinePoints}
-                updateShape={updateShape}
-                zmax={zmax}
-                zmin={zmin}
-              />
-            );
-          }),
-      // cursor, snapTarget, stageTransform and other high-frequency local state
+      () => {
+        // Render polylines first so obstacles (gates, flags, etc.) are drawn on
+        // top — the race line passes visually under the gates.
+        const filtered = designShapes.filter(
+          (shape) => shape.id !== draftSourceShapeId
+        );
+        const ordered = [
+          ...filtered.filter((s) => s.kind === "polyline"),
+          ...filtered.filter((s) => s.kind !== "polyline"),
+        ];
+        return ordered.map((shape) => {
+          const allowInteraction = activeTool === "select" && !readOnly;
+          const displayShape =
+            rotationSession?.shapeId === shape.id
+              ? { ...shape, rotation: rotationSession.previewRotation }
+              : shape;
+          return (
+            <TrackShapeNode
+              key={shape.id}
+              allowInteraction={allowInteraction}
+              contentDragActiveRef={contentDragActiveRef}
+              designPpm={design.field.ppm}
+              dragBound={dragBound}
+              dragSnapRef={dragSnapRef}
+              effectiveVertexSel={effectiveVertexSel}
+              hoveredWaypoint={hoveredWaypoint}
+              isPrimaryPolyline={primaryPolylineId === shape.id}
+              viewportScale={stageTransform.scale}
+              isHovered={hoveredShapeId === shape.id}
+              isMobile={isMobile}
+              mobileMultiSelectEnabled={mobileMultiSelectEnabled}
+              isSelected={
+                activeTool === "select" && selectionIdSet.has(shape.id)
+              }
+              selectionCount={selection.length}
+              groupDragOffsetPx={
+                groupDragPreview && groupDragIdSet.has(shape.id)
+                  ? {
+                      x: groupDragPreview.dx,
+                      y: groupDragPreview.dy,
+                    }
+                  : null
+              }
+              onMobileMultiSelectStart={onMobileMultiSelectStart}
+              onShapeContextMenu={openShapeContextMenu}
+              onSelectOnly={selectOnlyShape}
+              onToggleSelection={toggleShapeSelection}
+              snapEnabled={snapEnabled}
+              setSelection={setSelection}
+              selectedSegmentIndex={
+                segmentSel?.shapeId === shape.id
+                  ? segmentSel.segmentIndex
+                  : null
+              }
+              selectedSegmentPoint={
+                segmentSel?.shapeId === shape.id ? segmentSel.point : null
+              }
+              setSegmentSelection={setSegmentSel}
+              setVertexSel={setVertexSel}
+              shape={displayShape}
+              shapeRef={(node) => {
+                shapeRefs.current[shape.id] = node;
+              }}
+              setDragSnapPreview={setDragSnapPreview}
+              resolveShapeDragPosition={resolveShapeDragPosition}
+              resolveWaypointDragPosition={resolveWaypointDragPosition}
+              setPolylinePoints={setPolylinePoints}
+              updateShape={updateShape}
+              zmax={zmax}
+              zmin={zmin}
+            />
+          );
+        });
+      },
+      // cursor, snapTarget and other high-frequency local state
       // are intentionally absent — they are not referenced inside the callback.
       [
         activeTool,
@@ -1508,6 +1719,7 @@ const TrackCanvas = memo(
         resolveWaypointDragPosition,
         rotationSession,
         snapEnabled,
+        stageTransform.scale,
         segmentSel,
         selectOnlyShape,
         selection.length,
@@ -1523,6 +1735,69 @@ const TrackCanvas = memo(
         zmin,
       ]
     );
+
+    const mobileShapeHitTargets = useMemo(() => {
+      if (!isMobile || activeTool !== "select" || readOnly) return null;
+
+      return designShapes
+        .filter(
+          (shape): shape is Exclude<Shape, PolylineShape> =>
+            shape.kind !== "polyline" && shape.id !== draftSourceShapeId
+        )
+        .map((shape) => (
+          <MobileShapeHitTarget
+            key={`mobile-shape-hit-${shape.id}`}
+            contentDragActiveRef={contentDragActiveRef}
+            designPpm={design.field.ppm}
+            dragBound={dragBound}
+            dragSnapRef={dragSnapRef}
+            groupDragOffsetPx={
+              groupDragPreview && groupDragIdSet.has(shape.id)
+                ? {
+                    x: groupDragPreview.dx,
+                    y: groupDragPreview.dy,
+                  }
+                : null
+            }
+            isSelected={selectionIdSet.has(shape.id)}
+            mobileMultiSelectEnabled={mobileMultiSelectEnabled}
+            onMobileMultiSelectStart={onMobileMultiSelectStart}
+            onSelectOnly={selectOnlyShape}
+            onToggleSelection={toggleShapeSelection}
+            resolveShapeDragPosition={resolveShapeDragPosition}
+            selectionCount={selection.length}
+            setDragSnapPreview={setDragSnapPreview}
+            shape={shape}
+            shapeRefs={shapeRefs}
+            snapEnabled={snapEnabled}
+            updateShape={updateShape}
+            viewportScale={stageTransform.scale}
+          />
+        ));
+    }, [
+      activeTool,
+      contentDragActiveRef,
+      design.field.ppm,
+      designShapes,
+      dragBound,
+      dragSnapRef,
+      draftSourceShapeId,
+      groupDragIdSet,
+      groupDragPreview,
+      isMobile,
+      mobileMultiSelectEnabled,
+      onMobileMultiSelectStart,
+      readOnly,
+      resolveShapeDragPosition,
+      selectOnlyShape,
+      selection.length,
+      selectionIdSet,
+      setDragSnapPreview,
+      snapEnabled,
+      stageTransform.scale,
+      toggleShapeSelection,
+      updateShape,
+    ]);
 
     return (
       <ContextMenu onOpenChange={(open) => !open && setContextMenu(null)}>
@@ -1576,14 +1851,14 @@ const TrackCanvas = memo(
                 <span className="text-muted-foreground/60">Add points</span>
                 <span className="text-border/80">·</span>
                 <span className="inline-flex items-center gap-1">
-                  <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-[4px] px-1 text-[10px] shadow-none">
+                  <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-lg px-1 text-[10px] shadow-none">
                     Enter
                   </Kbd>
                   <span className="text-muted-foreground/70">finish</span>
                 </span>
                 <span className="text-border/80">·</span>
                 <span className="inline-flex items-center gap-1">
-                  <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-[4px] px-1 text-[10px] shadow-none">
+                  <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-lg px-1 text-[10px] shadow-none">
                     Esc
                   </Kbd>
                   <span className="text-muted-foreground/70">cancel</span>
@@ -1694,6 +1969,7 @@ const TrackCanvas = memo(
             {/* Shapes layer */}
             <Layer>
               {shapeNodes}
+              {mobileShapeHitTargets}
               {activeTool === "select" &&
                 !readOnly &&
                 selection.length > 1 &&

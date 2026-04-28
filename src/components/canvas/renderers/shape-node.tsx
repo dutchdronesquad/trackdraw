@@ -30,6 +30,7 @@ export interface TrackShapeNodeProps {
   effectiveVertexSel: { shapeId: string; idx: number } | null;
   hoveredWaypoint: { shapeId: string; idx: number } | null;
   isPrimaryPolyline: boolean;
+  viewportScale: number;
   selectedSegmentIndex: number | null;
   selectedSegmentPoint: { x: number; y: number } | null;
   isHovered: boolean;
@@ -94,6 +95,7 @@ function TrackShapeNodeComponent({
   effectiveVertexSel,
   hoveredWaypoint,
   isPrimaryPolyline,
+  viewportScale,
   selectedSegmentIndex,
   selectedSegmentPoint,
   isHovered,
@@ -129,12 +131,19 @@ function TrackShapeNodeComponent({
     isMobile && shape.kind !== "polyline"
       ? getShapeLocalBounds(shape, designPpm)
       : null;
+  const touchTargetMinScreenPx = shape.kind === "gate" ? 72 : 52;
+  const touchTargetMinCanvasPx =
+    touchTargetMinScreenPx / Math.max(viewportScale, 0.1);
   const touchTargetRect = touchBounds
     ? {
-        x: touchBounds.x - Math.max(0, 42 - touchBounds.width) / 2,
-        y: touchBounds.y - Math.max(0, 42 - touchBounds.height) / 2,
-        width: Math.max(touchBounds.width, 42),
-        height: Math.max(touchBounds.height, 42),
+        x:
+          touchBounds.x -
+          Math.max(0, touchTargetMinCanvasPx - touchBounds.width) / 2,
+        y:
+          touchBounds.y -
+          Math.max(0, touchTargetMinCanvasPx - touchBounds.height) / 2,
+        width: Math.max(touchBounds.width, touchTargetMinCanvasPx),
+        height: Math.max(touchBounds.height, touchTargetMinCanvasPx),
       }
     : null;
 
@@ -384,6 +393,7 @@ export const TrackShapeNode = memo(TrackShapeNodeComponent, (prev, next) => {
     prev.allowInteraction === next.allowInteraction &&
     prev.designPpm === next.designPpm &&
     prev.isMobile === next.isMobile &&
+    prev.viewportScale === next.viewportScale &&
     prev.isHovered === next.isHovered &&
     prev.mobileMultiSelectEnabled === next.mobileMultiSelectEnabled &&
     prev.isSelected === next.isSelected &&

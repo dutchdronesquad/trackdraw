@@ -117,15 +117,16 @@ export function renderGate(shape: GateShape, selected: boolean, ppm: number) {
   const marker = getShapeTimingMarker(shape);
   const base = getGate2DShape(shape, ppm);
   const color = marker ? getTimingMarkerColor(marker) : base.color;
-  const { depth, radius, width } = base;
+  const { radius, width } = base;
+  const barHeight = Math.max(base.depth, 6);
   return (
     <>
       {selected && (
         <Rect
           width={width + m2px(0.3, ppm)}
-          height={depth + m2px(0.3, ppm)}
+          height={barHeight + m2px(0.3, ppm)}
           offsetX={(width + m2px(0.3, ppm)) / 2}
-          offsetY={(depth + m2px(0.3, ppm)) / 2}
+          offsetY={(barHeight + m2px(0.3, ppm)) / 2}
           stroke="#60a5fa"
           strokeWidth={1}
           opacity={0.85}
@@ -135,21 +136,13 @@ export function renderGate(shape: GateShape, selected: boolean, ppm: number) {
       )}
       <Rect
         width={width}
-        height={depth}
+        height={barHeight}
         offsetX={width / 2}
-        offsetY={depth / 2}
+        offsetY={barHeight / 2}
         fill={color}
-        opacity={0.15}
-        strokeEnabled={false}
-      />
-      <Rect
-        width={width}
-        height={depth}
-        offsetX={width / 2}
-        offsetY={depth / 2}
-        stroke={color}
-        strokeWidth={marker ? 3 : 2}
+        opacity={0.88}
         cornerRadius={radius}
+        strokeEnabled={false}
       />
     </>
   );
@@ -336,14 +329,15 @@ export function renderLadder(
   ppm: number
 ) {
   const { color, depth, radius, width } = getLadder2DShape(shape, ppm);
+  const barHeight = Math.max(depth, 6);
   return (
     <>
       {selected && (
         <Rect
           width={width + m2px(0.3, ppm)}
-          height={depth + m2px(0.3, ppm)}
+          height={barHeight + m2px(0.3, ppm)}
           offsetX={(width + m2px(0.3, ppm)) / 2}
-          offsetY={(depth + m2px(0.3, ppm)) / 2}
+          offsetY={(barHeight + m2px(0.3, ppm)) / 2}
           stroke="#60a5fa"
           strokeWidth={1}
           opacity={0.85}
@@ -353,21 +347,13 @@ export function renderLadder(
       )}
       <Rect
         width={width}
-        height={depth}
+        height={barHeight}
         offsetX={width / 2}
-        offsetY={depth / 2}
+        offsetY={barHeight / 2}
         fill={color}
-        opacity={0.16}
-        strokeEnabled={false}
-      />
-      <Rect
-        width={width}
-        height={depth}
-        offsetX={width / 2}
-        offsetY={depth / 2}
-        stroke={color}
-        strokeWidth={2}
+        opacity={0.88}
         cornerRadius={radius}
+        strokeEnabled={false}
       />
     </>
   );
