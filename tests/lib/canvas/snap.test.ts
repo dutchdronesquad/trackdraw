@@ -156,7 +156,7 @@ describe("canvas snap helpers", () => {
   it("snaps to nearby race-line segments before axis alignment and grid", () => {
     expect(
       resolveSnapPosition({
-        pos: { x: 7.3, y: 6.6 },
+        pos: { x: 7.3, y: 6.4 },
         snapToGrid: true,
         snapToShapes: true,
         gridStep: 1,

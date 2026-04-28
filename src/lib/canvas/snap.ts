@@ -19,6 +19,7 @@ export interface ResolveSnapPositionOptions {
   snapToRouteLines?: boolean;
   snapToRouteWaypoints?: boolean;
   snapToShapes: boolean;
+  snapToAxisAlignment?: boolean;
   gridStep: number;
   magneticRadiusMeters: number;
   candidates: Shape[];
@@ -226,6 +227,7 @@ export function resolveSnapPosition({
   snapToRouteLines = true,
   snapToRouteWaypoints = true,
   snapToShapes,
+  snapToAxisAlignment = true,
   gridStep,
   magneticRadiusMeters,
   candidates,
@@ -259,20 +261,22 @@ export function resolveSnapPosition({
       excludeIds,
       pos,
       routeCandidates: snapToRouteLines ? routeCandidates : [],
-      snapRadiusMeters: magneticRadiusMeters,
+      snapRadiusMeters: magneticRadiusMeters * 0.45,
     });
     if (routeSnap) {
       return routeSnap;
     }
 
-    const alignmentSnap = resolveAxisAlignmentSnap({
-      candidates,
-      excludeIds,
-      pos,
-      snapRadiusMeters: magneticRadiusMeters,
-    });
-    if (alignmentSnap.snapped) {
-      return { x: alignmentSnap.x, y: alignmentSnap.y };
+    if (snapToAxisAlignment) {
+      const alignmentSnap = resolveAxisAlignmentSnap({
+        candidates,
+        excludeIds,
+        pos,
+        snapRadiusMeters: magneticRadiusMeters,
+      });
+      if (alignmentSnap.snapped) {
+        return { x: alignmentSnap.x, y: alignmentSnap.y };
+      }
     }
   }
 
