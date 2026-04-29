@@ -48,8 +48,8 @@ TrackDraw should not approve this work yet if the expected v1 includes:
 - [x] Phase 1: add Better Auth API Key plugin integration and API key management surface
 - [x] Phase 2: add bearer API key auth and first account-owned read endpoints
 - [x] Phase 3: add OpenAPI schema and API docs page
-- [ ] Phase 4: add livestream overlay package for integration consumers
-- [ ] Phase 5: harden throttling, audit events, tests, and docs
+- [x] Phase 4: add livestream overlay package for integration consumers
+- [x] Phase 5: harden throttling, audit events, tests, and docs
 
 ## Go / No-Go Criteria
 
@@ -483,8 +483,8 @@ These are the recommended defaults for Phase 0. They optimize for a small safe v
 - [x] Phase 1 complete: account users can create, list, and revoke expiring API keys
 - [x] Phase 2 complete: bearer auth resolves an API key owner and serves first project reads
 - [x] Phase 3 complete: OpenAPI schema and docs page are available
-- [ ] Phase 4 complete: livestream overlay package supports first integration consumers
-- [ ] Phase 5 complete: validation, tests, audit, and docs are complete
+- [x] Phase 4 complete: livestream overlay package supports first integration consumers
+- [x] Phase 5 complete: validation, tests, audit, and docs are complete
 
 ### Phase 0: Lock Product Boundary
 
@@ -598,16 +598,18 @@ Start state:
 
 Work:
 
-- finalize throttling for `/api/v1/*`
-- add stricter budgets for package endpoints than metadata endpoints if usage requires it
-- return stable `429` errors and `Retry-After` headers
-- add tests for API key creation, expiry, revoke, owner scoping, and bad bearer keys
-- add tests for throttled requests
-- add tests for project and overlay endpoint authorization
-- add a cleanup path for expired and revoked API key records after the visible retention window
-- update `CONTRIBUTING.md` with preview-mode validation notes if needed
-- update user-facing docs if API docs are linked from account settings
-- confirm existing editor, share, gallery, and embed behavior is unchanged
+- [x] finalize Better Auth API-key throttling for `/api/v1/*`
+- [x] keep a single Better Auth API-key budget for v1; add stricter package endpoint budgets later only if real usage requires it
+- [x] return stable `429` errors and `Retry-After` headers when Better Auth reports a retry window
+- [x] add tests for API key creation, expiry, revoke, owner scoping, and bad bearer keys
+- [x] add tests for v1 response envelopes, compact error bodies, and throttled auth failures
+- [x] add tests for project and overlay endpoint authorization
+- [x] add tests for track and overlay package serializers
+- [x] add a cleanup path for expired API key records after the visible retention window
+- [x] document that revoked API keys are deleted by Better Auth's API Key plugin rather than retained as separate revoked rows
+- [x] update `CONTRIBUTING.md` with preview-mode validation notes
+- [x] update user-facing docs if API docs are linked from account settings
+- [x] confirm existing editor, share, gallery, and embed behavior is unchanged through the full test suite
 
 Done state:
 

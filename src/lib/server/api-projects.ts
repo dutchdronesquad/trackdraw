@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getDesignShapes, serializeDesign } from "@/lib/track/design";
+import { getDesignShapes } from "@/lib/track/design";
 import {
   getObstacleNumberingReport,
   isNumberedObstacle,
@@ -283,19 +283,5 @@ export function toApiOverlayPackage(project: StoredProject) {
       ),
     })),
     updated_at: project.designUpdatedAt,
-  };
-}
-
-export function toApiTrackDrawExport(project: StoredProject) {
-  return {
-    type: "export" as const,
-    schema: "trackdraw.export.v1" as const,
-    source: {
-      type: "project" as const,
-      id: project.id,
-    },
-    title: project.title,
-    updated_at: project.designUpdatedAt,
-    design: serializeDesign(project.design),
   };
 }

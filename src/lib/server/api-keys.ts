@@ -30,6 +30,13 @@ export type ApiIdentity = {
   key: VerifiedApiKey;
 };
 
+type ApiKeyVerificationError = {
+  code?: string;
+  details?: {
+    tryAgainIn?: unknown;
+  };
+};
+
 type UserRow = {
   id: string;
   email: string | null;
@@ -148,6 +155,23 @@ export async function deleteApiKeyForSession(options: {
   });
 }
 
+function isRateLimitError(code: string) {
+  return (
+    code === "RATE_LIMITED" ||
+    code === "RATE_LIMIT_EXCEEDED" ||
+    code === "USAGE_EXCEEDED"
+  );
+}
+
+function getRetryAfterSeconds(error: ApiKeyVerificationError | null) {
+  const tryAgainIn = error?.details?.tryAgainIn;
+  if (typeof tryAgainIn !== "number" || !Number.isFinite(tryAgainIn)) {
+    return null;
+  }
+
+  return Math.max(1, Math.ceil(tryAgainIn / 1000));
+}
+
 async function getUserById(userId: string) {
   const db = await getDatabase();
   return db
@@ -186,15 +210,17 @@ export async function getApiIdentityFromBearerKey(options: {
   });
 
   if (!verified.valid || !verified.key) {
-    const code = verified.error?.code ?? "invalid_api_key";
+    const error = verified.error as ApiKeyVerificationError | null;
+    const code = error?.code ?? "invalid_api_key";
+    const rateLimited = isRateLimitError(code);
     return {
       ok: false as const,
-      status: code === "RATE_LIMIT_EXCEEDED" ? 429 : 401,
-      code: code === "RATE_LIMIT_EXCEEDED" ? "rate_limited" : "invalid_api_key",
-      detail:
-        code === "RATE_LIMIT_EXCEEDED"
-          ? "Too many requests for this API key. Try again later."
-          : "The API bearer key is invalid, expired, disabled, or lacks the required permission.",
+      status: rateLimited ? 429 : 401,
+      code: rateLimited ? "rate_limited" : "invalid_api_key",
+      detail: rateLimited
+        ? "Too many requests for this API key. Try again later."
+        : "The API bearer key is invalid, expired, disabled, or lacks the required permission.",
+      retryAfterSeconds: rateLimited ? getRetryAfterSeconds(error) : null,
     };
   }
 

@@ -87,6 +87,10 @@ export async function authenticateApiRequest(
       code: result.code,
       title: result.status === 429 ? "Too Many Requests" : "Unauthorized",
       detail: result.detail,
+      headers:
+        result.status === 429 && result.retryAfterSeconds
+          ? { "Retry-After": String(result.retryAfterSeconds) }
+          : undefined,
     }),
   };
 }
