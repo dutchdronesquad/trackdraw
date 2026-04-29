@@ -730,10 +730,7 @@ export function MapReferenceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        size="auto"
-        className="max-h-[min(92vh,760px)] w-[min(94vw,920px)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0"
-      >
+      <DialogContent className="max-h-[min(92vh,760px)] w-[min(94vw,920px)] max-w-[min(94vw,920px)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0">
         <DialogHeader className="border-border/40 border-b px-4 py-3 pr-12">
           <DialogTitle>Map reference</DialogTitle>
           <DialogDescription>

@@ -704,7 +704,7 @@ export default function DashboardGalleryManager({
           if (!open) setDeleteCandidate(null);
         }}
       >
-        <DialogContent size="md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete gallery entry?</DialogTitle>
             <DialogDescription>
@@ -727,8 +727,8 @@ export default function DashboardGalleryManager({
           </div>
 
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>
-              Cancel
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button
               type="button"
