@@ -9,15 +9,9 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { LocateFixed, Minus, Plus, RotateCcw, Search } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { createPortal } from "react-dom";
+import { LocateFixed, Minus, Plus, RotateCcw, Search, X } from "lucide-react";
+import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -584,7 +578,7 @@ export function MapReferenceDialog({
   };
 
   const desktopMapEditor = (
-    <div className="grid min-h-0 gap-0 overflow-y-auto p-3 lg:grid-cols-[minmax(0,1fr)_210px] lg:overflow-hidden">
+    <div className="grid min-h-0 flex-1 gap-0 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_210px] lg:overflow-hidden">
       <div className="min-w-0 space-y-2 lg:pr-3">
         {renderSearchPanel()}
         {renderPicker()}
@@ -728,22 +722,48 @@ export function MapReferenceDialog({
     );
   }
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[min(92vh,760px)] w-[min(94vw,920px)] max-w-[min(94vw,920px)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0">
-        <DialogHeader className="border-border/40 border-b px-4 py-3 pr-12">
-          <DialogTitle>Map reference</DialogTitle>
-          <DialogDescription>
-            Choose the field center and align the field footprint.
-          </DialogDescription>
-        </DialogHeader>
+  const desktopModal = (
+    <DesktopModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Map reference"
+      subtitle="Choose the field center and align the field footprint."
+      maxWidth="max-w-[min(94vw,920px)]"
+      headerless
+      panelClassName="flex max-h-[min(92vh,760px)] flex-col p-0"
+    >
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="border-border/40 flex shrink-0 items-start justify-between gap-4 border-b px-6 py-4">
+          <div>
+            <p className="text-foreground text-[1rem] font-semibold tracking-[-0.01em]">
+              Map reference
+            </p>
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+              Choose the field center and align the field footprint.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="text-muted-foreground/75 hover:text-foreground hover:bg-muted cursor-pointer rounded-full p-1.5 transition-colors"
+            aria-label="Close"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
 
-        {desktopMapEditor}
+        <div className="flex min-h-0 flex-1 p-4">{desktopMapEditor}</div>
 
-        <DialogFooter className="bg-muted/35 mx-0 mb-0 rounded-none border-t px-4 py-3">
+        <div className="border-border/40 bg-muted/35 flex shrink-0 justify-end gap-2 border-t px-6 py-4">
           {desktopActions}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </DesktopModal>
   );
+
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(desktopModal, document.body);
 }
