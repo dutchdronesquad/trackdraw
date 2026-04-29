@@ -10,16 +10,12 @@ export type ApiAuthResult =
   | { ok: true; identity: ApiIdentity }
   | { ok: false; response: NextResponse };
 
-function createRequestId() {
-  return `req_${crypto.randomUUID().replaceAll("-", "")}`;
-}
-
 export function apiSuccess<T>(data: T, init?: ResponseInit) {
   return NextResponse.json(
     {
       data,
       meta: {
-        apiVersion: API_VERSION,
+        api_version: API_VERSION,
       },
     },
     init
@@ -30,8 +26,8 @@ export function apiListSuccess<T>(
   data: T[],
   pagination: {
     limit: number;
-    nextCursor: string | null;
-    hasMore: boolean;
+    next_cursor: string | null;
+    has_more: boolean;
   },
   init?: ResponseInit
 ) {
@@ -40,7 +36,7 @@ export function apiListSuccess<T>(
       data,
       pagination,
       meta: {
-        apiVersion: API_VERSION,
+        api_version: API_VERSION,
       },
     },
     init
@@ -54,19 +50,15 @@ export function apiProblem(options: {
   detail: string;
   headers?: HeadersInit;
 }) {
-  const requestId = createRequestId();
   const headers = new Headers(options.headers);
   headers.set("content-type", "application/problem+json");
-  headers.set("x-request-id", requestId);
 
   return NextResponse.json(
     {
-      type: `https://trackdraw.app/problems/${options.code}`,
       title: options.title,
       status: options.status,
       detail: options.detail,
       code: options.code,
-      requestId,
     },
     {
       status: options.status,

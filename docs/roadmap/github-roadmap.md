@@ -33,10 +33,10 @@ The v1.6.0 release-sized work is archived below. The remaining active work stays
   - [x] API key management
         Let signed-in users create, list, and revoke permissioned expiring API keys through the Better Auth API Key plugin.
   - [ ] Throttling and rate limits
-        Enforce per-key API budgets, stable `429` responses, and stricter limits for export-oriented endpoints.
+        Enforce per-key API budgets, stable `429` responses, stricter limits for export-oriented endpoints, and cleanup for expired or revoked API keys after the visible retention window.
   - [x] First authenticated read endpoints
         Add bearer-authenticated project reads such as `/api/v1/me`, `/api/v1/projects`, and project track data.
-  - [ ] OpenAPI docs
+  - [x] OpenAPI docs
         Serve an OpenAPI schema and API docs page so external tools can integrate against an explicit contract.
   - [ ] Share and export integration endpoints
         Add owned published-share reads and project export JSON packages once the first project read path is proven; defer share export endpoints until a concrete consumer needs share-token lookup or published snapshot parity.

@@ -1,11 +1,20 @@
+import Link from "next/link";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Braces,
   Clipboard,
+  ExternalLink,
   LoaderCircle,
   Plus,
   RefreshCw,
   Trash2,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/AppTooltip";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -23,6 +32,23 @@ import {
 } from "./shared";
 import type { AccountApiKey, CreatedAccountApiKey } from "./types";
 import { formatDate, getPermissionLabel } from "./utils";
+
+function ActionTooltip({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactElement;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="top" sideOffset={6}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 type ApiKeysViewProps = {
   isPending: boolean;
@@ -63,6 +89,10 @@ export function AccountApiKeysView({
   onDeleteApiKey,
   onRefreshApiKeys,
 }: ApiKeysViewProps) {
+  const [confirmRevokeKeyId, setConfirmRevokeKeyId] = useState<string | null>(
+    null
+  );
+
   if (isPending) {
     return <AccountDialogLoading />;
   }
@@ -181,8 +211,17 @@ export function AccountApiKeysView({
         >
           <div>
             <p className="text-sm font-medium">Active API keys</p>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Keys use bearer authentication for `/api/v1`.
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+              Use these keys to connect external tools to your TrackDraw data.{" "}
+              <Link
+                href="/api/docs"
+                target="_blank"
+                rel="noreferrer"
+                className="text-foreground inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
+              >
+                API docs
+                <ExternalLink className="size-3" />
+              </Link>
             </p>
           </div>
           <Button
@@ -222,11 +261,12 @@ export function AccountApiKeysView({
           <div className="space-y-3">
             {apiKeys.map((apiKey) => {
               const isDeleting = deletingApiKeyId === apiKey.id;
+              const isConfirming = confirmRevokeKeyId === apiKey.id;
 
               return (
                 <div
                   key={apiKey.id}
-                  className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-4"
+                  className="group bg-muted/20 border-border/60 relative overflow-hidden rounded-2xl border px-4 py-4"
                 >
                   <div
                     className={cn(
@@ -255,24 +295,77 @@ export function AccountApiKeysView({
                       </p>
                     </div>
 
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => onDeleteApiKey(apiKey.id)}
-                      disabled={isDeleting}
-                      className={cn(
-                        "text-muted-foreground hover:text-foreground h-8 rounded-lg px-2.5",
-                        isMobile && "w-full justify-center"
-                      )}
-                    >
-                      {isDeleting ? (
-                        <LoaderCircle className="size-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="size-4" />
-                      )}
-                      Revoke
-                    </Button>
+                    {isMobile ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setConfirmRevokeKeyId(apiKey.id)}
+                        disabled={isDeleting}
+                        className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:ring-destructive/30 h-8 w-full justify-center rounded-lg px-2.5"
+                      >
+                        {isDeleting ? (
+                          <LoaderCircle className="size-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-4" />
+                        )}
+                        Revoke
+                      </Button>
+                    ) : (
+                      <ActionTooltip label="Revoke">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmRevokeKeyId(apiKey.id)}
+                          disabled={isDeleting}
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-50"
+                          aria-label={`Revoke ${apiKey.name?.trim() || "API key"}`}
+                        >
+                          {isDeleting ? (
+                            <LoaderCircle className="size-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="size-3.5" />
+                          )}
+                        </button>
+                      </ActionTooltip>
+                    )}
                   </div>
+
+                  <AnimatePresence>
+                    {isConfirming && (
+                      <motion.div
+                        className="bg-background/97 absolute inset-0 flex items-center justify-between gap-2 rounded-2xl px-4 backdrop-blur-sm"
+                        initial={{ x: "100%", opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: "100%", opacity: 0 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <p className="text-foreground truncate text-sm font-medium">
+                          Revoke this key?
+                        </p>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onDeleteApiKey(apiKey.id);
+                              setConfirmRevokeKeyId(null);
+                            }}
+                            disabled={isDeleting}
+                            className="bg-destructive/10 hover:bg-destructive/20 text-destructive disabled:text-destructive/60 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed"
+                          >
+                            {isDeleting ? "Revoking..." : "Revoke"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmRevokeKeyId(null)}
+                            disabled={isDeleting}
+                            className="text-muted-foreground hover:text-foreground disabled:text-muted-foreground/50 cursor-pointer rounded-lg px-2 py-1.5 text-xs transition-colors disabled:cursor-not-allowed"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             })}

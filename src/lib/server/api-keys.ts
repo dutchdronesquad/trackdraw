@@ -62,6 +62,10 @@ function normalizePermissions(value: unknown): ApiKeyPermissionSet | null {
   return permissions;
 }
 
+export function normalizeApiKeyPermissions(value: unknown) {
+  return normalizePermissions(value);
+}
+
 export function normalizeApiKeyRecord(key: ApiKeyListItem | VerifiedApiKey) {
   return {
     id: key.id,

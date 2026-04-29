@@ -434,14 +434,6 @@ export default function AccountDialog({
   };
 
   const handleDeleteApiKey = async (keyId: string) => {
-    const apiKey = apiKeys.find((item) => item.id === keyId);
-    const confirmed = window.confirm(
-      `Revoke ${apiKey?.name?.trim() || "this API key"}?\n\nExisting integrations using this key will stop working.`
-    );
-    if (!confirmed) {
-      return;
-    }
-
     setDeletingApiKeyId(keyId);
     setError(null);
 
@@ -629,7 +621,7 @@ export default function AccountDialog({
       }}
       contentTitle={current.title}
       contentDescription={current.description}
-      maxWidth="max-w-3xl"
+      maxWidth="max-w-4xl"
     >
       {current.content}
     </SidebarDialog>

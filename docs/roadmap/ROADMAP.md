@@ -127,13 +127,13 @@ Why:
 
 Focus:
 
-- Shipped first slice: Better Auth API Key plugin integration, plugin-compatible D1 `apikey` storage, browser-session API key management routes, and bearer-authenticated project reads at `/api/v1/me`, `/api/v1/projects`, `/api/v1/projects/[projectId]`, and `/api/v1/projects/[projectId]/track`
+- Shipped first slice: Better Auth API Key plugin integration, plugin-compatible D1 `apikey` storage, browser-session API key management routes, bearer-authenticated project reads at `/api/v1/me`, `/api/v1/projects`, `/api/v1/projects/[projectId]`, and `/api/v1/projects/[projectId]/track`, plus OpenAPI docs at `/api/v1/openapi.json` and `/api/docs`
 - Add browser-session API key management for signed-in users
 - Use Better Auth API Key plugin storage and verification, with explicit expiry and revocation
+- Clean up expired and revoked API keys after the visible retention window
 - Enforce throttling and rate limits for `/api/v1/*`, with stricter budgets for export endpoints
 - Keep `/api/v1/*` authenticated by default for v1
 - Start with read-only project data and owned-share metadata
-- Publish `GET /api/v1/openapi.json` and an API docs page from the first endpoint slice
 - Defer public unauthenticated REST reads, write APIs, and share export endpoints until concrete integrations require them
 
 #### Share Lifecycle Follow-up
