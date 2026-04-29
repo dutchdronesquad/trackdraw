@@ -112,7 +112,7 @@ These items are now follow-up work rather than intentionally blocked. The first 
 
 #### REST API And Integration Surface
 
-TrackDraw should add a versioned REST API as an account-backed integration surface for external tools, starting with read-only access to account projects and owned published shares.
+TrackDraw should add a versioned REST API as an account-backed integration surface for external tools, starting with read-only access to account projects and compact livestream overlay data.
 
 Supporting documents:
 
@@ -127,14 +127,14 @@ Why:
 
 Focus:
 
-- Shipped first slice: Better Auth API Key plugin integration, plugin-compatible D1 `apikey` storage, browser-session API key management routes, bearer-authenticated project reads at `/api/v1/me`, `/api/v1/projects`, `/api/v1/projects/[projectId]`, and `/api/v1/projects/[projectId]/track`, plus OpenAPI docs at `/api/v1/openapi.json` and `/api/docs`
+- Shipped first slice: Better Auth API Key plugin integration, plugin-compatible D1 `apikey` storage, browser-session API key management routes, bearer-authenticated project reads at `/api/v1/me`, `/api/v1/projects`, `/api/v1/projects/[projectId]`, and `/api/v1/projects/[projectId]/track`, livestream minimap data at `/api/v1/projects/[projectId]/overlay`, plus OpenAPI docs at `/api/v1/openapi.json` and `/api/docs`
 - Add browser-session API key management for signed-in users
 - Use Better Auth API Key plugin storage and verification, with explicit expiry and revocation
 - Clean up expired and revoked API keys after the visible retention window
-- Enforce throttling and rate limits for `/api/v1/*`, with stricter budgets for export endpoints
+- Enforce throttling and rate limits for `/api/v1/*`
 - Keep `/api/v1/*` authenticated by default for v1
-- Start with read-only project data and owned-share metadata
-- Defer public unauthenticated REST reads, write APIs, and share export endpoints until concrete integrations require them
+- Start with read-only project data and overlay/minimap metadata
+- Defer public unauthenticated REST reads, write APIs, and share endpoints until concrete integrations require them
 
 #### Share Lifecycle Follow-up
 
@@ -219,9 +219,8 @@ The same start/finish and split timing markers should first serve TrackDraw's ow
 
 Current state:
 
-- Stable project JSON export/import already exists through `serializeDesign()` and `parseDesign()`
-- The existing project JSON is the preferred first integration format for `rh-stream-overlays`
-- TrackDraw still lacks explicit race-route and timing-role authoring, so overlay preparation is not yet release-ready from this repo alone
+- The REST API now exposes a compact project overlay package for route, numbered obstacle, and timing marker data
+- Route and timing-role authoring exists, but overlay preparation still needs consumer-side validation against the `rh-stream-overlays` runtime expectations
 
 TrackDraw scope:
 

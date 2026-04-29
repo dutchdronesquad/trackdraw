@@ -38,8 +38,8 @@ The v1.6.0 release-sized work is archived below. The remaining active work stays
         Add bearer-authenticated project reads such as `/api/v1/me`, `/api/v1/projects`, and project track data.
   - [x] OpenAPI docs
         Serve an OpenAPI schema and API docs page so external tools can integrate against an explicit contract.
-  - [ ] Share and export integration endpoints
-        Add owned published-share reads and project export JSON packages once the first project read path is proven; defer share export endpoints until a concrete consumer needs share-token lookup or published snapshot parity.
+  - [x] RotorHazard livestream data endpoint
+        Add a compact account-project `/api/v1/projects/[projectId]/overlay` package for route, numbered obstacle, and timing marker data; defer shares and full project exports until a concrete non-overlay consumer needs them.
 
 - [x] Base UI to Radix UI migration
       Replace `@base-ui/react` with Radix UI primitives across all UI components to fix mobile touch handling inside dialogs. The immediate trigger is that Base UI's `Select` and `Menu` primitives fail to respond to touch events on mobile inside a dialog focus trap.
@@ -109,9 +109,9 @@ The v1.6.0 release-sized work is archived below. The remaining active work stays
   - [ ] Timing setup validation
         Warn or block overlay-oriented export when the race route is missing, timing roles are duplicated, or marked timing points cannot be mapped onto route progress.
   - [ ] TrackDraw JSON contract pass
-        Keep the existing serialized project JSON as the first integration format and document the fields `rh-stream-overlays` should consume.
-  - [ ] Overlay package export decision
-        Only add a dedicated overlay package export if the RH plugin proves the full project JSON is too broad or ambiguous.
+        Document the compact REST overlay package and the fields `rh-stream-overlays` should consume.
+  - [x] Overlay package endpoint
+        Added an account-project `/api/v1/projects/[projectId]/overlay` endpoint for route, numbered obstacle, and timing marker data without exposing full editor JSON.
 
 ## Backlog And Research
 

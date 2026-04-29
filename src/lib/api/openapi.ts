@@ -90,6 +90,55 @@ const trackPackageExample = {
   shapes: [],
 };
 
+const overlayPackageExample = {
+  type: "overlay_track",
+  schema: "trackdraw.overlay.v1",
+  source: { type: "project", id: "project_123" },
+  title: "Club race layout",
+  field: {
+    width: 60,
+    height: 40,
+    origin: "tl",
+    unit: "m",
+  },
+  route: {
+    shape_id: "route_123",
+    closed: false,
+    length_m: 126.4,
+    waypoints: [
+      { x: 8, y: 20, z: 0 },
+      { x: 28, y: 12, z: 1.5 },
+    ],
+    sampled_points: [
+      { x: 8, y: 20 },
+      { x: 12.4, y: 18.2 },
+    ],
+  },
+  route_status: "ready",
+  route_obstacles: [
+    {
+      id: "gate_1",
+      kind: "gate",
+      name: "Gate 1",
+      x: 12,
+      y: 18,
+      rotation: 90,
+      route_number: 1,
+      route_position: {
+        distance_m: 14.2,
+        progress: 0.112,
+        x: 12.1,
+        y: 18.1,
+        offset_m: 0.2,
+      },
+      width: 3,
+      height: 1.8,
+    },
+  ],
+  timing_markers: [],
+  updated_at: "2026-04-28T12:29:48.000Z",
+};
+
 export const trackdrawOpenApiSchema = {
   openapi: "3.1.0",
   info: {
@@ -97,11 +146,11 @@ export const trackdrawOpenApiSchema = {
     version: "1.0.0",
     summary: "Read-only TrackDraw integration API.",
     description: [
-      "The v1 REST API provides bearer-authenticated access to account identity checks and read-only project track data.",
+      "The TrackDraw REST API gives external tools a stable way to read account-backed track data and integration packages.",
       "",
-      "API keys are expiring bearer tokens created from account settings. Use `Authorization: Bearer <api_key>` for `/api/v1/*` endpoints.",
+      "Use it to connect project metadata, track geometry, timing markers, and livestream overlay data to tools outside TrackDraw.",
       "",
-      "Successful `/api/v1/*` responses use a `{ data, meta }` envelope. List endpoints add a `pagination` object. Errors use a compact `application/problem+json` body with `title`, `status`, `detail`, and a stable TrackDraw `code`.",
+      "The API is versioned, read-only in v1, and designed around explicit account ownership and expiring API keys.",
     ].join("\n"),
     contact: {
       name: "TrackDraw",
@@ -125,6 +174,11 @@ export const trackdrawOpenApiSchema = {
       description:
         "Bearer-authenticated read endpoints for active projects owned by the API key account. These endpoints require the `tracks:read` permission.",
     },
+    {
+      name: "RotorHazard",
+      description:
+        "Small bearer-authenticated packages for RotorHazard livestream minimaps and timing overlays.",
+    },
   ],
   "x-tagGroups": [
     {
@@ -134,6 +188,10 @@ export const trackdrawOpenApiSchema = {
     {
       name: "Track data",
       tags: ["Projects"],
+    },
+    {
+      name: "Integrations",
+      tags: ["RotorHazard"],
     },
   ],
   paths: {
@@ -270,6 +328,34 @@ export const trackdrawOpenApiSchema = {
                 data: {
                   ...trackPackageExample,
                 },
+                meta: { api_version: "v1" },
+              }
+            ),
+          },
+          "400": { $ref: "#/components/responses/BadRequest" },
+          "401": { $ref: "#/components/responses/Unauthorized" },
+          "404": { $ref: "#/components/responses/NotFound" },
+          "429": { $ref: "#/components/responses/RateLimited" },
+          "500": { $ref: "#/components/responses/InternalError" },
+        },
+      },
+    },
+    "/api/v1/projects/{projectId}/overlay": {
+      get: {
+        tags: ["RotorHazard"],
+        operationId: "getProjectOverlay",
+        summary: "Get livestream data",
+        description:
+          "Returns a compact route, obstacle, and timing package for livestream minimaps. This endpoint is designed for overlay consumers and excludes full editor JSON.",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ $ref: "#/components/parameters/ProjectId" }],
+        responses: {
+          "200": {
+            description: "Livestream overlay package for one project.",
+            content: jsonContent(
+              envelope({ $ref: "#/components/schemas/OverlayPackage" }),
+              {
+                data: overlayPackageExample,
                 meta: { api_version: "v1" },
               }
             ),
@@ -538,6 +624,85 @@ export const trackdrawOpenApiSchema = {
             description:
               "Integration-safe shape geometry. Editor-only fields such as map references, inventory, author name, tags, shape locks, front-offset guide metadata, and shape metadata are excluded.",
           },
+        },
+      },
+      OverlayPackage: {
+        type: "object",
+        description:
+          "Compact livestream minimap package with route geometry, numbered route obstacles, timing markers, and route positions.",
+        required: [
+          "type",
+          "schema",
+          "source",
+          "title",
+          "field",
+          "route",
+          "route_status",
+          "route_obstacles",
+          "timing_markers",
+          "updated_at",
+        ],
+        properties: {
+          type: { type: "string", const: "overlay_track" },
+          schema: { type: "string", const: "trackdraw.overlay.v1" },
+          source: {
+            type: "object",
+            required: ["type", "id"],
+            properties: {
+              type: { type: "string", const: "project" },
+              id: { type: "string" },
+            },
+          },
+          title: { type: "string" },
+          field: { $ref: "#/components/schemas/TrackField" },
+          route: {
+            anyOf: [
+              {
+                type: "object",
+                required: [
+                  "shape_id",
+                  "closed",
+                  "length_m",
+                  "waypoints",
+                  "sampled_points",
+                ],
+                properties: {
+                  shape_id: { type: "string" },
+                  closed: { type: "boolean" },
+                  length_m: { type: "number", minimum: 0 },
+                  waypoints: {
+                    type: "array",
+                    items: { type: "object", additionalProperties: true },
+                  },
+                  sampled_points: {
+                    type: "array",
+                    items: { type: "object", additionalProperties: true },
+                  },
+                },
+              },
+              { type: "null" },
+            ],
+          },
+          route_status: {
+            type: "string",
+            enum: [
+              "empty",
+              "missing-route",
+              "no-numbered-obstacles",
+              "no-route-matches",
+              "partial",
+              "ready",
+            ],
+          },
+          route_obstacles: {
+            type: "array",
+            items: { type: "object", additionalProperties: true },
+          },
+          timing_markers: {
+            type: "array",
+            items: { type: "object", additionalProperties: true },
+          },
+          updated_at: { type: "string", format: "date-time" },
         },
       },
     },
