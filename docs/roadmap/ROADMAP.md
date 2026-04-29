@@ -17,13 +17,13 @@ TrackDraw is now strong in these areas:
 
 The most useful next product moves are:
 
-- Race Pack QR codes that connect printed or on-screen briefings back to canonical shared views
-- Timing marker follow-ups that build on the shipped editor and Race Pack markers for race director planning and future overlay preparation
+- A versioned account-backed REST API with expiring API keys and OpenAPI documentation for external tools
+- Race-day operations follow-up that builds on shipped Race Pack QR codes and timing markers for future race director planning and overlay preparation
 - A sharper decision on how far account-backed project continuity should go after the shipped account and authorization foundation
 - A clearer separation between local-first workflows and account-backed follow-up
 - Versioned publish history for account-backed shares
 - Curated gallery collections that improve discovery without social mechanics
-- Operator-facing dashboard polish for published share and gallery lifecycle visibility
+- Targeted operator-facing dashboard follow-up only when it supports concrete collection or support workflows
 
 ## Product Principles
 
@@ -44,22 +44,7 @@ Labels used below:
 - `Account-backed`: depends on ownership, sync, identity, or shared persistence
 - `Research`: still primarily exploratory
 
-### 1. Race-Day Handoff Next Slice (`No account required`)
-
-The next release-sized work should build on the shipped Race Pack, published shares, map/reference work, and route numbering without turning TrackDraw into a race-control product.
-
-Focus:
-
-- Shipped timing gate markers for start/finish and split hardware placement
-- Keep future overlay metadata work behind the shipped editor and Race Pack timing marker foundation
-- Keep the future race director page behind these smaller foundations
-
-Suggested first slices:
-
-- Shipped: shared view QR code in Race Pack, tied to an active published account-project share with a clear no-share fallback
-- Shipped: timing gate markers for start/finish and split hardware placement, surfaced in the editor and Race Pack
-
-### 2. Accounts And Ownership Model (`Research`)
+### 1. Accounts And Ownership Model (`Research`)
 
 TrackDraw now has the first account foundation in place through sign-in, profile management, role-aware dashboard access, and internal role management. The next question is how far account-backed project continuity should go beyond that shipped foundation.
 
@@ -121,9 +106,35 @@ Current shipped foundation:
 - Role-aware dashboard access and internal role management
 - Initial account-backed schema and project/share ownership groundwork
 
-### 3. Account-Backed Follow-up (`Account-backed`)
+### 2. Account-Backed Follow-up (`Account-backed`)
 
 These items are now follow-up work rather than intentionally blocked. The first ownership model is clear enough that they can move forward when priority allows.
+
+#### REST API And Integration Surface
+
+TrackDraw should add a versioned REST API as an account-backed integration surface for external tools, starting with read-only access to account projects and owned published shares.
+
+Supporting documents:
+
+- `docs/research/trackdraw-rest-api.md`
+- `docs/pva/trackdraw-rest-api-pva.md`
+
+Why:
+
+- `rh-stream-overlays`, RotorHazard-adjacent plugins, club sites, event dashboards, and briefing tools need stable machine-readable track data
+- API keys are a natural account-only feature because they require identity, expiry, permissions, revocation, and ownership
+- OpenAPI documentation should make TrackDraw integration explicit rather than relying on ad hoc JSON exports or share-page scraping
+
+Focus:
+
+- Shipped first slice: Better Auth API Key plugin integration, plugin-compatible D1 `apikey` storage, browser-session API key management routes, and bearer-authenticated project reads at `/api/v1/me`, `/api/v1/projects`, `/api/v1/projects/[projectId]`, and `/api/v1/projects/[projectId]/track`
+- Add browser-session API key management for signed-in users
+- Use Better Auth API Key plugin storage and verification, with explicit expiry and revocation
+- Enforce throttling and rate limits for `/api/v1/*`, with stricter budgets for export endpoints
+- Keep `/api/v1/*` authenticated by default for v1
+- Start with read-only project data and owned-share metadata
+- Publish `GET /api/v1/openapi.json` and an API docs page from the first endpoint slice
+- Defer public unauthenticated REST reads, write APIs, and share export endpoints until concrete integrations require them
 
 #### Share Lifecycle Follow-up
 
@@ -181,27 +192,9 @@ Focus:
 - Surface selected collections on `/gallery` while keeping every card destination on `/share/[token]`
 - Keep collection pages or deep collection routing out of the first slice unless the gallery needs it later
 
-#### Admin Dashboard Operations Follow-up
+### 3. Race-Day Follow-up (`No account required`)
 
-Now that the admin dashboard exists, the next dashboard work should improve operator visibility and support workflows without turning the gallery into a social platform.
-
-Current boundary:
-
-- Public reporting flows are out of scope for now
-- Gallery safety remains operator-driven through existing feature, hide, restore, and delete controls
-- Dashboard follow-up should make existing account, share, audit, and gallery state easier to inspect before adding new moderation models
-
-Focus:
-
-- Add practical gallery filters for state, featured entries, hidden entries, and recent updates
-- Shipped: improve gallery dashboard share lifecycle visibility for active, expired, revoked, and gallery-linked shares
-- Shipped: make the audit log easier to inspect with account/gallery filters and action detail views
-- Support curated gallery collection management once collections become a build target
-- Consider a lightweight user/support lookup only if it helps resolve account, role, or share ownership issues
-
-### 4. Race-Day Follow-up (`No account required`)
-
-TrackDraw now has a real Race Pack and numbering handoff. The immediate QR/timing-marker slice is tracked at the top of the active roadmap; the remaining work here is broader race-day operations follow-up.
+TrackDraw now has a real Race Pack, numbering handoff, shared-view QR codes, and explicit timing markers. The immediate QR/timing-marker slice is archived with v1.6.0; the remaining work here is broader race-day operations follow-up.
 
 Current first pass:
 
@@ -255,7 +248,7 @@ Suggested first slices:
 - Add overlay-preparation validation that can be reused by export and future setup UI
 - Keep using full TrackDraw project JSON until the RH plugin proves a dedicated overlay package is necessary
 
-### 5. Real-Time Collaboration Evaluation (`Research`)
+### 4. Real-Time Collaboration Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
 
@@ -267,7 +260,7 @@ Suggested first slices:
 - Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
 - Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
-### 6. Backlog And Research Tracks
+### 5. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 
@@ -368,7 +361,7 @@ Suggested first slices:
   - Clarify how browse, duplicate, insert, and fork flows should work without overlapping confusingly with starter layouts or ordinary projects
   - Define ownership and visibility boundaries for private, club, team, or published template libraries
 
-### 7. Accounts Boundary
+### 6. Accounts Boundary
 
 Be deliberate about what should stay usable without an account versus what actually benefits from account identity and continuity.
 
@@ -388,6 +381,35 @@ Likely account-backed follow-up:
 - Curated gallery collections
 - Shared venue or club records, including shared inventory profiles
 - Identity-aware comments, review threads, and future collaboration
+
+## v1.6.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.6.0</summary>
+
+### Race-Day Handoff Next Slice (`No account required`)
+
+The Race Pack now connects printed and on-screen briefings back to canonical shared views, and timing hardware placement is clearer in both the editor and handoff output.
+
+Included:
+
+- Shared-view QR codes in Race Pack output, tied to active published account-project shares with a clear fallback when no share exists
+- Timing gate markers for start/finish and split hardware placement
+- Editor and Race Pack surfacing for timing roles so future race director and overlay preparation work can build on explicit metadata instead of ad hoc notes
+
+### Admin Dashboard Operations Follow-up (`Account-backed`)
+
+Operator-facing dashboard surfaces are now more consistent and easier to scan across gallery, users, and audit workflows.
+
+Included:
+
+- A consistent dashboard table toolbar with search and facet filters
+- Gallery state and share lifecycle filters for active, expired, revoked, and gallery-linked shares
+- User role filters for account administration
+- Audit category/action filters, clearer entity labels, and action detail views
+- A dashboard boundary that keeps public reporting out of scope while preserving operator-driven gallery and support workflows
+
+</details>
 
 ## v1.5.0 Archive
 
@@ -741,6 +763,9 @@ Sub-items:
       Add render and autosave instrumentation for development-time performance visibility.
 - [x] Editor and canvas modularisation
       Split key interaction and rendering responsibilities across more focused hooks, selectors, and utility modules.
+- [ ] Base UI to Radix UI migration
+      Replace `@base-ui/react` with Radix UI primitives across all UI components. The immediate trigger is that Base UI's `Select` and `Menu` primitives fail to respond to touch events on mobile inside a dialog focus trap. Migrate component-by-component keeping the exported API identical so call sites require no changes.
+      Supporting document: `docs/pva/base-ui-to-radix-ui-migration-pva.md`
 - [ ] Remaining maintainability and state-flow refactor pass
       Further reduce complexity in large rendering surfaces, persistence flow, and state-heavy editor paths.
 - [ ] File structure and large-file decomposition pass
