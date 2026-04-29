@@ -50,6 +50,7 @@ export function AccountDangerView({
             value={deleteConfirmation}
             onChange={(event) => onDeleteConfirmationChange(event.target.value)}
             placeholder="DELETE"
+            className="h-8 rounded-lg px-2.5 shadow-none"
           />
         </label>
 
@@ -63,6 +64,7 @@ export function AccountDangerView({
             disabled={
               deleting || deleteConfirmation.trim().toUpperCase() !== "DELETE"
             }
+            className="h-8 rounded-lg px-2.5"
           >
             {deleting ? "Deleting..." : "Delete account"}
           </Button>

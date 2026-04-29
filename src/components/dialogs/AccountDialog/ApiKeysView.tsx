@@ -99,7 +99,7 @@ export function AccountApiKeysView({
             type="text"
             value={apiKeyName}
             onChange={(event) => onApiKeyNameChange(event.target.value)}
-            className="order-2 sm:order-4"
+            className="order-2 h-8 rounded-lg px-2.5 shadow-none sm:order-4"
             placeholder="Overlay integration"
             maxLength={64}
           />
@@ -128,7 +128,7 @@ export function AccountApiKeysView({
             type="button"
             onClick={onCreateApiKey}
             disabled={creatingApiKey || !apiKeyName.trim()}
-            className="order-5 w-full sm:order-6 sm:w-auto"
+            className="order-5 h-8 rounded-lg px-2.5 sm:order-6 sm:w-auto"
           >
             {creatingApiKey ? (
               <LoaderCircle className="size-4 animate-spin" />
@@ -162,7 +162,7 @@ export function AccountApiKeysView({
                 type="button"
                 variant="outline"
                 onClick={() => onCopyApiKey(createdApiKey.key)}
-                className={cn(isMobile && "w-full")}
+                className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
               >
                 <Clipboard className="size-4" />
                 Copy
@@ -190,7 +190,7 @@ export function AccountApiKeysView({
             variant="outline"
             onClick={onRefreshApiKeys}
             disabled={apiKeysLoading}
-            className="shrink-0"
+            className="h-8 shrink-0 rounded-lg px-2.5"
           >
             <RefreshCw
               className={cn("size-4", apiKeysLoading && "animate-spin")}
@@ -261,7 +261,7 @@ export function AccountApiKeysView({
                       onClick={() => onDeleteApiKey(apiKey.id)}
                       disabled={isDeleting}
                       className={cn(
-                        "text-muted-foreground hover:text-foreground",
+                        "text-muted-foreground hover:text-foreground h-8 rounded-lg px-2.5",
                         isMobile && "w-full justify-center"
                       )}
                     >

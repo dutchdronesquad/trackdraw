@@ -1486,11 +1486,8 @@ export default function ShareDialog({
                         >
                           Edit details
                         </Button>
-                        <Button
-                          variant="outline"
-                          render={<Link href="/gallery" />}
-                        >
-                          View gallery
+                        <Button variant="outline" asChild>
+                          <Link href="/gallery">View gallery</Link>
                         </Button>
                       </div>
                       {confirmRemoveFromGallery ? (

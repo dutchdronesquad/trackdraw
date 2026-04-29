@@ -404,8 +404,8 @@ export function MapReferenceDialog({
             <Button
               type="button"
               variant="outline"
-              size="icon-sm"
-              className="bg-background/92 shadow-sm backdrop-blur-sm"
+              size="icon"
+              className="bg-background/92 size-7 shadow-sm backdrop-blur-sm"
               onClick={() => syncZoom(zoomRef.current + 1)}
               aria-label="Zoom in"
             >
@@ -414,8 +414,8 @@ export function MapReferenceDialog({
             <Button
               type="button"
               variant="outline"
-              size="icon-sm"
-              className="bg-background/92 shadow-sm backdrop-blur-sm"
+              size="icon"
+              className="bg-background/92 size-7 shadow-sm backdrop-blur-sm"
               onClick={() => syncZoom(zoomRef.current - 1)}
               aria-label="Zoom out"
             >
@@ -443,6 +443,7 @@ export function MapReferenceDialog({
           onKeyDown={(event) => {
             if (event.key === "Enter") applyTypedCenter();
           }}
+          className="h-8 rounded-lg px-2.5 shadow-none"
         />
       </label>
       <label className="block space-y-2">
@@ -456,6 +457,7 @@ export function MapReferenceDialog({
           onKeyDown={(event) => {
             if (event.key === "Enter") applyTypedCenter();
           }}
+          className="h-8 rounded-lg px-2.5 shadow-none"
         />
       </label>
     </div>
@@ -480,7 +482,8 @@ export function MapReferenceDialog({
               <Button
                 type="button"
                 variant="ghost"
-                size="icon-sm"
+                size="icon"
+                className="size-7"
                 onClick={() => syncRotation(0)}
                 aria-label="Reset rotation"
               >
@@ -504,6 +507,7 @@ export function MapReferenceDialog({
               type="button"
               variant="outline"
               size="sm"
+              className="h-7 rounded-lg px-2.5"
               onClick={() => nudgeRotation(-15)}
               aria-label="Rotate left 15 degrees"
             >
@@ -513,6 +517,7 @@ export function MapReferenceDialog({
               type="button"
               variant="outline"
               size="sm"
+              className="h-7 rounded-lg px-2.5"
               onClick={() => nudgeRotation(-1)}
               aria-label="Rotate left 1 degree"
             >
@@ -522,6 +527,7 @@ export function MapReferenceDialog({
               type="button"
               variant="outline"
               size="sm"
+              className="h-7 rounded-lg px-2.5"
               onClick={() => nudgeRotation(1)}
               aria-label="Rotate right 1 degree"
             >
@@ -531,6 +537,7 @@ export function MapReferenceDialog({
               type="button"
               variant="outline"
               size="sm"
+              className="h-7 rounded-lg px-2.5"
               onClick={() => nudgeRotation(15)}
               aria-label="Rotate right 15 degrees"
             >
@@ -550,7 +557,8 @@ export function MapReferenceDialog({
           <Button
             type="button"
             variant="ghost"
-            size="icon-xs"
+            size="icon"
+            className="size-6"
             onClick={() => syncRotation(0)}
             aria-label="Reset rotation"
           >
@@ -572,6 +580,7 @@ export function MapReferenceDialog({
           max={359}
           value={Math.round(rotationDeg)}
           onChange={(event) => syncRotation(Number(event.target.value))}
+          className="h-8 rounded-lg px-2.5 shadow-none"
         />
       </div>
     );
@@ -584,7 +593,7 @@ export function MapReferenceDialog({
         {renderPicker()}
       </div>
 
-      <div className="border-border/40 mt-3 space-y-4 lg:mt-0 lg:border-l lg:pl-3">
+      <div className="border-border/40 mt-3 space-y-4 lg:mt-0 lg:border-l lg:pl-4">
         <div className="space-y-2">
           <div className="text-muted-foreground text-[11px] font-medium">
             View
@@ -594,6 +603,7 @@ export function MapReferenceDialog({
               type="button"
               variant="outline"
               size="sm"
+              className="h-7 rounded-lg px-2.5"
               onClick={() => syncZoom(zoomRef.current - 1)}
               aria-label="Zoom out"
             >
@@ -604,6 +614,7 @@ export function MapReferenceDialog({
               type="button"
               variant="outline"
               size="sm"
+              className="h-7 rounded-lg px-2.5"
               onClick={() => syncZoom(zoomRef.current + 1)}
               aria-label="Zoom in"
             >
@@ -624,7 +635,7 @@ export function MapReferenceDialog({
             type="button"
             variant="outline"
             size="sm"
-            className="w-full"
+            className="h-7 w-full rounded-lg px-2.5"
             disabled={locatePending}
             onClick={handleLocate}
           >
@@ -658,6 +669,7 @@ export function MapReferenceDialog({
             type="button"
             variant="outline"
             size="sm"
+            className="h-7 rounded-lg px-2.5"
             disabled={locatePending}
             onClick={handleLocate}
           >

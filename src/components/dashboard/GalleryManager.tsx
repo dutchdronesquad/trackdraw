@@ -442,7 +442,8 @@ export default function DashboardGalleryManager({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-sm"
+                  size="icon"
+                  className="size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`${featureAction.label} ${entry.galleryTitle}`}
                   onClick={() =>
@@ -460,7 +461,8 @@ export default function DashboardGalleryManager({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-sm"
+                  size="icon"
+                  className="size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`${visibilityAction.label} ${entry.galleryTitle}`}
                   onClick={() =>
@@ -474,8 +476,8 @@ export default function DashboardGalleryManager({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-sm"
-                  className="text-destructive hover:text-destructive"
+                  size="icon"
+                  className="text-destructive hover:text-destructive size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`Delete ${entry.galleryTitle}`}
                   onClick={() => setDeleteCandidate(entry)}
