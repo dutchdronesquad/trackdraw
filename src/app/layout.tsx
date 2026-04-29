@@ -109,7 +109,7 @@ export default async function RootLayout({
     >
       <body className="font-sans antialiased">
         <ThemeBootstrap />
-        <TooltipProvider delay={500}>{children}</TooltipProvider>
+        <TooltipProvider delayDuration={500}>{children}</TooltipProvider>
         <Toaster position="bottom-right" richColors />
       </body>
     </html>

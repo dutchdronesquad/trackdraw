@@ -202,6 +202,7 @@ export default function Toolbar({
       <Sidebar
         collapsible="none"
         className="border-border h-full overflow-hidden border-r transition-[width] duration-200 ease-in-out"
+        style={{ width: "var(--sidebar-width)" }}
       >
         {/* Logo header */}
         <SidebarHeader className="border-border/60 flex h-11 items-center justify-center border-b px-3 py-0">
@@ -240,7 +241,7 @@ export default function Toolbar({
                 ) : (
                   <div className="h-2" />
                 ))}
-              <SidebarMenu className="space-y-1">
+              <SidebarMenu className="gap-0 space-y-1">
                 {group.tools.map((tool) => {
                   const active = tool.id === activeTool;
                   const btn = (
@@ -325,7 +326,7 @@ export default function Toolbar({
         </SidebarContent>
 
         <SidebarFooter className="border-border/60 gap-0 border-t p-2">
-          <SidebarMenu className="space-y-1" key="projects-footer-v3">
+          <SidebarMenu className="gap-0 space-y-1" key="projects-footer-v3">
             {renderFooterAction({
               key: "projects",
               label: "Projects",

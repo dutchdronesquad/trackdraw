@@ -9,9 +9,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { authClient } from "@/lib/auth-client";
@@ -144,21 +141,21 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
         className="border-border/70 bg-popover w-64 gap-0 rounded-2xl border p-0 shadow-[0_18px_40px_rgba(15,23,42,0.10)]"
       >
         <div className="px-3 py-2.5">
-          <PopoverHeader className="flex-row items-center gap-3 rounded-xl px-1 py-0.5">
+          <div className="flex items-center gap-3 rounded-xl px-1 py-0.5">
             <UserAvatar
               name={user?.name}
               email={user?.email}
               className="size-8 text-xs"
             />
             <div className="min-w-0 flex-1 text-left">
-              <PopoverTitle className="text-foreground truncate text-[12px] font-medium">
+              <p className="text-foreground truncate text-[12px] font-medium">
                 {getUserDisplayName(user)}
-              </PopoverTitle>
-              <PopoverDescription className="truncate pt-0.5 text-[11px]">
+              </p>
+              <p className="text-muted-foreground truncate pt-0.5 text-[11px]">
                 {user?.email ?? "TrackDraw account"}
-              </PopoverDescription>
+              </p>
             </div>
-          </PopoverHeader>
+          </div>
         </div>
         <div className="p-1.5">
           <button

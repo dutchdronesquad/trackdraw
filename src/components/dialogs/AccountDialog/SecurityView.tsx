@@ -287,44 +287,38 @@ export function AccountSecurityView({
                     <div className="flex items-center gap-1">
                       {isEditing ? null : (
                         <Tooltip>
-                          <TooltipTrigger
-                            render={
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size={isMobile ? "icon" : "icon-sm"}
-                                aria-label="Rename passkey"
-                                onClick={() =>
-                                  onEditingPasskeyIdChange(passkey.id)
-                                }
-                              >
-                                <Pencil className="size-4" />
-                              </Button>
-                            }
-                          />
-                          <TooltipContent>Rename</TooltipContent>
-                        </Tooltip>
-                      )}
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={
+                          <TooltipTrigger asChild>
                             <Button
                               type="button"
                               variant="ghost"
                               size={isMobile ? "icon" : "icon-sm"}
-                              aria-label={
-                                isDeleting
-                                  ? "Removing passkey"
-                                  : "Remove passkey"
+                              aria-label="Rename passkey"
+                              onClick={() =>
+                                onEditingPasskeyIdChange(passkey.id)
                               }
-                              onClick={() => onDeletePasskey(passkey.id)}
-                              disabled={isDeleting || passkeyLoading}
-                              className="text-muted-foreground hover:text-foreground"
                             >
-                              <Trash2 className="size-4" />
+                              <Pencil className="size-4" />
                             </Button>
-                          }
-                        />
+                          </TooltipTrigger>
+                          <TooltipContent>Rename</TooltipContent>
+                        </Tooltip>
+                      )}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size={isMobile ? "icon" : "icon-sm"}
+                            aria-label={
+                              isDeleting ? "Removing passkey" : "Remove passkey"
+                            }
+                            onClick={() => onDeletePasskey(passkey.id)}
+                            disabled={isDeleting || passkeyLoading}
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
                         <TooltipContent>
                           {isDeleting ? "Removing..." : "Remove from account"}
                         </TooltipContent>

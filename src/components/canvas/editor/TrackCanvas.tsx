@@ -1830,477 +1830,490 @@ const TrackCanvas = memo(
             endInteraction={endInteraction}
           />
         ) : null}
-        <ContextMenuTrigger
-          ref={containerRef}
-          className="relative h-full w-full overflow-hidden"
-          style={{ cursor: cursorStyle, touchAction: "none" }}
-        >
+        <ContextMenuTrigger asChild>
           <div
-            className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 flex max-w-[min(32rem,calc(100vw-7rem))] flex-col gap-1 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
-            style={{
-              top: RULER_SIZE + 6,
-              left: RULER_SIZE + 6,
-              display: showDesktopCanvasChrome ? "flex" : "none",
-            }}
+            ref={containerRef}
+            className="relative h-full w-full overflow-hidden"
+            style={{ cursor: cursorStyle, touchAction: "none" }}
           >
-            {draftPath.length > 0 ? (
-              <div className="text-foreground/80 flex flex-wrap items-center gap-1.5">
-                <span className="bg-primary/8 text-primary rounded-full px-1.5 py-0.5 font-medium">
-                  Path editing
-                </span>
-                <span className="text-muted-foreground/60">Add points</span>
-                <span className="text-border/80">·</span>
-                <span className="inline-flex items-center gap-1">
-                  <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-lg px-1 text-[10px] shadow-none">
-                    Enter
-                  </Kbd>
-                  <span className="text-muted-foreground/70">finish</span>
-                </span>
-                <span className="text-border/80">·</span>
-                <span className="inline-flex items-center gap-1">
-                  <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-lg px-1 text-[10px] shadow-none">
-                    Esc
-                  </Kbd>
-                  <span className="text-muted-foreground/70">cancel</span>
-                </span>
-                {draftCloseTarget && (
-                  <>
-                    <span className="text-border/80">·</span>
-                    <span className="rounded-full bg-amber-500/12 px-1.5 py-0.5 text-amber-600 dark:text-amber-300">
-                      Click to connect ends
-                    </span>
-                  </>
-                )}
-                {draftLengthWithCursor > 0 && (
-                  <>
-                    <span className="text-border/80">·</span>
-                    <span className="text-foreground/70 font-medium tabular-nums">
-                      {draftLengthWithCursor.toFixed(1)} m
-                    </span>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span>
-                  {design.field.width}m × {design.field.height}m
-                </span>
-                <span className="text-border">·</span>
-                <span>Grid {design.field.gridStep}m</span>
-                <span className="text-border">·</span>
-                <span>{snapEnabled ? "Smart snap" : "Snap off"}</span>
-              </div>
-            )}
-          </div>
-          <div
-            className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-10.5 right-2 z-20 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
-            style={{
-              top: RULER_SIZE + 6,
-              display: showDesktopCanvasChrome ? "block" : "none",
-            }}
-          >
-            <span className="text-foreground/60 font-medium">Mid-click</span>{" "}
-            pan ·{" "}
-            <span className="text-foreground/60 font-medium">Right-click</span>{" "}
-            menu · <span className="text-foreground/60 font-medium">Alt</span>{" "}
-            bypass
-          </div>
-          <div
-            className="absolute right-2 z-20"
-            style={{
-              top: RULER_SIZE + 34,
-              display: showDesktopCanvasChrome ? "block" : "none",
-            }}
-          >
-            <Tooltip>
-              <TooltipTrigger
-                onClick={() => {
-                  setManualView(false);
-                  fitFieldToViewport();
-                }}
-                className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
-                aria-label="Fit to window"
-              >
-                <Scan className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                Fit to window{" "}
-                <span className="ml-1 font-mono text-[11px] opacity-65">0</span>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <Stage
-            width={viewportSize.width}
-            height={viewportSize.height}
-            ref={stageRef}
-            draggable={activeTool === "grab" && !readOnly}
-            onDragStart={onStageDragStart}
-            onDragMove={onStageDragMove}
-            onDragEnd={onStageDragEnd}
-            onWheel={onWheel}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
-            onTap={onTap}
-            onDblTap={onDblTap}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseLeave={onMouseLeave}
-            onMouseUp={onMouseUp}
-          >
-            {/* Stable field layer: grid + borders — only redraws on design/theme change */}
-            <Layer listening={false}>
-              <MapReferenceLayer
-                field={design.field}
-                heightPx={heightPx}
-                mapReference={design.mapReference ?? null}
-                widthPx={widthPx}
-              />
-              <StableFieldContent
-                designField={design.field}
-                grid={grid}
-                heightPx={heightPx}
-                isDark={isDark}
-                stepPx={stepPx}
-                widthPx={widthPx}
-              />
-            </Layer>
+            <div
+              className="border-border/60 bg-card/80 text-muted-foreground pointer-events-none absolute z-20 flex max-w-[min(32rem,calc(100vw-7rem))] flex-col gap-1 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
+              style={{
+                top: RULER_SIZE + 6,
+                left: RULER_SIZE + 6,
+                display: showDesktopCanvasChrome ? "flex" : "none",
+              }}
+            >
+              {draftPath.length > 0 ? (
+                <div className="text-foreground/80 flex flex-wrap items-center gap-1.5">
+                  <span className="bg-primary/8 text-primary rounded-full px-1.5 py-0.5 font-medium">
+                    Path editing
+                  </span>
+                  <span className="text-muted-foreground/60">Add points</span>
+                  <span className="text-border/80">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-lg px-1 text-[10px] shadow-none">
+                      Enter
+                    </Kbd>
+                    <span className="text-muted-foreground/70">finish</span>
+                  </span>
+                  <span className="text-border/80">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-lg px-1 text-[10px] shadow-none">
+                      Esc
+                    </Kbd>
+                    <span className="text-muted-foreground/70">cancel</span>
+                  </span>
+                  {draftCloseTarget && (
+                    <>
+                      <span className="text-border/80">·</span>
+                      <span className="rounded-full bg-amber-500/12 px-1.5 py-0.5 text-amber-600 dark:text-amber-300">
+                        Click to connect ends
+                      </span>
+                    </>
+                  )}
+                  {draftLengthWithCursor > 0 && (
+                    <>
+                      <span className="text-border/80">·</span>
+                      <span className="text-foreground/70 font-medium tabular-nums">
+                        {draftLengthWithCursor.toFixed(1)} m
+                      </span>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span>
+                    {design.field.width}m × {design.field.height}m
+                  </span>
+                  <span className="text-border">·</span>
+                  <span>Grid {design.field.gridStep}m</span>
+                  <span className="text-border">·</span>
+                  <span>{snapEnabled ? "Smart snap" : "Snap off"}</span>
+                </div>
+              )}
+            </div>
+            <div
+              className="border-border/60 bg-card/80 text-muted-foreground/70 pointer-events-none absolute top-10.5 right-2 z-20 rounded-md border px-2 py-1 text-[11px] backdrop-blur"
+              style={{
+                top: RULER_SIZE + 6,
+                display: showDesktopCanvasChrome ? "block" : "none",
+              }}
+            >
+              <span className="text-foreground/60 font-medium">Mid-click</span>{" "}
+              pan ·{" "}
+              <span className="text-foreground/60 font-medium">
+                Right-click
+              </span>{" "}
+              menu · <span className="text-foreground/60 font-medium">Alt</span>{" "}
+              bypass
+            </div>
+            <div
+              className="absolute right-2 z-20"
+              style={{
+                top: RULER_SIZE + 34,
+                display: showDesktopCanvasChrome ? "block" : "none",
+              }}
+            >
+              <Tooltip>
+                <TooltipTrigger
+                  onClick={() => {
+                    setManualView(false);
+                    fitFieldToViewport();
+                  }}
+                  className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
+                  aria-label="Fit to window"
+                >
+                  <Scan className="size-3.5" />
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  Fit to window{" "}
+                  <span className="ml-1 font-mono text-[11px] opacity-65">
+                    0
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <Stage
+              width={viewportSize.width}
+              height={viewportSize.height}
+              ref={stageRef}
+              draggable={activeTool === "grab" && !readOnly}
+              onDragStart={onStageDragStart}
+              onDragMove={onStageDragMove}
+              onDragEnd={onStageDragEnd}
+              onWheel={onWheel}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onTap={onTap}
+              onDblTap={onDblTap}
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseLeave={onMouseLeave}
+              onMouseUp={onMouseUp}
+            >
+              {/* Stable field layer: grid + borders — only redraws on design/theme change */}
+              <Layer listening={false}>
+                <MapReferenceLayer
+                  field={design.field}
+                  heightPx={heightPx}
+                  mapReference={design.mapReference ?? null}
+                  widthPx={widthPx}
+                />
+                <StableFieldContent
+                  designField={design.field}
+                  grid={grid}
+                  heightPx={heightPx}
+                  isDark={isDark}
+                  stepPx={stepPx}
+                  widthPx={widthPx}
+                />
+              </Layer>
 
-            {/* Shapes layer */}
-            <Layer>
-              {shapeNodes}
-              {mobileShapeHitTargets}
-              {activeTool === "select" &&
-                !readOnly &&
-                selection.length > 1 &&
-                selectionFrame && (
-                  <Group
-                    x={selectionFrame.x + (groupDragPreview?.dx ?? 0)}
-                    y={selectionFrame.y + (groupDragPreview?.dy ?? 0)}
-                    draggable
-                    dragBoundFunc={dragBound}
-                    onMouseDown={(event) => {
-                      event.cancelBubble = true;
-                    }}
-                    onTap={(event) => {
-                      event.cancelBubble = true;
-                    }}
-                    onContextMenu={(event) => {
-                      event.cancelBubble = true;
-                      openContextMenuForSelection(selectionRef.current);
-                    }}
-                    onDragStart={(event) => {
-                      event.cancelBubble = true;
-                      dragSnapRef.current =
-                        snapEnabled &&
-                        !(
-                          event.evt.altKey ||
-                          event.evt.metaKey ||
-                          event.evt.shiftKey
+              {/* Shapes layer */}
+              <Layer>
+                {shapeNodes}
+                {mobileShapeHitTargets}
+                {activeTool === "select" &&
+                  !readOnly &&
+                  selection.length > 1 &&
+                  selectionFrame && (
+                    <Group
+                      x={selectionFrame.x + (groupDragPreview?.dx ?? 0)}
+                      y={selectionFrame.y + (groupDragPreview?.dy ?? 0)}
+                      draggable
+                      dragBoundFunc={dragBound}
+                      onMouseDown={(event) => {
+                        event.cancelBubble = true;
+                      }}
+                      onTap={(event) => {
+                        event.cancelBubble = true;
+                      }}
+                      onContextMenu={(event) => {
+                        event.cancelBubble = true;
+                        openContextMenuForSelection(selectionRef.current);
+                      }}
+                      onDragStart={(event) => {
+                        event.cancelBubble = true;
+                        dragSnapRef.current =
+                          snapEnabled &&
+                          !(
+                            event.evt.altKey ||
+                            event.evt.metaKey ||
+                            event.evt.shiftKey
+                          );
+                        setDragSnapPreview(null);
+                        beginInteraction();
+                        setGroupDragPreview({
+                          ids: [...selection],
+                          origin: { x: selectionFrame.x, y: selectionFrame.y },
+                          dx: 0,
+                          dy: 0,
+                        });
+                      }}
+                      onDragMove={(event) => {
+                        event.cancelBubble = true;
+                        const current = event.currentTarget.position();
+                        const resolved = resolveGroupDragPosition(
+                          current,
+                          selectionFrame,
+                          dragSnapRef.current,
+                          selectionRef.current
                         );
-                      setDragSnapPreview(null);
-                      beginInteraction();
-                      setGroupDragPreview({
-                        ids: [...selection],
-                        origin: { x: selectionFrame.x, y: selectionFrame.y },
-                        dx: 0,
-                        dy: 0,
-                      });
-                    }}
-                    onDragMove={(event) => {
-                      event.cancelBubble = true;
-                      const current = event.currentTarget.position();
-                      const resolved = resolveGroupDragPosition(
-                        current,
-                        selectionFrame,
-                        dragSnapRef.current,
-                        selectionRef.current
+                        setDragSnapPreview(
+                          resolved.snapped ? resolved.snapPoint : null
+                        );
+                        event.currentTarget.position(resolved.dragPosition);
+                        setGroupDragPreview((existing) =>
+                          existing
+                            ? {
+                                ...existing,
+                                dx: resolved.dragPosition.x - existing.origin.x,
+                                dy: resolved.dragPosition.y - existing.origin.y,
+                              }
+                            : existing
+                        );
+                      }}
+                      onDragEnd={(event) => {
+                        event.cancelBubble = true;
+                        const resolved = resolveGroupDragPosition(
+                          event.currentTarget.position(),
+                          selectionFrame,
+                          dragSnapRef.current,
+                          selectionRef.current
+                        );
+                        event.currentTarget.position(resolved.finalPosition);
+                        setDragSnapPreview(null);
+                        const activePreview = groupDragPreview;
+                        setGroupDragPreview(null);
+                        endInteraction();
+                        const origin = activePreview?.origin ?? {
+                          x: selectionFrame.x,
+                          y: selectionFrame.y,
+                        };
+                        const ids = activePreview?.ids ?? [...selection];
+                        applyGroupDragDelta(
+                          ids,
+                          resolved.finalPosition.x - origin.x,
+                          resolved.finalPosition.y - origin.y
+                        );
+                      }}
+                    >
+                      <Rect
+                        width={selectionFrame.width}
+                        height={selectionFrame.height}
+                        fill={isDark ? "#60a5fa12" : "#3b82f610"}
+                        strokeEnabled={false}
+                        cornerRadius={8}
+                      />
+                      {groupedSelectionLabel && (
+                        <Group x={10} y={-28} listening={false}>
+                          <Rect
+                            width={Math.max(
+                              54,
+                              groupedSelectionLabel.length * 7.2 + 18
+                            )}
+                            height={20}
+                            fill={isDark ? "#082f49" : "#e0f2fe"}
+                            stroke={isDark ? "#38bdf8" : "#0284c7"}
+                            strokeWidth={1}
+                            cornerRadius={999}
+                            opacity={0.96}
+                          />
+                          <Text
+                            x={0}
+                            y={4}
+                            width={Math.max(
+                              54,
+                              groupedSelectionLabel.length * 7.2 + 18
+                            )}
+                            align="center"
+                            text={groupedSelectionLabel}
+                            fontSize={11}
+                            fontStyle="600"
+                            fill={isDark ? "#e0f2fe" : "#075985"}
+                          />
+                        </Group>
+                      )}
+                    </Group>
+                  )}
+              </Layer>
+
+              {!readOnly ? (
+                <TrackCanvasEditorOverlays
+                  activeTool={activeTool}
+                  cursor={cursor}
+                  designPpm={design.field.ppm}
+                  draftCloseTarget={draftCloseTarget}
+                  draftPointsPx={draftPointsPx}
+                  draftPreviewSmoothPx={draftPreviewSmoothPx}
+                  dragSnapPreview={dragSnapPreview}
+                  effectiveSelectionFrame={
+                    selection.length > 1 ? effectiveSelectionFrame : null
+                  }
+                  hoverCell={hoverCell}
+                  isDark={isDark}
+                  magneticSnapRadiusPx={magneticSnapRadiusPx}
+                  marqueeRect={marqueeRect}
+                  onRotateStart={(event) => {
+                    if (
+                      !singleSelectedShape ||
+                      singleSelectedShape.locked ||
+                      !rotationGuide
+                    ) {
+                      return;
+                    }
+
+                    event.cancelBubble = true;
+                    const stage = stageRef.current;
+                    const pointer = stage?.getRelativePointerPosition();
+                    if (!pointer) return;
+                    if (!startRotationHistorySession()) return;
+
+                    const startAngle =
+                      (Math.atan2(
+                        pointer.y - rotationGuide.center.y,
+                        pointer.x - rotationGuide.center.x
+                      ) *
+                        180) /
+                      Math.PI;
+
+                    setRotationSession({
+                      center: rotationGuide.center,
+                      shapeId: singleSelectedShape.id,
+                      initialRotation: singleSelectedShape.rotation,
+                      previewRotation: singleSelectedShape.rotation,
+                      startAngle,
+                      startRotation: singleSelectedShape.rotation - 90,
+                    });
+                  }}
+                  rotationGuide={rotationGuide}
+                  showAngleLabel={rotationSession !== null}
+                  showFrontLabel={
+                    !!displaySingleSelectedShape &&
+                    hasFrontBackOrientation(displaySingleSelectedShape)
+                  }
+                  showRotationGuide={activeTool === "select"}
+                  snapRadiusMeters={snapRadiusMeters}
+                  snapTarget={snapTarget}
+                  stepPx={stepPx}
+                />
+              ) : null}
+
+              <Layer>
+                {showObstacleNumbers &&
+                  obstacleNumberMap &&
+                  designShapes
+                    .filter((shape) => shape.id !== draftSourceShapeId)
+                    .map((shape) => {
+                      const obstacleNumber = obstacleNumberMap.get(shape.id);
+                      if (typeof obstacleNumber !== "number") return null;
+
+                      const bounds = getShapeLocalBounds(
+                        shape,
+                        design.field.ppm
                       );
-                      setDragSnapPreview(
-                        resolved.snapped ? resolved.snapPoint : null
-                      );
-                      event.currentTarget.position(resolved.dragPosition);
-                      setGroupDragPreview((existing) =>
-                        existing
+                      if (!bounds) return null;
+
+                      const localX = bounds.x + bounds.width / 2;
+                      const localY = bounds.y - 16;
+                      const radians = (shape.rotation * Math.PI) / 180;
+                      const rotatedX =
+                        localX * Math.cos(radians) - localY * Math.sin(radians);
+                      const rotatedY =
+                        localX * Math.sin(radians) + localY * Math.cos(radians);
+                      const offset =
+                        groupDragPreview && groupDragIdSet.has(shape.id)
                           ? {
-                              ...existing,
-                              dx: resolved.dragPosition.x - existing.origin.x,
-                              dy: resolved.dragPosition.y - existing.origin.y,
+                              x: groupDragPreview.dx,
+                              y: groupDragPreview.dy,
                             }
-                          : existing
+                          : { x: 0, y: 0 };
+                      const x =
+                        m2px(
+                          shape.kind === "polyline" ? 0 : shape.x,
+                          design.field.ppm
+                        ) +
+                        rotatedX +
+                        offset.x;
+                      const y =
+                        m2px(
+                          shape.kind === "polyline" ? 0 : shape.y,
+                          design.field.ppm
+                        ) +
+                        rotatedY +
+                        offset.y;
+
+                      return (
+                        <Group
+                          key={`obstacle-number-${shape.id}`}
+                          listening={false}
+                        >
+                          <Circle
+                            x={x}
+                            y={y}
+                            radius={10}
+                            fill={
+                              selectionIdSet.has(shape.id)
+                                ? "#0f172a"
+                                : "#111827"
+                            }
+                            stroke={
+                              selectionIdSet.has(shape.id)
+                                ? "#60a5fa"
+                                : "#94a3b8"
+                            }
+                            strokeWidth={selectionIdSet.has(shape.id) ? 1.5 : 1}
+                            opacity={0.96}
+                          />
+                          <Text
+                            x={x - 10}
+                            y={y - 9}
+                            width={20}
+                            height={20}
+                            align="center"
+                            verticalAlign="middle"
+                            text={String(obstacleNumber)}
+                            fontSize={11}
+                            fontStyle="700"
+                            fill="#f8fafc"
+                          />
+                        </Group>
                       );
-                    }}
-                    onDragEnd={(event) => {
-                      event.cancelBubble = true;
-                      const resolved = resolveGroupDragPosition(
-                        event.currentTarget.position(),
-                        selectionFrame,
-                        dragSnapRef.current,
-                        selectionRef.current
-                      );
-                      event.currentTarget.position(resolved.finalPosition);
-                      setDragSnapPreview(null);
-                      const activePreview = groupDragPreview;
-                      setGroupDragPreview(null);
-                      endInteraction();
-                      const origin = activePreview?.origin ?? {
-                        x: selectionFrame.x,
-                        y: selectionFrame.y,
-                      };
-                      const ids = activePreview?.ids ?? [...selection];
-                      applyGroupDragDelta(
-                        ids,
-                        resolved.finalPosition.x - origin.x,
-                        resolved.finalPosition.y - origin.y
-                      );
+                    })}
+              </Layer>
+            </Stage>
+
+            {showRulers && (
+              <>
+                <div
+                  className="pointer-events-none absolute z-10"
+                  style={{ top: 0, left: RULER_SIZE }}
+                >
+                  <div
+                    style={{
+                      position: "relative",
+                      width: viewportSize.width - RULER_SIZE,
+                      height: RULER_SIZE,
                     }}
                   >
-                    <Rect
-                      width={selectionFrame.width}
-                      height={selectionFrame.height}
-                      fill={isDark ? "#60a5fa12" : "#3b82f610"}
-                      strokeEnabled={false}
-                      cornerRadius={8}
+                    <CanvasRuler
+                      orientation="h"
+                      stageTransform={{
+                        ...stageTransform,
+                        x: stageTransform.x - RULER_SIZE,
+                      }}
+                      ppm={design.field.ppm}
+                      gridStep={design.field.gridStep}
+                      length={viewportSize.width - RULER_SIZE}
+                      isDark={isDark}
                     />
-                    {groupedSelectionLabel && (
-                      <Group x={10} y={-28} listening={false}>
-                        <Rect
-                          width={Math.max(
-                            54,
-                            groupedSelectionLabel.length * 7.2 + 18
-                          )}
-                          height={20}
-                          fill={isDark ? "#082f49" : "#e0f2fe"}
-                          stroke={isDark ? "#38bdf8" : "#0284c7"}
-                          strokeWidth={1}
-                          cornerRadius={999}
-                          opacity={0.96}
-                        />
-                        <Text
-                          x={0}
-                          y={4}
-                          width={Math.max(
-                            54,
-                            groupedSelectionLabel.length * 7.2 + 18
-                          )}
-                          align="center"
-                          text={groupedSelectionLabel}
-                          fontSize={11}
-                          fontStyle="600"
-                          fill={isDark ? "#e0f2fe" : "#075985"}
-                        />
-                      </Group>
-                    )}
-                  </Group>
-                )}
-            </Layer>
-
-            {!readOnly ? (
-              <TrackCanvasEditorOverlays
-                activeTool={activeTool}
-                cursor={cursor}
-                designPpm={design.field.ppm}
-                draftCloseTarget={draftCloseTarget}
-                draftPointsPx={draftPointsPx}
-                draftPreviewSmoothPx={draftPreviewSmoothPx}
-                dragSnapPreview={dragSnapPreview}
-                effectiveSelectionFrame={
-                  selection.length > 1 ? effectiveSelectionFrame : null
-                }
-                hoverCell={hoverCell}
-                isDark={isDark}
-                magneticSnapRadiusPx={magneticSnapRadiusPx}
-                marqueeRect={marqueeRect}
-                onRotateStart={(event) => {
-                  if (
-                    !singleSelectedShape ||
-                    singleSelectedShape.locked ||
-                    !rotationGuide
-                  ) {
-                    return;
-                  }
-
-                  event.cancelBubble = true;
-                  const stage = stageRef.current;
-                  const pointer = stage?.getRelativePointerPosition();
-                  if (!pointer) return;
-                  if (!startRotationHistorySession()) return;
-
-                  const startAngle =
-                    (Math.atan2(
-                      pointer.y - rotationGuide.center.y,
-                      pointer.x - rotationGuide.center.x
-                    ) *
-                      180) /
-                    Math.PI;
-
-                  setRotationSession({
-                    center: rotationGuide.center,
-                    shapeId: singleSelectedShape.id,
-                    initialRotation: singleSelectedShape.rotation,
-                    previewRotation: singleSelectedShape.rotation,
-                    startAngle,
-                    startRotation: singleSelectedShape.rotation - 90,
-                  });
-                }}
-                rotationGuide={rotationGuide}
-                showAngleLabel={rotationSession !== null}
-                showFrontLabel={
-                  !!displaySingleSelectedShape &&
-                  hasFrontBackOrientation(displaySingleSelectedShape)
-                }
-                showRotationGuide={activeTool === "select"}
-                snapRadiusMeters={snapRadiusMeters}
-                snapTarget={snapTarget}
-                stepPx={stepPx}
-              />
-            ) : null}
-
-            <Layer>
-              {showObstacleNumbers &&
-                obstacleNumberMap &&
-                designShapes
-                  .filter((shape) => shape.id !== draftSourceShapeId)
-                  .map((shape) => {
-                    const obstacleNumber = obstacleNumberMap.get(shape.id);
-                    if (typeof obstacleNumber !== "number") return null;
-
-                    const bounds = getShapeLocalBounds(shape, design.field.ppm);
-                    if (!bounds) return null;
-
-                    const localX = bounds.x + bounds.width / 2;
-                    const localY = bounds.y - 16;
-                    const radians = (shape.rotation * Math.PI) / 180;
-                    const rotatedX =
-                      localX * Math.cos(radians) - localY * Math.sin(radians);
-                    const rotatedY =
-                      localX * Math.sin(radians) + localY * Math.cos(radians);
-                    const offset =
-                      groupDragPreview && groupDragIdSet.has(shape.id)
-                        ? {
-                            x: groupDragPreview.dx,
-                            y: groupDragPreview.dy,
-                          }
-                        : { x: 0, y: 0 };
-                    const x =
-                      m2px(
-                        shape.kind === "polyline" ? 0 : shape.x,
-                        design.field.ppm
-                      ) +
-                      rotatedX +
-                      offset.x;
-                    const y =
-                      m2px(
-                        shape.kind === "polyline" ? 0 : shape.y,
-                        design.field.ppm
-                      ) +
-                      rotatedY +
-                      offset.y;
-
-                    return (
-                      <Group
-                        key={`obstacle-number-${shape.id}`}
-                        listening={false}
-                      >
-                        <Circle
-                          x={x}
-                          y={y}
-                          radius={10}
-                          fill={
-                            selectionIdSet.has(shape.id) ? "#0f172a" : "#111827"
-                          }
-                          stroke={
-                            selectionIdSet.has(shape.id) ? "#60a5fa" : "#94a3b8"
-                          }
-                          strokeWidth={selectionIdSet.has(shape.id) ? 1.5 : 1}
-                          opacity={0.96}
-                        />
-                        <Text
-                          x={x - 10}
-                          y={y - 9}
-                          width={20}
-                          height={20}
-                          align="center"
-                          verticalAlign="middle"
-                          text={String(obstacleNumber)}
-                          fontSize={11}
-                          fontStyle="700"
-                          fill="#f8fafc"
-                        />
-                      </Group>
-                    );
-                  })}
-            </Layer>
-          </Stage>
-
-          {showRulers && (
-            <>
-              <div
-                className="pointer-events-none absolute z-10"
-                style={{ top: 0, left: RULER_SIZE }}
-              >
-                <div
-                  style={{
-                    position: "relative",
-                    width: viewportSize.width - RULER_SIZE,
-                    height: RULER_SIZE,
-                  }}
-                >
-                  <CanvasRuler
-                    orientation="h"
-                    stageTransform={{
-                      ...stageTransform,
-                      x: stageTransform.x - RULER_SIZE,
-                    }}
-                    ppm={design.field.ppm}
-                    gridStep={design.field.gridStep}
-                    length={viewportSize.width - RULER_SIZE}
-                    isDark={isDark}
-                  />
+                  </div>
                 </div>
-              </div>
-              <div
-                className="pointer-events-none absolute z-10"
-                style={{ top: RULER_SIZE, left: 0 }}
-              >
                 <div
+                  className="pointer-events-none absolute z-10"
+                  style={{ top: RULER_SIZE, left: 0 }}
+                >
+                  <div
+                    style={{
+                      position: "relative",
+                      width: RULER_SIZE,
+                      height: viewportSize.height - RULER_SIZE,
+                    }}
+                  >
+                    <CanvasRuler
+                      orientation="v"
+                      stageTransform={{
+                        ...stageTransform,
+                        y: stageTransform.y - RULER_SIZE,
+                      }}
+                      ppm={design.field.ppm}
+                      gridStep={design.field.gridStep}
+                      length={viewportSize.height - RULER_SIZE}
+                      isDark={isDark}
+                    />
+                  </div>
+                </div>
+                <div
+                  className="pointer-events-none absolute z-10"
                   style={{
-                    position: "relative",
+                    top: 0,
+                    left: 0,
                     width: RULER_SIZE,
-                    height: viewportSize.height - RULER_SIZE,
+                    height: RULER_SIZE,
+                    background: isDark ? "#070b12" : "#f2f4f7",
+                    borderRight: isDark
+                      ? "1px solid #1a2636"
+                      : "1px solid #c8d2db",
+                    borderBottom: isDark
+                      ? "1px solid #1a2636"
+                      : "1px solid #c8d2db",
                   }}
-                >
-                  <CanvasRuler
-                    orientation="v"
-                    stageTransform={{
-                      ...stageTransform,
-                      y: stageTransform.y - RULER_SIZE,
-                    }}
-                    ppm={design.field.ppm}
-                    gridStep={design.field.gridStep}
-                    length={viewportSize.height - RULER_SIZE}
-                    isDark={isDark}
-                  />
-                </div>
-              </div>
-              <div
-                className="pointer-events-none absolute z-10"
-                style={{
-                  top: 0,
-                  left: 0,
-                  width: RULER_SIZE,
-                  height: RULER_SIZE,
-                  background: isDark ? "#070b12" : "#f2f4f7",
-                  borderRight: isDark
-                    ? "1px solid #1a2636"
-                    : "1px solid #c8d2db",
-                  borderBottom: isDark
-                    ? "1px solid #1a2636"
-                    : "1px solid #c8d2db",
-                }}
-              />
-            </>
-          )}
+                />
+              </>
+            )}
+          </div>
         </ContextMenuTrigger>
 
         {contextMenu && (

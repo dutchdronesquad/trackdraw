@@ -38,8 +38,8 @@ export default function DashboardSiteHeader({
             {parent ? (
               <>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink render={<Link href={parent.href} />}>
-                    {parent.label}
+                  <BreadcrumbLink asChild>
+                    <Link href={parent.href}>{parent.label}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
@@ -48,8 +48,8 @@ export default function DashboardSiteHeader({
             {!parent ? (
               <>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink render={<Link href="/dashboard" />}>
-                    Dashboard
+                  <BreadcrumbLink asChild>
+                    <Link href="/dashboard">Dashboard</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />

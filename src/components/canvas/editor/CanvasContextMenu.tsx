@@ -94,7 +94,7 @@ export function CanvasContextMenuContent({
       contextMenu.deleteWaypointIndex !== null);
 
   return (
-    <ContextMenuContent sideOffset={6} className="min-w-56">
+    <ContextMenuContent className="min-w-56">
       <ContextMenuGroup>
         <ContextMenuLabel>
           <div className="text-foreground/85 font-medium">
@@ -285,7 +285,7 @@ export function CanvasContextMenuContent({
       </ContextMenuGroup>
       <ContextMenuSeparator />
       <ContextMenuItem
-        variant="destructive"
+        className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 [&_svg]:text-destructive"
         onClick={() => {
           onDelete(contextMenu.ids);
           onClose();

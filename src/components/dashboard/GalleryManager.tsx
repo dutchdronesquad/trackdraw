@@ -180,7 +180,7 @@ function ActionTooltip({
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger render={children} />
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent side="top" sideOffset={6}>
         {label}
       </TooltipContent>

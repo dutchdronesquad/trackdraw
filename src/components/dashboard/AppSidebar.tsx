@@ -194,24 +194,26 @@ export default function DashboardAppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
-              render={<Link href="/dashboard" />}
+              asChild
               className="hover:bg-transparent active:bg-transparent"
             >
-              <div className="flex flex-1 items-center group-data-[collapsible=icon]:justify-center">
-                <span className="relative block h-8 w-42 group-data-[collapsible=icon]:hidden">
-                  <Image
-                    src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
-                    alt="TrackDraw"
-                    fill
-                    unoptimized
-                    className="object-contain"
-                    draggable={false}
-                  />
-                </span>
-                <span className="text-foreground hidden size-8 items-center justify-center group-data-[collapsible=icon]:flex">
-                  <TrackDrawMark className="size-6" />
-                </span>
-              </div>
+              <Link href="/dashboard">
+                <div className="flex flex-1 items-center group-data-[collapsible=icon]:justify-center">
+                  <span className="relative block h-8 w-42 group-data-[collapsible=icon]:hidden">
+                    <Image
+                      src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
+                      alt="TrackDraw"
+                      fill
+                      unoptimized
+                      className="object-contain"
+                      draggable={false}
+                    />
+                  </span>
+                  <span className="text-foreground hidden size-8 items-center justify-center group-data-[collapsible=icon]:flex">
+                    <TrackDrawMark className="size-6" />
+                  </span>
+                </div>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -236,15 +238,15 @@ export default function DashboardAppSidebar({
                         "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground",
                         typeof badge === "number" && "pr-9"
                       )}
-                      render={
-                        <Link
-                          href={item.href}
-                          aria-current={isActive ? "page" : undefined}
-                        />
-                      }
+                      asChild
                     >
-                      <Icon />
-                      <span>{item.title}</span>
+                      <Link
+                        href={item.href}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <Icon />
+                        <span>{item.title}</span>
+                      </Link>
                     </SidebarMenuButton>
                     {typeof badge === "number" ? (
                       <SidebarMenuBadge className="bg-muted text-muted-foreground">
@@ -268,10 +270,12 @@ export default function DashboardAppSidebar({
                 <SidebarMenuButton
                   tooltip={item.title}
                   className="hover:bg-muted/80 hover:text-foreground"
-                  render={<Link href={item.href} />}
+                  asChild
                 >
-                  <Icon className="group-data-[collapsible=icon]:size-4.5" />
-                  <span>{item.title}</span>
+                  <Link href={item.href}>
+                    <Icon className="group-data-[collapsible=icon]:size-4.5" />
+                    <span>{item.title}</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );
