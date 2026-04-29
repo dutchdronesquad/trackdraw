@@ -10,7 +10,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Undo2,
@@ -165,6 +165,8 @@ export default function Header({
         : statusTone === "syncing"
           ? "Syncing"
           : "Synced";
+  const headerActionClass =
+    "text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 cursor-pointer gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5";
 
   const viewToggle = (
     <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
@@ -452,7 +454,7 @@ export default function Header({
               onClick={onExport}
               className={cn(
                 buttonVariants({ variant: "ghost", size: "sm" }),
-                "hidden h-8 gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5"
+                headerActionClass
               )}
             >
               <Download className="size-3.5" />
@@ -464,7 +466,7 @@ export default function Header({
             onClick={onShare}
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
-              "hidden h-8 gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5"
+              headerActionClass
             )}
           >
             <Share2 className="size-3.5" />

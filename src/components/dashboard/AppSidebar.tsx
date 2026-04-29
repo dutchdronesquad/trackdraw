@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import DashboardNavUser from "@/components/dashboard/NavUser";
+import { appTooltipContentClassName } from "@/components/AppTooltip";
 import { useTheme } from "@/hooks/useTheme";
 import {
   Sidebar,
@@ -232,7 +233,10 @@ export default function DashboardAppSidebar({
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      tooltip={item.title}
+                      tooltip={{
+                        children: item.title,
+                        className: appTooltipContentClassName,
+                      }}
                       isActive={isActive}
                       className={cn(
                         "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground",
@@ -268,7 +272,10 @@ export default function DashboardAppSidebar({
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
-                  tooltip={item.title}
+                  tooltip={{
+                    children: item.title,
+                    className: appTooltipContentClassName,
+                  }}
                   className="hover:bg-muted/80 hover:text-foreground"
                   asChild
                 >

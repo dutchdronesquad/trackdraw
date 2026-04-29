@@ -130,7 +130,7 @@ export function ItemOverviewList({
 
   return (
     <Section
-      title="Items"
+      title="Track items"
       className={cn(grow && "flex min-h-0 flex-1 flex-col")}
     >
       <div
@@ -141,7 +141,7 @@ export function ItemOverviewList({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Filter items"
-            className="bg-background border-border/40 h-8 text-[11px] shadow-none lg:h-7"
+            className="bg-background border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-1 lg:h-7 lg:px-2"
           />
           <MetaPill>
             {filteredShapes.length}/{shapes.length}
@@ -184,7 +184,7 @@ export function ItemOverviewList({
                     role="button"
                     tabIndex={0}
                     onClick={() => setSelection([shape.id])}
-                    className="group/item hover:bg-primary/8 focus-visible:ring-primary/20 relative grid w-full grid-cols-[32px_minmax(0,1fr)_48px_28px] items-center gap-3 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
+                    className="group/item hover:bg-brand-primary/8 focus-visible:ring-brand-primary/20 relative grid w-full grid-cols-[32px_minmax(0,1fr)_48px_28px] items-center gap-3 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
                     onMouseEnter={() => setHoveredShapeId(shape.id)}
                     onMouseLeave={() => setHoveredShapeId(null)}
                     onKeyDown={(event) => {
@@ -194,7 +194,7 @@ export function ItemOverviewList({
                       }
                     }}
                   >
-                    <span className="bg-primary absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-r-full opacity-0 transition-opacity group-hover/item:opacity-100" />
+                    <span className="bg-brand-primary absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-r-full opacity-0 transition-opacity group-hover/item:opacity-100" />
                     <div className="flex min-w-0 items-center">
                       <span className="border-border/30 bg-muted/35 text-muted-foreground/85 flex h-5 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-[10px]">
                         {shapeOrder.get(shape.id)}
@@ -212,7 +212,7 @@ export function ItemOverviewList({
                     </div>
                     {typeof numberingReport.obstacleNumberMap.get(shape.id) ===
                     "number" ? (
-                      <span className="border-primary/20 bg-primary/8 text-primary/90 flex h-5 w-12 shrink-0 items-center justify-center rounded-md border font-mono text-[10px]">
+                      <span className="border-brand-primary/20 bg-brand-primary/8 text-brand-primary flex h-5 w-12 shrink-0 items-center justify-center rounded-md border font-mono text-[10px]">
                         #{numberingReport.obstacleNumberMap.get(shape.id)}
                       </span>
                     ) : unmappedObstacleIds.has(shape.id) ? (
@@ -228,7 +228,7 @@ export function ItemOverviewList({
                       <button
                         type="button"
                         title="Remove item"
-                        className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors"
+                        className="text-muted-foreground/55 hover:bg-brand-primary/10 hover:text-brand-primary flex size-5 items-center justify-center rounded-md transition-colors"
                         onClick={(event) => {
                           event.stopPropagation();
                           removeShapes([shape.id]);

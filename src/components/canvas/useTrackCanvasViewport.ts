@@ -25,6 +25,28 @@ export function useTrackCanvasViewport({
   syncTransform,
 }: TrackCanvasViewportParams) {
   useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const syncStageTransform = () => {
+      syncTransform();
+    };
+
+    stage.on(
+      "xChange yChange scaleXChange scaleYChange dragmove",
+      syncStageTransform
+    );
+    syncTransform();
+
+    return () => {
+      stage.off(
+        "xChange yChange scaleXChange scaleYChange dragmove",
+        syncStageTransform
+      );
+    };
+  }, [stageRef, syncTransform]);
+
+  useEffect(() => {
     const element = containerRef.current;
     if (!element) return;
 

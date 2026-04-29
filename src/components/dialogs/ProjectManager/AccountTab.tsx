@@ -113,7 +113,7 @@ export function ProjectManagerAccountTab({
             className={cn(
               "flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-all duration-150",
               isCurrent
-                ? "border-primary/20 bg-primary/5"
+                ? "border-border/70 bg-muted/45"
                 : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
             )}
           >
@@ -128,14 +128,14 @@ export function ProjectManagerAccountTab({
                   className={cn(
                     "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
                     isSyncing
-                      ? "bg-primary/10 text-primary/80"
+                      ? "bg-muted text-foreground/75"
                       : hasConflict
                         ? "bg-destructive/10 text-destructive/80"
                         : hasPendingChanges
                           ? "bg-muted text-foreground/75"
                           : hasSyncFailure
                             ? "bg-destructive/10 text-destructive/80"
-                            : "bg-primary/10 text-primary/80"
+                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                   )}
                 >
                   {isSyncing

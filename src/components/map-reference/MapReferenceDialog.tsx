@@ -696,10 +696,15 @@ export function MapReferenceDialog({
         type="button"
         variant="outline"
         onClick={() => onOpenChange(false)}
+        className="h-8 cursor-pointer rounded-lg px-3 shadow-none"
       >
         Cancel
       </Button>
-      <Button type="button" onClick={handleSave}>
+      <Button
+        type="button"
+        onClick={handleSave}
+        className="h-8 cursor-pointer rounded-lg px-3"
+      >
         Save map
       </Button>
     </>
@@ -710,7 +715,11 @@ export function MapReferenceDialog({
       data-vaul-no-drag
       className="border-border/40 bg-card/96 shrink-0 border-t px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur-xs"
     >
-      <Button type="button" className="w-full" onClick={handleSave}>
+      <Button
+        type="button"
+        className="h-9 w-full cursor-pointer rounded-lg"
+        onClick={handleSave}
+      >
         Save map
       </Button>
     </div>
@@ -766,7 +775,7 @@ export function MapReferenceDialog({
 
         <div className="flex min-h-0 flex-1 p-4">{desktopMapEditor}</div>
 
-        <div className="border-border/40 bg-muted/35 flex shrink-0 justify-end gap-2 border-t px-6 py-4">
+        <div className="border-border/40 bg-background/80 flex shrink-0 justify-end gap-2 border-t px-6 py-3.5">
           {desktopActions}
         </div>
       </div>

@@ -5,7 +5,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 
 export function formatRelativeTime(iso: string): string {
   try {
@@ -90,7 +90,7 @@ export function EmptyState({
 
 export function CurrentBadge({ label = "current" }: { label?: string }) {
   return (
-    <span className="bg-primary/10 text-primary/80 inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide">
+    <span className="bg-muted text-foreground/75 inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide">
       {label}
     </span>
   );

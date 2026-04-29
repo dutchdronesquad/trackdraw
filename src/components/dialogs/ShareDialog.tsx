@@ -145,6 +145,11 @@ function buildIframeCode(embedUrl: string) {
   return `<iframe src="${embedUrl}" title="TrackDraw track embed" loading="lazy" style="width:100%;height:600px;border:0;" allowfullscreen></iframe>`;
 }
 
+const shareDialogButtonClassName =
+  "h-9 cursor-pointer rounded-lg px-3 text-sm shadow-none";
+const shareDialogSmallButtonClassName =
+  "h-8 cursor-pointer rounded-lg px-3 text-xs shadow-none";
+
 const PREVIEW_MAX_W = 960;
 const PREVIEW_MAX_H = 540;
 const PREVIEW_QUALITY = 0.72;
@@ -805,7 +810,7 @@ export default function ShareDialog({
     : share?.galleryState === "featured"
       ? "bg-amber-500/10 text-amber-500"
       : share?.galleryState === "listed"
-        ? "bg-primary/10 text-primary"
+        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
         : share?.galleryState === "hidden"
           ? "bg-destructive/10 text-destructive"
           : "bg-muted text-muted-foreground";
@@ -922,10 +927,13 @@ export default function ShareDialog({
                     readOnly
                     value={currentShareUrl}
                     onFocus={(e) => e.target.select()}
-                    className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+                    className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
                   />
                 ) : null}
-                <Button onClick={handleCopyCurrentUrl} className="w-full">
+                <Button
+                  onClick={handleCopyCurrentUrl}
+                  className={cn(shareDialogButtonClassName, "w-full")}
+                >
                   {copied ? (
                     <Check className="size-4" />
                   ) : (
@@ -955,7 +963,7 @@ export default function ShareDialog({
                           className={cn(
                             "border-border/60 bg-background/65 text-foreground hover:bg-muted/40 cursor-pointer rounded-lg border px-3 py-2 text-xs transition-colors",
                             expiresInDays === option.value &&
-                              "border-primary bg-primary/10 text-primary"
+                              "border-foreground/15 bg-muted text-foreground"
                           )}
                         >
                           {option.label}
@@ -1005,7 +1013,7 @@ export default function ShareDialog({
                       readOnly
                       value={share.url}
                       onFocus={(e) => e.target.select()}
-                      className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+                      className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 truncate rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
                     />
                   ) : null}
                   {linkNeedsRefresh ? (
@@ -1031,7 +1039,7 @@ export default function ShareDialog({
                     <Button
                       onClick={primaryAction}
                       disabled={busy}
-                      className="w-full"
+                      className={cn(shareDialogButtonClassName, "w-full")}
                     >
                       <PrimaryIcon className="size-4" />
                       {primaryActionLabel}
@@ -1043,7 +1051,7 @@ export default function ShareDialog({
                             variant="outline"
                             onClick={() => handlePublish(true)}
                             disabled={busy}
-                            className="w-full"
+                            className={cn(shareDialogButtonClassName, "w-full")}
                           >
                             <RefreshCw className="size-4" />
                             Update link
@@ -1053,7 +1061,7 @@ export default function ShareDialog({
                           variant="destructive"
                           onClick={handleRevoke}
                           disabled={busy}
-                          className="w-full"
+                          className={cn(shareDialogButtonClassName, "w-full")}
                         >
                           <Ban className="size-4" />
                           Revoke
@@ -1095,7 +1103,7 @@ export default function ShareDialog({
                 <Button
                   onClick={() => handlePublish()}
                   disabled={busy}
-                  className="w-full"
+                  className={cn(shareDialogButtonClassName, "w-full")}
                 >
                   {publishing ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -1127,7 +1135,7 @@ export default function ShareDialog({
                 <Button
                   onClick={() => handlePublish(true)}
                   disabled={busy}
-                  className="w-full"
+                  className={cn(shareDialogButtonClassName, "w-full")}
                 >
                   {publishing ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -1187,7 +1195,7 @@ export default function ShareDialog({
                           className={cn(
                             "border-border/60 bg-background/65 flex cursor-pointer items-start gap-2 rounded-lg border px-3 py-2 text-left transition-colors",
                             embedView === option.view
-                              ? "border-primary/50 bg-primary/10 text-primary"
+                              ? "border-foreground/15 bg-muted text-foreground"
                               : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
                           )}
                         >
@@ -1200,7 +1208,7 @@ export default function ShareDialog({
                               className={cn(
                                 "mt-0.5 block text-[10px] leading-snug",
                                 embedView === option.view
-                                  ? "text-primary/75"
+                                  ? "text-foreground/70"
                                   : "text-muted-foreground"
                               )}
                             >
@@ -1227,7 +1235,10 @@ export default function ShareDialog({
                       variant="outline"
                       size="sm"
                       onClick={handleCopyEmbed}
-                      className="w-full min-[520px]:w-auto"
+                      className={cn(
+                        shareDialogSmallButtonClassName,
+                        "w-full min-[520px]:w-auto"
+                      )}
                     >
                       {copiedEmbed ? (
                         <Check className="size-4" />
@@ -1242,7 +1253,7 @@ export default function ShareDialog({
                     value={iframeCode}
                     rows={3}
                     onFocus={(e) => e.target.select()}
-                    className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 resize-none rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
+                    className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 resize-none rounded-lg border px-3 py-2 font-mono text-xs outline-hidden focus:ring-1"
                   />
                 </div>
               </div>
@@ -1308,7 +1319,7 @@ export default function ShareDialog({
                 <Button
                   variant="outline"
                   onClick={() => setActiveTab("share")}
-                  className="w-full"
+                  className={cn(shareDialogButtonClassName, "w-full")}
                 >
                   Create share link first
                 </Button>
@@ -1343,7 +1354,7 @@ export default function ShareDialog({
                   <input
                     value={galleryTitleInput}
                     onChange={(e) => setGalleryTitleInput(e.target.value)}
-                    className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
+                    className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
                     placeholder="Track title"
                   />
                 </label>
@@ -1357,7 +1368,7 @@ export default function ShareDialog({
                     onChange={(e) => setGalleryDescriptionInput(e.target.value)}
                     maxLength={GALLERY_DESCRIPTION_MAX_LENGTH}
                     rows={3}
-                    className="border-border bg-background/70 text-foreground focus:ring-primary/50 w-full min-w-0 resize-none rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
+                    className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 resize-none rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
                     placeholder="Short description for the gallery card"
                   />
                   <span className="text-muted-foreground mt-1 block text-right text-[10px]">
@@ -1427,6 +1438,7 @@ export default function ShareDialog({
                     variant="outline"
                     onClick={() => setShowGalleryForm(false)}
                     disabled={busy}
+                    className={shareDialogButtonClassName}
                   >
                     Cancel
                   </Button>
@@ -1442,6 +1454,7 @@ export default function ShareDialog({
                         ? !canSubmitGalleryMetadataUpdate
                         : !canSubmitGalleryListing)
                     }
+                    className={shareDialogButtonClassName}
                   >
                     {isGalleryVisible ? "Save changes" : "Add to gallery"}
                   </Button>
@@ -1483,10 +1496,15 @@ export default function ShareDialog({
                             setShowGalleryForm(true);
                           }}
                           disabled={busy}
+                          className={shareDialogButtonClassName}
                         >
                           Edit details
                         </Button>
-                        <Button variant="outline" asChild>
+                        <Button
+                          variant="outline"
+                          className={shareDialogButtonClassName}
+                          asChild
+                        >
                           <Link href="/gallery">View gallery</Link>
                         </Button>
                       </div>
@@ -1500,7 +1518,10 @@ export default function ShareDialog({
                             <Button
                               variant="outline"
                               size="sm"
-                              className="w-full min-[380px]:w-auto"
+                              className={cn(
+                                shareDialogSmallButtonClassName,
+                                "w-full min-[380px]:w-auto"
+                              )}
                               onClick={() => setConfirmRemoveFromGallery(false)}
                               disabled={busy}
                             >
@@ -1509,7 +1530,10 @@ export default function ShareDialog({
                             <Button
                               variant="destructive"
                               size="sm"
-                              className="w-full min-[380px]:w-auto"
+                              className={cn(
+                                shareDialogSmallButtonClassName,
+                                "w-full min-[380px]:w-auto"
+                              )}
                               onClick={handleUnlistFromGallery}
                               disabled={busy}
                             >
@@ -1525,7 +1549,10 @@ export default function ShareDialog({
                             size="sm"
                             onClick={() => setConfirmRemoveFromGallery(true)}
                             disabled={busy}
-                            className="text-destructive hover:text-destructive"
+                            className={cn(
+                              shareDialogSmallButtonClassName,
+                              "text-destructive hover:text-destructive"
+                            )}
                           >
                             <Trash2 className="size-4" />
                             Remove from gallery
@@ -1557,7 +1584,10 @@ export default function ShareDialog({
                             setShowGalleryForm(true);
                           }}
                           disabled={busy || shareNeedsRefresh}
-                          className="w-full min-[520px]:w-auto"
+                          className={cn(
+                            shareDialogButtonClassName,
+                            "w-full min-[520px]:w-auto"
+                          )}
                         >
                           Add to gallery
                         </Button>

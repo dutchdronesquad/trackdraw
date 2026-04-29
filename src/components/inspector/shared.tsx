@@ -189,7 +189,7 @@ export function IconBtn({
       onClick={onClick}
       title={title}
       aria-label={title}
-      className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-md border px-2.5 text-[11px] font-medium transition-colors lg:h-7 lg:px-2 ${
+      className={`inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-2.5 text-[11px] font-medium transition-colors lg:h-7 lg:px-2 ${
         danger
           ? "border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12"
           : "border-border/50 bg-background text-foreground/82 hover:bg-muted/35"

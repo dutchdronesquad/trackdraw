@@ -1,18 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import DataTableFacetFilter from "@/components/dashboard/tables/DataTableFacetFilter";
-import DataTableToolbar from "@/components/dashboard/tables/DataTableToolbar";
-import { Badge } from "@/components/ui/badge";
+import { ArrowUpDown } from "lucide-react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  DataTableBodyCell,
+  DataTableEmptyState,
+  DataTableFrame,
+  DataTableHeaderCell,
+} from "@/components/data-table/DataTable";
+import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
+import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import DataTableToolbar from "@/components/data-table/DataTableToolbar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { TableBody, TableHeader, TableRow } from "@/components/ui/table";
 import { getAccountRoleLabel, parseAccountRole } from "@/lib/account-roles";
+import { cn } from "@/lib/utils";
 
 type AuditEventActor = {
   id: string;
@@ -45,6 +48,15 @@ const categoryFilters: { value: AuditEventCategory; label: string }[] = [
   { value: "Gallery", label: "Gallery" },
   { value: "System", label: "System" },
 ];
+const unknownActorValue = "__unknown_actor__";
+
+type AuditSortKey = "event" | "actor" | "target" | "entity" | "createdAt";
+type AuditSortDirection = "asc" | "desc";
+
+type AuditSortState = {
+  key: AuditSortKey;
+  direction: AuditSortDirection;
+};
 
 function formatDateTime(value: string) {
   try {
@@ -75,6 +87,17 @@ function getSecondaryLabel(user: AuditEventActor) {
   }
 
   return user.email?.trim() || user.id;
+}
+
+function getActorFilterValue(event: DashboardAuditEvent) {
+  return event.actorUserId ?? unknownActorValue;
+}
+
+function getActorFilterLabel(event: DashboardAuditEvent) {
+  const label = getUserLabel(event.actor);
+  const secondary = getSecondaryLabel(event.actor);
+
+  return secondary && secondary !== label ? `${label} (${secondary})` : label;
 }
 
 function getRoleChangeSummary(metadata: Record<string, unknown> | null) {
@@ -203,6 +226,39 @@ function getEntityDisplay(event: DashboardAuditEvent) {
   };
 }
 
+function getSortValue(event: DashboardAuditEvent, key: AuditSortKey) {
+  if (key === "event") return getEventTitle(event.eventType);
+  if (key === "actor") return getUserLabel(event.actor);
+  if (key === "target") return getUserLabel(event.target);
+  if (key === "entity") return getEntityDisplay(event).label;
+  return event.createdAt;
+}
+
+function compareAuditEvents(
+  a: DashboardAuditEvent,
+  b: DashboardAuditEvent,
+  sorting: AuditSortState
+) {
+  const direction = sorting.direction === "asc" ? 1 : -1;
+
+  if (sorting.key === "createdAt") {
+    return (
+      (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) *
+      direction
+    );
+  }
+
+  const primary = String(getSortValue(a, sorting.key)).localeCompare(
+    String(getSortValue(b, sorting.key)),
+    undefined,
+    { sensitivity: "base" }
+  );
+
+  if (primary !== 0) return primary * direction;
+
+  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+}
+
 function eventMatchesSearch(event: DashboardAuditEvent, query: string) {
   if (!query) return true;
   const entityDisplay = getEntityDisplay(event);
@@ -235,25 +291,99 @@ export default function DashboardAuditEventsTable({
   const [selectedCategories, setSelectedCategories] =
     useState<AuditEventCategory[]>(initialCategories);
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
+  const [selectedActors, setSelectedActors] = useState<string[]>([]);
+  const [sorting, setSorting] = useState<AuditSortState>({
+    key: "createdAt",
+    direction: "desc",
+  });
+
+  const toggleSort = (key: AuditSortKey) => {
+    setSorting((current) =>
+      current.key === key
+        ? {
+            key,
+            direction: current.direction === "asc" ? "desc" : "asc",
+          }
+        : {
+            key,
+            direction: key === "createdAt" ? "desc" : "asc",
+          }
+    );
+  };
+
+  const renderSortHeader = (
+    key: AuditSortKey,
+    label: string,
+    className?: string
+  ) => (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className={cn(dataTableSortButtonClassName, className)}
+      onClick={() => toggleSort(key)}
+      aria-label={`Sort audit events by ${label.toLowerCase()}`}
+    >
+      {label}
+      <ArrowUpDown
+        className={cn(
+          "text-muted-foreground ml-1 size-3.5",
+          sorting.key === key && "text-foreground"
+        )}
+      />
+    </Button>
+  );
 
   const normalizedQuery = globalFilter.trim().toLowerCase();
   const searchedEvents = events.filter((event) =>
     eventMatchesSearch(event, normalizedQuery)
   );
-  const categoryFacetEvents = searchedEvents.filter((event) =>
-    selectedEventTypes.length === 0
-      ? true
-      : selectedEventTypes.includes(event.eventType)
-  );
-  const eventTypeFacetEvents = searchedEvents.filter((event) =>
-    selectedCategories.length === 0
-      ? true
-      : selectedCategories.includes(getEventCategory(event.eventType))
-  );
-  const filteredEvents = eventTypeFacetEvents.filter((event) =>
-    selectedEventTypes.length === 0
-      ? true
-      : selectedEventTypes.includes(event.eventType)
+  const categoryFacetEvents = searchedEvents
+    .filter((event) =>
+      selectedEventTypes.length === 0
+        ? true
+        : selectedEventTypes.includes(event.eventType)
+    )
+    .filter((event) =>
+      selectedActors.length === 0
+        ? true
+        : selectedActors.includes(getActorFilterValue(event))
+    );
+  const eventTypeFacetEvents = searchedEvents
+    .filter((event) =>
+      selectedCategories.length === 0
+        ? true
+        : selectedCategories.includes(getEventCategory(event.eventType))
+    )
+    .filter((event) =>
+      selectedActors.length === 0
+        ? true
+        : selectedActors.includes(getActorFilterValue(event))
+    );
+  const actorFacetEvents = searchedEvents
+    .filter((event) =>
+      selectedCategories.length === 0
+        ? true
+        : selectedCategories.includes(getEventCategory(event.eventType))
+    )
+    .filter((event) =>
+      selectedEventTypes.length === 0
+        ? true
+        : selectedEventTypes.includes(event.eventType)
+    );
+  const filteredEvents = eventTypeFacetEvents
+    .filter((event) =>
+      selectedEventTypes.length === 0
+        ? true
+        : selectedEventTypes.includes(event.eventType)
+    )
+    .filter((event) =>
+      selectedActors.length === 0
+        ? true
+        : selectedActors.includes(getActorFilterValue(event))
+    );
+  const sortedEvents = [...filteredEvents].sort((a, b) =>
+    compareAuditEvents(a, b, sorting)
   );
 
   const eventTypeFilters = Array.from(
@@ -273,6 +403,24 @@ export default function DashboardAuditEventsTable({
       (event) => getEventCategory(event.eventType) === filter.value
     ).length,
   }));
+  const actorFilterOptions = Array.from(
+    new Map(
+      searchedEvents.map((event) => [
+        getActorFilterValue(event),
+        {
+          label: getActorFilterLabel(event),
+          value: getActorFilterValue(event),
+        },
+      ])
+    ).values()
+  )
+    .sort((a, b) => a.label.localeCompare(b.label))
+    .map((filter) => ({
+      ...filter,
+      count: actorFacetEvents.filter(
+        (event) => getActorFilterValue(event) === filter.value
+      ).length,
+    }));
   const uniqueActorCount = new Set(
     filteredEvents.map((event) => event.actorUserId).filter(Boolean)
   ).size;
@@ -323,119 +471,129 @@ export default function DashboardAuditEventsTable({
           options={eventTypeFilters}
           onChange={setSelectedEventTypes}
         />
+        <DataTableFacetFilter
+          title="Actor"
+          selected={selectedActors}
+          options={actorFilterOptions}
+          onChange={setSelectedActors}
+        />
       </DataTableToolbar>
 
-      <div className="overflow-hidden rounded-xl border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="h-9 px-2.5 py-2">Event</TableHead>
-              <TableHead className="h-9 px-2.5 py-2">Actor</TableHead>
-              <TableHead className="h-9 px-2.5 py-2">Target</TableHead>
-              <TableHead className="h-9 px-2.5 py-2">Entity</TableHead>
-              <TableHead className="h-9 px-2.5 py-2 text-right">When</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEvents.length > 0 ? (
-              filteredEvents.map((event) => {
-                const metadataEntries = Object.entries(event.metadata ?? {});
-                const entityDisplay = getEntityDisplay(event);
+      <DataTableFrame minWidthClassName="min-w-[980px]">
+        <TableHeader>
+          <TableRow>
+            <DataTableHeaderCell className="w-[34%]">
+              {renderSortHeader("event", "Event")}
+            </DataTableHeaderCell>
+            <DataTableHeaderCell className="w-[20%]">
+              {renderSortHeader("actor", "Actor")}
+            </DataTableHeaderCell>
+            <DataTableHeaderCell className="w-[20%]">
+              {renderSortHeader("target", "Target")}
+            </DataTableHeaderCell>
+            <DataTableHeaderCell className="w-[16%]">
+              {renderSortHeader("entity", "Entity")}
+            </DataTableHeaderCell>
+            <DataTableHeaderCell className="w-40 text-right">
+              {renderSortHeader("createdAt", "When", "ml-auto -mr-2")}
+            </DataTableHeaderCell>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedEvents.length > 0 ? (
+            sortedEvents.map((event) => {
+              const metadataEntries = Object.entries(event.metadata ?? {});
+              const entityDisplay = getEntityDisplay(event);
 
-                return (
-                  <TableRow key={event.id}>
-                    <TableCell className="px-2.5 py-2">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium">
-                          {getEventTitle(event.eventType)}
-                        </p>
-                        <div className="mt-1 flex items-center gap-2">
-                          <Badge variant="outline">
-                            {getEventCategory(event.eventType)}
-                          </Badge>
-                          <span className="text-muted-foreground text-xs">
-                            {getEventDetailLabel(event)}
-                          </span>
-                        </div>
-                        {metadataEntries.length > 0 ? (
-                          <details className="mt-2">
-                            <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-xs">
-                              Details
-                            </summary>
-                            <dl className="mt-2 grid gap-1 text-xs">
-                              {metadataEntries.map(([key, value]) => (
-                                <div
-                                  key={key}
-                                  className="grid grid-cols-[112px_minmax(0,1fr)] gap-2"
-                                >
-                                  <dt className="text-muted-foreground">
-                                    {formatMetadataLabel(key)}
-                                  </dt>
-                                  <dd className="text-foreground min-w-0 truncate font-mono">
-                                    {formatMetadataValue(value)}
-                                  </dd>
-                                </div>
-                              ))}
-                            </dl>
-                          </details>
-                        ) : null}
+              return (
+                <TableRow key={event.id}>
+                  <DataTableBodyCell>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium">
+                        {getEventTitle(event.eventType)}
+                      </p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <Badge variant="outline">
+                          {getEventCategory(event.eventType)}
+                        </Badge>
+                        <span className="text-muted-foreground text-xs">
+                          {getEventDetailLabel(event)}
+                        </span>
                       </div>
-                    </TableCell>
-                    <TableCell className="px-2.5 py-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
-                          {getUserLabel(event.actor)}
+                      {metadataEntries.length > 0 ? (
+                        <details className="mt-2">
+                          <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-xs">
+                            Details
+                          </summary>
+                          <dl className="mt-2 grid gap-1 text-xs">
+                            {metadataEntries.map(([key, value]) => (
+                              <div
+                                key={key}
+                                className="grid grid-cols-[112px_minmax(0,1fr)] gap-2"
+                              >
+                                <dt className="text-muted-foreground">
+                                  {formatMetadataLabel(key)}
+                                </dt>
+                                <dd className="text-foreground min-w-0 truncate font-mono">
+                                  {formatMetadataValue(value)}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </details>
+                      ) : null}
+                    </div>
+                  </DataTableBodyCell>
+                  <DataTableBodyCell>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {getUserLabel(event.actor)}
+                      </p>
+                      {getSecondaryLabel(event.actor) ? (
+                        <p className="text-muted-foreground truncate text-xs">
+                          {getSecondaryLabel(event.actor)}
                         </p>
-                        {getSecondaryLabel(event.actor) ? (
-                          <p className="text-muted-foreground truncate text-xs">
-                            {getSecondaryLabel(event.actor)}
-                          </p>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-2.5 py-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
-                          {getUserLabel(event.target)}
+                      ) : null}
+                    </div>
+                  </DataTableBodyCell>
+                  <DataTableBodyCell>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {getUserLabel(event.target)}
+                      </p>
+                      {getSecondaryLabel(event.target) ? (
+                        <p className="text-muted-foreground truncate text-xs">
+                          {getSecondaryLabel(event.target)}
                         </p>
-                        {getSecondaryLabel(event.target) ? (
-                          <p className="text-muted-foreground truncate text-xs">
-                            {getSecondaryLabel(event.target)}
-                          </p>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-2.5 py-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
-                          {entityDisplay.label}
+                      ) : null}
+                    </div>
+                  </DataTableBodyCell>
+                  <DataTableBodyCell>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {entityDisplay.label}
+                      </p>
+                      {entityDisplay.detail ? (
+                        <p className="text-muted-foreground truncate text-xs">
+                          {entityDisplay.detail}
                         </p>
-                        {entityDisplay.detail ? (
-                          <p className="text-muted-foreground truncate text-xs">
-                            {entityDisplay.detail}
-                          </p>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-2.5 py-2 text-right text-xs whitespace-nowrap">
-                      {formatDateTime(event.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-muted-foreground h-24 text-center text-sm"
-                >
-                  No audit events match the current filters.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                      ) : null}
+                    </div>
+                  </DataTableBodyCell>
+                  <DataTableBodyCell className="text-right text-xs whitespace-nowrap">
+                    {formatDateTime(event.createdAt)}
+                  </DataTableBodyCell>
+                </TableRow>
+              );
+            })
+          ) : (
+            <DataTableEmptyState
+              colSpan={5}
+              message="No audit events match the current filters."
+            />
+          )}
+        </TableBody>
+      </DataTableFrame>
     </div>
   );
 }

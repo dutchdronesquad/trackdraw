@@ -6,7 +6,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 import {
   parseThemePreference,
   resolveTheme,

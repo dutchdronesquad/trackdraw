@@ -61,7 +61,7 @@ export function ProjectManagerRestoreTab({
             className={cn(
               "relative flex items-center gap-3 overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-150",
               isActive
-                ? "border-primary/20 bg-primary/5"
+                ? "border-border/70 bg-muted/45"
                 : "border-border/60 bg-background/70"
             )}
           >
@@ -119,7 +119,7 @@ export function ProjectManagerRestoreTab({
                         setConfirmRestoreId(null);
                         onOpenChange(false);
                       }}
-                      className="bg-primary/10 hover:bg-primary/20 text-primary cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
+                      className="bg-foreground text-background hover:bg-foreground/90 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
                     >
                       Restore
                     </button>

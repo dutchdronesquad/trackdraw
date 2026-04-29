@@ -5,7 +5,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 import { cn } from "@/lib/utils";
 
 function shortSha(sha?: string | null) {

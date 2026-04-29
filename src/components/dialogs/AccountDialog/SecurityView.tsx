@@ -12,7 +12,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 import type { AuthPasskey } from "@/lib/auth-client";
 import { isDevAuthShimEnabled } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";

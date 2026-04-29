@@ -235,7 +235,7 @@ export function SingleInspectorView({
                     setGroupName([shape.id], event.target.value)
                   }
                   placeholder="Optional group name"
-                  className="bg-muted/50 border-border/70 focus-visible:border-primary/50 focus-visible:ring-primary/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
+                  className="bg-muted/50 border-border/70 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
                 />
               </Row>
               <div className="pt-1">
@@ -264,7 +264,7 @@ export function SingleInspectorView({
                   updateShape(shape.id, { name: event.target.value })
                 }
                 placeholder={`${shapeKindLabels[shape.kind]} name`}
-                className="bg-muted/50 border-border/70 focus-visible:border-primary/50 focus-visible:ring-primary/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
+                className="bg-muted/50 border-border/70 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
               />
             </Row>
             <Row label="Position">
@@ -389,7 +389,7 @@ export function SingleInspectorView({
                       })
                     }
                     placeholder="split-1"
-                    className="bg-muted/50 border-border/70 focus-visible:border-primary/50 focus-visible:ring-primary/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
+                    className="bg-muted/50 border-border/70 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
                   />
                 </Row>
               ) : null}

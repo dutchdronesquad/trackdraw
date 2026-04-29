@@ -69,7 +69,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Kbd } from "@/components/ui/kbd";
 import type { ContextMenuData } from "@/components/canvas/editor/CanvasContextMenu";

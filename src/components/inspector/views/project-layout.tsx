@@ -58,7 +58,7 @@ function MapReferenceSection({
   const actionBtnClass =
     "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
   const actionBtnPrimaryClass =
-    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/25 bg-primary/8 px-2.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/8 px-2.5 text-[11px] font-medium text-brand-primary transition-colors hover:bg-brand-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
 
   return (
     <Section title="Map reference">
@@ -76,7 +76,7 @@ function MapReferenceSection({
                   onChange={(event) =>
                     setMapReferenceOpacity(Number(event.target.value))
                   }
-                  className="accent-primary h-2 min-w-0 flex-1"
+                  className="h-2 min-w-0 flex-1 accent-neutral-800 dark:accent-neutral-200"
                 />
                 <span className="text-muted-foreground/70 w-9 text-right text-[10px] font-medium tabular-nums">
                   {Math.round(reference.opacity * 100)}%
@@ -415,7 +415,7 @@ export function ProjectLayoutInspectorView({
           }}
           onChange={(event) => updateDesignMeta({ title: event.target.value })}
           placeholder="Untitled Track"
-          className="bg-muted/40 border-border/40 h-9 text-sm lg:h-7"
+          className="bg-muted/40 border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-sm shadow-none focus-visible:ring-1 lg:h-7 lg:px-2 lg:text-[11px]"
         />
       </div>
       <Section title="Field">
