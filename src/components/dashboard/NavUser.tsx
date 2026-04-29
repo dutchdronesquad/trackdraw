@@ -53,21 +53,19 @@ export default function DashboardNavUser({ user }: DashboardNavUserProps) {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
-            }
-          >
-            <UserAvatar
-              name={user.name}
-              email={user.email}
-              className="size-8 text-xs"
-            />
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{user.name}</span>
-              <span className="truncate text-xs">{roleLabel}</span>
-            </div>
-            <ChevronsUpDownIcon className="ml-auto size-4" />
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton size="lg" className="aria-expanded:bg-muted">
+              <UserAvatar
+                name={user.name}
+                email={user.email}
+                className="size-8 text-xs"
+              />
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{user.name}</span>
+                <span className="truncate text-xs">{roleLabel}</span>
+              </div>
+              <ChevronsUpDownIcon className="ml-auto size-4" />
+            </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-64 rounded-lg"

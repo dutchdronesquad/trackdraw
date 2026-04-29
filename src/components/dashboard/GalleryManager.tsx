@@ -485,22 +485,20 @@ export default function DashboardGalleryManager({
               </ActionTooltip>
             </div>
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground ml-auto size-8 p-0 md:hidden"
-                    disabled={isPending || !canManageGallery}
-                    aria-label="Open gallery entry actions"
-                  />
-                }
-              >
-                {isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <MoreHorizontal className="size-4" />
-                )}
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground ml-auto size-8 p-0 md:hidden"
+                  disabled={isPending || !canManageGallery}
+                  aria-label="Open gallery entry actions"
+                >
+                  {isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <MoreHorizontal className="size-4" />
+                  )}
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-44">
                 <DropdownMenuItem

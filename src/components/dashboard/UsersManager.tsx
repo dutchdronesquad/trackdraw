@@ -198,18 +198,16 @@ export default function DashboardUsersManager({
         return (
           <div className="flex items-center gap-2">
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isPending}
-                    className="min-w-28 justify-between gap-2"
-                  />
-                }
-              >
-                {getAccountRoleLabel(draftRole)}
-                <ChevronDown className="text-muted-foreground size-3.5" />
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending}
+                  className="min-w-28 justify-between gap-2"
+                >
+                  {getAccountRoleLabel(draftRole)}
+                  <ChevronDown className="text-muted-foreground size-3.5" />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuRadioGroup

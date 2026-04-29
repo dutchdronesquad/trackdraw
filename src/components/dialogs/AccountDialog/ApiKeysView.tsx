@@ -1,6 +1,5 @@
 import {
   Braces,
-  ChevronDown,
   Clipboard,
   LoaderCircle,
   Plus,
@@ -9,12 +8,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -106,44 +105,23 @@ export function AccountApiKeysView({
           />
 
           <div className="order-4 sm:order-5">
-            <DropdownMenu>
-              <DropdownMenuTrigger
+            <Select
+              value={apiKeyExpiryDays}
+              onValueChange={onApiKeyExpiryDaysChange}
+            >
+              <SelectTrigger
                 aria-labelledby="api-key-expiry-label"
                 className="border-input focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50 flex h-8 w-full items-center justify-between gap-1.5 rounded-lg border bg-transparent pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-3"
               >
-                <span>
-                  {apiKeyExpiryDays === "7"
-                    ? "7 days"
-                    : apiKeyExpiryDays === "30"
-                      ? "30 days"
-                      : apiKeyExpiryDays === "90"
-                        ? "90 days"
-                        : "1 year"}
-                </span>
-                <ChevronDown className="text-muted-foreground size-4 shrink-0" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuRadioGroup
-                  value={apiKeyExpiryDays}
-                  onValueChange={(value) => {
-                    if (value) onApiKeyExpiryDaysChange(value);
-                  }}
-                >
-                  <DropdownMenuRadioItem value="7">
-                    7 days
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="30">
-                    30 days
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="90">
-                    90 days
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="365">
-                    1 year
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="start">
+                <SelectItem value="7">7 days</SelectItem>
+                <SelectItem value="30">30 days</SelectItem>
+                <SelectItem value="90">90 days</SelectItem>
+                <SelectItem value="365">1 year</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <Button
