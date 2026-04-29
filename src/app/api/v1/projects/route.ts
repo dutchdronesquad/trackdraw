@@ -29,8 +29,8 @@ export async function GET(request: Request) {
 
     return apiListSuccess(page.map(toApiProjectSummary), {
       limit,
-      nextCursor: null,
-      hasMore: false,
+      next_cursor: null,
+      has_more: false,
     });
   } catch (error) {
     return apiProblem({

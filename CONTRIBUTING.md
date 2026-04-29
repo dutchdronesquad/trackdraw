@@ -195,6 +195,14 @@ npm run build
 
 Also verify the relevant user flow, especially for `/studio`, `/share/[token]`, mobile editing, import/export, recovery, and preview-mode auth/share behavior.
 
+For REST API changes, validate the preview-mode flow with D1 when the change touches auth, API keys, project serialization, OpenAPI docs, or scheduled cleanup:
+
+1. run `npm run preview`
+2. sign in and create an API key from account settings
+3. call `/api/v1/me`, `/api/v1/projects`, one project `/track`, and one project `/overlay` with `Authorization: Bearer <api_key>`
+4. open `/api/docs` and confirm the documented endpoints match the shipped routes
+5. revoke the key and confirm bearer requests no longer authenticate
+
 For 3D editor interaction work, also sanity-check live inspector feedback and direct-manipulation controls such as path elevation handles, floating ladder placement, and rotation handles.
 
 ## Pull requests

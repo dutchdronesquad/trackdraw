@@ -9,6 +9,31 @@ const deleteUserMock = vi.fn();
 const updateUserMock = vi.fn();
 const magicLinkMock = vi.fn();
 const passkeySignInMock = vi.fn();
+const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(
+  window,
+  "localStorage"
+);
+
+function createMemoryStorage(): Storage {
+  const store = new Map<string, string>();
+
+  return {
+    get length() {
+      return store.size;
+    },
+    clear: vi.fn(() => {
+      store.clear();
+    }),
+    getItem: vi.fn((key: string) => store.get(key) ?? null),
+    key: vi.fn((index: number) => Array.from(store.keys())[index] ?? null),
+    removeItem: vi.fn((key: string) => {
+      store.delete(key);
+    }),
+    setItem: vi.fn((key: string, value: string) => {
+      store.set(key, value);
+    }),
+  };
+}
 
 vi.mock("@better-auth/passkey/client", () => ({
   passkeyClient: vi.fn(() => ({})),
@@ -35,6 +60,10 @@ describe("authClient session resolution", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: createMemoryStorage(),
+    });
 
     useSessionMock.mockReturnValue({
       data: {
@@ -67,6 +96,13 @@ describe("authClient session resolution", () => {
 
   afterEach(() => {
     cleanup();
+    if (originalLocalStorageDescriptor) {
+      Object.defineProperty(
+        window,
+        "localStorage",
+        originalLocalStorageDescriptor
+      );
+    }
     vi.unstubAllGlobals();
   });
 

@@ -178,14 +178,16 @@ Recommended local auth test flow:
 6. copy the link from the local server log
 7. confirm Studio shows the signed-in state and authenticated APIs stop returning `401`
 
-## Share retention
+## Retention Cleanup
 
 Shares become invalid when `expires_at` is reached, but they are not deleted immediately.
+API keys are managed by Better Auth. Revoked keys are deleted through the API Key plugin, and expired key records are removed by scheduled cleanup after the retention window.
 
 The Worker runs a daily cron cleanup and removes:
 
 - revoked shares
 - shares that have been expired for more than 30 days
+- API keys that have been expired for more than 90 days
 
 The cron schedule is configured in `wrangler.jsonc`. To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
 

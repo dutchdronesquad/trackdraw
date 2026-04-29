@@ -40,6 +40,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@scalar/nextjs-api-reference": "^0.10.11",
     "@tanstack/react-table": "^8.21.3",
     "better-auth": "^1.6.0",
     "class-variance-authority": "^0.7.1",
