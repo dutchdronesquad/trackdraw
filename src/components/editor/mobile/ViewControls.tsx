@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Play, Scan, Share2, ArrowRight } from "lucide-react";
+import ViewModeSwitch from "@/components/editor/ViewModeSwitch";
 import { cn } from "@/lib/utils";
 import type { EditorViewportTab } from "@/components/editor/mobile/Panels";
 
@@ -116,25 +117,14 @@ export function ViewControls({
         <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
           View mode
         </p>
-        <div className="border-border/50 bg-muted/28 flex items-center gap-1.5 rounded-2xl border p-1">
-          {(["2d", "3d"] as const).map((nextTab) => (
-            <button
-              key={nextTab}
-              onClick={() => {
-                onTabChange(nextTab);
-                closePanel?.();
-              }}
-              className={cn(
-                "flex-1 rounded-[0.8rem] border py-2.5 text-[11px] font-medium tracking-wide uppercase transition-colors",
-                tab === nextTab
-                  ? "border-primary/30 bg-primary/12 text-primary shadow-xs"
-                  : "text-muted-foreground hover:bg-background/50 hover:text-foreground border-transparent"
-              )}
-            >
-              {nextTab === "2d" ? "Canvas" : "3D Preview"}
-            </button>
-          ))}
-        </div>
+        <ViewModeSwitch
+          value={tab}
+          onValueChange={(nextTab) => {
+            onTabChange(nextTab);
+            closePanel?.();
+          }}
+          size="drawer"
+        />
         <button
           onClick={onFitView}
           className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   type ColumnDef,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
@@ -18,8 +17,10 @@ import {
   type AccountRole,
 } from "@/lib/account-roles";
 import type { AdminUser } from "@/lib/admin-users";
-import DataTableFacetFilter from "@/components/dashboard/tables/DataTableFacetFilter";
-import DataTableToolbar from "@/components/dashboard/tables/DataTableToolbar";
+import DataTable from "@/components/data-table/DataTable";
+import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
+import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,14 +30,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 type DashboardUsersManagerProps = {
   currentUserId: string;
@@ -62,10 +56,14 @@ function formatDate(value: string) {
   }
 }
 
-function roleBadgeVariant(role: AccountRole): "default" | "muted" | "outline" {
-  if (role === "admin") return "default";
-  if (role === "moderator") return "muted";
-  return "outline";
+function roleBadgeClassName(role: AccountRole) {
+  if (role === "admin") {
+    return "border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300";
+  }
+  if (role === "moderator") {
+    return "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+  }
+  return "border-border bg-muted/50 text-muted-foreground";
 }
 
 export default function DashboardUsersManager({
@@ -126,11 +124,12 @@ export default function DashboardUsersManager({
     {
       id: "user",
       accessorFn: (row) => getUserLabel(row),
+      meta: { className: "w-[40%] min-w-56" },
       header: ({ column }) => (
         <Button
           variant="ghost"
           size="sm"
-          className="-ml-3 h-8"
+          className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           User
@@ -160,20 +159,24 @@ export default function DashboardUsersManager({
     {
       accessorKey: "role",
       header: "Role",
+      meta: { className: "w-32" },
       cell: ({ row }) => (
-        <Badge variant={roleBadgeVariant(row.original.role)}>
+        <Badge
+          variant="outline"
+          className={roleBadgeClassName(row.original.role)}
+        >
           {getAccountRoleLabel(row.original.role)}
         </Badge>
       ),
     },
     {
       accessorKey: "createdAt",
-      meta: { className: "hidden sm:table-cell" },
+      meta: { className: "hidden w-36 sm:table-cell" },
       header: ({ column }) => (
         <Button
           variant="ghost"
           size="sm"
-          className="-ml-3 h-8"
+          className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Created
@@ -189,6 +192,7 @@ export default function DashboardUsersManager({
     {
       id: "changeRole",
       header: "Change role",
+      meta: { className: "w-56" },
       cell: ({ row }) => {
         const user = row.original;
         const draftRole = draftRoles[user.id] ?? user.role;
@@ -198,18 +202,16 @@ export default function DashboardUsersManager({
         return (
           <div className="flex items-center gap-2">
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isPending}
-                    className="min-w-28 justify-between gap-2"
-                  />
-                }
-              >
-                {getAccountRoleLabel(draftRole)}
-                <ChevronDown className="text-muted-foreground size-3.5" />
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending}
+                  className="hover:bg-muted hover:text-foreground h-8 min-w-28 cursor-pointer justify-between gap-2 rounded-lg px-2.5 text-xs shadow-none"
+                >
+                  {getAccountRoleLabel(draftRole)}
+                  <ChevronDown className="text-muted-foreground size-3.5" />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuRadioGroup
@@ -222,7 +224,11 @@ export default function DashboardUsersManager({
                   }
                 >
                   {accountRoles.map((role) => (
-                    <DropdownMenuRadioItem key={role} value={role}>
+                    <DropdownMenuRadioItem
+                      key={role}
+                      value={role}
+                      className="focus:bg-muted focus:text-foreground cursor-pointer"
+                    >
                       {getAccountRoleLabel(role)}
                     </DropdownMenuRadioItem>
                   ))}
@@ -231,7 +237,12 @@ export default function DashboardUsersManager({
             </DropdownMenu>
             <Button
               size="sm"
-              variant={isDirty ? "default" : "outline"}
+              variant="outline"
+              className={cn(
+                "hover:bg-muted hover:text-foreground h-8 cursor-pointer rounded-lg px-3 text-xs shadow-none",
+                isDirty &&
+                  "border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background"
+              )}
               onClick={() => void saveRole(user.id)}
               disabled={!isDirty || isPending}
             >
@@ -291,75 +302,12 @@ export default function DashboardUsersManager({
           />
         </DataTableToolbar>
 
-        <div className="overflow-hidden rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className={[
-                        "h-9 px-2.5 py-2",
-                        (
-                          header.column.columnDef.meta as
-                            | { className?: string }
-                            | undefined
-                        )?.className,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {filteredRows.length ? (
-                filteredRows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={[
-                          "px-2.5 py-2",
-                          (
-                            cell.column.columnDef.meta as
-                              | { className?: string }
-                              | undefined
-                          )?.className,
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="text-muted-foreground h-24 text-center"
-                  >
-                    No users found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          table={table}
+          rows={filteredRows}
+          columnsLength={columns.length}
+          emptyMessage="No users found."
+        />
 
         <p className="text-muted-foreground mt-3 text-xs">
           Showing {filteredRows.length} of {users.length} accounts.

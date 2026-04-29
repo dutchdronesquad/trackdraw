@@ -763,7 +763,7 @@ Sub-items:
       Add render and autosave instrumentation for development-time performance visibility.
 - [x] Editor and canvas modularisation
       Split key interaction and rendering responsibilities across more focused hooks, selectors, and utility modules.
-- [ ] Base UI to Radix UI migration
+- [x] Base UI to Radix UI migration
       Replace `@base-ui/react` with Radix UI primitives across all UI components. The immediate trigger is that Base UI's `Select` and `Menu` primitives fail to respond to touch events on mobile inside a dialog focus trap. Migrate component-by-component keeping the exported API identical so call sites require no changes.
       Supporting document: `docs/pva/base-ui-to-radix-ui-migration-pva.md`
 - [ ] Remaining maintainability and state-flow refactor pass

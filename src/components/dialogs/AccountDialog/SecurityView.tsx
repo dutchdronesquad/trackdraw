@@ -12,7 +12,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 import type { AuthPasskey } from "@/lib/auth-client";
 import { isDevAuthShimEnabled } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -116,6 +116,7 @@ export function AccountSecurityView({
                   value={email}
                   onChange={(event) => onEmailChange(event.target.value)}
                   placeholder="name@example.com"
+                  className="h-8 rounded-lg px-2.5 shadow-none"
                 />
               </label>
 
@@ -138,6 +139,7 @@ export function AccountSecurityView({
                     onEmailEditOpenChange(false);
                     onResetError();
                   }}
+                  className="h-8 rounded-lg px-2.5"
                 >
                   Cancel
                 </Button>
@@ -145,7 +147,7 @@ export function AccountSecurityView({
                   type="button"
                   onClick={onChangeEmail}
                   disabled={changingEmail || !hasEmailChanged}
-                  className={cn(isMobile && "w-full")}
+                  className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
                 >
                   {changingEmail ? "Saving..." : "Save"}
                 </Button>
@@ -159,7 +161,7 @@ export function AccountSecurityView({
                 onEmailEditOpenChange(true);
                 onResetError();
               }}
-              className={cn(isMobile && "w-full")}
+              className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
             >
               Change email
             </Button>
@@ -189,7 +191,10 @@ export function AccountSecurityView({
               !passkeySupported ||
               isDevAuthShimEnabled()
             }
-            className={cn("shrink-0", isMobile && "w-full")}
+            className={cn(
+              "h-8 shrink-0 rounded-lg px-2.5",
+              isMobile && "w-full"
+            )}
           >
             {passkeyLoading ? "Adding..." : "Add passkey"}
           </Button>
@@ -215,7 +220,7 @@ export function AccountSecurityView({
               type="button"
               variant="outline"
               onClick={onPasskeyReauthenticate}
-              className={cn(isMobile && "w-full")}
+              className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
             >
               Sign in again
             </Button>
@@ -287,44 +292,43 @@ export function AccountSecurityView({
                     <div className="flex items-center gap-1">
                       {isEditing ? null : (
                         <Tooltip>
-                          <TooltipTrigger
-                            render={
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size={isMobile ? "icon" : "icon-sm"}
-                                aria-label="Rename passkey"
-                                onClick={() =>
-                                  onEditingPasskeyIdChange(passkey.id)
-                                }
-                              >
-                                <Pencil className="size-4" />
-                              </Button>
-                            }
-                          />
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className={isMobile ? undefined : "size-7"}
+                              aria-label="Rename passkey"
+                              onClick={() =>
+                                onEditingPasskeyIdChange(passkey.id)
+                              }
+                            >
+                              <Pencil className="size-4" />
+                            </Button>
+                          </TooltipTrigger>
                           <TooltipContent>Rename</TooltipContent>
                         </Tooltip>
                       )}
                       <Tooltip>
-                        <TooltipTrigger
-                          render={
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size={isMobile ? "icon" : "icon-sm"}
-                              aria-label={
-                                isDeleting
-                                  ? "Removing passkey"
-                                  : "Remove passkey"
-                              }
-                              onClick={() => onDeletePasskey(passkey.id)}
-                              disabled={isDeleting || passkeyLoading}
-                              className="text-muted-foreground hover:text-foreground"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          }
-                        />
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label={
+                              isDeleting ? "Removing passkey" : "Remove passkey"
+                            }
+                            onClick={() => onDeletePasskey(passkey.id)}
+                            disabled={isDeleting || passkeyLoading}
+                            className={
+                              isMobile
+                                ? "text-muted-foreground hover:text-foreground"
+                                : "text-muted-foreground hover:text-foreground size-7"
+                            }
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
                         <TooltipContent>
                           {isDeleting ? "Removing..." : "Remove from account"}
                         </TooltipContent>
@@ -344,6 +348,7 @@ export function AccountSecurityView({
                           }))
                         }
                         placeholder="Passkey name"
+                        className="h-8 rounded-lg px-2.5 shadow-none"
                       />
 
                       <p className="text-muted-foreground text-xs leading-relaxed">
@@ -367,6 +372,7 @@ export function AccountSecurityView({
                               [passkey.id]: passkey.name ?? "",
                             }));
                           }}
+                          className="h-8 rounded-lg px-2.5"
                         >
                           Cancel
                         </Button>
@@ -374,6 +380,7 @@ export function AccountSecurityView({
                           type="button"
                           onClick={() => onRenamePasskey(passkey.id)}
                           disabled={passkeyLoading || !draftName.trim()}
+                          className="h-8 rounded-lg px-2.5"
                         >
                           Save name
                         </Button>

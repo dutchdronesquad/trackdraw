@@ -9,7 +9,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 import {
   Sidebar,
   SidebarContent,
@@ -158,7 +158,7 @@ export default function Toolbar({
       <SidebarMenuButton
         onClick={onClick}
         className={cn(
-          "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground h-9 rounded-xl border border-transparent transition-all duration-200 active:scale-[0.985]",
+          "text-sidebar-foreground hover:border-border/80 hover:bg-muted hover:text-foreground h-9 rounded-xl border border-transparent transition-all duration-200 active:scale-[0.985]",
           collapsed ? "justify-center px-0" : "gap-2.5"
         )}
       >
@@ -175,7 +175,7 @@ export default function Toolbar({
           <Tooltip>
             <TooltipTrigger
               onClick={onClick}
-              className="text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-9 w-full items-center justify-center rounded-xl border border-transparent transition-colors"
+              className="text-sidebar-foreground/90 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-9 w-full items-center justify-center rounded-xl border border-transparent transition-colors"
             >
               {icon}
             </TooltipTrigger>
@@ -202,6 +202,7 @@ export default function Toolbar({
       <Sidebar
         collapsible="none"
         className="border-border h-full overflow-hidden border-r transition-[width] duration-200 ease-in-out"
+        style={{ width: "var(--sidebar-width)" }}
       >
         {/* Logo header */}
         <SidebarHeader className="border-border/60 flex h-11 items-center justify-center border-b px-3 py-0">
@@ -234,25 +235,25 @@ export default function Toolbar({
                 (collapsed ? (
                   <SidebarSeparator className="my-2" />
                 ) : group.title ? (
-                  <SidebarGroupLabel className="text-sidebar-foreground/35 h-8 text-[11px] tracking-widest uppercase">
+                  <SidebarGroupLabel className="text-sidebar-foreground/70 h-8 text-[11px] tracking-widest uppercase">
                     {group.title}
                   </SidebarGroupLabel>
                 ) : (
                   <div className="h-2" />
                 ))}
-              <SidebarMenu className="space-y-1">
+              <SidebarMenu className="gap-0 space-y-1">
                 {group.tools.map((tool) => {
                   const active = tool.id === activeTool;
                   const btn = (
                     <SidebarMenuButton
-                      isActive={active}
+                      aria-pressed={active}
                       onClick={() => handleToolSelect(tool.id)}
                       className={cn(
                         "relative h-9 overflow-hidden rounded-xl border transition-all duration-150 active:scale-[0.985]",
                         collapsed ? "justify-center px-0" : "gap-2.5",
                         active
                           ? "border-brand-primary/30 bg-brand-primary/14 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                          : "text-sidebar-foreground/75 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
+                          : "text-sidebar-foreground hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
                       )}
                     >
                       {active && (
@@ -263,7 +264,7 @@ export default function Toolbar({
                           "flex size-4 shrink-0 items-center justify-center transition-colors",
                           active
                             ? "text-brand-primary"
-                            : "text-sidebar-foreground/70 group-hover/menu-button:text-foreground"
+                            : "text-sidebar-foreground/90 group-hover/menu-button:text-foreground"
                         )}
                       >
                         {tool.icon}
@@ -279,7 +280,7 @@ export default function Toolbar({
                             "h-4 min-w-4 px-1 font-mono text-[9px] leading-none shadow-none",
                             active
                               ? "bg-brand-primary/10 text-foreground/55"
-                              : "bg-muted/80 text-muted-foreground/55"
+                              : "bg-muted/80 text-muted-foreground/80"
                           )}
                         >
                           {tool.shortcut}
@@ -297,7 +298,7 @@ export default function Toolbar({
                               "flex h-9 w-full items-center justify-center rounded-xl border transition-colors duration-150",
                               active
                                 ? "border-brand-primary/30 bg-brand-primary/14 text-brand-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                                : "text-sidebar-foreground/65 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
+                                : "text-sidebar-foreground/90 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
                             )}
                           >
                             {tool.icon}
@@ -325,7 +326,7 @@ export default function Toolbar({
         </SidebarContent>
 
         <SidebarFooter className="border-border/60 gap-0 border-t p-2">
-          <SidebarMenu className="space-y-1" key="projects-footer-v3">
+          <SidebarMenu className="gap-0 space-y-1" key="projects-footer-v3">
             {renderFooterAction({
               key: "projects",
               label: "Projects",

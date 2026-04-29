@@ -5,7 +5,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/AppTooltip";
 import { cn } from "@/lib/utils";
 
 function shortSha(sha?: string | null) {
@@ -26,16 +26,20 @@ export default function VersionTag({ className }: { className?: string }) {
 
   return (
     <Tooltip>
-      <TooltipTrigger
-        render={<Link href={releaseHref} target="_blank" rel="noreferrer" />}
-        className={cn(
-          "border-border bg-muted text-foreground/70 hover:text-foreground inline-flex h-5 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] font-medium transition-colors select-none",
-          className
-        )}
-      >
-        <span className="inline-flex h-3 items-center leading-none">
-          {version}
-        </span>
+      <TooltipTrigger asChild>
+        <Link
+          href={releaseHref}
+          target="_blank"
+          rel="noreferrer"
+          className={cn(
+            "border-border bg-muted text-foreground/70 hover:text-foreground inline-flex h-5 items-center gap-1 rounded-md border px-1.5 font-mono text-[11px] font-medium transition-colors select-none",
+            className
+          )}
+        >
+          <span className="inline-flex h-3 items-center leading-none">
+            {version}
+          </span>
+        </Link>
       </TooltipTrigger>
       <TooltipContent sideOffset={4}>
         {sha ? `commit ${sha} · ` : ""}

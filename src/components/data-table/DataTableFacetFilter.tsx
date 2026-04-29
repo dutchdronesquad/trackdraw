@@ -66,11 +66,15 @@ export default function DataTableFacetFilter<TValue extends string>({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         className={cn(
-          buttonVariants({ variant: "outline", size: "lg" }),
-          "w-full justify-center border-dashed sm:w-auto sm:justify-start"
+          buttonVariants({ variant: "outline" }),
+          "hover:bg-muted hover:text-foreground h-9 w-full cursor-pointer justify-center gap-1.5 rounded-lg border-dashed px-3 text-xs shadow-none sm:w-auto sm:justify-start",
+          selected.length > 0 &&
+            "border-brand-primary/35 bg-brand-primary/6 hover:bg-brand-primary/10"
         )}
       >
-        <PlusCircle className="size-4" />
+        <PlusCircle
+          className={cn("size-4", selected.length > 0 && "text-brand-primary")}
+        />
         <span>{title}</span>
         {selected.length > 0 && (
           <>
@@ -82,7 +86,7 @@ export default function DataTableFacetFilter<TValue extends string>({
               {selected.length > 2 ? (
                 <Badge
                   variant="muted"
-                  className="rounded-sm px-1.5 font-medium tracking-normal normal-case"
+                  className="h-4 rounded-sm px-1.5 text-[10px] font-medium tracking-normal normal-case"
                 >
                   {selected.length} selected
                 </Badge>
@@ -91,7 +95,7 @@ export default function DataTableFacetFilter<TValue extends string>({
                   <Badge
                     key={value}
                     variant="muted"
-                    className="max-w-28 truncate rounded-sm px-1.5 font-medium tracking-normal normal-case"
+                    className="h-4 max-w-24 truncate rounded-sm px-1.5 text-[10px] font-medium tracking-normal normal-case"
                   >
                     {selectedLabels[index]}
                   </Badge>
@@ -107,7 +111,7 @@ export default function DataTableFacetFilter<TValue extends string>({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={`Filter ${title.toLowerCase()}...`}
-            className="h-8"
+            className="h-8 shadow-none"
           />
         </div>
         <div className="max-h-72 overflow-y-auto p-1">
@@ -130,7 +134,7 @@ export default function DataTableFacetFilter<TValue extends string>({
                     className={cn(
                       "flex size-4 items-center justify-center rounded-sm border transition-colors",
                       isSelected
-                        ? "border-sky-600 bg-sky-600 text-white"
+                        ? "border-brand-primary bg-brand-primary text-white"
                         : "border-border bg-background text-transparent"
                     )}
                   >
@@ -157,7 +161,7 @@ export default function DataTableFacetFilter<TValue extends string>({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="w-full justify-center"
+                className="hover:bg-muted hover:text-foreground w-full cursor-pointer justify-center"
                 onClick={clearSelection}
               >
                 Clear filters

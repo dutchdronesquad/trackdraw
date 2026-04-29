@@ -6,6 +6,7 @@ import { Eye, Hash, Tag } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/useTheme";
+import ViewModeSwitch from "@/components/editor/ViewModeSwitch";
 
 interface HeaderProps {
   tab: "2d" | "3d";
@@ -46,13 +47,12 @@ export default function Header({
           </span>
         </Link>
 
-        <button
-          onClick={() => onTabChange(tab === "2d" ? "3d" : "2d")}
-          className="text-foreground inline-flex h-8 min-w-11 items-center justify-center px-2 text-[11px] font-medium lg:hidden"
-          aria-label={`Switch to ${tab === "2d" ? "3D" : "2D"} view`}
-        >
-          {tab.toUpperCase()}
-        </button>
+        <ViewModeSwitch
+          value={tab}
+          onValueChange={onTabChange}
+          size="mobile"
+          className="lg:hidden"
+        />
       </div>
 
       <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden">
@@ -61,7 +61,7 @@ export default function Header({
           aria-label="Go to homepage"
           className="flex items-center rounded-xs opacity-90 transition-opacity hover:opacity-100"
         >
-          <span className="relative block h-9 w-40">
+          <span className="relative block h-9 w-36 sm:w-40">
             <Image
               src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
               alt="TrackDraw"
@@ -76,31 +76,11 @@ export default function Header({
 
       <div className="ml-auto flex h-full shrink-0 items-center gap-1">
         <div className="mr-1 hidden lg:flex">
-          <div className="border-border/70 flex items-center overflow-hidden rounded-md border text-[11px] font-medium">
-            <button
-              onClick={() => onTabChange("2d")}
-              className={cn(
-                "px-2.5 py-1 transition-colors",
-                tab === "2d"
-                  ? "bg-muted/80 text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              2D
-            </button>
-            <div className="bg-border/60 h-full w-px self-stretch" />
-            <button
-              onClick={() => onTabChange("3d")}
-              className={cn(
-                "px-2.5 py-1 transition-colors",
-                tab === "3d"
-                  ? "bg-muted/80 text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              3D
-            </button>
-          </div>
+          <ViewModeSwitch
+            value={tab}
+            onValueChange={onTabChange}
+            size="desktop"
+          />
         </div>
 
         {onToggleObstacleNumbers ? (

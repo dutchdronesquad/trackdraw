@@ -9,9 +9,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { authClient } from "@/lib/auth-client";
@@ -57,7 +54,7 @@ function getUserSecondaryLabel(
 }
 
 const accountMenuItemClassName =
-  "text-muted-foreground hover:text-foreground hover:bg-muted flex h-10 w-full items-center gap-3 rounded-xl px-3 text-left text-sm transition-colors";
+  "text-muted-foreground hover:text-foreground hover:bg-muted flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left text-[13px] transition-colors";
 
 interface AccountMenuProps {
   collapsed?: boolean;
@@ -119,8 +116,8 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
         className={cn(
           buttonVariants({ variant: "ghost", size: "sm" }),
           collapsed
-            ? "text-sidebar-foreground/65 hover:bg-muted hover:text-foreground flex h-9 w-full items-center justify-center rounded-xl px-0 transition-colors"
-            : "text-sidebar-foreground/80 hover:bg-muted hover:text-foreground flex h-10 w-full items-center gap-2.5 rounded-xl px-2.5 text-[13px] transition-colors"
+            ? "text-sidebar-foreground/65 hover:bg-muted hover:text-foreground flex h-9 w-full cursor-pointer items-center justify-center rounded-xl px-0 transition-colors"
+            : "text-sidebar-foreground/80 hover:bg-muted hover:text-foreground flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 text-[13px] transition-colors"
         )}
       >
         <UserAvatar
@@ -140,25 +137,28 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
         )}
       </PopoverTrigger>
       <PopoverContent
-        align="end"
-        className="border-border/70 bg-popover w-64 gap-0 rounded-2xl border p-0 shadow-[0_18px_40px_rgba(15,23,42,0.10)]"
+        align="start"
+        side="top"
+        sideOffset={10}
+        alignOffset={8}
+        className="border-border/70 bg-popover w-68 gap-0 rounded-2xl border p-0 shadow-[0_18px_48px_rgba(15,23,42,0.16)]"
       >
-        <div className="px-3 py-2.5">
-          <PopoverHeader className="flex-row items-center gap-3 rounded-xl px-1 py-0.5">
+        <div className="bg-muted/20 px-3 py-3">
+          <div className="flex items-center gap-3 rounded-xl px-1">
             <UserAvatar
               name={user?.name}
               email={user?.email}
               className="size-8 text-xs"
             />
             <div className="min-w-0 flex-1 text-left">
-              <PopoverTitle className="text-foreground truncate text-[12px] font-medium">
+              <p className="text-foreground truncate text-[12px] font-medium">
                 {getUserDisplayName(user)}
-              </PopoverTitle>
-              <PopoverDescription className="truncate pt-0.5 text-[11px]">
+              </p>
+              <p className="text-muted-foreground truncate pt-0.5 text-[11px]">
                 {user?.email ?? "TrackDraw account"}
-              </PopoverDescription>
+              </p>
             </div>
-          </PopoverHeader>
+          </div>
         </div>
         <div className="p-1.5">
           <button
@@ -196,7 +196,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
             disabled={signingOut}
             variant="ghost"
             size="sm"
-            className={accountMenuItemClassName}
+            className={cn(accountMenuItemClassName, "justify-start")}
           >
             <LogOut className="size-4" />
             <span>{signingOut ? "Signing out…" : "Sign out"}</span>

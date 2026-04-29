@@ -68,14 +68,14 @@ export function PolylineWaypointList({
           {shape.points.map((point, index) => (
             <div
               key={index}
-              className="group/row border-border/10 hover:bg-primary/6 relative grid grid-cols-[28px_minmax(0,1fr)_56px_44px] items-center gap-2 border-b py-2 pr-3 pl-3 transition-colors last:border-b-0 lg:py-1.5 lg:pr-2"
+              className="group/row border-border/10 hover:bg-muted/45 relative grid grid-cols-[28px_minmax(0,1fr)_56px_44px] items-center gap-2 border-b py-2 pr-3 pl-3 transition-colors last:border-b-0 lg:py-1.5 lg:pr-2"
               onMouseEnter={() =>
                 setHoveredWaypoint({ shapeId: shape.id, idx: index })
               }
               onMouseLeave={() => setHoveredWaypoint(null)}
             >
-              <span className="bg-primary/40 absolute top-0 bottom-0 left-0 w-px opacity-0 transition-opacity group-hover/row:opacity-100" />
-              <span className="border-border/30 bg-primary/8 text-primary/80 flex h-5 w-5 items-center justify-center rounded-xs border font-mono text-[10px] tabular-nums">
+              <span className="bg-border absolute top-0 bottom-0 left-0 w-px opacity-0 transition-opacity group-hover/row:opacity-100" />
+              <span className="border-border/30 bg-muted/45 text-foreground/75 flex h-5 w-5 items-center justify-center rounded-xs border font-mono text-[10px] tabular-nums">
                 {index}
               </span>
               <div className="min-w-0">
@@ -87,7 +87,7 @@ export function PolylineWaypointList({
                 type="number"
                 step={0.5}
                 title="Elevation (m)"
-                className="text-foreground/90 focus:bg-primary/6 focus:text-foreground hover:border-border/25 focus:border-primary/30 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-hidden"
+                className="text-foreground/90 focus:bg-muted/45 focus:text-foreground hover:border-border/25 focus:border-border/60 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-hidden"
                 value={point.z ?? 0}
                 disabled={shape.locked}
                 onFocus={startBatch}
@@ -108,7 +108,7 @@ export function PolylineWaypointList({
                   <button
                     title="Insert point after"
                     disabled={shape.locked}
-                    className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
+                    className="text-muted-foreground/55 hover:bg-muted hover:text-foreground flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
                     onClick={() => {
                       insertPolylinePoint(
                         shape.id,
@@ -126,7 +126,7 @@ export function PolylineWaypointList({
                 <button
                   title="Remove point"
                   disabled={shape.locked}
-                  className="text-muted-foreground/55 hover:text-primary hover:bg-primary/10 flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
+                  className="text-muted-foreground/55 hover:bg-muted hover:text-foreground flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
                   onClick={() => {
                     removePolylinePoint(shape.id, index);
                   }}

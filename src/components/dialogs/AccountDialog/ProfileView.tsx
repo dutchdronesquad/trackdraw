@@ -75,6 +75,7 @@ export function AccountProfileView({
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
             placeholder="Your name"
+            className="h-8 rounded-lg px-2.5 shadow-none"
           />
         </label>
 
@@ -88,7 +89,7 @@ export function AccountProfileView({
             type="button"
             onClick={onSave}
             disabled={saving || changingEmail || !hasNameChanged}
-            className={cn(isMobile && "w-full")}
+            className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
           >
             {saving ? "Saving..." : "Save changes"}
           </Button>
@@ -101,6 +102,7 @@ export function AccountProfileView({
             }}
             disabled={saving || changingEmail || !hasNameChanged}
             className={cn(
+              "h-8 rounded-lg px-2.5",
               isMobile &&
                 "text-muted-foreground hover:text-foreground w-full border-0 bg-transparent shadow-none"
             )}

@@ -94,7 +94,7 @@ export function CanvasContextMenuContent({
       contextMenu.deleteWaypointIndex !== null);
 
   return (
-    <ContextMenuContent sideOffset={6} className="min-w-56">
+    <ContextMenuContent className="min-w-56">
       <ContextMenuGroup>
         <ContextMenuLabel>
           <div className="text-foreground/85 font-medium">
@@ -116,6 +116,7 @@ export function CanvasContextMenuContent({
           {contextMenu.editablePolylineId &&
             contextMenu.addWaypointSegmentIndex !== null && (
               <ContextMenuItem
+                className="gap-2"
                 onClick={() => {
                   onAddWaypoint(
                     contextMenu.editablePolylineId!,
@@ -131,6 +132,7 @@ export function CanvasContextMenuContent({
           {contextMenu.editablePolylineId &&
             contextMenu.deleteWaypointIndex !== null && (
               <ContextMenuItem
+                className="gap-2"
                 onClick={() => {
                   onDeleteWaypoint(
                     contextMenu.editablePolylineId!,
@@ -146,6 +148,7 @@ export function CanvasContextMenuContent({
           {hasWaypointActions && hasPathActions && <ContextMenuSeparator />}
           {contextMenu.editablePolylineId && (
             <ContextMenuItem
+              className="gap-2"
               onClick={() => {
                 onContinueEditing(contextMenu.editablePolylineId!);
                 onClose();
@@ -157,6 +160,7 @@ export function CanvasContextMenuContent({
           )}
           {contextMenu.closablePolylineId && (
             <ContextMenuItem
+              className="gap-2"
               onClick={() => {
                 onClosePolyline(contextMenu.closablePolylineId!);
                 onClose();
@@ -171,6 +175,7 @@ export function CanvasContextMenuContent({
       {hasPathActions && <ContextMenuSeparator />}
       <ContextMenuGroup>
         <ContextMenuItem
+          className="gap-2"
           onClick={() => {
             onDuplicate(contextMenu.ids);
             onClose();
@@ -182,6 +187,7 @@ export function CanvasContextMenuContent({
         </ContextMenuItem>
         {contextMenu.canGroup && !contextMenu.hasGroupedShapes && (
           <ContextMenuItem
+            className="gap-2"
             onClick={() => {
               onGroupSelection(contextMenu.ids);
               onClose();
@@ -193,6 +199,7 @@ export function CanvasContextMenuContent({
         )}
         {!contextMenu.canGroup && contextMenu.hasGroupedShapes && (
           <ContextMenuItem
+            className="gap-2"
             onClick={() => {
               onUngroupSelection(contextMenu.ids);
               onClose();
@@ -204,6 +211,7 @@ export function CanvasContextMenuContent({
         )}
         {contextMenu.joinablePolylineIds.length >= 2 && (
           <ContextMenuItem
+            className="gap-2"
             onClick={() => {
               onJoinPolylines(contextMenu.joinablePolylineIds);
               onClose();
@@ -214,6 +222,7 @@ export function CanvasContextMenuContent({
           </ContextMenuItem>
         )}
         <ContextMenuItem
+          className="gap-2"
           onClick={() => {
             onToggleLock(contextMenu.ids, !contextMenu.locked);
             onClose();
@@ -227,12 +236,16 @@ export function CanvasContextMenuContent({
           {contextMenu.locked ? "Unlock" : "Lock"}
         </ContextMenuItem>
         <ContextMenuSub>
-          <ContextMenuSubTrigger disabled={contextMenu.ids.length !== 1}>
+          <ContextMenuSubTrigger
+            className="gap-2"
+            disabled={contextMenu.ids.length !== 1}
+          >
             <ArrowUp className="size-3.5" />
             Arrange
           </ContextMenuSubTrigger>
           <ContextMenuSubContent>
             <ContextMenuItem
+              className="gap-2"
               onClick={() => {
                 onBringForward(contextMenu.ids[0]);
                 onClose();
@@ -242,6 +255,7 @@ export function CanvasContextMenuContent({
               Bring forward
             </ContextMenuItem>
             <ContextMenuItem
+              className="gap-2"
               onClick={() => {
                 onSendBackward(contextMenu.ids[0]);
                 onClose();
@@ -254,12 +268,13 @@ export function CanvasContextMenuContent({
         </ContextMenuSub>
         {contextMenu.rotatableIds.length > 0 && (
           <ContextMenuSub>
-            <ContextMenuSubTrigger>
+            <ContextMenuSubTrigger className="gap-2">
               <RotateCw className="size-3.5" />
               Rotate
             </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem
+                className="gap-2"
                 onClick={() => {
                   onRotate(contextMenu.rotatableIds, -15);
                   onClose();
@@ -270,6 +285,7 @@ export function CanvasContextMenuContent({
                 <ContextMenuShortcut>Q / [</ContextMenuShortcut>
               </ContextMenuItem>
               <ContextMenuItem
+                className="gap-2"
                 onClick={() => {
                   onRotate(contextMenu.rotatableIds, 15);
                   onClose();
@@ -285,7 +301,7 @@ export function CanvasContextMenuContent({
       </ContextMenuGroup>
       <ContextMenuSeparator />
       <ContextMenuItem
-        variant="destructive"
+        className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 [&_svg]:text-destructive gap-2"
         onClick={() => {
           onDelete(contextMenu.ids);
           onClose();

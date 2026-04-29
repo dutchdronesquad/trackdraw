@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   type ColumnDef,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
@@ -40,20 +39,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import DataTableFacetFilter from "@/components/dashboard/tables/DataTableFacetFilter";
-import DataTableToolbar from "@/components/dashboard/tables/DataTableToolbar";
+} from "@/components/AppTooltip";
+import DataTable from "@/components/data-table/DataTable";
+import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
+import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import type { AccountRole } from "@/lib/account-roles";
 import type {
   DashboardGalleryEntry,
@@ -180,7 +173,7 @@ function ActionTooltip({
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger render={children} />
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent side="top" sideOffset={6}>
         {label}
       </TooltipContent>
@@ -340,11 +333,12 @@ export default function DashboardGalleryManager({
     {
       id: "track",
       accessorFn: (row) => row.galleryTitle,
+      meta: { className: "w-[30%] min-w-56" },
       header: ({ column }) => (
         <Button
           variant="ghost"
           size="sm"
-          className="-ml-3 h-8"
+          className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Track
@@ -366,6 +360,7 @@ export default function DashboardGalleryManager({
       id: "owner",
       accessorFn: (row) => getOwnerLabel(row),
       header: "Owner",
+      meta: { className: "w-[22%] min-w-48" },
       cell: ({ row }) => (
         <div className="min-w-0">
           <p className="truncate text-sm">{getOwnerLabel(row.original)}</p>
@@ -378,6 +373,7 @@ export default function DashboardGalleryManager({
     {
       accessorKey: "galleryState",
       header: "State",
+      meta: { className: "w-28" },
       cell: ({ row }) => (
         <Badge variant={getStateVariant(row.original.galleryState)}>
           {getStateLabel(row.original.galleryState)}
@@ -388,6 +384,7 @@ export default function DashboardGalleryManager({
       id: "shareLifecycle",
       header: "Share",
       accessorFn: (row) => getShareLifecycleState(row),
+      meta: { className: "w-44" },
       cell: ({ row }) => {
         const lifecycleState = getShareLifecycleState(row.original);
 
@@ -405,11 +402,12 @@ export default function DashboardGalleryManager({
     },
     {
       id: "published",
+      meta: { className: "w-36" },
       header: ({ column }) => (
         <Button
           variant="ghost"
           size="sm"
-          className="-ml-3 h-8"
+          className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Published
@@ -442,7 +440,8 @@ export default function DashboardGalleryManager({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-sm"
+                  size="icon"
+                  className="size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`${featureAction.label} ${entry.galleryTitle}`}
                   onClick={() =>
@@ -460,7 +459,8 @@ export default function DashboardGalleryManager({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-sm"
+                  size="icon"
+                  className="size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`${visibilityAction.label} ${entry.galleryTitle}`}
                   onClick={() =>
@@ -474,8 +474,8 @@ export default function DashboardGalleryManager({
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-sm"
-                  className="text-destructive hover:text-destructive"
+                  size="icon"
+                  className="text-destructive hover:text-destructive size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`Delete ${entry.galleryTitle}`}
                   onClick={() => setDeleteCandidate(entry)}
@@ -485,22 +485,20 @@ export default function DashboardGalleryManager({
               </ActionTooltip>
             </div>
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground ml-auto size-8 p-0 md:hidden"
-                    disabled={isPending || !canManageGallery}
-                    aria-label="Open gallery entry actions"
-                  />
-                }
-              >
-                {isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <MoreHorizontal className="size-4" />
-                )}
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground ml-auto size-8 p-0 md:hidden"
+                  disabled={isPending || !canManageGallery}
+                  aria-label="Open gallery entry actions"
+                >
+                  {isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <MoreHorizontal className="size-4" />
+                  )}
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-44">
                 <DropdownMenuItem
@@ -626,75 +624,14 @@ export default function DashboardGalleryManager({
         for operator cleanup.
       </p>
 
-      <div className="overflow-hidden rounded-xl border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={[
-                      "px-2.5 py-2",
-                      (
-                        header.column.columnDef.meta as
-                          | { className?: string }
-                          | undefined
-                      )?.className,
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {filteredRows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-muted-foreground py-8 text-center text-sm"
-                >
-                  {emptyMessage}
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredRows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={[
-                        "px-2.5 py-2",
-                        (
-                          cell.column.columnDef.meta as
-                            | { className?: string }
-                            | undefined
-                        )?.className,
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        table={table}
+        rows={filteredRows}
+        columnsLength={columns.length}
+        emptyMessage={emptyMessage}
+        minWidthClassName="min-w-[920px]"
+        emptyClassName="py-8"
+      />
 
       <p className="text-muted-foreground text-xs">
         Showing {filteredRows.length} of {entries.length} gallery entries.
@@ -706,7 +643,7 @@ export default function DashboardGalleryManager({
           if (!open) setDeleteCandidate(null);
         }}
       >
-        <DialogContent size="md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete gallery entry?</DialogTitle>
             <DialogDescription>
@@ -729,8 +666,8 @@ export default function DashboardGalleryManager({
           </div>
 
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>
-              Cancel
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button
               type="button"

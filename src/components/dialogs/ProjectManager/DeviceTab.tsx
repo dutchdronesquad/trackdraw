@@ -195,7 +195,7 @@ export function ProjectManagerDeviceTab({
         className={cn(
           "group relative flex items-start gap-3 overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-150",
           isCurrent
-            ? "border-primary/20 bg-primary/5"
+            ? "border-border/70 bg-muted/45"
             : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
         )}
       >
@@ -225,7 +225,7 @@ export function ProjectManagerDeviceTab({
                     className={cn(
                       "inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide",
                       isSyncing
-                        ? "bg-primary/10 text-primary/80"
+                        ? "bg-muted text-foreground/75"
                         : hasConflict
                           ? "bg-destructive/10 text-destructive/80"
                           : hasPendingChanges
@@ -233,7 +233,7 @@ export function ProjectManagerDeviceTab({
                             : hasSyncFailure
                               ? "bg-destructive/10 text-destructive/80"
                               : isSynced
-                                ? "bg-primary/10 text-primary/80"
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                                 : "bg-muted text-muted-foreground/75"
                     )}
                   >
@@ -433,8 +433,8 @@ export function ProjectManagerDeviceTab({
                     className={cn(
                       "flex shrink-0 items-center justify-center rounded-xl",
                       isMobile
-                        ? "bg-primary/10 text-primary size-9"
-                        : "bg-primary/10 text-primary size-8"
+                        ? "bg-muted text-foreground size-9"
+                        : "bg-muted text-foreground size-8"
                     )}
                   >
                     <FilePlus className={isMobile ? "size-4" : "size-3.5"} />

@@ -32,10 +32,13 @@ export default function DataTableToolbar({
         value={searchValue}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder={searchPlaceholder}
-        className={cn("w-full sm:w-90", searchClassName)}
+        className={cn(
+          "focus-visible:border-border/80 focus-visible:ring-ring/20 h-9 w-full rounded-lg shadow-none sm:w-90",
+          searchClassName
+        )}
       />
       {children ? (
-        <div className="flex flex-col items-center gap-2 sm:ml-auto sm:flex-row sm:items-center">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto sm:justify-end">
           {children}
         </div>
       ) : null}
