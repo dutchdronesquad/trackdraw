@@ -41,14 +41,14 @@ The v1.6.0 release-sized work is archived below. The remaining active work stays
   - [ ] Share and export integration endpoints
         Add owned published-share reads and project export JSON packages once the first project read path is proven; defer share export endpoints until a concrete consumer needs share-token lookup or published snapshot parity.
 
-- [ ] Base UI to Radix UI migration
+- [x] Base UI to Radix UI migration
       Replace `@base-ui/react` with Radix UI primitives across all UI components to fix mobile touch handling inside dialogs. The immediate trigger is that Base UI's `Select` and `Menu` primitives fail to respond to touch events on mobile inside a dialog focus trap.
-  - [ ] Phase 1: migrate `select` and `dropdown-menu` to `@radix-ui/react-select` and `@radix-ui/react-dropdown-menu`; fix mobile expiry select in Account dialog
-  - [ ] Phase 2: migrate `dialog` and `sheet` to `@radix-ui/react-dialog`
-  - [ ] Phase 3: migrate `popover`, `tooltip`, and `context-menu`
-  - [ ] Phase 4: migrate `collapsible`, `tabs`, `scroll-area`, `slider`, and `avatar`
-  - [ ] Phase 5: migrate utility-only components (`button`, `input`, `separator`, `breadcrumb`, `sidebar`)
-  - [ ] Phase 6: remove `@base-ui/react` from the dependency tree
+  - [x] Phase 1: migrate `select` and `dropdown-menu` to `@radix-ui/react-select` and `@radix-ui/react-dropdown-menu`; fix mobile expiry select in Account dialog
+  - [x] Phase 2: migrate `dialog` and `sheet` to `@radix-ui/react-dialog`
+  - [x] Phase 3: migrate `popover`, `tooltip`, and `context-menu`
+  - [x] Phase 4: migrate `collapsible`, `tabs`, `scroll-area`, `slider`, and `avatar`
+  - [x] Phase 5: migrate utility-only components (`button`, `input`, `separator`, `breadcrumb`, `sidebar`)
+  - [x] Phase 6: remove `@base-ui/react` from the dependency tree
 
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The first experimental `.trk` export is already shipped. Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping and orientation edge cases.

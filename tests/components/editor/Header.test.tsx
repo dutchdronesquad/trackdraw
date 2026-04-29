@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 
 import type React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Header from "@/components/editor/Header";
@@ -153,7 +153,12 @@ describe("Header", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: "3D" }));
+    const viewModeGroups = screen.getAllByRole("group", {
+      name: "View mode",
+    });
+    await user.click(
+      within(viewModeGroups[0]).getByRole("button", { name: "3D" })
+    );
     await user.click(
       screen.getByRole("button", { name: "Show obstacle numbers" })
     );
