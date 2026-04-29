@@ -22,14 +22,33 @@ Labels used below:
 
 ## Current Priority
 
-- [ ] Race-day handoff next slice (`No account required`)
-      Build on the shipped Race Pack, published shares, and editor numbering work with small release-sized improvements that make briefing and setup easier without turning TrackDraw into a race-control product.
-  - [x] Shared view QR code in Race Pack
-        Embed a QR code linking to the canonical published shared view in the Race Pack PDF, so pilots and crew can scan directly from a printed or on-screen briefing.
-  - [x] Timing gate markers
-        Let specific gates be marked as start/finish or split timing points so race directors can identify timing hardware placement clearly in the editor, Race Pack, and future overlay preparation.
+The v1.6.0 release-sized work is archived below. The remaining active work stays in Follow-up until the next release target is selected. The REST API remains open for a later version even though its first implementation slice has landed.
 
 ## Follow-up
+
+- [ ] TrackDraw REST API (`Account-backed`)
+      Add a versioned read-only REST API for external tools, backed by account-created expiring API keys and OpenAPI documentation.
+  - [x] API product boundary and auth matrix
+        Lock the account-only API key model, read-only v1 permissions, public-versus-authenticated endpoint policy, and first endpoint list.
+  - [x] API key management
+        Let signed-in users create, list, and revoke permissioned expiring API keys through the Better Auth API Key plugin.
+  - [ ] Throttling and rate limits
+        Enforce per-key API budgets, stable `429` responses, and stricter limits for export-oriented endpoints.
+  - [x] First authenticated read endpoints
+        Add bearer-authenticated project reads such as `/api/v1/me`, `/api/v1/projects`, and project track data.
+  - [ ] OpenAPI docs
+        Serve an OpenAPI schema and API docs page so external tools can integrate against an explicit contract.
+  - [ ] Share and export integration endpoints
+        Add owned published-share reads and project export JSON packages once the first project read path is proven; defer share export endpoints until a concrete consumer needs share-token lookup or published snapshot parity.
+
+- [ ] Base UI to Radix UI migration
+      Replace `@base-ui/react` with Radix UI primitives across all UI components to fix mobile touch handling inside dialogs. The immediate trigger is that Base UI's `Select` and `Menu` primitives fail to respond to touch events on mobile inside a dialog focus trap.
+  - [ ] Phase 1: migrate `select` and `dropdown-menu` to `@radix-ui/react-select` and `@radix-ui/react-dropdown-menu`; fix mobile expiry select in Account dialog
+  - [ ] Phase 2: migrate `dialog` and `sheet` to `@radix-ui/react-dialog`
+  - [ ] Phase 3: migrate `popover`, `tooltip`, and `context-menu`
+  - [ ] Phase 4: migrate `collapsible`, `tabs`, `scroll-area`, `slider`, and `avatar`
+  - [ ] Phase 5: migrate utility-only components (`button`, `input`, `separator`, `breadcrumb`, `sidebar`)
+  - [ ] Phase 6: remove `@base-ui/react` from the dependency tree
 
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The first experimental `.trk` export is already shipped. Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping and orientation edge cases.
@@ -55,15 +74,6 @@ Labels used below:
   - [ ] Public collection sections
         Surface curated collections on `/gallery` while keeping individual gallery cards pointed at `/share/[token]`.
 
-- [ ] Admin dashboard operations follow-up (`Account-backed`)
-      Improve operator visibility for shipped account, share, and gallery surfaces without adding public reporting flows for now.
-  - [ ] Gallery management filters
-        Add practical dashboard filters for gallery state, featured entries, hidden entries, and recent updates.
-  - [x] Share lifecycle visibility
-        Give operators a clearer view of active, expired, revoked, and gallery-linked shares for support and debugging.
-  - [x] Audit log usability
-        Add filters and detail views that make account, role, share, and gallery actions easier to inspect.
-
 - [ ] Real-time collaboration evaluation (`Research`)
       Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justifies the editor complexity.
   - [ ] Smallest credible live slice
@@ -78,7 +88,7 @@ Labels used below:
 ## Later Product Follow-up
 
 - [ ] Race-day communication and briefing (`No account required`)
-      The first Race Pack release is shipped, and the immediate QR/timing-marker slice now lives in Current Priority. The remaining work here is larger race-day operations follow-up.
+      The first Race Pack release is shipped, and the immediate QR/timing-marker slice is archived with v1.6.0. The remaining work here is larger race-day operations follow-up.
   - [ ] Race director page in Race Pack
         Add a race-director-oriented page to the Race Pack.
     - [ ] Race-day ops elements around the existing start area
@@ -189,6 +199,29 @@ Labels used below:
   - [ ] Relationship to starter layouts
         Keep templates distinct from starter layouts, project duplication, and saved projects.
 
+## v1.6.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.6.0</summary>
+
+- [x] Race-day handoff next slice (`No account required`)
+      Built on the shipped Race Pack, published shares, and editor numbering work with small release-sized improvements that make briefing and setup easier without turning TrackDraw into a race-control product.
+  - [x] Shared view QR code in Race Pack
+        Embedded a QR code linking to the canonical published shared view in the Race Pack PDF, so pilots and crew can scan directly from a printed or on-screen briefing.
+  - [x] Timing gate markers
+        Let specific gates be marked as start/finish or split timing points so race directors can identify timing hardware placement clearly in the editor, Race Pack, and future overlay preparation.
+
+- [x] Admin dashboard operations follow-up (`Account-backed`)
+      Improved operator visibility for shipped account, share, and gallery surfaces without adding public reporting flows.
+  - [x] Dashboard table facet filters
+        Added a consistent search-and-facet toolbar across gallery, users, and audit tables, including gallery state/share lifecycle, user role, and audit category/action filters.
+  - [x] Share lifecycle visibility
+        Gave operators a clearer view of active, expired, revoked, and gallery-linked shares for support and debugging.
+  - [x] Audit log usability
+        Added filters, clearer entity labels, and detail views that make account, role, share, and gallery actions easier to inspect.
+
+</details>
+
 ## v1.5.0 Archive
 
 <details>
@@ -226,80 +259,5 @@ Labels used below:
         Re-measured the shared 3D preview stack and kept further splitting limited to concrete hotspots.
   - [x] Export dependency audit
         Confirmed that heavier export dependencies stay fully deferred behind export flows.
-
-</details>
-
-## v1.4.0 Archive
-
-<details>
-<summary>Completed release work archived with v1.4.0</summary>
-
-- [x] Share page polish (`No account required`)
-      Give the shared read-only track view a more deliberate mobile and 3D review experience so it feels like a real review surface, not just Studio in read-only mode.
-  - [x] Mobile 3D control pass
-        Bottom bars, drawers, safe-area spacing, and fly-through controls now behave more cleanly on shared links, including the mobile fly-through start flow.
-  - [x] Clearer read-only review framing
-        Shared tracks now explain themselves faster with stronger first-load context, persistent shared-track context, and a clearer editable-copy path into Studio.
-
-- [x] Flow analysis follow-up (`No account required`)
-      Extend the current warning layer with clearer flow-break, spacing, and rhythm-oriented feedback where that proves actionable.
-  - [x] Rhythm and spacing cues first pass
-        Added first route-review cues for abrupt spacing shifts and short rhythm-breaking corrections in the existing route warning layer.
-  - [x] Alignment follow-up
-        Added first alignment-kink cues for small off-line bends in otherwise straighter route sections.
-
-- [x] Snap UX improvements (`No account required`)
-      Make snapping more visible, predictable, and mobile-friendly so placement and drag behavior stay consistent across the editor.
-  - [x] Visible snap toggle first pass
-        Added a persistent snap toggle in the editor UI for desktop and mobile, with Alt kept as a temporary bypass.
-  - [x] Snap to shapes for shape dragging
-        Let dragging placed obstacles or grouped selections snap to nearby shapes before falling back to the grid.
-  - [x] Unified snap resolver
-        Consolidate the current snap logic into one shared resolver so placement, drag, and waypoint editing follow the same rules.
-
-- [x] Landing page proof follow-up (`No account required`)
-      Show the strongest shipped review and handoff workflows more directly on the marketing site, especially cinematic FPV export, route review, and the draw-review-share loop.
-  - [x] Cinematic proof block
-        Added a stronger homepage FPV export proof section with a dedicated visual slot that can later take video or motion-led media.
-  - [x] Core workflow framing
-        Tightened the homepage story around draw in 2D, review in 3D, and share read-only.
-
-- [x] Cinematic FPV export first pass (`No account required`)
-      Shipped a share-ready cinematic FPV WebM export with theme-aware controls, stronger FPV camera motion, and background progress handling.
-  - [x] FPV camera polish first pass
-        Improved the fly-through camera feel so preview and export both read more like FPV flight instead of a neutral path rail.
-  - [x] Background export handling first pass
-        Moved the export into a background-friendly flow with clearer progress and time-remaining feedback.
-
-- [x] Editor state and persistence boundary pass (`No account required`)
-      Improve core editor boundaries so TrackDraw stays easier to reason about, autosave and project continuity become clearer, and future collaboration or review work does not require a full reset of the editor model.
-  - [x] Separate document state from local UI state
-        Split persistent track data more clearly from local interaction state such as tool mode, hover state, drag previews, and temporary selections.
-  - [x] Introduce clearer editor action boundaries
-        Move toward more explicit editor actions for meaningful changes so undo, testing, analysis hooks, and future sync-related work all have cleaner integration points.
-  - [x] Clarify persistence layers
-        Tighten the boundaries between local autosave, restore points, saved projects, account-backed projects, and published shares so the user model stays easier to understand.
-  - [x] Make undo and redo more intention-aware
-        Group meaningful edit sessions more deliberately so history feels cleaner during drag, rotate, and route editing work.
-
-- [x] Test infrastructure
-      Introduce Vitest as the baseline test runner and establish the first test coverage for core business logic and export paths.
-  - [x] Vitest setup and CI integration
-        Added Vitest to the project, introduced baseline test scripts, and wired a dedicated GitHub Actions `tests.yaml` workflow so the Vitest suite runs on push and pull request.
-  - [x] Unit tests for store and transforms
-        Added first coverage for core Zustand store actions plus geometry, orientation, shape, planning, and share-related transform helpers.
-  - [x] Unit tests for export logic
-        Added unit coverage for SVG and Velocidrone export builders where that logic can run without a browser runtime.
-  - [x] Component tests for critical editor paths
-        Added first `happy-dom` component coverage for editor shell actions around read-only review framing, tab switching, and undo/redo controls.
-
-- [x] File structure and module boundary pass
-      Tightened folder ownership and internal API surfaces across the editor store, canvas interaction layer, inspector, editor shell, and mobile editor composition. This first structural pass is complete; follow-up cleanup can now happen incrementally as new features land instead of through one large refactor.
-  - [x] Audit current module boundaries
-        Identified the highest-value boundary problems across the editor store, canvas interactions, inspector, and editor shell, then used that audit to drive the first extraction pass.
-  - [x] Remaining large-file splits
-        Break up any remaining oversized files identified in the audit, especially where editor composition and mobile/desktop orchestration still live together.
-  - [x] Reduce cross-module coupling in editor state
-        Moved shared editor-store state shapes into dedicated types, centralized UI/session reset profiles, and reduced duplicated store wiring so state changes stay more local to the editor boundary.
 
 </details>

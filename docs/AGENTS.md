@@ -14,6 +14,7 @@ A PVA is not a product evaluation or research document. Product-shape analysis, 
 
 Current PVAs:
 
+- `trackdraw-rest-api-pva.md` — account-backed REST API, expiring API tokens, OpenAPI docs, and phased endpoint rollout
 - `live-race-overlay-pva.md` — real-time race overlay integration with `rh-stream-overlays`
 - `map-field-overlay-pva.md` — map-based field placement with hybrid asset storage
 
@@ -31,6 +32,7 @@ A research document may cover:
 
 Current research documents:
 
+- `trackdraw-rest-api.md` — product and technical direction for a versioned account-backed REST API
 - `real-time-collaboration-evaluation.md` — collaboration architecture evaluation
 - `real-time-collaboration-product-shape.md` — host-review product model and go/no-go criteria
 - `ar-mode-evaluation.md` — AR mode technical feasibility

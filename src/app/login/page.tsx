@@ -15,6 +15,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient, isDevAuthShimEnabled } from "@/lib/auth-client";
 
+function getLoginCallbackURL() {
+  if (typeof window === "undefined") {
+    return "/studio";
+  }
+
+  const callbackURL = new URLSearchParams(window.location.search).get(
+    "callbackURL"
+  );
+  if (!callbackURL) {
+    return "/studio";
+  }
+
+  try {
+    const parsedUrl = new URL(callbackURL, window.location.origin);
+    if (parsedUrl.origin !== window.location.origin) {
+      return "/studio";
+    }
+
+    return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+  } catch {
+    return "/studio";
+  }
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState(false);
@@ -47,10 +71,11 @@ export default function LoginPage() {
     setEmailSent(false);
 
     try {
+      const callbackURL = getLoginCallbackURL();
       await authClient.signIn.magicLink({
         email,
-        callbackURL: "/studio",
-        newUserCallbackURL: "/studio",
+        callbackURL,
+        newUserCallbackURL: callbackURL,
       });
 
       toast.success("Check your email for a sign-in link.");
@@ -86,7 +111,7 @@ export default function LoginPage() {
 
         throw new Error(rawMessage || "Failed to sign in.");
       }
-      window.location.href = "/studio";
+      window.location.href = getLoginCallbackURL();
     } catch (authError) {
       setError(
         authError instanceof Error

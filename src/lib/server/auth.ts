@@ -1,6 +1,7 @@
 import "server-only";
 
 import { betterAuth } from "better-auth";
+import { apiKey } from "@better-auth/api-key";
 import { passkey } from "@better-auth/passkey";
 import { magicLink } from "better-auth/plugins";
 import { getSiteUrl } from "@/lib/seo";
@@ -252,6 +253,28 @@ export async function getAuth() {
       }),
       passkey({
         rpName: "TrackDraw",
+      }),
+      apiKey({
+        defaultPrefix: "td_",
+        requireName: true,
+        maximumNameLength: 64,
+        keyExpiration: {
+          defaultExpiresIn: 60 * 60 * 24 * 90,
+          minExpiresIn: 7,
+          maxExpiresIn: 365,
+        },
+        rateLimit: {
+          enabled: true,
+          timeWindow: 60 * 60 * 1000,
+          maxRequests: 600,
+        },
+        permissions: {
+          defaultPermissions: {
+            tracks: ["read"],
+            exports: ["read"],
+            shares: ["read"],
+          },
+        },
       }),
     ],
   });

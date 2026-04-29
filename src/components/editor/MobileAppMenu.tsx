@@ -6,10 +6,12 @@ import {
   Download,
   FolderOpen,
   Import,
+  LayoutDashboard,
   LogIn,
   LogOut,
   Menu,
   Share2,
+  UserRound,
 } from "lucide-react";
 import AccountDialog from "@/components/dialogs/AccountDialog";
 import { MobileDrawerHeader } from "@/components/MobileDrawer";
@@ -23,6 +25,7 @@ type MobileAppMenuProps = {
   onImport: () => void;
   onExport: () => void;
   onShare: () => void;
+  onOpenAccount?: () => void;
   defaultOpen?: boolean;
   hideTrigger?: boolean;
   onMenuOpenChange?: (open: boolean) => void;
@@ -58,6 +61,15 @@ function getAvatarLabel(
 
   const initials = parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
   return initials || "T";
+}
+
+function canAccessDashboard(user: unknown): boolean {
+  return (
+    typeof user === "object" &&
+    user !== null &&
+    "role" in user &&
+    (user.role === "admin" || user.role === "moderator")
+  );
 }
 
 function MenuRow({
@@ -116,6 +128,7 @@ export default function MobileAppMenu({
   onImport,
   onExport,
   onShare,
+  onOpenAccount,
   defaultOpen = false,
   hideTrigger = false,
   onMenuOpenChange,
@@ -139,6 +152,11 @@ export default function MobileAppMenu({
   const openAccount = () => {
     setMenuOpen(false);
     window.setTimeout(() => {
+      if (onOpenAccount) {
+        onOpenAccount();
+        return;
+      }
+
       setAccountOpen(true);
     }, 0);
   };
@@ -250,6 +268,36 @@ export default function MobileAppMenu({
                   />
                 </MenuSection>
 
+                {user ? (
+                  <MenuSection title="Account">
+                    <MenuRow
+                      icon={<UserRound className="size-4" />}
+                      label="Profile"
+                      description="Manage profile, security and API keys"
+                      onClick={openAccount}
+                    />
+                    {canAccessDashboard(user) ? (
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setMenuOpen(false)}
+                        className="hover:bg-muted/70 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors"
+                      >
+                        <span className="bg-muted/70 text-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+                          <LayoutDashboard className="size-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="text-foreground block text-[13px] font-medium">
+                            Dashboard
+                          </span>
+                          <span className="text-muted-foreground block truncate pt-0.5 text-[11px] leading-relaxed">
+                            Open moderation and admin tools
+                          </span>
+                        </span>
+                      </Link>
+                    ) : null}
+                  </MenuSection>
+                ) : null}
+
                 <MenuSection title="Share and transfer">
                   <MenuRow
                     icon={<Share2 className="size-4" />}
@@ -307,7 +355,13 @@ export default function MobileAppMenu({
           </div>
         </DrawerContent>
       </Drawer>
-      <AccountDialog open={accountOpen} onOpenChange={setAccountOpen} mobile />
+      {onOpenAccount ? null : (
+        <AccountDialog
+          open={accountOpen}
+          onOpenChange={setAccountOpen}
+          mobile
+        />
+      )}
     </>
   );
 }
