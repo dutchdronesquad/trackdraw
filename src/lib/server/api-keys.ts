@@ -142,6 +142,17 @@ export async function createApiKeyForSession(options: {
   });
 }
 
+export async function getApiKeyForSession(options: {
+  headers: Headers;
+  keyId: string;
+}) {
+  const auth = await getAuth();
+  return auth.api.getApiKey({
+    headers: options.headers,
+    query: { id: options.keyId },
+  });
+}
+
 export async function deleteApiKeyForSession(options: {
   headers: Headers;
   keyId: string;

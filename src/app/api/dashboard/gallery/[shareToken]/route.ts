@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
+import { isTrustedRequest } from "@/lib/server/csrf";
 import {
   deleteGalleryEntry,
   getGalleryEntryByShareToken,
@@ -37,6 +38,10 @@ export async function PATCH(
   request: Request,
   context: DashboardGalleryRouteContext
 ) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const actor = await getCurrentUserFromHeaders(request.headers);
     if (!actor) {
@@ -147,6 +152,10 @@ export async function DELETE(
   request: Request,
   context: DashboardGalleryRouteContext
 ) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const actor = await getCurrentUserFromHeaders(request.headers);
     if (!actor) {

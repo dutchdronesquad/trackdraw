@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
+import { isTrustedRequest } from "@/lib/server/csrf";
 import { getProjectForUser } from "@/lib/server/projects";
 import {
   createShare,
@@ -52,6 +53,10 @@ const createShareRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const body = createShareRequestSchema.parse(await request.json());
     const user = await getCurrentUserFromHeaders(request.headers);

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { uploadGalleryPreviewImage } from "@/lib/server/gallery-media";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isResourceOwner } from "@/lib/server/authorization";
+import { isTrustedRequest } from "@/lib/server/csrf";
 import {
   deleteGalleryEntry,
   getGalleryEntryByShareToken,
@@ -104,6 +105,10 @@ export async function DELETE(
   request: Request,
   context: ShareTokenRouteContext
 ) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const authorized = await authorizeOwnedShare(request, context);
     if ("error" in authorized) {
@@ -125,6 +130,10 @@ export async function DELETE(
 }
 
 export async function PATCH(request: Request, context: ShareTokenRouteContext) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const authorized = await authorizeOwnedShare(request, context);
     if ("error" in authorized) {

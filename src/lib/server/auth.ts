@@ -92,6 +92,8 @@ export async function getAuth() {
     basePath: "/api/auth",
     trustedOrigins: getTrustedOrigins(),
     advanced: {
+      // trustedProxyHeaders and cf-connecting-ip are safe only behind Cloudflare.
+      // Do not expose workers directly to the internet without Cloudflare in front.
       trustedProxyHeaders: true,
       ipAddress: {
         ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for", "x-real-ip"],
@@ -254,6 +256,7 @@ export async function getAuth() {
       passkey({
         rpName: "TrackDraw",
       }),
+      // Keys are stored hashed (Better Auth default). Never set disableKeyHashing: true.
       apiKey({
         defaultPrefix: "td_",
         requireName: true,

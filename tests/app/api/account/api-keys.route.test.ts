@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
+vi.mock("@/lib/server/csrf", () => ({
+  isTrustedRequest: vi.fn(),
+}));
+
 vi.mock("@/lib/server/auth-session", () => ({
   getCurrentUserFromHeaders: vi.fn(),
 }));
@@ -8,6 +14,7 @@ vi.mock("@/lib/server/api-keys", () => ({
   apiKeyExpiryDayOptions: [7, 30, 90, 365],
   createApiKeyForSession: vi.fn(),
   deleteApiKeyForSession: vi.fn(),
+  getApiKeyForSession: vi.fn(),
   listApiKeysForSession: vi.fn(),
   normalizeApiKeyExpiryDays: vi.fn((value: unknown) => value ?? 90),
   normalizeApiKeyRecord: vi.fn((key: unknown) => key),
@@ -23,10 +30,12 @@ import { DELETE } from "@/app/api/account/api-keys/[keyId]/route";
 import {
   createApiKeyForSession,
   deleteApiKeyForSession,
+  getApiKeyForSession,
   listApiKeysForSession,
 } from "@/lib/server/api-keys";
 import { createAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
+import { isTrustedRequest } from "@/lib/server/csrf";
 
 const user = {
   id: "user-1",
@@ -39,6 +48,7 @@ const user = {
 const apiKey = {
   id: "key-1",
   name: "Overlay",
+  prefix: "td_",
   start: "td_abc",
   enabled: true,
   permissions: { tracks: ["read"] },
@@ -51,8 +61,18 @@ const apiKey = {
 function postRequest(body: unknown) {
   return new Request("http://localhost/api/account/api-keys", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Origin: "http://localhost:3000",
+    },
     body: JSON.stringify(body),
+  });
+}
+
+function deleteRequest(keyId: string) {
+  return new Request(`http://localhost/api/account/api-keys/${keyId}`, {
+    method: "DELETE",
+    headers: { Origin: "http://localhost:3000" },
   });
 }
 
@@ -60,6 +80,7 @@ describe("account API key routes", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(isTrustedRequest).mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -100,6 +121,17 @@ describe("account API key routes", () => {
     expect(listApiKeysForSession).toHaveBeenCalledWith(request.headers);
   });
 
+  it("rejects POST requests from untrusted origins", async () => {
+    vi.mocked(isTrustedRequest).mockReturnValue(false);
+
+    const response = await POST(
+      postRequest({ name: "Overlay", expiresInDays: 30 })
+    );
+
+    expect(response.status).toBe(403);
+    expect(createApiKeyForSession).not.toHaveBeenCalled();
+  });
+
   it("creates expiring API keys and writes an audit event without logging the secret", async () => {
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
     vi.mocked(createApiKeyForSession).mockResolvedValue(apiKey as never);
@@ -126,6 +158,8 @@ describe("account API key routes", () => {
       entityId: "key-1",
       metadata: {
         name: "Overlay",
+        prefix: "td_",
+        start: "td_abc",
         expiresAt: "2026-07-19T10:00:00.000Z",
         permissions: { tracks: ["read"] },
       },
@@ -167,21 +201,39 @@ describe("account API key routes", () => {
     });
   });
 
-  it("revokes a signed-in user's key and writes an audit event", async () => {
+  it("rejects DELETE requests from untrusted origins", async () => {
+    vi.mocked(isTrustedRequest).mockReturnValue(false);
+
+    const response = await DELETE(deleteRequest("key-1"), {
+      params: Promise.resolve({ keyId: "key-1" }),
+    });
+
+    expect(response.status).toBe(403);
+    expect(deleteApiKeyForSession).not.toHaveBeenCalled();
+  });
+
+  it("revokes a signed-in user's key and writes an audit event with key metadata", async () => {
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
+    vi.mocked(getApiKeyForSession).mockResolvedValue({
+      name: "Overlay",
+      prefix: "td_",
+      start: "td_abc",
+    } as never);
     vi.mocked(deleteApiKeyForSession).mockResolvedValue({
       success: true,
     } as never);
 
-    const request = new Request("http://localhost/api/account/api-keys/key-1", {
-      method: "DELETE",
-    });
+    const request = deleteRequest("key-1");
     const response = await DELETE(request, {
       params: Promise.resolve({ keyId: "key-1" }),
     });
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ ok: true });
+    expect(getApiKeyForSession).toHaveBeenCalledWith({
+      headers: request.headers,
+      keyId: "key-1",
+    });
     expect(deleteApiKeyForSession).toHaveBeenCalledWith({
       headers: request.headers,
       keyId: "key-1",
@@ -192,18 +244,20 @@ describe("account API key routes", () => {
       eventType: "api_key.revoked",
       entityType: "api_key",
       entityId: "key-1",
+      metadata: {
+        name: "Overlay",
+        prefix: "td_",
+        start: "td_abc",
+      },
     });
   });
 
   it("does not revoke keys without a browser session", async () => {
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(null);
 
-    const response = await DELETE(
-      new Request("http://localhost/api/account/api-keys/key-1", {
-        method: "DELETE",
-      }),
-      { params: Promise.resolve({ keyId: "key-1" }) }
-    );
+    const response = await DELETE(deleteRequest("key-1"), {
+      params: Promise.resolve({ keyId: "key-1" }),
+    });
 
     expect(response.status).toBe(401);
     expect(deleteApiKeyForSession).not.toHaveBeenCalled();
