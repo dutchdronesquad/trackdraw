@@ -143,10 +143,8 @@ export async function PATCH(
     const message =
       error instanceof z.ZodError
         ? "Invalid gallery action payload"
-        : error instanceof Error
-          ? error.message
-          : "Failed to update gallery entry";
-
+        : "Failed to update gallery entry";
+    console.error("[TrackDraw] Failed to update gallery entry", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
@@ -207,14 +205,9 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("[TrackDraw] Failed to delete gallery entry", { error });
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to delete gallery entry",
-      },
+      { ok: false, error: "Failed to delete gallery entry" },
       { status: 500 }
     );
   }

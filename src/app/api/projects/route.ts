@@ -41,12 +41,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ ok: true, projects });
   } catch (error) {
+    console.error("[TrackDraw] Failed to list projects", { error });
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          error instanceof Error ? error.message : "Failed to list projects",
-      },
+      { ok: false, error: "Failed to list projects" },
       { status: 500 }
     );
   }
@@ -87,10 +84,8 @@ export async function POST(request: Request) {
     const message =
       error instanceof z.ZodError
         ? "Invalid project payload"
-        : error instanceof Error
-          ? error.message
-          : "Failed to save project";
-
+        : "Failed to save project";
+    console.error("[TrackDraw] Failed to save project", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

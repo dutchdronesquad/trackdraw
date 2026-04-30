@@ -120,10 +120,8 @@ export async function PATCH(
     const message =
       error instanceof z.ZodError
         ? "Invalid role update payload"
-        : error instanceof Error
-          ? error.message
-          : "Failed to update user role";
-
+        : "Failed to update user role";
+    console.error("[TrackDraw] Failed to update user role", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

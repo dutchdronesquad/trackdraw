@@ -1,4 +1,3 @@
-import CryptoJS from "crypto-js";
 import { getDesignShapes } from "@/lib/track/design";
 import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
 import { getShapeFacingDegrees } from "@/lib/track/orientation";
@@ -617,7 +616,8 @@ export function buildVelocidronePayload({
   return `${sceneId}\n${safeTrackName}\n${value}\n${type}\n${onlineId}`;
 }
 
-export function encryptVelocidroneTrk(plaintext: string) {
+export async function encryptVelocidroneTrk(plaintext: string) {
+  const CryptoJS = (await import("crypto-js")).default;
   const key = CryptoJS.enc.Utf8.parse(VELOCIDRONE_KEY);
   const encrypted = CryptoJS.AES.encrypt(plaintext, key, {
     mode: CryptoJS.mode.ECB,
@@ -658,7 +658,7 @@ export async function exportVelocidroneTrk(
     type: resolvedConfig.type,
     onlineId: resolvedConfig.onlineId,
   });
-  const encrypted = encryptVelocidroneTrk(plaintext);
+  const encrypted = await encryptVelocidroneTrk(plaintext);
 
   downloadTextFile(encrypted, filename);
 

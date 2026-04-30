@@ -121,12 +121,9 @@ export async function DELETE(
     await revokeShare(authorized.token);
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("[TrackDraw] Failed to revoke share", { error });
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          error instanceof Error ? error.message : "Failed to revoke share",
-      },
+      { ok: false, error: "Failed to revoke share" },
       { status: 500 }
     );
   }
@@ -247,10 +244,8 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
     const message =
       error instanceof z.ZodError
         ? "Invalid gallery update payload"
-        : error instanceof Error
-          ? error.message
-          : "Failed to update gallery state";
-
+        : "Failed to update gallery state";
+    console.error("[TrackDraw] Failed to update gallery state", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

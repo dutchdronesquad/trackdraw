@@ -33,11 +33,9 @@ export async function GET(request: Request) {
     const shares = await getSharesByUserId(user.id);
     return NextResponse.json({ ok: true, shares });
   } catch (error) {
+    console.error("[TrackDraw] Failed to list shares", { error });
     return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Failed to list shares",
-      },
+      { ok: false, error: "Failed to list shares" },
       { status: 500 }
     );
   }
@@ -117,10 +115,8 @@ export async function POST(request: Request) {
     const message =
       error instanceof z.ZodError
         ? "Invalid share publish payload"
-        : error instanceof Error
-          ? error.message
-          : "Unknown share publish error";
-
+        : "Failed to publish share";
+    console.error("[TrackDraw] Failed to publish share", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
