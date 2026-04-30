@@ -306,7 +306,6 @@ export function AccountApiKeysView({
                         </button>
                       </ActionTooltip>
                     </div>
-
                   </div>
                   <AnimatePresence>
                     {isConfirming && (
