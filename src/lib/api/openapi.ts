@@ -135,7 +135,40 @@ const overlayPackageExample = {
       height: 1.8,
     },
   ],
-  timing_markers: [],
+  timing_markers: [
+    {
+      shape_id: "gate_1",
+      role: "start_finish",
+      timing_id: null,
+      title: "Start / finish",
+      position: { x: 12, y: 18 },
+      route_position: {
+        distance_m: 14.2,
+        progress: 0.112,
+        x: 12.1,
+        y: 18.1,
+        offset_m: 0.2,
+      },
+    },
+  ],
+  readiness: {
+    status: "ready",
+    race_route_id: "route_123",
+    route_length_m: 126.4,
+    issues: [],
+    timing_points: [
+      {
+        shape_id: "gate_1",
+        role: "start_finish",
+        timing_id: null,
+        title: "Start / finish",
+        path_distance_m: 0.2,
+        projected_point: { x: 12.1, y: 18.1 },
+        route_distance_m: 14.2,
+        route_progress: 0.112,
+      },
+    ],
+  },
   updated_at: "2026-04-28T12:29:48.000Z",
 };
 
@@ -618,6 +651,7 @@ export const trackdrawOpenApiSchema = {
           "route_status",
           "route_obstacles",
           "timing_markers",
+          "readiness",
           "updated_at",
         ],
         properties: {
@@ -679,6 +713,112 @@ export const trackdrawOpenApiSchema = {
           timing_markers: {
             type: "array",
             items: { type: "object", additionalProperties: true },
+          },
+          readiness: {
+            type: "object",
+            description:
+              "Overlay readiness report for setup validation and route-progress timing anchors.",
+            required: [
+              "status",
+              "race_route_id",
+              "route_length_m",
+              "issues",
+              "timing_points",
+            ],
+            properties: {
+              status: { type: "string", enum: ["ready", "blocked"] },
+              race_route_id: {
+                anyOf: [{ type: "string" }, { type: "null" }],
+              },
+              route_length_m: {
+                anyOf: [{ type: "number", minimum: 0 }, { type: "null" }],
+              },
+              issues: {
+                type: "array",
+                items: {
+                  type: "object",
+                  required: ["type", "severity"],
+                  properties: {
+                    type: {
+                      type: "string",
+                      enum: [
+                        "duplicate-start-finish",
+                        "duplicate-timing-id",
+                        "missing-route",
+                        "missing-split-id",
+                        "missing-start-finish",
+                        "multiple-routes",
+                        "timing-point-off-route",
+                      ],
+                    },
+                    severity: { type: "string", enum: ["error"] },
+                    shape_id: { type: "string" },
+                    shape_ids: {
+                      type: "array",
+                      items: { type: "string" },
+                    },
+                    route_id: { type: "string" },
+                    timing_id: { type: "string" },
+                    distance_m: { type: "number", minimum: 0 },
+                    tolerance_m: { type: "number", minimum: 0 },
+                  },
+                  additionalProperties: false,
+                },
+              },
+              timing_points: {
+                type: "array",
+                items: {
+                  type: "object",
+                  required: [
+                    "shape_id",
+                    "role",
+                    "timing_id",
+                    "title",
+                    "path_distance_m",
+                    "projected_point",
+                    "route_distance_m",
+                    "route_progress",
+                  ],
+                  properties: {
+                    shape_id: { type: "string" },
+                    role: {
+                      type: "string",
+                      enum: ["start_finish", "split"],
+                    },
+                    timing_id: {
+                      anyOf: [{ type: "string" }, { type: "null" }],
+                    },
+                    title: { type: "string" },
+                    path_distance_m: {
+                      anyOf: [{ type: "number", minimum: 0 }, { type: "null" }],
+                    },
+                    projected_point: {
+                      anyOf: [
+                        {
+                          type: "object",
+                          required: ["x", "y"],
+                          properties: {
+                            x: { type: "number" },
+                            y: { type: "number" },
+                          },
+                        },
+                        { type: "null" },
+                      ],
+                    },
+                    route_distance_m: {
+                      anyOf: [{ type: "number", minimum: 0 }, { type: "null" }],
+                    },
+                    route_progress: {
+                      anyOf: [
+                        { type: "number", minimum: 0, maximum: 1 },
+                        { type: "null" },
+                      ],
+                    },
+                  },
+                  additionalProperties: false,
+                },
+              },
+            },
           },
           updated_at: { type: "string", format: "date-time" },
         },

@@ -141,7 +141,10 @@ describe("API project serializers", () => {
     const project = makeProject(
       makeDesign([
         raceLine,
-        gate("gate-early", 5),
+        {
+          ...gate("gate-early", 5),
+          meta: { timing: { role: "start_finish" } },
+        },
         gate("gate-late", 20, "split-a"),
       ])
     );
@@ -160,6 +163,22 @@ describe("API project serializers", () => {
         unit: "m",
       },
     });
+    expect(overlayPackage.readiness).toMatchObject({
+      status: "ready",
+      race_route_id: "route-1",
+      issues: [],
+    });
+    expect(overlayPackage.readiness.route_length_m).toBeCloseTo(30, 1);
+    expect(
+      overlayPackage.readiness.timing_points.map((point) => ({
+        shape_id: point.shape_id,
+        role: point.role,
+        timing_id: point.timing_id,
+      }))
+    ).toEqual([
+      { shape_id: "gate-early", role: "start_finish", timing_id: null },
+      { shape_id: "gate-late", role: "split", timing_id: "split-a" },
+    ]);
     expect(overlayPackage.route).toMatchObject({
       shape_id: "route-1",
       closed: false,
@@ -194,8 +213,8 @@ describe("API project serializers", () => {
     expect(lateGate?.route_position?.distance_m).toBeCloseTo(20, 1);
     expect(lateGate?.route_position?.progress).toBeCloseTo(2 / 3, 1);
 
-    expect(overlayPackage.timing_markers).toHaveLength(1);
-    expect(overlayPackage.timing_markers[0]).toMatchObject({
+    expect(overlayPackage.timing_markers).toHaveLength(2);
+    expect(overlayPackage.timing_markers[1]).toMatchObject({
       shape_id: "gate-late",
       role: "split",
       timing_id: "split-a",
