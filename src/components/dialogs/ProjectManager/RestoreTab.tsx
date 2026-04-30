@@ -82,6 +82,8 @@ export function ProjectManagerRestoreTab({
             <div className="flex shrink-0 items-center gap-0.5">
               {onRestorePoint && (
                 <button
+                  type="button"
+                  aria-label={`Restore ${r.designTitle || "snapshot"}`}
                   onClick={() => setConfirmRestoreId(r.id)}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                   title="Restore this snapshot"
@@ -91,6 +93,8 @@ export function ProjectManagerRestoreTab({
               )}
               {onDeleteRestorePoint && (
                 <button
+                  type="button"
+                  aria-label={`Delete ${r.designTitle || "snapshot"}`}
                   onClick={() => onDeleteRestorePoint(r.id)}
                   className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                   title="Delete snapshot"

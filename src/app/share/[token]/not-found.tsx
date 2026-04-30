@@ -53,10 +53,11 @@ export default function ShareNotFound() {
                 This shared track could not be opened
               </h1>
               <p className="text-muted-foreground max-w-2xl text-sm leading-7 sm:text-base">
-                The share link may be outdated, incomplete, or miscopied. Ask
-                the sender for a fresh link and try again. If the track is very
-                large, a JSON export is a more reliable alternative to a share
-                link.
+                The share link may have been revoked by the owner, or it may be
+                outdated, incomplete, or miscopied. Ask the sender to confirm
+                the link is still active or publish a fresh link. If the track
+                is very large, a JSON export is a more reliable alternative to a
+                share link.
               </p>
             </div>
 
@@ -70,7 +71,8 @@ export default function ShareNotFound() {
                     1.
                   </span>
                   <span>
-                    Ask the sender to copy the latest share link again.
+                    Ask the sender to confirm the share is still active and copy
+                    the latest share link again.
                   </span>
                 </li>
                 <li className="flex gap-3 py-2">

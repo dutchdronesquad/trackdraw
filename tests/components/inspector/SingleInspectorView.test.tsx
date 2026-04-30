@@ -100,4 +100,64 @@ describe("SingleInspectorView race timing controls", () => {
     expect(screen.queryByRole("button", { name: "Start" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Split" })).toBeNull();
   });
+
+  it("keeps mobile secondary sections collapsed while transform stays open", () => {
+    renderSingleInspector(gate, { mobileInline: true });
+
+    expect(
+      screen
+        .getByRole("button", { name: "Transform" })
+        .getAttribute("aria-expanded")
+    ).toBe("true");
+    expect(
+      screen
+        .getByRole("button", { name: "Race timing" })
+        .getAttribute("aria-expanded")
+    ).toBe("false");
+    expect(
+      screen.getByRole("button", { name: "Gate" }).getAttribute("aria-expanded")
+    ).toBe("false");
+  });
+
+  it("keeps grouped shape details collapsed on mobile", () => {
+    renderSingleInspector(
+      {
+        ...gate,
+        meta: {
+          groupId: "group-a",
+          groupName: "Opening section",
+        },
+      },
+      { mobileInline: true }
+    );
+
+    expect(
+      screen
+        .getByRole("button", { name: "Group" })
+        .getAttribute("aria-expanded")
+    ).toBe("false");
+    expect(
+      screen
+        .getByRole("button", { name: "Transform" })
+        .getAttribute("aria-expanded")
+    ).toBe("true");
+  });
+
+  it("keeps active timing controls open on mobile", () => {
+    renderSingleInspector(
+      {
+        ...gate,
+        meta: {
+          timing: { role: "start_finish" },
+        },
+      },
+      { mobileInline: true }
+    );
+
+    expect(
+      screen
+        .getByRole("button", { name: "Race timing" })
+        .getAttribute("aria-expanded")
+    ).toBe("true");
+  });
 });

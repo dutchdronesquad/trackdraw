@@ -22,17 +22,78 @@ Labels used below:
 
 ## Current Priority
 
-The v1.6.0 release-sized work is archived below. The remaining active work stays in Follow-up until the next release target is selected. The REST API remains open for a later version even though its first implementation slice has landed.
+The v1.6.0 release-sized work is archived below. The REST API and TrackDraw-side live overlay preparation slices are now complete. The next TrackDraw priority is stability, usability, and validation depth before opening larger new product surfaces.
 
 ## Follow-up
 
-- [ ] TrackDraw REST API (`Account-backed`)
+- [x] Stability and usability pass (`No account required`)
+      Improve reliability, clarity, and confidence across the shipped editor, share, export, mobile, and account-backed project flows before adding new product surfaces.
+  - [x] Editor interaction regression pass
+        Re-tested selection, drag/nudge, resize, rotate, undo/redo, snapping, route editing, inspector updates, and mobile touch behavior with focused automated coverage.
+  - [x] Locked-shape movement regression coverage
+        Added store coverage that locked-only nudges do not move shapes or create history, and mixed locked/editable selections only move editable shapes.
+  - [x] Route waypoint history regression coverage
+        Added store coverage that route waypoint insertion clears stale segment selection, preserves the selected route during the edit, and remains undoable/redoable.
+  - [x] Shape resize history regression coverage
+        Added store coverage that dimension changes are timestamped and remain undoable/redoable.
+  - [x] Share and export smoke pass
+        Verified JSON import/export, PNG, SVG, PDF, Race Pack, shared views, embeds, gallery cards, and account-published share flows with focused automated smoke coverage.
+  - [x] Race Pack PDF automated smoke
+        Added coverage that the race-day PDF export renders a Race Pack, includes the published share QR section, and saves the requested PDF filename.
+  - [x] Standard PDF automated smoke
+        Added coverage that the standard PDF export renders the track map, writes footer metadata, and saves the requested PDF filename.
+  - [x] PNG export automated smoke
+        Added coverage that the 2D PNG export renders through canvas, creates a PNG blob, assigns the requested filename, and triggers the download path.
+  - [x] SVG export automated smoke
+        Added coverage that the 2D SVG export assigns the requested filename and triggers the browser download path.
+  - [x] Velocidrone export download smoke
+        Added coverage that the experimental `.trk` export encrypts, assigns the requested filename, and triggers the browser download path.
+  - [x] JSON project export/import roundtrip smoke
+        Added coverage that serialized project JSON imports back into an editable design while preserving map reference data, shape order, and timing metadata.
+  - [x] Share/gallery/embed automated smoke
+        Ran focused coverage for share tokens, gallery validation and routes, share retention, embeds, SVG export, and Velocidrone export.
+  - [x] Automated baseline smoke
+        Ran the full Vitest suite and production build after the API, share, and inspector stability changes.
+  - [x] Mobile workflow cleanup
+        Remove practical friction in panels, drawers, selection targets, map-reference controls, share dialogs, and export dialogs without expanding scope.
+  - [x] Mobile inspector section defaults
+        Collapsed secondary single-shape inspector sections by default on mobile while keeping Transform open and active Race timing visible.
+  - [x] Mobile export 3D handoff
+        Fixed the mobile export drawer so the 3D Render row can switch to the 3D view instead of appearing actionable while disabled, with component coverage for the handoff.
+  - [x] Mobile project share actions
+        Kept Project Manager share actions visible on touch layouts and added accessible button labels for copy, open, and revoke actions.
+  - [x] Project manager device action accessibility
+        Added labels and keyboard-focus visibility for desktop device-project sync, export, rename, and delete actions.
+  - [x] Account project sync action clarity
+        Added explicit labels for pending, failed, and conflicted account-project sync actions, with coverage that conflict actions do not trigger direct sync.
+  - [x] Project manager restore action clarity
+        Added explicit restore/delete labels for restore points and covered the restore confirmation flow before closing the manager.
+  - [x] Account/project/share state clarity
+        Tightened copy, states, and edge-case coverage around signed-in versus local work, anonymous versus account-backed shares, revoked/expired links, active projects, and API-key setup.
+  - [x] Expired share state clarity
+        Clarified that temporary share links expire by chosen duration while account-published project links stay live until revoked, with copy coverage for the expired-share page.
+  - [x] Revoked or missing share fallback clarity
+        Clarified the unavailable share fallback so users know a link may have been revoked by the owner or copied incorrectly, with component coverage for the fallback page.
+  - [x] API-key setup clarity
+        Clarified that API keys grant read-only project, track package, and overlay data access, not edit access, and covered the copy with a component test.
+  - [x] API-key revoke accessibility
+        Kept the desktop API-key revoke action visible when keyboard-focused and covered the behavior with a component test.
+  - [x] Project share lifetime clarity
+        Clarified in the Project Manager that account-published links stay live until revoked while temporary anonymous links expire automatically, with component coverage for published and temporary labels.
+  - [x] Initial targeted regression tests
+        Added focused coverage for OpenAPI overlay readiness, share-token privacy and timing metadata roundtrip, mobile inspector behavior, API-key clarity copy, and locked-shape movement.
+  - [x] Performance and bundle check
+        Measure the current startup/editor path and clean up only concrete regressions or obvious weight, avoiding speculative refactors.
+  - [x] Production build and chunk baseline
+        Verified the production build, checked the Studio entry chunk set, measured the current static JS/CSS output at about 5.5 MB across 100 JS chunks, and confirmed there was no obvious eager export/3D bundle pull-in from the `/studio` page.
+
+- [x] TrackDraw REST API (`Account-backed`)
       Add a versioned read-only REST API for external tools, backed by account-created expiring API keys and OpenAPI documentation.
   - [x] API product boundary and auth matrix
         Lock the account-only API key model, read-only v1 permissions, public-versus-authenticated endpoint policy, and first endpoint list.
   - [x] API key management
         Let signed-in users create, list, and revoke permissioned expiring API keys through the Better Auth API Key plugin.
-  - [ ] Throttling and rate limits
+  - [x] Throttling and rate limits
         Enforce per-key API budgets, stable `429` responses, stricter limits for export-oriented endpoints, and cleanup for expired or revoked API keys after the visible retention window.
   - [x] First authenticated read endpoints
         Add bearer-authenticated project reads such as `/api/v1/me`, `/api/v1/projects`, and project track data.
@@ -100,15 +161,15 @@ The v1.6.0 release-sized work is archived below. The remaining active work stays
     - [ ] Race director page layout
           Turn that metadata into a dedicated Race Pack page.
 
-- [ ] Live race overlay preparation (`No account required`)
+- [x] Live race overlay preparation (`No account required`)
       Prepare TrackDraw projects for a future `rh-stream-overlays` minimap integration without making TrackDraw the live OBS overlay runtime.
-  - [ ] Active race route marker
-        Add only if multi-polyline overlay support becomes necessary; current overlay prep blocks ambiguous multi-route designs.
+  - [x] Single race line rule
+        Keep one race line per track as the supported model. Overlay readiness blocks missing or ambiguous route setups instead of adding active-route selection.
   - [x] Timing role metadata
         Reuse the race-day timing marker model for overlay preparation, including start/finish and split timing identifiers on relevant shapes.
   - [x] Timing setup validation
         Warn or block overlay-oriented export when the race route is missing, timing roles are duplicated, or marked timing points cannot be mapped onto route progress.
-  - [ ] TrackDraw JSON contract pass
+  - [x] TrackDraw REST overlay contract pass
         Document the compact REST overlay package and the fields `rh-stream-overlays` should consume.
   - [x] Overlay package endpoint
         Added an account-project `/api/v1/projects/[projectId]/overlay` endpoint for route, numbered obstacle, and timing marker data without exposing full editor JSON.

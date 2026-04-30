@@ -212,7 +212,9 @@ export function AccountApiKeysView({
           <div>
             <p className="text-sm font-medium">Active API keys</p>
             <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              Use these keys to connect external tools to your TrackDraw data.{" "}
+              Use these keys to let external tools read your account projects,
+              track packages, and livestream overlay data. Keys cannot edit
+              tracks.{" "}
               <Link
                 href="/api/docs"
                 target="_blank"
@@ -252,7 +254,8 @@ export function AccountApiKeysView({
               <div className="min-w-0">
                 <p className="text-sm font-medium">No API keys yet</p>
                 <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  Create one to connect external tools to your account projects.
+                  Create one when a trusted integration needs read-only access
+                  to your account projects.
                 </p>
               </div>
             </div>
@@ -316,7 +319,7 @@ export function AccountApiKeysView({
                           type="button"
                           onClick={() => setConfirmRevokeKeyId(apiKey.id)}
                           disabled={isDeleting}
-                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-50"
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-50"
                           aria-label={`Revoke ${apiKey.name?.trim() || "API key"}`}
                         >
                           {isDeleting ? (

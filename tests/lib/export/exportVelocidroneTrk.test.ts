@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest";
+// @vitest-environment happy-dom
+
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildVelocidronePayload,
   buildVelocidroneValueJson,
   encryptVelocidroneTrk,
+  exportVelocidroneTrk,
 } from "@/lib/export/exportVelocidroneTrk";
 import { normalizeDesign } from "@/lib/track/design";
 
@@ -75,6 +78,10 @@ function createVelocidroneReadyDesign() {
 }
 
 describe("exportVelocidroneTrk", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("builds Velocidrone value json with ordered gates and barriers", () => {
     const valueJson = buildVelocidroneValueJson(createVelocidroneReadyDesign());
 
@@ -155,5 +162,31 @@ describe("exportVelocidroneTrk", () => {
     expect(() => buildVelocidroneValueJson(invalid)).toThrow(
       /at least 2 gate objects/
     );
+  });
+
+  it("exports an encrypted .trk download with the requested filename", async () => {
+    const anchorRef: { current: HTMLAnchorElement | null } = { current: null };
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:trackdraw-trk");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      const element = originalCreateElement(tagName);
+      if (tagName === "a") {
+        anchorRef.current = element as HTMLAnchorElement;
+      }
+      return element;
+    });
+
+    const summary = await exportVelocidroneTrk(
+      createVelocidroneReadyDesign(),
+      "race-day.trk"
+    );
+
+    expect(summary.gateCount).toBe(2);
+    expect(anchorRef.current?.download).toBe("race-day.trk");
+    expect(anchorRef.current?.href).toBe("blob:trackdraw-trk");
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledOnce();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:trackdraw-trk");
   });
 });

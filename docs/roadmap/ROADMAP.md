@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, public gallery discovery, practical mobile use, venue-aligned editing, account-published embeds, and export/share handoff. The roadmap should now focus primarily on workflow depth and small product surfaces that build cleanly on the shipped foundation.
+This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, public gallery discovery, practical mobile use, venue-aligned editing, account-published embeds, export/share handoff, and the first account-backed REST integration surface. The roadmap should now focus primarily on stability, usability, and validation depth before adding larger new product surfaces.
 
 ## Current Focus
 
@@ -15,15 +15,15 @@ TrackDraw is now strong in these areas:
 - Practical mobile editing for quick venue-side changes
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 
-The most useful next product moves are:
+The most useful next product move is a stability and usability pass across the shipped product:
 
-- A versioned account-backed REST API with expiring API keys and OpenAPI documentation for external tools
-- Race-day operations follow-up that builds on shipped Race Pack QR codes and timing markers for future race director planning and overlay preparation
-- A sharper decision on how far account-backed project continuity should go after the shipped account and authorization foundation
-- A clearer separation between local-first workflows and account-backed follow-up
-- Versioned publish history for account-backed shares
-- Curated gallery collections that improve discovery without social mechanics
-- Targeted operator-facing dashboard follow-up only when it supports concrete collection or support workflows
+- Re-test editor interactions, mobile touch flows, route editing, snapping, transforms, and undo/redo
+- Smoke-test share, embed, gallery, import/export, Race Pack, account project, and REST API flows together
+- Add targeted regression tests around workflows where recent changes increased the cost of subtle breakage
+- Make common validation faster through a small validation matrix and documented changed-area test selection
+- Clean up confusing states and copy around local projects, account-backed projects, published shares, expired/revoked links, and API-key setup
+
+Larger product ideas such as venue libraries, share version history, gallery collections, and deeper race-day operations should stay parked until there is clearer need or until the shipped foundation has had a quality pass.
 
 ## Product Principles
 
@@ -44,7 +44,34 @@ Labels used below:
 - `Account-backed`: depends on ownership, sync, identity, or shared persistence
 - `Research`: still primarily exploratory
 
-### 1. Accounts And Ownership Model (`Research`)
+### 1. Stability And Usability Pass (`No account required`)
+
+The next TrackDraw slice should improve reliability and clarity across shipped workflows rather than opening another broad feature track.
+
+Why now:
+
+- The product surface is broad enough that regressions in selection, transforms, mobile panels, sharing, export, account-backed project state, or API setup are more expensive than another speculative feature
+- Recent work touched account, share, API, timing-marker, overlay-readiness, and mobile/dialog surfaces that should be validated together
+- Faster focused validation would make future small changes safer without requiring a full manual smoke test every time
+
+Focus:
+
+- Editor interaction regression pass: selection, drag, resize, rotate, undo/redo, snapping, route editing, inspector updates, and mobile touch behavior
+- Share and export smoke pass: JSON import/export, PNG, SVG, PDF, Race Pack, shared views, embeds, gallery cards, and account-published share flows
+- Mobile workflow cleanup: panels, drawers, selection targets, map-reference controls, share dialogs, and export dialogs
+- Account/project/share state clarity: signed-in versus local work, anonymous versus account-backed shares, revoked/expired links, active projects, and API-key setup
+- Targeted regression tests around recently touched editor, share, export, account, REST API, and overlay-readiness boundaries
+- Efficient validation workflow with documented changed-area test selection and no brittle script sprawl
+- Performance and bundle checks limited to concrete regressions or obvious weight
+
+Done state:
+
+- The main shipped workflows have a current smoke-test pass
+- High-risk boundaries have targeted tests or documented manual validation steps
+- Contributors can choose the right focused validation path without defaulting to the full build for every small change
+- The roadmap can reopen larger product work with a clearer quality baseline
+
+### 2. Accounts And Ownership Model (`Research`)
 
 TrackDraw now has the first account foundation in place through sign-in, profile management, role-aware dashboard access, and internal role management. The next question is how far account-backed project continuity should go beyond that shipped foundation.
 
@@ -106,13 +133,13 @@ Current shipped foundation:
 - Role-aware dashboard access and internal role management
 - Initial account-backed schema and project/share ownership groundwork
 
-### 2. Account-Backed Follow-up (`Account-backed`)
+### 3. Account-Backed Follow-up (`Account-backed`)
 
 These items are now follow-up work rather than intentionally blocked. The first ownership model is clear enough that they can move forward when priority allows.
 
 #### REST API And Integration Surface
 
-TrackDraw should add a versioned REST API as an account-backed integration surface for external tools, starting with read-only access to account projects and compact livestream overlay data.
+TrackDraw now has a versioned REST API as an account-backed integration surface for external tools, starting with read-only access to account projects and compact livestream overlay data.
 
 Supporting documents:
 
@@ -125,16 +152,19 @@ Why:
 - API keys are a natural account-only feature because they require identity, expiry, permissions, revocation, and ownership
 - OpenAPI documentation should make TrackDraw integration explicit rather than relying on ad hoc JSON exports or share-page scraping
 
-Focus:
+Shipped:
 
-- Shipped first slice: Better Auth API Key plugin integration, plugin-compatible D1 `apikey` storage, browser-session API key management routes, bearer-authenticated project reads at `/api/v1/me`, `/api/v1/projects`, `/api/v1/projects/[projectId]`, and `/api/v1/projects/[projectId]/track`, livestream minimap data at `/api/v1/projects/[projectId]/overlay`, plus OpenAPI docs at `/api/v1/openapi.json` and `/api/docs`
-- Add browser-session API key management for signed-in users
-- Use Better Auth API Key plugin storage and verification, with explicit expiry and revocation
-- Clean up expired and revoked API keys after the visible retention window
-- Enforce throttling and rate limits for `/api/v1/*`
-- Keep `/api/v1/*` authenticated by default for v1
-- Start with read-only project data and overlay/minimap metadata
+- Better Auth API Key plugin integration with plugin-compatible D1 `apikey` storage
+- Browser-session API key management for signed-in users
+- Bearer-authenticated project reads at `/api/v1/me`, `/api/v1/projects`, `/api/v1/projects/[projectId]`, and `/api/v1/projects/[projectId]/track`
+- Livestream minimap data at `/api/v1/projects/[projectId]/overlay`, including route data, numbered obstacles, timing markers, route positions, and overlay readiness details
+- OpenAPI docs at `/api/v1/openapi.json` and `/api/docs`
+- API key throttling, stable rate-limit errors, audit events, cleanup behavior, and test coverage for the shipped v1 boundaries
+
+Future follow-up:
+
 - Defer public unauthenticated REST reads, write APIs, and share endpoints until concrete integrations require them
+- Add stricter package-endpoint budgets only if real usage requires them
 
 #### Share Lifecycle Follow-up
 
@@ -220,11 +250,11 @@ The same start/finish and split timing markers should first serve TrackDraw's ow
 Current state:
 
 - The REST API now exposes a compact project overlay package for route, numbered obstacle, and timing marker data
-- Route and timing-role authoring exists, but overlay preparation still needs consumer-side validation against the `rh-stream-overlays` runtime expectations
+- Route and timing-role authoring exists, and TrackDraw now exposes overlay readiness details for the `rh-stream-overlays` runtime to consume
 
 TrackDraw scope:
 
-- Treat a design with exactly one polyline as overlay-prep eligible and block ambiguous multi-route designs until an explicit route model is needed
+- Treat a design with exactly one race line as overlay-prep eligible and block missing or ambiguous route setups
 - Reuse the race-day timing marker model, `shape.meta.timing`, for start/finish and split points
 - Keep editor controls for assigning timing roles on relevant shapes in a way that also improves Race Pack and race director output
 - Reuse overlay-preparation validation for missing race route, duplicate timing roles, missing timing identifiers, and timing-marked shapes that cannot be mapped onto route progress
@@ -244,10 +274,8 @@ Suggested first slices:
 - Shipped: inspector controls for `start_finish` and `split` roles on relevant gates or timing shapes
 - Shipped: timing markers surfaced in editor, 3D, Race Pack, and race director-oriented output before treating them as overlay-only metadata
 - Shipped: overlay-preparation validation and route-progress mapping helper for future export/setup UI
-- Shipped: `trackdraw.overlay.v1` contract builder with serialized design data, coordinate-system metadata, and overlay-preparation report
-- Shipped: Live Overlay package export in the existing export dialog, blocked until overlay-preparation validation passes
-- Add explicit active race route metadata only if multi-polyline overlay support becomes necessary
-- Keep the contract additive around serialized TrackDraw project JSON until external overlay runtimes prove a smaller dedicated package is necessary
+- Shipped: `trackdraw.overlay.v1` REST package with route data, numbered obstacles, timing markers, route positions, and readiness details
+- Shipped: one-race-line overlay preparation rule; no active-route selector is planned for v1
 
 ### 4. Real-Time Collaboration Evaluation (`Research`)
 

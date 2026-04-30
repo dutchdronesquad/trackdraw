@@ -108,6 +108,8 @@ export function SingleInspectorView({
     (Boolean(onResumeSelectedPath) || showDefaultPathActions);
   const timingMarker = getShapeTimingMarker(shape);
   const canSetTimingMarker = isTimingMarkerShape(shape);
+  const secondarySectionDefaultOpen = !mobileInline;
+  const timingSectionDefaultOpen = !mobileInline || Boolean(timingMarker);
   const timingRoleOptions: Array<{
     label: string;
     role: TimingRole | "none";
@@ -220,7 +222,7 @@ export function SingleInspectorView({
             ) : null}
           </div>
           {groupId && (
-            <Section title="Group">
+            <Section title="Group" defaultOpen={secondarySectionDefaultOpen}>
               <Row label="Group name">
                 <Input
                   value={groupName}
@@ -330,7 +332,7 @@ export function SingleInspectorView({
           </Section>
 
           {canSetTimingMarker && (
-            <Section title="Race timing">
+            <Section title="Race timing" defaultOpen={timingSectionDefaultOpen}>
               <Row label="Role">
                 <div
                   className="border-border/50 bg-background grid grid-cols-3 overflow-hidden rounded-md border p-0.5"
@@ -397,7 +399,7 @@ export function SingleInspectorView({
           )}
 
           {shape.kind === "gate" && (
-            <Section title="Gate">
+            <Section title="Gate" defaultOpen={secondarySectionDefaultOpen}>
               <Row label="Width (m)">
                 <Num
                   value={shape.width}
@@ -426,7 +428,7 @@ export function SingleInspectorView({
           )}
 
           {shape.kind === "flag" && (
-            <Section title="Flag">
+            <Section title="Flag" defaultOpen={secondarySectionDefaultOpen}>
               <Row label="Radius (m)">
                 <Num
                   value={shape.radius}
@@ -449,7 +451,7 @@ export function SingleInspectorView({
           )}
 
           {shape.kind === "cone" && (
-            <Section title="Cone">
+            <Section title="Cone" defaultOpen={secondarySectionDefaultOpen}>
               <Row label="Radius (m)">
                 <Num
                   value={shape.radius}
@@ -462,7 +464,7 @@ export function SingleInspectorView({
           )}
 
           {shape.kind === "label" && (
-            <Section title="Label">
+            <Section title="Label" defaultOpen={secondarySectionDefaultOpen}>
               <Row label="Text">
                 <textarea
                   rows={2}
@@ -505,7 +507,10 @@ export function SingleInspectorView({
           )}
 
           {shape.kind === "startfinish" && (
-            <Section title="Start Pads">
+            <Section
+              title="Start Pads"
+              defaultOpen={secondarySectionDefaultOpen}
+            >
               <Row label="Width (m)">
                 <Num
                   value={shape.width}
@@ -518,7 +523,7 @@ export function SingleInspectorView({
           )}
 
           {shape.kind === "ladder" && (
-            <Section title="Ladder">
+            <Section title="Ladder" defaultOpen={secondarySectionDefaultOpen}>
               <Row label="Width (m)">
                 <Num
                   value={shape.width}
@@ -567,7 +572,10 @@ export function SingleInspectorView({
           )}
 
           {shape.kind === "divegate" && (
-            <Section title="Dive Gate">
+            <Section
+              title="Dive Gate"
+              defaultOpen={secondarySectionDefaultOpen}
+            >
               <Row label="Size (m)">
                 <Num
                   value={shape.size}
@@ -610,7 +618,10 @@ export function SingleInspectorView({
           )}
 
           {shape.kind === "polyline" && (
-            <Section title="Race Line">
+            <Section
+              title="Race Line"
+              defaultOpen={secondarySectionDefaultOpen}
+            >
               <Row label="Stroke width (m)">
                 <Num
                   value={shape.strokeWidth ?? 0.26}

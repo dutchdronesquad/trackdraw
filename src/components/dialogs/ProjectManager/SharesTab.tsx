@@ -53,7 +53,7 @@ export function ProjectManagerSharesTab({
       <EmptyState
         icon={<Link2 className="size-6" />}
         title="No active shares"
-        description="Published share links from your account appear here."
+        description="Account-published links stay live until revoked. Temporary anonymous links expire automatically and are not managed here."
       />
     );
   }
@@ -66,6 +66,10 @@ export function ProjectManagerSharesTab({
           ? (accountProjectTitleById[share.projectId] ?? null)
           : null;
         const displayTitle = projectTitle ?? share.title;
+        const lifetimeLabel =
+          share.shareType === "published"
+            ? "read-only published link, live until revoked"
+            : `read-only temporary link, ${formatExpiresIn(share.expiresAt)}`;
 
         return (
           <div
@@ -80,10 +84,7 @@ export function ProjectManagerSharesTab({
                 {displayTitle}
               </p>
               <p className="text-muted-foreground mt-0.5 text-[11px]">
-                {itemLabel(share.shapeCount)} ·{" "}
-                {share.shareType === "published"
-                  ? "published until revoked"
-                  : formatExpiresIn(share.expiresAt)}
+                {itemLabel(share.shapeCount)} · {lifetimeLabel}
               </p>
             </div>
             <div
@@ -93,12 +94,13 @@ export function ProjectManagerSharesTab({
               <DesktopActionTooltip label="Copy link">
                 <button
                   type="button"
+                  aria-label="Copy share link"
                   onClick={async () => {
                     await navigator.clipboard.writeText(shareUrl);
                     setCopiedToken(share.token);
                     setTimeout(() => setCopiedToken(null), 2000);
                   }}
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-colors group-hover:opacity-100"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-100 transition-colors md:opacity-0 md:group-hover:opacity-100"
                 >
                   {copiedToken === share.token ? (
                     <Check className="size-3.5" />
@@ -110,10 +112,11 @@ export function ProjectManagerSharesTab({
               <DesktopActionTooltip label="Open in new tab">
                 <button
                   type="button"
+                  aria-label="Open share link"
                   onClick={() =>
                     window.open(shareUrl, "_blank", "noopener,noreferrer")
                   }
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-colors group-hover:opacity-100"
+                  className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-100 transition-colors md:opacity-0 md:group-hover:opacity-100"
                 >
                   <ExternalLink className="size-3.5" />
                 </button>
@@ -122,8 +125,9 @@ export function ProjectManagerSharesTab({
                 <DesktopActionTooltip label="Revoke link">
                   <button
                     type="button"
+                    aria-label="Revoke share link"
                     onClick={() => setConfirmRevokeToken(share.token)}
-                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-colors group-hover:opacity-100"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-100 transition-colors md:opacity-0 md:group-hover:opacity-100"
                   >
                     <Ban className="size-3.5" />
                   </button>

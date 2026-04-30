@@ -170,6 +170,67 @@ describe("track design helpers", () => {
     expect(serialized.shapes[0]?.id).toBe("gate-1");
   });
 
+  it("roundtrips JSON project export data back into an editable design", () => {
+    const design = normalizeDesign({
+      id: "design-json-roundtrip",
+      version: 1,
+      title: "Race day backup",
+      description: "Backup export",
+      tags: ["race-day"],
+      authorName: "TrackDraw",
+      inventory,
+      field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
+      mapReference: {
+        type: "map",
+        provider: "esri-world-imagery",
+        mapStyle: "satellite",
+        centerLat: 52.1,
+        centerLng: 5.2,
+        zoom: 18,
+        rotationDeg: 12,
+        opacity: 0.7,
+        visible: true,
+        locked: true,
+      },
+      shapes: [
+        {
+          id: "route-1",
+          kind: "polyline",
+          x: 0,
+          y: 0,
+          rotation: 0,
+          points: [
+            { x: 2, y: 3, z: 0 },
+            { x: 5, y: 8, z: 1 },
+          ],
+        },
+        {
+          id: "gate-start",
+          kind: "gate",
+          x: 10,
+          y: 12,
+          rotation: 90,
+          width: 3,
+          height: 1.8,
+          meta: { timing: { role: "start_finish" } },
+        },
+      ],
+      createdAt: "2026-04-13T10:00:00.000Z",
+      updatedAt: "2026-04-13T10:15:00.000Z",
+    });
+
+    const exportedJson = JSON.stringify(serializeDesign(design));
+    const importedDesign = parseDesign(JSON.parse(exportedJson));
+
+    expect(importedDesign?.id).toBe("design-json-roundtrip");
+    expect(importedDesign?.shapeOrder).toEqual(["route-1", "gate-start"]);
+    expect(importedDesign?.mapReference?.provider).toBe("esri-world-imagery");
+    expect(importedDesign?.shapeById["gate-start"]?.meta?.timing).toEqual({
+      role: "start_finish",
+    });
+    expect(importedDesign?.shapeById["route-1"]?.kind).toBe("polyline");
+  });
+
   it("keeps map references in project serialization and strips them from share serialization", () => {
     const design = normalizeDesign({
       id: "design-map",

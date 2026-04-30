@@ -10,7 +10,7 @@ import {
   getShareTitle,
   isShareSafe,
 } from "@/lib/share";
-import { createDefaultDesign } from "@/lib/track/design";
+import { createDefaultDesign, normalizeDesign } from "@/lib/track/design";
 import { parseEditorView } from "@/lib/view";
 
 describe("share helpers", () => {
@@ -27,6 +27,49 @@ describe("share helpers", () => {
 
     expect(decoded?.title).toBe("Club Race");
     expect(decoded?.id).toBe(design.id);
+  });
+
+  it("strips map references from share tokens while preserving timing metadata", () => {
+    const {
+      shapeById: _shapeById,
+      shapeOrder: _shapeOrder,
+      ...baseDesign
+    } = createDefaultDesign();
+    const design = normalizeDesign({
+      ...baseDesign,
+      id: "design-share-boundary",
+      mapReference: {
+        type: "map",
+        provider: "esri-world-imagery",
+        mapStyle: "satellite",
+        centerLat: 52.1,
+        centerLng: 5.2,
+        zoom: 18,
+        rotationDeg: 12,
+        opacity: 0.7,
+        visible: true,
+        locked: true,
+      },
+      shapes: [
+        {
+          id: "gate-start",
+          kind: "gate",
+          x: 10,
+          y: 12,
+          rotation: 90,
+          width: 3,
+          height: 1.8,
+          meta: { timing: { role: "start_finish" } },
+        },
+      ],
+    });
+
+    const decoded = decodeDesign(encodeDesign(design));
+
+    expect(decoded?.mapReference).toBeNull();
+    expect(decoded?.shapeById["gate-start"]?.meta?.timing).toEqual({
+      role: "start_finish",
+    });
   });
 
   it("builds stored share paths and absolute share urls", () => {

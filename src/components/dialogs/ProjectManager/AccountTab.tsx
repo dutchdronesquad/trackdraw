@@ -168,10 +168,18 @@ export function ProjectManagerAccountTab({
               isCurrent &&
               (hasConflict || hasSyncFailure || hasPendingChanges) ? (
                 <button
+                  type="button"
                   onClick={() => {
                     if (!hasConflict) onSyncProject(proj.id);
                   }}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                  aria-label={
+                    hasConflict
+                      ? `Resolve version conflict for ${proj.title || "project"}`
+                      : hasSyncFailure
+                        ? `Retry sync for ${proj.title || "project"}`
+                        : `Sync pending changes for ${proj.title || "project"}`
+                  }
                   title={
                     hasConflict
                       ? "Resolve the version conflict first"

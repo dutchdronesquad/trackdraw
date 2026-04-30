@@ -284,6 +284,15 @@ export function ProjectManagerDeviceTab({
                 >
                   <button
                     type="button"
+                    aria-label={
+                      hasConflict
+                        ? `Resolve version conflict for ${p.title || "project"}`
+                        : hasSyncFailure
+                          ? `Retry sync for ${p.title || "project"}`
+                          : isSynced || hasPendingChanges
+                            ? `Update account copy for ${p.title || "project"}`
+                            : `Sync ${p.title || "project"} to account`
+                    }
                     onClick={() => {
                       if (hasConflict) {
                         onResolveConflict?.(p.id);
@@ -295,7 +304,7 @@ export function ProjectManagerDeviceTab({
                     className={cn(
                       "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
                       !isMobile &&
-                        "opacity-0 transition-opacity group-hover:opacity-100"
+                        "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                     )}
                   >
                     {isSyncing ? (
@@ -312,11 +321,12 @@ export function ProjectManagerDeviceTab({
                 <DesktopActionTooltip label="Export JSON">
                   <button
                     type="button"
+                    aria-label={`Export ${p.title || "project"} as JSON`}
                     onClick={() => onExportProject(p.id)}
                     className={cn(
                       "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
                       !isMobile &&
-                        "opacity-0 transition-opacity group-hover:opacity-100"
+                        "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                     )}
                   >
                     <Download className="size-3.5" />
@@ -348,8 +358,10 @@ export function ProjectManagerDeviceTab({
                   {onRenameProject && (
                     <DesktopActionTooltip label="Rename">
                       <button
+                        type="button"
+                        aria-label={`Rename ${p.title || "project"}`}
                         onClick={() => startRename(p)}
-                        className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100"
+                        className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100 focus-visible:opacity-100"
                       >
                         <Pencil className="size-3.5" />
                       </button>
@@ -358,8 +370,10 @@ export function ProjectManagerDeviceTab({
                   {onDeleteProject && !isCurrent && (
                     <DesktopActionTooltip label="Delete">
                       <button
+                        type="button"
+                        aria-label={`Delete ${p.title || "project"}`}
                         onClick={() => setConfirmDeleteId(p.id)}
-                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100"
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100 focus-visible:opacity-100"
                       >
                         <Trash2 className="size-3.5" />
                       </button>

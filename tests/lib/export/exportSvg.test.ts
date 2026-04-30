@@ -1,5 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
-import { designToSvg } from "@/lib/export/exportSvg";
+// @vitest-environment happy-dom
+
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { designToSvg, exportSvg } from "@/lib/export/exportSvg";
 import { normalizeDesign } from "@/lib/track/design";
 
 const inventory = {
@@ -66,6 +68,10 @@ function createDesign() {
 }
 
 describe("exportSvg", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders a complete svg with escaped text and footer metadata", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-13T10:00:00.000Z"));
@@ -123,5 +129,27 @@ describe("exportSvg", () => {
 
     expect(svg).toContain(`stroke="#f59e0b" stroke-width="3"`);
     expect(svg).not.toContain(`>SF</text>`);
+  });
+
+  it("downloads the rendered svg with the requested filename", () => {
+    const anchorRef: { current: HTMLAnchorElement | null } = { current: null };
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:trackdraw-svg");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    vi.spyOn(document, "createElement").mockImplementation((tagName) => {
+      const element = originalCreateElement(tagName);
+      if (tagName === "a") {
+        anchorRef.current = element as HTMLAnchorElement;
+      }
+      return element;
+    });
+
+    exportSvg(createDesign(), "track-map.svg", "dark");
+
+    expect(anchorRef.current?.download).toBe("track-map.svg");
+    expect(anchorRef.current?.href).toBe("blob:trackdraw-svg");
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledOnce();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:trackdraw-svg");
   });
 });

@@ -178,7 +178,7 @@ function MobileFormatRow({
   description,
   isBusy,
   locked,
-  lockedLabel = "3D view",
+  lockedLabel = "Open required view",
   onAction,
 }: {
   ext: string;
@@ -190,15 +190,18 @@ function MobileFormatRow({
   lockedLabel?: string;
   onAction: () => void;
 }) {
-  const inactive = isBusy || locked;
+  const inactive = isBusy;
   return (
     <button
       type="button"
       disabled={inactive}
+      aria-busy={isBusy}
+      aria-label={locked ? lockedLabel : `Export ${label}`}
       onClick={onAction}
       className={cn(
         "flex w-full items-center gap-4 px-4 py-4 text-left transition-colors",
-        inactive ? "opacity-50" : "active:bg-muted/30"
+        inactive ? "opacity-50" : "active:bg-muted/30",
+        locked && !inactive && "opacity-70"
       )}
     >
       <span
@@ -728,6 +731,7 @@ export default function ExportDialog({
             description="Screenshot at the current camera angle."
             isBusy={busy === "3d"}
             locked={activeTab !== "3d"}
+            lockedLabel="Switch to 3D view"
             onAction={
               activeTab !== "3d" && onRequest3DView
                 ? onRequest3DView

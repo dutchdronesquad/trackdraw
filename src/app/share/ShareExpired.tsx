@@ -53,9 +53,10 @@ export default function ShareExpired() {
                 This share link has expired
               </h1>
               <p className="text-muted-foreground max-w-2xl text-sm leading-7 sm:text-base">
-                TrackDraw share links currently expire after 90 days unless a
-                different expiry is chosen when publishing. Ask the sender to
-                publish a fresh link if you still need this layout.
+                Temporary TrackDraw share links expire after the duration chosen
+                when they are created. Account-published project links stay live
+                until the owner revokes them. Ask the sender to publish a fresh
+                link if you still need this layout.
               </p>
             </div>
 
@@ -68,7 +69,10 @@ export default function ShareExpired() {
                   <span className="text-foreground/70 min-w-4 font-semibold tabular-nums">
                     1.
                   </span>
-                  <span>Ask the sender to publish the track again.</span>
+                  <span>
+                    Ask the sender to publish the track again, or send an
+                    account-published link for longer-lived read-only access.
+                  </span>
                 </li>
                 <li className="flex gap-3 py-2">
                   <span className="text-foreground/70 min-w-4 font-semibold tabular-nums">
