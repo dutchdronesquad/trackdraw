@@ -54,7 +54,10 @@ const createShareRequestSchema = z.object({
 
 export async function POST(request: Request) {
   if (!isTrustedRequest(request)) {
-    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
   }
 
   try {

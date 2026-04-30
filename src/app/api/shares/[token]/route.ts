@@ -106,7 +106,10 @@ export async function DELETE(
   context: ShareTokenRouteContext
 ) {
   if (!isTrustedRequest(request)) {
-    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
   }
 
   try {
@@ -131,7 +134,10 @@ export async function DELETE(
 
 export async function PATCH(request: Request, context: ShareTokenRouteContext) {
   if (!isTrustedRequest(request)) {
-    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
   }
 
   try {

@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextResponse } from "next/server";
 import { createDefaultDesign } from "@/lib/track/design";
-import type { StoredProject, StoredProjectSummary } from "@/lib/server/projects";
+import type {
+  StoredProject,
+  StoredProjectSummary,
+} from "@/lib/server/projects";
 
 vi.mock("@/lib/server/api-keys", () => ({
   trackReadPermission: { tracks: ["read"] },
@@ -64,7 +67,10 @@ import * as overlayRoute from "@/app/api/v1/projects/[projectId]/overlay/route";
 import * as projectsRoute from "@/app/api/v1/projects/route";
 import { authenticateApiRequest } from "@/lib/server/api-v1";
 import { trackReadPermission } from "@/lib/server/api-keys";
-import { getProjectForUser, listProjectSummariesForUser } from "@/lib/server/projects";
+import {
+  getProjectForUser,
+  listProjectSummariesForUser,
+} from "@/lib/server/projects";
 import {
   toApiOverlayPackage,
   toApiProjectSummaryLight,
@@ -133,7 +139,9 @@ describe("v1 project API routes", () => {
       trackReadPermission
     );
     expect(listProjectSummariesForUser).toHaveBeenCalledWith("user-1");
-    expect(vi.mocked(toApiProjectSummaryLight).mock.calls[0]?.[0]).toBe(summary);
+    expect(vi.mocked(toApiProjectSummaryLight).mock.calls[0]?.[0]).toBe(
+      summary
+    );
     await expect(response.json()).resolves.toEqual({
       data: [{ type: "project", id: "project-1", title: "Race layout" }],
       pagination: {

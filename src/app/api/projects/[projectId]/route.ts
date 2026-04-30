@@ -61,7 +61,10 @@ export async function GET(request: Request, context: ProjectRouteContext) {
 
 export async function DELETE(request: Request, context: ProjectRouteContext) {
   if (!isTrustedRequest(request)) {
-    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
   }
 
   try {

@@ -21,10 +21,7 @@ function unauthorizedResponse() {
 }
 
 function forbiddenResponse() {
-  return NextResponse.json(
-    { ok: false, error: "Forbidden" },
-    { status: 403 }
-  );
+  return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
 }
 
 function isBetterAuthNotFound(error: unknown): boolean {

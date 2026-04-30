@@ -7,7 +7,10 @@ import {
 } from "@/lib/track/obstacleNumbering";
 import { getPolyline2DDerived } from "@/lib/track/polyline-derived";
 import { getDesignTimingMarkers } from "@/lib/track/timing";
-import type { StoredProject, StoredProjectSummary } from "@/lib/server/projects";
+import type {
+  StoredProject,
+  StoredProjectSummary,
+} from "@/lib/server/projects";
 import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
 
 function isRecord(value: unknown): value is Record<string, unknown> {

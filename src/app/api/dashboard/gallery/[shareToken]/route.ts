@@ -39,7 +39,10 @@ export async function PATCH(
   context: DashboardGalleryRouteContext
 ) {
   if (!isTrustedRequest(request)) {
-    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
   }
 
   try {
@@ -153,7 +156,10 @@ export async function DELETE(
   context: DashboardGalleryRouteContext
 ) {
   if (!isTrustedRequest(request)) {
-    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
   }
 
   try {
