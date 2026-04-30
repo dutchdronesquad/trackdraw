@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextResponse } from "next/server";
 import { createDefaultDesign } from "@/lib/track/design";
-import type { StoredProject } from "@/lib/server/projects";
+import type {
+  StoredProject,
+  StoredProjectSummary,
+} from "@/lib/server/projects";
 
 vi.mock("@/lib/server/api-keys", () => ({
   trackReadPermission: { tracks: ["read"] },
@@ -39,14 +42,18 @@ vi.mock("@/lib/server/api-v1", () => ({
 
 vi.mock("@/lib/server/projects", () => ({
   getProjectForUser: vi.fn(),
-  listProjectsForUser: vi.fn(),
+  listProjectSummariesForUser: vi.fn(),
 }));
 
 vi.mock("@/lib/server/api-projects", () => ({
-  toApiProjectSummary: vi.fn((project: StoredProject) => ({
+  toApiProjectSummaryLight: vi.fn((project: StoredProjectSummary) => ({
     type: "project",
     id: project.id,
     title: project.title,
+  })),
+  toApiTrackPackage: vi.fn((project: StoredProject) => ({
+    type: "track",
+    source: { type: "project", id: project.id },
   })),
   toApiOverlayPackage: vi.fn((project: StoredProject) => ({
     type: "overlay_track",
@@ -55,14 +62,19 @@ vi.mock("@/lib/server/api-projects", () => ({
 }));
 
 import * as projectRoute from "@/app/api/v1/projects/[projectId]/route";
+import * as trackRoute from "@/app/api/v1/projects/[projectId]/track/route";
 import * as overlayRoute from "@/app/api/v1/projects/[projectId]/overlay/route";
 import * as projectsRoute from "@/app/api/v1/projects/route";
 import { authenticateApiRequest } from "@/lib/server/api-v1";
 import { trackReadPermission } from "@/lib/server/api-keys";
-import { getProjectForUser, listProjectsForUser } from "@/lib/server/projects";
+import {
+  getProjectForUser,
+  listProjectSummariesForUser,
+} from "@/lib/server/projects";
 import {
   toApiOverlayPackage,
-  toApiProjectSummary,
+  toApiProjectSummaryLight,
+  toApiTrackPackage,
 } from "@/lib/server/api-projects";
 
 const apiIdentity = {
@@ -88,6 +100,19 @@ function makeProject(id = "project-1"): StoredProject {
   };
 }
 
+function makeProjectSummary(id = "project-1"): StoredProjectSummary {
+  return {
+    id,
+    ownerUserId: "user-1",
+    title: "Race layout",
+    fieldWidth: 60,
+    fieldHeight: 40,
+    shapeCount: 0,
+    createdAt: "2026-04-28T09:00:00.000Z",
+    updatedAt: "2026-04-28T12:30:00.000Z",
+  };
+}
+
 function projectContext(projectId: string) {
   return { params: Promise.resolve({ projectId }) };
 }
@@ -102,8 +127,8 @@ describe("v1 project API routes", () => {
   });
 
   it("lists only projects for the API key owner", async () => {
-    const project = makeProject();
-    vi.mocked(listProjectsForUser).mockResolvedValue([project]);
+    const summary = makeProjectSummary();
+    vi.mocked(listProjectSummariesForUser).mockResolvedValue([summary]);
 
     const response = await projectsRoute.GET(
       new Request("http://localhost/api/v1/projects?limit=200")
@@ -113,8 +138,10 @@ describe("v1 project API routes", () => {
       expect.any(Request),
       trackReadPermission
     );
-    expect(listProjectsForUser).toHaveBeenCalledWith("user-1");
-    expect(vi.mocked(toApiProjectSummary).mock.calls[0]?.[0]).toBe(project);
+    expect(listProjectSummariesForUser).toHaveBeenCalledWith("user-1");
+    expect(vi.mocked(toApiProjectSummaryLight).mock.calls[0]?.[0]).toBe(
+      summary
+    );
     await expect(response.json()).resolves.toEqual({
       data: [{ type: "project", id: "project-1", title: "Race layout" }],
       pagination: {
@@ -124,6 +151,15 @@ describe("v1 project API routes", () => {
       },
       meta: { api_version: "v1" },
     });
+  });
+
+  it("returns 400 for invalid limit parameter", async () => {
+    const response = await projectsRoute.GET(
+      new Request("http://localhost/api/v1/projects?limit=abc")
+    );
+
+    expect(response.status).toBe(400);
+    expect(listProjectSummariesForUser).not.toHaveBeenCalled();
   });
 
   it("returns 404 for project metadata when the project is not owned by the key owner", async () => {
@@ -142,6 +178,42 @@ describe("v1 project API routes", () => {
       detail: "Project not found.",
       code: "not_found",
     });
+  });
+
+  it("returns track package only after loading a project for the API key owner", async () => {
+    const project = makeProject();
+    vi.mocked(getProjectForUser).mockResolvedValue(project);
+
+    const response = await trackRoute.GET(
+      new Request("http://localhost/api/v1/projects/project-1/track"),
+      projectContext("project-1")
+    );
+
+    expect(authenticateApiRequest).toHaveBeenCalledWith(
+      expect.any(Request),
+      trackReadPermission
+    );
+    expect(getProjectForUser).toHaveBeenCalledWith("project-1", "user-1");
+    expect(toApiTrackPackage).toHaveBeenCalledWith(project);
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        type: "track",
+        source: { type: "project", id: "project-1" },
+      },
+      meta: { api_version: "v1" },
+    });
+  });
+
+  it("returns 404 for track package when the project is not owned by the key owner", async () => {
+    vi.mocked(getProjectForUser).mockResolvedValue(null);
+
+    const response = await trackRoute.GET(
+      new Request("http://localhost/api/v1/projects/project-2/track"),
+      projectContext("project-2")
+    );
+
+    expect(getProjectForUser).toHaveBeenCalledWith("project-2", "user-1");
+    expect(response.status).toBe(404);
   });
 
   it("returns overlay data only after loading a project for the API key owner", async () => {

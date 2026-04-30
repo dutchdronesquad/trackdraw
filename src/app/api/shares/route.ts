@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
+import { isTrustedRequest } from "@/lib/server/csrf";
 import { getProjectForUser } from "@/lib/server/projects";
 import {
   createShare,
@@ -32,11 +33,9 @@ export async function GET(request: Request) {
     const shares = await getSharesByUserId(user.id);
     return NextResponse.json({ ok: true, shares });
   } catch (error) {
+    console.error("[TrackDraw] Failed to list shares", { error });
     return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Failed to list shares",
-      },
+      { ok: false, error: "Failed to list shares" },
       { status: 500 }
     );
   }
@@ -52,6 +51,13 @@ const createShareRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = createShareRequestSchema.parse(await request.json());
     const user = await getCurrentUserFromHeaders(request.headers);
@@ -109,10 +115,8 @@ export async function POST(request: Request) {
     const message =
       error instanceof z.ZodError
         ? "Invalid share publish payload"
-        : error instanceof Error
-          ? error.message
-          : "Unknown share publish error";
-
+        : "Failed to publish share";
+    console.error("[TrackDraw] Failed to publish share", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

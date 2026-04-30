@@ -3,6 +3,7 @@ import { z } from "zod";
 import { accountRoles } from "@/lib/account-roles";
 import { createAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
+import { isTrustedRequest } from "@/lib/server/csrf";
 import { canAssignAccountRole } from "@/lib/server/authorization";
 import {
   countUsersByRole,
@@ -41,6 +42,13 @@ export async function PATCH(
   request: Request,
   context: DashboardUserRouteContext
 ) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
+  }
+
   try {
     const actor = await getCurrentUserFromHeaders(request.headers);
 
@@ -112,10 +120,8 @@ export async function PATCH(
     const message =
       error instanceof z.ZodError
         ? "Invalid role update payload"
-        : error instanceof Error
-          ? error.message
-          : "Failed to update user role";
-
+        : "Failed to update user role";
+    console.error("[TrackDraw] Failed to update user role", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
+import { isTrustedRequest } from "@/lib/server/csrf";
 import {
   deleteGalleryEntry,
   getGalleryEntryByShareToken,
@@ -37,6 +38,13 @@ export async function PATCH(
   request: Request,
   context: DashboardGalleryRouteContext
 ) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
+  }
+
   try {
     const actor = await getCurrentUserFromHeaders(request.headers);
     if (!actor) {
@@ -135,10 +143,8 @@ export async function PATCH(
     const message =
       error instanceof z.ZodError
         ? "Invalid gallery action payload"
-        : error instanceof Error
-          ? error.message
-          : "Failed to update gallery entry";
-
+        : "Failed to update gallery entry";
+    console.error("[TrackDraw] Failed to update gallery entry", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
@@ -147,6 +153,13 @@ export async function DELETE(
   request: Request,
   context: DashboardGalleryRouteContext
 ) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
+  }
+
   try {
     const actor = await getCurrentUserFromHeaders(request.headers);
     if (!actor) {
@@ -192,14 +205,9 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("[TrackDraw] Failed to delete gallery entry", { error });
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to delete gallery entry",
-      },
+      { ok: false, error: "Failed to delete gallery entry" },
       { status: 500 }
     );
   }

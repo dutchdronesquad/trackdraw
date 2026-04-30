@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
-import { deleteApiKeyForSession } from "@/lib/server/api-keys";
+import {
+  deleteApiKeyForSession,
+  getApiKeyForSession,
+} from "@/lib/server/api-keys";
 import { createAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
+import { isTrustedRequest } from "@/lib/server/csrf";
 
 type ApiKeyRouteContext = {
   params: Promise<{
@@ -16,7 +20,25 @@ function unauthorizedResponse() {
   );
 }
 
+function forbiddenResponse() {
+  return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+}
+
+function isBetterAuthNotFound(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    ("statusCode" in error
+      ? (error as { statusCode: unknown }).statusCode === 404
+      : false)
+  );
+}
+
 export async function DELETE(request: Request, context: ApiKeyRouteContext) {
+  if (!isTrustedRequest(request)) {
+    return forbiddenResponse();
+  }
+
   try {
     const user = await getCurrentUserFromHeaders(request.headers);
     if (!user) {
@@ -31,10 +53,39 @@ export async function DELETE(request: Request, context: ApiKeyRouteContext) {
       );
     }
 
-    await deleteApiKeyForSession({
-      headers: request.headers,
-      keyId,
-    });
+    // Fetch key details before deleting so the audit event is self-describing.
+    let keyName: string | null = null;
+    let keyPrefix: string | null = null;
+    let keyStart: string | null = null;
+    try {
+      const existing = await getApiKeyForSession({
+        headers: request.headers,
+        keyId,
+      });
+      keyName = existing?.name ?? null;
+      keyPrefix = existing?.prefix ?? null;
+      keyStart = existing?.start ?? null;
+    } catch (lookupError) {
+      if (isBetterAuthNotFound(lookupError)) {
+        return NextResponse.json(
+          { ok: false, error: "API key not found" },
+          { status: 404 }
+        );
+      }
+      // Non-404 lookup errors: proceed; delete will also fail or succeed.
+    }
+
+    try {
+      await deleteApiKeyForSession({ headers: request.headers, keyId });
+    } catch (deleteError) {
+      if (isBetterAuthNotFound(deleteError)) {
+        return NextResponse.json(
+          { ok: false, error: "API key not found" },
+          { status: 404 }
+        );
+      }
+      throw deleteError;
+    }
 
     try {
       await createAuditEvent({
@@ -43,6 +94,11 @@ export async function DELETE(request: Request, context: ApiKeyRouteContext) {
         eventType: "api_key.revoked",
         entityType: "api_key",
         entityId: keyId,
+        metadata: {
+          name: keyName,
+          prefix: keyPrefix,
+          start: keyStart,
+        },
       });
     } catch (auditError) {
       console.error("[TrackDraw API keys] Failed to audit key revoke", {
@@ -53,12 +109,9 @@ export async function DELETE(request: Request, context: ApiKeyRouteContext) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("[TrackDraw API keys] Failed to revoke API key", { error });
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          error instanceof Error ? error.message : "Failed to revoke API key",
-      },
+      { ok: false, error: "Failed to revoke API key" },
       { status: 500 }
     );
   }

@@ -207,17 +207,6 @@ export const trackdrawOpenApiSchema = {
           "200": {
             description:
               "Account identity and current bearer-key capabilities.",
-            headers: {
-              "RateLimit-Limit": {
-                $ref: "#/components/headers/RateLimitLimit",
-              },
-              "RateLimit-Remaining": {
-                $ref: "#/components/headers/RateLimitRemaining",
-              },
-              "RateLimit-Reset": {
-                $ref: "#/components/headers/RateLimitReset",
-              },
-            },
             content: jsonContent(
               envelope({ $ref: "#/components/schemas/ApiIdentity" }),
               {
@@ -252,17 +241,6 @@ export const trackdrawOpenApiSchema = {
         responses: {
           "200": {
             description: "Cursor-paginated project summaries.",
-            headers: {
-              "RateLimit-Limit": {
-                $ref: "#/components/headers/RateLimitLimit",
-              },
-              "RateLimit-Remaining": {
-                $ref: "#/components/headers/RateLimitRemaining",
-              },
-              "RateLimit-Reset": {
-                $ref: "#/components/headers/RateLimitReset",
-              },
-            },
             content: jsonContent(
               listEnvelope({ $ref: "#/components/schemas/ProjectSummary" }),
               {

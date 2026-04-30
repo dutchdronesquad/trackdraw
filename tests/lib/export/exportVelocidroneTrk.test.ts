@@ -108,11 +108,11 @@ describe("exportVelocidroneTrk", () => {
     expect(payload).toContain(`"barriers"`);
   });
 
-  it("encrypts payloads deterministically for the same plaintext", () => {
+  it("encrypts payloads deterministically for the same plaintext", async () => {
     const plaintext = "8\ntrack\n{}\n0\n0";
 
-    const encryptedA = encryptVelocidroneTrk(plaintext);
-    const encryptedB = encryptVelocidroneTrk(plaintext);
+    const encryptedA = await encryptVelocidroneTrk(plaintext);
+    const encryptedB = await encryptVelocidroneTrk(plaintext);
 
     expect(encryptedA).toBe(encryptedB);
     expect(encryptedA).not.toBe(plaintext);

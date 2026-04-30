@@ -4,16 +4,16 @@ import {
   authenticateApiRequest,
 } from "@/lib/server/api-v1";
 import { trackReadPermission } from "@/lib/server/api-keys";
-import { toApiProjectSummary } from "@/lib/server/api-projects";
-import { listProjectsForUser } from "@/lib/server/projects";
+import { toApiProjectSummaryLight } from "@/lib/server/api-projects";
+import { listProjectSummariesForUser } from "@/lib/server/projects";
 
-function parseLimit(request: Request) {
+function parseLimit(request: Request): number | null {
   const url = new URL(request.url);
-  const rawLimit = Number.parseInt(url.searchParams.get("limit") ?? "50", 10);
-  if (Number.isNaN(rawLimit)) {
-    return 50;
-  }
-  return Math.max(1, Math.min(rawLimit, 100));
+  const raw = url.searchParams.get("limit");
+  if (raw === null) return 50;
+  const parsed = Number.parseInt(raw, 10);
+  if (Number.isNaN(parsed)) return null;
+  return Math.max(1, Math.min(parsed, 100));
 }
 
 export async function GET(request: Request) {
@@ -22,23 +22,31 @@ export async function GET(request: Request) {
     return auth.response;
   }
 
+  const limit = parseLimit(request);
+  if (limit === null) {
+    return apiProblem({
+      status: 400,
+      code: "bad_request",
+      title: "Bad Request",
+      detail: "Invalid limit parameter. Must be an integer between 1 and 100.",
+    });
+  }
+
   try {
-    const limit = parseLimit(request);
-    const projects = await listProjectsForUser(auth.identity.user.id);
+    const projects = await listProjectSummariesForUser(auth.identity.user.id);
     const page = projects.slice(0, limit);
 
-    return apiListSuccess(page.map(toApiProjectSummary), {
+    return apiListSuccess(page.map(toApiProjectSummaryLight), {
       limit,
       next_cursor: null,
-      has_more: false,
+      has_more: projects.length > limit,
     });
-  } catch (error) {
+  } catch {
     return apiProblem({
       status: 500,
       code: "internal_error",
       title: "Internal Server Error",
-      detail:
-        error instanceof Error ? error.message : "Failed to list projects.",
+      detail: "Failed to list projects.",
     });
   }
 }

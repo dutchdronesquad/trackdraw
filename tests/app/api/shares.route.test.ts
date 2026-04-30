@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultDesign } from "@/lib/track/design";
 import type { StoredShare, UserShare } from "@/lib/server/shares";
 
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/server/csrf", () => ({ isTrustedRequest: vi.fn(() => true) }));
+
 vi.mock("@/lib/server/auth-session", () => ({
   getCurrentUserFromHeaders: vi.fn(),
 }));

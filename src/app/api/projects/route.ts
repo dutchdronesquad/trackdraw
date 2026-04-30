@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
+import { isTrustedRequest } from "@/lib/server/csrf";
 import { listProjectsForUser, saveProjectForUser } from "@/lib/server/projects";
 
 const saveProjectRequestSchema = z.object({
@@ -40,18 +41,22 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ ok: true, projects });
   } catch (error) {
+    console.error("[TrackDraw] Failed to list projects", { error });
     return NextResponse.json(
-      {
-        ok: false,
-        error:
-          error instanceof Error ? error.message : "Failed to list projects",
-      },
+      { ok: false, error: "Failed to list projects" },
       { status: 500 }
     );
   }
 }
 
 export async function POST(request: Request) {
+  if (!isTrustedRequest(request)) {
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
+  }
+
   try {
     const user = await getCurrentUserFromHeaders(request.headers);
     if (!user) {
@@ -79,10 +84,8 @@ export async function POST(request: Request) {
     const message =
       error instanceof z.ZodError
         ? "Invalid project payload"
-        : error instanceof Error
-          ? error.message
-          : "Failed to save project";
-
+        : "Failed to save project";
+    console.error("[TrackDraw] Failed to save project", { error });
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

@@ -212,6 +212,70 @@ export async function listProjectsForUser(ownerUserId: string) {
   return result.results.map(mapProjectRow);
 }
 
+type ProjectSummaryRow = {
+  id: string;
+  owner_user_id: string;
+  title: string;
+  field_width: number | null;
+  field_height: number | null;
+  shape_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type StoredProjectSummary = {
+  id: string;
+  ownerUserId: string;
+  title: string;
+  fieldWidth: number | null;
+  fieldHeight: number | null;
+  shapeCount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function listProjectSummariesForUser(
+  ownerUserId: string
+): Promise<StoredProjectSummary[]> {
+  const db = await getDatabase();
+  const result = await db
+    .prepare(
+      `
+        select
+          id,
+          owner_user_id,
+          title,
+          field_width,
+          field_height,
+          shape_count,
+          created_at,
+          updated_at
+        from projects
+        where owner_user_id = ? and archived_at is null
+        order by updated_at desc
+      `
+    )
+    .bind(ownerUserId)
+    .all<ProjectSummaryRow>();
+
+  return result.results.map((row) => ({
+    id: row.id,
+    ownerUserId: row.owner_user_id,
+    title: row.title,
+    fieldWidth:
+      row.field_width === null
+        ? null
+        : Number.parseFloat(String(row.field_width)),
+    fieldHeight:
+      row.field_height === null
+        ? null
+        : Number.parseFloat(String(row.field_height)),
+    shapeCount: row.shape_count,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+}
+
 export async function archiveProjectForUser(
   projectId: string,
   ownerUserId: string
