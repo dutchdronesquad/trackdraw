@@ -220,6 +220,12 @@ export function SingleInspectorView({
                 ) : null}
               </div>
             ) : null}
+            {shape.locked ? (
+              <p className="rounded-lg border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+                Locked on the canvas. Unlock before moving, resizing, or
+                continuing path edits.
+              </p>
+            ) : null}
           </div>
           {groupId && (
             <Section title="Group" defaultOpen={secondarySectionDefaultOpen}>

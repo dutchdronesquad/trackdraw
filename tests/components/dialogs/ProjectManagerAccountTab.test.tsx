@@ -32,6 +32,23 @@ describe("ProjectManagerAccountTab", () => {
     cleanup();
   });
 
+  it("announces account project loading state", () => {
+    render(
+      <ProjectManagerAccountTab
+        accountProjects={[]}
+        error={null}
+        loading
+        onOpenChange={vi.fn()}
+        onSyncProject={vi.fn()}
+        projectSyncMetaById={{}}
+      />
+    );
+
+    const loadingState = screen.getByRole("status");
+    expect(loadingState.getAttribute("aria-busy")).toBe("true");
+    expect(screen.getByText("Loading account projects...")).toBeTruthy();
+  });
+
   it("labels pending and failed account sync actions", () => {
     const { rerender } = renderAccountTab({ status: "pending" });
 
@@ -60,9 +77,11 @@ describe("ProjectManagerAccountTab", () => {
     ).toBeTruthy();
   });
 
-  it("labels conflict actions without triggering direct sync", async () => {
+  it("routes conflict actions to the conflict resolver instead of direct sync", async () => {
     const user = userEvent.setup();
     const onSyncProject = vi.fn();
+    const onResolveConflict = vi.fn();
+    const onOpenChange = vi.fn();
 
     render(
       <ProjectManagerAccountTab
@@ -70,7 +89,8 @@ describe("ProjectManagerAccountTab", () => {
         activeDesignId={project.id}
         error={null}
         loading={false}
-        onOpenChange={vi.fn()}
+        onOpenChange={onOpenChange}
+        onResolveConflict={onResolveConflict}
         onSyncProject={onSyncProject}
         projectSyncMetaById={{ [project.id]: { status: "conflict" } }}
       />
@@ -83,5 +103,7 @@ describe("ProjectManagerAccountTab", () => {
     );
 
     expect(onSyncProject).not.toHaveBeenCalled();
+    expect(onResolveConflict).toHaveBeenCalledWith(project.id);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });

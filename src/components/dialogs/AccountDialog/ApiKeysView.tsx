@@ -342,9 +342,14 @@ export function AccountApiKeysView({
                         transition={{ duration: 0.18, ease: "easeOut" }}
                         onClick={(event) => event.stopPropagation()}
                       >
-                        <p className="text-foreground truncate text-sm font-medium">
-                          Revoke this key?
-                        </p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-foreground truncate text-sm font-medium">
+                            Revoke API key?
+                          </p>
+                          <p className="text-muted-foreground truncate text-[11px]">
+                            Integrations using this key lose read-only access.
+                          </p>
+                        </div>
                         <div className="flex shrink-0 items-center gap-1">
                           <button
                             type="button"

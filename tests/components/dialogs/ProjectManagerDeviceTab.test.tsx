@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/AppTooltip";
 import { ProjectManagerDeviceTab } from "@/components/dialogs/ProjectManager/DeviceTab";
@@ -54,5 +55,17 @@ describe("ProjectManagerDeviceTab", () => {
       expect(button.className).toContain("group-hover:opacity-100");
       expect(button.className).toContain("focus-visible:opacity-100");
     }
+  });
+
+  it("clarifies that desktop delete removes the local browser copy", async () => {
+    const user = userEvent.setup();
+    renderDeviceTab();
+
+    await user.click(
+      screen.getByRole("button", { name: "Delete Race day layout" })
+    );
+
+    expect(screen.getByText("Delete local project?")).toBeTruthy();
+    expect(screen.getByText("Removes this browser copy.")).toBeTruthy();
   });
 });

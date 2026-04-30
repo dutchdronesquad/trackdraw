@@ -86,5 +86,6 @@ describe("ExportDialog mobile workflow", () => {
     expect(
       screen.getByRole("button", { name: "Export Race Pack" })
     ).toBeTruthy();
+    expect(screen.getByText("Route numbers")).toBeTruthy();
   });
 });

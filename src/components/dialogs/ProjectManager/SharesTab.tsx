@@ -41,7 +41,15 @@ export function ProjectManagerSharesTab({
 
   if (loading) {
     return (
-      <div className="space-y-2">
+      <div
+        className="space-y-2"
+        aria-busy="true"
+        aria-live="polite"
+        role="status"
+      >
+        <p className="text-muted-foreground px-1 pb-1 text-[11px]">
+          Loading published shares...
+        </p>
         <SkeletonCard />
         <SkeletonCard />
       </div>

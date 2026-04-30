@@ -30,6 +30,20 @@ describe("ProjectManagerSharesTab", () => {
     vi.useRealTimers();
   });
 
+  it("announces loading state for published shares", () => {
+    render(
+      <ProjectManagerSharesTab
+        accountProjectTitleById={{}}
+        loading
+        shares={[]}
+      />
+    );
+
+    const loadingState = screen.getByRole("status");
+    expect(loadingState.getAttribute("aria-busy")).toBe("true");
+    expect(screen.getByText("Loading published shares...")).toBeTruthy();
+  });
+
   it("explains that only account-published shares are managed there", () => {
     render(
       <ProjectManagerSharesTab

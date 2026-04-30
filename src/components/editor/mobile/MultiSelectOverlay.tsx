@@ -43,7 +43,9 @@ export function MultiSelectOverlay({
             {selectedCount > 0 ? `${selectedCount} selected` : "Multi-select"}
           </p>
           <p className="truncate text-[11px] text-white/70">
-            Tap items to add or remove them.
+            {selectionLocked && selectedCount > 0
+              ? "Locked selection. Unlock before moving or resizing."
+              : "Tap items to add or remove them."}
           </p>
         </div>
       </div>
@@ -61,6 +63,7 @@ export function MultiSelectOverlay({
 
       <div className="grid grid-cols-4 gap-1.5">
         <button
+          type="button"
           onClick={onDuplicateSelection}
           disabled={selectedCount === 0}
           className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
@@ -69,6 +72,7 @@ export function MultiSelectOverlay({
           <span>Duplicate</span>
         </button>
         <button
+          type="button"
           onClick={canUngroupSelection ? onUngroupSelection : onGroupSelection}
           disabled={selectedCount < 2 && !canUngroupSelection}
           className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
@@ -81,6 +85,7 @@ export function MultiSelectOverlay({
           <span>{canUngroupSelection ? "Ungroup" : "Group"}</span>
         </button>
         <button
+          type="button"
           onClick={onToggleSelectionLock}
           disabled={selectedCount === 0}
           className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
@@ -93,6 +98,7 @@ export function MultiSelectOverlay({
           <span>{selectionLocked ? "Unlock" : "Lock"}</span>
         </button>
         <button
+          type="button"
           onClick={onDeleteSelection}
           disabled={selectedCount === 0}
           className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200 disabled:text-white/35"

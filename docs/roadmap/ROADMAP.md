@@ -1,6 +1,6 @@
 # TrackDraw Roadmap
 
-This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, public gallery discovery, practical mobile use, venue-aligned editing, account-published embeds, export/share handoff, and the first account-backed REST integration surface. The roadmap should now focus primarily on stability, usability, and validation depth before adding larger new product surfaces.
+This roadmap reflects the current state of TrackDraw. The core design loop is now in place across desktop, shared read-only viewing, public gallery discovery, practical mobile use, venue-aligned editing, account-published embeds, export/share handoff, and the first account-backed REST integration surface. The roadmap should now focus primarily on UI/UX polish and reliability before adding larger new product surfaces.
 
 ## Current Focus
 
@@ -15,12 +15,11 @@ TrackDraw is now strong in these areas:
 - Practical mobile editing for quick venue-side changes
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 
-The most useful next product move is a stability and usability pass across the shipped product:
+The most useful next product move is a UI/UX polish and reliability pass across the shipped product:
 
-- Re-test editor interactions, mobile touch flows, route editing, snapping, transforms, and undo/redo
-- Smoke-test share, embed, gallery, import/export, Race Pack, account project, and REST API flows together
-- Add targeted regression tests around workflows where recent changes increased the cost of subtle breakage
-- Make common validation faster through a small validation matrix and documented changed-area test selection
+- Fine-tune Project Manager, Account, share, export, mobile, and editor states that users touch repeatedly
+- Smooth small interaction details around selection, locked states, destructive actions, disabled states, touch targets, and inspector feedback
+- Keep focused regression coverage around workflows where UI polish could accidentally affect persistence, sharing, export, or mobile behavior
 - Clean up confusing states and copy around local projects, account-backed projects, published shares, expired/revoked links, and API-key setup
 
 Larger product ideas such as venue libraries, share version history, gallery collections, and deeper race-day operations should stay parked until there is clearer need or until the shipped foundation has had a quality pass.
@@ -44,32 +43,29 @@ Labels used below:
 - `Account-backed`: depends on ownership, sync, identity, or shared persistence
 - `Research`: still primarily exploratory
 
-### 1. Stability And Usability Pass (`No account required`)
+### 1. UI/UX Polish And Reliability Pass (`No account required`)
 
-The next TrackDraw slice should improve reliability and clarity across shipped workflows rather than opening another broad feature track.
+The next TrackDraw slice should make shipped workflows feel calmer, clearer, and more dependable rather than opening another broad feature track.
 
 Why now:
 
-- The product surface is broad enough that regressions in selection, transforms, mobile panels, sharing, export, account-backed project state, or API setup are more expensive than another speculative feature
-- Recent work touched account, share, API, timing-marker, overlay-readiness, and mobile/dialog surfaces that should be validated together
-- Faster focused validation would make future small changes safer without requiring a full manual smoke test every time
+- The main stability pass is complete, so the highest-value work is now removing practical friction in the flows users already have
+- Small UI/UX inconsistencies in selection, mobile panels, sharing, export, account-backed project state, or API setup can make the product feel less reliable than it is
+- Focused polish keeps the product moving without committing to speculative feature surfaces
 
 Focus:
 
-- Editor interaction regression pass: selection, drag, resize, rotate, undo/redo, snapping, route editing, inspector updates, and mobile touch behavior
-- Share and export smoke pass: JSON import/export, PNG, SVG, PDF, Race Pack, shared views, embeds, gallery cards, and account-published share flows
-- Mobile workflow cleanup: panels, drawers, selection targets, map-reference controls, share dialogs, and export dialogs
-- Account/project/share state clarity: signed-in versus local work, anonymous versus account-backed shares, revoked/expired links, active projects, and API-key setup
-- Targeted regression tests around recently touched editor, share, export, account, REST API, and overlay-readiness boundaries
-- Efficient validation workflow with documented changed-area test selection and no brittle script sprawl
-- Performance and bundle checks limited to concrete regressions or obvious weight
+- Project Manager and Account dialog polish: empty, loading, destructive, sync, share, and recovery states
+- Editor interaction polish: small selection, locked-state, hover, touch-target, and inspector feedback details
+- Mobile drawer and toolbar polish: compact panels, drawer hierarchy, spacing, and repeated venue-side touch use
+- Export and share confidence polish: disabled states, progress states, filename choices, and handoff wording
+- Focus and accessibility polish: labels, focus states, keyboard paths, and icon-only action clarity
 
 Done state:
 
-- The main shipped workflows have a current smoke-test pass
-- High-risk boundaries have targeted tests or documented manual validation steps
-- Contributors can choose the right focused validation path without defaulting to the full build for every small change
-- The roadmap can reopen larger product work with a clearer quality baseline
+- Existing workflows feel more consistent and self-explanatory without adding new product scope
+- High-risk polish changes have focused tests where behavior could regress
+- The roadmap can reopen larger product work with a clearer product-quality baseline
 
 ### 2. Accounts And Ownership Model (`Research`)
 

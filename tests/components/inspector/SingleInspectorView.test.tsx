@@ -160,4 +160,15 @@ describe("SingleInspectorView race timing controls", () => {
         .getAttribute("aria-expanded")
     ).toBe("true");
   });
+
+  it("explains locked shape interaction limits", () => {
+    renderSingleInspector({ ...gate, locked: true });
+
+    expect(screen.getByText("locked")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Locked on the canvas. Unlock before moving, resizing, or continuing path edits."
+      )
+    ).toBeTruthy();
+  });
 });

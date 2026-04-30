@@ -28,6 +28,7 @@ interface ProjectManagerAccountTabProps {
   projectSyncMetaById: Record<string, ProjectSyncMeta>;
   onOpenAccountProject?: (id: string) => void;
   onSyncProject?: (id: string) => void;
+  onResolveConflict?: (id: string) => void;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -40,6 +41,7 @@ export function ProjectManagerAccountTab({
   projectSyncMetaById,
   onOpenAccountProject,
   onSyncProject,
+  onResolveConflict,
   onOpenChange,
 }: ProjectManagerAccountTabProps) {
   const sorted = [...accountProjects].sort((a, b) =>
@@ -48,7 +50,15 @@ export function ProjectManagerAccountTab({
 
   if (loading) {
     return (
-      <div className="space-y-1.5">
+      <div
+        className="space-y-1.5"
+        aria-busy="true"
+        aria-live="polite"
+        role="status"
+      >
+        <p className="text-muted-foreground px-1 pb-1 text-[11px]">
+          Loading account projects...
+        </p>
         <SkeletonCard />
         <SkeletonCard />
         <SkeletonCard />
@@ -170,7 +180,12 @@ export function ProjectManagerAccountTab({
                 <button
                   type="button"
                   onClick={() => {
-                    if (!hasConflict) onSyncProject(proj.id);
+                    if (hasConflict) {
+                      onResolveConflict?.(proj.id);
+                      onOpenChange(false);
+                    } else {
+                      onSyncProject(proj.id);
+                    }
                   }}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                   aria-label={

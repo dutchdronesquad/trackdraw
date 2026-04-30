@@ -179,6 +179,7 @@ export default function ProjectManagerDialog({
         projectSyncMetaById={projectSyncMetaById}
         onOpenAccountProject={onOpenAccountProject}
         onSyncProject={onSyncProject}
+        onResolveConflict={onResolveConflict}
         onOpenChange={onOpenChange}
       />
     ),

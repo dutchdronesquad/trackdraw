@@ -394,9 +394,14 @@ export function ProjectManagerDeviceTab({
               transition={{ duration: 0.18, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="text-destructive truncate text-sm font-medium">
-                Delete permanently?
-              </p>
+              <div className="min-w-0 flex-1">
+                <p className="text-destructive truncate text-sm font-medium">
+                  Delete local project?
+                </p>
+                <p className="text-muted-foreground truncate text-[11px]">
+                  Removes this browser copy.
+                </p>
+              </div>
               <div className="flex shrink-0 items-center gap-1">
                 <button
                   onClick={() => {

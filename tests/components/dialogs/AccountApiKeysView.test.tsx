@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/AppTooltip";
 import { AccountApiKeysView } from "@/components/dialogs/AccountDialog/ApiKeysView";
@@ -76,5 +77,33 @@ describe("AccountApiKeysView", () => {
     expect(revokeButton.className).toContain("opacity-0");
     expect(revokeButton.className).toContain("group-hover:opacity-100");
     expect(revokeButton.className).toContain("focus-visible:opacity-100");
+  });
+
+  it("explains that revoking an API key stops integration access", async () => {
+    const user = userEvent.setup();
+
+    renderApiKeysView([
+      {
+        id: "key-1",
+        name: "RotorHazard",
+        start: "td_live",
+        createdAt: "2026-04-20T10:00:00.000Z",
+        expiresAt: "2026-05-20T10:00:00.000Z",
+        enabled: true,
+        lastRequest: null,
+        permissions: { tracks: ["read"] },
+      },
+    ]);
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Revoke RotorHazard",
+      })
+    );
+
+    expect(screen.getByText("Revoke API key?")).toBeTruthy();
+    expect(
+      screen.getByText("Integrations using this key lose read-only access.")
+    ).toBeTruthy();
   });
 });

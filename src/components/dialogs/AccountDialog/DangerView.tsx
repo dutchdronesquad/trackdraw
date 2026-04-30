@@ -36,8 +36,9 @@ export function AccountDangerView({
   return (
     <div className="space-y-5">
       <p className="text-muted-foreground text-sm leading-relaxed">
-        Permanently remove this TrackDraw account and all its account-backed
-        data. This action cannot be undone.
+        Permanently remove this TrackDraw account, account projects, published
+        links, API keys, and profile data. Export anything account-backed that
+        you want to keep before continuing. This action cannot be undone.
       </p>
 
       <div className="space-y-3">

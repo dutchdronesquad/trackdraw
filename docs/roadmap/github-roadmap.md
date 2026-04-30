@@ -22,9 +22,40 @@ Labels used below:
 
 ## Current Priority
 
-The v1.6.0 release-sized work is archived below. The REST API and TrackDraw-side live overlay preparation slices are now complete. The next TrackDraw priority is stability, usability, and validation depth before opening larger new product surfaces.
+The v1.6.0 release-sized work is archived below. The REST API, TrackDraw-side live overlay preparation, and first stability pass are now complete. The next TrackDraw priority is UI/UX polish and reliability across existing workflows before opening larger new product surfaces.
 
 ## Follow-up
+
+- [x] UI/UX polish and reliability pass (`No account required`)
+      Fine-tune existing editor, mobile, share, export, and account/project flows before starting larger new features.
+  - [x] Project Manager and Account dialog polish
+        Tighten empty, loading, destructive, and sync states where users decide whether work is local, account-backed, shared, revoked, or recoverable.
+  - [x] Account project conflict action polish
+        Wired account-project conflict actions to the existing conflict resolver instead of presenting a no-op resolve action in the account project list.
+  - [x] Project Manager loading-state polish
+        Added explicit loading text and status semantics for account projects and published shares instead of skeleton-only loading states.
+  - [x] Destructive action copy polish
+        Clarified that Project Manager delete removes the local browser copy, and that revoking an API key removes integration access.
+  - [x] Account deletion clarity
+        Clarified that deleting an account removes account projects, published links, API keys, and profile data, with coverage that deletion remains gated by the DELETE confirmation.
+  - [x] Editor interaction polish
+        Smooth small selection, locked-state, hover, touch-target, and inspector feedback details without changing the editor model.
+  - [x] Locked inspector feedback polish
+        Added a clear locked-shape note in the inspector so users understand that canvas movement, resizing, and path continuation are blocked until unlock.
+  - [x] Mobile drawer and toolbar polish
+        Review compact mobile panels, drawers, toolbar spacing, and touch affordances for repeated venue-side use.
+  - [x] Mobile multi-select locked-state polish
+        Added a clearer locked-selection hint to the mobile multi-select overlay so users know to unlock before moving or resizing.
+  - [x] Mobile path-builder status polish
+        Clarified the mobile path-builder status when a loop is already connected and made its overlay actions explicit button actions.
+  - [x] Export and share confidence polish
+        Clarify export/share disabled states, progress states, filename choices, and handoff wording where the user needs confidence before sending output.
+  - [x] Mobile export option label polish
+        Renamed the mobile export toggle from generic numbers to route numbers so users know it affects route-number overlays in 2D outputs.
+  - [x] Focus and accessibility polish
+        Keep icon-only, hover-only, destructive, and status actions discoverable through labels, focus states, and keyboard paths.
+  - [x] Mobile overlay button semantics
+        Made mobile multi-select overlay actions explicit button actions and covered the locked-state action semantics.
 
 - [x] Stability and usability pass (`No account required`)
       Improve reliability, clarity, and confidence across the shipped editor, share, export, mobile, and account-backed project flows before adding new product surfaces.
