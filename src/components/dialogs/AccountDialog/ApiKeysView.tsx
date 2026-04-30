@@ -31,7 +31,7 @@ import {
   AccountDialogNotSignedIn,
 } from "./shared";
 import type { AccountApiKey, CreatedAccountApiKey } from "./types";
-import { formatDate, getPermissionLabel } from "./utils";
+import { formatDate } from "./utils";
 
 function ActionTooltip({
   label,
@@ -107,7 +107,7 @@ export function AccountApiKeysView({
         <div
           className={cn(
             "grid gap-x-3 gap-y-2 sm:grid-cols-[1fr_9rem_auto]",
-            isMobile && "grid-cols-1"
+            isMobile && "grid-cols-1 gap-y-3"
           )}
         >
           <span
@@ -158,7 +158,10 @@ export function AccountApiKeysView({
             type="button"
             onClick={onCreateApiKey}
             disabled={creatingApiKey || !apiKeyName.trim()}
-            className="order-5 h-8 rounded-lg px-2.5 sm:order-6 sm:w-auto"
+            className={cn(
+              "order-5 h-8 rounded-lg px-2.5 sm:order-6 sm:w-auto",
+              isMobile && "mt-1 w-full"
+            )}
           >
             {creatingApiKey ? (
               <LoaderCircle className="size-4 animate-spin" />
@@ -203,18 +206,25 @@ export function AccountApiKeysView({
       </div>
 
       <div className="space-y-4">
-        <div
-          className={cn(
-            "flex items-center justify-between gap-3",
-            isMobile && "items-stretch"
-          )}
-        >
-          <div>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-medium">Active API keys</p>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onRefreshApiKeys}
+              disabled={apiKeysLoading}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted h-7 w-7 shrink-0 rounded-lg px-0"
+              aria-label="Refresh API keys"
+            >
+              <RefreshCw
+                className={cn("size-4", apiKeysLoading && "animate-spin")}
+              />
+            </Button>
+          </div>
+          <div>
             <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              Use these keys to let external tools read your account projects,
-              track packages, and livestream overlay data. Keys cannot edit
-              tracks.{" "}
+              Read-only keys for trusted integrations.{" "}
               <Link
                 href="/api/docs"
                 target="_blank"
@@ -226,18 +236,6 @@ export function AccountApiKeysView({
               </Link>
             </p>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onRefreshApiKeys}
-            disabled={apiKeysLoading}
-            className="h-8 shrink-0 rounded-lg px-2.5"
-          >
-            <RefreshCw
-              className={cn("size-4", apiKeysLoading && "animate-spin")}
-            />
-            Refresh
-          </Button>
         </div>
 
         {apiKeysLoading ? (
@@ -269,16 +267,11 @@ export function AccountApiKeysView({
               return (
                 <div
                   key={apiKey.id}
-                  className="group bg-muted/20 border-border/60 relative overflow-hidden rounded-2xl border px-4 py-4"
+                  className="group bg-muted/20 border-border/60 relative overflow-hidden rounded-xl border px-3 py-3"
                 >
-                  <div
-                    className={cn(
-                      "flex items-start justify-between gap-4",
-                      isMobile && "flex-col"
-                    )}
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                  <div className="space-y-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-2">
                         <span className="bg-background flex size-8 shrink-0 items-center justify-center rounded-xl">
                           <Braces className="size-4" />
                         </span>
@@ -286,40 +279,23 @@ export function AccountApiKeysView({
                           <p className="truncate text-sm font-medium">
                             {apiKey.name?.trim() || "Unnamed API key"}
                           </p>
-                          <p className="text-muted-foreground text-xs">
-                            {apiKey.start ?? "td_..."} · expires{" "}
-                            {formatDate(apiKey.expiresAt)}
-                          </p>
+                          <div className="mt-1 flex flex-wrap gap-1.5">
+                            <span className="border-border/50 bg-background/60 text-muted-foreground inline-flex rounded-md border px-1.5 py-0.5 text-[11px]">
+                              Expires {formatDate(apiKey.expiresAt)}
+                            </span>
+                            <span className="border-border/50 bg-background/60 text-muted-foreground inline-flex rounded-md border px-1.5 py-0.5 text-[11px]">
+                              Last used {formatDate(apiKey.lastRequest)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-muted-foreground mt-3 text-xs leading-relaxed">
-                        {getPermissionLabel(apiKey.permissions)} · last used{" "}
-                        {formatDate(apiKey.lastRequest)}
-                      </p>
-                    </div>
 
-                    {isMobile ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setConfirmRevokeKeyId(apiKey.id)}
-                        disabled={isDeleting}
-                        className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:ring-destructive/30 h-8 w-full justify-center rounded-lg px-2.5"
-                      >
-                        {isDeleting ? (
-                          <LoaderCircle className="size-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="size-4" />
-                        )}
-                        Revoke
-                      </Button>
-                    ) : (
                       <ActionTooltip label="Revoke">
                         <button
                           type="button"
                           onClick={() => setConfirmRevokeKeyId(apiKey.id)}
                           disabled={isDeleting}
-                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-50"
+                          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg opacity-100 transition-colors disabled:pointer-events-none disabled:opacity-50"
                           aria-label={`Revoke ${apiKey.name?.trim() || "API key"}`}
                         >
                           {isDeleting ? (
@@ -329,9 +305,9 @@ export function AccountApiKeysView({
                           )}
                         </button>
                       </ActionTooltip>
-                    )}
-                  </div>
+                    </div>
 
+                  </div>
                   <AnimatePresence>
                     {isConfirming && (
                       <motion.div
@@ -347,7 +323,9 @@ export function AccountApiKeysView({
                             Revoke API key?
                           </p>
                           <p className="text-muted-foreground truncate text-[11px]">
-                            Integrations using this key lose read-only access.
+                            {isMobile
+                              ? "This key stops working."
+                              : "Integrations using this key lose read-only access."}
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
