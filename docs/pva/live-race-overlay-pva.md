@@ -78,11 +78,13 @@ Implemented REST contract:
   Builds the `trackdraw.overlay.v1` package with field dimensions, route geometry, route status, numbered route obstacles, timing markers, and route positions.
 - [src/lib/api/openapi.ts](../../src/lib/api/openapi.ts)
   Documents the RotorHazard integration endpoint under the REST API docs.
+- [src/lib/track/overlay-prep.ts](../../src/lib/track/overlay-prep.ts)
+  Overlay readiness validation: detects missing route, multiple routes, missing start/finish, duplicate timing IDs, missing split IDs, and timing points that cannot be projected onto the route. Ready to be wired into the REST overlay response as a `prep` field.
 
 REST contract follow-up:
 
 - [ ] add explicit active race route selection instead of relying on the first valid polyline
-- [ ] add overlay validation output for missing route, duplicate timing roles, missing split identifiers, and timing markers that cannot be mapped onto route progress
+- [ ] wire `overlay-prep.ts` validation output into the REST overlay response so consumers can inspect readiness without a separate call
 - [ ] add minimap viewport or bounds hints for stable overlay framing
 - [ ] confirm the timing identifier naming and semantics with the `rh-stream-overlays`/RotorHazard side
 - [ ] document a sample `trackdraw.overlay.v1` payload in this PVA once the consumer contract is confirmed

@@ -1,16 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { buildStoredSharePath } from "@/lib/share";
 import { serializeDesign } from "@/lib/track/design";
-import { buildTrackDrawOverlayContract } from "@/lib/track/overlay-contract";
-import {
-  getOverlayPrepReport,
-  type OverlayPrepIssue,
-} from "@/lib/track/overlay-prep";
 import { useEditor } from "@/store/editor";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 import { cn } from "@/lib/utils";
@@ -246,34 +241,6 @@ function downloadJsonFile(filename: string, payload: unknown) {
   URL.revokeObjectURL(url);
 }
 
-function getOverlayIssueText(issue: OverlayPrepIssue) {
-  switch (issue.type) {
-    case "duplicate-start-finish":
-      return "Keep one Start timing point.";
-    case "duplicate-timing-id":
-      return `Timing ID ${issue.timingId ?? ""} is used more than once.`;
-    case "missing-route":
-      return "Add one race route.";
-    case "missing-split-id":
-      return "Add a Split ID to every split timing point.";
-    case "missing-start-finish":
-      return "Mark one gate or start pad as Start.";
-    case "multiple-routes":
-      return "Keep exactly one race route for overlay export.";
-    case "timing-point-off-route":
-      return "Move timing points closer to the race route.";
-  }
-}
-
-function getOverlayBlockedSummary(issues: OverlayPrepIssue[]) {
-  if (!issues.length) return "";
-
-  const labels = Array.from(new Set(issues.map(getOverlayIssueText)));
-  const visible = labels.slice(0, 2).join(" ");
-  const remaining = labels.length - 2;
-  return remaining > 0 ? `${visible} +${remaining} more.` : visible;
-}
-
 export default function ExportDialog({
   open,
   onOpenChange,
@@ -304,15 +271,6 @@ export default function ExportDialog({
     /[^a-z0-9-_]+/gi,
     "_"
   );
-  const overlayPrepReport = useMemo(
-    () => getOverlayPrepReport(design),
-    [design]
-  );
-  const overlayBlockedSummary = getOverlayBlockedSummary(
-    overlayPrepReport.issues
-  );
-  const overlayExportBlocked = overlayPrepReport.status !== "ready";
-
   const safeName = ({ theme, view }: { theme?: Theme; view: "2d" | "3d" }) => {
     return [baseName, view, theme].filter(Boolean).join("_");
   };
@@ -571,7 +529,7 @@ export default function ExportDialog({
         <p className="text-muted-foreground mb-4 text-[11px]">
           Files for reopening the layout or handing it to others.
         </p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
             ext="JSON"
             label="Project File"
@@ -582,24 +540,6 @@ export default function ExportDialog({
               run("json", () => {
                 const serialized = serializeDesign(design);
                 downloadJsonFile(`${baseName}.json`, serialized);
-              })
-            }
-          />
-          <DesktopFormatCard
-            ext="JSON"
-            label="Live Overlay"
-            color="bg-cyan-500/15 text-cyan-400"
-            description={
-              overlayExportBlocked
-                ? `Blocked: ${overlayBlockedSummary}`
-                : "Route and timing data for overlays."
-            }
-            busy={busy === "overlay-json"}
-            disabled={overlayExportBlocked}
-            onExport={() =>
-              run("overlay-json", () => {
-                const contract = buildTrackDrawOverlayContract(design);
-                downloadJsonFile(`${baseName}_overlay.json`, contract);
               })
             }
           />
@@ -821,26 +761,6 @@ export default function ExportDialog({
               run("json", () => {
                 const serialized = serializeDesign(design);
                 downloadJsonFile(`${baseName}.json`, serialized);
-              })
-            }
-          />
-          <MobileFormatRow
-            key="overlay-json"
-            ext="JSON"
-            label="Live Overlay"
-            color="bg-cyan-500/15 text-cyan-400"
-            description={
-              overlayExportBlocked
-                ? `Blocked: ${overlayBlockedSummary}`
-                : "Route and timing data."
-            }
-            isBusy={busy === "overlay-json"}
-            locked={overlayExportBlocked}
-            lockedLabel="Blocked"
-            onAction={() =>
-              run("overlay-json", () => {
-                const contract = buildTrackDrawOverlayContract(design);
-                downloadJsonFile(`${baseName}_overlay.json`, contract);
               })
             }
           />
