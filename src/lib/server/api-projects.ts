@@ -5,6 +5,11 @@ import {
   getObstacleNumberingReport,
   isNumberedObstacle,
 } from "@/lib/track/obstacleNumbering";
+import {
+  getOverlayPrepReport,
+  type OverlayPrepIssue,
+  type OverlayPrepTimingPoint,
+} from "@/lib/track/overlay-prep";
 import { getPolyline2DDerived } from "@/lib/track/polyline-derived";
 import { getDesignTimingMarkers } from "@/lib/track/timing";
 import type {
@@ -217,6 +222,48 @@ function toOverlayObstacle(
   }
 }
 
+function toApiOverlayPrepIssue(issue: OverlayPrepIssue) {
+  return {
+    type: issue.type,
+    severity: issue.severity,
+    ...(issue.shapeId ? { shape_id: issue.shapeId } : {}),
+    ...(issue.shapeIds ? { shape_ids: issue.shapeIds } : {}),
+    ...(issue.routeId ? { route_id: issue.routeId } : {}),
+    ...(issue.timingId ? { timing_id: issue.timingId } : {}),
+    ...(typeof issue.distance === "number"
+      ? { distance_m: issue.distance }
+      : {}),
+    ...(typeof issue.tolerance === "number"
+      ? { tolerance_m: issue.tolerance }
+      : {}),
+  };
+}
+
+function toApiOverlayPrepTimingPoint(point: OverlayPrepTimingPoint) {
+  return {
+    shape_id: point.shapeId,
+    role: point.role,
+    timing_id: point.timingId ?? null,
+    title: point.title,
+    path_distance_m: point.pathDistance,
+    projected_point: point.projectedPoint,
+    route_distance_m: point.routeDistance,
+    route_progress: point.routeProgress,
+  };
+}
+
+function toApiOverlayReadinessReport(design: TrackDesign) {
+  const report = getOverlayPrepReport(design);
+
+  return {
+    status: report.status,
+    race_route_id: report.raceRouteId,
+    route_length_m: report.routeLength,
+    issues: report.issues.map(toApiOverlayPrepIssue),
+    timing_points: report.timingPoints.map(toApiOverlayPrepTimingPoint),
+  };
+}
+
 export function toApiTrackPackage(project: StoredProject) {
   const shapes = getDesignShapes(project.design);
 
@@ -301,6 +348,7 @@ export function toApiOverlayPackage(project: StoredProject) {
         routeLength
       ),
     })),
+    readiness: toApiOverlayReadinessReport(project.design),
     updated_at: project.designUpdatedAt,
   };
 }

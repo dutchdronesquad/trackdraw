@@ -2,7 +2,7 @@
 
 This document evaluates the product shape and technical approach for a live race overlay feature built on top of TrackDraw's course design and route model.
 
-Status: proposed. See `docs/pva/live-race-overlay-pva.md` for the implementation plan once approved.
+Status: approved for TrackDraw-side preparation. The first REST-backed course-data contract and timing-marker setup are in place; see `docs/pva/live-race-overlay-pva.md` for the current implementation state and remaining overlay-runtime work.
 
 ## Purpose
 
@@ -24,7 +24,7 @@ Live race overlay should make a race easier to follow for viewers and commentato
 That means:
 
 - the overlay should show drones moving over the TrackDraw route in a way that feels believable
-- TrackDraw should export enough geometry and timing metadata for `rh-stream-overlays` to render a minimap overlay correctly
+- TrackDraw should expose enough geometry and timing metadata for `rh-stream-overlays` to render a minimap overlay correctly
 - live RotorHazard timing events should improve the visual understanding of battles, gaps, and track position
 - the system should remain honest about what is estimated versus what is truly measured
 
@@ -39,7 +39,7 @@ The first meaningful version should remain:
 
 Keep it in scope for the first release:
 
-- one exportable overlay track package per TrackDraw design
+- one versioned overlay track package per account-backed TrackDraw project
 - route-following pilot markers in `rh-stream-overlays`
 - explicit timing roles such as start/finish and split anchors mapped to route distance
 - RotorHazard integration through the existing overlay/plugin stack
@@ -86,7 +86,7 @@ TrackDraw should own the parts of the system that describe the course:
 - route geometry
 - track bounds or viewport hints if needed
 - timing roles such as start/finish and split anchors
-- the export package consumed by the overlay runtime
+- the REST overlay package consumed by the overlay runtime
 
 That keeps TrackDraw focused on design truth, not live overlay execution.
 
@@ -132,8 +132,8 @@ TrackDraw should not default to building a second live overlay runtime if `rh-st
 
 Recommendation:
 
-- TrackDraw exports track and timing metadata
-- `rh-stream-overlays` imports that package
+- TrackDraw serves track and timing metadata through the versioned REST API
+- `rh-stream-overlays` consumes that package
 - `rh-stream-overlays` combines imported track metadata with live RotorHazard events
 - OBS consumes the overlay from the RotorHazard/plugin side
 
@@ -298,57 +298,75 @@ Avoid copy that implies precision beyond the data model:
 
 ### Track Model
 
-TrackDraw should add a route-bound timing-anchor model that can express:
+TrackDraw's first implementation stores timing intent on timing-capable gates through `shape.meta.timing`.
+
+That timing metadata expresses:
 
 - timing role
 - timing point identifier
 - display label
+
+The REST overlay package then derives:
+
 - distance along route
-- optional route point reference for editing convenience
+- projected route position
+- route progress
 
 The route polyline remains the source of geometric progress.
 
-### Export / Import Contract
+### REST Overlay Contract
 
 TrackDraw and `rh-stream-overlays` need a shared contract that is small, explicit, and versioned.
 
-The exported package should likely include:
+The first integration contract is the bearer-authenticated project overlay endpoint:
+
+```text
+GET /api/v1/projects/{projectId}/overlay
+```
+
+The package includes:
 
 - schema version
 - track identifier
 - title
+- field dimensions and origin
 - route polyline points
 - route length
-- timing anchors with roles and identifiers
+- numbered route obstacles
+- timing markers with roles, identifiers, positions, and route projections
+- route status
 - optional viewport or bounds hints for minimap framing
 
-The first version should favor a plain JSON contract over tightly coupled direct database access.
+The first version favors a plain JSON REST contract over direct database access, share-page scraping, or manual file handoff.
 
-### Reuse The Existing Project JSON First
+### Superseded Early Transport Assumption
 
-TrackDraw already has a practical JSON portability format for full project export and import.
+Earlier planning considered using the existing TrackDraw project JSON as the first import source for `rh-stream-overlays`.
 
-Recommendation:
+That is no longer the preferred integration path.
 
-- use the existing TrackDraw project JSON as the first import source for `rh-stream-overlays`
-- avoid inventing a second export file immediately
-- treat the current project JSON as the transport container for early minimap integration
+Current recommendation:
 
-This is the lowest-risk path because:
+- keep project JSON as the backup/import format for TrackDraw itself
+- keep `/api/v1/projects/{projectId}/track` as the broader integration package
+- use `/api/v1/projects/{projectId}/overlay` as the compact livestream minimap package
+- do not require manual JSON export/import for the first `rh-stream-overlays` integration
 
-- TrackDraw already exports project JSON today
-- TrackDraw already imports project JSON today
-- the route polyline and field geometry are already present in that file
-- the team can validate cross-repo rendering before locking a dedicated overlay-specific schema
+Why:
+
+- the API key model gives account-owned consumers a revocable integration surface
+- the overlay package can stay smaller and cleaner than full editor JSON
+- OpenAPI can document the contract directly
+- `rh-stream-overlays` can fetch the latest account project without a manual handoff step
 
 ### Preferred Evolution Path
 
-The export/import path should evolve in this order:
+The integration path should evolve in this order:
 
-1. existing TrackDraw JSON as the initial import format
-2. add timing metadata to that JSON in a backward-compatible way
-3. validate that `rh-stream-overlays` can reliably consume it
-4. only then decide whether a dedicated overlay export format is worth the extra maintenance
+1. consume `trackdraw.overlay.v1` from the REST API
+2. validate that `rh-stream-overlays` can reliably render the route, obstacles, timing markers, and `readiness` report
+3. add minimap viewport or bounds hints if consumer-side framing needs them
+4. add explicit route selection only if real multi-route projects need it
 
 ### Timing Metadata Placement Options
 
@@ -376,8 +394,7 @@ Example shape concept:
   "meta": {
     "timing": {
       "role": "start_finish",
-      "timingPointId": "holeshot",
-      "label": "Holeshot"
+      "timingId": "holeshot"
     }
   }
 }
@@ -405,14 +422,14 @@ Example concept:
     {
       "id": "tp_start",
       "role": "start_finish",
-      "timingPointId": "holeshot",
+      "timingId": "holeshot",
       "label": "Holeshot",
       "distanceAlongRoute": 0
     },
     {
       "id": "tp_split_1",
       "role": "split",
-      "timingPointId": "split-1",
+      "timingId": "split-1",
       "label": "Split 1",
       "distanceAlongRoute": 47.2
     }
@@ -434,11 +451,10 @@ Cons:
 
 ### Recommended First Modeling Choice
 
-The recommended first choice is:
+The implemented first choice is:
 
-- keep the existing TrackDraw JSON as the container
 - store timing metadata on shapes through `meta` first
-- derive route anchors for export or import processing
+- derive route anchors for API package generation and overlay preparation
 
 Why this is the best first move:
 
@@ -467,32 +483,35 @@ The first integration can derive route anchors from shapes. A later phase may pe
 
 ### Recommended V1 Contract Shape
 
-For the first cross-repo integration, the minimum useful contract should be:
+For the first cross-repo integration, the minimum useful contract should be `trackdraw.overlay.v1`:
 
-- existing TrackDraw JSON project file
-- one primary route polyline
-- field dimensions
-- shape list
-- optional timing metadata on relevant shapes via `meta.timing`
+- `schema`: `trackdraw.overlay.v1`
+- `contractVersion`: `1`
+- `generatedAt`: ISO timestamp
+- `coordinateSystem`: field origin and meter-based route/field units
+- `route`: route waypoints, sampled route points, and route length
+- `routeObstacles`: numbered route obstacles with route positions
+- `timingMarkers`: timing roles and identifiers with route positions
+- `readiness`: validation and route-progress mapping data
 
 Expected `meta.timing` fields:
 
 - `role`: `start_finish` or `split`
-- `timingPointId`: string identifier used by the overlay side
-- `label`: optional human-readable label
+- `timingId`: string identifier used by the overlay side
 
 The overlay side should initially be responsible for:
 
-- reading the TrackDraw JSON
-- finding the primary route polyline
-- extracting timing-marked shapes
-- resolving those timing points onto route distance
+- reading the `trackdraw.overlay.v1` payload
+- rejecting or clearly blocking setup when readiness status is blocked
+- rendering the route, route obstacles, and timing markers
+- using route-position data for route distance/progress anchors
 
-### When To Graduate To A Dedicated Overlay Schema
+TrackDraw should expose this as the dedicated REST overlay package rather than merging it into normal project JSON. Project JSON remains the TrackDraw backup/import format; the overlay package is the external runtime contract.
 
-TrackDraw should only move to a dedicated overlay-specific export if one or more of these become true:
+### When To Expand Beyond The First Overlay Schema
 
-- `rh-stream-overlays` needs a smaller, cleaner payload than the full project JSON
+TrackDraw already has a compact `trackdraw.overlay.v1` REST package. It should only expand beyond that first schema if one or more of these become true:
+
 - route-distance derivation becomes too expensive or too ambiguous on the overlay side
 - timing points no longer map well to existing shapes
 - multiple overlay runtimes need a stable public contract

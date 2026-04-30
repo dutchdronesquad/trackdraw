@@ -178,6 +178,7 @@ function MobileFormatRow({
   description,
   isBusy,
   locked,
+  lockedLabel = "3D view",
   onAction,
 }: {
   ext: string;
@@ -186,6 +187,7 @@ function MobileFormatRow({
   description: string;
   isBusy: boolean;
   locked?: boolean;
+  lockedLabel?: string;
   onAction: () => void;
 }) {
   const inactive = isBusy || locked;
@@ -218,13 +220,25 @@ function MobileFormatRow({
       ) : locked ? (
         <span className="text-muted-foreground/50 flex shrink-0 items-center gap-1 text-[11px]">
           <ArrowRight className="size-3" />
-          3D view
+          {lockedLabel}
         </span>
       ) : (
         <Download className="text-muted-foreground/40 size-4 shrink-0" />
       )}
     </button>
   );
+}
+
+function downloadJsonFile(filename: string, payload: unknown) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function ExportDialog({
@@ -257,7 +271,6 @@ export default function ExportDialog({
     /[^a-z0-9-_]+/gi,
     "_"
   );
-
   const safeName = ({ theme, view }: { theme?: Theme; view: "2d" | "3d" }) => {
     return [baseName, view, theme].filter(Boolean).join("_");
   };
@@ -526,15 +539,7 @@ export default function ExportDialog({
             onExport={() =>
               run("json", () => {
                 const serialized = serializeDesign(design);
-                const blob = new Blob([JSON.stringify(serialized, null, 2)], {
-                  type: "application/json",
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${baseName}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
+                downloadJsonFile(`${baseName}.json`, serialized);
               })
             }
           />
@@ -755,15 +760,7 @@ export default function ExportDialog({
             onAction={() =>
               run("json", () => {
                 const serialized = serializeDesign(design);
-                const blob = new Blob([JSON.stringify(serialized, null, 2)], {
-                  type: "application/json",
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${baseName}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
+                downloadJsonFile(`${baseName}.json`, serialized);
               })
             }
           />
