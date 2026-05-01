@@ -26,8 +26,11 @@ TrackDraw should approve this feature for build preparation if the team is comfo
 - TrackDraw owns track preparation, route mapping, and the REST course-data endpoint
 - `rh-stream-overlays` owns OBS-facing overlay rendering
 - 2D minimap only
+- no user-facing TrackDraw base URL setup in the plugin; the plugin uses the production TrackDraw API endpoint by default
 - TrackDraw route used as the motion path
 - explicit timing-role mapping for start/finish and split anchors
+- project id and API key are the only required TrackDraw credentials/settings in RotorHazard
+- cached course data can be prepared online and reused at offline race locations
 - RotorHazard-fed pilot markers with estimated movement between anchors
 - a defined REST contract that `rh-stream-overlays` can consume reliably
 
@@ -224,7 +227,9 @@ Key findings:
 
 - The plugin is currently browser-overlay first. It does not have a persistent server-side TrackDraw client, stored integration settings, or a custom Socket.IO publisher.
 - Existing overlays rely on RotorHazard's built-in `data_dependencies` and browser Socket.IO events. A first live minimap can reuse browser-side race messages before adding backend event aggregation.
+- The plugin should not expose a user-facing TrackDraw base URL. Use a code-level default for the production TrackDraw API origin and build the overlay endpoint path from the configured project id.
 - TrackDraw API keys should not be embedded in an OBS/browser URL or client JavaScript. The plugin should fetch TrackDraw overlay packages server-side, cache the last valid package, and expose only a local read endpoint to the overlay page.
+- Offline race-day use is a first-version requirement: the operator should be able to fetch and validate the TrackDraw package while online, then use the cached package at a venue without internet access.
 - RotorHazard emits current lap snapshots through `current_laps`. Each lap can include a `splits` array with `split_id`, `split_time`, `split_raw`, and `split_speed`. The `split_id` is the zero-based secondary split timer index, not a TrackDraw identifier.
 - RotorHazard does not emit a dedicated browser `split_pass` event in the reviewed flow. Split pass handling updates `current_laps` and emits `phonetic_split_call`, so the minimap should detect split confirmations by diffing `current_laps` snapshots.
 - RotorHazard's plugin API supports general settings through `rhapi.ui.register_panel`, `rhapi.fields.register_option`, `UIField`, `UIFieldType`, `rhapi.db.option`, and `rhapi.db.option_set`. The server runtime already uses `requests`, so a plugin-side TrackDraw fetch helper can use `requests.Session` with a short timeout.
@@ -235,9 +240,9 @@ Key findings:
 Required `rh-stream-overlays` slices:
 
 1. Add TrackDraw integration settings and server-side fetch.
-   Store TrackDraw base URL, project id, bearer API key, and split mapping in RotorHazard plugin settings. Fetch `GET /api/v1/projects/{projectId}/overlay` server-side with `requests.Session`, a short timeout, schema/readiness checks, and a last-good cache. Do not pass the API key into templates.
+   Store project id, bearer API key, and split mapping in RotorHazard plugin settings. Do not ask the user for a TrackDraw base URL. Fetch `GET /api/v1/projects/{projectId}/overlay` against the plugin's built-in TrackDraw API origin with `requests.Session`, a short timeout, schema/readiness checks, and a durable last-good cache. Do not pass the API key into templates.
 2. Add local overlay-data endpoints.
-   Add a plugin route such as `/stream/overlay/<name>/trackdraw/track.json` that returns the cached `trackdraw.overlay.v1` package and a setup-state payload when fetch, auth, schema, or readiness fails.
+   Add a plugin route such as `/stream/overlay/<name>/trackdraw/track.json` that returns the cached `trackdraw.overlay.v1` package and a setup-state payload when fetch, auth, schema, or readiness fails. If the system is offline but a ready cached package exists, return that package with stale/offline metadata instead of blocking the overlay.
 3. Add OBS overlay routes and panel links.
    Add the `minimap` route under the existing `/stream/overlay/<name>/...` pattern, then expose it through `utils.py`. Keep `race-overview` as a post-minimap follow-up.
 4. Add a shared minimap renderer.
@@ -254,6 +259,7 @@ Required `rh-stream-overlays` slices:
 TrackDraw follow-up after this review:
 
 - Keep the current REST contract as the integration source of truth.
+- Make the project id visible and easy to copy from TrackDraw for account-backed projects, preferably near API/export or project metadata surfaces.
 - Do not add `bounds` or `viewport` hints for v1; revisit only if plugin-derived framing fails on real courses.
 - Keep TrackDraw `timing_id` values user-authored and map RotorHazard `split_id` values in the plugin.
 - Do not add a TrackDraw-owned live overlay route unless the RotorHazard plugin path proves insufficient.
@@ -334,10 +340,12 @@ Start state:
 
 Work:
 
-- add plugin-owned TrackDraw settings for base URL, project id, and bearer API key
+- add plugin-owned TrackDraw settings for project id and bearer API key
 - add plugin-owned split mapping from RotorHazard `split_id` to TrackDraw `timing_id`
+- use a built-in production TrackDraw API origin in plugin code; do not expose base URL as a normal setup field
 - fetch the TrackDraw overlay package server-side, never from OBS/browser JavaScript with the bearer key
-- cache the last valid `trackdraw.overlay.v1` package and expose it through a local plugin JSON route
+- cache the last valid `trackdraw.overlay.v1` package durably and expose it through a local plugin JSON route
+- support offline race-day use from cached course data after an earlier successful online refresh
 - render the minimap route and timing markers from `route.sampled_points` and `timing_markers`
 - derive first-pass viewport framing from the TrackDraw field and sampled route; open a TrackDraw follow-up for `bounds`/`viewport` hints only if real-course validation proves the plugin cannot frame reliably
 - expose setup states for missing config, auth failure, network failure, blocked readiness, unsupported schema, and stale cached data
@@ -357,9 +365,13 @@ Recommended first visual surface:
 
 Phase 3 implementation checklist:
 
-- [ ] Add TrackDraw config storage through RotorHazard plugin settings and a safe server-side fetch helper using `requests.Session`.
+- [ ] Add TrackDraw config storage for project id and API key through RotorHazard plugin settings; do not expose base URL as a normal setup field.
+- [ ] Add a copyable project id surface in TrackDraw for account-backed projects.
+- [ ] Add a safe server-side fetch helper using `requests.Session` and the plugin's built-in TrackDraw API origin.
 - [ ] Add split mapping config from RotorHazard zero-based `split_id` to TrackDraw `timing_id`.
+- [ ] Add durable last-good overlay-package caching for offline venue use.
 - [ ] Add local cached overlay-package JSON endpoint without exposing the TrackDraw bearer key.
+- [ ] Show cache status in plugin setup: never fetched, fresh, stale/offline, blocked, or auth failed.
 - [ ] Register the `minimap` link on the RotorHazard streams page; defer `race-overview` until the minimap is proven.
 - [ ] Add shared SVG route renderer, timing marker renderer, setup-state renderer, and theme-aware OBS-safe CSS.
 - [ ] Keep the first DDS minimap theme as the reference implementation without hardcoding DDS assumptions into shared data or race-state modules.
