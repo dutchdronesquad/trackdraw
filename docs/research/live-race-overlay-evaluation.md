@@ -366,7 +366,6 @@ The integration path should evolve in this order:
 1. consume `trackdraw.overlay.v1` from the REST API
 2. validate that `rh-stream-overlays` can reliably render the route, obstacles, timing markers, and `readiness` report
 3. add minimap viewport or bounds hints if consumer-side framing needs them
-4. add explicit route selection only if real multi-route projects need it
 
 ### Timing Metadata Placement Options
 
@@ -473,7 +472,7 @@ Even if timing metadata starts on shapes, the minimap still needs route progress
 
 That means TrackDraw or `rh-stream-overlays` must still resolve:
 
-- which route polyline is the active race path
+- whether the project has exactly one supported race line
 - where a timing-marked shape sits along that route
 - what `distanceAlongRoute` corresponds to each timing point
 

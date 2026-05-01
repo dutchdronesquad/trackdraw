@@ -1,7 +1,7 @@
 # Live Race Overlay PVA
 
 Date: April 17, 2026
-Updated: April 30, 2026
+Updated: May 1, 2026
 
 Status: TrackDraw-side preparation complete; external overlay runtime work remains
 
@@ -80,15 +80,15 @@ Implemented REST contract:
 - [src/lib/api/openapi.ts](../../src/lib/api/openapi.ts)
   Documents the RotorHazard integration endpoint under the REST API docs.
 - [src/lib/track/overlay-prep.ts](../../src/lib/track/overlay-prep.ts)
-  Overlay readiness validation: detects missing route, multiple routes, missing start/finish, duplicate timing IDs, missing split IDs, and timing points that cannot be projected onto the route. The REST overlay response exposes this as `readiness`.
+  Overlay readiness validation: detects missing or ambiguous route setup, missing start/finish, duplicate timing IDs, missing split IDs, and timing points that cannot be projected onto the route. The REST overlay response exposes this as `readiness`.
 
 REST contract follow-up:
 
 - [x] wire `overlay-prep.ts` validation output into the REST overlay response so consumers can inspect readiness without a separate call
-- [ ] add minimap viewport or bounds hints for stable overlay framing
-- [ ] confirm the timing identifier naming and semantics with the `rh-stream-overlays`/RotorHazard side
+- [x] keep viewport/bounds out of the v1 contract; the plugin should derive first-pass framing from `field`, `route.sampled_points`, `route_obstacles`, and `timing_markers`
+- [x] confirm first RotorHazard split semantics: split records expose zero-based `split_id` values from secondary split timers
 - [x] document a sample `trackdraw.overlay.v1` payload in this PVA once the consumer contract is confirmed
-- [ ] add explicit active race route selection only if real projects need more than the current single-route preparation rule
+- [x] keep one race line per track as the supported model; do not add active route selection
 
 Sample `trackdraw.overlay.v1` response body:
 
@@ -191,16 +191,72 @@ Timing metadata and typing:
 Primary route behavior:
 
 - [src/store/selectors.ts](../../src/store/selectors.ts)
-  Route-related behavior still generally falls back to the first usable polyline. The overlay preparation validator blocks multiple usable routes instead of silently choosing one.
+  A valid live overlay track has one race line. The overlay preparation validator blocks missing or ambiguous route setups instead of adding active-route selection.
 - [src/lib/track/polyline-derived.ts](../../src/lib/track/polyline-derived.ts)
   Reuse this layer for route length and progress calculations rather than duplicating geometry logic elsewhere.
 
 Recommended implementation order:
 
-1. Confirm timing identifier semantics with the RotorHazard/plugin side.
-2. Begin cross-repo consumption work in `rh-stream-overlays`.
-3. Add viewport or bounds hints if `rh-stream-overlays` needs stable framing from the payload.
-4. Return to explicit active route selection only if real multi-route courses make the single-route rule too limiting.
+1. Begin cross-repo consumption work in `rh-stream-overlays`.
+2. Add plugin-side split mapping from RotorHazard zero-based `split_id` to TrackDraw `timing_id`.
+3. Validate whether plugin-derived framing is stable on real courses before adding any TrackDraw viewport contract.
+
+### `rh-stream-overlays` Code Review
+
+Reviewed local clone of the `rh-stream-overlays` repository. Use repository-relative paths when carrying this analysis into issues, PRs, or implementation notes.
+
+Current plugin shape:
+
+- `custom_plugins/stream_overlays/__init__.py`
+  Registers a Flask blueprint plus stream-page panels on RotorHazard startup. The existing OBS routes are `/stream/overlay/<name>/node/<node_id>`, `/stream/overlay/<name>/topbar`, `/stream/overlay/<name>/leaderboard/<class_id>/overall`, `/stream/overlay/<name>/leaderboard/<class_id>/class`, and `/stream/overlay/<name>/heat/upcoming`.
+- `custom_plugins/stream_overlays/utils.py`
+  Builds markdown links for the RotorHazard streams page. New minimap and race-overview links should be registered here so the feature appears with the existing OBS overlay links.
+- `custom_plugins/stream_overlays/pages/stream/*`
+  Uses RotorHazard's `layout-basic.html` with plugin-owned CSS and JS assets. Existing overlays are organized around named themes such as `DDS`, `LCDR`, and `APEX`; the minimap should follow that model with shared logic and theme-specific presentation wrappers.
+- `custom_plugins/stream_overlays/static/js/main/stream_topbar.js`
+  Listens to `race_status`, `race_scheduled`, `leaderboard`, `prestage_ready`, `stage_ready`, and `stop_timer`.
+- `custom_plugins/stream_overlays/static/js/overlay_node_shared.js`
+  Listens to `current_heat`, `current_laps`, `race_status`, and `leaderboard`. It already reads lap snapshots and formats split data when present on lap records.
+- `custom_plugins/stream_overlays/static/js/overlay_heat.js`
+  Listens to `current_heat`, `heat_data`, `pilot_data`, `class_data`, `format_data`, and `frequency_data` for the upcoming-heat overlay.
+
+Key findings:
+
+- The plugin is currently browser-overlay first. It does not have a persistent server-side TrackDraw client, stored integration settings, or a custom Socket.IO publisher.
+- Existing overlays rely on RotorHazard's built-in `data_dependencies` and browser Socket.IO events. A first live minimap can reuse browser-side race messages before adding backend event aggregation.
+- TrackDraw API keys should not be embedded in an OBS/browser URL or client JavaScript. The plugin should fetch TrackDraw overlay packages server-side, cache the last valid package, and expose only a local read endpoint to the overlay page.
+- RotorHazard emits current lap snapshots through `current_laps`. Each lap can include a `splits` array with `split_id`, `split_time`, `split_raw`, and `split_speed`. The `split_id` is the zero-based secondary split timer index, not a TrackDraw identifier.
+- RotorHazard does not emit a dedicated browser `split_pass` event in the reviewed flow. Split pass handling updates `current_laps` and emits `phonetic_split_call`, so the minimap should detect split confirmations by diffing `current_laps` snapshots.
+- RotorHazard's plugin API supports general settings through `rhapi.ui.register_panel`, `rhapi.fields.register_option`, `UIField`, `UIFieldType`, `rhapi.db.option`, and `rhapi.db.option_set`. The server runtime already uses `requests`, so a plugin-side TrackDraw fetch helper can use `requests.Session` with a short timeout.
+- RotorHazard exposes lifecycle hooks such as `Evt.RACE_STAGE`, `Evt.RACE_START`, `Evt.RACE_STOP`, and `Evt.RACE_LAP_RECORDED` through `rhapi.events`, but the first minimap does not need a backend publisher if it reuses existing browser Socket.IO messages.
+- There is no minimap renderer or geometry utility in the plugin today. The lowest-risk renderer is plugin-local SVG: convert TrackDraw field coordinates to an SVG viewBox, draw `route.sampled_points`, draw `timing_markers`, and place pilot markers by route progress.
+- The plugin already has multiple visual themes. The minimap data, geometry, and race-state code should be theme-neutral. Theme-specific work should live in templates/CSS wrappers, starting with DDS presentation and adding LCDR/APEX variants after the data and estimation model is stable.
+
+Required `rh-stream-overlays` slices:
+
+1. Add TrackDraw integration settings and server-side fetch.
+   Store TrackDraw base URL, project id, bearer API key, and split mapping in RotorHazard plugin settings. Fetch `GET /api/v1/projects/{projectId}/overlay` server-side with `requests.Session`, a short timeout, schema/readiness checks, and a last-good cache. Do not pass the API key into templates.
+2. Add local overlay-data endpoints.
+   Add a plugin route such as `/stream/overlay/<name>/trackdraw/track.json` that returns the cached `trackdraw.overlay.v1` package and a setup-state payload when fetch, auth, schema, or readiness fails.
+3. Add OBS overlay routes and panel links.
+   Add the `minimap` route under the existing `/stream/overlay/<name>/...` pattern, then expose it through `utils.py`. Keep `race-overview` as a post-minimap follow-up.
+4. Add a shared minimap renderer.
+   Create plugin-local HTML/CSS/JS for route rendering, timing markers, safe-area padding, transparent background, disconnected/setup states, and resolution checks at 1920x1080 and 1280x720. Keep geometry and race-state modules shared across themes; keep colors, typography, marker styling, panel chrome, and spacing in theme CSS.
+5. Add browser-side race state adapter.
+   Reuse `race_status`, `current_heat`, `leaderboard`, and `current_laps` to build pilot state without requiring a custom backend publisher for v1. Track node, callsign, color, lap, last confirmed anchor, last update time, estimated progress, and confidence.
+6. Add estimation and correction behavior.
+   Start with start/finish-only lap anchors. Move markers between anchors using deterministic elapsed-time interpolation, then snap or ease to confirmed anchors when a lap update arrives. Stop advancing and fade markers when the confidence window expires.
+7. Add split-anchor support through explicit index mapping.
+   Map RotorHazard zero-based `split_id` values to TrackDraw `timing_id` values in plugin settings. Keep TrackDraw `timing_id` user-authored so the same track can work with different RotorHazard split-timer setups.
+8. Validate against real or replayed race data.
+   Use at least one real TrackDraw course and one RotorHazard session before treating the overlay as production-ready.
+
+TrackDraw follow-up after this review:
+
+- Keep the current REST contract as the integration source of truth.
+- Do not add `bounds` or `viewport` hints for v1; revisit only if plugin-derived framing fails on real courses.
+- Keep TrackDraw `timing_id` values user-authored and map RotorHazard `split_id` values in the plugin.
+- Do not add a TrackDraw-owned live overlay route unless the RotorHazard plugin path proves insufficient.
 
 ## Phase Plan
 
@@ -278,9 +334,14 @@ Start state:
 
 Work:
 
-- consume TrackDraw overlay packages
-- render the minimap route and timing markers
-- validate OBS browser-source behavior and transparency
+- add plugin-owned TrackDraw settings for base URL, project id, and bearer API key
+- add plugin-owned split mapping from RotorHazard `split_id` to TrackDraw `timing_id`
+- fetch the TrackDraw overlay package server-side, never from OBS/browser JavaScript with the bearer key
+- cache the last valid `trackdraw.overlay.v1` package and expose it through a local plugin JSON route
+- render the minimap route and timing markers from `route.sampled_points` and `timing_markers`
+- derive first-pass viewport framing from the TrackDraw field and sampled route; open a TrackDraw follow-up for `bounds`/`viewport` hints only if real-course validation proves the plugin cannot frame reliably
+- expose setup states for missing config, auth failure, network failure, blocked readiness, unsupported schema, and stale cached data
+- validate OBS browser-source behavior, transparency, and safe-area framing
 
 Done state:
 
@@ -290,9 +351,19 @@ Done state:
 
 Recommended first visual surface:
 
-- `race-overview`: full-scene overview with minimap plus compact race panel
-- `minimap`: small transparent corner overlay that can be layered over existing scenes
-- both variants reuse the same imported route renderer and theme tokens
+- ship `minimap` first as a small transparent corner overlay that can be layered over existing scenes
+- add `race-overview` only after the minimap renderer, setup states, and live estimation model are validated
+- keep both variants on the same imported route renderer and theme tokens when `race-overview` is added
+
+Phase 3 implementation checklist:
+
+- [ ] Add TrackDraw config storage through RotorHazard plugin settings and a safe server-side fetch helper using `requests.Session`.
+- [ ] Add split mapping config from RotorHazard zero-based `split_id` to TrackDraw `timing_id`.
+- [ ] Add local cached overlay-package JSON endpoint without exposing the TrackDraw bearer key.
+- [ ] Register the `minimap` link on the RotorHazard streams page; defer `race-overview` until the minimap is proven.
+- [ ] Add shared SVG route renderer, timing marker renderer, setup-state renderer, and theme-aware OBS-safe CSS.
+- [ ] Keep the first DDS minimap theme as the reference implementation without hardcoding DDS assumptions into shared data or race-state modules.
+- [ ] Validate one real TrackDraw REST payload and one blocked-readiness payload.
 
 ### Phase 4: Connect RotorHazard Live Data And Harden Estimation
 
@@ -303,11 +374,11 @@ Start state:
 
 Work:
 
-- add a race adapter that listens to RotorHazard race lifecycle and lap events
+- add a browser-side race adapter that listens to the same RotorHazard Socket.IO path the existing overlays already use
 - map RotorHazard pilot/node data into a small overlay state: pilot id, node, callsign, color, lap, last timing anchor, last event time, estimated route progress, and confidence
 - start with start/finish lap events as the reliable v1 signal
-- enable split anchors only when RotorHazard event data or plugin configuration can map a source timing event to a TrackDraw `timingId`
-- broadcast overlay state through the existing Socket.IO-driven overlay update path
+- enable split anchors through the plugin's `split_id` to TrackDraw `timing_id` mapping
+- detect split confirmations by diffing updated `current_laps` snapshots because RotorHazard updates split state through current laps rather than a dedicated browser split event
 - estimate movement between confirmed anchors with simple deterministic interpolation
 - snap/correct pilot dots to confirmed anchors when new timing events arrive
 - add stale-state and disconnect handling
@@ -323,11 +394,29 @@ Done state:
 Recommended v1 behavior:
 
 - before race start: show the imported track and pilot lineup, no moving dots
+- blocked readiness or missing TrackDraw config: show a setup state and do not animate pilot dots
 - race start: place all active pilots at the start/finish anchor
-- lap recorded: confirm a pilot at start/finish and advance lap/progress state
-- split recorded, if supported: confirm a pilot at the matching split anchor
-- stale pilot: fade or pulse the dot and stop advancing once the confidence window expires
+- lap recorded from `current_laps`: confirm a pilot at start/finish and advance lap/progress state
+- split recorded from `current_laps`: confirm a pilot at the TrackDraw timing marker mapped from that split's RotorHazard `split_id`
+- stale pilot: continue interpolation only inside a short confidence window, then fade the dot and stop advancing
 - race finish/stop: freeze final positions and keep the result panel readable for OBS
+
+Recommended first estimation defaults:
+
+- use the last completed lap time per pilot as the preferred expected full-lap duration once available
+- fall back to a configurable default lap duration before a pilot has completed a lap
+- for split sectors, use the last observed sector duration when available, otherwise divide the expected lap duration by the number of configured anchor sectors
+- mark a pilot as stale when no confirming lap or split update arrives within 5 seconds after the expected next anchor time
+- freeze stale markers instead of looping them through unconfirmed anchors
+
+Phase 4 implementation checklist:
+
+- [ ] Build pilot state from `current_heat`, `leaderboard`, `current_laps`, and `race_status`.
+- [ ] Detect new start/finish confirmations from changed lap snapshots per node.
+- [ ] Interpolate route progress from the last confirmed anchor using a configured or learned expected sector duration.
+- [ ] Stop or fade movement when data is stale, the socket disconnects, or the race stops.
+- [ ] Detect new split confirmations from changed `current_laps.node_index[*].laps[*].splits[*]` entries and map `split_id` through plugin config.
+- [ ] Validate with a real or replayed RotorHazard heat, including race start, lap updates, finish/stop, and reconnect.
 
 ## Validation Expectations
 
