@@ -1,5 +1,7 @@
 "use client";
 
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -93,6 +95,42 @@ export function CurrentBadge({ label = "current" }: { label?: string }) {
     <span className="bg-muted text-foreground/75 inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide">
       {label}
     </span>
+  );
+}
+
+export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
+  const copyProjectId = async () => {
+    try {
+      await navigator.clipboard.writeText(projectId);
+      toast.success("Project ID copied");
+    } catch {
+      toast.error("Could not copy the project ID from this browser.");
+    }
+  };
+
+  return (
+    <div className="border-border/35 mt-2 flex min-w-0 items-center justify-between gap-3 border-t pt-2">
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase">
+          API project ID
+        </p>
+        <p className="text-foreground/85 mt-0.5 truncate font-mono text-[11px]">
+          {projectId}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          void copyProjectId();
+        }}
+        className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 text-[11px] font-medium transition-colors"
+        aria-label="Copy API project ID"
+      >
+        <Copy className="size-3.5" />
+        Copy
+      </button>
+    </div>
   );
 }
 

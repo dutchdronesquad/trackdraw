@@ -9,6 +9,7 @@ import {
   formatRelativeTime,
   itemLabel,
   ProjectAvatar,
+  ProjectIdCopyRow,
   SkeletonCard,
 } from "./shared";
 
@@ -169,6 +170,7 @@ export function ProjectManagerAccountTab({
               >
                 {metaLine}
               </p>
+              {isCurrent ? <ProjectIdCopyRow projectId={proj.id} /> : null}
             </div>
             <div
               className="flex shrink-0 items-center gap-0.5"

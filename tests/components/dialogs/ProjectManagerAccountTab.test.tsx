@@ -106,4 +106,24 @@ describe("ProjectManagerAccountTab", () => {
     expect(onResolveConflict).toHaveBeenCalledWith(project.id);
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
+
+  it("shows and copies the API project ID for the current account project", async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    renderAccountTab({ status: "synced" });
+
+    expect(screen.getByText("API project ID")).toBeTruthy();
+    expect(screen.getByText(project.id)).toBeTruthy();
+
+    await user.click(
+      screen.getByRole("button", { name: "Copy API project ID" })
+    );
+
+    expect(writeText).toHaveBeenCalledWith(project.id);
+  });
 });
