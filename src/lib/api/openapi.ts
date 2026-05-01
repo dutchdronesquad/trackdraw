@@ -140,6 +140,7 @@ const overlayPackageExample = {
       shape_id: "gate_1",
       role: "start_finish",
       timing_id: null,
+      split_index: null,
       title: "Start / finish",
       position: { x: 12, y: 18 },
       route_position: {
@@ -161,6 +162,7 @@ const overlayPackageExample = {
         shape_id: "gate_1",
         role: "start_finish",
         timing_id: null,
+        split_index: null,
         title: "Start / finish",
         path_distance_m: 0.2,
         projected_point: { x: 12.1, y: 18.1 },
@@ -773,6 +775,7 @@ export const trackdrawOpenApiSchema = {
                     "shape_id",
                     "role",
                     "timing_id",
+                    "split_index",
                     "title",
                     "path_distance_m",
                     "projected_point",
@@ -787,6 +790,14 @@ export const trackdrawOpenApiSchema = {
                     },
                     timing_id: {
                       anyOf: [{ type: "string" }, { type: "null" }],
+                    },
+                    split_index: {
+                      anyOf: [
+                        { type: "integer", minimum: 0 },
+                        { type: "null" },
+                      ],
+                      description:
+                        "Zero-based TrackDraw split order along the route. This is null for start/finish timing points.",
                     },
                     title: { type: "string" },
                     path_distance_m: {

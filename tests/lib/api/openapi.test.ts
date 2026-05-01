@@ -33,6 +33,7 @@ describe("OpenAPI schema", () => {
       "shape_id",
       "role",
       "timing_id",
+      "split_index",
       "title",
       "path_distance_m",
       "projected_point",

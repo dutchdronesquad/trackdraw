@@ -252,16 +252,12 @@ function toApiOverlayPrepTimingPoint(point: OverlayPrepTimingPoint) {
   };
 }
 
-function toApiOverlayReadinessReport(design: TrackDesign) {
-  const report = getOverlayPrepReport(design);
-
-  return {
-    status: report.status,
-    race_route_id: report.raceRouteId,
-    route_length_m: report.routeLength,
-    issues: report.issues.map(toApiOverlayPrepIssue),
-    timing_points: report.timingPoints.map(toApiOverlayPrepTimingPoint),
-  };
+function getSplitIndexByShapeId(timingPoints: OverlayPrepTimingPoint[]) {
+  return new Map(
+    timingPoints
+      .filter((point) => point.role === "split")
+      .map((point, index) => [point.shapeId, index])
+  );
 }
 
 export function toApiTrackPackage(project: StoredProject) {
@@ -301,6 +297,10 @@ export function toApiOverlayPackage(project: StoredProject) {
   const obstacleReport = getObstacleNumberingReport(project.design);
   const shapes = getDesignShapes(project.design);
   const routeObstacles = shapes.filter(isNumberedObstacle);
+  const overlayPrepReport = getOverlayPrepReport(project.design);
+  const splitIndexByShapeId = getSplitIndexByShapeId(
+    overlayPrepReport.timingPoints
+  );
 
   return {
     type: "overlay_track" as const,
@@ -337,6 +337,7 @@ export function toApiOverlayPackage(project: StoredProject) {
       shape_id: marker.shape.id,
       role: marker.marker.role,
       timing_id: marker.marker.timingId ?? null,
+      split_index: splitIndexByShapeId.get(marker.shape.id) ?? null,
       title: marker.title,
       position: {
         x: marker.shape.x,
@@ -348,7 +349,16 @@ export function toApiOverlayPackage(project: StoredProject) {
         routeLength
       ),
     })),
-    readiness: toApiOverlayReadinessReport(project.design),
+    readiness: {
+      status: overlayPrepReport.status,
+      race_route_id: overlayPrepReport.raceRouteId,
+      route_length_m: overlayPrepReport.routeLength,
+      issues: overlayPrepReport.issues.map(toApiOverlayPrepIssue),
+      timing_points: overlayPrepReport.timingPoints.map((point) => ({
+        ...toApiOverlayPrepTimingPoint(point),
+        split_index: splitIndexByShapeId.get(point.shapeId) ?? null,
+      })),
+    },
     updated_at: project.designUpdatedAt,
   };
 }

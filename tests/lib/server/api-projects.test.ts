@@ -173,11 +173,22 @@ describe("API project serializers", () => {
       overlayPackage.readiness.timing_points.map((point) => ({
         shape_id: point.shape_id,
         role: point.role,
+        split_index: point.split_index,
         timing_id: point.timing_id,
       }))
     ).toEqual([
-      { shape_id: "gate-early", role: "start_finish", timing_id: null },
-      { shape_id: "gate-late", role: "split", timing_id: "split-a" },
+      {
+        shape_id: "gate-early",
+        role: "start_finish",
+        split_index: null,
+        timing_id: null,
+      },
+      {
+        shape_id: "gate-late",
+        role: "split",
+        split_index: 0,
+        timing_id: "split-a",
+      },
     ]);
     expect(overlayPackage.route).toMatchObject({
       shape_id: "route-1",
@@ -217,6 +228,7 @@ describe("API project serializers", () => {
     expect(overlayPackage.timing_markers[1]).toMatchObject({
       shape_id: "gate-late",
       role: "split",
+      split_index: 0,
       timing_id: "split-a",
       route_position: {
         distance_m: expect.any(Number),

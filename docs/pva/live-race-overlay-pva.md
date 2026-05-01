@@ -148,6 +148,7 @@ Sample `trackdraw.overlay.v1` response body:
         "shape_id": "gate_1",
         "role": "start_finish",
         "timing_id": null,
+        "split_index": null,
         "title": "Start / finish",
         "position": { "x": 12, "y": 18 },
         "route_position": {
@@ -169,6 +170,7 @@ Sample `trackdraw.overlay.v1` response body:
           "shape_id": "gate_1",
           "role": "start_finish",
           "timing_id": null,
+          "split_index": null,
           "title": "Start / finish",
           "path_distance_m": 0.2,
           "projected_point": { "x": 12.1, "y": 18.1 },
@@ -202,7 +204,7 @@ Primary route behavior:
 Recommended implementation order:
 
 1. Begin cross-repo consumption work in `rh-stream-overlays`.
-2. Add plugin-side split mapping from RotorHazard zero-based `split_id` to TrackDraw `timing_id`.
+2. Use TrackDraw's route-ordered `split_index` values to map RotorHazard `split_id` values automatically; do not expose split mapping as a normal setup field.
 3. Validate whether plugin-derived framing is stable on real courses before adding any TrackDraw viewport contract.
 
 ### `rh-stream-overlays` Code Review
@@ -241,7 +243,7 @@ Key findings:
 Required `rh-stream-overlays` slices:
 
 1. Add TrackDraw integration settings and server-side fetch.
-   Store one active project id, bearer API key, and split mapping in RotorHazard plugin settings. Do not ask the user for a TrackDraw base URL. Fetch `GET /api/v1/projects/{projectId}/overlay` against the plugin's built-in `https://trackdraw.app` API origin with `requests.Session`, a short timeout, schema/readiness checks, and a durable last-good-ready cache. Do not pass the API key into templates.
+   Store one active project id and bearer API key in RotorHazard plugin settings. Do not ask the user for a TrackDraw base URL or split mapping. Fetch `GET /api/v1/projects/{projectId}/overlay` against the plugin's built-in `https://trackdraw.app` API origin with `requests.Session`, a short timeout, schema/readiness checks, and a durable last-good-ready cache. Do not pass the API key into templates.
 2. Add local overlay-data endpoints.
    Add a plugin route such as `/stream/overlay/<name>/trackdraw/track.json` that returns the cached `trackdraw.overlay.v1` package and a setup-state payload when fetch, auth, schema, or readiness fails. If the system is offline but a ready cached package exists, return that package with stale/offline metadata instead of blocking the overlay.
 3. Add OBS overlay routes and panel links.
@@ -252,17 +254,17 @@ Required `rh-stream-overlays` slices:
    Reuse `race_status`, `current_heat`, `leaderboard`, and `current_laps` to build pilot state without requiring a custom backend publisher for v1. Track node, callsign, color, lap, last confirmed anchor, last update time, estimated progress, and confidence.
 6. Add estimation and correction behavior.
    Start with start/finish-only lap anchors. Move markers between anchors using deterministic elapsed-time interpolation, then snap or ease to confirmed anchors when a lap update arrives. Stop advancing and fade markers when the confidence window expires.
-7. Add split-anchor support through explicit index mapping.
-   Map RotorHazard zero-based `split_id` values to TrackDraw `timing_id` values in plugin settings. Keep TrackDraw `timing_id` user-authored so the same track can work with different RotorHazard split-timer setups.
+7. Add split-anchor support through TrackDraw-provided split indexes.
+   TrackDraw publishes zero-based `split_index` values on split timing points in route order. Map RotorHazard zero-based `split_id` values to those `split_index` values automatically. Do not make this a normal user-facing setup field; add an advanced override only if real timing hardware proves that split timer order can differ from route order.
 8. Validate against real or replayed race data.
    Use at least one real TrackDraw course and one RotorHazard session before treating the overlay as production-ready.
 
 TrackDraw follow-up after this review:
 
 - Keep the current REST contract as the integration source of truth.
-- Make the project id visible and easy to copy from TrackDraw for account-backed projects. Prefer the export/API surface over the account API-key view because the value belongs to a project-level integration setup, not to the key lifecycle itself.
+- Make the project id visible and easy to copy from TrackDraw for account-backed projects. Prefer the Projects dialog account-project surface over export or API-key management because the value belongs to project identity, not to a file export or key lifecycle.
 - Do not add `bounds` or `viewport` hints for v1; revisit only if plugin-derived framing fails on real courses.
-- Keep TrackDraw `timing_id` values user-authored and map RotorHazard `split_id` values in the plugin.
+- Keep split mapping automatic in the plugin by default: RotorHazard `split_id` values map to TrackDraw's route-ordered `split_index` values.
 - Do not add a TrackDraw-owned live overlay route unless the RotorHazard plugin path proves insufficient.
 
 ## Phase Plan
@@ -342,7 +344,7 @@ Start state:
 Work:
 
 - add plugin-owned TrackDraw settings for one active project id and bearer API key
-- add plugin-owned split mapping from RotorHazard `split_id` to TrackDraw `timing_id`
+- map RotorHazard `split_id` values to TrackDraw-provided route-ordered `split_index` values; do not expose this as a normal setup field
 - use `https://trackdraw.app` as the built-in production TrackDraw API origin in plugin code; do not expose base URL as a normal setup field
 - allow a hidden dev/test origin override only through config or environment
 - fetch the TrackDraw overlay package server-side, never from OBS/browser JavaScript with the bearer key
@@ -370,7 +372,7 @@ Phase 3 implementation checklist:
 - [ ] Add TrackDraw config storage for one active project id and API key through RotorHazard plugin settings; do not expose base URL as a normal setup field.
 - [ ] Add a copyable project id surface in TrackDraw for account-backed projects.
 - [ ] Add a safe server-side fetch helper using `requests.Session` and the plugin's built-in `https://trackdraw.app` API origin.
-- [ ] Add split mapping config from RotorHazard zero-based `split_id` to TrackDraw `timing_id`.
+- [ ] Use TrackDraw-provided zero-based `split_index` values for RotorHazard `split_id` mapping.
 - [ ] Add durable last-good-ready overlay-package caching for offline venue use.
 - [ ] Add local cached overlay-package JSON endpoint without exposing the TrackDraw bearer key.
 - [ ] Show cache status in plugin setup: never fetched, fresh, stale/offline, blocked, or auth failed.
@@ -393,7 +395,7 @@ Work:
 - add a browser-side race adapter that listens to the same RotorHazard Socket.IO path the existing overlays already use
 - map RotorHazard pilot/node data into a small overlay state: pilot id, node, callsign, color, lap, last timing anchor, last event time, estimated route progress, and confidence
 - start with start/finish lap events as the reliable v1 signal
-- enable split anchors through the plugin's `split_id` to TrackDraw `timing_id` mapping
+- enable split anchors through TrackDraw-provided route-order `split_index` mapping
 - detect split confirmations by diffing updated `current_laps` snapshots because RotorHazard updates split state through current laps rather than a dedicated browser split event
 - estimate movement between confirmed anchors with simple deterministic interpolation
 - snap/correct pilot dots to confirmed anchors when new timing events arrive
@@ -413,7 +415,7 @@ Recommended v1 behavior:
 - blocked readiness or missing TrackDraw config: show a setup state and do not animate pilot dots
 - race start: place all active pilots at the start/finish anchor
 - lap recorded from `current_laps`: confirm a pilot at start/finish and advance lap/progress state
-- split recorded from `current_laps`: confirm a pilot at the TrackDraw timing marker mapped from that split's RotorHazard `split_id`
+- split recorded from `current_laps`: confirm a pilot at the TrackDraw split anchor whose `split_index` matches that split's RotorHazard `split_id`
 - stale pilot: continue interpolation only inside a short confidence window, then fade the dot and stop advancing
 - race finish/stop: freeze final positions and keep the result panel readable for OBS
 
@@ -431,7 +433,7 @@ Phase 4 implementation checklist:
 - [ ] Detect new start/finish confirmations from changed lap snapshots per node.
 - [ ] Interpolate route progress from the last confirmed anchor using a configured or learned expected sector duration.
 - [ ] Stop or fade movement when data is stale, the socket disconnects, or the race stops.
-- [ ] Detect new split confirmations from changed `current_laps.node_index[*].laps[*].splits[*]` entries and map `split_id` through plugin config.
+- [ ] Detect new split confirmations from changed `current_laps.node_index[*].laps[*].splits[*]` entries and map `split_id` to TrackDraw `split_index`.
 - [ ] Validate with a real or replayed RotorHazard heat, including race start, lap updates, finish/stop, and reconnect.
 
 ## Validation Expectations
