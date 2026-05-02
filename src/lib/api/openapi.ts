@@ -115,6 +115,13 @@ const overlayPackageExample = {
     ],
   },
   route_status: "ready",
+  duration_estimate: {
+    estimated_lap_ms: 12600,
+    route_length_m: 126.4,
+    assumed_speed_mps: 10,
+    source: "trackdraw_default",
+    confidence: "low",
+  },
   route_obstacles: [
     {
       id: "gate_1",
@@ -706,6 +713,34 @@ export const trackdrawOpenApiSchema = {
               "no-route-matches",
               "partial",
               "ready",
+            ],
+          },
+          duration_estimate: {
+            description:
+              "Optional first-lap baseline for overlay runtimes before real RotorHazard lap or split data exists. Consumers should replace it with live timing data as soon as possible.",
+            anyOf: [
+              {
+                type: "object",
+                required: [
+                  "estimated_lap_ms",
+                  "route_length_m",
+                  "assumed_speed_mps",
+                  "source",
+                  "confidence",
+                ],
+                properties: {
+                  estimated_lap_ms: { type: "integer", minimum: 0 },
+                  route_length_m: { type: "number", minimum: 0 },
+                  assumed_speed_mps: { type: "number", minimum: 0 },
+                  source: {
+                    type: "string",
+                    enum: ["trackdraw_default"],
+                  },
+                  confidence: { type: "string", enum: ["low"] },
+                },
+                additionalProperties: false,
+              },
+              { type: "null" },
             ],
           },
           route_obstacles: {

@@ -255,6 +255,7 @@ TrackDraw scope:
 - Keep editor controls for assigning timing roles on relevant shapes in a way that also improves Race Pack and race director output
 - Reuse overlay-preparation validation for missing race route, duplicate timing roles, missing timing identifiers, and timing-marked shapes that cannot be mapped onto route progress
 - Use the `trackdraw.overlay.v1` contract builder as the TrackDraw-side source for the first minimap prototype
+- Provide an optional route-duration estimate in the overlay package so `rh-stream-overlays` has a better first-lap baseline before RotorHazard has real lap data
 
 Out of TrackDraw scope:
 
@@ -272,6 +273,7 @@ Suggested first slices:
 - Shipped: overlay-preparation validation and route-progress mapping helper for future export/setup UI
 - Shipped: `trackdraw.overlay.v1` REST package with route data, numbered obstacles, timing markers, route positions, and readiness details
 - Shipped: one-race-line overlay preparation rule; no active-route selector is planned for v1
+- Shipped: optional route-duration estimate in the overlay package, including estimated lap time, assumed speed, source, and confidence
 
 ### 4. Real-Time Collaboration Evaluation (`Research`)
 

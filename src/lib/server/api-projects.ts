@@ -18,6 +18,9 @@ import type {
 } from "@/lib/server/projects";
 import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
 
+const OVERLAY_ASSUMED_SPEED_MPS = 10;
+const OVERLAY_ESTIMATE_ROUNDING_MS = 100;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -112,6 +115,24 @@ function getPointSequenceLength(points: Array<{ x: number; y: number }>) {
   }
 
   return length;
+}
+
+function getOverlayDurationEstimate(routeLength: number) {
+  if (!Number.isFinite(routeLength) || routeLength <= 0) {
+    return null;
+  }
+
+  const rawLapMs = (routeLength / OVERLAY_ASSUMED_SPEED_MPS) * 1000;
+
+  return {
+    estimated_lap_ms:
+      Math.round(rawLapMs / OVERLAY_ESTIMATE_ROUNDING_MS) *
+      OVERLAY_ESTIMATE_ROUNDING_MS,
+    route_length_m: routeLength,
+    assumed_speed_mps: OVERLAY_ASSUMED_SPEED_MPS,
+    source: "trackdraw_default" as const,
+    confidence: "low" as const,
+  };
 }
 
 function projectPointOntoRoute(
@@ -326,6 +347,7 @@ export function toApiOverlayPackage(project: StoredProject) {
         }
       : null,
     route_status: obstacleReport.status,
+    duration_estimate: getOverlayDurationEstimate(routeLength),
     route_obstacles: routeObstacles.map((shape) =>
       toOverlayObstacle(
         shape,

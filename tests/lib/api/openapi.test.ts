@@ -10,6 +10,26 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 describe("OpenAPI schema", () => {
+  it("documents the optional overlay duration estimate", () => {
+    const overlayPackage =
+      trackdrawOpenApiSchema.components.schemas.OverlayPackage;
+
+    expect(overlayPackage.required).not.toContain("duration_estimate");
+    expect(
+      overlayPackage.properties.duration_estimate.anyOf[0].required
+    ).toEqual([
+      "estimated_lap_ms",
+      "route_length_m",
+      "assumed_speed_mps",
+      "source",
+      "confidence",
+    ]);
+    expect(
+      overlayPackage.properties.duration_estimate.anyOf[0].properties.source
+        .enum
+    ).toEqual(["trackdraw_default"]);
+  });
+
   it("documents overlay readiness as part of the public overlay package", () => {
     const overlayPackage =
       trackdrawOpenApiSchema.components.schemas.OverlayPackage;
@@ -54,7 +74,13 @@ describe("OpenAPI schema", () => {
 
     expect(overlayExample.schema).toBe("trackdraw.overlay.v1");
     expect(Object.hasOwn(overlayExample, "readiness")).toBe(true);
+    expect(Object.hasOwn(overlayExample, "duration_estimate")).toBe(true);
     expect(Object.hasOwn(overlayExample, "prep")).toBe(false);
+    expect(asRecord(overlayExample.duration_estimate)).toMatchObject({
+      estimated_lap_ms: 12600,
+      source: "trackdraw_default",
+      confidence: "low",
+    });
     expect(asRecord(overlayExample.readiness)).toMatchObject({
       status: "ready",
       race_route_id: "route_123",

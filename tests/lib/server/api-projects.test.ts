@@ -202,6 +202,14 @@ describe("API project serializers", () => {
     expect(overlayPackage.route?.sampled_points.length).toBeGreaterThanOrEqual(
       2
     );
+    expect(overlayPackage.duration_estimate).toMatchObject({
+      estimated_lap_ms: 3_000,
+      route_length_m: expect.any(Number),
+      assumed_speed_mps: 10,
+      source: "trackdraw_default",
+      confidence: "low",
+    });
+    expect(overlayPackage.duration_estimate?.route_length_m).toBeCloseTo(30, 1);
 
     expect(
       overlayPackage.route_obstacles.map((obstacle) => ({

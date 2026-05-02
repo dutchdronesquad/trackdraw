@@ -205,6 +205,19 @@ The v1.6.0 release-sized work is archived below. The REST API, TrackDraw-side li
   - [x] Overlay package endpoint
         Added an account-project `/api/v1/projects/[projectId]/overlay` endpoint for route, numbered obstacle, and timing marker data without exposing full editor JSON.
 
+- [ ] Route duration estimate for live overlays (`No account required`)
+      Give `rh-stream-overlays` a better first-lap baseline before RotorHazard has real lap data, while keeping live race estimation in the overlay runtime.
+  - [x] Duration model definition
+        Added a small `duration_estimate` contract for `trackdraw.overlay.v1`, including estimated lap milliseconds, route length, assumed speed, source, and confidence.
+  - [x] TrackDraw-side baseline controls
+        Decided the first version uses a conservative fixed club pace derived from route length, with no user-facing setup controls. This keeps race management and live estimation in the overlay runtime.
+  - [x] Overlay package extension
+        Added the optional duration estimate to the REST overlay package without making it a required schema field. The plugin should keep falling back to its own conservative default when the field is absent.
+  - [ ] Race Pack and setup copy
+        Surface the estimate only where it helps race-day setup, such as timing/overlay preparation notes, and avoid presenting it as a guaranteed race result prediction.
+  - [ ] Validation against real heats
+        Compare the first-lap estimate with actual RotorHazard lap data across a few real tracks before relying on it as the preferred baseline.
+
 ## Backlog And Research
 
 - [ ] Track DNA and layout analysis (`Research`)
