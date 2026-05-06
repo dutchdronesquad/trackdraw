@@ -219,7 +219,7 @@ export const trackdrawOpenApiSchema = {
     {
       name: "RotorHazard",
       description:
-        "Small bearer-authenticated packages for RotorHazard livestream minimaps and timing overlays.",
+        "Small bearer-authenticated packages for RotorHazard livestream map overlays and timing overlays.",
     },
   ],
   "x-tagGroups": [
@@ -366,7 +366,7 @@ export const trackdrawOpenApiSchema = {
         operationId: "getProjectOverlay",
         summary: "Get livestream data",
         description:
-          "Returns a compact route, obstacle, and timing package for livestream minimaps. This endpoint is designed for overlay consumers and excludes full editor JSON.",
+          "Returns a compact route, obstacle, and timing package for livestream map overlays. This endpoint is designed for overlay consumers and excludes full editor JSON.",
         security: [{ bearerAuth: [] }],
         parameters: [{ $ref: "#/components/parameters/ProjectId" }],
         responses: {
@@ -649,7 +649,7 @@ export const trackdrawOpenApiSchema = {
       OverlayPackage: {
         type: "object",
         description:
-          "Compact livestream minimap package with route geometry, numbered route obstacles, timing markers, and route positions.",
+          "Compact livestream map overlay package with route geometry, numbered route obstacles, timing markers, and route positions.",
         required: [
           "type",
           "schema",

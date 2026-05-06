@@ -24,7 +24,7 @@ Live race overlay should make a race easier to follow for viewers and commentato
 That means:
 
 - the overlay should show drones moving over the TrackDraw route in a way that feels believable
-- TrackDraw should expose enough geometry and timing metadata for `rh-stream-overlays` to render a minimap overlay correctly
+- TrackDraw should expose enough geometry and timing metadata for `rh-stream-overlays` to render a map overlay correctly
 - live RotorHazard timing events should improve the visual understanding of battles, gaps, and track position
 - the system should remain honest about what is estimated versus what is truly measured
 
@@ -240,7 +240,7 @@ The first version should prioritize:
 
 ### 3. Import Into `rh-stream-overlays`
 
-The overlay system imports the TrackDraw package and makes it available to a minimap overlay type.
+The overlay system imports the TrackDraw package and makes it available to a map overlay type.
 
 At that point the overlay can:
 
@@ -335,7 +335,7 @@ The package includes:
 - numbered route obstacles
 - timing markers with roles, identifiers, positions, and route projections
 - route status
-- optional viewport or bounds hints for minimap framing
+- optional viewport or bounds hints for map-overlay framing
 
 The first version favors a plain JSON REST contract over direct database access, share-page scraping, or manual file handoff.
 
@@ -349,7 +349,7 @@ Current recommendation:
 
 - keep project JSON as the backup/import format for TrackDraw itself
 - keep `/api/v1/projects/{projectId}/track` as the broader integration package
-- use `/api/v1/projects/{projectId}/overlay` as the compact livestream minimap package
+- use `/api/v1/projects/{projectId}/overlay` as the compact livestream map-overlay package
 - do not require manual JSON export/import for the first `rh-stream-overlays` integration
 
 Why:
@@ -365,7 +365,7 @@ The integration path should evolve in this order:
 
 1. consume `trackdraw.overlay.v1` from the REST API
 2. validate that `rh-stream-overlays` can reliably render the route, obstacles, timing markers, and `readiness` report
-3. add minimap viewport or bounds hints if consumer-side framing needs them
+3. add map-overlay viewport or bounds hints if consumer-side framing needs them
 
 ### Timing Metadata Placement Options
 
@@ -439,7 +439,7 @@ Example concept:
 Pros:
 
 - cleaner contract for overlay consumers
-- directly expresses the thing the minimap actually needs
+- directly expresses the thing the map overlay actually needs
 - does not depend on timing points being represented by obstacles
 
 Cons:
@@ -468,7 +468,7 @@ This is especially attractive for:
 
 ### Route Mapping
 
-Even if timing metadata starts on shapes, the minimap still needs route progress.
+Even if timing metadata starts on shapes, the map overlay still needs route progress.
 
 That means TrackDraw or `rh-stream-overlays` must still resolve:
 

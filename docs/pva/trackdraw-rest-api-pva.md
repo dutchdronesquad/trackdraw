@@ -193,7 +193,7 @@ Recommended v1 endpoint set:
 | 2     | `GET /api/v1/projects/{projectId}/track`   | Bearer key      | `tracks:read` | Return the integration-stable track package for an owned project.                         |
 | 3     | `GET /api/v1/openapi.json`                 | Public          | n/a           | Serve the OpenAPI 3.1 schema.                                                             |
 | 3     | `GET /api/docs`                            | Public          | n/a           | Render interactive API documentation from the OpenAPI schema.                             |
-| 4     | `GET /api/v1/projects/{projectId}/overlay` | Bearer key      | `tracks:read` | Return compact route, obstacle, and timing data for livestream minimaps.                  |
+| 4     | `GET /api/v1/projects/{projectId}/overlay` | Bearer key      | `tracks:read` | Return compact route, obstacle, and timing data for livestream map overlays.                  |
 
 Do not use a generic `tracks/{trackRef}` route in v1. Project ids and share tokens should stay on separate routes so ownership checks, error messages, and OpenAPI docs stay clear.
 
@@ -288,7 +288,7 @@ GET /api/docs
 GET /api/v1/projects/{projectId}/overlay
 ```
 
-Returns a compact `trackdraw.overlay.v1` package for livestream minimaps and timing overlays:
+Returns a compact `trackdraw.overlay.v1` package for livestream map overlays and timing overlays:
 
 - field dimensions and coordinate origin
 - primary route waypoints and sampled route points
@@ -464,7 +464,7 @@ These are the recommended defaults for Phase 0. They optimize for a small safe v
 ### Data Contract
 
 - `/track` should be the integration-stable package: metadata, field dimensions, normalized objects needed by external tools, route/timing summaries when available, and schema version.
-- `/overlay` should be the livestream minimap package: route waypoints, sampled route points, numbered route obstacles, timing markers, and route positions.
+- `/overlay` should be the livestream map-overlay package: route waypoints, sampled route points, numbered route obstacles, timing markers, and route positions.
 - API packages should follow the share-safe privacy boundary by default and exclude map references. A future private owner-only map-reference permission can be added later if there is a strong venue workflow.
 - Use schema names `trackdraw.track.v1` and `trackdraw.overlay.v1` for the shipped v1 packages.
 
@@ -574,7 +574,7 @@ Done state:
 Start state:
 
 - project reads work
-- livestream minimap consumers still need a stable package
+- livestream map-overlay consumers still need a stable package
 
 Work:
 

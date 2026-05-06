@@ -193,7 +193,7 @@ The v1.6.0 release-sized work is archived below. The REST API, TrackDraw-side li
           Turn that metadata into a dedicated Race Pack page.
 
 - [x] Live race overlay preparation (`No account required`)
-      Prepare TrackDraw projects for a future `rh-stream-overlays` minimap integration without making TrackDraw the live OBS overlay runtime.
+      Prepare TrackDraw projects for a future `rh-stream-overlays` map-overlay integration without making TrackDraw the live OBS overlay runtime.
   - [x] Single race line rule
         Keep one race line per track as the supported model. Overlay readiness blocks missing or ambiguous route setups instead of adding active-route selection.
   - [x] Timing role metadata

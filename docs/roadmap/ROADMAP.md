@@ -153,7 +153,7 @@ Shipped:
 - Better Auth API Key plugin integration with plugin-compatible D1 `apikey` storage
 - Browser-session API key management for signed-in users
 - Bearer-authenticated project reads at `/api/v1/me`, `/api/v1/projects`, `/api/v1/projects/[projectId]`, and `/api/v1/projects/[projectId]/track`
-- Livestream minimap data at `/api/v1/projects/[projectId]/overlay`, including route data, numbered obstacles, timing markers, route positions, and overlay readiness details
+- Livestream map-overlay data at `/api/v1/projects/[projectId]/overlay`, including route data, numbered obstacles, timing markers, route positions, and overlay readiness details
 - OpenAPI docs at `/api/v1/openapi.json` and `/api/docs`
 - API key throttling, stable rate-limit errors, audit events, cleanup behavior, and test coverage for the shipped v1 boundaries
 
@@ -254,12 +254,12 @@ TrackDraw scope:
 - Reuse the race-day timing marker model, `shape.meta.timing`, for start/finish and split points
 - Keep editor controls for assigning timing roles on relevant shapes in a way that also improves Race Pack and race director output
 - Reuse overlay-preparation validation for missing race route, duplicate timing roles, missing timing identifiers, and timing-marked shapes that cannot be mapped onto route progress
-- Use the `trackdraw.overlay.v1` contract builder as the TrackDraw-side source for the first minimap prototype
+- Use the `trackdraw.overlay.v1` contract builder as the TrackDraw-side source for the first map-overlay prototype
 - Provide an optional route-duration estimate in the overlay package so `rh-stream-overlays` has a better first-lap baseline before RotorHazard has real lap data
 
 Out of TrackDraw scope:
 
-- OBS-facing minimap rendering
+- OBS-facing map overlay rendering
 - RotorHazard event ingestion
 - estimated pilot position logic
 - stale, reconnect, and race-state behavior

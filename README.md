@@ -36,7 +36,7 @@
 </p>
 
 <p align="center">
-  TrackDraw is a free, browser-based track designer for FPV race directors.
+  TrackDraw is a browser-based track designer for FPV race directors.
   Build layouts on a real-scale canvas, review route flow in 3D, and turn the result into a shareable race-day handoff.
 </p>
 
