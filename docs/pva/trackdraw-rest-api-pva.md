@@ -193,7 +193,7 @@ Recommended v1 endpoint set:
 | 2     | `GET /api/v1/projects/{projectId}/track`   | Bearer key      | `tracks:read` | Return the integration-stable track package for an owned project.                         |
 | 3     | `GET /api/v1/openapi.json`                 | Public          | n/a           | Serve the OpenAPI 3.1 schema.                                                             |
 | 3     | `GET /api/docs`                            | Public          | n/a           | Render interactive API documentation from the OpenAPI schema.                             |
-| 4     | `GET /api/v1/projects/{projectId}/overlay` | Bearer key      | `tracks:read` | Return compact route, obstacle, and timing data for livestream map overlays.                  |
+| 4     | `GET /api/v1/projects/{projectId}/overlay` | Bearer key      | `tracks:read` | Return compact route, obstacle, and timing data for livestream map overlays.              |
 
 Do not use a generic `tracks/{trackRef}` route in v1. Project ids and share tokens should stay on separate routes so ownership checks, error messages, and OpenAPI docs stay clear.
 
