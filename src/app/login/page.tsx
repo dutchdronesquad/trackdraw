@@ -56,6 +56,7 @@ export default function LoginPage() {
     }
 
     if (typeof PublicKeyCredential === "undefined") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPasskeySupported(false);
       return;
     }

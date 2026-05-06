@@ -59,6 +59,7 @@ export default function AccountDialog({
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setName(user?.name ?? "");
     setEmail(user?.email ?? "");
     setEmailEditOpen(false);

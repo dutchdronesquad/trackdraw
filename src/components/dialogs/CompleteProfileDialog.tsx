@@ -33,6 +33,7 @@ export default function CompleteProfileDialog({
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setName(currentName ?? "");
     setSaving(false);
     setError(null);

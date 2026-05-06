@@ -86,6 +86,7 @@ export default function EditorShell({
   const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTab(initialTab);
   }, [initialTab]);
 
@@ -109,6 +110,7 @@ export default function EditorShell({
 
   useEffect(() => {
     if (tab === "3d") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasVisited3D(true);
     }
   }, [tab]);

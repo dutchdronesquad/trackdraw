@@ -46,7 +46,6 @@ export function useEditorHints({
   useEffect(() => {
     if (readOnly) return;
     if (!prevHasPath.current && hasPath) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowPostPathNudge(true);
     }
     prevHasPath.current = hasPath;

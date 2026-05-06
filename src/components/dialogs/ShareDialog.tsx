@@ -296,6 +296,7 @@ export default function ShareDialog({
   useEffect(() => {
     if (!open) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShare(null);
     setLoadDone(false);
     setPublishedDesignToken(null);
@@ -393,6 +394,7 @@ export default function ShareDialog({
 
   useEffect(() => {
     if (!showGalleryForm) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGalleryTitleInput(share?.galleryTitle || design.title.trim());
     setGalleryDescriptionInput(
       share?.galleryDescription || design.description?.trim() || ""

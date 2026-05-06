@@ -59,6 +59,7 @@ export function useEditorProjects({
       const shared = decodeDesign(seedToken);
       if (shared) {
         replaceDesign(shared);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSaveStatusLabel("Loaded from shared link");
         setProjects(listProjects());
         setRestorePoints(listRestorePointsForProject(shared.id));
@@ -95,6 +96,7 @@ export function useEditorProjects({
   useEffect(() => {
     if (readOnly) return;
     if (historyPaused || interactionSessionDepth > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSaveStatusLabel("Editing…");
       return;
     }

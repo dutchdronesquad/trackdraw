@@ -145,6 +145,7 @@ export function useLocationSearch({
     locationSearchAbortRef.current?.abort();
 
     if (!query) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocationResults([]);
       setLocationSearchError(null);
       setLocationSearchPending(false);

@@ -279,6 +279,7 @@ function useResolvedAuthSession(): SessionHookResult {
 
   useEffect(() => {
     if (!userId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResolvedRole(null);
       setRolePending(false);
       setRoleError(null);

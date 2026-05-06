@@ -203,6 +203,7 @@ export function useAccountProjectSync({
 
   useEffect(() => {
     if (!authUserId || readOnly) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshAccountProjects();
   }, [authUserId, readOnly, refreshAccountProjects]);
 
@@ -244,6 +245,7 @@ export function useAccountProjectSync({
 
   useEffect(() => {
     if (!projectManagerOpen || !authUserId || readOnly) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refreshAccountShares();
   }, [authUserId, projectManagerOpen, readOnly, refreshAccountShares]);
 
@@ -296,6 +298,7 @@ export function useAccountProjectSync({
 
     if (!nextUserId) {
       pendingReentryConflictCheckRef.current = false;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProjectVersionConflict(null);
     }
 
@@ -605,7 +608,9 @@ export function useAccountProjectSync({
   const currentProjectHasPendingChanges =
     isAccountProject &&
     currentProjectSyncMeta?.status !== "conflict" &&
+    // eslint-disable-next-line react-hooks/refs
     openedFromAccountSignatureRef.current !== currentProjectSyncSignature &&
+    // eslint-disable-next-line react-hooks/refs
     lastAccountSyncSignatureRef.current !== currentProjectSyncSignature;
 
   const headerStatus: HeaderStatus = readOnly

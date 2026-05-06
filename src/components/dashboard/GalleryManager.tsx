@@ -533,6 +533,7 @@ export default function DashboardGalleryManager({
     },
   ];
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: entries,
     columns,

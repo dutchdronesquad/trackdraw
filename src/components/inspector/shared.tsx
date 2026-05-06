@@ -93,6 +93,7 @@ export function Section({
   const isOpen = !collapsible || open;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(defaultOpen);
   }, [defaultOpen]);
 

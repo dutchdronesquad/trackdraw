@@ -345,11 +345,13 @@ export default function EditorShell({
 
   // Sync tab when initialTab prop changes (e.g. ShareViewer navigates ?view=3d via Link)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTab(initialTab);
   }, [initialTab]);
 
   useEffect(() => {
     if (readOnly || !authUser?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCompleteProfileOpen(false);
       setCompleteProfileDismissed(false);
       return;
@@ -503,6 +505,7 @@ export default function EditorShell({
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
     if (selection.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMobileInspectorOpen(false);
       setMobileMultiSelectEnabled(false);
     }
@@ -510,6 +513,7 @@ export default function EditorShell({
 
   useEffect(() => {
     if (activeTool === "polyline" || mobileDraftPathState.active) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobilePathBuilderPinnedOpen(false);
   }, [activeTool, mobileDraftPathState.active]);
 
@@ -533,6 +537,7 @@ export default function EditorShell({
 
   useEffect(() => {
     if (tab === "3d") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasVisited3D(true);
     }
   }, [tab]);

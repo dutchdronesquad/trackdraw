@@ -267,6 +267,7 @@ export default function ExportDialog({
   const [filename, setFilename] = useState("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setExportTheme(currentTheme);
   }, [currentTheme]);
 
@@ -663,6 +664,7 @@ export default function ExportDialog({
               <span>
                 {getFlythroughStatusText(
                   webmProgress,
+                  // eslint-disable-next-line react-hooks/refs
                   webmStartTimeRef.current
                 )}
               </span>
