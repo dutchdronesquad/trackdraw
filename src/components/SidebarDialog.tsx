@@ -133,7 +133,7 @@ export function SidebarDialog({
   if (isMobile) {
     const mobileNav = (
       <div className="border-border/30 px-4 pt-2.5 pb-0">
-        <div className="flex min-w-full items-center gap-1 overflow-x-auto [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
+        <div className="flex min-w-full [scrollbar-width:none] items-center gap-1 overflow-x-auto [-webkit-overflow-scrolling:touch]">
           {navItems.map((item) => (
             <NavButton
               key={item.id}
