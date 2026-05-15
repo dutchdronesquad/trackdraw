@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect } from "react";
 import { toast } from "sonner";
-import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync";
+import {
+  isAccountProjectSyncConflictError,
+  type ProjectSyncMeta,
+} from "@/components/editor/useAccountProjectSync";
 import type { TrackDesign } from "@/lib/types";
 
 type UseManualProjectSaveOptions = {
@@ -47,9 +50,13 @@ export function useManualProjectSave({
     try {
       await syncDesignToAccount(design, {
         updateStatusLabel: true,
-        forceCloudWrite: true,
       });
     } catch (error) {
+      if (isAccountProjectSyncConflictError(error)) {
+        setSaveStatusLabel("Review project version");
+        return;
+      }
+
       const message =
         error instanceof Error ? error.message : "Could not sync project";
       markProjectSyncFailed(design.id, message);

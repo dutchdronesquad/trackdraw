@@ -49,7 +49,7 @@ TrackDraw now has the first account foundation in place through sign-in, profile
 
 Supporting product-shape document:
 
-- `docs/pva/accounts-project-sync-pva.md`
+- `docs/research/accounts-project-sync.md`
 
 Why now:
 
@@ -104,6 +104,9 @@ Current shipped foundation:
 - Account-aware desktop and mobile shell entry points
 - Role-aware dashboard access and internal role management
 - Initial account-backed schema and project/share ownership groundwork
+- Account project sync detects stale cross-device saves and asks the user to review versions instead of silently overwriting the newer account copy
+- Failed account sync keeps the latest browser copy available locally and exposes retry/fallback status in the editor
+- Project Manager now makes account copies, browser copies, and device-only projects easier to tell apart
 
 ### 2. Account-Backed Follow-up (`Account-backed`)
 

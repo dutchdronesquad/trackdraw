@@ -3,7 +3,11 @@ import { z } from "zod";
 import { parseDesign } from "@/lib/track/design";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
-import { listProjectsForUser, saveProjectForUser } from "@/lib/server/projects";
+import {
+  listProjectsForUser,
+  ProjectVersionConflictError,
+  saveProjectForUser,
+} from "@/lib/server/projects";
 
 const saveProjectRequestSchema = z.object({
   design: z.unknown(),
@@ -11,6 +15,7 @@ const saveProjectRequestSchema = z.object({
   title: z.string().trim().min(1).optional(),
   description: z.string().optional(),
   forceWrite: z.boolean().optional(),
+  baseDesignUpdatedAt: z.string().min(1).nullable().optional(),
 });
 
 function unauthorizedResponse() {
@@ -77,10 +82,36 @@ export async function POST(request: Request) {
       title: body.title,
       description: body.description,
       forceWrite: body.forceWrite,
+      baseDesignUpdatedAt: body.baseDesignUpdatedAt,
     });
 
     return NextResponse.json({ ok: true, project });
   } catch (error) {
+    if (error instanceof ProjectVersionConflictError) {
+      const cloudProject = error.cloudProject;
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "project_version_conflict",
+          error: error.message,
+          conflict: {
+            projectId: error.projectId,
+            title: error.title,
+            localUpdatedAt: error.localUpdatedAt,
+            cloudUpdatedAt: error.cloudUpdatedAt,
+          },
+          project: {
+            id: cloudProject.id,
+            title: cloudProject.title,
+            updatedAt: cloudProject.updatedAt,
+            designUpdatedAt: cloudProject.designUpdatedAt,
+            shapeCount: cloudProject.shapeCount,
+          },
+        },
+        { status: 409 }
+      );
+    }
+
     const message =
       error instanceof z.ZodError
         ? "Invalid project payload"

@@ -26,6 +26,17 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
 
 ## Follow-up
 
+- [ ] Account project lifecycle polish (`Account-backed`)
+      Keep signed-in project continuity trustworthy while preserving local-first editing.
+  - [x] Stale save conflict protection
+        Detect when another device has changed the account copy and route the user into version review instead of silently overwriting newer account work.
+  - [x] Failed sync retry paths
+        Let users retry failed account sync directly from the editor status indicator and autosync failure toast.
+  - [x] Last-known-good local fallback
+        Save the latest browser copy locally when account sync fails and show that fallback state in project management.
+  - [x] Account and device project clarity
+        Clarify account copies, browser copies, and device-only projects in Project Manager without turning them into separate product concepts.
+
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The first experimental `.trk` export is already shipped. Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping and orientation edge cases.
   - [ ] Validate the current `.trk` export on more layouts

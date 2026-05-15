@@ -140,8 +140,20 @@ At minimum, users should be able to understand:
 - whether a project only exists on the current device
 - whether sync is in progress
 - whether the most recent sync failed
+- whether an account project needs version review because another device changed it first
 
 This should be shown in project-management surfaces, not necessarily overloaded into every editor control.
+
+First shipped sync-trust slice:
+
+- account project saves now send the last account version the browser knows about
+- stale cross-device saves return a version conflict instead of overwriting the newer account copy
+- the existing review flow lets users open the account version or keep the current browser copy as a separate local project
+- failed account sync can be retried from the editor status indicator and autosync failure toast
+- failed account sync immediately preserves the latest browser copy locally and shows that fallback in project management
+- Project Manager distinguishes account copies, browser copies linked to account, and device-only projects without exposing separate project types
+
+Remaining sync-trust work should focus on recovery depth rather than reopening the account model.
 
 ## Sign-Out Behavior
 
@@ -225,7 +237,7 @@ Once this recommendation is accepted, the next work should focus on depth within
 
 Priority follow-up:
 
-- tighten sync trust and recovery, especially around failed sync, conflict resolution, and last-known-good local fallback
+- continue sync trust and recovery, especially around richer failed-sync diagnostics and clearer recovery guidance after repeated failures
 - refine account project management so account-backed and device-only items stay understandable without feeling like two separate products
 - continue share lifecycle improvements around account ownership and project attachment
 

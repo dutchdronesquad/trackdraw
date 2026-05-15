@@ -77,6 +77,26 @@ describe("ProjectManagerAccountTab", () => {
     ).toBeTruthy();
   });
 
+  it("labels account projects as account copies", () => {
+    renderAccountTab({
+      status: "synced",
+      lastSyncedAt: "2026-04-20T10:30:00.000Z",
+    });
+
+    expect(screen.getByText(/account copy synced/)).toBeTruthy();
+  });
+
+  it("shows the local fallback when account sync failed after saving locally", () => {
+    renderAccountTab({
+      status: "failed",
+      error: "Network unavailable",
+      fallbackSavedAt: "2026-04-20T10:35:00.000Z",
+    });
+
+    expect(screen.getByText(/Latest browser copy saved locally/)).toBeTruthy();
+    expect(screen.queryByText("Network unavailable")).toBeNull();
+  });
+
   it("routes conflict actions to the conflict resolver instead of direct sync", async () => {
     const user = userEvent.setup();
     const onSyncProject = vi.fn();

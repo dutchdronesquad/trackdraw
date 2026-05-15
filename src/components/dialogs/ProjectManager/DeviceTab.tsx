@@ -81,6 +81,26 @@ export function ProjectManagerDeviceTab({
   const sorted = [...projects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
+  const accountProjectIds = new Set(accountProjects.map((p) => p.id));
+  const isAccountBackedBrowserCopy = (project: ProjectMeta) => {
+    const syncMeta = projectSyncMetaById[project.id];
+    return (
+      accountProjectIds.has(project.id) ||
+      syncMeta?.status === "synced" ||
+      syncMeta?.status === "pending" ||
+      syncMeta?.status === "syncing" ||
+      syncMeta?.status === "failed" ||
+      syncMeta?.status === "conflict"
+    );
+  };
+  const accountBackedBrowserCopies = sorted.filter(isAccountBackedBrowserCopy);
+  const deviceOnlyProjects = sorted.filter(
+    (project) => !isAccountBackedBrowserCopy(project)
+  );
+  const showProjectGroups =
+    Boolean(onSyncProject) &&
+    accountBackedBrowserCopies.length > 0 &&
+    deviceOnlyProjects.length > 0;
   const deletableOldProjectIds = sorted
     .filter((project) => project.id !== activeDesignId)
     .map((project) => project.id);
@@ -154,6 +174,9 @@ export function ProjectManagerDeviceTab({
     const hasConflict = syncMeta?.status === "conflict";
     const hasSyncFailure = syncMeta?.status === "failed";
     const hasPendingChanges = syncMeta?.status === "pending";
+    const fallbackLine = syncMeta?.fallbackSavedAt
+      ? `Latest browser copy saved locally ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
+      : null;
     const syncLabel = isSyncing
       ? "Syncing"
       : hasConflict
@@ -168,7 +191,7 @@ export function ProjectManagerDeviceTab({
     const syncDetail = hasConflict
       ? (syncMeta?.error ?? "This project changed on another device")
       : hasSyncFailure
-        ? (syncMeta?.error ?? "Could not sync this project")
+        ? (fallbackLine ?? syncMeta?.error ?? "Could not sync this project")
         : hasPendingChanges
           ? "Local changes are waiting to sync"
           : null;
@@ -177,10 +200,12 @@ export function ProjectManagerDeviceTab({
       : hasSyncFailure
         ? syncDetail
         : hasPendingChanges
-          ? `${itemLabel(p.shapeCount)} · waiting to sync`
+          ? `${itemLabel(p.shapeCount)} · browser copy waiting to sync`
           : isSynced && syncMeta?.lastSyncedAt
-            ? `${itemLabel(p.shapeCount)} · synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
-            : `${itemLabel(p.shapeCount)} · ${formatRelativeTime(p.updatedAt)}`;
+            ? `${itemLabel(p.shapeCount)} · browser copy synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
+            : isSynced
+              ? `${itemLabel(p.shapeCount)} · browser copy`
+              : `${itemLabel(p.shapeCount)} · only on this device · ${formatRelativeTime(p.updatedAt)}`;
 
     return (
       <div
@@ -553,7 +578,28 @@ export function ProjectManagerDeviceTab({
           </div>
         ) : null}
         {sorted.length > 0 ? (
-          sorted.map((p) => <ProjectCard key={p.id} p={p} />)
+          showProjectGroups ? (
+            <>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground px-1 text-[10px] font-semibold tracking-[0.12em] uppercase">
+                  Browser copies linked to account
+                </p>
+                {accountBackedBrowserCopies.map((p) => (
+                  <ProjectCard key={p.id} p={p} />
+                ))}
+              </div>
+              <div className="space-y-1.5 pt-2">
+                <p className="text-muted-foreground px-1 text-[10px] font-semibold tracking-[0.12em] uppercase">
+                  Only on this device
+                </p>
+                {deviceOnlyProjects.map((p) => (
+                  <ProjectCard key={p.id} p={p} />
+                ))}
+              </div>
+            </>
+          ) : (
+            sorted.map((p) => <ProjectCard key={p.id} p={p} />)
+          )
         ) : (
           <EmptyState
             icon={<FolderOpen className="size-6" />}

@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { createStarterLayoutDesign } from "@/lib/planning/starter-layouts";
 import { shouldShowStarterForDesign } from "@/components/editor/StarterFlow";
+import { isAccountProjectSyncConflictError } from "@/components/editor/useAccountProjectSync";
 import { useEditorHints } from "@/hooks/useEditorHints";
 import type { TrackDesign } from "@/lib/types";
 
@@ -81,6 +82,11 @@ export function useStarterExperience({
       void syncDesignToAccount(nextDesign, {
         updateStatusLabel: true,
       }).catch((error) => {
+        if (isAccountProjectSyncConflictError(error)) {
+          setSaveStatusLabel("Review project version");
+          return;
+        }
+
         markProjectSyncFailed(
           nextDesign.id,
           error instanceof Error ? error.message : "Cloud sync failed"

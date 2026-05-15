@@ -101,14 +101,19 @@ export function ProjectManagerAccountTab({
         const hasSyncFailure = syncMeta?.status === "failed";
         const hasPendingChanges = syncMeta?.status === "pending";
         const lastSyncedAt = syncMeta?.lastSyncedAt ?? proj.updatedAt;
+        const fallbackLine = syncMeta?.fallbackSavedAt
+          ? `Latest browser copy saved locally ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
+          : null;
         const metaLine = hasConflict
           ? (syncMeta?.error ??
             "This project changed on another device while you were signed out")
           : hasSyncFailure
-            ? (syncMeta?.error ?? "Could not sync the latest changes")
+            ? (fallbackLine ??
+              syncMeta?.error ??
+              "Could not sync the latest changes")
             : hasPendingChanges
-              ? `${itemLabel(proj.shapeCount)} · waiting to sync`
-              : `${itemLabel(proj.shapeCount)} · synced ${formatRelativeTime(lastSyncedAt)}`;
+              ? `${itemLabel(proj.shapeCount)} · account copy waiting to sync`
+              : `${itemLabel(proj.shapeCount)} · account copy synced ${formatRelativeTime(lastSyncedAt)}`;
 
         return (
           <div

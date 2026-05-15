@@ -9,6 +9,7 @@ import {
   listProjects,
   listRestorePointsForProject,
   loadProject,
+  saveLocalDraft,
   saveProject,
   type ProjectMeta,
   type RestorePointMeta,
@@ -46,6 +47,7 @@ export type ProjectSyncMeta = {
     | "failed"
     | "conflict";
   lastSyncedAt?: string | null;
+  fallbackSavedAt?: string | null;
   error?: string | null;
 };
 
@@ -55,6 +57,22 @@ export type ProjectVersionConflict = {
   localUpdatedAt: string;
   cloudUpdatedAt: string;
 };
+
+export class AccountProjectSyncConflictError extends Error {
+  readonly conflict: ProjectVersionConflict;
+
+  constructor(conflict: ProjectVersionConflict, message?: string) {
+    super(message ?? "Account project changed on another device.");
+    this.name = "AccountProjectSyncConflictError";
+    this.conflict = conflict;
+  }
+}
+
+export function isAccountProjectSyncConflictError(
+  error: unknown
+): error is AccountProjectSyncConflictError {
+  return error instanceof AccountProjectSyncConflictError;
+}
 
 type HeaderStatus = {
   label: string;
@@ -107,6 +125,7 @@ export function useAccountProjectSync({
   const [projectSyncMetaById, setProjectSyncMetaById] = useState<
     Record<string, ProjectSyncMeta>
   >({});
+  const accountProjectsRef = useRef<AccountProjectListItem[]>([]);
   const [projectVersionConflict, setProjectVersionConflict] =
     useState<ProjectVersionConflict | null>(null);
   const lastAccountSyncSignatureRef = useRef<string | null>(null);
@@ -124,6 +143,10 @@ export function useAccountProjectSync({
   useEffect(() => {
     designRef.current = design;
   }, [design]);
+
+  useEffect(() => {
+    accountProjectsRef.current = accountProjects;
+  }, [accountProjects]);
 
   const refreshAccountProjects = useCallback(
     async (options?: { force?: boolean }) => {
@@ -438,17 +461,30 @@ export function useAccountProjectSync({
   );
 
   const markProjectSyncFailed = useCallback(
-    (projectId: string, error: string) => {
+    (projectId: string, error: string, fallbackSavedAt?: string | null) => {
       setProjectSyncMetaById((previous) => ({
         ...previous,
         [projectId]: {
           status: "failed",
           lastSyncedAt: previous[projectId]?.lastSyncedAt ?? null,
+          fallbackSavedAt:
+            fallbackSavedAt ?? previous[projectId]?.fallbackSavedAt ?? null,
           error,
         },
       }));
     },
     []
+  );
+
+  const saveLocalSyncFallback = useCallback(
+    (targetDesign: TrackDesign) => {
+      const fallbackSavedAt = new Date().toISOString();
+      saveLocalDraft(targetDesign);
+      saveProject(targetDesign);
+      setProjects(listProjects());
+      return fallbackSavedAt;
+    },
+    [setProjects]
   );
 
   const syncDesignToAccount = useCallback(
@@ -470,6 +506,13 @@ export function useAccountProjectSync({
       if (syncInFlightByIdRef.current[targetDesign.id]) return;
 
       syncInFlightByIdRef.current[targetDesign.id] = true;
+      const knownAccountProject = accountProjectsRef.current.find(
+        (project) => project.id === targetDesign.id
+      );
+      const baseDesignUpdatedAt = options?.forceCloudWrite
+        ? undefined
+        : knownAccountProject?.designUpdatedAt;
+
       setProjectSyncMetaById((previous) => ({
         ...previous,
         [targetDesign.id]: {
@@ -488,12 +531,15 @@ export function useAccountProjectSync({
             title: targetDesign.title || "Untitled",
             design: targetDesign,
             forceWrite: options?.forceCloudWrite,
+            baseDesignUpdatedAt,
           }),
         });
 
         const payload = (await response.json()) as {
           ok: boolean;
+          code?: string;
           error?: string;
+          conflict?: ProjectVersionConflict;
           project?: {
             id: string;
             title: string;
@@ -502,6 +548,34 @@ export function useAccountProjectSync({
             shapeCount: number;
           };
         };
+
+        if (
+          response.status === 409 &&
+          !payload.ok &&
+          payload.code === "project_version_conflict" &&
+          payload.conflict
+        ) {
+          if (payload.project) {
+            upsertAccountProject(targetDesign, payload.project);
+          }
+          setProjectVersionConflict(payload.conflict);
+          setProjectSyncMetaById((previous) => ({
+            ...previous,
+            [targetDesign.id]: {
+              status: "conflict",
+              lastSyncedAt:
+                payload.project?.updatedAt ??
+                previous[targetDesign.id]?.lastSyncedAt ??
+                null,
+              error:
+                "Choose whether to open the account version or keep a local copy.",
+            },
+          }));
+          throw new AccountProjectSyncConflictError(
+            payload.conflict,
+            payload.error
+          );
+        }
 
         if (!response.ok || !payload.ok) {
           throw new Error(payload.error ?? "Failed to sync project");
@@ -532,6 +606,16 @@ export function useAccountProjectSync({
             description: `"${targetDesign.title || "Untitled"}" is now available from your account.`,
           });
         }
+      } catch (error) {
+        if (!isAccountProjectSyncConflictError(error)) {
+          const fallbackSavedAt = saveLocalSyncFallback(targetDesign);
+          markProjectSyncFailed(
+            targetDesign.id,
+            error instanceof Error ? error.message : "Could not sync project",
+            fallbackSavedAt
+          );
+        }
+        throw error;
       } finally {
         syncInFlightByIdRef.current[targetDesign.id] = false;
       }
@@ -540,6 +624,8 @@ export function useAccountProjectSync({
       cloudProjectsAvailable,
       cloudProjectsUnavailableReason,
       setSaveStatusLabel,
+      markProjectSyncFailed,
+      saveLocalSyncFallback,
       upsertAccountProject,
     ]
   );
@@ -577,6 +663,14 @@ export function useAccountProjectSync({
           updateStatusLabel: projectId === activeDesignId,
         });
       } catch (error) {
+        if (isAccountProjectSyncConflictError(error)) {
+          toast.message("Review project version", {
+            description:
+              "The account copy changed before this device could sync.",
+          });
+          return;
+        }
+
         markProjectSyncFailed(
           projectId,
           error instanceof Error ? error.message : "Could not sync project"
@@ -665,11 +759,26 @@ export function useAccountProjectSync({
       void syncDesignToAccount(designRef.current, {
         updateStatusLabel: true,
       }).catch((error) => {
+        if (isAccountProjectSyncConflictError(error)) {
+          setSaveStatusLabel("Review project version");
+          return;
+        }
+
         markProjectSyncFailed(
           currentDesignId,
           error instanceof Error ? error.message : "Cloud sync failed"
         );
         setSaveStatusLabel("Cloud sync failed");
+        toast.error("Could not sync project", {
+          description:
+            error instanceof Error ? error.message : "Please try again.",
+          action: {
+            label: "Retry",
+            onClick: () => {
+              void handleSyncProject(currentDesignId);
+            },
+          },
+        });
         console.error("[TrackDraw autosync]", error);
       });
     }, 4000);
@@ -683,6 +792,7 @@ export function useAccountProjectSync({
     currentProjectSyncSignature,
     historyPaused,
     interactionSessionDepth,
+    handleSyncProject,
     markProjectSyncFailed,
     readOnly,
     setSaveStatusLabel,

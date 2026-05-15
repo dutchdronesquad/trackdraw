@@ -185,4 +185,28 @@ describe("Header", () => {
     expect(undoMock).toHaveBeenCalledTimes(1);
     expect(redoMock).toHaveBeenCalledTimes(1);
   });
+
+  it("retries failed account sync from the status indicator", async () => {
+    const user = userEvent.setup();
+    const onRetrySync = vi.fn();
+
+    render(
+      <Header
+        tab="2d"
+        onTabChange={vi.fn()}
+        onShare={vi.fn()}
+        statusLabel="Sync failed"
+        statusTone="error"
+        onRetrySync={onRetrySync}
+      />
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Retry account sync (Sync failed)",
+      })
+    );
+
+    expect(onRetrySync).toHaveBeenCalledTimes(1);
+  });
 });

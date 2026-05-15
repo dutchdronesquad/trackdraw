@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 
+import type React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -19,18 +20,34 @@ const project: ProjectMeta = {
   shapeCount: 4,
 };
 
-function renderDeviceTab() {
+const localOnlyProject: ProjectMeta = {
+  id: "local-1",
+  title: "Practice draft",
+  createdAt: "2026-04-19T10:00:00.000Z",
+  updatedAt: "2026-04-19T10:30:00.000Z",
+  shapeCount: 2,
+};
+
+type DeviceTabProps = React.ComponentProps<typeof ProjectManagerDeviceTab>;
+
+function renderDeviceTab(
+  options: {
+    projectSyncMetaById?: DeviceTabProps["projectSyncMetaById"];
+    projects?: ProjectMeta[];
+    accountProjects?: DeviceTabProps["accountProjects"];
+  } = {}
+) {
   return render(
     <TooltipProvider>
       <ProjectManagerDeviceTab
-        accountProjects={[]}
+        accountProjects={options.accountProjects ?? []}
         onDeleteProject={vi.fn()}
         onExportProject={vi.fn()}
         onOpenChange={vi.fn()}
         onRenameProject={vi.fn()}
         onSyncProject={vi.fn()}
-        projectSyncMetaById={{}}
-        projects={[project]}
+        projectSyncMetaById={options.projectSyncMetaById ?? {}}
+        projects={options.projects ?? [project]}
       />
     </TooltipProvider>
   );
@@ -67,5 +84,45 @@ describe("ProjectManagerDeviceTab", () => {
 
     expect(screen.getByText("Delete local project?")).toBeTruthy();
     expect(screen.getByText("Removes this browser copy.")).toBeTruthy();
+  });
+
+  it("shows local fallback status after failed account sync", () => {
+    renderDeviceTab({
+      projectSyncMetaById: {
+        [project.id]: {
+          status: "failed",
+          error: "Network unavailable",
+          fallbackSavedAt: "2026-04-20T10:35:00.000Z",
+        },
+      },
+    });
+
+    expect(screen.getByText(/Latest browser copy saved locally/)).toBeTruthy();
+    expect(screen.queryByText("Network unavailable")).toBeNull();
+  });
+
+  it("separates account-linked browser copies from device-only projects", () => {
+    renderDeviceTab({
+      projects: [project, localOnlyProject],
+      accountProjects: [
+        {
+          id: project.id,
+          title: project.title,
+          updatedAt: project.updatedAt,
+          shapeCount: project.shapeCount,
+        },
+      ],
+      projectSyncMetaById: {
+        [project.id]: {
+          status: "synced",
+          lastSyncedAt: "2026-04-20T10:30:00.000Z",
+        },
+      },
+    });
+
+    expect(screen.getByText("Browser copies linked to account")).toBeTruthy();
+    expect(screen.getByText("Only on this device")).toBeTruthy();
+    expect(screen.getByText(/browser copy synced/)).toBeTruthy();
+    expect(screen.getByText(/only on this device/)).toBeTruthy();
   });
 });

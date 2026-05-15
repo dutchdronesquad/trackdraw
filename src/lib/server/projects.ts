@@ -42,7 +42,32 @@ type SaveProjectOptions = {
   title?: string;
   description?: string | null;
   forceWrite?: boolean;
+  baseDesignUpdatedAt?: string | null;
 };
+
+export class ProjectVersionConflictError extends Error {
+  readonly projectId: string;
+  readonly title: string;
+  readonly localUpdatedAt: string;
+  readonly cloudUpdatedAt: string;
+  readonly cloudProject: StoredProject;
+
+  constructor(options: {
+    projectId: string;
+    title: string;
+    localUpdatedAt: string;
+    cloudUpdatedAt: string;
+    cloudProject: StoredProject;
+  }) {
+    super("Account project changed on another device.");
+    this.name = "ProjectVersionConflictError";
+    this.projectId = options.projectId;
+    this.title = options.title;
+    this.localUpdatedAt = options.localUpdatedAt;
+    this.cloudUpdatedAt = options.cloudUpdatedAt;
+    this.cloudProject = options.cloudProject;
+  }
+}
 
 function mapProjectRow(row: ProjectRow): StoredProject {
   const rawDesign =
@@ -89,11 +114,23 @@ export async function saveProjectForUser(
   const existingProject = options.projectId
     ? await getProjectForUser(projectId, ownerUserId)
     : null;
+  const existingSerializedJson = existingProject
+    ? JSON.stringify(serializeDesign(existingProject.design))
+    : null;
 
   if (existingProject && !options.forceWrite) {
-    const existingSerializedJson = JSON.stringify(
-      serializeDesign(existingProject.design)
-    );
+    if (
+      options.baseDesignUpdatedAt &&
+      existingProject.designUpdatedAt !== options.baseDesignUpdatedAt
+    ) {
+      throw new ProjectVersionConflictError({
+        projectId,
+        title,
+        localUpdatedAt: normalized.updatedAt,
+        cloudUpdatedAt: existingProject.designUpdatedAt,
+        cloudProject: existingProject,
+      });
+    }
 
     if (existingSerializedJson === serializedJson) {
       return existingProject;
@@ -129,6 +166,7 @@ export async function saveProjectForUser(
           updated_at = excluded.updated_at,
           archived_at = null
         where projects.owner_user_id = excluded.owner_user_id
+          and (? = 1 or projects.design_json = ?)
       `
     )
     .bind(
@@ -141,13 +179,28 @@ export async function saveProjectForUser(
       normalized.field.height,
       shapeCount,
       now,
-      now
+      now,
+      options.forceWrite || !existingProject ? 1 : 0,
+      existingSerializedJson ?? ""
     )
     .run();
 
   const saved = await getProjectForUser(projectId, ownerUserId);
   if (!saved) {
     throw new Error("Failed to load saved cloud project");
+  }
+
+  if (!options.forceWrite) {
+    const savedSerializedJson = JSON.stringify(serializeDesign(saved.design));
+    if (savedSerializedJson !== serializedJson) {
+      throw new ProjectVersionConflictError({
+        projectId,
+        title,
+        localUpdatedAt: normalized.updatedAt,
+        cloudUpdatedAt: saved.designUpdatedAt,
+        cloudProject: saved,
+      });
+    }
   }
 
   return saved;

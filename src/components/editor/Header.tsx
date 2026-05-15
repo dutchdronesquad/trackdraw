@@ -92,6 +92,7 @@ interface HeaderProps {
   lastSnapshotLabel?: string | null;
   statusLabel?: string;
   statusTone?: "default" | "pending" | "syncing" | "success" | "error";
+  onRetrySync?: () => void;
   selectionLabel?: string;
   showObstacleNumbers?: boolean;
   onToggleObstacleNumbers?: () => void;
@@ -114,6 +115,7 @@ export default function Header({
   lastSnapshotLabel,
   statusLabel,
   statusTone = "default",
+  onRetrySync,
   showObstacleNumbers = false,
   onToggleObstacleNumbers,
 }: HeaderProps) {
@@ -166,6 +168,7 @@ export default function Header({
         : statusTone === "syncing"
           ? "Syncing"
           : "Synced";
+  const canRetryStatus = statusTone === "error" && Boolean(onRetrySync);
   const headerActionClass =
     "text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 cursor-pointer gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5";
 
@@ -390,8 +393,11 @@ export default function Header({
                   <div className="bg-border/80 mx-1 hidden h-4 w-px lg:block" />
                   <Tooltip>
                     <TooltipTrigger
+                      onClick={canRetryStatus ? onRetrySync : undefined}
                       className={cn(
-                        "hidden items-center gap-1 text-[10px] lg:inline-flex",
+                        "hidden items-center gap-1 rounded-md px-1 py-0.5 text-[10px] transition-colors lg:inline-flex",
+                        canRetryStatus &&
+                          "hover:bg-destructive/10 cursor-pointer",
                         statusTone === "error"
                           ? "text-destructive/85"
                           : statusTone === "pending"
@@ -402,7 +408,11 @@ export default function Header({
                                 ? "text-foreground/65"
                                 : "text-muted-foreground/80"
                       )}
-                      aria-label={statusLabel}
+                      aria-label={
+                        canRetryStatus
+                          ? `Retry account sync (${statusLabel})`
+                          : statusLabel
+                      }
                     >
                       {statusIcon}
                       <span>{statusWord}</span>

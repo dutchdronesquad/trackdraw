@@ -129,12 +129,12 @@ export default function ProjectManagerDialog({
     device: {
       label: "On this device",
       description:
-        "Projects saved in this browser. Open them here and bring them into account sync when needed.",
+        "Browser copies saved on this device. Synced projects can also appear in Account.",
     },
     account: {
       label: "Account projects",
       description:
-        "Projects already synced to your account and available on your signed-in devices.",
+        "Account copies available on your signed-in devices. Open one here to refresh this browser.",
     },
     restore: {
       label: "Snapshots",

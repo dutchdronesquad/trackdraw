@@ -648,6 +648,11 @@ export default function EditorShell({
               lastSnapshotLabel={lastSnapshotLabel}
               statusLabel={headerStatus?.label}
               statusTone={headerStatus?.tone}
+              onRetrySync={
+                isAccountProject && currentProjectSyncMeta?.status === "failed"
+                  ? () => void handleSyncProject(design.id)
+                  : undefined
+              }
               showObstacleNumbers={showObstacleNumbers}
               onToggleObstacleNumbers={() =>
                 setShowObstacleNumbers((current) => !current)
