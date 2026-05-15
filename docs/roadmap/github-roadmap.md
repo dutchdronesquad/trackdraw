@@ -26,7 +26,7 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
 
 ## Follow-up
 
-- [ ] Account project lifecycle polish (`Account-backed`)
+- [x] Account project lifecycle polish (`Account-backed`)
       Keep signed-in project continuity trustworthy while preserving local-first editing.
   - [x] Stale save conflict protection
         Detect when another device has changed the account copy and route the user into version review instead of silently overwriting newer account work.
