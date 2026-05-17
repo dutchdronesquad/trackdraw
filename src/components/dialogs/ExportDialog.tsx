@@ -6,6 +6,7 @@ import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { buildStoredSharePath } from "@/lib/share";
 import { serializeDesign } from "@/lib/track/design";
+import { downloadJsonFile } from "@/lib/export/download-json";
 import { useEditor } from "@/store/editor";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 import { cn } from "@/lib/utils";
@@ -230,18 +231,6 @@ function MobileFormatRow({
       )}
     </button>
   );
-}
-
-function downloadJsonFile(filename: string, payload: unknown) {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: "application/json",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 export default function ExportDialog({

@@ -31,6 +31,7 @@ import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
 import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
 import { type EditorTool } from "@/lib/editor-tools";
 import { loadProject } from "@/lib/projects";
+import { downloadJsonFile } from "@/lib/export/download-json";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
@@ -52,6 +53,7 @@ import {
 } from "@/store/selectors";
 import { authClient } from "@/lib/auth-client";
 import { Box, Route, X } from "lucide-react";
+import { toast } from "sonner";
 
 function createFirstUseBlankDesign() {
   const design = createDefaultDesign();
@@ -1220,24 +1222,31 @@ export default function EditorShell({
             onDeleteProjects={handleDeleteProjects}
             onRenameProject={handleRenameProject}
             onExportProject={(projectId) => {
-              const exportDesign =
-                projectId === design.id ? design : loadProject(projectId);
-              if (!exportDesign) return;
-              const serialized = serializeDesign(exportDesign);
+              try {
+                const exportDesign =
+                  projectId === design.id ? design : loadProject(projectId);
+                if (!exportDesign) {
+                  toast.error("Export failed", {
+                    description:
+                      "TrackDraw could not load this local project. Open it first or choose another saved project.",
+                  });
+                  return;
+                }
 
-              const baseName = (exportDesign.title.trim() || "track").replace(
-                /[^a-z0-9-_]+/gi,
-                "_"
-              );
-              const blob = new Blob([JSON.stringify(serialized, null, 2)], {
-                type: "application/json",
-              });
-              const url = URL.createObjectURL(blob);
-              const anchor = document.createElement("a");
-              anchor.href = url;
-              anchor.download = `${baseName}.json`;
-              anchor.click();
-              URL.revokeObjectURL(url);
+                const serialized = serializeDesign(exportDesign);
+                const baseName = (
+                  exportDesign.title.trim() || "track"
+                ).replace(/[^a-z0-9-_]+/gi, "_");
+
+                downloadJsonFile(`${baseName}.json`, serialized);
+                toast.success("Project JSON exported");
+              } catch (error) {
+                const message =
+                  error instanceof Error ? error.message : "Export failed";
+                toast.error("Export failed", {
+                  description: message,
+                });
+              }
             }}
             onRestorePoint={handleRestorePoint}
             onDeleteRestorePoint={handleDeleteRestorePoint}

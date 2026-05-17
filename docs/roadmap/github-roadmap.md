@@ -22,7 +22,7 @@ Labels used below:
 
 ## Current Priority
 
-The v1.7.0 release-sized work is archived below. The REST API, live race overlay preparation, UI/UX polish, and stability pass are now complete. The next TrackDraw priority is race-day workflow depth and account-backed project lifecycle follow-up.
+The v1.7.0 release-sized work is archived below. The REST API, live race overlay preparation, UI/UX polish, and stability pass are now complete. The next TrackDraw priority is race-day workflow depth, editor reliability, and account-backed project lifecycle follow-up.
 
 ## Follow-up
 
@@ -33,9 +33,28 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
   - [x] Failed sync retry paths
         Let users retry failed account sync directly from the editor status indicator and autosync failure toast.
   - [x] Last-known-good local fallback
-        Save the latest browser copy locally when account sync fails and show that fallback state in project management.
+        Save the latest local copy when account sync fails and show that fallback state in project management.
   - [x] Account and device project clarity
-        Clarify account copies, browser copies, and device-only projects in Project Manager without turning them into separate product concepts.
+        Clarify account copies, local copies, and device-only projects in Project Manager without turning them into separate product concepts.
+
+- [ ] Usability and reliability pass (`No account required`, `Account-backed`)
+      Harden shipped editor, mobile, export, share, and recovery workflows before starting another large product surface.
+  - [ ] Editor recovery and failure states
+        Improve autosave, import, export, share, account-sync, and runtime failure states so users know what happened and what to do next.
+    - [x] Local autosave failure state
+          Surface local persistence failures with a retry path instead of silently ignoring storage/quota errors.
+    - [x] Import failure clarity
+          Differentiate invalid JSON, wrong file type, unreadable files, and non-TrackDraw project data with visible recovery guidance.
+    - [x] Project JSON export feedback
+          Reuse one JSON download path and report Project Manager export failures instead of silently doing nothing when local project data cannot be loaded.
+  - [ ] Mobile editor ergonomics pass
+        Review Project Manager, inspector drawers, path builder, multi-select, map reference controls, and app/menu actions for venue-side use.
+  - [ ] Selection and transform reliability pass
+        Add targeted fixes and regression coverage for locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, and undo/redo.
+  - [ ] Export/share confidence pass
+        Clarify what each export/share output includes, what is intentionally excluded, and which limitations matter for race-day handoff.
+  - [ ] Performance and large-layout stability
+        Stress-test larger layouts with dense obstacles, long routes, map references, 3D preview, and PDF/export, then apply targeted performance fixes.
 
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The first experimental `.trk` export is already shipped. Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping and orientation edge cases.

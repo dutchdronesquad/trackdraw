@@ -93,13 +93,13 @@ export function ProjectManagerDeviceTab({
       syncMeta?.status === "conflict"
     );
   };
-  const accountBackedBrowserCopies = sorted.filter(isAccountBackedBrowserCopy);
+  const accountLinkedLocalCopies = sorted.filter(isAccountBackedBrowserCopy);
   const deviceOnlyProjects = sorted.filter(
     (project) => !isAccountBackedBrowserCopy(project)
   );
   const showProjectGroups =
     Boolean(onSyncProject) &&
-    accountBackedBrowserCopies.length > 0 &&
+    accountLinkedLocalCopies.length > 0 &&
     deviceOnlyProjects.length > 0;
   const deletableOldProjectIds = sorted
     .filter((project) => project.id !== activeDesignId)
@@ -175,7 +175,7 @@ export function ProjectManagerDeviceTab({
     const hasSyncFailure = syncMeta?.status === "failed";
     const hasPendingChanges = syncMeta?.status === "pending";
     const fallbackLine = syncMeta?.fallbackSavedAt
-      ? `Latest browser copy saved locally ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
+      ? `Latest local copy saved ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
       : null;
     const syncLabel = isSyncing
       ? "Syncing"
@@ -200,11 +200,11 @@ export function ProjectManagerDeviceTab({
       : hasSyncFailure
         ? syncDetail
         : hasPendingChanges
-          ? `${itemLabel(p.shapeCount)} · browser copy waiting to sync`
+          ? `${itemLabel(p.shapeCount)} · local copy waiting to sync`
           : isSynced && syncMeta?.lastSyncedAt
-            ? `${itemLabel(p.shapeCount)} · browser copy synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
+            ? `${itemLabel(p.shapeCount)} · local copy synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
             : isSynced
-              ? `${itemLabel(p.shapeCount)} · browser copy`
+              ? `${itemLabel(p.shapeCount)} · local copy`
               : `${itemLabel(p.shapeCount)} · only on this device · ${formatRelativeTime(p.updatedAt)}`;
 
     return (
@@ -424,7 +424,7 @@ export function ProjectManagerDeviceTab({
                   Delete local project?
                 </p>
                 <p className="text-muted-foreground truncate text-[11px]">
-                  Removes this browser copy.
+                  Removes this local copy.
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
@@ -582,9 +582,9 @@ export function ProjectManagerDeviceTab({
             <>
               <div className="space-y-1.5">
                 <p className="text-muted-foreground px-1 text-[10px] font-semibold tracking-[0.12em] uppercase">
-                  Browser copies linked to account
+                  Local copies linked to account
                 </p>
-                {accountBackedBrowserCopies.map((p) => (
+                {accountLinkedLocalCopies.map((p) => (
                   <ProjectCard key={p.id} p={p} />
                 ))}
               </div>

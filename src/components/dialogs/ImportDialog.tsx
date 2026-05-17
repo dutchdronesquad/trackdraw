@@ -8,6 +8,7 @@ import { parseDesign } from "@/lib/track/design";
 import { useTrackActions } from "@/store/actions";
 import { cn } from "@/lib/utils";
 import { Upload, FileJson, AlertCircle, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import type { TrackDesign } from "@/lib/types";
 
 interface ImportDialogProps {
@@ -18,6 +19,10 @@ interface ImportDialogProps {
 }
 
 type ParsedFile = { design: TrackDesign; shapeCount: number };
+
+function reportImportError(message: string, description: string) {
+  toast.error(message, { description });
+}
 
 export default function ImportDialog({
   open,
@@ -38,29 +43,60 @@ export default function ImportDialog({
   };
 
   const tryParse = useCallback((text: string) => {
+    let data: unknown;
+
     try {
-      const data = JSON.parse(text);
+      data = JSON.parse(text);
+    } catch {
+      const message = "Invalid JSON file.";
+      setError(message);
+      setParsed(null);
+      reportImportError(
+        "Import failed",
+        "TrackDraw could not read this JSON file. Check the file and try again."
+      );
+      return;
+    }
+
+    try {
       const design = parseDesign(data);
-      if (!design) throw new Error();
+      if (!design) {
+        throw new Error("Invalid TrackDraw project");
+      }
       setParsed({
         design,
         shapeCount: design.shapeOrder.length,
       });
       setError(null);
     } catch {
-      setError("Invalid file — this doesn't look like a TrackDraw project.");
+      const message = "This does not look like a TrackDraw project.";
+      setError(message);
       setParsed(null);
+      reportImportError(
+        "Import failed",
+        "Choose a JSON project file exported from TrackDraw."
+      );
     }
   }, []);
 
   const handleFile = useCallback(
     (file: File) => {
       if (!file.name.endsWith(".json")) {
-        setError("Only .json files are supported.");
+        setError("Only TrackDraw JSON project files are supported.");
         setParsed(null);
+        toast.error("Import failed", {
+          description: "Choose a .json file exported from TrackDraw.",
+        });
         return;
       }
-      file.text().then(tryParse);
+      file.text().then(tryParse, () => {
+        setError("TrackDraw could not read this file.");
+        setParsed(null);
+        toast.error("Import failed", {
+          description:
+            "TrackDraw could not read the selected file. Try again or choose another backup.",
+        });
+      });
     },
     [tryParse]
   );
@@ -134,7 +170,10 @@ export default function ImportDialog({
           </div>
 
           {error && (
-            <div className="bg-destructive/10 border-destructive/20 mt-3 flex items-start gap-2 rounded-lg border px-3 py-2.5">
+            <div
+              role="alert"
+              className="bg-destructive/10 border-destructive/20 mt-3 flex items-start gap-2 rounded-lg border px-3 py-2.5"
+            >
               <AlertCircle className="text-destructive mt-0.5 size-4 shrink-0" />
               <p className="text-destructive text-xs">{error}</p>
             </div>

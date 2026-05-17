@@ -148,10 +148,10 @@ First shipped sync-trust slice:
 
 - account project saves now send the last account version the browser knows about
 - stale cross-device saves return a version conflict instead of overwriting the newer account copy
-- the existing review flow lets users open the account version or keep the current browser copy as a separate local project
+- the existing review flow lets users open the account version or keep the current local copy as a separate project
 - failed account sync can be retried from the editor status indicator and autosync failure toast
-- failed account sync immediately preserves the latest browser copy locally and shows that fallback in project management
-- Project Manager distinguishes account copies, browser copies linked to account, and device-only projects without exposing separate project types
+- failed account sync immediately preserves the latest local copy and shows that fallback in project management
+- Project Manager distinguishes account copies, local copies linked to account, and device-only projects without exposing separate project types
 
 Remaining sync-trust work should focus on recovery depth rather than reopening the account model.
 
@@ -228,7 +228,7 @@ The technical recommendation should stay aligned with the product model:
 - Better Auth remains the current authentication layer
 - email magic-link stays the default sign-in method for now
 - passkeys are a reasonable follow-up improvement, not a prerequisite for the product model
-- browser-local persistence remains required even for signed-in sessions
+- device-local persistence remains required even for signed-in sessions
 - sync logic should treat the server copy as canonical for signed-in users, while preserving local resilience and explicit conflict handling
 
 ## Recommended Next Slices After This Decision

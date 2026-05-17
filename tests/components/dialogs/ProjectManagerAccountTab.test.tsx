@@ -93,7 +93,7 @@ describe("ProjectManagerAccountTab", () => {
       fallbackSavedAt: "2026-04-20T10:35:00.000Z",
     });
 
-    expect(screen.getByText(/Latest browser copy saved locally/)).toBeTruthy();
+    expect(screen.getByText(/Latest local copy saved/)).toBeTruthy();
     expect(screen.queryByText("Network unavailable")).toBeNull();
   });
 

@@ -129,7 +129,7 @@ export default function ProjectManagerDialog({
     device: {
       label: "On this device",
       description:
-        "Browser copies saved on this device. Synced projects can also appear in Account.",
+        "Local copies saved on this device. Synced projects can also appear in Account.",
     },
     account: {
       label: "Account projects",

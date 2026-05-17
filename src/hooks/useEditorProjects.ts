@@ -15,6 +15,7 @@ import {
   renameProject,
   saveLocalDraft,
   saveProject,
+  saveProjectWithResult,
   type ProjectMeta,
   type RestorePointMeta,
 } from "@/lib/projects";
@@ -23,6 +24,19 @@ import { recordPerfSample } from "@/lib/perf";
 import { useEditor } from "@/store/editor";
 import { toast } from "sonner";
 import type { TrackDesign } from "@/lib/types";
+
+function formatLocalSaveTime(date = new Date()) {
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function toLocalSaveError(error: unknown) {
+  if (error instanceof Error) return error;
+  if (typeof error === "string") return new Error(error);
+  return new Error("Could not save local project data.");
+}
 
 export function useEditorProjects({
   readOnly,
@@ -49,6 +63,55 @@ export function useEditorProjects({
     null
   );
   const [initialized, setInitialized] = useState(false);
+
+  const saveDesignLocally = useCallback((targetDesign: TrackDesign) => {
+    const startedAt = performance.now();
+    const draftResult = saveLocalDraft(targetDesign);
+    const projectResult = saveProjectWithResult(targetDesign);
+
+    if (!draftResult.ok || !projectResult.ok) {
+      throw toLocalSaveError(draftResult.error ?? projectResult.error);
+    }
+
+    setProjects(listProjects());
+    recordPerfSample("autosave:localStorage", performance.now() - startedAt);
+    setSaveStatusLabel(`Saved locally at ${formatLocalSaveTime()}`);
+  }, []);
+
+  const reportLocalSaveFailure = useCallback(
+    (targetDesign: TrackDesign, error: unknown) => {
+      const localSaveError = toLocalSaveError(error);
+
+      setSaveStatusLabel("Local save failed");
+      console.error("[TrackDraw local autosave]", localSaveError);
+      toast.error("Local save failed", {
+        description:
+          "TrackDraw could not save the latest local copy. Retry, or export a JSON backup if this keeps happening.",
+        action: {
+          label: "Retry",
+          onClick: () => {
+            try {
+              saveDesignLocally(targetDesign);
+              toast.success("Local save recovered", {
+                description: "The latest local copy was saved.",
+              });
+            } catch (retryError) {
+              setSaveStatusLabel("Local save failed");
+              console.error(
+                "[TrackDraw local autosave retry]",
+                toLocalSaveError(retryError)
+              );
+              toast.error("Local save still failing", {
+                description:
+                  "Export a JSON backup before making more changes if storage keeps failing.",
+              });
+            }
+          },
+        },
+      });
+    },
+    [saveDesignLocally]
+  );
 
   // Load persisted design on mount
   useEffect(() => {
@@ -104,28 +167,22 @@ export function useEditorProjects({
     const timeoutId = window.setTimeout(() => {
       try {
         if (hasMeaningfulProjectContent(design)) {
-          const startedAt = performance.now();
-          saveLocalDraft(design);
-          saveProject(design);
-          setProjects(listProjects());
-          recordPerfSample(
-            "autosave:localStorage",
-            performance.now() - startedAt
-          );
-          setSaveStatusLabel(
-            `Saved locally at ${new Intl.DateTimeFormat(undefined, {
-              hour: "2-digit",
-              minute: "2-digit",
-            }).format(new Date())}`
-          );
+          saveDesignLocally(design);
         }
-      } catch {
-        /* ignore */
+      } catch (error) {
+        reportLocalSaveFailure(design, error);
       }
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [design, historyPaused, interactionSessionDepth, readOnly]);
+  }, [
+    design,
+    historyPaused,
+    interactionSessionDepth,
+    readOnly,
+    reportLocalSaveFailure,
+    saveDesignLocally,
+  ]);
 
   // Periodic restore points — every 5 min if the design changed
   useEffect(() => {

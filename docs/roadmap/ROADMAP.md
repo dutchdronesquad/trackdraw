@@ -16,9 +16,10 @@ TrackDraw is now strong in these areas:
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 - Account-backed REST API with API key management and a live race overlay data endpoint
 
-The most useful next product move is deepening the race-day workflow and refining the account-backed project model:
+The most useful next product move is deepening the race-day workflow, keeping the editor dependable, and refining the account-backed project model:
 
 - Race director page with pilot line, timing/start box placement, and ops notes
+- Usability and reliability pass focused on recovery states, mobile ergonomics, editor interactions, exports, sharing, and larger layouts
 - Share version history so owners can update a published track without surprising existing links
 - Gallery collections for curated browsing beyond the current featured bucket
 
@@ -105,10 +106,47 @@ Current shipped foundation:
 - Role-aware dashboard access and internal role management
 - Initial account-backed schema and project/share ownership groundwork
 - Account project sync detects stale cross-device saves and asks the user to review versions instead of silently overwriting the newer account copy
-- Failed account sync keeps the latest browser copy available locally and exposes retry/fallback status in the editor
-- Project Manager now makes account copies, browser copies, and device-only projects easier to tell apart
+- Failed account sync keeps the latest local copy available and exposes retry/fallback status in the editor
+- Project Manager now makes account copies, local copies, and device-only projects easier to tell apart
 
-### 2. Account-Backed Follow-up (`Account-backed`)
+### 2. Usability And Reliability Pass (`No account required`, `Account-backed`)
+
+TrackDraw is feature-rich enough that small clarity and stability improvements can have more product value than starting another large surface. This track should harden the existing editor, share, export, mobile, and account flows without redesigning the product.
+
+Why now:
+
+- Core editing, sharing, exports, accounts, gallery publishing, embeds, API access, and Race Pack flows now overlap in normal usage
+- The account project lifecycle polish reduced a major source of cross-device ambiguity, but the same standard should apply to other failure and recovery states
+- Mobile is a supported venue-side workflow, so small friction in drawers, touch targets, labels, and recovery copy has real race-day cost
+- Export and share confidence matters because TrackDraw is increasingly used for handoff, briefing, publishing, and integrations
+
+Focus:
+
+- Improve editor recovery and failure states so autosave, import, export, share, account sync, and runtime errors explain what happened and what the user can do next
+- Run a mobile editor ergonomics pass across Project Manager, inspector drawers, path builder, multi-select, map reference controls, and app/menu actions
+- Harden selection and transform behavior around locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, and undo/redo
+- Improve export and share confidence by clarifying what each output includes, what is intentionally excluded, and which limitations matter for race-day use
+- Stress-test larger layouts and dense projects with map references, 3D preview, PDF/export, and longer routes, then make targeted performance or debounce fixes
+- Add regression tests where the risk is high enough: import/export, autosave/recovery, account sync failures, share publish/revoke, mobile project flows, and selection transforms
+
+Important boundary:
+
+- This should be a quality pass over shipped workflows, not a broad redesign
+- Do not use this track to introduce new editing modes, social features, or simulation-heavy analysis
+- Keep changes small enough that import/export, autosave, share publish/read, read-only viewing, and mobile editor flows can be validated after each slice
+
+Suggested first slices:
+
+- Editor recovery and failure states
+  - Started with a local autosave failure state that reports storage/quota failures and offers retry before users continue editing blindly
+  - Added clearer import failure states for invalid JSON, wrong file types, unreadable files, and non-TrackDraw project data
+  - Added shared JSON export feedback so Project Manager export failures are reported instead of silently ignored
+- Mobile editor ergonomics pass
+- Selection and transform reliability pass
+- Export/share confidence pass
+- Performance and large-layout stability
+
+### 3. Account-Backed Follow-up (`Account-backed`)
 
 These items are now follow-up work rather than intentionally blocked. The first ownership model is clear enough that they can move forward when priority allows.
 
@@ -168,7 +206,7 @@ Focus:
 - Surface selected collections on `/gallery` while keeping every card destination on `/share/[token]`
 - Keep collection pages or deep collection routing out of the first slice unless the gallery needs it later
 
-### 3. Race-Day Follow-up (`No account required`, `Account-backed`)
+### 4. Race-Day Follow-up (`No account required`, `Account-backed`)
 
 TrackDraw now has a real Race Pack, numbering handoff, shared-view QR codes, and explicit timing markers. The immediate QR/timing-marker slice is archived with v1.6.0; the remaining work here is broader race-day operations follow-up.
 
@@ -187,7 +225,7 @@ Important boundary:
 - A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
 - Live race overlay rendering, OBS presentation, RotorHazard event handling, and position estimation should stay in `rh-stream-overlays`, not in TrackDraw
 
-### 3. Real-Time Collaboration Evaluation (`Research`)
+### 5. Real-Time Collaboration Evaluation (`Research`)
 
 Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
 
@@ -199,7 +237,7 @@ Suggested first slices:
 - Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
 - Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
 
-### 4. Backlog And Research Tracks
+### 6. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 

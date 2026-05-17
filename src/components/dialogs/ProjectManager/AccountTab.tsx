@@ -102,7 +102,7 @@ export function ProjectManagerAccountTab({
         const hasPendingChanges = syncMeta?.status === "pending";
         const lastSyncedAt = syncMeta?.lastSyncedAt ?? proj.updatedAt;
         const fallbackLine = syncMeta?.fallbackSavedAt
-          ? `Latest browser copy saved locally ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
+          ? `Latest local copy saved ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
           : null;
         const metaLine = hasConflict
           ? (syncMeta?.error ??

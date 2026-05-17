@@ -74,7 +74,7 @@ describe("ProjectManagerDeviceTab", () => {
     }
   });
 
-  it("clarifies that desktop delete removes the local browser copy", async () => {
+  it("clarifies that desktop delete removes the local copy", async () => {
     const user = userEvent.setup();
     renderDeviceTab();
 
@@ -83,7 +83,7 @@ describe("ProjectManagerDeviceTab", () => {
     );
 
     expect(screen.getByText("Delete local project?")).toBeTruthy();
-    expect(screen.getByText("Removes this browser copy.")).toBeTruthy();
+    expect(screen.getByText("Removes this local copy.")).toBeTruthy();
   });
 
   it("shows local fallback status after failed account sync", () => {
@@ -97,11 +97,11 @@ describe("ProjectManagerDeviceTab", () => {
       },
     });
 
-    expect(screen.getByText(/Latest browser copy saved locally/)).toBeTruthy();
+    expect(screen.getByText(/Latest local copy saved/)).toBeTruthy();
     expect(screen.queryByText("Network unavailable")).toBeNull();
   });
 
-  it("separates account-linked browser copies from device-only projects", () => {
+  it("separates account-linked local copies from device-only projects", () => {
     renderDeviceTab({
       projects: [project, localOnlyProject],
       accountProjects: [
@@ -120,9 +120,9 @@ describe("ProjectManagerDeviceTab", () => {
       },
     });
 
-    expect(screen.getByText("Browser copies linked to account")).toBeTruthy();
+    expect(screen.getByText("Local copies linked to account")).toBeTruthy();
     expect(screen.getByText("Only on this device")).toBeTruthy();
-    expect(screen.getByText(/browser copy synced/)).toBeTruthy();
+    expect(screen.getByText(/local copy synced/)).toBeTruthy();
     expect(screen.getByText(/only on this device/)).toBeTruthy();
   });
 });
