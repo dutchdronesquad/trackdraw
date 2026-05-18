@@ -442,14 +442,14 @@ export default function ExportDialog({
           <div className="bg-border/30 h-px flex-1" />
         </div>
         <p className="text-muted-foreground mb-4 text-[11px]">
-          Still images and view captures for sharing or quick review.
+          Read-only captures for review, print, or sharing.
         </p>
         <div className="grid grid-cols-3 gap-3">
           <DesktopFormatCard
             ext="PNG"
             label="Image"
             color="bg-sky-500/15 text-sky-400"
-            description="High-resolution PNG at 3× scale, ready for sharing or print."
+            description="High-res 2D map for print, slides, chat, or quick review."
             busy={busy === "png"}
             onExport={() =>
               run("png", () =>
@@ -467,7 +467,7 @@ export default function ExportDialog({
             ext="SVG"
             label="Vector"
             color="bg-purple-500/15 text-purple-400"
-            description="Infinitely scalable — opens in Illustrator, Inkscape, or Figma."
+            description="Scalable artwork for Illustrator, Figma, or Inkscape edits."
             busy={busy === "svg"}
             onExport={() =>
               run("svg", () =>
@@ -484,7 +484,7 @@ export default function ExportDialog({
             ext="PNG"
             label="3D Render"
             color="bg-orange-500/15 text-orange-400"
-            description="Screenshot of the 3D view at the current camera angle."
+            description="Screenshot of the current 3D camera view for visual review."
             busy={busy === "3d"}
             lockedAction={
               activeTab !== "3d" && onRequest3DView
@@ -520,14 +520,14 @@ export default function ExportDialog({
           <div className="bg-border/30 h-px flex-1" />
         </div>
         <p className="text-muted-foreground mb-4 text-[11px]">
-          Files for reopening the layout or handing it to others.
+          Editable backup or read-only setup handoff.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
             ext="JSON"
             label="Project File"
             color="bg-emerald-500/15 text-emerald-400"
-            description="Full project file — share with others or reopen in TrackDraw."
+            description="Editable backup for reopening, sharing, or archiving in TrackDraw."
             busy={busy === "json"}
             onExport={() =>
               run("json", () => {
@@ -540,7 +540,7 @@ export default function ExportDialog({
             ext="PDF"
             label="Race Pack"
             color="bg-red-500/15 text-red-400"
-            description="Multi-page: track map, material list, and setup sequence."
+            description="Race-day setup handoff with map, materials, sequence, and QR."
             busy={busy === "race-day-pdf"}
             onExport={() =>
               run("race-day-pdf", async () => {
@@ -574,14 +574,14 @@ export default function ExportDialog({
           <div className="bg-border/30 h-px flex-1" />
         </div>
         <p className="text-muted-foreground mb-4 text-[11px]">
-          Animated review and external simulator formats.
+          Review video and experimental simulator output.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
             ext="WebM"
             label="Cinematic FPV"
             color="bg-violet-500/15 text-violet-400"
-            description="Fly-through video of your track. One full loop, ready to share."
+            description="One-loop route video for reviewing the flow or sharing the lap."
             busy={busy === "webm"}
             onExport={() =>
               run(
@@ -636,7 +636,7 @@ export default function ExportDialog({
             ext="TRK"
             label="Velocidrone"
             color="bg-lime-500/15 text-lime-400"
-            description="Experimental format for testing your layout in Velocidrone."
+            description="Experimental Velocidrone file for testing; check placement after import."
             busy={busy === "trk"}
             onExport={() =>
               run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))
@@ -682,7 +682,7 @@ export default function ExportDialog({
             ext="PNG"
             label="Image"
             color="bg-sky-500/15 text-sky-400"
-            description="High-resolution PNG at 3× scale."
+            description="High-res 2D map for print, chat, or review."
             isBusy={busy === "png"}
             onAction={() =>
               run("png", () =>
@@ -701,7 +701,7 @@ export default function ExportDialog({
             ext="SVG"
             label="Vector"
             color="bg-purple-500/15 text-purple-400"
-            description="Scalable — Illustrator, Inkscape, or Figma."
+            description="Scalable artwork for Illustrator, Figma, or Inkscape."
             isBusy={busy === "svg"}
             onAction={() =>
               run("svg", () =>
@@ -719,7 +719,7 @@ export default function ExportDialog({
             ext="PNG"
             label="3D Render"
             color="bg-orange-500/15 text-orange-400"
-            description="Screenshot at the current camera angle."
+            description="Current 3D camera screenshot for visual review."
             isBusy={busy === "3d"}
             locked={activeTab !== "3d"}
             lockedLabel="Switch to 3D view"
@@ -750,7 +750,7 @@ export default function ExportDialog({
             ext="JSON"
             label="Project File"
             color="bg-emerald-500/15 text-emerald-400"
-            description="Full backup — reopen or share in TrackDraw."
+            description="Editable backup for reopening or archiving in TrackDraw."
             isBusy={busy === "json"}
             onAction={() =>
               run("json", () => {
@@ -764,7 +764,7 @@ export default function ExportDialog({
             ext="PDF"
             label="Race Pack"
             color="bg-red-500/15 text-red-400"
-            description="Track map, material list, and setup sequence."
+            description="Setup PDF with map, materials, sequence, and QR."
             isBusy={busy === "race-day-pdf"}
             onAction={() =>
               run("race-day-pdf", async () => {
@@ -799,7 +799,7 @@ export default function ExportDialog({
             ext="WebM"
             label="Cinematic FPV"
             color="bg-violet-500/15 text-violet-400"
-            description="Fly-through video. One full loop."
+            description="One-loop route video for reviewing the flow."
             isBusy={busy === "webm"}
             onAction={() =>
               run(
@@ -855,7 +855,7 @@ export default function ExportDialog({
             ext="TRK"
             label="Velocidrone"
             color="bg-lime-500/15 text-lime-400"
-            description="Experimental import for Velocidrone."
+            description="Experimental file for testing; check after import."
             isBusy={busy === "trk"}
             onAction={() =>
               run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))

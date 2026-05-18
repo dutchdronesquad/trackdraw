@@ -57,8 +57,12 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
           Block store-level patch, batch patch, and route waypoint mutations for locked shapes so resize, inspector, and route-edit calls cannot bypass lock state.
   - [ ] Export/share confidence pass
         Clarify what each export/share output includes, what is intentionally excluded, and which limitations matter for race-day handoff.
+    - [x] Export output purpose copy
+          Clarify read-only visual outputs, editable JSON backups, PDF handoff intent, and experimental simulator limitations in export and share flows.
   - [ ] Performance and large-layout stability
         Stress-test larger layouts with dense obstacles, long routes, map references, 3D preview, and PDF/export, then apply targeted performance fixes.
+    - [x] Bounded dense-grid export rendering
+          Clamp very fine export grid spacing so SVG/PDF/PNG exports from large or dense layouts do not generate excessive grid markup.
 
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The first experimental `.trk` export is already shipped. Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping and orientation edge cases.

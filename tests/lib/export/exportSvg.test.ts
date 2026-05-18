@@ -97,6 +97,28 @@ describe("exportSvg", () => {
     expect(withoutNumbers).not.toContain(`font-weight="700" fill="#f8fafc"`);
   });
 
+  it("keeps very fine grid exports bounded for large layout stability", () => {
+    const design = normalizeDesign({
+      id: "design-svg-dense-grid",
+      version: 1,
+      title: "Dense grid",
+      description: "",
+      tags: [],
+      authorName: "",
+      inventory,
+      field: { width: 60, height: 40, origin: "tl", gridStep: 0.05, ppm: 20 },
+      shapes: [],
+      createdAt: "2026-04-13T10:00:00.000Z",
+      updatedAt: "2026-04-13T10:00:00.000Z",
+    });
+
+    const svg = designToSvg(design, "dark");
+    const lineCount = svg.match(/<line /g)?.length ?? 0;
+
+    expect(lineCount).toBeLessThan(300);
+    expect(svg).toContain(`60×40 m`);
+  });
+
   it("colors timing point gates independently from obstacle numbers", () => {
     const design = normalizeDesign({
       id: "design-svg-timing",

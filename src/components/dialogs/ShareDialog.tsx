@@ -1689,7 +1689,7 @@ export default function ShareDialog({
                       Export JSON instead
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      Reliable long-term backup, not URL-dependent
+                      Editable backup for reopening in TrackDraw
                     </p>
                   </div>
                 </button>

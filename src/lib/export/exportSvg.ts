@@ -35,6 +35,12 @@ function m(v: number, ppm: number) {
   return v * ppm;
 }
 
+const MIN_EXPORT_GRID_SPACING_PX = 8;
+
+function getExportGridStepPx(gridStepMeters: number, ppm: number) {
+  return Math.max(m(gridStepMeters, ppm), MIN_EXPORT_GRID_SPACING_PX);
+}
+
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -305,7 +311,8 @@ export function designToSvg(
   const { width, height, ppm, gridStep } = design.field;
   const W = m(width, ppm);
   const H = m(height, ppm);
-  const step = m(gridStep, ppm);
+  const rawStep = m(gridStep, ppm);
+  const step = getExportGridStepPx(gridStep, ppm);
   const coarseStep = step * 5;
   const majorStep = step * 10;
   const bl = 12; // corner bracket arm length
@@ -328,10 +335,12 @@ export function designToSvg(
     footerMeta: isDark ? "#3a6080" : "#4a6a88",
   };
 
-  // Grid lines — three levels (kept subtle so shapes read clearly)
+  // Grid lines — three levels (kept subtle so shapes read clearly). Very fine
+  // grid settings are clamped for export so large layouts do not produce
+  // enormous SVG/PDF/PNG payloads.
   let gridLines = "";
   for (let x = 0; x <= W + 0.01; x += step) {
-    const isMajor = Math.abs(x % majorStep) < 0.5;
+    const isMajor = Math.abs(x % majorStep) < Math.max(0.5, rawStep / 2);
     const isCoarse = !isMajor && Math.abs(x % coarseStep) < 0.5;
     const stroke = isMajor
       ? colors.gridMajor
@@ -342,7 +351,7 @@ export function designToSvg(
     gridLines += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="${stroke}" stroke-width="${sw}"/>`;
   }
   for (let y = 0; y <= H + 0.01; y += step) {
-    const isMajor = Math.abs(y % majorStep) < 0.5;
+    const isMajor = Math.abs(y % majorStep) < Math.max(0.5, rawStep / 2);
     const isCoarse = !isMajor && Math.abs(y % coarseStep) < 0.5;
     const stroke = isMajor
       ? colors.gridMajor

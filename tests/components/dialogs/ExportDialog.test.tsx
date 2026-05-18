@@ -88,4 +88,30 @@ describe("ExportDialog mobile workflow", () => {
     ).toBeTruthy();
     expect(screen.getByText("Route numbers")).toBeTruthy();
   });
+
+  it("clarifies mobile export purpose and limitations", () => {
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    expect(
+      screen.getByText("High-res 2D map for print, chat, or review.")
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Editable backup for reopening or archiving in TrackDraw."
+      )
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Setup PDF with map, materials, sequence, and QR.")
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Experimental file for testing; check after import.")
+    ).toBeTruthy();
+  });
 });
