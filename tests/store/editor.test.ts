@@ -412,6 +412,114 @@ describe("editor store history", () => {
     expect(getPastStatesCount()).toBe(1);
   });
 
+  it("does not patch locked shapes or create history for locked-only updates", () => {
+    const state = useEditor.getState();
+    const gateId = state.addShape({
+      kind: "gate",
+      x: 10,
+      y: 8,
+      rotation: 0,
+      width: 2,
+      height: 2,
+      locked: true,
+    });
+
+    state.clearHistory();
+    const beforeUpdatedAt = useEditor.getState().track.design.updatedAt;
+
+    state.updateShape(gateId, { x: 20, width: 4, rotation: 45 });
+
+    expect(useEditor.getState().track.design.shapeById[gateId]).toMatchObject({
+      x: 10,
+      y: 8,
+      rotation: 0,
+      width: 2,
+      height: 2,
+    });
+    expect(useEditor.getState().track.design.updatedAt).toBe(beforeUpdatedAt);
+    expect(getPastStatesCount()).toBe(0);
+  });
+
+  it("batch patches only editable shapes in a mixed locked selection", () => {
+    const state = useEditor.getState();
+    const lockedGateId = state.addShape({
+      kind: "gate",
+      x: 10,
+      y: 8,
+      rotation: 0,
+      width: 2,
+      height: 2,
+      locked: true,
+    });
+    const editableGateId = state.addShape({
+      kind: "gate",
+      x: 12,
+      y: 9,
+      rotation: 0,
+      width: 2,
+      height: 2,
+    });
+
+    state.clearHistory();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-13T10:10:06.000Z"));
+
+    state.updateShapes([lockedGateId, editableGateId], {
+      x: 20,
+      width: 4,
+    });
+
+    const nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[lockedGateId]).toMatchObject({
+      x: 10,
+      width: 2,
+    });
+    expect(nextDesign.shapeById[editableGateId]).toMatchObject({
+      x: 20,
+      width: 4,
+    });
+    expect(nextDesign.updatedAt).toBe("2026-04-13T10:10:06.000Z");
+    expect(getPastStatesCount()).toBe(1);
+  });
+
+  it("does not edit locked route waypoints or create history", () => {
+    const state = useEditor.getState();
+    const routeId = state.addShape({
+      kind: "polyline",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      locked: true,
+      points: [
+        { x: 0, y: 0, z: 0 },
+        { x: 4, y: 0, z: 0 },
+        { x: 8, y: 0, z: 0 },
+      ],
+    });
+
+    state.clearHistory();
+    const beforeUpdatedAt = useEditor.getState().track.design.updatedAt;
+
+    state.setPolylinePoints(routeId, [
+      { x: 1, y: 1, z: 0 },
+      { x: 4, y: 1, z: 0 },
+    ]);
+    state.updatePolylinePoint(routeId, 1, { x: 6 });
+    state.insertPolylinePoint(routeId, 1, { x: 2, y: 1, z: 0 });
+    state.removePolylinePoint(routeId, 1);
+    state.appendPolylinePoint(routeId, { x: 10, y: 0, z: 0 });
+    state.reversePolylinePoints(routeId);
+
+    const route = useEditor.getState().track.design.shapeById[routeId];
+    expect(route?.kind === "polyline" ? route.points : []).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 4, y: 0, z: 0 },
+      { x: 8, y: 0, z: 0 },
+    ]);
+    expect(useEditor.getState().track.design.updatedAt).toBe(beforeUpdatedAt);
+    expect(getPastStatesCount()).toBe(0);
+  });
+
   it("duplicates shapes, updates selection, and creates a history entry", () => {
     const state = useEditor.getState();
     const gateId = state.addShape({

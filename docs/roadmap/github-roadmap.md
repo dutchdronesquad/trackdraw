@@ -49,8 +49,12 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
           Reuse one JSON download path and report Project Manager export failures instead of silently doing nothing when local project data cannot be loaded.
   - [ ] Mobile editor ergonomics pass
         Review Project Manager, inspector drawers, path builder, multi-select, map reference controls, and app/menu actions for venue-side use.
+    - [x] Mobile app menu touch targets
+          Make project, share, import, export, account, dashboard, and sign-out actions easier to hit and scan in the mobile app menu.
   - [ ] Selection and transform reliability pass
         Add targeted fixes and regression coverage for locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, and undo/redo.
+    - [x] Locked shape mutation guards
+          Block store-level patch, batch patch, and route waypoint mutations for locked shapes so resize, inspector, and route-edit calls cannot bypass lock state.
   - [ ] Export/share confidence pass
         Clarify what each export/share output includes, what is intentionally excluded, and which limitations matter for race-day handoff.
   - [ ] Performance and large-layout stability

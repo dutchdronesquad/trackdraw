@@ -18,7 +18,6 @@ import { MobileDrawerHeader } from "@/components/MobileDrawer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
 
 type MobileAppMenuProps = {
   onOpenProjects: () => void;
@@ -87,9 +86,9 @@ function MenuRow({
     <button
       type="button"
       onClick={onClick}
-      className="hover:bg-muted/70 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors"
+      className="hover:bg-muted/70 flex min-h-14 w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors"
     >
-      <span className="bg-muted/70 text-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+      <span className="bg-muted/70 text-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
         {icon}
       </span>
       <span className="min-w-0 flex-1">
@@ -117,9 +116,9 @@ function MenuSection({
         {title}
       </p>
       <div className="border-border/60 bg-card overflow-hidden rounded-2xl border">
-        {children}
-      </div>
-    </section>
+      {children}
+    </div>
+  </section>
   );
 }
 
@@ -187,7 +186,7 @@ export default function MobileAppMenu({
             event.currentTarget.blur();
             setMenuOpen(true);
           }}
-          className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-md transition-colors lg:hidden"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-9 items-center justify-center rounded-md transition-colors lg:hidden"
           aria-label="Open app menu"
         >
           <Menu className="size-4" />
@@ -223,7 +222,7 @@ export default function MobileAppMenu({
                       event.currentTarget.blur();
                       openAccount();
                     }}
-                    className="hover:bg-muted/70 flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors"
+                    className="hover:bg-muted/70 flex min-h-14 w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors"
                   >
                     <span className="bg-foreground text-background flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-medium">
                       {getAvatarLabel(user)}
@@ -241,7 +240,7 @@ export default function MobileAppMenu({
                   <Link
                     href="/login"
                     onClick={() => setMenuOpen(false)}
-                    className="hover:bg-muted/70 flex items-center gap-3 rounded-xl px-2 py-2 transition-colors"
+                    className="hover:bg-muted/70 flex min-h-14 items-center gap-3 rounded-xl px-2 py-2 transition-colors"
                   >
                     <span className="bg-foreground text-background flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-medium">
                       <LogIn className="size-4" />
@@ -280,9 +279,9 @@ export default function MobileAppMenu({
                       <Link
                         href="/dashboard"
                         onClick={() => setMenuOpen(false)}
-                        className="hover:bg-muted/70 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors"
+                        className="hover:bg-muted/70 flex min-h-14 w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors"
                       >
-                        <span className="bg-muted/70 text-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+                        <span className="bg-muted/70 text-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
                           <LayoutDashboard className="size-4" />
                         </span>
                         <span className="min-w-0 flex-1">
@@ -340,9 +339,7 @@ export default function MobileAppMenu({
                     type="button"
                     onClick={handleSignOut}
                     disabled={signingOut}
-                    className={cn(
-                      "text-muted-foreground hover:text-foreground hover:bg-muted/70 flex h-10 w-full items-center gap-3 rounded-xl px-2.5 text-left text-[13px] transition-colors disabled:pointer-events-none disabled:opacity-60"
-                    )}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted/70 flex min-h-11 w-full items-center gap-3 rounded-xl px-2.5 text-left text-[13px] transition-colors disabled:pointer-events-none disabled:opacity-60"
                   >
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-lg">
                       <LogOut className="size-4" />

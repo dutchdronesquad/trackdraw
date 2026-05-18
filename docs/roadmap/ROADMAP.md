@@ -142,7 +142,9 @@ Suggested first slices:
   - Added clearer import failure states for invalid JSON, wrong file types, unreadable files, and non-TrackDraw project data
   - Added shared JSON export feedback so Project Manager export failures are reported instead of silently ignored
 - Mobile editor ergonomics pass
+  - Started with larger, more consistent mobile app-menu touch targets for project, share, transfer, account, dashboard, and sign-out actions
 - Selection and transform reliability pass
+  - Started with store-level locked-shape guards for direct patches, batch patches, and route waypoint edits
 - Export/share confidence pass
 - Performance and large-layout stability
 

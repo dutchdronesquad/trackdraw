@@ -177,7 +177,7 @@ export const useEditor = create<EditorState>()(
       updateShape: (id, patch) =>
         set((draft) => {
           const shape = draft.track.design.shapeById[id];
-          if (!shape) return;
+          if (!shape || shape.locked) return;
           if (!applyShapePatch(shape, patch)) return;
           touchTrackDesign(draft);
         }),
@@ -188,7 +188,7 @@ export const useEditor = create<EditorState>()(
 
           for (const id of ids) {
             const shape = draft.track.design.shapeById[id];
-            if (!shape) continue;
+            if (!shape || shape.locked) continue;
             if (applyShapePatch(shape, patch)) {
               changed = true;
             }
@@ -217,7 +217,8 @@ export const useEditor = create<EditorState>()(
 
       setPolylinePoints: (id, points) =>
         set((draft) => {
-          if (!setPolylinePoints(draft.track.design.shapeById[id], points)) {
+          const shape = draft.track.design.shapeById[id];
+          if (shape?.locked || !setPolylinePoints(shape, points)) {
             return;
           }
           touchTrackDesign(draft);
@@ -225,9 +226,8 @@ export const useEditor = create<EditorState>()(
 
       updatePolylinePoint: (id, index, patch) =>
         set((draft) => {
-          if (
-            !updatePolylinePoint(draft.track.design.shapeById[id], index, patch)
-          ) {
+          const shape = draft.track.design.shapeById[id];
+          if (shape?.locked || !updatePolylinePoint(shape, index, patch)) {
             return;
           }
           touchTrackDesign(draft);
@@ -235,9 +235,8 @@ export const useEditor = create<EditorState>()(
 
       insertPolylinePoint: (id, index, point) =>
         set((draft) => {
-          if (
-            !insertPolylinePoint(draft.track.design.shapeById[id], index, point)
-          ) {
+          const shape = draft.track.design.shapeById[id];
+          if (shape?.locked || !insertPolylinePoint(shape, index, point)) {
             return;
           }
           draft.ui.segmentSelection = null;
@@ -246,7 +245,8 @@ export const useEditor = create<EditorState>()(
 
       removePolylinePoint: (id, index) =>
         set((draft) => {
-          if (!removePolylinePoint(draft.track.design.shapeById[id], index)) {
+          const shape = draft.track.design.shapeById[id];
+          if (shape?.locked || !removePolylinePoint(shape, index)) {
             return;
           }
           draft.ui.segmentSelection = null;
@@ -255,7 +255,8 @@ export const useEditor = create<EditorState>()(
 
       appendPolylinePoint: (id, point) =>
         set((draft) => {
-          if (!appendPolylinePoint(draft.track.design.shapeById[id], point)) {
+          const shape = draft.track.design.shapeById[id];
+          if (shape?.locked || !appendPolylinePoint(shape, point)) {
             return;
           }
           touchTrackDesign(draft);
@@ -263,7 +264,8 @@ export const useEditor = create<EditorState>()(
 
       reversePolylinePoints: (id) =>
         set((draft) => {
-          if (!reversePolylinePoints(draft.track.design.shapeById[id])) return;
+          const shape = draft.track.design.shapeById[id];
+          if (shape?.locked || !reversePolylinePoints(shape)) return;
           touchTrackDesign(draft);
         }),
 
