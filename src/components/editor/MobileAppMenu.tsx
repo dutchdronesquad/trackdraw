@@ -116,9 +116,9 @@ function MenuSection({
         {title}
       </p>
       <div className="border-border/60 bg-card overflow-hidden rounded-2xl border">
-      {children}
-    </div>
-  </section>
+        {children}
+      </div>
+    </section>
   );
 }
 

@@ -6,15 +6,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import MobileAppMenu from "@/components/editor/MobileAppMenu";
 
 const sessionMock = vi.hoisted(() => ({
-  data: null as
-    | {
-        user?: {
-          email?: string | null;
-          name?: string | null;
-          role?: string | null;
-        } | null;
-      }
-    | null,
+  data: null as {
+    user?: {
+      email?: string | null;
+      name?: string | null;
+      role?: string | null;
+    } | null;
+  } | null,
 }));
 
 vi.mock("next/link", () => ({
@@ -122,8 +120,8 @@ describe("MobileAppMenu", () => {
     expect(screen.getByRole("link", { name: /Dashboard/ }).className).toContain(
       "min-h-14"
     );
-    expect(screen.getByRole("button", { name: /Sign out/ }).className).toContain(
-      "min-h-11"
-    );
+    expect(
+      screen.getByRole("button", { name: /Sign out/ }).className
+    ).toContain("min-h-11");
   });
 });
