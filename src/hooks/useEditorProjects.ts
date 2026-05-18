@@ -79,7 +79,7 @@ export function useEditorProjects({
   }, []);
 
   const reportLocalSaveFailure = useCallback(
-    (targetDesign: TrackDesign, error: unknown) => {
+    (error: unknown) => {
       const localSaveError = toLocalSaveError(error);
 
       setSaveStatusLabel("Local save failed");
@@ -91,7 +91,7 @@ export function useEditorProjects({
           label: "Retry",
           onClick: () => {
             try {
-              saveDesignLocally(targetDesign);
+              saveDesignLocally(useEditor.getState().track.design);
               toast.success("Local save recovered", {
                 description: "The latest local copy was saved.",
               });
@@ -170,7 +170,7 @@ export function useEditorProjects({
           saveDesignLocally(design);
         }
       } catch (error) {
-        reportLocalSaveFailure(design, error);
+        reportLocalSaveFailure(error);
       }
     }, 350);
 

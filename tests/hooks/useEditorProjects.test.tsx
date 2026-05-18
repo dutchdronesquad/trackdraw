@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "sonner";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
 import { createDefaultDesign } from "@/lib/track/design";
+import { useEditor } from "@/store/editor";
 
 vi.mock("sonner", () => ({
   toast: {
@@ -47,6 +48,8 @@ describe("useEditorProjects", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-05-17T12:30:00.000Z"));
+    useEditor.getState().newProject();
+    useEditor.getState().clearHistory();
   });
 
   afterEach(() => {
@@ -95,6 +98,11 @@ describe("useEditorProjects", () => {
       saveFailureToast?.[1] as { action?: { onClick?: () => void } } | undefined
     )?.action;
 
+    const latestDesign = createDefaultDesign();
+    latestDesign.id = "project-1";
+    latestDesign.title = "Updated race layout";
+    useEditor.getState().replaceDesign(latestDesign);
+
     localStorageMock.setFailWrites(false);
     act(() => {
       retryAction?.onClick?.();
@@ -106,7 +114,7 @@ describe("useEditorProjects", () => {
     );
     expect(result.current.saveStatusLabel).toContain("Saved locally at");
     expect(localStorage.getItem("trackdraw-project-project-1")).toContain(
-      "Race day layout"
+      "Updated race layout"
     );
   });
 });

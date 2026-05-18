@@ -165,16 +165,25 @@ export function saveProjectWithResult(design: TrackDesign): SaveProjectResult {
     shapeCount,
   };
 
-  // Update or insert in list (most-recent first)
+  const projectWrite = writeJson(`trackdraw-project-${design.id}`, serialized);
+  if (!projectWrite.ok) {
+    return {
+      meta,
+      ok: false,
+      error: projectWrite.error,
+    };
+  }
+
+  // Update or insert in list (most-recent first) only after the full payload
+  // exists, so the list cannot point at missing project data.
   const list = listProjects().filter((p) => p.id !== meta.id);
   list.unshift(meta);
   const listWrite = writeJson(PROJECT_LIST_KEY, list);
-  const projectWrite = writeJson(`trackdraw-project-${design.id}`, serialized);
 
   return {
     meta,
-    ok: listWrite.ok && projectWrite.ok,
-    error: listWrite.error ?? projectWrite.error,
+    ok: listWrite.ok,
+    error: listWrite.error,
   };
 }
 
