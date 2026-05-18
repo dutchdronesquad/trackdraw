@@ -88,13 +88,11 @@ describe("useEditorProjects", () => {
       })
     );
 
-    const saveFailureToast = vi.mocked(toast.error).mock.calls.find(
-      ([message]) => message === "Local save failed"
-    );
+    const saveFailureToast = vi
+      .mocked(toast.error)
+      .mock.calls.find(([message]) => message === "Local save failed");
     const retryAction = (
-      saveFailureToast?.[1] as
-        | { action?: { onClick?: () => void } }
-        | undefined
+      saveFailureToast?.[1] as { action?: { onClick?: () => void } } | undefined
     )?.action;
 
     localStorageMock.setFailWrites(false);

@@ -1234,9 +1234,10 @@ export default function EditorShell({
                 }
 
                 const serialized = serializeDesign(exportDesign);
-                const baseName = (
-                  exportDesign.title.trim() || "track"
-                ).replace(/[^a-z0-9-_]+/gi, "_");
+                const baseName = (exportDesign.title.trim() || "track").replace(
+                  /[^a-z0-9-_]+/gi,
+                  "_"
+                );
 
                 downloadJsonFile(`${baseName}.json`, serialized);
                 toast.success("Project JSON exported");
