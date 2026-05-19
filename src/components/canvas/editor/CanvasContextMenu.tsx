@@ -36,6 +36,7 @@ export interface ContextMenuData {
   editablePolylineId: string | null;
   groupLabel: string | null;
   hasGroupedShapes: boolean;
+  hasLockedShapes: boolean;
   ids: string[];
   joinablePolylineIds: string[];
   label: string;
@@ -176,6 +177,7 @@ export function CanvasContextMenuContent({
       <ContextMenuGroup>
         <ContextMenuItem
           className="gap-2"
+          disabled={contextMenu.hasLockedShapes}
           onClick={() => {
             onDuplicate(contextMenu.ids);
             onClose();
@@ -302,6 +304,7 @@ export function CanvasContextMenuContent({
       <ContextMenuSeparator />
       <ContextMenuItem
         className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 [&_svg]:text-destructive gap-2"
+        disabled={contextMenu.hasLockedShapes}
         onClick={() => {
           onDelete(contextMenu.ids);
           onClose();

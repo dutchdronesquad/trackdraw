@@ -57,6 +57,8 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
         Add targeted fixes and regression coverage for locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, and undo/redo.
     - [x] Locked shape mutation guards
           Block store-level patch, batch patch, and route waypoint mutations for locked shapes so resize, inspector, and route-edit calls cannot bypass lock state.
+    - [x] Locked destructive action guards
+          Keep duplicate and delete actions from mutating selections that include locked shapes, including keyboard shortcuts, context menus, mobile overlays, and clear shortcut feedback.
   - [ ] Export/share confidence pass
         Clarify what each export/share output includes, what is intentionally excluded, and which limitations matter for race-day handoff.
     - [x] Export output purpose copy

@@ -923,6 +923,10 @@ const TrackCanvas = memo(
               : null,
           groupLabel,
           hasGroupedShapes: selectionHasGroupedShapes(selectedShapes),
+          hasLockedShapes: nextSelection.some((id) => {
+            const shape = shapeById[id];
+            return Boolean(shape?.locked);
+          }),
           ids: nextSelection,
           joinablePolylineIds: nextSelection.filter((id) => {
             const shape = shapeById[id];

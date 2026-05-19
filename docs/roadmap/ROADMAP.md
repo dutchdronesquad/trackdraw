@@ -146,6 +146,7 @@ Suggested first slices:
   - Added steadier touch targets for path builder, quick adjust, and multi-select overlay actions during mobile editing
 - Selection and transform reliability pass
   - Started with store-level locked-shape guards for direct patches, batch patches, and route waypoint edits
+  - Added locked-selection guards and shortcut feedback for duplicate/delete paths so shortcuts, context menus, and mobile overlays cannot mutate selections that include locked shapes
 - Export/share confidence pass
   - Started by clarifying which exports are read-only visuals, which JSON files are editable backups, what Race Pack is for, and where simulator export remains experimental
 - Performance and large-layout stability

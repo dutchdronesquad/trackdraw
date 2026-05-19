@@ -54,6 +54,10 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { Box, Route, X } from "lucide-react";
 import { toast } from "sonner";
+import {
+  hasLockedSelection,
+  showLockedSelectionActionBlockedToast,
+} from "@/components/canvas/editor/useTrackCanvasShortcuts";
 
 function createFirstUseBlankDesign() {
   const design = createDefaultDesign();
@@ -958,6 +962,9 @@ export default function EditorShell({
             )}
             singleSelectionCanRotate={singleSelectionCanRotate}
             selectionLocked={selectionLocked}
+            selectionHasLockedShapes={selection.some((id) =>
+              Boolean(shapeById[id]?.locked)
+            )}
             selectedCount={selection.length}
             selectedGroupName={selectedGroupName}
             saveStatusLabel={saveStatusLabel}
@@ -999,6 +1006,10 @@ export default function EditorShell({
             onUndoPathPoint={() => canvasRef.current?.undoDraftPoint()}
             onDeleteSelection={() => {
               if (!selection.length) return;
+              if (hasLockedSelection(selection, shapeById)) {
+                showLockedSelectionActionBlockedToast("delete");
+                return;
+              }
               removeShapes(selection);
             }}
             onAddWaypoint={() => {
@@ -1032,6 +1043,10 @@ export default function EditorShell({
             }}
             onDuplicateSelection={() => {
               if (!selection.length) return;
+              if (hasLockedSelection(selection, shapeById)) {
+                showLockedSelectionActionBlockedToast("duplicate");
+                return;
+              }
               duplicateShapes(selection);
             }}
             onDeleteWaypoint={() => {

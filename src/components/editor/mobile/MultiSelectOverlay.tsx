@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 interface EditorMobileMultiSelectOverlayProps {
   canUngroupSelection: boolean;
   className: string;
+  hasLockedSelection: boolean;
   onDeleteSelection: () => void;
   onDuplicateSelection: () => void;
   onGroupSelection: () => void;
@@ -21,6 +22,7 @@ interface EditorMobileMultiSelectOverlayProps {
 export function MultiSelectOverlay({
   canUngroupSelection,
   className,
+  hasLockedSelection,
   onDeleteSelection,
   onDuplicateSelection,
   onGroupSelection,
@@ -65,7 +67,7 @@ export function MultiSelectOverlay({
         <button
           type="button"
           onClick={onDuplicateSelection}
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || hasLockedSelection}
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
         >
           <Copy className="size-4" />
@@ -100,7 +102,7 @@ export function MultiSelectOverlay({
         <button
           type="button"
           onClick={onDeleteSelection}
-          disabled={selectedCount === 0}
+          disabled={selectedCount === 0 || hasLockedSelection}
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200 disabled:text-white/35"
         >
           <Trash2 className="size-4" />

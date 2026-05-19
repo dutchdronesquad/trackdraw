@@ -207,6 +207,8 @@ export function nudgeShapes(
 
 export function duplicateShapes(design: TrackDesign, ids: string[]) {
   const idSet = new Set(ids);
+  if (ids.some((id) => design.shapeById[id]?.locked)) return [];
+
   const duplicatedGroupIds = new Map<string, string>();
   const toDuplicate = design.shapeOrder
     .filter((id) => idSet.has(id))

@@ -1,6 +1,7 @@
 "use client";
 
 import { type RefObject, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { useHistorySession } from "@/hooks/useHistorySession";
 import { isPolylineShape } from "@/lib/track/shape-utils";
 import type { EditorTool } from "@/lib/editor-tools";
@@ -50,6 +51,27 @@ export interface TrackCanvasShortcutsParams {
 
 function canRotateShape(shape: Shape) {
   return shape.kind !== "polyline" && shape.kind !== "cone" && !shape.locked;
+}
+
+export function hasLockedSelection(
+  ids: string[],
+  shapeById: Record<string, Shape>
+) {
+  return ids.some((id) => Boolean(shapeById[id]?.locked));
+}
+
+export function showLockedSelectionActionBlockedToast(
+  action: "delete" | "duplicate"
+) {
+  toast.error(
+    action === "delete"
+      ? "Unlock selection before deleting."
+      : "Unlock selection before duplicating.",
+    {
+      description: "This selection includes locked items.",
+      id: `locked-selection-${action}`,
+    }
+  );
 }
 
 export function useTrackCanvasShortcuts({
@@ -157,7 +179,12 @@ export function useTrackCanvasShortcuts({
 
       if (meta && event.key === "d") {
         event.preventDefault();
-        if (selectionRef.current.length) duplicateShapes(selectionRef.current);
+        if (!selectionRef.current.length) return;
+        if (hasLockedSelection(selectionRef.current, shapeByIdRef.current)) {
+          showLockedSelectionActionBlockedToast("duplicate");
+          return;
+        }
+        duplicateShapes(selectionRef.current);
         return;
       }
 
@@ -279,7 +306,12 @@ export function useTrackCanvasShortcuts({
           return;
         }
 
-        if (selectionRef.current.length) removeShapes(selectionRef.current);
+        if (!selectionRef.current.length) return;
+        if (hasLockedSelection(selectionRef.current, shapeByIdRef.current)) {
+          showLockedSelectionActionBlockedToast("delete");
+          return;
+        }
+        removeShapes(selectionRef.current);
       }
 
       switch (key.toLowerCase()) {

@@ -67,6 +67,7 @@ interface EditorMobilePanelsProps {
   canResumePathEditing?: boolean;
   singleSelectionCanRotate: boolean;
   selectionLocked: boolean;
+  selectionHasLockedShapes: boolean;
   selectedCount: number;
   selectedGroupName?: string | null;
   saveStatusLabel: string;
@@ -126,6 +127,7 @@ function MobileQuickActionsOverlay({
   onRotateSelection,
   onToggleSelectionLock,
   selectionLocked,
+  selectionHasLockedShapes,
   singleSelectedShapeLabel,
   canAddWaypoint = false,
   canDeleteWaypoint = false,
@@ -145,6 +147,7 @@ function MobileQuickActionsOverlay({
   onRotateSelection: (delta: number) => void;
   onToggleSelectionLock: () => void;
   selectionLocked: boolean;
+  selectionHasLockedShapes: boolean;
   singleSelectedShapeLabel: string | null;
   canAddWaypoint?: boolean;
   canDeleteWaypoint?: boolean;
@@ -182,6 +185,7 @@ function MobileQuickActionsOverlay({
             <button
               type="button"
               onClick={onAddWaypoint}
+              disabled={selectionHasLockedShapes}
               className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Plus className="size-4" />
@@ -191,6 +195,7 @@ function MobileQuickActionsOverlay({
             <button
               type="button"
               onClick={onResumeSelectedPath}
+              disabled={selectionHasLockedShapes}
               className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <PencilLine className="size-4" />
@@ -200,7 +205,8 @@ function MobileQuickActionsOverlay({
             <button
               type="button"
               onClick={onDuplicateSelection}
-              className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              disabled={selectionHasLockedShapes}
+              className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
             >
               <Copy className="size-4" />
               <span>Duplicate</span>
@@ -221,7 +227,8 @@ function MobileQuickActionsOverlay({
           <button
             type="button"
             onClick={canDeleteWaypoint ? onDeleteWaypoint : onDeleteSelection}
-            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
+            disabled={selectionHasLockedShapes}
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200 disabled:text-white/35"
           >
             <Trash2 className="size-4" />
             <span>{canDeleteWaypoint ? "Delete point" : "Delete"}</span>
@@ -229,7 +236,8 @@ function MobileQuickActionsOverlay({
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            disabled={selectionHasLockedShapes}
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <SlidersHorizontal className="size-4" />
             <span>Adjust</span>
@@ -341,6 +349,7 @@ export function EditorMobilePanels({
   singleSelectionCanQuickAdjust,
   singleSelectionCanRotate,
   selectionLocked,
+  selectionHasLockedShapes,
   selectedCount,
   selectedGroupName,
   saveStatusLabel,
@@ -594,6 +603,7 @@ export function EditorMobilePanels({
             onRotateSelection={onRotateSelection}
             onToggleSelectionLock={onToggleSelectionLock}
             selectionLocked={selectionLocked}
+            selectionHasLockedShapes={selectionHasLockedShapes}
             singleSelectedShapeLabel={singleSelectedShapeLabel}
             singleSelectionCanNudge={singleSelectionCanNudge}
             singleSelectionCanRotate={singleSelectionCanRotate}
@@ -643,6 +653,7 @@ export function EditorMobilePanels({
             onUngroupSelection={onUngroupSelection}
             selectedCount={selectedCount}
             selectedGroupName={selectedGroupName}
+            hasLockedSelection={selectionHasLockedShapes}
             selectionLocked={selectionLocked}
           />
         </div>

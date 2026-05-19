@@ -11,6 +11,7 @@ function renderMultiSelectOverlay(
   const props: React.ComponentProps<typeof MultiSelectOverlay> = {
     canUngroupSelection: false,
     className: "",
+    hasLockedSelection: false,
     onDeleteSelection: vi.fn(),
     onDuplicateSelection: vi.fn(),
     onGroupSelection: vi.fn(),
@@ -38,7 +39,10 @@ describe("MultiSelectOverlay", () => {
   });
 
   it("explains locked selection limits on mobile", () => {
-    renderMultiSelectOverlay({ selectionLocked: true });
+    renderMultiSelectOverlay({
+      hasLockedSelection: true,
+      selectionLocked: true,
+    });
 
     expect(
       screen.getByText("Locked selection. Unlock before moving or resizing.")
@@ -46,6 +50,34 @@ describe("MultiSelectOverlay", () => {
     expect(
       (screen.getByRole("button", { name: "Unlock" }) as HTMLButtonElement).type
     ).toBe("button");
+    expect(
+      (screen.getByRole("button", { name: "Duplicate" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+    expect(
+      (screen.getByRole("button", { name: "Delete" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+  });
+
+  it("disables destructive actions when any selected item is locked", () => {
+    renderMultiSelectOverlay({
+      hasLockedSelection: true,
+      selectionLocked: false,
+    });
+
+    expect(
+      (screen.getByRole("button", { name: "Duplicate" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+    expect(
+      (screen.getByRole("button", { name: "Delete" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+    expect(
+      (screen.getByRole("button", { name: "Lock" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(false);
   });
 
   it("keeps multi-select actions large enough for mobile taps", () => {

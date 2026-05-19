@@ -283,10 +283,21 @@ export const useEditor = create<EditorState>()(
 
       removeShapes: (ids) =>
         set((draft) => {
-          const idSet = new Set(ids);
-          ids.forEach((id) => removeShapeRecord(draft.track.design, id));
+          const removedIds = new Set<string>();
+          const targetShapes = ids
+            .map((id) => draft.track.design.shapeById[id])
+            .filter((shape): shape is Shape => Boolean(shape));
+
+          if (targetShapes.some((shape) => shape.locked)) return;
+
+          for (const shape of targetShapes) {
+            removeShapeRecord(draft.track.design, shape.id);
+            removedIds.add(shape.id);
+          }
+
+          if (removedIds.size === 0) return;
           draft.session.selection = draft.session.selection.filter(
-            (id) => !idSet.has(id)
+            (id) => !removedIds.has(id)
           );
           touchTrackDesign(draft);
         }),
@@ -300,6 +311,7 @@ export const useEditor = create<EditorState>()(
       duplicateShapes: (ids) =>
         set((draft) => {
           const newShapes = duplicateShapes(draft.track.design, ids);
+          if (newShapes.length === 0) return;
           newShapes.forEach((shape) =>
             addShapeRecord(draft.track.design, shape)
           );

@@ -550,6 +550,32 @@ describe("editor store history", () => {
     expect(getPastStatesCount()).toBe(1);
   });
 
+  it("does not duplicate locked shapes or create history", () => {
+    const state = useEditor.getState();
+    const gateId = state.addShape({
+      kind: "gate",
+      x: 10,
+      y: 8,
+      rotation: 5,
+      width: 2,
+      height: 2,
+      locked: true,
+    });
+
+    state.setSelection([gateId]);
+    state.clearHistory();
+    const beforeCount = useEditor.getState().track.design.shapeOrder.length;
+    const beforeUpdatedAt = useEditor.getState().track.design.updatedAt;
+
+    state.duplicateShapes([gateId]);
+
+    const nextState = useEditor.getState();
+    expect(nextState.track.design.shapeOrder).toHaveLength(beforeCount);
+    expect(nextState.session.selection).toEqual([gateId]);
+    expect(nextState.track.design.updatedAt).toBe(beforeUpdatedAt);
+    expect(getPastStatesCount()).toBe(0);
+  });
+
   it("removes selected shapes and clears them from the selection", () => {
     const state = useEditor.getState();
     const firstId = state.addShape({
@@ -578,6 +604,100 @@ describe("editor store history", () => {
     expect(nextState.track.design.shapeById[firstId]).toBeUndefined();
     expect(nextState.session.selection).toEqual([secondId]);
     expect(getPastStatesCount()).toBe(1);
+  });
+
+  it("does not remove mixed locked selections or create history", () => {
+    const state = useEditor.getState();
+    const lockedId = state.addShape({
+      kind: "gate",
+      x: 5,
+      y: 5,
+      rotation: 0,
+      width: 2,
+      height: 2,
+      locked: true,
+    });
+    const editableId = state.addShape({
+      kind: "flag",
+      x: 8,
+      y: 7,
+      rotation: 0,
+      radius: 0.25,
+    });
+
+    state.setSelection([lockedId, editableId]);
+    state.clearHistory();
+    const beforeUpdatedAt = useEditor.getState().track.design.updatedAt;
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-13T10:10:21.000Z"));
+
+    state.removeShapes([lockedId, editableId]);
+
+    const nextState = useEditor.getState();
+    expect(nextState.track.design.shapeById[lockedId]).toBeTruthy();
+    expect(nextState.track.design.shapeById[editableId]).toBeTruthy();
+    expect(nextState.session.selection).toEqual([lockedId, editableId]);
+    expect(nextState.track.design.updatedAt).toBe(beforeUpdatedAt);
+    expect(getPastStatesCount()).toBe(0);
+  });
+
+  it("does not remove grouped selections when one grouped member is locked", () => {
+    const state = useEditor.getState();
+    const lockedId = state.addShape({
+      kind: "gate",
+      x: 5,
+      y: 5,
+      rotation: 0,
+      width: 2,
+      height: 2,
+      locked: true,
+    });
+    const editableId = state.addShape({
+      kind: "flag",
+      x: 8,
+      y: 7,
+      rotation: 0,
+      radius: 0.25,
+    });
+
+    state.groupSelection([lockedId, editableId]);
+    state.setSelection([lockedId]);
+    state.clearHistory();
+    const beforeUpdatedAt = useEditor.getState().track.design.updatedAt;
+
+    state.removeShapes(useEditor.getState().session.selection);
+
+    const nextState = useEditor.getState();
+    expect(nextState.track.design.shapeById[lockedId]).toBeTruthy();
+    expect(nextState.track.design.shapeById[editableId]).toBeTruthy();
+    expect(nextState.session.selection).toEqual([lockedId, editableId]);
+    expect(nextState.track.design.updatedAt).toBe(beforeUpdatedAt);
+    expect(getPastStatesCount()).toBe(0);
+  });
+
+  it("does not remove locked-only selections or create history", () => {
+    const state = useEditor.getState();
+    const gateId = state.addShape({
+      kind: "gate",
+      x: 5,
+      y: 5,
+      rotation: 0,
+      width: 2,
+      height: 2,
+      locked: true,
+    });
+
+    state.setSelection([gateId]);
+    state.clearHistory();
+    const beforeUpdatedAt = useEditor.getState().track.design.updatedAt;
+
+    state.removeShapes([gateId]);
+
+    const nextState = useEditor.getState();
+    expect(nextState.track.design.shapeById[gateId]).toBeTruthy();
+    expect(nextState.session.selection).toEqual([gateId]);
+    expect(nextState.track.design.updatedAt).toBe(beforeUpdatedAt);
+    expect(getPastStatesCount()).toBe(0);
   });
 
   it("groups and ungroups the current selection", () => {
