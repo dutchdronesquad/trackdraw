@@ -47,4 +47,14 @@ describe("MultiSelectOverlay", () => {
       (screen.getByRole("button", { name: "Unlock" }) as HTMLButtonElement).type
     ).toBe("button");
   });
+
+  it("keeps multi-select actions large enough for mobile taps", () => {
+    renderMultiSelectOverlay();
+
+    for (const label of ["Duplicate", "Group", "Lock", "Delete"]) {
+      expect(screen.getByRole("button", { name: label }).className).toContain(
+        "min-h-14"
+      );
+    }
+  });
 });

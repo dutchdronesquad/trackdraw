@@ -143,12 +143,14 @@ Suggested first slices:
   - Added shared JSON export feedback so Project Manager export failures are reported instead of silently ignored
 - Mobile editor ergonomics pass
   - Started with larger, more consistent mobile app-menu touch targets for project, share, transfer, account, dashboard, and sign-out actions
+  - Added steadier touch targets for path builder, quick adjust, and multi-select overlay actions during mobile editing
 - Selection and transform reliability pass
   - Started with store-level locked-shape guards for direct patches, batch patches, and route waypoint edits
 - Export/share confidence pass
   - Started by clarifying which exports are read-only visuals, which JSON files are editable backups, what Race Pack is for, and where simulator export remains experimental
 - Performance and large-layout stability
   - Started with bounded dense-grid rendering for SVG/PDF/PNG exports so fine grid settings do not explode export payload size
+  - Added long-route obstacle-numbering coverage with bounded route-segment scans for dense gate layouts
 
 ### 3. Account-Backed Follow-up (`Account-backed`)
 

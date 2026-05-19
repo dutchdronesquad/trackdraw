@@ -55,4 +55,14 @@ describe("PathBuilderOverlay", () => {
       ).disabled
     ).toBe(true);
   });
+
+  it("keeps path actions large enough for mobile taps", () => {
+    renderPathBuilderOverlay();
+
+    for (const label of ["Undo", "Connect ends", "Finish", "Cancel"]) {
+      expect(screen.getByRole("button", { name: label }).className).toContain(
+        "min-h-14"
+      );
+    }
+  });
 });

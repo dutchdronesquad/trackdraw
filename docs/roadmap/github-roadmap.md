@@ -51,6 +51,8 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
         Review Project Manager, inspector drawers, path builder, multi-select, map reference controls, and app/menu actions for venue-side use.
     - [x] Mobile app menu touch targets
           Make project, share, import, export, account, dashboard, and sign-out actions easier to hit and scan in the mobile app menu.
+    - [x] Mobile editing overlay touch targets
+          Give path builder, quick adjust, and multi-select overlay actions steadier tap targets for venue-side editing on small screens.
   - [ ] Selection and transform reliability pass
         Add targeted fixes and regression coverage for locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, and undo/redo.
     - [x] Locked shape mutation guards
@@ -63,6 +65,8 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
         Stress-test larger layouts with dense obstacles, long routes, map references, 3D preview, and PDF/export, then apply targeted performance fixes.
     - [x] Bounded dense-grid export rendering
           Clamp very fine export grid spacing so SVG/PDF/PNG exports from large or dense layouts do not generate excessive grid markup.
+    - [x] Long-route obstacle numbering coverage
+          Precompute route segments and bound per-obstacle scans so numbering stays stable on long routes with many gates.
 
 - [ ] Velocidrone experimental export stabilization (`No account required`)
       The first experimental `.trk` export is already shipped. Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping and orientation edge cases.

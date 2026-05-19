@@ -135,4 +135,36 @@ describe("obstacle numbering", () => {
       totalNumberedObstacleCount: 0,
     });
   });
+
+  it("numbers dense obstacle sets on long routes", () => {
+    const routePoints = Array.from({ length: 80 }, (_, index) => ({
+      x: index * 2,
+      y: 5,
+      z: index % 4 === 0 ? 1 : 0,
+    }));
+    const gates = routePoints
+      .slice(1)
+      .map((point, index) =>
+        gate(`gate-${String(index + 1).padStart(2, "0")}`, point.x, point.y)
+      );
+    const design = makeDesign([
+      {
+        id: "long-route",
+        kind: "polyline",
+        x: 0,
+        y: 0,
+        rotation: 0,
+        points: routePoints,
+      },
+      ...gates,
+    ]);
+
+    const report = getObstacleNumberingReport(design);
+
+    expect(report.status).toBe("ready");
+    expect(report.mappedObstacleCount).toBe(gates.length);
+    expect(report.unmappedObstacleCount).toBe(0);
+    expect(report.obstacleNumberMap.get("gate-01")).toBe(1);
+    expect(report.obstacleNumberMap.get("gate-79")).toBe(79);
+  });
 });

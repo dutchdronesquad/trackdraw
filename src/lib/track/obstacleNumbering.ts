@@ -39,6 +39,17 @@ interface ObstacleNumberingCandidate {
   tolerance: number;
 }
 
+interface ObstaclePathSegment {
+  end: { x: number; y: number };
+  length: number;
+  maxX: number;
+  maxY: number;
+  minX: number;
+  minY: number;
+  start: { x: number; y: number };
+  startDistance: number;
+}
+
 export function isNumberedObstacle(shape: Shape) {
   return NUMBERED_KINDS.has(shape.kind);
 }
@@ -129,6 +140,90 @@ function projectPointOntoSegment(
   };
 }
 
+function buildObstaclePathSegments(
+  pathPoints: Array<{ x: number; y: number }>
+) {
+  const segments: ObstaclePathSegment[] = [];
+  let runningLength = 0;
+
+  for (let index = 1; index < pathPoints.length; index += 1) {
+    const start = pathPoints[index - 1];
+    const end = pathPoints[index];
+    const length = distance2D(start, end);
+
+    segments.push({
+      end,
+      length,
+      maxX: Math.max(start.x, end.x),
+      maxY: Math.max(start.y, end.y),
+      minX: Math.min(start.x, end.x),
+      minY: Math.min(start.y, end.y),
+      start,
+      startDistance: runningLength,
+    });
+
+    runningLength += length;
+  }
+
+  return segments;
+}
+
+function getNearbyObstaclePathSegments(
+  anchor: { x: number; y: number },
+  tolerance: number,
+  segments: ObstaclePathSegment[]
+) {
+  const nearby = segments.filter(
+    (segment) =>
+      anchor.x >= segment.minX - tolerance &&
+      anchor.x <= segment.maxX + tolerance &&
+      anchor.y >= segment.minY - tolerance &&
+      anchor.y <= segment.maxY + tolerance
+  );
+
+  return nearby.length > 0 ? nearby : segments;
+}
+
+function findNearestObstaclePathPosition(
+  anchor: { x: number; y: number },
+  tolerance: number,
+  segments: ObstaclePathSegment[]
+) {
+  const scanSegments = (candidates: ObstaclePathSegment[]) => {
+    let bestDistance = Number.POSITIVE_INFINITY;
+    let bestDistanceAlongPath = Number.POSITIVE_INFINITY;
+
+    for (const segment of candidates) {
+      const projection = projectPointOntoSegment(
+        anchor,
+        segment.start,
+        segment.end
+      );
+      const distanceAlongPath =
+        segment.startDistance + segment.length * projection.progress;
+
+      if (projection.distance < bestDistance) {
+        bestDistance = projection.distance;
+        bestDistanceAlongPath = distanceAlongPath;
+      }
+    }
+
+    return { bestDistance, bestDistanceAlongPath };
+  };
+
+  const nearbySegments = getNearbyObstaclePathSegments(
+    anchor,
+    tolerance,
+    segments
+  );
+  const nearbyResult = scanSegments(nearbySegments);
+  if (nearbySegments === segments || nearbyResult.bestDistance <= tolerance) {
+    return nearbyResult;
+  }
+
+  return scanSegments(segments);
+}
+
 function getObstacleNumberingCandidates(design: TrackDesign) {
   const shapes = getDesignShapes(design);
   const primaryPolyline = getPrimaryPolyline(design);
@@ -152,33 +247,21 @@ function getObstacleNumberingCandidates(design: TrackDesign) {
     };
   }
 
+  const pathSegments = buildObstaclePathSegments(pathPoints);
+
   return {
     candidates: numberedObstacles.map((shape, shapeOrder) => {
       const anchor = getObstacleNumberAnchor(shape);
-      let bestDistance = Number.POSITIVE_INFINITY;
-      let bestDistanceAlongPath = Number.POSITIVE_INFINITY;
-      let runningLength = 0;
+      const tolerance = getObstaclePathTolerance(shape);
+      const { bestDistance, bestDistanceAlongPath } =
+        findNearestObstaclePathPosition(anchor, tolerance, pathSegments);
 
-      for (let index = 1; index < pathPoints.length; index += 1) {
-        const start = pathPoints[index - 1];
-        const end = pathPoints[index];
-        const projection = projectPointOntoSegment(anchor, start, end);
-        const distanceAlongPath =
-          runningLength + projection.segmentLength * projection.progress;
-
-        if (projection.distance < bestDistance) {
-          bestDistance = projection.distance;
-          bestDistanceAlongPath = distanceAlongPath;
-        }
-
-        runningLength += projection.segmentLength;
-      }
       return {
         shape,
         shapeOrder,
         distanceAlongPath: bestDistanceAlongPath,
         pathDistance: bestDistance,
-        tolerance: getObstaclePathTolerance(shape),
+        tolerance,
       };
     }),
     numberedObstacles,

@@ -180,32 +180,36 @@ function MobileQuickActionsOverlay({
         <div className="grid grid-cols-4 gap-1.5">
           {canAddWaypoint ? (
             <button
+              type="button"
               onClick={onAddWaypoint}
-              className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Plus className="size-4" />
               <span>Add point</span>
             </button>
           ) : canResumePathEditing ? (
             <button
+              type="button"
               onClick={onResumeSelectedPath}
-              className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <PencilLine className="size-4" />
               <span>Edit path</span>
             </button>
           ) : (
             <button
+              type="button"
               onClick={onDuplicateSelection}
-              className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Copy className="size-4" />
               <span>Duplicate</span>
             </button>
           )}
           <button
+            type="button"
             onClick={onToggleSelectionLock}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
           >
             {selectionLocked ? (
               <Unlock className="size-4" />
@@ -215,15 +219,17 @@ function MobileQuickActionsOverlay({
             <span>{selectionLocked ? "Unlock" : "Lock"}</span>
           </button>
           <button
+            type="button"
             onClick={canDeleteWaypoint ? onDeleteWaypoint : onDeleteSelection}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
           >
             <Trash2 className="size-4" />
             <span>{canDeleteWaypoint ? "Delete point" : "Delete"}</span>
           </button>
           <button
+            type="button"
             onClick={() => setExpanded(true)}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
           >
             <SlidersHorizontal className="size-4" />
             <span>Adjust</span>
@@ -232,24 +238,27 @@ function MobileQuickActionsOverlay({
       ) : (
         <div className="grid grid-cols-4 gap-1.5">
           <button
+            type="button"
             onClick={() => setExpanded(false)}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/62 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/62 transition-colors hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="size-4" />
             <span>Back</span>
           </button>
           <button
+            type="button"
             onClick={() => onRotateSelection(-15)}
             disabled={!singleSelectionCanRotate}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <RotateCcw className="size-4" />
             <span>-15°</span>
           </button>
           <button
+            type="button"
             onClick={() => onRotateSelection(15)}
             disabled={!singleSelectionCanRotate}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <RotateCw className="size-4" />
             <span>+15°</span>
@@ -258,33 +267,37 @@ function MobileQuickActionsOverlay({
             Step
           </div>
           <button
+            type="button"
             onClick={() => onNudgeSelection(-mobilePrecisionStep, 0)}
             disabled={!singleSelectionCanNudge}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowLeft className="size-4" />
             <span>Left</span>
           </button>
           <button
+            type="button"
             onClick={() => onNudgeSelection(0, -mobilePrecisionStep)}
             disabled={!singleSelectionCanNudge}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowUp className="size-4" />
             <span>Up</span>
           </button>
           <button
+            type="button"
             onClick={() => onNudgeSelection(0, mobilePrecisionStep)}
             disabled={!singleSelectionCanNudge}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowDown className="size-4" />
             <span>Down</span>
           </button>
           <button
+            type="button"
             onClick={() => onNudgeSelection(mobilePrecisionStep, 0)}
             disabled={!singleSelectionCanNudge}
-            className="flex flex-col items-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
+            className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowRight className="size-4" />
             <span>Right</span>
