@@ -58,11 +58,13 @@ const MobilePanels = dynamic(() => import("./MobilePanels"), { ssr: false });
 export default function EditorShell({
   initialTab = "2d",
   embedMode = false,
+  title = "Untitled track",
   studioHref,
   existingShareMode = false,
 }: {
   initialTab?: EditorView;
   embedMode?: boolean;
+  title?: string;
   studioHref?: string;
   existingShareMode?: boolean;
 }) {
@@ -135,6 +137,7 @@ export default function EditorShell({
             tab={tab}
             onTabChange={handleTabChange}
             embedMode={embedMode}
+            title={title}
             studioHref={studioHref}
             showObstacleNumbers={showObstacleNumbers}
             onToggleObstacleNumbers={() =>
@@ -199,7 +202,7 @@ export default function EditorShell({
             onTabChange={handleTabChange}
             onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
             readOnlyMenuOpen={readOnlyMenuOpen}
-            saveStatusLabel={embedMode ? "Embedded track" : "Shared review"}
+            saveStatusLabel={embedMode ? "Embedded track" : "Shared preview"}
             studioHref={studioHref}
             tab={tab}
           />

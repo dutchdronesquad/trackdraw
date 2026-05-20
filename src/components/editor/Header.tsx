@@ -268,7 +268,7 @@ export default function Header({
                 className={cn(
                   "text-muted-foreground hidden size-7 items-center justify-center rounded-md transition-colors lg:flex",
                   showObstacleNumbers
-                    ? "bg-muted text-foreground"
+                    ? "text-foreground hover:bg-muted"
                     : "hover:text-foreground hover:bg-muted"
                 )}
                 aria-label={
@@ -300,10 +300,7 @@ export default function Header({
               <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
               <Link
                 href={studioHref}
-                className={cn(
-                  buttonVariants({ variant: "outline", size: "sm" }),
-                  "hidden h-8 gap-1.5 px-2 text-xs sm:inline-flex sm:h-7 sm:px-2.5"
-                )}
+                className="text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors sm:inline-flex sm:h-7 sm:px-2.5"
               >
                 Make editable copy
               </Link>

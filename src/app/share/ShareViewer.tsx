@@ -49,6 +49,7 @@ export default function ShareViewer({
     <div className="relative h-dvh">
       <EditorShell
         initialTab={initialTab}
+        title={shareTitle}
         studioHref={studioHref}
         existingShareMode
       />
@@ -57,7 +58,6 @@ export default function ShareViewer({
           <ContextOverlayCard
             icon={<Eye className="size-3.5" />}
             title={shareTitle}
-            badge={`Shared ${currentView.toUpperCase()}`}
             description={introDescription}
             dismissLabel="Dismiss shared track intro"
             onDismiss={() => setIntroDismissed(true)}
@@ -82,30 +82,6 @@ export default function ShareViewer({
           />
         </div>
       )}
-      {introDismissed ? (
-        <div className="pointer-events-none absolute inset-x-0 top-[calc(3.75rem+env(safe-area-inset-top))] z-30 flex justify-center px-3 sm:top-14">
-          <div className="border-border/60 bg-background/88 pointer-events-auto flex w-full max-w-xl items-center gap-3 rounded-2xl border px-3 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur">
-            <div className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-lg">
-              <Eye className="size-3.5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex min-w-0 items-center gap-2">
-                <p className="text-foreground truncate text-[13px] font-semibold">
-                  {shareTitle}
-                </p>
-                <span className="border-border/60 bg-muted/45 text-muted-foreground hidden rounded-md border px-1.5 py-0.5 text-[10px] font-medium tracking-[0.08em] uppercase sm:inline-flex">
-                  Shared {currentView.toUpperCase()}
-                </span>
-              </div>
-              <p className="text-foreground/75 mt-0.5 truncate text-[11px] leading-relaxed">
-                {authorName
-                  ? `Shared by ${authorName}`
-                  : "Read-only shared track"}
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

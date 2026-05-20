@@ -33,12 +33,12 @@ export default function ViewModeSwitch({
   const outerRadiusClassName = isDrawer
     ? "rounded-lg"
     : isMobile
-      ? "rounded-lg"
+      ? "rounded-md"
       : "rounded-md";
   const innerRadiusClassName = isDrawer
     ? "rounded-md"
     : isMobile
-      ? "rounded-md"
+      ? "rounded-sm"
       : "rounded-sm";
 
   return (

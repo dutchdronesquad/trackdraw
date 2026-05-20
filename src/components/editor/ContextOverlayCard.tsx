@@ -42,7 +42,7 @@ export function ContextOverlayCard({
   return (
     <div
       className={cn(
-        "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border backdrop-blur",
+        "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border backdrop-blur",
         variant === "default" &&
           "border-border/70 bg-background/94 px-3 py-3 shadow-[0_18px_36px_rgba(15,23,42,0.12)]",
         variant === "subtle" &&

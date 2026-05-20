@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ShareViewer from "@/app/share/ShareViewer";
 import { createDefaultDesign } from "@/lib/track/design";
@@ -12,16 +13,19 @@ vi.mock("next/dynamic", () => ({
       existingShareMode,
       initialTab,
       studioHref,
+      title,
     }: {
       existingShareMode?: boolean;
       initialTab?: string;
       studioHref?: string;
+      title?: string;
     }) {
       return (
         <div
           data-existing-share-mode={existingShareMode ? "true" : "false"}
           data-initial-tab={initialTab}
           data-studio-href={studioHref}
+          data-title={title}
           data-testid="editor-shell"
         />
       );
@@ -71,6 +75,7 @@ describe("ShareViewer", () => {
     expect(shell.getAttribute("data-studio-href")).toBe(
       "/studio?token=seed-token&view=3d"
     );
+    expect(shell.getAttribute("data-title")).toBe("Race day handoff");
     expect(screen.getByText("Race day handoff")).toBeTruthy();
     expect(
       screen.getByText(
@@ -85,5 +90,26 @@ describe("ShareViewer", () => {
         .getByRole("link", { name: /Make editable copy/ })
         .getAttribute("href")
     ).toBe("/studio?token=seed-token&view=3d");
+  });
+
+  it("removes the shared track intro when dismissed", async () => {
+    const user = userEvent.setup();
+    const design = createDefaultDesign();
+    design.title = "Race day handoff";
+
+    render(
+      <ShareViewer
+        design={design}
+        initialTab="2d"
+        studioSeedToken="seed-token"
+      />
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Dismiss shared track intro" })
+    );
+
+    expect(screen.queryByText("Race day handoff")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Open 2D" })).toBeNull();
   });
 });

@@ -60,9 +60,7 @@ export default function MobilePanels({
         <div
           className={cn(
             "pointer-events-auto flex items-center gap-1 border border-white/10 bg-slate-950/86 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur",
-            embedMode
-              ? "rounded-full p-1"
-              : "w-full max-w-sm rounded-[1.35rem] p-1.5"
+            embedMode ? "rounded-full p-1" : "w-full max-w-sm rounded-xl p-1.5"
           )}
         >
           <button
@@ -71,16 +69,16 @@ export default function MobilePanels({
               "flex min-w-0 items-center font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white",
               embedMode
                 ? "gap-1.5 rounded-full px-3 py-2 text-xs"
-                : "flex-1 flex-col gap-1 rounded-2xl px-2 py-2 text-[11px]"
+                : "flex-1 flex-col gap-1 rounded-lg px-2 py-2 text-[11px]"
             )}
           >
             <Scan className="size-3.5" />
-            <span>{embedMode ? "View" : "Review"}</span>
+            <span>{embedMode ? "View" : "Preview"}</span>
           </button>
           {!embedMode ? (
             <button
               onClick={onShare}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Share2 className="size-3.5" />
               <span>Share</span>
@@ -89,7 +87,7 @@ export default function MobilePanels({
           {!embedMode ? (
             <Link
               href={studioHref}
-              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <ArrowRight className="size-3.5" />
               <span>Edit copy</span>

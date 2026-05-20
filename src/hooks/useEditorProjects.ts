@@ -20,9 +20,11 @@ import {
   type RestorePointMeta,
 } from "@/lib/projects";
 import { decodeDesign } from "@/lib/share";
+import { nowIso } from "@/lib/track/design";
 import { recordPerfSample } from "@/lib/perf";
 import { useEditor } from "@/store/editor";
 import { toast } from "sonner";
+import { nanoid } from "nanoid";
 import type { TrackDesign } from "@/lib/types";
 
 function formatLocalSaveTime(date = new Date()) {
@@ -36,6 +38,25 @@ function toLocalSaveError(error: unknown) {
   if (error instanceof Error) return error;
   if (typeof error === "string") return new Error(error);
   return new Error("Could not save local project data.");
+}
+
+function getSharedEditableCopyTitle(title: string) {
+  const trimmed = title.trim();
+  if (!trimmed) return "Untitled track copy";
+  if (/^copy of /i.test(trimmed)) return trimmed;
+  return `Copy of ${trimmed}`;
+}
+
+function createSharedEditableCopy(design: TrackDesign): TrackDesign {
+  const timestamp = nowIso();
+
+  return {
+    ...design,
+    id: nanoid(),
+    title: getSharedEditableCopyTitle(design.title),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
 }
 
 export function useEditorProjects({
@@ -121,11 +142,11 @@ export function useEditorProjects({
     if (seedToken) {
       const shared = decodeDesign(seedToken);
       if (shared) {
-        replaceDesign(shared);
+        replaceDesign(createSharedEditableCopy(shared));
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSaveStatusLabel("Loaded from shared link");
+        setSaveStatusLabel("Editable copy created");
         setProjects(listProjects());
-        setRestorePoints(listRestorePointsForProject(shared.id));
+        setRestorePoints([]);
         setInitialized(true);
         return;
       }

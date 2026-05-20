@@ -98,14 +98,14 @@ export default function ShareNotFound() {
             <div className="grid max-w-xl gap-3 sm:grid-cols-2">
               <Link
                 href="/studio"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-medium transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-5 text-sm font-medium transition-colors"
               >
                 <ArrowRight className="size-4" />
                 Open Studio
               </Link>
               <Link
                 href="/"
-                className="border-border/50 bg-muted/18 text-foreground hover:bg-muted/28 inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl border px-5 text-sm font-medium transition-colors"
+                className="border-border/50 bg-muted/18 text-foreground hover:bg-muted/28 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border px-5 text-sm font-medium transition-colors"
               >
                 <RefreshCcw className="size-4" />
                 Back to Home

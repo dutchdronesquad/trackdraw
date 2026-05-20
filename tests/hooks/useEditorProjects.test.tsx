@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "sonner";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
 import { createDefaultDesign } from "@/lib/track/design";
+import { encodeDesign } from "@/lib/share";
 import { useEditor } from "@/store/editor";
 
 vi.mock("sonner", () => ({
@@ -116,5 +117,38 @@ describe("useEditorProjects", () => {
     expect(localStorage.getItem("trackdraw-project-project-1")).toContain(
       "Updated race layout"
     );
+  });
+
+  it("opens shared links as a new editable local copy", () => {
+    vi.stubGlobal("localStorage", createMemoryStorage().storage);
+    const sharedDesign = createDefaultDesign();
+    sharedDesign.id = "account-project-1";
+    sharedDesign.title = "Shared race layout";
+    sharedDesign.createdAt = "2026-05-10T10:00:00.000Z";
+    sharedDesign.updatedAt = "2026-05-10T10:30:00.000Z";
+    const replaceDesign = vi.fn();
+
+    const { result } = renderHook(() =>
+      useEditorProjects({
+        readOnly: false,
+        seedToken: encodeDesign(sharedDesign),
+        design: createDefaultDesign(),
+        historyPaused: false,
+        interactionSessionDepth: 0,
+        replaceDesign,
+      })
+    );
+
+    expect(replaceDesign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Copy of Shared race layout",
+        createdAt: "2026-05-17T12:30:00.000Z",
+        updatedAt: "2026-05-17T12:30:00.000Z",
+      })
+    );
+    const copiedDesign = replaceDesign.mock.calls[0]?.[0];
+    expect(copiedDesign?.id).not.toBe("account-project-1");
+    expect(result.current.saveStatusLabel).toBe("Editable copy created");
+    expect(result.current.restorePoints).toEqual([]);
   });
 });

@@ -13,6 +13,11 @@ import {
 import { Stage, Layer, Circle, Group, Text, Line } from "react-konva";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 import { Scan } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/AppTooltip";
 import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
 import { StableFieldContent } from "@/components/canvas/renderers/field-layer";
 import { getShapeLocalBounds } from "@/components/canvas/renderers/shape-bounds";
@@ -395,17 +400,22 @@ const TrackCanvas = memo(
             display: showDesktopCanvasChrome ? "block" : "none",
           }}
         >
-          <button
-            type="button"
-            onClick={() => {
-              setManualView(false);
-              fitFieldToViewport();
-            }}
-            className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
-            aria-label="Fit to window"
-          >
-            <Scan className="size-3.5" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger
+              onClick={() => {
+                setManualView(false);
+                fitFieldToViewport();
+              }}
+              className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
+              aria-label="Fit to window"
+            >
+              <Scan className="size-3.5" />
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              Fit to window{" "}
+              <span className="ml-1 font-mono text-[11px] opacity-65">0</span>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <Stage
           width={viewportSize.width}

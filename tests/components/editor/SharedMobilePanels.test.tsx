@@ -88,13 +88,13 @@ describe("shared MobilePanels", () => {
     expect(onSetReadOnlyMenuOpen).toHaveBeenCalledWith(true);
   });
 
-  it("keeps the full shared-review toolbar outside embed mode", () => {
+  it("keeps the full shared-preview toolbar outside embed mode", () => {
     renderMobilePanels({
       embedMode: false,
       studioHref: "/studio?fromShare=1",
     });
 
-    expect(screen.getByRole("button", { name: "Review" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Preview" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Share" })).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Edit copy" }).getAttribute("href")
