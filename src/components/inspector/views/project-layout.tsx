@@ -76,7 +76,7 @@ function MapReferenceSection({
                   onChange={(event) =>
                     setMapReferenceOpacity(Number(event.target.value))
                   }
-                  className="h-3 min-w-0 flex-1 accent-neutral-800 dark:accent-neutral-200 lg:h-2"
+                  className="h-3 min-w-0 flex-1 accent-neutral-800 lg:h-2 dark:accent-neutral-200"
                 />
                 <span className="text-muted-foreground/70 w-9 text-right text-[10px] font-medium tabular-nums">
                   {Math.round(reference.opacity * 100)}%

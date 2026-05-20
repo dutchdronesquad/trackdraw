@@ -104,12 +104,12 @@ describe("SingleInspectorView race timing controls", () => {
   it("keeps mobile secondary sections collapsed while transform stays open", () => {
     renderSingleInspector(gate, { mobileInline: true });
 
-    expect(screen.getByRole("button", { name: "Transform" }).className).toContain(
-      "min-h-9"
-    );
-    expect(screen.getByRole("button", { name: "Transform" }).className).toContain(
-      "lg:min-h-6"
-    );
+    expect(
+      screen.getByRole("button", { name: "Transform" }).className
+    ).toContain("min-h-9");
+    expect(
+      screen.getByRole("button", { name: "Transform" }).className
+    ).toContain("lg:min-h-6");
     expect(
       screen
         .getByRole("button", { name: "Transform" })
