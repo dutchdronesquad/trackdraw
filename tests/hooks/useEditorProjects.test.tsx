@@ -127,6 +127,7 @@ describe("useEditorProjects", () => {
     sharedDesign.createdAt = "2026-05-10T10:00:00.000Z";
     sharedDesign.updatedAt = "2026-05-10T10:30:00.000Z";
     const replaceDesign = vi.fn();
+    const onSeedTokenImported = vi.fn();
 
     const { result } = renderHook(() =>
       useEditorProjects({
@@ -136,6 +137,7 @@ describe("useEditorProjects", () => {
         historyPaused: false,
         interactionSessionDepth: 0,
         replaceDesign,
+        onSeedTokenImported,
       })
     );
 
@@ -148,6 +150,13 @@ describe("useEditorProjects", () => {
     );
     const copiedDesign = replaceDesign.mock.calls[0]?.[0];
     expect(copiedDesign?.id).not.toBe("account-project-1");
+    expect(onSeedTokenImported).toHaveBeenCalledTimes(1);
+    expect(localStorage.getItem("trackdraw-design")).toContain(
+      "Copy of Shared race layout"
+    );
+    expect(
+      localStorage.getItem(`trackdraw-project-${copiedDesign?.id}`)
+    ).toContain("Copy of Shared race layout");
     expect(result.current.saveStatusLabel).toBe("Editable copy created");
     expect(result.current.restorePoints).toEqual([]);
   });

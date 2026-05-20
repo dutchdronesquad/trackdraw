@@ -66,6 +66,7 @@ export function useEditorProjects({
   historyPaused,
   interactionSessionDepth,
   replaceDesign,
+  onSeedTokenImported,
 }: {
   readOnly: boolean;
   seedToken?: string;
@@ -73,6 +74,7 @@ export function useEditorProjects({
   historyPaused: boolean;
   interactionSessionDepth: number;
   replaceDesign: (design: TrackDesign) => void;
+  onSeedTokenImported?: () => void;
 }) {
   const [projects, setProjects] = useState<ProjectMeta[]>([]);
   const [restorePoints, setRestorePoints] = useState<RestorePointMeta[]>([]);
@@ -142,10 +144,28 @@ export function useEditorProjects({
     if (seedToken) {
       const shared = decodeDesign(seedToken);
       if (shared) {
-        replaceDesign(createSharedEditableCopy(shared));
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSaveStatusLabel("Editable copy created");
-        setProjects(listProjects());
+        const editableCopy = createSharedEditableCopy(shared);
+        replaceDesign(editableCopy);
+        try {
+          const startedAt = performance.now();
+          const draftResult = saveLocalDraft(editableCopy);
+          const projectResult = saveProjectWithResult(editableCopy);
+
+          if (!draftResult.ok || !projectResult.ok) {
+            throw toLocalSaveError(draftResult.error ?? projectResult.error);
+          }
+
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setProjects(listProjects());
+          recordPerfSample(
+            "autosave:localStorage",
+            performance.now() - startedAt
+          );
+          onSeedTokenImported?.();
+          setSaveStatusLabel("Editable copy created");
+        } catch (error) {
+          reportLocalSaveFailure(error);
+        }
         setRestorePoints([]);
         setInitialized(true);
         return;

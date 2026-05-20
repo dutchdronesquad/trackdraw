@@ -321,6 +321,14 @@ export default function EditorShell({
     setMobileToolsOpen,
   });
 
+  const handleSeedTokenImported = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("token");
+    const nextQuery = params.toString();
+    const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [pathname, router, searchParams]);
+
   const {
     projects,
     setProjects,
@@ -347,6 +355,7 @@ export default function EditorShell({
     historyPaused,
     interactionSessionDepth,
     replaceDesign,
+    onSeedTokenImported: handleSeedTokenImported,
   });
 
   // Sync tab when initialTab prop changes (e.g. ShareViewer navigates ?view=3d via Link)
