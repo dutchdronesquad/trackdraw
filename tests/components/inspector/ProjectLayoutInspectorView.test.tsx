@@ -57,7 +57,7 @@ describe("ProjectLayoutInspectorView map reference controls", () => {
         addEventListener: vi.fn(),
         matches: false,
         removeEventListener: vi.fn(),
-      }),
+      })
     );
   });
 
