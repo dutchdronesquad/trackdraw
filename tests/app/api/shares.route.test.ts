@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultDesign } from "@/lib/track/design";
 import type { StoredShare, UserShare } from "@/lib/server/shares";
 
@@ -70,6 +70,10 @@ function postRequest(body: unknown) {
 describe("shares API route", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("creates anonymous temporary shares with requested expiry", async () => {
