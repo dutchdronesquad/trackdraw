@@ -56,9 +56,9 @@ function MapReferenceSection({
   const [dialogOpen, setDialogOpen] = useState(false);
   const reference = design.mapReference ?? null;
   const actionBtnClass =
-    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+    "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-xs font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8 lg:text-[11px]";
   const actionBtnPrimaryClass =
-    "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/8 px-2.5 text-[11px] font-medium text-brand-primary transition-colors hover:bg-brand-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+    "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/8 px-2.5 text-xs font-medium text-brand-primary transition-colors hover:bg-brand-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8 lg:text-[11px]";
 
   return (
     <Section title="Map reference">
@@ -76,7 +76,7 @@ function MapReferenceSection({
                   onChange={(event) =>
                     setMapReferenceOpacity(Number(event.target.value))
                   }
-                  className="h-2 min-w-0 flex-1 accent-neutral-800 dark:accent-neutral-200"
+                  className="h-3 min-w-0 flex-1 accent-neutral-800 dark:accent-neutral-200 lg:h-2"
                 />
                 <span className="text-muted-foreground/70 w-9 text-right text-[10px] font-medium tabular-nums">
                   {Math.round(reference.opacity * 100)}%
@@ -95,7 +95,11 @@ function MapReferenceSection({
         ) : null}
 
         <div
-          className={reference ? "grid grid-cols-3 gap-1.5" : "grid gap-1.5"}
+          className={
+            reference
+              ? "grid grid-cols-3 gap-2 lg:gap-1.5"
+              : "grid gap-2 lg:gap-1.5"
+          }
         >
           <button
             type="button"
@@ -104,7 +108,7 @@ function MapReferenceSection({
             className={actionBtnPrimaryClass}
             onClick={() => setDialogOpen(true)}
           >
-            <MapPinned className="size-3" />
+            <MapPinned className="size-4 lg:size-3" />
             <span>{reference ? "Edit" : "Add map"}</span>
           </button>
           {reference ? (
@@ -127,9 +131,9 @@ function MapReferenceSection({
                 }
               >
                 {reference.visible === false ? (
-                  <Eye className="size-3" />
+                  <Eye className="size-4 lg:size-3" />
                 ) : (
-                  <EyeOff className="size-3" />
+                  <EyeOff className="size-4 lg:size-3" />
                 )}
                 <span>{reference.visible === false ? "Show" : "Hide"}</span>
               </button>
@@ -140,7 +144,7 @@ function MapReferenceSection({
                 className={`${actionBtnClass} border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
                 onClick={clearMapReference}
               >
-                <Trash2 className="size-3" />
+                <Trash2 className="size-4 lg:size-3" />
                 <span>Remove</span>
               </button>
             </>

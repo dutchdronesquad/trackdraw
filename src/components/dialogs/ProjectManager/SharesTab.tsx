@@ -68,6 +68,10 @@ export function ProjectManagerSharesTab({
 
   return (
     <div className="space-y-2">
+      <p className="text-muted-foreground px-1 pb-1 text-[11px] leading-relaxed">
+        Shares are read-only review links. Export JSON when someone needs an
+        editable TrackDraw backup.
+      </p>
       {shares.map((share) => {
         const shareUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/share/${encodeURIComponent(share.token)}`;
         const projectTitle = share.projectId

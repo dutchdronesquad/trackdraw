@@ -144,11 +144,15 @@ Suggested first slices:
 - Mobile editor ergonomics pass
   - Started with larger, more consistent mobile app-menu touch targets for project, share, transfer, account, dashboard, and sign-out actions
   - Added steadier touch targets for path builder, quick adjust, and multi-select overlay actions during mobile editing
+  - Improved mobile map-reference controls with larger action targets and easier opacity adjustment
+  - Enlarged mobile inspector section headers so collapsible panels are easier to open and close on touch screens
+  - Improved mobile Project Manager action targets for opening and scanning local-project actions
 - Selection and transform reliability pass
   - Started with store-level locked-shape guards for direct patches, batch patches, and route waypoint edits
   - Added locked-selection guards and shortcut feedback for duplicate/delete paths so shortcuts, context menus, and mobile overlays cannot mutate selections that include locked shapes
 - Export/share confidence pass
   - Started by clarifying which exports are read-only visuals, which JSON files are editable backups, what Race Pack is for, and where simulator export remains experimental
+  - Clarified managed shares as read-only review links and JSON export as the editable handoff path
 - Performance and large-layout stability
   - Started with bounded dense-grid rendering for SVG/PDF/PNG exports so fine grid settings do not explode export payload size
   - Added long-route obstacle-numbering coverage with bounded route-segment scans for dense gate layouts

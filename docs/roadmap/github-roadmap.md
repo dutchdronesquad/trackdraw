@@ -53,6 +53,12 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
           Make project, share, import, export, account, dashboard, and sign-out actions easier to hit and scan in the mobile app menu.
     - [x] Mobile editing overlay touch targets
           Give path builder, quick adjust, and multi-select overlay actions steadier tap targets for venue-side editing on small screens.
+    - [x] Mobile map reference controls
+          Make map reference actions and opacity adjustment easier to use from the mobile layout inspector.
+    - [x] Mobile inspector section targets
+          Make collapsible inspector sections easier to open and close on touch screens while preserving compact desktop density.
+    - [x] Mobile Project Manager action targets
+          Make local-project action menus easier to open and scan from the mobile Project Manager.
   - [ ] Selection and transform reliability pass
         Add targeted fixes and regression coverage for locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, and undo/redo.
     - [x] Locked shape mutation guards
@@ -63,6 +69,8 @@ The v1.7.0 release-sized work is archived below. The REST API, live race overlay
         Clarify what each export/share output includes, what is intentionally excluded, and which limitations matter for race-day handoff.
     - [x] Export output purpose copy
           Clarify read-only visual outputs, editable JSON backups, PDF handoff intent, and experimental simulator limitations in export and share flows.
+    - [x] Managed share limitation copy
+          Clarify in Project Manager that managed shares are read-only review links and JSON export is the editable handoff path.
   - [ ] Performance and large-layout stability
         Stress-test larger layouts with dense obstacles, long routes, map references, 3D preview, and PDF/export, then apply targeted performance fixes.
     - [x] Bounded dense-grid export rendering

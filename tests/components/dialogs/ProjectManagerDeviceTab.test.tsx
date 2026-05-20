@@ -8,8 +8,10 @@ import { TooltipProvider } from "@/components/AppTooltip";
 import { ProjectManagerDeviceTab } from "@/components/dialogs/ProjectManager/DeviceTab";
 import type { ProjectMeta } from "@/lib/projects";
 
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
 vi.mock("@/hooks/use-mobile", () => ({
-  useIsMobile: () => false,
+  useIsMobile: () => mobileState.isMobile,
 }));
 
 const project: ProjectMeta = {
@@ -54,6 +56,10 @@ function renderDeviceTab(
 }
 
 describe("ProjectManagerDeviceTab", () => {
+  afterEach(() => {
+    mobileState.isMobile = false;
+  });
+
   afterEach(() => {
     cleanup();
   });
@@ -124,5 +130,30 @@ describe("ProjectManagerDeviceTab", () => {
     expect(screen.getByText("Only on this device")).toBeTruthy();
     expect(screen.getByText(/local copy synced/)).toBeTruthy();
     expect(screen.getByText(/only on this device/)).toBeTruthy();
+  });
+
+  it("uses larger mobile project action targets", async () => {
+    mobileState.isMobile = true;
+    const user = userEvent.setup();
+
+    renderDeviceTab();
+
+    const manageButton = screen.getByRole("button", {
+      name: "Manage Race day layout",
+    });
+    expect(manageButton.className).toContain("size-10");
+
+    await user.click(manageButton);
+
+    for (const label of [
+      /^Sync to account/,
+      /^Export JSON/,
+      /^Rename/,
+      /^Delete/,
+    ]) {
+      expect(screen.getByRole("button", { name: label }).className).toContain(
+        "min-h-16"
+      );
+    }
   });
 });

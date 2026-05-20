@@ -369,11 +369,11 @@ export function ProjectManagerDeviceTab({
                       setMobileActionsId(p.id);
                       setMobileDeleteConfirm(false);
                     }}
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors"
                     title="More actions"
                     aria-label={`Manage ${p.title || "project"}`}
                   >
-                    <MoreHorizontal className="size-3.5" />
+                    <MoreHorizontal className="size-4" />
                   </button>
                 ) : isCurrent ? (
                   <CurrentBadge label="open" />
@@ -635,7 +635,7 @@ export function ProjectManagerDeviceTab({
                         }
                         closeMobileActions();
                       }}
-                      className="border-border/60 hover:bg-muted flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
+                      className="border-border/60 hover:bg-muted flex min-h-16 w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
                     >
                       <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
                         {mobileActionHasConflict ||
@@ -663,7 +663,7 @@ export function ProjectManagerDeviceTab({
                         onExportProject(mobileActionProject.id);
                         closeMobileActions();
                       }}
-                      className="border-border/60 hover:bg-muted flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
+                      className="border-border/60 hover:bg-muted flex min-h-16 w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
                     >
                       <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
                         <Download className="size-4" />
@@ -685,7 +685,7 @@ export function ProjectManagerDeviceTab({
                         startRename(mobileActionProject);
                         closeMobileActions();
                       }}
-                      className="border-border/60 hover:bg-muted flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
+                      className="border-border/60 hover:bg-muted flex min-h-16 w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition-colors"
                     >
                       <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
                         <Pencil className="size-4" />
@@ -736,7 +736,7 @@ export function ProjectManagerDeviceTab({
                       <button
                         type="button"
                         onClick={() => setMobileDeleteConfirm(true)}
-                        className="text-destructive hover:bg-destructive/10 flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors"
+                        className="text-destructive hover:bg-destructive/10 flex min-h-16 w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors"
                       >
                         <span className="bg-destructive/10 text-destructive flex size-9 shrink-0 items-center justify-center rounded-xl">
                           <Trash2 className="size-4" />

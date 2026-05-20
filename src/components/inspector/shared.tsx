@@ -110,7 +110,7 @@ export function Section({
           onClick={() => setOpen((current) => !current)}
           aria-expanded={isOpen}
           aria-controls={contentId}
-          className="text-muted-foreground/75 hover:text-foreground focus-visible:ring-ring/40 mb-2 flex min-h-6 w-full shrink-0 items-center justify-between gap-3 rounded-sm text-left text-[11px] font-medium tracking-[0.12em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
+          className="text-muted-foreground/75 hover:text-foreground focus-visible:ring-ring/40 mb-2 flex min-h-9 w-full shrink-0 items-center justify-between gap-3 rounded-sm text-left text-[11px] font-medium tracking-[0.12em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:min-h-6"
         >
           <span>{title}</span>
           <ChevronDown

@@ -94,6 +94,24 @@ describe("ProjectManagerSharesTab", () => {
     ).toBeTruthy();
   });
 
+  it("clarifies that managed shares are review links, not editable backups", () => {
+    render(
+      <TooltipProvider>
+        <ProjectManagerSharesTab
+          accountProjectTitleById={{}}
+          loading={false}
+          shares={[createShare()]}
+        />
+      </TooltipProvider>
+    );
+
+    expect(
+      screen.getByText(
+        "Shares are read-only review links. Export JSON when someone needs an editable TrackDraw backup."
+      )
+    ).toBeTruthy();
+  });
+
   it("keeps share actions accessible and visible on touch layouts", () => {
     render(
       <TooltipProvider>
