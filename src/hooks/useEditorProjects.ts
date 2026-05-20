@@ -155,16 +155,17 @@ export function useEditorProjects({
             throw toLocalSaveError(draftResult.error ?? projectResult.error);
           }
 
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          setProjects(listProjects());
           recordPerfSample(
             "autosave:localStorage",
             performance.now() - startedAt
           );
           onSeedTokenImported?.();
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setSaveStatusLabel("Editable copy created");
         } catch (error) {
           reportLocalSaveFailure(error);
+        } finally {
+          setProjects(listProjects());
         }
         setRestorePoints([]);
         setInitialized(true);

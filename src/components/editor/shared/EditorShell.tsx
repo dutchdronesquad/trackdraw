@@ -58,7 +58,7 @@ const MobilePanels = dynamic(() => import("./MobilePanels"), { ssr: false });
 export default function EditorShell({
   initialTab = "2d",
   embedMode = false,
-  title = "Untitled track",
+  title,
   studioHref,
   existingShareMode = false,
 }: {
@@ -71,6 +71,8 @@ export default function EditorShell({
   usePerfMetric("render:share/EditorShell");
 
   const hasPath = useEditor(selectHasPath);
+  const designTitle = useEditor((state) => state.track.design.title);
+  const effectiveTitle = title ?? (designTitle || "Untitled track");
   const isMobile = useIsMobile();
   const router = useRouter();
   const pathname = usePathname();
@@ -137,7 +139,7 @@ export default function EditorShell({
             tab={tab}
             onTabChange={handleTabChange}
             embedMode={embedMode}
-            title={title}
+            title={effectiveTitle}
             studioHref={studioHref}
             showObstacleNumbers={showObstacleNumbers}
             onToggleObstacleNumbers={() =>
