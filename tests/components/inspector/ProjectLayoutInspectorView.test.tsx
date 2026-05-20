@@ -51,15 +51,19 @@ function renderProjectLayoutInspector(design = withMapReference()) {
 
 describe("ProjectLayoutInspectorView map reference controls", () => {
   beforeEach(() => {
-    window.matchMedia = vi.fn().mockReturnValue({
-      addEventListener: vi.fn(),
-      matches: false,
-      removeEventListener: vi.fn(),
-    });
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn().mockReturnValue({
+        addEventListener: vi.fn(),
+        matches: false,
+        removeEventListener: vi.fn(),
+      }),
+    );
   });
 
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
   });
 
   it("keeps map reference actions large enough for mobile use", () => {
