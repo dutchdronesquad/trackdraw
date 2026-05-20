@@ -102,7 +102,7 @@ export function useEditorProjects({
   }, []);
 
   const reportLocalSaveFailure = useCallback(
-    (error: unknown) => {
+    (error: unknown, onRecovered?: () => void) => {
       const localSaveError = toLocalSaveError(error);
 
       setSaveStatusLabel("Local save failed");
@@ -115,6 +115,7 @@ export function useEditorProjects({
           onClick: () => {
             try {
               saveDesignLocally(useEditor.getState().track.design);
+              onRecovered?.();
               toast.success("Local save recovered", {
                 description: "The latest local copy was saved.",
               });
@@ -163,7 +164,7 @@ export function useEditorProjects({
           // eslint-disable-next-line react-hooks/set-state-in-effect
           setSaveStatusLabel("Editable copy created");
         } catch (error) {
-          reportLocalSaveFailure(error);
+          reportLocalSaveFailure(error, onSeedTokenImported);
         } finally {
           setProjects(listProjects());
         }
