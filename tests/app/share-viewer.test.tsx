@@ -109,7 +109,14 @@ describe("ShareViewer", () => {
       screen.getByRole("button", { name: "Dismiss shared track intro" })
     );
 
-    expect(screen.queryByText("Race day handoff")).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Dismiss shared track intro" })
+    ).toBeNull();
+    expect(
+      screen.queryByText(
+        "Read-only, no edits are saved. Switch to 3D or make your own editable copy in Studio."
+      )
+    ).toBeNull();
     expect(screen.queryByRole("link", { name: "Open 2D" })).toBeNull();
   });
 });

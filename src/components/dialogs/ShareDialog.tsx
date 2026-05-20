@@ -103,7 +103,7 @@ function readAnonShare(): AnonShare | null {
   try {
     const raw =
       typeof window !== "undefined"
-        ? localStorage.getItem(LS_ANON_SHARE_KEY)
+        ? window.localStorage.getItem(LS_ANON_SHARE_KEY)
         : null;
     if (!raw) return null;
     const p = JSON.parse(raw) as Partial<AnonShare>;
@@ -121,7 +121,7 @@ function readAnonShare(): AnonShare | null {
 
 function writeAnonShare(share: AnonShare) {
   try {
-    localStorage.setItem(LS_ANON_SHARE_KEY, JSON.stringify(share));
+    window.localStorage.setItem(LS_ANON_SHARE_KEY, JSON.stringify(share));
   } catch {
     /* quota */
   }
@@ -129,7 +129,7 @@ function writeAnonShare(share: AnonShare) {
 
 function clearAnonShare() {
   try {
-    localStorage.removeItem(LS_ANON_SHARE_KEY);
+    window.localStorage.removeItem(LS_ANON_SHARE_KEY);
   } catch {
     /* ignore */
   }
@@ -266,8 +266,7 @@ export default function ShareDialog({
     share?.galleryState === "listed" || share?.galleryState === "featured";
   const blockedByModeration = share?.galleryState === "hidden";
   const showEmbedSection = isAuthenticated && !existingShareMode;
-  const showGallerySection = isAuthenticated && !!projectId;
-  const isProjectPublishedShare = isAuthenticated && !!projectId;
+  const isAccountProjectShare = isAuthenticated && !!projectId;
 
   const galleryTitleValid = isGalleryTitleValid(galleryTitleInput);
   const galleryDescriptionValid = isGalleryDescriptionValid(
@@ -743,7 +742,7 @@ export default function ShareDialog({
     ? linkNeedsRefresh
       ? "Update link"
       : "Copy link"
-    : isProjectPublishedShare
+    : isAccountProjectShare
       ? "Create link"
       : isAuthenticated
         ? "Create new link"
@@ -846,7 +845,7 @@ export default function ShareDialog({
               },
             ]
           : []),
-        ...(showGallerySection
+        ...(isAccountProjectShare
           ? [
               {
                 id: "gallery",
@@ -873,7 +872,7 @@ export default function ShareDialog({
       description: existingShareMode
         ? "Copy or resend this published read-only link, or open Studio to make your own editable copy."
         : isAuthenticated
-          ? isProjectPublishedShare
+          ? isAccountProjectShare
             ? "Create or update the durable read-only link for this account project."
             : "Create a separate durable read-only link for this editable copy or local track."
           : "Create a temporary read-only snapshot link and control how long it stays active.",
@@ -898,7 +897,7 @@ export default function ShareDialog({
 
   return (
     <>
-      {showGallerySection && showGalleryForm && !isGalleryVisible && (
+      {isAccountProjectShare && showGalleryForm && !isGalleryVisible && (
         <GalleryPreviewRenderer onCapture={setGalleryPreviewDataUrl} />
       )}
 
@@ -983,12 +982,12 @@ export default function ShareDialog({
                 ) : (
                   <div className="border-border/60 bg-muted/18 rounded-xl border px-3 py-3">
                     <p className="text-foreground text-sm font-medium">
-                      {isProjectPublishedShare
+                      {isAccountProjectShare
                         ? "Saved project link"
                         : "New share link"}
                     </p>
                     <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                      {isProjectPublishedShare
+                      {isAccountProjectShare
                         ? "This saved account project uses one durable read-only link. Updating it keeps the same URL with the latest design."
                         : "This editable copy gets its own durable read-only link. It will not update another project's published link."}
                     </p>
@@ -1004,12 +1003,12 @@ export default function ShareDialog({
                       <p className="text-foreground text-sm font-medium">
                         {share
                           ? share.shareType === "published"
-                            ? isProjectPublishedShare
+                            ? isAccountProjectShare
                               ? "Saved project link"
                               : "Separate published link"
                             : "Temporary link"
                           : isAuthenticated
-                            ? isProjectPublishedShare
+                            ? isAccountProjectShare
                               ? "No saved project link yet"
                               : "No separate link yet"
                             : "No temporary link yet"}
@@ -1018,7 +1017,7 @@ export default function ShareDialog({
                         {share
                           ? getLifetimeCopy(hostname, share.expiresInDays)
                           : isAuthenticated
-                            ? isProjectPublishedShare
+                            ? isAccountProjectShare
                               ? "Create one durable URL for this account project. Future updates can keep the same link."
                               : "Create a durable URL for this copy without changing any earlier share."
                             : "Choose when it expires and create a read-only snapshot."}

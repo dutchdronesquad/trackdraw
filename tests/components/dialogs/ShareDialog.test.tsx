@@ -25,6 +25,32 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams("view=2d"),
 }));
 
+const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(
+  window,
+  "localStorage"
+);
+
+function createMemoryStorage(): Storage {
+  const store = new Map<string, string>();
+
+  return {
+    get length() {
+      return store.size;
+    },
+    clear: vi.fn(() => {
+      store.clear();
+    }),
+    getItem: vi.fn((key: string) => store.get(key) ?? null),
+    key: vi.fn((index: number) => Array.from(store.keys())[index] ?? null),
+    removeItem: vi.fn((key: string) => {
+      store.delete(key);
+    }),
+    setItem: vi.fn((key: string, value: string) => {
+      store.set(key, value);
+    }),
+  };
+}
+
 function renderShareDialog(projectId: string | null = null) {
   render(
     <ShareDialog open onOpenChange={vi.fn()} hasPath projectId={projectId} />
@@ -33,12 +59,18 @@ function renderShareDialog(projectId: string | null = null) {
 
 describe("ShareDialog", () => {
   beforeEach(() => {
+    useEditor.getState().newProject();
+    useEditor.getState().clearHistory();
     authState.session = {
       user: {
         id: "user-1",
         name: "Klaas",
       },
     };
+    Object.defineProperty(window, "localStorage", {
+      configurable: true,
+      value: createMemoryStorage(),
+    });
     vi.stubGlobal(
       "matchMedia",
       vi.fn(() => ({
@@ -68,6 +100,17 @@ describe("ShareDialog", () => {
 
   afterEach(() => {
     cleanup();
+    useEditor.getState().newProject();
+    useEditor.getState().clearHistory();
+    if (originalLocalStorageDescriptor) {
+      Object.defineProperty(
+        window,
+        "localStorage",
+        originalLocalStorageDescriptor
+      );
+    } else {
+      Reflect.deleteProperty(window, "localStorage");
+    }
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });

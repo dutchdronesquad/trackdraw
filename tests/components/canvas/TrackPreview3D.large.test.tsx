@@ -138,12 +138,15 @@ function createDensePreviewDesign() {
 
 describe("TrackPreview3D large layouts", () => {
   beforeEach(() => {
+    useEditor.getState().newProject();
+    useEditor.getState().clearHistory();
     useEditor.getState().replaceDesign(createDensePreviewDesign());
   });
 
   afterEach(() => {
     cleanup();
     useEditor.getState().newProject();
+    useEditor.getState().clearHistory();
   });
 
   it("renders all dense-layout shapes into the 3D preview scene", () => {
