@@ -11,6 +11,11 @@
   "commitMessagePrefix": "⬆️",
   "packageRules": [
     {
+      "matchPackagePrefixes": ["@radix-ui/"],
+      "groupName": "Radix UI",
+      "groupSlug": "radix-ui"
+    },
+    {
       "matchManagers": ["github-actions"],
       "addLabels": ["github_actions"],
       "rangeStrategy": "pin",
