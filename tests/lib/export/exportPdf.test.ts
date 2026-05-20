@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createDefaultDesign } from "@/lib/track/design";
+import { createDefaultDesign, normalizeDesign } from "@/lib/track/design";
+import { designToSvg } from "@/lib/export/exportSvg";
 
 const pdfMock = vi.hoisted(() => ({
   instances: [] as Array<{
@@ -79,6 +80,55 @@ vi.mock("@/lib/vendor/jspdf", () => {
 
 import { exportPdf } from "@/lib/export/exportPdf";
 
+const inventory = {
+  gate: 0,
+  ladder: 0,
+  divegate: 0,
+  startfinish: 0,
+  flag: 0,
+  cone: 0,
+};
+
+function createDensePracticalDesign() {
+  const routePoints = Array.from({ length: 80 }, (_, index) => ({
+    x: 4 + index * 0.75,
+    y: 20 + Math.sin(index / 6) * 7,
+    z: index % 4 === 0 ? 1 : 0,
+  }));
+
+  return normalizeDesign({
+    id: "pdf-dense-layout",
+    version: 1,
+    title: "Dense PDF layout",
+    description: "",
+    tags: [],
+    authorName: "",
+    inventory,
+    field: { width: 80, height: 60, origin: "tl", gridStep: 0.1, ppm: 15 },
+    shapes: [
+      {
+        id: "long-route",
+        kind: "polyline",
+        x: 0,
+        y: 0,
+        rotation: 0,
+        points: routePoints,
+      },
+      ...routePoints.slice(1).map((point, index) => ({
+        id: `gate-${String(index + 1).padStart(3, "0")}`,
+        kind: "gate" as const,
+        x: point.x,
+        y: point.y,
+        rotation: index % 3 === 0 ? 15 : 0,
+        width: 2,
+        height: 2,
+      })),
+    ],
+    createdAt: "2026-04-13T10:00:00.000Z",
+    updatedAt: "2026-04-13T10:00:00.000Z",
+  });
+}
+
 class MockImage {
   onerror: (() => void) | null = null;
   onload: (() => void) | null = null;
@@ -143,5 +193,27 @@ describe("exportPdf", () => {
       pdf.textCalls.some((call) => call.includes("Standard PDF Smoke"))
     ).toBe(true);
     expect(pdf.textCalls.some((call) => call.includes("60 × 40 m"))).toBe(true);
+  });
+
+  it("passes dense practical layouts through Race Pack PDF rendering", async () => {
+    const design = createDensePracticalDesign();
+
+    await exportPdf(null as never, design, "dense-race-pack.pdf", "dark", {
+      includeObstacleNumbers: true,
+      preset: "race-day",
+      shareUrl: "https://trackdraw.app/share/share-token",
+    });
+
+    const pdf = pdfMock.instances[0];
+    expect(pdf.savedFilenames).toEqual(["dense-race-pack.pdf"]);
+    expect(pdf.pages).toBeGreaterThan(3);
+    expect(designToSvg).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "pdf-dense-layout" }),
+      "dark",
+      expect.objectContaining({
+        includeObstacleNumbers: true,
+        preset: "race-day",
+      })
+    );
   });
 });

@@ -1,11 +1,17 @@
 // @vitest-environment happy-dom
 
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ExportDialog from "@/components/dialogs/ExportDialog";
 import { useEditor } from "@/store/editor";
+
+const mocks = vi.hoisted(() => ({
+  downloadJsonFile: vi.fn(),
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
+}));
 
 vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => true,
@@ -35,10 +41,24 @@ vi.mock("@/components/MobileDrawer", () => ({
     ) : null,
 }));
 
+vi.mock("@/lib/export/download-json", () => ({
+  downloadJsonFile: mocks.downloadJsonFile,
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: mocks.toastError,
+    success: mocks.toastSuccess,
+  },
+}));
+
 describe("ExportDialog mobile workflow", () => {
   beforeEach(() => {
     useEditor.getState().newProject();
     useEditor.getState().clearHistory();
+    mocks.downloadJsonFile.mockReset();
+    mocks.toastError.mockReset();
+    mocks.toastSuccess.mockReset();
   });
 
   afterEach(() => {
@@ -113,5 +133,33 @@ describe("ExportDialog mobile workflow", () => {
     expect(
       screen.getByText("Experimental file for testing; check after import.")
     ).toBeTruthy();
+  });
+
+  it("reports JSON export failures without closing the dialog", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    mocks.downloadJsonFile.mockImplementation(() => {
+      throw new Error("JSON payload could not be serialized");
+    });
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={onOpenChange}
+        open
+      />
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Export Project File" })
+    );
+
+    await waitFor(() => {
+      expect(mocks.toastError).toHaveBeenCalledWith(
+        "Export failed: JSON payload could not be serialized"
+      );
+    });
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });

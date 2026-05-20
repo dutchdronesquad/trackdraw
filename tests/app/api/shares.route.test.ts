@@ -178,6 +178,26 @@ describe("shares API route", () => {
     expect(createShare).not.toHaveBeenCalled();
   });
 
+  it("returns a recoverable publish failure when share creation fails", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(null);
+    vi.mocked(createShare).mockRejectedValue(new Error("D1 unavailable"));
+
+    const response = await POST(postRequest({ design: createDefaultDesign() }));
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Failed to publish share",
+    });
+    expect(consoleError).toHaveBeenCalledWith(
+      "[TrackDraw] Failed to publish share",
+      expect.objectContaining({ error: expect.any(Error) })
+    );
+  });
+
   it("returns a user's active project share", async () => {
     const share: UserShare = {
       token: "share-token",

@@ -3,6 +3,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { designToSvg, exportSvg } from "@/lib/export/exportSvg";
 import { normalizeDesign } from "@/lib/track/design";
+import { getObstacleNumberingReport } from "@/lib/track/obstacleNumbering";
 
 const inventory = {
   gate: 0,
@@ -117,6 +118,71 @@ describe("exportSvg", () => {
 
     expect(lineCount).toBeLessThan(300);
     expect(svg).toContain(`60×40 m`);
+  });
+
+  it("keeps dense practical layouts numbered and bounded in SVG export", () => {
+    const routePoints = Array.from({ length: 120 }, (_, index) => ({
+      x: 4 + index * 0.8,
+      y: 20 + Math.sin(index / 8) * 8,
+      z: index % 5 === 0 ? 1 : 0,
+    }));
+    const gates = routePoints.slice(1).map((point, index) => ({
+      id: `gate-${String(index + 1).padStart(3, "0")}`,
+      kind: "gate" as const,
+      x: point.x,
+      y: point.y,
+      rotation: index % 4 === 0 ? 15 : 0,
+      width: 2,
+      height: 2,
+    }));
+    const design = normalizeDesign({
+      id: "design-svg-large-layout",
+      version: 1,
+      title: "Large race-day layout",
+      description: "",
+      tags: [],
+      authorName: "",
+      inventory,
+      field: { width: 120, height: 80, origin: "tl", gridStep: 0.1, ppm: 15 },
+      mapReference: {
+        type: "map",
+        provider: "esri-world-imagery",
+        mapStyle: "satellite",
+        centerLat: 52.1,
+        centerLng: 5.2,
+        zoom: 18,
+        rotationDeg: 8,
+        opacity: 0.65,
+        visible: true,
+        locked: true,
+      },
+      shapes: [
+        {
+          id: "long-route",
+          kind: "polyline",
+          x: 0,
+          y: 0,
+          rotation: 0,
+          points: routePoints,
+        },
+        ...gates,
+      ],
+      createdAt: "2026-04-13T10:00:00.000Z",
+      updatedAt: "2026-04-13T10:00:00.000Z",
+    });
+
+    const report = getObstacleNumberingReport(design);
+    const svg = designToSvg(design, "dark");
+    const gridLineCount = svg.match(/<line /g)?.length ?? 0;
+
+    expect(report.status).toBe("ready");
+    expect(report.mappedObstacleCount).toBe(gates.length);
+    expect(report.obstacleNumberMap.get("gate-001")).toBe(1);
+    expect(report.obstacleNumberMap.get("gate-119")).toBe(119);
+    expect(gridLineCount).toBeLessThan(500);
+    expect(svg.length).toBeLessThan(350_000);
+    expect(svg).toContain(`Large race-day layout`);
+    expect(svg).toContain(`>119</text>`);
   });
 
   it("colors timing point gates independently from obstacle numbers", () => {

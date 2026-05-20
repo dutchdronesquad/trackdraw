@@ -83,6 +83,52 @@ describe("ImportDialog", () => {
     );
   });
 
+  it("rejects JSON that is not TrackDraw project data", async () => {
+    const user = userEvent.setup();
+    const { input } = renderImportDialog();
+
+    await user.upload(
+      input,
+      new File([JSON.stringify({ app: "other-planner" })], "track.json", {
+        type: "application/json",
+      })
+    );
+
+    expect(screen.getByRole("alert").textContent).toContain(
+      "This does not look like a TrackDraw project."
+    );
+    expect(toast.error).toHaveBeenCalledWith(
+      "Import failed",
+      expect.objectContaining({
+        description: "Choose a JSON project file exported from TrackDraw.",
+      })
+    );
+  });
+
+  it("shows a recoverable error when the selected file cannot be read", async () => {
+    const user = userEvent.setup();
+    const { input } = renderImportDialog();
+    const unreadableFile = new File(["{}"], "track.json", {
+      type: "application/json",
+    });
+    Object.defineProperty(unreadableFile, "text", {
+      value: vi.fn().mockRejectedValue(new Error("Read failed")),
+    });
+
+    await user.upload(input, unreadableFile);
+
+    expect(screen.getByRole("alert").textContent).toContain(
+      "TrackDraw could not read this file."
+    );
+    expect(toast.error).toHaveBeenCalledWith(
+      "Import failed",
+      expect.objectContaining({
+        description:
+          "TrackDraw could not read the selected file. Try again or choose another backup.",
+      })
+    );
+  });
+
   it("keeps the preview confirmation step for valid project files", async () => {
     const user = userEvent.setup();
     const onBeforeConfirm = vi.fn();

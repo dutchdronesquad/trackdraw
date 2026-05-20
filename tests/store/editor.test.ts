@@ -576,6 +576,39 @@ describe("editor store history", () => {
     expect(getPastStatesCount()).toBe(0);
   });
 
+  it("does not duplicate mixed locked selections or create history", () => {
+    const state = useEditor.getState();
+    const lockedId = state.addShape({
+      kind: "gate",
+      x: 10,
+      y: 8,
+      rotation: 5,
+      width: 2,
+      height: 2,
+      locked: true,
+    });
+    const editableId = state.addShape({
+      kind: "flag",
+      x: 12,
+      y: 9,
+      rotation: 0,
+      radius: 0.25,
+    });
+
+    state.setSelection([lockedId, editableId]);
+    state.clearHistory();
+    const beforeCount = useEditor.getState().track.design.shapeOrder.length;
+    const beforeUpdatedAt = useEditor.getState().track.design.updatedAt;
+
+    state.duplicateShapes([lockedId, editableId]);
+
+    const nextState = useEditor.getState();
+    expect(nextState.track.design.shapeOrder).toHaveLength(beforeCount);
+    expect(nextState.session.selection).toEqual([lockedId, editableId]);
+    expect(nextState.track.design.updatedAt).toBe(beforeUpdatedAt);
+    expect(getPastStatesCount()).toBe(0);
+  });
+
   it("removes selected shapes and clears them from the selection", () => {
     const state = useEditor.getState();
     const firstId = state.addShape({

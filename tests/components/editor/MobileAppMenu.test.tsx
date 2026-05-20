@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import MobileAppMenu from "@/components/editor/MobileAppMenu";
 
@@ -67,15 +68,16 @@ vi.mock("@/components/ui/drawer", () => ({
 }));
 
 function renderMenu() {
-  return render(
-    <MobileAppMenu
-      defaultOpen
-      onExport={vi.fn()}
-      onImport={vi.fn()}
-      onOpenProjects={vi.fn()}
-      onShare={vi.fn()}
-    />
-  );
+  const props: React.ComponentProps<typeof MobileAppMenu> = {
+    defaultOpen: true,
+    onExport: vi.fn(),
+    onImport: vi.fn(),
+    onOpenProjects: vi.fn(),
+    onShare: vi.fn(),
+  };
+
+  render(<MobileAppMenu {...props} />);
+  return props;
 }
 
 describe("MobileAppMenu", () => {
@@ -123,5 +125,40 @@ describe("MobileAppMenu", () => {
     expect(
       screen.getByRole("button", { name: /Sign out/ }).className
     ).toContain("min-h-11");
+  });
+
+  it("opens from the trigger and runs core workflow actions", async () => {
+    const user = userEvent.setup();
+    const props = {
+      onExport: vi.fn(),
+      onImport: vi.fn(),
+      onMenuOpenChange: vi.fn(),
+      onOpenProjects: vi.fn(),
+      onShare: vi.fn(),
+    };
+
+    render(<MobileAppMenu {...props} onOpenProjects={props.onOpenProjects} />);
+
+    await user.click(screen.getByRole("button", { name: "Open app menu" }));
+    expect(props.onMenuOpenChange).toHaveBeenCalledWith(true);
+    cleanup();
+    props.onMenuOpenChange.mockClear();
+
+    for (const [name, callback] of [
+      [/Projects.*Open and manage saved projects/, props.onOpenProjects],
+      [/Share.*Publish a read-only link/, props.onShare],
+      [/Import.*Bring in a JSON project file/, props.onImport],
+      [/Export.*Download PNG, PDF, SVG or JSON/, props.onExport],
+    ] as const) {
+      render(<MobileAppMenu {...props} defaultOpen />);
+      await user.click(screen.getByRole("button", { name }));
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledTimes(1);
+      });
+      expect(props.onMenuOpenChange).toHaveBeenCalledWith(false);
+      callback.mockClear();
+      props.onMenuOpenChange.mockClear();
+      cleanup();
+    }
   });
 });
