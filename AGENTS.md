@@ -8,6 +8,8 @@ Agents working in this repo should optimize for product safety over broad refact
 
 Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md` for contributor workflow, commands, runtime modes, and validation expectations. Keep those documents aligned rather than duplicating technical setup details across files.
 
+AI agents are expected to keep this file current. When a change introduces a durable product boundary, workflow expectation, validation rule, or repo ownership convention that future agents should know, update the nearest relevant `AGENTS.md` in the same change.
+
 ## Product Context
 
 - The main app surfaces are the landing page at `/`, the editor at `/studio`, the public gallery at `/gallery`, and read-only shared views at `/share/[token]`.
@@ -22,8 +24,10 @@ Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md`
 - TypeScript
 - Tailwind CSS 4
 - Zustand with zundo and Immer
+- Better Auth for account, passkey, magic-link, role, and API-key flows
 - Konva for the 2D editor
 - Three.js with react-three-fiber for 3D preview
+- OpenNext on Cloudflare with D1 and R2-backed gallery preview media for deployed/preview runtime behavior
 
 ## Working Agreement
 
@@ -45,6 +49,10 @@ Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md`
 - `src/components`: UI and editor composition
 - `src/store`: editor state, undo/redo, persistence-oriented logic
 - `src/lib`: design normalization, geometry, sharing, export, and helpers
+- `src/types`: shared TypeScript types
+- `tests`: unit, regression, and component coverage grouped by product area or module
+- `migrations`: D1 database migrations
+- `public`: static assets and generated public media references
 - `docs`: roadmap and planning docs; keep product language aligned with shipped behavior
 
 ## Commands
@@ -52,10 +60,11 @@ Use `README.md` for the product-facing repository overview and `CONTRIBUTING.md`
 - `npm run dev`
 - `npm run preview`
 - `npm run lint`
+- `npm run test`
 - `npm run type`
 - `npm run build`
 
-Run `npm run lint` and `npm run type` after non-trivial code changes when the environment allows it. Use `npm run preview` when validating D1-backed, auth-backed, or Cloudflare-runtime behavior.
+Run `npm run lint`, `npm run test`, and `npm run type` after non-trivial code changes when the environment allows it. Use `npm run preview` when validating D1-backed, auth-backed, share ownership, gallery publishing, REST API, or Cloudflare-runtime behavior.
 
 ## Pull Requests
 
@@ -82,6 +91,7 @@ Update `README.md`, `CONTRIBUTING.md`, or files in `docs/` when behavior, routes
 - Do not include machine-specific absolute filesystem paths in committed docs or repo files. Use repo-relative paths, route names, package names, or external repository names so GitHub documentation remains portable.
 - Do not update completed roadmap archive sections just to reflect newly shipped work elsewhere. Treat archived release sections as closed snapshots unless a factual correction is genuinely necessary.
 - For larger refactors, architecture passes, or foundation work documented in `docs/research`, describe the work in explicit phases with a clear start and done state for each phase, plus a short top-level checklist that can be ticked off in order.
+- Keep `AGENTS.md` files focused on durable guidance for future agents. Update them when repo conventions or risk boundaries change, but avoid adding one-off task notes, local machine details, or duplicate setup instructions from `CONTRIBUTING.md`.
 
 When updating `CHANGELOG.md`:
 
