@@ -128,7 +128,7 @@ Published links are now easier to manage when you are signed in. Shares are tied
 
 ### Layout acceleration
 
-TrackDraw now ships the initial `Layout acceleration` release through obstacle presets, selection grouping, and starter layouts. The editor now gets users from blank canvas to a useful draft noticeably faster while keeping everything usable without an account and fully editable after placement.
+TrackDraw now makes it much faster to go from a blank canvas to a useful draft through obstacle presets, selection grouping, and starter layouts. The editor keeps everything usable without an account and fully editable after placement.
 
 ### Better race-day handoff
 
