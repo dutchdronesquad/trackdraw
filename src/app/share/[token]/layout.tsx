@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { getShareDescription, getShareTitle } from "@/lib/share";
-import { getGalleryEntryByShareToken } from "@/lib/server/gallery";
+import {
+  getGalleryEntryByShareToken,
+  isPublicGalleryState,
+} from "@/lib/server/gallery";
 import { resolveShareView } from "@/lib/server/share-resolution";
 import {
   DEFAULT_OG_IMAGE_ALT,
@@ -17,10 +20,6 @@ type ShareTokenLayoutProps = {
     token: string;
   }>;
 };
-
-function isPublicGalleryState(state: string | null | undefined) {
-  return state === "listed" || state === "featured";
-}
 
 function resolveSocialImageUrl(previewImage: string | null | undefined) {
   if (!previewImage) return DEFAULT_SOCIAL_IMAGE;

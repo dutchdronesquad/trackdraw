@@ -108,6 +108,12 @@ export type GalleryOverviewStats = {
   unlisted: number;
 };
 
+export function isPublicGalleryState(
+  state: GalleryState | string | null | undefined
+) {
+  return state === "listed" || state === "featured";
+}
+
 export function parseGalleryState(value: string | null): GalleryState {
   if (!value) return "unlisted";
   if (value === "link_only") return "unlisted";

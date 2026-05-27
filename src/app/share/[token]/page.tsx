@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
-import { getGalleryEntryByShareToken } from "@/lib/server/gallery";
+import {
+  getGalleryEntryByShareToken,
+  isPublicGalleryState,
+} from "@/lib/server/gallery";
 import { resolveShareView } from "@/lib/server/share-resolution";
 import {
   SITE_AUTHOR,
@@ -20,10 +23,6 @@ type ShareTokenPageProps = {
     view?: string;
   }>;
 };
-
-function isPublicGalleryState(state: string | null | undefined) {
-  return state === "listed" || state === "featured";
-}
 
 function resolvePreviewImageUrl(previewImage: string | null | undefined) {
   if (!previewImage) return undefined;
