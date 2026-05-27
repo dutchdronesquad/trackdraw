@@ -27,6 +27,14 @@ export const DEFAULT_LANDING_DEMO_POSTER =
   "https://media.trackdraw.app/landing/screenshots/editor-3d-flythroug.png";
 export const LANDING_DEMO_VIDEO_PATH = "/landing/video-demo.webm";
 
+const JSON_LD_ESCAPE_LOOKUP: Record<string, string> = {
+  "<": "\\u003c",
+  ">": "\\u003e",
+  "&": "\\u0026",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029",
+};
+
 export function getSiteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "https://trackdraw.app";
 }
@@ -41,6 +49,18 @@ export function getSiteMediaUrl(path: string) {
 
 export function getLandingDemoVideoUrl() {
   return getSiteMediaUrl(LANDING_DEMO_VIDEO_PATH);
+}
+
+export function serializeJsonLd(value: unknown) {
+  const json = JSON.stringify(value);
+  if (typeof json !== "string") {
+    throw new Error("JSON-LD value must be serializable");
+  }
+
+  return json.replace(
+    /[<>&\u2028\u2029]/g,
+    (character) => JSON_LD_ESCAPE_LOOKUP[character]
+  );
 }
 
 export const DEFAULT_SOCIAL_IMAGE = getSiteMediaUrl(DEFAULT_SOCIAL_IMAGE_PATH);

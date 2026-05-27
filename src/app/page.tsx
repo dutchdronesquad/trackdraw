@@ -12,6 +12,7 @@ import {
   getLandingDemoVideoUrl,
   getSiteMediaUrl,
   getSiteUrl,
+  serializeJsonLd,
 } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -272,21 +273,21 @@ export default function Home() {
         id="software-application-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(softwareApplicationJsonLd),
+          __html: serializeJsonLd(softwareApplicationJsonLd),
         }}
       />
       <script
         id="video-object-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(videoObjectJsonLd),
+          __html: serializeJsonLd(videoObjectJsonLd),
         }}
       />
       <script
         id="faq-page-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqPageJsonLd),
+          __html: serializeJsonLd(faqPageJsonLd),
         }}
       />
       {/* ── Nav ─────────────────────────────────────────────── */}

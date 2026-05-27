@@ -12,6 +12,7 @@ import {
   SITE_AUTHOR,
   getSiteMediaUrl,
   getSiteUrl,
+  serializeJsonLd,
 } from "@/lib/seo";
 
 const title = "FPV Drone Race Track Gallery";
@@ -86,7 +87,7 @@ export default async function GalleryPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJsonLd) }}
       />
 
       <div className="bg-background min-h-screen overflow-x-clip">

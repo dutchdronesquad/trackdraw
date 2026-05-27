@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import { getGalleryEntryByShareToken } from "@/lib/server/gallery";
 import { resolveShareView } from "@/lib/server/share-resolution";
-import { SITE_AUTHOR, getSiteMediaUrl, getSiteUrl } from "@/lib/seo";
+import {
+  SITE_AUTHOR,
+  getSiteMediaUrl,
+  getSiteUrl,
+  serializeJsonLd,
+} from "@/lib/seo";
 import { parseEditorView } from "@/lib/view";
 import ShareViewer from "../ShareViewer";
 import ShareError from "../ShareError";
@@ -75,7 +80,7 @@ export default async function ShareTokenPage({
           <script
             id="track-share-jsonld"
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(trackJsonLd) }}
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(trackJsonLd) }}
           />
         ) : null}
         <ShareViewer
