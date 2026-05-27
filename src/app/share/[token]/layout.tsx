@@ -90,9 +90,7 @@ export async function generateMetadata({
     resolvedShare.source === "stored"
       ? await getGalleryEntryByShareToken(token)
       : null;
-  const isPublicGalleryShare = isPublicGalleryState(
-    galleryEntry?.galleryState
-  );
+  const isPublicGalleryShare = isPublicGalleryState(galleryEntry?.galleryState);
 
   const title =
     isPublicGalleryShare && galleryEntry
