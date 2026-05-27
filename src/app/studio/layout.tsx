@@ -7,13 +7,16 @@ import {
 } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Studio",
+  title: "Drone Race Track Builder",
   description:
-    "Design your FPV race track to scale, add gates and obstacles, and preview in 3D.",
+    "Open the TrackDraw drone race track builder to design FPV layouts to scale, add gates and obstacles, and preview track flow in 3D.",
+  alternates: {
+    canonical: "/studio",
+  },
   openGraph: {
-    title: "TrackDraw Studio",
+    title: "TrackDraw | Drone Race Track Builder",
     description:
-      "Design your FPV race track to scale, add gates and obstacles, and preview in 3D.",
+      "Design FPV drone race tracks to scale, add gates and obstacles, and preview track flow in 3D.",
     url: "/studio",
     images: [
       {
@@ -25,14 +28,14 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    title: "TrackDraw Studio",
+    title: "TrackDraw | Drone Race Track Builder",
     description:
-      "Design your FPV race track to scale, add gates and obstacles, and preview in 3D.",
+      "Design FPV drone race tracks to scale, add gates and obstacles, and preview track flow in 3D.",
     images: [DEFAULT_SOCIAL_IMAGE],
   },
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
   },
 };
 

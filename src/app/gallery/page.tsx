@@ -14,7 +14,8 @@ import {
   getSiteUrl,
 } from "@/lib/seo";
 
-const title = "Gallery — TrackDraw";
+const title = "FPV Drone Race Track Gallery";
+const socialTitle = "TrackDraw | FPV Drone Race Track Gallery";
 const description =
   "Browse FPV drone race track designs shared by the TrackDraw community.";
 
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     canonical: "/gallery",
   },
   openGraph: {
-    title,
+    title: socialTitle,
     description,
     url: "/gallery",
     images: [
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    title,
+    title: socialTitle,
     description,
     images: [DEFAULT_SOCIAL_IMAGE],
   },

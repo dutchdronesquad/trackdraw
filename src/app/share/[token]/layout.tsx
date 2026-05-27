@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getShareDescription, getShareTitle } from "@/lib/share";
+import { getGalleryEntryByShareToken } from "@/lib/server/gallery";
 import { resolveShareView } from "@/lib/server/share-resolution";
 import {
   DEFAULT_OG_IMAGE_ALT,
@@ -7,6 +8,7 @@ import {
   DEFAULT_SOCIAL_IMAGE_HEIGHT,
   DEFAULT_SOCIAL_IMAGE_WIDTH,
   SITE_NAME,
+  getSiteMediaUrl,
 } from "@/lib/seo";
 
 type ShareTokenLayoutProps = {
@@ -15,6 +17,32 @@ type ShareTokenLayoutProps = {
     token: string;
   }>;
 };
+
+function isPublicGalleryState(state: string | null | undefined) {
+  return state === "listed" || state === "featured";
+}
+
+function resolveSocialImageUrl(previewImage: string | null | undefined) {
+  if (!previewImage) return DEFAULT_SOCIAL_IMAGE;
+  if (previewImage.startsWith("http")) return previewImage;
+
+  return getSiteMediaUrl(previewImage);
+}
+
+function buildShareMetadataDescription(params: {
+  description: string;
+  fieldWidth: number;
+  fieldHeight: number;
+  shapeCount: number;
+}) {
+  const base = params.description.trim();
+  const fieldLabel = `${params.fieldWidth} x ${params.fieldHeight} m`;
+  const obstacleLabel =
+    params.shapeCount === 1 ? "1 obstacle" : `${params.shapeCount} obstacles`;
+  const detail = `FPV drone race track layout built with TrackDraw on a ${fieldLabel} field with ${obstacleLabel}.`;
+
+  return base ? `${base} ${detail}` : detail;
+}
 
 export async function generateMetadata({
   params,
@@ -27,6 +55,10 @@ export async function generateMetadata({
       title: "Expired Track Share",
       description:
         "This TrackDraw share link has expired. Ask the sender to publish a fresh link.",
+      robots: {
+        index: false,
+        follow: true,
+      },
     };
   }
 
@@ -35,6 +67,10 @@ export async function generateMetadata({
       title: "Unsupported Track Share",
       description:
         "This older TrackDraw share format is no longer supported. Ask the sender to publish a fresh link.",
+      robots: {
+        index: false,
+        follow: true,
+      },
     };
   }
 
@@ -42,25 +78,51 @@ export async function generateMetadata({
     return {
       title: "View Track",
       description: "View this FPV race track designed with TrackDraw.",
+      robots: {
+        index: false,
+        follow: true,
+      },
     };
   }
 
   const design = resolvedShare.design;
+  const galleryEntry =
+    resolvedShare.source === "stored"
+      ? await getGalleryEntryByShareToken(token)
+      : null;
+  const isPublicGalleryShare = isPublicGalleryState(
+    galleryEntry?.galleryState
+  );
 
   const title =
-    resolvedShare.source === "stored"
-      ? resolvedShare.title
-      : getShareTitle(design);
+    isPublicGalleryShare && galleryEntry
+      ? `${galleryEntry.galleryTitle} | FPV Drone Race Track`
+      : resolvedShare.source === "stored"
+        ? resolvedShare.title
+        : getShareTitle(design);
   const description =
-    resolvedShare.source === "stored"
-      ? resolvedShare.description
-      : getShareDescription(design);
+    isPublicGalleryShare && galleryEntry
+      ? buildShareMetadataDescription({
+          description: galleryEntry.galleryDescription,
+          fieldWidth: design.field.width,
+          fieldHeight: design.field.height,
+          shapeCount: design.shapeOrder.length,
+        })
+      : resolvedShare.source === "stored"
+        ? resolvedShare.description
+        : getShareDescription(design);
   const encodedToken = encodeURIComponent(token);
+  const socialImageUrl = isPublicGalleryShare
+    ? resolveSocialImageUrl(galleryEntry?.galleryPreviewImage)
+    : DEFAULT_SOCIAL_IMAGE;
   const socialImage = {
-    url: DEFAULT_SOCIAL_IMAGE,
+    url: socialImageUrl,
     width: DEFAULT_SOCIAL_IMAGE_WIDTH,
     height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
-    alt: DEFAULT_OG_IMAGE_ALT,
+    alt:
+      isPublicGalleryShare && galleryEntry
+        ? `${galleryEntry.galleryTitle} track preview`
+        : DEFAULT_OG_IMAGE_ALT,
   };
 
   return {
@@ -81,7 +143,11 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: [DEFAULT_SOCIAL_IMAGE],
+      images: [socialImageUrl],
+    },
+    robots: {
+      index: isPublicGalleryShare,
+      follow: true,
     },
   };
 }

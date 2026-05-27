@@ -16,19 +16,19 @@ import {
 
 export const metadata: Metadata = {
   title: {
-    absolute: "TrackDraw | Drone Race Track Planner",
+    absolute: "TrackDraw | Drone Race Track Builder",
   },
   description:
-    "TrackDraw is a drone race track planner for FPV race directors. Design tracks to scale, review track flow in 3D, and share read-only race-day layouts.",
+    "TrackDraw is a drone race track builder for FPV race directors. Design tracks to scale, review track flow in 3D, and share read-only race-day layouts.",
   keywords: SITE_KEYWORDS,
   authors: [SITE_AUTHOR],
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "TrackDraw | Drone Race Track Planner",
+    title: "TrackDraw | Drone Race Track Builder",
     description:
-      "Plan drone race tracks to scale, review FPV track flow in 3D, and share read-only race-day layouts.",
+      "Use TrackDraw as a drone race track builder to plan FPV layouts to scale, review track flow in 3D, and share read-only race-day plans.",
     url: "/",
     images: [
       {
@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    title: "TrackDraw | Drone Race Track Planner",
+    title: "TrackDraw | Drone Race Track Builder",
     description:
-      "Plan drone race tracks to scale, review FPV track flow in 3D, and share read-only race-day layouts.",
+      "Use TrackDraw as a drone race track builder to plan FPV layouts to scale, review track flow in 3D, and share read-only race-day plans.",
     images: [DEFAULT_SOCIAL_IMAGE],
   },
 };
@@ -157,6 +157,10 @@ const features = [
 
 const faq = [
   {
+    q: "Is TrackDraw a drone race track builder?",
+    a: "Yes. TrackDraw is a browser-based drone race track builder for FPV race directors who need scale-accurate layouts, 3D review, sharing, and export in one workflow.",
+  },
+  {
     q: "What is the best way to plan an FPV race track?",
     a: "Start with the field dimensions, place the obstacles you actually have, then review the route in 3D before sharing or exporting the plan. TrackDraw is built around that exact sequence.",
   },
@@ -188,6 +192,7 @@ const faq = [
 
 const landingDemoVideoSrc = getLandingDemoVideoUrl();
 const landingDemoPosterSrc = DEFAULT_LANDING_DEMO_POSTER;
+const landingPageUrl = getSiteUrl();
 
 const softwareApplicationJsonLd = {
   "@context": "https://schema.org",
@@ -196,7 +201,7 @@ const softwareApplicationJsonLd = {
   applicationCategory: "DesignApplication",
   operatingSystem: "Web",
   description: SITE_DESCRIPTION,
-  url: getSiteUrl(),
+  url: landingPageUrl,
   author: {
     "@type": "Organization",
     name: SITE_AUTHOR.name,
@@ -207,6 +212,30 @@ const softwareApplicationJsonLd = {
     price: "0",
     priceCurrency: "EUR",
   },
+};
+
+const videoObjectJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  name: "TrackDraw drone race track builder demo",
+  description:
+    "A quick product demo showing how TrackDraw helps FPV race directors build a drone race track layout, review it in 3D, and share it with pilots and crew.",
+  thumbnailUrl: [landingDemoPosterSrc],
+  contentUrl: landingDemoVideoSrc,
+  embedUrl: landingPageUrl,
+};
+
+const faqPageJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.a,
+    },
+  })),
 };
 
 function LandingVideo({ className = "" }: { className?: string }) {
@@ -244,6 +273,20 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(softwareApplicationJsonLd),
+        }}
+      />
+      <script
+        id="video-object-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(videoObjectJsonLd),
+        }}
+      />
+      <script
+        id="faq-page-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqPageJsonLd),
         }}
       />
       {/* ── Nav ─────────────────────────────────────────────── */}
@@ -284,7 +327,7 @@ export default function Home() {
 
               <Reveal delay={0.13} className="mt-5">
                 <p className="text-muted-foreground max-w-sm text-[15px] leading-7">
-                  TrackDraw is a browser-based drone race track planner for FPV
+                  TrackDraw is a browser-based drone race track builder for FPV
                   race directors. Draw to scale in 2D, review the flow in 3D,
                   share a read-only layout with pilots and crew, and keep the
                   plan usable from desktop or mobile.

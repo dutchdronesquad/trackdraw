@@ -1,11 +1,12 @@
 export const SITE_NAME = "TrackDraw";
 export const SITE_TITLE = "TrackDraw";
 export const SITE_DESCRIPTION =
-  "Plan drone race tracks to scale, review FPV track flow in 3D, and share read-only race-day layouts with pilots and crew.";
-export const SITE_TAGLINE = "Drone Race Track Planner";
+  "TrackDraw is a browser-based drone race track builder for planning FPV race tracks to scale, reviewing flow in 3D, and sharing race-day layouts.";
+export const SITE_TAGLINE = "Drone Race Track Builder";
 export const SITE_KEYWORDS = [
   "FPV",
   "drone racing",
+  "drone race track builder",
   "track design",
   "race track planner",
   "FPV track builder",
