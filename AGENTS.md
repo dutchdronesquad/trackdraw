@@ -89,7 +89,7 @@ When reviewing or making changes to the product, check whether the legal pages a
 
 - New product surfaces, account features, sharing mechanisms, or data flows should be reflected in the Privacy Policy.
 - New usage restrictions, licence conditions, or liability-relevant behavior should be reflected in the Terms of Service.
-- Keep the text at the category level — avoid enumerating specific field names, internal route names, or infrastructure product names that will become stale as the product evolves.
+- Keep the text at the category level — avoid enumerating internal route names, feature flags, or low-level infrastructure product names (e.g. specific storage APIs) that will become stale as the product evolves. Intentional legal disclosures are an exception: naming infrastructure providers (e.g. Cloudflare) and giving concrete data category examples serve a transparency and compliance purpose and should be kept accurate rather than removed.
 - Update `effectiveDate` in both files when material changes are made.
 
 ## Documentation Updates

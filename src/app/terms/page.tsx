@@ -75,7 +75,7 @@ const sections = [
 export default function TermsPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
-      <PublicSiteHeader currentPage="home" />
+      <PublicSiteHeader currentPage="legal" />
 
       <main>
         <section className="border-border/40 border-b">

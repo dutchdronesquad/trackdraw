@@ -17,7 +17,7 @@ import {
 
 export const metadata: Metadata = {
   title: {
-    absolute: "TrackDraw | Drone Race Track Builder",
+    absolute: "TrackDraw · Drone Race Track Builder",
   },
   description:
     "TrackDraw is a drone race track builder for FPV race directors. Design tracks to scale, review track flow in 3D, and share read-only race-day layouts.",

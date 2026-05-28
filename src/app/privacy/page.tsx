@@ -85,7 +85,7 @@ const sections: { title: string; body: BodyItem[] }[] = [
 export default function PrivacyPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
-      <PublicSiteHeader currentPage="home" />
+      <PublicSiteHeader currentPage="legal" />
 
       <main>
         <section className="border-border/40 border-b">

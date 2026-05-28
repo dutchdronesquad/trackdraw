@@ -17,7 +17,7 @@ import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 
 type PublicSiteHeaderProps = {
-  currentPage?: "home" | "gallery";
+  currentPage?: "home" | "gallery" | "legal";
 };
 
 type NavItem = {
