@@ -87,9 +87,9 @@ export default function TermsPage() {
               Terms of Service
             </h1>
             <p className="text-muted-foreground mt-5 max-w-2xl text-sm leading-7">
-              Effective {effectiveDate}. These terms explain the rules for
-              using TrackDraw, including accounts, projects, public sharing,
-              gallery publishing, embeds, and API access.
+              Effective {effectiveDate}. These terms explain the rules for using
+              TrackDraw, including accounts, projects, public sharing, gallery
+              publishing, embeds, and API access.
             </p>
           </div>
         </section>
