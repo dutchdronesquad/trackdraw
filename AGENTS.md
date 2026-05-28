@@ -81,6 +81,17 @@ Run `npm run lint`, `npm run test`, and `npm run type` after non-trivial code ch
 - For editor work, check desktop and mobile implications before changing component contracts.
 - For export or serialization work, assume backward compatibility matters unless the task explicitly says otherwise.
 
+## Legal Pages
+
+`src/app/terms/page.tsx` and `src/app/privacy/page.tsx` contain the Terms of Service and Privacy Policy.
+
+When reviewing or making changes to the product, check whether the legal pages are still accurate:
+
+- New product surfaces, account features, sharing mechanisms, or data flows should be reflected in the Privacy Policy.
+- New usage restrictions, licence conditions, or liability-relevant behavior should be reflected in the Terms of Service.
+- Keep the text at the category level — avoid enumerating specific field names, internal route names, or infrastructure product names that will become stale as the product evolves.
+- Update `effectiveDate` in both files when material changes are made.
+
 ## Documentation Updates
 
 Update `README.md`, `CONTRIBUTING.md`, or files in `docs/` when behavior, routes, scripts, or roadmap status materially changes.

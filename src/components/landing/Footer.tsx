@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Bug, Coffee, Flag, Heart } from "lucide-react";
+import { Bug, Coffee, FileText, Flag, Heart, ShieldCheck } from "lucide-react";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -20,8 +20,8 @@ export function Footer() {
   return (
     <footer className="border-border bg-muted/20 border-t">
       <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
-        {/* Top grid — mobile: brand full width + 3 cols, md: 4 cols */}
-        <div className="mb-10 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4">
+        {/* Top grid — mobile: brand full width + 2 cols, md: 5 cols */}
+        <div className="mb-10 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-5">
           {/* Brand — spans 2 cols on mobile */}
           <div className="col-span-2 space-y-3 md:col-span-1">
             <div className="flex items-center gap-2.5">
@@ -81,52 +81,37 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Legal */}
           <div className="space-y-3">
             <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-              Resources
+              Legal
             </h3>
             <ul className="space-y-2.5 text-sm">
               <li>
-                <a
-                  href="https://github.com/dutchdronesquad/trackdraw/issues"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/privacy"
                   className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                 >
-                  <Bug className="size-4 shrink-0" />
-                  Report an issue
-                </a>
+                  <ShieldCheck className="size-4 shrink-0" />
+                  Privacy Policy
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://github.com/sponsors/klaasnicolaas"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/terms"
                   className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                 >
-                  <Heart className="size-4 shrink-0" />
-                  GitHub Sponsors
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://ko-fi.com/klaasnicolaas"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-                >
-                  <Coffee className="size-4 shrink-0" />
-                  Ko-fi
-                </a>
+                  <FileText className="size-4 shrink-0" />
+                  Terms of Service
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Connect */}
+          {/* Community */}
           <div className="space-y-3">
             <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-              Connect
+              Community
             </h3>
             <ul className="space-y-2.5 text-sm">
               <li>
@@ -149,6 +134,48 @@ export function Footer() {
                 >
                   <Flag className="size-4 shrink-0" />
                   Dutch Drone Squad
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/dutchdronesquad/trackdraw/issues"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                >
+                  <Bug className="size-4 shrink-0" />
+                  Report an issue
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support */}
+          <div className="space-y-3">
+            <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
+              Support
+            </h3>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <a
+                  href="https://github.com/sponsors/klaasnicolaas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                >
+                  <Heart className="size-4 shrink-0" />
+                  GitHub Sponsors
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://ko-fi.com/klaasnicolaas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                >
+                  <Coffee className="size-4 shrink-0" />
+                  Ko-fi
                 </a>
               </li>
             </ul>
