@@ -9,6 +9,11 @@ import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import { Magnet } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/AppTooltip";
 
 const toolLabel: Record<string, string> = {
   select: "Select",
@@ -98,32 +103,45 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
 
       {/* Snap indicator — desktop only */}
       <span className="text-muted-foreground/45">·</span>
-      <button
-        type="button"
-        onClick={toggleSnapEnabled}
-        className={cn(
-          "pointer-events-auto inline-flex h-5 items-center gap-1 rounded px-1.5 text-[11px] transition-colors",
-          snapEnabled
-            ? "text-foreground/70 hover:bg-muted hover:text-foreground"
-            : "hover:bg-muted text-amber-500/85 hover:text-amber-400"
-        )}
-        title={`Toggle snap (${snapEnabled ? "on" : "off"})`}
-        aria-pressed={snapEnabled}
-      >
-        <Magnet
-          className={cn(
-            "size-3",
-            snapEnabled && snapActive
-              ? "text-green-500/80"
-              : snapEnabled
-                ? "text-foreground/60"
-                : "text-amber-500/85"
-          )}
-        />
-        <span>
-          {snapEnabled ? (snapActive ? "Snap" : "Snap On") : "Snap Off"}
-        </span>
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={toggleSnapEnabled}
+            className={cn(
+              "pointer-events-auto inline-flex h-5 items-center gap-1 rounded px-1.5 text-[11px] transition-colors",
+              snapEnabled
+                ? "text-foreground/70 hover:bg-muted hover:text-foreground"
+                : "hover:bg-muted text-amber-500/85 hover:text-amber-400"
+            )}
+            aria-pressed={snapEnabled}
+          >
+            <Magnet
+              className={cn(
+                "size-3",
+                snapEnabled && snapActive
+                  ? "text-green-500/80"
+                  : snapEnabled
+                    ? "text-foreground/60"
+                    : "text-amber-500/85"
+              )}
+            />
+            <span>
+              {snapEnabled ? (snapActive ? "Snap" : "Snap On") : "Snap Off"}
+            </span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" sideOffset={6} className="max-w-64">
+          <span className="block font-medium">
+            {snapEnabled ? "Snap is on" : "Snap is off"}
+          </span>
+          <span className="mt-1 block opacity-80">
+            {snapEnabled
+              ? "Points and drags lock to nearby grid positions, objects, and route points. Hold Alt while placing or dragging to bypass it once."
+              : "Placement and dragging stay freeform until you turn snap back on."}
+          </span>
+        </TooltipContent>
+      </Tooltip>
 
       <div className="flex-1" />
 

@@ -191,8 +191,7 @@ export type RouteWarningKind =
   | "hairpin"
   | "close-points"
   | "spacing-shift"
-  | "rhythm-break"
-  | "alignment-drift";
+  | "rhythm-break";
 
 export interface RouteWarning {
   kind: RouteWarningKind;
@@ -224,7 +223,6 @@ export interface RouteWarningSegmentVisual {
  * - close-points: consecutive waypoints < 0.5 m apart
  * - spacing-shift: abrupt jump from a short segment into a much longer one
  * - rhythm-break: short corrective segment between longer sections
- * - alignment-drift: a small kink breaks an otherwise straighter line
  */
 export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
   const pts = path.points;
@@ -276,42 +274,6 @@ export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
       if (angleDeg < 45) {
         warnings.push({ kind: "hairpin", waypointIndex: i });
       }
-    }
-  }
-
-  for (let i = 1; i < pts.length - 1; i += 1) {
-    const previous = pts[i - 1];
-    const current = pts[i];
-    const next = pts[i + 1];
-    const previousLength = segmentLengths[i - 1];
-    const nextLength = segmentLengths[i];
-    const angleDeg = turnAnglesByWaypoint.get(i);
-
-    if (
-      !previous ||
-      !current ||
-      !next ||
-      typeof previousLength !== "number" ||
-      typeof nextLength !== "number" ||
-      typeof angleDeg !== "number"
-    ) {
-      continue;
-    }
-
-    if (previousLength < 2.5 || nextLength < 2.5) continue;
-    if (angleDeg < 150 || angleDeg > 172) continue;
-
-    const baselineLength = Math.hypot(next.x - previous.x, next.y - previous.y);
-    if (baselineLength < 4) continue;
-
-    const offset =
-      Math.abs(
-        (next.x - previous.x) * (previous.y - current.y) -
-          (previous.x - current.x) * (next.y - previous.y)
-      ) / baselineLength;
-
-    if (offset >= 0.35 && offset <= 1.6) {
-      warnings.push({ kind: "alignment-drift", waypointIndex: i });
     }
   }
 
@@ -400,10 +362,9 @@ export function getPolylineRouteWarningVisuals(
 const ROUTE_WARNING_PRIORITY: Record<SegmentWarningKind, number> = {
   hairpin: 1,
   "spacing-shift": 2,
-  "alignment-drift": 3,
-  "rhythm-break": 4,
-  steep: 5,
-  "close-points": 6,
+  "rhythm-break": 3,
+  steep: 4,
+  "close-points": 5,
 };
 
 export function getRouteWarningSegmentColor(
@@ -413,7 +374,6 @@ export function getRouteWarningSegmentColor(
   if (!kind) return defaultColor;
   if (kind === "close-points") return "#ef4444";
   if (kind === "steep") return "#f97316";
-  if (kind === "alignment-drift") return "#84cc16";
   if (kind === "rhythm-break") return "#f59e0b";
   if (kind === "spacing-shift") return "#eab308";
   return "#fbbf24";
@@ -462,8 +422,7 @@ export function getPolylineRouteWarningSegmentVisuals(
 
     if (
       warning.kind === "hairpin" ||
-      warning.kind === "rhythm-break" ||
-      warning.kind === "alignment-drift"
+      warning.kind === "rhythm-break"
     ) {
       assignSegment(warning.waypointIndex - 1, warning.kind);
       assignSegment(warning.waypointIndex, warning.kind);

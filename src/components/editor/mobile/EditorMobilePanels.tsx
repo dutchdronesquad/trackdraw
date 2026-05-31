@@ -744,7 +744,7 @@ export function EditorMobilePanels({
                     </p>
                     <p className="pt-1 text-[11px] leading-relaxed opacity-80">
                       {snapEnabled
-                        ? "Grid and shape snap stay active until you turn them off."
+                        ? "Points and drags lock to nearby grid positions, objects, and route points."
                         : "Place and drag freely until you turn snap back on."}
                     </p>
                   </div>

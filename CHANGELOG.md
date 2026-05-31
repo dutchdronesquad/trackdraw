@@ -110,7 +110,7 @@ Snapping is now more visible and more consistent across the editor. You can keep
 
 ### Stronger route review warnings
 
-Route review now catches more uneven sections before export or sharing. It can flag abrupt spacing shifts, short rhythm-breaking corrections, and small alignment kinks while you refine the lap.
+Route review now catches more uneven sections before export or sharing. It can flag abrupt spacing shifts and short correction segments that interrupt the flow while you refine the lap.
 
 ## [1.3.0]
 

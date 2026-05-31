@@ -673,6 +673,7 @@ const TrackCanvas = memo(
           excludeIds?: Iterable<string>;
           snapToAxisAlignment?: boolean;
           snapToGrid?: boolean;
+          magneticRadiusMeters?: number;
           snapToRouteLines?: boolean;
           snapToRouteWaypoints?: boolean;
           snapToShapes?: boolean;
@@ -688,7 +689,8 @@ const TrackCanvas = memo(
           snapToShapes: options.snapToShapes ?? true,
           snapToAxisAlignment: options.snapToAxisAlignment,
           gridStep: design.field.gridStep,
-          magneticRadiusMeters: waypointSnapRadiusMeters,
+          magneticRadiusMeters:
+            options.magneticRadiusMeters ?? waypointSnapRadiusMeters,
           candidates: getWaypointSnapCandidates(posMeters),
           routeCandidates: routeSnapCandidates,
           snapToRouteLines: options.snapToRouteLines,
@@ -793,13 +795,26 @@ const TrackCanvas = memo(
       ): Vector2d => {
         const bounded = clampWaypointDragPosition(pos);
         if (!snapEnabled) return bounded;
+        const desktopWaypointSnapRadius = Math.min(
+          waypointSnapRadiusMeters,
+          Math.max(design.field.gridStep * 0.35, 0.15)
+        );
         return resolveCanvasSnapPosition(bounded, {
           excludeIds: sourcePathId ? [sourcePathId] : undefined,
+          magneticRadiusMeters: isMobile
+            ? waypointSnapRadiusMeters
+            : desktopWaypointSnapRadius,
           snapToRouteLines: false,
-          snapToRouteWaypoints: true,
+          snapToRouteWaypoints: isMobile,
         });
       },
-      [clampWaypointDragPosition, resolveCanvasSnapPosition]
+      [
+        clampWaypointDragPosition,
+        design.field.gridStep,
+        isMobile,
+        resolveCanvasSnapPosition,
+        waypointSnapRadiusMeters,
+      ]
     );
 
     const dragBound = useCallback(
@@ -1893,7 +1908,11 @@ const TrackCanvas = memo(
                   <span className="text-border">·</span>
                   <span>Grid {design.field.gridStep}m</span>
                   <span className="text-border">·</span>
-                  <span>{snapEnabled ? "Smart snap" : "Snap off"}</span>
+                  <span>
+                    {snapEnabled
+                      ? "Snap on: grid, objects, routes"
+                      : "Snap off: free placement"}
+                  </span>
                 </div>
               )}
             </div>

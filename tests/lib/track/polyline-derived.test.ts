@@ -147,8 +147,8 @@ describe("polyline derived helpers", () => {
     expect(getRouteWarningSegmentColor("close-points", "#123456")).toBe(
       "#ef4444"
     );
-    expect(getRouteWarningSegmentColor("alignment-drift", "#123456")).toBe(
-      "#84cc16"
+    expect(getRouteWarningSegmentColor("rhythm-break", "#123456")).toBe(
+      "#f59e0b"
     );
     expect(getRouteWarningSegmentColor("hairpin", "#123456")).toBe("#fbbf24");
   });

@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { Info } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import {
   getPolylineElevationSamples,
@@ -13,13 +15,24 @@ import {
 } from "@/lib/track/polyline-derived";
 import { selectPrimaryPolyline } from "@/store/selectors";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { DesktopModal } from "@/components/DesktopModal";
+import { MobileDrawer } from "@/components/MobileDrawer";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/AppTooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+type SegmentWarningKind = Exclude<RouteWarningKind, "flat" | "stub">;
 
 const WARNING_LABELS: Record<
   RouteWarningKind,
   (count: number, first?: number) => string
 > = {
   stub: () => "Path needs at least 2 waypoints to form a route",
-  flat: () => "No elevation set — 3D preview will be flat",
+  flat: () => "No elevation set - 3D preview will be flat",
   steep: (n, first) =>
     n === 1
       ? `Steep grade near waypoint ${first}`
@@ -33,52 +46,195 @@ const WARNING_LABELS: Record<
       ? `Abrupt spacing shift near waypoint ${first}`
       : `${n} abrupt spacing shifts`,
   "rhythm-break": (n, first) =>
-    n === 1 ? `Rhythm break near waypoint ${first}` : `${n} rhythm breaks`,
-  "alignment-drift": (n, first) =>
     n === 1
-      ? `Small alignment kink near waypoint ${first}`
-      : `${n} small alignment kinks`,
+      ? `Short correction segment near waypoint ${first}`
+      : `${n} short correction segments`,
 };
 
-function RouteWarnings({ warnings }: { warnings: RouteWarning[] }) {
-  const grouped = useMemo(() => {
+const WARNING_DETAILS: Record<
+  RouteWarningKind,
+  { title: string; problem: string; fix: string }
+> = {
+  stub: {
+    title: "Route is incomplete",
+    problem: "The path needs at least two waypoints before TrackDraw can review it as a route.",
+    fix: "Add another waypoint or finish drawing the race line.",
+  },
+  flat: {
+    title: "No elevation has been set",
+    problem: "All waypoints are still at 0 m, so the 3D preview and elevation chart stay flat.",
+    fix: "Set waypoint elevations in the inspector or 3D view if the route should climb or drop.",
+  },
+  steep: {
+    title: "Grade changes too quickly",
+    problem: "One section climbs or drops sharply over a short distance, which can make the 3D line feel abrupt.",
+    fix: "Spread the height change across more distance or add an intermediate waypoint.",
+  },
+  hairpin: {
+    title: "Turn is very tight",
+    problem: "A waypoint creates a sharp reversal that may be hard to fly cleanly at speed.",
+    fix: "Move the waypoint outward or add more room before and after the turn.",
+  },
+  "close-points": {
+    title: "Waypoints are too close",
+    problem: "Two waypoints are so close together that they create a tiny route segment.",
+    fix: "Delete one of the points or move it farther away from its neighbor.",
+  },
+  "spacing-shift": {
+    title: "Gate rhythm changes abruptly",
+    problem: "The distance before and after a waypoint changes suddenly, which can make the route feel uneven.",
+    fix: "Reposition nearby waypoints so the spacing changes more gradually.",
+  },
+  "rhythm-break": {
+    title: "Short correction breaks the flow",
+    problem: "A short middle segment interrupts longer surrounding sections and can create an awkward wobble.",
+    fix: "Smooth the correction by moving the point, deleting it, or adding a gentler transition.",
+  },
+};
+
+const WARNING_SHORT_LABELS: Record<RouteWarningKind, string> = {
+  stub: "Incomplete route",
+  flat: "Flat elevation",
+  steep: "Steep grade",
+  hairpin: "Tight turn",
+  "close-points": "Close points",
+  "spacing-shift": "Spacing shift",
+  "rhythm-break": "Short correction",
+};
+
+function isWarningKind(kind: RouteWarningKind) {
+  return (
+    kind === "steep" ||
+    kind === "close-points" ||
+    kind === "spacing-shift" ||
+    kind === "rhythm-break"
+  );
+}
+
+function useGroupedWarnings(warnings: RouteWarning[]) {
+  return useMemo(() => {
     const map = new Map<RouteWarningKind, { count: number; first?: number }>();
-    for (const w of warnings) {
-      const existing = map.get(w.kind);
+    for (const warning of warnings) {
+      const existing = map.get(warning.kind);
       if (!existing) {
-        map.set(w.kind, { count: 1, first: w.waypointIndex });
+        map.set(warning.kind, { count: 1, first: warning.waypointIndex });
       } else {
         existing.count += 1;
       }
     }
     return Array.from(map.entries());
   }, [warnings]);
+}
 
+function RouteWarningSummary({ warnings }: { warnings: RouteWarning[] }) {
+  const grouped = useGroupedWarnings(warnings);
   if (grouped.length === 0) return null;
 
+  const [kind, summary] = grouped[0];
+  const extraCount = grouped.length - 1;
+  const warn = isWarningKind(kind);
+
   return (
-    <div className="mb-2 space-y-1">
-      {grouped.map(([kind, { count, first }]) => {
-        const isWarn =
-          kind === "steep" ||
-          kind === "close-points" ||
-          kind === "spacing-shift" ||
-          kind === "rhythm-break" ||
-          kind === "alignment-drift";
-        return (
-          <div
-            key={kind}
-            className={`flex items-start gap-1.5 rounded px-2 py-1 text-[11px] leading-snug ${
-              isWarn
-                ? "bg-amber-500/8 text-amber-600 dark:text-amber-400"
-                : "bg-muted/40 text-muted-foreground"
-            }`}
-          >
-            <span className="mt-px shrink-0">{isWarn ? "⚠" : "↳"}</span>
-            <span>{WARNING_LABELS[kind](count, first)}</span>
-          </div>
-        );
-      })}
+    <div
+      className={cn(
+        "mb-2 flex items-center gap-1.5 rounded px-2 py-1 text-[11px] leading-snug",
+        warn
+          ? "bg-amber-500/8 text-amber-600 dark:text-amber-400"
+          : "bg-muted/40 text-muted-foreground"
+      )}
+    >
+      <span className="shrink-0">{warn ? "⚠" : "↳"}</span>
+      <span className="min-w-0 truncate">
+        {WARNING_LABELS[kind](summary.count, summary.first)}
+      </span>
+      {extraCount > 0 && (
+        <span className="text-muted-foreground shrink-0">
+          +{extraCount} more
+        </span>
+      )}
+    </div>
+  );
+}
+
+function RouteWarningDetails({ warnings }: { warnings: RouteWarning[] }) {
+  const grouped = useGroupedWarnings(warnings);
+
+  if (grouped.length === 0) {
+    return (
+      <div className="text-muted-foreground rounded border border-dashed px-3 py-2 text-sm">
+        No route warnings for this path.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+        Route Review
+      </div>
+      <div className="space-y-1.5">
+        {grouped.map(([kind, { count, first }]) => {
+          const warn = isWarningKind(kind);
+          return (
+            <div
+              key={kind}
+              className={cn(
+                "flex items-start gap-2 rounded px-2.5 py-2 text-xs leading-snug",
+                warn
+                  ? "bg-amber-500/8 text-amber-700 dark:text-amber-300"
+                  : "bg-muted/40 text-muted-foreground"
+              )}
+            >
+              <span className="mt-px shrink-0">{warn ? "⚠" : "↳"}</span>
+              <span className="min-w-0">
+                <span className="block font-medium">
+                  {WARNING_DETAILS[kind].title}
+                </span>
+                <span className="text-muted-foreground block">
+                  {WARNING_LABELS[kind](count, first)}
+                </span>
+                <span className="text-muted-foreground mt-1 block">
+                  {WARNING_DETAILS[kind].problem}
+                </span>
+                <span className="text-muted-foreground mt-1 block">
+                  {WARNING_DETAILS[kind].fix}
+                </span>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function RouteColorKey({ kinds }: { kinds: RouteWarningKind[] }) {
+  const warningKinds = kinds.filter(
+    (kind): kind is SegmentWarningKind => kind !== "flat" && kind !== "stub"
+  );
+  if (warningKinds.length === 0) return null;
+
+  const uniqueKinds = Array.from(new Set(warningKinds));
+  const items = [
+    { color: "var(--color-primary)", label: "Normal" },
+    ...uniqueKinds.map((kind) => ({
+      color: getRouteWarningSegmentColor(kind, "var(--color-primary)"),
+      label: WARNING_SHORT_LABELS[kind],
+    })),
+  ];
+
+  return (
+    <div className="text-muted-foreground mb-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] leading-tight">
+      {items.map((item) => (
+        <span key={item.label} className="inline-flex items-center gap-1.5">
+          <span
+            className="h-1.5 w-4 rounded-full"
+            style={{ backgroundColor: item.color }}
+            aria-hidden="true"
+          />
+          <span>{item.label}</span>
+        </span>
+      ))}
     </div>
   );
 }
@@ -95,16 +251,226 @@ const PLOT_H = VIEW_H - PAD_TOP - PAD_BOTTOM;
 function niceStep(range: number, targetTicks: number): number {
   const raw = range / targetTicks;
   const mag = Math.pow(10, Math.floor(Math.log10(raw)));
-  const candidates = [1, 2, 2.5, 5, 10].map((c) => c * mag);
-  return candidates.find((c) => c >= raw) ?? candidates[candidates.length - 1];
+  const candidates = [1, 2, 2.5, 5, 10].map((candidate) => candidate * mag);
+  return candidates.find((candidate) => candidate >= raw) ?? candidates.at(-1)!;
+}
+
+function ElevationSvg({
+  fillPath,
+  height,
+  minSample,
+  maxSample,
+  samples,
+  toX,
+  toY,
+  warningKindBySegment,
+  xTicks,
+  yTicks,
+}: {
+  fillPath: string;
+  height: number;
+  minSample: { d: number; z: number };
+  maxSample: { d: number; z: number };
+  samples: Array<{ d: number; z: number }>;
+  toX: (d: number) => number;
+  toY: (z: number) => number;
+  warningKindBySegment: Map<number, SegmentWarningKind>;
+  xTicks: Array<{ d: number; label: string }>;
+  yTicks: Array<{ z: number; label: string }>;
+}) {
+  const id = useId().replaceAll(":", "");
+  const fillId = `elev-fill-${id}`;
+  const clipId = `elev-clip-${id}`;
+
+  return (
+    <svg
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      width="100%"
+      height={height}
+      className="overflow-visible"
+      aria-label="Elevation profile chart"
+    >
+      <defs>
+        <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+          <stop
+            offset="0%"
+            stopColor="var(--color-primary)"
+            stopOpacity="0.35"
+          />
+          <stop
+            offset="100%"
+            stopColor="var(--color-primary)"
+            stopOpacity="0.03"
+          />
+        </linearGradient>
+        <clipPath id={clipId}>
+          <rect x={PAD_LEFT} y={PAD_TOP} width={PLOT_W} height={PLOT_H} />
+        </clipPath>
+      </defs>
+
+      {yTicks.map(({ z }) => (
+        <line
+          key={z}
+          x1={PAD_LEFT}
+          y1={toY(z).toFixed(2)}
+          x2={PAD_LEFT + PLOT_W}
+          y2={toY(z).toFixed(2)}
+          stroke="currentColor"
+          strokeOpacity={0.2}
+          strokeWidth={0.5}
+          strokeDasharray="3 3"
+        />
+      ))}
+
+      <path d={fillPath} fill={`url(#${fillId})`} clipPath={`url(#${clipId})`} />
+      {samples.slice(1).map((sample, index) => {
+        const previous = samples[index];
+        if (!previous) return null;
+        const warningKind = warningKindBySegment.get(index);
+        const stroke = getRouteWarningSegmentColor(
+          warningKind,
+          "var(--color-primary)"
+        );
+
+        return (
+          <path
+            key={`segment-${index}`}
+            d={`M${toX(previous.d).toFixed(2)},${toY(previous.z).toFixed(2)} L${toX(sample.d).toFixed(2)},${toY(sample.z).toFixed(2)}`}
+            fill="none"
+            stroke={stroke}
+            strokeWidth="1.9"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            clipPath={`url(#${clipId})`}
+          />
+        );
+      })}
+
+      {minSample.d !== maxSample.d && (
+        <>
+          <circle
+            cx={toX(minSample.d)}
+            cy={toY(minSample.z)}
+            r="3"
+            fill="var(--color-background)"
+            stroke="var(--color-primary)"
+            strokeWidth="1.5"
+          />
+          <text
+            x={toX(minSample.d)}
+            y={toY(minSample.z) + 10}
+            textAnchor="middle"
+            fontSize="10"
+            fill="currentColor"
+            fillOpacity={0.7}
+          >
+            {minSample.z.toFixed(1)}m
+          </text>
+        </>
+      )}
+
+      <circle
+        cx={toX(maxSample.d)}
+        cy={toY(maxSample.z)}
+        r="3"
+        fill="var(--color-primary)"
+        stroke="var(--color-background)"
+        strokeWidth="1.5"
+      />
+      <text
+        x={toX(maxSample.d)}
+        y={toY(maxSample.z) - 5}
+        textAnchor="middle"
+        fontSize="10"
+        fill="var(--color-primary)"
+        fontWeight="600"
+      >
+        {maxSample.z.toFixed(1)}m
+      </text>
+
+      <line
+        x1={PAD_LEFT}
+        y1={PAD_TOP + PLOT_H}
+        x2={PAD_LEFT + PLOT_W}
+        y2={PAD_TOP + PLOT_H}
+        stroke="currentColor"
+        strokeOpacity={0.3}
+        strokeWidth={1}
+      />
+      <line
+        x1={PAD_LEFT}
+        y1={PAD_TOP}
+        x2={PAD_LEFT}
+        y2={PAD_TOP + PLOT_H}
+        stroke="currentColor"
+        strokeOpacity={0.3}
+        strokeWidth={1}
+      />
+
+      {xTicks.map(({ d, label }) => (
+        <g key={d}>
+          <line
+            x1={toX(d)}
+            y1={PAD_TOP + PLOT_H}
+            x2={toX(d)}
+            y2={PAD_TOP + PLOT_H + 3}
+            stroke="currentColor"
+            strokeOpacity={0.3}
+            strokeWidth={1}
+          />
+          <text
+            x={toX(d)}
+            y={VIEW_H - 4}
+            textAnchor="middle"
+            fontSize="10"
+            fill="currentColor"
+            fillOpacity={0.7}
+          >
+            {label}
+          </text>
+        </g>
+      ))}
+
+      {yTicks.map(({ z, label }) => (
+        <g key={z}>
+          <line
+            x1={PAD_LEFT - 3}
+            y1={toY(z)}
+            x2={PAD_LEFT}
+            y2={toY(z)}
+            stroke="currentColor"
+            strokeOpacity={0.3}
+            strokeWidth={1}
+          />
+          <text
+            x={PAD_LEFT - 5}
+            y={toY(z) + 3}
+            textAnchor="end"
+            fontSize="10"
+            fill="currentColor"
+            fillOpacity={0.7}
+          >
+            {label}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
 }
 
 export default function ElevationChart({ className }: { className?: string }) {
   const path = useEditor(selectPrimaryPolyline);
+  const isMobile = useIsMobile();
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const portalRoot = typeof document === "undefined" ? null : document.body;
 
   const warnings = useMemo(
     () => (path ? getPolylineRouteWarnings(path) : []),
     [path]
+  );
+  const warningKinds = useMemo(
+    () => warnings.map((warning) => warning.kind),
+    [warnings]
   );
   const warningSegments = useMemo(
     () => (path ? getPolylineRouteWarningSegmentVisuals(path) : []),
@@ -124,8 +490,11 @@ export default function ElevationChart({ className }: { className?: string }) {
     if (samples.length < 2) return null;
 
     const totalDist = getPolylineTotalLength2D(path);
-    const rawMinZ = samples.reduce((a, s) => Math.min(a, s.z), Infinity);
-    const rawMaxZ = samples.reduce((a, s) => Math.max(a, s.z), -Infinity);
+    const rawMinZ = samples.reduce((a, sample) => Math.min(a, sample.z), Infinity);
+    const rawMaxZ = samples.reduce(
+      (a, sample) => Math.max(a, sample.z),
+      -Infinity
+    );
     const zRange = rawMaxZ - rawMinZ;
     const zPad = zRange < 0.5 ? 0.5 : zRange * 0.12;
     const minZ = rawMinZ - zPad;
@@ -137,8 +506,8 @@ export default function ElevationChart({ className }: { className?: string }) {
 
     const linePath = samples
       .map(
-        ({ d, z }, i) =>
-          `${i === 0 ? "M" : "L"}${toX(d).toFixed(2)},${toY(z).toFixed(2)}`
+        ({ d, z }, index) =>
+          `${index === 0 ? "M" : "L"}${toX(d).toFixed(2)},${toY(z).toFixed(2)}`
       )
       .join(" ");
 
@@ -150,23 +519,30 @@ export default function ElevationChart({ className }: { className?: string }) {
       ` L${lastX.toFixed(2)},${baselineY} L${firstX.toFixed(2)},${baselineY} Z`;
 
     const xStep = niceStep(totalDist, 5);
-    const xTicks: { d: number; label: string }[] = [];
+    const xTicks: Array<{ d: number; label: string }> = [];
     for (let d = 0; d <= totalDist + xStep * 0.01; d += xStep) {
-      const c = Math.min(d, totalDist);
-      xTicks.push({ d: c, label: c.toFixed(0) });
-      if (c >= totalDist) break;
+      const clampedDistance = Math.min(d, totalDist);
+      xTicks.push({ d: clampedDistance, label: clampedDistance.toFixed(0) });
+      if (clampedDistance >= totalDist) break;
     }
 
     const yStep = niceStep(zSpan, 4);
     const yTickStart = Math.ceil(minZ / yStep) * yStep;
-    const yTicks: { z: number; label: string }[] = [];
+    const yTicks: Array<{ z: number; label: string }> = [];
     for (let z = yTickStart; z <= maxZ + yStep * 0.01; z += yStep) {
-      if (z >= minZ - 0.001 && z <= maxZ + 0.001)
+      if (z >= minZ - 0.001 && z <= maxZ + 0.001) {
         yTicks.push({ z, label: z.toFixed(1) });
+      }
     }
 
-    const minSample = samples.reduce((a, s) => (s.z < a.z ? s : a), samples[0]);
-    const maxSample = samples.reduce((a, s) => (s.z > a.z ? s : a), samples[0]);
+    const minSample = samples.reduce(
+      (a, sample) => (sample.z < a.z ? sample : a),
+      samples[0]
+    );
+    const maxSample = samples.reduce(
+      (a, sample) => (sample.z > a.z ? sample : a),
+      samples[0]
+    );
 
     return {
       fillPath,
@@ -210,6 +586,54 @@ export default function ElevationChart({ className }: { className?: string }) {
     maxSample,
   } = chartData;
 
+  const chartProps = {
+    fillPath,
+    minSample,
+    maxSample,
+    samples,
+    toX,
+    toY,
+    warningKindBySegment,
+    xTicks,
+    yTicks,
+  };
+  const detailsContent = (
+    <div className="space-y-4">
+      <div>
+        <div className="text-muted-foreground mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+          <span>{totalDist.toFixed(1)} m route</span>
+          <span>
+            {rawMinZ.toFixed(1)}-{rawMaxZ.toFixed(1)} m elevation
+          </span>
+        </div>
+        <ElevationSvg {...chartProps} height={isMobile ? 180 : 220} />
+      </div>
+      <RouteColorKey kinds={warningKinds} />
+      <RouteWarningDetails warnings={warnings} />
+    </div>
+  );
+  const detailsOverlay = isMobile ? (
+    <MobileDrawer
+      open={detailsOpen}
+      onOpenChange={setDetailsOpen}
+      title="Elevation Profile"
+      subtitle="Route height, colored warning sections, and route-review notes."
+    >
+      {detailsContent}
+    </MobileDrawer>
+  ) : (
+    <DesktopModal
+      open={detailsOpen}
+      onOpenChange={setDetailsOpen}
+      title="Elevation Profile"
+      subtitle="Route height, colored warning sections, and route-review notes."
+      maxWidth="max-w-2xl"
+      panelClassName="px-7 py-7"
+    >
+      {detailsContent}
+    </DesktopModal>
+  );
+
   return (
     <div
       className={cn(
@@ -217,189 +641,38 @@ export default function ElevationChart({ className }: { className?: string }) {
         className
       )}
     >
-      <div className="mb-2 flex items-baseline justify-between">
+      <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
           Elevation Profile
         </span>
-        <span className="text-muted-foreground text-[11px]">
-          {totalDist.toFixed(1)} m · {rawMinZ.toFixed(1)}–{rawMaxZ.toFixed(1)} m
-        </span>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span className="text-muted-foreground truncate text-[11px]">
+            {totalDist.toFixed(1)} m · {rawMinZ.toFixed(1)}–{rawMaxZ.toFixed(1)} m
+          </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:bg-muted/70 hover:text-foreground focus-visible:bg-muted/70 h-6 w-6 shrink-0"
+                aria-label="Open elevation details"
+                onClick={() => setDetailsOpen(true)}
+              >
+                <Info className="size-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6}>
+              Elevation details
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
-      <RouteWarnings warnings={warnings} />
-
-      <svg
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        width="100%"
-        height={VIEW_H}
-        className="overflow-visible"
-        aria-label="Elevation profile chart"
-      >
-        <defs>
-          <linearGradient id="elev-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop
-              offset="0%"
-              stopColor="var(--color-primary)"
-              stopOpacity="0.35"
-            />
-            <stop
-              offset="100%"
-              stopColor="var(--color-primary)"
-              stopOpacity="0.03"
-            />
-          </linearGradient>
-          <clipPath id="elev-clip">
-            <rect x={PAD_LEFT} y={PAD_TOP} width={PLOT_W} height={PLOT_H} />
-          </clipPath>
-        </defs>
-
-        {yTicks.map(({ z }) => (
-          <line
-            key={z}
-            x1={PAD_LEFT}
-            y1={toY(z).toFixed(2)}
-            x2={PAD_LEFT + PLOT_W}
-            y2={toY(z).toFixed(2)}
-            stroke="currentColor"
-            strokeOpacity={0.2}
-            strokeWidth={0.5}
-            strokeDasharray="3 3"
-          />
-        ))}
-
-        <path d={fillPath} fill="url(#elev-fill)" clipPath="url(#elev-clip)" />
-        {samples.slice(1).map((sample, index) => {
-          const previous = samples[index];
-          if (!previous) return null;
-          const warningKind = warningKindBySegment.get(index);
-          const stroke = getRouteWarningSegmentColor(
-            warningKind,
-            "var(--color-primary)"
-          );
-
-          return (
-            <path
-              key={`segment-${index}`}
-              d={`M${toX(previous.d).toFixed(2)},${toY(previous.z).toFixed(2)} L${toX(sample.d).toFixed(2)},${toY(sample.z).toFixed(2)}`}
-              fill="none"
-              stroke={stroke}
-              strokeWidth="1.9"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              clipPath="url(#elev-clip)"
-            />
-          );
-        })}
-
-        {minSample.d !== maxSample.d && (
-          <>
-            <circle
-              cx={toX(minSample.d)}
-              cy={toY(minSample.z)}
-              r="3"
-              fill="var(--color-background)"
-              stroke="var(--color-primary)"
-              strokeWidth="1.5"
-            />
-            <text
-              x={toX(minSample.d)}
-              y={toY(minSample.z) + 10}
-              textAnchor="middle"
-              fontSize="10"
-              fill="currentColor"
-              fillOpacity={0.7}
-            >
-              {minSample.z.toFixed(1)}m
-            </text>
-          </>
-        )}
-
-        <circle
-          cx={toX(maxSample.d)}
-          cy={toY(maxSample.z)}
-          r="3"
-          fill="var(--color-primary)"
-          stroke="var(--color-background)"
-          strokeWidth="1.5"
-        />
-        <text
-          x={toX(maxSample.d)}
-          y={toY(maxSample.z) - 5}
-          textAnchor="middle"
-          fontSize="10"
-          fill="var(--color-primary)"
-          fontWeight="600"
-        >
-          {maxSample.z.toFixed(1)}m
-        </text>
-
-        <line
-          x1={PAD_LEFT}
-          y1={PAD_TOP + PLOT_H}
-          x2={PAD_LEFT + PLOT_W}
-          y2={PAD_TOP + PLOT_H}
-          stroke="currentColor"
-          strokeOpacity={0.3}
-          strokeWidth={1}
-        />
-        <line
-          x1={PAD_LEFT}
-          y1={PAD_TOP}
-          x2={PAD_LEFT}
-          y2={PAD_TOP + PLOT_H}
-          stroke="currentColor"
-          strokeOpacity={0.3}
-          strokeWidth={1}
-        />
-
-        {xTicks.map(({ d, label }) => (
-          <g key={d}>
-            <line
-              x1={toX(d)}
-              y1={PAD_TOP + PLOT_H}
-              x2={toX(d)}
-              y2={PAD_TOP + PLOT_H + 3}
-              stroke="currentColor"
-              strokeOpacity={0.3}
-              strokeWidth={1}
-            />
-            <text
-              x={toX(d)}
-              y={VIEW_H - 4}
-              textAnchor="middle"
-              fontSize="10"
-              fill="currentColor"
-              fillOpacity={0.7}
-            >
-              {label}
-            </text>
-          </g>
-        ))}
-
-        {yTicks.map(({ z, label }) => (
-          <g key={z}>
-            <line
-              x1={PAD_LEFT - 3}
-              y1={toY(z)}
-              x2={PAD_LEFT}
-              y2={toY(z)}
-              stroke="currentColor"
-              strokeOpacity={0.3}
-              strokeWidth={1}
-            />
-            <text
-              x={PAD_LEFT - 5}
-              y={toY(z) + 3}
-              textAnchor="end"
-              fontSize="10"
-              fill="currentColor"
-              fillOpacity={0.7}
-            >
-              {label}
-            </text>
-          </g>
-        ))}
-      </svg>
+      <RouteWarningSummary warnings={warnings} />
+      <RouteColorKey kinds={warningKinds} />
+      <ElevationSvg {...chartProps} height={VIEW_H} />
+      {portalRoot && detailsOpen ? createPortal(detailsOverlay, portalRoot) : null}
     </div>
   );
 }
