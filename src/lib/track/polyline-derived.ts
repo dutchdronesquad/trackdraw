@@ -420,10 +420,7 @@ export function getPolylineRouteWarningSegmentVisuals(
       continue;
     }
 
-    if (
-      warning.kind === "hairpin" ||
-      warning.kind === "rhythm-break"
-    ) {
+    if (warning.kind === "hairpin" || warning.kind === "rhythm-break") {
       assignSegment(warning.waypointIndex - 1, warning.kind);
       assignSegment(warning.waypointIndex, warning.kind);
     }

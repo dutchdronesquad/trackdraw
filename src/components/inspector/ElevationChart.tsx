@@ -57,37 +57,44 @@ const WARNING_DETAILS: Record<
 > = {
   stub: {
     title: "Route is incomplete",
-    problem: "The path needs at least two waypoints before TrackDraw can review it as a route.",
+    problem:
+      "The path needs at least two waypoints before TrackDraw can review it as a route.",
     fix: "Add another waypoint or finish drawing the race line.",
   },
   flat: {
     title: "No elevation has been set",
-    problem: "All waypoints are still at 0 m, so the 3D preview and elevation chart stay flat.",
+    problem:
+      "All waypoints are still at 0 m, so the 3D preview and elevation chart stay flat.",
     fix: "Set waypoint elevations in the inspector or 3D view if the route should climb or drop.",
   },
   steep: {
     title: "Grade changes too quickly",
-    problem: "One section climbs or drops sharply over a short distance, which can make the 3D line feel abrupt.",
+    problem:
+      "One section climbs or drops sharply over a short distance, which can make the 3D line feel abrupt.",
     fix: "Spread the height change across more distance or add an intermediate waypoint.",
   },
   hairpin: {
     title: "Turn is very tight",
-    problem: "A waypoint creates a sharp reversal that may be hard to fly cleanly at speed.",
+    problem:
+      "A waypoint creates a sharp reversal that may be hard to fly cleanly at speed.",
     fix: "Move the waypoint outward or add more room before and after the turn.",
   },
   "close-points": {
     title: "Waypoints are too close",
-    problem: "Two waypoints are so close together that they create a tiny route segment.",
+    problem:
+      "Two waypoints are so close together that they create a tiny route segment.",
     fix: "Delete one of the points or move it farther away from its neighbor.",
   },
   "spacing-shift": {
     title: "Gate rhythm changes abruptly",
-    problem: "The distance before and after a waypoint changes suddenly, which can make the route feel uneven.",
+    problem:
+      "The distance before and after a waypoint changes suddenly, which can make the route feel uneven.",
     fix: "Reposition nearby waypoints so the spacing changes more gradually.",
   },
   "rhythm-break": {
     title: "Short correction breaks the flow",
-    problem: "A short middle segment interrupts longer surrounding sections and can create an awkward wobble.",
+    problem:
+      "A short middle segment interrupts longer surrounding sections and can create an awkward wobble.",
     fix: "Smooth the correction by moving the point, deleting it, or adding a gentler transition.",
   },
 };
@@ -322,7 +329,11 @@ function ElevationSvg({
         />
       ))}
 
-      <path d={fillPath} fill={`url(#${fillId})`} clipPath={`url(#${clipId})`} />
+      <path
+        d={fillPath}
+        fill={`url(#${fillId})`}
+        clipPath={`url(#${clipId})`}
+      />
       {samples.slice(1).map((sample, index) => {
         const previous = samples[index];
         if (!previous) return null;
@@ -490,7 +501,10 @@ export default function ElevationChart({ className }: { className?: string }) {
     if (samples.length < 2) return null;
 
     const totalDist = getPolylineTotalLength2D(path);
-    const rawMinZ = samples.reduce((a, sample) => Math.min(a, sample.z), Infinity);
+    const rawMinZ = samples.reduce(
+      (a, sample) => Math.min(a, sample.z),
+      Infinity
+    );
     const rawMaxZ = samples.reduce(
       (a, sample) => Math.max(a, sample.z),
       -Infinity
@@ -647,7 +661,8 @@ export default function ElevationChart({ className }: { className?: string }) {
         </span>
         <div className="flex min-w-0 items-center gap-1.5">
           <span className="text-muted-foreground truncate text-[11px]">
-            {totalDist.toFixed(1)} m · {rawMinZ.toFixed(1)}–{rawMaxZ.toFixed(1)} m
+            {totalDist.toFixed(1)} m · {rawMinZ.toFixed(1)}–{rawMaxZ.toFixed(1)}{" "}
+            m
           </span>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -672,7 +687,9 @@ export default function ElevationChart({ className }: { className?: string }) {
       <RouteWarningSummary warnings={warnings} />
       <RouteColorKey kinds={warningKinds} />
       <ElevationSvg {...chartProps} height={VIEW_H} />
-      {portalRoot && detailsOpen ? createPortal(detailsOverlay, portalRoot) : null}
+      {portalRoot && detailsOpen
+        ? createPortal(detailsOverlay, portalRoot)
+        : null}
     </div>
   );
 }
