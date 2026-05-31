@@ -111,11 +111,24 @@ const WARNING_SHORT_LABELS: Record<RouteWarningKind, string> = {
 
 function isWarningKind(kind: RouteWarningKind) {
   return (
+    kind === "hairpin" ||
     kind === "steep" ||
     kind === "close-points" ||
     kind === "spacing-shift" ||
     kind === "rhythm-break"
   );
+}
+
+const WARNING_SUMMARY_PRIORITY: Partial<Record<RouteWarningKind, number>> = {
+  "close-points": 1,
+  steep: 2,
+  hairpin: 3,
+  "spacing-shift": 4,
+  "rhythm-break": 5,
+};
+
+function getSummaryPriority(kind: RouteWarningKind) {
+  return WARNING_SUMMARY_PRIORITY[kind] ?? Number.POSITIVE_INFINITY;
 }
 
 function useGroupedWarnings(warnings: RouteWarning[]) {
@@ -137,7 +150,11 @@ function RouteWarningSummary({ warnings }: { warnings: RouteWarning[] }) {
   const grouped = useGroupedWarnings(warnings);
   if (grouped.length === 0) return null;
 
-  const [kind, summary] = grouped[0];
+  const [kind, summary] =
+    grouped
+      .filter(([warningKind]) => isWarningKind(warningKind))
+      .sort(([a], [b]) => getSummaryPriority(a) - getSummaryPriority(b))[0] ??
+    grouped[0];
   const extraCount = grouped.length - 1;
   const warn = isWarningKind(kind);
 
