@@ -143,11 +143,12 @@ describe("DashboardGalleryManager", () => {
 
     await user.click(screen.getByLabelText("Inspect Track One"));
 
-    expect(screen.getByText("Preview media available")).toBeTruthy();
+    expect(screen.getByText("Ready for public review")).toBeTruthy();
     expect(screen.getByText("30 x 18 m")).toBeTruthy();
     expect(screen.getByText("12 elements")).toBeTruthy();
     expect(screen.getByText("Share token")).toBeTruthy();
     expect(screen.getByText("share-token")).toBeTruthy();
+    expect(screen.getByText("Preview file")).toBeTruthy();
     expect(
       screen.getByRole("link", { name: /Open share/i }).getAttribute("href")
     ).toBe("/share/share-token");
