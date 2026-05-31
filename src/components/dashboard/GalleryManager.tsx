@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import {
   type ColumnDef,
@@ -11,8 +13,14 @@ import {
 } from "@tanstack/react-table";
 import {
   ArrowUpDown,
+  AlertCircle,
+  CheckCircle2,
+  Copy,
   Eye,
   EyeOff,
+  ExternalLink,
+  ImageOff,
+  Info,
   Loader2,
   MoreHorizontal,
   Sparkles,
@@ -48,6 +56,7 @@ import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import type { AccountRole } from "@/lib/account-roles";
+import { getSiteMediaUrl } from "@/lib/seo";
 import type {
   DashboardGalleryEntry,
   GalleryState,
@@ -164,6 +173,75 @@ function getShareLifecycleDetail(entry: DashboardGalleryEntry) {
   return "No expiry";
 }
 
+function formatFieldSize(entry: DashboardGalleryEntry) {
+  if (entry.fieldWidth == null || entry.fieldHeight == null) {
+    return "Not set";
+  }
+
+  return `${entry.fieldWidth} x ${entry.fieldHeight} m`;
+}
+
+function formatElementCount(entry: DashboardGalleryEntry) {
+  if (entry.shapeCount == null) return "Not available";
+  return `${entry.shapeCount} ${entry.shapeCount === 1 ? "element" : "elements"}`;
+}
+
+function getPreviewImageUrl(entry: DashboardGalleryEntry) {
+  if (!entry.galleryPreviewImage) return null;
+  if (entry.galleryPreviewImage.startsWith("http")) {
+    return entry.galleryPreviewImage;
+  }
+
+  return getSiteMediaUrl(entry.galleryPreviewImage);
+}
+
+function getInspectSummary(entry: DashboardGalleryEntry) {
+  const shareState = getShareLifecycleState(entry);
+
+  if (shareState === "revoked") {
+    return {
+      tone: "warning" as const,
+      title: "Share is revoked",
+      detail:
+        "The listing can still appear in dashboard cleanup views, but the public share page will not render active track data.",
+    };
+  }
+
+  if (shareState === "expired") {
+    return {
+      tone: "warning" as const,
+      title: "Share is expired",
+      detail:
+        "The public share page will no longer render active track data until the owner republishes or updates the share.",
+    };
+  }
+
+  if (entry.galleryState === "hidden") {
+    return {
+      tone: "info" as const,
+      title: "Hidden from public gallery",
+      detail:
+        "The share is active, but this listing is currently removed from public gallery discovery.",
+    };
+  }
+
+  if (!entry.galleryPreviewImage) {
+    return {
+      tone: "warning" as const,
+      title: "Preview media is missing",
+      detail:
+        "The listing can be reviewed, but the public gallery card may look incomplete until preview media is regenerated.",
+    };
+  }
+
+  return {
+    tone: "ok" as const,
+    title: "Ready for public review",
+    detail:
+      "The share is active and the gallery listing has the core public metadata needed for review.",
+  };
+}
+
 function ActionTooltip({
   label,
   children,
@@ -178,6 +256,90 @@ function ActionTooltip({
         {label}
       </TooltipContent>
     </Tooltip>
+  );
+}
+
+function InspectDetail({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-1 py-1.5 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-4">
+      <dt className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+        {label}
+      </dt>
+      <dd className="text-sm break-words">{value}</dd>
+    </div>
+  );
+}
+
+function InspectMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+        {label}
+      </dt>
+      <dd className="mt-1 truncate text-sm font-medium">{value}</dd>
+    </div>
+  );
+}
+
+function InspectNotice({
+  tone,
+  title,
+  detail,
+}: {
+  tone: "ok" | "warning" | "info";
+  title: string;
+  detail: string;
+}) {
+  const Icon =
+    tone === "ok" ? CheckCircle2 : tone === "warning" ? AlertCircle : Info;
+  const iconClassName =
+    tone === "ok"
+      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+      : tone === "warning"
+        ? "bg-amber-500/10 text-amber-700 dark:text-amber-300"
+        : "bg-muted text-muted-foreground";
+
+  return (
+    <div className="flex gap-3 py-3">
+      <span
+        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full ${iconClassName}`}
+      >
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-medium">{title}</p>
+        <p className="text-muted-foreground mt-1 text-xs leading-5">{detail}</p>
+      </div>
+    </div>
+  );
+}
+
+function InspectSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <h3 className="text-muted-foreground text-xs font-medium uppercase">
+        {title}
+      </h3>
+      {children}
+    </section>
   );
 }
 
@@ -197,6 +359,8 @@ export default function DashboardGalleryManager({
   const [selectedShareLifecycles, setSelectedShareLifecycles] = useState<
     ShareLifecycleState[]
   >([]);
+  const [inspectCandidate, setInspectCandidate] =
+    useState<DashboardGalleryEntry | null>(null);
   const [deleteCandidate, setDeleteCandidate] =
     useState<DashboardGalleryEntry | null>(null);
 
@@ -298,6 +462,17 @@ export default function DashboardGalleryManager({
       );
     } finally {
       setPendingShareToken(null);
+    }
+  };
+
+  const copyShareLink = async (entry: DashboardGalleryEntry) => {
+    const href = `${window.location.origin}/share/${entry.shareToken}`;
+
+    try {
+      await navigator.clipboard.writeText(href);
+      toast.success("Share link copied.");
+    } catch {
+      toast.error("Could not copy the share link.");
     }
   };
 
@@ -436,12 +611,24 @@ export default function DashboardGalleryManager({
         return (
           <div className="flex justify-end">
             <div className="hidden items-center justify-end gap-1 md:flex">
+              <ActionTooltip label="Inspect">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-muted hover:text-foreground size-7"
+                  aria-label={`Inspect ${entry.galleryTitle}`}
+                  onClick={() => setInspectCandidate(entry)}
+                >
+                  <Info className="size-4" />
+                </Button>
+              </ActionTooltip>
               <ActionTooltip label={featureAction.label}>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="size-7"
+                  className="hover:bg-muted hover:text-foreground size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`${featureAction.label} ${entry.galleryTitle}`}
                   onClick={() =>
@@ -460,7 +647,7 @@ export default function DashboardGalleryManager({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="size-7"
+                  className="hover:bg-muted hover:text-foreground size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`${visibilityAction.label} ${entry.galleryTitle}`}
                   onClick={() =>
@@ -475,7 +662,7 @@ export default function DashboardGalleryManager({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="text-destructive hover:text-destructive size-7"
+                  className="text-destructive hover:bg-muted hover:text-destructive size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`Delete ${entry.galleryTitle}`}
                   onClick={() => setDeleteCandidate(entry)}
@@ -501,6 +688,11 @@ export default function DashboardGalleryManager({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-44">
+                <DropdownMenuItem onClick={() => setInspectCandidate(entry)}>
+                  <Info className="size-4" />
+                  Inspect
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() =>
                     void updateEntry(entry.shareToken, featureAction.action)
@@ -597,6 +789,15 @@ export default function DashboardGalleryManager({
     entries.length === 0
       ? "No gallery entries yet."
       : "No gallery entries match the current filters.";
+  const inspectShareLifecycle = inspectCandidate
+    ? getShareLifecycleState(inspectCandidate)
+    : null;
+  const inspectPreviewImageUrl = inspectCandidate
+    ? getPreviewImageUrl(inspectCandidate)
+    : null;
+  const inspectSummary = inspectCandidate
+    ? getInspectSummary(inspectCandidate)
+    : null;
 
   return (
     <div className="space-y-4">
@@ -637,6 +838,186 @@ export default function DashboardGalleryManager({
       <p className="text-muted-foreground text-xs">
         Showing {filteredRows.length} of {entries.length} gallery entries.
       </p>
+
+      <Dialog
+        open={inspectCandidate !== null}
+        onOpenChange={(open) => {
+          if (!open) setInspectCandidate(null);
+        }}
+      >
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-hidden p-0 sm:max-w-4xl">
+          {inspectCandidate && inspectShareLifecycle && inspectSummary ? (
+            <div className="flex max-h-[calc(100dvh-2rem)] min-h-0 flex-col">
+              <DialogHeader className="border-b p-6 pr-12">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <DialogTitle className="truncate">
+                      {inspectCandidate.galleryTitle}
+                    </DialogTitle>
+                    <DialogDescription className="mt-1">
+                      Inspect public gallery readiness and share lifecycle.
+                    </DialogDescription>
+                  </div>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <Badge
+                      variant={getStateVariant(inspectCandidate.galleryState)}
+                    >
+                      {getStateLabel(inspectCandidate.galleryState)}
+                    </Badge>
+                    <Badge
+                      variant={getShareLifecycleVariant(inspectShareLifecycle)}
+                    >
+                      {getShareLifecycleLabel(inspectShareLifecycle)}
+                    </Badge>
+                    <Badge
+                      variant={inspectPreviewImageUrl ? "outline" : "muted"}
+                    >
+                      Preview {inspectPreviewImageUrl ? "ready" : "missing"}
+                    </Badge>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="min-h-0 overflow-y-auto">
+                <div className="grid lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+                  <div className="border-b p-6 lg:border-r lg:border-b-0">
+                    <div className="bg-muted relative aspect-video overflow-hidden rounded-md border">
+                      {inspectPreviewImageUrl ? (
+                        <Image
+                          src={inspectPreviewImageUrl}
+                          alt={inspectCandidate.galleryTitle}
+                          fill
+                          unoptimized
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="text-muted-foreground absolute inset-0 flex flex-col items-center justify-center gap-2">
+                          <ImageOff className="size-8 opacity-50" />
+                          <p className="text-sm font-medium">
+                            No preview media
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-5">
+                      <InspectMetric
+                        label="Field"
+                        value={formatFieldSize(inspectCandidate)}
+                      />
+                      <InspectMetric
+                        label="Elements"
+                        value={formatElementCount(inspectCandidate)}
+                      />
+                      <InspectMetric
+                        label="Published"
+                        value={formatDate(inspectCandidate.galleryPublishedAt)}
+                      />
+                      <InspectMetric
+                        label="Updated"
+                        value={formatDate(inspectCandidate.updatedAt)}
+                      />
+                    </dl>
+                  </div>
+
+                  <div className="space-y-7 p-6">
+                    <InspectSection title="Review outcome">
+                      <InspectNotice
+                        tone={inspectSummary.tone}
+                        title={inspectSummary.title}
+                        detail={inspectSummary.detail}
+                      />
+                    </InspectSection>
+
+                    <InspectSection title="Public listing">
+                      <dl className="space-y-1">
+                        <InspectDetail
+                          label="Description"
+                          value={
+                            <span className="leading-6">
+                              {inspectCandidate.galleryDescription ||
+                                "No gallery description has been provided."}
+                            </span>
+                          }
+                        />
+                        <InspectDetail
+                          label="Share title"
+                          value={
+                            inspectCandidate.shareTitle || "Untitled track"
+                          }
+                        />
+                      </dl>
+                    </InspectSection>
+
+                    <InspectSection title="Record">
+                      <dl className="space-y-1">
+                        <InspectDetail
+                          label="Owner"
+                          value={getOwnerLabel(inspectCandidate)}
+                        />
+                        <InspectDetail
+                          label="Owner email"
+                          value={
+                            inspectCandidate.ownerEmail ??
+                            inspectCandidate.ownerUserId
+                          }
+                        />
+                        <InspectDetail
+                          label="Share token"
+                          value={
+                            <span className="font-mono text-xs">
+                              {inspectCandidate.shareToken}
+                            </span>
+                          }
+                        />
+                        {inspectCandidate.galleryPreviewImage ? (
+                          <InspectDetail
+                            label="Preview file"
+                            value={
+                              <span className="font-mono text-xs">
+                                {inspectCandidate.galleryPreviewImage}
+                              </span>
+                            }
+                          />
+                        ) : null}
+                      </dl>
+                    </InspectSection>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="border-t p-6 pt-4 sm:justify-between">
+                <DialogClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DialogClose>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void copyShareLink(inspectCandidate)}
+                  >
+                    <Copy className="size-4" />
+                    Copy link
+                  </Button>
+                  <Button asChild>
+                    <Link href={`/share/${inspectCandidate.shareToken}`}>
+                      <ExternalLink className="size-4" />
+                      Open share
+                    </Link>
+                  </Button>
+                </div>
+              </DialogFooter>
+            </div>
+          ) : (
+            <DialogHeader className="p-6 pr-12">
+              <DialogTitle>Gallery entry</DialogTitle>
+              <DialogDescription>
+                Select a gallery row to inspect its public context.
+              </DialogDescription>
+            </DialogHeader>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={deleteCandidate !== null}

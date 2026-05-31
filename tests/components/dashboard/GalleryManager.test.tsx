@@ -75,6 +75,9 @@ const entry: DashboardGalleryEntry = {
   shareTitle: "Track One share",
   shareExpiresAt: null,
   shareRevokedAt: null,
+  fieldWidth: 30,
+  fieldHeight: 18,
+  shapeCount: 12,
 };
 
 describe("DashboardGalleryManager", () => {
@@ -127,6 +130,27 @@ describe("DashboardGalleryManager", () => {
       },
       body: JSON.stringify({ action: "feature" }),
     });
+  });
+
+  it("opens read-only inspect context for a gallery entry", async () => {
+    const user = userEvent.setup();
+    render(
+      <DashboardGalleryManager
+        currentUserRole="moderator"
+        initialEntries={[entry]}
+      />
+    );
+
+    await user.click(screen.getByLabelText("Inspect Track One"));
+
+    expect(screen.getByText("Preview media available")).toBeTruthy();
+    expect(screen.getByText("30 x 18 m")).toBeTruthy();
+    expect(screen.getByText("12 elements")).toBeTruthy();
+    expect(screen.getByText("Share token")).toBeTruthy();
+    expect(screen.getByText("share-token")).toBeTruthy();
+    expect(
+      screen.getByRole("link", { name: /Open share/i }).getAttribute("href")
+    ).toBe("/share/share-token");
   });
 
   it("confirms before deleting a gallery entry", async () => {

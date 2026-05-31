@@ -22,7 +22,7 @@ Labels used below:
 
 ## Current Priority
 
-The completed release-sized work is archived below. The REST API, live race overlay preparation, account project lifecycle polish, UI/UX polish, and stability pass are now complete. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, and account-backed project lifecycle depth beyond the shipped conflict/retry baseline.
+The completed release-sized work is archived below. The REST API, live race overlay preparation, account project lifecycle polish, UI/UX polish, and stability pass are now complete. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and better dashboard visibility over public and integration-sensitive surfaces.
 
 ## Follow-up
 
@@ -37,11 +37,15 @@ The completed release-sized work is archived below. The REST API, live race over
       Support reusable venue records with boundaries, constraints, and venue-specific profiles.
 
 - [ ] Share version history (`Account-backed`)
-      Let owners update published shares while keeping clear version history and rollback options for account-backed projects.
-  - [ ] Published version snapshots
-        Store each deliberate publish/update as a named or timestamped version instead of silently replacing the visible share state.
-  - [ ] Rollback and current-version controls
-        Let owners inspect previous published versions and restore one when a shared track was updated by mistake.
+      Let owners update published shares while keeping clear version history, current-version state, and rollback options for account-backed projects.
+  - [ ] Published version data model
+        Store each deliberate publish/update as an immutable published-version record linked to the account-backed share and project, while keeping the existing share token as the stable public address.
+  - [ ] Owner publish/update flow
+        Make updating an already-published share an explicit action that creates a new version and shows the current published timestamp plus unpublished editor changes.
+  - [ ] Version review and restore
+        Let owners inspect recent versions with timestamp, gallery metadata, field size, and obstacle count, then restore a previous snapshot by publishing it as a new latest version.
+  - [ ] Dashboard lifecycle visibility
+        Surface current version, latest update time, version count, gallery state, and embed availability in the dashboard share lifecycle inspector.
 
 - [ ] Gallery featured collections (`Account-backed`)
       Let admins curate small gallery collections such as indoor practice, beginner friendly, technical layouts, and race-day examples without adding social feeds or voting.
@@ -50,16 +54,28 @@ The completed release-sized work is archived below. The REST API, live race over
   - [ ] Public collection sections
         Surface curated collections on `/gallery` while keeping individual gallery cards pointed at `/share/[token]`.
 
-- [ ] Real-time collaboration evaluation (`Research`)
-      Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justifies the editor complexity.
-  - [ ] Smallest credible live slice
-        Decide whether the first live multi-user step should be presence-only, a host-led review session, or true co-editing.
-  - [ ] Host-review-first recommendation
-        Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing.
-  - [ ] Sync model and conflict handling
-        Define how collaborative edits, conflict resolution, and offline/local-first behavior should work together only if shared editing still looks strategically justified.
-  - [ ] Re-evaluate after editor boundary improvements
-        Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too.
+- [ ] Dashboard operator tooling (`Account-backed`)
+      Improve dashboard visibility for public gallery tracks, published shares, contextual diagnostics, and API usage without turning TrackDraw into a social platform or broad support console.
+  - [ ] Gallery collections management
+        Add dashboard controls for creating, ordering, publishing, and assigning curated gallery collections.
+  - [ ] Public track quality review
+        Give moderators a review list with preview, title, description, field size, obstacle count, public indexing status, owner context, and feature/hide/restore/open actions.
+  - [ ] Share lifecycle inspector
+        Show share owner, project, token state, expiry/revocation, gallery listing, embed availability, and latest publish/update metadata in one operator view.
+  - [ ] Contextual account/project diagnostics
+        Add inspect affordances inside existing Users, Gallery, Share, API, and Audit surfaces instead of a standalone diagnostics page.
+    - [x] Gallery/share inspect drawer
+          Started with a read-only Inspect action on dashboard gallery rows that shows owner, share token, share lifecycle, gallery state, description, share title, field size, element count, preview media state, publish/update dates, and copy/open share actions.
+    - [ ] User context panel
+          Show role, created/updated dates, account-backed project count, active share count, gallery entry count, API key count, and recent account audit events from the Users table.
+    - [ ] Project context panel
+          Show project owner, title, updated timestamp, active share state, gallery state, API project ID, overlay readiness, field size, obstacle count, route presence, and timing-marker readiness.
+    - [ ] Entity timeline links
+          Link users, gallery entries, share tokens, projects, and API keys into filtered audit context when audit events already exist.
+    - [ ] Diagnostics boundary
+          Keep diagnostics contextual and read-focused: no standalone diagnostics page, project impersonation, private project editing, API key secrets, local-only browser projects, raw project JSON, or account takeover/session controls in the first slice.
+  - [ ] API usage dashboard
+        Show API key activity, last-used timestamps, rate-limit hits, endpoint error patterns, and overlay readiness/API usage signals for account projects.
 
 ## Later Product Follow-up
 
@@ -109,14 +125,6 @@ The completed release-sized work is archived below. The REST API, live race over
   - [ ] Full-track placement usefulness if demand appears
         Test whether full-track venue projection is accurate and useful enough to help real setup decisions without creating misleading precision.
 
-- [ ] Competition rule validation (`Research`)
-      Validate a layout against known rule sets such as FAI or MultiGP — minimum gate sizes, minimum obstacle distances, mandatory gate types. Useful for formal competition organizers.
-
-- [ ] Track challenges evaluation (`Research`)
-      Evaluate whether TrackDraw should support recurring design challenges, submissions, and lightweight participation loops without creating a heavy moderation or identity burden.
-  - [ ] Submission and voting model
-        Define how challenge entries, featured picks, or community voting would work if this becomes a real product surface.
-
 - [ ] Build mode / setup sequence (`No account required`)
       Turn a finished layout into a dedicated build/setup surface instead of extending the Race Pack indefinitely, but keep it as a later workflow track rather than a near-term follow-up.
   - [ ] Dedicated build-mode view
@@ -129,7 +137,7 @@ The completed release-sized work is archived below. The REST API, live race over
         Let setup order and timing adapt to crew size and venue constraints.
 
 - [ ] Comments and review mode (`Account-backed`)
-      Add anchored feedback around obstacles or route sections, but keep it as a later follow-up behind the more pressing design, handoff, and collaboration research tracks.
+      Add anchored feedback around obstacles or route sections, but keep it as a later follow-up behind the more pressing design, handoff, account, and publishing tracks.
   - [ ] Pinned obstacle notes
         Add simple notes attached to specific obstacles.
   - [ ] Route-section notes
@@ -147,26 +155,6 @@ The completed release-sized work is archived below. The REST API, live race over
         Decide whether a wrapper should load the hosted app or require its own runtime.
   - [ ] Platform recommendation
         Recommend web-first, Electron, Capacitor, or no wrapper for now.
-
-- [ ] PWA evaluation (`Research`)
-      Evaluate whether TrackDraw should add a narrow PWA layer for installability and app-like launch behavior.
-  - [ ] Installability and manifest pass
-        Determine whether a proper manifest and installable app shell would help repeat venue-side use.
-  - [ ] Service worker risk/benefit evaluation
-        Decide whether offline caching creates more value than stale-cache risk.
-  - [ ] PWA scope recommendation
-        Recommend standard web app, narrow PWA, or deeper offline/app-shell work later.
-
-- [ ] Template library product definition (`Research`)
-      Decide whether TrackDraw should support reusable personal, club, or team-owned templates at all.
-  - [ ] Template object definition
-        Define whether a template is a full project, reusable section/group, race-day preset, or something else.
-  - [ ] Ownership and visibility model
-        Define person, club, team, private, shared, and published ownership/visibility.
-  - [ ] Browse, duplicate, and fork flow
-        Clarify browse, insert, duplicate, and fork behavior.
-  - [ ] Relationship to starter layouts
-        Keep templates distinct from starter layouts, project duplication, and saved projects.
 
 ## v1.7.1 Archive
 

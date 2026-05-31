@@ -58,6 +58,9 @@ type DashboardGalleryEntryRow = {
   share_title: string | null;
   share_expires_at: string | null;
   share_revoked_at: string | null;
+  field_width: number | null;
+  field_height: number | null;
+  shape_count: number | null;
 };
 
 export type DashboardGalleryEntry = StoredGalleryEntry & {
@@ -66,6 +69,9 @@ export type DashboardGalleryEntry = StoredGalleryEntry & {
   shareTitle: string | null;
   shareExpiresAt: string | null;
   shareRevokedAt: string | null;
+  fieldWidth: number | null;
+  fieldHeight: number | null;
+  shapeCount: number | null;
 };
 
 type PublicGalleryEntryRow = {
@@ -150,6 +156,15 @@ function mapDashboardGalleryEntryRow(
     shareTitle: row.share_title,
     shareExpiresAt: row.share_expires_at,
     shareRevokedAt: row.share_revoked_at,
+    fieldWidth:
+      row.field_width === null
+        ? null
+        : Number.parseFloat(String(row.field_width)),
+    fieldHeight:
+      row.field_height === null
+        ? null
+        : Number.parseFloat(String(row.field_height)),
+    shapeCount: row.shape_count,
   };
 }
 
@@ -226,7 +241,10 @@ export async function listGalleryEntriesForDashboard(options?: {
           u.email as owner_email,
           s.title as share_title,
           s.expires_at as share_expires_at,
-          s.revoked_at as share_revoked_at
+          s.revoked_at as share_revoked_at,
+          s.field_width,
+          s.field_height,
+          s.shape_count
         from gallery_entries g
         left join users u on u.id = g.owner_user_id
         left join shares s on s.token = g.share_token

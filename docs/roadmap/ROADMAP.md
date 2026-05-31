@@ -16,14 +16,15 @@ TrackDraw is now strong in these areas:
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 - Account-backed REST API with API key management and a live race overlay data endpoint
 
-The most useful next product move is deepening the race-day workflow, keeping the editor dependable, and refining the account-backed project model:
+The most useful next product move is deepening the race-day workflow, keeping the editor dependable, refining the account-backed project model, and giving operators better dashboard visibility over public and integration-sensitive surfaces:
 
 - Race director page with pilot line, timing/start box placement, and ops notes
 - Usability and reliability pass focused on recovery states, mobile ergonomics, editor interactions, exports, sharing, and larger layouts
 - Share version history so owners can update a published track without surprising existing links
 - Gallery collections for curated browsing beyond the current featured bucket
+- Dashboard operator tooling for public track review, share lifecycle inspection, contextual account/project diagnostics, and API usage visibility
 
-Larger product ideas such as real-time collaboration, venue libraries, and build mode should stay parked until there is clearer need.
+Larger product ideas such as venue libraries, AR, and build mode should stay parked until there is clearer need.
 
 ## Product Principles
 
@@ -185,7 +186,7 @@ Focus:
 
 #### Share Version History
 
-Account-backed shares should eventually support deliberate publish history so owners can update a published track without making existing links feel mysterious.
+Account-backed shares should support deliberate publish history so owners can update a published track without making existing links feel mysterious or losing the last known-good public version.
 
 Why:
 
@@ -195,10 +196,36 @@ Why:
 
 Focus:
 
-- Store each deliberate publish or update as a timestamped published version
-- Make the current public version explicit in the share management UI
-- Let owners inspect previous versions and restore one if a published update was a mistake
+- Store each deliberate publish or update as a timestamped immutable published version
+- Make the current public version explicit in the share management UI, public share metadata, and dashboard share lifecycle inspector
+- Let owners compare recent published versions at a practical summary level before restoring one
+- Let owners restore a previous version as a new current version instead of mutating old history in place
+- Keep gallery entries, embeds, QR codes, and canonical `/share/[token]` links pointed at the current public version unless a future deep-link model is deliberately added
 - Keep anonymous shares simple and expiry-based; do not add version management to logged-out publishing
+
+Suggested first slices:
+
+- Published version data model
+  - Add a durable published-version record linked to the account-backed share and project
+  - Snapshot the normalized public share payload, title/description metadata, preview image reference where available, and publish timestamp
+  - Preserve the existing share token as the stable public address while separating current version from version history
+- Owner publish/update flow
+  - Make updating an already-published share an explicit action that creates a new version
+  - Show the current published version timestamp and whether the editor has unpublished changes
+  - Keep one-click copy/open/revoke actions intact so share management does not become heavy
+- Version review and restore
+  - Show recent versions with timestamp, editor title, gallery metadata where available, and lightweight layout summary such as field size and obstacle count
+  - Restore by publishing the selected historical snapshot as a new latest version
+  - Avoid full visual diffing in the first slice unless ordinary summaries are not enough
+- Operator visibility
+  - Surface current version, latest update time, version count, gallery state, and embed availability in the dashboard share lifecycle inspector
+  - Keep dashboard actions narrow: inspect, open, and support owner/admin actions already allowed by the current share and gallery model
+
+Important boundary:
+
+- This is share publish history, not full project version control
+- Do not add branching, named release channels, collaborative approval, or public version browsing in the first pass
+- Do not expose private project history through public gallery, embeds, or share metadata
 
 #### Gallery Featured Collections
 
@@ -216,6 +243,71 @@ Focus:
 - Let admins assign listed or featured gallery entries to one or more collections
 - Surface selected collections on `/gallery` while keeping every card destination on `/share/[token]`
 - Keep collection pages or deep collection routing out of the first slice unless the gallery needs it later
+
+#### Dashboard Operator Tooling
+
+The dashboard should become the control surface for public, account-backed, and integration-sensitive behavior without turning TrackDraw into a social platform or support console that can casually mutate user work.
+
+Why:
+
+- Public gallery tracks, embeds, API keys, and overlay integrations now create operational states that owners and moderators need to trust
+- Admins need faster ways to review public track quality, inspect share state, and understand account/project issues without digging through database records
+- API and overlay usage should be observable enough to debug integration problems before adding deeper public API or live-race features
+
+Focus:
+
+- Gallery collections management: add dashboard controls for creating, ordering, publishing, and assigning curated gallery collections
+- Public track quality review: give moderators a review list with preview, title, description, field size, obstacle count, public indexing status, owner context, and feature/hide/restore/open actions
+- Share lifecycle inspector: expose share owner, project, token state, expiry/revocation, gallery listing, embed availability, and latest publish/update metadata in one operator view
+- Contextual account/project diagnostics: add inspect affordances inside existing Users, Gallery, Share, API, and Audit surfaces instead of a standalone diagnostics page
+- API usage dashboard: show API key activity, last-used timestamps, rate-limit hits, endpoint error patterns, and overlay readiness/API usage signals for account projects
+
+##### Contextual Account/Project Diagnostics
+
+Contextual diagnostics should help operators answer "what state is this account, project, share, or integration in?" from the dashboard surface where the question naturally appears.
+
+Why:
+
+- Account sync, published shares, gallery listing, embeds, API keys, and overlay readiness can fail or look confusing in ways users will report as one support problem
+- Operators need lightweight inspection paths across users, projects, shares, gallery entries, API keys, and audit events
+- Contextual inspection should reduce database digging while preserving the product's privacy posture and local-first editing model
+- A standalone diagnostics page is not the preferred first slice; it creates a weak extra destination and duplicates existing dashboard modules
+
+Suggested first slices:
+
+- Gallery/share inspect drawer
+  - Started with a read-only Inspect action on dashboard gallery rows that surfaces owner, share token, share lifecycle, gallery state, description, share title, field size, element count, preview media state, publish/update dates, and copy/open share actions
+  - Add an inspect action on gallery and share-related rows showing owner, project ID, share lifecycle, gallery state, embed availability, preview media state, and public/share links
+  - Highlight likely user-facing problems such as revoked or expired shares, missing gallery preview media, and unavailable embeds
+  - Link to existing user, gallery, share, and audit surfaces instead of duplicating moderation actions
+- User context panel
+  - Add a user detail/inspect drawer from the Users table with role, created/updated dates, account-backed project count, active share count, gallery entry count, API key count, and recent account audit events
+  - Keep role management in the existing Users flow rather than adding another place to mutate account roles
+- Project context panel
+  - Surface account-backed project ID, owner, title, updated timestamp, active published share state, gallery state, API project ID, overlay readiness, field size, obstacle count, route presence, and timing-marker readiness
+  - Keep raw project design data out of contextual diagnostics except for safe summaries
+- Entity timeline links
+  - Link from users, gallery entries, share tokens, projects, and API keys into a filtered audit timeline when audit events already exist
+  - Include account, project sync, share publish/revoke, gallery visibility, API key lifecycle, and dashboard moderation events where already audited
+- Diagnostic copy
+  - Use "what happened / where to go next" labels over internal database terminology
+- Narrow operator actions
+  - Allow safe actions that already fit the current admin model, such as open public share, copy project/API IDs, open owner profile, open audit trail, and navigate to gallery moderation
+  - Keep destructive or privacy-sensitive actions out of the first slice unless they already exist behind explicit role checks elsewhere
+
+Diagnostics boundary:
+
+- This is contextual visibility, not impersonation
+- Do not create a standalone diagnostics dashboard page as the first slice
+- Do not let operators edit a user's private project design from diagnostics surfaces
+- Do not expose API key secrets, local-only browser projects, private map location metadata beyond existing owner-visible surfaces, or raw project JSON by default
+- Do not add account takeover, password/session management, or billing support flows in this slice
+
+Important boundary:
+
+- Keep dashboard features operator-focused and permissioned
+- Do not add public reporting, voting, comments, or moderation queues unless a later product decision explicitly expands the gallery model
+- Prefer read-only inspection and narrow existing actions before adding powerful support mutations
 
 ### 4. Race-Day Follow-up (`No account required`, `Account-backed`)
 
@@ -236,19 +328,7 @@ Important boundary:
 - A future Build mode should be treated as a separate operational product surface, not as "just a bigger PDF"
 - Live race overlay rendering, OBS presentation, RotorHazard event handling, and position estimation should stay in `rh-stream-overlays`, not in TrackDraw
 
-### 5. Real-Time Collaboration Evaluation (`Research`)
-
-Evaluate whether TrackDraw should support shared real-time editing for race track design, but do not actively invest in enabling collaboration until the sync, presence, and conflict model clearly justify the editor complexity.
-
-Suggested first slices:
-
-- Decide whether the first live multi-user step should be presence-only, a host-led review session, or true co-editing
-- Define the sync model and conflict handling approach only if a shared editing surface still looks strategically justified
-- Decide how local-first editing and offline behavior should interact with any live session model
-- Treat host-led review with optional presence as the strongest smaller step if TrackDraw wants live collaboration-adjacent value before full co-editing
-- Only revisit active co-editing investment after the editor state, persistence, and undo boundaries are stronger for the solo workflow too
-
-### 6. Backlog And Research Tracks
+### 5. Backlog And Research Tracks
 
 These remain valuable, but they are not the current build target.
 
@@ -298,16 +378,6 @@ Suggested first slices:
 - Derived section tags or labels from detected route patterns only if they make review faster without creating noisy false positives
 - Follow-up flow analysis that expands beyond current warnings into alignment and rhythm-oriented feedback where it stays actionable
 
-#### Track Challenges Evaluation (`Research`)
-
-Evaluate whether recurring design challenges would create meaningful product value without introducing a heavy moderation, identity, or submission-management burden.
-
-Suggested first slices:
-
-- Define how challenge entries are submitted
-- Decide whether accounts are required from day one
-- Test whether lightweight voting, featured picks, or curation is enough
-
 #### Build Mode / Setup Sequence (`No account required`)
 
 Turn a finished layout into a dedicated build/setup surface instead of continuing to expand the Race Pack, but keep it as a later workflow track rather than a near-term roadmap focus.
@@ -321,12 +391,12 @@ Suggested first slices:
 
 #### Comments And Review Mode (`Account-backed`)
 
-Allow feedback to be anchored to obstacles or route sections, but keep it as a later follow-up behind the more pressing design, handoff, and collaboration research tracks.
+Allow feedback to be anchored to obstacles or route sections, but keep it as a later follow-up behind the more pressing design, handoff, account, and publishing tracks.
 
 Why later:
 
 - Simple note-taking is plausible, but the more meaningful version depends on identity, ownership, and shared project context
-- Richer review workflows are easier to define once collaboration and publishing boundaries are clearer
+- Richer review workflows are easier to define once account ownership and publishing boundaries are clearer
 
 Suggested first slices:
 
@@ -342,14 +412,8 @@ Suggested first slices:
   - The core compatibility question is answered: TrackDraw can already generate an experimental `.trk` file that imports into Velocidrone
   - Next step is validation and orientation correctness, especially gate front/back direction
 - Desktop and mobile wrapper evaluation
-- PWA evaluation
-- Template library product definition
-  - Determine whether TrackDraw should support reusable personal, club, or team-owned templates at all
-  - Define what a template object actually is: full project, reusable section/group, race-day preset, or something else
-  - Clarify how browse, duplicate, insert, and fork flows should work without overlapping confusingly with starter layouts or ordinary projects
-  - Define ownership and visibility boundaries for private, club, team, or published template libraries
 
-### 5. Accounts Boundary
+### 6. Accounts Boundary
 
 Be deliberate about what should stay usable without an account versus what actually benefits from account identity and continuity.
 
@@ -368,7 +432,7 @@ Likely account-backed follow-up:
 - Operator-controlled gallery visibility through feature, hide, restore, and delete actions
 - Curated gallery collections
 - Shared venue or club records, including shared inventory profiles
-- Identity-aware comments, review threads, and future collaboration
+- Identity-aware comments and review threads
 
 ## v1.7.0 Archive
 
@@ -566,4 +630,3 @@ This initial release is also complete. TrackDraw now supports local inventory en
 - [Obstacle Presets PVA](../pva/obstacle-presets-pva.md)
 - [Snapshots And Layout Variants Design](../pva/snapshots-layout-variants-design.md)
 - [Wrapper Evaluation](../research/wrapper-evaluation.md)
-- [PWA Evaluation](../research/pwa-evaluation.md)
