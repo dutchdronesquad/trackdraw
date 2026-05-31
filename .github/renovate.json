@@ -16,6 +16,11 @@
       "matchPackageNames": ["@radix-ui/{/,}**"]
     },
     {
+      "groupName": "Better Auth",
+      "groupSlug": "better-auth",
+      "matchPackageNames": ["better-auth", "@better-auth/{/,}**"]
+    },
+    {
       "matchManagers": ["github-actions"],
       "addLabels": ["github_actions"],
       "rangeStrategy": "pin",
