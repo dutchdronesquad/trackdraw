@@ -164,7 +164,9 @@ function GalleryCard({
         <div className="mt-auto flex flex-wrap gap-2">
           <span className="border-border/55 bg-muted/28 text-muted-foreground inline-flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
             <Ruler className="size-3" />
-            <span className="truncate">{formatFieldSize(entry, unitSystem)}</span>
+            <span className="truncate">
+              {formatFieldSize(entry, unitSystem)}
+            </span>
           </span>
           <span className="border-border/55 bg-muted/28 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
             <Grid2X2 className="size-3" />

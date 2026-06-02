@@ -120,20 +120,10 @@ export function parseMeasurementInput(
   if (unit === "m" || unit === "meter" || unit === "meters") {
     return amount;
   }
-  if (
-    unit === "ft" ||
-    unit === "foot" ||
-    unit === "feet" ||
-    unit === "'"
-  ) {
+  if (unit === "ft" || unit === "foot" || unit === "feet" || unit === "'") {
     return feetToMeters(amount);
   }
-  if (
-    unit === "in" ||
-    unit === "inch" ||
-    unit === "inches" ||
-    unit === '"'
-  ) {
+  if (unit === "in" || unit === "inch" || unit === "inches" || unit === '"') {
     return inchesToMeters(amount);
   }
 

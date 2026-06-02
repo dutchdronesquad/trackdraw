@@ -179,7 +179,11 @@ function formatFieldSize(entry: DashboardGalleryEntry) {
     return "Not set";
   }
 
-  return formatMeasurementFieldSize(entry.fieldWidth, entry.fieldHeight, "metric");
+  return formatMeasurementFieldSize(
+    entry.fieldWidth,
+    entry.fieldHeight,
+    "metric"
+  );
 }
 
 function formatElementCount(entry: DashboardGalleryEntry) {

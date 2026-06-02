@@ -1919,9 +1919,7 @@ const TrackCanvas = memo(
                 </div>
               ) : (
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span>
-                    {fieldLabel}
-                  </span>
+                  <span>{fieldLabel}</span>
                   <span className="text-border">·</span>
                   <span>Grid {gridLabel}</span>
                   <span className="text-border">·</span>

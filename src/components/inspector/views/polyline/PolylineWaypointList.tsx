@@ -87,14 +87,16 @@ export function PolylineWaypointList({
                   {formatMeasurement(point.y, unitSystem, { precision: 1 })}
                 </span>
               </div>
-              <div className={shape.locked ? "pointer-events-none opacity-50" : ""}>
+              <div
+                className={shape.locked ? "pointer-events-none opacity-50" : ""}
+              >
                 <MeasurementNum
                   valueMeters={point.z ?? 0}
                   unitSystem={unitSystem}
                   onChange={(value) => {
-                  updatePolylinePoint(shape.id, index, {
+                    updatePolylinePoint(shape.id, index, {
                       z: value,
-                  });
+                    });
                   }}
                 />
               </div>

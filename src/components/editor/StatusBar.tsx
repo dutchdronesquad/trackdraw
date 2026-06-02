@@ -89,7 +89,9 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {/* Grid step — desktop only */}
       <span className="hidden lg:contents">
         <span className="text-muted-foreground/45">·</span>
-        <span>{formatMeasurement(field.gridStep, unitSystem, { precision: 1 })}</span>
+        <span>
+          {formatMeasurement(field.gridStep, unitSystem, { precision: 1 })}
+        </span>
         <span className="text-muted-foreground/45">·</span>
       </span>
 
@@ -174,9 +176,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
 
       {/* Field size — desktop only */}
       <span className="hidden lg:contents">
-        <span>
-          {formatFieldSize(field.width, field.height, unitSystem)}
-        </span>
+        <span>{formatFieldSize(field.width, field.height, unitSystem)}</span>
         <span className="text-muted-foreground/45">·</span>
       </span>
 
