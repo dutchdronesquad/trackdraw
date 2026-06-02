@@ -7,6 +7,7 @@ import {
 import { buildSetupPlan } from "@/lib/planning/setup-estimate";
 import { createQrCode } from "@/lib/qr-code";
 import { getDesignTimingMarkers, timingRoleLabels } from "@/lib/track/timing";
+import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
 import type { TrackDesign } from "../types";
 import {
   designToSvg,
@@ -294,6 +295,7 @@ function buildRacePackContext(design: TrackDesign, options?: Export2DOptions) {
   return {
     inventoryComparison,
     numberingEnabled,
+    unitSystem: options?.unitSystem ?? "metric",
     setupSequence: setupPlan.steps,
     shortages,
     estimatedSetupRange: setupPlan.estimatedElapsedRange,
@@ -341,7 +343,7 @@ function drawRacePackCover(
   pdf.setFontSize(10);
   pdf.setTextColor(...MUTED);
   pdf.text(
-    `${design.field.width} × ${design.field.height} m  ·  ${dateText}  ·  ${context.numberingEnabled ? "numbering included" : "numbering hidden"}`,
+    `${formatFieldSize(design.field.width, design.field.height, options?.unitSystem ?? "metric")}  ·  ${dateText}  ·  ${context.numberingEnabled ? "numbering included" : "numbering hidden"}`,
     margin,
     y
   );
@@ -472,10 +474,20 @@ function drawRacePackMapPage(
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8.2);
   pdf.setTextColor(...MUTED);
-  pdf.text(`${design.field.width} m`, imgX + imgW / 2, imgY + imgH + 7, {
+  const racePackWidthLabel = formatMeasurement(
+    design.field.width,
+    context.unitSystem,
+    { precision: 1 }
+  );
+  const racePackHeightLabel = formatMeasurement(
+    design.field.height,
+    context.unitSystem,
+    { precision: 1 }
+  );
+  pdf.text(racePackWidthLabel, imgX + imgW / 2, imgY + imgH + 7, {
     align: "center",
   });
-  pdf.text(`${design.field.height} m`, imgX - 6, imgY + imgH / 2, {
+  pdf.text(racePackHeightLabel, imgX - 6, imgY + imgH / 2, {
     angle: 90,
     align: "center",
   });
@@ -575,7 +587,7 @@ function drawRacePackBuildSheet(
       const title = item.marker.timingId
         ? `${item.title} (${item.marker.timingId})`
         : item.title;
-      const detail = `${timingRoleLabels[item.marker.role]} · ${item.shape.name?.trim() || item.shape.kind} · ${item.shape.x.toFixed(1)}, ${item.shape.y.toFixed(1)} m`;
+      const detail = `${timingRoleLabels[item.marker.role]} · ${item.shape.name?.trim() || item.shape.kind} · ${formatMeasurement(item.shape.x, context.unitSystem, { precision: 1 })}, ${formatMeasurement(item.shape.y, context.unitSystem, { precision: 1 })}`;
       ensurePageSpace(12, "Timing points");
       pdf.setTextColor(...INK);
       pdf.setFont("helvetica", "bold");
@@ -756,8 +768,20 @@ async function exportStandardPdf(
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7.5);
   pdf.setTextColor(...MUTED);
-  pdf.text(`${width} m`, imgX + imgW / 2, imgY + imgH + 7, { align: "center" });
-  pdf.text(`${height} m`, imgX - 6, imgY + imgH / 2, {
+  const standardWidthLabel = formatMeasurement(
+    width,
+    options?.unitSystem ?? "metric",
+    { precision: 1 }
+  );
+  const standardHeightLabel = formatMeasurement(
+    height,
+    options?.unitSystem ?? "metric",
+    { precision: 1 }
+  );
+  pdf.text(standardWidthLabel, imgX + imgW / 2, imgY + imgH + 7, {
+    align: "center",
+  });
+  pdf.text(standardHeightLabel, imgX - 6, imgY + imgH / 2, {
     angle: 90,
     align: "center",
   });
@@ -778,7 +802,12 @@ async function exportStandardPdf(
   pdf.text(design.title.trim() || "Untitled Track", margin + 5, midY);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
-  pdf.text(`${width} × ${height} m`, pageW / 2, midY, { align: "center" });
+  pdf.text(
+    formatFieldSize(width, height, options?.unitSystem ?? "metric"),
+    pageW / 2,
+    midY,
+    { align: "center" }
+  );
   pdf.text(dateText, pageW - margin - 5, midY, { align: "right" });
 
   pdf.save(filename);

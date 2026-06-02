@@ -22,7 +22,7 @@ Labels used below:
 
 ## Current Priority
 
-The completed release-sized work is archived below. The REST API, live race overlay preparation, account project lifecycle polish, UI/UX polish, and stability pass are now complete. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and better dashboard visibility over public and integration-sensitive surfaces.
+The completed release-sized work is archived below. The REST API, live race overlay preparation, account project lifecycle polish, UI/UX polish, and stability pass are now complete. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, regional measurement support and multilingual-readiness for international users, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and better dashboard visibility over public and integration-sensitive surfaces.
 
 ## Follow-up
 
@@ -35,6 +35,30 @@ The completed release-sized work is archived below. The REST API, live race over
 
 - [ ] Venue library and constraints (`Account-backed`)
       Support reusable venue records with boundaries, constraints, and venue-specific profiles.
+
+- [x] Regional measurement units (`No account required`)
+      Support regional metric and imperial-style display and input without changing the internal meter-based design model.
+  - [x] Unit preference model
+        Add a project-safe and user-friendly unit preference for metric or imperial-style measurements, with a metric default that fits most international users and does not break existing projects.
+  - [x] Locale-informed defaults
+        Use browser locale signals to choose an initial measurement default when no explicit preference exists, while keeping the detected value transparent and manually overrideable.
+  - [x] Editor display formatting
+        Replace direct `m` labels in field size, rulers, inspectors, route/elevation summaries, gallery metadata, and export previews with shared unit formatting.
+  - [x] Unit-aware numeric input
+        Let users enter common metric and imperial-style values such as meters, feet, and inches while storing normalized meter values in the design.
+  - [x] Export and share presentation
+        Show the selected measurement system in PDF/Race Pack/share-facing summaries while keeping JSON/API geometry compatible and meter-based.
+
+- [ ] Multilingual product experience (`Research`, `No account required`)
+      Use the regional measurement work as a first locale-aware foundation, then evaluate a full i18n layer for the public site, editor, share pages, and exported handoff copy.
+  - [ ] I18n architecture and text inventory
+        Audit hard-coded UI, export, share, legal-adjacent, dashboard, and error/recovery copy so translatable product text can move behind a stable message catalog without weakening type safety.
+  - [ ] Language detection and override
+        Use browser language as an initial default when no explicit language preference exists, but keep language selection manually overrideable and independent from measurement units.
+  - [ ] First language rollout
+        Choose the first supported languages from actual user demand and translation-maintenance capacity, with English as the stable fallback for incomplete translations.
+  - [ ] Translation QA boundary
+        Define how translated UI, mobile layouts, export PDFs/Race Packs, share pages, and legal pages are reviewed so longer translated strings do not break core workflows.
 
 - [ ] Share version history (`Account-backed`)
       Let owners update published shares while keeping clear version history, current-version state, and rollback options for account-backed projects.

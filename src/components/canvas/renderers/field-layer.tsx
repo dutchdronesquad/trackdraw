@@ -8,11 +8,7 @@ import type { RectLike } from "@/lib/canvas/shared";
 // Only re-renders when design, theme, or field dimensions change.
 
 export interface StableFieldContentProps {
-  designField: {
-    width: number;
-    height: number;
-    ppm: number;
-  };
+  fieldLabel: string;
   grid: React.JSX.Element[];
   heightPx: number;
   isDark: boolean;
@@ -21,7 +17,7 @@ export interface StableFieldContentProps {
 }
 
 export const StableFieldContent = memo(function StableFieldContent({
-  designField,
+  fieldLabel,
   grid,
   heightPx,
   isDark,
@@ -121,7 +117,7 @@ export const StableFieldContent = memo(function StableFieldContent({
       <Text
         x={widthPx - 6}
         y={heightPx - 14}
-        text={`${designField.width}×${designField.height}m`}
+        text={fieldLabel}
         fontSize={9}
         fill={isDark ? "#3a5878" : "#6888a8"}
         align="right"
@@ -195,12 +191,8 @@ export function FieldOverlayContent({
 // ── Legacy combined export (kept for backwards compatibility) ─────────────────
 
 export interface FieldLayerContentProps {
-  designField: {
-    width: number;
-    height: number;
-    ppm: number;
-  };
   effectiveSelectionFrame: RectLike | null;
+  fieldLabel: string;
   grid: React.JSX.Element[];
   heightPx: number;
   hoverCell: { x: number; y: number } | null;
@@ -211,8 +203,8 @@ export interface FieldLayerContentProps {
 }
 
 export function FieldLayerContent({
-  designField,
   effectiveSelectionFrame,
+  fieldLabel,
   grid,
   heightPx,
   hoverCell,
@@ -224,7 +216,7 @@ export function FieldLayerContent({
   return (
     <>
       <StableFieldContent
-        designField={designField}
+        fieldLabel={fieldLabel}
         grid={grid}
         heightPx={heightPx}
         isDark={isDark}

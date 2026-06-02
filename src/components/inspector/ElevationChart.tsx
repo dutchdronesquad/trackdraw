@@ -24,6 +24,8 @@ import {
   TooltipTrigger,
 } from "@/components/AppTooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
+import { formatMeasurement } from "@/lib/track/units";
 
 type SegmentWarningKind = Exclude<RouteWarningKind, "flat" | "stub">;
 
@@ -487,6 +489,7 @@ function ElevationSvg({
 }
 
 export default function ElevationChart({ className }: { className?: string }) {
+  const { unitSystem } = useMeasurementUnitSystem();
   const path = useEditor(selectPrimaryPolyline);
   const isMobile = useIsMobile();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -632,9 +635,12 @@ export default function ElevationChart({ className }: { className?: string }) {
     <div className="space-y-4">
       <div>
         <div className="text-muted-foreground mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-          <span>{totalDist.toFixed(1)} m route</span>
           <span>
-            {rawMinZ.toFixed(1)}-{rawMaxZ.toFixed(1)} m elevation
+            {formatMeasurement(totalDist, unitSystem, { precision: 1 })} route
+          </span>
+          <span>
+            {formatMeasurement(rawMinZ, unitSystem, { precision: 1 })}-
+            {formatMeasurement(rawMaxZ, unitSystem, { precision: 1 })} elevation
           </span>
         </div>
         <ElevationSvg {...chartProps} height={isMobile ? 180 : 220} />
@@ -678,8 +684,9 @@ export default function ElevationChart({ className }: { className?: string }) {
         </span>
         <div className="flex min-w-0 items-center gap-1.5">
           <span className="text-muted-foreground truncate text-[11px]">
-            {totalDist.toFixed(1)} m · {rawMinZ.toFixed(1)}–{rawMaxZ.toFixed(1)}{" "}
-            m
+            {formatMeasurement(totalDist, unitSystem, { precision: 1 })} ·{" "}
+            {formatMeasurement(rawMinZ, unitSystem, { precision: 1 })}–
+            {formatMeasurement(rawMaxZ, unitSystem, { precision: 1 })}
           </span>
           <Tooltip>
             <TooltipTrigger asChild>

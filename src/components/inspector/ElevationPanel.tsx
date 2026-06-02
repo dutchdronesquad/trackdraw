@@ -1,10 +1,12 @@
 "use client";
 
 import { useEditor } from "@/store/editor";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
   getPolylineElevationSamples,
   getPolylineTotalLength2D,
 } from "@/lib/track/polyline-derived";
+import { formatMeasurement } from "@/lib/track/units";
 import { selectPrimaryPolyline } from "@/store/selectors";
 
 const W = 260;
@@ -12,6 +14,7 @@ const H = 80;
 const PAD = { top: 8, right: 8, bottom: 20, left: 32 };
 
 export default function ElevationPanel() {
+  const { unitSystem } = useMeasurementUnitSystem();
   const path = useEditor(selectPrimaryPolyline);
 
   if (!path) {
@@ -70,7 +73,9 @@ export default function ElevationPanel() {
           Elevation Profile
         </p>
         <p className="text-muted-foreground text-[11px]">
-          {total.toFixed(1)} m · {minZ.toFixed(1)}–{maxZ.toFixed(1)} m
+          {formatMeasurement(total, unitSystem, { precision: 1 })} ·{" "}
+          {formatMeasurement(minZ, unitSystem, { precision: 1 })}–
+          {formatMeasurement(maxZ, unitSystem, { precision: 1 })}
         </p>
       </div>
 

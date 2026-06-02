@@ -13,6 +13,7 @@ import {
   SITE_NAME,
   getSiteMediaUrl,
 } from "@/lib/seo";
+import { formatFieldSize } from "@/lib/track/units";
 
 type ShareTokenLayoutProps = {
   children: React.ReactNode;
@@ -35,7 +36,11 @@ function buildShareMetadataDescription(params: {
   shapeCount: number;
 }) {
   const base = params.description.trim();
-  const fieldLabel = `${params.fieldWidth} x ${params.fieldHeight} m`;
+  const fieldLabel = formatFieldSize(
+    params.fieldWidth,
+    params.fieldHeight,
+    "metric"
+  );
   const obstacleLabel =
     params.shapeCount === 1 ? "1 obstacle" : `${params.shapeCount} obstacles`;
   const detail = `FPV drone race track layout built with TrackDraw on a ${fieldLabel} field with ${obstacleLabel}.`;

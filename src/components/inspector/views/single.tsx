@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import { getSingleInspectorViewModel } from "@/lib/inspector/single/view-model";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
   getShapeTimingMarker,
   getTimingMarkerMeta,
@@ -25,6 +26,7 @@ import {
 import {
   fmt,
   IconBtn,
+  MeasurementNum,
   Num,
   Row,
   Section,
@@ -88,6 +90,8 @@ export function SingleInspectorView({
   mobileInline = false,
 }: SingleInspectorViewProps) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
+  const { unitSystem } = useMeasurementUnitSystem();
+  const unitLabel = unitSystem === "imperial" ? "ft" : "m";
   const [directionReversedByShape, setDirectionReversedByShape] = useState<
     Record<string, boolean>
   >({});
@@ -279,19 +283,21 @@ export function SingleInspectorView({
               <div className="grid grid-cols-2 gap-2">
                 <label className="min-w-0">
                   <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
-                    X (m)
+                    X ({unitLabel})
                   </span>
-                  <Num
-                    value={fmt(anchorPosition.x)}
+                  <MeasurementNum
+                    valueMeters={fmt(anchorPosition.x)}
+                    unitSystem={unitSystem}
                     onChange={(value) => updateShape(shape.id, { x: value })}
                   />
                 </label>
                 <label className="min-w-0">
                   <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
-                    Y (m)
+                    Y ({unitLabel})
                   </span>
-                  <Num
-                    value={fmt(anchorPosition.y)}
+                  <MeasurementNum
+                    valueMeters={fmt(anchorPosition.y)}
+                    unitSystem={unitSystem}
                     onChange={(value) => updateShape(shape.id, { y: value })}
                   />
                 </label>
@@ -406,28 +412,28 @@ export function SingleInspectorView({
 
           {shape.kind === "gate" && (
             <Section title="Gate" defaultOpen={secondarySectionDefaultOpen}>
-              <Row label="Width (m)">
-                <Num
-                  value={shape.width}
+              <Row label="Width">
+                <MeasurementNum
+                  valueMeters={shape.width}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { width: value })}
-                  step={0.1}
-                  min={0.5}
+                  minMeters={0.5}
                 />
               </Row>
-              <Row label="Height (m)">
-                <Num
-                  value={shape.height}
+              <Row label="Height">
+                <MeasurementNum
+                  valueMeters={shape.height}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { height: value })}
-                  step={0.1}
-                  min={0.5}
+                  minMeters={0.5}
                 />
               </Row>
-              <Row label="Thickness (m)">
-                <Num
-                  value={shape.thick ?? 0.2}
+              <Row label="Thickness">
+                <MeasurementNum
+                  valueMeters={shape.thick ?? 0.2}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { thick: value })}
-                  step={0.05}
-                  min={0.05}
+                  minMeters={0.05}
                 />
               </Row>
             </Section>
@@ -435,22 +441,22 @@ export function SingleInspectorView({
 
           {shape.kind === "flag" && (
             <Section title="Flag" defaultOpen={secondarySectionDefaultOpen}>
-              <Row label="Radius (m)">
-                <Num
-                  value={shape.radius}
+              <Row label="Radius">
+                <MeasurementNum
+                  valueMeters={shape.radius}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { radius: value })}
-                  step={0.05}
-                  min={0.05}
+                  minMeters={0.05}
                 />
               </Row>
-              <Row label="Pole height (m)">
-                <Num
-                  value={shape.poleHeight ?? 3.5}
+              <Row label="Pole height">
+                <MeasurementNum
+                  valueMeters={shape.poleHeight ?? 3.5}
+                  unitSystem={unitSystem}
                   onChange={(value) =>
                     updateShape(shape.id, { poleHeight: value })
                   }
-                  step={0.1}
-                  min={0}
+                  minMeters={0}
                 />
               </Row>
             </Section>
@@ -458,12 +464,12 @@ export function SingleInspectorView({
 
           {shape.kind === "cone" && (
             <Section title="Cone" defaultOpen={secondarySectionDefaultOpen}>
-              <Row label="Radius (m)">
-                <Num
-                  value={shape.radius}
+              <Row label="Radius">
+                <MeasurementNum
+                  valueMeters={shape.radius}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { radius: value })}
-                  step={0.05}
-                  min={0.05}
+                  minMeters={0.05}
                 />
               </Row>
             </Section>
@@ -517,12 +523,12 @@ export function SingleInspectorView({
               title="Start Pads"
               defaultOpen={secondarySectionDefaultOpen}
             >
-              <Row label="Width (m)">
-                <Num
-                  value={shape.width}
+              <Row label="Width">
+                <MeasurementNum
+                  valueMeters={shape.width}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { width: value })}
-                  step={0.1}
-                  min={0.5}
+                  minMeters={0.5}
                 />
               </Row>
             </Section>
@@ -530,32 +536,32 @@ export function SingleInspectorView({
 
           {shape.kind === "ladder" && (
             <Section title="Ladder" defaultOpen={secondarySectionDefaultOpen}>
-              <Row label="Width (m)">
-                <Num
-                  value={shape.width}
+              <Row label="Width">
+                <MeasurementNum
+                  valueMeters={shape.width}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { width: value })}
-                  step={0.1}
-                  min={0.5}
+                  minMeters={0.5}
                 />
               </Row>
-              <Row label="Height (m)">
-                <Num
-                  value={shape.height}
+              <Row label="Height">
+                <MeasurementNum
+                  valueMeters={shape.height}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { height: value })}
-                  step={0.1}
-                  min={0.5}
+                  minMeters={0.5}
                 />
               </Row>
-              <Row label="Elevation (m)">
-                <Num
-                  value={shape.elevation ?? 0}
+              <Row label="Elevation">
+                <MeasurementNum
+                  valueMeters={shape.elevation ?? 0}
+                  unitSystem={unitSystem}
                   onChange={(value) =>
                     updateShape(shape.id, {
                       elevation: Math.max(0, value),
                     })
                   }
-                  step={0.1}
-                  min={0}
+                  minMeters={0}
                 />
               </Row>
               <Row label="Gates">
@@ -582,30 +588,30 @@ export function SingleInspectorView({
               title="Dive Gate"
               defaultOpen={secondarySectionDefaultOpen}
             >
-              <Row label="Size (m)">
-                <Num
-                  value={shape.size}
+              <Row label="Size">
+                <MeasurementNum
+                  valueMeters={shape.size}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { size: value })}
-                  step={0.1}
-                  min={0.5}
+                  minMeters={0.5}
                 />
               </Row>
-              <Row label="Elevation (m)">
-                <Num
-                  value={shape.elevation ?? 3}
+              <Row label="Elevation">
+                <MeasurementNum
+                  valueMeters={shape.elevation ?? 3}
+                  unitSystem={unitSystem}
                   onChange={(value) =>
                     updateShape(shape.id, { elevation: value })
                   }
-                  step={0.1}
-                  min={0.1}
+                  minMeters={0.1}
                 />
               </Row>
-              <Row label="Thickness (m)">
-                <Num
-                  value={shape.thick ?? 0.2}
+              <Row label="Thickness">
+                <MeasurementNum
+                  valueMeters={shape.thick ?? 0.2}
+                  unitSystem={unitSystem}
                   onChange={(value) => updateShape(shape.id, { thick: value })}
-                  step={0.05}
-                  min={0.05}
+                  minMeters={0.05}
                 />
               </Row>
               <Row label="Tilt (deg)">
@@ -628,14 +634,14 @@ export function SingleInspectorView({
               title="Race Line"
               defaultOpen={secondarySectionDefaultOpen}
             >
-              <Row label="Stroke width (m)">
-                <Num
-                  value={shape.strokeWidth ?? 0.26}
+              <Row label="Stroke width">
+                <MeasurementNum
+                  valueMeters={shape.strokeWidth ?? 0.26}
+                  unitSystem={unitSystem}
                   onChange={(value) =>
                     updateShape(shape.id, { strokeWidth: value })
                   }
-                  step={0.05}
-                  min={0.05}
+                  minMeters={0.05}
                 />
               </Row>
               <Row label="Flow">
@@ -673,16 +679,16 @@ export function SingleInspectorView({
                 </Row>
               )}
               {shape.showArrows && (
-                <Row label="Arrow spacing (m)">
-                  <Num
-                    value={shape.arrowSpacing ?? 15}
+                <Row label="Arrow spacing">
+                  <MeasurementNum
+                    valueMeters={shape.arrowSpacing ?? 15}
+                    unitSystem={unitSystem}
                     onChange={(value) =>
                       updateShape(shape.id, {
                         arrowSpacing: Math.max(1, Math.round(value * 2) / 2),
                       })
                     }
-                    step={0.5}
-                    min={1}
+                    minMeters={1}
                   />
                 </Row>
               )}

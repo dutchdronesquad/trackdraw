@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock3, Grid2X2, Ruler, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import type { PublicGalleryEntry } from "@/lib/server/gallery";
 import { getSiteMediaUrl } from "@/lib/seo";
+import { formatFieldSize as formatMeasurementFieldSize } from "@/lib/track/units";
 import { cn } from "@/lib/utils";
 
 type PublicGalleryGridProps = {
@@ -58,12 +60,19 @@ function formatDate(value: string | null) {
   }
 }
 
-function formatFieldSize(entry: PublicGalleryEntry) {
+function formatFieldSize(
+  entry: PublicGalleryEntry,
+  unitSystem: "metric" | "imperial"
+) {
   if (entry.fieldWidth == null || entry.fieldHeight == null) {
     return "Field size not set";
   }
 
-  return `${entry.fieldWidth} x ${entry.fieldHeight} m`;
+  return formatMeasurementFieldSize(
+    entry.fieldWidth,
+    entry.fieldHeight,
+    unitSystem
+  );
 }
 
 function getOwnerLabel(entry: PublicGalleryEntry) {
@@ -94,11 +103,13 @@ function GalleryCard({
   mediaBaseUrl,
   imageFailed,
   onImageError,
+  unitSystem,
 }: {
   entry: PublicGalleryEntry;
   mediaBaseUrl: string;
   imageFailed: boolean;
   onImageError: () => void;
+  unitSystem: "metric" | "imperial";
 }) {
   const previewUrl = getPreviewUrl(entry, mediaBaseUrl);
 
@@ -153,7 +164,7 @@ function GalleryCard({
         <div className="mt-auto flex flex-wrap gap-2">
           <span className="border-border/55 bg-muted/28 text-muted-foreground inline-flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
             <Ruler className="size-3" />
-            <span className="truncate">{formatFieldSize(entry)}</span>
+            <span className="truncate">{formatFieldSize(entry, unitSystem)}</span>
           </span>
           <span className="border-border/55 bg-muted/28 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
             <Grid2X2 className="size-3" />
@@ -179,6 +190,7 @@ export default function PublicGalleryGrid({
   entries,
   mediaBaseUrl = getSiteMediaUrl(""),
 }: PublicGalleryGridProps) {
+  const { unitSystem } = useMeasurementUnitSystem();
   const [visibleRecentCount, setVisibleRecentCount] =
     useState(RECENT_PAGE_SIZE);
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
@@ -229,6 +241,7 @@ export default function PublicGalleryGrid({
                 entry={entry}
                 mediaBaseUrl={mediaBaseUrl}
                 imageFailed={failedImages[entry.id] ?? false}
+                unitSystem={unitSystem}
                 onImageError={() =>
                   setFailedImages((current) => ({
                     ...current,
@@ -259,6 +272,7 @@ export default function PublicGalleryGrid({
                 entry={entry}
                 mediaBaseUrl={mediaBaseUrl}
                 imageFailed={failedImages[entry.id] ?? false}
+                unitSystem={unitSystem}
                 onImageError={() =>
                   setFailedImages((current) => ({
                     ...current,

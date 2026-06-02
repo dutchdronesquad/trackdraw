@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { buildStoredSharePath } from "@/lib/share";
 import { serializeDesign } from "@/lib/track/design";
 import { downloadJsonFile } from "@/lib/export/download-json";
@@ -243,6 +244,7 @@ export default function ExportDialog({
   projectId = null,
 }: ExportDialogProps) {
   const design = useEditor((s) => s.track.design);
+  const { unitSystem } = useMeasurementUnitSystem();
   const currentTheme = useTheme();
   const isMobile = useIsMobile();
   const [busy, setBusy] = useState<string | null>(null);
@@ -458,7 +460,7 @@ export default function ExportDialog({
                   `${safeName({ view: "2d", theme: exportTheme })}.png`,
                   exportTheme,
                   3,
-                  { includeObstacleNumbers }
+                  { includeObstacleNumbers, unitSystem }
                 )
               )
             }
@@ -475,7 +477,7 @@ export default function ExportDialog({
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.svg`,
                   exportTheme,
-                  { includeObstacleNumbers }
+                  { includeObstacleNumbers, unitSystem }
                 )
               )
             }
@@ -557,6 +559,7 @@ export default function ExportDialog({
                     includeObstacleNumbers,
                     preset: "race-day",
                     shareUrl,
+                    unitSystem,
                   }
                 );
               })
@@ -691,7 +694,7 @@ export default function ExportDialog({
                   `${safeName({ view: "2d", theme: exportTheme })}.png`,
                   exportTheme,
                   3,
-                  { includeObstacleNumbers }
+                  { includeObstacleNumbers, unitSystem }
                 )
               )
             }
@@ -709,7 +712,7 @@ export default function ExportDialog({
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.svg`,
                   exportTheme,
-                  { includeObstacleNumbers }
+                  { includeObstacleNumbers, unitSystem }
                 )
               )
             }
@@ -781,6 +784,7 @@ export default function ExportDialog({
                     includeObstacleNumbers,
                     preset: "race-day",
                     shareUrl,
+                    unitSystem,
                   }
                 );
               })

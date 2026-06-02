@@ -15,6 +15,10 @@ import {
   getObstacleNumberMap,
   isNumberedObstacle,
 } from "../track/obstacleNumbering";
+import {
+  formatCompactFieldSize,
+  type MeasurementUnitSystem,
+} from "../track/units";
 import { getShapeTimingMarker, getTimingMarkerColor } from "../track/timing";
 import {
   getPolyline2DDerived,
@@ -301,6 +305,7 @@ export type ExportTheme = "dark" | "light";
 export interface Export2DOptions {
   includeObstacleNumbers?: boolean;
   preset?: "standard" | "race-day";
+  unitSystem?: MeasurementUnitSystem;
 }
 
 export function designToSvg(
@@ -374,7 +379,11 @@ export function designToSvg(
       ? ""
       : obstacleNumbersToSvg(design, ppm, theme);
   const titleText = design.title.trim() || "Untitled Track";
-  const sizeText = `${width}×${height} m`;
+  const sizeText = formatCompactFieldSize(
+    width,
+    height,
+    options?.unitSystem ?? "metric"
+  );
   const dateText = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",

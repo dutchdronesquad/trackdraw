@@ -2,10 +2,13 @@
 
 import { Plus, PlusCircle, X } from "lucide-react";
 import { ListPanel } from "@/components/inspector/views/list-panel";
+import { MeasurementNum } from "@/components/inspector/shared";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
   getInsertedWaypointMidpoint,
   getNextAppendedWaypoint,
 } from "@/lib/inspector/single/view-model";
+import { formatMeasurement } from "@/lib/track/units";
 import type { PolylinePoint, PolylineShape } from "@/lib/types";
 
 interface PolylineWaypointListProps {
@@ -31,14 +34,14 @@ interface PolylineWaypointListProps {
 
 export function PolylineWaypointList({
   appendPolylinePoint,
-  finishBatch,
   insertPolylinePoint,
   removePolylinePoint,
   setHoveredWaypoint,
   shape,
-  startBatch,
   updatePolylinePoint,
 }: PolylineWaypointListProps) {
+  const { unitSystem } = useMeasurementUnitSystem();
+
   return (
     <div className="mt-3">
       <ListPanel
@@ -80,29 +83,21 @@ export function PolylineWaypointList({
               </span>
               <div className="min-w-0">
                 <span className="text-foreground/85 block font-mono text-[11px] leading-none tabular-nums">
-                  {point.x.toFixed(1)}, {point.y.toFixed(1)}
+                  {formatMeasurement(point.x, unitSystem, { precision: 1 })},{" "}
+                  {formatMeasurement(point.y, unitSystem, { precision: 1 })}
                 </span>
               </div>
-              <input
-                type="number"
-                step={0.5}
-                title="Elevation (m)"
-                className="text-foreground/90 focus:bg-muted/45 focus:text-foreground hover:border-border/25 focus:border-border/60 h-7 w-14 rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-right font-mono text-[11px] transition-colors focus:outline-hidden"
-                value={point.z ?? 0}
-                disabled={shape.locked}
-                onFocus={startBatch}
-                onBlur={finishBatch}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.currentTarget.blur();
-                  }
-                }}
-                onChange={(event) => {
+              <div className={shape.locked ? "pointer-events-none opacity-50" : ""}>
+                <MeasurementNum
+                  valueMeters={point.z ?? 0}
+                  unitSystem={unitSystem}
+                  onChange={(value) => {
                   updatePolylinePoint(shape.id, index, {
-                    z: +event.target.value,
+                      z: value,
                   });
-                }}
-              />
+                  }}
+                />
+              </div>
               <div className="flex items-center justify-end gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover/row:opacity-100">
                 {index < shape.points.length - 1 && (
                   <button

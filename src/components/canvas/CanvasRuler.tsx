@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import {
+  formatMeasurement,
+  type MeasurementUnitSystem,
+} from "@/lib/track/units";
 
 export const RULER_SIZE = 24;
 
@@ -15,6 +19,7 @@ interface RulerProps {
   /** Viewport width (h) or height (v) in pixels */
   length: number;
   isDark: boolean;
+  unitSystem?: MeasurementUnitSystem;
 }
 
 export function CanvasRuler({
@@ -24,6 +29,7 @@ export function CanvasRuler({
   gridStep,
   length,
   isDark,
+  unitSystem = "metric",
 }: RulerProps) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -114,9 +120,9 @@ export function CanvasRuler({
       ctx.stroke();
 
       if (isMajor) {
-        const label = Number.isInteger(meters)
-          ? String(meters)
-          : meters.toFixed(1);
+        const label = formatMeasurement(meters, unitSystem, {
+          precision: Number.isInteger(meters) ? 0 : 1,
+        });
         ctx.fillStyle = isDark ? "#7aa8cc" : "#4a6a88";
 
         if (isH) {
@@ -135,7 +141,7 @@ export function CanvasRuler({
         }
       }
     }
-  }, [orientation, stageTransform, ppm, gridStep, length, isDark]);
+  }, [orientation, stageTransform, ppm, gridStep, length, isDark, unitSystem]);
 
   const isH = orientation === "h";
   return (

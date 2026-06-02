@@ -31,8 +31,10 @@ import { PathBuilderOverlay } from "@/components/editor/mobile/PathBuilderOverla
 import { ViewControls } from "@/components/editor/mobile/ViewControls";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
 import { MobileDrawer } from "@/components/MobileDrawer";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import type { EditorTool } from "@/lib/editor-tools";
 import { getEditorMobilePanelsViewModel } from "@/lib/editor/mobile/view-model";
+import { formatMeasurement } from "@/lib/track/units";
 import { cn } from "@/lib/utils";
 
 export type EditorViewportTab = "2d" | "3d";
@@ -391,6 +393,7 @@ export function EditorMobilePanels({
   onTabChange,
   studioHref = "/studio",
 }: EditorMobilePanelsProps) {
+  const { unitSystem } = useMeasurementUnitSystem();
   const mobileOverlaySurfaceClassName =
     "pointer-events-auto w-full max-w-sm rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-2 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur";
   const [isLandscapeMobile, setIsLandscapeMobile] = useState(false);
@@ -624,6 +627,11 @@ export function EditorMobilePanels({
             className={mobileOverlaySurfaceClassName}
             draftPathClosed={draftPathClosed}
             draftPathLength={draftPathLength}
+            draftPathLengthLabel={formatMeasurement(
+              draftPathLength,
+              unitSystem,
+              { precision: 1 }
+            )}
             draftPathPointCount={draftPathPointCount}
             onCancelPath={onCancelPath}
             onCloseLoop={onCloseLoop}

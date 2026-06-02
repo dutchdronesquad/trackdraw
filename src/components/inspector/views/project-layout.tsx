@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Eye, EyeOff, MapPinned, Trash2 } from "lucide-react";
 import ElevationChart from "@/components/inspector/ElevationChart";
+import { MeasurementUnitToggle } from "@/components/MeasurementUnitToggle";
 import { MapReferenceDialog } from "@/components/map-reference/MapReferenceDialog";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
@@ -20,11 +21,14 @@ import type {
   TrackDesign,
 } from "@/lib/types";
 import {
+  MeasurementNum,
   Num,
   Row,
   Section,
   useInspectorInputBatch,
 } from "@/components/inspector/shared";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
+import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
 import {
   InspectorFooterDesktop,
   InspectorFooterMobile,
@@ -295,6 +299,8 @@ export function ProjectLayoutInspectorView({
   mobileInline = false,
 }: ProjectLayoutInspectorViewProps) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
+  const { unitSystem } = useMeasurementUnitSystem();
+  const fieldUnitLabel = unitSystem === "imperial" ? "ft" : "m";
   const isDesktop = useIsDesktopInspector();
   const inventory = normalizeInventoryProfile(design.inventory);
   const inventoryComparison = getInventoryComparison(design);
@@ -400,8 +406,10 @@ export function ProjectLayoutInspectorView({
         subtitle="Tune the project title, field setup, and available obstacle stock."
         meta={[
           `${shapes.length} items`,
-          `${design.field.width}x${design.field.height} m`,
-          `grid ${design.field.gridStep} m`,
+          formatFieldSize(design.field.width, design.field.height, unitSystem),
+          `grid ${formatMeasurement(design.field.gridStep, unitSystem, {
+            precision: 1,
+          })}`,
         ]}
       />
       <div>
@@ -423,37 +431,53 @@ export function ProjectLayoutInspectorView({
         />
       </div>
       <Section title="Field">
-        <Row label="Width (m)">
-          <Num
-            value={design.field.width}
+        <Row label="Units">
+          <MeasurementUnitToggle />
+        </Row>
+        <Row label={`Width (${fieldUnitLabel})`}>
+          <MeasurementNum
+            valueMeters={design.field.width}
+            unitSystem={unitSystem}
             onChange={(value) => updateField({ width: value })}
-            step={0.5}
-            min={5}
+            minMeters={5}
           />
         </Row>
-        <Row label="Height (m)">
-          <Num
-            value={design.field.height}
+        <Row label={`Height (${fieldUnitLabel})`}>
+          <MeasurementNum
+            valueMeters={design.field.height}
+            unitSystem={unitSystem}
             onChange={(value) => updateField({ height: value })}
-            step={0.5}
-            min={5}
+            minMeters={5}
           />
         </Row>
-        <Row label="Grid (m)">
-          <Num
-            value={design.field.gridStep}
+        <Row label={`Grid (${fieldUnitLabel})`}>
+          <MeasurementNum
+            valueMeters={design.field.gridStep}
+            unitSystem={unitSystem}
             onChange={(value) => updateField({ gridStep: value })}
-            step={0.5}
-            min={0.5}
+            minMeters={0.5}
           />
         </Row>
-        <Row label="Scale (px/m)">
-          <Num
-            value={design.field.ppm}
-            onChange={(value) => updateField({ ppm: value })}
-            step={5}
-            min={5}
-          />
+        <Row label="Render scale">
+          <div
+            className="flex min-w-0 items-center gap-2"
+            title="Internal canvas density in pixels per meter"
+          >
+            <div className="min-w-0 flex-1">
+              <Num
+                value={design.field.ppm}
+                onChange={(value) => updateField({ ppm: value })}
+                step={5}
+                min={5}
+              />
+            </div>
+            <span
+              className="text-muted-foreground/65 shrink-0 text-[10px] font-medium tracking-[0.08em] uppercase"
+              aria-label="pixels per meter, internal canvas scale"
+            >
+              px/m
+            </span>
+          </div>
         </Row>
       </Section>
       {inventoryContent}

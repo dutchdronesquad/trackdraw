@@ -23,10 +23,15 @@ import { StableFieldContent } from "@/components/canvas/renderers/field-layer";
 import { getShapeLocalBounds } from "@/components/canvas/renderers/shape-bounds";
 import { useTrackCanvasViewport } from "@/components/canvas/useTrackCanvasViewport";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
 import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
-import { m2px } from "@/lib/track/units";
+import {
+  formatCompactFieldSize,
+  formatMeasurement,
+  m2px,
+} from "@/lib/track/units";
 import { useEditor } from "@/store/editor";
 import {
   selectDesignPolylineZRange,
@@ -46,12 +51,21 @@ const TrackCanvas = memo(
   ) {
     usePerfMetric("render:share/TrackCanvas");
 
+    const { unitSystem } = useMeasurementUnitSystem();
     const design = useEditor((state) => state.track.design);
     const designShapes = useEditor(selectDesignShapes);
     const [zmin, zmax] = useEditor(selectDesignPolylineZRange);
     const primaryPolylineId = useEditor(
       (state) => selectPrimaryPolyline(state)?.id ?? null
     );
+    const fieldLabel = formatCompactFieldSize(
+      design.field.width,
+      design.field.height,
+      unitSystem
+    );
+    const gridLabel = formatMeasurement(design.field.gridStep, unitSystem, {
+      precision: 1,
+    });
     const stageRef = useRef<KonvaStage | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const contentDragActiveRef = useRef(false);
@@ -385,10 +399,10 @@ const TrackCanvas = memo(
         >
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>
-              {design.field.width}m × {design.field.height}m
+              {fieldLabel}
             </span>
             <span className="text-border">·</span>
-            <span>Grid {design.field.gridStep}m</span>
+            <span>Grid {gridLabel}</span>
             <span className="text-border">·</span>
             <span>Drag to pan, wheel to zoom</span>
           </div>
@@ -437,7 +451,7 @@ const TrackCanvas = memo(
         >
           <Layer listening={false}>
             <StableFieldContent
-              designField={design.field}
+              fieldLabel={fieldLabel}
               grid={grid}
               heightPx={heightPx}
               isDark={isDark}
@@ -528,6 +542,7 @@ const TrackCanvas = memo(
                   gridStep={design.field.gridStep}
                   length={viewportSize.width - RULER_SIZE}
                   isDark={isDark}
+                  unitSystem={unitSystem}
                 />
               </div>
             </div>
@@ -552,6 +567,7 @@ const TrackCanvas = memo(
                   gridStep={design.field.gridStep}
                   length={viewportSize.height - RULER_SIZE}
                   isDark={isDark}
+                  unitSystem={unitSystem}
                 />
               </div>
             </div>

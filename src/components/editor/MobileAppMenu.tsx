@@ -332,7 +332,6 @@ export default function MobileAppMenu({
                 </div>
                 <ThemeToggle />
               </div>
-
               {user ? (
                 <div className="border-border/60 mt-2 border-t pt-2">
                   <button

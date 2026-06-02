@@ -5,7 +5,9 @@ import { useUiActions } from "@/store/actions";
 import { selectShapeRecordMap } from "@/store/selectors";
 import VersionTag from "@/components/VersionTag";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
+import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import { Magnet } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -36,6 +38,7 @@ interface StatusBarProps {
 
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const { enabled, toggle } = useDeveloperMode();
+  const { unitSystem } = useMeasurementUnitSystem();
   const { toggleSnapEnabled } = useUiActions();
   const activeTool = useEditor((state) => state.ui.activeTool);
   const activePresetId = useEditor((state) => state.ui.activePresetId);
@@ -86,7 +89,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {/* Grid step — desktop only */}
       <span className="hidden lg:contents">
         <span className="text-muted-foreground/45">·</span>
-        <span>{field.gridStep}m</span>
+        <span>{formatMeasurement(field.gridStep, unitSystem, { precision: 1 })}</span>
         <span className="text-muted-foreground/45">·</span>
       </span>
 
@@ -94,10 +97,18 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       <span className="hidden lg:contents">
         {cursorPos ? (
           <span>
-            {cursorPos.x.toFixed(1)}, {cursorPos.y.toFixed(1)} m
+            {formatMeasurement(cursorPos.x, unitSystem, {
+              precision: 1,
+            })}
+            ,{" "}
+            {formatMeasurement(cursorPos.y, unitSystem, {
+              precision: 1,
+            })}
           </span>
         ) : (
-          <span className="text-muted-foreground/45">— m</span>
+          <span className="text-muted-foreground/45">
+            — {unitSystem === "imperial" ? "ft" : "m"}
+          </span>
         )}
       </span>
 
@@ -164,7 +175,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {/* Field size — desktop only */}
       <span className="hidden lg:contents">
         <span>
-          {field.width}×{field.height} m
+          {formatFieldSize(field.width, field.height, unitSystem)}
         </span>
         <span className="text-muted-foreground/45">·</span>
       </span>

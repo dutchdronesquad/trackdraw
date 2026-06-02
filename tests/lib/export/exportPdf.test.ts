@@ -192,7 +192,7 @@ describe("exportPdf", () => {
     expect(
       pdf.textCalls.some((call) => call.includes("Standard PDF Smoke"))
     ).toBe(true);
-    expect(pdf.textCalls.some((call) => call.includes("60 × 40 m"))).toBe(true);
+    expect(pdf.textCalls.some((call) => call.includes("60 x 40 m"))).toBe(true);
   });
 
   it("passes dense practical layouts through Race Pack PDF rendering", async () => {

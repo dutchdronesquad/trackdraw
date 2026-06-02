@@ -62,6 +62,7 @@ import type {
   GalleryState,
   StoredGalleryEntry,
 } from "@/lib/server/gallery";
+import { formatFieldSize as formatMeasurementFieldSize } from "@/lib/track/units";
 
 type DashboardGalleryManagerProps = {
   currentUserRole: AccountRole;
@@ -178,7 +179,7 @@ function formatFieldSize(entry: DashboardGalleryEntry) {
     return "Not set";
   }
 
-  return `${entry.fieldWidth} x ${entry.fieldHeight} m`;
+  return formatMeasurementFieldSize(entry.fieldWidth, entry.fieldHeight, "metric");
 }
 
 function formatElementCount(entry: DashboardGalleryEntry) {

@@ -10,6 +10,7 @@ import {
   getSiteUrl,
   serializeJsonLd,
 } from "@/lib/seo";
+import { formatFieldSize } from "@/lib/track/units";
 import { parseEditorView } from "@/lib/view";
 import ShareViewer from "../ShareViewer";
 import ShareError from "../ShareError";
@@ -68,7 +69,11 @@ export default async function ShareTokenPage({
             ],
             spatialCoverage: {
               "@type": "Place",
-              name: `${resolvedShare.design.field.width} x ${resolvedShare.design.field.height} m field`,
+              name: `${formatFieldSize(
+                resolvedShare.design.field.width,
+                resolvedShare.design.field.height,
+                "metric"
+              )} field`,
             },
           }
         : null;

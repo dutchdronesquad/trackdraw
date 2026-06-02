@@ -34,6 +34,7 @@ import { loadProject } from "@/lib/projects";
 import { downloadJsonFile } from "@/lib/export/download-json";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
@@ -204,6 +205,7 @@ export default function EditorShell({
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const { enabled: developerModeEnabled, toggle: toggleDeveloperMode } =
     useDeveloperMode();
+  const { unitSystem } = useMeasurementUnitSystem();
   const selection = useEditor((state) => state.session.selection);
   const design = useEditor((state) => state.track.design);
   const activeTool = useEditor((state) => state.ui.activeTool);
@@ -260,6 +262,7 @@ export default function EditorShell({
     segmentSelection,
     selection,
     shapeById,
+    unitSystem,
     vertexSelection,
   });
   const isMobile = useIsMobile();

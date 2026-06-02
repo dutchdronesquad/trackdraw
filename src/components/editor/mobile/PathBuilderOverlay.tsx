@@ -7,6 +7,7 @@ interface EditorMobilePathBuilderOverlayProps {
   className: string;
   draftPathClosed: boolean;
   draftPathLength: number;
+  draftPathLengthLabel?: string;
   draftPathPointCount: number;
   onCancelPath: () => void;
   onCloseLoop: () => void;
@@ -18,6 +19,7 @@ export function PathBuilderOverlay({
   className,
   draftPathClosed,
   draftPathLength,
+  draftPathLengthLabel,
   draftPathPointCount,
   onCancelPath,
   onCloseLoop,
@@ -37,9 +39,9 @@ export function PathBuilderOverlay({
           </p>
           <p className="truncate text-[11px] text-white/70">
             {draftPathClosed
-              ? `Loop connected · ${draftPathPointCount} points · ${draftPathLength.toFixed(1)} m`
+              ? `Loop connected · ${draftPathPointCount} points · ${draftPathLengthLabel ?? `${draftPathLength.toFixed(1)} m`}`
               : draftPathPointCount > 0
-                ? `${draftPathPointCount} points · ${draftPathLength.toFixed(1)} m`
+                ? `${draftPathPointCount} points · ${draftPathLengthLabel ?? `${draftPathLength.toFixed(1)} m`}`
                 : "Tap the canvas to place the first point"}
           </p>
         </div>

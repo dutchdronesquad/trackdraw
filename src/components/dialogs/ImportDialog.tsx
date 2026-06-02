@@ -5,8 +5,10 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { parseDesign } from "@/lib/track/design";
+import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { useTrackActions } from "@/store/actions";
 import { cn } from "@/lib/utils";
+import { formatFieldSize } from "@/lib/track/units";
 import { Upload, FileJson, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import type { TrackDesign } from "@/lib/types";
@@ -31,6 +33,7 @@ export default function ImportDialog({
   onBeforeConfirm,
 }: ImportDialogProps) {
   const { replaceDesign } = useTrackActions();
+  const { unitSystem } = useMeasurementUnitSystem();
   const isMobile = useIsMobile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -189,7 +192,11 @@ export default function ImportDialog({
                 {parsed.design.title || "Untitled project"}
               </p>
               <p className="text-muted-foreground mt-0.5 text-xs">
-                {parsed.design.field.width} × {parsed.design.field.height} m
+                {formatFieldSize(
+                  parsed.design.field.width,
+                  parsed.design.field.height,
+                  unitSystem
+                )}
                 &nbsp;·&nbsp;
                 {parsed.shapeCount}{" "}
                 {parsed.shapeCount === 1 ? "object" : "objects"}

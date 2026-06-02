@@ -4,6 +4,10 @@ import {
   getShapeGroupName,
   selectionHasGroupedShapes,
 } from "@/lib/track/shape-groups";
+import {
+  formatMeasurement,
+  type MeasurementUnitSystem,
+} from "@/lib/track/units";
 import type { Shape } from "@/lib/types";
 
 export function getEditorShellSelectionState(options: {
@@ -16,6 +20,7 @@ export function getEditorShellSelectionState(options: {
   } | null;
   selection: string[];
   shapeById: Record<string, Shape>;
+  unitSystem?: MeasurementUnitSystem;
   vertexSelection: { shapeId: string; idx: number } | null;
 }) {
   const {
@@ -24,6 +29,7 @@ export function getEditorShellSelectionState(options: {
     segmentSelection,
     selection,
     shapeById,
+    unitSystem = "metric",
     vertexSelection,
   } = options;
 
@@ -62,9 +68,11 @@ export function getEditorShellSelectionState(options: {
       ? vertexSelection
       : null;
   const mobilePrecisionStep = Math.min(designGridStep, 0.1);
-  const mobilePrecisionStepLabel = `${mobilePrecisionStep.toFixed(
-    mobilePrecisionStep < 0.1 ? 2 : 1
-  )} m`;
+  const mobilePrecisionStepLabel = formatMeasurement(
+    mobilePrecisionStep,
+    unitSystem,
+    { precision: mobilePrecisionStep < 0.1 ? 2 : 1 }
+  );
   const singleSelectionCanRotate = Boolean(
     singleSelectedShape &&
     singleSelectedShape.kind !== "polyline" &&

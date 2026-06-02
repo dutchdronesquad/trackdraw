@@ -21,6 +21,8 @@ The most useful next product move is deepening the race-day workflow, keeping th
 - Race director page with pilot line, timing/start box placement, and ops notes
 - Usability and reliability pass focused on recovery states, mobile ergonomics, editor interactions, exports, sharing, and larger layouts
 - Share version history so owners can update a published track without surprising existing links
+- Regional measurement units so international users can work in familiar metric or imperial-style measurements while TrackDraw keeps meter-based geometry internally
+- Multilingual product experience built on the same locale-aware foundation, starting with explicit language choice and controlled translation scope
 - Gallery collections for curated browsing beyond the current featured bucket
 - Dashboard operator tooling for public track review, share lifecycle inspection, contextual account/project diagnostics, and API usage visibility
 
@@ -157,6 +159,63 @@ Suggested first slices:
 - Performance and large-layout stability
   - Started with bounded dense-grid rendering for SVG/PDF/PNG exports so fine grid settings do not explode export payload size
   - Added long-route obstacle-numbering coverage with bounded route-segment scans for dense gate layouts
+
+#### Regional Measurement Units
+
+International users should be able to work in familiar metric or imperial-style measurements without TrackDraw changing its internal geometry model.
+
+Why:
+
+- TrackDraw currently stores, calculates, exports, and validates geometry in meters, which remains the safest shared model for maps, simulation-adjacent outputs, and backwards-compatible project files
+- Metric should remain the natural default for most international users, including markets such as Europe, China, and Japan
+- Users in places or clubs that expect feet/inches, including US users and some mixed-measurement UK contexts, should not have to mentally convert field size, obstacle dimensions, route length, or setup/export summaries while designing
+- Unit support is a core editor usability feature and should remain available without an account
+- Browser locale can provide a useful first guess, but venue practice and club expectations can differ from country defaults, so users need an explicit override
+
+Focus:
+
+- Add a simple metric versus imperial-style unit preference with a metric default that preserves existing project behavior
+- Use browser locale signals to choose the first-run unit default when no saved preference exists, then persist the user's override locally and, where appropriate, in account/project settings
+- Centralize measurement formatting so field labels, rulers, inspectors, route/elevation summaries, gallery metadata, and export previews stop hard-coding `m`
+- Support unit-aware numeric input for common values such as meters, feet, and inches while storing normalized meter values in project data
+- Keep JSON/API geometry meter-based for compatibility, while allowing share/export presentation to use the selected measurement system
+
+Current shipped foundation:
+
+- Browser-locale-informed metric versus imperial default with local manual override
+- Shared measurement formatting for core editor chrome, rulers, inspector summaries, gallery cards, import previews, share canvas labels, and visual export labels
+- Unit-aware measurement inputs for field settings, selected object dimensions/positions, and route waypoint elevation
+- PNG/SVG/PDF/Race Pack presentation follows the selected unit system while JSON/API geometry remains meter-based
+
+Important boundary:
+
+- Do not convert stored coordinates, field dimensions, route data, or obstacle dimensions away from meters
+- Do not add account-only regional settings as the first slice; the editor needs this for logged-out international users too
+- Do not couple measurement units to UI language; translation/localization can be a later track, while this slice focuses on measurement defaults, formatting, and input
+- Avoid broad localization work in this slice unless it is required for measurement clarity
+
+#### Multilingual Product Experience
+
+Regional measurement support should be treated as the first locale-aware foundation for TrackDraw, but a multilingual product needs its own rollout plan so translation work does not destabilize the editor.
+
+Why:
+
+- International users may benefit from familiar product language in addition to familiar measurement units
+- Locale-aware defaults, preference storage, shared formatting helpers, and text boundaries created for unit support can reduce the later cost of full i18n
+- Translation touches high-risk surfaces such as editor tools, import/export recovery, share pages, Race Pack/PDF copy, dashboard moderation, and legal pages, so it needs deliberate QA rather than ad hoc string replacement
+
+Focus:
+
+- Add an i18n architecture that moves hard-coded product copy behind typed message catalogs while preserving existing route behavior and metadata quality
+- Use browser language as a first-run default only when no saved language preference exists, and keep manual language selection separate from measurement units
+- Start with a small language set chosen from actual user demand and maintenance capacity, with English as the stable fallback for incomplete translations
+- Review translated UI on desktop and mobile, including compact buttons, inspector panels, dialogs, share pages, exported PDFs/Race Packs, and legal pages where applicable
+
+Important boundary:
+
+- Do not block regional measurement support on full i18n; units can ship first as a smaller, lower-risk slice
+- Do not infer units only from language, because English users can prefer metric and non-English users can work with imperial-style venue expectations
+- Do not translate legal pages casually; any material legal translation needs a separate review standard
 
 ### 3. Account-Backed Follow-up (`Account-backed`)
 

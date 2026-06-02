@@ -6,6 +6,11 @@ import { useHistorySession } from "@/hooks/useHistorySession";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useSessionActions } from "@/store/actions";
+import {
+  formatMeasurementInputValue,
+  parseMeasurementInput,
+  type MeasurementUnitSystem,
+} from "@/lib/track/units";
 import { ChevronDown } from "lucide-react";
 
 export const fmt = (value: number) => Number(value.toFixed(2));
@@ -166,6 +171,61 @@ export function Num({
         }
       }}
       onChange={(event) => onChange(+event.target.value)}
+      className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
+    />
+  );
+}
+
+export function MeasurementNum({
+  valueMeters,
+  unitSystem,
+  onChange,
+  minMeters,
+}: {
+  valueMeters: number;
+  unitSystem: MeasurementUnitSystem;
+  onChange: (valueMeters: number) => void;
+  minMeters?: number;
+}) {
+  const { startBatch, finishBatch } = useInspectorInputBatch();
+  const [draft, setDraft] = useState<string | null>(null);
+  const displayValue =
+    draft ?? formatMeasurementInputValue(valueMeters, unitSystem);
+
+  const commit = () => {
+    if (draft === null) return;
+
+    const parsed = parseMeasurementInput(draft, unitSystem);
+    if (parsed === null) {
+      setDraft(null);
+      return;
+    }
+
+    const nextValue =
+      typeof minMeters === "number" ? Math.max(minMeters, parsed) : parsed;
+    onChange(nextValue);
+    setDraft(null);
+  };
+
+  return (
+    <Input
+      type="text"
+      inputMode="decimal"
+      value={displayValue}
+      onFocus={() => {
+        setDraft(displayValue);
+        startBatch();
+      }}
+      onBlur={() => {
+        commit();
+        finishBatch();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          event.currentTarget.blur();
+        }
+      }}
+      onChange={(event) => setDraft(event.target.value)}
       className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
     />
   );
