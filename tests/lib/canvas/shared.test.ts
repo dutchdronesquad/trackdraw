@@ -43,7 +43,9 @@ describe("canvas shared helpers", () => {
       false
     );
     expect(
-      isTouchLikeEvent({ touches: { item: () => null } } as unknown as TouchEvent)
+      isTouchLikeEvent({
+        touches: { item: () => null },
+      } as unknown as TouchEvent)
     ).toBe(false);
     expect(
       isTouchLikeEvent({
