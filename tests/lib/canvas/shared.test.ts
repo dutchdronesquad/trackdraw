@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   clamp,
   isTouchLikeEvent,
@@ -11,18 +11,8 @@ import {
 } from "@/lib/canvas/shared";
 
 describe("canvas shared helpers", () => {
-  const originalTouchEvent = globalThis.TouchEvent;
-
   afterEach(() => {
-    if (originalTouchEvent) {
-      Object.defineProperty(globalThis, "TouchEvent", {
-        configurable: true,
-        value: originalTouchEvent,
-        writable: true,
-      });
-    } else {
-      Reflect.deleteProperty(globalThis, "TouchEvent");
-    }
+    vi.unstubAllGlobals();
   });
 
   it("detects typing targets and contenteditable ancestors", () => {
@@ -43,9 +33,18 @@ describe("canvas shared helpers", () => {
   });
 
   it("detects touch-like events without requiring a global TouchEvent constructor", () => {
-    Reflect.deleteProperty(globalThis, "TouchEvent");
+    vi.stubGlobal("TouchEvent", undefined);
 
     expect(isTouchLikeEvent(new MouseEvent("mousedown"))).toBe(false);
+    expect(
+      isTouchLikeEvent({ touches: undefined } as unknown as TouchEvent)
+    ).toBe(false);
+    expect(isTouchLikeEvent({ touches: null } as unknown as TouchEvent)).toBe(
+      false
+    );
+    expect(
+      isTouchLikeEvent({ touches: { item: () => null } } as unknown as TouchEvent)
+    ).toBe(false);
     expect(
       isTouchLikeEvent({
         touches: [{ clientX: 12, clientY: 24, identifier: 1 }],

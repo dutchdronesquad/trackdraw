@@ -41,7 +41,12 @@ export const isTouchLikeEvent = (
     return true;
   }
 
-  return "touches" in event;
+  const touches = (event as { touches?: unknown }).touches;
+  return (
+    typeof touches === "object" &&
+    touches !== null &&
+    typeof (touches as { length?: unknown }).length === "number"
+  );
 };
 
 export const clipboard: Shape[] = [];
