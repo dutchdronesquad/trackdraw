@@ -34,6 +34,16 @@ export const isTypingInInput = (target: HTMLElement | null) => {
   );
 };
 
+export const isTouchLikeEvent = (
+  event: MouseEvent | TouchEvent
+): event is TouchEvent => {
+  if (typeof TouchEvent !== "undefined" && event instanceof TouchEvent) {
+    return true;
+  }
+
+  return "touches" in event;
+};
+
 export const clipboard: Shape[] = [];
 
 export const clamp = (value: number, min: number, max: number) =>

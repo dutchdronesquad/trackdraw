@@ -1,8 +1,9 @@
 // @vitest-environment happy-dom
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   clamp,
+  isTouchLikeEvent,
   isTypingInInput,
   mergeClientRects,
   normalizeRect,
@@ -10,6 +11,20 @@ import {
 } from "@/lib/canvas/shared";
 
 describe("canvas shared helpers", () => {
+  const originalTouchEvent = globalThis.TouchEvent;
+
+  afterEach(() => {
+    if (originalTouchEvent) {
+      Object.defineProperty(globalThis, "TouchEvent", {
+        configurable: true,
+        value: originalTouchEvent,
+        writable: true,
+      });
+    } else {
+      Reflect.deleteProperty(globalThis, "TouchEvent");
+    }
+  });
+
   it("detects typing targets and contenteditable ancestors", () => {
     const input = document.createElement("input");
     const textarea = document.createElement("textarea");
@@ -25,6 +40,17 @@ describe("canvas shared helpers", () => {
     expect(isTypingInInput(child)).toBe(true);
     expect(isTypingInInput(plain)).toBe(false);
     expect(isTypingInInput(null)).toBe(false);
+  });
+
+  it("detects touch-like events without requiring a global TouchEvent constructor", () => {
+    Reflect.deleteProperty(globalThis, "TouchEvent");
+
+    expect(isTouchLikeEvent(new MouseEvent("mousedown"))).toBe(false);
+    expect(
+      isTouchLikeEvent({
+        touches: [{ clientX: 12, clientY: 24, identifier: 1 }],
+      } as unknown as TouchEvent)
+    ).toBe(true);
   });
 
   it("clamps values into the provided range", () => {

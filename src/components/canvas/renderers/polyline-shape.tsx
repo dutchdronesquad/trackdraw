@@ -12,6 +12,7 @@ import {
   getPolylineSmoothSegmentPointsPx,
   getPolylineSmoothPointsPx,
 } from "@/lib/track/polyline-derived";
+import { isTouchLikeEvent } from "@/lib/canvas/shared";
 import { zToColor } from "@/lib/track/alt";
 import { m2px, px2m } from "@/lib/track/units";
 import type { PolylinePoint, PolylineShape } from "@/lib/types";
@@ -694,28 +695,32 @@ export function PolylineShapeContent({
             setVertexSel({ shapeId: path.id, idx: index });
             const stage = event.target.getStage();
             if (!stage) return;
-            const client =
-              event.evt instanceof TouchEvent
-                ? {
-                    x: event.evt.touches[0]?.clientX ?? 0,
-                    y: event.evt.touches[0]?.clientY ?? 0,
-                  }
-                : {
-                    x: event.evt.clientX,
-                    y: event.evt.clientY,
-                  };
+            const nativeEvent = event.evt;
+            const isTouchStart = isTouchLikeEvent(nativeEvent);
+            const client = isTouchStart
+              ? {
+                  x: nativeEvent.touches[0]?.clientX ?? 0,
+                  y: nativeEvent.touches[0]?.clientY ?? 0,
+                }
+              : {
+                  x: nativeEvent.clientX,
+                  y: nativeEvent.clientY,
+                };
             startWaypointDrag({
               client,
               index,
               pointPx: { x, y },
               snapEnabled:
                 snapEnabled &&
-                !(event.evt.altKey || event.evt.metaKey || event.evt.shiftKey),
+                !(
+                  nativeEvent.altKey ||
+                  nativeEvent.metaKey ||
+                  nativeEvent.shiftKey
+                ),
               stage,
-              touchIdentifier:
-                event.evt instanceof TouchEvent
-                  ? (event.evt.touches[0]?.identifier ?? null)
-                  : null,
+              touchIdentifier: isTouchStart
+                ? (nativeEvent.touches[0]?.identifier ?? null)
+                : null,
             });
           };
 
