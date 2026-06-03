@@ -1,3 +1,10 @@
+import {
+  createCatalogShapeDraft,
+  TRACKDRAW_FLAG_ELEMENT_ID,
+  TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
+  TRACKDRAW_START_FINISH_ELEMENT_ID,
+} from "@/lib/track/elements/catalog";
 import type { PolylineShape, Shape, ShapeDraft, ShapeKind } from "@/lib/types";
 
 type PlaceablePresetShape = Exclude<Shape, PolylineShape>;
@@ -25,14 +32,12 @@ const gate = (
   rotation = 0,
   color = "#3b82f6"
 ): LayoutPresetShapeDraft => ({
-  kind: "gate",
-  x,
-  y,
-  rotation,
-  width: 2,
-  height: 2,
-  thick: 0.2,
-  color,
+  ...createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
+    x,
+    y,
+    rotation,
+    color,
+  }),
 });
 
 const ladder = (
@@ -41,14 +46,12 @@ const ladder = (
   rotation = 0,
   color = "#14b8a6"
 ): LayoutPresetShapeDraft => ({
-  kind: "ladder",
-  x,
-  y,
-  rotation,
-  width: 2,
-  height: 6,
-  rungs: 3,
-  color,
+  ...createCatalogShapeDraft(TRACKDRAW_LADDER_ELEMENT_ID, {
+    x,
+    y,
+    rotation,
+    color,
+  }),
 });
 
 const startFinish = (
@@ -57,12 +60,12 @@ const startFinish = (
   rotation = 0,
   color = "#f59e0b"
 ): LayoutPresetShapeDraft => ({
-  kind: "startfinish",
-  x,
-  y,
-  rotation,
-  width: 3,
-  color,
+  ...createCatalogShapeDraft(TRACKDRAW_START_FINISH_ELEMENT_ID, {
+    x,
+    y,
+    rotation,
+    color,
+  }),
 });
 
 const flag = (
@@ -71,13 +74,12 @@ const flag = (
   rotation = 0,
   color = "#a855f7"
 ): LayoutPresetShapeDraft => ({
-  kind: "flag",
-  x,
-  y,
-  rotation,
-  radius: 0.25,
-  poleHeight: 3.5,
-  color,
+  ...createCatalogShapeDraft(TRACKDRAW_FLAG_ELEMENT_ID, {
+    x,
+    y,
+    rotation,
+    color,
+  }),
 });
 
 export const layoutPresets: LayoutPreset[] = [

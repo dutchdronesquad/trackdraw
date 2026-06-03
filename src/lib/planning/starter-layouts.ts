@@ -1,4 +1,11 @@
 import { nanoid } from "nanoid";
+import {
+  createCatalogShapeDraft,
+  TRACKDRAW_FLAG_ELEMENT_ID,
+  TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
+  TRACKDRAW_START_FINISH_ELEMENT_ID,
+} from "@/lib/track/elements/catalog";
 import { createDefaultDesign, nowIso } from "@/lib/track/design";
 import type { ShapeDraft, TrackDesign } from "@/lib/types";
 
@@ -11,25 +18,21 @@ export interface StarterLayout {
 }
 
 const gate = (x: number, y: number, rotation = 0, color = "#3b82f6") => ({
-  kind: "gate" as const,
-  x,
-  y,
-  rotation,
-  width: 2,
-  height: 2,
-  thick: 0.2,
-  color,
+  ...createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
+    x,
+    y,
+    rotation,
+    color,
+  }),
 });
 
 const ladder = (x: number, y: number, rotation = 0, color = "#14b8a6") => ({
-  kind: "ladder" as const,
-  x,
-  y,
-  rotation,
-  width: 2,
-  height: 6,
-  rungs: 3,
-  color,
+  ...createCatalogShapeDraft(TRACKDRAW_LADDER_ELEMENT_ID, {
+    x,
+    y,
+    rotation,
+    color,
+  }),
 });
 
 const startFinish = (
@@ -38,22 +41,21 @@ const startFinish = (
   rotation = 0,
   color = "#f59e0b"
 ) => ({
-  kind: "startfinish" as const,
-  x,
-  y,
-  rotation,
-  width: 3,
-  color,
+  ...createCatalogShapeDraft(TRACKDRAW_START_FINISH_ELEMENT_ID, {
+    x,
+    y,
+    rotation,
+    color,
+  }),
 });
 
 const flag = (x: number, y: number, rotation = 0, color = "#a855f7") => ({
-  kind: "flag" as const,
-  x,
-  y,
-  rotation,
-  radius: 0.25,
-  poleHeight: 3.5,
-  color,
+  ...createCatalogShapeDraft(TRACKDRAW_FLAG_ELEMENT_ID, {
+    x,
+    y,
+    rotation,
+    color,
+  }),
 });
 
 export const starterLayouts: StarterLayout[] = [

@@ -6,9 +6,9 @@ The catalog should start local and typed, not as a database. A database becomes 
 
 ## Top-Level Checklist
 
-- [ ] Define a typed local element catalog for official and TrackDraw-provided elements.
-- [ ] Move default placement for generic tools and presets onto catalog entries.
-- [ ] Add official race-gate entries, including a MultiGP-style 5 ft x 5 ft standard gate, without changing existing saved designs.
+- [x] Define a typed local element catalog for official and TrackDraw-provided elements.
+- [x] Move default placement for generic tools and presets onto catalog entries.
+- [x] Add an initial official race-gate entry, including a MultiGP-style 5 ft x 5 ft standard gate, without changing existing saved designs.
 
 ## Reference Observations
 
@@ -58,11 +58,16 @@ Done state:
 - Layout and starter presets can opt into catalog entries instead of duplicating dimensions.
 - Existing imports/exports remain compatible.
 
+Status:
+
+- Shipped a typed local catalog module with TrackDraw-provided element entries, a source-backed MultiGP Standard Gate 5x5 entry, shared catalog placement helpers for toolbar tools, layout presets, and starter layouts, and tests for default dimensions and optional catalog metadata.
+
 ## Phase 2: Official Element Entries
 
 Start state:
 
-- The catalog exists, but only replaces existing generic defaults.
+- The catalog exists and powers existing generic defaults.
+- The first official MultiGP Standard Gate 5x5 entry exists in code, but it is not yet exposed through a user-facing element library.
 
 Scope:
 

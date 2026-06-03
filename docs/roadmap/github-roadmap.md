@@ -28,10 +28,10 @@ The completed release-sized work is archived below. The REST API, live race over
 
 - [ ] Track element catalog (`Research`, `No account required`)
       Build a catalog-backed element model for official gates, richer placement defaults, and future equipment/library expansion before changing default race-gate sizing.
-  - [ ] Local element catalog foundation
+  - [x] Local element catalog foundation
         Define typed catalog entries for official names, dimensions, source references, 2D defaults, 3D render hints, and export compatibility while keeping saved project geometry meter-based.
   - [ ] Official gate and obstacle entries
-        Add entries such as a MultiGP-style standard gate only through the catalog, with custom gate editing preserved and no automatic migration of existing projects.
+        Expose entries such as the cataloged MultiGP-style standard gate through deliberate placement/library UI, with custom gate editing preserved and no automatic migration of existing projects.
 
 - [ ] 3D preview realism and lighting (`Research`, `No account required`)
       Improve the 3D preview's readability and realism with stronger contrast, sun/directional lighting, shadows, and more recognizable gates/flags while keeping mobile performance safe.

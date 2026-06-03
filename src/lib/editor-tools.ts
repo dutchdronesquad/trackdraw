@@ -1,14 +1,15 @@
-import type {
-  ConeShape,
-  DiveGateShape,
-  FlagShape,
-  GateShape,
-  LabelShape,
-  LadderShape,
-  ShapeDraft,
-  ShapeKind,
-  StartFinishShape,
-} from "@/lib/types";
+import {
+  createCatalogShapeDraft,
+  TRACKDRAW_CONE_ELEMENT_ID,
+  TRACKDRAW_DIVE_GATE_ELEMENT_ID,
+  TRACKDRAW_FLAG_ELEMENT_ID,
+  TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LABEL_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
+  TRACKDRAW_START_FINISH_ELEMENT_ID,
+  type TrackElementCatalogId,
+} from "@/lib/track/elements/catalog";
+import type { ShapeDraft, ShapeKind } from "@/lib/types";
 
 export type EditorTool =
   | "select"
@@ -22,22 +23,6 @@ export type EditorTool =
   | "startfinish"
   | "ladder"
   | "divegate";
-
-type ToolShapeDefaults = {
-  gate: Pick<GateShape, "width" | "height" | "thick" | "color">;
-  flag: Pick<FlagShape, "radius" | "poleHeight" | "color">;
-  cone: Pick<ConeShape, "radius" | "color">;
-  label: Pick<LabelShape, "text" | "fontSize" | "color">;
-  startfinish: Pick<StartFinishShape, "width" | "color">;
-  ladder: Pick<
-    LadderShape,
-    "width" | "height" | "rungs" | "elevation" | "color"
-  >;
-  divegate: Pick<
-    DiveGateShape,
-    "size" | "thick" | "tilt" | "elevation" | "color"
-  >;
-};
 
 export const shapeKindLabels: Record<ShapeKind, string> = {
   gate: "Gate",
@@ -77,87 +62,27 @@ export const toolShortcuts: Partial<Record<EditorTool, string>> = {
   divegate: "D",
 };
 
-const toolShapeDefaults: ToolShapeDefaults = {
-  gate: { width: 2, height: 2, thick: 0.2, color: "#3b82f6" },
-  flag: { radius: 0.25, poleHeight: 3.5, color: "#a855f7" },
-  cone: { radius: 0.2, color: "#f97316" },
-  label: { text: "Gate A", fontSize: 18, color: "#e2e8f0" },
-  startfinish: { width: 3, color: "#f59e0b" },
-  ladder: { width: 2, height: 6, rungs: 3, elevation: 0, color: "#14b8a6" },
-  divegate: {
-    size: 2.8,
-    thick: 0.2,
-    tilt: 0,
-    elevation: 3,
-    color: "#f97316",
-  },
-};
+const toolCatalogEntryIds: Partial<Record<EditorTool, TrackElementCatalogId>> =
+  {
+    gate: TRACKDRAW_GATE_ELEMENT_ID,
+    flag: TRACKDRAW_FLAG_ELEMENT_ID,
+    cone: TRACKDRAW_CONE_ELEMENT_ID,
+    label: TRACKDRAW_LABEL_ELEMENT_ID,
+    startfinish: TRACKDRAW_START_FINISH_ELEMENT_ID,
+    ladder: TRACKDRAW_LADDER_ELEMENT_ID,
+    divegate: TRACKDRAW_DIVE_GATE_ELEMENT_ID,
+  };
 
 export function createShapeForTool(
   tool: EditorTool,
   point: { x: number; y: number }
 ): ShapeDraft | null {
-  switch (tool) {
-    case "gate":
-      return {
-        kind: "gate",
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...toolShapeDefaults.gate,
-      };
-    case "flag":
-      return {
-        kind: "flag",
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...toolShapeDefaults.flag,
-      };
-    case "cone":
-      return {
-        kind: "cone",
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...toolShapeDefaults.cone,
-      };
-    case "label":
-      return {
-        kind: "label",
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...toolShapeDefaults.label,
-      };
-    case "startfinish":
-      return {
-        kind: "startfinish",
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...toolShapeDefaults.startfinish,
-      };
-    case "ladder":
-      return {
-        kind: "ladder",
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...toolShapeDefaults.ladder,
-      };
-    case "divegate":
-      return {
-        kind: "divegate",
-        x: point.x,
-        y: point.y,
-        rotation: 0,
-        ...toolShapeDefaults.divegate,
-      };
-    case "select":
-    case "grab":
-    case "preset":
-    case "polyline":
-      return null;
-  }
+  const entryId = toolCatalogEntryIds[tool];
+  if (!entryId) return null;
+
+  return createCatalogShapeDraft(entryId, {
+    x: point.x,
+    y: point.y,
+    rotation: 0,
+  });
 }

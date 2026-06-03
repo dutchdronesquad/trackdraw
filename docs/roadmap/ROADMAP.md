@@ -235,7 +235,7 @@ Why:
 Feature tracks:
 
 - Track element catalog: define typed local catalog entries with official names, meter-based dimensions, display dimensions, source references, shape defaults, 2D hints, 3D hints, and export compatibility metadata
-- Official equipment entries: reintroduce any default race-gate size changes through catalog entries rather than hard-coded generic defaults, while preserving custom gate editing and saved-project compatibility
+- Official equipment entries: expose cataloged official entries such as the MultiGP Standard Gate 5x5 through deliberate placement/library UI rather than hard-coded generic defaults, while preserving custom gate editing and saved-project compatibility
 - Element library UI: expose official and custom variants without slowing down the current quick-placement toolbar flow
 
 Important boundary:
@@ -243,6 +243,11 @@ Important boundary:
 - Do not automatically migrate existing projects to official gate dimensions
 - Do not make the first element catalog account-backed or database-backed; start local and typed so it is testable and versioned
 - Do not copy competitor UI patterns wholesale; adapt useful patterns to TrackDraw's existing editor and handoff workflows
+
+Current shipped foundation:
+
+- A typed local catalog module now holds TrackDraw-provided element entries and a source-backed MultiGP Standard Gate 5x5 entry without changing the existing generic gate default
+- Toolbar placement, layout presets, and starter layouts now use shared catalog placement helpers for generic elements, keeping saved geometry meter-based and backwards compatible
 
 #### 3D Preview And Direct Manipulation
 
