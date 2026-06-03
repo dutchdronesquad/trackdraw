@@ -2,12 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAccountProjectSync } from "./useAccountProjectSync";
 import { useEditorDialogs } from "./useEditorDialogs";
 import { useManualProjectSave } from "./useManualProjectSave";
@@ -15,12 +10,8 @@ import { useStarterExperience } from "./useStarterExperience";
 import { EditorWorkspace } from "./EditorWorkspace";
 import { EditorStarterOverlay } from "./EditorStarterOverlay";
 import { EditorDialogsHost } from "./EditorDialogsHost";
-import type {
-  TrackCanvasHandle,
-} from "@/components/canvas/editor/TrackCanvas";
-import type {
-  TrackPreview3DHandle,
-} from "@/components/canvas/editor/TrackPreview3D";
+import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
+import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
 import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
 import { type EditorTool } from "@/lib/editor-tools";
@@ -29,7 +20,10 @@ import { downloadJsonFile } from "@/lib/export/download-json";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
-import { useDeveloperMode, useDeveloperModeShortcut } from "@/hooks/useDeveloperMode";
+import {
+  useDeveloperMode,
+  useDeveloperModeShortcut,
+} from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
@@ -58,7 +52,9 @@ import {
 const Header = dynamic(() => import("./Header"), { ssr: false });
 const SharedHeader = dynamic(() => import("./shared/Header"), { ssr: false });
 const Toolbar = dynamic(() => import("./Toolbar"), { ssr: false });
-const PerformanceHud = dynamic(() => import("./PerformanceHud"), { ssr: false });
+const PerformanceHud = dynamic(() => import("./PerformanceHud"), {
+  ssr: false,
+});
 
 const EditorMobilePanels = dynamic(
   () =>

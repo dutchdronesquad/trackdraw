@@ -2,12 +2,8 @@
 
 import dynamic from "next/dynamic";
 import type { RefObject } from "react";
-import type {
-  TrackCanvasHandle,
-} from "@/components/canvas/editor/TrackCanvas";
-import type {
-  TrackPreview3DHandle,
-} from "@/components/canvas/editor/TrackPreview3D";
+import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
+import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import type { ExportDialogProps } from "@/components/dialogs/ExportDialog";
 import type { ProjectMeta, RestorePointMeta } from "@/lib/projects";
 import type { EditorView } from "@/lib/view";

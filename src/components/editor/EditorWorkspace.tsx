@@ -1,7 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { type ReactNode, type ForwardRefExoticComponent, type RefAttributes } from "react";
+import {
+  type ReactNode,
+  type ForwardRefExoticComponent,
+  type RefAttributes,
+} from "react";
 import { DesktopInspectorPanel } from "./DesktopInspectorPanel";
 import StatusBar from "./StatusBar";
 import type {
