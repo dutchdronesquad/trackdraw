@@ -9,6 +9,7 @@ import {
 } from "@/lib/track/units";
 
 const EVENT = "trackdraw-measurement-unit-system";
+let memoryUnitSystem: MeasurementUnitSystem | null = null;
 
 function getBrowserDefault(): MeasurementUnitSystem {
   if (typeof navigator === "undefined") return "metric";
@@ -22,9 +23,9 @@ function getSnapshot(): MeasurementUnitSystem {
     const stored = normalizeMeasurementUnitSystem(
       window.localStorage.getItem(MEASUREMENT_STORAGE_KEY)
     );
-    return stored ?? getBrowserDefault();
+    return stored ?? memoryUnitSystem ?? getBrowserDefault();
   } catch {
-    return getBrowserDefault();
+    return memoryUnitSystem ?? getBrowserDefault();
   }
 }
 
@@ -46,6 +47,8 @@ function subscribe(callback: () => void) {
 
 export function setMeasurementUnitSystem(unitSystem: MeasurementUnitSystem) {
   if (typeof window === "undefined") return;
+
+  memoryUnitSystem = unitSystem;
 
   try {
     window.localStorage.setItem(MEASUREMENT_STORAGE_KEY, unitSystem);

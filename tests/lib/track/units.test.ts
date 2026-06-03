@@ -3,6 +3,7 @@ import {
   feetToMeters,
   formatFieldSize,
   formatMeasurement,
+  formatMeasurementInputValue,
   getMeasurementUnitSystemFromLocales,
   m2px,
   parseMeasurementInput,
@@ -36,6 +37,12 @@ describe("track unit helpers", () => {
     expect(formatMeasurement(10, "imperial")).toBe("33 ft");
     expect(formatFieldSize(60, 40, "metric")).toBe("60 x 40 m");
     expect(formatFieldSize(60, 40, "imperial")).toBe("197 x 131 ft");
+  });
+
+  it("formats negative measurement input values using absolute precision", () => {
+    expect(formatMeasurementInputValue(-100, "metric")).toBe("-100");
+    expect(formatMeasurementInputValue(-2, "metric")).toBe("-2");
+    expect(formatMeasurementInputValue(-100, "imperial")).toBe("-328.1");
   });
 
   it("parses metric and imperial measurement input into meters", () => {

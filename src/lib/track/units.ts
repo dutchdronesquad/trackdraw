@@ -56,7 +56,7 @@ function trimNumber(value: number, digits: number) {
 export function formatMeasurement(
   meters: number,
   unitSystem: MeasurementUnitSystem = "metric",
-  options: { precision?: number; compact?: boolean } = {}
+  options: { precision?: number } = {}
 ) {
   const precision = options.precision ?? (Math.abs(meters) < 10 ? 1 : 0);
 
@@ -102,7 +102,7 @@ export function formatMeasurementInputValue(
   unitSystem: MeasurementUnitSystem
 ) {
   const value = unitSystem === "imperial" ? metersToFeet(meters) : meters;
-  return trimNumber(value, value < 10 ? 2 : 1);
+  return trimNumber(value, Math.abs(value) < 10 ? 2 : 1);
 }
 
 export function parseMeasurementInput(
