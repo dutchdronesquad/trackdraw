@@ -16,6 +16,7 @@ import { useAccountProjectSync } from "./useAccountProjectSync";
 import { useEditorDialogs } from "./useEditorDialogs";
 import { useManualProjectSave } from "./useManualProjectSave";
 import { useStarterExperience } from "./useStarterExperience";
+import { DesktopInspectorPanel } from "./DesktopInspectorPanel";
 import { Button } from "@/components/ui/button";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import type {
@@ -39,6 +40,7 @@ import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
+import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 import type { EditorView } from "@/lib/view";
 import {
   useSessionActions,
@@ -92,10 +94,6 @@ const Header = dynamic(() => import("./Header"), {
 });
 
 const SharedHeader = dynamic(() => import("./shared/Header"), {
-  ssr: false,
-});
-
-const Inspector = dynamic(() => import("@/components/inspector/Inspector"), {
   ssr: false,
 });
 
@@ -187,6 +185,8 @@ const NewProjectDialog = dynamic(
   () => import("@/components/dialogs/NewProjectDialog"),
   { ssr: false }
 );
+
+const SIDEBAR_COLLAPSED_STORAGE_KEY = "trackdraw.sidebarCollapsed";
 
 export default function EditorShell({
   readOnly = false,
@@ -297,7 +297,9 @@ export default function EditorShell({
   });
   const [mobilePathBuilderPinnedOpen, setMobilePathBuilderPinnedOpen] =
     useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = usePersistentBoolean(
+    SIDEBAR_COLLAPSED_STORAGE_KEY
+  );
   const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
   const [completeProfileDismissed, setCompleteProfileDismissed] =
     useState(false);
@@ -926,9 +928,9 @@ export default function EditorShell({
 
             {/* Desktop Inspector */}
             {!readOnly && !isMobile && (
-              <aside className="border-border/80 bg-card/95 hidden min-h-0 w-85 shrink-0 flex-col overflow-hidden border-l backdrop-blur lg:flex">
-                <Inspector onResumeSelectedPath={handleResumeSelectedPath} />
-              </aside>
+              <DesktopInspectorPanel
+                onResumeSelectedPath={handleResumeSelectedPath}
+              />
             )}
           </div>
         </div>

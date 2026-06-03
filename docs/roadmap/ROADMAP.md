@@ -16,17 +16,18 @@ TrackDraw is now strong in these areas:
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 - Account-backed REST API with API key management and a live race overlay data endpoint
 
-The most useful next product move is deepening the race-day workflow, keeping the editor dependable, refining the account-backed project model, and giving operators better dashboard visibility over public and integration-sensitive surfaces:
+The most useful next product move is deepening the race-day workflow, keeping the editor dependable, refining the account-backed project model, and improving catalog-backed official elements, 3D review, and workspace ergonomics:
 
 - Race director page with pilot line, timing/start box placement, and ops notes
 - Usability and reliability pass focused on recovery states, mobile ergonomics, editor interactions, exports, sharing, and larger layouts
-- Share version history so owners can update a published track without surprising existing links
-- Regional measurement units so international users can work in familiar metric or imperial-style measurements while TrackDraw keeps meter-based geometry internally
+- Catalog-backed official track elements
+- More realistic 3D review and focused 3D item controls
+- Generated flightpath research as a separate route-authoring assist
+- Editor workspace ergonomics for larger layouts, including collapsible side panels where they preserve selection context
+- Regional measurement units so international users can work with familiar Metric or Imperial presets while TrackDraw keeps meter-based geometry internally
 - Multilingual product experience built on the same locale-aware foundation, starting with explicit language choice and controlled translation scope
-- Gallery collections for curated browsing beyond the current featured bucket
-- Dashboard operator tooling for public track review, share lifecycle inspection, contextual account/project diagnostics, and API usage visibility
 
-Larger product ideas such as venue libraries, AR, and build mode should stay parked until there is clearer need.
+Lower-priority follow-up such as share version history, gallery collections, dashboard operator tooling, Velocidrone export stabilization, AR, and build mode should stay parked until there is clearer need.
 
 ## Product Principles
 
@@ -162,7 +163,7 @@ Suggested first slices:
 
 #### Regional Measurement Units
 
-International users should be able to work in familiar metric or imperial-style measurements without TrackDraw changing its internal geometry model.
+International users should be able to work in familiar Metric or Imperial measurement presets without TrackDraw changing its internal geometry model.
 
 Why:
 
@@ -174,18 +175,18 @@ Why:
 
 Focus:
 
-- Add a simple metric versus imperial-style unit preference with a metric default that preserves existing project behavior
+- Add a simple Metric versus Imperial unit preference with a Metric default that preserves existing project behavior
 - Use browser locale signals to choose the first-run unit default when no saved preference exists, then persist the user's override locally and, where appropriate, in account/project settings
 - Centralize measurement formatting so field labels, rulers, inspectors, route/elevation summaries, gallery metadata, and export previews stop hard-coding `m`
 - Support unit-aware numeric input for common values such as meters, feet, and inches while storing normalized meter values in project data
-- Keep JSON/API geometry meter-based for compatibility, while allowing share/export presentation to use the selected measurement system
+- Keep JSON/API geometry and speed values meter-based/SI for compatibility, while allowing share/export presentation to use the selected measurement preset
 
 Current shipped foundation:
 
-- Browser-locale-informed metric versus imperial default with local manual override
+- Browser-locale-informed Metric versus Imperial default with local manual override
 - Shared measurement formatting for core editor chrome, rulers, inspector summaries, gallery cards, import previews, share canvas labels, and visual export labels
 - Unit-aware measurement inputs for field settings, selected object dimensions/positions, and route waypoint elevation
-- PNG/SVG/PDF/Race Pack presentation follows the selected unit system while JSON/API geometry remains meter-based
+- PNG/SVG/PDF/Race Pack presentation follows the selected measurement preset while JSON/API geometry remains meter-based
 
 Important boundary:
 
@@ -214,8 +215,99 @@ Focus:
 Important boundary:
 
 - Do not block regional measurement support on full i18n; units can ship first as a smaller, lower-risk slice
-- Do not infer units only from language, because English users can prefer metric and non-English users can work with imperial-style venue expectations
+- Do not infer units only from language, because English users can prefer Metric and non-English users can work with Imperial venue expectations
 - Do not translate legal pages casually; any material legal translation needs a separate review standard
+
+#### Track Element Catalog
+
+TrackDraw should move from generic element defaults toward a clearer equipment model with official names, dimensions, source references, and reusable placement defaults.
+
+Supporting research document:
+
+- `docs/research/track-element-catalog.md`
+
+Why:
+
+- Real race directors think in named equipment such as standard gates, champ gates, flags, launch blocks, hurdles, and club-specific kits, not just generic shape primitives
+- Official names and dimensions should be introduced through a durable catalog so TrackDraw can support MultiGP-style gates and other known objects without silently changing old projects
+- A catalog can feed 2D placement, 3D rendering, export metadata, inventory/setup counts, and future account-backed club libraries from one source of truth
+
+Feature tracks:
+
+- Track element catalog: define typed local catalog entries with official names, meter-based dimensions, display dimensions, source references, shape defaults, 2D hints, 3D hints, and export compatibility metadata
+- Official equipment entries: reintroduce any default race-gate size changes through catalog entries rather than hard-coded generic defaults, while preserving custom gate editing and saved-project compatibility
+- Element library UI: expose official and custom variants without slowing down the current quick-placement toolbar flow
+
+Important boundary:
+
+- Do not automatically migrate existing projects to official gate dimensions
+- Do not make the first element catalog account-backed or database-backed; start local and typed so it is testable and versioned
+- Do not copy competitor UI patterns wholesale; adapt useful patterns to TrackDraw's existing editor and handoff workflows
+
+#### 3D Preview And Direct Manipulation
+
+TrackDraw should improve 3D review and focused 3D editing as separate editor capabilities, not as part of the track element catalog.
+
+Why:
+
+- 3D review can become more useful with better lighting, contrast, sun/directional-light treatment, shadows, and more realistic gates/flags
+- Direct 3D controls can speed up selected item edits when they stay narrow and respect lock state, undo/redo, and mobile constraints
+
+Feature tracks:
+
+- 3D preview realism and lighting: improve scene readability with sun/directional lighting, shadows, contrast, and more realistic gate/flag presentation before adding heavy asset workflows
+- Focused 3D item controls: add direct controls for common edits such as elevation, rotation, scaling, and orientation only where undo/redo, lock state, and mobile behavior remain safe
+
+Important boundary:
+
+- Do not make 3D controls broad enough to destabilize the existing 2D-first editor
+- Do not bury 3D preview or direct manipulation work under the element catalog; they should remain standalone editor features
+
+#### Generated Flightpath Assistance
+
+TrackDraw should research generated flightpaths as route-authoring assistance, separate from the element catalog and separate from 3D preview rendering.
+
+Why:
+
+- TrackDraw already has explicit route authoring, elevation, obstacle numbering, and overlay preparation
+- Generated flightpaths may help with first-pass drafting, route review, flythrough preparation, and ambiguous gate-order warnings
+- The useful product boundary is whether users can accept and edit a suggested route, not whether TrackDraw can fully simulate an optimal racing line
+
+Feature tracks:
+
+- Generated flightpath research: prototype route generation from ordered elements as an optional starting point that users can accept and edit
+- Route ambiguity warnings: explore lightweight feedback for unclear order, direction, or corkscrew-like layouts before adding simulation-heavy path optimization
+
+Important boundary:
+
+- Do not treat generated flightpaths as authoritative until they are validated against real layouts
+- Do not replace explicit race-line authoring; generated routes should remain assistive and editable
+- Do not bury generated flightpath work under the element catalog or 3D preview work; it should remain a standalone route-authoring feature
+
+#### Editor Workspace Ergonomics
+
+TrackDraw should keep improving dense editor layouts without mixing those usability changes into the track element catalog work.
+
+Why:
+
+- Dense desktop editing benefits from collapsible side panels so users can reclaim canvas space without losing selection context
+- Mobile already relies on drawer-style surfaces, so desktop/tablet workspace density should be improved without regressing mobile editor flows
+- Workspace preferences are local UI state and should stay separate from saved track geometry and catalog definitions
+
+Feature tracks:
+
+- Collapsible inspector workspace: continue refining the shipped desktop collapse rail only if real usage shows friction around selection context or repeated resizing
+- Persistent sidebar density: keep local-only collapse preferences for editor chrome where that improves repeated editing
+
+Important boundary:
+
+- Do not bury workspace improvements under the element catalog; inspector collapse should remain a standalone usability feature
+- Do not store workspace density in project files unless it becomes an explicit share/review requirement
+
+Current shipped foundation:
+
+- Desktop users can collapse the inspector from the inspector header into a narrow right-side rail, then reopen it from that rail while preserving the current selection and leaving mobile drawer behavior unchanged
+- The left editor toolbar and right inspector collapsed states are persisted locally so repeated desktop editing keeps the chosen workspace density after refresh
 
 ### 3. Account-Backed Follow-up (`Account-backed`)
 
@@ -243,7 +335,7 @@ Focus:
 - Keep local-first publish flows simple for unauthenticated use
 - Improve operator visibility for temporary, published, revoked, gallery-linked, and embedded share states before adding deeper share administration
 
-#### Share Version History
+#### Share Version History (`Lower priority`)
 
 Account-backed shares should support deliberate publish history so owners can update a published track without making existing links feel mysterious or losing the last known-good public version.
 
@@ -286,7 +378,7 @@ Important boundary:
 - Do not add branching, named release channels, collaborative approval, or public version browsing in the first pass
 - Do not expose private project history through public gallery, embeds, or share metadata
 
-#### Gallery Featured Collections
+#### Gallery Featured Collections (`Lower priority`)
 
 The gallery can become more useful through curated collections without becoming a social feed.
 
@@ -303,7 +395,7 @@ Focus:
 - Surface selected collections on `/gallery` while keeping every card destination on `/share/[token]`
 - Keep collection pages or deep collection routing out of the first slice unless the gallery needs it later
 
-#### Dashboard Operator Tooling
+#### Dashboard Operator Tooling (`Lower priority`)
 
 The dashboard should become the control surface for public, account-backed, and integration-sensitive behavior without turning TrackDraw into a social platform or support console that can casually mutate user work.
 

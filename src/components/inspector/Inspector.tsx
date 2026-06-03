@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   MultiInspectorView,
@@ -17,13 +17,17 @@ import {
 import { useEditor } from "@/store/editor";
 import { selectDesignShapes, selectSelectedShapes } from "@/store/selectors";
 
-function Inspector({
-  onResumeSelectedPath,
-  mobileInline = false,
-}: {
+export interface InspectorProps {
+  headerAction?: ReactNode;
   onResumeSelectedPath?: (shapeId: string) => void;
   mobileInline?: boolean;
-}) {
+}
+
+function Inspector({
+  headerAction,
+  onResumeSelectedPath,
+  mobileInline = false,
+}: InspectorProps) {
   usePerfMetric("render:Inspector");
   const design = useEditor((state) => state.track.design);
   const selection = useEditor((state) => state.session.selection);
@@ -138,50 +142,57 @@ function Inspector({
       )}
     >
       <div className="border-border/60 bg-card/96 px-4 py-3 lg:px-3 lg:py-2.5">
-        <div
-          role="tablist"
-          aria-label="Inspector panels"
-          className="border-border/60 flex items-center gap-5 border-b"
-        >
-          {[
-            { id: "project" as const, label: "Project" },
-            { id: "layout" as const, label: "Layout" },
-            { id: "selection" as const, label: "Selection" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={panel === item.id}
-              aria-controls={`inspector-panel-${item.id}`}
-              id={`inspector-tab-${item.id}`}
-              disabled={item.id === "selection" && selectionDisabled}
-              onClick={() => setPanelOverride(item.id)}
-              className={cn(
-                "group relative -mb-px min-h-11 px-1 py-2.5 text-sm font-semibold transition-colors",
-                panel === item.id
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground active:text-foreground",
-                item.id === "selection" && selectionDisabled
-                  ? "cursor-not-allowed opacity-45"
-                  : ""
-              )}
-            >
-              {panel === item.id ? (
-                <motion.span
-                  layoutId={activeTabIndicatorLayoutId}
-                  className="bg-foreground absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full"
-                  transition={{
-                    type: "spring",
-                    stiffness: 420,
-                    damping: 34,
-                  }}
-                />
-              ) : null}
-              {item.label}
-              <span className="group-hover:bg-border pointer-events-none absolute inset-x-0 -bottom-px h-px bg-transparent transition-colors" />
-            </button>
-          ))}
+        <div className="border-border/60 flex items-center justify-between gap-3 border-b">
+          <div
+            role="tablist"
+            aria-label="Inspector panels"
+            className="flex min-w-0 items-center gap-5"
+          >
+            {[
+              { id: "project" as const, label: "Project" },
+              { id: "layout" as const, label: "Layout" },
+              { id: "selection" as const, label: "Selection" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={panel === item.id}
+                aria-controls={`inspector-panel-${item.id}`}
+                id={`inspector-tab-${item.id}`}
+                disabled={item.id === "selection" && selectionDisabled}
+                onClick={() => setPanelOverride(item.id)}
+                className={cn(
+                  "group relative -mb-px min-h-11 px-1 py-2.5 text-sm font-semibold transition-colors",
+                  panel === item.id
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground active:text-foreground",
+                  item.id === "selection" && selectionDisabled
+                    ? "cursor-not-allowed opacity-45"
+                    : ""
+                )}
+              >
+                {panel === item.id ? (
+                  <motion.span
+                    layoutId={activeTabIndicatorLayoutId}
+                    className="bg-foreground absolute inset-x-0 bottom-[-1px] h-0.5 rounded-full"
+                    transition={{
+                      type: "spring",
+                      stiffness: 420,
+                      damping: 34,
+                    }}
+                  />
+                ) : null}
+                {item.label}
+                <span className="group-hover:bg-border pointer-events-none absolute inset-x-0 -bottom-px h-px bg-transparent transition-colors" />
+              </button>
+            ))}
+          </div>
+          {headerAction ? (
+            <div className="-mb-px flex min-h-11 shrink-0 items-center py-1">
+              {headerAction}
+            </div>
+          ) : null}
         </div>
       </div>
 

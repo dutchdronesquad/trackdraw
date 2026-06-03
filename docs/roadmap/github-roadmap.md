@@ -22,32 +22,49 @@ Labels used below:
 
 ## Current Priority
 
-The completed release-sized work is archived below. The REST API, live race overlay preparation, account project lifecycle polish, UI/UX polish, and stability pass are now complete. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, regional measurement support and multilingual-readiness for international users, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and better dashboard visibility over public and integration-sensitive surfaces.
+The completed release-sized work is archived below. The REST API, live race overlay preparation, account project lifecycle polish, UI/UX polish, and stability pass are now complete. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, catalog-backed official track elements, 3D preview improvements, generated flightpath assistance, regional measurement support and multilingual-readiness for international users, and account-backed project lifecycle depth beyond the shipped conflict/retry baseline.
 
 ## Follow-up
 
-- [ ] Velocidrone experimental export stabilization (`No account required`)
-      The first experimental `.trk` export is already shipped. Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping and orientation edge cases.
-  - [ ] Validate the current `.trk` export on more layouts
-        Test the shipped export across a wider range of real track layouts so the current best-effort mapping is grounded in repeatable validation instead of one-off success cases.
-  - [ ] Resolve remaining mapping and orientation edge cases
-        Tighten the current export where prefab substitutions, facing direction, or rotation assumptions still produce avoidable cleanup work after import.
+- [ ] Track element catalog (`Research`, `No account required`)
+      Build a catalog-backed element model for official gates, richer placement defaults, and future equipment/library expansion before changing default race-gate sizing.
+  - [ ] Local element catalog foundation
+        Define typed catalog entries for official names, dimensions, source references, 2D defaults, 3D render hints, and export compatibility while keeping saved project geometry meter-based.
+  - [ ] Official gate and obstacle entries
+        Add entries such as a MultiGP-style standard gate only through the catalog, with custom gate editing preserved and no automatic migration of existing projects.
 
-- [ ] Venue library and constraints (`Account-backed`)
-      Support reusable venue records with boundaries, constraints, and venue-specific profiles.
+- [ ] 3D preview realism and lighting (`Research`, `No account required`)
+      Improve the 3D preview's readability and realism with stronger contrast, sun/directional lighting, shadows, and more recognizable gates/flags while keeping mobile performance safe.
+  - [ ] 3D readability and realism pass
+        Evaluate sun/directional lighting, stronger contrast, more realistic gates/flags, and shadow treatment without making the scene visually noisy.
+
+- [ ] Focused 3D item controls (`No account required`)
+      Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.
+  - [ ] 3D transform handles
+        Prototype selected-item controls for elevation, rotation, scale, and orientation only where the behavior is predictable across 2D and 3D.
+
+- [ ] Generated flightpath assistance (`Research`, `No account required`)
+      Research generated flightpaths from placed elements as an optional drafting/review aid that users can accept and edit.
+  - [ ] Generated flightpath research
+        Prototype flightpath generation from placed elements as an assistive review/drafting feature that can be accepted or edited, not as a replacement for explicit race-line authoring.
+
+- [x] Collapsible inspector workspace (`No account required`)
+      Let desktop/tablet users collapse the inspector sidebar to reclaim canvas space during dense editing while preserving selection context.
+  - [x] Collapsible inspector workspace
+        Add the collapse control to the inspector header, keep a reopen control in the collapsed rail, persist desktop workspace density locally, and verify it does not regress mobile drawer behavior.
 
 - [x] Regional measurement units (`No account required`)
-      Support regional metric and imperial-style display and input without changing the internal meter-based design model.
+      Support regional Metric and Imperial display/input presets without changing the internal meter-based design model.
   - [x] Unit preference model
-        Add a project-safe and user-friendly unit preference for metric or imperial-style measurements, with a metric default that fits most international users and does not break existing projects.
+        Add a project-safe and user-friendly Metric/Imperial preference, with a Metric default that fits most international users and does not break existing projects.
   - [x] Locale-informed defaults
         Use browser locale signals to choose an initial measurement default when no explicit preference exists, while keeping the detected value transparent and manually overrideable.
   - [x] Editor display formatting
         Replace direct `m` labels in field size, rulers, inspectors, route/elevation summaries, gallery metadata, and export previews with shared unit formatting.
   - [x] Unit-aware numeric input
-        Let users enter common metric and imperial-style values such as meters, feet, and inches while storing normalized meter values in the design.
+        Let users enter common Metric and Imperial values such as meters, feet, and inches while storing normalized meter values in the design.
   - [x] Export and share presentation
-        Show the selected measurement system in PDF/Race Pack/share-facing summaries while keeping JSON/API geometry compatible and meter-based.
+        Show the selected measurement preset in PDF/Race Pack/share-facing summaries while keeping JSON/API geometry and speed values compatible and meter-based/SI.
 
 - [ ] Multilingual product experience (`Research`, `No account required`)
       Use the regional measurement work as a first locale-aware foundation, then evaluate a full i18n layer for the public site, editor, share pages, and exported handoff copy.
@@ -60,48 +77,19 @@ The completed release-sized work is archived below. The REST API, live race over
   - [ ] Translation QA boundary
         Define how translated UI, mobile layouts, export PDFs/Race Packs, share pages, and legal pages are reviewed so longer translated strings do not break core workflows.
 
-- [ ] Share version history (`Account-backed`)
-      Let owners update published shares while keeping clear version history, current-version state, and rollback options for account-backed projects.
-  - [ ] Published version data model
-        Store each deliberate publish/update as an immutable published-version record linked to the account-backed share and project, while keeping the existing share token as the stable public address.
-  - [ ] Owner publish/update flow
-        Make updating an already-published share an explicit action that creates a new version and shows the current published timestamp plus unpublished editor changes.
-  - [ ] Version review and restore
-        Let owners inspect recent versions with timestamp, gallery metadata, field size, and obstacle count, then restore a previous snapshot by publishing it as a new latest version.
-  - [ ] Dashboard lifecycle visibility
-        Surface current version, latest update time, version count, gallery state, and embed availability in the dashboard share lifecycle inspector.
-
-- [ ] Gallery featured collections (`Account-backed`)
-      Let admins curate small gallery collections such as indoor practice, beginner friendly, technical layouts, and race-day examples without adding social feeds or voting.
-  - [ ] Collection management
-        Add dashboard controls for creating, ordering, and publishing curated gallery collections.
-  - [ ] Public collection sections
-        Surface curated collections on `/gallery` while keeping individual gallery cards pointed at `/share/[token]`.
-
-- [ ] Dashboard operator tooling (`Account-backed`)
-      Improve dashboard visibility for public gallery tracks, published shares, contextual diagnostics, and API usage without turning TrackDraw into a social platform or broad support console.
-  - [ ] Gallery collections management
-        Add dashboard controls for creating, ordering, publishing, and assigning curated gallery collections.
-  - [ ] Public track quality review
-        Give moderators a review list with preview, title, description, field size, obstacle count, public indexing status, owner context, and feature/hide/restore/open actions.
-  - [ ] Share lifecycle inspector
-        Show share owner, project, token state, expiry/revocation, gallery listing, embed availability, and latest publish/update metadata in one operator view.
-  - [ ] Contextual account/project diagnostics
-        Add inspect affordances inside existing Users, Gallery, Share, API, and Audit surfaces instead of a standalone diagnostics page.
-    - [x] Gallery/share inspect drawer
-          Started with a read-only Inspect action on dashboard gallery rows that shows owner, share token, share lifecycle, gallery state, description, share title, field size, element count, preview media state, publish/update dates, and copy/open share actions.
-    - [ ] User context panel
-          Show role, created/updated dates, account-backed project count, active share count, gallery entry count, API key count, and recent account audit events from the Users table.
-    - [ ] Project context panel
-          Show project owner, title, updated timestamp, active share state, gallery state, API project ID, overlay readiness, field size, obstacle count, route presence, and timing-marker readiness.
-    - [ ] Entity timeline links
-          Link users, gallery entries, share tokens, projects, and API keys into filtered audit context when audit events already exist.
-    - [ ] Diagnostics boundary
-          Keep diagnostics contextual and read-focused: no standalone diagnostics page, project impersonation, private project editing, API key secrets, local-only browser projects, raw project JSON, or account takeover/session controls in the first slice.
-  - [ ] API usage dashboard
-        Show API key activity, last-used timestamps, rate-limit hits, endpoint error patterns, and overlay readiness/API usage signals for account projects.
-
 ## Later Product Follow-up
+
+- [ ] Velocidrone experimental export stabilization (`Lower priority`, `No account required`)
+      Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping/orientation edge cases.
+
+- [ ] Share version history (`Lower priority`, `Account-backed`)
+      Let owners update published shares with clear version history, current-version state, and rollback options once share lifecycle work becomes a priority again.
+
+- [ ] Gallery featured collections (`Lower priority`, `Account-backed`)
+      Let admins curate small gallery collections such as indoor practice, beginner friendly, technical layouts, and race-day examples when gallery growth warrants it.
+
+- [ ] Dashboard operator tooling (`Lower priority`, `Account-backed`)
+      Improve dashboard visibility for public gallery tracks, published shares, contextual diagnostics, and API usage after higher-priority editor and catalog work settles.
 
 - [ ] Race-day communication and briefing (`No account required`)
       The first Race Pack release is shipped, and the immediate QR/timing-marker slice is archived with v1.6.0. The remaining work here is larger race-day operations follow-up.
