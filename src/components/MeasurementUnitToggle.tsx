@@ -21,14 +21,14 @@ export function MeasurementUnitToggle({
   const { unitSystem, setUnitSystem } = useMeasurementUnitSystem();
   const nextUnitSystem = unitSystem === "metric" ? "imperial" : "metric";
   const label = unitSystem === "metric" ? "Metric" : "Imperial";
-  const nextLabel = nextUnitSystem === "metric" ? "metric" : "imperial";
+  const nextLabel = nextUnitSystem === "metric" ? "Metric" : "Imperial";
 
   const button = (
     <button
       type="button"
       onClick={() => setUnitSystem(nextUnitSystem)}
-      aria-label={`Units: ${label}. Switch to ${nextLabel}.`}
-      title={`Units: ${label}. Switch to ${nextLabel}.`}
+      aria-label={`Measurement preset: ${label}. Switch to ${nextLabel}.`}
+      title={`Measurement preset: ${label}. Switch to ${nextLabel}.`}
       className={cn(
         "text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors lg:h-7 lg:px-2",
         className
@@ -45,9 +45,9 @@ export function MeasurementUnitToggle({
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
       <TooltipContent>
-        <span className="block font-medium">Units: {label}</span>
+        <span className="block font-medium">Measurement preset: {label}</span>
         <span className="mt-1 block opacity-80">
-          Switch to {nextLabel} measurements.
+          Switch displayed distances and compatible inputs.
         </span>
       </TooltipContent>
     </Tooltip>
