@@ -7,26 +7,19 @@ import {
   useEffect,
   useRef,
   useState,
-  type ForwardRefExoticComponent,
-  type RefAttributes,
 } from "react";
-import StatusBar from "./StatusBar";
-import { ContextOverlayCard } from "./ContextOverlayCard";
 import { useAccountProjectSync } from "./useAccountProjectSync";
 import { useEditorDialogs } from "./useEditorDialogs";
 import { useManualProjectSave } from "./useManualProjectSave";
 import { useStarterExperience } from "./useStarterExperience";
-import { DesktopInspectorPanel } from "./DesktopInspectorPanel";
-import { Button } from "@/components/ui/button";
-import { MobileDrawer } from "@/components/MobileDrawer";
+import { EditorWorkspace } from "./EditorWorkspace";
+import { EditorStarterOverlay } from "./EditorStarterOverlay";
+import { EditorDialogsHost } from "./EditorDialogsHost";
 import type {
   TrackCanvasHandle,
-  TrackCanvasProps,
 } from "@/components/canvas/editor/TrackCanvas";
-import type { ExportDialogProps } from "@/components/dialogs/ExportDialog";
 import type {
   TrackPreview3DHandle,
-  TrackPreview3DProps,
 } from "@/components/canvas/editor/TrackPreview3D";
 import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
 import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
@@ -36,10 +29,11 @@ import { downloadJsonFile } from "@/lib/export/download-json";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
-import { useDeveloperMode } from "@/hooks/useDeveloperMode";
+import { useDeveloperMode, useDeveloperModeShortcut } from "@/hooks/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
+import { useCompleteProfile } from "@/hooks/useCompleteProfile";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 import type { EditorView } from "@/lib/view";
 import {
@@ -55,47 +49,16 @@ import {
   selectShapeRecordMap,
 } from "@/store/selectors";
 import { authClient } from "@/lib/auth-client";
-import { Box, Route, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   hasLockedSelection,
   showLockedSelectionActionBlockedToast,
 } from "@/components/canvas/editor/useTrackCanvasShortcuts";
 
-function createFirstUseBlankDesign() {
-  const design = createDefaultDesign();
-  return {
-    ...design,
-    title: "",
-    description: "",
-  };
-}
-
-const TrackPreview3D = dynamic<TrackPreview3DProps>(
-  () => import("@/components/canvas/editor/TrackPreview3D"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="text-muted-foreground/40 flex h-full items-center justify-center text-xs">
-        Loading 3D…
-      </div>
-    ),
-  }
-) as ForwardRefExoticComponent<
-  TrackPreview3DProps & RefAttributes<TrackPreview3DHandle>
->;
-
-const Toolbar = dynamic(() => import("./Toolbar"), {
-  ssr: false,
-});
-
-const Header = dynamic(() => import("./Header"), {
-  ssr: false,
-});
-
-const SharedHeader = dynamic(() => import("./shared/Header"), {
-  ssr: false,
-});
+const Header = dynamic(() => import("./Header"), { ssr: false });
+const SharedHeader = dynamic(() => import("./shared/Header"), { ssr: false });
+const Toolbar = dynamic(() => import("./Toolbar"), { ssr: false });
+const PerformanceHud = dynamic(() => import("./PerformanceHud"), { ssr: false });
 
 const EditorMobilePanels = dynamic(
   () =>
@@ -110,83 +73,16 @@ const SharedMobilePanels = dynamic(
   { ssr: false }
 );
 
-const LayoutPresetPicker = dynamic(
-  () =>
-    import("@/components/editor/LayoutPresetPicker").then((mod) => ({
-      default: mod.LayoutPresetPicker,
-    })),
-  { ssr: false }
-);
-
-const PerformanceHud = dynamic(() => import("./PerformanceHud"), {
-  ssr: false,
-});
-
-const StarterSteps = dynamic(
-  () =>
-    import("@/components/editor/StarterFlow").then((mod) => ({
-      default: mod.StarterSteps,
-    })),
-  { ssr: false }
-);
-
-const StarterActions = dynamic(
-  () =>
-    import("@/components/editor/StarterFlow").then((mod) => ({
-      default: mod.StarterActions,
-    })),
-  { ssr: false }
-);
-
-const TrackCanvas = dynamic<TrackCanvasProps>(
-  () => import("@/components/canvas/editor/TrackCanvas"),
-  { ssr: false }
-) as ForwardRefExoticComponent<
-  TrackCanvasProps & RefAttributes<TrackCanvasHandle>
->;
-
-const ExportDialog = dynamic<ExportDialogProps>(
-  () => import("@/components/dialogs/ExportDialog"),
-  { ssr: false }
-);
-
-const ShareDialog = dynamic(() => import("@/components/dialogs/ShareDialog"), {
-  ssr: false,
-});
-
-const ImportDialog = dynamic(
-  () => import("@/components/dialogs/ImportDialog"),
-  {
-    ssr: false,
-  }
-);
-
-const KeyboardShortcutsDialog = dynamic(
-  () => import("@/components/dialogs/KeyboardShortcutsDialog"),
-  { ssr: false }
-);
-
-const CompleteProfileDialog = dynamic(
-  () => import("@/components/dialogs/CompleteProfileDialog"),
-  { ssr: false }
-);
-
-const ProjectVersionConflictDialog = dynamic(
-  () => import("@/components/dialogs/ProjectVersionConflictDialog"),
-  { ssr: false }
-);
-
-const ProjectManagerDialog = dynamic(
-  () => import("@/components/dialogs/ProjectManager"),
-  { ssr: false }
-);
-
-const NewProjectDialog = dynamic(
-  () => import("@/components/dialogs/NewProjectDialog"),
-  { ssr: false }
-);
-
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "trackdraw.sidebarCollapsed";
+
+function createFirstUseBlankDesign() {
+  const design = createDefaultDesign();
+  return {
+    ...design,
+    title: "",
+    description: "",
+  };
+}
 
 export default function EditorShell({
   readOnly = false,
@@ -202,9 +98,10 @@ export default function EditorShell({
   existingShareMode?: boolean;
 }) {
   usePerfMetric("render:EditorShell");
+  useDeveloperModeShortcut();
+
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
-  const { enabled: developerModeEnabled, toggle: toggleDeveloperMode } =
-    useDeveloperMode();
+  const { enabled: developerModeEnabled } = useDeveloperMode();
   const { unitSystem } = useMeasurementUnitSystem();
   const selection = useEditor((state) => state.session.selection);
   const design = useEditor((state) => state.track.design);
@@ -273,7 +170,7 @@ export default function EditorShell({
   const searchParams = useSearchParams();
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
-  const [tab, setTab] = useState<"2d" | "3d">(initialTab);
+  const [tab, setTab] = useState<EditorView>(initialTab);
   const [hasVisited3D, setHasVisited3D] = useState(initialTab === "3d");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
     null
@@ -300,11 +197,9 @@ export default function EditorShell({
   const [sidebarCollapsed, setSidebarCollapsed] = usePersistentBoolean(
     SIDEBAR_COLLAPSED_STORAGE_KEY
   );
-  const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
-  const [completeProfileDismissed, setCompleteProfileDismissed] =
-    useState(false);
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
+
   const {
     shareOpen,
     setShareOpen,
@@ -369,39 +264,6 @@ export default function EditorShell({
     setTab(initialTab);
   }, [initialTab]);
 
-  useEffect(() => {
-    if (readOnly || !authUser?.id) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCompleteProfileOpen(false);
-      setCompleteProfileDismissed(false);
-      return;
-    }
-
-    if (authUser.name?.trim()) {
-      setCompleteProfileOpen(false);
-      setCompleteProfileDismissed(false);
-      return;
-    }
-
-    if (!completeProfileDismissed) {
-      setCompleteProfileOpen(true);
-    }
-  }, [authUser?.id, authUser?.name, completeProfileDismissed, readOnly]);
-
-  const handleCompleteProfileOpenChange = useCallback(
-    (open: boolean) => {
-      setCompleteProfileOpen(open);
-      if (!open && authUser && !authUser.name?.trim()) {
-        setCompleteProfileDismissed(true);
-      }
-    },
-    [authUser]
-  );
-
-  const handleCompleteProfileSave = useCallback(async (name: string) => {
-    await authClient.updateProfileName(name);
-    setCompleteProfileDismissed(false);
-  }, []);
   const {
     accountProjects,
     accountProjectsLoading,
@@ -436,6 +298,7 @@ export default function EditorShell({
     setActiveRestorePointId,
     setSaveStatusLabel,
   });
+
   const currentProjectSyncMeta = projectSyncMetaById[design.id];
   const { handleManualSave } = useManualProjectSave({
     readOnly,
@@ -447,6 +310,12 @@ export default function EditorShell({
     markProjectSyncFailed,
     setSaveStatusLabel,
   });
+
+  const {
+    completeProfileOpen,
+    handleCompleteProfileOpenChange,
+    handleCompleteProfileSave,
+  } = useCompleteProfile({ readOnly, authUser });
 
   const handleOpenAccountProjectFromDialog = useCallback(
     async (projectId: string) => {
@@ -562,28 +431,6 @@ export default function EditorShell({
     }
   }, [tab]);
 
-  useEffect(() => {
-    if (process.env.NODE_ENV === "production") return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!(event.metaKey || event.ctrlKey) || !event.shiftKey) return;
-      if (event.key !== ".") return;
-
-      const target = event.target as HTMLElement | null;
-      const isInput =
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable;
-      if (isInput) return;
-
-      event.preventDefault();
-      toggleDeveloperMode();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleDeveloperMode]);
-
   const handleMobileMultiSelectStart = useCallback(
     (shapeId: string) => {
       setMobileMultiSelectEnabled(true);
@@ -622,6 +469,36 @@ export default function EditorShell({
     [setActivePresetId, setActiveTool, setPresetPickerOpen, setSelection]
   );
 
+  const handleExportProject = useCallback(
+    (projectId: string) => {
+      try {
+        const exportDesign =
+          projectId === design.id ? design : loadProject(projectId);
+        if (!exportDesign) {
+          toast.error("Export failed", {
+            description:
+              "TrackDraw could not load this local project. Open it first or choose another saved project.",
+          });
+          return;
+        }
+
+        const serialized = serializeDesign(exportDesign);
+        const baseName = (exportDesign.title.trim() || "track").replace(
+          /[^a-z0-9-_]+/gi,
+          "_"
+        );
+
+        downloadJsonFile(`${baseName}.json`, serialized);
+        toast.success("Project JSON exported");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Export failed";
+        toast.error("Export failed", { description: message });
+      }
+    },
+    [design]
+  );
+
   return (
     <>
       <div className="bg-background text-foreground relative flex h-dvh overflow-hidden">
@@ -638,7 +515,6 @@ export default function EditorShell({
 
         {/* ── Main column ────────────────────────────────────── */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          {/* Header */}
           {readOnly ? (
             <SharedHeader
               tab={tab}
@@ -687,252 +563,66 @@ export default function EditorShell({
             />
           )}
 
-          {/* ── Body ─────────────────────────────────────────── */}
-          <div className="relative flex min-h-0 flex-1 overflow-hidden">
-            {/* Canvas area */}
-            <div className="flex min-h-0 flex-1 flex-col">
-              <div className="bg-canvas relative min-h-0 flex-1 overflow-hidden">
-                {/* 2D: always mounted so export always works; hidden visually when not active */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    visibility: tab === "2d" ? "visible" : "hidden",
-                    pointerEvents: tab === "2d" ? "auto" : "none",
-                  }}
-                >
-                  <TrackCanvas
-                    ref={canvasRef}
-                    onCursorChange={setCursorPos}
-                    onDraftPathStateChange={setMobileDraftPathState}
-                    onSnapChange={setSnapActive}
-                    onMobileMultiSelectStart={handleMobileMultiSelectStart}
-                    mobileRulersEnabled={mobileRulersEnabled}
-                    mobileMultiSelectEnabled={mobileMultiSelectEnabled}
-                    readOnly={readOnly}
-                    showObstacleNumbers={showObstacleNumbers}
-                  />
-                </div>
-                {hasVisited3D ? (
-                  <div
-                    className="absolute inset-0"
-                    style={{ display: tab === "3d" ? "block" : "none" }}
-                  >
-                    <TrackPreview3D
-                      ref={preview3DRef}
-                      showGizmo={mobileGizmoEnabled}
-                      onFlyModeChange={setMobileFlyModeActive}
-                      readOnly={readOnly}
-                    />
-                  </div>
-                ) : null}
-                {shouldShowStarter && isMobile ? (
-                  <MobileDrawer
-                    open={shouldShowStarter}
-                    onOpenChange={(open) => {
-                      if (!open) setStarterDismissed(true);
-                    }}
-                    title="Welcome to TrackDraw"
-                    subtitle="Place a few gates, draw the route, check 3D, then share when the track is ready."
-                    contentClassName="max-h-[96dvh]"
-                    bodyClassName="space-y-5 pt-3 pb-4"
-                  >
-                    <StarterSteps mobile />
-                    <StarterActions
-                      mobile
-                      onPath={() => applyStarterDesign("gate")}
-                      onBlank={() => applyStarterDesign("blank")}
-                      onStarterLayout={applyStarterLayout}
-                    />
-                  </MobileDrawer>
-                ) : null}
-                {shouldShowStarter && !isMobile ? (
-                  <div className="absolute inset-0 z-20 hidden items-center justify-center bg-slate-950/10 px-5 backdrop-blur-sm lg:flex">
-                    <div className="border-border/50 bg-card/97 pointer-events-auto w-full max-w-xl rounded-4xl border px-8 py-8 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur">
-                      <div className="relative">
-                        <div className="pr-10">
-                          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-                            Studio
-                          </p>
-                          <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
-                            Welcome to TrackDraw
-                          </p>
-                          <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                            Design the layout in 2D, review elevation in 3D, and
-                            share a read-only link when the track is ready.
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setStarterDismissed(true)}
-                          className="text-muted-foreground/75 hover:text-foreground hover:bg-muted absolute top-0 right-0 cursor-pointer rounded-full p-1.5 transition-colors"
-                          aria-label="Dismiss starter dialog"
-                        >
-                          <X className="size-4" />
-                        </button>
-                      </div>
-
-                      <div className="mt-6">
-                        <StarterSteps />
-                        <StarterActions
-                          onPath={() => applyStarterDesign("gate")}
-                          onBlank={() => applyStarterDesign("blank")}
-                          onStarterLayout={applyStarterLayout}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-                {!readOnly &&
-                starterMode === "guided" &&
-                tab === "2d" &&
-                designShapes.length === 0 &&
-                activeTool === "gate" &&
-                !gateHintDismissed ? (
-                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
-                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
-                      <ContextOverlayCard
-                        icon={<Box className="size-4" />}
-                        title="Place your first gate"
-                        badge="Guided"
-                        description="Tap or click on the canvas to drop the first gate. Add a few gates before switching to Path."
-                        action={
-                          <Button size="sm" onClick={dismissGateHint}>
-                            Got it
-                          </Button>
-                        }
-                        dismissLabel="Dismiss gate placement hint"
-                        onDismiss={dismissGateHint}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-                {!readOnly &&
-                starterMode === "guided" &&
-                tab === "2d" &&
-                !shouldShowStarter &&
-                designShapes.length > 0 &&
-                !hasPath &&
-                !desktopPathHintDismissed ? (
-                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
-                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
-                      <ContextOverlayCard
-                        icon={<Route className="size-4" />}
-                        title="Next, draw the route"
-                        badge="Guided"
-                        description="Place a few gates first, then switch to Path and trace the lap through them. Finish the route before checking 3D."
-                        action={
-                          <Button
-                            size="sm"
-                            onClick={() => setActiveTool("polyline")}
-                          >
-                            Start path
-                          </Button>
-                        }
-                        dismissLabel="Dismiss path onboarding hint"
-                        onDismiss={dismissDesktopPathHint}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-                {!readOnly &&
-                starterMode === "guided" &&
-                tab === "3d" &&
-                !hasPath &&
-                !desktopPreviewHintDismissed ? (
-                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
-                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
-                      <ContextOverlayCard
-                        icon={<Box className="size-4" />}
-                        title="3D works best after the route"
-                        badge="Preview"
-                        description="Obstacle placement already previews here, but the route is what makes elevation and fly-through review useful."
-                        action={
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              handleTabChange("2d");
-                              setActiveTool("polyline");
-                            }}
-                          >
-                            Draw path in 2D
-                          </Button>
-                        }
-                        dismissLabel="Dismiss 3D preview onboarding hint"
-                        onDismiss={dismissDesktopPreviewHint}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-                {!readOnly &&
-                starterMode === "guided" &&
-                tab === "3d" &&
-                hasPath &&
-                !review3DHintDismissed ? (
-                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
-                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
-                      <ContextOverlayCard
-                        icon={<Box className="size-4" />}
-                        title="Now review it in 3D"
-                        badge="Guided"
-                        description="Orbit around the route, check elevation and spacing, then share or export once the layout feels right."
-                        action={
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setShareOpen(true);
-                              dismissReview3DHint();
-                            }}
-                          >
-                            Share or export next
-                          </Button>
-                        }
-                        dismissLabel="Dismiss 3D review hint"
-                        onDismiss={dismissReview3DHint}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-                {!readOnly &&
-                starterMode === "guided" &&
-                tab === "2d" &&
-                showPostPathNudge &&
-                !postPathNudgeDismissed ? (
-                  <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex justify-center px-4 lg:justify-start lg:px-0">
-                    <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
-                      <ContextOverlayCard
-                        icon={<Box className="size-4" />}
-                        title="Route ready — check it in 3D"
-                        badge="Next step"
-                        description="Switch to the 3D tab now to review the route before refining more obstacle placement."
-                        action={
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              handleTabChange("3d");
-                              dismissPostPathNudge();
-                            }}
-                          >
-                            Switch to 3D
-                          </Button>
-                        }
-                        dismissLabel="Dismiss post-path 3D nudge"
-                        onDismiss={dismissPostPathNudge}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-              <StatusBar cursorPos={cursorPos} snapActive={snapActive} />
-            </div>
-
-            {/* Desktop Inspector */}
-            {!readOnly && !isMobile && (
-              <DesktopInspectorPanel
-                onResumeSelectedPath={handleResumeSelectedPath}
+          {/* ── Workspace (canvas + inspector) ───────────────── */}
+          <EditorWorkspace
+            tab={tab}
+            readOnly={readOnly}
+            isMobile={isMobile}
+            canvasRef={canvasRef}
+            preview3DRef={preview3DRef}
+            hasVisited3D={hasVisited3D}
+            mobileRulersEnabled={mobileRulersEnabled}
+            mobileMultiSelectEnabled={mobileMultiSelectEnabled}
+            showObstacleNumbers={showObstacleNumbers}
+            mobileGizmoEnabled={mobileGizmoEnabled}
+            cursorPos={cursorPos}
+            snapActive={snapActive}
+            onCursorChange={setCursorPos}
+            onDraftPathStateChange={setMobileDraftPathState}
+            onSnapChange={setSnapActive}
+            onMobileMultiSelectStart={handleMobileMultiSelectStart}
+            onFlyModeChange={setMobileFlyModeActive}
+            onResumeSelectedPath={handleResumeSelectedPath}
+            overlay={
+              <EditorStarterOverlay
+                readOnly={readOnly}
+                isMobile={isMobile}
+                shouldShowStarter={shouldShowStarter}
+                onDismissStarter={() => setStarterDismissed(true)}
+                starterMode={starterMode}
+                tab={tab}
+                designShapeCount={designShapes.length}
+                activeTool={activeTool}
+                hasPath={hasPath}
+                gateHintDismissed={gateHintDismissed}
+                onDismissGateHint={dismissGateHint}
+                desktopPathHintDismissed={desktopPathHintDismissed}
+                onDismissDesktopPathHint={dismissDesktopPathHint}
+                desktopPreviewHintDismissed={desktopPreviewHintDismissed}
+                onDismissDesktopPreviewHint={dismissDesktopPreviewHint}
+                review3DHintDismissed={review3DHintDismissed}
+                onDismissReview3DHint={dismissReview3DHint}
+                showPostPathNudge={showPostPathNudge}
+                postPathNudgeDismissed={postPathNudgeDismissed}
+                onDismissPostPathNudge={dismissPostPathNudge}
+                onApplyStarterDesign={applyStarterDesign}
+                onApplyStarterLayout={applyStarterLayout}
+                onStartPathTool={() => setActiveTool("polyline")}
+                onGoTo2DAndStartPath={() => {
+                  handleTabChange("2d");
+                  setActiveTool("polyline");
+                }}
+                onShareAndDismissReview={() => {
+                  setShareOpen(true);
+                  dismissReview3DHint();
+                }}
+                onGoTo3DAndDismissNudge={() => {
+                  handleTabChange("3d");
+                  dismissPostPathNudge();
+                }}
               />
-            )}
-          </div>
+            }
+          />
         </div>
 
         {isMobile && !readOnly ? (
@@ -1168,166 +858,96 @@ export default function EditorShell({
           />
         ) : null}
 
-        {shareOpen ? (
-          <ShareDialog
-            open={shareOpen}
-            onOpenChange={setShareOpen}
-            hasPath={hasPath}
-            projectId={isAccountProject ? design.id : null}
-            onSharePublished={() => void refreshAccountShares(true)}
-            existingShareMode={existingShareMode}
-            onExportJson={() => {
-              setShareOpen(false);
-              setExportOpen(true);
-            }}
-          />
-        ) : null}
-        {importOpen ? (
-          <ImportDialog
-            open={importOpen}
-            onOpenChange={setImportOpen}
-            onBeforeConfirm={() => {
-              snapshotCurrentDesign();
-            }}
-            onBackupCurrent={() => {
-              setImportOpen(false);
-              setExportOpen(true);
-            }}
-          />
-        ) : null}
-        {exportOpen ? (
-          <ExportDialog
-            open={exportOpen}
-            onOpenChange={setExportOpen}
-            canvasRef={canvasRef}
-            preview3DRef={preview3DRef}
-            activeTab={tab}
-            onRequest3DView={() => handleTabChange("3d")}
-            projectId={isAccountProject ? design.id : null}
-          />
-        ) : null}
-        {shortcutsOpen ? (
-          <KeyboardShortcutsDialog
-            open={shortcutsOpen}
-            onOpenChange={setShortcutsOpen}
-          />
-        ) : null}
-        {newProjectOpen ? (
-          <NewProjectDialog
-            open={newProjectOpen}
-            onOpenChange={setNewProjectOpen}
-            hasContent={Boolean(design.title.trim() || designShapes.length)}
-            onNewProject={() => {
-              snapshotCurrentDesign();
-              applyStarterDesign("blank");
-              setNewProjectOpen(false);
-              setMobileToolsOpen(false);
-            }}
-            onBackupProject={() => {
-              setNewProjectOpen(false);
-              setExportOpen(true);
-            }}
-            onStartStarterLayout={(layoutId) => {
-              applyStarterLayout(layoutId);
-              setNewProjectOpen(false);
-            }}
-          />
-        ) : null}
-        {projectManagerOpen ? (
-          <ProjectManagerDialog
-            open={projectManagerOpen}
-            onOpenChange={setProjectManagerOpen}
-            onOpenNewProject={openNewProjectDialog}
-            onOpenProject={handleOpenProject}
-            onOpenAccountProject={
-              authUser && cloudProjectsAvailable
-                ? handleOpenAccountProjectFromDialog
-                : undefined
-            }
-            onSyncProject={
-              authUser && cloudProjectsAvailable ? handleSyncProject : undefined
-            }
-            onDeleteProject={handleDeleteProject}
-            onDeleteProjects={handleDeleteProjects}
-            onRenameProject={handleRenameProject}
-            onExportProject={(projectId) => {
-              try {
-                const exportDesign =
-                  projectId === design.id ? design : loadProject(projectId);
-                if (!exportDesign) {
-                  toast.error("Export failed", {
-                    description:
-                      "TrackDraw could not load this local project. Open it first or choose another saved project.",
-                  });
-                  return;
-                }
+        <EditorDialogsHost
+          isMobile={isMobile}
+          activeDesignId={design.id}
+          shareOpen={shareOpen}
+          onShareOpenChange={setShareOpen}
+          hasPath={hasPath}
+          shareProjectId={isAccountProject ? design.id : null}
+          existingShareMode={existingShareMode}
+          onRefreshAccountShares={refreshAccountShares}
+          onShareExportJson={() => {
+            setShareOpen(false);
+            setExportOpen(true);
+          }}
+          importOpen={importOpen}
+          onImportOpenChange={setImportOpen}
+          onImportBeforeConfirm={snapshotCurrentDesign}
+          onImportBackupCurrent={() => {
+            setImportOpen(false);
+            setExportOpen(true);
+          }}
+          exportOpen={exportOpen}
+          onExportOpenChange={setExportOpen}
+          canvasRef={canvasRef}
+          preview3DRef={preview3DRef}
+          activeTab={tab}
+          exportProjectId={isAccountProject ? design.id : null}
+          onExportRequest3DView={() => handleTabChange("3d")}
+          shortcutsOpen={shortcutsOpen}
+          onShortcutsOpenChange={setShortcutsOpen}
+          newProjectOpen={newProjectOpen}
+          onNewProjectOpenChange={setNewProjectOpen}
+          newProjectHasContent={Boolean(
+            design.title.trim() || designShapes.length
+          )}
+          onNewProject={() => {
+            snapshotCurrentDesign();
+            applyStarterDesign("blank");
+            setNewProjectOpen(false);
+            setMobileToolsOpen(false);
+          }}
+          onNewProjectBackup={() => {
+            setNewProjectOpen(false);
+            setExportOpen(true);
+          }}
+          onNewProjectStarterLayout={(layoutId) => {
+            applyStarterLayout(layoutId);
+            setNewProjectOpen(false);
+          }}
+          projectManagerOpen={projectManagerOpen}
+          onProjectManagerOpenChange={setProjectManagerOpen}
+          onProjectManagerOpenNewProject={openNewProjectDialog}
+          onOpenProject={handleOpenProject}
+          onOpenAccountProject={
+            authUser && cloudProjectsAvailable
+              ? handleOpenAccountProjectFromDialog
+              : undefined
+          }
+          onSyncProject={
+            authUser && cloudProjectsAvailable ? handleSyncProject : undefined
+          }
+          onDeleteProject={handleDeleteProject}
+          onDeleteProjects={handleDeleteProjects}
+          onRenameProject={handleRenameProject}
+          onExportProject={handleExportProject}
+          onRestorePoint={handleRestorePoint}
+          onDeleteRestorePoint={handleDeleteRestorePoint}
+          projects={projects}
+          accountProjects={accountProjects}
+          accountProjectsLoading={accountProjectsLoading}
+          accountProjectsError={accountProjectsError}
+          accountShares={accountShares}
+          accountSharesLoading={accountSharesLoading}
+          onRevokeShare={handleRevokeShare}
+          projectSyncMetaById={projectSyncMetaById}
+          syncingProjectId={syncingProjectId}
+          restorePoints={restorePoints}
+          activeRestorePointId={activeRestorePointId ?? undefined}
+          presetPickerOpen={presetPickerOpen}
+          onPresetPickerOpenChange={setPresetPickerOpen}
+          activePresetId={activePresetId}
+          onSelectPreset={handlePresetSelect}
+          completeProfileOpen={completeProfileOpen}
+          onCompleteProfileOpenChange={handleCompleteProfileOpenChange}
+          authUser={authUser}
+          onCompleteProfileSave={handleCompleteProfileSave}
+          projectVersionConflict={projectVersionConflict}
+          onOpenCloudConflictVersion={handleOpenCloudConflictVersion}
+          onKeepLocalConflictCopy={handleKeepLocalConflictCopy}
+        />
 
-                const serialized = serializeDesign(exportDesign);
-                const baseName = (exportDesign.title.trim() || "track").replace(
-                  /[^a-z0-9-_]+/gi,
-                  "_"
-                );
-
-                downloadJsonFile(`${baseName}.json`, serialized);
-                toast.success("Project JSON exported");
-              } catch (error) {
-                const message =
-                  error instanceof Error ? error.message : "Export failed";
-                toast.error("Export failed", {
-                  description: message,
-                });
-              }
-            }}
-            onRestorePoint={handleRestorePoint}
-            onDeleteRestorePoint={handleDeleteRestorePoint}
-            projects={projects}
-            accountProjects={accountProjects}
-            accountProjectsLoading={accountProjectsLoading}
-            accountProjectsError={accountProjectsError}
-            accountShares={accountShares}
-            accountSharesLoading={accountSharesLoading}
-            onRevokeShare={handleRevokeShare}
-            projectSyncMetaById={projectSyncMetaById}
-            syncingProjectId={syncingProjectId}
-            restorePoints={restorePoints}
-            activeDesignId={design.id}
-            activeRestorePointId={activeRestorePointId ?? undefined}
-            onResolveConflict={() => setProjectManagerOpen(false)}
-          />
-        ) : null}
-        {presetPickerOpen ? (
-          <LayoutPresetPicker
-            mobile={isMobile}
-            open={presetPickerOpen}
-            onOpenChange={setPresetPickerOpen}
-            selectedPresetId={activePresetId}
-            onSelectPreset={handlePresetSelect}
-          />
-        ) : null}
-        {completeProfileOpen ? (
-          <CompleteProfileDialog
-            open={completeProfileOpen}
-            onOpenChange={handleCompleteProfileOpenChange}
-            email={authUser?.email ?? null}
-            currentName={authUser?.name ?? ""}
-            onSave={handleCompleteProfileSave}
-          />
-        ) : null}
-        {projectVersionConflict ? (
-          <ProjectVersionConflictDialog
-            open={Boolean(projectVersionConflict)}
-            mobile={isMobile}
-            title={projectVersionConflict.title ?? "Untitled"}
-            localUpdatedAt={
-              projectVersionConflict.localUpdatedAt ?? design.updatedAt
-            }
-            cloudUpdatedAt={
-              projectVersionConflict.cloudUpdatedAt ?? design.updatedAt
-            }
-            onOpenCloudVersion={handleOpenCloudConflictVersion}
-            onKeepLocalCopy={handleKeepLocalConflictCopy}
-          />
-        ) : null}
         {developerModeEnabled ? <PerformanceHud /> : null}
       </div>
     </>

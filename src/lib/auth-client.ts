@@ -6,7 +6,7 @@ import { createAuthClient } from "better-auth/react";
 import { magicLinkClient } from "better-auth/client/plugins";
 import { parseAccountRole, type AccountRole } from "@/lib/account-roles";
 
-type AuthUser = {
+export type AuthUser = {
   id: string;
   email: string | null;
   name: string | null;

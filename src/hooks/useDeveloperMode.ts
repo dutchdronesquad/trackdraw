@@ -67,3 +67,27 @@ export function useDeveloperMode() {
     toggle,
   };
 }
+
+export function useDeveloperModeShortcut() {
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || !event.shiftKey) return;
+      if (event.key !== ".") return;
+
+      const target = event.target as HTMLElement | null;
+      const isInput =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable;
+      if (isInput) return;
+
+      event.preventDefault();
+      setDeveloperModeEnabled(!developerModeEnabled);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+}
