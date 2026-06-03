@@ -52,9 +52,8 @@ describe("useMeasurementUnitSystem", () => {
   });
 
   it("keeps unit changes responsive when localStorage is unavailable", async () => {
-    const { useMeasurementUnitSystem } = await import(
-      "@/hooks/useMeasurementUnitSystem"
-    );
+    const { useMeasurementUnitSystem } =
+      await import("@/hooks/useMeasurementUnitSystem");
     const { result } = renderHook(() => useMeasurementUnitSystem());
 
     expect(result.current.unitSystem).toBe("metric");
