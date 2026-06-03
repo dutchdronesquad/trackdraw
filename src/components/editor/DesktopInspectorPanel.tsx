@@ -24,6 +24,7 @@ export function DesktopInspectorPanel({
 
   return (
     <aside
+      id="desktop-inspector-panel"
       aria-label="Inspector"
       className={cn(
         "border-border/80 bg-card/95 hidden min-h-0 shrink-0 flex-col overflow-hidden border-l backdrop-blur transition-[width] duration-200 ease-out lg:flex",
@@ -52,10 +53,7 @@ export function DesktopInspectorPanel({
           </div>
         </>
       ) : (
-        <div
-          id="desktop-inspector-panel"
-          className="min-h-0 flex-1 overflow-hidden"
-        >
+        <div className="min-h-0 flex-1 overflow-hidden">
           <Inspector
             headerAction={
               <button
