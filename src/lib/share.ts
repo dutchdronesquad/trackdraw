@@ -75,11 +75,13 @@ export function decodeDesignWithReason(
   token: string
 ): { ok: true; design: TrackDesign } | { ok: false; reason: ShareDecodeError } {
   const normalized = normalizeShareToken(token);
+  if (normalized.length > MAX_SAFE_TOKEN_LENGTH) {
+    return { ok: false, reason: "too-large" };
+  }
+
   const design = decodeDesign(token);
   if (design) return { ok: true, design };
-  const reason: ShareDecodeError =
-    normalized.length > MAX_SAFE_TOKEN_LENGTH ? "too-large" : "invalid";
-  return { ok: false, reason };
+  return { ok: false, reason: "invalid" };
 }
 
 export function getShareTitle(design: TrackDesign) {

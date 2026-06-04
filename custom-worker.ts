@@ -1,6 +1,7 @@
 // @ts-ignore `.open-next/worker.js` is generated at build time
 import { default as handler } from "./.open-next/worker.js";
 import { cleanupExpiredApiKeys } from "./src/lib/server/api-key-retention";
+import { getEarlyWorkerResponse } from "./src/lib/server/request-guards";
 import { cleanupExpiredShares } from "./src/lib/server/share-retention";
 
 type D1PreparedStatement = {
@@ -27,6 +28,13 @@ type WorkerExecutionContext = {
 
 const worker = {
   ...handler,
+
+  fetch(request: Request, env: WorkerEnv, ctx: WorkerExecutionContext) {
+    const earlyResponse = getEarlyWorkerResponse(request);
+    if (earlyResponse) return earlyResponse;
+
+    return handler.fetch(request, env, ctx);
+  },
 
   async scheduled(
     _controller: ScheduledController,

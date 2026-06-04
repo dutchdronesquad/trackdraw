@@ -98,6 +98,88 @@ openssl rand -base64 32
 Add deployed auth and mail secrets to Cloudflare Worker secrets for the matching environment, not to the repository.
 Keep non-secret mail configuration in [`wrangler.jsonc`](../../wrangler.jsonc) so GitHub-driven deploys do not drift from dashboard-only vars.
 
+## Production protection
+
+TrackDraw should protect the Worker both in code and at Cloudflare's edge.
+
+The repository-level guard in [`custom-worker.ts`](../../custom-worker.ts) rejects unsafe non-API page methods before requests reach OpenNext. This specifically protects against invalid Server Action probes such as `POST /studio` with a bogus `next-action` header. TrackDraw does not use Server Actions, and page routes are expected to be `GET`, `HEAD`, or `OPTIONS` only. Legitimate writes should go through `/api/*`.
+
+Recommended Cloudflare dashboard setup:
+
+### Block invalid page writes
+
+Create this as a WAF custom rule.
+
+Where to create it:
+
+- New Cloudflare dashboard: select the `trackdraw.app` zone, open `Security` → `Security rules`, then choose `Create rule` → `Custom rule`.
+
+Rule settings:
+
+- Rule name: `Block unsafe methods on page routes`
+- Field/expression mode: use `Edit expression`
+- Expression:
+  ```text
+  not starts_with(http.request.uri.path, "/api/")
+  and http.request.method in {"POST" "PUT" "PATCH" "DELETE"}
+  ```
+- Action: `Block`
+- Deploy after saving.
+
+Create a second WAF custom rule for obvious Server Action probes:
+
+- Rule name: `Block invalid Server Action probes`
+- Field/expression mode: use `Edit expression`
+- Expression:
+  ```text
+  http.request.headers["next-action"][0] ne ""
+  and not starts_with(http.request.uri.path, "/api/")
+  ```
+- Action: `Block`
+- Deploy after saving.
+
+### Rate-limit CPU-sensitive pages
+
+Create this as a WAF rate limiting rule after reviewing recent traffic volume.
+
+Where to create it:
+
+- New Cloudflare dashboard: select the `trackdraw.app` zone, open `Security` → `Security rules`, then choose `Create rule` → `Rate limiting rules`.
+- Older Cloudflare dashboard/docs path: select the zone, open `Security` → `WAF` → `Rate limiting rules`, then choose `Create rule`.
+
+Suggested first rule:
+
+- Rule name: `Limit public page bursts`
+- Field/expression mode: use `Edit expression`
+- Expression:
+  ```text
+  (
+    http.request.uri.path eq "/studio"
+    or http.request.uri.path eq "/gallery"
+    or http.request.uri.path eq "/sitemap.xml"
+    or starts_with(http.request.uri.path, "/share/")
+  )
+  and http.request.method in {"GET" "HEAD"}
+  ```
+- Cache status: if available, disable `Also apply rate limiting to cached assets` so the counter focuses on requests reaching the Worker.
+- Characteristics: use at least `IP` and `User-Agent`. Keep Cloudflare's default data-center characteristic if the dashboard includes it.
+- Threshold: start from Cloudflare Security Analytics for the real traffic pattern. If there is no baseline yet, start in a conservative log/simulate mode or with a high threshold and reduce after observing false positives.
+- Action: start with `Log`/`Simulate` if available on the plan. Otherwise use `Managed Challenge` before moving to `Block`.
+
+Additional guidance:
+
+- Keep verified bots allowed for public gallery/share discovery, but rate-limit generic or unverified crawlers that repeatedly hit share pages or Studio.
+- When investigating `Worker exceeded CPU time limit`, group events by `http.request.uri.path`, method, user agent, and timestamp. If the spike aligns with the daily cron in [`wrangler.jsonc`](../../wrangler.jsonc), inspect retention cleanup. Otherwise prioritize public SSR/API traffic.
+
+Cloudflare references:
+
+- Workers CPU limits: <https://developers.cloudflare.com/workers/platform/limits/>
+- Workers error observability: <https://developers.cloudflare.com/workers/observability/errors/>
+- WAF custom rules in the dashboard: <https://developers.cloudflare.com/waf/custom-rules/create-dashboard/>
+- WAF rate limiting rules: <https://developers.cloudflare.com/waf/rate-limiting-rules/>
+- Create rate limiting rules in the dashboard: <https://developers.cloudflare.com/waf/rate-limiting-rules/create-zone-dashboard/>
+- Rate limiting best practices: <https://developers.cloudflare.com/waf/rate-limiting-rules/best-practices/>
+
 ### R2-backed public site media
 
 If a landing-page or other public site asset is too large for `public/`, store it in a public R2 bucket and expose it through the fixed site media host `https://media.trackdraw.app`.

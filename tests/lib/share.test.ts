@@ -12,6 +12,7 @@ import {
 } from "@/lib/share";
 import { createDefaultDesign, normalizeDesign } from "@/lib/track/design";
 import { parseEditorView } from "@/lib/view";
+import LZString from "lz-string";
 
 describe("share helpers", () => {
   afterEach(() => {
@@ -88,6 +89,8 @@ describe("share helpers", () => {
   });
 
   it("reports decode reasons for invalid and oversized tokens", () => {
+    const decompressSpy = vi.spyOn(LZString, "decompressFromEncodedURIComponent");
+
     expect(decodeDesignWithReason("%%%")).toEqual({
       ok: false,
       reason: "invalid",
@@ -96,6 +99,7 @@ describe("share helpers", () => {
       ok: false,
       reason: "too-large",
     });
+    expect(decompressSpy).toHaveBeenCalledTimes(1);
   });
 
   it("returns sensible share title and description fallbacks", () => {
