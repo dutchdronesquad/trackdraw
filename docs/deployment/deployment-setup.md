@@ -146,42 +146,40 @@ Create a second WAF custom rule for obvious Server Action probes:
 
 ### Rate-limit CPU-sensitive pages
 
-Create this as a WAF rate limiting rule after reviewing recent traffic volume.
+Create this as a WAF rate limiting rule for public routes that can create meaningful Worker rendering load.
 
 Where to create it:
 
 - New Cloudflare dashboard: select the `trackdraw.app` zone, open `Security` → `Security rules`, then choose `Create rule` → `Rate limiting rules`.
 
-Use route families instead of a hand-maintained list of public pages. The default rule should target page rendering by excluding stable non-page namespaces such as API and asset routes.
+Use route families instead of a hand-maintained list of individual pages. Keep API writes and account/dashboard pages out of this rule; they need endpoint-specific protection.
 
-Suggested broad rule:
+Rule settings:
 
-- Rule name: `Limit public page render bursts`
+- Rule name: `Limit CPU-sensitive public routes`
 - Field/expression mode: use `Edit expression`
 - Expression:
   ```text
-  http.request.method in {"GET" "HEAD"}
-  and not (
-    http.request.uri.path eq "/api"
-    or starts_with(http.request.uri.path, "/api/")
+  not cf.client.bot
+  and (
+    http.request.uri.path eq "/studio"
+    or http.request.uri.path eq "/gallery"
+    or http.request.uri.path eq "/sitemap.xml"
+    or starts_with(http.request.uri.path, "/share/")
+    or starts_with(http.request.uri.path, "/embed/")
   )
-  and not starts_with(http.request.uri.path, "/_next/")
-  and not starts_with(http.request.uri.path, "/assets/")
-  and not starts_with(http.request.uri.path, "/favicon")
-  and http.request.uri.path ne "/robots.txt"
-  and not cf.client.bot
   ```
-- Scope: covers `/`, `/studio`, `/gallery`, `/share/*`, `/sitemap.xml`, legal pages, guides, and future public pages without editing the rule.
-- Cache status: disable `Also apply rate limiting to cached assets` so the counter focuses on requests reaching the Worker.
-- Characteristics: use `IP` and `User-Agent`.
-- Threshold: start from Cloudflare Security Analytics for the real traffic pattern, then choose a conservative threshold above normal user and crawler traffic.
-- Action: `Managed Challenge`.
+- Scope: covers Studio, gallery, sitemap generation, shared tracks, and embeds. Add new route families here only when they render user/content-heavy pages.
+- Characteristics: use `IP`.
+- Threshold: `120 requests` per `1 minute`.
+- Action: `Block`.
+- Duration: `10 seconds`.
 
 Additional guidance:
 
-- Do not add every new public route to Cloudflare manually. Prefer broad page-render rules with stable exclusions.
+- Do not add every new public route to Cloudflare manually. Add only route families that are proven to create meaningful Worker rendering load.
 - Keep API rate limits separate and endpoint-specific. `/api/*` has different write semantics, authentication behavior, and user-impact risks than public page rendering.
-- Keep verified bots allowed for public gallery/share discovery, but rate-limit generic or unverified crawlers that repeatedly hit share pages or Studio.
+- Keep verified bots allowed for public gallery/share discovery. The rate limiting expression excludes them through `not cf.client.bot`.
 - When investigating `Worker exceeded CPU time limit`, group events by `http.request.uri.path`, method, user agent, and timestamp. If the spike aligns with the daily cron in [`wrangler.jsonc`](../../wrangler.jsonc), inspect retention cleanup. Otherwise prioritize public SSR/API traffic.
 
 Cloudflare references:
