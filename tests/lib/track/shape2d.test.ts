@@ -7,6 +7,12 @@ import {
   getLadder2DShape,
   getStartFinish2DShape,
 } from "@/lib/track/shape2d";
+import { feetToMeters } from "@/lib/track/units";
+import {
+  createCatalogShapeDraft,
+  MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+} from "@/lib/track/elements/catalog";
+import type { GateShape } from "@/lib/types";
 
 describe("track 2d shape helpers", () => {
   const ppm = 20;
@@ -29,6 +35,7 @@ describe("track 2d shape helpers", () => {
       width: 40,
       depth: 4,
       color: "#3b82f6",
+      variant: "frame-only",
     });
 
     expect(
@@ -112,5 +119,28 @@ describe("track 2d shape helpers", () => {
     expect(diveGate.size).toBe(56);
     expect(diveGate.visibleDepth).toBeGreaterThan(0);
     expect(diveGate.postRadius).toBeGreaterThan(0);
+  });
+
+  it("uses catalog panel-frame dimensions for official gate 2d metrics", () => {
+    const shape = createCatalogShapeDraft(
+      MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+      {
+        x: 0,
+        y: 0,
+        includeCatalogMetadata: true,
+      }
+    ) as GateShape;
+    const gate = getGate2DShape(shape, ppm);
+
+    expect(gate.variant).toBe("panel-frame");
+    if (gate.variant !== "panel-frame") {
+      throw new Error("expected panel-frame gate metrics");
+    }
+    expect(gate.openingWidth).toBeCloseTo(feetToMeters(5) * ppm);
+    expect(gate.width).toBeCloseTo(feetToMeters(7) * ppm);
+    expect(gate.panels.leftWidth).toBeCloseTo(feetToMeters(1) * ppm);
+    expect(gate.panels.rightWidth).toBeCloseTo(feetToMeters(1) * ppm);
+    expect(gate.panels.topColor).toBe("#202e5d");
+    expect(gate.frame.placement).toBe("outer");
   });
 });

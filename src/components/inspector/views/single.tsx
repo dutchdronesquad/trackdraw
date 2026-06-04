@@ -11,7 +11,6 @@ import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
 } from "@/lib/track/elements/catalog";
-import { formatMeasurement } from "@/lib/track/units";
 import {
   getShapeTimingMarker,
   getTimingMarkerMeta,
@@ -119,18 +118,23 @@ export function SingleInspectorView({
   const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
   const catalogEntry = getTrackElementCatalogEntry(catalogIdentity?.elementId);
   const selectedGateShape = shape.kind === "gate" ? shape : null;
-  const catalogGateDimensions =
+  const hasCatalogGateDimensions =
     selectedGateShape &&
     catalogEntry?.kind === "gate" &&
     typeof catalogEntry.dimensions.widthMeters === "number" &&
-    typeof catalogEntry.dimensions.heightMeters === "number"
-      ? {
-          width: catalogEntry.dimensions.widthMeters,
-          height: catalogEntry.dimensions.heightMeters,
-        }
-      : null;
-  const isOfficialCatalogGate =
-    catalogIdentity?.official === true && catalogGateDimensions !== null;
+    typeof catalogEntry.dimensions.heightMeters === "number";
+  const hasFixedCatalogDimensions =
+    hasCatalogGateDimensions && catalogEntry.editable?.dimensions === false;
+  const hasFixedCatalogColor =
+    catalogIdentity !== null && catalogEntry?.editable?.color === false;
+  const catalogStatusLabel =
+    catalogIdentity?.official &&
+    hasFixedCatalogDimensions &&
+    hasFixedCatalogColor
+      ? "Official size and color"
+      : catalogIdentity?.official
+        ? "Official dimensions"
+        : "Catalog item";
   const canSetTimingMarker = isTimingMarkerShape(shape);
   const secondarySectionDefaultOpen = !mobileInline;
   const timingSectionDefaultOpen = !mobileInline || canSetTimingMarker;
@@ -152,17 +156,6 @@ export function SingleInspectorView({
       meta: getTimingMarkerMeta(shape.meta, marker),
     } as Partial<Shape>);
   };
-  const renderOfficialMeasurement = (valueMeters: number) => (
-    <div className="border-border/50 bg-muted/25 text-foreground/82 flex h-8 min-w-0 items-center justify-between gap-2 rounded-md border px-2.5 text-[11px] shadow-none lg:h-7 lg:px-2">
-      <span className="min-w-0 truncate font-mono">
-        {formatMeasurement(valueMeters, unitSystem, { precision: 2 })}
-      </span>
-      <span className="text-muted-foreground/70 shrink-0 text-[10px] font-medium">
-        Official
-      </span>
-    </div>
-  );
-
   return (
     <div className="flex h-full min-h-0 flex-col">
       <InspectorScrollBody mobileInline={mobileInline}>
@@ -326,9 +319,7 @@ export function SingleInspectorView({
                       : "border-border/60 bg-muted/40 text-muted-foreground"
                   }`}
                 >
-                  {catalogIdentity.official
-                    ? "Official dimensions"
-                    : "Catalog item"}
+                  {catalogStatusLabel}
                 </span>
               </Row>
             </Section>
@@ -457,73 +448,73 @@ export function SingleInspectorView({
                 />
               </Row>
             )}
-            <Row label="Color">
-              <div className="flex items-center gap-2">
-                <label className="group relative block cursor-pointer">
-                  <span
-                    className="border-border/45 block size-9 rounded-lg border shadow-xs transition-transform group-hover:scale-[1.03] lg:size-7"
-                    style={{
-                      background: `linear-gradient(135deg, ${defaultColor} 0%, color-mix(in oklab, ${defaultColor} 72%, black) 100%)`,
-                    }}
-                  />
-                  <span className="absolute inset-0 rounded-lg ring-1 ring-white/18 ring-inset" />
-                  <input
-                    type="color"
-                    className="absolute inset-0 cursor-pointer opacity-0"
-                    value={defaultColor}
-                    onFocus={startBatch}
-                    onBlur={finishBatch}
-                    onChange={(event) =>
-                      updateShape(shape.id, { color: event.target.value })
-                    }
-                    aria-label="Pick color"
-                  />
-                </label>
-                <span className="border-border/45 bg-muted/35 text-foreground/78 inline-flex h-8 items-center rounded-lg border px-2.5 font-mono text-[11px] lg:h-7">
-                  {defaultColor}
-                </span>
-              </div>
-            </Row>
+            {!hasFixedCatalogColor ? (
+              <Row label="Color">
+                <div className="flex items-center gap-2">
+                  <label className="group relative block cursor-pointer">
+                    <span
+                      className="border-border/45 block size-9 rounded-lg border shadow-xs transition-transform group-hover:scale-[1.03] lg:size-7"
+                      style={{
+                        background: `linear-gradient(135deg, ${defaultColor} 0%, color-mix(in oklab, ${defaultColor} 72%, black) 100%)`,
+                      }}
+                    />
+                    <span className="absolute inset-0 rounded-lg ring-1 ring-white/18 ring-inset" />
+                    <input
+                      type="color"
+                      className="absolute inset-0 cursor-pointer opacity-0"
+                      value={defaultColor}
+                      onFocus={startBatch}
+                      onBlur={finishBatch}
+                      onChange={(event) =>
+                        updateShape(shape.id, { color: event.target.value })
+                      }
+                      aria-label="Pick color"
+                    />
+                  </label>
+                  <span className="border-border/45 bg-muted/35 text-foreground/78 inline-flex h-8 items-center rounded-lg border px-2.5 font-mono text-[11px] lg:h-7">
+                    {defaultColor}
+                  </span>
+                </div>
+              </Row>
+            ) : null}
             {shape.kind === "gate" && (
               <>
-                <Row label="Width">
-                  {isOfficialCatalogGate && catalogGateDimensions ? (
-                    renderOfficialMeasurement(catalogGateDimensions.width)
-                  ) : (
+                {!hasFixedCatalogDimensions ? (
+                  <>
+                    <Row label="Width">
+                      <MeasurementNum
+                        valueMeters={shape.width}
+                        unitSystem={unitSystem}
+                        onChange={(value) =>
+                          updateShape(shape.id, { width: value })
+                        }
+                        minMeters={0.5}
+                      />
+                    </Row>
+                    <Row label="Height">
+                      <MeasurementNum
+                        valueMeters={shape.height}
+                        unitSystem={unitSystem}
+                        onChange={(value) =>
+                          updateShape(shape.id, { height: value })
+                        }
+                        minMeters={0.5}
+                      />
+                    </Row>
+                  </>
+                ) : null}
+                {!hasFixedCatalogDimensions ? (
+                  <Row label="Thickness">
                     <MeasurementNum
-                      valueMeters={shape.width}
+                      valueMeters={shape.thick ?? 0.2}
                       unitSystem={unitSystem}
                       onChange={(value) =>
-                        updateShape(shape.id, { width: value })
+                        updateShape(shape.id, { thick: value })
                       }
-                      minMeters={0.5}
+                      minMeters={0.05}
                     />
-                  )}
-                </Row>
-                <Row label="Height">
-                  {isOfficialCatalogGate && catalogGateDimensions ? (
-                    renderOfficialMeasurement(catalogGateDimensions.height)
-                  ) : (
-                    <MeasurementNum
-                      valueMeters={shape.height}
-                      unitSystem={unitSystem}
-                      onChange={(value) =>
-                        updateShape(shape.id, { height: value })
-                      }
-                      minMeters={0.5}
-                    />
-                  )}
-                </Row>
-                <Row label="Thickness">
-                  <MeasurementNum
-                    valueMeters={shape.thick ?? 0.2}
-                    unitSystem={unitSystem}
-                    onChange={(value) =>
-                      updateShape(shape.id, { thick: value })
-                    }
-                    minMeters={0.05}
-                  />
-                </Row>
+                  </Row>
+                ) : null}
               </>
             )}
             {shape.kind === "flag" && (

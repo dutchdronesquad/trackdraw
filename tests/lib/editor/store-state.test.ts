@@ -43,7 +43,7 @@ describe("editor store state helpers", () => {
     expect(next.rotationSession).toBeNull();
   });
 
-  it("defaults to the generic TrackDraw gate variant", () => {
+  it("defaults to the frame-only TrackDraw gate variant", () => {
     expect(createDefaultEditorUiState().activeGateElementId).toBe(
       TRACKDRAW_GATE_ELEMENT_ID
     );

@@ -5,6 +5,10 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SingleInspectorView } from "@/components/inspector/views/single";
+import {
+  createCatalogShapeDraft,
+  MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+} from "@/lib/track/elements/catalog";
 import type { GateShape, Shape, StartFinishShape } from "@/lib/types";
 
 const gate: GateShape = {
@@ -218,5 +222,33 @@ describe("SingleInspectorView race timing controls", () => {
         "Locked on the canvas. Unlock before moving, resizing, or continuing path edits."
       )
     ).toBeTruthy();
+  });
+
+  it("hides fixed official gate size and color controls", () => {
+    const officialGate = createCatalogShapeDraft(
+      MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+      {
+        x: 0,
+        y: 0,
+        includeCatalogMetadata: true,
+      }
+    ) as GateShape;
+
+    renderSingleInspector(officialGate);
+
+    expect(screen.getByText("Official size and color")).toBeTruthy();
+    expect(screen.queryByText("Color")).toBeNull();
+    expect(screen.queryByText("Width")).toBeNull();
+    expect(screen.queryByText("Height")).toBeNull();
+    expect(screen.queryByText("Thickness")).toBeNull();
+  });
+
+  it("keeps frame-only gate size and color controls editable", () => {
+    renderSingleInspector(gate);
+
+    expect(screen.getByText("Color")).toBeTruthy();
+    expect(screen.getByText("Width")).toBeTruthy();
+    expect(screen.getByText("Height")).toBeTruthy();
+    expect(screen.getByText("Thickness")).toBeTruthy();
   });
 });

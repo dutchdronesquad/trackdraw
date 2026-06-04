@@ -45,6 +45,7 @@ Candidate catalog entry fields:
 - `organization`: optional source, such as `MultiGP`
 - `kind`: existing TrackDraw shape kind
 - `dimensions`: meter-based canonical dimensions plus display dimensions
+- `editable`: optional editability flags for catalog-owned properties such as fixed official sizing or color
 - `defaultShape`: current TrackDraw shape draft defaults
 - `tags`: `official`, `race`, `practice`, `timing-compatible`, `sim-export`
 - `sources`: optional public URLs or documentation references
@@ -79,19 +80,20 @@ Scope:
   - Dive gate variants only after deciding whether they should remain one `divegate` shape or become catalog-driven variants
 - Keep "Custom Gate" available through the standard TrackDraw Gate so users are not boxed into official-only dimensions.
 - Expose the official name in inspector/export summaries only when the shape was created from a catalog entry or explicitly assigned one.
-- Keep official gate width and height fixed after placement. Custom sizing belongs to the standard TrackDraw Gate instead of modifying an official catalog item.
+- Keep official gate sizing and color fixed after placement when the catalog entry owns those values. Custom sizing and coloring belong to the standard TrackDraw Gate instead of modifying an official catalog item.
 
 Done state:
 
 - Users can place at least one official named race gate.
-- The inspector can show the official identity and dimensions without hiding editable width/height controls.
+- The inspector can show the official identity and dimensions while hiding controls for catalog-fixed sizing or color.
 - Export and Race Pack copy can reference official names where helpful.
 
 Status:
 
 - Users can now place catalog-backed MultiGP-style gate variants through the normal Gate placement flow: Standard Gate 5x5 and Championship Gate 7x6. Desktop keeps the active gate type in a compact canvas placement control with a dropdown for additional variants, while mobile keeps one Gate entry in the tools drawer with a compact type picker for variants.
-- Newly placed official gates remain normal `gate` shapes, with their source identity stored under `meta.catalog`. The inspector shows the catalog type, source, official size, and official dimension status.
-- Official gate width and height are fixed in normal editing. Custom sizing belongs to the standard TrackDraw Gate.
+- Newly placed official gates remain normal `gate` shapes, with their source identity stored under `meta.catalog`. The inspector shows the catalog type, source, official size, and fixed official status.
+- Official gate sizing and color are fixed in normal editing. Custom sizing and coloring belong to the standard TrackDraw Gate.
+- Newly placed gates default with their front facing downward on the canvas so the default gate orientation matches the editor's front/back guide expectation.
 
 ## Phase 3: Element Library UI
 
@@ -123,4 +125,5 @@ Status:
 - Do not migrate existing projects to new official gate sizes automatically.
 - Do not couple element catalog work to accounts in the first slice.
 - Do not make realistic 3D model fidelity part of the catalog phase. The catalog should expose identity, dimensions, source metadata, and render hints; the 3D preview work should consume those hints for official visual variants.
+- Do not let catalog-backed visuals introduce per-element asset generation for repeated official items in dense tracks; share reusable textures/material inputs and keep dense-layout render/export regression coverage in place.
 - Do not copy a competitor's UI wholesale; borrow validated product patterns and fit them into TrackDraw's existing editor model.

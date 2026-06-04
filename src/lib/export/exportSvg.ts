@@ -62,6 +62,18 @@ function gateToSvg(s: GateShape, ppm: number): string {
   const { depth, radius, width } = base;
   const rot = s.rotation;
 
+  if (base.variant === "panel-frame") {
+    const centerWidth = base.openingWidth;
+    const strokeColor = marker ? color : base.frame.color;
+
+    return `<g transform="translate(${cx},${cy}) rotate(${rot})">
+    <rect x="${-width / 2}" y="${-depth / 2}" width="${base.panels.leftWidth}" height="${depth}" fill="${base.panels.leftColor}" fill-opacity="0.94" rx="${radius}"/>
+    <rect x="${-centerWidth / 2}" y="${-depth / 2}" width="${centerWidth}" height="${depth}" fill="${base.panels.topColor}" fill-opacity="0.9"/>
+    <rect x="${width / 2 - base.panels.rightWidth}" y="${-depth / 2}" width="${base.panels.rightWidth}" height="${depth}" fill="${base.panels.rightColor}" fill-opacity="0.94" rx="${radius}"/>
+    <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="none" stroke="${strokeColor}" stroke-width="${marker ? 3 : 2}" rx="${radius}"/>
+  </g>`;
+  }
+
   return `<g transform="translate(${cx},${cy}) rotate(${rot})">
     <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="${color}" fill-opacity="0.15" rx="${radius}"/>
     <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="none" stroke="${color}" stroke-width="${marker ? 3 : 2}" rx="${radius}"/>
@@ -266,8 +278,10 @@ function rotatePoint(
 
 function obstacleNumbersToSvg(
   design: TrackDesign,
+  shapes: Shape[],
   ppm: number,
-  theme: ExportTheme
+  theme: ExportTheme,
+  boundsCache?: Map<string, ReturnType<typeof getNumberedShapeBounds>>
 ) {
   const obstacleNumberMap = getObstacleNumberMap(design);
   if (!obstacleNumberMap.size) return "";
@@ -276,13 +290,14 @@ function obstacleNumbersToSvg(
   const badgeStroke = theme === "dark" ? "#94a3b8" : "#cbd5e1";
   const textFill = "#f8fafc";
 
-  return getDesignShapes(design)
+  return shapes
     .filter(
       (shape) => isNumberedObstacle(shape) && obstacleNumberMap.has(shape.id)
     )
     .map((shape) => {
       const number = obstacleNumberMap.get(shape.id);
-      const bounds = getNumberedShapeBounds(shape, ppm);
+      const bounds =
+        boundsCache?.get(shape.id) ?? getNumberedShapeBounds(shape, ppm);
       if (!bounds || typeof number !== "number") return "";
 
       const localPoint = {
@@ -367,17 +382,25 @@ export function designToSvg(
     gridLines += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${stroke}" stroke-width="${sw}"/>`;
   }
 
-  const shapeSvg = getDesignShapes(design);
+  const shapes = getDesignShapes(design);
   const primaryPolylineId =
-    shapeSvg.find((shape): shape is PolylineShape => shape.kind === "polyline")
+    shapes.find((shape): shape is PolylineShape => shape.kind === "polyline")
       ?.id ?? null;
-  const shapeMarkup = shapeSvg
-    .map((s) => shapeToSvg(s, ppm, primaryPolylineId))
+  const shapeBoundsCache = new Map<
+    string,
+    ReturnType<typeof getNumberedShapeBounds>
+  >();
+  const shapeMarkup = shapes
+    .map((s) => {
+      if (isNumberedObstacle(s))
+        shapeBoundsCache.set(s.id, getNumberedShapeBounds(s, ppm));
+      return shapeToSvg(s, ppm, primaryPolylineId);
+    })
     .join("\n  ");
   const obstacleNumberMarkup =
     options?.includeObstacleNumbers === false
       ? ""
-      : obstacleNumbersToSvg(design, ppm, theme);
+      : obstacleNumbersToSvg(design, shapes, ppm, theme, shapeBoundsCache);
   const titleText = design.title.trim() || "Untitled Track";
   const sizeText = formatCompactFieldSize(
     width,

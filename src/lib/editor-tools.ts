@@ -95,7 +95,6 @@ export function createShapeForTool(
   return createCatalogShapeDraft(resolvedEntryId, {
     x: point.x,
     y: point.y,
-    rotation: 0,
     includeCatalogMetadata: resolvedEntry?.official === true,
   });
 }

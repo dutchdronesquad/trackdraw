@@ -27,7 +27,7 @@ describe("editor tool helpers", () => {
       kind: "gate",
       x: 12,
       y: 7,
-      rotation: 0,
+      rotation: 180,
       width: 2,
       height: 2,
       thick: 0.2,
@@ -68,6 +68,7 @@ describe("editor tool helpers", () => {
       kind: "gate",
       x: 3,
       y: 4,
+      rotation: 180,
       width: feetToMeters(5),
       height: feetToMeters(5),
       meta: {
@@ -91,6 +92,7 @@ describe("editor tool helpers", () => {
 
     expect(shape).toMatchObject({
       kind: "gate",
+      rotation: 180,
       width: feetToMeters(7),
       height: feetToMeters(6),
       meta: {
@@ -103,7 +105,7 @@ describe("editor tool helpers", () => {
     });
   });
 
-  it("falls back to the generic gate when a non-gate catalog id is passed", () => {
+  it("falls back to the frame-only gate when a non-gate catalog id is passed", () => {
     expect(
       createShapeForTool(
         "gate",

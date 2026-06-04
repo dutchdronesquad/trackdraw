@@ -264,14 +264,18 @@ Why:
 Feature tracks:
 
 - 3D preview realism and lighting: improve scene readability with sun/directional lighting, shadows, contrast, and more realistic gate/flag presentation before adding heavy asset workflows
-- Catalog-aware 3D element rendering: use catalog identity such as `MultiGP Standard Gate 5x5` to render official elements with more recognizable shapes/materials while keeping generic gates lightweight
+- Catalog-aware element rendering: use catalog visual metadata such as panel sizes, PVC frame placement, colors, and branding treatment to render official elements consistently across 2D, 3D, and export paths while keeping generic elements lightweight
 - Focused 3D item controls: add direct controls for common edits such as elevation, rotation, scaling, and orientation only where undo/redo, lock state, and mobile behavior remain safe
+
+Current shipped foundation:
+
+- Catalog-backed MultiGP-style 5x5 and 7x6 gates now carry visual metadata for panel sizes, PVC frame placement, colors, and branding treatment; the 2D canvas/SVG output, live 3D preview, and flythrough export consume that metadata while the generic TrackDraw Gate stays lightweight
 
 Important boundary:
 
 - Do not make 3D controls broad enough to destabilize the existing 2D-first editor
 - Do not bury 3D preview or direct manipulation work under the element catalog; they should remain standalone editor features
-- Do not duplicate catalog source/dimension decisions in the 3D renderer; consume catalog metadata and render hints instead
+- Do not duplicate catalog source, dimension, or visual decisions in renderers; consume catalog visual metadata and shared helpers instead
 
 #### Generated Flightpath Assistance
 

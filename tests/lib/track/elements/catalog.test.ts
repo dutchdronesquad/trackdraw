@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getCanvasRotationGuideAngleDeg } from "@/lib/track/orientation";
 import { feetToMeters } from "@/lib/track/units";
 import {
   createCatalogShapeDraft,
@@ -10,6 +11,7 @@ import {
   TRACKDRAW_GATE_ELEMENT_ID,
   trackElementCatalog,
 } from "@/lib/track/elements/catalog";
+import type { GateShape } from "@/lib/types";
 
 describe("track element catalog", () => {
   it("exposes unique catalog entries", () => {
@@ -32,7 +34,7 @@ describe("track element catalog", () => {
     ]);
   });
 
-  it("keeps the generic TrackDraw gate defaults unchanged", () => {
+  it("keeps the frame-only TrackDraw gate defaults unchanged", () => {
     const shape = createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
       x: 12,
       y: 8,
@@ -52,7 +54,21 @@ describe("track element catalog", () => {
     expect(shape.meta).toBeUndefined();
   });
 
-  it("documents the official MultiGP 5x5 gate without changing generic placement", () => {
+  it("defaults newly placed gates to a downward-facing front", () => {
+    const shape = createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+    });
+
+    expect(shape).toMatchObject({
+      kind: "gate",
+      rotation: 180,
+    });
+    const gateShape = { ...shape, id: "gate-1" } as GateShape;
+    expect(getCanvasRotationGuideAngleDeg(gateShape)).toBe(90);
+  });
+
+  it("documents the MultiGP 5x5 panel-frame gate without changing default placement", () => {
     const entry = getTrackElementCatalogEntry(
       MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID
     );

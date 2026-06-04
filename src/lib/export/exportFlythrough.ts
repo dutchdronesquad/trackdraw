@@ -13,8 +13,10 @@ import {
   getFpvCameraPose,
   getInitialFpvCameraPose,
 } from "@/lib/track/fpvCamera";
+import { getGateVisualSpec } from "@/lib/track/elements/visual";
 import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
-import type { TrackDesign, Shape, PolylineShape } from "@/lib/types";
+import type { PanelFrameGateVisualSpec } from "@/lib/track/elements/catalog";
+import type { GateShape, TrackDesign, Shape, PolylineShape } from "@/lib/types";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 
 const FPS = 60;
@@ -40,9 +42,181 @@ function makeMat(color: string, emissiveIntensity = 0.08) {
   });
 }
 
+function addBox(
+  group: THREE.Group,
+  size: [number, number, number],
+  position: [number, number, number],
+  material: THREE.Material
+) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
+  mesh.position.set(...position);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+}
+
+function addCylinder(
+  group: THREE.Group,
+  radius: number,
+  length: number,
+  position: [number, number, number],
+  rotation: [number, number, number],
+  material: THREE.Material
+) {
+  const mesh = new THREE.Mesh(
+    new THREE.CylinderGeometry(radius, radius, length, 16),
+    material
+  );
+  mesh.position.set(...position);
+  mesh.rotation.set(...rotation);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+}
+
+function createOfficialGateGroup(
+  shape: GateShape,
+  visual: PanelFrameGateVisualSpec
+): THREE.Group {
+  const { branding, frame, panels } = visual;
+  const h = shape.height ?? 2;
+  const w = shape.width ?? 3;
+  const panelBand = Math.max(Math.min(w, h) * 0.18, 0.22);
+  const leftPanelWidth = panels.left.widthMeters || panelBand;
+  const rightPanelWidth = panels.right.widthMeters || panelBand;
+  const topPanelHeight = panels.top.heightMeters || panelBand;
+  const panelDepth = 0.018;
+  const frameTube = frame.diameterMeters;
+  const frontZ = -(panelDepth / 2 + 0.012);
+  const leftPanelX = -w / 2 - leftPanelWidth / 2;
+  const rightPanelX = w / 2 + rightPanelWidth / 2;
+  const topPanelY = h + topPanelHeight / 2;
+  const topPanelW = w + leftPanelWidth + rightPanelWidth;
+  const outerLeftX = -w / 2 - leftPanelWidth;
+  const outerRightX = w / 2 + rightPanelWidth;
+  const outerTopY = h + topPanelHeight;
+  const checkerSize = Math.max(
+    Math.min(leftPanelWidth, rightPanelWidth, topPanelHeight) * 0.18,
+    0.045
+  );
+  const yaw = (-shape.rotation * Math.PI) / 180;
+
+  const group = new THREE.Group();
+  group.position.set(shape.x, 0, shape.y);
+  group.rotation.y = yaw;
+
+  const frameMat = new THREE.MeshStandardMaterial({
+    color: frame.color,
+    roughness: 0.5,
+    metalness: 0.18,
+  });
+  const leftPanelMat = new THREE.MeshStandardMaterial({
+    color: panels.left.color,
+    emissive: panels.left.color,
+    emissiveIntensity: 0.02,
+    roughness: 0.7,
+    metalness: 0.01,
+  });
+  const rightPanelMat = new THREE.MeshStandardMaterial({
+    color: panels.right.color,
+    emissive: panels.right.color,
+    emissiveIntensity: 0.02,
+    roughness: 0.7,
+    metalness: 0.01,
+  });
+  const topMat = new THREE.MeshStandardMaterial({
+    color: panels.top.color,
+    emissive: panels.top.color,
+    emissiveIntensity: 0.04,
+    roughness: 0.64,
+    metalness: 0.03,
+  });
+  const checkerMat = new THREE.MeshBasicMaterial({
+    color: branding.checkerColor,
+  });
+  addCylinder(
+    group,
+    frameTube / 2,
+    outerTopY,
+    [outerLeftX, outerTopY / 2, -panelDepth * 0.65],
+    [0, 0, 0],
+    frameMat
+  );
+  addCylinder(
+    group,
+    frameTube / 2,
+    outerTopY,
+    [outerRightX, outerTopY / 2, -panelDepth * 0.65],
+    [0, 0, 0],
+    frameMat
+  );
+  addCylinder(
+    group,
+    frameTube / 2,
+    outerRightX - outerLeftX,
+    [0, outerTopY, -panelDepth * 0.65],
+    [0, 0, Math.PI / 2],
+    frameMat
+  );
+  for (const x of [outerLeftX, outerRightX]) {
+    const elbow = new THREE.Mesh(
+      new THREE.SphereGeometry(frameTube * 0.66, 16, 12),
+      frameMat
+    );
+    elbow.position.set(x, outerTopY, -panelDepth * 0.65);
+    elbow.castShadow = true;
+    group.add(elbow);
+  }
+  addBox(
+    group,
+    [leftPanelWidth, h, panelDepth],
+    [leftPanelX, h / 2, 0],
+    leftPanelMat
+  );
+  addBox(
+    group,
+    [rightPanelWidth, h, panelDepth],
+    [rightPanelX, h / 2, 0],
+    rightPanelMat
+  );
+  addBox(
+    group,
+    [topPanelW, topPanelHeight, panelDepth],
+    [0, topPanelY, 0],
+    topMat
+  );
+
+  for (const dir of [-1, 1]) {
+    const panelX = dir < 0 ? leftPanelX : rightPanelX;
+    for (let index = 0; index < 12; index += 1) {
+      const row = Math.floor(index / 3);
+      const col = index % 3;
+      if ((row + col) % 2 === 0) continue;
+      addBox(
+        group,
+        [checkerSize, checkerSize, 0.018],
+        [
+          panelX + dir * ((col - 1) * checkerSize),
+          h * 0.12 + row * checkerSize,
+          frontZ - 0.004,
+        ],
+        checkerMat
+      );
+    }
+  }
+
+  return group;
+}
+
 function addShapes(scene: THREE.Scene, shapes: Shape[]): void {
   for (const shape of shapes) {
     if (shape.kind === "gate") {
+      const visual = getGateVisualSpec(shape);
+      if (visual.variant === "panel-frame") {
+        scene.add(createOfficialGateGroup(shape, visual));
+        continue;
+      }
+
       const color = shape.color ?? "#3b82f6";
       const thick = shape.thick ?? 0.2;
       const h = shape.height ?? 2;

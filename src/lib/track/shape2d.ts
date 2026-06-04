@@ -1,4 +1,5 @@
 import { m2px } from "@/lib/track/units";
+import { getGateVisualSpec } from "@/lib/track/elements/visual";
 import type {
   ConeShape,
   DiveGateShape,
@@ -9,13 +10,48 @@ import type {
 } from "@/lib/types";
 
 export function getGate2DShape(shape: GateShape, ppm: number) {
-  const width = m2px(shape.width, ppm);
-  const depth = m2px(shape.thick ?? 0.2, ppm);
+  const visual = getGateVisualSpec(shape);
+  const openingWidth = m2px(shape.width, ppm);
+
+  if (visual.variant === "panel-frame") {
+    const leftPanelWidth = m2px(visual.panels.left.widthMeters, ppm);
+    const rightPanelWidth = m2px(visual.panels.right.widthMeters, ppm);
+    const width = openingWidth + leftPanelWidth + rightPanelWidth;
+    const depth = Math.max(
+      m2px(visual.frame.diameterMeters, ppm),
+      m2px(0.12, ppm)
+    );
+
+    return {
+      color: visual.panels.top.color,
+      depth,
+      frame: {
+        color: visual.frame.color,
+        diameter: m2px(visual.frame.diameterMeters, ppm),
+        placement: visual.frame.placement,
+      },
+      openingWidth,
+      panels: {
+        leftColor: visual.panels.left.color,
+        leftWidth: leftPanelWidth,
+        rightColor: visual.panels.right.color,
+        rightWidth: rightPanelWidth,
+        topColor: visual.panels.top.color,
+      },
+      radius: Math.min(12, depth / 2),
+      variant: visual.variant,
+      width,
+    };
+  }
+
+  const depth = m2px(visual.frame.diameterMeters, ppm);
   return {
-    color: shape.color ?? "#3b82f6",
+    color: visual.frame.color,
     depth,
+    openingWidth,
     radius: Math.min(12, depth / 2),
-    width,
+    variant: visual.variant,
+    width: openingWidth,
   };
 }
 

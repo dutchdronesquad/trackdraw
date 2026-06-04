@@ -46,12 +46,62 @@ export interface TrackElementSource {
   url: string;
 }
 
+export interface GatePanelVisualSpec {
+  widthMeters: number;
+  color: string;
+}
+
+export interface GateTopPanelVisualSpec {
+  heightMeters: number;
+  color: string;
+}
+
+export interface GateFrameVisualSpec {
+  placement: "outer" | "opening";
+  material: "pvc" | "tube";
+  color: string;
+  diameterMeters: number;
+}
+
+export interface GateBrandingVisualSpec {
+  label: string;
+  markColor: string;
+  accentColor: string;
+  checkerColor: string;
+  style: "plain" | "multigp";
+}
+
+export interface FrameOnlyGateVisualSpec {
+  kind: "gate";
+  variant: "frame-only";
+  frame: GateFrameVisualSpec;
+}
+
+export interface PanelFrameGateVisualSpec {
+  kind: "gate";
+  variant: "panel-frame";
+  panels: {
+    left: GatePanelVisualSpec;
+    right: GatePanelVisualSpec;
+    top: GateTopPanelVisualSpec;
+  };
+  frame: GateFrameVisualSpec;
+  branding: GateBrandingVisualSpec;
+}
+
+export type GateVisualSpec = FrameOnlyGateVisualSpec | PanelFrameGateVisualSpec;
+export type TrackElementVisualSpec = GateVisualSpec;
+
 export interface TrackElementCatalogEntry {
   id: TrackElementCatalogId;
   name: string;
   organization?: string;
   kind: PlaceableCatalogShape["kind"];
   official?: boolean;
+  editable?: {
+    color?: boolean;
+    dimensions?: boolean;
+  };
   dimensions: TrackElementDimensions;
   defaultShape: TrackElementShapeDraft;
   tags: string[];
@@ -62,6 +112,7 @@ export interface TrackElementCatalogEntry {
   render3d?: {
     modelHint?: string;
   };
+  visual?: TrackElementVisualSpec;
   exportHints?: {
     simulatorFriendly?: boolean;
   };
@@ -103,6 +154,7 @@ function isTrackElementCatalogIdentity(
   if (!isRecord(value)) return false;
   if (value.version !== 1) return false;
   if (typeof value.elementId !== "string") return false;
+  if (!getTrackElementCatalogEntry(value.elementId)) return false;
   if (!isPlaceableCatalogShapeKind(value.assignedKind)) return false;
   if (typeof value.official !== "boolean") return false;
   if (!isRecord(value.snapshot)) return false;
@@ -116,18 +168,18 @@ function isTrackElementCatalogIdentity(
   return typeof value.snapshot.dimensionsLabel === "string";
 }
 
-const trackdrawGateDefaults = {
+const frameOnlyGateDefaults = {
   kind: "gate",
   x: 0,
   y: 0,
-  rotation: 0,
+  rotation: 180,
   width: 2,
   height: 2,
   thick: 0.2,
   color: "#3b82f6",
 } satisfies TrackElementShapeDraft;
 
-const trackdrawFlagDefaults = {
+const flagDefaults = {
   kind: "flag",
   x: 0,
   y: 0,
@@ -137,6 +189,52 @@ const trackdrawFlagDefaults = {
   color: "#a855f7",
 } satisfies TrackElementShapeDraft;
 
+const frameOnlyGateVisual = {
+  kind: "gate",
+  variant: "frame-only",
+  frame: {
+    placement: "opening",
+    material: "tube",
+    color: frameOnlyGateDefaults.color,
+    diameterMeters: frameOnlyGateDefaults.thick,
+  },
+} satisfies GateVisualSpec;
+
+const panelFrameGateVisual = {
+  kind: "gate",
+  variant: "panel-frame",
+  panels: {
+    left: { widthMeters: feetToMeters(1), color: "#f8fafc" },
+    right: { widthMeters: feetToMeters(1), color: "#f8fafc" },
+    top: { heightMeters: feetToMeters(1), color: "#202e5d" },
+  },
+  frame: {
+    placement: "outer",
+    material: "pvc",
+    color: "#f8fafc",
+    diameterMeters: 0.055,
+  },
+  branding: {
+    label: "MULTIGP",
+    markColor: "#f8fafc",
+    accentColor: "#dc2626",
+    checkerColor: "#111827",
+    style: "multigp",
+  },
+} satisfies GateVisualSpec;
+
+const panelFrameChampionshipGateVisual = {
+  ...panelFrameGateVisual,
+  panels: {
+    ...panelFrameGateVisual.panels,
+    top: { heightMeters: feetToMeters(1), color: "#202e5d" },
+  },
+  branding: {
+    ...panelFrameGateVisual.branding,
+    accentColor: "#b91c1c",
+  },
+} satisfies GateVisualSpec;
+
 export const trackElementCatalog = [
   {
     id: TRACKDRAW_GATE_ELEMENT_ID,
@@ -144,14 +242,15 @@ export const trackElementCatalog = [
     organization: "TrackDraw",
     kind: "gate",
     dimensions: {
-      widthMeters: trackdrawGateDefaults.width,
-      heightMeters: trackdrawGateDefaults.height,
+      widthMeters: frameOnlyGateDefaults.width,
+      heightMeters: frameOnlyGateDefaults.height,
       display: { unitSystem: "metric", label: "2 x 2 m" },
     },
-    defaultShape: trackdrawGateDefaults,
-    tags: ["generic", "race", "practice"],
+    defaultShape: frameOnlyGateDefaults,
+    tags: ["race", "practice"],
     render2d: { icon: "gate" },
     render3d: { modelHint: "gate-frame" },
+    visual: frameOnlyGateVisual,
     exportHints: { simulatorFriendly: true },
   },
   {
@@ -160,17 +259,18 @@ export const trackElementCatalog = [
     organization: "MultiGP",
     kind: "gate",
     official: true,
+    editable: { color: false, dimensions: false },
     dimensions: {
       widthMeters: feetToMeters(5),
       heightMeters: feetToMeters(5),
       display: { unitSystem: "imperial", label: "5 ft x 5 ft" },
     },
     defaultShape: {
-      ...trackdrawGateDefaults,
+      ...frameOnlyGateDefaults,
       width: feetToMeters(5),
       height: feetToMeters(5),
     },
-    tags: ["official", "race", "practice", "multigp"],
+    tags: ["race", "practice", "multigp"],
     sources: [
       {
         label: "MultiGP Standard Gate 5x5",
@@ -179,6 +279,7 @@ export const trackElementCatalog = [
     ],
     render2d: { icon: "gate" },
     render3d: { modelHint: "gate-frame" },
+    visual: panelFrameGateVisual,
     exportHints: { simulatorFriendly: true },
   },
   {
@@ -187,17 +288,18 @@ export const trackElementCatalog = [
     organization: "MultiGP",
     kind: "gate",
     official: true,
+    editable: { color: false, dimensions: false },
     dimensions: {
       widthMeters: feetToMeters(7),
       heightMeters: feetToMeters(6),
       display: { unitSystem: "imperial", label: "7 ft x 6 ft" },
     },
     defaultShape: {
-      ...trackdrawGateDefaults,
+      ...frameOnlyGateDefaults,
       width: feetToMeters(7),
       height: feetToMeters(6),
     },
-    tags: ["official", "championship", "race", "multigp"],
+    tags: ["championship", "race", "multigp"],
     sources: [
       {
         label: "MultiGP Drone Race Course Obstacles",
@@ -206,6 +308,7 @@ export const trackElementCatalog = [
     ],
     render2d: { icon: "gate" },
     render3d: { modelHint: "gate-frame" },
+    visual: panelFrameChampionshipGateVisual,
     exportHints: { simulatorFriendly: true },
   },
   {
@@ -214,12 +317,12 @@ export const trackElementCatalog = [
     organization: "TrackDraw",
     kind: "flag",
     dimensions: {
-      radiusMeters: trackdrawFlagDefaults.radius,
-      heightMeters: trackdrawFlagDefaults.poleHeight,
+      radiusMeters: flagDefaults.radius,
+      heightMeters: flagDefaults.poleHeight,
       display: { unitSystem: "metric", label: "0.25 m radius, 3.5 m pole" },
     },
-    defaultShape: trackdrawFlagDefaults,
-    tags: ["generic", "race", "practice"],
+    defaultShape: flagDefaults,
+    tags: ["race", "practice"],
     render2d: { icon: "flag" },
     render3d: { modelHint: "flag-pole" },
     exportHints: { simulatorFriendly: true },
@@ -241,7 +344,7 @@ export const trackElementCatalog = [
       radius: 0.2,
       color: "#f97316",
     },
-    tags: ["generic", "practice"],
+    tags: ["practice"],
     render2d: { icon: "cone" },
     render3d: { modelHint: "cone" },
     exportHints: { simulatorFriendly: true },
@@ -263,7 +366,7 @@ export const trackElementCatalog = [
       fontSize: 18,
       color: "#e2e8f0",
     },
-    tags: ["generic", "annotation"],
+    tags: ["annotation"],
     render2d: { icon: "label" },
   },
   {
@@ -283,7 +386,7 @@ export const trackElementCatalog = [
       width: 3,
       color: "#f59e0b",
     },
-    tags: ["generic", "race", "timing-compatible"],
+    tags: ["race", "timing-compatible"],
     render2d: { icon: "startfinish" },
     render3d: { modelHint: "start-pads" },
     exportHints: { simulatorFriendly: true },
@@ -309,7 +412,7 @@ export const trackElementCatalog = [
       elevation: 0,
       color: "#14b8a6",
     },
-    tags: ["generic", "technical", "practice"],
+    tags: ["technical", "practice"],
     render2d: { icon: "ladder" },
     render3d: { modelHint: "ladder-gate" },
     exportHints: { simulatorFriendly: true },
@@ -334,7 +437,7 @@ export const trackElementCatalog = [
       elevation: 3,
       color: "#f97316",
     },
-    tags: ["generic", "technical", "practice"],
+    tags: ["technical", "practice"],
     render2d: { icon: "divegate" },
     render3d: { modelHint: "dive-gate" },
     exportHints: { simulatorFriendly: true },

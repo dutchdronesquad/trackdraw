@@ -22,7 +22,9 @@ import {
   getPolylineCurve3Derived,
   getPolylinePreview3DPoints,
 } from "@/lib/track/polyline-derived-3d";
+import { getGateVisualSpec } from "@/lib/track/elements/visual";
 import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
+import type { PanelFrameGateVisualSpec } from "@/lib/track/elements/catalog";
 import type {
   ConeShape,
   DiveGateShape,
@@ -285,34 +287,376 @@ export function WheelBridge({
   return null;
 }
 
-function useTextTexture(
+interface TextTextureOptions {
+  fontFamily?: string;
+  fontStyle?: "normal" | "italic";
+  fontWeight?: number;
+  letterSpacing?: number;
+}
+
+interface TextTextureCacheEntry {
+  refs: number;
+  texture: THREE.CanvasTexture;
+}
+
+const textTextureCache = new Map<string, TextTextureCacheEntry>();
+
+function getTextTextureCacheKey(
   text: string,
   color: string,
-  fontSize: number
+  fontSize: number,
+  options: Required<TextTextureOptions>
+) {
+  return [
+    text,
+    color,
+    fontSize,
+    options.fontFamily,
+    options.fontStyle,
+    options.fontWeight,
+    options.letterSpacing,
+  ].join("\u0001");
+}
+
+function createTextTexture(
+  text: string,
+  color: string,
+  fontSize: number,
+  options: Required<TextTextureOptions>
 ): THREE.CanvasTexture {
-  const texture = useMemo(() => {
-    const scale = 4;
-    const measW = Math.max(256, text.length * fontSize * scale * 0.62 + 40);
-    const measH = fontSize * scale * 2;
-    const canvas = document.createElement("canvas");
-    canvas.width = measW;
-    canvas.height = measH;
-    const ctx = canvas.getContext("2d")!;
-    ctx.clearRect(0, 0, measW, measH);
-    ctx.fillStyle = color;
-    ctx.font = `600 ${fontSize * scale}px ui-monospace,monospace,Arial`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+  const scale = 4;
+  const measW = Math.max(256, text.length * fontSize * scale * 0.62 + 40);
+  const measH = fontSize * scale * 2;
+  const canvas = document.createElement("canvas");
+  canvas.width = measW;
+  canvas.height = measH;
+  const ctx = canvas.getContext("2d")!;
+  ctx.clearRect(0, 0, measW, measH);
+  ctx.fillStyle = color;
+  ctx.font = `${options.fontStyle} ${options.fontWeight} ${
+    fontSize * scale
+  }px ${options.fontFamily}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  if (options.letterSpacing) {
+    const spacing = options.letterSpacing * scale;
+    const chars = [...text];
+    const totalWidth =
+      chars.reduce((sum, char) => sum + ctx.measureText(char).width, 0) +
+      spacing * Math.max(chars.length - 1, 0);
+    let x = measW / 2 - totalWidth / 2;
+    for (const char of chars) {
+      const charWidth = ctx.measureText(char).width;
+      ctx.fillText(char, x + charWidth / 2, measH / 2);
+      x += charWidth + spacing;
+    }
+  } else {
     ctx.fillText(text, measW / 2, measH / 2);
-    return new THREE.CanvasTexture(canvas);
-  }, [text, color, fontSize]);
-
-  useEffect(() => () => texture.dispose(), [texture]);
-
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
 }
 
-function Gate3D({
+function getSharedTextTexture(
+  text: string,
+  color: string,
+  fontSize: number,
+  options: Required<TextTextureOptions>
+) {
+  const key = getTextTextureCacheKey(text, color, fontSize, options);
+  const existing = textTextureCache.get(key);
+  if (existing) {
+    existing.refs += 1;
+    return { key, texture: existing.texture };
+  }
+
+  const texture = createTextTexture(text, color, fontSize, options);
+  textTextureCache.set(key, { refs: 1, texture });
+  return { key, texture };
+}
+
+function releaseSharedTextTexture(
+  key: string,
+  fallbackTexture: THREE.CanvasTexture
+) {
+  const entry = textTextureCache.get(key);
+  if (!entry) {
+    // Cache was cleared (e.g. HMR module replacement) — dispose directly.
+    fallbackTexture.dispose();
+    return;
+  }
+
+  entry.refs -= 1;
+  if (entry.refs > 0) return;
+
+  textTextureCache.delete(key);
+  entry.texture.dispose();
+}
+
+function useTextTexture(
+  text: string,
+  color: string,
+  fontSize: number,
+  options?: TextTextureOptions
+): THREE.CanvasTexture {
+  const fontFamily = options?.fontFamily ?? "ui-monospace,monospace,Arial";
+  const fontStyle = options?.fontStyle ?? "normal";
+  const fontWeight = options?.fontWeight ?? 600;
+  const letterSpacing = options?.letterSpacing ?? 0;
+  const shared = useMemo(
+    () =>
+      getSharedTextTexture(text, color, fontSize, {
+        fontFamily,
+        fontStyle,
+        fontWeight,
+        letterSpacing,
+      }),
+    [color, fontFamily, fontSize, fontStyle, fontWeight, letterSpacing, text]
+  );
+
+  useEffect(() => {
+    const { key, texture } = shared;
+    return () => releaseSharedTextTexture(key, texture);
+  }, [shared]);
+
+  return shared.texture;
+}
+
+function FrontTextPlaneGeometry({
+  height,
+  width,
+}: {
+  height: number;
+  width: number;
+}) {
+  const geometry = useMemo(
+    () => new THREE.PlaneGeometry(width, height),
+    [height, width]
+  );
+
+  useEffect(() => () => geometry.dispose(), [geometry]);
+
+  return <primitive object={geometry} attach="geometry" />;
+}
+
+function PanelFrameFrameOnlyGate3D({
+  selected = false,
+  shape,
+  outerRef,
+  visual,
+  rot,
+}: {
+  selected?: boolean;
+  shape: GateShape;
+  outerRef?: Ref<THREE.Group>;
+  visual: PanelFrameGateVisualSpec;
+  rot: [number, number, number];
+}) {
+  const { branding, frame, panels } = visual;
+  const multigpLabelStyle = useMemo(
+    () => ({
+      fontFamily: '"Arial Narrow","Helvetica Neue Condensed",Arial,sans-serif',
+      fontStyle: "italic" as const,
+      fontWeight: 800,
+      letterSpacing: 0.3,
+    }),
+    []
+  );
+  const topTextTexture = useTextTexture(
+    branding.label,
+    branding.markColor,
+    32,
+    multigpLabelStyle
+  );
+  const sideTextTexture = useTextTexture(
+    branding.label,
+    branding.accentColor,
+    28,
+    multigpLabelStyle
+  );
+  const h = shape.height ?? 2;
+  const w = shape.width ?? 3;
+  const leftPanelWidth = panels.left.widthMeters;
+  const rightPanelWidth = panels.right.widthMeters;
+  const topPanelHeight = panels.top.heightMeters;
+  const panelDepth = 0.018;
+  const frameTube = frame.diameterMeters;
+  const frontZ = -(panelDepth / 2 + 0.012);
+  const leftPanelX = -w / 2 - leftPanelWidth / 2;
+  const rightPanelX = w / 2 + rightPanelWidth / 2;
+  const topPanelY = h + topPanelHeight / 2;
+  const topPanelW = w + leftPanelWidth + rightPanelWidth;
+  const outerLeftX = -w / 2 - leftPanelWidth;
+  const outerRightX = w / 2 + rightPanelWidth;
+  const outerTopY = h + topPanelHeight;
+  const checkerSize = Math.max(
+    Math.min(leftPanelWidth, rightPanelWidth, topPanelHeight) * 0.18,
+    0.045
+  );
+  const frameTubeMat = {
+    color: frame.color,
+    roughness: 0.55,
+    metalness: 0.08,
+    emissive: selected ? "#60a5fa" : "#000000",
+    emissiveIntensity: selected ? 0.12 : 0,
+  };
+  const frameElbowMat = {
+    color: frame.color,
+    roughness: 0.58,
+    metalness: 0.04,
+  };
+
+  return (
+    <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={rot}>
+      <mesh
+        position={[outerLeftX, outerTopY / 2, -panelDepth * 0.65]}
+        rotation={[0, 0, 0]}
+        castShadow
+      >
+        <cylinderGeometry
+          args={[frameTube / 2, frameTube / 2, outerTopY, 16]}
+        />
+        <meshStandardMaterial {...frameTubeMat} />
+      </mesh>
+      <mesh
+        position={[outerRightX, outerTopY / 2, -panelDepth * 0.65]}
+        castShadow
+      >
+        <cylinderGeometry
+          args={[frameTube / 2, frameTube / 2, outerTopY, 16]}
+        />
+        <meshStandardMaterial {...frameTubeMat} />
+      </mesh>
+      <mesh
+        position={[0, outerTopY, -panelDepth * 0.65]}
+        rotation={[0, 0, Math.PI / 2]}
+        castShadow
+      >
+        <cylinderGeometry
+          args={[frameTube / 2, frameTube / 2, outerRightX - outerLeftX, 16]}
+        />
+        <meshStandardMaterial {...frameTubeMat} />
+      </mesh>
+      {[
+        [outerLeftX, outerTopY],
+        [outerRightX, outerTopY],
+      ].map(([x, y], index) => (
+        <mesh
+          key={`pvc-elbow-${index}`}
+          position={[x, y, -panelDepth * 0.65]}
+          castShadow
+        >
+          <sphereGeometry args={[frameTube * 0.66, 16, 12]} />
+          <meshStandardMaterial {...frameElbowMat} />
+        </mesh>
+      ))}
+
+      <mesh position={[leftPanelX, h / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[leftPanelWidth, h, panelDepth]} />
+        <meshStandardMaterial
+          color={panels.left.color}
+          roughness={0.7}
+          metalness={0.01}
+          emissive={selected ? "#60a5fa" : panels.left.color}
+          emissiveIntensity={selected ? 0.24 : 0.02}
+        />
+      </mesh>
+      <mesh position={[rightPanelX, h / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[rightPanelWidth, h, panelDepth]} />
+        <meshStandardMaterial
+          color={panels.right.color}
+          roughness={0.7}
+          metalness={0.01}
+          emissive={selected ? "#60a5fa" : panels.right.color}
+          emissiveIntensity={selected ? 0.24 : 0.02}
+        />
+      </mesh>
+      <mesh position={[0, topPanelY, 0]} castShadow receiveShadow>
+        <boxGeometry args={[topPanelW, topPanelHeight, panelDepth]} />
+        <meshStandardMaterial
+          color={panels.top.color}
+          roughness={0.64}
+          metalness={0.03}
+          emissive={selected ? "#60a5fa" : panels.top.color}
+          emissiveIntensity={selected ? 0.28 : 0.04}
+        />
+      </mesh>
+
+      {[-1, 1].map((dir) => (
+        <group key={`side-accents-${dir}`}>
+          {Array.from({ length: 12 }).map((_, index) => {
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+            if ((row + col) % 2 === 0) return null;
+            return (
+              <mesh
+                key={`${dir}-checker-${index}`}
+                position={[
+                  (dir < 0 ? leftPanelX : rightPanelX) +
+                    dir * ((col - 1) * checkerSize),
+                  h * 0.12 + row * checkerSize,
+                  frontZ - 0.004,
+                ]}
+              >
+                <boxGeometry args={[checkerSize, checkerSize, panelDepth]} />
+                <meshBasicMaterial color={branding.checkerColor} />
+              </mesh>
+            );
+          })}
+        </group>
+      ))}
+
+      <mesh
+        position={[0, topPanelY, frontZ - 0.016]}
+        rotation={[0, Math.PI, 0]}
+      >
+        <FrontTextPlaneGeometry
+          width={Math.max(w * 0.38, 0.46)}
+          height={topPanelHeight * 0.62}
+        />
+        <meshBasicMaterial
+          map={topTextTexture}
+          transparent
+          depthWrite={false}
+        />
+      </mesh>
+      {[-1, 1].map((dir) => (
+        <mesh
+          key={`side-text-${dir}`}
+          position={[
+            dir < 0 ? leftPanelX : rightPanelX,
+            h * 0.58,
+            frontZ - 0.016,
+          ]}
+          rotation={[0, Math.PI, dir > 0 ? -Math.PI / 2 : Math.PI / 2]}
+        >
+          <FrontTextPlaneGeometry
+            width={h * 0.44}
+            height={(dir < 0 ? leftPanelWidth : rightPanelWidth) * 0.62}
+          />
+          <meshBasicMaterial
+            map={sideTextTexture}
+            transparent
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+
+      <mesh position={[0, h / 2, -panelDepth / 2 - 0.004]}>
+        <planeGeometry args={[w, h]} />
+        <meshBasicMaterial
+          color={frame.color}
+          transparent
+          opacity={selected ? 0.1 : 0.045}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function FrameOnlyGate3D({
   selected = false,
   shape,
   outerRef,
@@ -325,14 +669,28 @@ function Gate3D({
   const color = marker
     ? getTimingMarkerColor(marker)
     : (shape.color ?? "#3b82f6");
-  const thick = shape.thick ?? 0.2;
-  const h = shape.height ?? 2;
-  const w = shape.width ?? 3;
+  const visual = getGateVisualSpec(shape);
   const rot: [number, number, number] = [
     0,
     (-shape.rotation * Math.PI) / 180,
     0,
   ];
+
+  if (visual.variant === "panel-frame") {
+    return (
+      <PanelFrameFrameOnlyGate3D
+        shape={shape}
+        selected={selected}
+        outerRef={outerRef}
+        visual={visual}
+        rot={rot}
+      />
+    );
+  }
+
+  const thick = shape.thick ?? 0.2;
+  const h = shape.height ?? 2;
+  const w = shape.width ?? 3;
 
   return (
     <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={rot}>
@@ -761,7 +1119,7 @@ function Ladder3D({
   );
 }
 
-function DiveGate3D({
+function DiveFrameOnlyGate3D({
   selected = false,
   shape,
   outerRef,
@@ -1095,7 +1453,11 @@ function Shape3D({
     case "gate":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <Gate3D shape={shape} selected={isSelected} outerRef={outerRef} />
+          <FrameOnlyGate3D
+            shape={shape}
+            selected={isSelected}
+            outerRef={outerRef}
+          />
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
@@ -1153,7 +1515,7 @@ function Shape3D({
     case "divegate":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <DiveGate3D
+          <DiveFrameOnlyGate3D
             shape={shape}
             selected={isSelected}
             outerRef={outerRef}
