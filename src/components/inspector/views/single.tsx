@@ -298,23 +298,23 @@ export function SingleInspectorView({
             <Section title="Catalog" defaultOpen>
               <Row label="Type">
                 <div className="min-w-0">
-                  <p className="truncate text-[12px] font-medium text-foreground">
+                  <p className="text-foreground truncate text-[12px] font-medium">
                     {catalogIdentity.snapshot.name}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  <p className="text-muted-foreground mt-0.5 text-[11px]">
                     {shapeKindLabels[catalogIdentity.assignedKind]}
                   </p>
                 </div>
               </Row>
               {catalogIdentity.snapshot.organization ? (
                 <Row label="Source">
-                  <span className="text-[12px] text-foreground">
+                  <span className="text-foreground text-[12px]">
                     {catalogIdentity.snapshot.organization}
                   </span>
                 </Row>
               ) : null}
               <Row label="Official size">
-                <span className="text-[12px] text-foreground">
+                <span className="text-foreground text-[12px]">
                   {catalogIdentity.snapshot.dimensionsLabel}
                 </span>
               </Row>
@@ -624,9 +624,7 @@ export function SingleInspectorView({
                   <MeasurementNum
                     valueMeters={shape.size}
                     unitSystem={unitSystem}
-                    onChange={(value) =>
-                      updateShape(shape.id, { size: value })
-                    }
+                    onChange={(value) => updateShape(shape.id, { size: value })}
                     minMeters={0.5}
                   />
                 </Row>

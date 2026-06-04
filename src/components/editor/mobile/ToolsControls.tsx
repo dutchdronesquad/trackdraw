@@ -78,7 +78,7 @@ export function ToolsControls({
           </p>
 
           {/* Gate — full-width card with inline type picker */}
-          <div className="mb-2 overflow-hidden rounded-2xl border border-border/50 bg-muted/14">
+          <div className="border-border/50 bg-muted/14 mb-2 overflow-hidden rounded-2xl border">
             <button
               type="button"
               onClick={() => runAction(() => onSelectTool("gate"))}
@@ -90,7 +90,7 @@ export function ToolsControls({
               )}
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border/45 bg-background/50">
+                <span className="border-border/45 bg-background/50 flex size-10 shrink-0 items-center justify-center rounded-xl border">
                   {mobileGateToolEntry?.icon}
                 </span>
                 <div className="min-w-0">
@@ -103,7 +103,7 @@ export function ToolsControls({
                 </div>
               </div>
               {activeGateEntry?.official ? (
-                <span className="shrink-0 rounded-md bg-brand-primary/12 px-1.5 py-1 text-[9px] leading-none font-semibold tracking-[0.08em] text-brand-primary uppercase">
+                <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-md px-1.5 py-1 text-[9px] leading-none font-semibold tracking-[0.08em] uppercase">
                   Official
                 </span>
               ) : null}
@@ -123,7 +123,7 @@ export function ToolsControls({
               />
             </button>
             {gateTypesOpen ? (
-              <div className="space-y-1 border-t border-border/25 p-1.5">
+              <div className="border-border/25 space-y-1 border-t p-1.5">
                 {gateCatalogEntries.map((entry) => {
                   const active = activeGateEntry?.id === entry.id;
                   return (
@@ -151,7 +151,7 @@ export function ToolsControls({
                       </span>
                       <Check
                         className={cn(
-                          "size-3.5 shrink-0 text-brand-primary transition-opacity",
+                          "text-brand-primary size-3.5 shrink-0 transition-opacity",
                           active ? "opacity-100" : "opacity-0"
                         )}
                       />
@@ -192,7 +192,6 @@ export function ToolsControls({
                 );
               })}
           </div>
-
         </div>
       )}
     </>

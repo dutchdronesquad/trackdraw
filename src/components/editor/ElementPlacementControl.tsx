@@ -46,21 +46,21 @@ export function ElementPlacementControl() {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           style={controlWidthStyle}
-          className="group grid h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border border-border/65 bg-sidebar/94 px-2.5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.16)] backdrop-blur-md transition-colors hover:border-border hover:bg-sidebar"
+          className="group border-border/65 bg-sidebar/94 hover:border-border hover:bg-sidebar grid h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-2.5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.16)] backdrop-blur-md transition-colors"
         >
-          <span className="rounded-sm bg-muted px-1.5 py-1 font-mono text-[9px] leading-none font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+          <span className="bg-muted text-muted-foreground rounded-sm px-1.5 py-1 font-mono text-[9px] leading-none font-semibold tracking-[0.12em] uppercase">
             Gate
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-xs leading-none font-medium text-foreground">
+            <span className="text-foreground block truncate text-xs leading-none font-medium">
               {activeEntry.name}
             </span>
             <span className="mt-1 flex min-w-0 items-center gap-1.5">
-              <span className="truncate text-[11px] leading-none text-muted-foreground">
+              <span className="text-muted-foreground truncate text-[11px] leading-none">
                 {activeEntry.dimensions.display.label}
               </span>
               {activeEntry.official ? (
-                <span className="shrink-0 rounded-[3px] bg-brand-primary/12 px-1 py-0.5 text-[9px] leading-none font-semibold tracking-[0.08em] text-brand-primary uppercase">
+                <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-[3px] px-1 py-0.5 text-[9px] leading-none font-semibold tracking-[0.08em] uppercase">
                   Official
                 </span>
               ) : null}
@@ -69,7 +69,7 @@ export function ElementPlacementControl() {
           <span className="flex shrink-0 items-center">
             <ChevronDown
               className={cn(
-                "size-3.5 text-muted-foreground transition-transform",
+                "text-muted-foreground size-3.5 transition-transform",
                 open && "rotate-180"
               )}
             />
@@ -83,7 +83,7 @@ export function ElementPlacementControl() {
           className="overflow-hidden p-0"
         >
           <div className="border-border/70 border-b px-3 py-2">
-            <p className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
+            <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.08em] uppercase">
               Choose gate type
             </p>
           </div>
@@ -115,7 +115,7 @@ export function ElementPlacementControl() {
                         {entry.dimensions.display.label}
                       </span>
                       {entry.official ? (
-                        <span className="rounded-[3px] bg-muted px-1 py-0.5 text-[9px] leading-none font-semibold tracking-[0.08em] uppercase">
+                        <span className="bg-muted rounded-[3px] px-1 py-0.5 text-[9px] leading-none font-semibold tracking-[0.08em] uppercase">
                           Official
                         </span>
                       ) : null}
@@ -123,7 +123,7 @@ export function ElementPlacementControl() {
                   </span>
                   <Check
                     className={cn(
-                      "size-4 shrink-0 text-brand-primary transition-opacity",
+                      "text-brand-primary size-4 shrink-0 transition-opacity",
                       active ? "opacity-100" : "opacity-0"
                     )}
                   />

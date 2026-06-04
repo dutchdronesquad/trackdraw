@@ -56,9 +56,13 @@ describe("editor tool helpers", () => {
   });
 
   it("creates the selected official gate variant through the gate tool", () => {
-    const shape = createShapeForTool("gate", { x: 3, y: 4 }, {
-      gateElementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
-    });
+    const shape = createShapeForTool(
+      "gate",
+      { x: 3, y: 4 },
+      {
+        gateElementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+      }
+    );
 
     expect(shape).toMatchObject({
       kind: "gate",
@@ -77,9 +81,13 @@ describe("editor tool helpers", () => {
   });
 
   it("creates larger official gate variants through the same gate tool", () => {
-    const shape = createShapeForTool("gate", { x: 6, y: 8 }, {
-      gateElementId: MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
-    });
+    const shape = createShapeForTool(
+      "gate",
+      { x: 6, y: 8 },
+      {
+        gateElementId: MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+      }
+    );
 
     expect(shape).toMatchObject({
       kind: "gate",
@@ -97,9 +105,13 @@ describe("editor tool helpers", () => {
 
   it("falls back to the generic gate when a non-gate catalog id is passed", () => {
     expect(
-      createShapeForTool("gate", { x: 1, y: 2 }, {
-        gateElementId: TRACKDRAW_FLAG_ELEMENT_ID,
-      })
+      createShapeForTool(
+        "gate",
+        { x: 1, y: 2 },
+        {
+          gateElementId: TRACKDRAW_FLAG_ELEMENT_ID,
+        }
+      )
     ).toMatchObject({
       kind: "gate",
       width: 2,

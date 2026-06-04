@@ -193,7 +193,9 @@ describe("SingleInspectorView race timing controls", () => {
     const { rerender } = render(<SingleInspectorView {...props} />);
 
     expect(
-      screen.getByRole("button", { name: "Race timing" }).getAttribute("aria-expanded")
+      screen
+        .getByRole("button", { name: "Race timing" })
+        .getAttribute("aria-expanded")
     ).toBe("true");
 
     // Simulate the store updating after the user sets role to "Off"
@@ -201,7 +203,9 @@ describe("SingleInspectorView race timing controls", () => {
 
     // The section must stay open — closing mid-interaction was the bug
     expect(
-      screen.getByRole("button", { name: "Race timing" }).getAttribute("aria-expanded")
+      screen
+        .getByRole("button", { name: "Race timing" })
+        .getAttribute("aria-expanded")
     ).toBe("true");
   });
 

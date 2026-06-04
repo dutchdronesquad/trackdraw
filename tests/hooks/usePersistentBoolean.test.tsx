@@ -48,7 +48,11 @@ function setStorage(impl: Storage) {
 
 function restoreStorage() {
   if (originalLocalStorageDescriptor) {
-    Object.defineProperty(window, "localStorage", originalLocalStorageDescriptor);
+    Object.defineProperty(
+      window,
+      "localStorage",
+      originalLocalStorageDescriptor
+    );
   }
 }
 
@@ -66,35 +70,40 @@ describe("usePersistentBoolean", () => {
 
   it("initialises to false by default when nothing stored", async () => {
     setStorage(createMapStorage());
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY));
     expect(result.current[0]).toBe(false);
   });
 
   it("initialises to the provided defaultValue", async () => {
     setStorage(createMapStorage());
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY, true));
     expect(result.current[0]).toBe(true);
   });
 
   it("reads a stored 'true' value from localStorage", async () => {
     setStorage(createMapStorage({ [KEY]: "true" }));
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY));
     expect(result.current[0]).toBe(true);
   });
 
   it("reads a stored 'false' value, overriding a true defaultValue", async () => {
     setStorage(createMapStorage({ [KEY]: "false" }));
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY, true));
     expect(result.current[0]).toBe(false);
   });
 
   it("ignores unrecognised stored strings and falls back to defaultValue", async () => {
     setStorage(createMapStorage({ [KEY]: "yes" }));
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY, true));
     expect(result.current[0]).toBe(true);
   });
@@ -102,7 +111,8 @@ describe("usePersistentBoolean", () => {
   it("persists a true value to localStorage when state changes", async () => {
     const storage = createMapStorage();
     setStorage(storage);
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY));
 
     await act(async () => {
@@ -116,7 +126,8 @@ describe("usePersistentBoolean", () => {
   it("persists a false value to localStorage when state changes", async () => {
     const storage = createMapStorage({ [KEY]: "true" });
     setStorage(storage);
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY));
 
     await act(async () => {
@@ -133,7 +144,8 @@ describe("usePersistentBoolean", () => {
       throw new DOMException("Storage full", "QuotaExceededError");
     });
     setStorage(storage);
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY));
 
     await act(async () => {
@@ -145,7 +157,8 @@ describe("usePersistentBoolean", () => {
 
   it("returns the defaultValue when localStorage.getItem throws", async () => {
     setStorage(createThrowingStorage());
-    const { usePersistentBoolean } = await import("@/hooks/usePersistentBoolean");
+    const { usePersistentBoolean } =
+      await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY, true));
     expect(result.current[0]).toBe(true);
   });
