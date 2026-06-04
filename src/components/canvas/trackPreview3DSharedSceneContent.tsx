@@ -629,7 +629,7 @@ function PanelFrameGate3D({
             h * 0.58,
             frontZ - 0.016,
           ]}
-          rotation={[0, Math.PI, dir > 0 ? -Math.PI / 2 : Math.PI / 2]}
+          rotation={[0, Math.PI, dir > 0 ? Math.PI / 2 : -Math.PI / 2]}
         >
           <FrontTextPlaneGeometry
             width={h * 0.44}
