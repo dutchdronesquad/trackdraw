@@ -129,13 +129,14 @@ Rule settings:
 - Action: `Block`
 - Deploy after saving.
 
-Create a second WAF custom rule for obvious Server Action probes:
+Create a second WAF custom rule for obvious POST Server Action probes:
 
 - Rule name: `Block invalid Server Action probes`
 - Field/expression mode: use `Edit expression`
 - Expression:
   ```text
-  http.request.headers["next-action"][0] ne ""
+  http.request.method eq "POST"
+  and http.request.headers["next-action"][0] ne ""
   and not (
     http.request.uri.path eq "/api"
     or starts_with(http.request.uri.path, "/api/")
@@ -143,6 +144,7 @@ Create a second WAF custom rule for obvious Server Action probes:
   ```
 - Action: `Block`
 - Deploy after saving.
+- Keep this rule `POST`-only. Do not block `GET` or `HEAD` requests just because a crawler or proxy sends an unexpected `next-action` header; discovery paths such as `/robots.txt`, `/robot.txt`, and `/sitemap.xml` should remain crawlable.
 
 ### Rate-limit CPU-sensitive pages
 
@@ -164,14 +166,13 @@ Rule settings:
   and (
     http.request.uri.path eq "/studio"
     or http.request.uri.path eq "/gallery"
-    or http.request.uri.path eq "/sitemap.xml"
     or starts_with(http.request.uri.path, "/share/")
     or starts_with(http.request.uri.path, "/embed/")
   )
   ```
-- Scope: covers Studio, gallery, sitemap generation, shared tracks, and embeds. Add new route families here only when they render user/content-heavy pages.
+- Scope: covers Studio, gallery, shared tracks, and embeds. Add new route families here only when they render user/content-heavy pages.
 - Characteristics: use `IP`.
-- Threshold: `120 requests` per `1 minute`.
+- Threshold: `120 requests` per `10 seconds`.
 - Action: `Block`.
 - Duration: `10 seconds`.
 
@@ -180,6 +181,7 @@ Additional guidance:
 - Do not add every new public route to Cloudflare manually. Add only route families that are proven to create meaningful Worker rendering load.
 - Keep API rate limits separate and endpoint-specific. `/api/*` has different write semantics, authentication behavior, and user-impact risks than public page rendering.
 - Keep verified bots allowed for public gallery/share discovery. The rate limiting expression excludes them through `not cf.client.bot`.
+- Keep `/robots.txt`, common typo probes such as `/robot.txt`, and `/sitemap.xml` out of this rate limit. These requests are crawler-driven by design, and not every useful crawler is guaranteed to match Cloudflare's verified bot field.
 - When investigating `Worker exceeded CPU time limit`, group events by `http.request.uri.path`, method, user agent, and timestamp. If the spike aligns with the daily cron in [`wrangler.jsonc`](../../wrangler.jsonc), inspect retention cleanup. Otherwise prioritize public SSR/API traffic.
 
 Cloudflare references:
