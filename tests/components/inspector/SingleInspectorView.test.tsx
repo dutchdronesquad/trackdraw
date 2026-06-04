@@ -236,7 +236,7 @@ describe("SingleInspectorView race timing controls", () => {
 
     renderSingleInspector(officialGate);
 
-    expect(screen.getByText("Official size and color")).toBeTruthy();
+    expect(screen.getByText("MultiGP Standard Gate 5x5")).toBeTruthy();
     expect(screen.queryByText("Color")).toBeNull();
     expect(screen.queryByText("Width")).toBeNull();
     expect(screen.queryByText("Height")).toBeNull();
