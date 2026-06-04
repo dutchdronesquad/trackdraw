@@ -1,5 +1,6 @@
 import {
   createCatalogShapeDraft,
+  createTrackElementCatalogIdentity,
   getTrackElementCatalogEntry,
   TRACKDRAW_CONE_ELEMENT_ID,
   TRACKDRAW_DIVE_GATE_ELEMENT_ID,
@@ -10,7 +11,7 @@ import {
   TRACKDRAW_START_FINISH_ELEMENT_ID,
   type TrackElementCatalogId,
 } from "@/lib/track/elements/catalog";
-import type { ShapeDraft, ShapeKind } from "@/lib/types";
+import type { GateShape, ShapeDraft, ShapeKind } from "@/lib/types";
 
 export type EditorTool =
   | "select"
@@ -97,4 +98,35 @@ export function createShapeForTool(
     y: point.y,
     includeCatalogMetadata: resolvedEntry?.official === true,
   });
+}
+
+export function buildGateCatalogTypePatch(
+  shape: GateShape,
+  targetEntryId: TrackElementCatalogId
+): Partial<GateShape> | null {
+  const entry = getTrackElementCatalogEntry(targetEntryId);
+  if (!entry || entry.kind !== "gate") return null;
+
+  const draft = createCatalogShapeDraft(targetEntryId, {
+    x: shape.x,
+    y: shape.y,
+    rotation: shape.rotation,
+    includeCatalogMetadata: false,
+  });
+
+  // Preserve non-catalog meta (timing markers, group membership, etc.)
+  const strippedMeta = shape.meta
+    ? Object.fromEntries(
+        Object.entries(shape.meta).filter(([k]) => k !== "catalog")
+      )
+    : {};
+  const newCatalogIdentity = entry.official
+    ? createTrackElementCatalogIdentity(entry)
+    : undefined;
+  const newMeta =
+    newCatalogIdentity || Object.keys(strippedMeta).length > 0
+      ? { ...strippedMeta, catalog: newCatalogIdentity }
+      : undefined;
+
+  return { ...draft, meta: newMeta } as Partial<GateShape>;
 }

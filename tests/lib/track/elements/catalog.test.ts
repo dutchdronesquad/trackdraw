@@ -3,7 +3,7 @@ import { getCanvasRotationGuideAngleDeg } from "@/lib/track/orientation";
 import { feetToMeters } from "@/lib/track/units";
 import {
   createCatalogShapeDraft,
-  getGateTrackElementCatalogEntries,
+  getCatalogEntriesByKind,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
@@ -25,9 +25,7 @@ describe("track element catalog", () => {
   });
 
   it("exposes gate entries for placement controls", () => {
-    expect(
-      getGateTrackElementCatalogEntries().map((entry) => entry.id)
-    ).toEqual([
+    expect(getCatalogEntriesByKind("gate").map((entry) => entry.id)).toEqual([
       TRACKDRAW_GATE_ELEMENT_ID,
       MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
       MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,

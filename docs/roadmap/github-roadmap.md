@@ -26,18 +26,18 @@ The completed release-sized work is archived below. The REST API, live race over
 
 ## Follow-up
 
-- [ ] Track element catalog (`Research`, `No account required`)
-      Build a catalog-backed element model for official gates, richer placement defaults, and future equipment/library expansion before changing default race-gate sizing. This track owns element identity, source metadata, dimensions, and placement selection, not high-fidelity 3D rendering.
+- [x] Track element catalog (`Research`, `No account required`)
+      Built a catalog-backed element model for official gates with typed entries for names, dimensions, source references, 2D/3D rendering, and export compatibility. Includes placement selection, inspector identity display, in-place type switching, and catalog-driven visual rendering across 2D, 3D, and export paths.
   - [x] Local element catalog foundation
         Define typed catalog entries for official names, dimensions, source references, 2D defaults, 3D render hints, and export compatibility while keeping saved project geometry meter-based.
-  - [ ] Official gate and obstacle entries
-        Expose entries such as the cataloged MultiGP-style standard gate through deliberate placement/library UI, with custom sizing kept on the standard TrackDraw Gate and no automatic migration of existing projects.
+  - [x] Official gate and obstacle entries
+        Covered by the placement selector, catalog identity in inspector, and in-place type switching sub-items. MultiGP-style gates are accessible through deliberate placement and inspector UI, custom sizing remains on the standard TrackDraw Gate, and no existing projects were migrated.
   - [x] MultiGP gate placement selector
         Keep Gate as the primary placement tool while letting users switch the active gate type between the generic TrackDraw gate and catalog-backed MultiGP-style 5x5 and 7x6 variants through compact desktop and mobile type pickers.
   - [x] Catalog identity in inspector
         Show placed catalog-backed elements with their official type, source, official size, and dimension status while keeping official gate width and height fixed in normal editing.
-  - [ ] In-place catalog type switching (`No account required`)
-        Let users change the catalog type of an already-placed gate directly from the inspector — for example switching a frame-only TrackDraw gate to a MultiGP Standard Gate 5x5 or back — without needing to delete and re-place the element. The switch should apply the new catalog entry's visual spec, locked dimensions, and identity while preserving position, rotation, and route connections.
+  - [x] In-place catalog type switching (`No account required`)
+        Let users change the catalog type of an already-placed gate directly from the inspector without needing to delete and re-place. The type picker uses the shadcn Select and shows for all placed gates, including frame-only TrackDraw gates. Switching resets to the target entry's defaults while preserving position, rotation, and route connections, and preserves non-catalog meta such as timing markers. The source organization links to the entry's first source URL. getCatalogEntriesByKind replaces the gate-specific helper to support future element types.
 
 - [x] 3D preview realism and lighting (`Research`, `No account required`)
       Improved the 3D preview's readability and realism with stronger contrast, sun/directional lighting, shadows, and more recognizable gates/flags while keeping mobile performance safe. Catalog metadata drives official variant rendering, including a realistic MultiGP Standard Gate 5x5.
@@ -45,6 +45,13 @@ The completed release-sized work is archived below. The REST API, live race over
         Tuned directional lighting with a warm sun tint, lowered ambient intensity for stronger shadow contrast, raised shadow map resolution to 2048, set shadow camera frustum to track bounds to eliminate shadow coverage gaps on large tracks, added shadow-bias to prevent acne, and removed polyline shadow casting to reduce visual noise. Unified the lighting theme across editor, share, and gallery into a single shared constant.
   - [x] Catalog-aware 3D element rendering
         Use catalog-owned visual metadata to render catalog-backed MultiGP-style 5x5 and 7x6 gates with recognizable panel sizes, PVC frame placement, colors, and branding treatment across 2D canvas/SVG output, the live preview, and flythrough export while keeping generic gates lightweight.
+
+- [ ] MultiGP obstacle catalog expansion (`No account required`)
+      Extend the catalog with additional official MultiGP obstacles beyond gates, such as flags and ladders, so users can place and identify standard competition obstacles with the same catalog-backed identity, visual rendering, and inspector treatment already in place for gates.
+  - [ ] MultiGP flag and marker entries
+        Add catalog entries for official MultiGP-style flag/marker obstacles with catalog identity, 2D canvas rendering, 3D preview, and source links.
+  - [ ] MultiGP ladder and other obstacle entries
+        Add catalog entries for official MultiGP ladder-style obstacles and any other common competition elements with the same catalog pipeline.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.

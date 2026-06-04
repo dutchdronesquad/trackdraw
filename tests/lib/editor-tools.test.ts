@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildGateCatalogTypePatch,
   createShapeForTool,
   shapeKindLabels,
   toolLabels,
   toolShortcuts,
 } from "@/lib/editor-tools";
 import {
+  createCatalogShapeDraft,
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
+  TRACKDRAW_GATE_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
+import type { GateShape } from "@/lib/types";
 import { feetToMeters } from "@/lib/track/units";
 
 describe("editor tool helpers", () => {
@@ -126,5 +130,75 @@ describe("editor tool helpers", () => {
     expect(createShapeForTool("grab", { x: 1, y: 2 })).toBeNull();
     expect(createShapeForTool("preset", { x: 1, y: 2 })).toBeNull();
     expect(createShapeForTool("polyline", { x: 1, y: 2 })).toBeNull();
+  });
+});
+
+describe("buildGateCatalogTypePatch", () => {
+  const baseShape = createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
+    x: 5,
+    y: 8,
+    rotation: 90,
+  }) as GateShape & { id: string };
+  baseShape.id = "gate-1";
+
+  it("switches to a catalog-backed entry and applies its defaults", () => {
+    const patch = buildGateCatalogTypePatch(
+      baseShape,
+      MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID
+    );
+
+    expect(patch).toMatchObject({
+      kind: "gate",
+      x: 5,
+      y: 8,
+      rotation: 90,
+      meta: {
+        catalog: expect.objectContaining({
+          elementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+          official: true,
+        }),
+      },
+    });
+  });
+
+  it("resets to frame-only defaults and clears catalog identity when switching to TrackDraw Gate", () => {
+    const catalogShape = createCatalogShapeDraft(
+      MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+      { x: 3, y: 4, rotation: 45, includeCatalogMetadata: true }
+    ) as GateShape & { id: string };
+    catalogShape.id = "gate-2";
+
+    const patch = buildGateCatalogTypePatch(
+      catalogShape,
+      TRACKDRAW_GATE_ELEMENT_ID
+    );
+
+    expect(patch).toMatchObject({ kind: "gate", x: 3, y: 4, rotation: 45 });
+    expect(patch?.meta?.catalog).toBeUndefined();
+  });
+
+  it("preserves non-catalog meta when switching type", () => {
+    const shapeWithTiming = {
+      ...baseShape,
+      meta: { timing: { role: "split", timingId: "t1" } },
+    } as unknown as GateShape;
+
+    const patch = buildGateCatalogTypePatch(
+      shapeWithTiming,
+      MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID
+    );
+
+    expect(patch?.meta).toMatchObject({
+      timing: { role: "split", timingId: "t1" },
+      catalog: expect.objectContaining({
+        elementId: MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+      }),
+    });
+  });
+
+  it("returns null for a non-gate catalog id", () => {
+    expect(
+      buildGateCatalogTypePatch(baseShape, TRACKDRAW_FLAG_ELEMENT_ID)
+    ).toBeNull();
   });
 });

@@ -8,9 +8,13 @@ import { shapeKindLabels } from "@/lib/editor-tools";
 import { getSingleInspectorViewModel } from "@/lib/inspector/single/view-model";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
+  getCatalogEntriesByKind,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
+  TRACKDRAW_GATE_ELEMENT_ID,
+  type TrackElementCatalogId,
 } from "@/lib/track/elements/catalog";
+import { buildGateCatalogTypePatch } from "@/lib/editor-tools";
 import {
   getShapeTimingMarker,
   getTimingMarkerMeta,
@@ -27,6 +31,13 @@ import {
   Trash2,
   Ungroup,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   fmt,
   IconBtn,
@@ -118,6 +129,12 @@ export function SingleInspectorView({
   const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
   const catalogEntry = getTrackElementCatalogEntry(catalogIdentity?.elementId);
   const selectedGateShape = shape.kind === "gate" ? shape : null;
+  const gateCatalogEntries = selectedGateShape
+    ? getCatalogEntriesByKind("gate")
+    : null;
+  const activeGateEntryId: TrackElementCatalogId =
+    (catalogIdentity?.elementId as TrackElementCatalogId | undefined) ??
+    TRACKDRAW_GATE_ELEMENT_ID;
   const hasCatalogGateDimensions =
     selectedGateShape &&
     catalogEntry?.kind === "gate" &&
@@ -127,14 +144,6 @@ export function SingleInspectorView({
     hasCatalogGateDimensions && catalogEntry.editable?.dimensions === false;
   const hasFixedCatalogColor =
     catalogIdentity !== null && catalogEntry?.editable?.color === false;
-  const catalogStatusLabel =
-    catalogIdentity?.official &&
-    hasFixedCatalogDimensions &&
-    hasFixedCatalogColor
-      ? "Official size and color"
-      : catalogIdentity?.official
-        ? "Official dimensions"
-        : "Catalog item";
   const canSetTimingMarker = isTimingMarkerShape(shape);
   const secondarySectionDefaultOpen = !mobileInline;
   const timingSectionDefaultOpen = !mobileInline || canSetTimingMarker;
@@ -287,41 +296,62 @@ export function SingleInspectorView({
               </div>
             </Section>
           )}
-          {catalogIdentity ? (
+          {gateCatalogEntries ? (
             <Section title="Catalog" defaultOpen>
               <Row label="Type">
-                <div className="min-w-0">
-                  <p className="text-foreground truncate text-[12px] font-medium">
-                    {catalogIdentity.snapshot.name}
-                  </p>
-                  <p className="text-muted-foreground mt-0.5 text-[11px]">
-                    {shapeKindLabels[catalogIdentity.assignedKind]}
-                  </p>
-                </div>
+                <Select
+                  value={activeGateEntryId}
+                  disabled={shape.locked}
+                  onValueChange={(value) => {
+                    const patch = buildGateCatalogTypePatch(
+                      selectedGateShape!,
+                      value as TrackElementCatalogId
+                    );
+                    if (patch)
+                      updateShape(shape.id, patch as Partial<typeof shape>);
+                  }}
+                >
+                  <SelectTrigger className="border-border/40 bg-muted/40 h-9 w-full text-xs shadow-none lg:h-7 lg:text-[11px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {gateCatalogEntries.map((entry) => (
+                      <SelectItem
+                        key={entry.id}
+                        value={entry.id}
+                        className="text-xs lg:text-[11px]"
+                      >
+                        {entry.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Row>
-              {catalogIdentity.snapshot.organization ? (
+              {catalogIdentity?.snapshot.organization ? (
                 <Row label="Source">
+                  {catalogEntry?.sources?.[0]?.url ? (
+                    <a
+                      href={catalogEntry.sources[0].url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-foreground hover:text-foreground/70 text-[12px] underline underline-offset-2 transition-colors"
+                    >
+                      {catalogIdentity.snapshot.organization}
+                    </a>
+                  ) : (
+                    <span className="text-foreground text-[12px]">
+                      {catalogIdentity.snapshot.organization}
+                    </span>
+                  )}
+                </Row>
+              ) : null}
+              {catalogIdentity ? (
+                <Row label="Official size">
                   <span className="text-foreground text-[12px]">
-                    {catalogIdentity.snapshot.organization}
+                    {catalogIdentity.snapshot.dimensionsLabel}
                   </span>
                 </Row>
               ) : null}
-              <Row label="Official size">
-                <span className="text-foreground text-[12px]">
-                  {catalogIdentity.snapshot.dimensionsLabel}
-                </span>
-              </Row>
-              <Row label="Status">
-                <span
-                  className={`inline-flex min-h-6 items-center rounded-md border px-2 py-1 text-[11px] font-medium ${
-                    catalogIdentity.official
-                      ? "border-emerald-500/25 bg-emerald-500/8 text-emerald-700 dark:text-emerald-300"
-                      : "border-border/60 bg-muted/40 text-muted-foreground"
-                  }`}
-                >
-                  {catalogStatusLabel}
-                </span>
-              </Row>
             </Section>
           ) : null}
 

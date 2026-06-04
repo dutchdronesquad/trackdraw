@@ -8,14 +8,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  getGateTrackElementCatalogEntries,
+  getCatalogEntriesByKind,
   TRACKDRAW_GATE_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import { cn } from "@/lib/utils";
 import { useSessionActions, useUiActions } from "@/store/actions";
 import { useEditor } from "@/store/editor";
 
-const gateCatalogEntries = getGateTrackElementCatalogEntries();
+const gateCatalogEntries = getCatalogEntriesByKind("gate");
 const placementControlWidthCh = Math.max(
   22,
   Math.min(

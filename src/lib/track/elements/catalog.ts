@@ -455,9 +455,12 @@ export function getTrackElementCatalogEntry(
   return trackElementCatalogMap.get(id as TrackElementCatalogId) ?? null;
 }
 
-export function getGateTrackElementCatalogEntries(): GateTrackElementCatalogEntry[] {
+export function getCatalogEntriesByKind<
+  K extends PlaceableCatalogShape["kind"],
+>(kind: K): (TrackElementCatalogEntry & { kind: K })[] {
   return (trackElementCatalog as readonly TrackElementCatalogEntry[]).filter(
-    (entry): entry is GateTrackElementCatalogEntry => entry.kind === "gate"
+    (entry): entry is TrackElementCatalogEntry & { kind: K } =>
+      entry.kind === kind
   );
 }
 

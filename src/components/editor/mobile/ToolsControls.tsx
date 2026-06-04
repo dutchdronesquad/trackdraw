@@ -4,14 +4,14 @@ import { useState } from "react";
 import { Check, ChevronDown, Redo2, Undo2 } from "lucide-react";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
 import {
-  getGateTrackElementCatalogEntries,
+  getCatalogEntriesByKind,
   type TrackElementCatalogId,
 } from "@/lib/track/elements/catalog";
 import type { EditorTool } from "@/lib/editor-tools";
 import { cn } from "@/lib/utils";
 import type { EditorViewportTab } from "./Panels";
 
-const gateCatalogEntries = getGateTrackElementCatalogEntries();
+const gateCatalogEntries = getCatalogEntriesByKind("gate");
 const mobileGateToolEntry = mobileToolEntries.find((t) => t.id === "gate");
 
 interface ToolsControlsProps {
