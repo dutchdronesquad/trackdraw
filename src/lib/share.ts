@@ -68,8 +68,9 @@ export type ShareDecodeError = "too-large" | "invalid";
 /**
  * Like decodeDesign, but distinguishes between a token that is too long for
  * browsers/apps to pass intact ("too-large") and one that is simply corrupt or
- * miscopied ("invalid"). The heuristic is: if the token itself exceeds
- * MAX_SAFE_TOKEN_LENGTH the decode failure is most likely due to truncation.
+ * miscopied ("invalid"). Tokens over MAX_SAFE_TOKEN_LENGTH are rejected before
+ * decompression, so callers should not expect a best-effort decode for
+ * long-but-valid tokens.
  */
 export function decodeDesignWithReason(
   token: string
