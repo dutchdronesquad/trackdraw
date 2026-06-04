@@ -133,8 +133,9 @@ export function SingleInspectorView({
     ? getCatalogEntriesByKind("gate")
     : null;
   const activeGateEntryId: TrackElementCatalogId =
-    (catalogIdentity?.elementId as TrackElementCatalogId | undefined) ??
-    TRACKDRAW_GATE_ELEMENT_ID;
+    catalogEntry?.kind === "gate"
+      ? (catalogIdentity!.elementId as TrackElementCatalogId)
+      : TRACKDRAW_GATE_ELEMENT_ID;
   const hasCatalogGateDimensions =
     selectedGateShape &&
     catalogEntry?.kind === "gate" &&
