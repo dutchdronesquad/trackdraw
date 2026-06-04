@@ -6,31 +6,11 @@ import { Suspense, useCallback, useMemo } from "react";
 import { useEditor } from "@/store/editor";
 import { selectDesignShapes } from "@/store/selectors";
 import { useTheme } from "@/hooks/useTheme";
+import { SCENE_3D_THEME } from "@/components/canvas/scene3DTheme";
 import {
   MemoShape3D,
   ScreenshotHelper,
 } from "@/components/canvas/trackPreview3DSharedSceneContent";
-
-const THEME = {
-  dark: {
-    bg: "#0b1018",
-    fog: "#0b1018" as `#${string}`,
-    ambientIntensity: 0.7,
-    dirIntensity: 1.4,
-    groundColor: "#0f1824",
-    gridCell: "#1e293b",
-    gridSection: "#3d5068",
-  },
-  light: {
-    bg: "#e8edf3",
-    fog: "#e8edf3" as `#${string}`,
-    ambientIntensity: 1.2,
-    dirIntensity: 1.8,
-    groundColor: "#d0d8e4",
-    gridCell: "#b0bcc8",
-    gridSection: "#7a96b0",
-  },
-};
 
 type Props = {
   /** Called once with the PNG data URL after the scene has rendered. */
@@ -45,7 +25,7 @@ export function GalleryPreviewRenderer({ onCapture }: Props) {
   const field = useEditor((s) => s.track.design.field);
   const shapes = useEditor(selectDesignShapes);
   const theme = useTheme();
-  const t = THEME[theme];
+  const t = SCENE_3D_THEME[theme];
 
   const cx = field.width / 2;
   const cz = field.height / 2;
@@ -115,8 +95,16 @@ export function GalleryPreviewRenderer({ onCapture }: Props) {
         <ambientLight intensity={t.ambientIntensity} />
         <directionalLight
           position={[cx + longest * 0.5, longest, cz + longest * 0.3]}
+          color={t.dirColor}
           intensity={t.dirIntensity}
           castShadow
+          shadow-bias={-0.0005}
+          shadow-camera-left={-longest * 0.7}
+          shadow-camera-right={longest * 0.7}
+          shadow-camera-top={longest * 0.7}
+          shadow-camera-bottom={-longest * 0.7}
+          shadow-camera-near={1}
+          shadow-camera-far={longest * 2 + 60}
         />
         <Suspense fallback={null}>
           <mesh

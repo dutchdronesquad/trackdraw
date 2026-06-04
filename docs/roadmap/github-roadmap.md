@@ -39,10 +39,10 @@ The completed release-sized work is archived below. The REST API, live race over
   - [ ] In-place catalog type switching (`No account required`)
         Let users change the catalog type of an already-placed gate directly from the inspector — for example switching a frame-only TrackDraw gate to a MultiGP Standard Gate 5x5 or back — without needing to delete and re-place the element. The switch should apply the new catalog entry's visual spec, locked dimensions, and identity while preserving position, rotation, and route connections.
 
-- [ ] 3D preview realism and lighting (`Research`, `No account required`)
-      Improve the 3D preview's readability and realism with stronger contrast, sun/directional lighting, shadows, and more recognizable gates/flags while keeping mobile performance safe. Use catalog metadata to render official variants differently where helpful, such as a more realistic MultiGP Standard Gate 5x5.
-  - [ ] 3D readability and realism pass
-        Evaluate sun/directional lighting, stronger contrast, more realistic gates/flags, and shadow treatment without making the scene visually noisy.
+- [x] 3D preview realism and lighting (`Research`, `No account required`)
+      Improved the 3D preview's readability and realism with stronger contrast, sun/directional lighting, shadows, and more recognizable gates/flags while keeping mobile performance safe. Catalog metadata drives official variant rendering, including a realistic MultiGP Standard Gate 5x5.
+  - [x] 3D readability and realism pass
+        Tuned directional lighting with a warm sun tint, lowered ambient intensity for stronger shadow contrast, raised shadow map resolution to 2048, set shadow camera frustum to track bounds to eliminate shadow coverage gaps on large tracks, added shadow-bias to prevent acne, and removed polyline shadow casting to reduce visual noise. Unified the lighting theme across editor, share, and gallery into a single shared constant.
   - [x] Catalog-aware 3D element rendering
         Use catalog-owned visual metadata to render catalog-backed MultiGP-style 5x5 and 7x6 gates with recognizable panel sizes, PVC frame placement, colors, and branding treatment across 2D canvas/SVG output, the live preview, and flythrough export while keeping generic gates lightweight.
 

@@ -18,6 +18,7 @@ import * as THREE from "three";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
+import { SCENE_3D_THEME } from "@/components/canvas/scene3DTheme";
 import { useEditor } from "@/store/editor";
 import { selectDesignShapes, selectHasPath } from "@/store/selectors";
 import {
@@ -46,27 +47,6 @@ const DroneCamera = dynamic(
   { ssr: false }
 );
 
-const THEME = {
-  dark: {
-    bg: "#0b1018",
-    fog: "#0b1018" as `#${string}`,
-    ambientIntensity: 0.7,
-    dirIntensity: 1.4,
-    groundColor: "#0f1824",
-    gridCell: "#1e293b",
-    gridSection: "#3d5068",
-  },
-  light: {
-    bg: "#e8edf3",
-    fog: "#e8edf3" as `#${string}`,
-    ambientIntensity: 1.2,
-    dirIntensity: 1.8,
-    groundColor: "#d0d8e4",
-    gridCell: "#b0bcc8",
-    gridSection: "#7a96b0",
-  },
-};
-
 const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
   function TrackPreview3D(
     { showGizmo = true, onFlyModeChange }: TrackPreview3DProps,
@@ -79,7 +59,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const hasPath = useEditor(selectHasPath);
     const theme = useTheme();
     const isMobile = useIsMobile();
-    const t = THEME[theme];
+    const t = SCENE_3D_THEME[theme];
     const cx = field.width / 2;
     const cz = field.height / 2;
     const longest = Math.max(field.width, field.height);
@@ -165,19 +145,27 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           <ambientLight intensity={t.ambientIntensity} />
           <directionalLight
             position={[cx + 12, 28, cz + 8]}
+            color={t.dirColor}
             intensity={t.dirIntensity}
             castShadow
-            shadow-mapSize-width={1536}
-            shadow-mapSize-height={1536}
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-bias={-0.0005}
+            shadow-camera-left={-longest * 0.7}
+            shadow-camera-right={longest * 0.7}
+            shadow-camera-top={longest * 0.7}
+            shadow-camera-bottom={-longest * 0.7}
+            shadow-camera-near={1}
+            shadow-camera-far={longest * 2 + 60}
           />
           <pointLight
             position={[cx - 10, 8, cz - 5]}
-            intensity={0.3}
+            intensity={0.18}
             color="#2dd4bf"
           />
           <pointLight
             position={[cx + 15, 6, cz + 12]}
-            intensity={0.25}
+            intensity={0.15}
             color="#60a5fa"
           />
 

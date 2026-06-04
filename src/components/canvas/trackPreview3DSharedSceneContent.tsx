@@ -440,7 +440,7 @@ function FrontTextPlaneGeometry({
   return <primitive object={geometry} attach="geometry" />;
 }
 
-function PanelFrameFrameOnlyGate3D({
+function PanelFrameGate3D({
   selected = false,
   shape,
   outerRef,
@@ -656,7 +656,7 @@ function PanelFrameFrameOnlyGate3D({
   );
 }
 
-function FrameOnlyGate3D({
+function Gate3D({
   selected = false,
   shape,
   outerRef,
@@ -678,7 +678,7 @@ function FrameOnlyGate3D({
 
   if (visual.variant === "panel-frame") {
     return (
-      <PanelFrameFrameOnlyGate3D
+      <PanelFrameGate3D
         shape={shape}
         selected={selected}
         outerRef={outerRef}
@@ -1119,7 +1119,7 @@ function Ladder3D({
   );
 }
 
-function DiveFrameOnlyGate3D({
+function DiveGate3D({
   selected = false,
   shape,
   outerRef,
@@ -1364,7 +1364,6 @@ function RaceLine3D({
             <mesh
               key={`${shape.id}-segment-${segmentIndex}`}
               geometry={segmentGeometry}
-              castShadow
             >
               <meshStandardMaterial
                 color={color}
@@ -1376,7 +1375,7 @@ function RaceLine3D({
           );
         })
       ) : (
-        <mesh geometry={geometry} castShadow>
+        <mesh geometry={geometry}>
           <meshStandardMaterial
             color={selected ? "#93c5fd" : (shape.color ?? "#3b82f6")}
             emissive={selected ? "#60a5fa" : "#000000"}
@@ -1453,11 +1452,7 @@ function Shape3D({
     case "gate":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <FrameOnlyGate3D
-            shape={shape}
-            selected={isSelected}
-            outerRef={outerRef}
-          />
+          <Gate3D shape={shape} selected={isSelected} outerRef={outerRef} />
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
@@ -1515,7 +1510,7 @@ function Shape3D({
     case "divegate":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <DiveFrameOnlyGate3D
+          <DiveGate3D
             shape={shape}
             selected={isSelected}
             outerRef={outerRef}
