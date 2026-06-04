@@ -89,7 +89,10 @@ describe("share helpers", () => {
   });
 
   it("reports decode reasons for invalid and oversized tokens", () => {
-    const decompressSpy = vi.spyOn(LZString, "decompressFromEncodedURIComponent");
+    const decompressSpy = vi.spyOn(
+      LZString,
+      "decompressFromEncodedURIComponent"
+    );
 
     expect(decodeDesignWithReason("%%%")).toEqual({
       ok: false,
