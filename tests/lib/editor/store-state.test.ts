@@ -5,12 +5,18 @@ import {
   resetEditorUiState,
   sanitizeEditorUiState,
 } from "@/lib/editor/store-state";
+import type { EditorUiState } from "@/lib/editor/store-types";
+import {
+  MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+  TRACKDRAW_GATE_ELEMENT_ID,
+} from "@/lib/track/elements/catalog";
 
 describe("editor store state helpers", () => {
   it("resetEditorUiState preserves preset and resets zoom/pan when requested", () => {
-    const current = {
+    const current: EditorUiState = {
       ...createDefaultEditorUiState(),
       activePresetId: "straight-gate-run",
+      activeGateElementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
       zoom: 2.25,
       panOffset: { x: 120, y: 75 },
       hoveredShapeId: "shape-1",
@@ -30,10 +36,17 @@ describe("editor store state helpers", () => {
     });
 
     expect(next.activePresetId).toBe("straight-gate-run");
+    expect(next.activeGateElementId).toBe(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
     expect(next.zoom).toBe(1);
     expect(next.panOffset).toEqual({ x: 0, y: 0 });
     expect(next.hoveredShapeId).toBeNull();
     expect(next.rotationSession).toBeNull();
+  });
+
+  it("defaults to the generic TrackDraw gate variant", () => {
+    expect(createDefaultEditorUiState().activeGateElementId).toBe(
+      TRACKDRAW_GATE_ELEMENT_ID
+    );
   });
 
   it("sanitizeEditorUiState clears transient hover and drag state", () => {

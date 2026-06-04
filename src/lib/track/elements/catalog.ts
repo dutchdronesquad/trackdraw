@@ -10,6 +10,8 @@ export const TRACKDRAW_START_FINISH_ELEMENT_ID =
 export const TRACKDRAW_LADDER_ELEMENT_ID = "trackdraw-generic-ladder";
 export const TRACKDRAW_DIVE_GATE_ELEMENT_ID = "trackdraw-generic-dive-gate";
 export const MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID = "multigp-standard-gate-5x5";
+export const MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID =
+  "multigp-championship-gate-7x6";
 
 export type TrackElementCatalogId =
   | typeof TRACKDRAW_GATE_ELEMENT_ID
@@ -19,10 +21,14 @@ export type TrackElementCatalogId =
   | typeof TRACKDRAW_START_FINISH_ELEMENT_ID
   | typeof TRACKDRAW_LADDER_ELEMENT_ID
   | typeof TRACKDRAW_DIVE_GATE_ELEMENT_ID
-  | typeof MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID;
+  | typeof MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID
+  | typeof MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID;
 
 type PlaceableCatalogShape = Exclude<Shape, PolylineShape>;
 export type TrackElementShapeDraft = ShapeDraft<PlaceableCatalogShape>;
+export type GateTrackElementCatalogEntry = TrackElementCatalogEntry & {
+  kind: "gate";
+};
 
 export interface TrackElementDimensions {
   widthMeters?: number;
@@ -59,6 +65,55 @@ export interface TrackElementCatalogEntry {
   exportHints?: {
     simulatorFriendly?: boolean;
   };
+}
+
+export interface TrackElementCatalogIdentity {
+  version: 1;
+  elementId: TrackElementCatalogId;
+  assignedKind: PlaceableCatalogShape["kind"];
+  official: boolean;
+  snapshot: {
+    name: string;
+    organization?: string;
+    dimensionsLabel: string;
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isPlaceableCatalogShapeKind(
+  value: unknown
+): value is PlaceableCatalogShape["kind"] {
+  return (
+    value === "gate" ||
+    value === "flag" ||
+    value === "cone" ||
+    value === "label" ||
+    value === "startfinish" ||
+    value === "ladder" ||
+    value === "divegate"
+  );
+}
+
+function isTrackElementCatalogIdentity(
+  value: unknown
+): value is TrackElementCatalogIdentity {
+  if (!isRecord(value)) return false;
+  if (value.version !== 1) return false;
+  if (typeof value.elementId !== "string") return false;
+  if (!isPlaceableCatalogShapeKind(value.assignedKind)) return false;
+  if (typeof value.official !== "boolean") return false;
+  if (!isRecord(value.snapshot)) return false;
+  if (typeof value.snapshot.name !== "string") return false;
+  if (
+    "organization" in value.snapshot &&
+    typeof value.snapshot.organization !== "string"
+  ) {
+    return false;
+  }
+  return typeof value.snapshot.dimensionsLabel === "string";
 }
 
 const trackdrawGateDefaults = {
@@ -120,6 +175,33 @@ export const trackElementCatalog = [
       {
         label: "MultiGP Standard Gate 5x5",
         url: "https://shop.multigp.com/product/standard-multigp-gate-5x5/",
+      },
+    ],
+    render2d: { icon: "gate" },
+    render3d: { modelHint: "gate-frame" },
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+    name: "MultiGP Championship Gate 7x6",
+    organization: "MultiGP",
+    kind: "gate",
+    official: true,
+    dimensions: {
+      widthMeters: feetToMeters(7),
+      heightMeters: feetToMeters(6),
+      display: { unitSystem: "imperial", label: "7 ft x 6 ft" },
+    },
+    defaultShape: {
+      ...trackdrawGateDefaults,
+      width: feetToMeters(7),
+      height: feetToMeters(6),
+    },
+    tags: ["official", "championship", "race", "multigp"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
       },
     ],
     render2d: { icon: "gate" },
@@ -270,6 +352,36 @@ export function getTrackElementCatalogEntry(
   return trackElementCatalogMap.get(id as TrackElementCatalogId) ?? null;
 }
 
+export function getGateTrackElementCatalogEntries(): GateTrackElementCatalogEntry[] {
+  return (trackElementCatalog as readonly TrackElementCatalogEntry[]).filter(
+    (entry): entry is GateTrackElementCatalogEntry => entry.kind === "gate"
+  );
+}
+
+export function createTrackElementCatalogIdentity(
+  entry: TrackElementCatalogEntry
+): TrackElementCatalogIdentity {
+  return {
+    version: 1,
+    elementId: entry.id,
+    assignedKind: entry.kind,
+    official: entry.official === true,
+    snapshot: {
+      name: entry.name,
+      organization: entry.organization,
+      dimensionsLabel: entry.dimensions.display.label,
+    },
+  };
+}
+
+export function getTrackElementCatalogIdentity(
+  meta: Record<string, unknown> | null | undefined
+): TrackElementCatalogIdentity | null {
+  if (!isRecord(meta)) return null;
+  const catalog = meta.catalog;
+  return isTrackElementCatalogIdentity(catalog) ? catalog : null;
+}
+
 export function createCatalogShapeDraft(
   entryId: TrackElementCatalogId,
   placement: {
@@ -298,10 +410,7 @@ export function createCatalogShapeDraft(
     ...draft,
     meta: {
       ...draft.meta,
-      catalogElementId: entry.id,
-      catalogElementName: entry.name,
-      catalogOrganization: entry.organization,
-      officialCatalogElement: entry.official === true,
+      catalog: createTrackElementCatalogIdentity(entry),
     },
   } satisfies TrackElementShapeDraft;
 }

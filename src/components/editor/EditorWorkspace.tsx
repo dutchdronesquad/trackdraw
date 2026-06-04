@@ -7,6 +7,7 @@ import {
   type RefAttributes,
 } from "react";
 import { DesktopInspectorPanel } from "./DesktopInspectorPanel";
+import { ElementPlacementControl } from "./ElementPlacementControl";
 import StatusBar from "./StatusBar";
 import type {
   TrackCanvasHandle,
@@ -126,6 +127,9 @@ export function EditorWorkspace({
                 readOnly={readOnly}
               />
             </div>
+          ) : null}
+          {tab === "2d" && !readOnly && !isMobile ? (
+            <ElementPlacementControl />
           ) : null}
           {overlay}
         </div>

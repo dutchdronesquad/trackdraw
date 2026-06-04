@@ -101,7 +101,7 @@ describe("SingleInspectorView race timing controls", () => {
     expect(screen.queryByRole("button", { name: "Split" })).toBeNull();
   });
 
-  it("keeps mobile secondary sections collapsed while transform stays open", () => {
+  it("keeps mobile secondary sections collapsed while transform and race timing stay open", () => {
     renderSingleInspector(gate, { mobileInline: true });
 
     expect(
@@ -115,14 +115,13 @@ describe("SingleInspectorView race timing controls", () => {
         .getByRole("button", { name: "Transform" })
         .getAttribute("aria-expanded")
     ).toBe("true");
+    // Race timing stays open on mobile for any shape that supports it,
+    // so clearing the role mid-interaction does not collapse the section.
     expect(
       screen
         .getByRole("button", { name: "Race timing" })
         .getAttribute("aria-expanded")
-    ).toBe("false");
-    expect(
-      screen.getByRole("button", { name: "Gate" }).getAttribute("aria-expanded")
-    ).toBe("false");
+    ).toBe("true");
   });
 
   it("keeps grouped shape details collapsed on mobile", () => {
@@ -164,6 +163,45 @@ describe("SingleInspectorView race timing controls", () => {
       screen
         .getByRole("button", { name: "Race timing" })
         .getAttribute("aria-expanded")
+    ).toBe("true");
+  });
+
+  it("keeps race timing section open on mobile after clearing the timing role", async () => {
+    const shapeWithMarker: GateShape = {
+      ...gate,
+      meta: { timing: { role: "start_finish" } },
+    };
+    const props: React.ComponentProps<typeof SingleInspectorView> = {
+      appendPolylinePoint: vi.fn(),
+      closePolyline: vi.fn(),
+      duplicateShapes: vi.fn(),
+      insertPolylinePoint: vi.fn(),
+      removePolylinePoint: vi.fn(),
+      removeShapes: vi.fn(),
+      reversePolylinePoints: vi.fn(),
+      setGroupName: vi.fn(),
+      setHoveredWaypoint: vi.fn(),
+      setSelection: vi.fn(),
+      setShapesLocked: vi.fn(),
+      shape: shapeWithMarker,
+      ungroupSelection: vi.fn(),
+      updatePolylinePoint: vi.fn(),
+      updateShape: vi.fn(),
+      mobileInline: true,
+    };
+
+    const { rerender } = render(<SingleInspectorView {...props} />);
+
+    expect(
+      screen.getByRole("button", { name: "Race timing" }).getAttribute("aria-expanded")
+    ).toBe("true");
+
+    // Simulate the store updating after the user sets role to "Off"
+    rerender(<SingleInspectorView {...props} shape={gate} />);
+
+    // The section must stay open — closing mid-interaction was the bug
+    expect(
+      screen.getByRole("button", { name: "Race timing" }).getAttribute("aria-expanded")
     ).toBe("true");
   });
 

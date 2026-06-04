@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { feetToMeters } from "@/lib/track/units";
 import {
   createCatalogShapeDraft,
+  getGateTrackElementCatalogEntries,
   getTrackElementCatalogEntry,
+  getTrackElementCatalogIdentity,
+  MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   trackElementCatalog,
@@ -17,6 +20,16 @@ describe("track element catalog", () => {
       "gate"
     );
     expect(getTrackElementCatalogEntry("missing")).toBeNull();
+  });
+
+  it("exposes gate entries for placement controls", () => {
+    expect(getGateTrackElementCatalogEntries().map((entry) => entry.id)).toEqual(
+      [
+        TRACKDRAW_GATE_ELEMENT_ID,
+        MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+        MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+      ]
+    );
   });
 
   it("keeps the generic TrackDraw gate defaults unchanged", () => {
@@ -57,6 +70,28 @@ describe("track element catalog", () => {
     expect(entry?.dimensions.heightMeters).toBeCloseTo(feetToMeters(5));
   });
 
+  it("documents additional common MultiGP gate variants", () => {
+    const championshipGate = getTrackElementCatalogEntry(
+      MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID
+    );
+
+    expect(championshipGate).toMatchObject({
+      name: "MultiGP Championship Gate 7x6",
+      organization: "MultiGP",
+      kind: "gate",
+      official: true,
+      dimensions: {
+        display: { unitSystem: "imperial", label: "7 ft x 6 ft" },
+      },
+    });
+    expect(championshipGate?.dimensions.widthMeters).toBeCloseTo(
+      feetToMeters(7)
+    );
+    expect(championshipGate?.dimensions.heightMeters).toBeCloseTo(
+      feetToMeters(6)
+    );
+  });
+
   it("can stamp catalog identity metadata when a placement flow asks for it", () => {
     const shape = createCatalogShapeDraft(
       MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
@@ -72,11 +107,40 @@ describe("track element catalog", () => {
       width: feetToMeters(5),
       height: feetToMeters(5),
       meta: {
-        catalogElementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
-        catalogElementName: "MultiGP Standard Gate 5x5",
-        catalogOrganization: "MultiGP",
-        officialCatalogElement: true,
+        catalog: {
+          version: 1,
+          elementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+          assignedKind: "gate",
+          official: true,
+          snapshot: {
+            name: "MultiGP Standard Gate 5x5",
+            organization: "MultiGP",
+            dimensionsLabel: "5 ft x 5 ft",
+          },
+        },
       },
     });
+    expect(getTrackElementCatalogIdentity(shape.meta)).toMatchObject({
+      elementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+      assignedKind: "gate",
+      official: true,
+      snapshot: {
+        name: "MultiGP Standard Gate 5x5",
+        organization: "MultiGP",
+        dimensionsLabel: "5 ft x 5 ft",
+      },
+    });
+  });
+
+  it("ignores invalid catalog identity metadata", () => {
+    expect(getTrackElementCatalogIdentity(undefined)).toBeNull();
+    expect(
+      getTrackElementCatalogIdentity({
+        catalog: {
+          version: 1,
+          elementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+        },
+      })
+    ).toBeNull();
   });
 });

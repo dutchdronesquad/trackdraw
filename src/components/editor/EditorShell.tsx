@@ -18,6 +18,7 @@ import { type EditorTool } from "@/lib/editor-tools";
 import { loadProject } from "@/lib/projects";
 import { downloadJsonFile } from "@/lib/export/download-json";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
+import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
@@ -103,6 +104,9 @@ export default function EditorShell({
   const design = useEditor((state) => state.track.design);
   const activeTool = useEditor((state) => state.ui.activeTool);
   const activePresetId = useEditor((state) => state.ui.activePresetId);
+  const activeGateElementId = useEditor(
+    (state) => state.ui.activeGateElementId
+  );
   const snapEnabled = useEditor((state) => state.ui.snapEnabled);
   const {
     duplicateShapes,
@@ -119,6 +123,7 @@ export default function EditorShell({
   } = useTrackActions();
   const {
     setActiveTool,
+    setActiveGateElementId,
     setActivePresetId,
     setSegmentSelection,
     toggleSnapEnabled,
@@ -402,6 +407,18 @@ export default function EditorShell({
     setMobilePathBuilderPinnedOpen(false);
   }, [activeTool, mobileDraftPathState.active]);
 
+  const handleGateElementSelect = useCallback(
+    (entryId: TrackElementCatalogId) => {
+      setSelection([]);
+      setMobileMultiSelectEnabled(false);
+      setMobilePathBuilderPinnedOpen(false);
+      setActiveGateElementId(entryId);
+      setActiveTool("gate");
+      setMobileToolsOpen(false);
+    },
+    [setActiveGateElementId, setActiveTool, setSelection]
+  );
+
   useEffect(() => {
     if (!pendingFlyThroughStart || tab !== "3d") return;
 
@@ -624,6 +641,7 @@ export default function EditorShell({
         {isMobile && !readOnly ? (
           <EditorMobilePanels
             activeTool={activeTool}
+            activeGateElementId={activeGateElementId}
             activePresetLabel={activePresetLabel}
             draftPathActive={mobileDraftPathState.active}
             draftPathClosed={mobileDraftPathState.closed}
@@ -778,6 +796,7 @@ export default function EditorShell({
               setMobileMultiSelectEnabled(false);
               setSelection([]);
             }}
+            onSelectGateElement={handleGateElementSelect}
             onSelectTool={(tool) => {
               setSelection([]);
               setMobileMultiSelectEnabled(false);

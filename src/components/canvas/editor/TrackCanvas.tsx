@@ -385,6 +385,9 @@ const TrackCanvas = memo(
     } = useTrackActions();
     const activeTool = useEditor((state) => state.ui.activeTool);
     const activePresetId = useEditor((state) => state.ui.activePresetId);
+    const activeGateElementId = useEditor(
+      (state) => state.ui.activeGateElementId
+    );
     const snapEnabled = useEditor((state) => state.ui.snapEnabled);
     const segmentSel = useEditor((state) => state.ui.segmentSelection);
     const vertexSel = useEditor((state) => state.ui.vertexSelection);
@@ -1168,6 +1171,7 @@ const TrackCanvas = memo(
     } = useTrackCanvasInteractions({
       activeTool,
       activePresetId,
+      activeGateElementId,
       addShape,
       addShapes,
       contentDragActiveRef,

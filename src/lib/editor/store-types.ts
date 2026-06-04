@@ -9,6 +9,7 @@ import type {
 } from "@/lib/types";
 import type { EditorTool } from "@/lib/editor-tools";
 import type { DraftPoint, RectLike } from "@/lib/canvas/shared";
+import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 
 export interface EditorTrackState {
   design: TrackDesign;
@@ -17,6 +18,7 @@ export interface EditorTrackState {
 export interface EditorUiState {
   activeTool: EditorTool;
   activePresetId: string | null;
+  activeGateElementId: TrackElementCatalogId | null;
   snapEnabled: boolean;
   zoom: number;
   panOffset: { x: number; y: number };
@@ -123,6 +125,7 @@ export interface EditorSessionActions {
 export interface EditorUiActions {
   setActiveTool: (tool: EditorTool) => void;
   setActivePresetId: (presetId: string | null) => void;
+  setActiveGateElementId: (entryId: TrackElementCatalogId | null) => void;
   setSnapEnabled: (enabled: boolean) => void;
   toggleSnapEnabled: () => void;
   setZoom: (zoom: number) => void;
@@ -244,6 +247,7 @@ export const editorStateOwnership = {
   ui: [
     "activeTool",
     "activePresetId",
+    "activeGateElementId",
     "snapEnabled",
     "zoom",
     "panOffset",
@@ -302,6 +306,7 @@ export const editorActionOwnership = {
   ui: [
     "setActiveTool",
     "setActivePresetId",
+    "setActiveGateElementId",
     "setSnapEnabled",
     "toggleSnapEnabled",
     "setZoom",

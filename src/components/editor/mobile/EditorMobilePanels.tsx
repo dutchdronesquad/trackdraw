@@ -13,8 +13,6 @@ import {
   Lock,
   PencilLine,
   Plus,
-  Magnet,
-  Redo2,
   RotateCcw,
   RotateCw,
   Scan,
@@ -23,17 +21,17 @@ import {
   SquareMousePointer,
   Trash2,
   Unlock,
-  Undo2,
 } from "lucide-react";
 import Inspector from "@/components/inspector/Inspector";
 import { MultiSelectOverlay } from "@/components/editor/mobile/MultiSelectOverlay";
 import { PathBuilderOverlay } from "@/components/editor/mobile/PathBuilderOverlay";
+import { ToolsControls } from "@/components/editor/mobile/ToolsControls";
 import { ViewControls } from "@/components/editor/mobile/ViewControls";
-import { mobileToolEntries } from "@/components/editor/tool-icons";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import type { EditorTool } from "@/lib/editor-tools";
 import { getEditorMobilePanelsViewModel } from "@/lib/editor/mobile/view-model";
+import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 import { formatMeasurement } from "@/lib/track/units";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +39,7 @@ export type EditorViewportTab = "2d" | "3d";
 
 interface EditorMobilePanelsProps {
   activeTool: EditorTool;
+  activeGateElementId: TrackElementCatalogId | null;
   activePresetLabel?: string | null;
   draftPathActive: boolean;
   draftPathClosed: boolean;
@@ -98,6 +97,7 @@ interface EditorMobilePanelsProps {
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
   onToggleSnapEnabled: () => void;
+  onSelectGateElement: (entryId: TrackElementCatalogId) => void;
   onSelectTool: (tool: EditorTool) => void;
   onSetMobileToolsOpen: (open: boolean) => void;
   onSetMobileViewOpen: (open: boolean) => void;
@@ -320,6 +320,7 @@ function MobileQuickActionsOverlay({
 
 export function EditorMobilePanels({
   activeTool,
+  activeGateElementId,
   activePresetLabel,
   canAddWaypoint = false,
   canDeleteWaypoint = false,
@@ -380,6 +381,7 @@ export function EditorMobilePanels({
   onSetMobileGizmoEnabled,
   onSetMobileObstacleNumbersEnabled,
   onToggleSnapEnabled,
+  onSelectGateElement,
   onSelectTool,
   onSetMobileToolsOpen,
   onSetMobileViewOpen,
@@ -425,11 +427,6 @@ export function EditorMobilePanels({
     onOpenView();
   };
 
-  const runMobileAction = (action: () => void) => {
-    blurActiveControl();
-    action();
-  };
-
   useEffect(() => {
     const mediaQuery = window.matchMedia(
       "(max-width: 1023px) and (orientation: landscape)"
@@ -472,7 +469,6 @@ export function EditorMobilePanels({
   };
   const showQuickAdjustOverlayVisible =
     showQuickAdjustOverlay && singleSelectionCanQuickAdjust;
-
   return (
     <>
       {!readOnly && !mobileFlyModeActive && (
@@ -700,133 +696,21 @@ export function EditorMobilePanels({
           subtitle={
             tab === "3d"
               ? "Project actions for the current 3D session"
-              : "Drawing and project actions"
+              : "Drawing and editing tools"
           }
-          bodyClassName="space-y-5 pt-3 pb-4"
+          bodyClassName="space-y-4 pt-3 pb-4"
         >
-          <>
-            <div>
-              <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-                History
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => runMobileAction(onUndo)}
-                  disabled={!canUndo}
-                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Undo2 className="size-4" />
-                  <span className="text-[11px] leading-none font-medium">
-                    Undo
-                  </span>
-                </button>
-                <button
-                  onClick={() => runMobileAction(onRedo)}
-                  disabled={!canRedo}
-                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-3 transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Redo2 className="size-4" />
-                  <span className="text-[11px] leading-none font-medium">
-                    Redo
-                  </span>
-                </button>
-              </div>
-            </div>
-            {tab === "2d" && (
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-                  Snap
-                </p>
-                <button
-                  onClick={() => runMobileAction(onToggleSnapEnabled)}
-                  className={cn(
-                    "border-border/50 flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all",
-                    snapEnabled
-                      ? "text-foreground border-emerald-500/30 bg-emerald-500/8"
-                      : "bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">
-                      {snapEnabled ? "Snap on" : "Snap off"}
-                    </p>
-                    <p className="pt-1 text-[11px] leading-relaxed opacity-80">
-                      {snapEnabled
-                        ? "Points and drags lock to nearby grid positions, objects, and route points."
-                        : "Place and drag freely until you turn snap back on."}
-                    </p>
-                  </div>
-                  <Magnet
-                    className={cn(
-                      "size-4 shrink-0",
-                      snapEnabled ? "text-emerald-500" : "text-muted-foreground"
-                    )}
-                  />
-                </button>
-              </div>
-            )}
-            {tab === "2d" && (
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-                  Presets
-                </p>
-                <button
-                  onClick={() => runMobileAction(() => onSelectTool("preset"))}
-                  className={cn(
-                    "border-border/50 flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition-all",
-                    activeTool === "preset"
-                      ? "border-border/80 bg-muted/55 text-foreground"
-                      : "bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">Layout presets</p>
-                    <p className="pt-1 text-[11px] leading-relaxed opacity-80">
-                      {activePresetLabel
-                        ? `Current preset: ${activePresetLabel}`
-                        : "Place a curated multi-shape section in one tap."}
-                    </p>
-                  </div>
-                  <LayoutGrid className="size-4 shrink-0" />
-                </button>
-              </div>
-            )}
-            {tab === "2d" && (
-              <div>
-                <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-                  Drawing tools
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  {mobileToolEntries
-                    .filter(
-                      (tool) => tool.id !== "grab" && tool.id !== "preset"
-                    )
-                    .map((tool) => {
-                      const active = activeTool === tool.id;
-                      return (
-                        <button
-                          key={tool.id}
-                          onClick={() =>
-                            runMobileAction(() => onSelectTool(tool.id))
-                          }
-                          className={cn(
-                            "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
-                            active
-                              ? "border-border/80 bg-muted/55 text-foreground"
-                              : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-                          )}
-                        >
-                          {tool.icon}
-                          <span className="text-[11px] leading-none font-medium">
-                            {tool.label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-            )}
-          </>
+          <ToolsControls
+            activeTool={activeTool}
+            activeGateElementId={activeGateElementId}
+            canRedo={canRedo}
+            canUndo={canUndo}
+            tab={tab}
+            onRedo={onRedo}
+            onSelectGateElement={onSelectGateElement}
+            onSelectTool={onSelectTool}
+            onUndo={onUndo}
+          />
         </MobileDrawer>
       )}
 
@@ -853,6 +737,8 @@ export function EditorMobilePanels({
             onStartFlyThrough={onStartFlyThrough}
             onTabChange={onTabChange}
             saveStatusLabel={saveStatusLabel}
+            snapEnabled={snapEnabled}
+            onToggleSnapEnabled={onToggleSnapEnabled}
             closePanel={() => onSetMobileViewOpen(false)}
             tab={tab}
           />

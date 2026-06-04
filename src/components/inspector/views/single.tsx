@@ -8,6 +8,11 @@ import { shapeKindLabels } from "@/lib/editor-tools";
 import { getSingleInspectorViewModel } from "@/lib/inspector/single/view-model";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
+  getTrackElementCatalogEntry,
+  getTrackElementCatalogIdentity,
+} from "@/lib/track/elements/catalog";
+import { formatMeasurement } from "@/lib/track/units";
+import {
   getShapeTimingMarker,
   getTimingMarkerMeta,
   isTimingMarkerShape,
@@ -111,9 +116,24 @@ export function SingleInspectorView({
     shape.kind === "polyline" &&
     (Boolean(onResumeSelectedPath) || showDefaultPathActions);
   const timingMarker = getShapeTimingMarker(shape);
+  const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
+  const catalogEntry = getTrackElementCatalogEntry(catalogIdentity?.elementId);
+  const selectedGateShape = shape.kind === "gate" ? shape : null;
+  const catalogGateDimensions =
+    selectedGateShape &&
+    catalogEntry?.kind === "gate" &&
+    typeof catalogEntry.dimensions.widthMeters === "number" &&
+    typeof catalogEntry.dimensions.heightMeters === "number"
+      ? {
+          width: catalogEntry.dimensions.widthMeters,
+          height: catalogEntry.dimensions.heightMeters,
+        }
+      : null;
+  const isOfficialCatalogGate =
+    catalogIdentity?.official === true && catalogGateDimensions !== null;
   const canSetTimingMarker = isTimingMarkerShape(shape);
   const secondarySectionDefaultOpen = !mobileInline;
-  const timingSectionDefaultOpen = !mobileInline || Boolean(timingMarker);
+  const timingSectionDefaultOpen = !mobileInline || canSetTimingMarker;
   const timingRoleOptions: Array<{
     label: string;
     role: TimingRole | "none";
@@ -132,6 +152,16 @@ export function SingleInspectorView({
       meta: getTimingMarkerMeta(shape.meta, marker),
     } as Partial<Shape>);
   };
+  const renderOfficialMeasurement = (valueMeters: number) => (
+    <div className="border-border/50 bg-muted/25 text-foreground/82 flex h-8 min-w-0 items-center justify-between gap-2 rounded-md border px-2.5 text-[11px] shadow-none lg:h-7 lg:px-2">
+      <span className="min-w-0 truncate font-mono">
+        {formatMeasurement(valueMeters, unitSystem, { precision: 2 })}
+      </span>
+      <span className="text-muted-foreground/70 shrink-0 text-[10px] font-medium">
+        Official
+      </span>
+    </div>
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -247,7 +277,10 @@ export function SingleInspectorView({
                     setGroupName([shape.id], event.target.value)
                   }
                   placeholder="Optional group name"
-                  className="bg-muted/50 border-border/70 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
                 />
               </Row>
               <div className="pt-1">
@@ -261,87 +294,45 @@ export function SingleInspectorView({
               </div>
             </Section>
           )}
-          <Section title="Transform">
-            <Row label="Name">
-              <Input
-                value={shape.name ?? ""}
-                onFocus={startBatch}
-                onBlur={finishBatch}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.currentTarget.blur();
-                  }
-                }}
-                onChange={(event) =>
-                  updateShape(shape.id, { name: event.target.value })
-                }
-                placeholder={`${shapeKindLabels[shape.kind]} name`}
-                className="bg-muted/50 border-border/70 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
-              />
-            </Row>
-            <Row label="Position">
-              <div className="grid grid-cols-2 gap-2">
-                <label className="min-w-0">
-                  <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
-                    X ({unitLabel})
-                  </span>
-                  <MeasurementNum
-                    valueMeters={fmt(anchorPosition.x)}
-                    unitSystem={unitSystem}
-                    onChange={(value) => updateShape(shape.id, { x: value })}
-                  />
-                </label>
-                <label className="min-w-0">
-                  <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
-                    Y ({unitLabel})
-                  </span>
-                  <MeasurementNum
-                    valueMeters={fmt(anchorPosition.y)}
-                    unitSystem={unitSystem}
-                    onChange={(value) => updateShape(shape.id, { y: value })}
-                  />
-                </label>
-              </div>
-            </Row>
-            {shape.kind !== "cone" && (
-              <Row label="Rotation (deg)">
-                <Num
-                  value={shape.rotation}
-                  onChange={(value) =>
-                    updateShape(shape.id, { rotation: value })
-                  }
-                  step={1}
-                />
+          {catalogIdentity ? (
+            <Section title="Catalog" defaultOpen>
+              <Row label="Type">
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] font-medium text-foreground">
+                    {catalogIdentity.snapshot.name}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    {shapeKindLabels[catalogIdentity.assignedKind]}
+                  </p>
+                </div>
               </Row>
-            )}
-            <Row label="Color">
-              <div className="flex items-center gap-2">
-                <label className="group relative block cursor-pointer">
-                  <span
-                    className="border-border/45 block size-9 rounded-lg border shadow-xs transition-transform group-hover:scale-[1.03] lg:size-7"
-                    style={{
-                      background: `linear-gradient(135deg, ${defaultColor} 0%, color-mix(in oklab, ${defaultColor} 72%, black) 100%)`,
-                    }}
-                  />
-                  <span className="absolute inset-0 rounded-lg ring-1 ring-white/18 ring-inset" />
-                  <input
-                    type="color"
-                    className="absolute inset-0 cursor-pointer opacity-0"
-                    value={defaultColor}
-                    onFocus={startBatch}
-                    onBlur={finishBatch}
-                    onChange={(event) =>
-                      updateShape(shape.id, { color: event.target.value })
-                    }
-                    aria-label="Pick color"
-                  />
-                </label>
-                <span className="border-border/45 bg-muted/35 text-foreground/78 inline-flex h-8 items-center rounded-lg border px-2.5 font-mono text-[11px] lg:h-7">
-                  {defaultColor}
+              {catalogIdentity.snapshot.organization ? (
+                <Row label="Source">
+                  <span className="text-[12px] text-foreground">
+                    {catalogIdentity.snapshot.organization}
+                  </span>
+                </Row>
+              ) : null}
+              <Row label="Official size">
+                <span className="text-[12px] text-foreground">
+                  {catalogIdentity.snapshot.dimensionsLabel}
                 </span>
-              </div>
-            </Row>
-          </Section>
+              </Row>
+              <Row label="Status">
+                <span
+                  className={`inline-flex min-h-6 items-center rounded-md border px-2 py-1 text-[11px] font-medium ${
+                    catalogIdentity.official
+                      ? "border-emerald-500/25 bg-emerald-500/8 text-emerald-700 dark:text-emerald-300"
+                      : "border-border/60 bg-muted/40 text-muted-foreground"
+                  }`}
+                >
+                  {catalogIdentity.official
+                    ? "Official dimensions"
+                    : "Catalog item"}
+                </span>
+              </Row>
+            </Section>
+          ) : null}
 
           {canSetTimingMarker && (
             <Section title="Race timing" defaultOpen={timingSectionDefaultOpen}>
@@ -410,8 +401,178 @@ export function SingleInspectorView({
             </Section>
           )}
 
-          {shape.kind === "gate" && (
-            <Section title="Gate" defaultOpen={secondarySectionDefaultOpen}>
+          <Section title="Transform">
+            <Row label="Name">
+              <Input
+                value={shape.name ?? ""}
+                onFocus={startBatch}
+                onBlur={finishBatch}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.currentTarget.blur();
+                  }
+                }}
+                onChange={(event) =>
+                  updateShape(shape.id, { name: event.target.value })
+                }
+                placeholder={`${shapeKindLabels[shape.kind]} name`}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
+              />
+            </Row>
+            <Row label="Position">
+              <div className="grid grid-cols-2 gap-2">
+                <label className="min-w-0">
+                  <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
+                    X ({unitLabel})
+                  </span>
+                  <MeasurementNum
+                    valueMeters={fmt(anchorPosition.x)}
+                    unitSystem={unitSystem}
+                    onChange={(value) => updateShape(shape.id, { x: value })}
+                  />
+                </label>
+                <label className="min-w-0">
+                  <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
+                    Y ({unitLabel})
+                  </span>
+                  <MeasurementNum
+                    valueMeters={fmt(anchorPosition.y)}
+                    unitSystem={unitSystem}
+                    onChange={(value) => updateShape(shape.id, { y: value })}
+                  />
+                </label>
+              </div>
+            </Row>
+            {shape.kind !== "cone" && (
+              <Row label="Rotation (deg)">
+                <Num
+                  value={shape.rotation}
+                  onChange={(value) =>
+                    updateShape(shape.id, { rotation: value })
+                  }
+                  step={1}
+                />
+              </Row>
+            )}
+            <Row label="Color">
+              <div className="flex items-center gap-2">
+                <label className="group relative block cursor-pointer">
+                  <span
+                    className="border-border/45 block size-9 rounded-lg border shadow-xs transition-transform group-hover:scale-[1.03] lg:size-7"
+                    style={{
+                      background: `linear-gradient(135deg, ${defaultColor} 0%, color-mix(in oklab, ${defaultColor} 72%, black) 100%)`,
+                    }}
+                  />
+                  <span className="absolute inset-0 rounded-lg ring-1 ring-white/18 ring-inset" />
+                  <input
+                    type="color"
+                    className="absolute inset-0 cursor-pointer opacity-0"
+                    value={defaultColor}
+                    onFocus={startBatch}
+                    onBlur={finishBatch}
+                    onChange={(event) =>
+                      updateShape(shape.id, { color: event.target.value })
+                    }
+                    aria-label="Pick color"
+                  />
+                </label>
+                <span className="border-border/45 bg-muted/35 text-foreground/78 inline-flex h-8 items-center rounded-lg border px-2.5 font-mono text-[11px] lg:h-7">
+                  {defaultColor}
+                </span>
+              </div>
+            </Row>
+            {shape.kind === "gate" && (
+              <>
+                <Row label="Width">
+                  {isOfficialCatalogGate ? (
+                    renderOfficialMeasurement(shape.width)
+                  ) : (
+                    <MeasurementNum
+                      valueMeters={shape.width}
+                      unitSystem={unitSystem}
+                      onChange={(value) =>
+                        updateShape(shape.id, { width: value })
+                      }
+                      minMeters={0.5}
+                    />
+                  )}
+                </Row>
+                <Row label="Height">
+                  {isOfficialCatalogGate ? (
+                    renderOfficialMeasurement(shape.height)
+                  ) : (
+                    <MeasurementNum
+                      valueMeters={shape.height}
+                      unitSystem={unitSystem}
+                      onChange={(value) =>
+                        updateShape(shape.id, { height: value })
+                      }
+                      minMeters={0.5}
+                    />
+                  )}
+                </Row>
+                <Row label="Thickness">
+                  <MeasurementNum
+                    valueMeters={shape.thick ?? 0.2}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, { thick: value })
+                    }
+                    minMeters={0.05}
+                  />
+                </Row>
+              </>
+            )}
+            {shape.kind === "flag" && (
+              <>
+                <Row label="Radius">
+                  <MeasurementNum
+                    valueMeters={shape.radius}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, { radius: value })
+                    }
+                    minMeters={0.05}
+                  />
+                </Row>
+                <Row label="Pole height">
+                  <MeasurementNum
+                    valueMeters={shape.poleHeight ?? 3.5}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, { poleHeight: value })
+                    }
+                    minMeters={0}
+                  />
+                </Row>
+              </>
+            )}
+            {shape.kind === "cone" && (
+              <Row label="Radius">
+                <MeasurementNum
+                  valueMeters={shape.radius}
+                  unitSystem={unitSystem}
+                  onChange={(value) => updateShape(shape.id, { radius: value })}
+                  minMeters={0.05}
+                />
+              </Row>
+            )}
+            {shape.kind === "label" && (
+              <Row label="Font size (px)">
+                <Num
+                  value={shape.fontSize ?? 18}
+                  onChange={(value) =>
+                    updateShape(shape.id, { fontSize: value })
+                  }
+                  step={1}
+                  min={8}
+                />
+              </Row>
+            )}
+            {shape.kind === "startfinish" && (
               <Row label="Width">
                 <MeasurementNum
                   valueMeters={shape.width}
@@ -420,60 +581,90 @@ export function SingleInspectorView({
                   minMeters={0.5}
                 />
               </Row>
-              <Row label="Height">
-                <MeasurementNum
-                  valueMeters={shape.height}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { height: value })}
-                  minMeters={0.5}
-                />
-              </Row>
-              <Row label="Thickness">
-                <MeasurementNum
-                  valueMeters={shape.thick ?? 0.2}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { thick: value })}
-                  minMeters={0.05}
-                />
-              </Row>
-            </Section>
-          )}
-
-          {shape.kind === "flag" && (
-            <Section title="Flag" defaultOpen={secondarySectionDefaultOpen}>
-              <Row label="Radius">
-                <MeasurementNum
-                  valueMeters={shape.radius}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { radius: value })}
-                  minMeters={0.05}
-                />
-              </Row>
-              <Row label="Pole height">
-                <MeasurementNum
-                  valueMeters={shape.poleHeight ?? 3.5}
-                  unitSystem={unitSystem}
-                  onChange={(value) =>
-                    updateShape(shape.id, { poleHeight: value })
-                  }
-                  minMeters={0}
-                />
-              </Row>
-            </Section>
-          )}
-
-          {shape.kind === "cone" && (
-            <Section title="Cone" defaultOpen={secondarySectionDefaultOpen}>
-              <Row label="Radius">
-                <MeasurementNum
-                  valueMeters={shape.radius}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { radius: value })}
-                  minMeters={0.05}
-                />
-              </Row>
-            </Section>
-          )}
+            )}
+            {shape.kind === "ladder" && (
+              <>
+                <Row label="Width">
+                  <MeasurementNum
+                    valueMeters={shape.width}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, { width: value })
+                    }
+                    minMeters={0.5}
+                  />
+                </Row>
+                <Row label="Height">
+                  <MeasurementNum
+                    valueMeters={shape.height}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, { height: value })
+                    }
+                    minMeters={0.5}
+                  />
+                </Row>
+                <Row label="Elevation">
+                  <MeasurementNum
+                    valueMeters={shape.elevation ?? 0}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, {
+                        elevation: Math.max(0, value),
+                      })
+                    }
+                    minMeters={0}
+                  />
+                </Row>
+              </>
+            )}
+            {shape.kind === "divegate" && (
+              <>
+                <Row label="Size">
+                  <MeasurementNum
+                    valueMeters={shape.size}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, { size: value })
+                    }
+                    minMeters={0.5}
+                  />
+                </Row>
+                <Row label="Elevation">
+                  <MeasurementNum
+                    valueMeters={shape.elevation ?? 3}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, { elevation: value })
+                    }
+                    minMeters={0.1}
+                  />
+                </Row>
+                <Row label="Thickness">
+                  <MeasurementNum
+                    valueMeters={shape.thick ?? 0.2}
+                    unitSystem={unitSystem}
+                    onChange={(value) =>
+                      updateShape(shape.id, { thick: value })
+                    }
+                    minMeters={0.05}
+                  />
+                </Row>
+                <Row label="Tilt (deg)">
+                  <Num
+                    value={shape.tilt ?? 0}
+                    onChange={(value) =>
+                      updateShape(shape.id, {
+                        tilt: Math.round(Math.max(0, Math.min(90, value))),
+                      })
+                    }
+                    step={5}
+                    min={0}
+                  />
+                </Row>
+              </>
+            )}
+          </Section>
 
           {shape.kind === "label" && (
             <Section title="Label" defaultOpen={secondarySectionDefaultOpen}>
@@ -487,16 +678,6 @@ export function SingleInspectorView({
                   onChange={(event) =>
                     updateShape(shape.id, { text: event.target.value })
                   }
-                />
-              </Row>
-              <Row label="Font size (px)">
-                <Num
-                  value={shape.fontSize ?? 18}
-                  onChange={(value) =>
-                    updateShape(shape.id, { fontSize: value })
-                  }
-                  step={1}
-                  min={8}
                 />
               </Row>
               <Row label="3D mode">
@@ -518,52 +699,8 @@ export function SingleInspectorView({
             </Section>
           )}
 
-          {shape.kind === "startfinish" && (
-            <Section
-              title="Start Pads"
-              defaultOpen={secondarySectionDefaultOpen}
-            >
-              <Row label="Width">
-                <MeasurementNum
-                  valueMeters={shape.width}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { width: value })}
-                  minMeters={0.5}
-                />
-              </Row>
-            </Section>
-          )}
-
           {shape.kind === "ladder" && (
             <Section title="Ladder" defaultOpen={secondarySectionDefaultOpen}>
-              <Row label="Width">
-                <MeasurementNum
-                  valueMeters={shape.width}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { width: value })}
-                  minMeters={0.5}
-                />
-              </Row>
-              <Row label="Height">
-                <MeasurementNum
-                  valueMeters={shape.height}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { height: value })}
-                  minMeters={0.5}
-                />
-              </Row>
-              <Row label="Elevation">
-                <MeasurementNum
-                  valueMeters={shape.elevation ?? 0}
-                  unitSystem={unitSystem}
-                  onChange={(value) =>
-                    updateShape(shape.id, {
-                      elevation: Math.max(0, value),
-                    })
-                  }
-                  minMeters={0}
-                />
-              </Row>
               <Row label="Gates">
                 <Num
                   value={shape.rungs}
@@ -578,52 +715,6 @@ export function SingleInspectorView({
                   }}
                   step={1}
                   min={1}
-                />
-              </Row>
-            </Section>
-          )}
-
-          {shape.kind === "divegate" && (
-            <Section
-              title="Dive Gate"
-              defaultOpen={secondarySectionDefaultOpen}
-            >
-              <Row label="Size">
-                <MeasurementNum
-                  valueMeters={shape.size}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { size: value })}
-                  minMeters={0.5}
-                />
-              </Row>
-              <Row label="Elevation">
-                <MeasurementNum
-                  valueMeters={shape.elevation ?? 3}
-                  unitSystem={unitSystem}
-                  onChange={(value) =>
-                    updateShape(shape.id, { elevation: value })
-                  }
-                  minMeters={0.1}
-                />
-              </Row>
-              <Row label="Thickness">
-                <MeasurementNum
-                  valueMeters={shape.thick ?? 0.2}
-                  unitSystem={unitSystem}
-                  onChange={(value) => updateShape(shape.id, { thick: value })}
-                  minMeters={0.05}
-                />
-              </Row>
-              <Row label="Tilt (deg)">
-                <Num
-                  value={shape.tilt ?? 0}
-                  onChange={(value) =>
-                    updateShape(shape.id, {
-                      tilt: Math.round(Math.max(0, Math.min(90, value))),
-                    })
-                  }
-                  step={5}
-                  min={0}
                 />
               </Row>
             </Section>

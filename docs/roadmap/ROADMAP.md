@@ -235,7 +235,7 @@ Why:
 Feature tracks:
 
 - Track element catalog: define typed local catalog entries with official names, meter-based dimensions, display dimensions, source references, shape defaults, 2D hints, 3D hints, and export compatibility metadata
-- Official equipment entries: expose cataloged official entries such as the MultiGP Standard Gate 5x5 through deliberate placement/library UI rather than hard-coded generic defaults, while preserving custom gate editing and saved-project compatibility
+- Official equipment entries: expose cataloged official entries such as the MultiGP Standard Gate 5x5 through deliberate placement/library UI rather than hard-coded generic defaults, while keeping custom sizing on the standard TrackDraw Gate and preserving saved-project compatibility
 - Element library UI: expose official and custom variants without slowing down the current quick-placement toolbar flow
 
 Important boundary:
@@ -246,8 +246,10 @@ Important boundary:
 
 Current shipped foundation:
 
-- A typed local catalog module now holds TrackDraw-provided element entries and a source-backed MultiGP Standard Gate 5x5 entry without changing the existing generic gate default
+- A typed local catalog module now holds TrackDraw-provided element entries and source-backed MultiGP-style 5x5 and 7x6 gate entries without changing the existing generic gate default
 - Toolbar placement, layout presets, and starter layouts now use shared catalog placement helpers for generic elements, keeping saved geometry meter-based and backwards compatible
+- Gate placement can now switch between the generic TrackDraw gate and catalog-backed MultiGP-style 5x5 and 7x6 gate variants through a compact desktop placement dropdown and a compact mobile Gate type picker
+- The inspector shows catalog type, source, official size, and dimension status while keeping official gate width and height fixed in normal editing
 
 #### 3D Preview And Direct Manipulation
 
@@ -256,17 +258,20 @@ TrackDraw should improve 3D review and focused 3D editing as separate editor cap
 Why:
 
 - 3D review can become more useful with better lighting, contrast, sun/directional-light treatment, shadows, and more realistic gates/flags
+- Catalog metadata can tell 3D rendering which official object was placed, but the visual fidelity work itself belongs here rather than in the catalog model
 - Direct 3D controls can speed up selected item edits when they stay narrow and respect lock state, undo/redo, and mobile constraints
 
 Feature tracks:
 
 - 3D preview realism and lighting: improve scene readability with sun/directional lighting, shadows, contrast, and more realistic gate/flag presentation before adding heavy asset workflows
+- Catalog-aware 3D element rendering: use catalog identity such as `MultiGP Standard Gate 5x5` to render official elements with more recognizable shapes/materials while keeping generic gates lightweight
 - Focused 3D item controls: add direct controls for common edits such as elevation, rotation, scaling, and orientation only where undo/redo, lock state, and mobile behavior remain safe
 
 Important boundary:
 
 - Do not make 3D controls broad enough to destabilize the existing 2D-first editor
 - Do not bury 3D preview or direct manipulation work under the element catalog; they should remain standalone editor features
+- Do not duplicate catalog source/dimension decisions in the 3D renderer; consume catalog metadata and render hints instead
 
 #### Generated Flightpath Assistance
 

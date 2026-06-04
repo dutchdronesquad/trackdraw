@@ -94,6 +94,7 @@ interface EditorState {
   sanitizeHistoryState: EditorSessionActions["sanitizeHistoryState"];
   setActiveTool: EditorUiActions["setActiveTool"];
   setActivePresetId: EditorUiActions["setActivePresetId"];
+  setActiveGateElementId: EditorUiActions["setActiveGateElementId"];
   setSnapEnabled: EditorUiActions["setSnapEnabled"];
   toggleSnapEnabled: EditorUiActions["toggleSnapEnabled"];
   setZoom: EditorUiActions["setZoom"];
@@ -478,6 +479,11 @@ export const useEditor = create<EditorState>()(
       setActivePresetId: (presetId) =>
         set((draft) => {
           draft.ui.activePresetId = presetId;
+        }),
+
+      setActiveGateElementId: (entryId) =>
+        set((draft) => {
+          draft.ui.activeGateElementId = entryId;
         }),
 
       setSnapEnabled: (enabled) =>

@@ -1,5 +1,6 @@
 import {
   createCatalogShapeDraft,
+  getTrackElementCatalogEntry,
   TRACKDRAW_CONE_ELEMENT_ID,
   TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
@@ -75,14 +76,26 @@ const toolCatalogEntryIds: Partial<Record<EditorTool, TrackElementCatalogId>> =
 
 export function createShapeForTool(
   tool: EditorTool,
-  point: { x: number; y: number }
+  point: { x: number; y: number },
+  options: { gateElementId?: TrackElementCatalogId | null } = {}
 ): ShapeDraft | null {
-  const entryId = toolCatalogEntryIds[tool];
+  const entryId =
+    tool === "gate"
+      ? options.gateElementId || TRACKDRAW_GATE_ELEMENT_ID
+      : toolCatalogEntryIds[tool];
   if (!entryId) return null;
 
-  return createCatalogShapeDraft(entryId, {
+  const entry = getTrackElementCatalogEntry(entryId);
+  const resolvedEntryId =
+    tool === "gate" && entry?.kind !== "gate"
+      ? TRACKDRAW_GATE_ELEMENT_ID
+      : entryId;
+  const resolvedEntry = getTrackElementCatalogEntry(resolvedEntryId);
+
+  return createCatalogShapeDraft(resolvedEntryId, {
     x: point.x,
     y: point.y,
     rotation: 0,
+    includeCatalogMetadata: resolvedEntry?.official === true,
   });
 }

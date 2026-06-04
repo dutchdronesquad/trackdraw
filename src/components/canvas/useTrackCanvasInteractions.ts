@@ -24,6 +24,7 @@ import {
 } from "@/lib/canvas/interaction-helpers";
 import { findNearestSnapTargetWithRoutes } from "@/lib/canvas/snap";
 import { createShapeForTool, type EditorTool } from "@/lib/editor-tools";
+import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 import {
   getLayoutPresetById,
   placeLayoutPreset,
@@ -39,6 +40,7 @@ import type { PolylineShape, Shape, ShapeDraft } from "@/lib/types";
 interface TrackCanvasInteractionsParams {
   activeTool: EditorTool;
   activePresetId: string | null;
+  activeGateElementId: TrackElementCatalogId | null;
   addShape: (shape: ShapeDraft) => string;
   addShapes: (shapes: ShapeDraft[]) => string[];
   contentDragActiveRef: React.RefObject<boolean>;
@@ -101,6 +103,7 @@ interface TrackCanvasInteractionsParams {
 export function useTrackCanvasInteractions({
   activeTool,
   activePresetId,
+  activeGateElementId,
   addShape,
   addShapes,
   contentDragActiveRef,
@@ -613,7 +616,9 @@ export function useTrackCanvasInteractions({
           touchInteractionModeRef.current = "none";
           return;
         }
-        const shape = createShapeForTool(activeTool, meters);
+        const shape = createShapeForTool(activeTool, meters, {
+          gateElementId: activeGateElementId,
+        });
         if (!shape) return;
         const id = addShape(shape);
         setSelection([id]);
@@ -634,6 +639,7 @@ export function useTrackCanvasInteractions({
     [
       activeTool,
       activePresetId,
+      activeGateElementId,
       addShape,
       addShapes,
       finalizePath,
@@ -841,7 +847,9 @@ export function useTrackCanvasInteractions({
           suppressTapRef.current = true;
           return;
         }
-        const shape = createShapeForTool(activeTool, meters);
+        const shape = createShapeForTool(activeTool, meters, {
+          gateElementId: activeGateElementId,
+        });
         if (!shape) return;
         const id = addShape(shape);
         setSelection([id]);
@@ -875,6 +883,7 @@ export function useTrackCanvasInteractions({
     [
       activeTool,
       activePresetId,
+      activeGateElementId,
       addShape,
       addShapes,
       marqueeAdditiveRef,

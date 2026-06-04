@@ -18,6 +18,8 @@ interface EditorMobileViewControlsProps {
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onShare?: () => void;
   onStartFlyThrough: () => void;
+  snapEnabled?: boolean;
+  onToggleSnapEnabled?: () => void;
   onTabChange: (tab: EditorViewportTab) => void;
   saveStatusLabel: string;
   showShareActions?: boolean;
@@ -82,9 +84,11 @@ export function ViewControls({
   onShare,
   onStartFlyThrough,
   onTabChange,
+  onToggleSnapEnabled,
   readOnly = false,
   saveStatusLabel,
   showShareActions = true,
+  snapEnabled = false,
   studioHref = "/studio",
   tab,
 }: EditorMobileViewControlsProps) {
@@ -139,6 +143,34 @@ export function ViewControls({
         </button>
         {tab === "2d" ? (
           <>
+            {onToggleSnapEnabled && (
+              <button
+                onClick={onToggleSnapEnabled}
+                className={cn(
+                  "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                  snapEnabled
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <div>
+                  <p className="text-[11px] font-medium">Snap</p>
+                  <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+                    Lock to nearby grid positions and objects
+                  </p>
+                </div>
+                <div
+                  className={cn(
+                    "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                    snapEnabled
+                      ? "bg-foreground/90 justify-end"
+                      : "bg-border/80 justify-start"
+                  )}
+                >
+                  <span className="bg-background block size-5 rounded-full shadow-xs" />
+                </div>
+              </button>
+            )}
             <ToggleRow
               title="Rulers"
               description="Show top and left guides on mobile"

@@ -27,16 +27,22 @@ The completed release-sized work is archived below. The REST API, live race over
 ## Follow-up
 
 - [ ] Track element catalog (`Research`, `No account required`)
-      Build a catalog-backed element model for official gates, richer placement defaults, and future equipment/library expansion before changing default race-gate sizing.
+      Build a catalog-backed element model for official gates, richer placement defaults, and future equipment/library expansion before changing default race-gate sizing. This track owns element identity, source metadata, dimensions, and placement selection, not high-fidelity 3D rendering.
   - [x] Local element catalog foundation
         Define typed catalog entries for official names, dimensions, source references, 2D defaults, 3D render hints, and export compatibility while keeping saved project geometry meter-based.
   - [ ] Official gate and obstacle entries
-        Expose entries such as the cataloged MultiGP-style standard gate through deliberate placement/library UI, with custom gate editing preserved and no automatic migration of existing projects.
+        Expose entries such as the cataloged MultiGP-style standard gate through deliberate placement/library UI, with custom sizing kept on the standard TrackDraw Gate and no automatic migration of existing projects.
+  - [x] MultiGP gate placement selector
+        Keep Gate as the primary placement tool while letting users switch the active gate type between the generic TrackDraw gate and catalog-backed MultiGP-style 5x5 and 7x6 variants through compact desktop and mobile type pickers.
+  - [x] Catalog identity in inspector
+        Show placed catalog-backed elements with their official type, source, official size, and dimension status while keeping official gate width and height fixed in normal editing.
 
 - [ ] 3D preview realism and lighting (`Research`, `No account required`)
-      Improve the 3D preview's readability and realism with stronger contrast, sun/directional lighting, shadows, and more recognizable gates/flags while keeping mobile performance safe.
+      Improve the 3D preview's readability and realism with stronger contrast, sun/directional lighting, shadows, and more recognizable gates/flags while keeping mobile performance safe. Use catalog metadata to render official variants differently where helpful, such as a more realistic MultiGP Standard Gate 5x5.
   - [ ] 3D readability and realism pass
         Evaluate sun/directional lighting, stronger contrast, more realistic gates/flags, and shadow treatment without making the scene visually noisy.
+  - [ ] Catalog-aware 3D element rendering
+        Use `meta.catalog` and catalog render hints to choose more realistic 3D treatments for official elements, starting with the MultiGP Standard Gate 5x5, while keeping generic gates lightweight.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.

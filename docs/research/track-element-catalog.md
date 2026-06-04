@@ -8,7 +8,8 @@ The catalog should start local and typed, not as a database. A database becomes 
 
 - [x] Define a typed local element catalog for official and TrackDraw-provided elements.
 - [x] Move default placement for generic tools and presets onto catalog entries.
-- [x] Add an initial official race-gate entry, including a MultiGP-style 5 ft x 5 ft standard gate, without changing existing saved designs.
+- [x] Add initial official race-gate entries, including MultiGP-style 5x5 and 7x6 variants, without changing existing saved designs.
+- [x] Show catalog identity, official size status, and fixed official dimensions for placed catalog-backed gates.
 
 ## Reference Observations
 
@@ -73,16 +74,24 @@ Scope:
 
 - Add the first official gate entries after validating exact sizing and source language:
   - MultiGP Standard Gate 5x5
-  - MultiGP Champ Gate 7x6 or 10x8 only after confirming the correct naming/dimensions for the intended race context
+  - MultiGP Championship Gate 7x6
+  - Hurdles only after deciding whether they should remain `gate`-like catalog variants or become their own obstacle category
   - Dive gate variants only after deciding whether they should remain one `divegate` shape or become catalog-driven variants
-- Keep "Custom Gate" available so users are not boxed into official-only dimensions.
+- Keep "Custom Gate" available through the standard TrackDraw Gate so users are not boxed into official-only dimensions.
 - Expose the official name in inspector/export summaries only when the shape was created from a catalog entry or explicitly assigned one.
+- Keep official gate width and height fixed after placement. Custom sizing belongs to the standard TrackDraw Gate instead of modifying an official catalog item.
 
 Done state:
 
 - Users can place at least one official named race gate.
 - The inspector can show the official identity and dimensions without hiding editable width/height controls.
 - Export and Race Pack copy can reference official names where helpful.
+
+Status:
+
+- Users can now place catalog-backed MultiGP-style gate variants through the normal Gate placement flow: Standard Gate 5x5 and Championship Gate 7x6. Desktop keeps the active gate type in a compact canvas placement control with a dropdown for additional variants, while mobile keeps one Gate entry in the tools drawer with a compact type picker for variants.
+- Newly placed official gates remain normal `gate` shapes, with their source identity stored under `meta.catalog`. The inspector shows the catalog type, source, official size, and official dimension status.
+- Official gate width and height are fixed in normal editing. Custom sizing belongs to the standard TrackDraw Gate.
 
 ## Phase 3: Element Library UI
 
@@ -95,6 +104,7 @@ Scope:
 - Add a compact element picker behind existing tool groups instead of expanding the primary toolbar.
 - Keep quick placement fast: one-click Gate still places the default gate.
 - Add a secondary way to choose variants such as official gates, flags, launch blocks, hurdles, and custom saved elements.
+- Keep official gates in the Gate/element placement flow rather than adding a separate top-level catalog placement mode that competes with the normal Gate tool.
 - Avoid card-in-card layouts and keep mobile picker behavior deliberate.
 
 Done state:
@@ -103,9 +113,14 @@ Done state:
 - Mobile users can still place common items without opening a dense desktop-style library.
 - The current starter layouts continue to work.
 
+Status:
+
+- The first UI slice keeps Gate as the primary placement tool and avoids a separate catalog dialog. This deliberately favors an active-element dropdown that can scale from two gate variants to a longer curated list without expanding the toolbar.
+
 ## Boundaries
 
 - Do not change stored shape dimensions globally just because an official catalog entry exists.
 - Do not migrate existing projects to new official gate sizes automatically.
 - Do not couple element catalog work to accounts in the first slice.
+- Do not make realistic 3D model fidelity part of the catalog phase. The catalog should expose identity, dimensions, source metadata, and render hints; the 3D preview work should consume those hints for official visual variants.
 - Do not copy a competitor's UI wholesale; borrow validated product patterns and fit them into TrackDraw's existing editor model.

@@ -99,6 +99,9 @@ export function useSessionActions() {
 export function useUiActions() {
   const setActiveTool = useEditor((state) => state.setActiveTool);
   const setActivePresetId = useEditor((state) => state.setActivePresetId);
+  const setActiveGateElementId = useEditor(
+    (state) => state.setActiveGateElementId
+  );
   const setSnapEnabled = useEditor((state) => state.setSnapEnabled);
   const toggleSnapEnabled = useEditor((state) => state.toggleSnapEnabled);
   const setZoom = useEditor((state) => state.setZoom);
@@ -121,6 +124,7 @@ export function useUiActions() {
   return {
     setActiveTool,
     setActivePresetId,
+    setActiveGateElementId,
     setSnapEnabled,
     toggleSnapEnabled,
     setZoom,
