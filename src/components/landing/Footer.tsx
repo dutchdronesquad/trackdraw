@@ -20,10 +20,8 @@ export function Footer() {
   return (
     <footer className="border-border bg-muted/20 border-t">
       <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
-        {/* Top grid — mobile: brand full width + 2 cols, md: 5 cols */}
-        <div className="mb-10 grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-5">
-          {/* Brand — spans 2 cols on mobile */}
-          <div className="col-span-2 space-y-3 md:col-span-1">
+        <div className="mb-10 grid gap-x-8 gap-y-8 md:grid-cols-[minmax(0,1.25fr)_minmax(0,3fr)] lg:gap-x-12">
+          <div className="space-y-3">
             <div className="flex items-center gap-2.5">
               <span className="inline-flex">
                 <span className="relative block h-8 w-35 dark:hidden">
@@ -54,131 +52,129 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Product */}
-          <div className="space-y-3">
-            <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-              Product
-            </h3>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link
-                  href="/studio"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Open Studio
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/dutchdronesquad/trackdraw/releases"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Release notes
-                </a>
-              </li>
-            </ul>
-          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4 md:gap-x-8">
+            <div className="space-y-3">
+              <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
+                Product
+              </h3>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <Link
+                    href="/studio"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Open Studio
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/dutchdronesquad/trackdraw/releases"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Release notes
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-          {/* Legal */}
-          <div className="space-y-3">
-            <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-              Legal
-            </h3>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-                >
-                  <ShieldCheck className="size-4 shrink-0" />
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-                >
-                  <FileText className="size-4 shrink-0" />
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
-          </div>
+            <div className="space-y-3">
+              <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
+                Legal
+              </h3>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <ShieldCheck className="size-4 shrink-0" />
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <FileText className="size-4 shrink-0" />
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Community */}
-          <div className="space-y-3">
-            <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-              Community
-            </h3>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <a
-                  href="https://github.com/dutchdronesquad/trackdraw"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-                >
-                  <GithubIcon className="size-4 shrink-0" />
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://dutchdronesquad.nl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-                >
-                  <Flag className="size-4 shrink-0" />
-                  Dutch Drone Squad
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://github.com/dutchdronesquad/trackdraw/issues"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-                >
-                  <Bug className="size-4 shrink-0" />
-                  Report an issue
-                </a>
-              </li>
-            </ul>
-          </div>
+            <div className="space-y-3">
+              <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
+                Community
+              </h3>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <a
+                    href="https://github.com/dutchdronesquad/trackdraw"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <GithubIcon className="size-4 shrink-0" />
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://dutchdronesquad.nl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <Flag className="size-4 shrink-0" />
+                    Dutch Drone Squad
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/dutchdronesquad/trackdraw/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <Bug className="size-4 shrink-0" />
+                    Report an issue
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-          {/* Support */}
-          <div className="space-y-3">
-            <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-              Support
-            </h3>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <a
-                  href="https://github.com/sponsors/klaasnicolaas"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-                >
-                  <Heart className="size-4 shrink-0" />
-                  GitHub Sponsors
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://ko-fi.com/klaasnicolaas"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
-                >
-                  <Coffee className="size-4 shrink-0" />
-                  Ko-fi
-                </a>
-              </li>
-            </ul>
+            <div className="space-y-3">
+              <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
+                Support
+              </h3>
+              <ul className="space-y-2.5 text-sm">
+                <li>
+                  <a
+                    href="https://github.com/sponsors/klaasnicolaas"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <Heart className="size-4 shrink-0" />
+                    GitHub Sponsors
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://ko-fi.com/klaasnicolaas"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+                  >
+                    <Coffee className="size-4 shrink-0" />
+                    Ko-fi
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 

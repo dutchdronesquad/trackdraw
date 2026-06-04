@@ -1,5 +1,7 @@
 const SAFE_PAGE_METHODS = "GET, HEAD, OPTIONS";
-const SAFE_PAGE_METHOD_SET = new Set(["GET", "HEAD", "OPTIONS"]);
+const SAFE_PAGE_METHOD_SET = new Set(
+  SAFE_PAGE_METHODS.split(",").map((method) => method.trim())
+);
 
 function isApiPath(pathname: string) {
   return pathname === "/api" || pathname.startsWith("/api/");
