@@ -487,8 +487,8 @@ export function SingleInspectorView({
             {shape.kind === "gate" && (
               <>
                 <Row label="Width">
-                  {isOfficialCatalogGate ? (
-                    renderOfficialMeasurement(shape.width)
+                  {isOfficialCatalogGate && catalogGateDimensions ? (
+                    renderOfficialMeasurement(catalogGateDimensions.width)
                   ) : (
                     <MeasurementNum
                       valueMeters={shape.width}
@@ -501,8 +501,8 @@ export function SingleInspectorView({
                   )}
                 </Row>
                 <Row label="Height">
-                  {isOfficialCatalogGate ? (
-                    renderOfficialMeasurement(shape.height)
+                  {isOfficialCatalogGate && catalogGateDimensions ? (
+                    renderOfficialMeasurement(catalogGateDimensions.height)
                   ) : (
                     <MeasurementNum
                       valueMeters={shape.height}

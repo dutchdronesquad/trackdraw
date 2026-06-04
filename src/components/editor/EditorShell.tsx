@@ -416,7 +416,14 @@ export default function EditorShell({
       setActiveTool("gate");
       setMobileToolsOpen(false);
     },
-    [setActiveGateElementId, setActiveTool, setSelection]
+    [
+      setActiveGateElementId,
+      setActiveTool,
+      setMobileMultiSelectEnabled,
+      setMobilePathBuilderPinnedOpen,
+      setMobileToolsOpen,
+      setSelection,
+    ]
   );
 
   useEffect(() => {
