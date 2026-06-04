@@ -78,6 +78,7 @@ export function GalleryPreviewRenderer({ onCapture }: Props) {
       aria-hidden="true"
     >
       <Canvas
+        shadows="percentage"
         gl={{ antialias: true, preserveDrawingBuffer: true }}
         camera={{
           // Lower, closer diagonal angle from the opposite side for stronger card previews.
@@ -98,6 +99,8 @@ export function GalleryPreviewRenderer({ onCapture }: Props) {
           color={t.dirColor}
           intensity={t.dirIntensity}
           castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
           shadow-bias={-0.0005}
           shadow-camera-left={-longest * 0.7}
           shadow-camera-right={longest * 0.7}
