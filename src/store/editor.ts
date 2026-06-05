@@ -687,6 +687,7 @@ export const useEditor = create<EditorState>()(
 
       reorderShapes: (fromId: string, beforeId: string | null) =>
         set((draft) => {
+          if (beforeId === fromId) return;
           const order = draft.track.design.shapeOrder;
           const fromIdx = order.indexOf(fromId);
           if (fromIdx === -1) return;
