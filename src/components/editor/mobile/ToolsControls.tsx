@@ -35,7 +35,10 @@ interface ToolsControlsProps {
   canUndo: boolean;
   tab: EditorViewportTab;
   onRedo: () => void;
-  onSelectPlacementElement: (tool: EditorTool, id: TrackElementCatalogId) => void;
+  onSelectPlacementElement: (
+    tool: EditorTool,
+    id: TrackElementCatalogId
+  ) => void;
   onSelectTool: (tool: EditorTool) => void;
   onUndo: () => void;
 }
@@ -89,7 +92,9 @@ export function ToolsControls({
           <div className="mb-2 space-y-2">
             {catalogToolIds.map((toolId) => {
               const entries =
-                catalogEntriesByTool[toolId as keyof typeof catalogEntriesByTool];
+                catalogEntriesByTool[
+                  toolId as keyof typeof catalogEntriesByTool
+                ];
               const toolEntry = mobileToolEntries.find((t) => t.id === toolId);
               const activeId =
                 activePlacementElementId[toolId] ?? defaultIdByTool[toolId];
@@ -127,7 +132,7 @@ export function ToolsControls({
                     <div className="min-w-0 flex-1">
                       <p
                         className={cn(
-                          "text-sm font-semibold leading-tight",
+                          "text-sm leading-tight font-semibold",
                           isActiveTool
                             ? "text-foreground"
                             : "text-foreground/75"
@@ -159,9 +164,14 @@ export function ToolsControls({
                           exit="hidden"
                           variants={{
                             hidden: {},
-                            visible: { transition: { staggerChildren: 0.045, delayChildren: 0.06 } },
+                            visible: {
+                              transition: {
+                                staggerChildren: 0.045,
+                                delayChildren: 0.06,
+                              },
+                            },
                           }}
-                          className="border-brand-primary/20 space-y-0.5 border-t px-2 pb-2 pt-1.5"
+                          className="border-brand-primary/20 space-y-0.5 border-t px-2 pt-1.5 pb-2"
                         >
                           {entries.map((entry) => {
                             const isActiveType = activeEntry?.id === entry.id;
@@ -171,7 +181,14 @@ export function ToolsControls({
                                 type="button"
                                 variants={{
                                   hidden: { opacity: 0, y: -6 },
-                                  visible: { opacity: 1, y: 0, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] } },
+                                  visible: {
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: {
+                                      duration: 0.18,
+                                      ease: [0.16, 1, 0.3, 1],
+                                    },
+                                  },
                                 }}
                                 onClick={() =>
                                   runAction(() =>
@@ -200,7 +217,7 @@ export function ToolsControls({
                                 <span className="min-w-0 flex-1">
                                   <span
                                     className={cn(
-                                      "block truncate text-[13px] font-semibold leading-tight",
+                                      "block truncate text-[13px] leading-tight font-semibold",
                                       isActiveType
                                         ? "text-foreground"
                                         : "text-foreground/80"
@@ -213,7 +230,7 @@ export function ToolsControls({
                                       {entry.dimensions.display.label}
                                     </span>
                                     {entry.official ? (
-                                      <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none tracking-widest uppercase">
+                                      <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-widest uppercase">
                                         Official
                                       </span>
                                     ) : null}

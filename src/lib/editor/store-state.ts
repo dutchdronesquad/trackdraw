@@ -58,8 +58,9 @@ export function resetEditorUiState(
 ): EditorUiState {
   return createDefaultEditorUiState({
     activePresetId: options.activePresetId ?? current.activePresetId,
-    activePlacementElementId:
-      options.activePlacementElementId ?? { ...current.activePlacementElementId },
+    activePlacementElementId: options.activePlacementElementId ?? {
+      ...current.activePlacementElementId,
+    },
     zoom: options.zoom ?? current.zoom,
     panOffset: options.panOffset ?? current.panOffset,
   });

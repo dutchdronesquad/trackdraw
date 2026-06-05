@@ -97,7 +97,10 @@ interface EditorMobilePanelsProps {
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
   onToggleSnapEnabled: () => void;
-  onSelectPlacementElement: (tool: EditorTool, entryId: TrackElementCatalogId) => void;
+  onSelectPlacementElement: (
+    tool: EditorTool,
+    entryId: TrackElementCatalogId
+  ) => void;
   onSelectTool: (tool: EditorTool) => void;
   onSetMobileToolsOpen: (open: boolean) => void;
   onSetMobileViewOpen: (open: boolean) => void;

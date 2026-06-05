@@ -125,7 +125,10 @@ export interface EditorSessionActions {
 export interface EditorUiActions {
   setActiveTool: (tool: EditorTool) => void;
   setActivePresetId: (presetId: string | null) => void;
-  setActivePlacementElementId: (tool: EditorTool, entryId: TrackElementCatalogId | null) => void;
+  setActivePlacementElementId: (
+    tool: EditorTool,
+    entryId: TrackElementCatalogId | null
+  ) => void;
   setSnapEnabled: (enabled: boolean) => void;
   toggleSnapEnabled: () => void;
   setZoom: (zoom: number) => void;

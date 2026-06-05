@@ -40,7 +40,9 @@ export function getFlagVisualSpec(shape: FlagShape): FlagVisualSpec | null {
   return null;
 }
 
-export function getLadderVisualSpec(shape: LadderShape): LadderVisualSpec | null {
+export function getLadderVisualSpec(
+  shape: LadderShape
+): LadderVisualSpec | null {
   const visual = getTrackElementVisualSpec(shape);
   if (visual?.kind === "ladder") return visual;
   return null;

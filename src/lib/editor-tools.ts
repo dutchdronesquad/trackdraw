@@ -12,7 +12,13 @@ import {
   type TrackElementCatalogId,
   type TrackElementCatalogEntry,
 } from "@/lib/track/elements/catalog";
-import type { FlagShape, GateShape, LadderShape, ShapeDraft, ShapeKind } from "@/lib/types";
+import type {
+  FlagShape,
+  GateShape,
+  LadderShape,
+  ShapeDraft,
+  ShapeKind,
+} from "@/lib/types";
 
 export type EditorTool =
   | "select"
@@ -80,7 +86,9 @@ export function createShapeForTool(
   tool: EditorTool,
   point: { x: number; y: number },
   options: {
-    activePlacementElementId?: Partial<Record<EditorTool, TrackElementCatalogId>>;
+    activePlacementElementId?: Partial<
+      Record<EditorTool, TrackElementCatalogId>
+    >;
   } = {}
 ): ShapeDraft | null {
   const entryId =
@@ -106,10 +114,9 @@ export function createShapeForTool(
   });
 }
 
-function buildCatalogTypePatchInner<S extends GateShape | FlagShape | LadderShape>(
-  shape: S,
-  entry: TrackElementCatalogEntry
-): Partial<S> {
+function buildCatalogTypePatchInner<
+  S extends GateShape | FlagShape | LadderShape,
+>(shape: S, entry: TrackElementCatalogEntry): Partial<S> {
   const draft = createCatalogShapeDraft(entry.id, {
     x: shape.x,
     y: shape.y,

@@ -64,7 +64,9 @@ describe("editor tool helpers", () => {
       "gate",
       { x: 3, y: 4 },
       {
-        activePlacementElementId: { gate: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID },
+        activePlacementElementId: {
+          gate: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+        },
       }
     );
 
@@ -90,7 +92,9 @@ describe("editor tool helpers", () => {
       "gate",
       { x: 6, y: 8 },
       {
-        activePlacementElementId: { gate: MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID },
+        activePlacementElementId: {
+          gate: MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+        },
       }
     );
 

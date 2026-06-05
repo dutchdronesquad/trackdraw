@@ -36,7 +36,9 @@ describe("editor store state helpers", () => {
     });
 
     expect(next.activePresetId).toBe("straight-gate-run");
-    expect(next.activePlacementElementId.gate).toBe(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
+    expect(next.activePlacementElementId.gate).toBe(
+      MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID
+    );
     expect(next.zoom).toBe(1);
     expect(next.panOffset).toEqual({ x: 0, y: 0 });
     expect(next.hoveredShapeId).toBeNull();

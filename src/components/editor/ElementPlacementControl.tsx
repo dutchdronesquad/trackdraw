@@ -41,7 +41,10 @@ const labelByTool: Partial<Record<EditorTool, string>> = {
 };
 
 function getControlWidthCh(entries: { name: string }[]) {
-  return Math.max(22, Math.min(32, Math.max(...entries.map((e) => e.name.length)) + 5));
+  return Math.max(
+    22,
+    Math.min(32, Math.max(...entries.map((e) => e.name.length)) + 5)
+  );
 }
 
 export function ElementPlacementControl() {
@@ -80,101 +83,105 @@ export function ElementPlacementControl() {
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
             className="pointer-events-auto"
           >
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          style={controlWidthStyle}
-          className="group border-border/55 bg-sidebar/96 hover:border-border/80 hover:bg-sidebar grid h-12 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border px-3 text-left shadow-[0_8px_32px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all"
-        >
-          <span className="border-border/40 text-muted-foreground rounded-md border px-2 py-1 text-[9px] leading-none font-semibold tracking-widest uppercase">
-            {toolLabel}
-          </span>
-          <span className="min-w-0">
-            <span className="text-foreground block truncate text-[13px] leading-none font-semibold">
-              {activeEntry.name}
-            </span>
-            <span className="mt-1.5 flex min-w-0 items-center gap-1.5">
-              <span className="text-muted-foreground/70 truncate text-[11px] leading-none">
-                {activeEntry.dimensions.display.label}
-              </span>
-              {activeEntry.official ? (
-                <span className="bg-brand-primary/14 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
-                  Official
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger
+                style={controlWidthStyle}
+                className="group border-border/55 bg-sidebar/96 hover:border-border/80 hover:bg-sidebar grid h-12 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border px-3 text-left shadow-[0_8px_32px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all"
+              >
+                <span className="border-border/40 text-muted-foreground rounded-md border px-2 py-1 text-[9px] leading-none font-semibold tracking-widest uppercase">
+                  {toolLabel}
                 </span>
-              ) : null}
-            </span>
-          </span>
-          <ChevronDown
-            className={cn(
-              "text-muted-foreground/60 size-4 shrink-0 transition-transform duration-200",
-              open && "rotate-180"
-            )}
-          />
-        </PopoverTrigger>
-        <PopoverContent
-          align="center"
-          side="top"
-          sideOffset={10}
-          style={controlWidthStyle}
-          className="overflow-hidden rounded-xl p-0 shadow-[0_8px_32px_rgba(15,23,42,0.18)]"
-        >
-          <div className="px-3 pt-3 pb-1.5">
-            <p className="text-muted-foreground/60 text-[10px] font-semibold tracking-widest uppercase">
-              {toolLabel} type
-            </p>
-          </div>
-          <div className="max-h-72 space-y-0.5 overflow-y-auto px-1.5 pb-1.5">
-            {entries.map((entry) => {
-              const active = activeId === entry.id;
-              return (
-                <button
-                  key={entry.id}
-                  type="button"
-                  onClick={() => {
-                    setSelection([]);
-                    setActivePlacementElementId(activeTool, entry.id);
-                    setOpen(false);
-                  }}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors",
-                    active
-                      ? "bg-brand-primary/10 text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                  )}
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className={cn(
-                      "block truncate text-[13px] leading-tight font-semibold",
-                      active ? "text-foreground" : "text-foreground/80"
-                    )}>
-                      {entry.name}
-                    </span>
-                    <span className="mt-1 flex min-w-0 items-center gap-1.5">
-                      <span className="text-muted-foreground/65 truncate text-[11px] leading-none">
-                        {entry.dimensions.display.label}
-                      </span>
-                      {entry.official ? (
-                        <span className="bg-brand-primary/12 text-brand-primary rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase shrink-0">
-                          Official
-                        </span>
-                      ) : null}
-                    </span>
+                <span className="min-w-0">
+                  <span className="text-foreground block truncate text-[13px] leading-none font-semibold">
+                    {activeEntry.name}
                   </span>
-                  <div className={cn(
-                    "size-4 shrink-0 rounded-full border-2 transition-all",
-                    active
-                      ? "border-brand-primary bg-brand-primary"
-                      : "border-border/50"
-                  )}>
-                    {active && (
-                      <Check className="text-background size-full p-0.75" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </PopoverContent>
-      </Popover>
+                  <span className="mt-1.5 flex min-w-0 items-center gap-1.5">
+                    <span className="text-muted-foreground/70 truncate text-[11px] leading-none">
+                      {activeEntry.dimensions.display.label}
+                    </span>
+                    {activeEntry.official ? (
+                      <span className="bg-brand-primary/14 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
+                        Official
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "text-muted-foreground/60 size-4 shrink-0 transition-transform duration-200",
+                    open && "rotate-180"
+                  )}
+                />
+              </PopoverTrigger>
+              <PopoverContent
+                align="center"
+                side="top"
+                sideOffset={10}
+                style={controlWidthStyle}
+                className="overflow-hidden rounded-xl p-0 shadow-[0_8px_32px_rgba(15,23,42,0.18)]"
+              >
+                <div className="px-3 pt-3 pb-1.5">
+                  <p className="text-muted-foreground/60 text-[10px] font-semibold tracking-widest uppercase">
+                    {toolLabel} type
+                  </p>
+                </div>
+                <div className="max-h-72 space-y-0.5 overflow-y-auto px-1.5 pb-1.5">
+                  {entries.map((entry) => {
+                    const active = activeId === entry.id;
+                    return (
+                      <button
+                        key={entry.id}
+                        type="button"
+                        onClick={() => {
+                          setSelection([]);
+                          setActivePlacementElementId(activeTool, entry.id);
+                          setOpen(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors",
+                          active
+                            ? "bg-brand-primary/10 text-foreground"
+                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                        )}
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span
+                            className={cn(
+                              "block truncate text-[13px] leading-tight font-semibold",
+                              active ? "text-foreground" : "text-foreground/80"
+                            )}
+                          >
+                            {entry.name}
+                          </span>
+                          <span className="mt-1 flex min-w-0 items-center gap-1.5">
+                            <span className="text-muted-foreground/65 truncate text-[11px] leading-none">
+                              {entry.dimensions.display.label}
+                            </span>
+                            {entry.official ? (
+                              <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
+                                Official
+                              </span>
+                            ) : null}
+                          </span>
+                        </span>
+                        <div
+                          className={cn(
+                            "size-4 shrink-0 rounded-full border-2 transition-all",
+                            active
+                              ? "border-brand-primary bg-brand-primary"
+                              : "border-border/50"
+                          )}
+                        >
+                          {active && (
+                            <Check className="text-background size-full p-0.75" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </PopoverContent>
+            </Popover>
           </motion.div>
         )}
       </AnimatePresence>

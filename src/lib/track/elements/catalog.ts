@@ -123,7 +123,10 @@ export interface PanelRunsLadderVisualSpec {
 }
 
 export type LadderVisualSpec = PanelRunsLadderVisualSpec;
-export type TrackElementVisualSpec = GateVisualSpec | FlagVisualSpec | LadderVisualSpec;
+export type TrackElementVisualSpec =
+  | GateVisualSpec
+  | FlagVisualSpec
+  | LadderVisualSpec;
 
 export interface TrackElementCatalogEntry {
   id: TrackElementCatalogId;
@@ -496,7 +499,10 @@ export const trackElementCatalog = [
     dimensions: {
       widthMeters: feetToMeters(5),
       heightMeters: feetToMeters(5) * 3,
-      display: { unitSystem: "imperial", label: "5 ft wide, 3 × 5 ft sections" },
+      display: {
+        unitSystem: "imperial",
+        label: "5 ft wide, 3 × 5 ft sections",
+      },
     },
     defaultShape: {
       kind: "ladder",
@@ -526,8 +532,19 @@ export const trackElementCatalog = [
         right: { widthMeters: feetToMeters(1), color: "#f8fafc" },
         top: { heightMeters: feetToMeters(1), color: "#202e5d" },
       },
-      frame: { placement: "outer", material: "pvc", color: "#f8fafc", diameterMeters: 0.055 },
-      branding: { label: "MULTIGP", markColor: "#f8fafc", accentColor: "#dc2626", checkerColor: "#111827", style: "multigp" },
+      frame: {
+        placement: "outer",
+        material: "pvc",
+        color: "#f8fafc",
+        diameterMeters: 0.055,
+      },
+      branding: {
+        label: "MULTIGP",
+        markColor: "#f8fafc",
+        accentColor: "#dc2626",
+        checkerColor: "#111827",
+        style: "multigp",
+      },
     } satisfies LadderVisualSpec,
     exportHints: { simulatorFriendly: true },
   },
@@ -541,7 +558,10 @@ export const trackElementCatalog = [
     dimensions: {
       widthMeters: feetToMeters(7),
       heightMeters: feetToMeters(6) * 3,
-      display: { unitSystem: "imperial", label: "7 ft wide, 3 × 6 ft openings" },
+      display: {
+        unitSystem: "imperial",
+        label: "7 ft wide, 3 × 6 ft openings",
+      },
     },
     defaultShape: {
       kind: "ladder",
@@ -571,8 +591,19 @@ export const trackElementCatalog = [
         right: { widthMeters: feetToMeters(1), color: "#f8fafc" },
         top: { heightMeters: feetToMeters(1), color: "#202e5d" },
       },
-      frame: { placement: "outer", material: "pvc", color: "#f8fafc", diameterMeters: 0.055 },
-      branding: { label: "MULTIGP", markColor: "#f8fafc", accentColor: "#b91c1c", checkerColor: "#111827", style: "multigp" },
+      frame: {
+        placement: "outer",
+        material: "pvc",
+        color: "#f8fafc",
+        diameterMeters: 0.055,
+      },
+      branding: {
+        label: "MULTIGP",
+        markColor: "#f8fafc",
+        accentColor: "#b91c1c",
+        checkerColor: "#111827",
+        style: "multigp",
+      },
     } satisfies LadderVisualSpec,
     exportHints: { simulatorFriendly: true },
   },
