@@ -661,7 +661,7 @@ export function SingleInspectorView({
               <>
                 {!hasFixedCatalogDimensions ? (
                   <>
-                    <Row label="Width">
+                    <Row label={`Width (${unitLabel})`}>
                       <MeasurementNum
                         valueMeters={shape.width}
                         unitSystem={unitSystem}
@@ -671,7 +671,7 @@ export function SingleInspectorView({
                         minMeters={0.5}
                       />
                     </Row>
-                    <Row label="Height">
+                    <Row label={`Height (${unitLabel})`}>
                       <MeasurementNum
                         valueMeters={shape.height}
                         unitSystem={unitSystem}
@@ -684,7 +684,7 @@ export function SingleInspectorView({
                   </>
                 ) : null}
                 {!hasFixedCatalogDimensions ? (
-                  <Row label="Thickness">
+                  <Row label={`Thickness (${unitLabel})`}>
                     <MeasurementNum
                       valueMeters={shape.thick ?? 0.2}
                       unitSystem={unitSystem}
@@ -699,7 +699,7 @@ export function SingleInspectorView({
             )}
             {shape.kind === "flag" && !hasFixedFlagDimensions && (
               <>
-                <Row label="Radius">
+                <Row label={`Radius (${unitLabel})`}>
                   <MeasurementNum
                     valueMeters={shape.radius}
                     unitSystem={unitSystem}
@@ -709,7 +709,7 @@ export function SingleInspectorView({
                     minMeters={0.05}
                   />
                 </Row>
-                <Row label="Pole height">
+                <Row label={`Pole height (${unitLabel})`}>
                   <MeasurementNum
                     valueMeters={shape.poleHeight ?? 3.5}
                     unitSystem={unitSystem}
@@ -722,7 +722,7 @@ export function SingleInspectorView({
               </>
             )}
             {shape.kind === "cone" && (
-              <Row label="Radius">
+              <Row label={`Radius (${unitLabel})`}>
                 <MeasurementNum
                   valueMeters={shape.radius}
                   unitSystem={unitSystem}
@@ -744,7 +744,7 @@ export function SingleInspectorView({
               </Row>
             )}
             {shape.kind === "startfinish" && (
-              <Row label="Width">
+              <Row label={`Width (${unitLabel})`}>
                 <MeasurementNum
                   valueMeters={shape.width}
                   unitSystem={unitSystem}
@@ -757,7 +757,7 @@ export function SingleInspectorView({
               <>
                 {!hasFixedLadderDimensions && (
                   <>
-                    <Row label="Width">
+                    <Row label={`Width (${unitLabel})`}>
                       <MeasurementNum
                         valueMeters={shape.width}
                         unitSystem={unitSystem}
@@ -767,7 +767,7 @@ export function SingleInspectorView({
                         minMeters={0.5}
                       />
                     </Row>
-                    <Row label="Height">
+                    <Row label={`Height (${unitLabel})`}>
                       <MeasurementNum
                         valueMeters={shape.height}
                         unitSystem={unitSystem}
@@ -777,25 +777,25 @@ export function SingleInspectorView({
                         minMeters={0.5}
                       />
                     </Row>
+                    <Row label={`Elevation (${unitLabel})`}>
+                      <MeasurementNum
+                        valueMeters={shape.elevation ?? 0}
+                        unitSystem={unitSystem}
+                        onChange={(value) =>
+                          updateShape(shape.id, {
+                            elevation: Math.max(0, value),
+                          })
+                        }
+                        minMeters={0}
+                      />
+                    </Row>
                   </>
                 )}
-                <Row label="Elevation">
-                  <MeasurementNum
-                    valueMeters={shape.elevation ?? 0}
-                    unitSystem={unitSystem}
-                    onChange={(value) =>
-                      updateShape(shape.id, {
-                        elevation: Math.max(0, value),
-                      })
-                    }
-                    minMeters={0}
-                  />
-                </Row>
               </>
             )}
             {shape.kind === "divegate" && (
               <>
-                <Row label="Size">
+                <Row label={`Size (${unitLabel})`}>
                   <MeasurementNum
                     valueMeters={shape.size}
                     unitSystem={unitSystem}
@@ -803,7 +803,7 @@ export function SingleInspectorView({
                     minMeters={0.5}
                   />
                 </Row>
-                <Row label="Elevation">
+                <Row label={`Elevation (${unitLabel})`}>
                   <MeasurementNum
                     valueMeters={shape.elevation ?? 3}
                     unitSystem={unitSystem}
@@ -813,7 +813,7 @@ export function SingleInspectorView({
                     minMeters={0.1}
                   />
                 </Row>
-                <Row label="Thickness">
+                <Row label={`Thickness (${unitLabel})`}>
                   <MeasurementNum
                     valueMeters={shape.thick ?? 0.2}
                     unitSystem={unitSystem}
@@ -898,7 +898,7 @@ export function SingleInspectorView({
               title="Race Line"
               defaultOpen={secondarySectionDefaultOpen}
             >
-              <Row label="Stroke width">
+              <Row label={`Stroke width (${unitLabel})`}>
                 <MeasurementNum
                   valueMeters={shape.strokeWidth ?? 0.26}
                   unitSystem={unitSystem}
@@ -943,7 +943,7 @@ export function SingleInspectorView({
                 </Row>
               )}
               {shape.showArrows && (
-                <Row label="Arrow spacing">
+                <Row label={`Arrow spacing (${unitLabel})`}>
                   <MeasurementNum
                     valueMeters={shape.arrowSpacing ?? 15}
                     unitSystem={unitSystem}
