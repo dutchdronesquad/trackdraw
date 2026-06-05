@@ -817,7 +817,11 @@ function CornerMarkerFlag3D({
   );
 
   return (
-    <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
+    <group
+      ref={outerRef}
+      position={[shape.x, 0, shape.y]}
+      rotation={[0, yawRad, 0]}
+    >
       <mesh
         position={[0, 0.02, 0]}
         receiveShadow
@@ -938,7 +942,11 @@ function Flag3D({
   }
 
   return (
-    <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
+    <group
+      ref={outerRef}
+      position={[shape.x, 0, shape.y]}
+      rotation={[0, yawRad, 0]}
+    >
       <mesh
         position={[0, 0.025, 0]}
         receiveShadow

@@ -33,8 +33,8 @@ The completed release-sized work is archived below. The next TrackDraw priority 
   - [x] MultiGP ladder and other obstacle entries
         Added MultiGP Standard Ladder 5x5 and Championship Ladder 7x6 with panel-frame 3D rendering matching the real obstacle, and the same catalog pipeline as gates and flags.
 
-- [ ] Flag real-time rotation in 3D (`No account required`)
-      Rotating a flag in the 3D editor no longer updates the visual in real-time. The flag only reflects the new rotation after the interaction ends. Investigate whether the rotation formula change for gates/ladders or the hooks restructuring caused a regression in the flag render path.
+- [x] Flag real-time rotation in 3D (`No account required`)
+      Flags now rotate visually in real-time during 3D drag, matching gates and ladders. The fix was passing `outerRef` from `Shape3D` through `Flag3D` and `CornerMarkerFlag3D` to their root groups, so the rotation drag handler can mutate the group transform directly each animation frame.
 
 - [ ] Track items list improvements (`No account required`)
       The layout track items list currently uses internal shape kind labels. Two improvements: use the placed element's catalog name or custom name so the list is more meaningful, and add a drag handle per item so users can reorder track elements directly in the list.
