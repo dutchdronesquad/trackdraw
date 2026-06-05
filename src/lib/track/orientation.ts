@@ -39,13 +39,13 @@ const ORIENTATION_BASE_OFFSETS: Record<
   ShapeKind,
   Partial<Record<OrientationSurface, number>>
 > = {
-  gate: { facing: 0, canvasGuide: -90, previewGuide: 0 },
+  gate: { facing: 0, canvasGuide: 90, previewGuide: 0 },
   flag: { facing: 0, canvasGuide: 0, previewGuide: -90 },
   cone: { facing: 0, canvasGuide: -90, previewGuide: 0 },
   label: { facing: 0, canvasGuide: -90, previewGuide: 0 },
   polyline: { facing: 0, canvasGuide: -90, previewGuide: 0 },
   startfinish: { facing: 0, canvasGuide: -90, previewGuide: 0 },
-  ladder: { facing: 0, canvasGuide: -90, previewGuide: 0 },
+  ladder: { facing: 0, canvasGuide: 90, previewGuide: 0 },
   divegate: { facing: 90, canvasGuide: 90, previewGuide: 0 },
 };
 
