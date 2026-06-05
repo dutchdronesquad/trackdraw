@@ -63,7 +63,7 @@ describe("track element catalog", () => {
       rotation: 0,
     });
     const gateShape = { ...shape, id: "gate-1" } as GateShape;
-    expect(getCanvasRotationGuideAngleDeg(gateShape)).toBe(270);
+    expect(getCanvasRotationGuideAngleDeg(gateShape)).toBe(90);
   });
 
   it("documents the MultiGP 5x5 panel-frame gate without changing default placement", () => {

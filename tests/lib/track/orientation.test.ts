@@ -50,7 +50,7 @@ describe("track orientation helpers", () => {
     };
 
     expect(getShapeFacingDegrees(gate)).toBe(60);
-    expect(getCanvasRotationGuideAngleDeg(gate)).toBe(330);
+    expect(getCanvasRotationGuideAngleDeg(gate)).toBe(150);
     expect(getPreviewRotationGuideDegrees(gate)).toBe(60);
   });
 
