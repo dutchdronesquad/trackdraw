@@ -16,7 +16,7 @@ describe("editor store state helpers", () => {
     const current: EditorUiState = {
       ...createDefaultEditorUiState(),
       activePresetId: "straight-gate-run",
-      activeGateElementId: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+      activePlacementElementId: { gate: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID },
       zoom: 2.25,
       panOffset: { x: 120, y: 75 },
       hoveredShapeId: "shape-1",
@@ -36,7 +36,7 @@ describe("editor store state helpers", () => {
     });
 
     expect(next.activePresetId).toBe("straight-gate-run");
-    expect(next.activeGateElementId).toBe(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
+    expect(next.activePlacementElementId.gate).toBe(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
     expect(next.zoom).toBe(1);
     expect(next.panOffset).toEqual({ x: 0, y: 0 });
     expect(next.hoveredShapeId).toBeNull();
@@ -44,7 +44,7 @@ describe("editor store state helpers", () => {
   });
 
   it("defaults to the frame-only TrackDraw gate variant", () => {
-    expect(createDefaultEditorUiState().activeGateElementId).toBe(
+    expect(createDefaultEditorUiState().activePlacementElementId.gate).toBe(
       TRACKDRAW_GATE_ELEMENT_ID
     );
   });

@@ -1,8 +1,9 @@
-import type { GateShape, Shape } from "@/lib/types";
+import type { FlagShape, GateShape, Shape } from "@/lib/types";
 import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
   type FrameOnlyGateVisualSpec,
+  type FlagVisualSpec,
   type GateVisualSpec,
   type TrackElementVisualSpec,
 } from "@/lib/track/elements/catalog";
@@ -30,6 +31,12 @@ export function getGateVisualSpec(shape: GateShape): GateVisualSpec {
   const visual = getTrackElementVisualSpec(shape);
   if (visual?.kind === "gate") return visual;
   return getFallbackGateVisualSpec(shape);
+}
+
+export function getFlagVisualSpec(shape: FlagShape): FlagVisualSpec | null {
+  const visual = getTrackElementVisualSpec(shape);
+  if (visual?.kind === "flag") return visual;
+  return null;
 }
 
 function getFallbackGateVisualSpec(shape: GateShape): FrameOnlyGateVisualSpec {

@@ -11,10 +11,16 @@ import {
   getCatalogEntriesByKind,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
+  TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
   type TrackElementCatalogId,
 } from "@/lib/track/elements/catalog";
-import { buildGateCatalogTypePatch } from "@/lib/editor-tools";
+import {
+  buildFlagCatalogTypePatch,
+  buildGateCatalogTypePatch,
+  buildLadderCatalogTypePatch,
+} from "@/lib/editor-tools";
 import {
   getShapeTimingMarker,
   getTimingMarkerMeta,
@@ -143,6 +149,33 @@ export function SingleInspectorView({
     typeof catalogEntry.dimensions.heightMeters === "number";
   const hasFixedCatalogDimensions =
     hasCatalogGateDimensions && catalogEntry.editable?.dimensions === false;
+
+  const selectedFlagShape = shape.kind === "flag" ? shape : null;
+  const flagCatalogEntries = selectedFlagShape
+    ? getCatalogEntriesByKind("flag")
+    : null;
+  const activeFlagEntryId: TrackElementCatalogId =
+    catalogEntry?.kind === "flag"
+      ? (catalogIdentity!.elementId as TrackElementCatalogId)
+      : TRACKDRAW_FLAG_ELEMENT_ID;
+  const hasFixedFlagDimensions =
+    selectedFlagShape &&
+    catalogEntry?.kind === "flag" &&
+    catalogEntry.editable?.dimensions === false;
+
+  const selectedLadderShape = shape.kind === "ladder" ? shape : null;
+  const ladderCatalogEntries = selectedLadderShape
+    ? getCatalogEntriesByKind("ladder")
+    : null;
+  const activeLadderEntryId: TrackElementCatalogId =
+    catalogEntry?.kind === "ladder"
+      ? (catalogIdentity!.elementId as TrackElementCatalogId)
+      : TRACKDRAW_LADDER_ELEMENT_ID;
+  const hasFixedLadderDimensions =
+    selectedLadderShape &&
+    catalogEntry?.kind === "ladder" &&
+    catalogEntry.editable?.dimensions === false;
+
   const hasFixedCatalogColor =
     catalogIdentity !== null && catalogEntry?.editable?.color === false;
   const canSetTimingMarker = isTimingMarkerShape(shape);
@@ -317,6 +350,122 @@ export function SingleInspectorView({
                   </SelectTrigger>
                   <SelectContent>
                     {gateCatalogEntries.map((entry) => (
+                      <SelectItem
+                        key={entry.id}
+                        value={entry.id}
+                        className="text-xs lg:text-[11px]"
+                      >
+                        {entry.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Row>
+              {catalogIdentity?.snapshot.organization ? (
+                <Row label="Source">
+                  {catalogEntry?.sources?.[0]?.url ? (
+                    <a
+                      href={catalogEntry.sources[0].url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-foreground hover:text-foreground/70 text-[12px] underline underline-offset-2 transition-colors"
+                    >
+                      {catalogIdentity.snapshot.organization}
+                    </a>
+                  ) : (
+                    <span className="text-foreground text-[12px]">
+                      {catalogIdentity.snapshot.organization}
+                    </span>
+                  )}
+                </Row>
+              ) : null}
+              {catalogIdentity ? (
+                <Row label="Official size">
+                  <span className="text-foreground text-[12px]">
+                    {catalogIdentity.snapshot.dimensionsLabel}
+                  </span>
+                </Row>
+              ) : null}
+            </Section>
+          ) : null}
+          {flagCatalogEntries ? (
+            <Section title="Catalog" defaultOpen>
+              <Row label="Type">
+                <Select
+                  value={activeFlagEntryId}
+                  disabled={shape.locked}
+                  onValueChange={(value) => {
+                    const patch = buildFlagCatalogTypePatch(
+                      selectedFlagShape!,
+                      value as TrackElementCatalogId
+                    );
+                    if (patch)
+                      updateShape(shape.id, patch as Partial<typeof shape>);
+                  }}
+                >
+                  <SelectTrigger className="border-border/40 bg-muted/40 h-9 w-full text-xs shadow-none lg:h-7 lg:text-[11px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {flagCatalogEntries.map((entry) => (
+                      <SelectItem
+                        key={entry.id}
+                        value={entry.id}
+                        className="text-xs lg:text-[11px]"
+                      >
+                        {entry.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Row>
+              {catalogIdentity?.snapshot.organization ? (
+                <Row label="Source">
+                  {catalogEntry?.sources?.[0]?.url ? (
+                    <a
+                      href={catalogEntry.sources[0].url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-foreground hover:text-foreground/70 text-[12px] underline underline-offset-2 transition-colors"
+                    >
+                      {catalogIdentity.snapshot.organization}
+                    </a>
+                  ) : (
+                    <span className="text-foreground text-[12px]">
+                      {catalogIdentity.snapshot.organization}
+                    </span>
+                  )}
+                </Row>
+              ) : null}
+              {catalogIdentity ? (
+                <Row label="Official size">
+                  <span className="text-foreground text-[12px]">
+                    {catalogIdentity.snapshot.dimensionsLabel}
+                  </span>
+                </Row>
+              ) : null}
+            </Section>
+          ) : null}
+          {ladderCatalogEntries ? (
+            <Section title="Catalog" defaultOpen>
+              <Row label="Type">
+                <Select
+                  value={activeLadderEntryId}
+                  disabled={shape.locked}
+                  onValueChange={(value) => {
+                    const patch = buildLadderCatalogTypePatch(
+                      selectedLadderShape!,
+                      value as TrackElementCatalogId
+                    );
+                    if (patch)
+                      updateShape(shape.id, patch as Partial<typeof shape>);
+                  }}
+                >
+                  <SelectTrigger className="border-border/40 bg-muted/40 h-9 w-full text-xs shadow-none lg:h-7 lg:text-[11px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ladderCatalogEntries.map((entry) => (
                       <SelectItem
                         key={entry.id}
                         value={entry.id}
@@ -548,7 +697,7 @@ export function SingleInspectorView({
                 ) : null}
               </>
             )}
-            {shape.kind === "flag" && (
+            {shape.kind === "flag" && !hasFixedFlagDimensions && (
               <>
                 <Row label="Radius">
                   <MeasurementNum
@@ -606,26 +755,30 @@ export function SingleInspectorView({
             )}
             {shape.kind === "ladder" && (
               <>
-                <Row label="Width">
-                  <MeasurementNum
-                    valueMeters={shape.width}
-                    unitSystem={unitSystem}
-                    onChange={(value) =>
-                      updateShape(shape.id, { width: value })
-                    }
-                    minMeters={0.5}
-                  />
-                </Row>
-                <Row label="Height">
-                  <MeasurementNum
-                    valueMeters={shape.height}
-                    unitSystem={unitSystem}
-                    onChange={(value) =>
-                      updateShape(shape.id, { height: value })
-                    }
-                    minMeters={0.5}
-                  />
-                </Row>
+                {!hasFixedLadderDimensions && (
+                  <>
+                    <Row label="Width">
+                      <MeasurementNum
+                        valueMeters={shape.width}
+                        unitSystem={unitSystem}
+                        onChange={(value) =>
+                          updateShape(shape.id, { width: value })
+                        }
+                        minMeters={0.5}
+                      />
+                    </Row>
+                    <Row label="Height">
+                      <MeasurementNum
+                        valueMeters={shape.height}
+                        unitSystem={unitSystem}
+                        onChange={(value) =>
+                          updateShape(shape.id, { height: value })
+                        }
+                        minMeters={0.5}
+                      />
+                    </Row>
+                  </>
+                )}
                 <Row label="Elevation">
                   <MeasurementNum
                     valueMeters={shape.elevation ?? 0}
@@ -719,7 +872,7 @@ export function SingleInspectorView({
             </Section>
           )}
 
-          {shape.kind === "ladder" && (
+          {shape.kind === "ladder" && !hasFixedLadderDimensions && (
             <Section title="Ladder" defaultOpen={secondarySectionDefaultOpen}>
               <Row label="Gates">
                 <Num

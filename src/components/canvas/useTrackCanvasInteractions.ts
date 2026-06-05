@@ -40,7 +40,7 @@ import type { PolylineShape, Shape, ShapeDraft } from "@/lib/types";
 interface TrackCanvasInteractionsParams {
   activeTool: EditorTool;
   activePresetId: string | null;
-  activeGateElementId: TrackElementCatalogId | null;
+  activePlacementElementId: Partial<Record<EditorTool, TrackElementCatalogId>>;
   addShape: (shape: ShapeDraft) => string;
   addShapes: (shapes: ShapeDraft[]) => string[];
   contentDragActiveRef: React.RefObject<boolean>;
@@ -103,7 +103,7 @@ interface TrackCanvasInteractionsParams {
 export function useTrackCanvasInteractions({
   activeTool,
   activePresetId,
-  activeGateElementId,
+  activePlacementElementId,
   addShape,
   addShapes,
   contentDragActiveRef,
@@ -617,7 +617,7 @@ export function useTrackCanvasInteractions({
           return;
         }
         const shape = createShapeForTool(activeTool, meters, {
-          gateElementId: activeGateElementId,
+          activePlacementElementId,
         });
         if (!shape) return;
         const id = addShape(shape);
@@ -639,7 +639,7 @@ export function useTrackCanvasInteractions({
     [
       activeTool,
       activePresetId,
-      activeGateElementId,
+      activePlacementElementId,
       addShape,
       addShapes,
       finalizePath,
@@ -848,7 +848,7 @@ export function useTrackCanvasInteractions({
           return;
         }
         const shape = createShapeForTool(activeTool, meters, {
-          gateElementId: activeGateElementId,
+          activePlacementElementId,
         });
         if (!shape) return;
         const id = addShape(shape);
@@ -883,7 +883,7 @@ export function useTrackCanvasInteractions({
     [
       activeTool,
       activePresetId,
-      activeGateElementId,
+      activePlacementElementId,
       addShape,
       addShapes,
       marqueeAdditiveRef,

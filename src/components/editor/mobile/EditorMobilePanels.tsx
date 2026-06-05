@@ -39,7 +39,7 @@ export type EditorViewportTab = "2d" | "3d";
 
 interface EditorMobilePanelsProps {
   activeTool: EditorTool;
-  activeGateElementId: TrackElementCatalogId | null;
+  activePlacementElementId: Partial<Record<EditorTool, TrackElementCatalogId>>;
   activePresetLabel?: string | null;
   draftPathActive: boolean;
   draftPathClosed: boolean;
@@ -97,7 +97,7 @@ interface EditorMobilePanelsProps {
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
   onToggleSnapEnabled: () => void;
-  onSelectGateElement: (entryId: TrackElementCatalogId) => void;
+  onSelectPlacementElement: (tool: EditorTool, entryId: TrackElementCatalogId) => void;
   onSelectTool: (tool: EditorTool) => void;
   onSetMobileToolsOpen: (open: boolean) => void;
   onSetMobileViewOpen: (open: boolean) => void;
@@ -320,7 +320,7 @@ function MobileQuickActionsOverlay({
 
 export function EditorMobilePanels({
   activeTool,
-  activeGateElementId,
+  activePlacementElementId,
   activePresetLabel,
   canAddWaypoint = false,
   canDeleteWaypoint = false,
@@ -381,7 +381,7 @@ export function EditorMobilePanels({
   onSetMobileGizmoEnabled,
   onSetMobileObstacleNumbersEnabled,
   onToggleSnapEnabled,
-  onSelectGateElement,
+  onSelectPlacementElement,
   onSelectTool,
   onSetMobileToolsOpen,
   onSetMobileViewOpen,
@@ -702,12 +702,12 @@ export function EditorMobilePanels({
         >
           <ToolsControls
             activeTool={activeTool}
-            activeGateElementId={activeGateElementId}
+            activePlacementElementId={activePlacementElementId}
             canRedo={canRedo}
             canUndo={canUndo}
             tab={tab}
             onRedo={onRedo}
-            onSelectGateElement={onSelectGateElement}
+            onSelectPlacementElement={onSelectPlacementElement}
             onSelectTool={onSelectTool}
             onUndo={onUndo}
           />

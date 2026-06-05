@@ -10,8 +10,9 @@ import {
   TRACKDRAW_LADDER_ELEMENT_ID,
   TRACKDRAW_START_FINISH_ELEMENT_ID,
   type TrackElementCatalogId,
+  type TrackElementCatalogEntry,
 } from "@/lib/track/elements/catalog";
-import type { GateShape, ShapeDraft, ShapeKind } from "@/lib/types";
+import type { FlagShape, GateShape, LadderShape, ShapeDraft, ShapeKind } from "@/lib/types";
 
 export type EditorTool =
   | "select"
@@ -78,18 +79,23 @@ const toolCatalogEntryIds: Partial<Record<EditorTool, TrackElementCatalogId>> =
 export function createShapeForTool(
   tool: EditorTool,
   point: { x: number; y: number },
-  options: { gateElementId?: TrackElementCatalogId | null } = {}
+  options: {
+    activePlacementElementId?: Partial<Record<EditorTool, TrackElementCatalogId>>;
+  } = {}
 ): ShapeDraft | null {
   const entryId =
-    tool === "gate"
-      ? options.gateElementId || TRACKDRAW_GATE_ELEMENT_ID
-      : toolCatalogEntryIds[tool];
+    options.activePlacementElementId?.[tool] ?? toolCatalogEntryIds[tool];
   if (!entryId) return null;
 
   const entry = getTrackElementCatalogEntry(entryId);
+  const defaultForTool = toolCatalogEntryIds[tool];
+  const defaultEntry = defaultForTool
+    ? getTrackElementCatalogEntry(defaultForTool)
+    : null;
+  // Safety: if the entry's kind doesn't match the tool's expected kind, fall back
   const resolvedEntryId =
-    tool === "gate" && entry?.kind !== "gate"
-      ? TRACKDRAW_GATE_ELEMENT_ID
+    defaultEntry && entry?.kind !== defaultEntry.kind
+      ? (defaultForTool ?? entryId)
       : entryId;
   const resolvedEntry = getTrackElementCatalogEntry(resolvedEntryId);
 
@@ -100,14 +106,11 @@ export function createShapeForTool(
   });
 }
 
-export function buildGateCatalogTypePatch(
-  shape: GateShape,
-  targetEntryId: TrackElementCatalogId
-): Partial<GateShape> | null {
-  const entry = getTrackElementCatalogEntry(targetEntryId);
-  if (!entry || entry.kind !== "gate") return null;
-
-  const draft = createCatalogShapeDraft(targetEntryId, {
+function buildCatalogTypePatchInner<S extends GateShape | FlagShape | LadderShape>(
+  shape: S,
+  entry: TrackElementCatalogEntry
+): Partial<S> {
+  const draft = createCatalogShapeDraft(entry.id, {
     x: shape.x,
     y: shape.y,
     rotation: shape.rotation,
@@ -128,5 +131,32 @@ export function buildGateCatalogTypePatch(
       ? { ...strippedMeta, catalog: newCatalogIdentity }
       : undefined;
 
-  return { ...draft, meta: newMeta } as Partial<GateShape>;
+  return { ...draft, meta: newMeta } as unknown as Partial<S>;
+}
+
+export function buildGateCatalogTypePatch(
+  shape: GateShape,
+  targetEntryId: TrackElementCatalogId
+): Partial<GateShape> | null {
+  const entry = getTrackElementCatalogEntry(targetEntryId);
+  if (!entry || entry.kind !== "gate") return null;
+  return buildCatalogTypePatchInner(shape, entry);
+}
+
+export function buildFlagCatalogTypePatch(
+  shape: FlagShape,
+  targetEntryId: TrackElementCatalogId
+): Partial<FlagShape> | null {
+  const entry = getTrackElementCatalogEntry(targetEntryId);
+  if (!entry || entry.kind !== "flag") return null;
+  return buildCatalogTypePatchInner(shape, entry);
+}
+
+export function buildLadderCatalogTypePatch(
+  shape: LadderShape,
+  targetEntryId: TrackElementCatalogId
+): Partial<LadderShape> | null {
+  const entry = getTrackElementCatalogEntry(targetEntryId);
+  if (!entry || entry.kind !== "ladder") return null;
+  return buildCatalogTypePatchInner(shape, entry);
 }

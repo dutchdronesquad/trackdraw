@@ -1,27 +1,41 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronDown, Redo2, Undo2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Check, Redo2, Undo2 } from "lucide-react";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
 import {
   getCatalogEntriesByKind,
+  TRACKDRAW_FLAG_ELEMENT_ID,
+  TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
   type TrackElementCatalogId,
 } from "@/lib/track/elements/catalog";
 import type { EditorTool } from "@/lib/editor-tools";
 import { cn } from "@/lib/utils";
 import type { EditorViewportTab } from "./Panels";
 
-const gateCatalogEntries = getCatalogEntriesByKind("gate");
-const mobileGateToolEntry = mobileToolEntries.find((t) => t.id === "gate");
+const catalogEntriesByTool = {
+  gate: getCatalogEntriesByKind("gate"),
+  flag: getCatalogEntriesByKind("flag"),
+  ladder: getCatalogEntriesByKind("ladder"),
+} as const;
+
+const defaultIdByTool: Partial<Record<EditorTool, TrackElementCatalogId>> = {
+  gate: TRACKDRAW_GATE_ELEMENT_ID,
+  flag: TRACKDRAW_FLAG_ELEMENT_ID,
+  ladder: TRACKDRAW_LADDER_ELEMENT_ID,
+};
+
+const catalogToolIds = Object.keys(catalogEntriesByTool) as EditorTool[];
 
 interface ToolsControlsProps {
   activeTool: EditorTool;
-  activeGateElementId: TrackElementCatalogId | null;
+  activePlacementElementId: Partial<Record<EditorTool, TrackElementCatalogId>>;
   canRedo: boolean;
   canUndo: boolean;
   tab: EditorViewportTab;
   onRedo: () => void;
-  onSelectGateElement: (id: TrackElementCatalogId) => void;
+  onSelectPlacementElement: (tool: EditorTool, id: TrackElementCatalogId) => void;
   onSelectTool: (tool: EditorTool) => void;
   onUndo: () => void;
 }
@@ -34,24 +48,18 @@ function runAction(action: () => void) {
 
 export function ToolsControls({
   activeTool,
-  activeGateElementId,
+  activePlacementElementId,
   canRedo,
   canUndo,
   tab,
   onRedo,
-  onSelectGateElement,
+  onSelectPlacementElement,
   onSelectTool,
   onUndo,
 }: ToolsControlsProps) {
-  const [gateTypesOpen, setGateTypesOpen] = useState(false);
-
-  const activeGateEntry =
-    gateCatalogEntries.find((e) => e.id === activeGateElementId) ??
-    gateCatalogEntries[0];
-
   return (
     <>
-      {/* Compact undo / redo — no section header */}
+      {/* Undo / redo */}
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => runAction(onUndo)}
@@ -77,99 +85,160 @@ export function ToolsControls({
             Tools
           </p>
 
-          {/* Gate — full-width card with inline type picker */}
-          <div className="border-border/50 bg-muted/14 mb-2 overflow-hidden rounded-2xl border">
-            <button
-              type="button"
-              onClick={() => runAction(() => onSelectTool("gate"))}
-              className={cn(
-                "flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-all",
-                activeTool === "gate"
-                  ? "bg-muted/55 text-foreground"
-                  : "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
-              )}
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="border-border/45 bg-background/50 flex size-10 shrink-0 items-center justify-center rounded-xl border">
-                  {mobileGateToolEntry?.icon}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">Gate</p>
-                  <p className="truncate pt-0.5 text-[11px] opacity-70">
-                    {activeGateEntry
-                      ? `${activeGateEntry.name} · ${activeGateEntry.dimensions.display.label}`
-                      : "Place a gate"}
-                  </p>
-                </div>
-              </div>
-              {activeGateEntry?.official ? (
-                <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-md px-1.5 py-1 text-[9px] leading-none font-semibold tracking-[0.08em] uppercase">
-                  Official
-                </span>
-              ) : null}
-            </button>
-            <button
-              type="button"
-              onClick={() => setGateTypesOpen((c) => !c)}
-              className="border-border/25 text-muted-foreground hover:bg-muted/22 hover:text-foreground flex min-h-9 w-full items-center justify-between gap-2 border-t px-4 text-left text-[11px] font-medium transition-colors"
-              aria-expanded={gateTypesOpen}
-            >
-              <span>Change gate type</span>
-              <ChevronDown
-                className={cn(
-                  "size-3.5 transition-transform",
-                  gateTypesOpen && "rotate-180"
-                )}
-              />
-            </button>
-            {gateTypesOpen ? (
-              <div className="border-border/25 space-y-1 border-t p-1.5">
-                {gateCatalogEntries.map((entry) => {
-                  const active = activeGateEntry?.id === entry.id;
-                  return (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      onClick={() =>
-                        runAction(() => onSelectGateElement(entry.id))
-                      }
+          {/* Catalog tools — active one auto-expands with type list */}
+          <div className="mb-2 space-y-2">
+            {catalogToolIds.map((toolId) => {
+              const entries =
+                catalogEntriesByTool[toolId as keyof typeof catalogEntriesByTool];
+              const toolEntry = mobileToolEntries.find((t) => t.id === toolId);
+              const activeId =
+                activePlacementElementId[toolId] ?? defaultIdByTool[toolId];
+              const activeEntry =
+                entries.find((e) => e.id === activeId) ?? entries[0];
+              const isActiveTool = activeTool === toolId;
+              const toolLabel = toolEntry?.label ?? toolId;
+
+              return (
+                <div
+                  key={toolId}
+                  className={cn(
+                    "overflow-hidden rounded-2xl border transition-all duration-200",
+                    isActiveTool
+                      ? "border-brand-primary/25 bg-brand-primary/5"
+                      : "border-border/50 bg-muted/14"
+                  )}
+                >
+                  {/* Tool header — always visible */}
+                  <button
+                    type="button"
+                    onClick={() => runAction(() => onSelectTool(toolId))}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                  >
+                    <span
                       className={cn(
-                        "flex min-h-11 w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition-colors",
-                        active
-                          ? "bg-muted/60 text-foreground"
-                          : "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
+                        "flex size-10 shrink-0 items-center justify-center rounded-xl border transition-all",
+                        isActiveTool
+                          ? "border-brand-primary/30 bg-brand-primary/10 text-brand-primary"
+                          : "border-border/45 bg-background/50 text-muted-foreground"
                       )}
                     >
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[12px] font-medium">
-                          {entry.name}
-                        </span>
-                        <span className="mt-0.5 block truncate text-[10px] opacity-75">
-                          {entry.dimensions.display.label}
-                          {entry.official ? " · Official" : ""}
-                        </span>
-                      </span>
-                      <Check
+                      {toolEntry?.icon}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p
                         className={cn(
-                          "text-brand-primary size-3.5 shrink-0 transition-opacity",
-                          active ? "opacity-100" : "opacity-0"
+                          "text-sm font-semibold leading-tight",
+                          isActiveTool
+                            ? "text-foreground"
+                            : "text-foreground/75"
                         )}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
+                      >
+                        {toolLabel}
+                      </p>
+                      <p className="text-muted-foreground/60 mt-0.5 truncate text-[11px]">
+                        {activeEntry?.name ?? "—"}
+                        {activeEntry?.official ? " · Official" : ""}
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Type list — only visible when this tool is active */}
+                  <AnimatePresence initial={false}>
+                    {isActiveTool && (
+                      <motion.div
+                        key="type-list"
+                        initial={{ height: 0 }}
+                        animate={{ height: "auto" }}
+                        exit={{ height: 0 }}
+                        transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <motion.div
+                          initial="hidden"
+                          animate="visible"
+                          exit="hidden"
+                          variants={{
+                            hidden: {},
+                            visible: { transition: { staggerChildren: 0.045, delayChildren: 0.06 } },
+                          }}
+                          className="border-brand-primary/20 space-y-0.5 border-t px-2 pb-2 pt-1.5"
+                        >
+                          {entries.map((entry) => {
+                            const isActiveType = activeEntry?.id === entry.id;
+                            return (
+                              <motion.button
+                                key={entry.id}
+                                type="button"
+                                variants={{
+                                  hidden: { opacity: 0, y: -6 },
+                                  visible: { opacity: 1, y: 0, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] } },
+                                }}
+                                onClick={() =>
+                                  runAction(() =>
+                                    onSelectPlacementElement(toolId, entry.id)
+                                  )
+                                }
+                                className={cn(
+                                  "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
+                                  isActiveType
+                                    ? "bg-brand-primary/10 text-foreground"
+                                    : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                                )}
+                              >
+                                <div
+                                  className={cn(
+                                    "size-4 shrink-0 rounded-full border-2 transition-all",
+                                    isActiveType
+                                      ? "border-brand-primary bg-brand-primary"
+                                      : "border-border/50"
+                                  )}
+                                >
+                                  {isActiveType && (
+                                    <Check className="text-background size-full p-0.5" />
+                                  )}
+                                </div>
+                                <span className="min-w-0 flex-1">
+                                  <span
+                                    className={cn(
+                                      "block truncate text-[13px] font-semibold leading-tight",
+                                      isActiveType
+                                        ? "text-foreground"
+                                        : "text-foreground/80"
+                                    )}
+                                  >
+                                    {entry.name}
+                                  </span>
+                                  <span className="text-muted-foreground/60 mt-0.5 flex items-center gap-1.5 text-[11px]">
+                                    <span className="truncate">
+                                      {entry.dimensions.display.label}
+                                    </span>
+                                    {entry.official ? (
+                                      <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none tracking-widest uppercase">
+                                        Official
+                                      </span>
+                                    ) : null}
+                                  </span>
+                                </span>
+                              </motion.button>
+                            );
+                          })}
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Drawing tools grid — preset excluded */}
+          {/* Remaining tools — compact 3-col grid */}
           <div className="grid grid-cols-3 gap-2">
             {mobileToolEntries
               .filter(
                 (tool) =>
                   tool.id !== "grab" &&
-                  tool.id !== "gate" &&
-                  tool.id !== "preset"
+                  tool.id !== "preset" &&
+                  !catalogToolIds.includes(tool.id as EditorTool)
               )
               .map((tool) => {
                 const active = activeTool === tool.id;
@@ -180,7 +249,7 @@ export function ToolsControls({
                     className={cn(
                       "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
                       active
-                        ? "border-border/80 bg-muted/55 text-foreground"
+                        ? "border-brand-primary/25 bg-brand-primary/8 text-brand-primary"
                         : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
                     )}
                   >

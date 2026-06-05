@@ -104,8 +104,8 @@ export default function EditorShell({
   const design = useEditor((state) => state.track.design);
   const activeTool = useEditor((state) => state.ui.activeTool);
   const activePresetId = useEditor((state) => state.ui.activePresetId);
-  const activeGateElementId = useEditor(
-    (state) => state.ui.activeGateElementId
+  const activePlacementElementId = useEditor(
+    (state) => state.ui.activePlacementElementId
   );
   const snapEnabled = useEditor((state) => state.ui.snapEnabled);
   const {
@@ -123,7 +123,7 @@ export default function EditorShell({
   } = useTrackActions();
   const {
     setActiveTool,
-    setActiveGateElementId,
+    setActivePlacementElementId,
     setActivePresetId,
     setSegmentSelection,
     toggleSnapEnabled,
@@ -407,17 +407,17 @@ export default function EditorShell({
     setMobilePathBuilderPinnedOpen(false);
   }, [activeTool, mobileDraftPathState.active]);
 
-  const handleGateElementSelect = useCallback(
-    (entryId: TrackElementCatalogId) => {
+  const handlePlacementElementSelect = useCallback(
+    (tool: EditorTool, entryId: TrackElementCatalogId) => {
       setSelection([]);
       setMobileMultiSelectEnabled(false);
       setMobilePathBuilderPinnedOpen(false);
-      setActiveGateElementId(entryId);
-      setActiveTool("gate");
+      setActivePlacementElementId(tool, entryId);
+      setActiveTool(tool);
       setMobileToolsOpen(false);
     },
     [
-      setActiveGateElementId,
+      setActivePlacementElementId,
       setActiveTool,
       setMobileMultiSelectEnabled,
       setMobilePathBuilderPinnedOpen,
@@ -648,7 +648,7 @@ export default function EditorShell({
         {isMobile && !readOnly ? (
           <EditorMobilePanels
             activeTool={activeTool}
-            activeGateElementId={activeGateElementId}
+            activePlacementElementId={activePlacementElementId}
             activePresetLabel={activePresetLabel}
             draftPathActive={mobileDraftPathState.active}
             draftPathClosed={mobileDraftPathState.closed}
@@ -803,7 +803,7 @@ export default function EditorShell({
               setMobileMultiSelectEnabled(false);
               setSelection([]);
             }}
-            onSelectGateElement={handleGateElementSelect}
+            onSelectPlacementElement={handlePlacementElementSelect}
             onSelectTool={(tool) => {
               setSelection([]);
               setMobileMultiSelectEnabled(false);
@@ -814,7 +814,11 @@ export default function EditorShell({
               }
               setMobilePathBuilderPinnedOpen(tool === "polyline");
               setActiveTool(tool);
-              setMobileToolsOpen(false);
+              // Keep drawer open for catalog tools so the type list stays visible
+              const catalogTools: EditorTool[] = ["gate", "flag", "ladder"];
+              if (!catalogTools.includes(tool)) {
+                setMobileToolsOpen(false);
+              }
             }}
             onSetMobileToolsOpen={setMobileToolsOpen}
             onSetMobileViewOpen={setMobileViewOpen}

@@ -1,8 +1,9 @@
 import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/planning/layout-presets";
 import { createDefaultDesign } from "@/lib/track/design";
 import {
+  TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
-  type TrackElementCatalogId,
+  TRACKDRAW_LADDER_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import type {
   EditorSessionState,
@@ -12,7 +13,7 @@ import type {
 
 interface EditorUiResetOptions {
   activePresetId?: string | null;
-  activeGateElementId?: TrackElementCatalogId | null;
+  activePlacementElementId?: EditorUiState["activePlacementElementId"];
   zoom?: number;
   panOffset?: { x: number; y: number };
 }
@@ -29,8 +30,11 @@ export function createDefaultEditorUiState(
   return {
     activeTool: "select",
     activePresetId: options.activePresetId ?? DEFAULT_LAYOUT_PRESET_ID,
-    activeGateElementId:
-      options.activeGateElementId ?? TRACKDRAW_GATE_ELEMENT_ID,
+    activePlacementElementId: options.activePlacementElementId ?? {
+      gate: TRACKDRAW_GATE_ELEMENT_ID,
+      flag: TRACKDRAW_FLAG_ELEMENT_ID,
+      ladder: TRACKDRAW_LADDER_ELEMENT_ID,
+    },
     snapEnabled: true,
     zoom: options.zoom ?? 1,
     panOffset: options.panOffset ?? { x: 0, y: 0 },
@@ -54,8 +58,8 @@ export function resetEditorUiState(
 ): EditorUiState {
   return createDefaultEditorUiState({
     activePresetId: options.activePresetId ?? current.activePresetId,
-    activeGateElementId:
-      options.activeGateElementId ?? current.activeGateElementId,
+    activePlacementElementId:
+      options.activePlacementElementId ?? { ...current.activePlacementElementId },
     zoom: options.zoom ?? current.zoom,
     panOffset: options.panOffset ?? current.panOffset,
   });

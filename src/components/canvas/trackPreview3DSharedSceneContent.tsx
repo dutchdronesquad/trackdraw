@@ -22,9 +22,9 @@ import {
   getPolylineCurve3Derived,
   getPolylinePreview3DPoints,
 } from "@/lib/track/polyline-derived-3d";
-import { getGateVisualSpec } from "@/lib/track/elements/visual";
+import { getFlagVisualSpec, getGateVisualSpec } from "@/lib/track/elements/visual";
 import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
-import type { PanelFrameGateVisualSpec } from "@/lib/track/elements/catalog";
+import type { CornerMarkerFlagVisualSpec, PanelFrameGateVisualSpec } from "@/lib/track/elements/catalog";
 import type {
   ConeShape,
   DiveGateShape,
@@ -722,6 +722,115 @@ function Gate3D({
   );
 }
 
+function CornerMarkerFlag3D({
+  selected = false,
+  shape,
+  visual,
+}: {
+  selected?: boolean;
+  shape: FlagShape;
+  visual: CornerMarkerFlagVisualSpec;
+}) {
+  const ph = shape.poleHeight ?? 3.0;
+  const yawRad = (-shape.rotation * Math.PI) / 180;
+  const poleRadius = 0.030;
+  const pw = ph * 0.18;
+  const topCurveX = pw * 0.65;
+  const panelDepth = ph * 0.012;
+
+  const poleCurve = useMemo(
+    () =>
+      new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, ph * 0.85, 0),
+        new THREE.Vector3(topCurveX * 0.28, ph * 0.93, 0),
+        new THREE.Vector3(topCurveX, ph, 0),
+      ]),
+    [ph, topCurveX]
+  );
+
+  // panel starts ~8% above ground so the pole base is visible below the fabric
+  const panelStartY = ph * 0.08;
+  const splitY = panelStartY + ph * 0.24;
+
+  // pole tip in panel-local coords (panel is shifted right by poleRadius)
+  const poleTipLocalX = topCurveX - poleRadius;
+
+  const upperShape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(0, splitY);
+    s.lineTo(pw, splitY);
+    // right edge: straight up, then curves inward to reach the pole tip
+    s.lineTo(pw, ph * 0.70);
+    s.bezierCurveTo(pw * 0.95, ph * 0.83, poleTipLocalX + pw * 0.08, ph * 0.94, poleTipLocalX, ph);
+    // top arc: follows inside of pole bend back to where curve starts (left edge)
+    s.bezierCurveTo(poleTipLocalX * 0.52, ph * 0.97, 0, ph * 0.91, 0, ph * 0.85);
+    s.lineTo(0, splitY);
+    return s;
+  }, [ph, pw, splitY, poleTipLocalX]);
+
+  const lowerShape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(0, panelStartY);
+    s.lineTo(0, splitY);
+    // right edge: straight down, tapers to a point at the bottom
+    s.lineTo(pw, splitY);
+    s.bezierCurveTo(
+      pw, splitY - ph * 0.08,
+      pw * 0.45, panelStartY + ph * 0.01,
+      pw * 0.08, panelStartY
+    );
+    s.lineTo(0, panelStartY);
+    return s;
+  }, [ph, pw, splitY, panelStartY]);
+
+  const extrudeSettings = useMemo(
+    () => ({ depth: panelDepth, bevelEnabled: false }),
+    [panelDepth]
+  );
+
+  return (
+    <group position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
+      <mesh position={[0, 0.02, 0]} receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.04, 0.13, 24]} />
+        <meshBasicMaterial color="#888" transparent opacity={0.18} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Panel at z=0, left edge touching the pole's right surface */}
+      <mesh receiveShadow castShadow position={[poleRadius, 0, 0]}>
+        <extrudeGeometry args={[upperShape, extrudeSettings]} />
+        <meshStandardMaterial
+          color={visual.panelUpperColor}
+          roughness={0.78}
+          metalness={0}
+          emissive={selected ? "#60a5fa" : visual.panelUpperColor}
+          emissiveIntensity={selected ? 0.18 : 0.01}
+        />
+      </mesh>
+      <mesh receiveShadow castShadow position={[poleRadius, 0, 0]}>
+        <extrudeGeometry args={[lowerShape, extrudeSettings]} />
+        <meshStandardMaterial
+          color={visual.panelLowerColor}
+          roughness={0.78}
+          metalness={0}
+          emissive={selected ? "#60a5fa" : visual.panelLowerColor}
+          emissiveIntensity={selected ? 0.18 : 0.04}
+        />
+      </mesh>
+      {/* Pole at z=0 — no x-overlap with panel (panel starts at x=poleRadius) */}
+      <mesh castShadow>
+        <tubeGeometry args={[poleCurve, 40, poleRadius, 12, false]} />
+        <meshStandardMaterial
+          color={visual.poleColor}
+          roughness={0.38}
+          metalness={0.42}
+          emissive={selected ? "#60a5fa" : "#000000"}
+          emissiveIntensity={selected ? 0.14 : 0}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 function Flag3D({
   selected = false,
   shape,
@@ -729,6 +838,13 @@ function Flag3D({
   selected?: boolean;
   shape: FlagShape;
 }) {
+  const flagVisual = getFlagVisualSpec(shape);
+  if (flagVisual?.variant === "corner-marker") {
+    return (
+      <CornerMarkerFlag3D shape={shape} selected={selected} visual={flagVisual} />
+    );
+  }
+
   const color = shape.color ?? "#a855f7";
   const ph = shape.poleHeight ?? 3.5;
   const yawRad = (-shape.rotation * Math.PI) / 180;

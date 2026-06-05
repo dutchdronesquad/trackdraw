@@ -18,7 +18,7 @@ export interface EditorTrackState {
 export interface EditorUiState {
   activeTool: EditorTool;
   activePresetId: string | null;
-  activeGateElementId: TrackElementCatalogId | null;
+  activePlacementElementId: Partial<Record<EditorTool, TrackElementCatalogId>>;
   snapEnabled: boolean;
   zoom: number;
   panOffset: { x: number; y: number };
@@ -125,7 +125,7 @@ export interface EditorSessionActions {
 export interface EditorUiActions {
   setActiveTool: (tool: EditorTool) => void;
   setActivePresetId: (presetId: string | null) => void;
-  setActiveGateElementId: (entryId: TrackElementCatalogId | null) => void;
+  setActivePlacementElementId: (tool: EditorTool, entryId: TrackElementCatalogId | null) => void;
   setSnapEnabled: (enabled: boolean) => void;
   toggleSnapEnabled: () => void;
   setZoom: (zoom: number) => void;
@@ -247,7 +247,7 @@ export const editorStateOwnership = {
   ui: [
     "activeTool",
     "activePresetId",
-    "activeGateElementId",
+    "activePlacementElementId",
     "snapEnabled",
     "zoom",
     "panOffset",
@@ -306,7 +306,7 @@ export const editorActionOwnership = {
   ui: [
     "setActiveTool",
     "setActivePresetId",
-    "setActiveGateElementId",
+    "setActivePlacementElementId",
     "setSnapEnabled",
     "toggleSnapEnabled",
     "setZoom",

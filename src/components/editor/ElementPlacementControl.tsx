@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
 import {
   Popover,
@@ -9,130 +10,174 @@ import {
 } from "@/components/ui/popover";
 import {
   getCatalogEntriesByKind,
+  TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
+  type TrackElementCatalogId,
 } from "@/lib/track/elements/catalog";
 import { cn } from "@/lib/utils";
 import { useSessionActions, useUiActions } from "@/store/actions";
 import { useEditor } from "@/store/editor";
+import type { EditorTool } from "@/lib/editor-tools";
 
-const gateCatalogEntries = getCatalogEntriesByKind("gate");
-const placementControlWidthCh = Math.max(
-  22,
-  Math.min(
-    32,
-    Math.max(...gateCatalogEntries.map((entry) => entry.name.length)) + 5
-  )
-);
+const catalogEntriesByTool: Partial<
+  Record<EditorTool, ReturnType<typeof getCatalogEntriesByKind>>
+> = {
+  gate: getCatalogEntriesByKind("gate"),
+  flag: getCatalogEntriesByKind("flag"),
+  ladder: getCatalogEntriesByKind("ladder"),
+};
+
+const defaultIdByTool: Partial<Record<EditorTool, TrackElementCatalogId>> = {
+  gate: TRACKDRAW_GATE_ELEMENT_ID,
+  flag: TRACKDRAW_FLAG_ELEMENT_ID,
+  ladder: TRACKDRAW_LADDER_ELEMENT_ID,
+};
+
+const labelByTool: Partial<Record<EditorTool, string>> = {
+  gate: "Gate",
+  flag: "Flag",
+  ladder: "Ladder",
+};
+
+function getControlWidthCh(entries: { name: string }[]) {
+  return Math.max(22, Math.min(32, Math.max(...entries.map((e) => e.name.length)) + 5));
+}
 
 export function ElementPlacementControl() {
   const [open, setOpen] = useState(false);
   const activeTool = useEditor((state) => state.ui.activeTool);
-  const activeGateElementId =
-    useEditor((state) => state.ui.activeGateElementId) ??
-    TRACKDRAW_GATE_ELEMENT_ID;
-  const { setActiveGateElementId } = useUiActions();
+  const activePlacementElementId = useEditor(
+    (state) => state.ui.activePlacementElementId
+  );
+  const { setActivePlacementElementId } = useUiActions();
   const { setSelection } = useSessionActions();
-  const activeEntry =
-    gateCatalogEntries.find((entry) => entry.id === activeGateElementId) ??
-    gateCatalogEntries[0];
+
+  const entries = catalogEntriesByTool[activeTool];
+  const visible = !!entries && entries.length > 1;
+  const activeId = visible
+    ? (activePlacementElementId[activeTool] ?? defaultIdByTool[activeTool])
+    : undefined;
+  const activeEntry = visible
+    ? (entries!.find((e) => e.id === activeId) ?? entries![0])
+    : undefined;
+  const toolLabel = labelByTool[activeTool] ?? activeTool;
   const controlWidthStyle = {
-    width: `min(${placementControlWidthCh}ch, calc(100vw - 2rem))`,
+    width: visible
+      ? `min(${getControlWidthCh(entries!)}ch, calc(100vw - 2rem))`
+      : "auto",
   } satisfies CSSProperties;
 
-  if (activeTool !== "gate" || !activeEntry) return null;
-
   return (
-    <div className="pointer-events-auto absolute bottom-3 left-1/2 z-20 hidden -translate-x-1/2 lg:block">
+    <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 hidden -translate-x-1/2 lg:block">
+      <AnimatePresence>
+        {visible && activeEntry && (
+          <motion.div
+            key={activeTool}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="pointer-events-auto"
+          >
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           style={controlWidthStyle}
-          className="group border-border/65 bg-sidebar/94 hover:border-border hover:bg-sidebar grid h-11 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 rounded-md border px-2.5 text-left shadow-[0_10px_30px_rgba(15,23,42,0.16)] backdrop-blur-md transition-colors"
+          className="group border-border/55 bg-sidebar/96 hover:border-border/80 hover:bg-sidebar grid h-12 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border px-3 text-left shadow-[0_8px_32px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all"
         >
-          <span className="bg-muted text-muted-foreground rounded-sm px-1.5 py-1 font-mono text-[9px] leading-none font-semibold tracking-[0.12em] uppercase">
-            Gate
+          <span className="border-border/40 text-muted-foreground rounded-md border px-2 py-1 text-[9px] leading-none font-semibold tracking-widest uppercase">
+            {toolLabel}
           </span>
           <span className="min-w-0">
-            <span className="text-foreground block truncate text-xs leading-none font-medium">
+            <span className="text-foreground block truncate text-[13px] leading-none font-semibold">
               {activeEntry.name}
             </span>
-            <span className="mt-1 flex min-w-0 items-center gap-1.5">
-              <span className="text-muted-foreground truncate text-[11px] leading-none">
+            <span className="mt-1.5 flex min-w-0 items-center gap-1.5">
+              <span className="text-muted-foreground/70 truncate text-[11px] leading-none">
                 {activeEntry.dimensions.display.label}
               </span>
               {activeEntry.official ? (
-                <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-[3px] px-1 py-0.5 text-[9px] leading-none font-semibold tracking-[0.08em] uppercase">
+                <span className="bg-brand-primary/14 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
                   Official
                 </span>
               ) : null}
             </span>
           </span>
-          <span className="flex shrink-0 items-center">
-            <ChevronDown
-              className={cn(
-                "text-muted-foreground size-3.5 transition-transform",
-                open && "rotate-180"
-              )}
-            />
-          </span>
+          <ChevronDown
+            className={cn(
+              "text-muted-foreground/60 size-4 shrink-0 transition-transform duration-200",
+              open && "rotate-180"
+            )}
+          />
         </PopoverTrigger>
         <PopoverContent
           align="center"
           side="top"
-          sideOffset={8}
+          sideOffset={10}
           style={controlWidthStyle}
-          className="overflow-hidden p-0"
+          className="overflow-hidden rounded-xl p-0 shadow-[0_8px_32px_rgba(15,23,42,0.18)]"
         >
-          <div className="border-border/70 border-b px-3 py-2">
-            <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.08em] uppercase">
-              Choose gate type
+          <div className="px-3 pt-3 pb-1.5">
+            <p className="text-muted-foreground/60 text-[10px] font-semibold tracking-widest uppercase">
+              {toolLabel} type
             </p>
           </div>
-          <div className="max-h-72 space-y-1 overflow-y-auto p-1.5">
-            {gateCatalogEntries.map((entry) => {
-              const active = activeGateElementId === entry.id;
+          <div className="max-h-72 space-y-0.5 overflow-y-auto px-1.5 pb-1.5">
+            {entries.map((entry) => {
+              const active = activeId === entry.id;
               return (
                 <button
                   key={entry.id}
                   type="button"
                   onClick={() => {
                     setSelection([]);
-                    setActiveGateElementId(entry.id);
+                    setActivePlacementElementId(activeTool, entry.id);
                     setOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left transition-colors",
+                    "flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors",
                     active
                       ? "bg-brand-primary/10 text-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                   )}
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm leading-tight font-medium">
+                    <span className={cn(
+                      "block truncate text-[13px] leading-tight font-semibold",
+                      active ? "text-foreground" : "text-foreground/80"
+                    )}>
                       {entry.name}
                     </span>
-                    <span className="mt-1 flex min-w-0 items-center gap-1.5 text-xs opacity-75">
-                      <span className="truncate">
+                    <span className="mt-1 flex min-w-0 items-center gap-1.5">
+                      <span className="text-muted-foreground/65 truncate text-[11px] leading-none">
                         {entry.dimensions.display.label}
                       </span>
                       {entry.official ? (
-                        <span className="bg-muted rounded-[3px] px-1 py-0.5 text-[9px] leading-none font-semibold tracking-[0.08em] uppercase">
+                        <span className="bg-brand-primary/12 text-brand-primary rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase shrink-0">
                           Official
                         </span>
                       ) : null}
                     </span>
                   </span>
-                  <Check
-                    className={cn(
-                      "text-brand-primary size-4 shrink-0 transition-opacity",
-                      active ? "opacity-100" : "opacity-0"
+                  <div className={cn(
+                    "size-4 shrink-0 rounded-full border-2 transition-all",
+                    active
+                      ? "border-brand-primary bg-brand-primary"
+                      : "border-border/50"
+                  )}>
+                    {active && (
+                      <Check className="text-background size-full p-0.75" />
                     )}
-                  />
+                  </div>
                 </button>
               );
             })}
           </div>
         </PopoverContent>
       </Popover>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
