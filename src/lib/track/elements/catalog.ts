@@ -110,9 +110,9 @@ export interface CornerMarkerFlagVisualSpec {
 
 export type FlagVisualSpec = CornerMarkerFlagVisualSpec;
 
-export interface PanelRunsLadderVisualSpec {
+export interface PanelFrameLadderVisualSpec {
   kind: "ladder";
-  variant: "panel-rungs";
+  variant: "panel-frame";
   panels: {
     left: GatePanelVisualSpec;
     right: GatePanelVisualSpec;
@@ -122,7 +122,7 @@ export interface PanelRunsLadderVisualSpec {
   branding: GateBrandingVisualSpec;
 }
 
-export type LadderVisualSpec = PanelRunsLadderVisualSpec;
+export type LadderVisualSpec = PanelFrameLadderVisualSpec;
 export type TrackElementVisualSpec =
   | GateVisualSpec
   | FlagVisualSpec
@@ -526,7 +526,7 @@ export const trackElementCatalog = [
     render3d: { modelHint: "ladder-gate" },
     visual: {
       kind: "ladder",
-      variant: "panel-rungs",
+      variant: "panel-frame",
       panels: {
         left: { widthMeters: feetToMeters(1), color: "#f8fafc" },
         right: { widthMeters: feetToMeters(1), color: "#f8fafc" },
@@ -585,7 +585,7 @@ export const trackElementCatalog = [
     render3d: { modelHint: "ladder-gate" },
     visual: {
       kind: "ladder",
-      variant: "panel-rungs",
+      variant: "panel-frame",
       panels: {
         left: { widthMeters: feetToMeters(1), color: "#f8fafc" },
         right: { widthMeters: feetToMeters(1), color: "#f8fafc" },

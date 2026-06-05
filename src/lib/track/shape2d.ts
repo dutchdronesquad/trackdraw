@@ -122,7 +122,7 @@ export function getLadder2DShape(shape: LadderShape, ppm: number) {
   const openingWidth = m2px(shape.width ?? 2, ppm);
   const depth = m2px(0.18, ppm);
 
-  if (ladderVisual?.variant === "panel-rungs") {
+  if (ladderVisual?.variant === "panel-frame") {
     const leftPanelWidth = m2px(ladderVisual.panels.left.widthMeters, ppm);
     const rightPanelWidth = m2px(ladderVisual.panels.right.widthMeters, ppm);
     const width = openingWidth + leftPanelWidth + rightPanelWidth;
@@ -130,7 +130,7 @@ export function getLadder2DShape(shape: LadderShape, ppm: number) {
       color: ladderVisual.panels.top.color,
       depth,
       radius: Math.min(12, depth / 2),
-      variant: "panel-rungs" as const,
+      variant: "panel-frame" as const,
       width,
     };
   }

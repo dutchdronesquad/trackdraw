@@ -31,7 +31,7 @@ import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
 import type {
   CornerMarkerFlagVisualSpec,
   PanelFrameGateVisualSpec,
-  PanelRunsLadderVisualSpec,
+  PanelFrameLadderVisualSpec,
 } from "@/lib/track/elements/catalog";
 import type {
   ConeShape,
@@ -1179,7 +1179,7 @@ function PanelFrameLadder3D({
   shape: LadderShape;
   outerRef?: Ref<THREE.Group>;
   elevationOverrideRef?: RefObject<number | null>;
-  visual: PanelRunsLadderVisualSpec;
+  visual: PanelFrameLadderVisualSpec;
 }) {
   const { branding, frame, panels } = visual;
   // shape.width = inner opening (same convention as gates)
@@ -1516,7 +1516,7 @@ function Ladder3D({
     }
   });
 
-  if (ladderVisual?.variant === "panel-rungs") {
+  if (ladderVisual?.variant === "panel-frame") {
     return (
       <PanelFrameLadder3D
         shape={shape}
