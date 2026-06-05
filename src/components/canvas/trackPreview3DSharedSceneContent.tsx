@@ -734,10 +734,12 @@ function CornerMarkerFlag3D({
   selected = false,
   shape,
   visual,
+  outerRef,
 }: {
   selected?: boolean;
   shape: FlagShape;
   visual: CornerMarkerFlagVisualSpec;
+  outerRef?: Ref<THREE.Group>;
 }) {
   const ph = shape.poleHeight ?? 3.0;
   const yawRad = (-shape.rotation * Math.PI) / 180;
@@ -815,7 +817,7 @@ function CornerMarkerFlag3D({
   );
 
   return (
-    <group position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
+    <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
       <mesh
         position={[0, 0.02, 0]}
         receiveShadow
@@ -868,9 +870,11 @@ function CornerMarkerFlag3D({
 function Flag3D({
   selected = false,
   shape,
+  outerRef,
 }: {
   selected?: boolean;
   shape: FlagShape;
+  outerRef?: Ref<THREE.Group>;
 }) {
   const flagVisual = getFlagVisualSpec(shape);
   const color = shape.color ?? "#a855f7";
@@ -928,12 +932,13 @@ function Flag3D({
         shape={shape}
         selected={selected}
         visual={flagVisual}
+        outerRef={outerRef}
       />
     );
   }
 
   return (
-    <group position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
+    <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
       <mesh
         position={[0, 0.025, 0]}
         receiveShadow
@@ -1976,7 +1981,7 @@ function Shape3D({
     case "flag":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <Flag3D shape={shape} selected={isSelected} />
+          <Flag3D shape={shape} selected={isSelected} outerRef={outerRef} />
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
