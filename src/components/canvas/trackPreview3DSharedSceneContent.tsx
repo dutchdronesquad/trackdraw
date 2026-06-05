@@ -873,16 +873,6 @@ function Flag3D({
   shape: FlagShape;
 }) {
   const flagVisual = getFlagVisualSpec(shape);
-  if (flagVisual?.variant === "corner-marker") {
-    return (
-      <CornerMarkerFlag3D
-        shape={shape}
-        selected={selected}
-        visual={flagVisual}
-      />
-    );
-  }
-
   const color = shape.color ?? "#a855f7";
   const ph = shape.poleHeight ?? 3.5;
   const yawRad = (-shape.rotation * Math.PI) / 180;
@@ -931,6 +921,16 @@ function Flag3D({
     );
     return banner;
   }, [bannerBottom, bannerTop, bannerWidth, ph]);
+
+  if (flagVisual?.variant === "corner-marker") {
+    return (
+      <CornerMarkerFlag3D
+        shape={shape}
+        selected={selected}
+        visual={flagVisual}
+      />
+    );
+  }
 
   return (
     <group position={[shape.x, 0, shape.y]} rotation={[0, yawRad, 0]}>
@@ -1484,18 +1484,6 @@ function Ladder3D({
   elevationOverrideRef?: RefObject<number | null>;
 }) {
   const ladderVisual = getLadderVisualSpec(shape);
-  if (ladderVisual?.variant === "panel-rungs") {
-    return (
-      <PanelFrameLadder3D
-        shape={shape}
-        selected={selected}
-        outerRef={outerRef}
-        elevationOverrideRef={elevationOverrideRef}
-        visual={ladderVisual}
-      />
-    );
-  }
-
   const color = shape.color ?? "#3b82f6";
   const w = shape.width ?? 1.5;
   const totalH = shape.height ?? 4.5;
@@ -1527,6 +1515,18 @@ function Ladder3D({
       lowerBarRef.current.visible = liveElevation > 0;
     }
   });
+
+  if (ladderVisual?.variant === "panel-rungs") {
+    return (
+      <PanelFrameLadder3D
+        shape={shape}
+        selected={selected}
+        outerRef={outerRef}
+        elevationOverrideRef={elevationOverrideRef}
+        visual={ladderVisual}
+      />
+    );
+  }
 
   return (
     <group

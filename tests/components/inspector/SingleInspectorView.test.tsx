@@ -238,17 +238,17 @@ describe("SingleInspectorView race timing controls", () => {
 
     expect(screen.getByText("MultiGP Standard Gate 5x5")).toBeTruthy();
     expect(screen.queryByText("Color")).toBeNull();
-    expect(screen.queryByText("Width")).toBeNull();
-    expect(screen.queryByText("Height")).toBeNull();
-    expect(screen.queryByText("Thickness")).toBeNull();
+    expect(screen.queryByText(/^Width/)).toBeNull();
+    expect(screen.queryByText(/^Height/)).toBeNull();
+    expect(screen.queryByText(/^Thickness/)).toBeNull();
   });
 
   it("keeps frame-only gate size and color controls editable", () => {
     renderSingleInspector(gate);
 
     expect(screen.getByText("Color")).toBeTruthy();
-    expect(screen.getByText("Width")).toBeTruthy();
-    expect(screen.getByText("Height")).toBeTruthy();
-    expect(screen.getByText("Thickness")).toBeTruthy();
+    expect(screen.getByText(/^Width/)).toBeTruthy();
+    expect(screen.getByText(/^Height/)).toBeTruthy();
+    expect(screen.getByText(/^Thickness/)).toBeTruthy();
   });
 });
