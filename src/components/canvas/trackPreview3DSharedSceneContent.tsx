@@ -22,9 +22,9 @@ import {
   getPolylineCurve3Derived,
   getPolylinePreview3DPoints,
 } from "@/lib/track/polyline-derived-3d";
-import { getFlagVisualSpec, getGateVisualSpec } from "@/lib/track/elements/visual";
+import { getFlagVisualSpec, getGateVisualSpec, getLadderVisualSpec } from "@/lib/track/elements/visual";
 import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
-import type { CornerMarkerFlagVisualSpec, PanelFrameGateVisualSpec } from "@/lib/track/elements/catalog";
+import type { CornerMarkerFlagVisualSpec, PanelFrameGateVisualSpec, PanelRunsLadderVisualSpec } from "@/lib/track/elements/catalog";
 import type {
   ConeShape,
   DiveGateShape,
@@ -1130,6 +1130,212 @@ function StartFinish3D({
   );
 }
 
+function PanelFrameLadder3D({
+  selected = false,
+  shape,
+  outerRef,
+  elevationOverrideRef,
+  visual,
+}: {
+  selected?: boolean;
+  shape: LadderShape;
+  outerRef?: Ref<THREE.Group>;
+  elevationOverrideRef?: RefObject<number | null>;
+  visual: PanelRunsLadderVisualSpec;
+}) {
+  const { branding, frame, panels } = visual;
+  // shape.width = inner opening (same convention as gates)
+  const w = shape.width ?? 1.5;
+  const totalH = shape.height ?? 4.5;
+  const rungs = Math.max(1, shape.rungs ?? 3);
+  const baseY = Math.max(shape.elevation ?? 0, 0);
+  const gateH = totalH / rungs;
+  const rot: [number, number, number] = [0, (-shape.rotation * Math.PI) / 180, 0];
+
+  const leftPanelWidth = panels.left.widthMeters;
+  const rightPanelWidth = panels.right.widthMeters;
+  const topPanelHeight = panels.top.heightMeters;
+  const panelDepth = 0.018;
+  const frameTube = frame.diameterMeters;
+  const outerLeftX = -w / 2 - leftPanelWidth;
+  const outerRightX = w / 2 + rightPanelWidth;
+  const outerW = outerRightX - outerLeftX;
+
+  const multigpLabelStyle = useMemo(
+    () => ({
+      fontFamily: '"Arial Narrow","Helvetica Neue Condensed",Arial,sans-serif',
+      fontStyle: "italic" as const,
+      fontWeight: 800,
+      letterSpacing: 0.3,
+    }),
+    []
+  );
+  const topTextTexture = useTextTexture(branding.label, branding.markColor, 32, multigpLabelStyle);
+  const sideTextTexture = useTextTexture(branding.label, branding.accentColor, 28, multigpLabelStyle);
+
+  const groupRef = useRef<THREE.Group>(null);
+  const lowerBarRef = useRef<THREE.Mesh>(null);
+  const setGroupRefs = useCallback(
+    (node: THREE.Group | null) => {
+      groupRef.current = node;
+      assignGroupRef(outerRef, node);
+    },
+    [outerRef]
+  );
+
+  useFrame(() => {
+    if (!groupRef.current || !elevationOverrideRef) return;
+    const liveElevation = elevationOverrideRef.current;
+    if (liveElevation === null) return;
+    groupRef.current.position.set(shape.x, Math.max(liveElevation, 0), shape.y);
+    if (lowerBarRef.current) {
+      lowerBarRef.current.visible = liveElevation > 0;
+    }
+  });
+
+  const frameTubeMat = {
+    color: frame.color,
+    roughness: 0.55,
+    metalness: 0.08,
+    emissive: selected ? "#60a5fa" : "#000000",
+    emissiveIntensity: selected ? 0.12 : 0,
+  };
+  const panelEmissiveIntensity = selected ? 0.24 : 0.02;
+
+  // Each gate rung has height = gateH (opening) + topPanelHeight (cap)
+  // Rung i sits at y = i * rungStep so gates stack without overlap
+  // Banner fits WITHIN each section: gateH = openingH + bannerH, total = shape.height
+  const bannerH = topPanelHeight;
+  const openingH = gateH - bannerH;
+  const frontZ = -(panelDepth / 2 + 0.012);
+  const checkerSize = Math.max(
+    Math.min(leftPanelWidth, rightPanelWidth, bannerH) * 0.18,
+    0.035
+  );
+  const tJunctionRadius = frameTube * 0.8;
+
+  return (
+    <group ref={setGroupRefs} position={[shape.x, baseY, shape.y]} rotation={rot}>
+      {/* Continuous posts — exactly totalH tall */}
+      <mesh position={[outerLeftX, totalH / 2, -panelDepth * 0.65]} castShadow>
+        <cylinderGeometry args={[frameTube / 2, frameTube / 2, totalH, 16]} />
+        <meshStandardMaterial {...frameTubeMat} />
+      </mesh>
+      <mesh position={[outerRightX, totalH / 2, -panelDepth * 0.65]} castShadow>
+        <cylinderGeometry args={[frameTube / 2, frameTube / 2, totalH, 16]} />
+        <meshStandardMaterial {...frameTubeMat} />
+      </mesh>
+
+      {/* Bottom bar when elevated */}
+      <mesh ref={lowerBarRef} position={[0, 0, -panelDepth * 0.65]} rotation={[0, 0, Math.PI / 2]} castShadow visible={baseY > 0}>
+        <cylinderGeometry args={[frameTube / 2, frameTube / 2, outerW, 16]} />
+        <meshStandardMaterial {...frameTubeMat} />
+      </mesh>
+
+      {/* Top corner elbows — at very top (totalH) */}
+      {[outerLeftX, outerRightX].map((x, idx) => (
+        <mesh key={`elbow-${idx}`} position={[x, totalH, -panelDepth * 0.65]} castShadow>
+          <sphereGeometry args={[frameTube * 0.66, 16, 12]} />
+          <meshStandardMaterial color={frame.color} roughness={0.58} metalness={0.04} />
+        </mesh>
+      ))}
+
+      {/* Per section: bar at TOP → banner hangs below bar → opening below banner */}
+      {Array.from({ length: rungs }).map((_, i) => {
+        const sectionY = i * gateH;
+        const barY = (i + 1) * gateH;        // bar at the TOP of each section
+        const bannerMidY = barY - bannerH / 2; // banner hangs BELOW the bar
+        const openingMidY = sectionY + openingH / 2;
+        const isIntermediate = i < rungs - 1;
+
+        return (
+          <group key={i}>
+            {/* Horizontal bar at top of opening */}
+            <mesh position={[0, barY, -panelDepth * 0.65]} rotation={[0, 0, Math.PI / 2]} castShadow>
+              <cylinderGeometry args={[frameTube / 2, frameTube / 2, outerW, 16]} />
+              <meshStandardMaterial {...frameTubeMat} />
+            </mesh>
+            {/* T-junction connectors on intermediate bars */}
+            {isIntermediate && [outerLeftX, outerRightX].map((x, idx) => (
+              <mesh key={idx} position={[x, barY, -panelDepth * 0.65]}>
+                <cylinderGeometry args={[tJunctionRadius, tJunctionRadius, frameTube * 2.4, 12]} />
+                <meshStandardMaterial color={frame.color} roughness={0.5} metalness={0.1} />
+              </mesh>
+            ))}
+            {/* Navy banner */}
+            <mesh position={[0, bannerMidY, 0]} castShadow receiveShadow>
+              <boxGeometry args={[outerW, bannerH, panelDepth]} />
+              <meshStandardMaterial color={panels.top.color} roughness={0.64} metalness={0.03}
+                emissive={selected ? "#60a5fa" : panels.top.color} emissiveIntensity={selected ? 0.28 : 0.04} />
+            </mesh>
+            <mesh position={[0, bannerMidY, frontZ - 0.016]} rotation={[0, Math.PI, 0]}>
+              <FrontTextPlaneGeometry width={Math.max(w * 0.38, 0.46)} height={bannerH * 0.62} />
+              <meshBasicMaterial map={topTextTexture} transparent depthWrite={false} />
+            </mesh>
+            {/* White left panel */}
+            <mesh position={[-w / 2 - leftPanelWidth / 2, openingMidY, 0]} castShadow receiveShadow>
+              <boxGeometry args={[leftPanelWidth, openingH, panelDepth]} />
+              <meshStandardMaterial color={panels.left.color} roughness={0.7} metalness={0.01}
+                emissive={selected ? "#60a5fa" : panels.left.color} emissiveIntensity={panelEmissiveIntensity} />
+            </mesh>
+            {/* White right panel */}
+            <mesh position={[w / 2 + rightPanelWidth / 2, openingMidY, 0]} castShadow receiveShadow>
+              <boxGeometry args={[rightPanelWidth, openingH, panelDepth]} />
+              <meshStandardMaterial color={panels.right.color} roughness={0.7} metalness={0.01}
+                emissive={selected ? "#60a5fa" : panels.right.color} emissiveIntensity={panelEmissiveIntensity} />
+            </mesh>
+            {/* Checker accents */}
+            {[-1, 1].map((dir) =>
+              Array.from({ length: 12 }).map((__, idx) => {
+                const row = Math.floor(idx / 3);
+                const col = idx % 3;
+                if ((row + col) % 2 === 0) return null;
+                return (
+                  <mesh
+                    key={`${dir}-c-${idx}`}
+                    position={[
+                      (dir < 0 ? -w / 2 - leftPanelWidth / 2 : w / 2 + rightPanelWidth / 2) +
+                        dir * ((col - 1) * checkerSize),
+                      sectionY + openingH * 0.12 + row * checkerSize,
+                      frontZ - 0.004,
+                    ]}
+                  >
+                    <boxGeometry args={[checkerSize, checkerSize, panelDepth]} />
+                    <meshBasicMaterial color={branding.checkerColor} />
+                  </mesh>
+                );
+              })
+            )}
+            {/* Side text — y at 58% of opening height, matching gate alignment */}
+            {[-1, 1].map((dir) => (
+              <mesh
+                key={`st-${dir}`}
+                position={[
+                  dir < 0 ? -w / 2 - leftPanelWidth / 2 : w / 2 + rightPanelWidth / 2,
+                  sectionY + openingH * 0.58,
+                  frontZ - 0.016,
+                ]}
+                rotation={[0, Math.PI, dir > 0 ? Math.PI / 2 : -Math.PI / 2]}
+              >
+                <FrontTextPlaneGeometry
+                  width={openingH * 0.44}
+                  height={(dir < 0 ? leftPanelWidth : rightPanelWidth) * 0.62}
+                />
+                <meshBasicMaterial map={sideTextTexture} transparent depthWrite={false} />
+              </mesh>
+            ))}
+            {/* Opening fill */}
+            <mesh position={[0, openingMidY, -panelDepth / 2 - 0.004]}>
+              <planeGeometry args={[w, openingH]} />
+              <meshBasicMaterial color={frame.color} transparent opacity={selected ? 0.1 : 0.045} side={THREE.DoubleSide} />
+            </mesh>
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
 function Ladder3D({
   selected = false,
   shape,
@@ -1141,6 +1347,19 @@ function Ladder3D({
   outerRef?: Ref<THREE.Group>;
   elevationOverrideRef?: RefObject<number | null>;
 }) {
+  const ladderVisual = getLadderVisualSpec(shape);
+  if (ladderVisual?.variant === "panel-rungs") {
+    return (
+      <PanelFrameLadder3D
+        shape={shape}
+        selected={selected}
+        outerRef={outerRef}
+        elevationOverrideRef={elevationOverrideRef}
+        visual={ladderVisual}
+      />
+    );
+  }
+
   const color = shape.color ?? "#3b82f6";
   const w = shape.width ?? 1.5;
   const totalH = shape.height ?? 4.5;
