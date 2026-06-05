@@ -1,5 +1,8 @@
 import { m2px } from "@/lib/track/units";
-import { getGateVisualSpec } from "@/lib/track/elements/visual";
+import {
+  getGateVisualSpec,
+  getLadderVisualSpec,
+} from "@/lib/track/elements/visual";
 import type {
   ConeShape,
   DiveGateShape,
@@ -115,13 +118,29 @@ export function getStartFinish2DShape(shape: StartFinishShape, ppm: number) {
 }
 
 export function getLadder2DShape(shape: LadderShape, ppm: number) {
-  const width = m2px(shape.width ?? 2, ppm);
+  const ladderVisual = getLadderVisualSpec(shape);
+  const openingWidth = m2px(shape.width ?? 2, ppm);
   const depth = m2px(0.18, ppm);
+
+  if (ladderVisual?.variant === "panel-rungs") {
+    const leftPanelWidth = m2px(ladderVisual.panels.left.widthMeters, ppm);
+    const rightPanelWidth = m2px(ladderVisual.panels.right.widthMeters, ppm);
+    const width = openingWidth + leftPanelWidth + rightPanelWidth;
+    return {
+      color: ladderVisual.panels.top.color,
+      depth,
+      radius: Math.min(12, depth / 2),
+      variant: "panel-rungs" as const,
+      width,
+    };
+  }
+
   return {
     color: shape.color ?? "#14b8a6",
     depth,
     radius: Math.min(12, depth / 2),
-    width,
+    variant: "frame-only" as const,
+    width: openingWidth,
   };
 }
 
