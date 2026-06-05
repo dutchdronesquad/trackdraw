@@ -51,7 +51,7 @@ describe("track orientation helpers", () => {
 
     expect(getShapeFacingDegrees(gate)).toBe(60);
     expect(getCanvasRotationGuideAngleDeg(gate)).toBe(330);
-    expect(getPreviewRotationGuideDegrees(gate)).toBe(240);
+    expect(getPreviewRotationGuideDegrees(gate)).toBe(60);
   });
 
   it("uses dive gate specific orientation offsets", () => {

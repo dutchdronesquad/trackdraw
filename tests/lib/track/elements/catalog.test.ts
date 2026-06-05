@@ -52,7 +52,7 @@ describe("track element catalog", () => {
     expect(shape.meta).toBeUndefined();
   });
 
-  it("defaults newly placed gates to a downward-facing front", () => {
+  it("defaults newly placed gates to a forward-facing front (rotation 0)", () => {
     const shape = createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
       x: 0,
       y: 0,
@@ -60,10 +60,10 @@ describe("track element catalog", () => {
 
     expect(shape).toMatchObject({
       kind: "gate",
-      rotation: 180,
+      rotation: 0,
     });
     const gateShape = { ...shape, id: "gate-1" } as GateShape;
-    expect(getCanvasRotationGuideAngleDeg(gateShape)).toBe(90);
+    expect(getCanvasRotationGuideAngleDeg(gateShape)).toBe(270);
   });
 
   it("documents the MultiGP 5x5 panel-frame gate without changing default placement", () => {

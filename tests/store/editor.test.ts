@@ -922,7 +922,7 @@ describe("editor store history", () => {
 
     state.replaceDesign({
       id: "replacement",
-      version: 1,
+      version: 2,
       title: "Replacement",
       description: "",
       tags: [],

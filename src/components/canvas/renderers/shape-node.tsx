@@ -237,7 +237,11 @@ function TrackShapeNodeComponent({
         m2px(shape.kind === "polyline" ? 0 : shape.y, designPpm) +
         (groupDragOffsetPx?.y ?? 0)
       }
-      rotation={shape.rotation}
+      rotation={
+        shape.kind === "gate" || shape.kind === "ladder"
+          ? shape.rotation + 180
+          : shape.rotation
+      }
       draggable={
         allowInteraction &&
         !shape.locked &&

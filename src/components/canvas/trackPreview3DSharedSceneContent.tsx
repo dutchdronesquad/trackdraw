@@ -672,7 +672,7 @@ function Gate3D({
   const visual = getGateVisualSpec(shape);
   const rot: [number, number, number] = [
     0,
-    (-shape.rotation * Math.PI) / 180,
+    (-(shape.rotation + 180) * Math.PI) / 180,
     0,
   ];
 
@@ -1150,7 +1150,7 @@ function PanelFrameLadder3D({
   const rungs = Math.max(1, shape.rungs ?? 3);
   const baseY = Math.max(shape.elevation ?? 0, 0);
   const gateH = totalH / rungs;
-  const rot: [number, number, number] = [0, (-shape.rotation * Math.PI) / 180, 0];
+  const rot: [number, number, number] = [0, (-(shape.rotation + 180) * Math.PI) / 180, 0];
 
   const leftPanelWidth = panels.left.widthMeters;
   const rightPanelWidth = panels.right.widthMeters;
@@ -1371,7 +1371,7 @@ function Ladder3D({
   const lowerBarRef = useRef<THREE.Mesh>(null);
   const rot: [number, number, number] = [
     0,
-    (-shape.rotation * Math.PI) / 180,
+    (-(shape.rotation + 180) * Math.PI) / 180,
     0,
   ];
   const setGroupRefs = useCallback(

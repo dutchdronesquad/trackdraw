@@ -129,7 +129,7 @@ export interface MapReference {
 
 export interface TrackDesign {
   id: UUID;
-  version: 1;
+  version: 2;
   title: string;
   description?: string;
   tags?: string[];
@@ -145,7 +145,7 @@ export interface TrackDesign {
 
 export interface SerializedTrackDesign {
   id: UUID;
-  version: 1;
+  version: 1 | 2;
   title: string;
   description?: string;
   tags?: string[];

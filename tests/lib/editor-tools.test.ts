@@ -31,7 +31,7 @@ describe("editor tool helpers", () => {
       kind: "gate",
       x: 12,
       y: 7,
-      rotation: 180,
+      rotation: 0,
       width: 2,
       height: 2,
       thick: 0.2,
@@ -72,7 +72,7 @@ describe("editor tool helpers", () => {
       kind: "gate",
       x: 3,
       y: 4,
-      rotation: 180,
+      rotation: 0,
       width: feetToMeters(5),
       height: feetToMeters(5),
       meta: {
@@ -96,7 +96,7 @@ describe("editor tool helpers", () => {
 
     expect(shape).toMatchObject({
       kind: "gate",
-      rotation: 180,
+      rotation: 0,
       width: feetToMeters(7),
       height: feetToMeters(6),
       meta: {

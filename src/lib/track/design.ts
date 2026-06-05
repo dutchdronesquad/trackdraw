@@ -144,20 +144,42 @@ export function serializeDesignForShare(
   return serializeDesign(design, { includeMapReference: false });
 }
 
+function migrateV1ShapeRotations(
+  shapeById: Record<string, Shape>
+): Record<string, Shape> {
+  const result: Record<string, Shape> = {};
+  for (const [id, shape] of Object.entries(shapeById)) {
+    if (shape.kind === "gate" || shape.kind === "ladder") {
+      result[id] = {
+        ...shape,
+        rotation: ((shape.rotation ?? 0) - 180 + 360) % 360,
+      };
+    } else {
+      result[id] = shape;
+    }
+  }
+  return result;
+}
+
 export function normalizeDesign(
   design: TrackDesign | SerializedTrackDesign
 ): TrackDesign {
+  const inputVersion = (design as { version?: number }).version;
   const { shapeById, shapeOrder } = normalizeShapes(getRawDesignShapes(design));
+  const migratedShapeById =
+    inputVersion === 1 || inputVersion === undefined
+      ? migrateV1ShapeRotations(shapeById)
+      : shapeById;
   return {
     ...design,
-    version: 1,
+    version: 2,
     inventory: normalizeInventoryProfile(
       (design as Partial<TrackDesign>).inventory
     ),
     mapReference: normalizeMapReference(
       (design as Partial<TrackDesign>).mapReference
     ),
-    shapeById,
+    shapeById: migratedShapeById,
     shapeOrder,
   };
 }
@@ -166,7 +188,7 @@ export function createDefaultDesign(): TrackDesign {
   const timestamp = nowIso();
   return {
     id: nanoid(),
-    version: 1,
+    version: 2,
     title: "New Track",
     description: "",
     tags: [],

@@ -23,7 +23,7 @@ const inventory = {
 function makeDesign(shapes: Shape[]): TrackDesign {
   return normalizeDesign({
     id: "design-1",
-    version: 1,
+    version: 2,
     title: "API test",
     description: "Editor-only description",
     tags: ["private"],

@@ -205,7 +205,7 @@ const frameOnlyGateDefaults = {
   kind: "gate",
   x: 0,
   y: 0,
-  rotation: 180,
+  rotation: 0,
   width: 2,
   height: 2,
   thick: 0.2,
