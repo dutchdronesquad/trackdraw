@@ -22,16 +22,16 @@ Labels used below:
 
 ## Current Priority
 
-The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, MultiGP obstacle catalog expansion, focused 3D item controls, generated flightpath assistance, multilingual-readiness for international users, and account-backed project lifecycle depth beyond the shipped conflict/retry baseline.
+The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, focused 3D item controls, generated flightpath assistance, multilingual-readiness for international users, and account-backed project lifecycle depth beyond the shipped conflict/retry baseline.
 
 ## Follow-up
 
-- [ ] MultiGP obstacle catalog expansion (`No account required`)
-      Extend the catalog with additional official MultiGP obstacles beyond gates, such as flags and ladders, so users can place and identify standard competition obstacles with the same catalog-backed identity, visual rendering, and inspector treatment already in place for gates.
-  - [ ] MultiGP flag and marker entries
-        Add catalog entries for official MultiGP-style flag/marker obstacles with catalog identity, 2D canvas rendering, 3D preview, and source links.
-  - [ ] MultiGP ladder and other obstacle entries
-        Add catalog entries for official MultiGP ladder-style obstacles and any other common competition elements with the same catalog pipeline.
+- [x] MultiGP obstacle catalog expansion (`No account required`)
+      Extended the catalog with official MultiGP flags and ladders. Users can place and identify standard competition obstacles with the same catalog-backed identity, visual rendering, inspector treatment, and in-place type switching already in place for gates.
+  - [x] MultiGP flag and marker entries
+        Added the MultiGP Corner Flag (10 ft feather flag) with realistic 3D rendering, catalog identity, inspector type switching, and an official source link.
+  - [x] MultiGP ladder and other obstacle entries
+        Added MultiGP Standard Ladder 5x5 and Championship Ladder 7x6 with panel-frame 3D rendering matching the real obstacle, and the same catalog pipeline as gates and flags.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.

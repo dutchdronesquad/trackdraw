@@ -74,6 +74,12 @@ Run `npm run lint`, `npm run test`, and `npm run type` after non-trivial code ch
 - Apply the `enhancement` label for product/code improvements and the `dependencies` label for dependency-only PRs.
 - When this workflow matures, prefer an agentic PR template with consistent sections for intent, changes, validation, risk, and follow-up instead of ad hoc prose.
 
+## Design Schema
+
+`TrackDesign.version` is currently `2`. `normalizeDesign` auto-migrates version 1 designs by shifting gate and ladder rotations by −180° so the visual result is unchanged. Always create new designs with `version: 2`. Do not write code that assumes `version: 1` as the current schema.
+
+Gate and ladder shapes use `rotation: 0` as the forward-facing direction (the side that faces toward a typical viewer). The 2D canvas and 3D renderer both apply an internal +180° offset so the stored value and visual agree. Do not add extra offsets elsewhere; the convention is handled in `shape-node.tsx` (Konva) and `trackPreview3DSharedSceneContent.tsx` (Three.js).
+
 ## Change Heuristics
 
 - For landing-page work, protect SEO metadata, structured data, and conversion paths into `/studio`.
