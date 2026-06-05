@@ -67,6 +67,11 @@ const TrackCanvas = memo(
       precision: 1,
     });
     const stageRef = useRef<KonvaStage | null>(null);
+    const [stageInstance, setStageInstance] = useState<KonvaStage | null>(null);
+    const handleStageRef = useCallback((stage: KonvaStage | null) => {
+      stageRef.current = stage;
+      setStageInstance(stage);
+    }, []);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const contentDragActiveRef = useRef(false);
     const hasManualViewRef = useRef(false);
@@ -165,6 +170,7 @@ const TrackCanvas = memo(
       setManualView,
       setViewportSize,
       stageRef,
+      stageInstance,
       syncTransform,
     });
 
@@ -432,7 +438,7 @@ const TrackCanvas = memo(
         <Stage
           width={viewportSize.width}
           height={viewportSize.height}
-          ref={stageRef}
+          ref={handleStageRef}
           draggable
           onDragStart={() => {
             setManualView(true);

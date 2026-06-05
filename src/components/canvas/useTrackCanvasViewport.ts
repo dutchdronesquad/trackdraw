@@ -11,6 +11,7 @@ interface TrackCanvasViewportParams {
   setManualView: (value: boolean) => void;
   setViewportSize: (size: { width: number; height: number }) => void;
   stageRef: RefObject<KonvaStage | null>;
+  stageInstance: KonvaStage | null;
   syncTransform: () => void;
 }
 
@@ -22,10 +23,11 @@ export function useTrackCanvasViewport({
   setManualView,
   setViewportSize,
   stageRef,
+  stageInstance,
   syncTransform,
 }: TrackCanvasViewportParams) {
   useEffect(() => {
-    const stage = stageRef.current;
+    const stage = stageInstance;
     if (!stage) return;
 
     const syncStageTransform = () => {
@@ -44,7 +46,7 @@ export function useTrackCanvasViewport({
         syncStageTransform
       );
     };
-  }, [stageRef, syncTransform]);
+  }, [stageInstance, syncTransform]);
 
   useEffect(() => {
     const element = containerRef.current;
