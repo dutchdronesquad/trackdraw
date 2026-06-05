@@ -110,6 +110,7 @@ export interface EditorTrackActions {
   newProject: () => void;
   bringForward: (id: string) => void;
   sendBackward: (id: string) => void;
+  reorderShapes: (fromId: string, beforeId: string | null) => void;
 }
 
 export interface EditorSessionActions {

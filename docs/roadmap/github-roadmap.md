@@ -36,12 +36,14 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 - [x] Flag real-time rotation in 3D (`No account required`)
       Flags now rotate visually in real-time during 3D drag, matching gates and ladders. The fix was passing `outerRef` from `Shape3D` through `Flag3D` and `CornerMarkerFlag3D` to their root groups, so the rotation drag handler can mutate the group transform directly each animation frame.
 
-- [ ] Track items list improvements (`No account required`)
-      The layout track items list currently uses internal shape kind labels. Two improvements: use the placed element's catalog name or custom name so the list is more meaningful, and add a drag handle per item so users can reorder track elements directly in the list.
-  - [ ] Catalog-aware item names
-        Show the catalog entry name (e.g. "MultiGP Standard Gate 5x5") or the user-assigned name instead of the generic kind label in the track items list.
-  - [ ] Drag-to-reorder items
-        Add a drag handle to each row in the track items list so users can change the draw/render order of elements without deleting and re-placing them.
+- [x] Track items list improvements (`No account required`)
+      The layout track items list now shows catalog names and supports filtering by type. The list is intentionally designed as a foundation for the upcoming auto path generator: the order of race obstacles in the list (backed by `shapeOrder`) will define the intended race sequence, which the path generator can use to connect them automatically. Drag-to-reorder is not yet exposed in the UI — it will be added as part of the path generation feature once reordering has an immediate, visible effect.
+  - [x] Catalog-aware item names
+        The primary label now resolves to the user custom name → catalog entry name (e.g. "MultiGP Standard Gate 5x5") → generic kind label. The kind label stays visible as a secondary subtitle. Filter search also matches catalog names.
+  - [x] Obstacle / all filter pills
+        Two pills — "All" and "Obstacles" — let users focus the list on race obstacles (gates, ladders, dive gates) or see everything. Non-obstacle elements (flags, cones, labels) remain visible under "All" but are not the primary focus.
+  - [ ] Drag-to-reorder obstacles
+        Once the auto path generator is in place, expose drag handles on the obstacles list so users can define the exact intended race sequence. The `reorderShapes` store action is already in place; only the UI needs to be wired up at that point.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.
@@ -49,9 +51,11 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         Prototype selected-item controls for elevation, rotation, scale, and orientation only where the behavior is predictable across 2D and 3D.
 
 - [ ] Generated flightpath assistance (`Research`, `No account required`)
-      Research generated flightpaths from placed elements as an optional drafting/review aid that users can accept and edit.
+      Research generated flightpaths from placed obstacles as an optional drafting aid. The intended race sequence is defined by the obstacle order in the track items list (backed by `shapeOrder`), which users can set via drag-to-reorder once this feature ships. The generator connects obstacles in that order and produces an editable race line — it assists authoring rather than replacing it.
   - [ ] Generated flightpath research
-        Prototype flightpath generation from placed elements as an assistive review/drafting feature that can be accepted or edited, not as a replacement for explicit race-line authoring.
+        Prototype flightpath generation from the ordered obstacle list as an assistive review/drafting feature. The output should be an editable race line, not a locked result. Validate that the sequence-based model (list order → path) is intuitive before committing to the full UI.
+  - [ ] Drag-to-reorder obstacles (prerequisite)
+        Wire up the drag handles in the track items list so users can explicitly set the intended race sequence before generating a path. The store action is ready; this is a UI-only change gated on the path generator being useful enough to justify the interaction.
 
 - [ ] Multilingual product experience (`Research`, `No account required`)
       Use the regional measurement work as a first locale-aware foundation, then evaluate a full i18n layer for the public site, editor, share pages, and exported handoff copy.

@@ -85,6 +85,7 @@ interface EditorState {
   newProject: EditorTrackActions["newProject"];
   bringForward: EditorTrackActions["bringForward"];
   sendBackward: EditorTrackActions["sendBackward"];
+  reorderShapes: EditorTrackActions["reorderShapes"];
   setSelection: EditorSessionActions["setSelection"];
   pauseHistory: EditorSessionActions["pauseHistory"];
   resumeHistory: EditorSessionActions["resumeHistory"];
@@ -682,6 +683,21 @@ export const useEditor = create<EditorState>()(
             draft.track.design.shapeOrder.splice(idx - 1, 0, shapeId);
             touchTrackDesign(draft);
           }
+        }),
+
+      reorderShapes: (fromId: string, beforeId: string | null) =>
+        set((draft) => {
+          const order = draft.track.design.shapeOrder;
+          const fromIdx = order.indexOf(fromId);
+          if (fromIdx === -1) return;
+          const [shapeId] = order.splice(fromIdx, 1);
+          if (beforeId === null) {
+            order.push(shapeId);
+          } else {
+            const toIdx = order.indexOf(beforeId);
+            order.splice(toIdx === -1 ? order.length : toIdx, 0, shapeId);
+          }
+          touchTrackDesign(draft);
         }),
 
       pauseHistory: () => {

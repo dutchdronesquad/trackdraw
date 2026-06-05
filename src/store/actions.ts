@@ -40,6 +40,7 @@ export function useTrackActions() {
   const newProject = useEditor((state) => state.newProject);
   const bringForward = useEditor((state) => state.bringForward);
   const sendBackward = useEditor((state) => state.sendBackward);
+  const reorderShapes = useEditor((state) => state.reorderShapes);
 
   return {
     addShape,
@@ -73,6 +74,7 @@ export function useTrackActions() {
     newProject,
     bringForward,
     sendBackward,
+    reorderShapes,
   };
 }
 
