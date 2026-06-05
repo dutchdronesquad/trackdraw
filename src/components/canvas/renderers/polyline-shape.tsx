@@ -550,9 +550,11 @@ export function PolylineShapeContent({
 
   if (!pointsPxMemo.length) return null;
 
+  const canSelectPath = allowInteraction && !path.locked;
+
   return (
     <>
-      {allowInteraction && (
+      {canSelectPath && (
         <Line
           points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
           stroke="#000000"
@@ -644,9 +646,8 @@ export function PolylineShapeContent({
           );
         })}
       </Group>
-      {allowInteraction &&
+      {canSelectPath &&
         isMobile &&
-        !path.locked &&
         selectedSegmentIndex !== null &&
         selectedSegmentPoint &&
         (() => {
@@ -673,8 +674,7 @@ export function PolylineShapeContent({
             </Group>
           );
         })()}
-      {allowInteraction &&
-        !path.locked &&
+      {canSelectPath &&
         displayPath.points.map((point, index) => {
           const x = m2px(point.x, designPpm);
           const y = m2px(point.y, designPpm);

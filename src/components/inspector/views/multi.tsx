@@ -5,12 +5,28 @@ import ElevationChart from "@/components/inspector/ElevationChart";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/editor-tools";
 import {
+  getCatalogEntriesByKind,
+  getTrackElementCatalogEntry,
+  getTrackElementCatalogIdentity,
+  TRACKDRAW_FLAG_ELEMENT_ID,
+  TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
+  type TrackElementCatalogId,
+} from "@/lib/track/elements/catalog";
+import {
   getShapeGroupId,
   getShapeGroupName,
   selectionHasGroupedShapes,
 } from "@/lib/track/shape-groups";
 import type { Shape } from "@/lib/types";
 import { Copy, GitMerge, Group, Trash2, Ungroup } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   IconBtn,
   Row,
@@ -34,7 +50,41 @@ export interface MultiInspectorViewProps {
   setGroupName: (ids: string[], name: string) => void;
   setSelection: Dispatch<SetStateAction<string[]>> | ((ids: string[]) => void);
   ungroupSelection: (ids: string[]) => void;
+  updateShapesCatalogType: (
+    ids: string[],
+    entryId: TrackElementCatalogId
+  ) => void;
   mobileInline?: boolean;
+}
+
+export type BatchCatalogKind = "gate" | "flag" | "ladder";
+
+const defaultCatalogEntryByKind: Record<
+  BatchCatalogKind,
+  TrackElementCatalogId
+> = {
+  gate: TRACKDRAW_GATE_ELEMENT_ID,
+  flag: TRACKDRAW_FLAG_ELEMENT_ID,
+  ladder: TRACKDRAW_LADDER_ELEMENT_ID,
+};
+
+export function getBatchCatalogKind(shapes: Shape[]): BatchCatalogKind | null {
+  const firstKind = shapes[0]?.kind;
+  if (firstKind !== "gate" && firstKind !== "flag" && firstKind !== "ladder") {
+    return null;
+  }
+  return shapes.every((shape) => shape.kind === firstKind) ? firstKind : null;
+}
+
+export function getBatchCatalogEntryId(
+  shape: Shape,
+  kind: BatchCatalogKind
+): TrackElementCatalogId {
+  const catalogId = getTrackElementCatalogIdentity(shape.meta)?.elementId;
+  const catalogEntry = getTrackElementCatalogEntry(catalogId);
+  return catalogEntry?.kind === kind
+    ? catalogEntry.id
+    : defaultCatalogEntryByKind[kind];
 }
 
 export function MultiInspectorView({
@@ -47,6 +97,7 @@ export function MultiInspectorView({
   setGroupName,
   setSelection,
   ungroupSelection,
+  updateShapesCatalogType,
   mobileInline = false,
 }: MultiInspectorViewProps) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
@@ -76,6 +127,22 @@ export function MultiInspectorView({
   const activeGroupName =
     groupCount === 1 ? (getShapeGroupName(selectedShapes[0]) ?? "") : "";
   const canGroupSelection = selection.length > 1 && !hasGroupedShapes;
+  const batchCatalogKind = getBatchCatalogKind(selectedShapes);
+  const batchCatalogEntries = batchCatalogKind
+    ? getCatalogEntriesByKind(batchCatalogKind)
+    : null;
+  const editableCatalogShapes = batchCatalogKind
+    ? selectedShapes.filter((shape) => !shape.locked)
+    : [];
+  const editableCatalogSelectionCount = editableCatalogShapes.length;
+  const editableCatalogIds = editableCatalogShapes.map((shape) =>
+    getBatchCatalogEntryId(shape, batchCatalogKind!)
+  );
+  const activeBatchCatalogId =
+    editableCatalogIds.length > 0 &&
+    editableCatalogIds.every((id) => id === editableCatalogIds[0])
+      ? editableCatalogIds[0]
+      : undefined;
   const meta = [
     ...(groupCount > 0
       ? [`${groupCount} group${groupCount === 1 ? "" : "s"}`]
@@ -154,6 +221,42 @@ export function MultiInspectorView({
                 </div>
               ))}
           </div>
+          {batchCatalogEntries ? (
+            <Section title="Catalog" defaultOpen>
+              <Row label="Type">
+                <Select
+                  value={activeBatchCatalogId}
+                  disabled={editableCatalogSelectionCount === 0}
+                  onValueChange={(value) =>
+                    updateShapesCatalogType(
+                      selection,
+                      value as TrackElementCatalogId
+                    )
+                  }
+                >
+                  <SelectTrigger className="border-border/40 bg-muted/40 h-9 w-full text-xs shadow-none lg:h-7 lg:text-[11px]">
+                    <SelectValue placeholder="Mixed types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {batchCatalogEntries.map((entry) => (
+                      <SelectItem
+                        key={entry.id}
+                        value={entry.id}
+                        className="text-xs lg:text-[11px]"
+                      >
+                        {entry.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Row>
+              {editableCatalogSelectionCount < selectedShapes.length ? (
+                <p className="text-muted-foreground px-0.5 text-[10px] leading-relaxed">
+                  Locked items stay unchanged.
+                </p>
+              ) : null}
+            </Section>
+          ) : null}
           {groupCount === 1 && (
             <Section title="Group">
               <Row label="Group name">

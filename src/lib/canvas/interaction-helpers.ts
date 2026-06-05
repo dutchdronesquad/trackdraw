@@ -296,11 +296,12 @@ export function getTouchInteractionMode(options: {
 }
 
 export function getSelectedIdsInMarquee(options: {
+  excludeIds?: ReadonlySet<string>;
   marqueeRect: { x: number; y: number; width: number; height: number };
   shapeRefs: Record<string, KonvaGroup | null>;
   stage: KonvaStage;
 }) {
-  const { marqueeRect, shapeRefs, stage } = options;
+  const { excludeIds, marqueeRect, shapeRefs, stage } = options;
   if (
     marqueeRect.width < MIN_MARQUEE_SIZE &&
     marqueeRect.height < MIN_MARQUEE_SIZE
@@ -309,6 +310,7 @@ export function getSelectedIdsInMarquee(options: {
   }
 
   const ids = Object.entries(shapeRefs)
+    .filter(([id]) => !excludeIds?.has(id))
     .filter(
       (entry): entry is [string, NonNullable<(typeof shapeRefs)[string]>] =>
         Boolean(entry[1])

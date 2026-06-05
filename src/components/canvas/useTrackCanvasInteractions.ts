@@ -171,6 +171,15 @@ export function useTrackCanvasInteractions({
       ),
     [designShapes]
   );
+  const marqueeExcludeIds = useMemo(
+    () =>
+      new Set(
+        designShapes
+          .filter((shape) => shape.kind === "polyline" && shape.locked)
+          .map((shape) => shape.id)
+      ),
+    [designShapes]
+  );
 
   const getNearbySnapCandidates = useCallback(
     (meters: { x: number; y: number }) => {
@@ -867,6 +876,7 @@ export function useTrackCanvasInteractions({
       marqueeOriginRef.current = null;
       setMarqueeRect(null);
       const marqueeSelection = getSelectedIdsInMarquee({
+        excludeIds: marqueeExcludeIds,
         marqueeRect: rect,
         shapeRefs: shapeRefs.current,
         stage,
@@ -888,6 +898,7 @@ export function useTrackCanvasInteractions({
       addShapes,
       marqueeAdditiveRef,
       marqueeOriginRef,
+      marqueeExcludeIds,
       marqueeRect,
       pointerToMeters,
       readOnly,

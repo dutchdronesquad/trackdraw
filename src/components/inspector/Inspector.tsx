@@ -33,6 +33,7 @@ function Inspector({
   const selection = useEditor((state) => state.session.selection);
   const {
     updateShape,
+    updateShapesCatalogType,
     setShapesLocked,
     updatePolylinePoint,
     insertPolylinePoint,
@@ -101,6 +102,7 @@ function Inspector({
         setGroupName={setGroupName}
         setSelection={setSelection}
         ungroupSelection={ungroupSelection}
+        updateShapesCatalogType={updateShapesCatalogType}
       />
     );
   } else if (count === 1) {

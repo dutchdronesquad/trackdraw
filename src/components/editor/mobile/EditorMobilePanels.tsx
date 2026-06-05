@@ -107,6 +107,7 @@ interface EditorMobilePanelsProps {
   onSetReadOnlyMenuOpen: (open: boolean) => void;
   onShare: () => void;
   onSetGroupName?: (name: string) => void;
+
   onStartFlyThrough: () => void;
   studioHref?: string;
   onUngroupSelection: () => void;
@@ -442,7 +443,6 @@ export function EditorMobilePanels({
       mediaQuery.removeEventListener("change", updateLandscapeMobile);
   }, []);
 
-  const canOpenInspector = !mobileMultiSelectEnabled;
   const {
     mobileStatusTitle,
     mobileStatusValue,
@@ -458,11 +458,8 @@ export function EditorMobilePanels({
     selectedCount,
     tab,
   });
-  const inspectorHint = canOpenInspector
-    ? selectedCount > 0
-      ? `${selectedCount} selected`
-      : "Design settings"
-    : "Finish multi-select to inspect";
+  const inspectorHint =
+    selectedCount > 0 ? `${selectedCount} selected` : "Design settings";
   const handleMobileSelectButton = () => {
     if (mobileMultiSelectEnabled) {
       onExitMobileMultiSelect();
@@ -519,13 +516,7 @@ export function EditorMobilePanels({
             </div>
             <button
               onClick={openInspectorDrawer}
-              disabled={!canOpenInspector}
-              className={cn(
-                "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium transition-colors landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5",
-                canOpenInspector
-                  ? "text-white/72 hover:bg-white/10 hover:text-white"
-                  : "text-white/38"
-              )}
+              className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <SlidersHorizontal className="size-3.5" />
               <span>Inspect</span>

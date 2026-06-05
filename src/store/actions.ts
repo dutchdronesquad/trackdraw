@@ -5,6 +5,9 @@ export function useTrackActions() {
   const addShapes = useEditor((state) => state.addShapes);
   const updateShape = useEditor((state) => state.updateShape);
   const updateShapes = useEditor((state) => state.updateShapes);
+  const updateShapesCatalogType = useEditor(
+    (state) => state.updateShapesCatalogType
+  );
   const setShapesLocked = useEditor((state) => state.setShapesLocked);
   const setPolylinePoints = useEditor((state) => state.setPolylinePoints);
   const updatePolylinePoint = useEditor((state) => state.updatePolylinePoint);
@@ -47,6 +50,7 @@ export function useTrackActions() {
     addShapes,
     updateShape,
     updateShapes,
+    updateShapesCatalogType,
     setShapesLocked,
     setPolylinePoints,
     updatePolylinePoint,

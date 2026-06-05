@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useEditor } from "@/store/editor";
+import {
+  MULTIGP_CORNER_FLAG_ELEMENT_ID,
+  MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+  MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
+  getTrackElementCatalogIdentity,
+} from "@/lib/track/elements/catalog";
 
 function getPastStatesCount() {
   return useEditor.temporal.getState().pastStates.length;
@@ -479,6 +485,61 @@ describe("editor store history", () => {
       width: 4,
     });
     expect(nextDesign.updatedAt).toBe("2026-04-13T10:10:06.000Z");
+    expect(getPastStatesCount()).toBe(1);
+  });
+
+  it("batch switches catalog gate types while leaving locked gates unchanged", () => {
+    const state = useEditor.getState();
+    const lockedGateId = state.addShape({
+      kind: "gate",
+      x: 10,
+      y: 8,
+      rotation: 35,
+      width: 2,
+      height: 2,
+      locked: true,
+    });
+    const editableGateId = state.addShape({
+      kind: "gate",
+      x: 12,
+      y: 9,
+      rotation: 45,
+      width: 2,
+      height: 2,
+    });
+
+    state.clearHistory();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-13T10:10:07.000Z"));
+
+    state.updateShapesCatalogType(
+      [lockedGateId, editableGateId],
+      MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID
+    );
+
+    const nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[lockedGateId]).toMatchObject({
+      width: 2,
+      height: 2,
+      rotation: 35,
+    });
+    expect(nextDesign.shapeById[editableGateId]).toMatchObject({
+      x: 12,
+      y: 9,
+      rotation: 45,
+    });
+    const editableGate = nextDesign.shapeById[editableGateId];
+    expect(editableGate?.kind).toBe("gate");
+    if (editableGate?.kind === "gate") {
+      expect(editableGate.width).toBeCloseTo(1.524);
+      expect(editableGate.height).toBeCloseTo(1.524);
+    }
+    expect(
+      getTrackElementCatalogIdentity(
+        nextDesign.shapeById[editableGateId]?.meta
+      )?.elementId
+    ).toBe(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
+    expect(nextDesign.updatedAt).toBe("2026-04-13T10:10:07.000Z");
     expect(getPastStatesCount()).toBe(1);
   });
 
@@ -1014,5 +1075,107 @@ describe("editor store history", () => {
       thirdId,
       firstId,
     ]);
+  });
+
+  it("reorderShapes moves a shape before another", () => {
+    const state = useEditor.getState();
+    const a = state.addShape({ kind: "cone", x: 0, y: 0, rotation: 0, radius: 1 });
+    const b = state.addShape({ kind: "cone", x: 1, y: 0, rotation: 0, radius: 1 });
+    const c = state.addShape({ kind: "cone", x: 2, y: 0, rotation: 0, radius: 1 });
+
+    state.reorderShapes(c, a);
+    expect(useEditor.getState().track.design.shapeOrder).toEqual([c, a, b]);
+  });
+
+  it("reorderShapes with null beforeId moves shape to end", () => {
+    const state = useEditor.getState();
+    const a = state.addShape({ kind: "cone", x: 0, y: 0, rotation: 0, radius: 1 });
+    const b = state.addShape({ kind: "cone", x: 1, y: 0, rotation: 0, radius: 1 });
+    const c = state.addShape({ kind: "cone", x: 2, y: 0, rotation: 0, radius: 1 });
+
+    state.reorderShapes(a, null);
+    expect(useEditor.getState().track.design.shapeOrder).toEqual([b, c, a]);
+  });
+
+  it("reorderShapes is a no-op when fromId equals beforeId", () => {
+    const state = useEditor.getState();
+    const a = state.addShape({ kind: "cone", x: 0, y: 0, rotation: 0, radius: 1 });
+    const b = state.addShape({ kind: "cone", x: 1, y: 0, rotation: 0, radius: 1 });
+
+    const orderBefore = [...useEditor.getState().track.design.shapeOrder];
+    state.reorderShapes(a, a);
+    expect(useEditor.getState().track.design.shapeOrder).toEqual(orderBefore);
+  });
+
+  it("updateShapesCatalogType switches flag types and skips locked flags", () => {
+    const state = useEditor.getState();
+    const editableId = state.addShape({
+      kind: "flag",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+    });
+    const lockedId = state.addShape({
+      kind: "flag",
+      x: 1,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+      locked: true,
+    });
+
+    state.updateShapesCatalogType([editableId, lockedId], MULTIGP_CORNER_FLAG_ELEMENT_ID);
+
+    expect(
+      getTrackElementCatalogIdentity(
+        useEditor.getState().track.design.shapeById[editableId]?.meta
+      )?.elementId
+    ).toBe(MULTIGP_CORNER_FLAG_ELEMENT_ID);
+    expect(
+      getTrackElementCatalogIdentity(
+        useEditor.getState().track.design.shapeById[lockedId]?.meta
+      )
+    ).toBeNull();
+  });
+
+  it("updateShapesCatalogType switches ladder types", () => {
+    const state = useEditor.getState();
+    const id = state.addShape({
+      kind: "ladder",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: 2,
+      height: 2,
+      rungs: 3,
+    });
+
+    state.updateShapesCatalogType([id], MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID);
+
+    expect(
+      getTrackElementCatalogIdentity(
+        useEditor.getState().track.design.shapeById[id]?.meta
+      )?.elementId
+    ).toBe(MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID);
+  });
+
+  it("updateShapesCatalogType does nothing when all shapes are locked", () => {
+    const state = useEditor.getState();
+    const id = state.addShape({
+      kind: "gate",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: 3,
+      height: 3,
+      locked: true,
+    });
+    state.clearHistory();
+
+    state.updateShapesCatalogType([id], MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
+
+    expect(useEditor.getState().track.design.shapeById[id]?.meta).toBeUndefined();
+    expect(getPastStatesCount()).toBe(0);
   });
 });

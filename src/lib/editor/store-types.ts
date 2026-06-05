@@ -63,6 +63,10 @@ export interface EditorTrackActions {
   addShapes: (shapes: ShapeDraft[]) => string[];
   updateShape: (id: string, patch: Partial<Shape>) => void;
   updateShapes: (ids: string[], patch: Partial<Shape>) => void;
+  updateShapesCatalogType: (
+    ids: string[],
+    entryId: TrackElementCatalogId
+  ) => void;
   setShapesLocked: (ids: string[], locked: boolean) => void;
   setPolylinePoints: (id: string, points: PolylinePoint[]) => void;
   updatePolylinePoint: (

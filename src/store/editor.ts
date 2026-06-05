@@ -4,7 +4,14 @@ import { create } from "zustand";
 import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
 import { nanoid } from "nanoid";
-import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
+import type {
+  FlagShape,
+  GateShape,
+  LadderShape,
+  PolylineShape,
+  Shape,
+  TrackDesign,
+} from "@/lib/types";
 import { normalizeMapReference } from "@/lib/map-reference/geometry";
 import { clamp } from "@/lib/canvas/shared";
 import {
@@ -46,6 +53,11 @@ import {
   expandGroupedSelection,
   getShapeGroupId,
 } from "@/lib/track/shape-groups";
+import {
+  buildFlagCatalogTypePatch,
+  buildGateCatalogTypePatch,
+  buildLadderCatalogTypePatch,
+} from "@/lib/editor-tools";
 
 export type { EditorTool } from "@/lib/editor-tools";
 
@@ -58,6 +70,7 @@ interface EditorState {
   addShapes: EditorTrackActions["addShapes"];
   updateShape: EditorTrackActions["updateShape"];
   updateShapes: EditorTrackActions["updateShapes"];
+  updateShapesCatalogType: EditorTrackActions["updateShapesCatalogType"];
   setShapesLocked: EditorTrackActions["setShapesLocked"];
   setPolylinePoints: EditorTrackActions["setPolylinePoints"];
   updatePolylinePoint: EditorTrackActions["updatePolylinePoint"];
@@ -192,6 +205,38 @@ export const useEditor = create<EditorState>()(
             const shape = draft.track.design.shapeById[id];
             if (!shape || shape.locked) continue;
             if (applyShapePatch(shape, patch)) {
+              changed = true;
+            }
+          }
+
+          if (changed) {
+            touchTrackDesign(draft);
+          }
+        }),
+
+      updateShapesCatalogType: (ids, entryId) =>
+        set((draft) => {
+          let changed = false;
+          const patchBuilders = {
+            gate: (s: Shape) =>
+              buildGateCatalogTypePatch(s as GateShape, entryId),
+            flag: (s: Shape) =>
+              buildFlagCatalogTypePatch(s as FlagShape, entryId),
+            ladder: (s: Shape) =>
+              buildLadderCatalogTypePatch(s as LadderShape, entryId),
+          } as const;
+
+          for (const id of ids) {
+            const shape = draft.track.design.shapeById[id];
+            if (!shape || shape.locked) continue;
+
+            const builder =
+              shape.kind in patchBuilders
+                ? patchBuilders[shape.kind as keyof typeof patchBuilders]
+                : null;
+            const patch = builder ? builder(shape) : null;
+
+            if (patch && applyShapePatch(shape, patch as Partial<Shape>)) {
               changed = true;
             }
           }

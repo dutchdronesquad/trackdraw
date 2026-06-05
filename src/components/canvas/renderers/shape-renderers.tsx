@@ -92,6 +92,43 @@ export function renderLockedIndicator(
   );
 }
 
+export function renderLockedPathSelectBadge(shape: Shape, ppm: number) {
+  if (shape.kind !== "polyline") return null;
+  const bounds = getShapeLocalBounds(shape, ppm);
+  if (!bounds) return null;
+
+  const width = 34;
+  const height = 16;
+  const x = bounds.x - 6;
+  const y = bounds.y - height - 8;
+
+  return (
+    <Group x={x} y={y}>
+      <Rect
+        width={width}
+        height={height}
+        fill="#f59e0b"
+        opacity={0.92}
+        cornerRadius={5}
+        shadowColor="#0f172a"
+        shadowOpacity={0.18}
+        shadowBlur={6}
+        shadowOffsetY={2}
+      />
+      <Text
+        width={width}
+        height={height}
+        text="LOCK"
+        fill="#111827"
+        fontSize={8}
+        fontStyle="700"
+        align="center"
+        verticalAlign="middle"
+      />
+    </Group>
+  );
+}
+
 export function renderHoverIndicator(shape: Shape, ppm: number) {
   const bounds = getShapeLocalBounds(shape, ppm);
   if (!bounds) return null;

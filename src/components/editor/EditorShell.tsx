@@ -708,6 +708,7 @@ export default function EditorShell({
             }}
             onOpenInspector={() => {
               setMobileToolsOpen(false);
+              setMobileMultiSelectEnabled(false);
               setMobileInspectorOpen(true);
             }}
             onResumeSelectedPath={() => {

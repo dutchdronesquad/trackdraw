@@ -2025,6 +2025,7 @@ const TrackCanvas = memo(
                 {mobileShapeHitTargets}
                 {activeTool === "select" &&
                   !readOnly &&
+                  !mobileMultiSelectEnabled &&
                   selection.length > 1 &&
                   selectionFrame && (
                     <Group

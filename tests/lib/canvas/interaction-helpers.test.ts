@@ -224,9 +224,13 @@ describe("canvas interaction helpers", () => {
 
   it("collects marquee-selected ids and respects the minimum marquee size", () => {
     const result = getSelectedIdsInMarquee({
+      excludeIds: new Set(["locked-path"]),
       marqueeRect: { x: 0, y: 0, width: 20, height: 20 },
       shapeRefs: {
         a: {
+          getClientRect: () => ({ x: 5, y: 5, width: 4, height: 4 }),
+        } as never,
+        "locked-path": {
           getClientRect: () => ({ x: 5, y: 5, width: 4, height: 4 }),
         } as never,
         b: {
