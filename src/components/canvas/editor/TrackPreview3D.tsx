@@ -31,6 +31,10 @@ import {
   selectSelectedPolyline,
   selectShapeRecordMap,
 } from "@/store/selectors";
+import {
+  getTrackElementCatalogEntry,
+  getTrackElementCatalogIdentity,
+} from "@/lib/track/elements/catalog";
 import { useEditor } from "@/store/editor";
 import {
   useSessionActions,
@@ -372,6 +376,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               ) {
                 return null;
               }
+              const catalogEntry = getTrackElementCatalogEntry(
+                getTrackElementCatalogIdentity(shape.meta)?.elementId
+              );
+              if (catalogEntry?.editable?.dimensions === false) return null;
               return (
                 <LadderElevationHandle3D
                   key={`ladder-elevation-${shape.id}`}

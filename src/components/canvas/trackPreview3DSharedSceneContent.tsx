@@ -1859,26 +1859,49 @@ function RaceLine3D({
   );
 }
 
+const SELECTION_MARKER_MARGIN = 0.35;
+
+function getShapeTopY(shape: Shape): number {
+  switch (shape.kind) {
+    case "gate": {
+      const gateShape = shape as GateShape;
+      const gateVisual = getGateVisualSpec(gateShape);
+      const openingH = gateShape.height ?? 2;
+      if (gateVisual.variant === "panel-frame") {
+        return openingH + gateVisual.panels.top.heightMeters;
+      }
+      return openingH;
+    }
+    case "flag":
+      return Math.max((shape as FlagShape).poleHeight ?? 3.5, 0.5);
+    case "cone": {
+      const r = (shape as ConeShape).radius ?? 0.2;
+      return Math.max(r * 1.15, 0.1);
+    }
+    case "label":
+      return (shape as LabelShape).project ? 0.1 : 2.8;
+    case "polyline":
+      return 0.6;
+    case "startfinish":
+      return 0.1;
+    case "ladder": {
+      const s = shape as LadderShape;
+      return Math.max((s.height ?? 4.5) + (s.elevation ?? 0), 0.5);
+    }
+    case "divegate": {
+      const s = shape as DiveGateShape;
+      return Math.max((s.elevation ?? 3) + (s.size ?? 2.8) / 2, 0.5);
+    }
+    default:
+      return 1.0;
+  }
+}
+
 function SelectionMarker3D({ shape }: { shape: Shape }) {
   const pulse = useRef(0);
   const meshRef = useRef<THREE.Mesh>(null);
 
-  const heightByKind: Partial<Record<Shape["kind"], number>> = {
-    gate: Math.max((shape as GateShape).height ?? 2, 1.4) + 0.45,
-    flag: Math.max((shape as FlagShape).poleHeight ?? 3.5, 1.8) + 0.35,
-    cone: Math.max(((shape as ConeShape).radius ?? 0.2) * 2.5, 0.5) + 0.35,
-    label: (shape as LabelShape).project ? 0.8 : 3.1,
-    polyline: 0.95,
-    startfinish: 0.55,
-    ladder:
-      Math.max(
-        ((shape as LadderShape).height ?? 4.5) +
-          ((shape as LadderShape).elevation ?? 0),
-        1.8
-      ) + 0.35,
-    divegate: Math.max((shape as DiveGateShape).elevation ?? 3, 1.8) + 0.55,
-  };
-  const markerY = heightByKind[shape.kind] ?? 1.2;
+  const markerY = getShapeTopY(shape) + SELECTION_MARKER_MARGIN;
 
   useFrame((_, delta) => {
     pulse.current += delta * 3.4;
@@ -1976,6 +1999,7 @@ function Shape3D({
             outerRef={outerRef}
             elevationOverrideRef={elevationOverrideRef}
           />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "divegate":
