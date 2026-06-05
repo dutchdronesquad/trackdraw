@@ -535,9 +535,8 @@ describe("editor store history", () => {
       expect(editableGate.height).toBeCloseTo(1.524);
     }
     expect(
-      getTrackElementCatalogIdentity(
-        nextDesign.shapeById[editableGateId]?.meta
-      )?.elementId
+      getTrackElementCatalogIdentity(nextDesign.shapeById[editableGateId]?.meta)
+        ?.elementId
     ).toBe(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
     expect(nextDesign.updatedAt).toBe("2026-04-13T10:10:07.000Z");
     expect(getPastStatesCount()).toBe(1);
@@ -1079,9 +1078,27 @@ describe("editor store history", () => {
 
   it("reorderShapes moves a shape before another", () => {
     const state = useEditor.getState();
-    const a = state.addShape({ kind: "cone", x: 0, y: 0, rotation: 0, radius: 1 });
-    const b = state.addShape({ kind: "cone", x: 1, y: 0, rotation: 0, radius: 1 });
-    const c = state.addShape({ kind: "cone", x: 2, y: 0, rotation: 0, radius: 1 });
+    const a = state.addShape({
+      kind: "cone",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+    });
+    const b = state.addShape({
+      kind: "cone",
+      x: 1,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+    });
+    const c = state.addShape({
+      kind: "cone",
+      x: 2,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+    });
 
     state.reorderShapes(c, a);
     expect(useEditor.getState().track.design.shapeOrder).toEqual([c, a, b]);
@@ -1089,9 +1106,27 @@ describe("editor store history", () => {
 
   it("reorderShapes with null beforeId moves shape to end", () => {
     const state = useEditor.getState();
-    const a = state.addShape({ kind: "cone", x: 0, y: 0, rotation: 0, radius: 1 });
-    const b = state.addShape({ kind: "cone", x: 1, y: 0, rotation: 0, radius: 1 });
-    const c = state.addShape({ kind: "cone", x: 2, y: 0, rotation: 0, radius: 1 });
+    const a = state.addShape({
+      kind: "cone",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+    });
+    const b = state.addShape({
+      kind: "cone",
+      x: 1,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+    });
+    const c = state.addShape({
+      kind: "cone",
+      x: 2,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+    });
 
     state.reorderShapes(a, null);
     expect(useEditor.getState().track.design.shapeOrder).toEqual([b, c, a]);
@@ -1099,8 +1134,14 @@ describe("editor store history", () => {
 
   it("reorderShapes is a no-op when fromId equals beforeId", () => {
     const state = useEditor.getState();
-    const a = state.addShape({ kind: "cone", x: 0, y: 0, rotation: 0, radius: 1 });
-    const b = state.addShape({ kind: "cone", x: 1, y: 0, rotation: 0, radius: 1 });
+    const a = state.addShape({
+      kind: "cone",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      radius: 1,
+    });
+    state.addShape({ kind: "cone", x: 1, y: 0, rotation: 0, radius: 1 });
 
     const orderBefore = [...useEditor.getState().track.design.shapeOrder];
     state.reorderShapes(a, a);
@@ -1125,7 +1166,10 @@ describe("editor store history", () => {
       locked: true,
     });
 
-    state.updateShapesCatalogType([editableId, lockedId], MULTIGP_CORNER_FLAG_ELEMENT_ID);
+    state.updateShapesCatalogType(
+      [editableId, lockedId],
+      MULTIGP_CORNER_FLAG_ELEMENT_ID
+    );
 
     expect(
       getTrackElementCatalogIdentity(
@@ -1175,7 +1219,9 @@ describe("editor store history", () => {
 
     state.updateShapesCatalogType([id], MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID);
 
-    expect(useEditor.getState().track.design.shapeById[id]?.meta).toBeUndefined();
+    expect(
+      useEditor.getState().track.design.shapeById[id]?.meta
+    ).toBeUndefined();
     expect(getPastStatesCount()).toBe(0);
   });
 });
