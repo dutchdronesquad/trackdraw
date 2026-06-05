@@ -1732,6 +1732,12 @@ function DiveGate3D({
   );
 }
 
+const POLYLINE_3D_HEIGHT_OFFSET = 0.5;
+
+function getPolylineTubeRadius(shape: PolylineShape) {
+  return Math.max(0.02, (shape.strokeWidth ?? 0.26) / 2);
+}
+
 function RaceLine3D({
   editing = false,
   isPrimary = false,
@@ -1744,7 +1750,7 @@ function RaceLine3D({
   shape: PolylineShape;
 }) {
   const previewPoints = useMemo(
-    () => getPolylinePreview3DPoints(shape, 0.5),
+    () => getPolylinePreview3DPoints(shape, POLYLINE_3D_HEIGHT_OFFSET),
     [shape]
   );
   const warningSegments = useMemo(
@@ -1763,7 +1769,7 @@ function RaceLine3D({
     [shape]
   );
   const showWarningVisuals = selected || isPrimary;
-  const tubeRadius = Math.max(0.02, (shape.strokeWidth ?? 0.26) / 2);
+  const tubeRadius = getPolylineTubeRadius(shape);
   const segmentedGeometries = useMemo(() => {
     if (!showWarningVisuals || !warningSegments.length) return null;
 
@@ -1789,7 +1795,7 @@ function RaceLine3D({
   const geometry = useMemo(() => {
     if (editing) return null;
     const curveData = getPolylineCurve3Derived(shape, {
-      heightOffset: 0.5,
+      heightOffset: POLYLINE_3D_HEIGHT_OFFSET,
       samplesPerSegment: 18,
       density: 12,
     });
@@ -1861,6 +1867,23 @@ function RaceLine3D({
 
 const SELECTION_MARKER_MARGIN = 0.35;
 
+function getPolylineTopY(shape: PolylineShape): number {
+  const maxPointZ = shape.points.reduce(
+    (maxZ, point) => Math.max(maxZ, point.z ?? 0),
+    0
+  );
+  return (
+    Math.max(maxPointZ, 0) +
+    POLYLINE_3D_HEIGHT_OFFSET +
+    getPolylineTubeRadius(shape)
+  );
+}
+
+function getDiveGateTopY(shape: DiveGateShape): number {
+  const tiltRad = ((shape.tilt ?? 0) * Math.PI) / 180;
+  return (shape.elevation ?? 3) + ((shape.size ?? 2.8) / 2) * Math.sin(tiltRad);
+}
+
 function getShapeTopY(shape: Shape): number {
   switch (shape.kind) {
     case "gate": {
@@ -1881,7 +1904,7 @@ function getShapeTopY(shape: Shape): number {
     case "label":
       return (shape as LabelShape).project ? 0.1 : 2.8;
     case "polyline":
-      return 0.6;
+      return getPolylineTopY(shape as PolylineShape);
     case "startfinish":
       return 0.1;
     case "ladder": {
@@ -1890,7 +1913,7 @@ function getShapeTopY(shape: Shape): number {
     }
     case "divegate": {
       const s = shape as DiveGateShape;
-      return Math.max((s.elevation ?? 3) + (s.size ?? 2.8) / 2, 0.5);
+      return Math.max(getDiveGateTopY(s), 0.5);
     }
     default:
       return 1.0;

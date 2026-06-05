@@ -379,7 +379,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               const catalogEntry = getTrackElementCatalogEntry(
                 getTrackElementCatalogIdentity(shape.meta)?.elementId
               );
-              if (catalogEntry?.editable?.dimensions === false) return null;
+              if (
+                catalogEntry?.kind === "ladder" &&
+                catalogEntry.editable?.dimensions === false
+              ) {
+                return null;
+              }
               return (
                 <LadderElevationHandle3D
                   key={`ladder-elevation-${shape.id}`}
