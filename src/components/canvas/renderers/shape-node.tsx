@@ -372,7 +372,9 @@ function TrackShapeNodeComponent({
         )}
       </Group>
       {shape.locked && renderLockedIndicator(shape, highlighted, designPpm)}
-      {shape.locked && <LockedPathSelectBadge shape={shape} ppm={designPpm} />}
+      {shape.locked && allowInteraction && (
+        <LockedPathSelectBadge shape={shape} ppm={designPpm} />
+      )}
     </Group>
   );
 }
