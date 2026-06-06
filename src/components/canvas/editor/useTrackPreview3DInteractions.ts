@@ -39,6 +39,14 @@ interface UseTrackPreview3DInteractionsParams {
   updateShape: (id: string, patch: Partial<Shape>) => void;
 }
 
+function getLiveRotationYawRadians(shape: Shape, rotation: number) {
+  const meshRotation =
+    shape.kind === "gate" || shape.kind === "ladder"
+      ? rotation + 180
+      : rotation;
+  return (-meshRotation * Math.PI) / 180;
+}
+
 export function useTrackPreview3DInteractions({
   beginInteraction,
   endInteraction,
@@ -323,7 +331,10 @@ export function useTrackPreview3DInteractions({
       );
       rotationDragValueRef.current = rotation;
       if (dragRotationGroupRef.current) {
-        dragRotationGroupRef.current.rotation.y = (-rotation * Math.PI) / 180;
+        dragRotationGroupRef.current.rotation.y = getLiveRotationYawRadians(
+          shape,
+          rotation
+        );
       }
     },
     [shapeById]

@@ -10,6 +10,7 @@ The catalog should start local and typed, not as a database. A database becomes 
 - [x] Move default placement for generic tools and presets onto catalog entries.
 - [x] Add initial official race-gate entries, including MultiGP-style 5x5 and 7x6 variants, without changing existing saved designs.
 - [x] Show catalog identity, official size status, and fixed official dimensions for placed catalog-backed gates.
+- [x] Extend catalog-backed MultiGP entries to gates, ladders, and the 10 ft corner flag with texture-based 3D rendering.
 
 ## Reference Observations
 
@@ -62,14 +63,14 @@ Done state:
 
 Status:
 
-- Shipped a typed local catalog module with TrackDraw-provided element entries, a source-backed MultiGP Standard Gate 5x5 entry, shared catalog placement helpers for toolbar tools, layout presets, and starter layouts, and tests for default dimensions and optional catalog metadata.
+- Shipped a typed local catalog module with TrackDraw-provided element entries, source-backed MultiGP entries, shared catalog placement helpers for toolbar tools, layout presets, and starter layouts, and tests for default dimensions and optional catalog metadata.
 
 ## Phase 2: Official Element Entries
 
 Start state:
 
 - The catalog exists and powers existing generic defaults.
-- The first official MultiGP Standard Gate 5x5 entry exists in code, but it is not yet exposed through a user-facing element library.
+- Initial official MultiGP entries exist in code, but the user-facing placement flow still needs to keep official variants discoverable without overwhelming the primary tools.
 
 Scope:
 
@@ -91,9 +92,30 @@ Done state:
 Status:
 
 - Users can now place catalog-backed MultiGP-style gate variants through the normal Gate placement flow: Standard Gate 5x5 and Championship Gate 7x6. Desktop keeps the active gate type in a compact canvas placement control with a dropdown for additional variants, while mobile keeps one Gate entry in the tools drawer with a compact type picker for variants.
-- Newly placed official gates remain normal `gate` shapes, with their source identity stored under `meta.catalog`. The inspector shows the catalog type, source, official size, and fixed official status.
-- Official gate sizing and color are fixed in normal editing. Custom sizing and coloring belong to the standard TrackDraw Gate.
-- Newly placed gates default with their front facing downward on the canvas so the default gate orientation matches the editor's front/back guide expectation.
+- Users can also place catalog-backed MultiGP Standard Ladder 5x5, Championship Ladder 7x6, and Corner Flag entries through the same typed catalog pipeline.
+- Newly placed official elements remain normal TrackDraw shapes, with their source identity stored under `meta.catalog`. The inspector shows the catalog type, source, official size, and fixed official status.
+- Official sizing and color are fixed in normal editing. Custom sizing and coloring belong to the standard TrackDraw generic elements instead of modifying official catalog items.
+- Newly placed gates and ladders default with their front facing downward on the canvas so the default orientation matches the editor's front/back guide expectation.
+
+## MultiGP Texture Asset Flow
+
+TrackDraw now renders several MultiGP catalog visuals from extracted texture assets over procedural 3D geometry. The geometry stays code-driven so sizing, rotation, selection, and export behavior remain predictable, while the official artwork is loaded as reusable texture files.
+
+Detailed maintenance workflow:
+
+- `docs/assets/multigp-obstacle-asset-workflow.md`
+
+Repository layout:
+
+- `assets/multigp/multigp-obstacles.glb` keeps the source GLB used to recover the embedded artwork.
+- `scripts/extract_glb_textures.py` is an optional maintenance helper for extracting embedded GLB textures when runtime PNGs need to be regenerated.
+- `public/assets/models/textures/multigp-obstacles/` contains the runtime PNG textures served by the app.
+
+Notes:
+
+- The source GLB is intentionally outside `public/` so it is not served as a runtime asset.
+- Runtime code should reference the extracted PNG textures, not the GLB.
+- Future user-provided custom banner textures are not catalog source assets; they should be account-backed media stored in Cloudflare R2 with ownership metadata.
 
 ## Phase 3: Element Library UI
 

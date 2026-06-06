@@ -5,6 +5,8 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { getPreviewRotationGuideDegrees } from "@/lib/track/orientation";
+import { getLadderVisualSpec } from "@/lib/track/elements/visual";
+import { getLadderRenderedHeight } from "@/lib/track/render3d-layout";
 import type {
   DiveGateShape,
   FlagShape,
@@ -28,8 +30,16 @@ export function LadderElevationHandle3D({
 }) {
   const [hovered, setHovered] = useState(false);
   const guideGroupRef = useRef<THREE.Group>(null);
-  const guideHeight = Math.max(shape.height ?? 4.5, 1) + 0.65;
-  const handleY = Math.max(shape.height ?? 4.5, 1) + 0.42;
+  const ladderVisual = getLadderVisualSpec(shape);
+  const renderedHeight = Math.max(
+    getLadderRenderedHeight(
+      shape,
+      ladderVisual?.variant === "panel-frame" ? ladderVisual : null
+    ),
+    1
+  );
+  const guideHeight = renderedHeight + 0.65;
+  const handleY = renderedHeight + 0.42;
   const gripRadius = isMobile
     ? isDragging
       ? 0.22

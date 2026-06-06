@@ -27,7 +27,7 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 ## Follow-up
 
 - [x] MultiGP obstacle catalog expansion (`No account required`)
-      Extended the catalog with official MultiGP flags and ladders. Users can place and identify standard competition obstacles with the same catalog-backed identity, visual rendering, inspector treatment, and in-place type switching already in place for gates.
+      Extended the catalog with official MultiGP flags and ladders. Users can place and identify standard competition obstacles with the same catalog-backed identity, texture-backed visual rendering, inspector treatment, and in-place type switching already in place for gates.
   - [x] MultiGP flag and marker entries
         Added the MultiGP Corner Flag (10 ft feather flag) with realistic 3D rendering, catalog identity, inspector type switching, and an official source link.
   - [x] MultiGP ladder and other obstacle entries
@@ -197,7 +197,7 @@ The completed release-sized work is archived below. The next TrackDraw priority 
   - [x] 3D readability and realism pass
         Tuned directional lighting with a warm sun tint, lowered ambient intensity for stronger shadow contrast, raised shadow map resolution to 2048, set shadow camera frustum to track bounds to eliminate shadow coverage gaps on large tracks, added shadow-bias to prevent acne, and removed polyline shadow casting to reduce visual noise. Unified the lighting theme across editor, share, and gallery into a single shared constant.
   - [x] Catalog-aware 3D element rendering
-        Use catalog-owned visual metadata to render catalog-backed MultiGP-style 5x5 and 7x6 gates with recognizable panel sizes, PVC frame placement, colors, and branding treatment across 2D canvas/SVG output, the live preview, and flythrough export while keeping generic gates lightweight.
+        Use catalog-owned visual metadata and extracted runtime textures to render catalog-backed MultiGP-style gates, ladders, and corner flags with recognizable panel sizes, PVC frame placement, and artwork across the live preview and flythrough export while keeping generic elements lightweight.
 
 - [x] Collapsible inspector workspace (`No account required`)
       Let desktop/tablet users collapse the inspector sidebar to reclaim canvas space during dense editing while preserving selection context.

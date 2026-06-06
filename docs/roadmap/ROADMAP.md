@@ -23,6 +23,7 @@ The most useful next product move is deepening the race-day workflow, keeping th
 - Path editing UX improvements for smoother curves and a more natural drawing experience
 - Catalog-backed official track elements, including MultiGP ladder variants, Dive Gate, Launch Gate, and a new Double Gate Tower shape kind
 - More realistic 3D review and focused 3D item controls
+- Account-backed custom banner texture support for official-size gates, ladders, and flags, so clubs can preview their own printed banners on MultiGP-sized hardware
 - Generated flightpath research as a separate route-authoring assist
 - Editor workspace ergonomics for larger layouts, including collapsible side panels where they preserve selection context
 - Regional measurement units so international users can work with familiar Metric or Imperial presets while TrackDraw keeps meter-based geometry internally
@@ -247,7 +248,7 @@ Important boundary:
 
 Current shipped foundation:
 
-- A typed local catalog module now holds TrackDraw-provided element entries and source-backed MultiGP-style 5x5 and 7x6 gate entries without changing the existing generic gate default
+- A typed local catalog module now holds TrackDraw-provided element entries and source-backed MultiGP-style gate, ladder, and corner flag entries without changing the existing generic element defaults
 - Toolbar placement, layout presets, and starter layouts now use shared catalog placement helpers for generic elements, keeping saved geometry meter-based and backwards compatible
 - Gate placement can now switch between the generic TrackDraw gate and catalog-backed MultiGP-style 5x5 and 7x6 gate variants through a compact desktop placement dropdown and a compact mobile Gate type picker
 - The inspector shows catalog type, source, official size, and dimension status while keeping official gate width and height fixed in normal editing
@@ -272,12 +273,12 @@ Why:
 Feature tracks:
 
 - 3D preview realism and lighting: improve scene readability with sun/directional lighting, shadows, contrast, and more realistic gate/flag presentation before adding heavy asset workflows
-- Catalog-aware element rendering: use catalog visual metadata such as panel sizes, PVC frame placement, colors, and branding treatment to render official elements consistently across 2D, 3D, and export paths while keeping generic elements lightweight
+- Catalog-aware element rendering: use catalog visual metadata such as panel sizes, PVC frame placement, and texture-backed artwork to render official elements consistently across 3D preview and export paths while keeping generic elements lightweight
 - Focused 3D item controls: add direct controls for common edits such as elevation, rotation, scaling, and orientation only where undo/redo, lock state, and mobile behavior remain safe
 
 Current shipped foundation:
 
-- Catalog-backed MultiGP-style 5x5 and 7x6 gates now carry visual metadata for panel sizes, PVC frame placement, colors, and branding treatment; the 2D canvas/SVG output, live 3D preview, and flythrough export consume that metadata while the generic TrackDraw Gate stays lightweight
+- Catalog-backed MultiGP-style gates, ladders, and corner flags now carry visual metadata for panel sizes, PVC frame placement, and texture-backed artwork; the live 3D preview and flythrough export consume shared layout helpers and extracted runtime textures while generic TrackDraw elements stay lightweight
 
 Important boundary:
 
@@ -358,6 +359,45 @@ Current shipped foundation:
 ### 3. Account-Backed Follow-up (`Account-backed`)
 
 These items are now follow-up work rather than intentionally blocked. The first ownership model is clear enough that they can move forward when priority allows.
+
+#### REST API Route And Integration Packages
+
+The REST API should separate generic TrackDraw data from consumer-specific integration packages before adding more external consumers such as RaceLink.
+
+Why:
+
+- `/track` is currently the broad account-backed track package, but external tools also need a route-focused contract that describes what is flown rather than every editor-safe object that was drawn
+- The existing `/overlay` endpoint is a compact livestream package used by `rh-stream-overlays`, but it is not a generic RotorHazard API and should not become the naming pattern for every integration
+- RaceLink-style lighting integrations need route-ordered gates/obstacles, timing markers, and explicit sections/groups without depending on manual export JSON ordering
+- A clearer API model avoids a growing set of ad hoc vendor endpoints while still leaving room for integration-specific packages when a consumer truly needs one
+
+Proposed API shape:
+
+- Keep `/api/v1/projects/[projectId]/track` as the drawn layout / geometry package
+- Add `/api/v1/projects/[projectId]/route` as the flown route semantics package
+- Add `/api/v1/projects/[projectId]/integrations/stream-overlays` as the canonical livestream overlay integration package
+- Keep `/api/v1/projects/[projectId]/overlay` as a backwards-compatible alias for the stream overlays package
+- Reserve `/api/v1/projects/[projectId]/integrations/[consumer]` for future consumer-specific packages only when the generic `/route` contract is not enough
+
+Route package focus:
+
+- Return route geometry, ordered route elements, timing roles, split indices, route distances, route progress, and route readiness
+- Base element order on route progress relative to start/finish, not on JSON array order
+- Include explicit `sections` or groups once the product has a stable authoring or derivation model for them
+- Make the route package useful for lighting systems, event dashboards, RaceLink-style imports, and other tools that need race-course semantics without a full editor export
+
+OpenAPI/docs follow-up:
+
+- Keep `/track` and `/route` under the Track data group
+- Keep `/integrations/stream-overlays` and the deprecated `/overlay` alias under the Integrations group
+- Rename any overly broad RotorHazard wording to describe the actual stream overlays integration package
+- Document `/overlay` as a backwards-compatible alias and direct new consumers to `/integrations/stream-overlays`
+
+Open questions:
+
+- Should route sections/groups be explicitly authored in the editor, derived from route patterns/naming, or both?
+- Should the public API call drawn editor objects `shapes` for continuity, or expose them as `objects` while keeping `shapes` as internal/editor terminology?
+- What minimal fields does RaceLink need for track elements, gate groups, and lighting zones before a vendor-specific adapter would be justified?
 
 #### Share Lifecycle Follow-up
 
@@ -541,6 +581,26 @@ Suggested follow-up:
 
 - Keep refining floating ladder placement so the controls stay easy to read and adjust in dense layouts and mobile-sized screens
 - Continue only with narrow, high-confidence 3D controls that improve placement speed without turning the preview into a heavy general-purpose modeling surface
+
+#### Custom Banner Textures (`Account-backed`)
+
+The MultiGP texture-based obstacle approach creates a clear path for user-owned, club-specific, or sponsor-specific printed banners while still reusing official hardware dimensions. This should be account-backed so uploaded artwork can be linked to a user, reused across projects, and rendered reliably in shares, gallery entries, and flythrough exports.
+
+Suggested first slices:
+
+- Let users attach custom front-facing artwork to official-size gate side panels, gate top panels, ladder sections, and feather flags
+- Start with account-owned image uploads mapped onto existing MultiGP 5x5, 7x6, ladder, and flag geometry
+- Store uploaded banner artwork in Cloudflare R2 with database metadata for `ownerId`, optional `projectId`, panel target, dimensions, MIME type, aspect ratio, R2 key, and lifecycle state
+- Use stable media URLs or a controlled `/api/media` path for editor preview, shares, gallery cards, and flythrough rendering instead of embedding user artwork directly into project JSON
+- Generate lightweight previews or normalized derivatives where needed so the editor does not have to load oversized print-resolution artwork for every 3D frame
+- Preserve the official catalog items as locked dimension presets, while allowing artwork overrides as a separate visual layer
+- Add aspect-ratio validation and crop/fit controls so uploaded banners do not silently distort on real-size panels
+- Include custom artwork in share/export/flythrough outputs through account-backed asset URLs with explicit ownership and access rules
+
+Important boundary:
+
+- Do not turn TrackDraw into a general texture editor; keep the first version focused on replacing banner artwork on known official-size surfaces
+- Require an account for custom banner artwork so assets have a durable owner, can be reused across projects, and do not depend on fragile browser-local files
 
 #### Heatmap And Flow Analysis (`No account required`)
 

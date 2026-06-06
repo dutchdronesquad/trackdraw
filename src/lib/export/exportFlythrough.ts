@@ -13,10 +13,30 @@ import {
   getFpvCameraPose,
   getInitialFpvCameraPose,
 } from "@/lib/track/fpvCamera";
-import { getGateVisualSpec } from "@/lib/track/elements/visual";
+import {
+  getGateVisualSpec,
+  getFlagVisualSpec,
+  getLadderVisualSpec,
+} from "@/lib/track/elements/visual";
+import {
+  getCornerFlagLayout,
+  getPanelFrameGateLayout,
+  getPanelFrameLadderLayout,
+} from "@/lib/track/render3d-layout";
 import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
-import type { PanelFrameGateVisualSpec } from "@/lib/track/elements/catalog";
-import type { GateShape, TrackDesign, Shape, PolylineShape } from "@/lib/types";
+import type {
+  GatePanelTextureVisualSpec,
+  PanelFrameGateVisualSpec,
+  PanelFrameLadderVisualSpec,
+  FlagVisualSpec,
+} from "@/lib/track/elements/catalog";
+import type {
+  GateShape,
+  TrackDesign,
+  Shape,
+  PolylineShape,
+  LadderShape,
+} from "@/lib/types";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 
 const FPS = 60;
@@ -74,31 +94,84 @@ function addCylinder(
   group.add(mesh);
 }
 
-function createOfficialGateGroup(
+function loadTexture(path: string): Promise<THREE.Texture> {
+  return new Promise((resolve, reject) => {
+    new THREE.TextureLoader().load(
+      path,
+      (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = 4;
+        resolve(texture);
+      },
+      undefined,
+      reject
+    );
+  });
+}
+
+async function loadFlagTextures(visual: FlagVisualSpec | null) {
+  if (!visual?.textures) return null;
+  const [front, back] = await Promise.all([
+    loadTexture(visual.textures.front),
+    loadTexture(visual.textures.back),
+  ]);
+  return { front, back };
+}
+
+async function loadPanelTextures(textures: GatePanelTextureVisualSpec) {
+  const [left, right, top] = await Promise.all([
+    loadTexture(textures.left),
+    loadTexture(textures.right),
+    loadTexture(textures.top),
+  ]);
+  return { left, right, top };
+}
+
+function addPanelTexturePlane(
+  group: THREE.Group,
+  texture: THREE.Texture,
+  size: [number, number],
+  position: [number, number, number]
+) {
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(...size),
+    new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 0.72,
+      metalness: 0.01,
+      side: THREE.FrontSide,
+    })
+  );
+  mesh.position.set(...position);
+  mesh.rotation.y = Math.PI;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  group.add(mesh);
+}
+
+async function createOfficialGateGroup(
   shape: GateShape,
   visual: PanelFrameGateVisualSpec
-): THREE.Group {
-  const { branding, frame, panels } = visual;
-  const h = shape.height ?? 2;
-  const w = shape.width ?? 3;
-  const panelBand = Math.max(Math.min(w, h) * 0.18, 0.22);
-  const leftPanelWidth = panels.left.widthMeters || panelBand;
-  const rightPanelWidth = panels.right.widthMeters || panelBand;
-  const topPanelHeight = panels.top.heightMeters || panelBand;
-  const panelDepth = 0.018;
-  const frameTube = frame.diameterMeters;
-  const frontZ = -(panelDepth / 2 + 0.012);
-  const leftPanelX = -w / 2 - leftPanelWidth / 2;
-  const rightPanelX = w / 2 + rightPanelWidth / 2;
-  const topPanelY = h + topPanelHeight / 2;
-  const topPanelW = w + leftPanelWidth + rightPanelWidth;
-  const outerLeftX = -w / 2 - leftPanelWidth;
-  const outerRightX = w / 2 + rightPanelWidth;
-  const outerTopY = h + topPanelHeight;
-  const checkerSize = Math.max(
-    Math.min(leftPanelWidth, rightPanelWidth, topPanelHeight) * 0.18,
-    0.045
-  );
+): Promise<THREE.Group> {
+  const { panels } = visual;
+  const panelTextures = await loadPanelTextures(visual.textures);
+  const {
+    frameTube,
+    frameZ,
+    frontZ,
+    h,
+    leftPanelWidth,
+    leftPanelX,
+    outerLeftX,
+    outerRightX,
+    outerTopY,
+    panelDepth,
+    rightPanelWidth,
+    rightPanelX,
+    topPanelHeight,
+    topPanelW,
+    topPanelY,
+  } = getPanelFrameGateLayout(shape, visual);
   const yaw = (-shape.rotation * Math.PI) / 180;
 
   const group = new THREE.Group();
@@ -106,9 +179,9 @@ function createOfficialGateGroup(
   group.rotation.y = yaw;
 
   const frameMat = new THREE.MeshStandardMaterial({
-    color: frame.color,
-    roughness: 0.5,
-    metalness: 0.18,
+    color: "#e5e7eb",
+    roughness: 0.82,
+    metalness: 0.02,
   });
   const leftPanelMat = new THREE.MeshStandardMaterial({
     color: panels.left.color,
@@ -131,14 +204,11 @@ function createOfficialGateGroup(
     roughness: 0.64,
     metalness: 0.03,
   });
-  const checkerMat = new THREE.MeshBasicMaterial({
-    color: branding.checkerColor,
-  });
   addCylinder(
     group,
     frameTube / 2,
     outerTopY,
-    [outerLeftX, outerTopY / 2, -panelDepth * 0.65],
+    [outerLeftX, outerTopY / 2, frameZ],
     [0, 0, 0],
     frameMat
   );
@@ -146,7 +216,7 @@ function createOfficialGateGroup(
     group,
     frameTube / 2,
     outerTopY,
-    [outerRightX, outerTopY / 2, -panelDepth * 0.65],
+    [outerRightX, outerTopY / 2, frameZ],
     [0, 0, 0],
     frameMat
   );
@@ -154,7 +224,7 @@ function createOfficialGateGroup(
     group,
     frameTube / 2,
     outerRightX - outerLeftX,
-    [0, outerTopY, -panelDepth * 0.65],
+    [0, outerTopY, frameZ],
     [0, 0, Math.PI / 2],
     frameMat
   );
@@ -163,7 +233,7 @@ function createOfficialGateGroup(
       new THREE.SphereGeometry(frameTube * 0.66, 16, 12),
       frameMat
     );
-    elbow.position.set(x, outerTopY, -panelDepth * 0.65);
+    elbow.position.set(x, outerTopY, frameZ);
     elbow.castShadow = true;
     group.add(elbow);
   }
@@ -186,34 +256,192 @@ function createOfficialGateGroup(
     topMat
   );
 
-  for (const dir of [-1, 1]) {
-    const panelX = dir < 0 ? leftPanelX : rightPanelX;
-    for (let index = 0; index < 12; index += 1) {
-      const row = Math.floor(index / 3);
-      const col = index % 3;
-      if ((row + col) % 2 === 0) continue;
-      addBox(
-        group,
-        [checkerSize, checkerSize, 0.018],
-        [
-          panelX + dir * ((col - 1) * checkerSize),
-          h * 0.12 + row * checkerSize,
-          frontZ - 0.004,
-        ],
-        checkerMat
-      );
-    }
+  addPanelTexturePlane(
+    group,
+    panelTextures.left,
+    [leftPanelWidth, h],
+    [leftPanelX, h / 2, frontZ - 0.012]
+  );
+  addPanelTexturePlane(
+    group,
+    panelTextures.right,
+    [rightPanelWidth, h],
+    [rightPanelX, h / 2, frontZ - 0.012]
+  );
+  addPanelTexturePlane(
+    group,
+    panelTextures.top,
+    [topPanelW, topPanelHeight],
+    [0, topPanelY, frontZ - 0.012]
+  );
+
+  return group;
+}
+
+async function createPanelFrameLadderGroup(
+  shape: LadderShape,
+  visual: PanelFrameLadderVisualSpec
+): Promise<THREE.Group> {
+  const { frame, panels } = visual;
+  const panelTextures = await loadPanelTextures(visual.textures);
+  const {
+    bannerH,
+    baseY,
+    frameTube,
+    frameZ,
+    gateH,
+    leftPanelWidth,
+    openingH,
+    outerLeftX,
+    outerRightX,
+    outerW,
+    panelDepth,
+    rightPanelWidth,
+    rungs,
+    totalH,
+    w,
+  } = getPanelFrameLadderLayout(shape, visual);
+  const yaw = (-shape.rotation * Math.PI) / 180;
+
+  const group = new THREE.Group();
+  group.position.set(shape.x, baseY, shape.y);
+  group.rotation.y = yaw;
+
+  const frameMat = new THREE.MeshStandardMaterial({
+    color: "#e5e7eb",
+    roughness: 0.82,
+    metalness: 0.02,
+  });
+  const leftPanelMat = new THREE.MeshStandardMaterial({
+    color: panels.left.color,
+    emissive: panels.left.color,
+    emissiveIntensity: 0.02,
+    roughness: 0.7,
+    metalness: 0.01,
+  });
+  const rightPanelMat = new THREE.MeshStandardMaterial({
+    color: panels.right.color,
+    emissive: panels.right.color,
+    emissiveIntensity: 0.02,
+    roughness: 0.7,
+    metalness: 0.01,
+  });
+  const topPanelMat = new THREE.MeshStandardMaterial({
+    color: panels.top.color,
+    emissive: panels.top.color,
+    emissiveIntensity: 0.04,
+    roughness: 0.64,
+    metalness: 0.03,
+  });
+  const fillMat = new THREE.MeshBasicMaterial({
+    color: frame.color,
+    transparent: true,
+    opacity: 0.045,
+    side: THREE.DoubleSide,
+  });
+
+  addCylinder(
+    group,
+    frameTube / 2,
+    totalH,
+    [outerLeftX, totalH / 2, frameZ],
+    [0, 0, 0],
+    frameMat
+  );
+  addCylinder(
+    group,
+    frameTube / 2,
+    totalH,
+    [outerRightX, totalH / 2, frameZ],
+    [0, 0, 0],
+    frameMat
+  );
+  if (baseY > 0) {
+    addCylinder(
+      group,
+      frameTube / 2,
+      outerW,
+      [0, 0, frameZ],
+      [0, 0, Math.PI / 2],
+      frameMat
+    );
+  }
+
+  for (const x of [outerLeftX, outerRightX]) {
+    const elbow = new THREE.Mesh(
+      new THREE.SphereGeometry(frameTube * 0.66, 16, 12),
+      frameMat
+    );
+    elbow.position.set(x, totalH, frameZ);
+    elbow.castShadow = true;
+    group.add(elbow);
+  }
+
+  for (let i = 0; i < rungs; i += 1) {
+    const sectionY = i * gateH;
+    const barY = (i + 1) * gateH;
+    const bannerMidY = barY - bannerH / 2;
+    const openingMidY = sectionY + openingH / 2;
+
+    addCylinder(
+      group,
+      frameTube / 2,
+      outerW,
+      [0, barY, frameZ],
+      [0, 0, Math.PI / 2],
+      frameMat
+    );
+    addBox(
+      group,
+      [outerW, bannerH, panelDepth],
+      [0, bannerMidY, 0],
+      topPanelMat
+    );
+    addBox(
+      group,
+      [leftPanelWidth, openingH, panelDepth],
+      [-w / 2 - leftPanelWidth / 2, openingMidY, 0],
+      leftPanelMat
+    );
+    addBox(
+      group,
+      [rightPanelWidth, openingH, panelDepth],
+      [w / 2 + rightPanelWidth / 2, openingMidY, 0],
+      rightPanelMat
+    );
+    addPanelTexturePlane(
+      group,
+      panelTextures.left,
+      [leftPanelWidth, openingH],
+      [-w / 2 - leftPanelWidth / 2, openingMidY, -panelDepth / 2 - 0.024]
+    );
+    addPanelTexturePlane(
+      group,
+      panelTextures.right,
+      [rightPanelWidth, openingH],
+      [w / 2 + rightPanelWidth / 2, openingMidY, -panelDepth / 2 - 0.024]
+    );
+    addPanelTexturePlane(
+      group,
+      panelTextures.top,
+      [outerW, bannerH],
+      [0, bannerMidY, -panelDepth / 2 - 0.024]
+    );
+
+    const fill = new THREE.Mesh(new THREE.PlaneGeometry(w, openingH), fillMat);
+    fill.position.set(0, openingMidY, -panelDepth / 2 - 0.004);
+    group.add(fill);
   }
 
   return group;
 }
 
-function addShapes(scene: THREE.Scene, shapes: Shape[]): void {
+async function addShapes(scene: THREE.Scene, shapes: Shape[]): Promise<void> {
   for (const shape of shapes) {
     if (shape.kind === "gate") {
       const visual = getGateVisualSpec(shape);
       if (visual.variant === "panel-frame") {
-        scene.add(createOfficialGateGroup(shape, visual));
+        scene.add(await createOfficialGateGroup(shape, visual));
         continue;
       }
 
@@ -245,6 +473,12 @@ function addShapes(scene: THREE.Scene, shapes: Shape[]): void {
 
       scene.add(group);
     } else if (shape.kind === "ladder") {
+      const ladderVisual = getLadderVisualSpec(shape);
+      if (ladderVisual?.variant === "panel-frame") {
+        scene.add(await createPanelFrameLadderGroup(shape, ladderVisual));
+        continue;
+      }
+
       const color = shape.color ?? "#3b82f6";
       const w = shape.width ?? 1.5;
       const totalH = shape.height ?? 4.5;
@@ -493,30 +727,52 @@ function addShapes(scene: THREE.Scene, shapes: Shape[]): void {
       scene.add(outer);
     } else if (shape.kind === "flag") {
       const color = shape.color ?? "#a855f7";
-      const ph = shape.poleHeight ?? 3.5;
       const yaw = (-shape.rotation * Math.PI) / 180;
+      const flagVisual = getFlagVisualSpec(shape);
+      const flagTextures = await loadFlagTextures(flagVisual);
+      const {
+        bannerCenterY,
+        bannerHeight,
+        bannerTextureWidth,
+        bannerTextureX,
+        panelDepth,
+        ph,
+        poleCapRadius,
+        polePoints,
+        poleRadius,
+        poleTipX,
+        poleTipY,
+      } = getCornerFlagLayout(shape, Boolean(flagTextures));
 
-      const mastCurve = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0, ph * 0.42, 0),
-        new THREE.Vector3(0.01, ph * 0.74, 0),
-        new THREE.Vector3(0.045, ph * 0.9, 0),
-        new THREE.Vector3(0.11, ph * 0.985, 0),
-        new THREE.Vector3(0.2, ph * 0.985, 0),
-      ]);
+      const mastCurve = new THREE.CatmullRomCurve3(
+        polePoints.map(([x, y]) => new THREE.Vector3(x, y, 0)),
+        false,
+        "centripetal",
+        0.5
+      );
 
       const mastMat = new THREE.MeshStandardMaterial({
         color: "#d7dde8",
         metalness: 0.3,
         roughness: 0.42,
       });
-      const bannerMat = new THREE.MeshStandardMaterial({
-        color,
-        emissive: color,
-        emissiveIntensity: 0.08,
-        roughness: 0.68,
-        side: THREE.DoubleSide,
-      });
+      const bannerMat = new THREE.MeshStandardMaterial(
+        flagTextures
+          ? {
+              color: "#ffffff",
+              transparent: true,
+              roughness: 0.78,
+              side: THREE.DoubleSide,
+              map: flagTextures.front,
+            }
+          : {
+              color,
+              emissive: color,
+              emissiveIntensity: 0.08,
+              roughness: 0.68,
+              side: THREE.DoubleSide,
+            }
+      );
 
       const group = new THREE.Group();
       group.position.set(shape.x, 0, shape.y);
@@ -536,12 +792,20 @@ function addShapes(scene: THREE.Scene, shapes: Shape[]): void {
       group.add(ring);
 
       const mast = new THREE.Mesh(
-        new THREE.TubeGeometry(mastCurve, 40, 0.024, 10, false),
+        new THREE.TubeGeometry(mastCurve, 40, poleRadius, 10, false),
         mastMat
       );
       group.add(mast);
+      const mastCap = new THREE.Mesh(
+        new THREE.SphereGeometry(poleCapRadius, 18, 12),
+        mastMat
+      );
+      mastCap.position.set(poleTipX, poleTipY, 0);
+      mastCap.castShadow = true;
+      mastCap.receiveShadow = true;
+      group.add(mastCap);
 
-      // Extruded bezier banner — matches Flag3D exactly
+      // Extruded bezier banner — matches Flag3D fallback.
       const bannerTop = ph * 0.96;
       const bannerBottom = ph * 0.18;
       const bannerWidth = Math.max(ph * 0.18, 0.62);
@@ -588,7 +852,42 @@ function addShapes(scene: THREE.Scene, shapes: Shape[]): void {
         bannerMat
       );
       banner.position.set(0.01, 0, 0);
-      group.add(banner);
+      if (flagTextures) {
+        const frontPanel = new THREE.Mesh(
+          new THREE.PlaneGeometry(bannerTextureWidth, bannerHeight),
+          new THREE.MeshStandardMaterial({
+            map: flagTextures.front,
+            transparent: true,
+            roughness: 0.78,
+            side: THREE.FrontSide,
+          })
+        );
+        frontPanel.position.set(
+          bannerTextureX,
+          bannerCenterY,
+          panelDepth * 0.65
+        );
+        group.add(frontPanel);
+
+        const backPanel = new THREE.Mesh(
+          new THREE.PlaneGeometry(bannerTextureWidth, bannerHeight),
+          new THREE.MeshStandardMaterial({
+            map: flagTextures.back,
+            transparent: true,
+            roughness: 0.78,
+            side: THREE.FrontSide,
+          })
+        );
+        backPanel.position.set(
+          bannerTextureX,
+          bannerCenterY,
+          -panelDepth * 0.35
+        );
+        backPanel.rotation.y = Math.PI;
+        group.add(backPanel);
+      } else {
+        group.add(banner);
+      }
 
       scene.add(group);
     } else if (shape.kind === "cone") {
@@ -779,8 +1078,6 @@ export function exportFlythrough(
     gridHelper.position.set(cx, 0.001, cz);
     scene.add(gridHelper);
 
-    addShapes(scene, shapes);
-
     const cleanup = () => {
       renderer.dispose();
       if (document.body.contains(canvas)) document.body.removeChild(canvas);
@@ -811,12 +1108,6 @@ export function exportFlythrough(
       camera.rotateZ(bankAngle);
     };
 
-    // Prime camera at t=0
-    const initialPose = getInitialFpvCameraPose(samplePoint);
-    camera.position.copy(initialPose.position);
-    camera.lookAt(initialPose.lookTarget);
-    renderer.render(scene, camera);
-
     const downloadBlob = (blob: Blob) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -830,6 +1121,8 @@ export function exportFlythrough(
     // Timestamps are in seconds; frames are rendered off-screen and captured directly.
     void (async () => {
       try {
+        await addShapes(scene, shapes);
+
         // Watermark logo on the ground — same as FieldWatermark in the actual 3D view
         const wmTex = await loadWatermarkTexture(isDark);
         if (wmTex) {
@@ -848,6 +1141,12 @@ export function exportFlythrough(
           wm.position.set(cx, 0.015, cz);
           scene.add(wm);
         }
+
+        // Prime camera at t=0 after all async scene assets are loaded.
+        const initialPose = getInitialFpvCameraPose(samplePoint);
+        camera.position.copy(initialPose.position);
+        camera.lookAt(initialPose.lookTarget);
+        renderer.render(scene, camera);
 
         const target = new BufferTarget();
         const output = new Output({

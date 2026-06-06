@@ -53,7 +53,7 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 ## What you can do
 
 - 🏁 **Design layouts to scale** - place obstacles on a real-scale canvas with Metric or Imperial measurements that map cleanly to the real world
-- 🚩 **Use official gate types** - place common MultiGP-style gates such as Standard Gate 5x5 and Championship Gate 7x6, or keep using custom-sized TrackDraw gates
+- 🚩 **Use official obstacle types** - place MultiGP-style gates, ladders, and flags with real dimensions, or keep using custom-sized TrackDraw elements
 - 🗺️ **Line up with real venues** - add an editor-only satellite map reference, search or choose the field center, and align it with rotation and opacity controls
 - ⚡ **Start and iterate faster** - use obstacle presets, selection grouping, and starter layouts to get from blank canvas to a workable draft quickly
 - 💾 **Manage projects safely** - keep multiple local projects, reopen older layouts, rename or export them, and roll back through restore points and snapshots
@@ -81,6 +81,10 @@ See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw
 4. **Turn the design into a handoff** by saving it locally, syncing it to your account, publishing a read-only share link, listing it in the gallery, or exporting the assets you need, including race-day documents and cinematic FPV video.
 
 TrackDraw works without an account. You can create, manage, temporarily share, recover, import, and export projects in the browser, while signing in adds continuity across devices, durable published links, gallery publishing, and embeds.
+
+## Credits and sources
+
+MultiGP obstacle dimensions and visual references are based on the official [MultiGP Drone Race Course Obstacles](https://www.multigp.com/multigp-drone-race-course-obstacles/) guide. MultiGP names and artwork belong to MultiGP; TrackDraw is not affiliated with or endorsed by MultiGP.
 
 ## Sponsors
 
