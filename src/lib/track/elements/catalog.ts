@@ -78,7 +78,7 @@ export interface GateFrameVisualSpec {
 export interface GatePanelTextureVisualSpec {
   left: string;
   right: string;
-  top: string;
+  top?: string;
 }
 
 export interface FrameOnlyGateVisualSpec {
@@ -717,7 +717,7 @@ export function getTrackElementCatalogTexturePaths(): string[] {
     ) {
       paths.add(visual.textures.left);
       paths.add(visual.textures.right);
-      paths.add(visual.textures.top);
+      if (visual.textures.top) paths.add(visual.textures.top);
       continue;
     }
 

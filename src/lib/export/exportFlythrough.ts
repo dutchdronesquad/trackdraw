@@ -22,6 +22,7 @@ import {
   getCornerFlagLayout,
   getPanelFrameGateLayout,
   getPanelFrameLadderLayout,
+  resolvePanelTextureMapping,
 } from "@/lib/track/render3d-layout";
 import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
 import type {
@@ -190,13 +191,8 @@ async function createOfficialGateGroup(
     topPanelY,
   } = getPanelFrameGateLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
-  const leftSideUsesDerivedRight =
-    visual.textures.left === visual.textures.right;
-  const leftSideTexture = leftSideUsesDerivedRight
-    ? panelTextures.left
-    : panelTextures.right;
-  const rightSideTexture = panelTextures.left;
-  const leftSideTextureRotationZ = leftSideUsesDerivedRight ? Math.PI : 0;
+  const { leftPanel: leftSideTexture, rightPanel: rightSideTexture, leftRotationZ: leftSideTextureRotationZ } =
+    resolvePanelTextureMapping(visual.textures, [panelTextures.left, panelTextures.right]);
 
   const group = new THREE.Group();
   group.position.set(shape.x, 0, shape.y);
@@ -330,13 +326,8 @@ async function createPanelFrameLadderGroup(
     w,
   } = getPanelFrameLadderLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
-  const leftSideUsesDerivedRight =
-    visual.textures.left === visual.textures.right;
-  const leftSideTexture = leftSideUsesDerivedRight
-    ? panelTextures.left
-    : panelTextures.right;
-  const rightSideTexture = panelTextures.left;
-  const leftSideTextureRotationZ = leftSideUsesDerivedRight ? Math.PI : 0;
+  const { leftPanel: leftSideTexture, rightPanel: rightSideTexture, leftRotationZ: leftSideTextureRotationZ } =
+    resolvePanelTextureMapping(visual.textures, [panelTextures.left, panelTextures.right]);
 
   const group = new THREE.Group();
   group.position.set(shape.x, baseY, shape.y);

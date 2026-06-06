@@ -24,6 +24,7 @@ import {
   getLadderRenderedHeight,
   getPanelFrameGateLayout,
   getPanelFrameLadderLayout,
+  resolvePanelTextureMapping,
 } from "@/lib/track/render3d-layout";
 import {
   getFlagVisualSpec,
@@ -98,8 +99,9 @@ const CATALOG_TEXTURE_PATHS = getTrackElementCatalogTexturePaths();
 export function useCatalogTextureWarmup() {
   useEffect(() => {
     // Populate the Three.js texture cache in parallel immediately on mount.
-    // By this point the browser HTTP cache already has the images (seeded by
-    // EditorWorkspace on app boot), so these calls resolve from memory.
+    // In the editor the browser HTTP cache is already warm (seeded by
+    // EditorWorkspace). In the share view this is the first fetch, but loading
+    // all textures in parallel is still faster than the old sequential approach.
     for (const path of CATALOG_TEXTURE_PATHS) {
       useTexture.preload(path);
     }
@@ -481,10 +483,10 @@ function PanelFrameGateTexturePlanes({
     textures.right,
     textures.top ?? textures.left,
   ]) as THREE.Texture[];
-  const leftSideUsesDerivedRight = textures.left === textures.right;
-  const leftSideTexture = leftSideUsesDerivedRight ? leftTexture : rightTexture;
-  const rightSideTexture = leftTexture;
-  const leftSideTextureRotationZ = leftSideUsesDerivedRight ? Math.PI : 0;
+  const { leftPanel, rightPanel, leftRotationZ } = resolvePanelTextureMapping(
+    textures,
+    [leftTexture, rightTexture]
+  );
 
   useEffect(() => {
     for (const texture of [leftTexture, rightTexture, topTexture]) {
@@ -498,11 +500,11 @@ function PanelFrameGateTexturePlanes({
     <>
       <mesh
         position={[leftPanelX, h / 2, frontZ]}
-        rotation={[0, Math.PI, leftSideTextureRotationZ]}
+        rotation={[0, Math.PI, leftRotationZ]}
       >
         <planeGeometry args={[leftPanelWidth, h]} />
         <meshStandardMaterial
-          map={leftSideTexture}
+          map={leftPanel}
           roughness={0.72}
           metalness={0.01}
           side={THREE.FrontSide}
@@ -511,7 +513,7 @@ function PanelFrameGateTexturePlanes({
       <mesh position={[rightPanelX, h / 2, frontZ]} rotation={[0, Math.PI, 0]}>
         <planeGeometry args={[rightPanelWidth, h]} />
         <meshStandardMaterial
-          map={rightSideTexture}
+          map={rightPanel}
           roughness={0.72}
           metalness={0.01}
           side={THREE.FrontSide}
@@ -565,10 +567,10 @@ function PanelFrameLadderSectionTexturePlanes({
     textures.right,
     textures.top ?? textures.left,
   ]) as THREE.Texture[];
-  const leftSideUsesDerivedRight = textures.left === textures.right;
-  const leftSideTexture = leftSideUsesDerivedRight ? leftTexture : rightTexture;
-  const rightSideTexture = leftTexture;
-  const leftSideTextureRotationZ = leftSideUsesDerivedRight ? Math.PI : 0;
+  const { leftPanel, rightPanel, leftRotationZ } = resolvePanelTextureMapping(
+    textures,
+    [leftTexture, rightTexture]
+  );
 
   useEffect(() => {
     for (const texture of [leftTexture, rightTexture, topTexture]) {
@@ -582,11 +584,11 @@ function PanelFrameLadderSectionTexturePlanes({
     <>
       <mesh
         position={[leftPanelX, openingMidY, frontZ]}
-        rotation={[0, Math.PI, leftSideTextureRotationZ]}
+        rotation={[0, Math.PI, leftRotationZ]}
       >
         <planeGeometry args={[leftPanelWidth, openingH]} />
         <meshStandardMaterial
-          map={leftSideTexture}
+          map={leftPanel}
           roughness={0.72}
           metalness={0.01}
           side={THREE.FrontSide}
@@ -598,7 +600,7 @@ function PanelFrameLadderSectionTexturePlanes({
       >
         <planeGeometry args={[rightPanelWidth, openingH]} />
         <meshStandardMaterial
-          map={rightSideTexture}
+          map={rightPanel}
           roughness={0.72}
           metalness={0.01}
           side={THREE.FrontSide}
