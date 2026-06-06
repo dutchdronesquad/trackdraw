@@ -928,7 +928,7 @@ function CornerMarkerFlag3D({
         panelDepth={panelDepth}
         selected={selected}
       />
-      {/* Pole at z=0 — no x-overlap with panel (panel starts at x=poleRadius) */}
+      {/* Pole follows the textured feather flag's leading edge. */}
       <mesh castShadow>
         <tubeGeometry args={[poleCurve, 40, poleRadius, 12, false]} />
         <meshStandardMaterial

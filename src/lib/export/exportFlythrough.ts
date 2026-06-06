@@ -94,9 +94,19 @@ function addCylinder(
   group.add(mesh);
 }
 
+function getGateLadderYawRadians(rotation: number) {
+  return (-(rotation + 180) * Math.PI) / 180;
+}
+
+const textureLoader = new THREE.TextureLoader();
+const textureCache = new Map<string, Promise<THREE.Texture>>();
+
 function loadTexture(path: string): Promise<THREE.Texture> {
-  return new Promise((resolve, reject) => {
-    new THREE.TextureLoader().load(
+  const cached = textureCache.get(path);
+  if (cached) return cached;
+
+  const promise = new Promise<THREE.Texture>((resolve, reject) => {
+    textureLoader.load(
       path,
       (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
@@ -104,9 +114,14 @@ function loadTexture(path: string): Promise<THREE.Texture> {
         resolve(texture);
       },
       undefined,
-      reject
+      (error) => {
+        textureCache.delete(path);
+        reject(error);
+      }
     );
   });
+  textureCache.set(path, promise);
+  return promise;
 }
 
 async function loadFlagTextures(visual: FlagVisualSpec | null) {
@@ -172,7 +187,7 @@ async function createOfficialGateGroup(
     topPanelW,
     topPanelY,
   } = getPanelFrameGateLayout(shape, visual);
-  const yaw = (-shape.rotation * Math.PI) / 180;
+  const yaw = getGateLadderYawRadians(shape.rotation);
 
   const group = new THREE.Group();
   group.position.set(shape.x, 0, shape.y);
@@ -301,7 +316,7 @@ async function createPanelFrameLadderGroup(
     totalH,
     w,
   } = getPanelFrameLadderLayout(shape, visual);
-  const yaw = (-shape.rotation * Math.PI) / 180;
+  const yaw = getGateLadderYawRadians(shape.rotation);
 
   const group = new THREE.Group();
   group.position.set(shape.x, baseY, shape.y);
@@ -449,7 +464,7 @@ async function addShapes(scene: THREE.Scene, shapes: Shape[]): Promise<void> {
       const thick = shape.thick ?? 0.2;
       const h = shape.height ?? 2;
       const w = shape.width ?? 3;
-      const yaw = (-shape.rotation * Math.PI) / 180;
+      const yaw = getGateLadderYawRadians(shape.rotation);
       const mat = makeMat(color);
 
       const group = new THREE.Group();
@@ -486,7 +501,7 @@ async function addShapes(scene: THREE.Scene, shapes: Shape[]): Promise<void> {
       const baseY = Math.max(shape.elevation ?? 0, 0);
       const thick = 0.2;
       const gateH = totalH / rungs;
-      const yaw = (-shape.rotation * Math.PI) / 180;
+      const yaw = getGateLadderYawRadians(shape.rotation);
       const mat = makeMat(color);
       const fillMat = new THREE.MeshBasicMaterial({
         color,

@@ -56,11 +56,19 @@ def parse_glb(path: Path) -> tuple[dict[str, Any], bytes]:
     gltf_json: dict[str, Any] | None = None
     bin_chunk = b""
     offset = 12
-    while offset + 8 <= length:
+    while offset < length:
+        if offset + 8 > length:
+            raise ValueError(f"{path} has a truncated chunk header at byte {offset}")
         chunk_length, chunk_type = struct.unpack_from("<II", data, offset)
         offset += 8
-        chunk = data[offset : offset + chunk_length]
-        offset += chunk_length
+        chunk_end = offset + chunk_length
+        if chunk_end > length:
+            raise ValueError(
+                f"{path} chunk at byte {offset - 8} declares length "
+                f"{chunk_length}, which exceeds GLB length {length}"
+            )
+        chunk = data[offset:chunk_end]
+        offset = chunk_end
 
         if chunk_type == JSON_CHUNK_TYPE:
             gltf_json = json.loads(chunk.decode("utf-8").rstrip("\x00 "))
@@ -87,7 +95,13 @@ def buffer_view_bytes(
 
     byte_offset = int(view.get("byteOffset", 0))
     byte_length = int(view["byteLength"])
-    return bin_chunk[byte_offset : byte_offset + byte_length]
+    byte_end = byte_offset + byte_length
+    if byte_offset < 0 or byte_length < 0 or byte_end > len(bin_chunk):
+        raise ValueError(
+            f"bufferView {buffer_view_index} range "
+            f"{byte_offset}:{byte_end} exceeds BIN chunk length {len(bin_chunk)}"
+        )
+    return bin_chunk[byte_offset:byte_end]
 
 
 def decode_data_uri(uri: str) -> tuple[bytes, str]:
