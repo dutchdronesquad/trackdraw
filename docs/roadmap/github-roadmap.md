@@ -31,9 +31,9 @@ The completed release-sized work is archived below. The next TrackDraw priority 
   - [x] MultiGP flag and marker entries
         Added the MultiGP Corner Flag (10 ft feather flag) with realistic 3D rendering, catalog identity, inspector type switching, and an official source link.
   - [x] MultiGP ladder and other obstacle entries
-        Added MultiGP Standard Ladder 5x5 and Championship Ladder 7x6 with panel-frame 3D rendering matching the real obstacle, and the same catalog pipeline as gates and flags.
-  - [ ] MultiGP Topless Ladder 7x6
-        Add as a ladder variant using the same catalog pipeline as the existing ladder entries. The 3D rendering omits the top bar; the shape kind and inspector treatment stay the same.
+        Added MultiGP Standard Ladder 5x5, Championship Ladder 7x6, and Topless Ladder 7x6 with panel-frame 3D rendering matching the real obstacles, and the same catalog pipeline as gates and flags.
+  - [x] MultiGP Topless Ladder 7x6
+        Added as a ladder variant using the same catalog pipeline as the existing ladder entries. The lower two sections keep top/banner panels; the upper section omits the top/banner panel and top PVC frame.
   - [ ] MultiGP Dive Gate 7x6
         Add as a catalog-backed gate variant with official dimensions and a 3D rendering that reflects the low-profile dive orientation. Shares the gate shape kind and inspector pipeline.
   - [ ] MultiGP Launch Gate 7x6

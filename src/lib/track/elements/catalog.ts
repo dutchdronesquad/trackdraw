@@ -18,6 +18,8 @@ export const MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID =
   "multigp-standard-ladder-5x5";
 export const MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID =
   "multigp-championship-ladder-7x6";
+export const MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID =
+  "multigp-topless-ladder-7x6";
 
 export type TrackElementCatalogId =
   | typeof TRACKDRAW_GATE_ELEMENT_ID
@@ -31,7 +33,8 @@ export type TrackElementCatalogId =
   | typeof MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID
   | typeof MULTIGP_CORNER_FLAG_ELEMENT_ID
   | typeof MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID
-  | typeof MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID;
+  | typeof MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID
+  | typeof MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID;
 
 type PlaceableCatalogShape = Exclude<Shape, PolylineShape>;
 export type TrackElementShapeDraft = ShapeDraft<PlaceableCatalogShape>;
@@ -120,6 +123,7 @@ export interface PanelFrameLadderVisualSpec {
   };
   frame: GateFrameVisualSpec;
   textures: GatePanelTextureVisualSpec;
+  topPanelPlacement?: "all" | "lower-sections";
 }
 
 export type LadderVisualSpec = PanelFrameLadderVisualSpec;
@@ -251,10 +255,10 @@ const panelFrameGateVisual = {
     diameterMeters: 0.055,
   },
   textures: {
-    left: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-left-panel-regular-50-percent.png",
+    left: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-left-panel-regular-50-percent.webp",
     right:
-      "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.png",
-    top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.png",
+      "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
+    top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
   },
 } satisfies GateVisualSpec;
 
@@ -266,10 +270,10 @@ const panelFrameChampionshipGateVisual = {
     top: { heightMeters: feetToMeters(2), color: "#202e5d" },
   },
   textures: {
-    left: "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.png",
+    left: "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
     right:
-      "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.png",
-    top: "/assets/models/textures/multigp-obstacles/large-top-multigp.png",
+      "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+    top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
   },
 } satisfies GateVisualSpec;
 
@@ -398,8 +402,8 @@ export const trackElementCatalog = [
       poleColor: "#1c1c1c",
       textures: {
         front:
-          "/assets/models/textures/multigp-obstacles/feather-banners-cobranded-multigp.png",
-        back: "/assets/models/textures/multigp-obstacles/feather-banners-cobranded-multigp-back.png",
+          "/assets/models/textures/multigp-obstacles/feather-banners-cobranded-multigp.webp",
+        back: "/assets/models/textures/multigp-obstacles/feather-banners-cobranded-multigp-back.webp",
       },
     } satisfies FlagVisualSpec,
     exportHints: { simulatorFriendly: true },
@@ -544,10 +548,10 @@ export const trackElementCatalog = [
         diameterMeters: 0.055,
       },
       textures: {
-        left: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-left-panel-regular-50-percent.png",
+        left: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-left-panel-regular-50-percent.webp",
         right:
-          "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.png",
-        top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.png",
+          "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
+        top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
       },
     } satisfies LadderVisualSpec,
     exportHints: { simulatorFriendly: true },
@@ -602,11 +606,70 @@ export const trackElementCatalog = [
         diameterMeters: 0.055,
       },
       textures: {
-        left: "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.png",
+        left: "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
         right:
-          "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.png",
-        top: "/assets/models/textures/multigp-obstacles/large-top-multigp.png",
+          "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+        top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
       },
+    } satisfies LadderVisualSpec,
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
+    name: "MultiGP Topless Ladder 7x6",
+    organization: "MultiGP",
+    kind: "ladder",
+    official: true,
+    editable: { color: false, dimensions: false },
+    dimensions: {
+      widthMeters: feetToMeters(7),
+      heightMeters: feetToMeters(6) * 3,
+      display: {
+        unitSystem: "imperial",
+        label: "7 ft wide, 3 x 6 ft topless",
+      },
+    },
+    defaultShape: {
+      kind: "ladder",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: feetToMeters(7),
+      height: feetToMeters(6) * 3,
+      rungs: 3,
+      elevation: 0,
+      color: "#f8fafc",
+    } satisfies TrackElementShapeDraft,
+    tags: ["championship", "race", "technical", "multigp", "topless"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
+      },
+    ],
+    render2d: { icon: "ladder" },
+    render3d: { modelHint: "ladder-gate" },
+    visual: {
+      kind: "ladder",
+      variant: "panel-frame",
+      panels: {
+        left: { widthMeters: feetToMeters(1.5), color: "#f8fafc" },
+        right: { widthMeters: feetToMeters(1.5), color: "#f8fafc" },
+        top: { heightMeters: feetToMeters(2), color: "#202e5d" },
+      },
+      frame: {
+        placement: "outer",
+        material: "pvc",
+        color: "#f8fafc",
+        diameterMeters: 0.055,
+      },
+      textures: {
+        left: "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+        right:
+          "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+        top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+      },
+      topPanelPlacement: "lower-sections",
     } satisfies LadderVisualSpec,
     exportHints: { simulatorFriendly: true },
   },
@@ -640,6 +703,32 @@ export const trackElementCatalog = [
 const trackElementCatalogMap = new Map(
   trackElementCatalog.map((entry) => [entry.id, entry])
 );
+
+export function getTrackElementCatalogTexturePaths(): string[] {
+  const paths = new Set<string>();
+
+  for (const entry of trackElementCatalog) {
+    const visual = entry.visual;
+    if (!visual) continue;
+
+    if (
+      (visual.kind === "gate" || visual.kind === "ladder") &&
+      visual.variant === "panel-frame"
+    ) {
+      paths.add(visual.textures.left);
+      paths.add(visual.textures.right);
+      paths.add(visual.textures.top);
+      continue;
+    }
+
+    if (visual.kind === "flag") {
+      paths.add(visual.textures.front);
+      paths.add(visual.textures.back);
+    }
+  }
+
+  return Array.from(paths);
+}
 
 export function getTrackElementCatalogEntry(
   id: string | null | undefined

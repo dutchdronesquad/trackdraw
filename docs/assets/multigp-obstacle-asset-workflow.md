@@ -15,10 +15,10 @@ The MultiGP guide is the source reference for obstacle dimensions, construction 
 - `assets/multigp/multigp-obstacles.glb`
   - Source GLB containing the imported MultiGP obstacle artwork.
   - Kept outside `public/` so it is not served as a runtime asset.
-- `scripts/extract_glb_textures.py`
+- `scripts/extract_glb_textures.mjs`
   - Optional maintenance helper for extracting embedded images from the source GLB.
 - `public/assets/models/textures/multigp-obstacles/`
-  - Runtime PNG textures loaded by the 3D preview and flythrough export.
+  - Extracted PNG textures and optimized runtime WebP textures loaded by the 3D preview and flythrough export.
 
 ## Current Runtime Model
 
@@ -26,9 +26,11 @@ TrackDraw does not render the MultiGP GLB directly at runtime. Instead:
 
 1. The catalog defines official element dimensions and texture paths in `src/lib/track/elements/catalog.ts`.
 2. Shared layout helpers in `src/lib/track/render3d-layout.ts` compute panel sizes, frame placement, ladder height, and flag texture placement.
-3. The 3D preview and flythrough export build procedural geometry and apply the extracted PNG textures onto known panel surfaces.
+3. The 3D preview and flythrough export build procedural geometry and apply optimized WebP textures onto known panel surfaces.
 
 This keeps official obstacle geometry predictable for selection, rotation, export, and dense layouts while still using recognizable MultiGP artwork.
+
+Side-panel orientation is handled in runtime rendering. For front-facing gates and ladders, the physical left side should read bottom-to-top and the physical right side should read top-to-bottom. The Standard 5x5 assets have separate left/right side images, so runtime rendering maps those companion textures onto the opposite physical side. The Championship 7x6 assets use one shared side image, so runtime rendering derives the opposite side by rotating the physical-left side plane 180 degrees in its own panel plane.
 
 ## Blender Route
 
@@ -49,10 +51,10 @@ At this point the Blender route is done. The source GLB should contain the full 
 
 ## Runtime Texture Extraction
 
-TrackDraw currently renders procedural 3D geometry with PNG textures instead of rendering the source GLB directly. If the runtime PNGs need to be regenerated from the combined GLB, use the optional extraction helper:
+TrackDraw currently renders procedural 3D geometry with optimized texture files instead of rendering the source GLB directly. If the extracted PNGs need to be regenerated from the combined GLB, use the optional extraction helper:
 
 ```bash
-python3 scripts/extract_glb_textures.py
+npm run assets:multigp:extract
 ```
 
 By default the script reads:
@@ -67,7 +69,19 @@ and writes:
 public/assets/models/textures/multigp-obstacles/
 ```
 
-If runtime PNGs were exported another way, the Python helper can be skipped. The important part is that `public/assets/models/textures/multigp-obstacles/` contains the filenames referenced by `src/lib/track/elements/catalog.ts`.
+If source PNGs were exported another way, the extraction helper can be skipped. The important part is that `public/assets/models/textures/multigp-obstacles/` contains the runtime WebP filenames referenced by `src/lib/track/elements/catalog.ts`.
+
+## Runtime Texture Optimization
+
+After extracting or replacing source PNGs, downsample them and generate lossless WebP files for browser/GPU use:
+
+```bash
+npm run assets:multigp:optimize
+```
+
+The source GLB and extracted images can be very high resolution. Runtime rendering does not need the full 4k-8k source bitmaps because the artwork is mapped onto small gate, ladder, and flag panels in an interactive 3D preview. The optimizer keeps stable basenames, preserves aspect ratios, writes optimized PNG maintenance copies, and generates lossless WebP files for the runtime catalog paths.
+
+The MultiGP corner-flag back texture is intentionally mirrored as a standalone image. The runtime back panel is rotated 180 degrees around the vertical axis, which makes the mirrored back texture read correctly in the 3D scene. Do not add an extra flag-back flip in runtime code or in the optimizer.
 
 ## After Updating Textures
 
@@ -75,14 +89,14 @@ Check the runtime texture filenames against `src/lib/track/elements/catalog.ts`.
 
 Current expected runtime textures:
 
-- `MultiGP-2017-Airgate-left-panel-regular-50-percent.png`
-- `MultiGP-2017-Airgate-right-panel-regular-50-percent.png`
-- `MultiGP-2017-Airgate-top-regular-50-percent.png`
-- `large-side-panel-multigp.png`
-- `large-top-multigp.png`
-- `feather-banners-cobranded-multigp.png`
-- `feather-banners-cobranded-multigp-back.png`
-- `5x10-hurdle-multigp.png`
+- `MultiGP-2017-Airgate-left-panel-regular-50-percent.webp`
+- `MultiGP-2017-Airgate-right-panel-regular-50-percent.webp`
+- `MultiGP-2017-Airgate-top-regular-50-percent.webp`
+- `large-side-panel-multigp.webp`
+- `large-top-multigp.webp`
+- `feather-banners-cobranded-multigp.webp`
+- `feather-banners-cobranded-multigp-back.webp`
+- `5x10-hurdle-multigp.webp`
 
 If filenames change, either rename the runtime files back to the expected names or update the catalog texture paths. Prefer stable filenames in `public/assets/models/textures/multigp-obstacles/` so saved catalog rendering behavior remains easy to review.
 
@@ -90,15 +104,20 @@ If filenames change, either rename the runtime files back to the expected names 
 
 After replacing the GLB or textures:
 
-1. If runtime PNGs need regeneration, run the extractor or otherwise update the texture files in `public/assets/models/textures/multigp-obstacles/`.
-2. Start the app and inspect:
+1. If source PNGs need regeneration, run the extractor or otherwise update the texture files in `public/assets/models/textures/multigp-obstacles/`.
+2. Run `npm run assets:multigp:optimize` so runtime textures stay small enough for fast 3D loading.
+3. Start the app and inspect:
    - MultiGP Standard Gate 5x5
    - MultiGP Championship Gate 7x6
    - MultiGP Standard Ladder 5x5
    - MultiGP Championship Ladder 7x6
+   - MultiGP Topless Ladder 7x6
    - MultiGP Corner Flag
-3. Rotate gates and ladders in the 3D editor and confirm textures stay attached to the same physical side.
-4. Run:
+4. Confirm side-panel reading direction for gates and ladders:
+   - physical left side reads bottom-to-top
+   - physical right side reads top-to-bottom
+5. Rotate gates and ladders in the 3D editor and confirm textures stay attached to the same physical side.
+6. Run:
 
 ```bash
 npx eslint src/lib/track/elements/catalog.ts src/lib/track/render3d-layout.ts src/components/canvas/trackPreview3DSharedSceneContent.tsx src/lib/export/exportFlythrough.ts

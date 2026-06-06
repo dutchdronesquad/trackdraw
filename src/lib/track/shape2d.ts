@@ -127,7 +127,11 @@ export function getLadder2DShape(shape: LadderShape, ppm: number) {
     const rightPanelWidth = m2px(ladderVisual.panels.right.widthMeters, ppm);
     const width = openingWidth + leftPanelWidth + rightPanelWidth;
     return {
-      color: ladderVisual.panels.top.color,
+      color:
+        ladderVisual.panels.top?.color ??
+        ladderVisual.panels.left.color ??
+        shape.color ??
+        "#14b8a6",
       depth,
       radius: Math.min(12, depth / 2),
       variant: "panel-frame" as const,

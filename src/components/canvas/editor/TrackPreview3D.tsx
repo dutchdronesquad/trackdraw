@@ -48,6 +48,7 @@ import {
   ScreenshotHelper,
   WheelBridge,
   type QuaternionState,
+  useCatalogTextureWarmup,
 } from "@/components/canvas/trackPreview3DSharedSceneContent";
 import {
   DiveGateTiltHandle3D,
@@ -94,6 +95,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     ref
   ) {
     usePerfMetric("render:TrackPreview3D");
+    useCatalogTextureWarmup();
+
     const field = useEditor((state) => state.track.design.field);
     const selection = useEditor((state) => state.session.selection);
     const {
@@ -330,30 +333,31 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           />
 
           {shapes.map((shape) => (
-            <MemoShape3D
-              key={shape.id}
-              isPrimaryPolyline={primaryPolyline?.id === shape.id}
-              isSelected={selectedIdSet.has(shape.id)}
-              onSelect={handleShapeSelect}
-              shape={
-                elevationDrag?.shapeId === shape.id && previewPolyline
-                  ? previewPolyline
-                  : shape
-              }
-              outerRef={
-                rotationDrag?.shapeId === shape.id
-                  ? dragRotationGroupRef
-                  : undefined
-              }
-              tiltDragRef={
-                tiltDrag?.shapeId === shape.id ? tiltDragValueRef : undefined
-              }
-              elevationOverrideRef={
-                ladderElevationDrag?.shapeId === shape.id
-                  ? ladderElevationDragValueRef
-                  : undefined
-              }
-            />
+            <Suspense key={shape.id} fallback={null}>
+              <MemoShape3D
+                isPrimaryPolyline={primaryPolyline?.id === shape.id}
+                isSelected={selectedIdSet.has(shape.id)}
+                onSelect={handleShapeSelect}
+                shape={
+                  elevationDrag?.shapeId === shape.id && previewPolyline
+                    ? previewPolyline
+                    : shape
+                }
+                outerRef={
+                  rotationDrag?.shapeId === shape.id
+                    ? dragRotationGroupRef
+                    : undefined
+                }
+                tiltDragRef={
+                  tiltDrag?.shapeId === shape.id ? tiltDragValueRef : undefined
+                }
+                elevationOverrideRef={
+                  ladderElevationDrag?.shapeId === shape.id
+                    ? ladderElevationDragValueRef
+                    : undefined
+                }
+              />
+            </Suspense>
           ))}
 
           {previewPolyline && !flyMode ? (

@@ -92,7 +92,7 @@ Done state:
 Status:
 
 - Users can now place catalog-backed MultiGP-style gate variants through the normal Gate placement flow: Standard Gate 5x5 and Championship Gate 7x6. Desktop keeps the active gate type in a compact canvas placement control with a dropdown for additional variants, while mobile keeps one Gate entry in the tools drawer with a compact type picker for variants.
-- Users can also place catalog-backed MultiGP Standard Ladder 5x5, Championship Ladder 7x6, and Corner Flag entries through the same typed catalog pipeline.
+- Users can also place catalog-backed MultiGP Standard Ladder 5x5, Championship Ladder 7x6, Topless Ladder 7x6, and Corner Flag entries through the same typed catalog pipeline.
 - Newly placed official elements remain normal TrackDraw shapes, with their source identity stored under `meta.catalog`. The inspector shows the catalog type, source, official size, and fixed official status.
 - Official sizing and color are fixed in normal editing. Custom sizing and coloring belong to the standard TrackDraw generic elements instead of modifying official catalog items.
 - Newly placed gates and ladders default with their front facing downward on the canvas so the default orientation matches the editor's front/back guide expectation.
@@ -108,13 +108,14 @@ Detailed maintenance workflow:
 Repository layout:
 
 - `assets/multigp/multigp-obstacles.glb` keeps the source GLB used to recover the embedded artwork.
-- `scripts/extract_glb_textures.py` is an optional maintenance helper for extracting embedded GLB textures when runtime PNGs need to be regenerated.
-- `public/assets/models/textures/multigp-obstacles/` contains the runtime PNG textures served by the app.
+- `scripts/extract_glb_textures.mjs` is an optional maintenance helper for extracting embedded GLB textures when source PNGs need to be regenerated.
+- `scripts/optimize_multigp_textures.mjs` downscales extracted PNGs and generates the lossless WebP files used at runtime.
+- `public/assets/models/textures/multigp-obstacles/` contains the optimized runtime WebP textures served by the app.
 
 Notes:
 
 - The source GLB is intentionally outside `public/` so it is not served as a runtime asset.
-- Runtime code should reference the extracted PNG textures, not the GLB.
+- Runtime code should reference the optimized WebP textures, not the GLB.
 - Future user-provided custom banner textures are not catalog source assets; they should be account-backed media stored in Cloudflare R2 with ownership metadata.
 
 ## Phase 3: Element Library UI

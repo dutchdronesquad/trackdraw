@@ -251,11 +251,11 @@ Current shipped foundation:
 - A typed local catalog module now holds TrackDraw-provided element entries and source-backed MultiGP-style gate, ladder, and corner flag entries without changing the existing generic element defaults
 - Toolbar placement, layout presets, and starter layouts now use shared catalog placement helpers for generic elements, keeping saved geometry meter-based and backwards compatible
 - Gate placement can now switch between the generic TrackDraw gate and catalog-backed MultiGP-style 5x5 and 7x6 gate variants through a compact desktop placement dropdown and a compact mobile Gate type picker
+- Ladder placement can switch between the generic TrackDraw ladder and catalog-backed MultiGP Standard 5x5, Championship 7x6, and Topless 7x6 ladder variants
 - The inspector shows catalog type, source, official size, and dimension status while keeping official gate width and height fixed in normal editing
 
 Next catalog slices:
 
-- Topless Ladder 7x6: add as a straightforward ladder variant — same shape kind and pipeline as the existing Standard and Championship ladder entries, with the top bar omitted from the 3D rendering and catalog metadata
 - Dive Gate 7x6: add as a catalog-backed gate variant with official dimensions and a 3D rendering that reflects the low-profile dive orientation; shares the gate shape kind and inspector pipeline
 - Launch Gate 7x6: add as a catalog-backed gate variant used at the race start; shares the gate shape kind and pipeline, with official dimensions and appropriate 3D rendering
 - Double Gate Tower 5x5 and 7x6: introduce as a new shape kind with its own 2D representation, 3D rendering, catalog entries, and inspector pipeline; race-line behavior is gate-like (fly through) while the physical structure resembles a two-frame tower

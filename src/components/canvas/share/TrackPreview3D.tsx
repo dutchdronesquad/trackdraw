@@ -27,6 +27,7 @@ import {
   ScreenshotHelper,
   WheelBridge,
   type QuaternionState,
+  useCatalogTextureWarmup,
 } from "@/components/canvas/trackPreview3DSharedSceneContent";
 import {
   AxisGizmoOverlay,
@@ -53,6 +54,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     ref
   ) {
     usePerfMetric("render:share/TrackPreview3D");
+    useCatalogTextureWarmup();
 
     const field = useEditor((state) => state.track.design.field);
     const shapes = useEditor(selectDesignShapes);
@@ -107,13 +109,14 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const shapeNodes = useMemo(
       () =>
         shapes.map((shape) => (
-          <MemoShape3D
-            key={shape.id}
-            isPrimaryPolyline={false}
-            isSelected={false}
-            onSelect={handleShapeSelect}
-            shape={shape}
-          />
+          <Suspense key={shape.id} fallback={null}>
+            <MemoShape3D
+              isPrimaryPolyline={false}
+              isSelected={false}
+              onSelect={handleShapeSelect}
+              shape={shape}
+            />
+          </Suspense>
         )),
       [handleShapeSelect, shapes]
     );

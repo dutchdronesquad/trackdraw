@@ -7,8 +7,12 @@ import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+  MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+  MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
+  MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
   trackElementCatalog,
 } from "@/lib/track/elements/catalog";
 import type { GateShape } from "@/lib/types";
@@ -29,6 +33,15 @@ describe("track element catalog", () => {
       TRACKDRAW_GATE_ELEMENT_ID,
       MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
       MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+    ]);
+  });
+
+  it("exposes ladder entries for placement controls", () => {
+    expect(getCatalogEntriesByKind("ladder").map((entry) => entry.id)).toEqual([
+      TRACKDRAW_LADDER_ELEMENT_ID,
+      MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
+      MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID,
+      MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
     ]);
   });
 
@@ -103,6 +116,29 @@ describe("track element catalog", () => {
     );
     expect(championshipGate?.dimensions.heightMeters).toBeCloseTo(
       feetToMeters(6)
+    );
+  });
+
+  it("documents the MultiGP Topless Ladder 7x6 variant", () => {
+    const toplessLadder = getTrackElementCatalogEntry(
+      MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID
+    );
+
+    expect(toplessLadder).toMatchObject({
+      name: "MultiGP Topless Ladder 7x6",
+      organization: "MultiGP",
+      kind: "ladder",
+      official: true,
+      dimensions: {
+        display: {
+          unitSystem: "imperial",
+          label: "7 ft wide, 3 x 6 ft topless",
+        },
+      },
+    });
+    expect(toplessLadder?.dimensions.widthMeters).toBeCloseTo(feetToMeters(7));
+    expect(toplessLadder?.dimensions.heightMeters).toBeCloseTo(
+      feetToMeters(6) * 3
     );
   });
 

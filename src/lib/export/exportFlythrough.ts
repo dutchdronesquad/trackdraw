@@ -137,7 +137,7 @@ async function loadPanelTextures(textures: GatePanelTextureVisualSpec) {
   const [left, right, top] = await Promise.all([
     loadTexture(textures.left),
     loadTexture(textures.right),
-    loadTexture(textures.top),
+    textures.top ? loadTexture(textures.top) : Promise.resolve(null),
   ]);
   return { left, right, top };
 }
@@ -146,7 +146,8 @@ function addPanelTexturePlane(
   group: THREE.Group,
   texture: THREE.Texture,
   size: [number, number],
-  position: [number, number, number]
+  position: [number, number, number],
+  textureRotationZ = 0
 ) {
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(...size),
@@ -159,6 +160,7 @@ function addPanelTexturePlane(
   );
   mesh.position.set(...position);
   mesh.rotation.y = Math.PI;
+  mesh.rotation.z = textureRotationZ;
   mesh.castShadow = false;
   mesh.receiveShadow = false;
   group.add(mesh);
@@ -188,6 +190,13 @@ async function createOfficialGateGroup(
     topPanelY,
   } = getPanelFrameGateLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
+  const leftSideUsesDerivedRight =
+    visual.textures.left === visual.textures.right;
+  const leftSideTexture = leftSideUsesDerivedRight
+    ? panelTextures.left
+    : panelTextures.right;
+  const rightSideTexture = panelTextures.left;
+  const leftSideTextureRotationZ = leftSideUsesDerivedRight ? Math.PI : 0;
 
   const group = new THREE.Group();
   group.position.set(shape.x, 0, shape.y);
@@ -273,22 +282,25 @@ async function createOfficialGateGroup(
 
   addPanelTexturePlane(
     group,
-    panelTextures.left,
+    leftSideTexture,
     [leftPanelWidth, h],
-    [leftPanelX, h / 2, frontZ]
+    [leftPanelX, h / 2, frontZ],
+    leftSideTextureRotationZ
   );
   addPanelTexturePlane(
     group,
-    panelTextures.right,
+    rightSideTexture,
     [rightPanelWidth, h],
     [rightPanelX, h / 2, frontZ]
   );
-  addPanelTexturePlane(
-    group,
-    panelTextures.top,
-    [topPanelW, topPanelHeight],
-    [0, topPanelY, frontZ]
-  );
+  if (panelTextures.top) {
+    addPanelTexturePlane(
+      group,
+      panelTextures.top,
+      [topPanelW, topPanelHeight],
+      [0, topPanelY, frontZ]
+    );
+  }
 
   return group;
 }
@@ -298,6 +310,7 @@ async function createPanelFrameLadderGroup(
   visual: PanelFrameLadderVisualSpec
 ): Promise<THREE.Group> {
   const { frame, panels } = visual;
+  const topPanel = panels.top;
   const panelTextures = await loadPanelTextures(visual.textures);
   const {
     bannerH,
@@ -305,7 +318,6 @@ async function createPanelFrameLadderGroup(
     frameTube,
     frameZ,
     frontZ,
-    gateH,
     leftPanelWidth,
     openingH,
     outerLeftX,
@@ -313,11 +325,18 @@ async function createPanelFrameLadderGroup(
     outerW,
     panelDepth,
     rightPanelWidth,
-    rungs,
+    sections,
     totalH,
     w,
   } = getPanelFrameLadderLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
+  const leftSideUsesDerivedRight =
+    visual.textures.left === visual.textures.right;
+  const leftSideTexture = leftSideUsesDerivedRight
+    ? panelTextures.left
+    : panelTextures.right;
+  const rightSideTexture = panelTextures.left;
+  const leftSideTextureRotationZ = leftSideUsesDerivedRight ? Math.PI : 0;
 
   const group = new THREE.Group();
   group.position.set(shape.x, baseY, shape.y);
@@ -342,13 +361,15 @@ async function createPanelFrameLadderGroup(
     roughness: 0.7,
     metalness: 0.01,
   });
-  const topPanelMat = new THREE.MeshStandardMaterial({
-    color: panels.top.color,
-    emissive: panels.top.color,
-    emissiveIntensity: 0.04,
-    roughness: 0.64,
-    metalness: 0.03,
-  });
+  const topPanelMat = topPanel
+    ? new THREE.MeshStandardMaterial({
+        color: topPanel.color,
+        emissive: topPanel.color,
+        emissiveIntensity: 0.04,
+        roughness: 0.64,
+        metalness: 0.03,
+      })
+    : null;
   const fillMat = new THREE.MeshBasicMaterial({
     color: frame.color,
     transparent: true,
@@ -383,69 +404,73 @@ async function createPanelFrameLadderGroup(
     );
   }
 
-  for (const x of [outerLeftX, outerRightX]) {
-    const elbow = new THREE.Mesh(
-      new THREE.SphereGeometry(frameTube * 0.66, 16, 12),
-      frameMat
-    );
-    elbow.position.set(x, totalH, frameZ);
-    elbow.castShadow = true;
-    group.add(elbow);
+  if (sections.at(-1)?.hasTopPanel ?? true) {
+    for (const x of [outerLeftX, outerRightX]) {
+      const elbow = new THREE.Mesh(
+        new THREE.SphereGeometry(frameTube * 0.66, 16, 12),
+        frameMat
+      );
+      elbow.position.set(x, totalH, frameZ);
+      elbow.castShadow = true;
+      group.add(elbow);
+    }
   }
 
-  for (let i = 0; i < rungs; i += 1) {
-    const sectionY = i * gateH;
-    const barY = (i + 1) * gateH;
-    const bannerMidY = barY - bannerH / 2;
-    const openingMidY = sectionY + openingH / 2;
-
-    addCylinder(
-      group,
-      frameTube / 2,
-      outerW,
-      [0, barY, frameZ],
-      [0, 0, Math.PI / 2],
-      frameMat
-    );
-    addBox(
-      group,
-      [outerW, bannerH, panelDepth],
-      [0, bannerMidY, 0],
-      topPanelMat
-    );
+  for (const section of sections) {
+    if (section.hasTopPanel) {
+      addCylinder(
+        group,
+        frameTube / 2,
+        outerW,
+        [0, section.barY, frameZ],
+        [0, 0, Math.PI / 2],
+        frameMat
+      );
+    }
+    if (section.hasTopPanel && topPanelMat && bannerH > 0) {
+      addBox(
+        group,
+        [outerW, bannerH, panelDepth],
+        [0, section.bannerMidY, 0],
+        topPanelMat
+      );
+    }
     addBox(
       group,
       [leftPanelWidth, openingH, panelDepth],
-      [-w / 2 - leftPanelWidth / 2, openingMidY, 0],
+      [-w / 2 - leftPanelWidth / 2, section.openingMidY, 0],
       leftPanelMat
     );
     addBox(
       group,
       [rightPanelWidth, openingH, panelDepth],
-      [w / 2 + rightPanelWidth / 2, openingMidY, 0],
+      [w / 2 + rightPanelWidth / 2, section.openingMidY, 0],
       rightPanelMat
     );
     addPanelTexturePlane(
       group,
-      panelTextures.left,
+      leftSideTexture,
       [leftPanelWidth, openingH],
-      [-w / 2 - leftPanelWidth / 2, openingMidY, frontZ]
+      [-w / 2 - leftPanelWidth / 2, section.openingMidY, frontZ],
+      leftSideTextureRotationZ
     );
     addPanelTexturePlane(
       group,
-      panelTextures.right,
+      rightSideTexture,
       [rightPanelWidth, openingH],
-      [w / 2 + rightPanelWidth / 2, openingMidY, frontZ]
+      [w / 2 + rightPanelWidth / 2, section.openingMidY, frontZ]
     );
-    addPanelTexturePlane(
-      group,
-      panelTextures.top,
-      [outerW, bannerH],
-      [0, bannerMidY, frontZ]
-    );
+    if (section.hasTopPanel && panelTextures.top && bannerH > 0) {
+      addPanelTexturePlane(
+        group,
+        panelTextures.top,
+        [outerW, bannerH],
+        [0, section.bannerMidY, frontZ]
+      );
+    }
 
     const fill = new THREE.Mesh(new THREE.PlaneGeometry(w, openingH), fillMat);
-    fill.position.set(0, openingMidY, -panelDepth / 2 - 0.004);
+    fill.position.set(0, section.openingMidY, -panelDepth / 2 - 0.004);
     group.add(fill);
   }
 

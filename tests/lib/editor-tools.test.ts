@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildGateCatalogTypePatch,
+  buildLadderCatalogTypePatch,
   createShapeForTool,
   getShapeDisplayLabel,
   shapeKindLabels,
@@ -13,10 +14,12 @@ import {
   getTrackElementCatalogEntry,
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+  MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
+  TRACKDRAW_LADDER_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
-import type { GateShape } from "@/lib/types";
+import type { GateShape, LadderShape } from "@/lib/types";
 import { feetToMeters } from "@/lib/track/units";
 
 describe("editor tool helpers", () => {
@@ -52,6 +55,7 @@ describe("editor tool helpers", () => {
       height: 6,
       rungs: 3,
       elevation: 0,
+      color: "#14b8a6",
     });
     expect(createShapeForTool("divegate", point)).toMatchObject({
       kind: "divegate",
@@ -239,5 +243,32 @@ describe("buildGateCatalogTypePatch", () => {
     expect(
       buildGateCatalogTypePatch(baseShape, TRACKDRAW_FLAG_ELEMENT_ID)
     ).toBeNull();
+  });
+});
+
+describe("buildLadderCatalogTypePatch", () => {
+  it("resets to TrackDraw defaults and clears catalog identity", () => {
+    const catalogShape = createCatalogShapeDraft(
+      MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
+      { x: 3, y: 4, rotation: 45, includeCatalogMetadata: true }
+    ) as LadderShape & { id: string };
+    catalogShape.id = "ladder-1";
+
+    const patch = buildLadderCatalogTypePatch(
+      catalogShape,
+      TRACKDRAW_LADDER_ELEMENT_ID
+    );
+
+    expect(patch).toMatchObject({
+      kind: "ladder",
+      x: 3,
+      y: 4,
+      rotation: 45,
+      width: 2,
+      height: 6,
+      rungs: 3,
+      color: "#14b8a6",
+    });
+    expect(patch?.meta?.catalog).toBeUndefined();
   });
 });

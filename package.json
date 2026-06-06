@@ -20,6 +20,9 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "type": "next typegen && tsc --noEmit",
+    "assets:multigp:extract": "node scripts/extract_glb_textures.mjs",
+    "assets:multigp:optimize": "node scripts/optimize_multigp_textures.mjs",
+    "assets:multigp:refresh": "node scripts/extract_glb_textures.mjs && node scripts/optimize_multigp_textures.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
