@@ -327,7 +327,7 @@ export function useTrackCanvasInteractions({
             return;
           }
           const current = s.scaleX();
-          const next = current + (target - current) * 0.25;
+          const next = current + (target - current) * 0.1;
           const settled = Math.abs(target - next) < 0.0005;
           const applied = settled ? target : next;
           const nextPosition = getZoomedStagePosition({

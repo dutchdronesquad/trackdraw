@@ -184,7 +184,7 @@ export function WheelBridge({
       const currentDist = camera.position.distanceTo(controls.target);
       const base = targetDistanceRef.current ?? currentDist;
       const capped = Math.sign(rawDeltaY) * Math.min(Math.abs(rawDeltaY), 30);
-      const factor = Math.exp(capped * 0.012);
+      const factor = Math.exp(capped * 0.007);
       targetDistanceRef.current = Math.max(
         minDistance,
         Math.min(maxDistance, base * factor)
@@ -249,7 +249,7 @@ export function WheelBridge({
         return;
       }
 
-      const syntheticDeltaY = -Math.log(scaleRatio) / 0.012;
+      const syntheticDeltaY = -Math.log(scaleRatio) / 0.007;
       queueZoomDistance(syntheticDeltaY);
     };
 
@@ -306,7 +306,7 @@ export function WheelBridge({
     const currentDist = offset.length();
     const dir = offset.normalize();
 
-    const next = currentDist + (target - currentDist) * 0.15;
+    const next = currentDist + (target - currentDist) * 0.1;
     const settled = Math.abs(target - next) < 0.05;
     const applied = settled ? target : next;
 
@@ -1259,7 +1259,7 @@ function StartFinish3D({
               args={[podW - topInset, 0.018, podD - topInset]}
               radius={0.04}
               smoothness={4}
-              position={[0, podH + 0.012, 0]}
+              position={[0, podH + 0.007, 0]}
               receiveShadow
             >
               <meshStandardMaterial
