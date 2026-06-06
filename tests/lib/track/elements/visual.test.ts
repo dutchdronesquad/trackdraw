@@ -62,16 +62,24 @@ describe("track element visual specs", () => {
         color: "#f8fafc",
         diameterMeters: 0.055,
       },
-      branding: {
-        label: "MULTIGP",
-        style: "multigp",
+      textures: {
+        left: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-left-panel-regular-50-percent.png",
+        right:
+          "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.png",
+        top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.png",
       },
     });
     expect(getGateVisualSpec(championshipGate)).toMatchObject({
       kind: "gate",
       variant: "panel-frame",
       panels: {
-        top: { heightMeters: feetToMeters(1), color: "#202e5d" },
+        top: { heightMeters: feetToMeters(2), color: "#202e5d" },
+      },
+      textures: {
+        left: "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.png",
+        right:
+          "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.png",
+        top: "/assets/models/textures/multigp-obstacles/large-top-multigp.png",
       },
     });
   });
