@@ -61,6 +61,7 @@ import {
 } from "@/lib/track/orientation";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
 import { distance2D, getPolyline2DPoints } from "@/lib/track/geometry";
+import { getPolylineSmoothSegmentPointsPx } from "@/lib/track/polyline-derived";
 import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
 import {
   getShapeGroupId,
@@ -70,7 +71,7 @@ import {
 import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { shapeKindLabels } from "@/lib/editor-tools";
+import { getShapeDisplayLabel } from "@/lib/editor-tools";
 import {
   Tooltip,
   TooltipContent,
@@ -98,6 +99,93 @@ const TrackCanvasEditorOverlays = dynamic(
   () => import("@/components/canvas/editor/TrackCanvasEditorOverlays"),
   { ssr: false }
 );
+
+function resolveClosestPointOnPolyline(points: number[], pointer: Vector2d) {
+  let bestPoint = { x: pointer.x, y: pointer.y };
+  let bestDistanceSq = Number.POSITIVE_INFINITY;
+
+  for (let index = 0; index <= points.length - 4; index += 2) {
+    const startX = points[index];
+    const startY = points[index + 1];
+    const endX = points[index + 2];
+    const endY = points[index + 3];
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const lengthSq = dx * dx + dy * dy;
+    const t =
+      lengthSq > 0
+        ? Math.max(
+            0,
+            Math.min(
+              1,
+              ((pointer.x - startX) * dx + (pointer.y - startY) * dy) / lengthSq
+            )
+          )
+        : 0;
+    const projectedX = startX + dx * t;
+    const projectedY = startY + dy * t;
+    const distanceSq =
+      (pointer.x - projectedX) ** 2 + (pointer.y - projectedY) ** 2;
+
+    if (distanceSq < bestDistanceSq) {
+      bestDistanceSq = distanceSq;
+      bestPoint = { x: projectedX, y: projectedY };
+    }
+  }
+
+  return { distanceSq: bestDistanceSq, pointPx: bestPoint };
+}
+
+type PolylineContextMenuHit = {
+  distanceSq: number;
+  pointPx: Vector2d;
+  segmentIndex: number;
+  shape: PolylineShape;
+};
+
+function findPolylineContextMenuHit({
+  designPpm,
+  maxDistancePx,
+  pointer,
+  shapes,
+}: {
+  designPpm: number;
+  maxDistancePx: number;
+  pointer: Vector2d;
+  shapes: Shape[];
+}): PolylineContextMenuHit | null {
+  let best: PolylineContextMenuHit | null = null;
+  const maxDistanceSq = maxDistancePx * maxDistancePx;
+
+  for (const shape of shapes) {
+    if (shape.kind !== "polyline" || shape.locked || shape.points.length < 2) {
+      continue;
+    }
+
+    const segmentPoints = getPolylineSmoothSegmentPointsPx(shape, designPpm);
+    for (
+      let segmentIndex = 0;
+      segmentIndex < segmentPoints.length;
+      segmentIndex += 1
+    ) {
+      const points = segmentPoints[segmentIndex];
+      if (points.length < 4) continue;
+      const candidate = resolveClosestPointOnPolyline(points, pointer);
+      if (
+        candidate.distanceSq <= maxDistanceSq &&
+        (!best || candidate.distanceSq < best.distanceSq)
+      ) {
+        best = {
+          ...candidate,
+          segmentIndex,
+          shape,
+        };
+      }
+    }
+  }
+
+  return best;
+}
 
 export interface TrackCanvasHandle {
   getStage: () => KonvaStage | null;
@@ -444,6 +532,16 @@ const TrackCanvas = memo(
     const contentDragActiveRef = useRef(false);
     const touchMovedRef = useRef(false);
     const suppressTapRef = useRef(false);
+    const mobilePathPointerRef = useRef<{
+      clientX: number;
+      clientY: number;
+      pointerId: number;
+    } | null>(null);
+    const mobilePathTouchRef = useRef<{
+      clientX: number;
+      clientY: number;
+      identifier: number;
+    } | null>(null);
     const touchInteractionModeRef = useRef<
       "none" | "pan" | "content" | "viewportGesture"
     >("none");
@@ -493,6 +591,7 @@ const TrackCanvas = memo(
     const [contextMenu, setContextMenu] = useState<ContextMenuData | null>(
       null
     );
+    const contextMenuHandledRef = useRef(false);
     const hasManualViewRef = useRef(false);
     const isDark = useTheme() === "dark";
     const obstacleNumberMap = useMemo(
@@ -878,7 +977,9 @@ const TrackCanvas = memo(
         clickedShape?: Shape,
         options?: { segmentIndex?: number | null }
       ) => {
-        if (activeTool !== "select" || readOnly || ids.length === 0) return;
+        if (activeTool !== "select" || readOnly || ids.length === 0) {
+          return false;
+        }
 
         const nextSelection =
           clickedShape && !ids.includes(clickedShape.id)
@@ -974,7 +1075,7 @@ const TrackCanvas = memo(
             nextSelection.length > 1
               ? `${nextSelection.length} items`
               : primaryShape
-                ? shapeKindLabels[primaryShape.kind]
+                ? getShapeDisplayLabel(primaryShape)
                 : "Selection",
           locked: nextSelection.every((id) => {
             const shape = shapeById[id];
@@ -982,6 +1083,8 @@ const TrackCanvas = memo(
           }),
           rotatableIds,
         });
+        contextMenuHandledRef.current = true;
+        return true;
       },
       [
         activeTool,
@@ -1002,6 +1105,275 @@ const TrackCanvas = memo(
         openContextMenuForSelection(ids, clickedShape, options);
       },
       [openContextMenuForSelection]
+    );
+
+    const selectPolylineSegmentAtPointer = useCallback(
+      (
+        pointer: Vector2d,
+        options: {
+          maxDistanceScreenPx: number;
+          shapeIds?: string[];
+        }
+      ) => {
+        const shapes = options.shapeIds
+          ? options.shapeIds
+              .map((id) => shapeById[id])
+              .filter((shape): shape is Shape => Boolean(shape))
+          : designShapes;
+        const hit = findPolylineContextMenuHit({
+          designPpm: design.field.ppm,
+          maxDistancePx:
+            options.maxDistanceScreenPx / Math.max(stageTransform.scale, 0.1),
+          pointer,
+          shapes,
+        });
+
+        if (!hit) return false;
+
+        if (
+          selectionRef.current.length !== 1 ||
+          selectionRef.current[0] !== hit.shape.id
+        ) {
+          setSelection([hit.shape.id]);
+        }
+        setSegmentSel({
+          shapeId: hit.shape.id,
+          segmentIndex: hit.segmentIndex,
+          point: {
+            x: px2m(hit.pointPx.x, design.field.ppm),
+            y: px2m(hit.pointPx.y, design.field.ppm),
+          },
+        });
+        setVertexSel(null);
+        return true;
+      },
+      [
+        design.field.ppm,
+        designShapes,
+        setSegmentSel,
+        setSelection,
+        setVertexSel,
+        shapeById,
+        stageTransform.scale,
+      ]
+    );
+
+    const handleMobileSelectedPathSegmentTap = useCallback(
+      (pointer: Vector2d) => {
+        const selectedPathIds = selectionRef.current.filter((id) => {
+          const shape = shapeById[id];
+          return shape?.kind === "polyline" && !shape.locked;
+        });
+
+        if (selectedPathIds.length !== 1) return false;
+
+        return selectPolylineSegmentAtPointer(pointer, {
+          maxDistanceScreenPx: 48,
+          shapeIds: selectedPathIds,
+        });
+      },
+      [selectPolylineSegmentAtPointer, shapeById]
+    );
+
+    const getStagePointFromClient = useCallback((client: Vector2d) => {
+      const stage = stageRef.current;
+      if (!stage) return null;
+
+      const stageBox = stage.container().getBoundingClientRect();
+      const scaleX = stage.scaleX() || 1;
+      const scaleY = stage.scaleY() || 1;
+      return {
+        x: (client.x - stageBox.left - stage.x()) / scaleX,
+        y: (client.y - stageBox.top - stage.y()) / scaleY,
+      };
+    }, []);
+
+    const isStageDomTarget = useCallback((target: EventTarget | null) => {
+      return (
+        target instanceof Node &&
+        (stageRef.current?.container().contains(target) ?? false)
+      );
+    }, []);
+
+    const handleCanvasPointerDown = useCallback(
+      (event: React.PointerEvent<HTMLDivElement>) => {
+        if (!isMobile || readOnly || activeTool !== "select") return;
+        if (event.pointerType !== "touch" && event.pointerType !== "pen")
+          return;
+        if (!isStageDomTarget(event.target)) return;
+
+        mobilePathPointerRef.current = {
+          clientX: event.clientX,
+          clientY: event.clientY,
+          pointerId: event.pointerId,
+        };
+      },
+      [activeTool, isMobile, isStageDomTarget, readOnly]
+    );
+
+    const clearMobilePathPointer = useCallback(() => {
+      mobilePathPointerRef.current = null;
+      mobilePathTouchRef.current = null;
+    }, []);
+
+    const finishMobilePathRetarget = useCallback(
+      (pointer: Vector2d) => {
+        if (!handleMobileSelectedPathSegmentTap(pointer)) return false;
+        suppressTapRef.current = true;
+        touchMovedRef.current = false;
+        lastTouchStagePointRef.current = null;
+        touchInteractionModeRef.current = "none";
+        return true;
+      },
+      [handleMobileSelectedPathSegmentTap]
+    );
+
+    const handleCanvasPointerUp = useCallback(
+      (event: React.PointerEvent<HTMLDivElement>) => {
+        const start = mobilePathPointerRef.current;
+        mobilePathPointerRef.current = null;
+        if (!start || start.pointerId !== event.pointerId) return;
+        if (!isMobile || readOnly || activeTool !== "select") return;
+        if (event.pointerType !== "touch" && event.pointerType !== "pen")
+          return;
+        if (!isStageDomTarget(event.target)) return;
+
+        const movedPx = Math.hypot(
+          event.clientX - start.clientX,
+          event.clientY - start.clientY
+        );
+        if (movedPx > 12) return;
+
+        const pointer = getStagePointFromClient({
+          x: event.clientX,
+          y: event.clientY,
+        });
+        if (!pointer) return;
+
+        if (finishMobilePathRetarget(pointer)) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      },
+      [
+        activeTool,
+        finishMobilePathRetarget,
+        getStagePointFromClient,
+        isMobile,
+        isStageDomTarget,
+        readOnly,
+      ]
+    );
+
+    const handleCanvasTouchStartCapture = useCallback(
+      (event: React.TouchEvent<HTMLDivElement>) => {
+        mobilePathTouchRef.current = null;
+        if (!isMobile || readOnly || activeTool !== "select") return;
+        if (event.touches.length !== 1) return;
+        if (!isStageDomTarget(event.target)) return;
+
+        const touch = event.touches[0];
+        mobilePathTouchRef.current = {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          identifier: touch.identifier,
+        };
+      },
+      [activeTool, isMobile, isStageDomTarget, readOnly]
+    );
+
+    const handleCanvasTouchEndCapture = useCallback(
+      (event: React.TouchEvent<HTMLDivElement>) => {
+        const start = mobilePathTouchRef.current;
+        if (!start) return;
+        const touch = Array.from(event.changedTouches).find(
+          (candidate) => candidate.identifier === start.identifier
+        );
+        if (!touch) return;
+        mobilePathTouchRef.current = null;
+        if (!isMobile || readOnly || activeTool !== "select") return;
+        if (!isStageDomTarget(event.target)) return;
+
+        const movedPx = Math.hypot(
+          touch.clientX - start.clientX,
+          touch.clientY - start.clientY
+        );
+        if (movedPx > 12) return;
+
+        const pointer = getStagePointFromClient({
+          x: touch.clientX,
+          y: touch.clientY,
+        });
+        if (!pointer) return;
+
+        if (finishMobilePathRetarget(pointer)) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      },
+      [
+        activeTool,
+        finishMobilePathRetarget,
+        getStagePointFromClient,
+        isMobile,
+        isStageDomTarget,
+        readOnly,
+      ]
+    );
+
+    const handleCanvasContextMenu = useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        if (contextMenuHandledRef.current) {
+          contextMenuHandledRef.current = false;
+          return;
+        }
+
+        if (!(event.target instanceof HTMLCanvasElement)) return;
+        if (activeTool !== "select" || readOnly) return;
+
+        const stage = stageRef.current;
+        if (!stage) return;
+
+        const pointer = getStagePointFromClient({
+          x: event.clientX,
+          y: event.clientY,
+        });
+        if (!pointer) return;
+        const maxDistancePx = 28 / Math.max(stageTransform.scale, 0.1);
+        const hit = findPolylineContextMenuHit({
+          designPpm: design.field.ppm,
+          maxDistancePx,
+          pointer,
+          shapes: designShapes,
+        });
+
+        if (!hit) return;
+
+        setSegmentSel({
+          shapeId: hit.shape.id,
+          segmentIndex: hit.segmentIndex,
+          point: {
+            x: px2m(hit.pointPx.x, design.field.ppm),
+            y: px2m(hit.pointPx.y, design.field.ppm),
+          },
+        });
+        setVertexSel(null);
+        openContextMenuForSelection([hit.shape.id], hit.shape, {
+          segmentIndex: hit.segmentIndex,
+        });
+        contextMenuHandledRef.current = false;
+      },
+      [
+        activeTool,
+        design.field.ppm,
+        designShapes,
+        getStagePointFromClient,
+        openContextMenuForSelection,
+        readOnly,
+        setSegmentSel,
+        setVertexSel,
+        stageTransform.scale,
+      ]
     );
 
     const addWaypointToSelectedSegment = useCallback(
@@ -1196,6 +1568,7 @@ const TrackCanvas = memo(
       marqueeOriginRef: marqueeOrigin,
       marqueeRect,
       onCursorChange,
+      onMobileSelectedPathSegmentTap: handleMobileSelectedPathSegmentTap,
       onSnapChange,
       mobileMultiSelectEnabled,
       readOnly,
@@ -1844,7 +2217,13 @@ const TrackCanvas = memo(
     ]);
 
     return (
-      <ContextMenu onOpenChange={(open) => !open && setContextMenu(null)}>
+      <ContextMenu
+        onOpenChange={(open) => {
+          if (open) return;
+          contextMenuHandledRef.current = false;
+          setContextMenu(null);
+        }}
+      >
         {!readOnly ? (
           <TrackCanvasShortcuts
             activeTool={activeTool}
@@ -1878,6 +2257,14 @@ const TrackCanvas = memo(
           <div
             ref={containerRef}
             className="relative h-full w-full overflow-hidden"
+            onContextMenu={handleCanvasContextMenu}
+            onPointerCancel={clearMobilePathPointer}
+            onPointerDownCapture={handleCanvasPointerDown}
+            onPointerLeave={clearMobilePathPointer}
+            onPointerUpCapture={handleCanvasPointerUp}
+            onTouchCancelCapture={clearMobilePathPointer}
+            onTouchEndCapture={handleCanvasTouchEndCapture}
+            onTouchStartCapture={handleCanvasTouchStartCapture}
             style={{ cursor: cursorStyle, touchAction: "none" }}
           >
             <div

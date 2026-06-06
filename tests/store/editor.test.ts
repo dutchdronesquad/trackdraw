@@ -946,6 +946,47 @@ describe("editor store history", () => {
     ]);
   });
 
+  it("keeps a selected route segment when the same path is selected again", () => {
+    const state = useEditor.getState();
+    const routeId = state.addShape({
+      kind: "polyline",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      points: [
+        { x: 0, y: 0, z: 0 },
+        { x: 4, y: 0, z: 0 },
+      ],
+    });
+    const gateId = state.addShape({
+      kind: "gate",
+      x: 2,
+      y: 2,
+      rotation: 0,
+      width: 2,
+      height: 1.5,
+    });
+
+    state.setSelection([routeId]);
+    state.setSegmentSelection({
+      shapeId: routeId,
+      segmentIndex: 0,
+      point: { x: 2, y: 0 },
+    });
+
+    state.setSelection([routeId]);
+
+    expect(useEditor.getState().ui.segmentSelection).toEqual({
+      shapeId: routeId,
+      segmentIndex: 0,
+      point: { x: 2, y: 0 },
+    });
+
+    state.setSelection([gateId]);
+
+    expect(useEditor.getState().ui.segmentSelection).toBeNull();
+  });
+
   it("updates field and design metadata through explicit track actions", () => {
     const state = useEditor.getState();
     state.clearHistory();

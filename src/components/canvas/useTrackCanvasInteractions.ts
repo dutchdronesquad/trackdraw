@@ -67,6 +67,7 @@ interface TrackCanvasInteractionsParams {
   marqueeRect: RectLike | null;
   mobileMultiSelectEnabled?: boolean;
   onCursorChange?: (pos: { x: number; y: number } | null) => void;
+  onMobileSelectedPathSegmentTap?: (pointer: Vector2d) => boolean;
   onSnapChange?: (active: boolean) => void;
   readOnly: boolean;
   snapEnabled: boolean;
@@ -124,6 +125,7 @@ export function useTrackCanvasInteractions({
   marqueeRect,
   mobileMultiSelectEnabled: _mobileMultiSelectEnabled,
   onCursorChange,
+  onMobileSelectedPathSegmentTap,
   onSnapChange,
   readOnly,
   snapEnabled,
@@ -409,8 +411,7 @@ export function useTrackCanvasInteractions({
           targetIsStage: event.target === stage,
         });
         touchInteractionModeRef.current = nextTouchMode;
-        lastTouchStagePointRef.current =
-          nextTouchMode === "content" ? touchToStagePoint(touch, stage) : null;
+        lastTouchStagePointRef.current = touchToStagePoint(touch, stage);
       }
     },
     [
@@ -540,9 +541,6 @@ export function useTrackCanvasInteractions({
         lastPinchCenterRef.current = null;
         lastTouchPosRef.current = null;
         lastTouchStartClientRef.current = null;
-        lastTouchStagePointRef.current = null;
-        touchMovedRef.current = false;
-        touchInteractionModeRef.current = "none";
         return;
       }
 
@@ -561,17 +559,21 @@ export function useTrackCanvasInteractions({
       lastPinchCenterRef,
       lastPinchDistRef,
       lastTouchPosRef,
-      lastTouchStagePointRef,
       lastTouchStartClientRef,
       suppressTapRef,
-      touchMovedRef,
       touchInteractionModeRef,
     ]
   );
 
   const onTap = useCallback(
     (event: { target: unknown }) => {
-      if (event.target !== stageRef.current) return;
+      if (event.target !== stageRef.current) {
+        suppressTapRef.current = false;
+        touchMovedRef.current = false;
+        lastTouchStagePointRef.current = null;
+        touchInteractionModeRef.current = "none";
+        return;
+      }
       if (
         suppressTapRef.current ||
         touchMovedRef.current ||
@@ -586,10 +588,9 @@ export function useTrackCanvasInteractions({
 
       const stage = stageRef.current;
       if (!stage) return;
-      const pointer =
-        isMobile && touchInteractionModeRef.current === "content"
-          ? lastTouchStagePointRef.current
-          : stage.getRelativePointerPosition();
+      const pointer = isMobile
+        ? (lastTouchStagePointRef.current ?? stage.getRelativePointerPosition())
+        : stage.getRelativePointerPosition();
       lastTouchStagePointRef.current = null;
       if (!pointer) return;
 
@@ -639,6 +640,11 @@ export function useTrackCanvasInteractions({
       }
 
       if (activeTool === "select") {
+        if (isMobile && onMobileSelectedPathSegmentTap?.(pointer)) {
+          touchMovedRef.current = false;
+          touchInteractionModeRef.current = "none";
+          return;
+        }
         setSelection([]);
       }
 
@@ -653,6 +659,7 @@ export function useTrackCanvasInteractions({
       addShapes,
       finalizePath,
       isMobile,
+      onMobileSelectedPathSegmentTap,
       pointerToMeters,
       readOnly,
       setActiveTool,

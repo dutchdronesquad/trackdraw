@@ -87,6 +87,13 @@ function sameOffset(
   return Math.abs(a.x - b.x) < 0.001 && Math.abs(a.y - b.y) < 0.001;
 }
 
+function samePoint(
+  a: { x: number; y: number } | null | undefined,
+  b: { x: number; y: number } | null | undefined
+) {
+  return sameOffset(a, b);
+}
+
 function TrackShapeNodeComponent({
   allowInteraction,
   contentDragActiveRef,
@@ -352,7 +359,7 @@ function TrackShapeNodeComponent({
             hoveredWaypoint={hoveredWaypoint}
             isPrimaryPolyline={isPrimaryPolyline}
             isMobile={isMobile}
-            isSelected={highlighted}
+            isSelected={selected}
             onPathContextMenu={(segmentIndex) =>
               onShapeContextMenu?.(shape, { segmentIndex })
             }
@@ -366,6 +373,7 @@ function TrackShapeNodeComponent({
             setSegmentSelection={setSegmentSelection}
             setVertexSel={setVertexSel}
             setPolylinePoints={setPolylinePoints}
+            viewportScale={viewportScale}
             zmax={zmax}
             zmin={zmin}
           />
@@ -407,6 +415,8 @@ export const TrackShapeNode = memo(TrackShapeNodeComponent, (prev, next) => {
     prev.isSelected === next.isSelected &&
     prev.isPrimaryPolyline === next.isPrimaryPolyline &&
     prev.snapEnabled === next.snapEnabled &&
+    prev.selectedSegmentIndex === next.selectedSegmentIndex &&
+    samePoint(prev.selectedSegmentPoint, next.selectedSegmentPoint) &&
     prev.selectionCount === next.selectionCount &&
     prev.shape === next.shape &&
     prev.zmin === next.zmin &&

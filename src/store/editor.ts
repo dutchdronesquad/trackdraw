@@ -61,6 +61,10 @@ import {
 
 export type { EditorTool } from "@/lib/editor-tools";
 
+function sameSelection(a: string[], b: string[]) {
+  return a.length === b.length && a.every((id, index) => id === b[index]);
+}
+
 interface EditorState {
   track: EditorTrackState;
   session: EditorSessionState;
@@ -507,11 +511,15 @@ export const useEditor = create<EditorState>()(
 
       setSelection: (ids) =>
         set((draft) => {
-          draft.session.selection = expandGroupedSelection(
-            draft.track.design,
-            ids
+          const nextSelection = expandGroupedSelection(draft.track.design, ids);
+          const selectionChanged = !sameSelection(
+            draft.session.selection,
+            nextSelection
           );
-          draft.ui.segmentSelection = null;
+          draft.session.selection = nextSelection;
+          if (selectionChanged) {
+            draft.ui.segmentSelection = null;
+          }
           if (draft.session.selection.length !== 1) {
             draft.ui.vertexSelection = null;
           }

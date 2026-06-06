@@ -60,7 +60,6 @@ import {
   Orbit,
   Route,
   Share2,
-  Waves,
   FileText,
 } from "lucide-react";
 import { Screenshot } from "@/components/landing/Screenshot";
@@ -111,18 +110,18 @@ const features = [
     surface:
       "from-brand-secondary/[0.13] via-brand-secondary/[0.035] to-transparent",
     glow: "#F0761D",
-    title: "Built-in obstacle set",
-    text: "Design with the obstacles race crews actually use, from gates and flags to ladders, dive gates, and race lines.",
+    title: "MultiGP obstacle catalog",
+    text: "Place MultiGP gates, flags, and ladders with real dimensions and source references, or use the generic set for custom builds.",
   },
   {
-    icon: Waves,
+    icon: Orbit,
     color: "text-emerald-400",
     bg: "bg-emerald-500/12",
     border: "border-emerald-500/20",
     surface: "from-emerald-500/[0.13] via-emerald-500/[0.035] to-transparent",
     glow: "#34d399",
-    title: "Elevation-aware planning",
-    text: "Add height to the race line while you plan so vertical problems show up before build day.",
+    title: "Realistic 3D preview",
+    text: "Orbit the layout in 3D, add elevation to the race line, and fly through the route cinematically to catch flow problems before build day.",
   },
   {
     icon: Share2,
@@ -151,8 +150,8 @@ const features = [
     border: "border-rose-500/20",
     surface: "from-rose-500/[0.13] via-rose-500/[0.035] to-transparent",
     glow: "#fb7185",
-    title: "Portable deliverables",
-    text: "Export briefing files, print assets, and reusable project data from the same layout.",
+    title: "Race Pack and export",
+    text: "Generate a pilot briefing PDF with obstacle layout, route map, and setup notes. Also export SVG, PNG, and JSON from the same design.",
   },
 ];
 
@@ -356,9 +355,9 @@ export default function Home() {
               <Reveal delay={0.23}>
                 <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-2.5">
                   {[
-                    "5+ element types",
-                    "2D and 3D preview",
-                    "PDF, SVG and PNG export",
+                    "MultiGP catalog",
+                    "3D preview and flythrough",
+                    "Race Pack PDF and SVG",
                     "Read-only sharing",
                   ].map((item) => (
                     <li

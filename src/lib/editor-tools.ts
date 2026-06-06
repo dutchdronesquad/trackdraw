@@ -1,6 +1,7 @@
 import {
   createCatalogShapeDraft,
   createTrackElementCatalogIdentity,
+  getTrackElementCatalogIdentity,
   getTrackElementCatalogEntry,
   TRACKDRAW_CONE_ELEMENT_ID,
   TRACKDRAW_DIVE_GATE_ELEMENT_ID,
@@ -16,6 +17,7 @@ import type {
   FlagShape,
   GateShape,
   LadderShape,
+  Shape,
   ShapeDraft,
   ShapeKind,
 } from "@/lib/types";
@@ -43,6 +45,15 @@ export const shapeKindLabels: Record<ShapeKind, string> = {
   ladder: "Ladder",
   divegate: "Dive Gate",
 };
+
+export function getShapeDisplayLabel(shape: Shape): string {
+  const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
+  if (catalogIdentity?.assignedKind === shape.kind) {
+    return catalogIdentity.snapshot.name;
+  }
+
+  return shapeKindLabels[shape.kind];
+}
 
 export const toolLabels: Record<EditorTool, string> = {
   select: "Select",

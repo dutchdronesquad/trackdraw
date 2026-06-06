@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   buildGateCatalogTypePatch,
   createShapeForTool,
+  getShapeDisplayLabel,
   shapeKindLabels,
   toolLabels,
   toolShortcuts,
 } from "@/lib/editor-tools";
 import {
+  createTrackElementCatalogIdentity,
   createCatalogShapeDraft,
+  getTrackElementCatalogEntry,
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
@@ -134,6 +137,38 @@ describe("editor tool helpers", () => {
     expect(createShapeForTool("grab", { x: 1, y: 2 })).toBeNull();
     expect(createShapeForTool("preset", { x: 1, y: 2 })).toBeNull();
     expect(createShapeForTool("polyline", { x: 1, y: 2 })).toBeNull();
+  });
+
+  it("uses catalog-backed shape names for display labels", () => {
+    const shape = createShapeForTool(
+      "gate",
+      { x: 3, y: 4 },
+      {
+        activePlacementElementId: {
+          gate: MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+        },
+      }
+    );
+
+    expect(shape?.kind).toBe("gate");
+    expect(getShapeDisplayLabel({ ...shape!, id: "gate-1" })).toBe(
+      "MultiGP Standard Gate 5x5"
+    );
+  });
+
+  it("falls back to kind labels when catalog metadata does not match the shape", () => {
+    const flagEntry = getTrackElementCatalogEntry(TRACKDRAW_FLAG_ELEMENT_ID);
+    expect(flagEntry).not.toBeNull();
+
+    const gate = {
+      ...createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, { x: 1, y: 2 }),
+      id: "gate-2",
+      meta: {
+        catalog: createTrackElementCatalogIdentity(flagEntry!),
+      },
+    } as GateShape;
+
+    expect(getShapeDisplayLabel(gate)).toBe("Gate");
   });
 });
 

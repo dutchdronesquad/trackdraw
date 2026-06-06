@@ -42,8 +42,6 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         The primary label now resolves to the user custom name → catalog entry name (e.g. "MultiGP Standard Gate 5x5") → generic kind label. The kind label stays visible as a secondary subtitle. Filter search also matches catalog names.
   - [x] Obstacle / all filter pills
         Two pills — "All" and "Obstacles" — let users focus the list on race obstacles (gates, ladders, dive gates) or see everything. Non-obstacle elements (flags, cones, labels) remain visible under "All" but are not the primary focus.
-  - [ ] Drag-to-reorder obstacles
-        Once the auto path generator is in place, expose drag handles on the obstacles list so users can define the exact intended race sequence. The `reorderShapes` store action is already in place; only the UI needs to be wired up at that point.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.

@@ -49,6 +49,7 @@ export interface PolylineShapeContentProps {
   ) => void;
   setVertexSel: (value: { shapeId: string; idx: number } | null) => void;
   setPolylinePoints: (id: string, points: PolylinePoint[]) => void;
+  viewportScale: number;
   zmax: number;
   zmin: number;
 }
@@ -73,6 +74,7 @@ export function PolylineShapeContent({
   setSegmentSelection,
   setVertexSel,
   setPolylinePoints,
+  viewportScale,
   zmax,
   zmin,
 }: PolylineShapeContentProps) {
@@ -104,9 +106,11 @@ export function PolylineShapeContent({
     [path, previewPoints]
   );
   const strokePx = m2px(displayPath.strokeWidth ?? 0.26, designPpm);
+  const minSelectionStrokePx =
+    (isMobile ? 44 : 30) / Math.max(viewportScale, 0.1);
   const selectionStrokePx = isMobile
-    ? Math.max(22, strokePx + 18)
-    : Math.max(14, strokePx + 10);
+    ? Math.max(22, minSelectionStrokePx, strokePx + 18)
+    : Math.max(14, minSelectionStrokePx, strokePx + 10);
   const polylineMetrics = useMemo(
     () => getPolyline2DDerived(displayPath),
     [displayPath]
@@ -477,101 +481,83 @@ export function PolylineShapeContent({
     ]
   );
 
-  const handleSegmentSelection = useCallback(
-    (event: KonvaEventObject<MouseEvent | TouchEvent>) => {
-      const stage = event.target.getStage();
-      const pointer = stage?.getRelativePointerPosition();
-      if (!pointer) return;
-      const selection = selectNearestSegment(pointer);
-      if (!selection) return;
-
-      event.cancelBubble = true;
-      setSelection([path.id]);
+  // Shared core: commits segment + vertex state for a given pointer position.
+  // Returns the resolved segment index, or null if no segment was found.
+  const selectSegmentAtPointer = useCallback(
+    (pointer: Vector2d): number | null => {
+      const result = selectNearestSegment(pointer);
+      if (!result) return null;
       setSegmentSelection({
         shapeId: path.id,
-        segmentIndex: selection.segmentIndex,
+        segmentIndex: result.segmentIndex,
         point: {
-          x: px2m(selection.pointPx.x, designPpm),
-          y: px2m(selection.pointPx.y, designPpm),
+          x: px2m(result.pointPx.x, designPpm),
+          y: px2m(result.pointPx.y, designPpm),
         },
       });
       setVertexSel(null);
+      return result.segmentIndex;
     },
     [
       designPpm,
       path.id,
       selectNearestSegment,
       setSegmentSelection,
-      setSelection,
       setVertexSel,
     ]
   );
 
-  const handleMobileSegmentTouchEnd = useCallback(
-    (event: KonvaEventObject<TouchEvent>) => {
-      if (!isMobile || !isSelected) return;
-      handleSegmentSelection(event);
+  const handleSegmentSelection = useCallback(
+    (event: KonvaEventObject<MouseEvent | TouchEvent>) => {
+      const pointer = event.target.getStage()?.getRelativePointerPosition();
+      if (!pointer) return;
+      const segmentIndex = selectSegmentAtPointer(pointer);
+      if (segmentIndex === null) return;
+      event.cancelBubble = true;
+      if (!isSelected) setSelection([path.id]);
     },
-    [handleSegmentSelection, isMobile, isSelected]
+    [isSelected, path.id, selectSegmentAtPointer, setSelection]
   );
 
   const handlePathContextMenu = useCallback(
     (event: KonvaEventObject<PointerEvent>) => {
       event.evt.preventDefault();
-      const stage = event.target.getStage();
-      const pointer = stage?.getRelativePointerPosition();
+      const pointer = event.target.getStage()?.getRelativePointerPosition();
       if (!pointer) return;
-      const selection = selectNearestSegment(pointer);
-      if (!selection) return;
-
+      const segmentIndex = selectSegmentAtPointer(pointer);
+      if (segmentIndex === null) return;
       event.cancelBubble = true;
       setSelection([path.id]);
-      setSegmentSelection({
-        shapeId: path.id,
-        segmentIndex: selection.segmentIndex,
-        point: {
-          x: px2m(selection.pointPx.x, designPpm),
-          y: px2m(selection.pointPx.y, designPpm),
-        },
-      });
-      setVertexSel(null);
-      onPathContextMenu?.(selection.segmentIndex);
+      onPathContextMenu?.(segmentIndex);
     },
-    [
-      designPpm,
-      onPathContextMenu,
-      path.id,
-      selectNearestSegment,
-      setSegmentSelection,
-      setSelection,
-      setVertexSel,
-    ]
+    [onPathContextMenu, path.id, selectSegmentAtPointer, setSelection]
   );
 
   if (!pointsPxMemo.length) return null;
 
   const canSelectPath = allowInteraction && !path.locked;
+  const displayPts = smoothPx.length >= 4 ? smoothPx : pointsPxMemo;
 
   return (
     <>
       {canSelectPath && (
         <Line
-          points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
+          points={displayPts}
           stroke="#000000"
           strokeWidth={selectionStrokePx}
+          hitStrokeWidth={selectionStrokePx}
           opacity={0.001}
           lineCap="round"
           lineJoin="round"
-          onMouseDown={handlePathSelect}
-          onMouseUp={handleSegmentSelection}
-          onTouchEnd={handleMobileSegmentTouchEnd}
+          onMouseDown={isMobile ? undefined : handlePathSelect}
+          onMouseUp={isMobile ? undefined : handleSegmentSelection}
           onTap={handleSegmentSelection}
           onContextMenu={handlePathContextMenu}
         />
       )}
       {isSelected && (
         <Line
-          points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
+          points={displayPts}
           stroke="#3b82f6"
           strokeWidth={strokePx + 4}
           lineCap="round"
@@ -604,7 +590,7 @@ export function PolylineShapeContent({
           })
         ) : (
           <Line
-            points={smoothPx.length >= 4 ? smoothPx : pointsPxMemo}
+            points={displayPts}
             stroke={
               path.color
                 ? color
@@ -691,7 +677,6 @@ export function PolylineShapeContent({
           ) => {
             event.cancelBubble = true;
             setSelection([path.id]);
-            setSegmentSelection(null);
             setVertexSel({ shapeId: path.id, idx: index });
             const stage = event.target.getStage();
             if (!stage) return;
