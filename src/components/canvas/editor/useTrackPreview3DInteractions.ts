@@ -25,6 +25,13 @@ import {
   snapRotationDegrees,
 } from "@/components/canvas/trackPreview3DMath";
 
+const elevationDragRaycaster = new THREE.Raycaster();
+const elevationDragNdc = new THREE.Vector2();
+const elevationDragCameraDirection = new THREE.Vector3();
+const elevationDragPlaneNormal = new THREE.Vector3();
+const elevationDragPlane = new THREE.Plane();
+const elevationDragHit = new THREE.Vector3();
+
 function getVerticalDragPlaneY(
   clientX: number,
   clientY: number,
@@ -35,28 +42,33 @@ function getVerticalDragPlaneY(
 ): number | null {
   const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
   const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
-  const raycaster = new THREE.Raycaster();
-  raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
+  elevationDragNdc.set(ndcX, ndcY);
+  elevationDragRaycaster.setFromCamera(elevationDragNdc, camera);
 
-  const cameraDirection = new THREE.Vector3();
-  camera.getWorldDirection(cameraDirection);
-  const planeNormal = new THREE.Vector3(
-    cameraDirection.x,
+  camera.getWorldDirection(elevationDragCameraDirection);
+  elevationDragPlaneNormal.set(
+    elevationDragCameraDirection.x,
     0,
-    cameraDirection.z
+    elevationDragCameraDirection.z
   );
-  if (planeNormal.lengthSq() < 0.0001) {
+  if (elevationDragPlaneNormal.lengthSq() < 0.0001) {
     return null;
   }
-  planeNormal.normalize();
+  elevationDragPlaneNormal.normalize();
 
-  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
-    planeNormal,
-    new THREE.Vector3(anchorX, 0, anchorZ)
+  elevationDragPlane.setFromNormalAndCoplanarPoint(
+    elevationDragPlaneNormal,
+    elevationDragHit.set(anchorX, 0, anchorZ)
   );
-  const hit = new THREE.Vector3();
-  if (!raycaster.ray.intersectPlane(plane, hit)) return null;
-  return hit.y;
+  if (
+    !elevationDragRaycaster.ray.intersectPlane(
+      elevationDragPlane,
+      elevationDragHit
+    )
+  ) {
+    return null;
+  }
+  return elevationDragHit.y;
 }
 
 interface UseTrackPreview3DInteractionsParams {
