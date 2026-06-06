@@ -191,8 +191,14 @@ async function createOfficialGateGroup(
     topPanelY,
   } = getPanelFrameGateLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
-  const { leftPanel: leftSideTexture, rightPanel: rightSideTexture, leftRotationZ: leftSideTextureRotationZ } =
-    resolvePanelTextureMapping(visual.textures, [panelTextures.left, panelTextures.right]);
+  const {
+    leftPanel: leftSideTexture,
+    rightPanel: rightSideTexture,
+    leftRotationZ: leftSideTextureRotationZ,
+  } = resolvePanelTextureMapping(visual.textures, [
+    panelTextures.left,
+    panelTextures.right,
+  ]);
 
   const group = new THREE.Group();
   group.position.set(shape.x, 0, shape.y);
@@ -326,8 +332,14 @@ async function createPanelFrameLadderGroup(
     w,
   } = getPanelFrameLadderLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
-  const { leftPanel: leftSideTexture, rightPanel: rightSideTexture, leftRotationZ: leftSideTextureRotationZ } =
-    resolvePanelTextureMapping(visual.textures, [panelTextures.left, panelTextures.right]);
+  const {
+    leftPanel: leftSideTexture,
+    rightPanel: rightSideTexture,
+    leftRotationZ: leftSideTextureRotationZ,
+  } = resolvePanelTextureMapping(visual.textures, [
+    panelTextures.left,
+    panelTextures.right,
+  ]);
 
   const group = new THREE.Group();
   group.position.set(shape.x, baseY, shape.y);
