@@ -32,6 +32,14 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         Added the MultiGP Corner Flag (10 ft feather flag) with realistic 3D rendering, catalog identity, inspector type switching, and an official source link.
   - [x] MultiGP ladder and other obstacle entries
         Added MultiGP Standard Ladder 5x5 and Championship Ladder 7x6 with panel-frame 3D rendering matching the real obstacle, and the same catalog pipeline as gates and flags.
+  - [ ] MultiGP Topless Ladder 7x6
+        Add as a ladder variant using the same catalog pipeline as the existing ladder entries. The 3D rendering omits the top bar; the shape kind and inspector treatment stay the same.
+  - [ ] MultiGP Dive Gate 7x6
+        Add as a catalog-backed gate variant with official dimensions and a 3D rendering that reflects the low-profile dive orientation. Shares the gate shape kind and inspector pipeline.
+  - [ ] MultiGP Launch Gate 7x6
+        Add as a catalog-backed gate variant used at the race start, with official dimensions and appropriate 3D rendering. Shares the gate shape kind and inspector pipeline.
+  - [ ] MultiGP Double Gate Tower 5x5 and 7x6
+        New shape kind with its own 2D representation, 3D rendering, catalog entries, and inspector pipeline. Race-line behavior is gate-like (fly through); physical structure is a two-frame tower.
 
 - [x] Flag real-time rotation in 3D (`No account required`)
       Flags now rotate visually in real-time during 3D drag, matching gates and ladders. The fix was passing `outerRef` from `Shape3D` through `Flag3D` and `CornerMarkerFlag3D` to their root groups, so the rotation drag handler can mutate the group transform directly each animation frame.
@@ -47,6 +55,15 @@ The completed release-sized work is archived below. The next TrackDraw priority 
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.
   - [ ] 3D transform handles
         Prototype selected-item controls for elevation, rotation, scale, and orientation only where the behavior is predictable across 2D and 3D.
+
+- [ ] Path editing UX (`No account required`)
+      Make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model forces extra points to avoid sharp corners.
+  - [ ] Path drawing interaction improvements
+        Improve waypoint placement and drag feedback so tracing a line feels more deliberate and less error-prone, especially on touch and trackpad.
+  - [ ] Automatic curve smoothing
+        Evaluate Catmull-Rom splines or chord-length parameterization to produce smoother curves from the same waypoints without manual handle editing, with backwards-compatible geometry.
+  - [ ] Per-waypoint curve strength (`Research`)
+        Only pursue if automatic smoothing is not sufficient and if there is an interaction model that works on both desktop and mobile. Direct canvas handles are likely too fiddly on touch; validate an inspector- or gesture-based alternative first before committing to an approach.
 
 - [ ] Generated flightpath assistance (`Research`, `No account required`)
       Research generated flightpaths from placed obstacles as an optional drafting aid. The intended race sequence is defined by the obstacle order in the track items list (backed by `shapeOrder`), which users can set via drag-to-reorder once this feature ships. The generator connects obstacles in that order and produces an editable race line — it assists authoring rather than replacing it.

@@ -59,7 +59,7 @@ export function DroneCamera({
     if (!pl) return null;
 
     const curve = getPolylineCurve3Derived(pl, {
-      heightOffset: 0.8,
+      heightOffset: 0.6,
       samplesPerSegment: 18,
       density: 12,
     })?.curve;

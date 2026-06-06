@@ -1745,7 +1745,7 @@ function DiveGate3D({
   );
 }
 
-const POLYLINE_3D_HEIGHT_OFFSET = 0.5;
+const POLYLINE_3D_HEIGHT_OFFSET = 0.3;
 
 function getPolylineTubeRadius(shape: PolylineShape) {
   return Math.max(0.02, (shape.strokeWidth ?? 0.26) / 2);
@@ -1778,7 +1778,7 @@ function RaceLine3D({
     [warningSegments]
   );
   const smoothSegmentPoints = useMemo(
-    () => getPolylineSmoothSegmentPoints3D(shape, 0.5, 18),
+    () => getPolylineSmoothSegmentPoints3D(shape, 0.3, 18),
     [shape]
   );
   const showWarningVisuals = selected || isPrimary;

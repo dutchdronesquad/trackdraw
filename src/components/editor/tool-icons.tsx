@@ -44,6 +44,24 @@ function LadderIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
       className={className}
     >
+      <rect x="2.5" y="1.5" width="9" height="11" />
+      <line x1="2.5" y1="5.2" x2="11.5" y2="5.2" />
+      <line x1="2.5" y1="8.8" x2="11.5" y2="8.8" />
+    </svg>
+  );
+}
+
+function _TowerIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
       <polyline points="2.5,7 2.5,1.5 11.5,1.5 11.5,7" />
       <polyline points="2.5,12.5 2.5,7 11.5,7 11.5,12.5" />
     </svg>

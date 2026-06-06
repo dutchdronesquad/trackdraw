@@ -16,11 +16,12 @@ TrackDraw is now strong in these areas:
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 - Account-backed REST API with API key management and a live race overlay data endpoint
 
-The most useful next product move is deepening the race-day workflow, keeping the editor dependable, refining the account-backed project model, and improving catalog-backed official elements, 3D review, and workspace ergonomics:
+The most useful next product move is deepening the race-day workflow, keeping the editor dependable, refining the account-backed project model, improving path editing UX, and expanding catalog-backed official elements, 3D review, and workspace ergonomics:
 
 - Race director page with pilot line, timing/start box placement, and ops notes
 - Usability and reliability pass focused on recovery states, mobile ergonomics, editor interactions, exports, sharing, and larger layouts
-- Catalog-backed official track elements
+- Path editing UX improvements for smoother curves and a more natural drawing experience
+- Catalog-backed official track elements, including MultiGP ladder variants, Dive Gate, Launch Gate, and a new Double Gate Tower shape kind
 - More realistic 3D review and focused 3D item controls
 - Generated flightpath research as a separate route-authoring assist
 - Editor workspace ergonomics for larger layouts, including collapsible side panels where they preserve selection context
@@ -251,6 +252,13 @@ Current shipped foundation:
 - Gate placement can now switch between the generic TrackDraw gate and catalog-backed MultiGP-style 5x5 and 7x6 gate variants through a compact desktop placement dropdown and a compact mobile Gate type picker
 - The inspector shows catalog type, source, official size, and dimension status while keeping official gate width and height fixed in normal editing
 
+Next catalog slices:
+
+- Topless Ladder 7x6: add as a straightforward ladder variant — same shape kind and pipeline as the existing Standard and Championship ladder entries, with the top bar omitted from the 3D rendering and catalog metadata
+- Dive Gate 7x6: add as a catalog-backed gate variant with official dimensions and a 3D rendering that reflects the low-profile dive orientation; shares the gate shape kind and inspector pipeline
+- Launch Gate 7x6: add as a catalog-backed gate variant used at the race start; shares the gate shape kind and pipeline, with official dimensions and appropriate 3D rendering
+- Double Gate Tower 5x5 and 7x6: introduce as a new shape kind with its own 2D representation, 3D rendering, catalog entries, and inspector pipeline; race-line behavior is gate-like (fly through) while the physical structure resembles a two-frame tower
+
 #### 3D Preview And Direct Manipulation
 
 TrackDraw should improve 3D review and focused 3D editing as separate editor capabilities, not as part of the track element catalog.
@@ -297,6 +305,30 @@ Important boundary:
 - Do not treat generated flightpaths as authoritative until they are validated against real layouts
 - Do not replace explicit race-line authoring; generated routes should remain assistive and editable
 - Do not bury generated flightpath work under the element catalog or 3D preview work; it should remain a standalone route-authoring feature
+
+#### Path Editing UX
+
+TrackDraw should make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model creates unwanted sharp corners or requires too many waypoints to get a smooth result.
+
+Why:
+
+- Placing waypoints one by one to approximate a curve is low-signal work: the user is fighting the tool to express a shape rather than focusing on the layout itself
+- Sharp corners between segments are a common complaint that forces extra waypoints as a workaround, which bloats the route and makes later edits harder
+- Smoother automatic curve fitting would reduce the number of waypoints needed for a clean corner and make the path easier to adjust after the fact
+- Giving users direct control over curve strength at individual waypoints is a lower-risk first step that works within the existing waypoint model
+
+Focus:
+
+- Improve the path drawing interaction so placing and adjusting waypoints feels more deliberate and less error-prone, especially on touch and trackpad
+- Evaluate automatic curve smoothing options such as Catmull-Rom splines or chord-length parameterization that produce smoother curves from the same waypoints without requiring manual handle editing
+- If automatic smoothing is not sufficient or introduces regressions on existing paths, evaluate per-waypoint curve strength control; only proceed if there is an interaction model that works comfortably on both desktop and mobile — direct canvas handles are likely too fiddly on touch, so any approach should first be validated against an inspector- or gesture-based alternative
+- Ensure any smoothing change remains backwards-compatible with saved project geometry and does not silently deform existing paths on re-open
+
+Important boundary:
+
+- Do not change the underlying waypoint data model unless a migration path for saved projects is in place
+- Do not introduce full vector-editor-style bezier handles as the default interaction; they should be optional or automatic, not the primary drawing mode
+- Keep the interaction consistent between desktop pointer and mobile touch so improvements do not regress venue-side editing
 
 #### Editor Workspace Ergonomics
 

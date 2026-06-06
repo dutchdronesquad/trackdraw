@@ -688,7 +688,7 @@ export function exportFlythrough(
     }
 
     const curveResult = getPolylineCurve3Derived(polyline, {
-      heightOffset: 0.8,
+      heightOffset: 0.6,
       samplesPerSegment: 18,
       density: 12,
     });
