@@ -65,6 +65,7 @@ vi.mock("@/components/canvas/trackPreview3DSharedSceneContent", () => ({
     <div data-shape-id={shape.id} data-testid="shape-3d" />
   ),
   ScreenshotHelper: () => <div data-testid="screenshot-helper" />,
+  useCatalogTextureWarmup: () => {},
   WheelBridge: () => <div data-testid="wheel-bridge" />,
 }));
 
