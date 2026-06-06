@@ -481,56 +481,59 @@ export function PolylineShapeContent({
     ]
   );
 
-  // Shared core: commits segment + vertex state for a given pointer position.
-  // Returns the resolved segment index, or null if no segment was found.
-  const selectSegmentAtPointer = useCallback(
-    (pointer: Vector2d): number | null => {
-      const result = selectNearestSegment(pointer);
-      if (!result) return null;
+  const commitSegmentSelection = useCallback(
+    (selection: { segmentIndex: number; pointPx: Vector2d }) => {
       setSegmentSelection({
         shapeId: path.id,
-        segmentIndex: result.segmentIndex,
+        segmentIndex: selection.segmentIndex,
         point: {
-          x: px2m(result.pointPx.x, designPpm),
-          y: px2m(result.pointPx.y, designPpm),
+          x: px2m(selection.pointPx.x, designPpm),
+          y: px2m(selection.pointPx.y, designPpm),
         },
       });
       setVertexSel(null);
-      return result.segmentIndex;
     },
-    [
-      designPpm,
-      path.id,
-      selectNearestSegment,
-      setSegmentSelection,
-      setVertexSel,
-    ]
+    [designPpm, path.id, setSegmentSelection, setVertexSel]
   );
 
   const handleSegmentSelection = useCallback(
     (event: KonvaEventObject<MouseEvent | TouchEvent>) => {
       const pointer = event.target.getStage()?.getRelativePointerPosition();
       if (!pointer) return;
-      const segmentIndex = selectSegmentAtPointer(pointer);
-      if (segmentIndex === null) return;
+      const selection = selectNearestSegment(pointer);
+      if (!selection) return;
       event.cancelBubble = true;
       if (!isSelected) setSelection([path.id]);
+      commitSegmentSelection(selection);
     },
-    [isSelected, path.id, selectSegmentAtPointer, setSelection]
+    [
+      commitSegmentSelection,
+      isSelected,
+      path.id,
+      selectNearestSegment,
+      setSelection,
+    ]
   );
 
   const handlePathContextMenu = useCallback(
     (event: KonvaEventObject<PointerEvent>) => {
-      event.evt.preventDefault();
       const pointer = event.target.getStage()?.getRelativePointerPosition();
       if (!pointer) return;
-      const segmentIndex = selectSegmentAtPointer(pointer);
-      if (segmentIndex === null) return;
+      const selection = selectNearestSegment(pointer);
+      if (!selection) return;
       event.cancelBubble = true;
-      setSelection([path.id]);
-      onPathContextMenu?.(segmentIndex);
+      if (!isSelected) setSelection([path.id]);
+      commitSegmentSelection(selection);
+      onPathContextMenu?.(selection.segmentIndex);
     },
-    [onPathContextMenu, path.id, selectSegmentAtPointer, setSelection]
+    [
+      commitSegmentSelection,
+      isSelected,
+      onPathContextMenu,
+      path.id,
+      selectNearestSegment,
+      setSelection,
+    ]
   );
 
   if (!pointsPxMemo.length) return null;

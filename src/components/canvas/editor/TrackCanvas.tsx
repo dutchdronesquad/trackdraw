@@ -61,7 +61,7 @@ import {
 } from "@/lib/track/orientation";
 import type { PolylinePoint, PolylineShape, Shape } from "@/lib/types";
 import { distance2D, getPolyline2DPoints } from "@/lib/track/geometry";
-import { getPolylineSmoothSegmentPointsPx } from "@/lib/track/polyline-derived";
+import { findPolylineTarget } from "@/lib/canvas/polyline-targeting";
 import { getObstacleNumberMap } from "@/lib/track/obstacleNumbering";
 import {
   getShapeGroupId,
@@ -99,93 +99,6 @@ const TrackCanvasEditorOverlays = dynamic(
   () => import("@/components/canvas/editor/TrackCanvasEditorOverlays"),
   { ssr: false }
 );
-
-function resolveClosestPointOnPolyline(points: number[], pointer: Vector2d) {
-  let bestPoint = { x: pointer.x, y: pointer.y };
-  let bestDistanceSq = Number.POSITIVE_INFINITY;
-
-  for (let index = 0; index <= points.length - 4; index += 2) {
-    const startX = points[index];
-    const startY = points[index + 1];
-    const endX = points[index + 2];
-    const endY = points[index + 3];
-    const dx = endX - startX;
-    const dy = endY - startY;
-    const lengthSq = dx * dx + dy * dy;
-    const t =
-      lengthSq > 0
-        ? Math.max(
-            0,
-            Math.min(
-              1,
-              ((pointer.x - startX) * dx + (pointer.y - startY) * dy) / lengthSq
-            )
-          )
-        : 0;
-    const projectedX = startX + dx * t;
-    const projectedY = startY + dy * t;
-    const distanceSq =
-      (pointer.x - projectedX) ** 2 + (pointer.y - projectedY) ** 2;
-
-    if (distanceSq < bestDistanceSq) {
-      bestDistanceSq = distanceSq;
-      bestPoint = { x: projectedX, y: projectedY };
-    }
-  }
-
-  return { distanceSq: bestDistanceSq, pointPx: bestPoint };
-}
-
-type PolylineContextMenuHit = {
-  distanceSq: number;
-  pointPx: Vector2d;
-  segmentIndex: number;
-  shape: PolylineShape;
-};
-
-function findPolylineContextMenuHit({
-  designPpm,
-  maxDistancePx,
-  pointer,
-  shapes,
-}: {
-  designPpm: number;
-  maxDistancePx: number;
-  pointer: Vector2d;
-  shapes: Shape[];
-}): PolylineContextMenuHit | null {
-  let best: PolylineContextMenuHit | null = null;
-  const maxDistanceSq = maxDistancePx * maxDistancePx;
-
-  for (const shape of shapes) {
-    if (shape.kind !== "polyline" || shape.locked || shape.points.length < 2) {
-      continue;
-    }
-
-    const segmentPoints = getPolylineSmoothSegmentPointsPx(shape, designPpm);
-    for (
-      let segmentIndex = 0;
-      segmentIndex < segmentPoints.length;
-      segmentIndex += 1
-    ) {
-      const points = segmentPoints[segmentIndex];
-      if (points.length < 4) continue;
-      const candidate = resolveClosestPointOnPolyline(points, pointer);
-      if (
-        candidate.distanceSq <= maxDistanceSq &&
-        (!best || candidate.distanceSq < best.distanceSq)
-      ) {
-        best = {
-          ...candidate,
-          segmentIndex,
-          shape,
-        };
-      }
-    }
-  }
-
-  return best;
-}
 
 export interface TrackCanvasHandle {
   getStage: () => KonvaStage | null;
@@ -1120,7 +1033,7 @@ const TrackCanvas = memo(
               .map((id) => shapeById[id])
               .filter((shape): shape is Shape => Boolean(shape))
           : designShapes;
-        const hit = findPolylineContextMenuHit({
+        const hit = findPolylineTarget({
           designPpm: design.field.ppm,
           maxDistancePx:
             options.maxDistanceScreenPx / Math.max(stageTransform.scale, 0.1),
@@ -1340,7 +1253,7 @@ const TrackCanvas = memo(
         });
         if (!pointer) return;
         const maxDistancePx = 28 / Math.max(stageTransform.scale, 0.1);
-        const hit = findPolylineContextMenuHit({
+        const hit = findPolylineTarget({
           designPpm: design.field.ppm,
           maxDistancePx,
           pointer,
