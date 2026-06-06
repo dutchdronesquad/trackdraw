@@ -1778,7 +1778,8 @@ function RaceLine3D({
     [warningSegments]
   );
   const smoothSegmentPoints = useMemo(
-    () => getPolylineSmoothSegmentPoints3D(shape, 0.3, 18),
+    () =>
+      getPolylineSmoothSegmentPoints3D(shape, POLYLINE_3D_HEIGHT_OFFSET, 18),
     [shape]
   );
   const showWarningVisuals = selected || isPrimary;
