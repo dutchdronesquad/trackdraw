@@ -109,7 +109,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         shapes.map((shape) => (
           <MemoShape3D
             key={shape.id}
-            isEditing={false}
             isPrimaryPolyline={false}
             isSelected={false}
             onSelect={handleShapeSelect}

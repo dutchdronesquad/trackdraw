@@ -5,6 +5,10 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { getPreviewRotationGuideDegrees } from "@/lib/track/orientation";
+import {
+  DEFAULT_POLYLINE_STROKE_WIDTH,
+  POLYLINE_3D_HEIGHT_OFFSET,
+} from "@/lib/track/constants";
 import { getLadderVisualSpec } from "@/lib/track/elements/visual";
 import { getLadderRenderedHeight } from "@/lib/track/render3d-layout";
 import type {
@@ -133,10 +137,8 @@ export function PolylineElevationHandles3D({
     <group>
       {path.points.map((point, index) => {
         const pointHeight = Math.max(point.z ?? 0, 0);
-        const guideHeight = Math.max(0.4, pointHeight + 0.5);
         const isActive = activeIndex === index;
         const isHovered = hoveredIndex === index;
-        const handleY = pointHeight + 0.52;
         const guideColor = isActive
           ? "#f59e0b"
           : isHovered
@@ -156,6 +158,19 @@ export function PolylineElevationHandles3D({
           : isActive
             ? 0.18
             : 0.15;
+        const tubeRadius = Math.max(
+          0.02,
+          (path.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH) / 2
+        );
+        const lineCenterY = pointHeight + POLYLINE_3D_HEIGHT_OFFSET;
+        const lineTopY = lineCenterY + tubeRadius;
+        const handleGap = isMobile ? 0.04 : 0.025;
+        const handleY = lineTopY + gripHeight / 2 + handleGap;
+        const guideHeight = Math.max(0.4, handleY);
+        const ringY = lineCenterY - tubeRadius * 0.25;
+        const ringInnerRadius = tubeRadius * 0.35;
+        const ringOuterRadius = tubeRadius * 0.72;
+        const hoverDiscRadius = tubeRadius * 0.82;
         const touchTargetRadius = isMobile ? 0.38 : gripRadius + 0.06;
         const touchTargetHeight = isMobile ? 0.58 : gripHeight;
         return (
@@ -169,10 +184,10 @@ export function PolylineElevationHandles3D({
               />
             </mesh>
             <mesh
-              position={[point.x, pointHeight + 0.03, point.y]}
+              position={[point.x, ringY, point.y]}
               rotation={[-Math.PI / 2, 0, 0]}
             >
-              <ringGeometry args={[0.13, 0.19, 40]} />
+              <ringGeometry args={[ringInnerRadius, ringOuterRadius, 40]} />
               <meshBasicMaterial
                 color={isActive ? "#fbbf24" : "#60a5fa"}
                 transparent
@@ -182,10 +197,10 @@ export function PolylineElevationHandles3D({
             </mesh>
             {(isActive || isHovered) && (
               <mesh
-                position={[point.x, pointHeight + 0.031, point.y]}
+                position={[point.x, ringY + 0.001, point.y]}
                 rotation={[-Math.PI / 2, 0, 0]}
               >
-                <circleGeometry args={[0.24, 36]} />
+                <circleGeometry args={[hoverDiscRadius, 36]} />
                 <meshBasicMaterial
                   color={isActive ? "#fbbf24" : "#93c5fd"}
                   transparent

@@ -6,6 +6,7 @@ import {
 } from "./geometry";
 import { getDesignShapes } from "./design";
 import type { PolylinePoint, PolylineShape, TrackDesign } from "../types";
+import { DEFAULT_POLYLINE_STROKE_WIDTH } from "./constants";
 import { m2px } from "./units";
 
 const POLYLINE_2D_SAMPLES_PER_SEGMENT = 18;
@@ -153,7 +154,7 @@ export function getPolylineBounds(path: PolylineShape, ppm: number) {
     maxY = Math.max(maxY, y);
   }
 
-  const strokePx = m2px(path.strokeWidth ?? 0.26, ppm);
+  const strokePx = m2px(path.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH, ppm);
   const bounds = {
     x: minX - strokePx,
     y: minY - strokePx,

@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
 import { normalizeMapReference } from "@/lib/map-reference/geometry";
 import { normalizeInventoryProfile } from "@/lib/planning/inventory";
+import { DEFAULT_POLYLINE_STROKE_WIDTH } from "@/lib/track/constants";
 import { normalizeShapeTimingMeta } from "@/lib/track/timing";
 import type {
   PolylineShape,
@@ -37,7 +38,7 @@ export function normalizeShape(shape: Shape): Shape {
       ...normalizePolylinePosition(shape),
       frontOffsetDeg: shape.frontOffsetDeg ?? 0,
       arrowSpacing: shape.arrowSpacing ?? 15,
-      strokeWidth: shape.strokeWidth ?? 0.26,
+      strokeWidth: shape.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH,
       smooth: true,
     });
   }

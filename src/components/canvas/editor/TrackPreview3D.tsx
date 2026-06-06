@@ -332,7 +332,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           {shapes.map((shape) => (
             <MemoShape3D
               key={shape.id}
-              isEditing={elevationDrag?.shapeId === shape.id}
               isPrimaryPolyline={primaryPolyline?.id === shape.id}
               isSelected={selectedIdSet.has(shape.id)}
               onSelect={handleShapeSelect}

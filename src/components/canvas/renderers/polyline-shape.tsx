@@ -14,6 +14,7 @@ import {
 } from "@/lib/track/polyline-derived";
 import { isTouchLikeEvent } from "@/lib/canvas/shared";
 import { zToColor } from "@/lib/track/alt";
+import { DEFAULT_POLYLINE_STROKE_WIDTH } from "@/lib/track/constants";
 import { m2px, px2m } from "@/lib/track/units";
 import type { PolylinePoint, PolylineShape } from "@/lib/types";
 
@@ -105,7 +106,10 @@ export function PolylineShapeContent({
         : path,
     [path, previewPoints]
   );
-  const strokePx = m2px(displayPath.strokeWidth ?? 0.26, designPpm);
+  const strokePx = m2px(
+    displayPath.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH,
+    designPpm
+  );
   const minSelectionStrokePx =
     (isMobile ? 44 : 30) / Math.max(viewportScale, 0.1);
   const selectionStrokePx = isMobile

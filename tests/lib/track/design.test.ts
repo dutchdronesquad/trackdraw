@@ -46,7 +46,7 @@ describe("track design helpers", () => {
     ]);
     expect(normalized.frontOffsetDeg).toBe(0);
     expect(normalized.arrowSpacing).toBe(15);
-    expect(normalized.strokeWidth).toBe(0.26);
+    expect(normalized.strokeWidth).toBe(0.2);
     expect(normalized.smooth).toBe(true);
   });
 

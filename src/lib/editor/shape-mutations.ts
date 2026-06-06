@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import { DEFAULT_POLYLINE_STROKE_WIDTH } from "@/lib/track/constants";
 import { getShapeGroupId } from "@/lib/track/shape-groups";
 import type {
   PolylinePoint,
@@ -347,8 +348,8 @@ export function joinPolylineShapes(
         nextPath.arrowSpacing ?? 15
       ),
       strokeWidth: Math.max(
-        merged.strokeWidth ?? 0.26,
-        nextPath.strokeWidth ?? 0.26
+        merged.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH,
+        nextPath.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH
       ),
       closed: false,
       locked: false,

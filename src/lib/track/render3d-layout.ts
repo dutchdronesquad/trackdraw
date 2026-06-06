@@ -5,6 +5,7 @@ import type {
 import type { FlagShape, GateShape, LadderShape } from "@/lib/types";
 
 export const PANEL_FRAME_PANEL_DEPTH = 0.018;
+export const PANEL_FRAME_TEXTURE_SURFACE_OFFSET = 0.0015;
 export const TEXTURED_PANEL_FRAME_TUBE_SCALE = 0.58;
 const MULTIGP_FEATHER_FLAG_TEXTURE_ASPECT = 1134 / 5811;
 
@@ -21,7 +22,7 @@ export function getPanelFrameGateLayout(
   const frameTube =
     visual.frame.diameterMeters * TEXTURED_PANEL_FRAME_TUBE_SCALE;
   const frameZ = panelDepth * 0.1;
-  const frontZ = -(panelDepth / 2 + 0.012);
+  const frontZ = -(panelDepth / 2 + PANEL_FRAME_TEXTURE_SURFACE_OFFSET);
   const leftPanelX = -w / 2 - leftPanelWidth / 2;
   const rightPanelX = w / 2 + rightPanelWidth / 2;
   const topPanelY = h + topPanelHeight / 2;
@@ -72,7 +73,7 @@ export function getPanelFrameLadderLayout(
   const openingH = totalOpeningH / rungs;
   const gateH = openingH + bannerH;
   const totalH = gateH * rungs;
-  const frontZ = -(panelDepth / 2 + 0.012);
+  const frontZ = -(panelDepth / 2 + PANEL_FRAME_TEXTURE_SURFACE_OFFSET);
   const tJunctionRadius = frameTube * 0.8;
 
   return {

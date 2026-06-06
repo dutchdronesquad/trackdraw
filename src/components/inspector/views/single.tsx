@@ -27,6 +27,7 @@ import {
   isTimingMarkerShape,
   type TimingRole,
 } from "@/lib/track/timing";
+import { DEFAULT_POLYLINE_STROKE_WIDTH } from "@/lib/track/constants";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   Copy,
@@ -900,7 +901,9 @@ export function SingleInspectorView({
             >
               <Row label={`Stroke width (${unitLabel})`}>
                 <MeasurementNum
-                  valueMeters={shape.strokeWidth ?? 0.26}
+                  valueMeters={
+                    shape.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH
+                  }
                   unitSystem={unitSystem}
                   onChange={(value) =>
                     updateShape(shape.id, { strokeWidth: value })

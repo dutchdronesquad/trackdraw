@@ -38,7 +38,6 @@ export function GalleryPreviewRenderer({ onCapture }: Props) {
       shapes.map((shape) => (
         <MemoShape3D
           key={shape.id}
-          isEditing={false}
           isPrimaryPolyline={false}
           isSelected={false}
           onSelect={noop}

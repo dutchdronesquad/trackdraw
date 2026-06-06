@@ -26,6 +26,7 @@ import {
   getPolylineRouteWarningSegmentVisuals,
   getPolylineSmoothSegmentPointsPx,
 } from "../track/polyline-derived";
+import { DEFAULT_POLYLINE_STROKE_WIDTH } from "../track/constants";
 import {
   getCone2DShape,
   getDiveGate2DShape,
@@ -121,7 +122,7 @@ function polylineToSvg(
   const d = pts
     .map((p, i) => `${i === 0 ? "M" : "L"}${m(p.x, ppm)},${m(p.y, ppm)}`)
     .join(" ");
-  const sw = m(s.strokeWidth ?? 0.26, ppm);
+  const sw = m(s.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH, ppm);
   const color = s.color ?? "#3b82f6";
   const closed = s.closed ? " Z" : "";
   const warningSegments = showWarningVisuals

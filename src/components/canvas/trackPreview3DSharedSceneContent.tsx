@@ -1,6 +1,6 @@
 "use client";
 
-import { RoundedBox, Line as DreiLine, useTexture } from "@react-three/drei";
+import { RoundedBox, useTexture } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
@@ -18,10 +18,7 @@ import {
   getRouteWarningSegmentColor,
   getPolylineSmoothSegmentPoints3D,
 } from "@/lib/track/polyline-derived";
-import {
-  getPolylineCurve3Derived,
-  getPolylinePreview3DPoints,
-} from "@/lib/track/polyline-derived-3d";
+import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
 import {
   getCornerFlagLayout,
   getLadderRenderedHeight,
@@ -34,6 +31,10 @@ import {
   getLadderVisualSpec,
 } from "@/lib/track/elements/visual";
 import { getShapeTimingMarker, getTimingMarkerColor } from "@/lib/track/timing";
+import {
+  DEFAULT_POLYLINE_STROKE_WIDTH,
+  POLYLINE_3D_HEIGHT_OFFSET,
+} from "@/lib/track/constants";
 import type {
   CornerMarkerFlagVisualSpec,
   GatePanelTextureVisualSpec,
@@ -701,7 +702,7 @@ function PanelFrameGate3D({
       </mesh>
 
       <PanelFrameGateTexturePlanes
-        frontZ={frontZ - 0.012}
+        frontZ={frontZ}
         h={h}
         leftPanelWidth={leftPanelWidth}
         leftPanelX={leftPanelX}
@@ -1425,7 +1426,7 @@ function PanelFrameLadder3D({
             <PanelFrameLadderSectionTexturePlanes
               bannerH={bannerH}
               bannerMidY={bannerMidY}
-              frontZ={frontZ - 0.012}
+              frontZ={frontZ}
               leftPanelWidth={leftPanelWidth}
               openingH={openingH}
               openingMidY={openingMidY}
@@ -1741,27 +1742,22 @@ function DiveGate3D({
   );
 }
 
-const POLYLINE_3D_HEIGHT_OFFSET = 0.3;
-
 function getPolylineTubeRadius(shape: PolylineShape) {
-  return Math.max(0.02, (shape.strokeWidth ?? 0.26) / 2);
+  return Math.max(
+    0.02,
+    (shape.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH) / 2
+  );
 }
 
 function RaceLine3D({
-  editing = false,
   isPrimary = false,
   selected = false,
   shape,
 }: {
-  editing?: boolean;
   isPrimary?: boolean;
   selected?: boolean;
   shape: PolylineShape;
 }) {
-  const previewPoints = useMemo(
-    () => getPolylinePreview3DPoints(shape, POLYLINE_3D_HEIGHT_OFFSET),
-    [shape]
-  );
   const warningSegments = useMemo(
     () => getPolylineRouteWarningSegmentVisuals(shape),
     [shape]
@@ -1803,7 +1799,6 @@ function RaceLine3D({
     warningSegments.length,
   ]);
   const geometry = useMemo(() => {
-    if (editing) return null;
     const curveData = getPolylineCurve3Derived(shape, {
       heightOffset: POLYLINE_3D_HEIGHT_OFFSET,
       samplesPerSegment: 18,
@@ -1817,23 +1812,13 @@ function RaceLine3D({
       10,
       shape.closed ?? false
     );
-  }, [editing, shape, tubeRadius]);
+  }, [shape, tubeRadius]);
 
   useEffect(() => {
     return () => {
       segmentedGeometries?.forEach((geometry) => geometry?.dispose());
     };
   }, [segmentedGeometries]);
-
-  if (editing) {
-    return (
-      <DreiLine
-        points={previewPoints}
-        color={selected ? "#93c5fd" : (shape.color ?? "#3b82f6")}
-        lineWidth={Math.max(2, (shape.strokeWidth ?? 0.26) * 8)}
-      />
-    );
-  }
 
   if (!geometry) return null;
   return (
@@ -1964,7 +1949,6 @@ function SelectionMarker3D({ shape }: { shape: Shape }) {
 }
 
 function Shape3D({
-  isEditing,
   isPrimaryPolyline,
   isSelected,
   onSelect,
@@ -1973,7 +1957,6 @@ function Shape3D({
   tiltDragRef,
   elevationOverrideRef,
 }: {
-  isEditing: boolean;
   isPrimaryPolyline: boolean;
   isSelected: boolean;
   onSelect: (event: ThreeEvent<MouseEvent>, shapeId: string) => void;
@@ -2015,7 +1998,6 @@ function Shape3D({
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
           <RaceLine3D
-            editing={isEditing}
             isPrimary={isPrimaryPolyline}
             shape={shape}
             selected={isSelected}
@@ -2063,7 +2045,6 @@ export const MemoShape3D = memo(
   Shape3D,
   (prev, next) =>
     prev.shape === next.shape &&
-    prev.isEditing === next.isEditing &&
     prev.isPrimaryPolyline === next.isPrimaryPolyline &&
     prev.isSelected === next.isSelected &&
     prev.onSelect === next.onSelect &&

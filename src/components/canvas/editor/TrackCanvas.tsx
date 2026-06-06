@@ -49,6 +49,7 @@ import {
   m2px,
   px2m,
 } from "@/lib/track/units";
+import { DEFAULT_POLYLINE_STROKE_WIDTH } from "@/lib/track/constants";
 import {
   buildSnapIndex,
   getNearbySnapCandidates as getNearbySnapCandidatesFromIndex,
@@ -1381,7 +1382,7 @@ const TrackCanvas = memo(
             rotation: 0,
             points,
             closed: nextClosed,
-            strokeWidth: 0.26,
+            strokeWidth: DEFAULT_POLYLINE_STROKE_WIDTH,
             showArrows: false,
             arrowSpacing: 15,
             smooth: true,

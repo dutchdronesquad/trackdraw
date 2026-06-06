@@ -10,6 +10,7 @@ import {
   getRouteWarningSegmentColor,
 } from "@/lib/track/polyline-derived";
 import { zToColor } from "@/lib/track/alt";
+import { DEFAULT_POLYLINE_STROKE_WIDTH } from "@/lib/track/constants";
 import { m2px } from "@/lib/track/units";
 import type { PolylineShape as TrackPolylineShape } from "@/lib/types";
 
@@ -28,7 +29,10 @@ function SharePolylineShapeComponent({
   zmax,
   zmin,
 }: SharePolylineShapeProps) {
-  const strokePx = m2px(path.strokeWidth ?? 0.26, designPpm);
+  const strokePx = m2px(
+    path.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH,
+    designPpm
+  );
   const polylineMetrics = useMemo(() => getPolyline2DDerived(path), [path]);
   const warningSegments = useMemo(
     () => getPolylineRouteWarningSegmentVisuals(path),
