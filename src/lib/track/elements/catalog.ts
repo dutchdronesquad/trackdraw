@@ -730,37 +730,6 @@ export function getTrackElementCatalogTexturePaths(): string[] {
   return Array.from(paths);
 }
 
-export function getTrackElementCatalogTexturePathsForShapes(
-  shapes: readonly Shape[]
-): string[] {
-  const paths = new Set<string>();
-
-  for (const shape of shapes) {
-    const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
-    const visual = getTrackElementCatalogEntry(
-      catalogIdentity?.elementId
-    )?.visual;
-    if (!visual || visual.kind !== shape.kind) continue;
-
-    if (
-      (visual.kind === "gate" || visual.kind === "ladder") &&
-      visual.variant === "panel-frame"
-    ) {
-      paths.add(visual.textures.left);
-      paths.add(visual.textures.right);
-      if (visual.textures.top) paths.add(visual.textures.top);
-      continue;
-    }
-
-    if (visual.kind === "flag") {
-      paths.add(visual.textures.front);
-      paths.add(visual.textures.back);
-    }
-  }
-
-  return Array.from(paths);
-}
-
 export function getTrackElementCatalogEntry(
   id: string | null | undefined
 ): TrackElementCatalogEntry | null {
