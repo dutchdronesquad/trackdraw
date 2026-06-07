@@ -4,6 +4,7 @@ import { RoundedBox, useTexture } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
+  Suspense,
   memo,
   useCallback,
   useEffect,
@@ -55,6 +56,14 @@ import type {
   StartFinishShape,
 } from "@/lib/types";
 
+// Eagerly preload all catalog textures when this module is first imported
+// (triggered ~800ms after page load via dynamic import prefetch).
+if (typeof window !== "undefined") {
+  for (const path of getTrackElementCatalogTexturePaths()) {
+    useTexture.preload(path);
+  }
+}
+
 type WebKitGestureEvent = Event & { scale: number };
 export type QuaternionState = [number, number, number, number];
 
@@ -94,18 +103,9 @@ export function ScreenshotHelper({
   return null;
 }
 
-const CATALOG_TEXTURE_PATHS = getTrackElementCatalogTexturePaths();
-
-export function useCatalogTextureWarmup() {
-  useEffect(() => {
-    // Populate the Three.js texture cache in parallel immediately on mount.
-    // In the editor the browser HTTP cache is already warm (seeded by
-    // EditorWorkspace). In the share view this is the first fetch, but loading
-    // all textures in parallel is still faster than the old sequential approach.
-    for (const path of CATALOG_TEXTURE_PATHS) {
-      useTexture.preload(path);
-    }
-  }, []);
+export function useCatalogTextureWarmup(_shapes?: readonly Shape[]) {
+  // Module-level preload (above) already covers all catalog textures eagerly.
+  // This hook is kept for call-site compatibility.
 }
 
 export function CameraAxisTracker({
@@ -488,13 +488,13 @@ function PanelFrameGateTexturePlanes({
     [leftTexture, rightTexture]
   );
 
-  useEffect(() => {
-    for (const texture of [leftTexture, rightTexture, topTexture]) {
+  for (const texture of [leftTexture, rightTexture, topTexture]) {
+    if (texture.colorSpace !== THREE.SRGBColorSpace) {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = 4;
       texture.needsUpdate = true;
     }
-  }, [leftTexture, rightTexture, topTexture]);
+  }
 
   return (
     <>
@@ -572,13 +572,13 @@ function PanelFrameLadderSectionTexturePlanes({
     [leftTexture, rightTexture]
   );
 
-  useEffect(() => {
-    for (const texture of [leftTexture, rightTexture, topTexture]) {
+  for (const texture of [leftTexture, rightTexture, topTexture]) {
+    if (texture.colorSpace !== THREE.SRGBColorSpace) {
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = 4;
       texture.needsUpdate = true;
     }
-  }, [leftTexture, rightTexture, topTexture]);
+  }
 
   return (
     <>
@@ -735,18 +735,20 @@ function PanelFrameGate3D({
         />
       </mesh>
 
-      <PanelFrameGateTexturePlanes
-        frontZ={frontZ}
-        h={h}
-        leftPanelWidth={leftPanelWidth}
-        leftPanelX={leftPanelX}
-        rightPanelWidth={rightPanelWidth}
-        rightPanelX={rightPanelX}
-        textures={visual.textures}
-        topPanelHeight={topPanelHeight}
-        topPanelW={topPanelW}
-        topPanelY={topPanelY}
-      />
+      <Suspense fallback={null}>
+        <PanelFrameGateTexturePlanes
+          frontZ={frontZ}
+          h={h}
+          leftPanelWidth={leftPanelWidth}
+          leftPanelX={leftPanelX}
+          rightPanelWidth={rightPanelWidth}
+          rightPanelX={rightPanelX}
+          textures={visual.textures}
+          topPanelHeight={topPanelHeight}
+          topPanelW={topPanelW}
+          topPanelY={topPanelY}
+        />
+      </Suspense>
 
       <mesh position={[0, h / 2, -panelDepth / 2 - 0.004]}>
         <planeGeometry args={[w, h]} />
@@ -851,28 +853,13 @@ function TexturedCornerFlagPanel3D({
     backTexturePath,
   ]) as THREE.Texture[];
 
-  const frontMap = useMemo(() => {
-    const texture = frontTexture.clone();
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = 4;
-    texture.needsUpdate = true;
-    return texture;
-  }, [frontTexture]);
-
-  const backMap = useMemo(() => {
-    const texture = backTexture.clone();
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = 4;
-    texture.needsUpdate = true;
-    return texture;
-  }, [backTexture]);
-
-  useEffect(() => {
-    return () => {
-      frontMap.dispose();
-      backMap.dispose();
-    };
-  }, [frontMap, backMap]);
+  for (const texture of [frontTexture, backTexture]) {
+    if (texture.colorSpace !== THREE.SRGBColorSpace) {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 4;
+      texture.needsUpdate = true;
+    }
+  }
 
   return (
     <group>
@@ -883,7 +870,7 @@ function TexturedCornerFlagPanel3D({
       >
         <planeGeometry args={[bannerTextureWidth, bannerHeight]} />
         <meshStandardMaterial
-          map={frontMap}
+          map={frontTexture}
           transparent
           roughness={0.78}
           metalness={0}
@@ -900,7 +887,7 @@ function TexturedCornerFlagPanel3D({
       >
         <planeGeometry args={[bannerTextureWidth, bannerHeight]} />
         <meshStandardMaterial
-          map={backMap}
+          map={backTexture}
           transparent
           roughness={0.78}
           metalness={0}
@@ -968,16 +955,18 @@ function CornerMarkerFlag3D({
           side={THREE.DoubleSide}
         />
       </mesh>
-      <TexturedCornerFlagPanel3D
-        backTexturePath={visual.textures.back}
-        bannerCenterY={bannerCenterY}
-        bannerHeight={bannerHeight}
-        bannerTextureWidth={bannerTextureWidth}
-        bannerTextureX={bannerTextureX}
-        frontTexturePath={visual.textures.front}
-        panelDepth={panelDepth}
-        selected={selected}
-      />
+      <Suspense fallback={null}>
+        <TexturedCornerFlagPanel3D
+          backTexturePath={visual.textures.back}
+          bannerCenterY={bannerCenterY}
+          bannerHeight={bannerHeight}
+          bannerTextureWidth={bannerTextureWidth}
+          bannerTextureX={bannerTextureX}
+          frontTexturePath={visual.textures.front}
+          panelDepth={panelDepth}
+          selected={selected}
+        />
+      </Suspense>
       {/* Pole follows the textured feather flag's leading edge. */}
       <mesh castShadow>
         <tubeGeometry args={[poleCurve, 40, poleRadius, 12, false]} />
@@ -1479,19 +1468,21 @@ function PanelFrameLadder3D({
                 />
               </mesh>
             ) : null}
-            <PanelFrameLadderSectionTexturePlanes
-              bannerH={bannerH}
-              bannerMidY={section.bannerMidY}
-              frontZ={frontZ}
-              hasTopPanel={section.hasTopPanel}
-              leftPanelWidth={leftPanelWidth}
-              openingH={openingH}
-              openingMidY={section.openingMidY}
-              rightPanelWidth={rightPanelWidth}
-              textures={visual.textures}
-              topPanelW={outerW}
-              w={w}
-            />
+            <Suspense fallback={null}>
+              <PanelFrameLadderSectionTexturePlanes
+                bannerH={bannerH}
+                bannerMidY={section.bannerMidY}
+                frontZ={frontZ}
+                hasTopPanel={section.hasTopPanel}
+                leftPanelWidth={leftPanelWidth}
+                openingH={openingH}
+                openingMidY={section.openingMidY}
+                rightPanelWidth={rightPanelWidth}
+                textures={visual.textures}
+                topPanelW={outerW}
+                w={w}
+              />
+            </Suspense>
             {/* White left panel */}
             <mesh
               position={[-w / 2 - leftPanelWidth / 2, section.openingMidY, 0]}

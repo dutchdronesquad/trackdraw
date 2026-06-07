@@ -54,10 +54,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     ref
   ) {
     usePerfMetric("render:share/TrackPreview3D");
-    useCatalogTextureWarmup();
 
     const field = useEditor((state) => state.track.design.field);
     const shapes = useEditor(selectDesignShapes);
+    useCatalogTextureWarmup(shapes);
     const hasPath = useEditor(selectHasPath);
     const theme = useTheme();
     const isMobile = useIsMobile();

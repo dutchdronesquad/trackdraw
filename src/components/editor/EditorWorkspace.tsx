@@ -20,7 +20,6 @@ import type {
 } from "@/components/canvas/editor/TrackPreview3D";
 import type { EditorView } from "@/lib/view";
 import type { RefObject } from "react";
-import { getTrackElementCatalogTexturePaths } from "@/lib/track/elements/catalog";
 import { Spinner } from "@/components/ui/spinner";
 
 const TrackCanvas = dynamic<TrackCanvasProps>(
@@ -30,8 +29,12 @@ const TrackCanvas = dynamic<TrackCanvasProps>(
   TrackCanvasProps & RefAttributes<TrackCanvasHandle>
 >;
 
+function loadTrackPreview3D() {
+  return import("@/components/canvas/editor/TrackPreview3D");
+}
+
 const TrackPreview3D = dynamic<TrackPreview3DProps>(
-  () => import("@/components/canvas/editor/TrackPreview3D"),
+  () => loadTrackPreview3D(),
   {
     ssr: false,
     loading: () => (
@@ -94,16 +97,15 @@ export function EditorWorkspace({
   onResumeSelectedPath,
   overlay,
 }: EditorWorkspaceProps) {
-  // Preload 3D textures into the browser HTTP cache as soon as the editor
-  // mounts, well before the user opens the 3D view. Uses plain Image objects
-  // so Three.js is not needed here. When the 3D canvas later requests the same
-  // URLs via TextureLoader, the browser serves them from cache instantly.
   useEffect(() => {
-    for (const path of getTrackElementCatalogTexturePaths()) {
-      const img = new Image();
-      img.src = path;
-    }
-  }, []);
+    if (hasVisited3D) return;
+
+    const timeoutId = window.setTimeout(() => {
+      void loadTrackPreview3D();
+    }, 800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [hasVisited3D]);
 
   return (
     <div className="relative flex min-h-0 flex-1 overflow-hidden">

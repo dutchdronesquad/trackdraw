@@ -95,7 +95,6 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     ref
   ) {
     usePerfMetric("render:TrackPreview3D");
-    useCatalogTextureWarmup();
 
     const field = useEditor((state) => state.track.design.field);
     const selection = useEditor((state) => state.session.selection);
@@ -109,6 +108,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const { setPolylinePoints, updateShape } = useTrackActions();
     const { setLiveShapePatch, clearLiveShapePatch } = useUiActions();
     const shapes = useEditor(selectDesignShapes);
+    useCatalogTextureWarmup(shapes);
     const hasPath = useEditor(selectHasPath);
     const primaryPolyline = useEditor(selectPrimaryPolyline);
     const shapeById = useEditor(selectShapeRecordMap);

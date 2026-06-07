@@ -24,8 +24,12 @@ import type { EditorView } from "@/lib/view";
 import { useEditor } from "@/store/editor";
 import { selectHasPath } from "@/store/selectors";
 
+function loadTrackPreview3D() {
+  return import("@/components/canvas/share/TrackPreview3D");
+}
+
 const TrackPreview3D = dynamic<TrackPreview3DProps>(
-  () => import("@/components/canvas/share/TrackPreview3D"),
+  () => loadTrackPreview3D(),
   {
     ssr: false,
     loading: () => (
@@ -93,6 +97,16 @@ export default function EditorShell({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTab(initialTab);
   }, [initialTab]);
+
+  useEffect(() => {
+    if (hasVisited3D) return;
+
+    const timeoutId = window.setTimeout(() => {
+      void loadTrackPreview3D();
+    }, 800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [hasVisited3D]);
 
   useEffect(() => {
     if (!pendingFlyThroughStart || tab !== "3d") return;
