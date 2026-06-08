@@ -75,7 +75,7 @@ import {
   useOverrideVersion,
 } from "@/components/canvas/textureDebugContext";
 import type { TexturePanelEdge } from "@/lib/track/elements/catalog";
-import { getMultiGpDiveGateArchTopY } from "@/lib/track/render3d-layout";
+import { resolveDiveGateElevation } from "@/lib/track/render3d-layout";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useTrackPreview3DInteractions } from "@/components/canvas/editor/useTrackPreview3DInteractions";
 import { motion, useReducedMotion } from "framer-motion";
@@ -600,6 +600,11 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               ) {
                 return null;
               }
+              const visual = getDiveGateVisualSpec(shape);
+              const elevationVariant =
+                visual?.variant === "arch" || visual?.variant === "launch"
+                  ? visual.variant
+                  : "generic";
               return (
                 <DiveGateElevationHandle3D
                   key={`divegate-elevation-${shape.id}`}
@@ -608,10 +613,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                     handleDiveGateElevationDragStart(
                       event,
                       shape.id,
-                      shape.elevation ??
-                        (getDiveGateVisualSpec(shape)
-                          ? getMultiGpDiveGateArchTopY()
-                          : 3.0)
+                      resolveDiveGateElevation(
+                        shape.elevation,
+                        elevationVariant
+                      )
                     )
                   }
                   isDragging={diveGateElevationDrag?.shapeId === shape.id}

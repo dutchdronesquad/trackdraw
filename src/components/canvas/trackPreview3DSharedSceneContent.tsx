@@ -28,6 +28,7 @@ import {
 import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
 import {
   getCornerFlagLayout,
+  getLadderRenderedHeight,
   getMultiGpDiveGateArchLayout,
   getMultiGpDiveGateArchTopY,
   getMultiGpLaunchGateLayout,
@@ -37,6 +38,7 @@ import {
   resolveArchDiveGateBannerTextureMapping,
   resolveLaunchGateBannerTextureMapping,
   resolvePanelFrameTextureMapping,
+  resolveDiveGateElevation,
 } from "@/lib/track/render3d-layout";
 import {
   getDiveGateVisualSpec,
@@ -2139,7 +2141,7 @@ function ArchDiveGate3D({
 
   useFrame(() => {
     if (!archGroupRef.current) return;
-    const storedElev = shape.elevation ?? getMultiGpDiveGateArchTopY();
+    const storedElev = resolveDiveGateElevation(shape.elevation, "arch");
     const delta =
       elevationOverrideRef?.current != null
         ? elevationOverrideRef.current - storedElev
@@ -2456,7 +2458,7 @@ function LaunchGate3D({
 
   useFrame(() => {
     if (!launchGroupRef.current) return;
-    const storedElev = shape.elevation ?? getMultiGpLaunchGateTopY();
+    const storedElev = resolveDiveGateElevation(shape.elevation, "launch");
     const delta =
       elevationOverrideRef?.current != null
         ? elevationOverrideRef.current - storedElev
@@ -2936,6 +2938,103 @@ function RaceLine3D({
   );
 }
 
+const SELECTION_MARKER_MARGIN = 0.35;
+
+function getPolylineTopY(shape: PolylineShape): number {
+  const maxPointZ = shape.points.reduce(
+    (maxZ, point) => Math.max(maxZ, point.z ?? 0),
+    0
+  );
+  return (
+    Math.max(maxPointZ, 0) +
+    POLYLINE_3D_HEIGHT_OFFSET +
+    getPolylineTubeRadius(shape)
+  );
+}
+
+function getDiveGateTopY(shape: DiveGateShape): number {
+  const visual = getDiveGateVisualSpec(shape);
+  if (visual?.variant === "arch") {
+    return getMultiGpDiveGateArchTopY(shape.elevation);
+  }
+  if (visual?.variant === "launch") {
+    return getMultiGpLaunchGateTopY(shape.elevation);
+  }
+
+  const tiltRad = ((shape.tilt ?? 0) * Math.PI) / 180;
+  return (
+    resolveDiveGateElevation(shape.elevation, "generic") +
+    ((shape.width ?? 2.8) / 2) * Math.sin(tiltRad)
+  );
+}
+
+function getShapeTopY(shape: Shape): number {
+  switch (shape.kind) {
+    case "gate": {
+      const gateShape = shape as GateShape;
+      const gateVisual = getGateVisualSpec(gateShape);
+      const openingH = gateShape.height ?? 2;
+      if (gateVisual.variant === "panel-frame") {
+        return openingH + gateVisual.panels.top.heightMeters;
+      }
+      return openingH;
+    }
+    case "flag":
+      return Math.max((shape as FlagShape).poleHeight ?? 3.5, 0.5);
+    case "cone": {
+      const radius = (shape as ConeShape).radius ?? 0.2;
+      return Math.max(radius * 1.15, 0.1);
+    }
+    case "label":
+      return (shape as LabelShape).project ? 0.1 : 2.8;
+    case "polyline":
+      return getPolylineTopY(shape as PolylineShape);
+    case "startfinish":
+      return 0.1;
+    case "ladder": {
+      const ladderShape = shape as LadderShape;
+      const ladderVisual = getLadderVisualSpec(ladderShape);
+      return Math.max(
+        getLadderRenderedHeight(
+          ladderShape,
+          ladderVisual?.variant === "panel-frame" ? ladderVisual : null
+        ) + (ladderShape.elevation ?? 0),
+        0.5
+      );
+    }
+    case "divegate":
+      return Math.max(getDiveGateTopY(shape as DiveGateShape), 0.5);
+    default:
+      return 1.0;
+  }
+}
+
+function SelectionMarker3D({ shape }: { shape: Shape }) {
+  const pulse = useRef(0);
+  const meshRef = useRef<THREE.Mesh>(null);
+
+  const markerY = getShapeTopY(shape) + SELECTION_MARKER_MARGIN;
+
+  useFrame((_, delta) => {
+    pulse.current += delta * 3.4;
+    if (!meshRef.current) return;
+    const scale = 1 + Math.sin(pulse.current) * 0.08;
+    meshRef.current.scale.setScalar(scale);
+  });
+
+  return (
+    <mesh ref={meshRef} position={[shape.x, markerY, shape.y]} renderOrder={10}>
+      <sphereGeometry args={[0.12, 18, 18]} />
+      <meshBasicMaterial
+        color="#60a5fa"
+        transparent
+        opacity={0.95}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
 function Shape3D({
   isPrimaryPolyline,
   isSelected,
@@ -2958,24 +3057,28 @@ function Shape3D({
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
           <Gate3D shape={shape} selected={isSelected} outerRef={outerRef} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "flag":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
           <Flag3D shape={shape} selected={isSelected} outerRef={outerRef} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "cone":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
           <Cone3D shape={shape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "label":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
           <Label3D shape={shape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "polyline":
@@ -2986,12 +3089,14 @@ function Shape3D({
             shape={shape}
             selected={isSelected}
           />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "startfinish":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
           <StartFinish3D shape={shape} selected={isSelected} />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "ladder":
@@ -3003,6 +3108,7 @@ function Shape3D({
             outerRef={outerRef}
             elevationOverrideRef={elevationOverrideRef}
           />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     case "divegate":
@@ -3015,6 +3121,7 @@ function Shape3D({
             tiltDragRef={tiltDragRef}
             elevationOverrideRef={elevationOverrideRef}
           />
+          {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
     default:

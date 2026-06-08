@@ -380,6 +380,27 @@ export function getLadderRenderedHeight(
 export function getMultiGpDiveGateArchTopY(
   elevation = MULTIGP_DIVE_GATE_REAR_EDGE_H
 ) {
+  if (elevation <= 0) return MULTIGP_DIVE_GATE_REAR_EDGE_H;
+  return elevation;
+}
+
+export type DiveGateElevationVariant = "arch" | "launch" | "generic";
+
+export function getDiveGateDefaultElevation(
+  variant: DiveGateElevationVariant
+): number {
+  if (variant === "arch") return getMultiGpDiveGateArchTopY();
+  if (variant === "launch") return getMultiGpLaunchGateTopY();
+  return 3.0;
+}
+
+export function resolveDiveGateElevation(
+  elevation: number | null | undefined,
+  variant: DiveGateElevationVariant
+): number {
+  const defaultElevation = getDiveGateDefaultElevation(variant);
+  if (elevation == null) return defaultElevation;
+  if (variant !== "generic" && elevation <= 0) return defaultElevation;
   return elevation;
 }
 
@@ -389,7 +410,7 @@ export function getMultiGpDiveGateArchLayout(
   const openingW = shape.width ?? MULTIGP_DIVE_GATE_OPENING_W;
   const openingH = shape.height ?? MULTIGP_DIVE_GATE_OPENING_H;
   // elevation = absolute rear-edge height; default matches MultiGP spec (15 ft)
-  const rearEdgeH = shape.elevation ?? MULTIGP_DIVE_GATE_REAR_EDGE_H;
+  const rearEdgeH = getMultiGpDiveGateArchTopY(shape.elevation);
   const frontEdgeH =
     rearEdgeH -
     (MULTIGP_DIVE_GATE_REAR_EDGE_H - MULTIGP_DIVE_GATE_FRONT_EDGE_H);
@@ -500,6 +521,7 @@ export function getMultiGpDiveGateArchLayout(
 export function getMultiGpLaunchGateTopY(
   elevation = MULTIGP_LAUNCH_GATE_TOP_Y
 ) {
+  if (elevation <= 0) return MULTIGP_LAUNCH_GATE_TOP_Y;
   return elevation;
 }
 
@@ -509,7 +531,7 @@ export function getMultiGpLaunchGateLayout(
   const openingW = shape.width ?? MULTIGP_LAUNCH_GATE_OPENING_W;
   const openingD = shape.height ?? MULTIGP_LAUNCH_GATE_OPENING_D;
   // elevation = absolute top-frame height; default matches MultiGP spec (15 ft)
-  const topY = shape.elevation ?? MULTIGP_LAUNCH_GATE_TOP_Y;
+  const topY = getMultiGpLaunchGateTopY(shape.elevation);
   const outerW = MULTIGP_LAUNCH_GATE_OUTER_W;
   const outerD = MULTIGP_LAUNCH_GATE_OUTER_D;
   const sidePanelW = (outerW - openingW) / 2;

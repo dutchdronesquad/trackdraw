@@ -16,6 +16,7 @@ import {
   getLadderVisualSpec,
 } from "@/lib/track/elements/visual";
 import {
+  resolveDiveGateElevation,
   getLadderRenderedHeight,
   getMultiGpDiveGateArchTopY,
   getMultiGpLaunchGateTopY,
@@ -146,6 +147,10 @@ export function DiveGateElevationHandle3D({
   const groupRef = useRef<THREE.Group>(null);
 
   const visual = getDiveGateVisualSpec(shape);
+  const elevationVariant =
+    visual?.variant === "arch" || visual?.variant === "launch"
+      ? visual.variant
+      : "generic";
   const sz = shape.width ?? 2.8;
   const tilt = shape.tilt ?? 0;
   const tiltRad = (tilt * Math.PI) / 180;
@@ -158,8 +163,10 @@ export function DiveGateElevationHandle3D({
     return elevation + (sz / 2) * Math.sin(tiltRad);
   };
 
-  const storedElev =
-    shape.elevation ?? (visual ? getMultiGpDiveGateArchTopY() : 3.0);
+  const storedElev = resolveDiveGateElevation(
+    shape.elevation,
+    elevationVariant
+  );
   const baseTopY = getGateTopY(storedElev);
 
   const gripRadius = isMobile
@@ -188,7 +195,7 @@ export function DiveGateElevationHandle3D({
   const rangeMidY = elevationMin + rangeHeight / 2;
 
   useFrame(() => {
-    if (!groupRef.current || !elevationOverrideRef) return;
+    if (!isDragging || !groupRef.current || !elevationOverrideRef) return;
     const liveElev = elevationOverrideRef.current;
     if (liveElev === null) return;
     groupRef.current.position.set(shape.x, getGateTopY(liveElev), shape.y);

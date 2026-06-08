@@ -4,6 +4,7 @@ import {
   getMultiGpDiveGateArchTopY,
   getMultiGpLaunchGateLayout,
   getMultiGpLaunchGateTopY,
+  resolveDiveGateElevation,
 } from "@/lib/track/render3d-layout";
 import { feetToMeters } from "@/lib/track/units";
 
@@ -71,5 +72,27 @@ describe("track 3D layout helpers", () => {
       feetToMeters(5),
       feetToMeters(5),
     ]);
+  });
+
+  it("treats legacy non-positive MultiGP elevations as unset", () => {
+    const archLayout = getMultiGpDiveGateArchLayout({
+      width: feetToMeters(7),
+      height: feetToMeters(6),
+      elevation: 0,
+    });
+    const launchLayout = getMultiGpLaunchGateLayout({
+      width: feetToMeters(7),
+      height: feetToMeters(6),
+      elevation: 0,
+    });
+
+    expect(getMultiGpDiveGateArchTopY(0)).toBeCloseTo(feetToMeters(15));
+    expect(getMultiGpLaunchGateTopY(0)).toBeCloseTo(feetToMeters(15));
+    expect(archLayout.topY).toBeCloseTo(feetToMeters(15));
+    expect(launchLayout.topY).toBeCloseTo(feetToMeters(15));
+    expect(resolveDiveGateElevation(0, "arch")).toBeCloseTo(feetToMeters(15));
+    expect(resolveDiveGateElevation(0, "launch")).toBeCloseTo(
+      feetToMeters(15)
+    );
   });
 });

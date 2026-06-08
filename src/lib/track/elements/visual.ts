@@ -69,8 +69,7 @@ function getDiveGateEntryId(shape: DiveGateShape) {
   if (catalogIdentity) return catalogIdentity.elementId;
   // Non-official shapes (TrackDraw generic dive gate) have no catalog identity stored.
   // Fall back to the generic dive gate entry so min/max clamping still applies.
-  if (!getDiveGateVisualSpec(shape)) return TRACKDRAW_DIVE_GATE_ELEMENT_ID;
-  return undefined;
+  return TRACKDRAW_DIVE_GATE_ELEMENT_ID;
 }
 
 export function getDiveGateElevationMin(shape: DiveGateShape): number {
