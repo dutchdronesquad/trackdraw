@@ -48,6 +48,14 @@ async function toPng(rawBuffer, info) {
   return sharp(rawBuffer, { raw: info }).png(PNG_OPTIONS).toBuffer();
 }
 
+async function toRaw(filePath) {
+  const image = sharp(filePath);
+  const { data, info } = await image
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  return { data, info };
+}
+
 async function saveWithWebp(filePath, pngBuffer) {
   await fs.writeFile(filePath, pngBuffer);
   await sharp(pngBuffer)
@@ -79,15 +87,16 @@ function applyBlueToRed(data, channels) {
 
 async function optimizeTexture(fileName, target) {
   const source = await fs.readFile(tex(fileName));
+  const { width: srcWidth, height: srcHeight } = await sharp(source).metadata();
 
   // Already palettized means already optimized. Re-quantizing palettized images
-  // produces slightly different bytes each run, so we stop after the first pass.
-  if (isPalettized(source)) {
+  // produces slightly different bytes each run, so we stop after the first pass
+  // only when the image already satisfies the target dimensions.
+  if (isPalettized(source) && srcWidth != null && srcWidth <= target.width) {
     console.log(`${fileName}: up to date, skipping`);
     return;
   }
 
-  const { width: srcWidth, height: srcHeight } = await sharp(source).metadata();
   const optimized = await sharp(source)
     .resize({ width: target.width, withoutEnlargement: true, fit: "inside" })
     .png(PNG_OPTIONS)

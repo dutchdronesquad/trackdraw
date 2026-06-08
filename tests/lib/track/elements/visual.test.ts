@@ -87,6 +87,59 @@ describe("track element visual specs", () => {
     });
   });
 
+  it("uses red MultiGP top panels for start/finish gates", () => {
+    const standardGate = createCatalogShapeDraft(
+      MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
+      {
+        x: 0,
+        y: 0,
+        includeCatalogMetadata: true,
+      }
+    ) as GateShape;
+    const championshipGate = createCatalogShapeDraft(
+      MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
+      {
+        x: 0,
+        y: 0,
+        includeCatalogMetadata: true,
+      }
+    ) as GateShape;
+
+    const standardStartFinish = {
+      ...standardGate,
+      meta: {
+        ...standardGate.meta,
+        timing: { role: "start_finish" },
+      },
+    } satisfies GateShape;
+    const championshipStartFinish = {
+      ...championshipGate,
+      meta: {
+        ...championshipGate.meta,
+        timing: { role: "start_finish" },
+      },
+    } satisfies GateShape;
+
+    expect(getGateVisualSpec(standardStartFinish)).toMatchObject({
+      panels: { top: { color: "#8A181B" } },
+      textures: {
+        top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-red-50-percent.webp",
+      },
+    });
+    expect(getGateVisualSpec(championshipStartFinish)).toMatchObject({
+      panels: { top: { color: "#8A181B" } },
+      textures: {
+        top: "/assets/models/textures/multigp-obstacles/large-top-red-multigp.webp",
+      },
+    });
+    expect(getGateVisualSpec(standardGate)).toMatchObject({
+      panels: { top: { color: "#202e5d" } },
+      textures: {
+        top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
+      },
+    });
+  });
+
   it("falls back to a frame-only visual spec for ordinary gates without catalog metadata", () => {
     const shape: GateShape = {
       id: "plain-gate",
