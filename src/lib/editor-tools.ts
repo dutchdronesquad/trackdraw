@@ -14,6 +14,7 @@ import {
   type TrackElementCatalogEntry,
 } from "@/lib/track/elements/catalog";
 import type {
+  DiveGateShape,
   FlagShape,
   GateShape,
   LadderShape,
@@ -126,7 +127,7 @@ export function createShapeForTool(
 }
 
 function buildCatalogTypePatchInner<
-  S extends GateShape | FlagShape | LadderShape,
+  S extends GateShape | FlagShape | LadderShape | DiveGateShape,
 >(shape: S, entry: TrackElementCatalogEntry): Partial<S> {
   const draft = createCatalogShapeDraft(entry.id, {
     x: shape.x,
@@ -176,5 +177,14 @@ export function buildLadderCatalogTypePatch(
 ): Partial<LadderShape> | null {
   const entry = getTrackElementCatalogEntry(targetEntryId);
   if (!entry || entry.kind !== "ladder") return null;
+  return buildCatalogTypePatchInner(shape, entry);
+}
+
+export function buildDiveGateCatalogTypePatch(
+  shape: DiveGateShape,
+  targetEntryId: TrackElementCatalogId
+): Partial<DiveGateShape> | null {
+  const entry = getTrackElementCatalogEntry(targetEntryId);
+  if (!entry || entry.kind !== "divegate") return null;
   return buildCatalogTypePatchInner(shape, entry);
 }

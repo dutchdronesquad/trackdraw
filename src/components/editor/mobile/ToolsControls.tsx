@@ -5,6 +5,7 @@ import { Check, Redo2, Undo2 } from "lucide-react";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
 import {
   getCatalogEntriesByKind,
+  TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_LADDER_ELEMENT_ID,
@@ -18,12 +19,14 @@ const catalogEntriesByTool = {
   gate: getCatalogEntriesByKind("gate"),
   flag: getCatalogEntriesByKind("flag"),
   ladder: getCatalogEntriesByKind("ladder"),
+  divegate: getCatalogEntriesByKind("divegate"),
 } as const;
 
 const defaultIdByTool: Partial<Record<EditorTool, TrackElementCatalogId>> = {
   gate: TRACKDRAW_GATE_ELEMENT_ID,
   flag: TRACKDRAW_FLAG_ELEMENT_ID,
   ladder: TRACKDRAW_LADDER_ELEMENT_ID,
+  divegate: TRACKDRAW_DIVE_GATE_ELEMENT_ID,
 };
 
 const catalogToolIds = Object.keys(catalogEntriesByTool) as EditorTool[];

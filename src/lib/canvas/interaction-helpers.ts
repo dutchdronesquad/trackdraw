@@ -194,7 +194,7 @@ export function getWheelZoomTarget(options: {
   currentTargetScale: number;
   deltaY: number;
 }) {
-  const zoomIntensity = options.ctrlKey ? 0.006 : 0.0025;
+  const zoomIntensity = options.ctrlKey ? 0.006 : 0.003;
   const zoomFactor = Math.exp(-options.deltaY * zoomIntensity);
   return clampZoom(options.currentTargetScale * zoomFactor);
 }

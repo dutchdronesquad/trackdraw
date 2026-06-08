@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/popover";
 import {
   getCatalogEntriesByKind,
+  TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_LADDER_ELEMENT_ID,
@@ -26,26 +27,28 @@ const catalogEntriesByTool: Partial<
   gate: getCatalogEntriesByKind("gate"),
   flag: getCatalogEntriesByKind("flag"),
   ladder: getCatalogEntriesByKind("ladder"),
+  divegate: getCatalogEntriesByKind("divegate"),
 };
 
 const defaultIdByTool: Partial<Record<EditorTool, TrackElementCatalogId>> = {
   gate: TRACKDRAW_GATE_ELEMENT_ID,
   flag: TRACKDRAW_FLAG_ELEMENT_ID,
   ladder: TRACKDRAW_LADDER_ELEMENT_ID,
+  divegate: TRACKDRAW_DIVE_GATE_ELEMENT_ID,
 };
 
 const labelByTool: Partial<Record<EditorTool, string>> = {
   gate: "Gate",
   flag: "Flag",
   ladder: "Ladder",
+  divegate: "Dive Gate",
 };
 
-function getControlWidthCh(entries: { name: string }[]) {
-  return Math.max(
-    22,
-    Math.min(32, Math.max(...entries.map((e) => e.name.length)) + 5)
-  );
-}
+const allEntries = Object.values(catalogEntriesByTool).flat();
+const controlWidthCh = Math.max(
+  28,
+  Math.min(42, Math.max(...allEntries.map((e) => e.name.length)) + 8)
+);
 
 export function ElementPlacementControl() {
   const [open, setOpen] = useState(false);
@@ -66,9 +69,7 @@ export function ElementPlacementControl() {
     : undefined;
   const toolLabel = labelByTool[activeTool] ?? activeTool;
   const controlWidthStyle = {
-    width: visible
-      ? `min(${getControlWidthCh(entries!)}ch, calc(100vw - 2rem))`
-      : "auto",
+    width: visible ? `min(${controlWidthCh}ch, calc(100vw - 2rem))` : "auto",
   } satisfies CSSProperties;
 
   return (
@@ -76,7 +77,7 @@ export function ElementPlacementControl() {
       <AnimatePresence>
         {visible && activeEntry && (
           <motion.div
-            key={activeTool}
+            key="placement-control"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
@@ -88,23 +89,43 @@ export function ElementPlacementControl() {
                 style={controlWidthStyle}
                 className="group border-border/55 bg-sidebar/96 hover:border-border/80 hover:bg-sidebar grid h-12 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-xl border px-3 text-left shadow-[0_8px_32px_rgba(15,23,42,0.18)] backdrop-blur-md transition-all"
               >
-                <span className="border-border/40 text-muted-foreground rounded-md border px-2 py-1 text-[9px] leading-none font-semibold tracking-widest uppercase">
-                  {toolLabel}
-                </span>
-                <span className="min-w-0">
-                  <span className="text-foreground block truncate text-[13px] leading-none font-semibold">
-                    {activeEntry.name}
-                  </span>
-                  <span className="mt-1.5 flex min-w-0 items-center gap-1.5">
-                    <span className="text-muted-foreground/70 truncate text-[11px] leading-none">
-                      {activeEntry.dimensions.display.label}
-                    </span>
-                    {activeEntry.official ? (
-                      <span className="bg-brand-primary/14 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
-                        Official
+                <AnimatePresence initial={false} mode="popLayout">
+                  <motion.span
+                    key={activeTool}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.12 }}
+                    className="border-border/40 text-muted-foreground rounded-md border px-2 py-1 text-[9px] leading-none font-semibold tracking-widest uppercase"
+                  >
+                    {toolLabel}
+                  </motion.span>
+                </AnimatePresence>
+                <span className="relative min-w-0 overflow-hidden">
+                  <AnimatePresence initial={false} mode="popLayout">
+                    <motion.span
+                      key={activeEntry.id}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                      className="block min-w-0"
+                    >
+                      <span className="text-foreground block truncate text-[13px] leading-none font-semibold">
+                        {activeEntry.name}
                       </span>
-                    ) : null}
-                  </span>
+                      <span className="mt-1.5 flex min-w-0 items-center gap-1.5">
+                        <span className="text-muted-foreground/70 truncate text-[11px] leading-none">
+                          {activeEntry.dimensions.display.label}
+                        </span>
+                        {activeEntry.official ? (
+                          <span className="bg-brand-primary/14 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
+                            Official
+                          </span>
+                        ) : null}
+                      </span>
+                    </motion.span>
+                  </AnimatePresence>
                 </span>
                 <ChevronDown
                   className={cn(

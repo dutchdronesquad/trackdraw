@@ -409,7 +409,9 @@ export const TrackShapeNode = memo(TrackShapeNodeComponent, (prev, next) => {
     prev.allowInteraction === next.allowInteraction &&
     prev.designPpm === next.designPpm &&
     prev.isMobile === next.isMobile &&
-    prev.viewportScale === next.viewportScale &&
+    (!prev.isMobile ||
+      !next.isMobile ||
+      prev.viewportScale === next.viewportScale) &&
     prev.isHovered === next.isHovered &&
     prev.mobileMultiSelectEnabled === next.mobileMultiSelectEnabled &&
     prev.isSelected === next.isSelected &&

@@ -302,7 +302,7 @@ export function GateRotateHandle3D({
         ? Math.max(((shape as FlagShape).poleHeight ?? 3.5) * 0.22, 1.45)
         : shape.kind === "ladder"
           ? ((shape as LadderShape).width ?? 2) / 2 + 0.85
-          : ((shape as DiveGateShape).size ?? 2.8) / 2 + 0.85,
+          : ((shape as DiveGateShape).width ?? 2.8) / 2 + 0.85,
     1.7
   );
   const yawRad = (-guideRotationDeg * Math.PI) / 180;
@@ -436,7 +436,7 @@ export function DiveGateTiltHandle3D({
   tiltOverrideRef: RefObject<number | null>;
 }) {
   const [hovered, setHovered] = useState(false);
-  const sz = shape.size ?? 2.8;
+  const sz = shape.width ?? 2.8;
   const tilt = shape.tilt ?? 0;
   const tiltRad = (tilt * Math.PI) / 180;
   const yawRad = (-shape.rotation * Math.PI) / 180;

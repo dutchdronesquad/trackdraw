@@ -61,7 +61,7 @@ describe("track orientation helpers", () => {
       x: 0,
       y: 0,
       rotation: 30,
-      size: 2.8,
+      width: 2.8,
     };
 
     expect(getShapeFacingDegrees(diveGate)).toBe(120);

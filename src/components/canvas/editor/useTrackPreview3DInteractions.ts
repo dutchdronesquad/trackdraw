@@ -12,6 +12,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 import { useHistorySession } from "@/hooks/useHistorySession";
 import * as THREE from "three";
 import { normalizeRotationDegrees } from "@/lib/track/orientation";
+import { getDiveGateVisualSpec } from "@/lib/track/elements/visual";
 import type {
   DiveGateShape,
   LadderShape,
@@ -580,8 +581,9 @@ export function useTrackPreview3DInteractions({
       if (!camera || !container) return;
       const shape = shapeById[drag.shapeId];
       if (!shape || shape.kind !== "divegate") return;
+      if (getDiveGateVisualSpec(shape)?.variant === "arch") return;
       const dg = shape as DiveGateShape;
-      const sz = dg.size ?? 2.8;
+      const sz = dg.width ?? 2.8;
       const yawRad = (-dg.rotation * Math.PI) / 180;
       const centerY = dg.elevation ?? 3.0;
       const localX = sz / 2 + 0.6;
@@ -622,6 +624,7 @@ export function useTrackPreview3DInteractions({
       event.stopPropagation();
       const shape = shapeById[shapeId];
       if (!shape || shape.kind !== "divegate" || shape.locked) return;
+      if (getDiveGateVisualSpec(shape)?.variant === "arch") return;
       if (!startSession()) return;
       setTiltDrag({ shapeId, startTilt: currentTilt });
     },

@@ -81,6 +81,41 @@ describe("track design helpers", () => {
     expect(normalized.shapeById["gate-1"]?.kind).toBe("gate");
   });
 
+  it("migrates legacy dive gate size storage to width", () => {
+    const normalized = normalizeDesign({
+      id: "design-legacy-divegate",
+      version: 2,
+      title: "Layout",
+      description: "",
+      tags: [],
+      authorName: "",
+      inventory,
+      field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
+      shapes: [
+        {
+          id: "dive-1",
+          kind: "divegate",
+          x: 10,
+          y: 8,
+          rotation: 0,
+          size: 2.8,
+          tilt: 30,
+          elevation: 3,
+        },
+      ],
+      createdAt: "2026-04-13T10:00:00.000Z",
+      updatedAt: "2026-04-13T10:00:00.000Z",
+    } as unknown as SerializedTrackDesign);
+
+    expect(normalized.shapeById["dive-1"]).toMatchObject({
+      kind: "divegate",
+      width: 2.8,
+      tilt: 30,
+      elevation: 3,
+    });
+    expect("size" in normalized.shapeById["dive-1"]!).toBe(false);
+  });
+
   it("normalizes timing marker metadata on supported shapes", () => {
     const design = normalizeDesign({
       id: "design-timing",

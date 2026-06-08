@@ -10,9 +10,10 @@ import {
 import { feetToMeters } from "@/lib/track/units";
 import {
   createCatalogShapeDraft,
+  MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
-import type { GateShape } from "@/lib/types";
+import type { DiveGateShape, GateShape } from "@/lib/types";
 
 describe("track 2d shape helpers", () => {
   const ppm = 20;
@@ -108,7 +109,7 @@ describe("track 2d shape helpers", () => {
         x: 0,
         y: 0,
         rotation: 0,
-        size: 2.8,
+        width: 2.8,
         tilt: 60,
       },
       ppm
@@ -142,5 +143,25 @@ describe("track 2d shape helpers", () => {
     expect(gate.panels.rightWidth).toBeCloseTo(feetToMeters(1) * ppm);
     expect(gate.panels.topColor).toBe("#202e5d");
     expect(gate.frame.placement).toBe("outer");
+  });
+
+  it("uses a top-down footprint for the official MultiGP dive gate", () => {
+    const shape = createCatalogShapeDraft(MULTIGP_DIVE_GATE_7X6_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    }) as DiveGateShape;
+    const diveGate = getDiveGate2DShape(shape, ppm);
+
+    expect(diveGate.variant).toBe("arch");
+    if (diveGate.variant !== "arch") {
+      throw new Error("expected arch dive gate metrics");
+    }
+    expect(diveGate.openingW).toBeCloseTo(feetToMeters(7) * ppm);
+    expect(diveGate.sidePanelW).toBeCloseTo(feetToMeters(2) * ppm);
+    expect(diveGate.pipeSegments).toHaveLength(6);
+    expect(diveGate.couplerPoints).toHaveLength(4);
+    expect(diveGate.bounds.width).toBeGreaterThan(diveGate.openingW);
+    expect(diveGate.bounds.height).toBeGreaterThan(diveGate.openingDepth);
   });
 });

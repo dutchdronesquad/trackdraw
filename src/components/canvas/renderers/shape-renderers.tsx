@@ -12,6 +12,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { m2px } from "@/lib/track/units";
 import {
   getCone2DShape,
+  getDiveGateArchPanelPath,
   getDiveGate2DShape,
   getFlag2DShape,
   getGate2DShape,
@@ -479,10 +480,144 @@ export function renderDiveGate(
   selected: boolean,
   ppm: number
 ) {
-  const { color, inset, postRadius, size, visibleDepth } = getDiveGate2DShape(
-    shape,
-    ppm
-  );
+  const diveGate = getDiveGate2DShape(shape, ppm);
+  if (diveGate.variant === "arch") {
+    const {
+      bounds,
+      color,
+      couplerPoints,
+      couplerRadius,
+      frameColor,
+      frameTube,
+      openingDepth,
+      openingW,
+      outerDepth,
+      outerW,
+      pipeSegments,
+    } = diveGate;
+    const panelOpacity = selected ? 0.95 : 0.88;
+    const panelPath = getDiveGateArchPanelPath(diveGate);
+
+    return (
+      <>
+        {selected && (
+          <Rect
+            x={bounds.x - m2px(0.15, ppm)}
+            y={bounds.y - m2px(0.15, ppm)}
+            width={bounds.width + m2px(0.3, ppm)}
+            height={bounds.height + m2px(0.3, ppm)}
+            stroke="#60a5fa"
+            strokeWidth={1}
+            opacity={0.85}
+            cornerRadius={4}
+            listening={false}
+          />
+        )}
+        <KonvaShape
+          fill={color}
+          opacity={panelOpacity}
+          sceneFunc={(context, shapeNode) => {
+            const { opening, outer } = panelPath;
+
+            context.beginPath();
+            context.moveTo(outer.x + outer.radius, outer.y);
+            context.lineTo(outer.x + outer.width - outer.radius, outer.y);
+            context.quadraticCurveTo(
+              outer.x + outer.width,
+              outer.y,
+              outer.x + outer.width,
+              outer.y + outer.radius
+            );
+            context.lineTo(
+              outer.x + outer.width,
+              outer.y + outer.height - outer.radius
+            );
+            context.quadraticCurveTo(
+              outer.x + outer.width,
+              outer.y + outer.height,
+              outer.x + outer.width - outer.radius,
+              outer.y + outer.height
+            );
+            context.lineTo(outer.x + outer.radius, outer.y + outer.height);
+            context.quadraticCurveTo(
+              outer.x,
+              outer.y + outer.height,
+              outer.x,
+              outer.y + outer.height - outer.radius
+            );
+            context.lineTo(outer.x, outer.y + outer.radius);
+            context.quadraticCurveTo(
+              outer.x,
+              outer.y,
+              outer.x + outer.radius,
+              outer.y
+            );
+            context.closePath();
+
+            context.moveTo(opening.x, opening.y);
+            context.lineTo(opening.x, opening.y + opening.height);
+            context.lineTo(
+              opening.x + opening.width,
+              opening.y + opening.height
+            );
+            context.lineTo(opening.x + opening.width, opening.y);
+            context.closePath();
+
+            context.fillShape(shapeNode);
+          }}
+        />
+        <Rect
+          width={outerW}
+          height={outerDepth}
+          offsetX={outerW / 2}
+          offsetY={outerDepth / 2}
+          stroke={frameColor}
+          strokeWidth={Math.max(1, frameTube * 0.55)}
+          fillEnabled={false}
+          cornerRadius={3}
+        />
+        <Rect
+          width={openingW}
+          height={openingDepth}
+          offsetX={openingW / 2}
+          offsetY={openingDepth / 2}
+          stroke={frameColor}
+          strokeWidth={Math.max(1, frameTube * 0.35)}
+          fillEnabled={false}
+          cornerRadius={2}
+        />
+        {pipeSegments.map((segment, index) => (
+          <Line
+            key={`pipe-${index}`}
+            points={[
+              segment.start.x,
+              segment.start.y,
+              segment.end.x,
+              segment.end.y,
+            ]}
+            stroke={frameColor}
+            strokeWidth={Math.max(1, frameTube * 0.58)}
+            lineCap="round"
+            lineJoin="round"
+            opacity={0.55}
+          />
+        ))}
+        {couplerPoints.map((point, index) => (
+          <Circle
+            key={`coupler-${index}`}
+            x={point.x}
+            y={point.y}
+            radius={couplerRadius}
+            fill="#d6d9de"
+            stroke={frameColor}
+            strokeWidth={Math.max(1, frameTube * 0.22)}
+          />
+        ))}
+      </>
+    );
+  }
+
+  const { color, inset, postRadius, size, visibleDepth } = diveGate;
   return (
     <>
       {selected && (

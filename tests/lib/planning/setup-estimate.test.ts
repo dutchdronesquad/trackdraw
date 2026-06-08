@@ -55,7 +55,7 @@ describe("setup estimate helpers", () => {
           x: 14,
           y: 18,
           rotation: 0,
-          size: 2.8,
+          width: 2.8,
           tilt: 30,
           elevation: 4,
         },

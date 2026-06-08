@@ -8,9 +8,11 @@ import {
   getTrackElementCatalogIdentity,
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
   MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID,
+  MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
   MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
+  TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_LADDER_ELEMENT_ID,
   trackElementCatalog,
@@ -42,6 +44,15 @@ describe("track element catalog", () => {
       MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
       MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID,
       MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
+    ]);
+  });
+
+  it("exposes dive gate entries for placement controls", () => {
+    expect(
+      getCatalogEntriesByKind("divegate").map((entry) => entry.id)
+    ).toEqual([
+      TRACKDRAW_DIVE_GATE_ELEMENT_ID,
+      MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
     ]);
   });
 
@@ -140,6 +151,34 @@ describe("track element catalog", () => {
     expect(toplessLadder?.dimensions.heightMeters).toBeCloseTo(
       feetToMeters(6) * 3
     );
+  });
+
+  it("documents the official MultiGP dive gate opening and textures", () => {
+    const diveGate = getTrackElementCatalogEntry(
+      MULTIGP_DIVE_GATE_7X6_ELEMENT_ID
+    );
+
+    expect(diveGate).toMatchObject({
+      name: "MultiGP Dive Gate 7x6",
+      organization: "MultiGP",
+      kind: "divegate",
+      official: true,
+      dimensions: {
+        display: { unitSystem: "imperial", label: "7 ft x 6 ft" },
+      },
+      visual: {
+        kind: "divegate",
+        variant: "arch",
+        banner: {
+          sideTexture:
+            "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+          topTexture:
+            "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+        },
+      },
+    });
+    expect(diveGate?.dimensions.widthMeters).toBeCloseTo(feetToMeters(7));
+    expect(diveGate?.dimensions.heightMeters).toBeCloseTo(feetToMeters(6));
   });
 
   it("can stamp catalog identity metadata when a placement flow asks for it", () => {

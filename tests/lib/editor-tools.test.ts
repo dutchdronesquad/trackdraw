@@ -59,7 +59,7 @@ describe("editor tool helpers", () => {
     });
     expect(createShapeForTool("divegate", point)).toMatchObject({
       kind: "divegate",
-      size: 2.8,
+      width: 2.8,
       thick: 0.2,
       tilt: 0,
       elevation: 3,

@@ -11,12 +11,14 @@ import {
   getCatalogEntriesByKind,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
+  TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_LADDER_ELEMENT_ID,
   type TrackElementCatalogId,
 } from "@/lib/track/elements/catalog";
 import {
+  buildDiveGateCatalogTypePatch,
   buildFlagCatalogTypePatch,
   buildGateCatalogTypePatch,
   buildLadderCatalogTypePatch,
@@ -175,6 +177,19 @@ export function SingleInspectorView({
   const hasFixedLadderDimensions =
     selectedLadderShape &&
     catalogEntry?.kind === "ladder" &&
+    catalogEntry.editable?.dimensions === false;
+
+  const selectedDiveGateShape = shape.kind === "divegate" ? shape : null;
+  const diveGateCatalogEntries = selectedDiveGateShape
+    ? getCatalogEntriesByKind("divegate")
+    : null;
+  const activeDiveGateEntryId: TrackElementCatalogId =
+    catalogEntry?.kind === "divegate"
+      ? (catalogIdentity!.elementId as TrackElementCatalogId)
+      : TRACKDRAW_DIVE_GATE_ELEMENT_ID;
+  const hasFixedDiveGateDimensions =
+    selectedDiveGateShape &&
+    catalogEntry?.kind === "divegate" &&
     catalogEntry.editable?.dimensions === false;
 
   const hasFixedCatalogColor =
@@ -506,6 +521,65 @@ export function SingleInspectorView({
             </Section>
           ) : null}
 
+          {diveGateCatalogEntries ? (
+            <Section title="Catalog" defaultOpen>
+              <Row label="Type">
+                <Select
+                  value={activeDiveGateEntryId}
+                  disabled={shape.locked}
+                  onValueChange={(value) => {
+                    const patch = buildDiveGateCatalogTypePatch(
+                      selectedDiveGateShape!,
+                      value as TrackElementCatalogId
+                    );
+                    if (patch)
+                      updateShape(shape.id, patch as Partial<typeof shape>);
+                  }}
+                >
+                  <SelectTrigger className="border-border/40 bg-muted/40 h-9 w-full text-xs shadow-none lg:h-7 lg:text-[11px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {diveGateCatalogEntries.map((entry) => (
+                      <SelectItem
+                        key={entry.id}
+                        value={entry.id}
+                        className="text-xs lg:text-[11px]"
+                      >
+                        {entry.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Row>
+              {catalogIdentity?.snapshot.organization ? (
+                <Row label="Source">
+                  {catalogEntry?.sources?.[0]?.url ? (
+                    <a
+                      href={catalogEntry.sources[0].url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-foreground hover:text-foreground/70 text-[12px] underline underline-offset-2 transition-colors"
+                    >
+                      {catalogIdentity.snapshot.organization}
+                    </a>
+                  ) : (
+                    <span className="text-foreground text-[12px]">
+                      {catalogIdentity.snapshot.organization}
+                    </span>
+                  )}
+                </Row>
+              ) : null}
+              {catalogIdentity ? (
+                <Row label="Official size">
+                  <span className="text-foreground text-[12px]">
+                    {catalogIdentity.snapshot.dimensionsLabel}
+                  </span>
+                </Row>
+              ) : null}
+            </Section>
+          ) : null}
+
           {canSetTimingMarker && (
             <Section title="Race timing" defaultOpen={timingSectionDefaultOpen}>
               <Row label="Role">
@@ -794,13 +868,15 @@ export function SingleInspectorView({
                 )}
               </>
             )}
-            {shape.kind === "divegate" && (
+            {shape.kind === "divegate" && !hasFixedDiveGateDimensions && (
               <>
                 <Row label={`Size (${unitLabel})`}>
                   <MeasurementNum
-                    valueMeters={shape.size}
+                    valueMeters={shape.width}
                     unitSystem={unitSystem}
-                    onChange={(value) => updateShape(shape.id, { size: value })}
+                    onChange={(value) =>
+                      updateShape(shape.id, { width: value })
+                    }
                     minMeters={0.5}
                   />
                 </Row>

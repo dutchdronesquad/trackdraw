@@ -73,7 +73,7 @@ function getObstaclePathTolerance(shape: Shape) {
     case "ladder":
       return Math.max(shape.width * 0.42, 1.15);
     case "divegate":
-      return Math.max(shape.size * 0.38, 1.15);
+      return Math.max(shape.width * 0.38, 1.15);
     default:
       return 1.1;
   }

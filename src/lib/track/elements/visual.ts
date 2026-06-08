@@ -1,7 +1,14 @@
-import type { FlagShape, GateShape, LadderShape, Shape } from "@/lib/types";
+import type {
+  DiveGateShape,
+  FlagShape,
+  GateShape,
+  LadderShape,
+  Shape,
+} from "@/lib/types";
 import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
+  type DiveGateVisualSpec,
   type FrameOnlyGateVisualSpec,
   type FlagVisualSpec,
   type GateVisualSpec,
@@ -45,6 +52,14 @@ export function getLadderVisualSpec(
 ): LadderVisualSpec | null {
   const visual = getTrackElementVisualSpec(shape);
   if (visual?.kind === "ladder") return visual;
+  return null;
+}
+
+export function getDiveGateVisualSpec(
+  shape: DiveGateShape
+): DiveGateVisualSpec | null {
+  const visual = getTrackElementVisualSpec(shape);
+  if (visual?.kind === "divegate") return visual;
   return null;
 }
 

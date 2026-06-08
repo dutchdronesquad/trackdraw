@@ -171,7 +171,7 @@ describe("canvas interaction helpers", () => {
         currentTargetScale: 1,
         deltaY: -100,
       })
-    ).toBeGreaterThan(1);
+    ).toBeCloseTo(Math.exp(0.3));
 
     expect(
       getZoomedStagePosition({

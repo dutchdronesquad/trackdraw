@@ -1947,6 +1947,8 @@ const TrackCanvas = memo(
       ]
     );
 
+    const shapeNodeViewportScale = isMobile ? stageTransform.scale : 1;
+
     // Memoize the shape nodes so that high-frequency local state changes
     // (cursor position, snap target, stage transform) do not trigger O(n)
     // JSX re-creation and React reconciliation for every shape on every frame.
@@ -1978,7 +1980,7 @@ const TrackCanvas = memo(
               effectiveVertexSel={effectiveVertexSel}
               hoveredWaypoint={hoveredWaypoint}
               isPrimaryPolyline={primaryPolylineId === shape.id}
-              viewportScale={stageTransform.scale}
+              viewportScale={shapeNodeViewportScale}
               isHovered={hoveredShapeId === shape.id}
               isMobile={isMobile}
               mobileMultiSelectEnabled={mobileMultiSelectEnabled}
@@ -2050,7 +2052,7 @@ const TrackCanvas = memo(
         resolveWaypointDragPosition,
         rotationSession,
         snapEnabled,
-        stageTransform.scale,
+        shapeNodeViewportScale,
         segmentSel,
         selectOnlyShape,
         selection.length,

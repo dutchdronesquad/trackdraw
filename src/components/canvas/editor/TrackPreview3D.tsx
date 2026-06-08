@@ -35,6 +35,7 @@ import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
 } from "@/lib/track/elements/catalog";
+import { getDiveGateVisualSpec } from "@/lib/track/elements/visual";
 import { useEditor } from "@/store/editor";
 import {
   useSessionActions,
@@ -177,10 +178,13 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         ),
       [selectedIdSet, shapes]
     );
-    const hasSelectedDiveGate = useMemo(
+    const hasSelectedTiltableDiveGate = useMemo(
       () =>
         shapes.some(
-          (shape) => selectedIdSet.has(shape.id) && shape.kind === "divegate"
+          (shape) =>
+            selectedIdSet.has(shape.id) &&
+            shape.kind === "divegate" &&
+            getDiveGateVisualSpec(shape)?.variant !== "arch"
         ),
       [selectedIdSet, shapes]
     );
@@ -440,7 +444,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               if (
                 !selectedIdSet.has(shape.id) ||
                 shape.locked ||
-                shape.kind !== "divegate"
+                shape.kind !== "divegate" ||
+                getDiveGateVisualSpec(shape)?.variant === "arch"
               )
                 return null;
               return (
@@ -563,7 +568,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         <TrackPreview3DHintOverlays
           flyMode={flyMode}
           hasPath={hasPath}
-          hasSelectedDiveGate={hasSelectedDiveGate}
+          hasSelectedDiveGate={hasSelectedTiltableDiveGate}
           hasSelectedRotatable={hasSelectedRotatable}
           isMobile={isMobile}
           readOnly={readOnly}

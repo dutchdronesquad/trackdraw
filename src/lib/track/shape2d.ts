@@ -1,8 +1,10 @@
 import { m2px } from "@/lib/track/units";
 import {
+  getDiveGateVisualSpec,
   getGateVisualSpec,
   getLadderVisualSpec,
 } from "@/lib/track/elements/visual";
+import { getMultiGpDiveGateArchLayout } from "@/lib/track/render3d-layout";
 import type {
   ConeShape,
   DiveGateShape,
@@ -11,6 +13,8 @@ import type {
   LadderShape,
   StartFinishShape,
 } from "@/lib/types";
+
+const DIVE_GATE_2D_BANNER_VISUAL_SCALE = 0.82;
 
 export function getGate2DShape(shape: GateShape, ppm: number) {
   const visual = getGateVisualSpec(shape);
@@ -148,8 +152,123 @@ export function getLadder2DShape(shape: LadderShape, ppm: number) {
   };
 }
 
+export function getDiveGateArchPanelPath(options: {
+  openingDepth: number;
+  openingW: number;
+  outerDepth: number;
+  outerW: number;
+}) {
+  const { openingDepth, openingW, outerDepth, outerW } = options;
+  const outerRadius = Math.min(3, outerW / 2, outerDepth / 2);
+  const outer = {
+    height: outerDepth,
+    radius: outerRadius,
+    width: outerW,
+    x: -outerW / 2,
+    y: -outerDepth / 2,
+  };
+  const opening = {
+    height: openingDepth,
+    width: openingW,
+    x: -openingW / 2,
+    y: -openingDepth / 2,
+  };
+  const outerPath = [
+    `M ${outer.x + outer.radius} ${outer.y}`,
+    `H ${outer.x + outer.width - outer.radius}`,
+    `Q ${outer.x + outer.width} ${outer.y} ${outer.x + outer.width} ${outer.y + outer.radius}`,
+    `V ${outer.y + outer.height - outer.radius}`,
+    `Q ${outer.x + outer.width} ${outer.y + outer.height} ${outer.x + outer.width - outer.radius} ${outer.y + outer.height}`,
+    `H ${outer.x + outer.radius}`,
+    `Q ${outer.x} ${outer.y + outer.height} ${outer.x} ${outer.y + outer.height - outer.radius}`,
+    `V ${outer.y + outer.radius}`,
+    `Q ${outer.x} ${outer.y} ${outer.x + outer.radius} ${outer.y}`,
+    "Z",
+  ].join(" ");
+  const openingPath = [
+    `M ${opening.x} ${opening.y}`,
+    `H ${opening.x + opening.width}`,
+    `V ${opening.y + opening.height}`,
+    `H ${opening.x}`,
+    "Z",
+  ].join(" ");
+
+  return {
+    opening,
+    outer,
+    svgPath: `${outerPath} ${openingPath}`,
+  };
+}
+
 export function getDiveGate2DShape(shape: DiveGateShape, ppm: number) {
-  const size = m2px(shape.size ?? 2.8, ppm);
+  const visual = getDiveGateVisualSpec(shape);
+  if (visual?.variant === "arch") {
+    const layout = getMultiGpDiveGateArchLayout(shape);
+    const toPoint = ([x, , z]: [number, number, number]) => ({
+      x: m2px(x, ppm),
+      y: m2px(z, ppm),
+    });
+    const pipeSegments = layout.pipeSegments.map(({ end, start }) => ({
+      end: toPoint(end),
+      start: toPoint(start),
+    }));
+    const couplerPoints = layout.couplerPoints.map(({ x, z }) => ({
+      x: m2px(x, ppm),
+      y: m2px(z, ppm),
+    }));
+    const projectedDepthScale = Math.abs(Math.sin(layout.tiltRad));
+    const sidePanelW = m2px(layout.sidePanelW, ppm);
+    const sidePanelVisualW = sidePanelW * DIVE_GATE_2D_BANNER_VISUAL_SCALE;
+    const openingW = m2px(layout.openingW, ppm);
+    const openingDepth = Math.max(
+      m2px(0.18, ppm),
+      m2px(layout.openingH * projectedDepthScale, ppm)
+    );
+    const bannerDepth = Math.max(
+      m2px(0.16, ppm),
+      m2px(
+        layout.bannerH * projectedDepthScale * DIVE_GATE_2D_BANNER_VISUAL_SCALE,
+        ppm
+      )
+    );
+    const outerDepth = openingDepth + bannerDepth * 2;
+    const outerW = openingW + sidePanelVisualW * 2;
+    const frameTube = Math.max(2, m2px(shape.thick ?? 0.055, ppm));
+    const allPoints = [
+      ...pipeSegments.flatMap((segment) => [segment.start, segment.end]),
+      ...couplerPoints,
+      { x: -outerW / 2, y: -outerDepth / 2 },
+      { x: outerW / 2, y: outerDepth / 2 },
+    ];
+    const minX = Math.min(...allPoints.map((point) => point.x)) - frameTube;
+    const maxX = Math.max(...allPoints.map((point) => point.x)) + frameTube;
+    const minY = Math.min(...allPoints.map((point) => point.y)) - frameTube;
+    const maxY = Math.max(...allPoints.map((point) => point.y)) + frameTube;
+
+    return {
+      bounds: {
+        height: maxY - minY,
+        width: maxX - minX,
+        x: minX,
+        y: minY,
+      },
+      color: visual.banner.color,
+      bannerDepth,
+      couplerRadius: Math.max(2.5, frameTube * 0.75),
+      couplerPoints,
+      frameColor: visual.frame.color,
+      frameTube,
+      openingDepth,
+      openingW,
+      outerDepth,
+      outerW,
+      pipeSegments,
+      sidePanelW,
+      variant: "arch" as const,
+    };
+  }
+
+  const size = m2px(shape.width ?? 2.8, ppm);
   const thick = m2px(shape.thick ?? 0.2, ppm);
   const tilt = shape.tilt ?? 0;
   const visibleDepth = Math.max(
@@ -164,6 +283,7 @@ export function getDiveGate2DShape(shape: DiveGateShape, ppm: number) {
     inset,
     postRadius,
     size,
+    variant: "frame-only" as const,
     visibleDepth,
   };
 }

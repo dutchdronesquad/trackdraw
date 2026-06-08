@@ -4,6 +4,7 @@ import { normalizeInventoryProfile } from "@/lib/planning/inventory";
 import { DEFAULT_POLYLINE_STROKE_WIDTH } from "@/lib/track/constants";
 import { normalizeShapeTimingMeta } from "@/lib/track/timing";
 import type {
+  DiveGateShape,
   PolylineShape,
   SerializedTrackDesign,
   Shape,
@@ -48,6 +49,17 @@ export function normalizeShape(shape: Shape): Shape {
       ...shape,
       frontOffsetDeg: shape.frontOffsetDeg ?? 0,
       elevation: shape.elevation ?? 0,
+    });
+  }
+
+  if (shape.kind === "divegate") {
+    const { size: legacySize, ...rest } = shape as DiveGateShape & {
+      size?: number;
+    };
+    return normalizeShapeTimingMeta({
+      ...rest,
+      width: shape.width ?? legacySize ?? 2.8,
+      frontOffsetDeg: shape.frontOffsetDeg ?? 0,
     });
   }
 

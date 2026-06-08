@@ -234,7 +234,7 @@ function toOverlayObstacle(
     case "divegate":
       return {
         ...base,
-        size: shape.size,
+        width: shape.width,
         tilt: shape.tilt ?? 0,
         elevation: shape.elevation ?? 3,
       };

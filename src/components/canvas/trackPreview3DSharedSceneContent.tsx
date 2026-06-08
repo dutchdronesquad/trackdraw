@@ -23,11 +23,14 @@ import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
 import {
   getCornerFlagLayout,
   getLadderRenderedHeight,
+  getMultiGpDiveGateArchLayout,
+  getMultiGpDiveGateArchTopY,
   getPanelFrameGateLayout,
   getPanelFrameLadderLayout,
   resolvePanelTextureMapping,
 } from "@/lib/track/render3d-layout";
 import {
+  getDiveGateVisualSpec,
   getFlagVisualSpec,
   getGateVisualSpec,
   getLadderVisualSpec,
@@ -38,6 +41,7 @@ import {
   POLYLINE_3D_HEIGHT_OFFSET,
 } from "@/lib/track/constants";
 import type {
+  ArchDiveGateVisualSpec,
   CornerMarkerFlagVisualSpec,
   GatePanelTextureVisualSpec,
   PanelFrameGateVisualSpec,
@@ -1648,6 +1652,205 @@ function Ladder3D({
   );
 }
 
+function PipeBetween({
+  color,
+  emissive,
+  emissiveIntensity,
+  end,
+  radius,
+  start,
+}: {
+  color: string;
+  emissive: string;
+  emissiveIntensity: number;
+  end: [number, number, number];
+  radius: number;
+  start: [number, number, number];
+}) {
+  const { length, midpoint, quaternion } = useMemo(() => {
+    const from = new THREE.Vector3(...start);
+    const to = new THREE.Vector3(...end);
+    const direction = to.clone().sub(from);
+    const pipeLength = direction.length();
+    return {
+      length: pipeLength,
+      midpoint: from.add(to).multiplyScalar(0.5),
+      quaternion: new THREE.Quaternion().setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.normalize()
+      ),
+    };
+  }, [end, start]);
+
+  return (
+    <mesh position={midpoint} quaternion={quaternion} castShadow>
+      <cylinderGeometry args={[radius, radius, length, 16]} />
+      <meshStandardMaterial
+        color={color}
+        emissive={emissive}
+        emissiveIntensity={emissiveIntensity}
+        roughness={0.48}
+        metalness={0.05}
+      />
+    </mesh>
+  );
+}
+
+function ArchDiveGate3D({
+  selected,
+  shape,
+  outerRef,
+  visual,
+}: {
+  selected: boolean;
+  shape: DiveGateShape;
+  outerRef?: Ref<THREE.Group>;
+  visual: ArchDiveGateVisualSpec;
+}) {
+  const yawRad = (-shape.rotation * Math.PI) / 180;
+  const tube = visual.frame.diameterMeters;
+  const pipeRadius = tube / 2;
+  const frameColor = visual.frame.color;
+  const [sideTexture, topTexture] = useTexture([
+    visual.banner.sideTexture,
+    visual.banner.topTexture,
+  ]) as THREE.Texture[];
+
+  for (const texture of [sideTexture, topTexture]) {
+    if (texture.colorSpace !== THREE.SRGBColorSpace) {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 4;
+      texture.needsUpdate = true;
+    }
+  }
+
+  const layout = getMultiGpDiveGateArchLayout(shape);
+
+  const sel = selected;
+  const emissive = sel ? "#60a5fa" : frameColor;
+  const emissiveIntensity = sel ? 0.55 : 0.08;
+
+  return (
+    <group
+      ref={outerRef}
+      position={[shape.x, 0, shape.y]}
+      rotation={[0, yawRad, 0]}
+    >
+      {layout.pipeSegments.map(({ end, start }, index) => (
+        <PipeBetween
+          key={`pipe-${index}`}
+          start={start}
+          end={end}
+          radius={pipeRadius}
+          color={frameColor}
+          emissive={emissive}
+          emissiveIntensity={emissiveIntensity}
+        />
+      ))}
+      {layout.couplerPoints.map(({ height, postH, x, z }, index) => {
+        if (height >= postH) return null;
+
+        return (
+          <mesh key={`coupler-${index}`} position={[x, height, z]} castShadow>
+            <cylinderGeometry
+              args={[tube * 0.75, tube * 0.75, tube * 1.8, 16]}
+            />
+            <meshStandardMaterial
+              color="#d6d9de"
+              emissive={sel ? "#60a5fa" : "#d6d9de"}
+              emissiveIntensity={sel ? 0.35 : 0.04}
+              roughness={0.54}
+              metalness={0.08}
+            />
+          </mesh>
+        );
+      })}
+
+      <group
+        position={[0, layout.centerY, 0]}
+        rotation={[layout.tiltRad, 0, 0]}
+      >
+        <mesh position={[-layout.halfOpening - layout.sidePanelW / 2, 0, 0]}>
+          <planeGeometry args={[layout.sidePanelW, layout.openingH]} />
+          <meshStandardMaterial
+            color="#ffffff"
+            map={sideTexture}
+            roughness={0.72}
+            metalness={0.01}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        <mesh
+          position={[layout.halfOpening + layout.sidePanelW / 2, 0, 0]}
+          rotation={[0, 0, Math.PI]}
+        >
+          <planeGeometry args={[layout.sidePanelW, layout.openingH]} />
+          <meshStandardMaterial
+            color="#ffffff"
+            map={sideTexture}
+            roughness={0.72}
+            metalness={0.01}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        <mesh position={[0, layout.openingH / 2 + layout.bannerH / 2, 0]}>
+          <planeGeometry args={[layout.outerW, layout.bannerH]} />
+          <meshStandardMaterial
+            color="#ffffff"
+            map={topTexture}
+            roughness={0.68}
+            metalness={0.02}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        <mesh position={[0, -layout.openingH / 2 - layout.bannerH / 2, 0]}>
+          <planeGeometry args={[layout.outerW, layout.bannerH]} />
+          <meshStandardMaterial
+            color="#ffffff"
+            map={topTexture}
+            roughness={0.68}
+            metalness={0.02}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+
+        <mesh position={[0, layout.halfOuterH, 0]} castShadow>
+          <boxGeometry args={[layout.outerW, tube, tube]} />
+          <meshStandardMaterial
+            color={frameColor}
+            emissive={emissive}
+            emissiveIntensity={emissiveIntensity}
+          />
+        </mesh>
+        <mesh position={[0, -layout.halfOuterH, 0]} castShadow>
+          <boxGeometry args={[layout.outerW, tube, tube]} />
+          <meshStandardMaterial
+            color={frameColor}
+            emissive={emissive}
+            emissiveIntensity={emissiveIntensity}
+          />
+        </mesh>
+        <mesh position={[-layout.halfOuterW, 0, 0]} castShadow>
+          <boxGeometry args={[tube, layout.outerH, tube]} />
+          <meshStandardMaterial
+            color={frameColor}
+            emissive={emissive}
+            emissiveIntensity={emissiveIntensity}
+          />
+        </mesh>
+        <mesh position={[layout.halfOuterW, 0, 0]} castShadow>
+          <boxGeometry args={[tube, layout.outerH, tube]} />
+          <meshStandardMaterial
+            color={frameColor}
+            emissive={emissive}
+            emissiveIntensity={emissiveIntensity}
+          />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
 function DiveGate3D({
   selected = false,
   shape,
@@ -1659,8 +1862,11 @@ function DiveGate3D({
   outerRef?: Ref<THREE.Group>;
   tiltDragRef?: RefObject<number | null>;
 }) {
+  const visual = getDiveGateVisualSpec(shape);
+  const isArch = visual?.variant === "arch";
+
   const color = shape.color ?? "#f97316";
-  const sz = shape.size ?? 2.8;
+  const sz = shape.width ?? 2.8;
   const thick = shape.thick ?? 0.2;
   const tilt = shape.tilt ?? 0;
   const tiltRad = (tilt * Math.PI) / 180;
@@ -1677,7 +1883,7 @@ function DiveGate3D({
   const postMeshesRef = useRef<Array<THREE.Mesh | null>>([]);
 
   useFrame(() => {
-    if (!tiltDragRef || tiltDragRef.current === null) return;
+    if (isArch || !tiltDragRef || tiltDragRef.current === null) return;
     const liveTiltRad = (tiltDragRef.current * Math.PI) / 180;
 
     if (frameGroupRef.current) {
@@ -1707,6 +1913,17 @@ function DiveGate3D({
       }
     }
   });
+
+  if (isArch) {
+    return (
+      <ArchDiveGate3D
+        selected={selected}
+        shape={shape}
+        outerRef={outerRef}
+        visual={visual as ArchDiveGateVisualSpec}
+      />
+    );
+  }
 
   return (
     <group
@@ -1923,8 +2140,15 @@ function getPolylineTopY(shape: PolylineShape): number {
 }
 
 function getDiveGateTopY(shape: DiveGateShape): number {
+  const visual = getDiveGateVisualSpec(shape);
+  if (visual?.variant === "arch") {
+    return getMultiGpDiveGateArchTopY();
+  }
+
   const tiltRad = ((shape.tilt ?? 0) * Math.PI) / 180;
-  return (shape.elevation ?? 3) + ((shape.size ?? 2.8) / 2) * Math.sin(tiltRad);
+  return (
+    (shape.elevation ?? 3) + ((shape.width ?? 2.8) / 2) * Math.sin(tiltRad)
+  );
 }
 
 function getShapeTopY(shape: Shape): number {

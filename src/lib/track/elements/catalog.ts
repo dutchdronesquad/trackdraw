@@ -20,6 +20,7 @@ export const MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID =
   "multigp-championship-ladder-7x6";
 export const MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID =
   "multigp-topless-ladder-7x6";
+export const MULTIGP_DIVE_GATE_7X6_ELEMENT_ID = "multigp-dive-gate-7x6";
 
 export type TrackElementCatalogId =
   | typeof TRACKDRAW_GATE_ELEMENT_ID
@@ -34,7 +35,8 @@ export type TrackElementCatalogId =
   | typeof MULTIGP_CORNER_FLAG_ELEMENT_ID
   | typeof MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID
   | typeof MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID
-  | typeof MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID;
+  | typeof MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID
+  | typeof MULTIGP_DIVE_GATE_7X6_ELEMENT_ID;
 
 type PlaceableCatalogShape = Exclude<Shape, PolylineShape>;
 export type TrackElementShapeDraft = ShapeDraft<PlaceableCatalogShape>;
@@ -127,10 +129,25 @@ export interface PanelFrameLadderVisualSpec {
 }
 
 export type LadderVisualSpec = PanelFrameLadderVisualSpec;
+
+export interface ArchDiveGateVisualSpec {
+  kind: "divegate";
+  variant: "arch";
+  frame: GateFrameVisualSpec;
+  banner: {
+    color: string;
+    sideTexture: string;
+    topTexture: string;
+  };
+}
+
+export type DiveGateVisualSpec = ArchDiveGateVisualSpec;
+
 export type TrackElementVisualSpec =
   | GateVisualSpec
   | FlagVisualSpec
-  | LadderVisualSpec;
+  | LadderVisualSpec
+  | DiveGateVisualSpec;
 
 export interface TrackElementCatalogEntry {
   id: TrackElementCatalogId;
@@ -687,7 +704,7 @@ export const trackElementCatalog = [
       x: 0,
       y: 0,
       rotation: 0,
-      size: 2.8,
+      width: 2.8,
       thick: 0.2,
       tilt: 0,
       elevation: 3,
@@ -696,6 +713,58 @@ export const trackElementCatalog = [
     tags: ["technical", "practice"],
     render2d: { icon: "divegate" },
     render3d: { modelHint: "dive-gate" },
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
+    name: "MultiGP Dive Gate 7x6",
+    organization: "MultiGP",
+    kind: "divegate",
+    official: true,
+    editable: { color: false, dimensions: false },
+    dimensions: {
+      widthMeters: feetToMeters(7),
+      heightMeters: feetToMeters(6),
+      display: { unitSystem: "imperial", label: "7 ft x 6 ft" },
+    },
+    defaultShape: {
+      kind: "divegate",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: feetToMeters(7),
+      height: feetToMeters(6),
+      thick: 0.055,
+      tilt: 0,
+      elevation: 0,
+      color: "#f8fafc",
+    } satisfies TrackElementShapeDraft,
+    tags: ["championship", "race", "multigp", "technical"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
+      },
+    ],
+    render2d: { icon: "divegate" },
+    render3d: { modelHint: "dive-gate" },
+    visual: {
+      kind: "divegate",
+      variant: "arch",
+      frame: {
+        placement: "outer",
+        material: "pvc",
+        color: "#f8fafc",
+        diameterMeters: 0.055,
+      },
+      banner: {
+        color: "#202e5d",
+        sideTexture:
+          "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+        topTexture:
+          "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+      },
+    } satisfies DiveGateVisualSpec,
     exportHints: { simulatorFriendly: true },
   },
 ] satisfies TrackElementCatalogEntry[];
@@ -724,6 +793,12 @@ export function getTrackElementCatalogTexturePaths(): string[] {
     if (visual.kind === "flag") {
       paths.add(visual.textures.front);
       paths.add(visual.textures.back);
+      continue;
+    }
+
+    if (visual.kind === "divegate") {
+      paths.add(visual.banner.sideTexture);
+      paths.add(visual.banner.topTexture);
     }
   }
 
