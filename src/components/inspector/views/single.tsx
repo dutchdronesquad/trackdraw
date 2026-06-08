@@ -929,12 +929,10 @@ export function SingleInspectorView({
             {shape.kind === "divegate" && hasFixedDiveGateDimensions && (
               <Row label={`Elevation (${unitLabel})`}>
                 <MeasurementNum
-                  valueMeters={
-                    resolveDiveGateElevation(
-                      shape.elevation,
-                      fixedDiveGateElevationVariant
-                    )
-                  }
+                  valueMeters={resolveDiveGateElevation(
+                    shape.elevation,
+                    fixedDiveGateElevationVariant
+                  )}
                   unitSystem={unitSystem}
                   onChange={(value) =>
                     updateShape(shape.id, { elevation: value })

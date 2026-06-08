@@ -91,8 +91,6 @@ describe("track 3D layout helpers", () => {
     expect(archLayout.topY).toBeCloseTo(feetToMeters(15));
     expect(launchLayout.topY).toBeCloseTo(feetToMeters(15));
     expect(resolveDiveGateElevation(0, "arch")).toBeCloseTo(feetToMeters(15));
-    expect(resolveDiveGateElevation(0, "launch")).toBeCloseTo(
-      feetToMeters(15)
-    );
+    expect(resolveDiveGateElevation(0, "launch")).toBeCloseTo(feetToMeters(15));
   });
 });
