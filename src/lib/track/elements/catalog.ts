@@ -21,6 +21,7 @@ export const MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID =
 export const MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID =
   "multigp-topless-ladder-7x6";
 export const MULTIGP_DIVE_GATE_7X6_ELEMENT_ID = "multigp-dive-gate-7x6";
+export const MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID = "multigp-launch-gate-7x6";
 
 export type TrackElementCatalogId =
   | typeof TRACKDRAW_GATE_ELEMENT_ID
@@ -36,7 +37,8 @@ export type TrackElementCatalogId =
   | typeof MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID
   | typeof MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID
   | typeof MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID
-  | typeof MULTIGP_DIVE_GATE_7X6_ELEMENT_ID;
+  | typeof MULTIGP_DIVE_GATE_7X6_ELEMENT_ID
+  | typeof MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID;
 
 type PlaceableCatalogShape = Exclude<Shape, PolylineShape>;
 export type TrackElementShapeDraft = ShapeDraft<PlaceableCatalogShape>;
@@ -77,10 +79,28 @@ export interface GateFrameVisualSpec {
   diameterMeters: number;
 }
 
+export type TexturePanelEdge = "top" | "right" | "bottom" | "left";
+
+export interface TextureOrientationSpec {
+  textureTopEdgeFaces?: TexturePanelEdge;
+  flipX?: boolean;
+  flipY?: boolean;
+}
+
+export interface PanelTexturePlacementSpec<TSource extends string> {
+  source: TSource;
+  orientation?: TextureOrientationSpec;
+}
+
 export interface GatePanelTextureVisualSpec {
   left: string;
   right: string;
   top?: string;
+  placement?: {
+    left?: PanelTexturePlacementSpec<"left" | "right" | "top">;
+    right?: PanelTexturePlacementSpec<"left" | "right" | "top">;
+    top?: PanelTexturePlacementSpec<"left" | "right" | "top">;
+  };
 }
 
 export interface FrameOnlyGateVisualSpec {
@@ -138,10 +158,33 @@ export interface ArchDiveGateVisualSpec {
     color: string;
     sideTexture: string;
     topTexture: string;
+    placement?: {
+      left?: PanelTexturePlacementSpec<"side" | "top">;
+      right?: PanelTexturePlacementSpec<"side" | "top">;
+      top?: PanelTexturePlacementSpec<"side" | "top">;
+      bottom?: PanelTexturePlacementSpec<"side" | "top">;
+    };
   };
 }
 
-export type DiveGateVisualSpec = ArchDiveGateVisualSpec;
+export interface LaunchGateVisualSpec {
+  kind: "divegate";
+  variant: "launch";
+  frame: GateFrameVisualSpec;
+  banner: {
+    color: string;
+    sideTexture: string;
+    topTexture: string;
+    placement?: {
+      front?: PanelTexturePlacementSpec<"side" | "top">;
+      rear?: PanelTexturePlacementSpec<"side" | "top">;
+      left?: PanelTexturePlacementSpec<"side" | "top">;
+      right?: PanelTexturePlacementSpec<"side" | "top">;
+    };
+  };
+}
+
+export type DiveGateVisualSpec = ArchDiveGateVisualSpec | LaunchGateVisualSpec;
 
 export type TrackElementVisualSpec =
   | GateVisualSpec
@@ -276,6 +319,11 @@ const panelFrameGateVisual = {
     right:
       "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
     top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
+    placement: {
+      left: { source: "right", orientation: { textureTopEdgeFaces: "top" } },
+      right: { source: "left", orientation: { textureTopEdgeFaces: "top" } },
+      top: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
+    },
   },
 } satisfies GateVisualSpec;
 
@@ -291,6 +339,11 @@ const panelFrameChampionshipGateVisual = {
     right:
       "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
     top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+    placement: {
+      left: { source: "left", orientation: { flipX: true } },
+      right: { source: "left", orientation: { flipX: true } },
+      top: { source: "top", orientation: { flipX: true } },
+    },
   },
 } satisfies GateVisualSpec;
 
@@ -569,6 +622,17 @@ export const trackElementCatalog = [
         right:
           "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
         top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
+        placement: {
+          left: {
+            source: "right",
+            orientation: { textureTopEdgeFaces: "top" },
+          },
+          right: {
+            source: "left",
+            orientation: { textureTopEdgeFaces: "top" },
+          },
+          top: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
+        },
       },
     } satisfies LadderVisualSpec,
     exportHints: { simulatorFriendly: true },
@@ -627,6 +691,17 @@ export const trackElementCatalog = [
         right:
           "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
         top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+        placement: {
+          left: {
+            source: "left",
+            orientation: { textureTopEdgeFaces: "bottom" },
+          },
+          right: {
+            source: "left",
+            orientation: { textureTopEdgeFaces: "top" },
+          },
+          top: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
+        },
       },
     } satisfies LadderVisualSpec,
     exportHints: { simulatorFriendly: true },
@@ -685,6 +760,24 @@ export const trackElementCatalog = [
         right:
           "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
         top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+        placement: {
+          left: {
+            source: "left",
+            orientation: { textureTopEdgeFaces: "bottom" },
+          },
+          right: {
+            source: "left",
+            orientation: { textureTopEdgeFaces: "top" },
+          },
+          top: {
+            source: "top",
+            orientation: {
+              textureTopEdgeFaces: "bottom",
+              flipX: true,
+              flipY: true,
+            },
+          },
+        },
       },
       topPanelPlacement: "lower-sections",
     } satisfies LadderVisualSpec,
@@ -763,6 +856,79 @@ export const trackElementCatalog = [
           "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
         topTexture:
           "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+      },
+    } satisfies DiveGateVisualSpec,
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID,
+    name: "MultiGP Launch Gate 7x6",
+    organization: "MultiGP",
+    kind: "divegate",
+    official: true,
+    editable: { color: false, dimensions: false },
+    dimensions: {
+      widthMeters: feetToMeters(7),
+      heightMeters: feetToMeters(6),
+      display: {
+        unitSystem: "imperial",
+        label: "7 ft x 6 ft",
+      },
+    },
+    defaultShape: {
+      kind: "divegate",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: feetToMeters(7),
+      height: feetToMeters(6),
+      thick: 0.055,
+      tilt: 0,
+      elevation: 0,
+      color: "#f8fafc",
+    } satisfies TrackElementShapeDraft,
+    tags: ["launch", "race", "multigp", "technical"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
+      },
+    ],
+    render2d: { icon: "divegate" },
+    render3d: { modelHint: "launch-gate" },
+    visual: {
+      kind: "divegate",
+      variant: "launch",
+      frame: {
+        placement: "outer",
+        material: "pvc",
+        color: "#f8fafc",
+        diameterMeters: 0.055,
+      },
+      banner: {
+        color: "#202e5d",
+        sideTexture:
+          "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+        topTexture:
+          "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+        placement: {
+          front: {
+            source: "top",
+            orientation: { textureTopEdgeFaces: "bottom", flipX: true },
+          },
+          rear: {
+            source: "top",
+            orientation: { textureTopEdgeFaces: "bottom", flipX: true },
+          },
+          left: {
+            source: "side",
+            orientation: { textureTopEdgeFaces: "top", flipY: true },
+          },
+          right: {
+            source: "side",
+            orientation: { textureTopEdgeFaces: "bottom", flipY: true },
+          },
+        },
       },
     } satisfies DiveGateVisualSpec,
     exportHints: { simulatorFriendly: true },

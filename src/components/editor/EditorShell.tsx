@@ -816,7 +816,12 @@ export default function EditorShell({
               setMobilePathBuilderPinnedOpen(tool === "polyline");
               setActiveTool(tool);
               // Keep drawer open for catalog tools so the type list stays visible
-              const catalogTools: EditorTool[] = ["gate", "flag", "ladder"];
+              const catalogTools: EditorTool[] = [
+                "gate",
+                "flag",
+                "ladder",
+                "divegate",
+              ];
               if (!catalogTools.includes(tool)) {
                 setMobileToolsOpen(false);
               }

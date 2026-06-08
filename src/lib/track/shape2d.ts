@@ -4,7 +4,10 @@ import {
   getGateVisualSpec,
   getLadderVisualSpec,
 } from "@/lib/track/elements/visual";
-import { getMultiGpDiveGateArchLayout } from "@/lib/track/render3d-layout";
+import {
+  getMultiGpDiveGateArchLayout,
+  getMultiGpLaunchGateLayout,
+} from "@/lib/track/render3d-layout";
 import type {
   ConeShape,
   DiveGateShape,
@@ -202,6 +205,57 @@ export function getDiveGateArchPanelPath(options: {
 
 export function getDiveGate2DShape(shape: DiveGateShape, ppm: number) {
   const visual = getDiveGateVisualSpec(shape);
+  if (visual?.variant === "launch") {
+    const layout = getMultiGpLaunchGateLayout(shape);
+    const toPoint = ([x, , z]: [number, number, number]) => ({
+      x: m2px(x, ppm),
+      y: m2px(z, ppm),
+    });
+    const pipeSegments = layout.pipeSegments.map(({ end, start }) => ({
+      end: toPoint(end),
+      start: toPoint(start),
+    }));
+    const couplerPoints = layout.couplerPoints.map(({ x, z }) => ({
+      x: m2px(x, ppm),
+      y: m2px(z, ppm),
+    }));
+    const outerW = m2px(layout.outerW, ppm);
+    const outerDepth = m2px(layout.outerD, ppm);
+    const openingW = m2px(layout.openingW, ppm);
+    const openingDepth = m2px(layout.openingD, ppm);
+    const frameTube = Math.max(2, m2px(shape.thick ?? 0.055, ppm));
+    const allPoints = [
+      ...pipeSegments.flatMap((segment) => [segment.start, segment.end]),
+      ...couplerPoints,
+      { x: -outerW / 2, y: -outerDepth / 2 },
+      { x: outerW / 2, y: outerDepth / 2 },
+    ];
+    const minX = Math.min(...allPoints.map((point) => point.x)) - frameTube;
+    const maxX = Math.max(...allPoints.map((point) => point.x)) + frameTube;
+    const minY = Math.min(...allPoints.map((point) => point.y)) - frameTube;
+    const maxY = Math.max(...allPoints.map((point) => point.y)) + frameTube;
+
+    return {
+      bounds: {
+        height: maxY - minY,
+        width: maxX - minX,
+        x: minX,
+        y: minY,
+      },
+      color: visual.banner.color,
+      couplerRadius: Math.max(2.5, frameTube * 0.75),
+      couplerPoints,
+      frameColor: visual.frame.color,
+      frameTube,
+      openingDepth,
+      openingW,
+      outerDepth,
+      outerW,
+      pipeSegments,
+      variant: "launch" as const,
+    };
+  }
+
   if (visual?.variant === "arch") {
     const layout = getMultiGpDiveGateArchLayout(shape);
     const toPoint = ([x, , z]: [number, number, number]) => ({

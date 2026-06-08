@@ -256,8 +256,6 @@ Current shipped foundation:
 
 Next catalog slices:
 
-- Dive Gate 7x6: add as a catalog-backed gate variant with official dimensions and a 3D rendering that reflects the low-profile dive orientation; shares the gate shape kind and inspector pipeline
-- Launch Gate 7x6: add as a catalog-backed gate variant used at the race start; shares the gate shape kind and pipeline, with official dimensions and appropriate 3D rendering
 - Double Gate Tower 5x5 and 7x6: introduce as a new shape kind with its own 2D representation, 3D rendering, catalog entries, and inspector pipeline; race-line behavior is gate-like (fly through) while the physical structure resembles a two-frame tower
 
 #### 3D Preview And Direct Manipulation
@@ -279,6 +277,8 @@ Feature tracks:
 Current shipped foundation:
 
 - Catalog-backed MultiGP-style gates, ladders, and corner flags now carry visual metadata for panel sizes, PVC frame placement, and texture-backed artwork; the live 3D preview and flythrough export consume shared layout helpers and extracted runtime textures while generic TrackDraw elements stay lightweight
+- MultiGP Dive Gate 7x6 and Launch Gate 7x6 are now catalog-backed with correct 3D arch and box-frame rendering respectively; banner panels cast and receive shadows correctly and texture orientations are accurate across all four panels
+- All MultiGP obstacle texture orientations (standard gate, championship gate, standard ladder, championship ladder, topless ladder, launch gate) are now correct and verified; the `ArchDiveGateVisualSpec` banner placement API mirrors the launch gate pattern so dive gate textures are fully configurable
 
 Important boundary:
 

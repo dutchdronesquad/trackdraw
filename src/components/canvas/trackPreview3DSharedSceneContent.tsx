@@ -1,6 +1,12 @@
 "use client";
 
 import { RoundedBox, useTexture } from "@react-three/drei";
+import {
+  getEffectiveFlips,
+  getEffectiveRotation,
+  registerPanel,
+  useOverrideVersion,
+} from "@/components/canvas/textureDebugContext";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
@@ -25,9 +31,13 @@ import {
   getLadderRenderedHeight,
   getMultiGpDiveGateArchLayout,
   getMultiGpDiveGateArchTopY,
+  getMultiGpLaunchGateLayout,
+  getMultiGpLaunchGateTopY,
   getPanelFrameGateLayout,
   getPanelFrameLadderLayout,
-  resolvePanelTextureMapping,
+  resolveArchDiveGateBannerTextureMapping,
+  resolveLaunchGateBannerTextureMapping,
+  resolvePanelFrameTextureMapping,
 } from "@/lib/track/render3d-layout";
 import {
   getDiveGateVisualSpec,
@@ -44,10 +54,14 @@ import type {
   ArchDiveGateVisualSpec,
   CornerMarkerFlagVisualSpec,
   GatePanelTextureVisualSpec,
+  LaunchGateVisualSpec,
   PanelFrameGateVisualSpec,
   PanelFrameLadderVisualSpec,
 } from "@/lib/track/elements/catalog";
-import { getTrackElementCatalogTexturePaths } from "@/lib/track/elements/catalog";
+import {
+  getTrackElementCatalogIdentity,
+  getTrackElementCatalogTexturePaths,
+} from "@/lib/track/elements/catalog";
 import type {
   ConeShape,
   DiveGateShape,
@@ -81,6 +95,23 @@ function assignGroupRef(
     return;
   }
   ref.current = node;
+}
+
+function cloneTextureForPanel(
+  texture: THREE.Texture,
+  {
+    flipX = false,
+    flipY = false,
+    rotation = 0,
+  }: { flipX?: boolean; flipY?: boolean; rotation?: number }
+) {
+  const clone = texture.clone();
+  clone.center.set(0.5, 0.5);
+  clone.rotation = rotation;
+  clone.repeat.set(flipX ? -1 : 1, flipY ? -1 : 1);
+  clone.offset.set(0, 0);
+  clone.needsUpdate = true;
+  return clone;
 }
 
 export function CameraCapture({
@@ -460,6 +491,7 @@ function useTextTexture(
 }
 
 function PanelFrameGateTexturePlanes({
+  catalogId,
   frontZ,
   h,
   leftPanelWidth,
@@ -471,6 +503,7 @@ function PanelFrameGateTexturePlanes({
   topPanelW,
   topPanelY,
 }: {
+  catalogId?: string;
   frontZ: number;
   h: number;
   leftPanelWidth: number;
@@ -487,10 +520,6 @@ function PanelFrameGateTexturePlanes({
     textures.right,
     textures.top ?? textures.left,
   ]) as THREE.Texture[];
-  const { leftPanel, rightPanel, leftRotationZ } = resolvePanelTextureMapping(
-    textures,
-    [leftTexture, rightTexture]
-  );
 
   for (const texture of [leftTexture, rightTexture, topTexture]) {
     if (texture.colorSpace !== THREE.SRGBColorSpace) {
@@ -499,39 +528,156 @@ function PanelFrameGateTexturePlanes({
       texture.needsUpdate = true;
     }
   }
+  const overrideVersion = useOverrideVersion();
+  const panelTextures = useMemo(() => {
+    const mapping = resolvePanelFrameTextureMapping(textures, {
+      left: leftTexture,
+      right: rightTexture,
+      top: topTexture,
+    });
+    const leftFlips = getEffectiveFlips(
+      catalogId,
+      "left",
+      mapping.left.flipX,
+      mapping.left.flipY
+    );
+    const rightFlips = getEffectiveFlips(
+      catalogId,
+      "right",
+      mapping.right.flipX,
+      mapping.right.flipY
+    );
+    const topFlips = mapping.top
+      ? getEffectiveFlips(
+          catalogId,
+          "top",
+          mapping.top.flipX,
+          mapping.top.flipY
+        )
+      : null;
+    return {
+      left: {
+        texture: cloneTextureForPanel(mapping.left.texture, {
+          rotation: getEffectiveRotation(
+            catalogId,
+            "left",
+            mapping.left.rotation
+          ),
+          ...leftFlips,
+        }),
+        rotation: mapping.left.rotation,
+        source: mapping.left.source,
+        flipX: mapping.left.flipX,
+        flipY: mapping.left.flipY,
+      },
+      right: {
+        texture: cloneTextureForPanel(mapping.right.texture, {
+          rotation: getEffectiveRotation(
+            catalogId,
+            "right",
+            mapping.right.rotation
+          ),
+          ...rightFlips,
+        }),
+        rotation: mapping.right.rotation,
+        source: mapping.right.source,
+        flipX: mapping.right.flipX,
+        flipY: mapping.right.flipY,
+      },
+      top:
+        mapping.top && topFlips
+          ? {
+              texture: cloneTextureForPanel(mapping.top.texture, {
+                rotation: getEffectiveRotation(
+                  catalogId,
+                  "top",
+                  mapping.top.rotation
+                ),
+                ...topFlips,
+              }),
+              rotation: mapping.top.rotation,
+              source: mapping.top.source,
+              flipX: mapping.top.flipX,
+              flipY: mapping.top.flipY,
+            }
+          : null,
+    };
+    // overrideVersion is intentionally included to trigger re-clone on cycle
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    leftTexture,
+    rightTexture,
+    textures,
+    topTexture,
+    overrideVersion,
+    catalogId,
+  ]);
+
+  useEffect(() => {
+    if (!catalogId) return;
+    registerPanel(
+      catalogId,
+      "left",
+      panelTextures.left.source,
+      panelTextures.left.flipX,
+      panelTextures.left.flipY,
+      panelTextures.left.rotation
+    );
+    registerPanel(
+      catalogId,
+      "right",
+      panelTextures.right.source,
+      panelTextures.right.flipX,
+      panelTextures.right.flipY,
+      panelTextures.right.rotation
+    );
+    if (panelTextures.top)
+      registerPanel(
+        catalogId,
+        "top",
+        panelTextures.top.source,
+        panelTextures.top.flipX,
+        panelTextures.top.flipY,
+        panelTextures.top.rotation
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogId]);
 
   return (
     <>
-      <mesh
-        position={[leftPanelX, h / 2, frontZ]}
-        rotation={[0, Math.PI, leftRotationZ]}
-      >
-        <planeGeometry args={[leftPanelWidth, h]} />
-        <meshStandardMaterial
-          map={leftPanel}
-          roughness={0.72}
-          metalness={0.01}
-          side={THREE.FrontSide}
-        />
-      </mesh>
-      <mesh position={[rightPanelX, h / 2, frontZ]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[rightPanelWidth, h]} />
-        <meshStandardMaterial
-          map={rightPanel}
-          roughness={0.72}
-          metalness={0.01}
-          side={THREE.FrontSide}
-        />
-      </mesh>
-      <mesh position={[0, topPanelY, frontZ]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[topPanelW, topPanelHeight]} />
-        <meshStandardMaterial
-          map={topTexture}
-          roughness={0.68}
-          metalness={0.02}
-          side={THREE.FrontSide}
-        />
-      </mesh>
+      <group position={[leftPanelX, h / 2, frontZ]} rotation={[0, Math.PI, 0]}>
+        <mesh>
+          <planeGeometry args={[leftPanelWidth, h]} />
+          <meshStandardMaterial
+            map={panelTextures.left.texture}
+            roughness={0.72}
+            metalness={0.01}
+            side={THREE.FrontSide}
+          />
+        </mesh>
+      </group>
+      <group position={[rightPanelX, h / 2, frontZ]} rotation={[0, Math.PI, 0]}>
+        <mesh>
+          <planeGeometry args={[rightPanelWidth, h]} />
+          <meshStandardMaterial
+            map={panelTextures.right.texture}
+            roughness={0.72}
+            metalness={0.01}
+            side={THREE.FrontSide}
+          />
+        </mesh>
+      </group>
+      <group position={[0, topPanelY, frontZ]} rotation={[0, Math.PI, 0]}>
+        <mesh>
+          <planeGeometry args={[topPanelW, topPanelHeight]} />
+          <meshStandardMaterial
+            map={panelTextures.top?.texture ?? null}
+            roughness={0.68}
+            metalness={0.02}
+            side={THREE.FrontSide}
+          />
+        </mesh>
+      </group>
     </>
   );
 }
@@ -539,6 +685,7 @@ function PanelFrameGateTexturePlanes({
 function PanelFrameLadderSectionTexturePlanes({
   bannerH,
   bannerMidY,
+  catalogId,
   frontZ,
   hasTopPanel,
   leftPanelWidth,
@@ -551,6 +698,7 @@ function PanelFrameLadderSectionTexturePlanes({
 }: {
   bannerH: number;
   bannerMidY: number;
+  catalogId?: string;
   frontZ: number;
   hasTopPanel: boolean;
   leftPanelWidth: number;
@@ -571,10 +719,6 @@ function PanelFrameLadderSectionTexturePlanes({
     textures.right,
     textures.top ?? textures.left,
   ]) as THREE.Texture[];
-  const { leftPanel, rightPanel, leftRotationZ } = resolvePanelTextureMapping(
-    textures,
-    [leftTexture, rightTexture]
-  );
 
   for (const texture of [leftTexture, rightTexture, topTexture]) {
     if (texture.colorSpace !== THREE.SRGBColorSpace) {
@@ -583,43 +727,162 @@ function PanelFrameLadderSectionTexturePlanes({
       texture.needsUpdate = true;
     }
   }
+  const overrideVersion = useOverrideVersion();
+  const panelTextures = useMemo(() => {
+    const mapping = resolvePanelFrameTextureMapping(textures, {
+      left: leftTexture,
+      right: rightTexture,
+      top: textures.top ? topTexture : null,
+    });
+    const leftFlips = getEffectiveFlips(
+      catalogId,
+      "left",
+      mapping.left.flipX,
+      mapping.left.flipY
+    );
+    const rightFlips = getEffectiveFlips(
+      catalogId,
+      "right",
+      mapping.right.flipX,
+      mapping.right.flipY
+    );
+    const topFlips = mapping.top
+      ? getEffectiveFlips(
+          catalogId,
+          "top",
+          mapping.top.flipX,
+          mapping.top.flipY
+        )
+      : null;
+    return {
+      left: {
+        texture: cloneTextureForPanel(mapping.left.texture, {
+          rotation: getEffectiveRotation(
+            catalogId,
+            "left",
+            mapping.left.rotation
+          ),
+          ...leftFlips,
+        }),
+        rotation: mapping.left.rotation,
+        source: mapping.left.source,
+        flipX: mapping.left.flipX,
+        flipY: mapping.left.flipY,
+      },
+      right: {
+        texture: cloneTextureForPanel(mapping.right.texture, {
+          rotation: getEffectiveRotation(
+            catalogId,
+            "right",
+            mapping.right.rotation
+          ),
+          ...rightFlips,
+        }),
+        rotation: mapping.right.rotation,
+        source: mapping.right.source,
+        flipX: mapping.right.flipX,
+        flipY: mapping.right.flipY,
+      },
+      top:
+        mapping.top && topFlips
+          ? {
+              texture: cloneTextureForPanel(mapping.top.texture, {
+                rotation: getEffectiveRotation(
+                  catalogId,
+                  "top",
+                  mapping.top.rotation
+                ),
+                ...topFlips,
+              }),
+              rotation: mapping.top.rotation,
+              source: mapping.top.source,
+              flipX: mapping.top.flipX,
+              flipY: mapping.top.flipY,
+            }
+          : null,
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    leftTexture,
+    rightTexture,
+    textures,
+    topTexture,
+    overrideVersion,
+    catalogId,
+  ]);
+
+  useEffect(() => {
+    if (!catalogId) return;
+    registerPanel(
+      catalogId,
+      "left",
+      panelTextures.left.source,
+      panelTextures.left.flipX,
+      panelTextures.left.flipY,
+      panelTextures.left.rotation
+    );
+    registerPanel(
+      catalogId,
+      "right",
+      panelTextures.right.source,
+      panelTextures.right.flipX,
+      panelTextures.right.flipY,
+      panelTextures.right.rotation
+    );
+    if (panelTextures.top)
+      registerPanel(
+        catalogId,
+        "top",
+        panelTextures.top.source,
+        panelTextures.top.flipX,
+        panelTextures.top.flipY,
+        panelTextures.top.rotation
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogId]);
 
   return (
     <>
-      <mesh
+      <group
         position={[leftPanelX, openingMidY, frontZ]}
-        rotation={[0, Math.PI, leftRotationZ]}
-      >
-        <planeGeometry args={[leftPanelWidth, openingH]} />
-        <meshStandardMaterial
-          map={leftPanel}
-          roughness={0.72}
-          metalness={0.01}
-          side={THREE.FrontSide}
-        />
-      </mesh>
-      <mesh
-        position={[rightPanelX, openingMidY, frontZ]}
         rotation={[0, Math.PI, 0]}
       >
-        <planeGeometry args={[rightPanelWidth, openingH]} />
-        <meshStandardMaterial
-          map={rightPanel}
-          roughness={0.72}
-          metalness={0.01}
-          side={THREE.FrontSide}
-        />
-      </mesh>
-      {shouldRenderTopTexture ? (
-        <mesh position={[0, bannerMidY, frontZ]} rotation={[0, Math.PI, 0]}>
-          <planeGeometry args={[topPanelW, bannerH]} />
+        <mesh>
+          <planeGeometry args={[leftPanelWidth, openingH]} />
           <meshStandardMaterial
-            map={topTexture}
-            roughness={0.68}
-            metalness={0.02}
+            map={panelTextures.left.texture}
+            roughness={0.72}
+            metalness={0.01}
             side={THREE.FrontSide}
           />
         </mesh>
+      </group>
+      <group
+        position={[rightPanelX, openingMidY, frontZ]}
+        rotation={[0, Math.PI, 0]}
+      >
+        <mesh>
+          <planeGeometry args={[rightPanelWidth, openingH]} />
+          <meshStandardMaterial
+            map={panelTextures.right.texture}
+            roughness={0.72}
+            metalness={0.01}
+            side={THREE.FrontSide}
+          />
+        </mesh>
+      </group>
+      {shouldRenderTopTexture ? (
+        <group position={[0, bannerMidY, frontZ]} rotation={[0, Math.PI, 0]}>
+          <mesh>
+            <planeGeometry args={[topPanelW, bannerH]} />
+            <meshStandardMaterial
+              map={panelTextures.top?.texture ?? null}
+              roughness={0.68}
+              metalness={0.02}
+              side={THREE.FrontSide}
+            />
+          </mesh>
+        </group>
       ) : null}
     </>
   );
@@ -638,6 +901,7 @@ function PanelFrameGate3D({
   visual: PanelFrameGateVisualSpec;
   rot: [number, number, number];
 }) {
+  const catalogId = getTrackElementCatalogIdentity(shape.meta)?.elementId;
   const { frame, panels } = visual;
   const h = shape.height ?? 2;
   const {
@@ -741,6 +1005,7 @@ function PanelFrameGate3D({
 
       <Suspense fallback={null}>
         <PanelFrameGateTexturePlanes
+          catalogId={catalogId}
           frontZ={frontZ}
           h={h}
           leftPanelWidth={leftPanelWidth}
@@ -1307,12 +1572,14 @@ function StartFinish3D({
 }
 
 function PanelFrameLadder3D({
+  catalogId,
   selected = false,
   shape,
   outerRef,
   elevationOverrideRef,
   visual,
 }: {
+  catalogId?: string;
   selected?: boolean;
   shape: LadderShape;
   outerRef?: Ref<THREE.Group>;
@@ -1476,6 +1743,7 @@ function PanelFrameLadder3D({
               <PanelFrameLadderSectionTexturePlanes
                 bannerH={bannerH}
                 bannerMidY={section.bannerMidY}
+                catalogId={catalogId}
                 frontZ={frontZ}
                 hasTopPanel={section.hasTopPanel}
                 leftPanelWidth={leftPanelWidth}
@@ -1545,6 +1813,7 @@ function Ladder3D({
   outerRef?: Ref<THREE.Group>;
   elevationOverrideRef?: RefObject<number | null>;
 }) {
+  const catalogId = getTrackElementCatalogIdentity(shape.meta)?.elementId;
   const ladderVisual = getLadderVisualSpec(shape);
   const color = shape.color ?? "#3b82f6";
   const w = shape.width ?? 1.5;
@@ -1581,6 +1850,7 @@ function Ladder3D({
   if (ladderVisual?.variant === "panel-frame") {
     return (
       <PanelFrameLadder3D
+        catalogId={catalogId}
         shape={shape}
         selected={selected}
         outerRef={outerRef}
@@ -1707,6 +1977,7 @@ function ArchDiveGate3D({
   outerRef?: Ref<THREE.Group>;
   visual: ArchDiveGateVisualSpec;
 }) {
+  const catalogId = getTrackElementCatalogIdentity(shape.meta)?.elementId;
   const yawRad = (-shape.rotation * Math.PI) / 180;
   const tube = visual.frame.diameterMeters;
   const pipeRadius = tube / 2;
@@ -1723,6 +1994,134 @@ function ArchDiveGate3D({
       texture.needsUpdate = true;
     }
   }
+
+  const overrideVersion = useOverrideVersion();
+  const panelTextures = useMemo(() => {
+    const mapping = resolveArchDiveGateBannerTextureMapping(visual.banner, {
+      side: sideTexture,
+      top: topTexture,
+    });
+    const leftFlips = getEffectiveFlips(
+      catalogId,
+      "left",
+      mapping.left.flipX,
+      mapping.left.flipY
+    );
+    const rightFlips = getEffectiveFlips(
+      catalogId,
+      "right",
+      mapping.right.flipX,
+      mapping.right.flipY
+    );
+    const topFlips = getEffectiveFlips(
+      catalogId,
+      "top",
+      mapping.top.flipX,
+      mapping.top.flipY
+    );
+    const bottomFlips = getEffectiveFlips(
+      catalogId,
+      "bottom",
+      mapping.bottom.flipX,
+      mapping.bottom.flipY
+    );
+    return {
+      left: {
+        texture: cloneTextureForPanel(mapping.left.texture, {
+          rotation: getEffectiveRotation(
+            catalogId,
+            "left",
+            mapping.left.rotation
+          ),
+          ...leftFlips,
+        }),
+        rotation: mapping.left.rotation,
+        source: mapping.left.source,
+        flipX: mapping.left.flipX,
+        flipY: mapping.left.flipY,
+      },
+      right: {
+        texture: cloneTextureForPanel(mapping.right.texture, {
+          rotation: getEffectiveRotation(
+            catalogId,
+            "right",
+            mapping.right.rotation
+          ),
+          ...rightFlips,
+        }),
+        rotation: mapping.right.rotation,
+        source: mapping.right.source,
+        flipX: mapping.right.flipX,
+        flipY: mapping.right.flipY,
+      },
+      top: {
+        texture: cloneTextureForPanel(mapping.top.texture, {
+          rotation: getEffectiveRotation(
+            catalogId,
+            "top",
+            mapping.top.rotation
+          ),
+          ...topFlips,
+        }),
+        rotation: mapping.top.rotation,
+        source: mapping.top.source,
+        flipX: mapping.top.flipX,
+        flipY: mapping.top.flipY,
+      },
+      bottom: {
+        texture: cloneTextureForPanel(mapping.bottom.texture, {
+          rotation: getEffectiveRotation(
+            catalogId,
+            "bottom",
+            mapping.bottom.rotation
+          ),
+          ...bottomFlips,
+        }),
+        rotation: mapping.bottom.rotation,
+        source: mapping.bottom.source,
+        flipX: mapping.bottom.flipX,
+        flipY: mapping.bottom.flipY,
+      },
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sideTexture, topTexture, visual.banner, overrideVersion, catalogId]);
+
+  useEffect(() => {
+    if (!catalogId) return;
+    registerPanel(
+      catalogId,
+      "left",
+      panelTextures.left.source,
+      panelTextures.left.flipX,
+      panelTextures.left.flipY,
+      panelTextures.left.rotation
+    );
+    registerPanel(
+      catalogId,
+      "right",
+      panelTextures.right.source,
+      panelTextures.right.flipX,
+      panelTextures.right.flipY,
+      panelTextures.right.rotation
+    );
+    registerPanel(
+      catalogId,
+      "top",
+      panelTextures.top.source,
+      panelTextures.top.flipX,
+      panelTextures.top.flipY,
+      panelTextures.top.rotation
+    );
+    registerPanel(
+      catalogId,
+      "bottom",
+      panelTextures.bottom.source,
+      panelTextures.bottom.flipX,
+      panelTextures.bottom.flipY,
+      panelTextures.bottom.rotation
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogId]);
 
   const layout = getMultiGpDiveGateArchLayout(shape);
 
@@ -1770,11 +2169,15 @@ function ArchDiveGate3D({
         position={[0, layout.centerY, 0]}
         rotation={[layout.tiltRad, 0, 0]}
       >
-        <mesh position={[-layout.halfOpening - layout.sidePanelW / 2, 0, 0]}>
+        <mesh
+          position={[-layout.halfOpening - layout.sidePanelW / 2, 0, 0]}
+          castShadow
+          receiveShadow
+        >
           <planeGeometry args={[layout.sidePanelW, layout.openingH]} />
           <meshStandardMaterial
             color="#ffffff"
-            map={sideTexture}
+            map={panelTextures.left.texture}
             roughness={0.72}
             metalness={0.01}
             side={THREE.DoubleSide}
@@ -1783,31 +2186,41 @@ function ArchDiveGate3D({
         <mesh
           position={[layout.halfOpening + layout.sidePanelW / 2, 0, 0]}
           rotation={[0, 0, Math.PI]}
+          castShadow
+          receiveShadow
         >
           <planeGeometry args={[layout.sidePanelW, layout.openingH]} />
           <meshStandardMaterial
             color="#ffffff"
-            map={sideTexture}
+            map={panelTextures.right.texture}
             roughness={0.72}
             metalness={0.01}
             side={THREE.DoubleSide}
           />
         </mesh>
-        <mesh position={[0, layout.openingH / 2 + layout.bannerH / 2, 0]}>
+        <mesh
+          position={[0, layout.openingH / 2 + layout.bannerH / 2, 0]}
+          castShadow
+          receiveShadow
+        >
           <planeGeometry args={[layout.outerW, layout.bannerH]} />
           <meshStandardMaterial
             color="#ffffff"
-            map={topTexture}
+            map={panelTextures.top.texture}
             roughness={0.68}
             metalness={0.02}
             side={THREE.DoubleSide}
           />
         </mesh>
-        <mesh position={[0, -layout.openingH / 2 - layout.bannerH / 2, 0]}>
+        <mesh
+          position={[0, -layout.openingH / 2 - layout.bannerH / 2, 0]}
+          castShadow
+          receiveShadow
+        >
           <planeGeometry args={[layout.outerW, layout.bannerH]} />
           <meshStandardMaterial
             color="#ffffff"
-            map={topTexture}
+            map={panelTextures.bottom.texture}
             roughness={0.68}
             metalness={0.02}
             side={THREE.DoubleSide}
@@ -1851,6 +2264,269 @@ function ArchDiveGate3D({
   );
 }
 
+function LaunchGate3D({
+  selected,
+  shape,
+  outerRef,
+  visual,
+}: {
+  selected: boolean;
+  shape: DiveGateShape;
+  outerRef?: Ref<THREE.Group>;
+  visual: LaunchGateVisualSpec;
+}) {
+  const catalogId = getTrackElementCatalogIdentity(shape.meta)?.elementId;
+  const yawRad = (-shape.rotation * Math.PI) / 180;
+  const tube = visual.frame.diameterMeters;
+  const pipeRadius = tube / 2;
+  const frameColor = visual.frame.color;
+  const [sideTexture, topTexture] = useTexture([
+    visual.banner.sideTexture,
+    visual.banner.topTexture,
+  ]) as THREE.Texture[];
+
+  for (const texture of [sideTexture, topTexture]) {
+    if (texture.colorSpace !== THREE.SRGBColorSpace) {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 4;
+      texture.needsUpdate = true;
+    }
+  }
+  const overrideVersion = useOverrideVersion();
+  const panelTextures = useMemo(
+    () => {
+      const mapping = resolveLaunchGateBannerTextureMapping(visual.banner, {
+        side: sideTexture,
+        top: topTexture,
+      });
+      const frontFlips = getEffectiveFlips(
+        catalogId,
+        "front",
+        mapping.front.flipX,
+        mapping.front.flipY
+      );
+      const rearFlips = getEffectiveFlips(
+        catalogId,
+        "rear",
+        mapping.rear.flipX,
+        mapping.rear.flipY
+      );
+      const leftFlips = getEffectiveFlips(
+        catalogId,
+        "left",
+        mapping.left.flipX,
+        mapping.left.flipY
+      );
+      const rightFlips = getEffectiveFlips(
+        catalogId,
+        "right",
+        mapping.right.flipX,
+        mapping.right.flipY
+      );
+      return {
+        front: {
+          texture: cloneTextureForPanel(mapping.front.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "front",
+              mapping.front.rotation
+            ),
+            ...frontFlips,
+          }),
+          rotation: mapping.front.rotation,
+          source: mapping.front.source,
+          flipX: mapping.front.flipX,
+          flipY: mapping.front.flipY,
+        },
+        rear: {
+          texture: cloneTextureForPanel(mapping.rear.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "rear",
+              mapping.rear.rotation
+            ),
+            ...rearFlips,
+          }),
+          rotation: mapping.rear.rotation,
+          source: mapping.rear.source,
+          flipX: mapping.rear.flipX,
+          flipY: mapping.rear.flipY,
+        },
+        left: {
+          texture: cloneTextureForPanel(mapping.left.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "left",
+              mapping.left.rotation
+            ),
+            ...leftFlips,
+          }),
+          rotation: mapping.left.rotation,
+          source: mapping.left.source,
+          flipX: mapping.left.flipX,
+          flipY: mapping.left.flipY,
+        },
+        right: {
+          texture: cloneTextureForPanel(mapping.right.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "right",
+              mapping.right.rotation
+            ),
+            ...rightFlips,
+          }),
+          rotation: mapping.right.rotation,
+          source: mapping.right.source,
+          flipX: mapping.right.flipX,
+          flipY: mapping.right.flipY,
+        },
+      };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sideTexture, topTexture, visual.banner, overrideVersion, catalogId]
+  );
+  const layout = getMultiGpLaunchGateLayout(shape);
+  const sel = selected;
+  const emissive = sel ? "#60a5fa" : frameColor;
+  const emissiveIntensity = sel ? 0.55 : 0.08;
+  const banners = [
+    {
+      x: 0,
+      z: -layout.halfOpeningD - layout.endPanelD / 2,
+      width: layout.outerW,
+      depth: layout.endPanelD,
+      rotZ: 0,
+      panel: panelTextures.front,
+      panelName: "front",
+    },
+    {
+      x: 0,
+      z: layout.halfOpeningD + layout.endPanelD / 2,
+      width: layout.outerW,
+      depth: layout.endPanelD,
+      rotZ: Math.PI,
+      panel: panelTextures.rear,
+      panelName: "rear",
+    },
+    {
+      x: -layout.halfOpeningW - layout.sidePanelW / 2,
+      z: 0,
+      width: layout.sidePanelW,
+      depth: layout.openingD,
+      rotZ: 0,
+      panel: panelTextures.left,
+      panelName: "left",
+    },
+    {
+      x: layout.halfOpeningW + layout.sidePanelW / 2,
+      z: 0,
+      width: layout.sidePanelW,
+      depth: layout.openingD,
+      rotZ: 0,
+      panel: panelTextures.right,
+      panelName: "right",
+    },
+  ];
+
+  useEffect(() => {
+    if (!catalogId) return;
+    registerPanel(
+      catalogId,
+      "front",
+      panelTextures.front.source,
+      panelTextures.front.flipX,
+      panelTextures.front.flipY,
+      panelTextures.front.rotation
+    );
+    registerPanel(
+      catalogId,
+      "rear",
+      panelTextures.rear.source,
+      panelTextures.rear.flipX,
+      panelTextures.rear.flipY,
+      panelTextures.rear.rotation
+    );
+    registerPanel(
+      catalogId,
+      "left",
+      panelTextures.left.source,
+      panelTextures.left.flipX,
+      panelTextures.left.flipY,
+      panelTextures.left.rotation
+    );
+    registerPanel(
+      catalogId,
+      "right",
+      panelTextures.right.source,
+      panelTextures.right.flipX,
+      panelTextures.right.flipY,
+      panelTextures.right.rotation
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catalogId]);
+
+  return (
+    <group
+      ref={outerRef}
+      position={[shape.x, 0, shape.y]}
+      rotation={[0, yawRad, 0]}
+    >
+      {layout.pipeSegments.map(({ end, start }, index) => (
+        <PipeBetween
+          key={`pipe-${index}`}
+          start={start}
+          end={end}
+          radius={pipeRadius}
+          color={frameColor}
+          emissive={emissive}
+          emissiveIntensity={emissiveIntensity}
+        />
+      ))}
+      {layout.couplerPoints.map(({ height, postH, x, z }, index) => {
+        if (height >= postH) return null;
+
+        return (
+          <mesh key={`coupler-${index}`} position={[x, height, z]} castShadow>
+            <cylinderGeometry
+              args={[tube * 0.75, tube * 0.75, tube * 1.8, 16]}
+            />
+            <meshStandardMaterial
+              color="#d6d9de"
+              emissive={sel ? "#60a5fa" : "#d6d9de"}
+              emissiveIntensity={sel ? 0.35 : 0.04}
+              roughness={0.54}
+              metalness={0.08}
+            />
+          </mesh>
+        );
+      })}
+
+      <group position={[0, layout.topY - tube * 0.12, 0]}>
+        {banners.map(({ depth, panel, rotZ, width, x, z }, index) => {
+          return (
+            <group
+              key={`banner-${index}`}
+              position={[x, 0, z]}
+              rotation={[Math.PI / 2, 0, rotZ]}
+            >
+              <mesh castShadow receiveShadow>
+                <planeGeometry args={[width, depth]} />
+                <meshStandardMaterial
+                  color="#ffffff"
+                  map={panel.texture}
+                  roughness={0.68}
+                  metalness={0.02}
+                  side={THREE.DoubleSide}
+                />
+              </mesh>
+            </group>
+          );
+        })}
+      </group>
+    </group>
+  );
+}
+
 function DiveGate3D({
   selected = false,
   shape,
@@ -1864,6 +2540,7 @@ function DiveGate3D({
 }) {
   const visual = getDiveGateVisualSpec(shape);
   const isArch = visual?.variant === "arch";
+  const isLaunch = visual?.variant === "launch";
 
   const color = shape.color ?? "#f97316";
   const sz = shape.width ?? 2.8;
@@ -1883,7 +2560,9 @@ function DiveGate3D({
   const postMeshesRef = useRef<Array<THREE.Mesh | null>>([]);
 
   useFrame(() => {
-    if (isArch || !tiltDragRef || tiltDragRef.current === null) return;
+    if (isArch || isLaunch || !tiltDragRef || tiltDragRef.current === null) {
+      return;
+    }
     const liveTiltRad = (tiltDragRef.current * Math.PI) / 180;
 
     if (frameGroupRef.current) {
@@ -1921,6 +2600,17 @@ function DiveGate3D({
         shape={shape}
         outerRef={outerRef}
         visual={visual as ArchDiveGateVisualSpec}
+      />
+    );
+  }
+
+  if (isLaunch) {
+    return (
+      <LaunchGate3D
+        selected={selected}
+        shape={shape}
+        outerRef={outerRef}
+        visual={visual as LaunchGateVisualSpec}
       />
     );
   }
@@ -2143,6 +2833,9 @@ function getDiveGateTopY(shape: DiveGateShape): number {
   const visual = getDiveGateVisualSpec(shape);
   if (visual?.variant === "arch") {
     return getMultiGpDiveGateArchTopY();
+  }
+  if (visual?.variant === "launch") {
+    return getMultiGpLaunchGateTopY();
   }
 
   const tiltRad = ((shape.tilt ?? 0) * Math.PI) / 180;

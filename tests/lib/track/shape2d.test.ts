@@ -11,6 +11,7 @@ import { feetToMeters } from "@/lib/track/units";
 import {
   createCatalogShapeDraft,
   MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
+  MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
 import type { DiveGateShape, GateShape } from "@/lib/types";
@@ -163,5 +164,27 @@ describe("track 2d shape helpers", () => {
     expect(diveGate.couplerPoints).toHaveLength(4);
     expect(diveGate.bounds.width).toBeGreaterThan(diveGate.openingW);
     expect(diveGate.bounds.height).toBeGreaterThan(diveGate.openingDepth);
+  });
+
+  it("uses a top-down square footprint for the official MultiGP launch gate", () => {
+    const shape = createCatalogShapeDraft(MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID, {
+      x: 0,
+      y: 0,
+      includeCatalogMetadata: true,
+    }) as DiveGateShape;
+    const launchGate = getDiveGate2DShape(shape, ppm);
+
+    expect(launchGate.variant).toBe("launch");
+    if (launchGate.variant !== "launch") {
+      throw new Error("expected launch gate metrics");
+    }
+    expect(launchGate.openingW).toBeCloseTo(feetToMeters(7) * ppm);
+    expect(launchGate.openingDepth).toBeCloseTo(feetToMeters(6) * ppm);
+    expect(launchGate.outerW).toBeCloseTo(feetToMeters(10) * ppm);
+    expect(launchGate.outerDepth).toBeCloseTo(feetToMeters(10) * ppm);
+    expect(launchGate.pipeSegments).toHaveLength(12);
+    expect(launchGate.couplerPoints).toHaveLength(4);
+    expect(launchGate.bounds.width).toBeGreaterThan(launchGate.openingW);
+    expect(launchGate.bounds.height).toBeGreaterThan(launchGate.openingDepth);
   });
 });

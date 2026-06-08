@@ -481,7 +481,7 @@ export function renderDiveGate(
   ppm: number
 ) {
   const diveGate = getDiveGate2DShape(shape, ppm);
-  if (diveGate.variant === "arch") {
+  if (diveGate.variant === "arch" || diveGate.variant === "launch") {
     const {
       bounds,
       color,

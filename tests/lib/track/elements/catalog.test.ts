@@ -9,6 +9,7 @@ import {
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
   MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID,
   MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
+  MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
   MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
@@ -53,6 +54,7 @@ describe("track element catalog", () => {
     ).toEqual([
       TRACKDRAW_DIVE_GATE_ELEMENT_ID,
       MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
+      MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID,
     ]);
   });
 
@@ -179,6 +181,37 @@ describe("track element catalog", () => {
     });
     expect(diveGate?.dimensions.widthMeters).toBeCloseTo(feetToMeters(7));
     expect(diveGate?.dimensions.heightMeters).toBeCloseTo(feetToMeters(6));
+  });
+
+  it("documents the official MultiGP launch gate and texture", () => {
+    const launchGate = getTrackElementCatalogEntry(
+      MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID
+    );
+
+    expect(launchGate).toMatchObject({
+      name: "MultiGP Launch Gate 7x6",
+      organization: "MultiGP",
+      kind: "divegate",
+      official: true,
+      dimensions: {
+        display: {
+          unitSystem: "imperial",
+          label: "7 ft x 6 ft",
+        },
+      },
+      visual: {
+        kind: "divegate",
+        variant: "launch",
+        banner: {
+          sideTexture:
+            "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
+          topTexture:
+            "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
+        },
+      },
+    });
+    expect(launchGate?.dimensions.widthMeters).toBeCloseTo(feetToMeters(7));
+    expect(launchGate?.dimensions.heightMeters).toBeCloseTo(feetToMeters(6));
   });
 
   it("can stamp catalog identity metadata when a placement flow asks for it", () => {

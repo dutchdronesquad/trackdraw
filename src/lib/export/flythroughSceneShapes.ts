@@ -8,14 +8,17 @@ import {
 import {
   getCornerFlagLayout,
   getMultiGpDiveGateArchLayout,
+  getMultiGpLaunchGateLayout,
   getPanelFrameGateLayout,
   getPanelFrameLadderLayout,
-  resolvePanelTextureMapping,
+  resolveLaunchGateBannerTextureMapping,
+  resolvePanelFrameTextureMapping,
 } from "@/lib/track/render3d-layout";
 import type {
   ArchDiveGateVisualSpec,
   FlagVisualSpec,
   GatePanelTextureVisualSpec,
+  LaunchGateVisualSpec,
   PanelFrameGateVisualSpec,
   PanelFrameLadderVisualSpec,
 } from "@/lib/track/elements/catalog";
@@ -118,6 +121,23 @@ function loadTexture(path: string): Promise<THREE.Texture> {
   return promise;
 }
 
+function cloneTextureForPanel(
+  texture: THREE.Texture,
+  {
+    flipX = false,
+    flipY = false,
+    rotation = 0,
+  }: { flipX?: boolean; flipY?: boolean; rotation?: number }
+) {
+  const clone = texture.clone();
+  clone.center.set(0.5, 0.5);
+  clone.rotation = rotation;
+  clone.repeat.set(flipX ? -1 : 1, flipY ? -1 : 1);
+  clone.offset.set(0, 0);
+  clone.needsUpdate = true;
+  return clone;
+}
+
 async function loadFlagTextures(visual: FlagVisualSpec | null) {
   if (!visual?.textures) return null;
   const [front, back] = await Promise.all([
@@ -140,8 +160,7 @@ function addPanelTexturePlane(
   group: THREE.Group,
   texture: THREE.Texture,
   size: [number, number],
-  position: [number, number, number],
-  textureRotationZ = 0
+  position: [number, number, number]
 ) {
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(...size),
@@ -154,7 +173,6 @@ function addPanelTexturePlane(
   );
   mesh.position.set(...position);
   mesh.rotation.y = Math.PI;
-  mesh.rotation.z = textureRotationZ;
   mesh.castShadow = false;
   mesh.receiveShadow = false;
   group.add(mesh);
@@ -184,14 +202,11 @@ async function createOfficialGateGroup(
     topPanelY,
   } = getPanelFrameGateLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
-  const {
-    leftPanel: leftSideTexture,
-    rightPanel: rightSideTexture,
-    leftRotationZ: leftSideTextureRotationZ,
-  } = resolvePanelTextureMapping(visual.textures, [
-    panelTextures.left,
-    panelTextures.right,
-  ]);
+  const textureMapping = resolvePanelFrameTextureMapping(visual.textures, {
+    left: panelTextures.left,
+    right: panelTextures.right,
+    top: panelTextures.top,
+  });
 
   const group = new THREE.Group();
   group.position.set(shape.x, 0, shape.y);
@@ -277,21 +292,20 @@ async function createOfficialGateGroup(
 
   addPanelTexturePlane(
     group,
-    leftSideTexture,
+    cloneTextureForPanel(textureMapping.left.texture, textureMapping.left),
     [leftPanelWidth, h],
-    [leftPanelX, h / 2, frontZ],
-    leftSideTextureRotationZ
+    [leftPanelX, h / 2, frontZ]
   );
   addPanelTexturePlane(
     group,
-    rightSideTexture,
+    cloneTextureForPanel(textureMapping.right.texture, textureMapping.right),
     [rightPanelWidth, h],
     [rightPanelX, h / 2, frontZ]
   );
-  if (panelTextures.top) {
+  if (textureMapping.top) {
     addPanelTexturePlane(
       group,
-      panelTextures.top,
+      cloneTextureForPanel(textureMapping.top.texture, textureMapping.top),
       [topPanelW, topPanelHeight],
       [0, topPanelY, frontZ]
     );
@@ -325,14 +339,11 @@ async function createPanelFrameLadderGroup(
     w,
   } = getPanelFrameLadderLayout(shape, visual);
   const yaw = getGateLadderYawRadians(shape.rotation);
-  const {
-    leftPanel: leftSideTexture,
-    rightPanel: rightSideTexture,
-    leftRotationZ: leftSideTextureRotationZ,
-  } = resolvePanelTextureMapping(visual.textures, [
-    panelTextures.left,
-    panelTextures.right,
-  ]);
+  const textureMapping = resolvePanelFrameTextureMapping(visual.textures, {
+    left: panelTextures.left,
+    right: panelTextures.right,
+    top: panelTextures.top,
+  });
 
   const group = new THREE.Group();
   group.position.set(shape.x, baseY, shape.y);
@@ -445,21 +456,20 @@ async function createPanelFrameLadderGroup(
     );
     addPanelTexturePlane(
       group,
-      leftSideTexture,
+      cloneTextureForPanel(textureMapping.left.texture, textureMapping.left),
       [leftPanelWidth, openingH],
-      [-w / 2 - leftPanelWidth / 2, section.openingMidY, frontZ],
-      leftSideTextureRotationZ
+      [-w / 2 - leftPanelWidth / 2, section.openingMidY, frontZ]
     );
     addPanelTexturePlane(
       group,
-      rightSideTexture,
+      cloneTextureForPanel(textureMapping.right.texture, textureMapping.right),
       [rightPanelWidth, openingH],
       [w / 2 + rightPanelWidth / 2, section.openingMidY, frontZ]
     );
-    if (section.hasTopPanel && panelTextures.top && bannerH > 0) {
+    if (section.hasTopPanel && textureMapping.top && bannerH > 0) {
       addPanelTexturePlane(
         group,
-        panelTextures.top,
+        cloneTextureForPanel(textureMapping.top.texture, textureMapping.top),
         [outerW, bannerH],
         [0, section.bannerMidY, frontZ]
       );
@@ -580,6 +590,128 @@ async function createArchDiveGateGroup(
     panel.add(banner);
   }
 
+  group.add(panel);
+
+  return group;
+}
+
+async function createLaunchGateGroup(
+  shape: DiveGateShape,
+  visual: LaunchGateVisualSpec
+): Promise<THREE.Group> {
+  const [sideTexture, topTexture] = await Promise.all([
+    loadTexture(visual.banner.sideTexture),
+    loadTexture(visual.banner.topTexture),
+  ]);
+  const tube = visual.frame.diameterMeters;
+  const pipeRadius = tube / 2;
+  const layout = getMultiGpLaunchGateLayout(shape);
+
+  const group = new THREE.Group();
+  group.position.set(shape.x, 0, shape.y);
+  group.rotation.y = (-shape.rotation * Math.PI) / 180;
+
+  const frameMat = makeMat(visual.frame.color);
+  const makeBannerMat = (texture: THREE.Texture) =>
+    new THREE.MeshStandardMaterial({
+      color: "#ffffff",
+      map: texture,
+      roughness: 0.68,
+      metalness: 0.02,
+      side: THREE.DoubleSide,
+    });
+  const textureMapping = resolveLaunchGateBannerTextureMapping(visual.banner, {
+    side: sideTexture,
+    top: topTexture,
+  });
+  const bannerMats = {
+    front: makeBannerMat(
+      cloneTextureForPanel(textureMapping.front.texture, textureMapping.front)
+    ),
+    rear: makeBannerMat(
+      cloneTextureForPanel(textureMapping.rear.texture, textureMapping.rear)
+    ),
+    left: makeBannerMat(
+      cloneTextureForPanel(textureMapping.left.texture, textureMapping.left)
+    ),
+    right: makeBannerMat(
+      cloneTextureForPanel(textureMapping.right.texture, textureMapping.right)
+    ),
+  };
+  const couplerMat = new THREE.MeshStandardMaterial({
+    color: "#d6d9de",
+    roughness: 0.54,
+    metalness: 0.08,
+  });
+
+  for (const { end, start } of layout.pipeSegments) {
+    addPipeBetween(group, start, end, pipeRadius, frameMat);
+  }
+  for (const { height, postH, x, z } of layout.couplerPoints) {
+    if (height < postH) {
+      addCylinder(
+        group,
+        tube * 0.75,
+        tube * 1.8,
+        [x, height, z],
+        [0, 0, 0],
+        couplerMat
+      );
+    }
+  }
+
+  const panel = new THREE.Group();
+  panel.position.y = layout.topY - tube * 0.12;
+  const banners: Array<{
+    depth: number;
+    material: THREE.Material;
+    rotZ: number;
+    width: number;
+    x: number;
+    z: number;
+  }> = [
+    {
+      x: 0,
+      z: -layout.halfOpeningD - layout.endPanelD / 2,
+      width: layout.outerW,
+      depth: layout.endPanelD,
+      rotZ: 0,
+      material: bannerMats.front,
+    },
+    {
+      x: 0,
+      z: layout.halfOpeningD + layout.endPanelD / 2,
+      width: layout.outerW,
+      depth: layout.endPanelD,
+      rotZ: Math.PI,
+      material: bannerMats.rear,
+    },
+    {
+      x: -layout.halfOpeningW - layout.sidePanelW / 2,
+      z: 0,
+      width: layout.sidePanelW,
+      depth: layout.openingD,
+      rotZ: 0,
+      material: bannerMats.left,
+    },
+    {
+      x: layout.halfOpeningW + layout.sidePanelW / 2,
+      z: 0,
+      width: layout.sidePanelW,
+      depth: layout.openingD,
+      rotZ: 0,
+      material: bannerMats.right,
+    },
+  ];
+  for (const { depth, material, rotZ, width, x, z } of banners) {
+    const banner = new THREE.Mesh(
+      new THREE.PlaneGeometry(width, depth),
+      material
+    );
+    banner.position.set(x, 0, z);
+    banner.rotation.set(Math.PI / 2, 0, rotZ);
+    panel.add(banner);
+  }
   group.add(panel);
 
   return group;
@@ -790,6 +922,10 @@ export async function addFlythroughShapes(
       const diveGateVisual = getDiveGateVisualSpec(shape);
       if (diveGateVisual?.variant === "arch") {
         scene.add(await createArchDiveGateGroup(shape, diveGateVisual));
+        continue;
+      }
+      if (diveGateVisual?.variant === "launch") {
+        scene.add(await createLaunchGateGroup(shape, diveGateVisual));
         continue;
       }
 

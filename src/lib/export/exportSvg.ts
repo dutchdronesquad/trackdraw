@@ -203,7 +203,7 @@ function diveGateToSvg(s: DiveGateShape, ppm: number): string {
   const cx = m(s.x, ppm);
   const cy = m(s.y, ppm);
   const diveGate = getDiveGate2DShape(s, ppm);
-  if (diveGate.variant === "arch") {
+  if (diveGate.variant === "arch" || diveGate.variant === "launch") {
     const {
       color,
       couplerPoints,
@@ -289,7 +289,9 @@ function getNumberedShapeBounds(shape: Shape, ppm: number) {
     }
     case "divegate": {
       const diveGate = getDiveGate2DShape(shape, ppm);
-      if (diveGate.variant === "arch") return diveGate.bounds;
+      if (diveGate.variant === "arch" || diveGate.variant === "launch") {
+        return diveGate.bounds;
+      }
 
       const { size, visibleDepth } = diveGate;
       return {

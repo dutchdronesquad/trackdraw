@@ -26,14 +26,14 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 
 ## Follow-up
 
-- [ ] MultiGP Dive Gate 7x6 (`No account required`)
-        Add as a catalog-backed gate variant with official dimensions and a 3D rendering that reflects the low-profile dive orientation. Shares the gate shape kind and inspector pipeline.
+- [x] MultiGP Dive Gate 7x6 (`No account required`)
+      Catalog-backed gate variant with official 7×6 ft dimensions and a 3D arch rendering. Shares the gate shape kind and inspector pipeline. Arch panels now cast and receive shadows correctly, and texture placement is fully configurable via the `ArchDiveGateVisualSpec` banner placement API.
 
-- [ ] MultiGP Launch Gate 7x6 (`No account required`)
-        Add as a catalog-backed gate variant used at the race start, with official dimensions and appropriate 3D rendering. Shares the gate shape kind and inspector pipeline.
+- [x] MultiGP Launch Gate 7x6 (`No account required`)
+      Catalog-backed gate variant with official 7×6 ft dimensions and a 3D box-frame rendering with four configurable banner panels. Shares the gate shape kind and inspector pipeline. Banner panels now cast and receive shadows correctly with correct texture orientations.
 
 - [ ] MultiGP Double Gate Tower 5x5 and 7x6 (`No account required`)
-        New shape kind with its own 2D representation, 3D rendering, catalog entries, and inspector pipeline. Race-line behavior is gate-like (fly through); physical structure is a two-frame tower.
+      New shape kind with its own 2D representation, 3D rendering, catalog entries, and inspector pipeline. Race-line behavior is gate-like (fly through); physical structure is a two-frame tower.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.

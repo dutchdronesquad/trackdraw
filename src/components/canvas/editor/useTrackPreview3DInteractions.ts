@@ -581,7 +581,7 @@ export function useTrackPreview3DInteractions({
       if (!camera || !container) return;
       const shape = shapeById[drag.shapeId];
       if (!shape || shape.kind !== "divegate") return;
-      if (getDiveGateVisualSpec(shape)?.variant === "arch") return;
+      if (getDiveGateVisualSpec(shape)) return;
       const dg = shape as DiveGateShape;
       const sz = dg.width ?? 2.8;
       const yawRad = (-dg.rotation * Math.PI) / 180;
@@ -624,7 +624,7 @@ export function useTrackPreview3DInteractions({
       event.stopPropagation();
       const shape = shapeById[shapeId];
       if (!shape || shape.kind !== "divegate" || shape.locked) return;
-      if (getDiveGateVisualSpec(shape)?.variant === "arch") return;
+      if (getDiveGateVisualSpec(shape)) return;
       if (!startSession()) return;
       setTiltDrag({ shapeId, startTilt: currentTilt });
     },

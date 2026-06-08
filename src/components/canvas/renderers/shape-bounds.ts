@@ -56,7 +56,9 @@ export function getShapeLocalBounds(shape: Shape, ppm: number) {
     }
     case "divegate": {
       const diveGate = getDiveGate2DShape(shape, ppm);
-      if (diveGate.variant === "arch") return diveGate.bounds;
+      if (diveGate.variant === "arch" || diveGate.variant === "launch") {
+        return diveGate.bounds;
+      }
 
       const { size, visibleDepth } = diveGate;
       return {

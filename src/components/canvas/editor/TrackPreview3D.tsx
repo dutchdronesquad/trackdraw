@@ -63,7 +63,20 @@ import {
   FlyThroughControlsOverlay,
   TrackPreview3DHintOverlays,
 } from "@/components/canvas/trackPreview3DOverlays";
+import {
+  EDGES,
+  generateExportConfigForCatalog,
+  getCurrentEdgeForPanel,
+  getEffectiveFlips,
+  getPanelsForCatalog,
+  setEdge,
+  toggleFlip,
+  useOverrideVersion,
+} from "@/components/canvas/textureDebugContext";
+import type { TexturePanelEdge } from "@/lib/track/elements/catalog";
+import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useTrackPreview3DInteractions } from "@/components/canvas/editor/useTrackPreview3DInteractions";
+import { motion, useReducedMotion } from "framer-motion";
 import dynamic from "next/dynamic";
 
 const DroneCamera = dynamic(
@@ -73,6 +86,154 @@ const DroneCamera = dynamic(
     })),
   { ssr: false }
 );
+
+const POPUP_TRANSITION = { duration: 0.16, ease: [0.22, 1, 0.36, 1] as const };
+
+function TextureDebugPopup({ catalogId }: { catalogId: string }) {
+  useOverrideVersion();
+  const theme = useTheme();
+  const prefersReducedMotion = useReducedMotion();
+  const panels = getPanelsForCatalog(catalogId);
+  const [copied, setCopied] = useState(false);
+  const isDark = theme === "dark";
+
+  function handleCopy() {
+    void navigator.clipboard.writeText(
+      generateExportConfigForCatalog(catalogId)
+    );
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  }
+
+  const panelClass = isDark
+    ? "border-[#2b3443] bg-[#0f1726]/88 text-slate-50 shadow-[0_32px_96px_rgba(2,6,23,0.52)] backdrop-blur-md"
+    : "border-[#c8d4e5] bg-[#eef3f9]/88 text-slate-900 shadow-[0_28px_84px_rgba(15,23,42,0.22)] backdrop-blur-md";
+  const titleClass = isDark ? "text-sky-200/88" : "text-sky-700";
+  const bodyClass = isDark ? "text-white/54" : "text-slate-600";
+  const buttonClass = isDark
+    ? "border-white/10 bg-white/[0.05] text-white/76 hover:border-white/18 hover:bg-white/[0.08] hover:text-white"
+    : "border-slate-900/10 bg-white/72 text-slate-700 hover:border-slate-900/16 hover:bg-white hover:text-slate-950";
+  const rowClass = isDark ? "bg-white/[0.035]" : "bg-slate-900/[0.045]";
+  const segClass = isDark
+    ? "border-white/6 bg-white/[0.03]"
+    : "border-black/6 bg-black/[0.025]";
+  const segActive = isDark
+    ? "bg-white/12 text-white"
+    : "bg-white text-slate-900 shadow-sm";
+  const segIdle = isDark
+    ? "text-white/36 hover:bg-white/6 hover:text-white/70"
+    : "text-slate-400 hover:bg-black/5 hover:text-slate-700";
+  const flipActive = isDark
+    ? "border-sky-400/35 bg-sky-500/15 text-sky-300"
+    : "border-sky-500/30 bg-sky-500/10 text-sky-600";
+
+  return (
+    <motion.div
+      initial={
+        prefersReducedMotion ? false : { opacity: 0, y: -6, scale: 0.988 }
+      }
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={POPUP_TRANSITION}
+      className={`absolute top-3 right-3 z-20 w-74 max-w-[calc(100vw-1.5rem)] rounded-2xl border ${panelClass}`}
+    >
+      {/* Header — same structure as the Developer HUD */}
+      <div className="border-b border-current/8 px-3 py-2.5">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p
+              className={`text-[9px] font-semibold tracking-[0.2em] uppercase ${titleClass}`}
+            >
+              Texture Debug
+            </p>
+            <p className={`mt-1 truncate text-[11px] ${bodyClass}`}>
+              {catalogId}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className={`shrink-0 rounded-md border px-2 py-1 text-[9px] font-medium tracking-[0.04em] transition-colors select-none ${
+              copied
+                ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-400"
+                : buttonClass
+            }`}
+          >
+            {copied ? "✓ Copied" : "Copy config"}
+          </button>
+        </div>
+      </div>
+
+      {/* Panel rows */}
+      <div className="space-y-1.5 p-3">
+        {panels.length === 0 ? (
+          <p className={`py-1 text-center text-[11px] ${bodyClass}`}>
+            No panels registered yet
+          </p>
+        ) : (
+          panels.map((panel) => {
+            const current = getCurrentEdgeForPanel(catalogId, panel.panelName);
+            const flips = getEffectiveFlips(
+              catalogId,
+              panel.panelName,
+              panel.baseFlipX,
+              panel.baseFlipY
+            );
+            return (
+              <div
+                key={panel.panelName}
+                className={`rounded-lg px-2.5 py-2 ${rowClass}`}
+              >
+                {/* Row header: name + flip toggles */}
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[11px]">{panel.panelName}</span>
+                  <div className="flex items-center gap-1">
+                    <span className={`mr-0.5 text-[9px] ${bodyClass}`}>
+                      flip
+                    </span>
+                    {(["x", "y"] as const).map((axis) => {
+                      const active = axis === "x" ? flips.flipX : flips.flipY;
+                      return (
+                        <button
+                          key={axis}
+                          type="button"
+                          onClick={() =>
+                            toggleFlip(catalogId, panel.panelName, axis)
+                          }
+                          className={`rounded-md border px-2 py-0.5 text-[9px] font-medium tracking-[0.04em] transition-colors select-none ${
+                            active ? flipActive : buttonClass
+                          }`}
+                        >
+                          {axis.toUpperCase()}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {/* Edge segmented control */}
+                <div
+                  className={`flex gap-0.5 rounded-md border p-0.5 ${segClass}`}
+                >
+                  {(EDGES as TexturePanelEdge[]).map((edge) => (
+                    <button
+                      key={edge}
+                      type="button"
+                      onClick={() => setEdge(catalogId, panel.panelName, edge)}
+                      className={`flex-1 rounded py-1 text-[10px] font-medium transition-all select-none ${
+                        current === edge ? segActive : segIdle
+                      }`}
+                    >
+                      {edge}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </motion.div>
+  );
+}
 
 export interface TrackPreview3DHandle {
   screenshot: () => string;
@@ -116,6 +277,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const selectedPolyline = useEditor(selectSelectedPolyline);
     const theme = useTheme();
     const isMobile = useIsMobile();
+    const { enabled: devMode } = useDeveloperMode();
     const t = SCENE_3D_THEME[theme];
     const cx = field.width / 2;
     const cz = field.height / 2;
@@ -132,6 +294,12 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const orbitControlsRef = useRef<OrbitControlsImpl | null>(null);
     const selectionRef = useRef(selection);
     const selectedIdSet = useMemo(() => new Set(selection), [selection]);
+
+    const selectedDebugCatalogId = useMemo(() => {
+      if (!devMode || selection.length !== 1) return null;
+      const shape = shapeById[selection[0]];
+      return getTrackElementCatalogIdentity(shape?.meta)?.elementId ?? null;
+    }, [devMode, selection, shapeById]);
 
     const {
       containerRef,
@@ -184,7 +352,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           (shape) =>
             selectedIdSet.has(shape.id) &&
             shape.kind === "divegate" &&
-            getDiveGateVisualSpec(shape)?.variant !== "arch"
+            !getDiveGateVisualSpec(shape)
         ),
       [selectedIdSet, shapes]
     );
@@ -445,7 +613,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                 !selectedIdSet.has(shape.id) ||
                 shape.locked ||
                 shape.kind !== "divegate" ||
-                getDiveGateVisualSpec(shape)?.variant === "arch"
+                !!getDiveGateVisualSpec(shape)
               )
                 return null;
               return (
@@ -575,6 +743,10 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           selectedPolyline={selectedPolyline}
           onStartFlyThrough={startFlyThrough}
         />
+
+        {devMode && selectedDebugCatalogId && (
+          <TextureDebugPopup catalogId={selectedDebugCatalogId} />
+        )}
       </div>
     );
   }
