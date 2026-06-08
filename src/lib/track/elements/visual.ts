@@ -16,6 +16,35 @@ import {
   type LadderVisualSpec,
   type TrackElementVisualSpec,
 } from "@/lib/track/elements/catalog";
+import { getShapeTimingMarker } from "@/lib/track/timing";
+
+const START_FINISH_TOP_TEXTURES: Record<string, string> = {
+  "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp":
+    "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-red-50-percent.webp",
+  "/assets/models/textures/multigp-obstacles/large-top-multigp.webp":
+    "/assets/models/textures/multigp-obstacles/large-top-red-multigp.webp",
+};
+
+const START_FINISH_TOP_COLOR = "#8A181B";
+const MULTIGP_TOP_PANEL_COLOR = "#202e5d";
+
+function withStartFinishTopTexture(visual: GateVisualSpec): GateVisualSpec {
+  if (visual.variant !== "panel-frame") return visual;
+  const top = visual.textures.top;
+  const redTop = top ? (START_FINISH_TOP_TEXTURES[top] ?? top) : top;
+  const topColor = visual.panels.top.color;
+  const redColor =
+    topColor === MULTIGP_TOP_PANEL_COLOR ? START_FINISH_TOP_COLOR : topColor;
+  if (redTop === top && redColor === topColor) return visual;
+  return {
+    ...visual,
+    panels: {
+      ...visual.panels,
+      top: { ...visual.panels.top, color: redColor },
+    },
+    textures: { ...visual.textures, top: redTop },
+  };
+}
 
 export function getTrackElementVisualSpec(
   shape: Shape
@@ -38,8 +67,9 @@ export function getTrackElementVisualSpec(
 
 export function getGateVisualSpec(shape: GateShape): GateVisualSpec {
   const visual = getTrackElementVisualSpec(shape);
-  if (visual?.kind === "gate") return visual;
-  return getFallbackGateVisualSpec(shape);
+  const base = visual?.kind === "gate" ? visual : getFallbackGateVisualSpec(shape);
+  const timing = getShapeTimingMarker(shape);
+  return timing?.role === "start_finish" ? withStartFinishTopTexture(base) : base;
 }
 
 export function getFlagVisualSpec(shape: FlagShape): FlagVisualSpec | null {
