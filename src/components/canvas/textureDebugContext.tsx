@@ -56,6 +56,7 @@ export function registerPanel(
     baseFlipY,
     edgeIndex: snapToEdgeIndex(baseRotation),
   });
+  emitOverrideChange();
 }
 
 export function setEdge(

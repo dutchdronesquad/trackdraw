@@ -107,6 +107,8 @@ function cloneTextureForPanel(
 ) {
   const clone = texture.clone();
   clone.center.set(0.5, 0.5);
+  clone.wrapS = THREE.RepeatWrapping;
+  clone.wrapT = THREE.RepeatWrapping;
   clone.rotation = rotation;
   clone.repeat.set(flipX ? -1 : 1, flipY ? -1 : 1);
   clone.offset.set(0, 0);

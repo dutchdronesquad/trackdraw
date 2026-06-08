@@ -71,7 +71,7 @@ export interface LadderShape extends BaseShape {
 export interface DiveGateShape extends BaseShape {
   kind: "divegate";
   width: number; // m width of flying opening (or square frame side for generic variant)
-  height?: number; // m height of flying opening (defaults to width for square frame)
+  height?: number; // m secondary opening/footprint span, depending on variant (defaults to width for square frame)
   thick?: number; // m frame/panel width (default 0.20)
   tilt?: number; // degrees from vertical: 0=vertical wall, 90=flat/horizontal (generic only)
   elevation?: number; // m height of frame center above ground (generic variant, default 3.0)
