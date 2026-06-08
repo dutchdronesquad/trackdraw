@@ -59,7 +59,9 @@ async function saveWithWebp(filePath, pngBuffer) {
 function applyBlueToRed(data, channels) {
   const out = Buffer.alloc(data.length);
   for (let i = 0; i < data.length; i += channels) {
-    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const r = data[i],
+      g = data[i + 1],
+      b = data[i + 2];
     if (b > r + 30 && b > g + 10 && r < 80 && g < 100) {
       const scale = (r + g + b) / 3 / 56.7;
       out[i] = Math.min(255, Math.round(0x8a * scale));
@@ -114,8 +116,12 @@ async function generateRedVariant(sourceFileName, outputFileName) {
 
   await saveWithWebp(tex(outputFileName), png);
 
-  const webpSize = formatBytes((await fs.stat(tex(toWebpName(outputFileName)))).size);
-  console.log(`${outputFileName}: ${info.width}x${info.height} ${formatBytes(png.length)}; webp ${webpSize}`);
+  const webpSize = formatBytes(
+    (await fs.stat(tex(toWebpName(outputFileName)))).size
+  );
+  console.log(
+    `${outputFileName}: ${info.width}x${info.height} ${formatBytes(png.length)}; webp ${webpSize}`
+  );
 }
 
 for (const [fileName, target] of Object.entries(textureTargets)) {

@@ -67,9 +67,12 @@ export function getTrackElementVisualSpec(
 
 export function getGateVisualSpec(shape: GateShape): GateVisualSpec {
   const visual = getTrackElementVisualSpec(shape);
-  const base = visual?.kind === "gate" ? visual : getFallbackGateVisualSpec(shape);
+  const base =
+    visual?.kind === "gate" ? visual : getFallbackGateVisualSpec(shape);
   const timing = getShapeTimingMarker(shape);
-  return timing?.role === "start_finish" ? withStartFinishTopTexture(base) : base;
+  return timing?.role === "start_finish"
+    ? withStartFinishTopTexture(base)
+    : base;
 }
 
 export function getFlagVisualSpec(shape: FlagShape): FlagVisualSpec | null {
