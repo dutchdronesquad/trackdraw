@@ -181,11 +181,13 @@ export function MeasurementNum({
   unitSystem,
   onChange,
   minMeters,
+  maxMeters,
 }: {
   valueMeters: number;
   unitSystem: MeasurementUnitSystem;
   onChange: (valueMeters: number) => void;
   minMeters?: number;
+  maxMeters?: number;
 }) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
   const [draft, setDraft] = useState<string | null>(null);
@@ -201,8 +203,11 @@ export function MeasurementNum({
       return;
     }
 
-    const nextValue =
-      typeof minMeters === "number" ? Math.max(minMeters, parsed) : parsed;
+    let nextValue = parsed;
+    if (typeof minMeters === "number")
+      nextValue = Math.max(minMeters, nextValue);
+    if (typeof maxMeters === "number")
+      nextValue = Math.min(maxMeters, nextValue);
     onChange(nextValue);
     setDraft(null);
   };

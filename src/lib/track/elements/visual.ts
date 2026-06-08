@@ -6,6 +6,7 @@ import type {
   Shape,
 } from "@/lib/types";
 import {
+  TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
   type DiveGateVisualSpec,
@@ -61,6 +62,25 @@ export function getDiveGateVisualSpec(
   const visual = getTrackElementVisualSpec(shape);
   if (visual?.kind === "divegate") return visual;
   return null;
+}
+
+function getDiveGateEntryId(shape: DiveGateShape) {
+  const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
+  if (catalogIdentity) return catalogIdentity.elementId;
+  // Non-official shapes (TrackDraw generic dive gate) have no catalog identity stored.
+  // Fall back to the generic dive gate entry so min/max clamping still applies.
+  if (!getDiveGateVisualSpec(shape)) return TRACKDRAW_DIVE_GATE_ELEMENT_ID;
+  return undefined;
+}
+
+export function getDiveGateElevationMin(shape: DiveGateShape): number {
+  const entry = getTrackElementCatalogEntry(getDiveGateEntryId(shape));
+  return entry?.elevationMinMeters ?? 0;
+}
+
+export function getDiveGateElevationMax(shape: DiveGateShape): number | null {
+  const entry = getTrackElementCatalogEntry(getDiveGateEntryId(shape));
+  return entry?.elevationMaxMeters ?? null;
 }
 
 function getFallbackGateVisualSpec(shape: GateShape): FrameOnlyGateVisualSpec {

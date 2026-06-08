@@ -18,14 +18,17 @@ describe("track 3D layout helpers", () => {
     expect(getMultiGpDiveGateArchTopY()).toBeCloseTo(feetToMeters(15));
     expect(layout.cornerPoints[0]?.[1]).toBeCloseTo(feetToMeters(12));
     expect(layout.cornerPoints[2]?.[1]).toBeCloseTo(feetToMeters(15));
-    expect(layout.pipeSegments).toHaveLength(6);
-    expect(layout.pipeSegments[2]?.start[0]).toBeCloseTo(
+    expect(layout.pipeSegments).toHaveLength(2);
+    expect(layout.pipeSegments[0]?.start[0]).toBeCloseTo(
       layout.cornerPoints[2]?.[0] ?? 0
     );
-    expect(layout.pipeSegments[2]?.end[0]).toBeCloseTo(
+    expect(layout.pipeSegments[0]?.end[0]).toBeCloseTo(
       (layout.cornerPoints[2]?.[0] ?? 0) - feetToMeters(2)
     );
-    expect(layout.pipeSegments[4]?.end[0]).toBeCloseTo(
+    expect(layout.pipeSegments[1]?.start[0]).toBeCloseTo(
+      layout.cornerPoints[3]?.[0] ?? 0
+    );
+    expect(layout.pipeSegments[1]?.end[0]).toBeCloseTo(
       (layout.cornerPoints[3]?.[0] ?? 0) + feetToMeters(2)
     );
     expect(layout.couplerPoints.map((point) => point.height)).toEqual([
@@ -50,7 +53,17 @@ describe("track 3D layout helpers", () => {
     expect(layout.outerD).toBeCloseTo(feetToMeters(10));
     expect(layout.sidePanelW).toBeCloseTo(feetToMeters(1.5));
     expect(layout.endPanelD).toBeCloseTo(feetToMeters(2));
-    expect(layout.pipeSegments).toHaveLength(12);
+    expect(layout.pipeSegments).toHaveLength(8);
+    expect(layout.pipeSegments[0]?.start).toEqual([
+      -layout.halfOuterW,
+      layout.topY,
+      -layout.halfOuterD,
+    ]);
+    expect(layout.pipeSegments[4]?.start).toEqual([
+      -layout.halfOpeningW,
+      layout.topY,
+      -layout.halfOpeningD,
+    ]);
     expect(layout.couplerPoints).toHaveLength(4);
     expect(layout.couplerPoints.map((point) => point.height)).toEqual([
       feetToMeters(5),

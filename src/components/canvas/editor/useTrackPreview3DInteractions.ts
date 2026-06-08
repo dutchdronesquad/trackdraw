@@ -12,7 +12,11 @@ import type { ThreeEvent } from "@react-three/fiber";
 import { useHistorySession } from "@/hooks/useHistorySession";
 import * as THREE from "three";
 import { normalizeRotationDegrees } from "@/lib/track/orientation";
-import { getDiveGateVisualSpec } from "@/lib/track/elements/visual";
+import {
+  getDiveGateElevationMax,
+  getDiveGateElevationMin,
+  getDiveGateVisualSpec,
+} from "@/lib/track/elements/visual";
 import type {
   DiveGateShape,
   LadderShape,
@@ -133,6 +137,11 @@ export function useTrackPreview3DInteractions({
     startClientY: number;
     startElevation: number;
   } | null>(null);
+  const [diveGateElevationDrag, setDiveGateElevationDrag] = useState<{
+    shapeId: string;
+    startClientY: number;
+    startElevation: number;
+  } | null>(null);
   const [isMiddleMousePanning, setIsMiddleMousePanning] = useState(false);
   const { startSession, finishSession, cancelSession } = useHistorySession({
     beginInteraction,
@@ -148,10 +157,12 @@ export function useTrackPreview3DInteractions({
   const rotationDragRef = useRef(rotationDrag);
   const tiltDragRef = useRef(tiltDrag);
   const ladderElevationDragRef = useRef(ladderElevationDrag);
+  const diveGateElevationDragRef = useRef(diveGateElevationDrag);
   const dragAnimationFrameRef = useRef<number | null>(null);
   const rotationDragAnimationFrameRef = useRef<number | null>(null);
   const tiltDragAnimationFrameRef = useRef<number | null>(null);
   const ladderElevationDragAnimationFrameRef = useRef<number | null>(null);
+  const diveGateElevationDragAnimationFrameRef = useRef<number | null>(null);
   const pendingElevationClientRef = useRef<{ x: number; y: number } | null>(
     null
   );
@@ -161,9 +172,11 @@ export function useTrackPreview3DInteractions({
   const pendingTiltClientYRef = useRef<number | null>(null);
   const pendingTiltClientXRef = useRef<number | null>(null);
   const pendingLadderElevationClientYRef = useRef<number | null>(null);
+  const pendingDiveGateElevationClientYRef = useRef<number | null>(null);
   const rotationDragValueRef = useRef<number | null>(null);
   const tiltDragValueRef = useRef<number | null>(null);
   const ladderElevationDragValueRef = useRef<number | null>(null);
+  const diveGateElevationDragValueRef = useRef<number | null>(null);
   const dragRotationGroupRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.Camera | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -187,6 +200,10 @@ export function useTrackPreview3DInteractions({
   useEffect(() => {
     ladderElevationDragRef.current = ladderElevationDrag;
   }, [ladderElevationDrag]);
+
+  useEffect(() => {
+    diveGateElevationDragRef.current = diveGateElevationDrag;
+  }, [diveGateElevationDrag]);
 
   useEffect(() => {
     const stopMiddleMousePanning = () => {
@@ -870,13 +887,173 @@ export function useTrackPreview3DInteractions({
     updateShape,
   ]);
 
+  const applyDiveGateElevationDrag = useCallback(
+    (clientY: number) => {
+      const drag = diveGateElevationDragRef.current;
+      if (!drag) return;
+      const shape = shapeById[drag.shapeId];
+      if (!shape || shape.kind !== "divegate") return;
+      const deltaMeters = (drag.startClientY - clientY) * 0.035;
+      const elevationMin = getDiveGateElevationMin(shape);
+      const elevationMax = getDiveGateElevationMax(shape);
+      const raw = drag.startElevation + deltaMeters;
+      const clamped =
+        elevationMin > 0 || elevationMax != null
+          ? Math.min(elevationMax ?? Infinity, Math.max(elevationMin, raw))
+          : raw;
+      const nextElevation = +clamped.toFixed(2);
+      const currentElevation =
+        diveGateElevationDragValueRef.current ?? drag.startElevation;
+      if (Math.abs(currentElevation - nextElevation) < 0.01) return;
+      diveGateElevationDragValueRef.current = nextElevation;
+      setLiveShapePatch(drag.shapeId, { elevation: nextElevation });
+    },
+    [setLiveShapePatch, shapeById]
+  );
+
+  const handleDiveGateElevationDragStart = useCallback(
+    (
+      event: ThreeEvent<PointerEvent>,
+      shapeId: string,
+      currentElevation: number
+    ) => {
+      event.stopPropagation();
+      const shape = shapeById[shapeId];
+      if (!shape || shape.kind !== "divegate" || shape.locked) return;
+      if (!startSession()) return;
+      diveGateElevationDragValueRef.current = currentElevation;
+      setDiveGateElevationDrag({
+        shapeId,
+        startClientY: event.nativeEvent.clientY,
+        startElevation: currentElevation,
+      });
+    },
+    [shapeById, startSession]
+  );
+
+  useEffect(() => {
+    if (!diveGateElevationDrag) return;
+
+    let finished = false;
+    const cleanupListeners = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", stopDrag);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", stopDrag);
+      window.removeEventListener("touchcancel", cancelDrag);
+      window.removeEventListener("blur", cancelDrag);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (diveGateElevationDragAnimationFrameRef.current !== null) {
+        window.cancelAnimationFrame(
+          diveGateElevationDragAnimationFrameRef.current
+        );
+        diveGateElevationDragAnimationFrameRef.current = null;
+      }
+    };
+
+    const finishDrag = () => {
+      if (finished) return;
+      finished = true;
+      const drag = diveGateElevationDragRef.current;
+      cleanupListeners();
+      if (pendingDiveGateElevationClientYRef.current !== null) {
+        applyDiveGateElevationDrag(pendingDiveGateElevationClientYRef.current);
+      }
+      const finalElevation = diveGateElevationDragValueRef.current;
+      finishSession(() => {
+        if (drag && finalElevation !== null) {
+          updateShape(drag.shapeId, { elevation: finalElevation });
+        }
+        if (drag) {
+          clearLiveShapePatch(drag.shapeId);
+        }
+      });
+      setDiveGateElevationDrag(null);
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      pendingDiveGateElevationClientYRef.current = event.clientY;
+      if (diveGateElevationDragAnimationFrameRef.current !== null) return;
+      diveGateElevationDragAnimationFrameRef.current =
+        window.requestAnimationFrame(() => {
+          diveGateElevationDragAnimationFrameRef.current = null;
+          if (pendingDiveGateElevationClientYRef.current !== null) {
+            applyDiveGateElevationDrag(
+              pendingDiveGateElevationClientYRef.current
+            );
+          }
+        });
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!event.touches.length) return;
+      event.preventDefault();
+      pendingDiveGateElevationClientYRef.current = event.touches[0].clientY;
+      if (diveGateElevationDragAnimationFrameRef.current !== null) return;
+      diveGateElevationDragAnimationFrameRef.current =
+        window.requestAnimationFrame(() => {
+          diveGateElevationDragAnimationFrameRef.current = null;
+          if (pendingDiveGateElevationClientYRef.current !== null) {
+            applyDiveGateElevationDrag(
+              pendingDiveGateElevationClientYRef.current
+            );
+          }
+        });
+    };
+
+    const stopDrag = () => {
+      finishDrag();
+    };
+
+    const cancelDrag = () => {
+      if (finished) return;
+      finished = true;
+      cleanupListeners();
+      diveGateElevationDragValueRef.current = null;
+      cancelSession(() => {
+        const drag = diveGateElevationDragRef.current;
+        if (drag) {
+          clearLiveShapePatch(drag.shapeId);
+        }
+        setDiveGateElevationDrag(null);
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      cancelDrag();
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", stopDrag);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", stopDrag);
+    window.addEventListener("touchcancel", cancelDrag);
+    window.addEventListener("blur", cancelDrag);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelDrag();
+    };
+  }, [
+    applyDiveGateElevationDrag,
+    cancelSession,
+    clearLiveShapePatch,
+    diveGateElevationDrag,
+    finishSession,
+    updateShape,
+  ]);
+
   return {
     cameraRef,
     containerRef,
     dragRotationGroupRef,
+    diveGateElevationDrag,
+    diveGateElevationDragValueRef,
     elevationDrag,
     handleCameraCapture,
     handleContainerMouseDownCapture,
+    handleDiveGateElevationDragStart,
     handleElevationDragStart,
     handleLadderElevationDragStart,
     handleRotateDragStart,

@@ -64,6 +64,7 @@ export interface MultiGpDiveGateArchLayout {
     x: number;
     z: number;
   }[];
+  legPoints: Array<{ x: number; z: number; topY: number }>;
   pipeSegments: {
     end: Point3Tuple;
     start: Point3Tuple;
@@ -87,6 +88,7 @@ export interface MultiGpLaunchGateLayout {
     x: number;
     z: number;
   }[];
+  legPoints: Array<{ x: number; z: number; topY: number }>;
   halfOpeningD: number;
   halfOpeningW: number;
   halfOuterD: number;
@@ -375,25 +377,30 @@ export function getLadderRenderedHeight(
   return getPanelFrameLadderLayout(shape, visual).totalH;
 }
 
-export function getMultiGpDiveGateArchTopY() {
-  return MULTIGP_DIVE_GATE_REAR_EDGE_H;
+export function getMultiGpDiveGateArchTopY(
+  elevation = MULTIGP_DIVE_GATE_REAR_EDGE_H
+) {
+  return elevation;
 }
 
 export function getMultiGpDiveGateArchLayout(
-  shape: Pick<DiveGateShape, "width" | "height">
+  shape: Pick<DiveGateShape, "width" | "height" | "elevation">
 ): MultiGpDiveGateArchLayout {
   const openingW = shape.width ?? MULTIGP_DIVE_GATE_OPENING_W;
   const openingH = shape.height ?? MULTIGP_DIVE_GATE_OPENING_H;
+  // elevation = absolute rear-edge height; default matches MultiGP spec (15 ft)
+  const rearEdgeH = shape.elevation ?? MULTIGP_DIVE_GATE_REAR_EDGE_H;
+  const frontEdgeH =
+    rearEdgeH -
+    (MULTIGP_DIVE_GATE_REAR_EDGE_H - MULTIGP_DIVE_GATE_FRONT_EDGE_H);
   const halfOpening = openingW / 2;
   const outerW = openingW + MULTIGP_DIVE_GATE_SIDE_PANEL_W * 2;
   const outerH = openingH + MULTIGP_DIVE_GATE_BANNER_H * 2;
   const halfOuterW = outerW / 2;
   const halfOuterH = outerH / 2;
-  const verticalSpan =
-    MULTIGP_DIVE_GATE_REAR_EDGE_H - MULTIGP_DIVE_GATE_FRONT_EDGE_H;
+  const verticalSpan = rearEdgeH - frontEdgeH;
   const tiltRad = -Math.acos(Math.min(1, verticalSpan / outerH));
-  const centerY =
-    (MULTIGP_DIVE_GATE_FRONT_EDGE_H + MULTIGP_DIVE_GATE_REAR_EDGE_H) / 2;
+  const centerY = (frontEdgeH + rearEdgeH) / 2;
 
   const panelPoint = (x: number, y: number): Point3Tuple => [
     x,
@@ -416,53 +423,54 @@ export function getMultiGpDiveGateArchLayout(
     cornerPoints[3][1],
     cornerPoints[3][2],
   ];
-  const pipeSegments = [
+  const legPoints = [
+    { x: cornerPoints[0][0], z: cornerPoints[0][2], topY: cornerPoints[0][1] },
+    { x: cornerPoints[1][0], z: cornerPoints[1][2], topY: cornerPoints[1][1] },
     {
-      start: [cornerPoints[0][0], 0, cornerPoints[0][2]] as Point3Tuple,
-      end: cornerPoints[0],
+      x: rearLeftSupportTop[0],
+      z: rearLeftSupportTop[2],
+      topY: rearLeftSupportTop[1],
     },
     {
-      start: [cornerPoints[1][0], 0, cornerPoints[1][2]] as Point3Tuple,
-      end: cornerPoints[1],
-    },
-    {
-      start: cornerPoints[2],
-      end: rearLeftSupportTop,
-    },
-    {
-      start: [rearLeftSupportTop[0], 0, rearLeftSupportTop[2]] as Point3Tuple,
-      end: rearLeftSupportTop,
-    },
-    {
-      start: cornerPoints[3],
-      end: rearRightSupportTop,
-    },
-    {
-      start: [rearRightSupportTop[0], 0, rearRightSupportTop[2]] as Point3Tuple,
-      end: rearRightSupportTop,
+      x: rearRightSupportTop[0],
+      z: rearRightSupportTop[2],
+      topY: rearRightSupportTop[1],
     },
   ];
+  const pipeSegments = [
+    { start: cornerPoints[2], end: rearLeftSupportTop },
+    { start: cornerPoints[3], end: rearRightSupportTop },
+  ];
+  const elevationDelta = rearEdgeH - MULTIGP_DIVE_GATE_REAR_EDGE_H;
+  const couplerH = Math.max(
+    0,
+    MULTIGP_DIVE_GATE_FRONT_COUPLER_H + elevationDelta
+  );
+  const rearCouplerH = Math.max(
+    0,
+    MULTIGP_DIVE_GATE_REAR_COUPLER_H + elevationDelta
+  );
   const couplerPoints = [
     {
-      height: MULTIGP_DIVE_GATE_FRONT_COUPLER_H,
+      height: couplerH,
       postH: cornerPoints[0][1],
       x: cornerPoints[0][0],
       z: cornerPoints[0][2],
     },
     {
-      height: MULTIGP_DIVE_GATE_FRONT_COUPLER_H,
+      height: couplerH,
       postH: cornerPoints[1][1],
       x: cornerPoints[1][0],
       z: cornerPoints[1][2],
     },
     {
-      height: MULTIGP_DIVE_GATE_REAR_COUPLER_H,
+      height: rearCouplerH,
       postH: rearLeftSupportTop[1],
       x: rearLeftSupportTop[0],
       z: rearLeftSupportTop[2],
     },
     {
-      height: MULTIGP_DIVE_GATE_REAR_COUPLER_H,
+      height: rearCouplerH,
       postH: rearRightSupportTop[1],
       x: rearRightSupportTop[0],
       z: rearRightSupportTop[2],
@@ -480,23 +488,28 @@ export function getMultiGpDiveGateArchLayout(
     openingH,
     openingW,
     outerH,
+    legPoints,
     outerW,
     pipeSegments,
     sidePanelW: MULTIGP_DIVE_GATE_SIDE_PANEL_W,
     tiltRad,
-    topY: MULTIGP_DIVE_GATE_REAR_EDGE_H,
+    topY: rearEdgeH,
   };
 }
 
-export function getMultiGpLaunchGateTopY() {
-  return MULTIGP_LAUNCH_GATE_TOP_Y;
+export function getMultiGpLaunchGateTopY(
+  elevation = MULTIGP_LAUNCH_GATE_TOP_Y
+) {
+  return elevation;
 }
 
 export function getMultiGpLaunchGateLayout(
-  shape: Pick<DiveGateShape, "width" | "height">
+  shape: Pick<DiveGateShape, "width" | "height" | "elevation">
 ): MultiGpLaunchGateLayout {
   const openingW = shape.width ?? MULTIGP_LAUNCH_GATE_OPENING_W;
   const openingD = shape.height ?? MULTIGP_LAUNCH_GATE_OPENING_D;
+  // elevation = absolute top-frame height; default matches MultiGP spec (15 ft)
+  const topY = shape.elevation ?? MULTIGP_LAUNCH_GATE_TOP_Y;
   const outerW = MULTIGP_LAUNCH_GATE_OUTER_W;
   const outerD = MULTIGP_LAUNCH_GATE_OUTER_D;
   const sidePanelW = (outerW - openingW) / 2;
@@ -505,7 +518,6 @@ export function getMultiGpLaunchGateLayout(
   const halfOpeningD = openingD / 2;
   const halfOuterW = outerW / 2;
   const halfOuterD = outerD / 2;
-  const topY = MULTIGP_LAUNCH_GATE_TOP_Y;
   const legTops: Point3Tuple[] = [
     [-halfOuterW, topY, -halfOuterD],
     [halfOuterW, topY, -halfOuterD],
@@ -546,15 +558,13 @@ export function getMultiGpLaunchGateLayout(
       [-halfOpeningW, topY, -halfOpeningD],
     ],
   ];
-  const pipeSegments = [
-    ...legTops.map((end) => ({
-      start: [end[0], 0, end[2]] as Point3Tuple,
-      end,
-    })),
-    ...topSegments.map(([start, end]) => ({ start, end })),
-  ];
+  const legPoints = legTops.map(([x, , z]) => ({ x, z, topY }));
+  const pipeSegments = topSegments.map(([start, end]) => ({ start, end }));
   const couplerPoints = legTops.map(([x, , z]) => ({
-    height: MULTIGP_LAUNCH_GATE_COUPLER_H,
+    height: Math.max(
+      0,
+      MULTIGP_LAUNCH_GATE_COUPLER_H + (topY - MULTIGP_LAUNCH_GATE_TOP_Y)
+    ),
     postH: topY,
     x,
     z,
@@ -562,6 +572,7 @@ export function getMultiGpLaunchGateLayout(
 
   return {
     couplerPoints,
+    legPoints,
     halfOpeningD,
     halfOpeningW,
     halfOuterD,

@@ -213,6 +213,8 @@ export interface TrackElementCatalogEntry {
     modelHint?: string;
   };
   visual?: TrackElementVisualSpec;
+  elevationMinMeters?: number;
+  elevationMaxMeters?: number;
   exportHints?: {
     simulatorFriendly?: boolean;
   };
@@ -806,6 +808,8 @@ export const trackElementCatalog = [
     tags: ["technical", "practice"],
     render2d: { icon: "divegate" },
     render3d: { modelHint: "dive-gate" },
+    elevationMinMeters: 0.5,
+    elevationMaxMeters: 5,
     exportHints: { simulatorFriendly: true },
   },
   {
@@ -829,7 +833,7 @@ export const trackElementCatalog = [
       height: feetToMeters(6),
       thick: 0.055,
       tilt: 0,
-      elevation: 0,
+      elevation: feetToMeters(15),
       color: "#f8fafc",
     } satisfies TrackElementShapeDraft,
     tags: ["championship", "race", "multigp", "technical"],
@@ -841,6 +845,8 @@ export const trackElementCatalog = [
     ],
     render2d: { icon: "divegate" },
     render3d: { modelHint: "dive-gate" },
+    elevationMinMeters: feetToMeters(4),
+    elevationMaxMeters: feetToMeters(15),
     visual: {
       kind: "divegate",
       variant: "arch",
@@ -884,7 +890,7 @@ export const trackElementCatalog = [
       height: feetToMeters(6),
       thick: 0.055,
       tilt: 0,
-      elevation: 0,
+      elevation: feetToMeters(15),
       color: "#f8fafc",
     } satisfies TrackElementShapeDraft,
     tags: ["launch", "race", "multigp", "technical"],
@@ -896,6 +902,8 @@ export const trackElementCatalog = [
     ],
     render2d: { icon: "divegate" },
     render3d: { modelHint: "launch-gate" },
+    elevationMinMeters: feetToMeters(1),
+    elevationMaxMeters: feetToMeters(15),
     visual: {
       kind: "divegate",
       variant: "launch",

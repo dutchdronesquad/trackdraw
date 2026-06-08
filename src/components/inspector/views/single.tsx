@@ -24,6 +24,10 @@ import {
   buildLadderCatalogTypePatch,
 } from "@/lib/editor-tools";
 import {
+  getDiveGateElevationMax,
+  getDiveGateElevationMin,
+} from "@/lib/track/elements/visual";
+import {
   getShapeTimingMarker,
   getTimingMarkerMeta,
   isTimingMarkerShape,
@@ -913,6 +917,21 @@ export function SingleInspectorView({
                   />
                 </Row>
               </>
+            )}
+            {shape.kind === "divegate" && hasFixedDiveGateDimensions && (
+              <Row label={`Elevation (${unitLabel})`}>
+                <MeasurementNum
+                  valueMeters={
+                    shape.elevation ?? getDiveGateElevationMax(shape) ?? 4.572
+                  }
+                  unitSystem={unitSystem}
+                  onChange={(value) =>
+                    updateShape(shape.id, { elevation: value })
+                  }
+                  minMeters={getDiveGateElevationMin(shape)}
+                  maxMeters={getDiveGateElevationMax(shape) ?? undefined}
+                />
+              </Row>
             )}
           </Section>
 

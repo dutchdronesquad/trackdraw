@@ -9,8 +9,17 @@ import {
   DEFAULT_POLYLINE_STROKE_WIDTH,
   POLYLINE_3D_HEIGHT_OFFSET,
 } from "@/lib/track/constants";
-import { getLadderVisualSpec } from "@/lib/track/elements/visual";
-import { getLadderRenderedHeight } from "@/lib/track/render3d-layout";
+import {
+  getDiveGateElevationMax,
+  getDiveGateElevationMin,
+  getDiveGateVisualSpec,
+  getLadderVisualSpec,
+} from "@/lib/track/elements/visual";
+import {
+  getLadderRenderedHeight,
+  getMultiGpDiveGateArchTopY,
+  getMultiGpLaunchGateTopY,
+} from "@/lib/track/render3d-layout";
 import type {
   DiveGateShape,
   FlagShape,
@@ -77,7 +86,7 @@ export function LadderElevationHandle3D({
       position={[shape.x, Math.max(shape.elevation ?? 0, 0), shape.y]}
     >
       <mesh position={[0, guideHeight / 2, 0]}>
-        <cylinderGeometry args={[0.022, 0.022, guideHeight, 12]} />
+        <cylinderGeometry args={[0.028, 0.028, guideHeight, 16]} />
         <meshBasicMaterial color={guideColor} transparent opacity={0.5} />
       </mesh>
       <mesh
@@ -117,6 +126,152 @@ export function LadderElevationHandle3D({
         />
       </mesh>
     </group>
+  );
+}
+
+export function DiveGateElevationHandle3D({
+  shape,
+  onDragStart,
+  isDragging,
+  isMobile,
+  elevationOverrideRef,
+}: {
+  shape: DiveGateShape;
+  onDragStart: (event: ThreeEvent<PointerEvent>) => void;
+  isDragging: boolean;
+  isMobile: boolean;
+  elevationOverrideRef: RefObject<number | null>;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const groupRef = useRef<THREE.Group>(null);
+
+  const visual = getDiveGateVisualSpec(shape);
+  const sz = shape.width ?? 2.8;
+  const tilt = shape.tilt ?? 0;
+  const tiltRad = (tilt * Math.PI) / 180;
+
+  const getGateTopY = (elevation: number) => {
+    if (visual?.variant === "arch")
+      return getMultiGpDiveGateArchTopY(elevation);
+    if (visual?.variant === "launch")
+      return getMultiGpLaunchGateTopY(elevation);
+    return elevation + (sz / 2) * Math.sin(tiltRad);
+  };
+
+  const storedElev =
+    shape.elevation ?? (visual ? getMultiGpDiveGateArchTopY() : 3.0);
+  const baseTopY = getGateTopY(storedElev);
+
+  const gripRadius = isMobile
+    ? isDragging
+      ? 0.22
+      : 0.2
+    : isDragging
+      ? 0.18
+      : 0.16;
+  const gripHeight = isMobile
+    ? isDragging
+      ? 0.26
+      : 0.22
+    : isDragging
+      ? 0.2
+      : 0.17;
+  const touchTargetRadius = isMobile ? 0.34 : gripRadius;
+  const touchTargetHeight = isMobile ? 0.58 : gripHeight;
+  const guideColor = isDragging ? "#f59e0b" : hovered ? "#bfdbfe" : "#93c5fd";
+  const guideHeight = 0.65;
+  const handleY = 0.42;
+
+  const elevationMin = getDiveGateElevationMin(shape);
+  const elevationMax = getDiveGateElevationMax(shape);
+  const rangeHeight = elevationMax != null ? elevationMax - elevationMin : 0;
+  const rangeMidY = elevationMin + rangeHeight / 2;
+
+  useFrame(() => {
+    if (!groupRef.current || !elevationOverrideRef) return;
+    const liveElev = elevationOverrideRef.current;
+    if (liveElev === null) return;
+    groupRef.current.position.set(shape.x, getGateTopY(liveElev), shape.y);
+  });
+
+  return (
+    <>
+      {elevationMax != null && rangeHeight > 0 && (
+        <group position={[shape.x, 0, shape.y]}>
+          <mesh position={[0, rangeMidY, 0]}>
+            <cylinderGeometry args={[0.028, 0.028, rangeHeight, 16]} />
+            <meshBasicMaterial
+              color={guideColor}
+              transparent
+              opacity={isDragging ? 0.45 : hovered ? 0.35 : 0.22}
+            />
+          </mesh>
+          <mesh position={[0, elevationMin, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.05, 0.1, 20]} />
+            <meshBasicMaterial
+              color={guideColor}
+              transparent
+              opacity={isDragging ? 0.7 : hovered ? 0.55 : 0.35}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+          <mesh
+            position={[0, elevationMax!, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <ringGeometry args={[0.05, 0.1, 20]} />
+            <meshBasicMaterial
+              color={guideColor}
+              transparent
+              opacity={isDragging ? 0.7 : hovered ? 0.55 : 0.35}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        </group>
+      )}
+      <group ref={groupRef} position={[shape.x, baseTopY, shape.y]}>
+        <mesh position={[0, guideHeight / 2, 0]}>
+          <cylinderGeometry args={[0.028, 0.028, guideHeight, 16]} />
+          <meshBasicMaterial color={guideColor} transparent opacity={0.5} />
+        </mesh>
+        <mesh
+          position={[0, handleY, 0]}
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            onDragStart(event);
+          }}
+          onPointerOver={() => setHovered(true)}
+          onPointerOut={() => setHovered(false)}
+        >
+          <cylinderGeometry
+            args={[touchTargetRadius, touchTargetRadius, touchTargetHeight, 24]}
+          />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+        <mesh position={[0, handleY, 0]}>
+          <cylinderGeometry args={[gripRadius, gripRadius, gripHeight, 24]} />
+          <meshStandardMaterial
+            color={isDragging ? "#f59e0b" : hovered ? "#38bdf8" : "#1e293b"}
+            emissive={isDragging ? "#fbbf24" : hovered ? "#7dd3fc" : "#60a5fa"}
+            emissiveIntensity={isDragging ? 1 : hovered ? 0.62 : 0.28}
+            roughness={0.16}
+            metalness={0.14}
+          />
+        </mesh>
+        <mesh position={[0, handleY + gripHeight * 0.26, 0]}>
+          <coneGeometry
+            args={[gripRadius * 0.78, Math.max(gripHeight * 0.6, 0.08), 24]}
+          />
+          <meshStandardMaterial
+            color={isDragging ? "#fff3c4" : hovered ? "#f8fbff" : "#cbd5e1"}
+            emissive={isDragging ? "#fbbf24" : hovered ? "#bae6fd" : "#93c5fd"}
+            emissiveIntensity={isDragging ? 0.7 : hovered ? 0.38 : 0.16}
+            roughness={0.12}
+            metalness={0.08}
+          />
+        </mesh>
+      </group>
+    </>
   );
 }
 

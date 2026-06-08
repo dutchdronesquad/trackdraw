@@ -160,7 +160,7 @@ describe("track 2d shape helpers", () => {
     }
     expect(diveGate.openingW).toBeCloseTo(feetToMeters(7) * ppm);
     expect(diveGate.sidePanelW).toBeCloseTo(feetToMeters(2) * ppm);
-    expect(diveGate.pipeSegments).toHaveLength(6);
+    expect(diveGate.pipeSegments).toHaveLength(2);
     expect(diveGate.couplerPoints).toHaveLength(4);
     expect(diveGate.bounds.width).toBeGreaterThan(diveGate.openingW);
     expect(diveGate.bounds.height).toBeGreaterThan(diveGate.openingDepth);
@@ -182,7 +182,7 @@ describe("track 2d shape helpers", () => {
     expect(launchGate.openingDepth).toBeCloseTo(feetToMeters(6) * ppm);
     expect(launchGate.outerW).toBeCloseTo(feetToMeters(10) * ppm);
     expect(launchGate.outerDepth).toBeCloseTo(feetToMeters(10) * ppm);
-    expect(launchGate.pipeSegments).toHaveLength(12);
+    expect(launchGate.pipeSegments).toHaveLength(8);
     expect(launchGate.couplerPoints).toHaveLength(4);
     expect(launchGate.bounds.width).toBeGreaterThan(launchGate.openingW);
     expect(launchGate.bounds.height).toBeGreaterThan(launchGate.openingDepth);

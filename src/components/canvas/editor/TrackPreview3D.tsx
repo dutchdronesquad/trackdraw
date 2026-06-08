@@ -52,6 +52,7 @@ import {
   useCatalogTextureWarmup,
 } from "@/components/canvas/trackPreview3DSharedSceneContent";
 import {
+  DiveGateElevationHandle3D,
   DiveGateTiltHandle3D,
   GateRotateHandle3D,
   LadderElevationHandle3D,
@@ -74,6 +75,7 @@ import {
   useOverrideVersion,
 } from "@/components/canvas/textureDebugContext";
 import type { TexturePanelEdge } from "@/lib/track/elements/catalog";
+import { getMultiGpDiveGateArchTopY } from "@/lib/track/render3d-layout";
 import { useDeveloperMode } from "@/hooks/useDeveloperMode";
 import { useTrackPreview3DInteractions } from "@/components/canvas/editor/useTrackPreview3DInteractions";
 import { motion, useReducedMotion } from "framer-motion";
@@ -303,10 +305,13 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
     const {
       containerRef,
+      diveGateElevationDrag,
+      diveGateElevationDragValueRef,
       dragRotationGroupRef,
       elevationDrag,
       handleCameraCapture,
       handleContainerMouseDownCapture,
+      handleDiveGateElevationDragStart,
       handleElevationDragStart,
       handleLadderElevationDragStart,
       handleRotateDragStart,
@@ -363,7 +368,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       !elevationDrag &&
       !rotationDrag &&
       !tiltDrag &&
-      !ladderElevationDrag;
+      !ladderElevationDrag &&
+      !diveGateElevationDrag;
 
     useEffect(() => {
       selectionRef.current = selection;
@@ -430,7 +436,11 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             isMobile ||
               flyMode ||
               Boolean(
-                elevationDrag || rotationDrag || tiltDrag || ladderElevationDrag
+                elevationDrag ||
+                rotationDrag ||
+                tiltDrag ||
+                ladderElevationDrag ||
+                diveGateElevationDrag
               )
           )
         }
@@ -526,7 +536,9 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                 elevationOverrideRef={
                   ladderElevationDrag?.shapeId === shape.id
                     ? ladderElevationDragValueRef
-                    : undefined
+                    : diveGateElevationDrag?.shapeId === shape.id
+                      ? diveGateElevationDragValueRef
+                      : undefined
                 }
               />
             </Suspense>
@@ -574,6 +586,37 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                   isDragging={ladderElevationDrag?.shapeId === shape.id}
                   isMobile={isMobile}
                   elevationOverrideRef={ladderElevationDragValueRef}
+                />
+              );
+            })}
+
+          {!flyMode &&
+            !readOnly &&
+            shapes.map((shape) => {
+              if (
+                !selectedIdSet.has(shape.id) ||
+                shape.locked ||
+                shape.kind !== "divegate"
+              ) {
+                return null;
+              }
+              return (
+                <DiveGateElevationHandle3D
+                  key={`divegate-elevation-${shape.id}`}
+                  shape={shape}
+                  onDragStart={(event) =>
+                    handleDiveGateElevationDragStart(
+                      event,
+                      shape.id,
+                      shape.elevation ??
+                        (getDiveGateVisualSpec(shape)
+                          ? getMultiGpDiveGateArchTopY()
+                          : 3.0)
+                    )
+                  }
+                  isDragging={diveGateElevationDrag?.shapeId === shape.id}
+                  isMobile={isMobile}
+                  elevationOverrideRef={diveGateElevationDragValueRef}
                 />
               );
             })}
@@ -646,7 +689,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               !elevationDrag &&
               !rotationDrag &&
               !tiltDrag &&
-              !ladderElevationDrag
+              !ladderElevationDrag &&
+              !diveGateElevationDrag
             }
             minDistance={8}
             maxDistance={Math.max(120, longest * 3)}
@@ -671,7 +715,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                 !elevationDrag &&
                 !rotationDrag &&
                 !tiltDrag &&
-                !ladderElevationDrag
+                !ladderElevationDrag &&
+                !diveGateElevationDrag
               }
               enableDamping
               dampingFactor={0.08}
@@ -698,7 +743,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
                 !elevationDrag &&
                 !rotationDrag &&
                 !tiltDrag &&
-                !ladderElevationDrag
+                !ladderElevationDrag &&
+                !diveGateElevationDrag
               }
               enableDamping
               dampingFactor={0.08}

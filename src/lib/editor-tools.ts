@@ -13,6 +13,7 @@ import {
   type TrackElementCatalogId,
   type TrackElementCatalogEntry,
 } from "@/lib/track/elements/catalog";
+import { getDiveGateVisualSpec } from "@/lib/track/elements/visual";
 import type {
   DiveGateShape,
   FlagShape,
@@ -186,5 +187,30 @@ export function buildDiveGateCatalogTypePatch(
 ): Partial<DiveGateShape> | null {
   const entry = getTrackElementCatalogEntry(targetEntryId);
   if (!entry || entry.kind !== "divegate") return null;
-  return buildCatalogTypePatchInner(shape, entry);
+  const patch = buildCatalogTypePatchInner(shape, entry);
+
+  if (shape.elevation == null) return patch;
+
+  // Convert elevation across coordinate systems so the gate stays at the same
+  // visual height. Visual gates (arch/launch) use topY = elevation. The generic
+  // gate uses topY = elevation + (width/2)*sin(tilt). Both collapse to the same
+  // formula when tilt=0 (the generic default), so this conversion is lossless for
+  // the common case and gracefully handles tilted generic → visual switches.
+  const sourceIsVisual = !!getDiveGateVisualSpec(shape);
+  const tiltRad = ((shape.tilt ?? 0) * Math.PI) / 180;
+  const sourceTopY = sourceIsVisual
+    ? shape.elevation
+    : shape.elevation + ((shape.width ?? 2.8) / 2) * Math.sin(tiltRad);
+
+  const elevMin = entry.elevationMinMeters ?? 0;
+  const elevMax = entry.elevationMaxMeters ?? null;
+  const newElevation = Math.min(
+    elevMax ?? Infinity,
+    Math.max(elevMin, sourceTopY)
+  );
+  if (newElevation > 0.1) {
+    return { ...patch, elevation: +newElevation.toFixed(2) };
+  }
+
+  return patch;
 }
