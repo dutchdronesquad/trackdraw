@@ -39,53 +39,20 @@ import {
   moveGalleryEntryToListed,
 } from "@/lib/server/gallery";
 import { resolveStoredShare } from "@/lib/server/shares";
-import type { StoredShare } from "@/lib/server/shares";
+import {
+  createGalleryEntryFixture,
+  createStoredShareFixture,
+  moderatorActor,
+  routeContext,
+} from "../../../helpers/api-routes";
 
-const actor = {
-  id: "mod-1",
-  email: "mod@trackdraw.local",
-  name: "Moderator",
-  image: null,
-  role: "moderator" as const,
-};
-
-const entry = {
-  id: "entry-1",
-  shareToken: "share-token",
-  ownerUserId: "owner-1",
-  galleryState: "listed" as const,
-  galleryTitle: "Track",
-  galleryDescription: "Public description",
-  galleryPreviewImage: "gallery/previews/entry-1.webp",
-  galleryPublishedAt: "2026-04-20T10:00:00.000Z",
-  moderationHiddenAt: null,
-  createdAt: "2026-04-20T09:00:00.000Z",
-  updatedAt: "2026-04-20T10:00:00.000Z",
-};
-
-const storedShare = {
-  id: "share-id",
-  token: "share-token",
-  design: {
-    title: "Track",
-    description: "Description",
-    field: { width: 30, height: 20, gridStep: 5 },
-    shapes: [],
-  },
-  title: "Track",
-  description: "Description",
-  shapeCount: 0,
-  fieldWidth: 30,
-  fieldHeight: 20,
-  createdAt: "2026-04-20T10:00:00.000Z",
-  updatedAt: "2026-04-20T10:00:00.000Z",
-  publishedAt: "2026-04-20T10:00:00.000Z",
+const entry = createGalleryEntryFixture();
+const storedShare = createStoredShareFixture({
   expiresAt: null,
-  revokedAt: null,
   ownerUserId: "owner-1",
   projectId: "project-1",
   shareType: "published",
-} as unknown as StoredShare;
+});
 
 function patchRequest(action: string) {
   return new Request("http://localhost/api/dashboard/gallery/share-token", {
@@ -102,13 +69,13 @@ function deleteRequest() {
 }
 
 function context() {
-  return { params: Promise.resolve({ shareToken: "share-token" }) };
+  return routeContext({ shareToken: "share-token" });
 }
 
 describe("dashboard gallery API route", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(actor);
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(moderatorActor);
     vi.mocked(hasCapability).mockReturnValue(true);
     vi.mocked(getGalleryEntryByShareToken)
       .mockResolvedValueOnce(entry)
@@ -150,7 +117,7 @@ describe("dashboard gallery API route", () => {
     expect(resolveStoredShare).toHaveBeenCalledWith("share-token");
     expect(moveGalleryEntryToFeatured).toHaveBeenCalledWith("share-token");
     expect(createAuditEvent).toHaveBeenCalledWith({
-      actorUserId: actor.id,
+      actorUserId: moderatorActor.id,
       targetUserId: entry.ownerUserId,
       eventType: "gallery.entry.featured",
       entityType: "gallery_entry",
@@ -213,7 +180,7 @@ describe("dashboard gallery API route", () => {
     await expect(response.json()).resolves.toEqual({ ok: true });
     expect(deleteGalleryEntry).toHaveBeenCalledWith("share-token");
     expect(createAuditEvent).toHaveBeenCalledWith({
-      actorUserId: actor.id,
+      actorUserId: moderatorActor.id,
       targetUserId: entry.ownerUserId,
       eventType: "gallery.entry.deleted",
       entityType: "gallery_entry",

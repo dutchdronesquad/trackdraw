@@ -29,9 +29,10 @@ vi.mock("@/lib/server/shares", () => ({
   revokeShare: vi.fn(),
 }));
 
-import { PATCH } from "@/app/api/shares/[token]/route";
+import { DELETE, PATCH } from "@/app/api/shares/[token]/route";
 import { uploadGalleryPreviewImage } from "@/lib/server/gallery-media";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
+import { isTrustedRequest } from "@/lib/server/csrf";
 import { isResourceOwner } from "@/lib/server/authorization";
 import {
   deleteGalleryEntry,
@@ -43,65 +44,42 @@ import {
 import {
   getOrCreateGalleryEntryForShare,
   resolveStoredShare,
+  revokeShare,
 } from "@/lib/server/shares";
-import type { StoredShare } from "@/lib/server/shares";
+import {
+  createGalleryEntryFixture,
+  createStoredShareFixture,
+  jsonRequest,
+  routeContext,
+  testUser,
+} from "../../helpers/api-routes";
 
-const owner = {
-  id: "user-1",
-  email: "owner@trackdraw.local",
-  name: "Owner",
-  image: null,
-  role: "user" as const,
-};
-
-const share = {
-  id: "share-id-1",
-  token: "share-token",
-  design: {
-    title: "Track",
-    description: "Description",
-    field: { width: 30, height: 20, gridStep: 5 },
-    shapes: [],
-  },
-  title: "Track",
-  description: "Description",
-  shapeCount: 0,
-  fieldWidth: 30,
-  fieldHeight: 20,
-  createdAt: "2026-04-20T10:00:00.000Z",
-  updatedAt: "2026-04-20T10:00:00.000Z",
-  publishedAt: "2026-04-20T10:00:00.000Z",
-  expiresAt: "2026-05-20T10:00:00.000Z",
-  revokedAt: null,
-  ownerUserId: owner.id,
+const share = createStoredShareFixture({
+  ownerUserId: testUser.id,
   projectId: "project-1",
   shareType: "published",
-} as unknown as StoredShare;
+});
 
-const entry = {
-  id: "entry-1",
+const entry = createGalleryEntryFixture({
   shareToken: share.token,
-  ownerUserId: owner.id,
-  galleryState: "unlisted" as const,
-  galleryTitle: "Track",
+  ownerUserId: testUser.id,
+  galleryState: "unlisted",
   galleryDescription: "Description",
   galleryPreviewImage: null,
   galleryPublishedAt: null,
-  moderationHiddenAt: null,
   createdAt: "2026-04-20T10:00:00.000Z",
-  updatedAt: "2026-04-20T10:00:00.000Z",
-};
+});
 
 function patchRequest(body: unknown) {
-  return new Request(`http://localhost/api/shares/${share.token}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  return jsonRequest(
+    `http://localhost/api/shares/${share.token}`,
+    "PATCH",
+    body
+  );
 }
 
 function context() {
-  return { params: Promise.resolve({ token: share.token }) };
+  return routeContext({ token: share.token });
 }
 
 describe("owner share gallery API route", () => {
@@ -111,7 +89,7 @@ describe("owner share gallery API route", () => {
       status: "available",
       share,
     });
-    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(owner);
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
     vi.mocked(isResourceOwner).mockReturnValue(true);
     vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue(entry);
     vi.mocked(getGalleryEntryByShareToken).mockResolvedValue({
@@ -165,6 +143,35 @@ describe("owner share gallery API route", () => {
     expect(moveGalleryEntryToListed).toHaveBeenCalledWith(share.token);
   });
 
+  it("blocks share revocation before ownership checks when the request is not trusted", async () => {
+    vi.mocked(isTrustedRequest).mockReturnValue(false);
+
+    const response = (await DELETE(
+      new Request(`http://localhost/api/shares/${share.token}`, {
+        method: "DELETE",
+      }),
+      context()
+    )) as Response;
+
+    expect(response.status).toBe(403);
+    expect(resolveStoredShare).not.toHaveBeenCalled();
+    expect(revokeShare).not.toHaveBeenCalled();
+  });
+
+  it("revokes an owned share without touching gallery metadata", async () => {
+    const response = (await DELETE(
+      new Request(`http://localhost/api/shares/${share.token}`, {
+        method: "DELETE",
+      }),
+      context()
+    )) as Response;
+
+    expect(response.status).toBe(200);
+    expect(revokeShare).toHaveBeenCalledWith(share.token);
+    expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({ ok: true });
+  });
+
   it("blocks gallery changes for expired or revoked shares", async () => {
     vi.mocked(resolveStoredShare).mockResolvedValue({
       status: "expired",
@@ -212,6 +219,30 @@ describe("owner share gallery API route", () => {
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
   });
 
+  it("requires an account display name before listing in the gallery", async () => {
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue({
+      ...testUser,
+      name: "  ",
+    });
+
+    const response = (await PATCH(
+      patchRequest({
+        action: "list",
+        title: "Public title",
+        description: "Public description",
+      }),
+      context()
+    )) as Response;
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Set a display name on your account before listing in the gallery",
+    });
+    expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
+    expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
+  });
+
   it("updates metadata only for listed or featured entries", async () => {
     vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue({
       ...entry,
@@ -234,6 +265,29 @@ describe("owner share gallery API route", () => {
       description: "Updated public description",
     });
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
+  });
+
+  it("rejects metadata updates while an entry is still unlisted", async () => {
+    vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue({
+      ...entry,
+      galleryState: "unlisted",
+    });
+
+    const response = (await PATCH(
+      patchRequest({
+        action: "update",
+        title: "Updated title",
+        description: "Updated public description",
+      }),
+      context()
+    )) as Response;
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Only listed gallery items can update their metadata",
+    });
+    expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
   });
 
   it("removes a gallery entry without revoking the share", async () => {

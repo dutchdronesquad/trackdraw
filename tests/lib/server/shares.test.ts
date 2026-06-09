@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
 import type { SerializedTrackDesign } from "@/lib/types";
+import {
+  createD1AllStatement,
+  createD1Statement as createStatement,
+  installD1Statements,
+  type MockD1Statement,
+} from "../../helpers/d1";
 
 vi.mock("server-only", () => ({}));
 
@@ -34,40 +40,35 @@ vi.mock("@/lib/server/gallery", () => ({
   },
 }));
 
-import { createShare } from "@/lib/server/shares";
+import {
+  createShare,
+  getSharesByUserId,
+  resolveStoredShare,
+  revokeShare,
+} from "@/lib/server/shares";
 
-type Statement = {
-  sql: string;
-  bind: ReturnType<typeof vi.fn>;
-  first: ReturnType<typeof vi.fn>;
-  run: ReturnType<typeof vi.fn>;
+function installStatements(statements: MockD1Statement[]) {
+  installD1Statements(mocks.prepare, statements);
+}
+
+type ShareRowFixture = {
+  id: string;
+  token: string;
+  design_json: string;
+  title: string;
+  description: string;
+  field_width: number;
+  field_height: number;
+  shape_count: number;
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+  expires_at: string | null;
+  revoked_at: string | null;
+  owner_user_id: string | null;
+  project_id: string | null;
+  share_type: string;
 };
-
-function createStatement(result?: {
-  first?: unknown;
-  run?: unknown;
-}): Statement {
-  const statement = {
-    sql: "",
-    bind: vi.fn(() => statement),
-    first: vi.fn(async () => result?.first ?? null),
-    run: vi.fn(async () => result?.run ?? {}),
-  };
-
-  return statement;
-}
-
-function installStatements(statements: Statement[]) {
-  mocks.prepare.mockImplementation((sql: string) => {
-    const statement = statements.shift();
-    if (!statement) {
-      throw new Error(`Unexpected SQL: ${sql}`);
-    }
-
-    statement.sql = sql;
-    return statement;
-  });
-}
 
 function existingShareRow(serialized: SerializedTrackDesign) {
   return {
@@ -89,6 +90,151 @@ function existingShareRow(serialized: SerializedTrackDesign) {
     share_type: "published",
   };
 }
+
+function shareRow(overrides: Partial<ShareRowFixture> = {}): ShareRowFixture {
+  return {
+    ...baseShareRow(),
+    ...overrides,
+  };
+}
+
+function baseShareRow(): ShareRowFixture {
+  return {
+    id: "share-id-x",
+    token: "tok-x",
+    design_json: JSON.stringify({}),
+    title: "Test share",
+    description: "",
+    field_width: 40,
+    field_height: 20,
+    shape_count: 3,
+    created_at: "2026-01-01T00:00:00.000Z",
+    updated_at: "2026-04-25T12:00:00.000Z",
+    published_at: null,
+    expires_at: null,
+    revoked_at: null,
+    owner_user_id: "user-1",
+    project_id: null,
+    share_type: "published",
+  };
+}
+
+describe("resolveStoredShare", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
+    mocks.prepare.mockReset();
+  });
+
+  it("returns missing when no share row exists", async () => {
+    installStatements([createStatement({ first: null })]);
+    const result = await resolveStoredShare("unknown-token");
+    expect(result.status).toBe("missing");
+  });
+
+  it("returns revoked when share has a revoked_at timestamp", async () => {
+    installStatements([
+      createStatement({
+        first: shareRow({ revoked_at: "2026-04-01T00:00:00.000Z" }),
+      }),
+    ]);
+    const result = await resolveStoredShare("tok-x");
+    expect(result.status).toBe("revoked");
+  });
+
+  it("returns expired when share expires_at is in the past", async () => {
+    installStatements([
+      createStatement({
+        first: shareRow({ expires_at: "2026-03-01T00:00:00.000Z" }),
+      }),
+    ]);
+    const result = await resolveStoredShare("tok-x");
+    expect(result.status).toBe("expired");
+  });
+
+  it("returns available when share exists and is within its expiry", async () => {
+    installStatements([
+      createStatement({
+        first: shareRow({ expires_at: "2026-12-31T00:00:00.000Z" }),
+      }),
+    ]);
+    const result = await resolveStoredShare("tok-x");
+    expect(result.status).toBe("available");
+  });
+
+  it("returns available for a published share with no expiry", async () => {
+    installStatements([createStatement({ first: shareRow() })]);
+    const result = await resolveStoredShare("tok-x");
+    expect(result.status).toBe("available");
+  });
+});
+
+describe("revokeShare", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
+    mocks.prepare.mockReset();
+    mocks.deleteGalleryEntry.mockReset();
+  });
+
+  it("executes an UPDATE query and deletes the gallery entry", async () => {
+    const stmt = createStatement();
+    installStatements([stmt]);
+
+    await revokeShare("tok-revoke");
+
+    expect(stmt.run).toHaveBeenCalledOnce();
+    expect(stmt.bind).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(String),
+      "tok-revoke"
+    );
+    expect(mocks.deleteGalleryEntry).toHaveBeenCalledWith("tok-revoke");
+  });
+});
+
+describe("getSharesByUserId", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
+    mocks.prepare.mockReset();
+  });
+
+  it("returns an empty list when no shares exist for the user", async () => {
+    const stmt = createD1AllStatement([]);
+    mocks.prepare.mockReturnValue(stmt);
+
+    const result = await getSharesByUserId("user-1");
+    expect(result).toEqual([]);
+  });
+
+  it("returns mapped user shares", async () => {
+    const row = {
+      token: "tok-user",
+      title: "My share",
+      shape_count: 4,
+      created_at: "2026-04-01T00:00:00.000Z",
+      expires_at: null,
+      project_id: "proj-1",
+      share_type: "published",
+      gallery_state: "listed",
+      gallery_title: "Gallery Title",
+      gallery_description: "Gallery desc",
+    };
+    const stmt = createD1AllStatement([row]);
+    mocks.prepare.mockReturnValue(stmt);
+
+    const result = await getSharesByUserId("user-1");
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      token: "tok-user",
+      shapeCount: 4,
+      projectId: "proj-1",
+      shareType: "published",
+      galleryState: "listed",
+    });
+  });
+});
 
 describe("share server helpers", () => {
   beforeEach(() => {

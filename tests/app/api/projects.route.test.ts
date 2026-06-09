@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultDesign } from "@/lib/track/design";
 import type { StoredProject } from "@/lib/server/projects";
+import {
+  createStoredProjectFixture,
+  jsonRequest,
+  testUser,
+} from "../../helpers/api-routes";
 
 vi.mock("server-only", () => ({}));
 
@@ -60,49 +65,18 @@ import {
   saveProjectForUser,
 } from "@/lib/server/projects";
 
-const user = {
-  id: "user-1",
-  email: "pilot@trackdraw.local",
-  name: "Pilot",
-  image: null,
-  role: "user" as const,
-};
-
-function makeStoredProject(overrides: Partial<StoredProject> = {}) {
-  const design = createDefaultDesign();
-  return {
-    id: "project-1",
-    ownerUserId: user.id,
-    title: "Race layout",
-    description: "",
-    design,
-    designUpdatedAt: design.updatedAt,
-    fieldWidth: design.field.width,
-    fieldHeight: design.field.height,
-    shapeCount: 0,
-    createdAt: "2026-04-20T10:00:00.000Z",
-    updatedAt: "2026-04-20T10:00:00.000Z",
-    archivedAt: null,
-    ...overrides,
-  } satisfies StoredProject;
-}
-
 function postRequest(body: unknown) {
-  return new Request("http://localhost/api/projects", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  return jsonRequest("http://localhost/api/projects", "POST", body);
 }
 
 describe("projects API route", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
   });
 
   it("lists account projects with design version metadata", async () => {
-    const project = makeStoredProject({
+    const project = createStoredProjectFixture({
       updatedAt: "2026-04-20T12:00:00.000Z",
     });
     vi.mocked(listProjectsForUser).mockResolvedValue([project]);
@@ -110,7 +84,7 @@ describe("projects API route", () => {
     const response = await GET(new Request("http://localhost/api/projects"));
 
     expect(response.status).toBe(200);
-    expect(listProjectsForUser).toHaveBeenCalledWith(user.id);
+    expect(listProjectsForUser).toHaveBeenCalledWith(testUser.id);
     await expect(response.json()).resolves.toEqual({
       ok: true,
       projects: [
@@ -127,7 +101,7 @@ describe("projects API route", () => {
 
   it("passes the known account design version when saving", async () => {
     const design = createDefaultDesign();
-    const project = makeStoredProject({ design });
+    const project = createStoredProjectFixture({ design });
     vi.mocked(saveProjectForUser).mockResolvedValue(project);
 
     const response = await POST(
@@ -140,7 +114,7 @@ describe("projects API route", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(saveProjectForUser).toHaveBeenCalledWith(user.id, design, {
+    expect(saveProjectForUser).toHaveBeenCalledWith(testUser.id, design, {
       projectId: "project-1",
       title: "Race layout",
       description: undefined,
@@ -154,7 +128,7 @@ describe("projects API route", () => {
     localDesign.updatedAt = "2026-04-20T10:05:00.000Z";
     const cloudDesign = createDefaultDesign();
     cloudDesign.updatedAt = "2026-04-20T10:10:00.000Z";
-    const cloudProject = makeStoredProject({
+    const cloudProject = createStoredProjectFixture({
       design: cloudDesign,
       designUpdatedAt: cloudDesign.updatedAt,
       updatedAt: "2026-04-20T10:11:00.000Z",

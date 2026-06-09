@@ -6,7 +6,16 @@ import { toast } from "sonner";
 import { useEditorProjects } from "@/hooks/useEditorProjects";
 import { createDefaultDesign } from "@/lib/track/design";
 import { encodeDesign } from "@/lib/share";
+import {
+  createRestorePoint,
+  listRestorePointsForProject,
+  saveProject,
+} from "@/lib/projects";
 import { useEditor } from "@/store/editor";
+import {
+  createMemoryStorage,
+  createMemoryStorageController,
+} from "../helpers/storage";
 
 vi.mock("sonner", () => ({
   toast: {
@@ -14,36 +23,6 @@ vi.mock("sonner", () => ({
     success: vi.fn(),
   },
 }));
-
-function createMemoryStorage() {
-  const store = new Map<string, string>();
-  let failWrites = false;
-
-  const storage: Storage = {
-    get length() {
-      return store.size;
-    },
-    clear: vi.fn(() => store.clear()),
-    getItem: vi.fn((key: string) => store.get(key) ?? null),
-    key: vi.fn((index: number) => Array.from(store.keys())[index] ?? null),
-    removeItem: vi.fn((key: string) => {
-      store.delete(key);
-    }),
-    setItem: vi.fn((key: string, value: string) => {
-      if (failWrites) {
-        throw new DOMException("Storage quota exceeded", "QuotaExceededError");
-      }
-      store.set(key, value);
-    }),
-  };
-
-  return {
-    storage,
-    setFailWrites(value: boolean) {
-      failWrites = value;
-    },
-  };
-}
 
 describe("useEditorProjects", () => {
   beforeEach(() => {
@@ -61,7 +40,7 @@ describe("useEditorProjects", () => {
   });
 
   it("surfaces local autosave failures and lets the user retry", () => {
-    const localStorageMock = createMemoryStorage();
+    const localStorageMock = createMemoryStorageController();
     localStorageMock.setFailWrites(true);
     vi.stubGlobal("localStorage", localStorageMock.storage);
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -120,7 +99,7 @@ describe("useEditorProjects", () => {
   });
 
   it("opens shared links as a new editable local copy", () => {
-    vi.stubGlobal("localStorage", createMemoryStorage().storage);
+    vi.stubGlobal("localStorage", createMemoryStorage());
     const sharedDesign = createDefaultDesign();
     sharedDesign.id = "account-project-1";
     sharedDesign.title = "Shared race layout";
@@ -158,6 +137,114 @@ describe("useEditorProjects", () => {
       localStorage.getItem(`trackdraw-project-${copiedDesign?.id}`)
     ).toContain("Copy of Shared race layout");
     expect(result.current.saveStatusLabel).toBe("Editable copy created");
+    expect(result.current.restorePoints).toEqual([]);
+  });
+
+  it("opens a saved project after snapshotting the current meaningful design", () => {
+    vi.stubGlobal("localStorage", createMemoryStorage());
+    const activeDesign = createDefaultDesign();
+    activeDesign.id = "active-project";
+    activeDesign.title = "Active race layout";
+    const savedDesign = createDefaultDesign();
+    savedDesign.id = "saved-project";
+    savedDesign.title = "Saved race layout";
+    saveProject(savedDesign);
+    const replaceDesign = vi.fn();
+
+    const { result } = renderHook(() =>
+      useEditorProjects({
+        readOnly: false,
+        design: activeDesign,
+        historyPaused: false,
+        interactionSessionDepth: 0,
+        replaceDesign,
+      })
+    );
+
+    act(() => {
+      result.current.handleOpenProject("saved-project");
+    });
+
+    expect(replaceDesign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "saved-project",
+        title: "Saved race layout",
+      })
+    );
+    expect(localStorage.getItem("trackdraw-project-active-project")).toContain(
+      "Active race layout"
+    );
+    expect(listRestorePointsForProject("active-project")).toHaveLength(1);
+    expect(result.current.restorePoints).toEqual([]);
+    expect(result.current.activeRestorePointId).toBeNull();
+    expect(result.current.saveStatusLabel).toBe("Project opened");
+  });
+
+  it("restores a snapshot and marks it as the active restore point", () => {
+    vi.stubGlobal("localStorage", createMemoryStorage());
+    const design = createDefaultDesign();
+    design.id = "project-1";
+    design.title = "Race day layout";
+    const restorePoint = createRestorePoint(design);
+    const replaceDesign = vi.fn();
+
+    const { result } = renderHook(() =>
+      useEditorProjects({
+        readOnly: false,
+        design,
+        historyPaused: false,
+        interactionSessionDepth: 0,
+        replaceDesign,
+      })
+    );
+
+    act(() => {
+      result.current.handleRestorePoint(restorePoint.id);
+    });
+
+    expect(replaceDesign).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "project-1", title: "Race day layout" })
+    );
+    expect(result.current.restorePoints).toEqual([
+      expect.objectContaining({ id: restorePoint.id }),
+    ]);
+    expect(result.current.activeRestorePointId).toBe(restorePoint.id);
+    expect(result.current.saveStatusLabel).toBe("Restored from snapshot");
+  });
+
+  it("renames the active project through the editor store and clears restore points when deleting it", () => {
+    vi.stubGlobal("localStorage", createMemoryStorage());
+    const design = createDefaultDesign();
+    design.id = "project-1";
+    design.title = "Original title";
+    saveProject(design);
+    createRestorePoint(design);
+    useEditor.getState().replaceDesign(design);
+
+    const { result } = renderHook(() =>
+      useEditorProjects({
+        readOnly: false,
+        design,
+        historyPaused: false,
+        interactionSessionDepth: 0,
+        replaceDesign: vi.fn(),
+      })
+    );
+
+    act(() => {
+      result.current.handleRenameProject("project-1", "Renamed layout");
+    });
+
+    expect(useEditor.getState().track.design.title).toBe("Renamed layout");
+    expect(localStorage.getItem("trackdraw-project-project-1")).toContain(
+      "Renamed layout"
+    );
+
+    act(() => {
+      result.current.handleDeleteProject("project-1");
+    });
+
+    expect(localStorage.getItem("trackdraw-project-project-1")).toBeNull();
     expect(result.current.restorePoints).toEqual([]);
   });
 });

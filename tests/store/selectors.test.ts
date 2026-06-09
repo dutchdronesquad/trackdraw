@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   selectActiveTool,
   selectDesignPolylineZRange,
@@ -22,30 +22,26 @@ import {
   selectZoom,
 } from "@/store/selectors";
 import { useEditor } from "@/store/editor";
+import {
+  flagDraft,
+  gateDraft,
+  polylineDraft,
+  resetEditorStore,
+} from "../helpers/editor-store";
 
 describe("editor selectors", () => {
   beforeEach(() => {
-    useEditor.getState().newProject();
-    useEditor.getState().clearHistory();
+    resetEditorStore();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("returns design-derived shape collections and cached references", () => {
     const state = useEditor.getState();
-    const gateId = state.addShape({
-      kind: "gate",
-      x: 10,
-      y: 8,
-      rotation: 0,
-      width: 2.2,
-      height: 1.9,
-    });
-    const flagId = state.addShape({
-      kind: "flag",
-      x: 14,
-      y: 9,
-      rotation: 0,
-      radius: 0.25,
-    });
+    const gateId = state.addShape(gateDraft({ width: 2.2, height: 1.9 }));
+    const flagId = state.addShape(flagDraft({ x: 14, y: 9 }));
 
     const snapshot = useEditor.getState();
     const shapes = selectDesignShapes(snapshot);
@@ -62,24 +58,15 @@ describe("editor selectors", () => {
 
   it("resolves selected and primary polylines plus path flags", () => {
     const state = useEditor.getState();
-    state.addShape({
-      kind: "gate",
-      x: 3,
-      y: 4,
-      rotation: 0,
-      width: 2,
-      height: 2,
-    });
-    const polylineId = state.addShape({
-      kind: "polyline",
-      x: 0,
-      y: 0,
-      rotation: 0,
-      points: [
-        { x: 1, y: 2, z: 0.5 },
-        { x: 3, y: 4, z: 2 },
-      ],
-    });
+    state.addShape(gateDraft({ x: 3, y: 4 }));
+    const polylineId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 1, y: 2, z: 0.5 },
+          { x: 3, y: 4, z: 2 },
+        ],
+      })
+    );
 
     state.setSelection([polylineId]);
 
@@ -97,24 +84,10 @@ describe("editor selectors", () => {
 
   it("tracks locked selections and ui state selectors", () => {
     const state = useEditor.getState();
-    const gateId = state.addShape({
-      kind: "gate",
-      x: 5,
-      y: 6,
-      rotation: 0,
-      width: 2,
-      height: 2,
-      locked: true,
-    });
-    const secondGateId = state.addShape({
-      kind: "gate",
-      x: 8,
-      y: 9,
-      rotation: 0,
-      width: 2,
-      height: 2,
-      locked: true,
-    });
+    const gateId = state.addShape(gateDraft({ x: 5, y: 6, locked: true }));
+    const secondGateId = state.addShape(
+      gateDraft({ x: 8, y: 9, locked: true })
+    );
 
     state.setSelection([gateId, secondGateId]);
     state.setActiveTool("grab");

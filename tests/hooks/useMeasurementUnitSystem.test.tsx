@@ -2,36 +2,17 @@
 
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createThrowingStorage,
+  installWindowStorage,
+} from "../helpers/storage";
 
-const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(
-  window,
-  "localStorage"
-);
-
-function createThrowingStorage(): Storage {
-  return {
-    get length() {
-      return 0;
-    },
-    clear: vi.fn(),
-    getItem: vi.fn(() => {
-      throw new DOMException("Storage unavailable", "SecurityError");
-    }),
-    key: vi.fn(() => null),
-    removeItem: vi.fn(),
-    setItem: vi.fn(() => {
-      throw new DOMException("Storage unavailable", "SecurityError");
-    }),
-  };
-}
+let restoreStorage: (() => void) | null = null;
 
 describe("useMeasurementUnitSystem", () => {
   beforeEach(() => {
     vi.resetModules();
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      value: createThrowingStorage(),
-    });
+    restoreStorage = installWindowStorage(createThrowingStorage());
     Object.defineProperty(window.navigator, "languages", {
       configurable: true,
       value: ["nl-NL"],
@@ -40,13 +21,8 @@ describe("useMeasurementUnitSystem", () => {
 
   afterEach(() => {
     cleanup();
-    if (originalLocalStorageDescriptor) {
-      Object.defineProperty(
-        window,
-        "localStorage",
-        originalLocalStorageDescriptor
-      );
-    }
+    restoreStorage?.();
+    restoreStorage = null;
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });

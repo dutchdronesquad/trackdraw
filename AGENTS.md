@@ -51,6 +51,7 @@ AI agents are expected to keep this file current. When a change introduces a dur
 - `src/lib`: design normalization, geometry, sharing, export, and helpers
 - `src/types`: shared TypeScript types
 - `tests`: unit, regression, and component coverage grouped by product area or module
+- `tests/helpers`: shared test fixtures, browser storage fakes, D1 statement mocks, and editor-store builders; reuse these before adding per-file mock factories
 - `migrations`: D1 database migrations
 - `public`: static assets and generated public media references
 - `docs`: roadmap and planning docs; keep product language aligned with shipped behavior

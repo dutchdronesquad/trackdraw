@@ -2,6 +2,7 @@
 
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createMemoryStorage, installWindowStorage } from "../helpers/storage";
 
 const useSessionMock = vi.fn();
 const signOutMock = vi.fn();
@@ -9,31 +10,7 @@ const deleteUserMock = vi.fn();
 const updateUserMock = vi.fn();
 const magicLinkMock = vi.fn();
 const passkeySignInMock = vi.fn();
-const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(
-  window,
-  "localStorage"
-);
-
-function createMemoryStorage(): Storage {
-  const store = new Map<string, string>();
-
-  return {
-    get length() {
-      return store.size;
-    },
-    clear: vi.fn(() => {
-      store.clear();
-    }),
-    getItem: vi.fn((key: string) => store.get(key) ?? null),
-    key: vi.fn((index: number) => Array.from(store.keys())[index] ?? null),
-    removeItem: vi.fn((key: string) => {
-      store.delete(key);
-    }),
-    setItem: vi.fn((key: string, value: string) => {
-      store.set(key, value);
-    }),
-  };
-}
+let restoreStorage: (() => void) | null = null;
 
 vi.mock("@better-auth/passkey/client", () => ({
   passkeyClient: vi.fn(() => ({})),
@@ -60,10 +37,7 @@ describe("authClient session resolution", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      value: createMemoryStorage(),
-    });
+    restoreStorage = installWindowStorage(createMemoryStorage());
 
     useSessionMock.mockReturnValue({
       data: {
@@ -96,13 +70,8 @@ describe("authClient session resolution", () => {
 
   afterEach(() => {
     cleanup();
-    if (originalLocalStorageDescriptor) {
-      Object.defineProperty(
-        window,
-        "localStorage",
-        originalLocalStorageDescriptor
-      );
-    }
+    restoreStorage?.();
+    restoreStorage = null;
     vi.unstubAllGlobals();
   });
 
@@ -138,6 +107,51 @@ describe("authClient session resolution", () => {
     });
 
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("normalizes unexpected account roles from the session endpoint", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        user: { role: "owner" },
+      }),
+    } as Response);
+    const { authClient } = await import("@/lib/auth-client");
+
+    const session = renderHook(() => authClient.useSession());
+
+    await waitFor(() => {
+      expect(session.result.current.data?.user.role).toBe("user");
+    });
+  });
+
+  it("keeps the browser session visible when account role resolution fails", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      json: async () => ({
+        ok: false,
+        error: "Session lookup failed",
+      }),
+    } as Response);
+    const { authClient } = await import("@/lib/auth-client");
+
+    const session = renderHook(() => authClient.useSession());
+
+    await waitFor(() => {
+      expect(session.result.current.isPending).toBe(false);
+      expect(session.result.current.error?.message).toBe(
+        "Session lookup failed"
+      );
+    });
+    expect(session.result.current.data).toMatchObject({
+      session: { id: "session-1" },
+      user: {
+        id: "user-1",
+        email: "pilot@trackdraw.local",
+      },
+    });
+    expect(session.result.current.data?.user.role).toBeUndefined();
   });
 
   it("clears the resolved role cache on signOut", async () => {
@@ -186,5 +200,39 @@ describe("authClient session resolution", () => {
       callbackURL: "/studio",
     });
     expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("trims profile names before updating the Better Auth user", async () => {
+    const { authClient } = await import("@/lib/auth-client");
+
+    await authClient.updateProfileName("  Race Director  ");
+
+    expect(updateUserMock).toHaveBeenCalledWith({ name: "Race Director" });
+  });
+
+  it("posts normalized email changes with the default studio callback", async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({}),
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { authClient } = await import("@/lib/auth-client");
+
+    await authClient.changeEmail({ newEmail: "  PILOT@EXAMPLE.COM " });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      new URL("/api/auth/change-email", window.location.origin),
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          newEmail: "pilot@example.com",
+          callbackURL: "/studio",
+        }),
+      }
+    );
   });
 });

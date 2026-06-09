@@ -2,58 +2,15 @@
 
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createMemoryStorage,
+  createThrowingStorage,
+  installWindowStorage,
+} from "../helpers/storage";
 
-const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(
-  window,
-  "localStorage"
-);
-
-function createMapStorage(initial: Record<string, string> = {}): Storage {
-  const store = new Map<string, string>(Object.entries(initial));
-  return {
-    get length() {
-      return store.size;
-    },
-    clear: () => store.clear(),
-    getItem: (key: string) => store.get(key) ?? null,
-    key: (index: number) => [...store.keys()][index] ?? null,
-    removeItem: (key: string) => void store.delete(key),
-    setItem: (key: string, value: string) => void store.set(key, value),
-  };
-}
-
-function createThrowingStorage(): Storage {
-  return {
-    get length() {
-      return 0;
-    },
-    clear: vi.fn(),
-    getItem: vi.fn(() => {
-      throw new DOMException("Storage unavailable", "SecurityError");
-    }),
-    key: vi.fn(() => null),
-    removeItem: vi.fn(),
-    setItem: vi.fn(() => {
-      throw new DOMException("Storage unavailable", "SecurityError");
-    }),
-  };
-}
-
+let restoreStorage: (() => void) | null = null;
 function setStorage(impl: Storage) {
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: impl,
-  });
-}
-
-function restoreStorage() {
-  if (originalLocalStorageDescriptor) {
-    Object.defineProperty(
-      window,
-      "localStorage",
-      originalLocalStorageDescriptor
-    );
-  }
+  restoreStorage = installWindowStorage(impl);
 }
 
 const KEY = "test.persistentBoolean";
@@ -64,12 +21,13 @@ describe("usePersistentBoolean", () => {
   });
 
   afterEach(() => {
-    restoreStorage();
+    restoreStorage?.();
+    restoreStorage = null;
     vi.restoreAllMocks();
   });
 
   it("initialises to false by default when nothing stored", async () => {
-    setStorage(createMapStorage());
+    setStorage(createMemoryStorage());
     const { usePersistentBoolean } =
       await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY));
@@ -77,7 +35,7 @@ describe("usePersistentBoolean", () => {
   });
 
   it("initialises to the provided defaultValue", async () => {
-    setStorage(createMapStorage());
+    setStorage(createMemoryStorage());
     const { usePersistentBoolean } =
       await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY, true));
@@ -85,7 +43,7 @@ describe("usePersistentBoolean", () => {
   });
 
   it("reads a stored 'true' value from localStorage", async () => {
-    setStorage(createMapStorage({ [KEY]: "true" }));
+    setStorage(createMemoryStorage({ [KEY]: "true" }));
     const { usePersistentBoolean } =
       await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY));
@@ -93,7 +51,7 @@ describe("usePersistentBoolean", () => {
   });
 
   it("reads a stored 'false' value, overriding a true defaultValue", async () => {
-    setStorage(createMapStorage({ [KEY]: "false" }));
+    setStorage(createMemoryStorage({ [KEY]: "false" }));
     const { usePersistentBoolean } =
       await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY, true));
@@ -101,7 +59,7 @@ describe("usePersistentBoolean", () => {
   });
 
   it("ignores unrecognised stored strings and falls back to defaultValue", async () => {
-    setStorage(createMapStorage({ [KEY]: "yes" }));
+    setStorage(createMemoryStorage({ [KEY]: "yes" }));
     const { usePersistentBoolean } =
       await import("@/hooks/usePersistentBoolean");
     const { result } = renderHook(() => usePersistentBoolean(KEY, true));
@@ -109,7 +67,7 @@ describe("usePersistentBoolean", () => {
   });
 
   it("persists a true value to localStorage when state changes", async () => {
-    const storage = createMapStorage();
+    const storage = createMemoryStorage();
     setStorage(storage);
     const { usePersistentBoolean } =
       await import("@/hooks/usePersistentBoolean");
@@ -124,7 +82,7 @@ describe("usePersistentBoolean", () => {
   });
 
   it("persists a false value to localStorage when state changes", async () => {
-    const storage = createMapStorage({ [KEY]: "true" });
+    const storage = createMemoryStorage({ [KEY]: "true" });
     setStorage(storage);
     const { usePersistentBoolean } =
       await import("@/hooks/usePersistentBoolean");
@@ -139,7 +97,7 @@ describe("usePersistentBoolean", () => {
   });
 
   it("keeps in-memory state working when localStorage.setItem throws", async () => {
-    const storage = createMapStorage();
+    const storage = createMemoryStorage();
     vi.spyOn(storage, "setItem").mockImplementation(() => {
       throw new DOMException("Storage full", "QuotaExceededError");
     });

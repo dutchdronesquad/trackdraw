@@ -25,7 +25,6 @@ vi.mock("@/lib/server/audit", () => ({
 
 import { GET } from "@/app/api/dashboard/users/route";
 import { PATCH } from "@/app/api/dashboard/users/[userId]/route";
-import type { AdminUser } from "@/lib/admin-users";
 import { createAuditEvent } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import {
@@ -38,32 +37,25 @@ import {
   listUsersForAdmin,
   updateUserRole,
 } from "@/lib/server/users";
+import {
+  adminActor,
+  createAdminUserFixture,
+  jsonRequest,
+  moderatorActor,
+  routeContext,
+} from "../../../helpers/api-routes";
 
-const adminActor = {
-  id: "admin-1",
-  email: "admin@trackdraw.local",
-  name: "Admin",
-  image: null,
-  role: "admin" as const,
-};
+const targetUser = createAdminUserFixture();
 
-const moderatorActor = {
-  id: "mod-1",
-  email: "mod@trackdraw.local",
-  name: "Moderator",
-  image: null,
-  role: "moderator" as const,
-};
+function patchRoleRequest(role: string) {
+  return jsonRequest("http://localhost/api/dashboard/users/user-2", "PATCH", {
+    role,
+  });
+}
 
-const targetUser: AdminUser = {
-  id: "user-2",
-  name: "Target User",
-  email: "target@trackdraw.local",
-  image: null,
-  role: "user",
-  createdAt: "2026-01-01T00:00:00.000Z",
-  updatedAt: "2026-01-01T00:00:00.000Z",
-};
+function userContext() {
+  return routeContext({ userId: "user-2" });
+}
 
 describe("dashboard users API routes", () => {
   beforeEach(() => {
@@ -123,11 +115,8 @@ describe("dashboard users API routes", () => {
       vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(null);
 
       const response = await PATCH(
-        new Request("http://localhost/api/dashboard/users/user-2", {
-          method: "PATCH",
-          body: JSON.stringify({ role: "moderator" }),
-        }),
-        { params: Promise.resolve({ userId: "user-2" }) }
+        patchRoleRequest("moderator"),
+        userContext()
       );
 
       expect(response.status).toBe(401);
@@ -142,11 +131,8 @@ describe("dashboard users API routes", () => {
       vi.mocked(canAssignAccountRole).mockReturnValue(false);
 
       const response = await PATCH(
-        new Request("http://localhost/api/dashboard/users/user-2", {
-          method: "PATCH",
-          body: JSON.stringify({ role: "moderator" }),
-        }),
-        { params: Promise.resolve({ userId: "user-2" }) }
+        patchRoleRequest("moderator"),
+        userContext()
       );
 
       expect(response.status).toBe(403);
@@ -157,20 +143,14 @@ describe("dashboard users API routes", () => {
     });
 
     it("prevents demoting the last admin", async () => {
-      const loneAdminUser: AdminUser = { ...targetUser, role: "admin" };
+      const loneAdminUser = createAdminUserFixture({ role: "admin" });
 
       vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(adminActor);
       vi.mocked(canAssignAccountRole).mockReturnValue(true);
       vi.mocked(getAdminUserById).mockResolvedValue(loneAdminUser);
       vi.mocked(countUsersByRole).mockResolvedValue(1);
 
-      const response = await PATCH(
-        new Request("http://localhost/api/dashboard/users/user-2", {
-          method: "PATCH",
-          body: JSON.stringify({ role: "user" }),
-        }),
-        { params: Promise.resolve({ userId: "user-2" }) }
-      );
+      const response = await PATCH(patchRoleRequest("user"), userContext());
 
       expect(response.status).toBe(400);
       await expect(response.json()).resolves.toEqual({
@@ -182,18 +162,15 @@ describe("dashboard users API routes", () => {
     });
 
     it("returns early without writing when the role does not change", async () => {
-      const existingModerator: AdminUser = { ...targetUser, role: "moderator" };
+      const existingModerator = createAdminUserFixture({ role: "moderator" });
 
       vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(adminActor);
       vi.mocked(canAssignAccountRole).mockReturnValue(true);
       vi.mocked(getAdminUserById).mockResolvedValue(existingModerator);
 
       const response = await PATCH(
-        new Request("http://localhost/api/dashboard/users/user-2", {
-          method: "PATCH",
-          body: JSON.stringify({ role: "moderator" }),
-        }),
-        { params: Promise.resolve({ userId: "user-2" }) }
+        patchRoleRequest("moderator"),
+        userContext()
       );
 
       expect(response.status).toBe(200);
@@ -206,7 +183,7 @@ describe("dashboard users API routes", () => {
     });
 
     it("updates the role and writes an audit event", async () => {
-      const updatedUser: AdminUser = { ...targetUser, role: "moderator" };
+      const updatedUser = createAdminUserFixture({ role: "moderator" });
 
       vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(adminActor);
       vi.mocked(canAssignAccountRole).mockReturnValue(true);
@@ -214,11 +191,8 @@ describe("dashboard users API routes", () => {
       vi.mocked(updateUserRole).mockResolvedValue(updatedUser);
 
       const response = await PATCH(
-        new Request("http://localhost/api/dashboard/users/user-2", {
-          method: "PATCH",
-          body: JSON.stringify({ role: "moderator" }),
-        }),
-        { params: Promise.resolve({ userId: "user-2" }) }
+        patchRoleRequest("moderator"),
+        userContext()
       );
 
       expect(response.status).toBe(200);

@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultDesign } from "@/lib/track/design";
-import type { StoredShare, UserShare } from "@/lib/server/shares";
+import type { UserShare } from "@/lib/server/shares";
+import {
+  createStoredProjectFixture,
+  createStoredShareFixture,
+  jsonRequest,
+  testUser,
+} from "../../helpers/api-routes";
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/server/csrf", () => ({ isTrustedRequest: vi.fn(() => true) }));
@@ -28,43 +34,8 @@ import {
   getSharesByUserId,
 } from "@/lib/server/shares";
 
-const user = {
-  id: "user-1",
-  email: "pilot@trackdraw.local",
-  name: "Pilot",
-  image: null,
-  role: "user" as const,
-};
-
-function createStoredShare(overrides: Partial<StoredShare> = {}): StoredShare {
-  const design = createDefaultDesign();
-  return {
-    id: "share-id",
-    token: "share-token",
-    design,
-    title: design.title,
-    description: "Read-only TrackDraw plan.",
-    shapeCount: 0,
-    fieldWidth: design.field.width,
-    fieldHeight: design.field.height,
-    createdAt: "2026-04-20T10:00:00.000Z",
-    updatedAt: "2026-04-20T10:00:00.000Z",
-    publishedAt: "2026-04-20T10:00:00.000Z",
-    expiresAt: "2026-05-20T10:00:00.000Z",
-    revokedAt: null,
-    ownerUserId: null,
-    projectId: null,
-    shareType: "temporary",
-    ...overrides,
-  };
-}
-
 function postRequest(body: unknown) {
-  return new Request("http://localhost/api/shares", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  return jsonRequest("http://localhost/api/shares", "POST", body);
 }
 
 describe("shares API route", () => {
@@ -78,7 +49,9 @@ describe("shares API route", () => {
 
   it("creates anonymous temporary shares with requested expiry", async () => {
     const design = createDefaultDesign();
-    const share = createStoredShare({ expiresAt: "2026-05-02T12:00:00.000Z" });
+    const share = createStoredShareFixture({
+      expiresAt: "2026-05-02T12:00:00.000Z",
+    });
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(null);
     vi.mocked(createShare).mockResolvedValue(share);
 
@@ -110,27 +83,19 @@ describe("shares API route", () => {
 
   it("creates authenticated project shares as published links and ignores expiry input", async () => {
     const design = createDefaultDesign();
-    const share = createStoredShare({
+    const share = createStoredShareFixture({
       expiresAt: null,
-      ownerUserId: user.id,
+      ownerUserId: testUser.id,
       projectId: "project-1",
       shareType: "published",
     });
-    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
-    vi.mocked(getProjectForUser).mockResolvedValue({
-      id: "project-1",
-      ownerUserId: user.id,
-      title: "Project",
-      description: "",
-      design,
-      designUpdatedAt: design.updatedAt,
-      fieldWidth: design.field.width,
-      fieldHeight: design.field.height,
-      shapeCount: 0,
-      createdAt: "2026-04-20T10:00:00.000Z",
-      updatedAt: "2026-04-20T10:00:00.000Z",
-      archivedAt: null,
-    });
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
+    vi.mocked(getProjectForUser).mockResolvedValue(
+      createStoredProjectFixture({
+        title: "Project",
+        design,
+      })
+    );
     vi.mocked(createShare).mockResolvedValue(share);
 
     const response = await POST(
@@ -149,7 +114,7 @@ describe("shares API route", () => {
         token: "share-token",
         path: "/share/share-token?view=2d",
         expiresAt: null,
-        ownerUserId: user.id,
+        ownerUserId: testUser.id,
         projectId: "project-1",
         shareType: "published",
       },
@@ -158,7 +123,7 @@ describe("shares API route", () => {
       expect.objectContaining({ id: design.id }),
       {
         expiresInDays: undefined,
-        ownerUserId: user.id,
+        ownerUserId: testUser.id,
         projectId: "project-1",
       }
     );
@@ -215,7 +180,7 @@ describe("shares API route", () => {
       galleryTitle: null,
       galleryDescription: null,
     };
-    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(user);
+    vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
     vi.mocked(getShareByProjectIdForUser).mockResolvedValue(share);
 
     const response = await GET(
@@ -225,7 +190,7 @@ describe("shares API route", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ ok: true, share });
     expect(getShareByProjectIdForUser).toHaveBeenCalledWith(
-      user.id,
+      testUser.id,
       "project-1"
     );
     expect(getSharesByUserId).not.toHaveBeenCalled();
