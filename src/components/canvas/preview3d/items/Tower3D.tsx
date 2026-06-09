@@ -1,7 +1,16 @@
 "use client";
 
 import { useTexture } from "@react-three/drei";
-import { Suspense, useEffect, useMemo, type Ref } from "react";
+import { useFrame } from "@react-three/fiber";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type Ref,
+  type RefObject,
+} from "react";
 import * as THREE from "three";
 import {
   getEffectiveFlips,
@@ -22,6 +31,7 @@ import {
   type TowerVisualSpec,
 } from "@/lib/track/elements/catalog";
 import type { GateShape, TowerShape } from "@/lib/types";
+import { assignGroupRef } from "./texture-cache";
 
 function cloneTextureForPanel(
   texture: THREE.Texture,
@@ -547,12 +557,63 @@ export function Tower3D({
   selected = false,
   shape,
   outerRef,
+  elevationOverrideRef,
 }: {
   selected?: boolean;
   shape: TowerShape;
   outerRef?: Ref<THREE.Group>;
+  elevationOverrideRef?: RefObject<number | null>;
 }) {
   const visual = getTowerVisualSpecFor3D(shape);
+  const color = shape.color ?? "#38bdf8";
+  const w = shape.width ?? 2;
+  const h = shape.height ?? 2;
+  const thick = shape.thick ?? 0.2;
+  const levelCount = getTowerLevelCount(shape);
+  const elevation = Math.max(shape.elevation ?? 0, 0);
+  const totalH = elevation + levelCount * h;
+  const leftPostRef = useRef<THREE.Mesh>(null);
+  const rightPostRef = useRef<THREE.Mesh>(null);
+  const levelBarRefs = useRef<Array<THREE.Mesh | null>>([]);
+  const rot: [number, number, number] = [
+    0,
+    (-(shape.rotation + 180) * Math.PI) / 180,
+    0,
+  ];
+  const matProps = {
+    color,
+    emissive: selected ? "#60a5fa" : color,
+    emissiveIntensity: selected ? 0.55 : 0.08,
+  };
+  const setGroupRefs = useCallback(
+    (node: THREE.Group | null) => {
+      assignGroupRef(outerRef, node);
+    },
+    [outerRef]
+  );
+
+  useFrame(() => {
+    const liveElevation = elevationOverrideRef?.current;
+    const nextElevation =
+      liveElevation == null ? elevation : Math.max(liveElevation, 0);
+    const nextTotalH = nextElevation + levelCount * h;
+    const postScaleY = totalH > 0 ? nextTotalH / totalH : 1;
+
+    for (const postRef of [leftPostRef, rightPostRef]) {
+      const post = postRef.current;
+      if (!post) continue;
+      post.position.y = nextTotalH / 2;
+      post.scale.y = postScaleY;
+    }
+
+    for (let index = 0; index <= levelCount; index += 1) {
+      const bar = levelBarRefs.current[index];
+      if (bar) {
+        bar.position.y = nextElevation + index * h;
+      }
+    }
+  });
+
   if (visual?.variant === "panel-frame") {
     return (
       <PanelFrameTower3D
@@ -564,38 +625,27 @@ export function Tower3D({
     );
   }
 
-  const color = shape.color ?? "#38bdf8";
-  const w = shape.width ?? 2;
-  const h = shape.height ?? 2;
-  const thick = shape.thick ?? 0.2;
-  const levelCount = getTowerLevelCount(shape);
-  const elevation = Math.max(shape.elevation ?? 0, 0);
-  const totalH = elevation + levelCount * h;
-  const rot: [number, number, number] = [
-    0,
-    (-(shape.rotation + 180) * Math.PI) / 180,
-    0,
-  ];
-  const matProps = {
-    color,
-    emissive: selected ? "#60a5fa" : color,
-    emissiveIntensity: selected ? 0.55 : 0.08,
-  };
-
   return (
-    <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={rot}>
-      <mesh position={[-w / 2, totalH / 2, 0]} castShadow>
+    <group ref={setGroupRefs} position={[shape.x, 0, shape.y]} rotation={rot}>
+      <mesh ref={leftPostRef} position={[-w / 2, totalH / 2, 0]} castShadow>
         <boxGeometry args={[thick, totalH, thick]} />
         <meshStandardMaterial {...matProps} />
       </mesh>
-      <mesh position={[w / 2, totalH / 2, 0]} castShadow>
+      <mesh ref={rightPostRef} position={[w / 2, totalH / 2, 0]} castShadow>
         <boxGeometry args={[thick, totalH, thick]} />
         <meshStandardMaterial {...matProps} />
       </mesh>
       {Array.from({ length: levelCount + 1 }, (_, index) => {
         const y = elevation + index * h;
         return (
-          <mesh key={index} position={[0, y, 0]} castShadow>
+          <mesh
+            key={index}
+            ref={(node) => {
+              levelBarRefs.current[index] = node;
+            }}
+            position={[0, y, 0]}
+            castShadow
+          >
             <boxGeometry args={[w + thick, thick, thick]} />
             <meshStandardMaterial {...matProps} />
           </mesh>

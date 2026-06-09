@@ -21,6 +21,7 @@ import {
   getMultiGpDiveGateArchTopY,
   getMultiGpLaunchGateTopY,
 } from "@/lib/track/render3d-layout";
+import { getTowerTopY } from "@/components/canvas/preview3d/items/Tower3D";
 import type {
   DiveGateShape,
   FlagShape,
@@ -29,6 +30,142 @@ import type {
   PolylineShape,
   TowerShape,
 } from "@/lib/types";
+
+export function TowerElevationHandle3D({
+  shape,
+  onDragStart,
+  isDragging,
+  isMobile,
+  elevationOverrideRef,
+  elevationMin,
+  elevationMax,
+}: {
+  shape: TowerShape;
+  onDragStart: (event: ThreeEvent<PointerEvent>) => void;
+  isDragging: boolean;
+  isMobile: boolean;
+  elevationOverrideRef: RefObject<number | null>;
+  elevationMin: number;
+  elevationMax: number | null;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const guideGroupRef = useRef<THREE.Group>(null);
+  const guideColor = isDragging ? "#f59e0b" : hovered ? "#bfdbfe" : "#93c5fd";
+  const guideHeight = 0.65;
+  const handleY = 0.42;
+  const gripRadius = isMobile
+    ? isDragging
+      ? 0.22
+      : 0.2
+    : isDragging
+      ? 0.18
+      : 0.16;
+  const gripHeight = isMobile
+    ? isDragging
+      ? 0.26
+      : 0.22
+    : isDragging
+      ? 0.2
+      : 0.17;
+  const touchTargetRadius = isMobile ? 0.34 : gripRadius;
+  const touchTargetHeight = isMobile ? 0.58 : gripHeight;
+  const getHandleBaseY = (elevation: number) =>
+    getTowerTopY({
+      ...shape,
+      elevation: Math.max(elevationMin, elevation),
+    });
+  const topY = getHandleBaseY(shape.elevation ?? elevationMin);
+  const minHandleBaseY = getHandleBaseY(elevationMin);
+  const maxHandleBaseY =
+    elevationMax == null ? null : getHandleBaseY(elevationMax);
+  const rangeHeight =
+    maxHandleBaseY == null ? 0 : Math.max(0, maxHandleBaseY - minHandleBaseY);
+
+  useFrame(() => {
+    if (!guideGroupRef.current) return;
+    const liveElevation = elevationOverrideRef.current;
+    if (liveElevation === null) return;
+    guideGroupRef.current.position.set(
+      shape.x,
+      getHandleBaseY(liveElevation),
+      shape.y
+    );
+  });
+
+  return (
+    <>
+      {maxHandleBaseY !== null && rangeHeight > 0 ? (
+        <group position={[shape.x, 0, shape.y]}>
+          <mesh position={[0, minHandleBaseY + rangeHeight / 2, 0]}>
+            <cylinderGeometry args={[0.028, 0.028, rangeHeight, 16]} />
+            <meshBasicMaterial
+              color={guideColor}
+              transparent
+              opacity={isDragging ? 0.38 : hovered ? 0.3 : 0.18}
+            />
+          </mesh>
+          {[minHandleBaseY, maxHandleBaseY].map((limitY) => (
+            <mesh
+              key={limitY}
+              position={[0, limitY, 0]}
+              rotation={[-Math.PI / 2, 0, 0]}
+            >
+              <ringGeometry args={[0.05, 0.1, 20]} />
+              <meshBasicMaterial
+                color={guideColor}
+                transparent
+                opacity={isDragging ? 0.7 : hovered ? 0.55 : 0.35}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          ))}
+        </group>
+      ) : null}
+      <group ref={guideGroupRef} position={[shape.x, topY, shape.y]}>
+        <mesh position={[0, guideHeight / 2, 0]}>
+          <cylinderGeometry args={[0.028, 0.028, guideHeight, 16]} />
+          <meshBasicMaterial color={guideColor} transparent opacity={0.5} />
+        </mesh>
+        <mesh
+          position={[0, handleY, 0]}
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            onDragStart(event);
+          }}
+          onPointerOver={() => setHovered(true)}
+          onPointerOut={() => setHovered(false)}
+        >
+          <cylinderGeometry
+            args={[touchTargetRadius, touchTargetRadius, touchTargetHeight, 24]}
+          />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+        <mesh position={[0, handleY, 0]}>
+          <cylinderGeometry args={[gripRadius, gripRadius, gripHeight, 24]} />
+          <meshStandardMaterial
+            color={isDragging ? "#f59e0b" : hovered ? "#38bdf8" : "#1e293b"}
+            emissive={isDragging ? "#fbbf24" : hovered ? "#7dd3fc" : "#60a5fa"}
+            emissiveIntensity={isDragging ? 1 : hovered ? 0.62 : 0.28}
+            roughness={0.16}
+            metalness={0.14}
+          />
+        </mesh>
+        <mesh position={[0, handleY + gripHeight * 0.26, 0]}>
+          <coneGeometry
+            args={[gripRadius * 0.78, Math.max(gripHeight * 0.6, 0.08), 24]}
+          />
+          <meshStandardMaterial
+            color={isDragging ? "#fff3c4" : hovered ? "#f8fbff" : "#cbd5e1"}
+            emissive={isDragging ? "#fbbf24" : hovered ? "#bae6fd" : "#93c5fd"}
+            emissiveIntensity={isDragging ? 0.7 : hovered ? 0.38 : 0.16}
+            roughness={0.12}
+            metalness={0.08}
+          />
+        </mesh>
+      </group>
+    </>
+  );
+}
 
 export function LadderElevationHandle3D({
   shape,

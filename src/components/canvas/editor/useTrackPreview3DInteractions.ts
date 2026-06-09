@@ -16,6 +16,8 @@ import {
   getDiveGateElevationMax,
   getDiveGateElevationMin,
   getDiveGateVisualSpec,
+  getTowerElevationMax,
+  getTowerElevationMin,
 } from "@/lib/track/elements/visual";
 import type {
   DiveGateShape,
@@ -23,6 +25,7 @@ import type {
   PolylinePoint,
   PolylineShape,
   Shape,
+  TowerShape,
 } from "@/lib/types";
 import { getShapeCanvasRenderRotationOffset } from "@/lib/track/items/registry";
 import {
@@ -96,6 +99,10 @@ function getLiveRotationYawRadians(shape: Shape, rotation: number) {
   return (-meshRotation * Math.PI) / 180;
 }
 
+function clampElevation(value: number, min: number, max: number | null) {
+  return Math.min(max ?? Infinity, Math.max(min, value));
+}
+
 export function useTrackPreview3DInteractions({
   beginInteraction,
   endInteraction,
@@ -135,6 +142,11 @@ export function useTrackPreview3DInteractions({
     startClientY: number;
     startElevation: number;
   } | null>(null);
+  const [towerElevationDrag, setTowerElevationDrag] = useState<{
+    shapeId: string;
+    startClientY: number;
+    startElevation: number;
+  } | null>(null);
   const [diveGateElevationDrag, setDiveGateElevationDrag] = useState<{
     shapeId: string;
     startClientY: number;
@@ -155,11 +167,14 @@ export function useTrackPreview3DInteractions({
   const rotationDragRef = useRef(rotationDrag);
   const tiltDragRef = useRef(tiltDrag);
   const ladderElevationDragRef = useRef(ladderElevationDrag);
+  const towerElevationDragRef = useRef(towerElevationDrag);
   const diveGateElevationDragRef = useRef(diveGateElevationDrag);
   const dragAnimationFrameRef = useRef<number | null>(null);
   const rotationDragAnimationFrameRef = useRef<number | null>(null);
   const tiltDragAnimationFrameRef = useRef<number | null>(null);
   const ladderElevationDragAnimationFrameRef = useRef<number | null>(null);
+  const towerElevationDragAnimationFrameRef = useRef<number | null>(null);
+  const towerElevationClearAnimationFrameRef = useRef<number | null>(null);
   const diveGateElevationDragAnimationFrameRef = useRef<number | null>(null);
   const pendingElevationClientRef = useRef<{ x: number; y: number } | null>(
     null
@@ -170,10 +185,12 @@ export function useTrackPreview3DInteractions({
   const pendingTiltClientYRef = useRef<number | null>(null);
   const pendingTiltClientXRef = useRef<number | null>(null);
   const pendingLadderElevationClientYRef = useRef<number | null>(null);
+  const pendingTowerElevationClientYRef = useRef<number | null>(null);
   const pendingDiveGateElevationClientYRef = useRef<number | null>(null);
   const rotationDragValueRef = useRef<number | null>(null);
   const tiltDragValueRef = useRef<number | null>(null);
   const ladderElevationDragValueRef = useRef<number | null>(null);
+  const towerElevationDragValueRef = useRef<number | null>(null);
   const diveGateElevationDragValueRef = useRef<number | null>(null);
   const dragRotationGroupRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.Camera | null>(null);
@@ -198,6 +215,10 @@ export function useTrackPreview3DInteractions({
   useEffect(() => {
     ladderElevationDragRef.current = ladderElevationDrag;
   }, [ladderElevationDrag]);
+
+  useEffect(() => {
+    towerElevationDragRef.current = towerElevationDrag;
+  }, [towerElevationDrag]);
 
   useEffect(() => {
     diveGateElevationDragRef.current = diveGateElevationDrag;
@@ -690,6 +711,61 @@ export function useTrackPreview3DInteractions({
     [shapeById, startSession]
   );
 
+  const applyTowerElevationDrag = useCallback(
+    (clientY: number) => {
+      const drag = towerElevationDragRef.current;
+      if (!drag) return;
+      const shape = shapeById[drag.shapeId];
+      if (!shape || shape.kind !== "tower") return;
+      const deltaMeters = (drag.startClientY - clientY) * 0.035;
+      const nextElevation = +clampElevation(
+        drag.startElevation + deltaMeters,
+        getTowerElevationMin(shape),
+        getTowerElevationMax(shape)
+      );
+      const roundedNextElevation = +nextElevation.toFixed(2);
+      const currentElevation =
+        towerElevationDragValueRef.current ??
+        (shape as TowerShape).elevation ??
+        0;
+      if (Math.abs(currentElevation - roundedNextElevation) < 0.01) return;
+      towerElevationDragValueRef.current = roundedNextElevation;
+      setLiveShapePatch(drag.shapeId, { elevation: roundedNextElevation });
+    },
+    [setLiveShapePatch, shapeById]
+  );
+
+  const handleTowerElevationDragStart = useCallback(
+    (
+      event: ThreeEvent<PointerEvent>,
+      shapeId: string,
+      currentElevation: number
+    ) => {
+      event.stopPropagation();
+      const shape = shapeById[shapeId];
+      if (!shape || shape.kind !== "tower" || shape.locked) return;
+      if (!startSession()) return;
+      if (towerElevationClearAnimationFrameRef.current !== null) {
+        window.cancelAnimationFrame(
+          towerElevationClearAnimationFrameRef.current
+        );
+        towerElevationClearAnimationFrameRef.current = null;
+      }
+      const clampedElevation = clampElevation(
+        currentElevation,
+        getTowerElevationMin(shape),
+        getTowerElevationMax(shape)
+      );
+      towerElevationDragValueRef.current = +clampedElevation.toFixed(2);
+      setTowerElevationDrag({
+        shapeId,
+        startClientY: event.nativeEvent.clientY,
+        startElevation: clampedElevation,
+      });
+    },
+    [shapeById, startSession]
+  );
+
   useEffect(() => {
     if (!tiltDrag) return;
 
@@ -885,6 +961,119 @@ export function useTrackPreview3DInteractions({
     updateShape,
   ]);
 
+  useEffect(() => {
+    if (!towerElevationDrag) return;
+
+    let finished = false;
+    const cleanupListeners = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", stopDrag);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", stopDrag);
+      window.removeEventListener("touchcancel", cancelDrag);
+      window.removeEventListener("blur", cancelDrag);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (towerElevationDragAnimationFrameRef.current !== null) {
+        window.cancelAnimationFrame(
+          towerElevationDragAnimationFrameRef.current
+        );
+        towerElevationDragAnimationFrameRef.current = null;
+      }
+    };
+
+    const finishDrag = () => {
+      if (finished) return;
+      finished = true;
+      const drag = towerElevationDragRef.current;
+      const finalElevation = towerElevationDragValueRef.current;
+      cleanupListeners();
+      finishSession(() => {
+        if (drag && finalElevation !== null) {
+          updateShape(drag.shapeId, { elevation: finalElevation });
+        }
+        if (drag) {
+          clearLiveShapePatch(drag.shapeId);
+        }
+      });
+      setTowerElevationDrag(null);
+      towerElevationClearAnimationFrameRef.current =
+        window.requestAnimationFrame(() => {
+          towerElevationClearAnimationFrameRef.current = null;
+          if (towerElevationDragRef.current === null) {
+            towerElevationDragValueRef.current = null;
+          }
+        });
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      pendingTowerElevationClientYRef.current = event.clientY;
+      if (towerElevationDragAnimationFrameRef.current !== null) return;
+      towerElevationDragAnimationFrameRef.current =
+        window.requestAnimationFrame(() => {
+          towerElevationDragAnimationFrameRef.current = null;
+          if (pendingTowerElevationClientYRef.current !== null) {
+            applyTowerElevationDrag(pendingTowerElevationClientYRef.current);
+          }
+        });
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!event.touches.length) return;
+      event.preventDefault();
+      pendingTowerElevationClientYRef.current = event.touches[0].clientY;
+      if (towerElevationDragAnimationFrameRef.current !== null) return;
+      towerElevationDragAnimationFrameRef.current =
+        window.requestAnimationFrame(() => {
+          towerElevationDragAnimationFrameRef.current = null;
+          if (pendingTowerElevationClientYRef.current !== null) {
+            applyTowerElevationDrag(pendingTowerElevationClientYRef.current);
+          }
+        });
+    };
+
+    const stopDrag = () => {
+      finishDrag();
+    };
+
+    const cancelDrag = () => {
+      if (finished) return;
+      finished = true;
+      cleanupListeners();
+      towerElevationDragValueRef.current = null;
+      cancelSession(() => {
+        const drag = towerElevationDragRef.current;
+        if (drag) {
+          clearLiveShapePatch(drag.shapeId);
+        }
+        setTowerElevationDrag(null);
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      cancelDrag();
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", stopDrag);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", stopDrag);
+    window.addEventListener("touchcancel", cancelDrag);
+    window.addEventListener("blur", cancelDrag);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      cancelDrag();
+    };
+  }, [
+    applyTowerElevationDrag,
+    cancelSession,
+    clearLiveShapePatch,
+    finishSession,
+    towerElevationDrag,
+    updateShape,
+  ]);
+
   const applyDiveGateElevationDrag = useCallback(
     (clientY: number) => {
       const drag = diveGateElevationDragRef.current;
@@ -1056,6 +1245,7 @@ export function useTrackPreview3DInteractions({
     handleLadderElevationDragStart,
     handleRotateDragStart,
     handleTiltDragStart,
+    handleTowerElevationDragStart,
     isMiddleMousePanning,
     ladderElevationDrag,
     ladderElevationDragValueRef,
@@ -1064,5 +1254,7 @@ export function useTrackPreview3DInteractions({
     rotationDragValueRef,
     tiltDrag,
     tiltDragValueRef,
+    towerElevationDrag,
+    towerElevationDragValueRef,
   };
 }

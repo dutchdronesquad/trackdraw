@@ -8,6 +8,7 @@ import type {
 } from "@/lib/types";
 import {
   TRACKDRAW_DIVE_GATE_ELEMENT_ID,
+  TRACKDRAW_TOWER_ELEMENT_ID,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
   type DiveGateVisualSpec,
@@ -95,6 +96,22 @@ export function getTowerVisualSpec(shape: TowerShape): TowerVisualSpec | null {
   const visual = getTrackElementVisualSpec(shape);
   if (visual?.kind === "tower") return visual;
   return null;
+}
+
+function getTowerEntryId(shape: TowerShape) {
+  const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
+  if (catalogIdentity) return catalogIdentity.elementId;
+  return TRACKDRAW_TOWER_ELEMENT_ID;
+}
+
+export function getTowerElevationMin(shape: TowerShape): number {
+  const entry = getTrackElementCatalogEntry(getTowerEntryId(shape));
+  return entry?.elevationMinMeters ?? 0;
+}
+
+export function getTowerElevationMax(shape: TowerShape): number | null {
+  const entry = getTrackElementCatalogEntry(getTowerEntryId(shape));
+  return entry?.elevationMaxMeters ?? null;
 }
 
 export function getDiveGateVisualSpec(

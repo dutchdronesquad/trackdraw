@@ -279,6 +279,7 @@ Current shipped foundation:
 - Catalog-backed MultiGP-style gates, ladders, and corner flags now carry visual metadata for panel sizes, PVC frame placement, and texture-backed artwork; the live 3D preview and flythrough export consume shared layout helpers and extracted runtime textures while generic TrackDraw elements stay lightweight
 - MultiGP Dive Gate 7x6 and Launch Gate 7x6 are now catalog-backed with correct 3D arch and box-frame rendering respectively; banner panels cast and receive shadows correctly and texture orientations are accurate across all four panels
 - All MultiGP obstacle texture orientations (standard gate, championship gate, standard ladder, championship ladder, topless ladder, launch gate) are now correct and verified; the `ArchDiveGateVisualSpec` banner placement API mirrors the launch gate pattern so dive gate textures are fully configurable
+- Selected editable towers can be lifted directly in the 3D preview within their bounded elevation range; fixed-dimension catalog towers remain inspector- and catalog-protected
 
 Important boundary:
 

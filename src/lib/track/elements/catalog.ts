@@ -510,6 +510,8 @@ export const trackElementCatalog = [
     tags: ["technical", "practice", "tower"],
     render2d: { icon: "tower" },
     render3d: { modelHint: "tower" },
+    elevationMinMeters: 1.5,
+    elevationMaxMeters: 4,
     exportHints: { simulatorFriendly: true },
   },
   {

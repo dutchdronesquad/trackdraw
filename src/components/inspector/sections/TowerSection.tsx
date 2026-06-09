@@ -4,6 +4,10 @@ import {
   Row,
   Section,
 } from "@/components/inspector/shared";
+import {
+  getTowerElevationMax,
+  getTowerElevationMin,
+} from "@/lib/track/elements/visual";
 import type { MeasurementUnitSystem } from "@/lib/track/units";
 import type { Shape, TowerShape } from "@/lib/types";
 
@@ -44,9 +48,15 @@ export function TowerDimensionFields({
           valueMeters={shape.elevation ?? 0}
           unitSystem={unitSystem}
           onChange={(value) =>
-            updateShape(shape.id, { elevation: Math.max(0, value) })
+            updateShape(shape.id, {
+              elevation: Math.min(
+                getTowerElevationMax(shape) ?? Infinity,
+                Math.max(getTowerElevationMin(shape), value)
+              ),
+            })
           }
-          minMeters={0}
+          minMeters={getTowerElevationMin(shape)}
+          maxMeters={getTowerElevationMax(shape) ?? undefined}
         />
       </Row>
       <Row label={`Thickness (${unitLabel})`}>

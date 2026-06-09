@@ -159,7 +159,12 @@ function Shape3D({
     case "tower":
       return (
         <group onClick={(event) => onSelect(event, shape.id)}>
-          <Tower3D shape={shape} selected={isSelected} outerRef={outerRef} />
+          <Tower3D
+            shape={shape}
+            selected={isSelected}
+            outerRef={outerRef}
+            elevationOverrideRef={elevationOverrideRef}
+          />
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );
