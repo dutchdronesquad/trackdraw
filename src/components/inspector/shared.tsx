@@ -13,7 +13,12 @@ import {
 } from "@/lib/track/units";
 import { ChevronDown } from "lucide-react";
 
-export const fmt = (value: number) => Number(value.toFixed(2));
+export const fmt = (value: number | null | undefined) =>
+  Number(
+    (typeof value === "number" && Number.isFinite(value) ? value : 0).toFixed(
+      2
+    )
+  );
 
 export function useInspectorInputBatch() {
   const { beginInteraction, endInteraction, pauseHistory, resumeHistory } =

@@ -17,6 +17,7 @@ Current PVAs:
 - `trackdraw-rest-api-pva.md` — account-backed REST API, expiring API tokens, OpenAPI docs, and phased endpoint rollout
 - `live-race-overlay-pva.md` — real-time race overlay integration with `rh-stream-overlays`
 - `map-field-overlay-pva.md` — map-based field placement with hybrid asset storage
+- `3d-transform-controls-pva.md` — focused 3D move/rotate gizmo and orbit-control stabilization
 
 ### `research/`
 

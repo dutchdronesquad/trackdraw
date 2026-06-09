@@ -2,15 +2,19 @@ import { shapeKindLabels } from "@/lib/track/items/registry";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import type { Shape } from "@/lib/types";
 
+function finiteOrZero(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 export function getShapeAnchorPosition(shape: Shape) {
   if (shape.kind !== "polyline" || shape.points.length === 0) {
-    return { x: shape.x, y: shape.y };
+    return { x: finiteOrZero(shape.x), y: finiteOrZero(shape.y) };
   }
 
   const totals = shape.points.reduce(
     (accumulator, point) => ({
-      x: accumulator.x + point.x,
-      y: accumulator.y + point.y,
+      x: accumulator.x + finiteOrZero(point.x),
+      y: accumulator.y + finiteOrZero(point.y),
     }),
     { x: 0, y: 0 }
   );
@@ -46,9 +50,9 @@ export function getInsertedWaypointMidpoint(
   next: { x: number; y: number; z?: number }
 ) {
   return {
-    x: +((current.x + next.x) / 2).toFixed(2),
-    y: +((current.y + next.y) / 2).toFixed(2),
-    z: +(((current.z ?? 0) + (next.z ?? 0)) / 2).toFixed(2),
+    x: +((finiteOrZero(current.x) + finiteOrZero(next.x)) / 2).toFixed(2),
+    y: +((finiteOrZero(current.y) + finiteOrZero(next.y)) / 2).toFixed(2),
+    z: +((finiteOrZero(current.z) + finiteOrZero(next.z)) / 2).toFixed(2),
   };
 }
 
@@ -63,8 +67,8 @@ export function getNextAppendedWaypoint(
 ) {
   const lastPoint = point ?? { x: 0, y: 0, z: 0 };
   return {
-    x: +(lastPoint.x + 1).toFixed(2),
-    y: +(lastPoint.y + 1).toFixed(2),
-    z: lastPoint.z ?? 0,
+    x: +(finiteOrZero(lastPoint.x) + 1).toFixed(2),
+    y: +(finiteOrZero(lastPoint.y) + 1).toFixed(2),
+    z: finiteOrZero(lastPoint.z),
   };
 }

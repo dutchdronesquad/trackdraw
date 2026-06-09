@@ -11,6 +11,10 @@ import type { PolylineShape, Shape } from "@/lib/types";
 import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { Stage as KonvaStage } from "konva/lib/Stage";
 
+function finiteOrZero(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 export function buildSnapIndex(shapes: Shape[], snapCellSize: number) {
   const index = new Map<string, Shape[]>();
 
@@ -139,23 +143,37 @@ export function buildCursorState(
   snappedMeters: { x: number; y: number },
   stepPx: number
 ): CursorState {
+  const safePointer = {
+    x: finiteOrZero(pointer.x),
+    y: finiteOrZero(pointer.y),
+  };
+  const safeRawMeters = {
+    x: finiteOrZero(rawMeters.x),
+    y: finiteOrZero(rawMeters.y),
+  };
+  const safeSnappedMeters = {
+    x: finiteOrZero(snappedMeters.x),
+    y: finiteOrZero(snappedMeters.y),
+  };
+  const safeStepPx = Math.max(1, finiteOrZero(stepPx));
+
   return {
-    rawMeters,
-    snappedMeters,
-    rawPx: { x: pointer.x, y: pointer.y },
+    rawMeters: safeRawMeters,
+    snappedMeters: safeSnappedMeters,
+    rawPx: safePointer,
     snappedPx: {
-      x: Math.round(pointer.x / stepPx) * stepPx,
-      y: Math.round(pointer.y / stepPx) * stepPx,
+      x: Math.round(safePointer.x / safeStepPx) * safeStepPx,
+      y: Math.round(safePointer.y / safeStepPx) * safeStepPx,
     },
   };
 }
 
 export function getCursorStateKey(cursor: CursorState) {
   return [
-    cursor.rawPx.x.toFixed(2),
-    cursor.rawPx.y.toFixed(2),
-    cursor.snappedMeters.x.toFixed(2),
-    cursor.snappedMeters.y.toFixed(2),
+    finiteOrZero(cursor.rawPx.x).toFixed(2),
+    finiteOrZero(cursor.rawPx.y).toFixed(2),
+    finiteOrZero(cursor.snappedMeters.x).toFixed(2),
+    finiteOrZero(cursor.snappedMeters.y).toFixed(2),
   ].join("|");
 }
 

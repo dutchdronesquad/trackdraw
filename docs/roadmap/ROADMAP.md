@@ -272,7 +272,7 @@ Feature tracks:
 
 - 3D preview realism and lighting: improve scene readability with sun/directional lighting, shadows, contrast, and more realistic gate/flag presentation before adding heavy asset workflows
 - Catalog-aware element rendering: use catalog visual metadata such as panel sizes, PVC frame placement, and texture-backed artwork to render official elements consistently across 3D preview and export paths while keeping generic elements lightweight
-- Focused 3D item controls: add direct controls for common edits such as elevation, rotation, scaling, and orientation only where undo/redo, lock state, and mobile behavior remain safe
+- Focused 3D item controls: add direct controls for common edits such as elevation, rotation, scaling, and orientation only where undo/redo, lock state, and mobile behavior remain safe; move/rotate gizmo work is tracked in [3D Transform Controls PVA](../pva/3d-transform-controls-pva.md)
 
 Current shipped foundation:
 

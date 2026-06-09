@@ -39,8 +39,8 @@ The completed release-sized work is archived below. The next TrackDraw priority 
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.
   - [x] Editable tower elevation handle
         Selected custom towers can now be lifted directly in the 3D view with the same live-preview, undo/redo, lock-state, mobile drag behavior, and bounded elevation range used by existing 3D elevation controls. Fixed-dimension catalog towers remain protected.
-  - [ ] 3D transform handles
-        Prototype selected-item controls for elevation, rotation, scale, and orientation only where the behavior is predictable across 2D and 3D.
+  - [ ] 3D transform gizmo and edit mode toolbar
+        Draft PVA: [3D Transform Controls PVA](../pva/3d-transform-controls-pva.md). Prototype selected-item move and rotate controls with orbit-friendly camera behavior only where the interaction is predictable across 2D and 3D. Do not add dimension handles until move/rotate are accepted.
 
 - [ ] Path editing UX (`No account required`)
       Make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model forces extra points to avoid sharp corners.
