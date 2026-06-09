@@ -256,4 +256,3 @@ First decide whether Drei `TransformControls` can be made to feel good enough. I
 - move Z
 - move XZ plane
 - rotate yaw
-
