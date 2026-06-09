@@ -11,7 +11,7 @@ export function renderLadder(
   ppm: number
 ) {
   const ladder2d = getLadder2DShape(shape, ppm);
-  const barHeight = Math.max(ladder2d.depth, 8);
+  const barHeight = Math.max(ladder2d.depth, 7);
   const selectionPad = m2px(0.3, ppm);
   const { color, radius, width } = ladder2d;
   return (

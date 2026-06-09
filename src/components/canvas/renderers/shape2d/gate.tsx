@@ -11,7 +11,7 @@ export function renderGate(shape: GateShape, selected: boolean, ppm: number) {
   const base = getGate2DShape(shape, ppm);
   const color = marker ? getTimingMarkerColor(marker) : base.color;
   const { radius, width } = base;
-  const barHeight = Math.max(base.depth, 6);
+  const barHeight = Math.max(base.depth, 7);
   const selectionPad = m2px(0.3, ppm);
 
   if (base.variant === "panel-frame") {

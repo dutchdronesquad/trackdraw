@@ -52,6 +52,9 @@ function getTowerVisualSpecFor3D(shape: TowerShape): TowerVisualSpec | null {
 }
 
 function TowerPanelFrameTexturePlanes({
+  bottomPanelHeight,
+  bottomPanelW,
+  bottomPanelY,
   catalogId,
   frontZ,
   h,
@@ -59,11 +62,15 @@ function TowerPanelFrameTexturePlanes({
   leftPanelX,
   rightPanelWidth,
   rightPanelX,
+  renderBottomPanel,
   textures,
   topPanelHeight,
   topPanelW,
   topPanelY,
 }: {
+  bottomPanelHeight: number;
+  bottomPanelW: number;
+  bottomPanelY: number;
   catalogId?: string;
   frontZ: number;
   h: number;
@@ -71,6 +78,7 @@ function TowerPanelFrameTexturePlanes({
   leftPanelX: number;
   rightPanelWidth: number;
   rightPanelX: number;
+  renderBottomPanel: boolean;
   textures: GatePanelTextureVisualSpec;
   topPanelHeight: number;
   topPanelW: number;
@@ -115,6 +123,14 @@ function TowerPanelFrameTexturePlanes({
           "top",
           mapping.top.flipX,
           mapping.top.flipY
+        )
+      : null;
+    const bottomFlips = mapping.bottom
+      ? getEffectiveFlips(
+          catalogId,
+          "bottom",
+          mapping.bottom.flipX,
+          mapping.bottom.flipY
         )
       : null;
     return {
@@ -163,6 +179,23 @@ function TowerPanelFrameTexturePlanes({
               flipY: mapping.top.flipY,
             }
           : null,
+      bottom:
+        mapping.bottom && bottomFlips
+          ? {
+              texture: cloneTextureForPanel(mapping.bottom.texture, {
+                rotation: getEffectiveRotation(
+                  catalogId,
+                  "bottom",
+                  mapping.bottom.rotation
+                ),
+                ...bottomFlips,
+              }),
+              rotation: mapping.bottom.rotation,
+              source: mapping.bottom.source,
+              flipX: mapping.bottom.flipX,
+              flipY: mapping.bottom.flipY,
+            }
+          : null,
     };
     // overrideVersion is intentionally included to trigger re-clone on cycle
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -202,6 +235,15 @@ function TowerPanelFrameTexturePlanes({
         panelTextures.top.flipY,
         panelTextures.top.rotation
       );
+    if (panelTextures.bottom)
+      registerPanel(
+        catalogId,
+        "bottom",
+        panelTextures.bottom.source,
+        panelTextures.bottom.flipX,
+        panelTextures.bottom.flipY,
+        panelTextures.bottom.rotation
+      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [catalogId]);
 
@@ -211,7 +253,7 @@ function TowerPanelFrameTexturePlanes({
         <mesh>
           <planeGeometry args={[leftPanelWidth, h]} />
           <meshStandardMaterial
-            map={panelTextures.left.texture}
+            map={panelTextures.right.texture}
             roughness={0.72}
             metalness={0.01}
             side={THREE.FrontSide}
@@ -222,7 +264,7 @@ function TowerPanelFrameTexturePlanes({
         <mesh>
           <planeGeometry args={[rightPanelWidth, h]} />
           <meshStandardMaterial
-            map={panelTextures.right.texture}
+            map={panelTextures.left.texture}
             roughness={0.72}
             metalness={0.01}
             side={THREE.FrontSide}
@@ -240,6 +282,19 @@ function TowerPanelFrameTexturePlanes({
           />
         </mesh>
       </group>
+      {renderBottomPanel ? (
+        <group position={[0, bottomPanelY, frontZ]} rotation={[0, Math.PI, 0]}>
+          <mesh>
+            <planeGeometry args={[bottomPanelW, bottomPanelHeight]} />
+            <meshStandardMaterial
+              map={panelTextures.bottom?.texture ?? null}
+              roughness={0.68}
+              metalness={0.02}
+              side={THREE.FrontSide}
+            />
+          </mesh>
+        </group>
+      ) : null}
     </>
   );
 }
@@ -256,7 +311,11 @@ export function getTowerTopY(shape: TowerShape): number {
     towerVisual?.variant === "panel-frame"
       ? openingH + towerVisual.panels.top.heightMeters
       : openingH;
-  return (shape.elevation ?? 0) + levelCount * levelPitch;
+  const bottomPanelHeight =
+    towerVisual?.variant === "panel-frame" && levelCount === 1
+      ? towerVisual.panels.top.heightMeters
+      : 0;
+  return (shape.elevation ?? 0) + bottomPanelHeight + levelCount * levelPitch;
 }
 
 function PanelFrameTower3D({
@@ -299,6 +358,8 @@ function PanelFrameTower3D({
     metalness: 0.01,
   };
   const levelPitch = layout.outerTopY;
+  const hasBottomPanel = levelCount === 1;
+  const bottomPanelY = -layout.topPanelHeight / 2;
 
   return (
     <group ref={outerRef} position={[shape.x, 0, shape.y]} rotation={rot}>
@@ -322,7 +383,11 @@ function PanelFrameTower3D({
           ))
         : null}
       {Array.from({ length: levelCount }, (_, index) => {
-        const baseY = elevation + index * levelPitch;
+        const baseY =
+          elevation +
+          (hasBottomPanel ? layout.topPanelHeight : 0) +
+          index * levelPitch;
+        const renderBottomPanel = hasBottomPanel && index === 0;
         return (
           <group key={index} position={[0, baseY, 0]}>
             <mesh
@@ -434,8 +499,29 @@ function PanelFrameTower3D({
                 emissiveIntensity={selected ? 0.28 : 0.04}
               />
             </mesh>
+            {renderBottomPanel ? (
+              <mesh position={[0, bottomPanelY, 0]} castShadow receiveShadow>
+                <boxGeometry
+                  args={[
+                    layout.topPanelW,
+                    layout.topPanelHeight,
+                    layout.panelDepth,
+                  ]}
+                />
+                <meshStandardMaterial
+                  color={visual.panels.top.color}
+                  roughness={0.64}
+                  metalness={0.03}
+                  emissive={selected ? "#60a5fa" : visual.panels.top.color}
+                  emissiveIntensity={selected ? 0.28 : 0.04}
+                />
+              </mesh>
+            ) : null}
             <Suspense fallback={null}>
               <TowerPanelFrameTexturePlanes
+                bottomPanelHeight={layout.topPanelHeight}
+                bottomPanelW={layout.topPanelW}
+                bottomPanelY={bottomPanelY}
                 catalogId={catalogId}
                 frontZ={layout.frontZ}
                 h={layout.h}
@@ -443,6 +529,7 @@ function PanelFrameTower3D({
                 leftPanelX={layout.leftPanelX}
                 rightPanelWidth={layout.rightPanelWidth}
                 rightPanelX={layout.rightPanelX}
+                renderBottomPanel={renderBottomPanel}
                 textures={visual.textures}
                 topPanelHeight={layout.topPanelHeight}
                 topPanelW={layout.topPanelW}

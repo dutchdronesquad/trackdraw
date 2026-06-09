@@ -149,11 +149,13 @@ export function Num({
   onChange,
   step = 0.1,
   min,
+  max,
 }: {
   value: number;
   onChange: (value: number) => void;
   step?: number;
   min?: number;
+  max?: number;
 }) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
 
@@ -162,6 +164,7 @@ export function Num({
       type="number"
       step={step}
       min={min}
+      max={max}
       value={value}
       onFocus={startBatch}
       onBlur={finishBatch}

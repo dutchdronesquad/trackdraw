@@ -199,7 +199,7 @@ function PanelFrameLadderSectionTexturePlanes({
         <mesh>
           <planeGeometry args={[leftPanelWidth, openingH]} />
           <meshStandardMaterial
-            map={panelTextures.left.texture}
+            map={panelTextures.right.texture}
             roughness={0.72}
             metalness={0.01}
             side={THREE.FrontSide}
@@ -213,7 +213,7 @@ function PanelFrameLadderSectionTexturePlanes({
         <mesh>
           <planeGeometry args={[rightPanelWidth, openingH]} />
           <meshStandardMaterial
-            map={panelTextures.right.texture}
+            map={panelTextures.left.texture}
             roughness={0.72}
             metalness={0.01}
             side={THREE.FrontSide}
@@ -483,7 +483,7 @@ export function Ladder3D({
   const ladderVisual = getLadderVisualSpec(shape);
   const color = shape.color ?? "#3b82f6";
   const w = shape.width ?? 1.5;
-  const totalH = shape.height ?? 4.5;
+  const totalH = shape.height ?? 6;
   const rungs = Math.max(1, shape.rungs ?? 3);
   const baseY = Math.max(shape.elevation ?? 0, 0);
   const thick = 0.2;

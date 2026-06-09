@@ -20,6 +20,7 @@ import type {
 } from "@/lib/types";
 
 const DIVE_GATE_2D_BANNER_VISUAL_SCALE = 0.82;
+const TRACKDRAW_FRAME_2D_DEPTH_METERS = 0.2;
 
 export function getGate2DShape(shape: GateShape, ppm: number) {
   const visual = getGateVisualSpec(shape);
@@ -129,7 +130,7 @@ export function getStartFinish2DShape(shape: StartFinishShape, ppm: number) {
 export function getLadder2DShape(shape: LadderShape, ppm: number) {
   const ladderVisual = getLadderVisualSpec(shape);
   const openingWidth = m2px(shape.width ?? 2, ppm);
-  const depth = m2px(0.18, ppm);
+  const depth = m2px(TRACKDRAW_FRAME_2D_DEPTH_METERS, ppm);
 
   if (ladderVisual?.variant === "panel-frame") {
     const leftPanelWidth = m2px(ladderVisual.panels.left.widthMeters, ppm);
@@ -161,7 +162,13 @@ export function getTower2DShape(shape: TowerShape, ppm: number) {
   const visual = getTowerVisualSpec(shape);
   const openingWidth = m2px(shape.width ?? 2, ppm);
   const levelCount = Math.max(1, Math.min(4, Math.round(shape.levels ?? 1)));
-  const depth = Math.max(m2px(shape.thick ?? 0.18, ppm), m2px(0.14, ppm));
+  const depth =
+    visual?.variant === "panel-frame"
+      ? Math.max(m2px(visual.frame.diameterMeters, ppm), m2px(0.12, ppm))
+      : Math.max(
+          m2px(shape.thick ?? TRACKDRAW_FRAME_2D_DEPTH_METERS, ppm),
+          m2px(TRACKDRAW_FRAME_2D_DEPTH_METERS, ppm)
+        );
 
   if (visual?.variant === "panel-frame") {
     const leftPanelWidth = m2px(visual.panels.left.widthMeters, ppm);

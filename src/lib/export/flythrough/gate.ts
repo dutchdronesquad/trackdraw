@@ -130,13 +130,13 @@ async function createOfficialGateGroup(
 
   addPanelTexturePlane(
     group,
-    cloneTextureForPanel(textureMapping.left.texture, textureMapping.left),
+    cloneTextureForPanel(textureMapping.right.texture, textureMapping.right),
     [leftPanelWidth, h],
     [leftPanelX, h / 2, frontZ]
   );
   addPanelTexturePlane(
     group,
-    cloneTextureForPanel(textureMapping.right.texture, textureMapping.right),
+    cloneTextureForPanel(textureMapping.left.texture, textureMapping.left),
     [rightPanelWidth, h],
     [rightPanelX, h / 2, frontZ]
   );

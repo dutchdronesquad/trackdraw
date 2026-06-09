@@ -38,6 +38,7 @@ export interface PanelFrameTextureMapping<T> {
   left: ResolvedTexturePanel<T>;
   right: ResolvedTexturePanel<T>;
   top: ResolvedTexturePanel<T> | null;
+  bottom: ResolvedTexturePanel<T> | null;
 }
 
 export interface LaunchGateBannerTextureMapping<T> {
@@ -157,37 +158,41 @@ export function resolvePanelFrameTextureMapping<T>(
   textureSpec: GatePanelTextureVisualSpec,
   loaded: { left: T; right: T; top: T | null }
 ): PanelFrameTextureMapping<T> {
-  const symmetric = textureSpec.left === textureSpec.right;
   const topSource = textureSpec.top ? "top" : "left";
-  const leftFallback: PanelTexturePlacementSpec<"left" | "right" | "top"> =
-    symmetric
-      ? {
-          source: "left",
-          orientation: { textureTopEdgeFaces: "bottom" },
-        }
-      : { source: "right" };
-  const rightFallback: PanelTexturePlacementSpec<"left" | "right" | "top"> = {
+  const leftFallback: PanelTexturePlacementSpec<"left" | "right" | "top"> = {
     source: "left",
   };
+  const rightFallback: PanelTexturePlacementSpec<"left" | "right" | "top"> = {
+    source: "right",
+  };
+  const loadedTextures = loaded as Record<"left" | "right" | "top", T>;
 
   return {
     left: resolvePanelTexture(
       textureSpec.placement?.left,
       leftFallback,
-      loaded as Record<"left" | "right" | "top", T>
+      loadedTextures
     ),
     right: resolvePanelTexture(
       textureSpec.placement?.right,
       rightFallback,
-      loaded as Record<"left" | "right" | "top", T>
+      loadedTextures
     ),
     top: loaded.top
       ? resolvePanelTexture(
           textureSpec.placement?.top,
           { source: topSource },
-          loaded as Record<"left" | "right" | "top", T>
+          loadedTextures
         )
       : null,
+    bottom:
+      loaded.top || textureSpec.placement?.bottom?.source !== "top"
+        ? resolvePanelTexture(
+            textureSpec.placement?.bottom,
+            { source: topSource },
+            loadedTextures
+          )
+        : null,
   };
 }
 
@@ -303,7 +308,7 @@ export function getPanelFrameLadderLayout(
   visual: PanelFrameLadderVisualSpec
 ) {
   const w = shape.width ?? 1.5;
-  const totalOpeningH = shape.height ?? 4.5;
+  const totalOpeningH = shape.height ?? 6;
   const rungs = Math.max(1, shape.rungs ?? 3);
   const baseY = Math.max(shape.elevation ?? 0, 0);
   const leftPanelWidth = visual.panels.left.widthMeters;
@@ -372,7 +377,7 @@ export function getLadderRenderedHeight(
   shape: LadderShape,
   visual: PanelFrameLadderVisualSpec | null
 ) {
-  const height = shape.height ?? 4.5;
+  const height = shape.height ?? 6;
   if (!visual) return height;
   return getPanelFrameLadderLayout(shape, visual).totalH;
 }

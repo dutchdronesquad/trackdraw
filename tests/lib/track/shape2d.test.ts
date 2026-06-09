@@ -74,7 +74,7 @@ describe("track 2d shape helpers", () => {
         },
         ppm
       ).depth
-    ).toBeCloseTo(3.6);
+    ).toBeCloseTo(4);
   });
 
   it("builds flag and cone bounds", () => {
@@ -167,6 +167,16 @@ describe("track 2d shape helpers", () => {
     expect(tower.openingWidth).toBeCloseTo(feetToMeters(5) * ppm);
     expect(tower.width).toBeCloseTo(feetToMeters(7) * ppm);
     expect(tower.totalDepth).toBe(tower.depth);
+
+    const gate = getGate2DShape(
+      createCatalogShapeDraft(MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID, {
+        x: 0,
+        y: 0,
+        includeCatalogMetadata: true,
+      }) as GateShape,
+      ppm
+    );
+    expect(tower.depth).toBe(gate.depth);
   });
 
   it("uses a top-down footprint for the official MultiGP dive gate", () => {

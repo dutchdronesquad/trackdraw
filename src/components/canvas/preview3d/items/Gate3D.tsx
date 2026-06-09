@@ -182,7 +182,7 @@ function PanelFrameGateTexturePlanes({
         <mesh>
           <planeGeometry args={[leftPanelWidth, h]} />
           <meshStandardMaterial
-            map={panelTextures.left.texture}
+            map={panelTextures.right.texture}
             roughness={0.72}
             metalness={0.01}
             side={THREE.FrontSide}
@@ -193,7 +193,7 @@ function PanelFrameGateTexturePlanes({
         <mesh>
           <planeGeometry args={[rightPanelWidth, h]} />
           <meshStandardMaterial
-            map={panelTextures.right.texture}
+            map={panelTextures.left.texture}
             roughness={0.72}
             metalness={0.01}
             side={THREE.FrontSide}

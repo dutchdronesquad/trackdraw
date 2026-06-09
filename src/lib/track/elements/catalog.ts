@@ -112,6 +112,7 @@ export interface GatePanelTextureVisualSpec {
     left?: PanelTexturePlacementSpec<"left" | "right" | "top">;
     right?: PanelTexturePlacementSpec<"left" | "right" | "top">;
     top?: PanelTexturePlacementSpec<"left" | "right" | "top">;
+    bottom?: PanelTexturePlacementSpec<"left" | "right" | "top">;
   };
 }
 
@@ -350,9 +351,10 @@ const panelFrameGateVisual = {
       "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-right-panel-regular-50-percent.webp",
     top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
     placement: {
-      left: { source: "right", orientation: { textureTopEdgeFaces: "top" } },
-      right: { source: "left", orientation: { textureTopEdgeFaces: "top" } },
+      left: { source: "left", orientation: { textureTopEdgeFaces: "top" } },
+      right: { source: "right", orientation: { textureTopEdgeFaces: "top" } },
       top: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
+      bottom: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
     },
   },
 } satisfies GateVisualSpec;
@@ -370,9 +372,12 @@ const panelFrameChampionshipGateVisual = {
       "/assets/models/textures/multigp-obstacles/large-side-panel-multigp.webp",
     top: "/assets/models/textures/multigp-obstacles/large-top-multigp.webp",
     placement: {
-      left: { source: "left", orientation: { flipX: true } },
-      right: { source: "left", orientation: { flipX: true } },
-      top: { source: "top", orientation: { flipX: true } },
+      left: { source: "left", orientation: { textureTopEdgeFaces: "top" } },
+      right: {
+        source: "left",
+        orientation: { textureTopEdgeFaces: "bottom" },
+      },
+      top: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
     },
   },
 } satisfies GateVisualSpec;
@@ -390,7 +395,18 @@ const panelFrameChampionshipTowerVisual = {
   variant: "panel-frame",
   panels: panelFrameChampionshipGateVisual.panels,
   frame: panelFrameChampionshipGateVisual.frame,
-  textures: panelFrameChampionshipGateVisual.textures,
+  textures: {
+    ...panelFrameChampionshipGateVisual.textures,
+    placement: {
+      left: { source: "left", orientation: { textureTopEdgeFaces: "top" } },
+      right: {
+        source: "left",
+        orientation: { textureTopEdgeFaces: "bottom" },
+      },
+      top: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
+      bottom: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
+    },
+  },
 } satisfies TowerVisualSpec;
 
 export const trackElementCatalog = [
@@ -853,11 +869,11 @@ export const trackElementCatalog = [
         top: "/assets/models/textures/multigp-obstacles/MultiGP-2017-Airgate-top-regular-50-percent.webp",
         placement: {
           left: {
-            source: "right",
+            source: "left",
             orientation: { textureTopEdgeFaces: "top" },
           },
           right: {
-            source: "left",
+            source: "right",
             orientation: { textureTopEdgeFaces: "top" },
           },
           top: { source: "top", orientation: { textureTopEdgeFaces: "top" } },
@@ -923,7 +939,7 @@ export const trackElementCatalog = [
         placement: {
           left: {
             source: "left",
-            orientation: { textureTopEdgeFaces: "bottom" },
+            orientation: { textureTopEdgeFaces: "top" },
           },
           right: {
             source: "left",
@@ -992,7 +1008,7 @@ export const trackElementCatalog = [
         placement: {
           left: {
             source: "left",
-            orientation: { textureTopEdgeFaces: "bottom" },
+            orientation: { textureTopEdgeFaces: "top" },
           },
           right: {
             source: "left",

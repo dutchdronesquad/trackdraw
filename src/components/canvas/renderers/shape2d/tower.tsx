@@ -7,7 +7,8 @@ import type { TowerShape } from "@/lib/types";
 
 export function renderTower(shape: TowerShape, selected: boolean, ppm: number) {
   const tower = getTower2DShape(shape, ppm);
-  const { depth, levelCount, radius, totalDepth, width } = tower;
+  const { depth, levelCount, radius, width } = tower;
+  const barHeight = Math.max(depth, 7);
   const selectionPad = m2px(0.3, ppm);
 
   const strokeColor =
@@ -18,9 +19,9 @@ export function renderTower(shape: TowerShape, selected: boolean, ppm: number) {
       {selected && (
         <Rect
           width={width + selectionPad}
-          height={totalDepth + selectionPad}
+          height={barHeight + selectionPad}
           offsetX={(width + selectionPad) / 2}
-          offsetY={(totalDepth + selectionPad) / 2}
+          offsetY={(barHeight + selectionPad) / 2}
           stroke="#60a5fa"
           strokeWidth={1}
           opacity={0.85}
@@ -32,9 +33,9 @@ export function renderTower(shape: TowerShape, selected: boolean, ppm: number) {
         <>
           <Rect
             x={-width / 2}
-            y={-depth / 2}
+            y={-barHeight / 2}
             width={tower.panels.leftWidth}
-            height={depth}
+            height={barHeight}
             fill={tower.panels.leftColor}
             opacity={0.94}
             cornerRadius={[radius, 0, 0, radius]}
@@ -42,18 +43,18 @@ export function renderTower(shape: TowerShape, selected: boolean, ppm: number) {
           />
           <Rect
             x={-tower.openingWidth / 2}
-            y={-depth / 2}
+            y={-barHeight / 2}
             width={tower.openingWidth}
-            height={depth}
+            height={barHeight}
             fill={tower.panels.topColor}
             opacity={0.9}
             strokeEnabled={false}
           />
           <Rect
             x={width / 2 - tower.panels.rightWidth}
-            y={-depth / 2}
+            y={-barHeight / 2}
             width={tower.panels.rightWidth}
-            height={depth}
+            height={barHeight}
             fill={tower.panels.rightColor}
             opacity={0.94}
             cornerRadius={[0, radius, radius, 0]}
@@ -63,34 +64,38 @@ export function renderTower(shape: TowerShape, selected: boolean, ppm: number) {
       ) : (
         <Rect
           width={width}
-          height={depth}
+          height={barHeight}
           offsetX={width / 2}
-          offsetY={depth / 2}
+          offsetY={barHeight / 2}
           fill={tower.color}
           opacity={0.88}
           cornerRadius={radius}
           strokeEnabled={false}
         />
       )}
-      <Rect
-        width={width}
-        height={depth}
-        offsetX={width / 2}
-        offsetY={depth / 2}
-        fillEnabled={false}
-        stroke={strokeColor}
-        strokeWidth={1}
-        opacity={0.88}
-        cornerRadius={radius}
-      />
-      <Line
-        points={[-width / 2, 0, width / 2, 0]}
-        stroke={strokeColor}
-        strokeWidth={1}
-        opacity={levelCount > 1 ? 0.62 : 0.28}
-        dash={levelCount > 1 ? [3, 2] : [2, 4]}
-        listening={false}
-      />
+      {tower.variant === "panel-frame" ? (
+        <Rect
+          width={width}
+          height={barHeight}
+          offsetX={width / 2}
+          offsetY={barHeight / 2}
+          fillEnabled={false}
+          stroke={strokeColor}
+          strokeWidth={1}
+          opacity={0.88}
+          cornerRadius={radius}
+        />
+      ) : null}
+      {levelCount > 1 ? (
+        <Line
+          points={[-width / 2, 0, width / 2, 0]}
+          stroke={strokeColor}
+          strokeWidth={1}
+          opacity={0.62}
+          dash={[3, 2]}
+          listening={false}
+        />
+      ) : null}
     </>
   );
 }

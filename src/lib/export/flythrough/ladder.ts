@@ -158,13 +158,13 @@ async function createPanelFrameLadderGroup(
     );
     addPanelTexturePlane(
       group,
-      cloneTextureForPanel(textureMapping.left.texture, textureMapping.left),
+      cloneTextureForPanel(textureMapping.right.texture, textureMapping.right),
       [leftPanelWidth, openingH],
       [-w / 2 - leftPanelWidth / 2, section.openingMidY, frontZ]
     );
     addPanelTexturePlane(
       group,
-      cloneTextureForPanel(textureMapping.right.texture, textureMapping.right),
+      cloneTextureForPanel(textureMapping.left.texture, textureMapping.left),
       [rightPanelWidth, openingH],
       [w / 2 + rightPanelWidth / 2, section.openingMidY, frontZ]
     );
@@ -197,7 +197,7 @@ export async function addLadderSceneShapes(
 
   const color = shape.color ?? "#3b82f6";
   const w = shape.width ?? 1.5;
-  const totalH = shape.height ?? 4.5;
+  const totalH = shape.height ?? 6;
   const rungs = Math.max(1, shape.rungs ?? 3);
   const baseY = Math.max(shape.elevation ?? 0, 0);
   const thick = 0.2;

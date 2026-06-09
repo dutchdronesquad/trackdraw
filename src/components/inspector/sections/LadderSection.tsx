@@ -71,14 +71,15 @@ export function LadderSection({
         <Num
           value={shape.rungs}
           onChange={(value) => {
-            const clampedRungs = Math.round(Math.max(1, Math.min(10, value)));
+            const clampedRungs = Math.round(Math.max(3, Math.min(5, value)));
             updateShape(shape.id, {
               rungs: clampedRungs,
-              height: clampedRungs * 1.5,
+              height: clampedRungs * 2,
             });
           }}
           step={1}
-          min={1}
+          min={3}
+          max={5}
         />
       </Row>
     </Section>
