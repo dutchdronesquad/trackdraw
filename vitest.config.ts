@@ -9,7 +9,9 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    fileParallelism: true,
     include: ["tests/**/*.test.{ts,tsx}"],
+    pool: "threads",
     restoreMocks: true,
     clearMocks: true,
     coverage: {
