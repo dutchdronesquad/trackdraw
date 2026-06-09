@@ -277,6 +277,8 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
     const primaryPolyline = useEditor(selectPrimaryPolyline);
     const shapeById = useEditor(selectShapeRecordMap);
     const selectedPolyline = useEditor(selectSelectedPolyline);
+    const editableSelectedPolyline =
+      selectedPolyline && !selectedPolyline.locked ? selectedPolyline : null;
     const theme = useTheme();
     const isMobile = useIsMobile();
     const { enabled: devMode } = useDeveloperMode();
@@ -329,7 +331,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
       endInteraction,
       pauseHistory,
       resumeHistory,
-      selectedPolyline: selectedPolyline ?? null,
+      selectedPolyline: editableSelectedPolyline,
       setPolylinePoints,
       setSelection,
       setLiveShapePatch,
@@ -357,6 +359,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           (shape) =>
             selectedIdSet.has(shape.id) &&
             shape.kind === "divegate" &&
+            !shape.locked &&
             !getDiveGateVisualSpec(shape)
         ),
       [selectedIdSet, shapes]
@@ -544,7 +547,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             </Suspense>
           ))}
 
-          {previewPolyline && !flyMode ? (
+          {previewPolyline && !flyMode && !readOnly ? (
             <PolylineElevationHandles3D
               isMobile={isMobile}
               path={previewPolyline}
@@ -791,7 +794,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           hasSelectedRotatable={hasSelectedRotatable}
           isMobile={isMobile}
           readOnly={readOnly}
-          selectedPolyline={selectedPolyline}
+          selectedPolyline={editableSelectedPolyline}
           onStartFlyThrough={startFlyThrough}
         />
 

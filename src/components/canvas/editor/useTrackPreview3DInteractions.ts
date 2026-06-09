@@ -246,7 +246,7 @@ export function useTrackPreview3DInteractions({
     (event: ThreeEvent<PointerEvent>, index: number) => {
       event.stopPropagation();
       const point = selectedPolyline?.points[index];
-      if (!selectedPolyline || !point) return;
+      if (!selectedPolyline || selectedPolyline.locked || !point) return;
       const camera = cameraRef.current;
       const container = containerRef.current;
       const rect = container?.getBoundingClientRect();
@@ -282,7 +282,7 @@ export function useTrackPreview3DInteractions({
       const drag = elevationDragRef.current;
       if (!drag) return;
       const shape = shapeById[drag.shapeId];
-      if (!shape || shape.kind !== "polyline") return;
+      if (!shape || shape.kind !== "polyline" || shape.locked) return;
       const camera = cameraRef.current;
       const container = containerRef.current;
       const rect = container?.getBoundingClientRect();
