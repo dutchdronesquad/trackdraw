@@ -11,7 +11,7 @@ export default defineConfig({
     environment: "node",
     fileParallelism: true,
     include: ["tests/**/*.test.{ts,tsx}"],
-    pool: "threads",
+    pool: "forks",
     restoreMocks: true,
     clearMocks: true,
     coverage: {
