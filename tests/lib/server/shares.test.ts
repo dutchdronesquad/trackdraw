@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
 import type { SerializedTrackDesign } from "@/lib/types";
 import {
@@ -46,6 +46,10 @@ import {
   resolveStoredShare,
   revokeShare,
 } from "@/lib/server/shares";
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 function installStatements(statements: MockD1Statement[]) {
   installD1Statements(mocks.prepare, statements);
