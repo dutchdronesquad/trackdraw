@@ -1,5 +1,5 @@
 import { resolveStoredShare } from "@/lib/server/shares";
-import { parseEditorView } from "@/lib/view";
+import { parseEditorView } from "@/lib/editor/view";
 import EmbedUnavailable from "../EmbedUnavailable";
 import EmbedViewer from "../EmbedViewer";
 

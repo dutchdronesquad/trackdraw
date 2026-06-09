@@ -9,6 +9,7 @@ import type {
   LadderShape,
   Shape,
   StartFinishShape,
+  TowerShape,
   TrackDesign,
 } from "@/lib/types";
 
@@ -99,30 +100,6 @@ const DEFAULT_CONFIG: VelocidronePocConfig = {
   conePrefabId: 42,
   diveGatePrefabId: 619,
 };
-
-function isVelocidroneGateShape(shape: Shape): shape is GateShape {
-  return shape.kind === "gate";
-}
-
-function isVelocidroneStartShape(shape: Shape): shape is StartFinishShape {
-  return shape.kind === "startfinish";
-}
-
-function isVelocidroneFlagShape(shape: Shape): shape is FlagShape {
-  return shape.kind === "flag";
-}
-
-function isVelocidroneConeShape(shape: Shape): shape is ConeShape {
-  return shape.kind === "cone";
-}
-
-function isVelocidroneLadderShape(shape: Shape): shape is LadderShape {
-  return shape.kind === "ladder";
-}
-
-function isVelocidroneDiveGateShape(shape: Shape): shape is DiveGateShape {
-  return shape.kind === "divegate";
-}
 
 function degreesToQuaternionStorageY(
   degrees: number
@@ -224,7 +201,7 @@ function buildTransform(
 }
 
 function buildGatePlacement(
-  shape: GateShape,
+  shape: GateShape | TowerShape,
   prefab: number,
   transform: ExportTransform,
   height = GROUND_HEIGHT
@@ -430,8 +407,10 @@ function assertFiniteNumber(value: number, label: string) {
 
 function assertPocShapes(design: TrackDesign) {
   const shapes = getDesignShapes(design);
-  const startShapes = shapes.filter(isVelocidroneStartShape);
-  const gates = shapes.filter(isVelocidroneGateShape);
+  const startShapes = shapes.filter(
+    (s): s is StartFinishShape => s.kind === "startfinish"
+  );
+  const gates = shapes.filter((s): s is GateShape => s.kind === "gate");
 
   assertFiniteNumber(design.field.width, "field width");
   assertFiniteNumber(design.field.height, "field height");
@@ -488,12 +467,13 @@ function getOrderedGateSourceShapes(design: TrackDesign) {
       (
         entry
       ): entry is {
-        shape: GateShape | LadderShape;
+        shape: GateShape | LadderShape | TowerShape;
         shapeOrder: number;
         routeNumber: number;
       } =>
-        isVelocidroneGateShape(entry.shape) ||
-        isVelocidroneLadderShape(entry.shape)
+        entry.shape.kind === "gate" ||
+        entry.shape.kind === "tower" ||
+        entry.shape.kind === "ladder"
     )
     .sort((a, b) => {
       if (a.routeNumber !== b.routeNumber) {
@@ -512,10 +492,10 @@ function buildGatePlacements(
   const shapes = getOrderedGateSourceShapes(design);
 
   return shapes.flatMap((shape) => {
-    if (isVelocidroneGateShape(shape)) {
+    if (shape.kind === "gate" || shape.kind === "tower") {
       return [buildGatePlacement(shape, config.gatePrefabId, transform)];
     }
-    if (isVelocidroneLadderShape(shape)) {
+    if (shape.kind === "ladder") {
       return buildLadderGatePlacements(shape, config, transform);
     }
     return [];
@@ -528,7 +508,9 @@ function buildBarrierRecords(
   transform: ExportTransform
 ): VelocidroneBarrierRecord[] {
   const shapes = getDesignShapes(design);
-  const startShape = shapes.find(isVelocidroneStartShape);
+  const startShape = shapes.find(
+    (s): s is StartFinishShape => s.kind === "startfinish"
+  );
 
   if (!startShape) {
     throw new Error(
@@ -539,19 +521,21 @@ function buildBarrierRecords(
   return [
     ...buildFieldPerimeterBarrierRecords(design, config, transform),
     buildStartGridBarrierRecord(startShape, config, transform),
-    ...shapes.filter(isVelocidroneFlagShape).map((shape: FlagShape) =>
-      buildBarrierRecord(shape, config.flagPrefabId, transform, {
-        sinkIntoGround: 0.22,
-        rotationOffset: 180,
-      })
-    ),
     ...shapes
-      .filter(isVelocidroneConeShape)
+      .filter((s): s is FlagShape => s.kind === "flag")
+      .map((shape) =>
+        buildBarrierRecord(shape, config.flagPrefabId, transform, {
+          sinkIntoGround: 0.22,
+          rotationOffset: 180,
+        })
+      ),
+    ...shapes
+      .filter((s): s is ConeShape => s.kind === "cone")
       .map((shape: ConeShape) =>
         buildBarrierRecord(shape, config.conePrefabId, transform)
       ),
     ...shapes
-      .filter(isVelocidroneDiveGateShape)
+      .filter((s): s is DiveGateShape => s.kind === "divegate")
       .map((shape: DiveGateShape) =>
         buildDiveGateBarrierRecord(shape, config, transform)
       ),

@@ -1,5 +1,6 @@
 import { m2px } from "@/lib/track/units";
 import {
+  getTowerVisualSpec,
   getDiveGateVisualSpec,
   getGateVisualSpec,
   getLadderVisualSpec,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/track/render3d-layout";
 import type {
   ConeShape,
+  TowerShape,
   DiveGateShape,
   FlagShape,
   GateShape,
@@ -150,6 +152,52 @@ export function getLadder2DShape(shape: LadderShape, ppm: number) {
     color: shape.color ?? "#14b8a6",
     depth,
     radius: Math.min(12, depth / 2),
+    variant: "frame-only" as const,
+    width: openingWidth,
+  };
+}
+
+export function getTower2DShape(shape: TowerShape, ppm: number) {
+  const visual = getTowerVisualSpec(shape);
+  const openingWidth = m2px(shape.width ?? 2, ppm);
+  const levelCount = Math.max(1, Math.min(4, Math.round(shape.levels ?? 1)));
+  const depth = Math.max(m2px(shape.thick ?? 0.18, ppm), m2px(0.14, ppm));
+
+  if (visual?.variant === "panel-frame") {
+    const leftPanelWidth = m2px(visual.panels.left.widthMeters, ppm);
+    const rightPanelWidth = m2px(visual.panels.right.widthMeters, ppm);
+    const width = openingWidth + leftPanelWidth + rightPanelWidth;
+    return {
+      color: visual.panels.top.color,
+      depth,
+      frame: {
+        color: visual.frame.color,
+        diameter: m2px(visual.frame.diameterMeters, ppm),
+        placement: visual.frame.placement,
+      },
+      levelCount,
+      openingWidth,
+      panels: {
+        leftColor: visual.panels.left.color,
+        leftWidth: leftPanelWidth,
+        rightColor: visual.panels.right.color,
+        rightWidth: rightPanelWidth,
+        topColor: visual.panels.top.color,
+      },
+      radius: Math.min(12, depth / 2),
+      totalDepth: depth,
+      variant: visual.variant,
+      width,
+    };
+  }
+
+  return {
+    color: shape.color ?? "#3b82f6",
+    depth,
+    levelCount,
+    openingWidth,
+    radius: Math.min(12, depth / 2),
+    totalDepth: depth,
     variant: "frame-only" as const,
     width: openingWidth,
   };

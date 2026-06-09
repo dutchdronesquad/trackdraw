@@ -1,19 +1,17 @@
-import { shapeKindLabels } from "@/lib/editor-tools";
+import {
+  shapeKindLabels,
+  isSetupHardObstacle,
+  getTrackItemAdapter,
+  type SetupComplexity,
+  type SetupProfile,
+} from "@/lib/track/items/registry";
 import {
   getObstacleNumberMap,
   isNumberedObstacle,
 } from "@/lib/track/obstacleNumbering";
 import type { Shape, TrackDesign } from "@/lib/types";
 
-type SetupComplexity = "light" | "standard" | "heavy";
-
-type SetupProfile = {
-  priority: number;
-  prepMinutes: number;
-  placeMinutes: number;
-  note: string;
-  complexity: SetupComplexity;
-};
+export type { SetupComplexity, SetupProfile };
 
 export type SetupStep = {
   id: string;
@@ -36,67 +34,7 @@ export type SetupPlan = {
 };
 
 function getSetupProfile(shape: Shape): SetupProfile {
-  switch (shape.kind) {
-    case "startfinish":
-      return {
-        priority: 0,
-        prepMinutes: 2,
-        placeMinutes: 3,
-        note: "Set this first so the launch and finish reference is fixed before the rest of the course goes down.",
-        complexity: "standard",
-      };
-    case "divegate": {
-      const elevationFactor = Math.max(0, (shape.elevation ?? 3) - 2.5);
-      const tiltFactor = (shape.tilt ?? 0) > 20 ? 1 : 0;
-      return {
-        priority: 1,
-        prepMinutes: 5 + tiltFactor,
-        placeMinutes: 8 + Math.round(elevationFactor),
-        note: "Place and secure this early. Dive gates usually need more alignment and anchoring than a standard gate.",
-        complexity: "heavy",
-      };
-    }
-    case "ladder":
-      return {
-        priority: 2,
-        prepMinutes: 4 + Math.max(0, shape.rungs - 3),
-        placeMinutes: 7,
-        note: "Treat this as a higher-effort item. Allow extra time if it needs overhead rigging or a careful suspend point.",
-        complexity: "heavy",
-      };
-    case "gate":
-      return {
-        priority: 3,
-        prepMinutes: 1,
-        placeMinutes: 2,
-        note: "Place and square this gate once the anchor structures are in place.",
-        complexity: "standard",
-      };
-    case "flag":
-      return {
-        priority: 4,
-        prepMinutes: 1,
-        placeMinutes: 1,
-        note: "Use flags for final visibility and edge definition after the main obstacles are in place.",
-        complexity: "light",
-      };
-    case "cone":
-      return {
-        priority: 5,
-        prepMinutes: 0,
-        placeMinutes: 1,
-        note: "Use cones in the final cleanup pass for boundary marking and spacing checks.",
-        complexity: "light",
-      };
-    default:
-      return {
-        priority: 99,
-        prepMinutes: 0,
-        placeMinutes: 0,
-        note: "No setup guidance is available for this item yet.",
-        complexity: "light",
-      };
-  }
+  return getTrackItemAdapter(shape.kind).getSetupProfile(shape);
 }
 
 function getDisplayLabel(shape: Shape) {
@@ -136,11 +74,9 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
         kind: shapeKindLabels[shape.kind],
         label: getDisplayLabel(shape),
         note:
-          obstacleNumber != null && shape.kind === "gate"
+          obstacleNumber != null
             ? `${profile.note} Use obstacle #${obstacleNumber} on the map as the placement reference.`
-            : obstacleNumber != null
-              ? `${profile.note} Use obstacle #${obstacleNumber} on the map as the placement reference.`
-              : profile.note,
+            : profile.note,
         complexity: profile.complexity,
         estimatedMinutes: profile.placeMinutes,
         obstacleNumber,
@@ -201,19 +137,13 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
     });
   }
 
-  const gatesToPrep = shapes.filter(
-    (shape) =>
-      shape.kind === "gate" ||
-      shape.kind === "startfinish" ||
-      shape.kind === "divegate" ||
-      shape.kind === "ladder"
-  ).length;
+  const gatesToPrep = shapes.filter(isSetupHardObstacle).length;
   const softGoodsToPrep = shapes.filter(
     (shape) => shape.kind === "flag"
   ).length;
   const coneCount = shapes.filter((shape) => shape.kind === "cone").length;
   const heavyObstacleCount = shapes.filter(
-    (shape) => shape.kind === "divegate" || shape.kind === "ladder"
+    (shape) => getSetupProfile(shape).complexity === "heavy"
   ).length;
 
   const prepSteps: SetupStep[] = [

@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { parseEditorView } from "@/lib/view";
+import { parseEditorView } from "@/lib/editor/view";
 
 const EditorShell = dynamic(() => import("@/components/editor/EditorShell"), {
   ssr: false,

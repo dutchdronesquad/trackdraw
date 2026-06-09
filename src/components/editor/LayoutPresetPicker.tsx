@@ -12,7 +12,7 @@ import {
   layoutPresets,
   type LayoutPreset,
 } from "@/lib/planning/layout-presets";
-import { shapeKindLabels } from "@/lib/editor-tools";
+import { shapeKindLabels } from "@/lib/track/items/registry";
 import { cn } from "@/lib/utils";
 
 const preparedPresets = layoutPresets.map((preset) => {

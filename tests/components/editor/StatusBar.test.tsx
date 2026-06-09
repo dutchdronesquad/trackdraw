@@ -11,7 +11,7 @@ const developerModeState = vi.hoisted(() => ({
   toggle: vi.fn(),
 }));
 
-vi.mock("@/hooks/useDeveloperMode", () => ({
+vi.mock("@/hooks/account/useDeveloperMode", () => ({
   useDeveloperMode: () => developerModeState,
 }));
 

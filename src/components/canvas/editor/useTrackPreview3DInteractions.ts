@@ -9,7 +9,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
-import { useHistorySession } from "@/hooks/useHistorySession";
+import { useHistorySession } from "@/hooks/account/useHistorySession";
 import * as THREE from "three";
 import { normalizeRotationDegrees } from "@/lib/track/orientation";
 import {
@@ -24,11 +24,12 @@ import type {
   PolylineShape,
   Shape,
 } from "@/lib/types";
+import { getShapeCanvasRenderRotationOffset } from "@/lib/track/items/registry";
 import {
   groundAngle,
   sideGateTiltAngle,
   snapRotationDegrees,
-} from "@/components/canvas/trackPreview3DMath";
+} from "@/components/canvas/preview3d/math";
 
 const elevationDragRaycaster = new THREE.Raycaster();
 const elevationDragNdc = new THREE.Vector2();
@@ -91,10 +92,7 @@ interface UseTrackPreview3DInteractionsParams {
 }
 
 function getLiveRotationYawRadians(shape: Shape, rotation: number) {
-  const meshRotation =
-    shape.kind === "gate" || shape.kind === "ladder"
-      ? rotation + 180
-      : rotation;
+  const meshRotation = rotation + getShapeCanvasRenderRotationOffset(shape);
   return (-meshRotation * Math.PI) / 180;
 }
 

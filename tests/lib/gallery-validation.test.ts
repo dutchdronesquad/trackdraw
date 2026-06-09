@@ -6,7 +6,7 @@ import {
   getGalleryDescriptionLength,
   isGalleryDescriptionValid,
   isGalleryTitleValid,
-} from "@/lib/gallery-validation";
+} from "@/lib/gallery/validation";
 
 describe("gallery validation", () => {
   it("validates gallery title and description boundaries", () => {

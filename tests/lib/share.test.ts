@@ -11,7 +11,7 @@ import {
   isShareSafe,
 } from "@/lib/share";
 import { createDefaultDesign, normalizeDesign } from "@/lib/track/design";
-import { parseEditorView } from "@/lib/view";
+import { parseEditorView } from "@/lib/editor/view";
 import LZString from "lz-string";
 
 describe("share helpers", () => {

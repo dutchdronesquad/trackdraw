@@ -2,7 +2,7 @@
 
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { useEditorHints } from "@/hooks/useEditorHints";
+import { useEditorHints } from "@/hooks/editor/useEditorHints";
 import { createMemoryStorage, installWindowStorage } from "../helpers/storage";
 
 let restoreStorage: (() => void) | null = null;

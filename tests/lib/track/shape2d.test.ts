@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getCone2DShape,
+  getTower2DShape,
   getDiveGate2DShape,
   getFlag2DShape,
   getGate2DShape,
@@ -11,10 +12,11 @@ import { feetToMeters } from "@/lib/track/units";
 import {
   createCatalogShapeDraft,
   MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
+  MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID,
   MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
-import type { DiveGateShape, GateShape } from "@/lib/types";
+import type { DiveGateShape, GateShape, TowerShape } from "@/lib/types";
 
 describe("track 2d shape helpers", () => {
   const ppm = 20;
@@ -144,6 +146,27 @@ describe("track 2d shape helpers", () => {
     expect(gate.panels.rightWidth).toBeCloseTo(feetToMeters(1) * ppm);
     expect(gate.panels.topColor).toBe("#202e5d");
     expect(gate.frame.placement).toBe("outer");
+  });
+
+  it("uses one top-down footprint for stacked tower gates", () => {
+    const shape = createCatalogShapeDraft(
+      MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID,
+      {
+        x: 0,
+        y: 0,
+        includeCatalogMetadata: true,
+      }
+    ) as TowerShape;
+    const tower = getTower2DShape(shape, ppm);
+
+    expect(tower.variant).toBe("panel-frame");
+    if (tower.variant !== "panel-frame") {
+      throw new Error("expected panel-frame tower metrics");
+    }
+    expect(tower.levelCount).toBe(2);
+    expect(tower.openingWidth).toBeCloseTo(feetToMeters(5) * ppm);
+    expect(tower.width).toBeCloseTo(feetToMeters(7) * ppm);
+    expect(tower.totalDepth).toBe(tower.depth);
   });
 
   it("uses a top-down footprint for the official MultiGP dive gate", () => {

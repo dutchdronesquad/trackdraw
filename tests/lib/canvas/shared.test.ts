@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
 
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { clamp } from "@/lib/utils";
 import {
-  clamp,
   isTouchLikeEvent,
   isTypingInInput,
   mergeClientRects,

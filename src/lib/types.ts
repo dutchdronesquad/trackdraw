@@ -2,6 +2,7 @@ export type UUID = string;
 
 export type ShapeKind =
   | "gate"
+  | "tower"
   | "flag"
   | "cone"
   | "label"
@@ -35,6 +36,15 @@ export interface GateShape extends BaseShape {
   width: number; // m (inner opening)
   height: number; // m (clearance height)
   thick?: number; // m (post thickness)
+}
+
+export interface TowerShape extends BaseShape {
+  kind: "tower";
+  width: number; // m inner opening width
+  height: number; // m clearance height for each stacked opening
+  levels?: number; // number of stacked openings
+  elevation?: number; // m bottom clearance below the first opening
+  thick?: number; // m post thickness
 }
 
 export interface FlagShape extends BaseShape {
@@ -95,6 +105,7 @@ export interface PolylineShape extends BaseShape {
 
 export type Shape =
   | GateShape
+  | TowerShape
   | FlagShape
   | ConeShape
   | LabelShape

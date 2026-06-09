@@ -29,7 +29,7 @@ import { ToolsControls } from "@/components/editor/mobile/ToolsControls";
 import { ViewControls } from "@/components/editor/mobile/ViewControls";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
-import type { EditorTool } from "@/lib/editor-tools";
+import type { EditorTool } from "@/lib/editor/tool-registry";
 import { getEditorMobilePanelsViewModel } from "@/lib/editor/mobile/view-model";
 import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 import { formatMeasurement } from "@/lib/track/units";

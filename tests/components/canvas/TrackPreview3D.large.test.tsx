@@ -3,7 +3,7 @@
 import React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import TrackPreview3D from "@/components/canvas/share/TrackPreview3D";
+import TrackPreview3D from "@/components/canvas/viewer/TrackPreview3D";
 import { normalizeDesign } from "@/lib/track/design";
 import { useEditor } from "@/store/editor";
 
@@ -39,12 +39,27 @@ vi.mock("@react-three/fiber", () => {
 
   return {
     Canvas: MockCanvas,
+    useFrame: vi.fn(),
+    useThree: vi.fn(() => ({
+      camera: { position: { distanceTo: vi.fn(() => 10) } },
+      gl: {
+        domElement: {
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          toDataURL: vi.fn(() => ""),
+        },
+      },
+    })),
   };
 });
 
 vi.mock("@react-three/drei", () => ({
   Grid: () => <div data-testid="preview-grid" />,
   OrbitControls: () => <div data-testid="orbit-controls" />,
+  useTexture: Object.assign(
+    vi.fn(() => ({})),
+    { preload: vi.fn() }
+  ),
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({
@@ -59,7 +74,7 @@ vi.mock("@/hooks/usePerfMetric", () => ({
   usePerfMetric: () => {},
 }));
 
-vi.mock("@/components/canvas/trackPreview3DSharedSceneContent", () => ({
+vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
   CameraAxisTracker: () => <div data-testid="axis-tracker" />,
   MemoShape3D: ({ shape }: { shape: { id: string } }) => (
     <div data-shape-id={shape.id} data-testid="shape-3d" />
@@ -69,7 +84,7 @@ vi.mock("@/components/canvas/trackPreview3DSharedSceneContent", () => ({
   WheelBridge: () => <div data-testid="wheel-bridge" />,
 }));
 
-vi.mock("@/components/canvas/trackPreview3DOverlays", () => ({
+vi.mock("@/components/canvas/preview3d/overlays", () => ({
   AxisGizmoOverlay: () => <div data-testid="axis-gizmo" />,
   FieldWatermark: () => <div data-testid="field-watermark" />,
   FlyThroughControlsOverlay: () => <div data-testid="fly-controls" />,

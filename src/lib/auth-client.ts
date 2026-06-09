@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { createAuthClient } from "better-auth/react";
 import { magicLinkClient } from "better-auth/client/plugins";
-import { parseAccountRole, type AccountRole } from "@/lib/account-roles";
+import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
 
 export type AuthUser = {
   id: string;

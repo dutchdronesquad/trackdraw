@@ -6,11 +6,11 @@ import { Suspense, useCallback, useMemo } from "react";
 import { useEditor } from "@/store/editor";
 import { selectDesignShapes } from "@/store/selectors";
 import { useTheme } from "@/hooks/useTheme";
-import { SCENE_3D_THEME } from "@/components/canvas/scene3DTheme";
+import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import {
   MemoShape3D,
   ScreenshotHelper,
-} from "@/components/canvas/trackPreview3DSharedSceneContent";
+} from "@/components/canvas/preview3d/shared-scene";
 
 type Props = {
   /** Called once with the PNG data URL after the scene has rendered. */

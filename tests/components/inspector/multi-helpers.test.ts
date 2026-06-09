@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   getBatchCatalogKind,
   getBatchCatalogEntryId,
-} from "@/components/inspector/views/multi";
+} from "@/components/inspector/views/multi-selection";
 import {
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_LADDER_ELEMENT_ID,
+  TRACKDRAW_TOWER_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   MULTIGP_CORNER_FLAG_ELEMENT_ID,
   createTrackElementCatalogIdentity,
@@ -49,6 +50,20 @@ function ladder(overrides: Partial<Shape> = {}): Shape {
     width: 2,
     height: 2,
     rungs: 3,
+    ...overrides,
+  } as Shape;
+}
+
+function tower(overrides: Partial<Shape> = {}): Shape {
+  return {
+    id: "t1",
+    kind: "tower",
+    x: 0,
+    y: 0,
+    rotation: 0,
+    width: 2,
+    height: 2,
+    levels: 2,
     ...overrides,
   } as Shape;
 }
@@ -96,6 +111,12 @@ describe("getBatchCatalogKind", () => {
     ).toBe("ladder");
   });
 
+  it("returns 'tower' for all towers", () => {
+    expect(
+      getBatchCatalogKind([tower({ id: "t1" }), tower({ id: "t2" })])
+    ).toBe("tower");
+  });
+
   it("returns kind for a single shape", () => {
     expect(getBatchCatalogKind([gate()])).toBe("gate");
   });
@@ -117,6 +138,12 @@ describe("getBatchCatalogEntryId", () => {
   it("returns default ladder ID when shape has no catalog meta", () => {
     expect(getBatchCatalogEntryId(ladder(), "ladder")).toBe(
       TRACKDRAW_LADDER_ELEMENT_ID
+    );
+  });
+
+  it("returns default tower ID when shape has no catalog meta", () => {
+    expect(getBatchCatalogEntryId(tower(), "tower")).toBe(
+      TRACKDRAW_TOWER_ELEMENT_ID
     );
   });
 

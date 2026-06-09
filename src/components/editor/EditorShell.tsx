@@ -13,8 +13,9 @@ import { EditorDialogsHost } from "./EditorDialogsHost";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
+import { catalogPlacementToolIds } from "@/lib/editor/placement-catalog";
 import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
-import { type EditorTool } from "@/lib/editor-tools";
+import { type EditorTool } from "@/lib/editor/tool-registry";
 import { loadProject } from "@/lib/projects";
 import { downloadJsonFile } from "@/lib/export/download-json";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
@@ -24,13 +25,13 @@ import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
   useDeveloperMode,
   useDeveloperModeShortcut,
-} from "@/hooks/useDeveloperMode";
-import { useUndoRedo } from "@/hooks/useUndoRedo";
+} from "@/hooks/account/useDeveloperMode";
+import { useUndoRedo } from "@/hooks/editor/useUndoRedo";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
-import { useEditorProjects } from "@/hooks/useEditorProjects";
-import { useCompleteProfile } from "@/hooks/useCompleteProfile";
+import { useEditorProjects } from "@/hooks/editor/useEditorProjects";
+import { useCompleteProfile } from "@/hooks/account/useCompleteProfile";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
-import type { EditorView } from "@/lib/view";
+import type { EditorView } from "@/lib/editor/view";
 import {
   useSessionActions,
   useTrackActions,
@@ -51,7 +52,7 @@ import {
 } from "@/components/canvas/editor/useTrackCanvasShortcuts";
 
 const Header = dynamic(() => import("./Header"), { ssr: false });
-const SharedHeader = dynamic(() => import("./shared/Header"), { ssr: false });
+const SharedHeader = dynamic(() => import("./viewer/Header"), { ssr: false });
 const Toolbar = dynamic(() => import("./Toolbar"), { ssr: false });
 const PerformanceHud = dynamic(() => import("./PerformanceHud"), {
   ssr: false,
@@ -66,7 +67,7 @@ const EditorMobilePanels = dynamic(
 );
 
 const SharedMobilePanels = dynamic(
-  () => import("@/components/editor/shared/MobilePanels"),
+  () => import("@/components/editor/viewer/MobilePanels"),
   { ssr: false }
 );
 
@@ -816,13 +817,7 @@ export default function EditorShell({
               setMobilePathBuilderPinnedOpen(tool === "polyline");
               setActiveTool(tool);
               // Keep drawer open for catalog tools so the type list stays visible
-              const catalogTools: EditorTool[] = [
-                "gate",
-                "flag",
-                "ladder",
-                "divegate",
-              ];
-              if (!catalogTools.includes(tool)) {
+              if (!catalogPlacementToolIds.includes(tool)) {
                 setMobileToolsOpen(false);
               }
             }}

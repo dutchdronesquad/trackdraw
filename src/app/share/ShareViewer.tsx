@@ -7,12 +7,12 @@ import { useEffect, useState } from "react";
 import { useEditor } from "@/store/editor";
 import { ContextOverlayCard } from "@/components/editor/ContextOverlayCard";
 import { getShareTitle } from "@/lib/share";
-import { parseEditorView, type EditorView } from "@/lib/view";
+import { parseEditorView, type EditorView } from "@/lib/editor/view";
 import { ArrowRight, Eye } from "lucide-react";
 import type { TrackDesign } from "@/lib/types";
 
 const EditorShell = dynamic(
-  () => import("@/components/editor/shared/EditorShell"),
+  () => import("@/components/editor/viewer/EditorShell"),
   {
     ssr: false,
     loading: () => <div className="h-dvh" />,

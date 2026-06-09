@@ -18,7 +18,7 @@ import type {
   TrackPreview3DHandle,
   TrackPreview3DProps,
 } from "@/components/canvas/editor/TrackPreview3D";
-import type { EditorView } from "@/lib/view";
+import type { EditorView } from "@/lib/editor/view";
 import type { RefObject } from "react";
 import { Spinner } from "@/components/ui/spinner";
 

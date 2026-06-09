@@ -14,7 +14,7 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
-import { SCENE_3D_THEME } from "@/components/canvas/scene3DTheme";
+import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
@@ -23,6 +23,7 @@ import type {
   FlagShape,
   GateShape,
   LadderShape,
+  TowerShape,
 } from "@/lib/types";
 import {
   selectDesignShapes,
@@ -35,6 +36,7 @@ import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
 } from "@/lib/track/elements/catalog";
+import { has3dRotateHandle } from "@/lib/track/items/registry";
 import { getDiveGateVisualSpec } from "@/lib/track/elements/visual";
 import { useEditor } from "@/store/editor";
 import {
@@ -50,20 +52,20 @@ import {
   WheelBridge,
   type QuaternionState,
   useCatalogTextureWarmup,
-} from "@/components/canvas/trackPreview3DSharedSceneContent";
+} from "@/components/canvas/preview3d/shared-scene";
 import {
   DiveGateElevationHandle3D,
   DiveGateTiltHandle3D,
   GateRotateHandle3D,
   LadderElevationHandle3D,
   PolylineElevationHandles3D,
-} from "@/components/canvas/editor/trackPreview3DEditSceneContent";
+} from "@/components/canvas/editor/edit-scene-content";
 import {
   AxisGizmoOverlay,
   FieldWatermark,
   FlyThroughControlsOverlay,
   TrackPreview3DHintOverlays,
-} from "@/components/canvas/trackPreview3DOverlays";
+} from "@/components/canvas/preview3d/overlays";
 import {
   EDGES,
   generateExportConfigForCatalog,
@@ -73,17 +75,17 @@ import {
   setEdge,
   toggleFlip,
   useOverrideVersion,
-} from "@/components/canvas/textureDebugContext";
+} from "@/components/canvas/preview3d/texture-debug";
 import type { TexturePanelEdge } from "@/lib/track/elements/catalog";
 import { resolveDiveGateElevation } from "@/lib/track/render3d-layout";
-import { useDeveloperMode } from "@/hooks/useDeveloperMode";
+import { useDeveloperMode } from "@/hooks/account/useDeveloperMode";
 import { useTrackPreview3DInteractions } from "@/components/canvas/editor/useTrackPreview3DInteractions";
 import { motion, useReducedMotion } from "framer-motion";
 import dynamic from "next/dynamic";
 
 const DroneCamera = dynamic(
   () =>
-    import("@/components/canvas/trackPreview3DFlythrough").then((mod) => ({
+    import("@/components/canvas/preview3d/flythrough").then((mod) => ({
       default: mod.DroneCamera,
     })),
   { ssr: false }
@@ -346,10 +348,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           (shape) =>
             selectedIdSet.has(shape.id) &&
             !shape.locked &&
-            (shape.kind === "gate" ||
-              shape.kind === "flag" ||
-              shape.kind === "ladder" ||
-              shape.kind === "divegate")
+            has3dRotateHandle(shape)
         ),
       [selectedIdSet, shapes]
     );
@@ -633,19 +632,19 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             !readOnly &&
             shapes.map((shape) => {
               if (!selectedIdSet.has(shape.id) || shape.locked) return null;
-              if (
-                shape.kind !== "gate" &&
-                shape.kind !== "flag" &&
-                shape.kind !== "ladder" &&
-                shape.kind !== "divegate"
-              ) {
+              if (!has3dRotateHandle(shape)) {
                 return null;
               }
               return (
                 <GateRotateHandle3D
                   key={`rotate-${shape.id}`}
                   shape={
-                    shape as GateShape | FlagShape | LadderShape | DiveGateShape
+                    shape as
+                      | GateShape
+                      | FlagShape
+                      | LadderShape
+                      | TowerShape
+                      | DiveGateShape
                   }
                   onDragStart={(event) =>
                     handleRotateDragStart(event, shape.id, shape.rotation)

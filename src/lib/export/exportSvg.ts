@@ -1,6 +1,7 @@
 import type {
   TrackDesign,
   Shape,
+  ShapeKind,
   GateShape,
   FlagShape,
   ConeShape,
@@ -8,6 +9,7 @@ import type {
   PolylineShape,
   StartFinishShape,
   LadderShape,
+  TowerShape,
   DiveGateShape,
 } from "../types";
 import { getDesignShapes } from "../track/design";
@@ -19,27 +21,22 @@ import {
   formatCompactFieldSize,
   type MeasurementUnitSystem,
 } from "../track/units";
-import { getShapeTimingMarker, getTimingMarkerColor } from "../track/timing";
 import {
-  getPolyline2DDerived,
-  getRouteWarningSegmentColor,
-  getPolylineRouteWarningSegmentVisuals,
-  getPolylineSmoothSegmentPointsPx,
-} from "../track/polyline-derived";
-import { DEFAULT_POLYLINE_STROKE_WIDTH } from "../track/constants";
-import {
-  getCone2DShape,
-  getDiveGateArchPanelPath,
   getDiveGate2DShape,
-  getFlag2DShape,
   getGate2DShape,
   getLadder2DShape,
-  getStartFinish2DShape,
+  getTower2DShape,
 } from "../track/shape2d";
-
-function m(v: number, ppm: number) {
-  return v * ppm;
-}
+import { coneToSvg } from "./svg/cone";
+import { diveGateToSvg } from "./svg/divegate";
+import { flagToSvg } from "./svg/flag";
+import { gateToSvg } from "./svg/gate";
+import { labelToSvg } from "./svg/label";
+import { ladderToSvg } from "./svg/ladder";
+import { polylineToSvg } from "./svg/polyline";
+import { startfinishToSvg } from "./svg/startfinish";
+import { towerToSvg } from "./svg/tower";
+import { escapeXml, m } from "./svg/utils";
 
 const MIN_EXPORT_GRID_SPACING_PX = 8;
 
@@ -47,234 +44,28 @@ function getExportGridStepPx(gridStepMeters: number, ppm: number) {
   return Math.max(m(gridStepMeters, ppm), MIN_EXPORT_GRID_SPACING_PX);
 }
 
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function gateToSvg(s: GateShape, ppm: number): string {
-  const cx = m(s.x, ppm);
-  const cy = m(s.y, ppm);
-  const marker = getShapeTimingMarker(s);
-  const base = getGate2DShape(s, ppm);
-  const color = marker ? getTimingMarkerColor(marker) : base.color;
-  const { depth, radius, width } = base;
-  const rot = s.rotation;
-
-  if (base.variant === "panel-frame") {
-    const centerWidth = base.openingWidth;
-    const strokeColor = marker ? color : base.frame.color;
-
-    return `<g transform="translate(${cx},${cy}) rotate(${rot})">
-    <rect x="${-width / 2}" y="${-depth / 2}" width="${base.panels.leftWidth}" height="${depth}" fill="${base.panels.leftColor}" fill-opacity="0.94" rx="${radius}"/>
-    <rect x="${-centerWidth / 2}" y="${-depth / 2}" width="${centerWidth}" height="${depth}" fill="${base.panels.topColor}" fill-opacity="0.9"/>
-    <rect x="${width / 2 - base.panels.rightWidth}" y="${-depth / 2}" width="${base.panels.rightWidth}" height="${depth}" fill="${base.panels.rightColor}" fill-opacity="0.94" rx="${radius}"/>
-    <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="none" stroke="${strokeColor}" stroke-width="${marker ? 3 : 2}" rx="${radius}"/>
-  </g>`;
-  }
-
-  return `<g transform="translate(${cx},${cy}) rotate(${rot})">
-    <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="${color}" fill-opacity="0.15" rx="${radius}"/>
-    <rect x="${-width / 2}" y="${-depth / 2}" width="${width}" height="${depth}" fill="none" stroke="${color}" stroke-width="${marker ? 3 : 2}" rx="${radius}"/>
-  </g>`;
-}
-
-function flagToSvg(s: FlagShape, ppm: number): string {
-  const cx = m(s.x, ppm);
-  const cy = m(s.y, ppm);
-  const { bannerLength, bannerWidth, color, mastRadius } = getFlag2DShape(
-    s,
-    ppm
-  );
-  return `<g transform="translate(${cx},${cy}) rotate(${s.rotation})">
-    <path d="M${mastRadius * 0.2} ${-bannerWidth * 0.34} C ${bannerLength * 0.22} ${-bannerWidth * 0.62}, ${bannerLength * 0.76} ${-bannerWidth * 0.42}, ${bannerLength} 0 C ${bannerLength * 0.76} ${bannerWidth * 0.42}, ${bannerLength * 0.22} ${bannerWidth * 0.62}, ${mastRadius * 0.2} ${bannerWidth * 0.34} Q 0 ${bannerWidth * 0.14}, 0 0 Q 0 ${-bannerWidth * 0.14}, ${mastRadius * 0.2} ${-bannerWidth * 0.34} Z" fill="${color}" fill-opacity="0.8"/>
-    <circle r="${mastRadius}" fill="${color}"/>
-    <circle r="${Math.max(1.5, mastRadius * 0.38)}" fill="#ffffff" fill-opacity="0.78"/>
-  </g>`;
-}
-
-function coneToSvg(s: ConeShape, ppm: number): string {
-  const cx = m(s.x, ppm);
-  const cy = m(s.y, ppm);
-  const { color, radius } = getCone2DShape(s, ppm);
-  return `<g transform="translate(${cx},${cy})">
-    <circle r="${radius}" fill="${color}" stroke="${color}" stroke-width="2"/>
-  </g>`;
-}
-
-function labelToSvg(s: LabelShape, ppm: number): string {
-  const cx = m(s.x, ppm);
-  const cy = m(s.y, ppm);
-  const fs = s.fontSize ?? 14;
-  const color = s.color ?? "#e2e8f0";
-  return `<text x="${cx}" y="${cy}" font-size="${fs}" fill="${color}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${s.rotation},${cx},${cy})">${escapeXml(s.text)}</text>`;
-}
-
-function polylineToSvg(
-  s: PolylineShape,
-  ppm: number,
-  showWarningVisuals = false
-): string {
-  const pts = getPolyline2DDerived(s).smoothPoints;
-  if (pts.length < 2) return "";
-  const d = pts
-    .map((p, i) => `${i === 0 ? "M" : "L"}${m(p.x, ppm)},${m(p.y, ppm)}`)
-    .join(" ");
-  const sw = m(s.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH, ppm);
-  const color = s.color ?? "#3b82f6";
-  const closed = s.closed ? " Z" : "";
-  const warningSegments = showWarningVisuals
-    ? getPolylineRouteWarningSegmentVisuals(s)
-    : [];
-  const warningKindBySegment = new Map(
-    warningSegments.map((segment) => [segment.segmentIndex, segment.kind])
-  );
-  const smoothSegmentPx = showWarningVisuals
-    ? getPolylineSmoothSegmentPointsPx(s, ppm)
-    : [];
-  const segmentMarkup =
-    showWarningVisuals && warningSegments.length
-      ? smoothSegmentPx
-          .map((points, segmentIndex) => {
-            if (!points || points.length < 4) return "";
-            const warningKind = warningKindBySegment.get(segmentIndex);
-            const stroke = getRouteWarningSegmentColor(warningKind, color);
-            const segmentPath = points
-              .reduce<string[]>((commands, value, index) => {
-                if (index % 2 === 0) {
-                  commands.push(
-                    `${index === 0 ? "M" : "L"}${value},${points[index + 1]}`
-                  );
-                }
-                return commands;
-              }, [])
-              .join(" ");
-            return `<path d="${segmentPath}" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
-          })
-          .join("")
-      : "";
-
-  return `<g>
-    <path d="${d}${closed}" fill="none" stroke="${color}" stroke-width="${sw * 2}" stroke-opacity="0.12" stroke-linecap="round" stroke-linejoin="round"/>
-    ${
-      showWarningVisuals && warningSegments.length
-        ? segmentMarkup
-        : `<path d="${d}${closed}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`
-    }
-  </g>`;
-}
-
-function startfinishToSvg(s: StartFinishShape, ppm: number): string {
-  const cx = m(s.x, ppm);
-  const cy = m(s.y, ppm);
-  const marker = getShapeTimingMarker(s);
-  const base = getStartFinish2DShape(s, ppm);
-  const color = marker ? getTimingMarkerColor(marker) : base.color;
-  const { padDepth, padWidth, pads } = base;
-  const padMarkup = pads
-    .map(({ index, x }) => {
-      const fontSize = Math.max(7, padWidth * 0.45);
-      return `<g transform="translate(${x},0)">
-        <rect x="${-padWidth / 2}" y="${-padDepth / 2}" width="${padWidth}" height="${padDepth}" fill="${color}" fill-opacity="0.25" rx="2"/>
-        <rect x="${-padWidth / 2}" y="${-padDepth / 2}" width="${padWidth}" height="${padDepth}" fill="none" stroke="${color}" stroke-width="${marker ? 2.4 : 1.5}" rx="2"/>
-        <text x="0" y="${fontSize * 0.35}" font-size="${fontSize}" fill="${color}" fill-opacity="0.7" text-anchor="middle">${index + 1}</text>
-      </g>`;
-    })
-    .join("");
-  return `<g transform="translate(${cx},${cy}) rotate(${s.rotation})">
-    ${padMarkup}
-  </g>`;
-}
-
-function ladderToSvg(s: LadderShape, ppm: number): string {
-  const cx = m(s.x, ppm);
-  const cy = m(s.y, ppm);
-  const { color, depth, radius, width } = getLadder2DShape(s, ppm);
-  return `<g transform="rotate(${s.rotation},${cx},${cy})">
-    <rect x="${cx - width / 2}" y="${cy - depth / 2}" width="${width}" height="${depth}" fill="${color}" fill-opacity="0.16" rx="${radius}"/>
-    <rect x="${cx - width / 2}" y="${cy - depth / 2}" width="${width}" height="${depth}" stroke="${color}" stroke-width="2" fill="none" rx="${radius}"/>
-  </g>`;
-}
-
-function diveGateToSvg(s: DiveGateShape, ppm: number): string {
-  const cx = m(s.x, ppm);
-  const cy = m(s.y, ppm);
-  const diveGate = getDiveGate2DShape(s, ppm);
-  if (diveGate.variant === "arch" || diveGate.variant === "launch") {
-    const {
-      color,
-      couplerPoints,
-      couplerRadius,
-      frameColor,
-      frameTube,
-      openingDepth,
-      openingW,
-      outerDepth,
-      outerW,
-      pipeSegments,
-    } = diveGate;
-    const pipes = pipeSegments
-      .map(
-        (segment) =>
-          `<line x1="${segment.start.x}" y1="${segment.start.y}" x2="${segment.end.x}" y2="${segment.end.y}" stroke="${frameColor}" stroke-width="${Math.max(1, frameTube * 0.58)}" stroke-linecap="round" opacity="0.55"/>`
-      )
-      .join("");
-    const couplers = couplerPoints
-      .map(
-        (point) =>
-          `<circle cx="${point.x}" cy="${point.y}" r="${couplerRadius}" fill="#d6d9de" stroke="${frameColor}" stroke-width="${Math.max(1, frameTube * 0.22)}"/>`
-      )
-      .join("");
-    const panelPath = getDiveGateArchPanelPath(diveGate);
-
-    return `<g transform="translate(${cx},${cy}) rotate(${s.rotation})">
-      <path d="${panelPath.svgPath}" fill="${color}" fill-opacity="0.88" fill-rule="evenodd"/>
-      <rect x="${-outerW / 2}" y="${-outerDepth / 2}" width="${outerW}" height="${outerDepth}" fill="none" stroke="${frameColor}" stroke-width="${Math.max(1, frameTube * 0.55)}" rx="3"/>
-      <rect x="${-openingW / 2}" y="${-openingDepth / 2}" width="${openingW}" height="${openingDepth}" fill="none" stroke="${frameColor}" stroke-width="${Math.max(1, frameTube * 0.35)}" rx="2"/>
-      ${pipes}
-      ${couplers}
-    </g>`;
-  }
-
-  const { color, inset, postRadius, size, visibleDepth } = diveGate;
-  return `<g transform="rotate(${s.rotation},${cx},${cy})">
-    <rect x="${cx - size / 2}" y="${cy - visibleDepth / 2}" width="${size}" height="${visibleDepth}" fill="${color}" fill-opacity="0.03" rx="4"/>
-    <rect x="${cx - size / 2}" y="${cy - visibleDepth / 2}" width="${size}" height="${visibleDepth}" stroke="${color}" stroke-width="2" fill="none" rx="4" opacity="0.95"/>
-    <circle cx="${cx - size / 2 + inset}" cy="${cy - visibleDepth / 2 + inset}" r="${postRadius}" fill="${color}"/>
-    <circle cx="${cx + size / 2 - inset}" cy="${cy - visibleDepth / 2 + inset}" r="${postRadius}" fill="${color}"/>
-    <circle cx="${cx - size / 2 + inset}" cy="${cy + visibleDepth / 2 - inset}" r="${postRadius}" fill="${color}"/>
-    <circle cx="${cx + size / 2 - inset}" cy="${cy + visibleDepth / 2 - inset}" r="${postRadius}" fill="${color}"/>
-  </g>`;
-}
+const shapeToSvgDispatch: Record<
+  ShapeKind,
+  (shape: Shape, ppm: number, primaryPolylineId: string | null) => string
+> = {
+  gate: (shape, ppm) => gateToSvg(shape as GateShape, ppm),
+  flag: (shape, ppm) => flagToSvg(shape as FlagShape, ppm),
+  cone: (shape, ppm) => coneToSvg(shape as ConeShape, ppm),
+  label: (shape, ppm) => labelToSvg(shape as LabelShape, ppm),
+  polyline: (shape, ppm, primaryPolylineId) =>
+    polylineToSvg(shape as PolylineShape, ppm, primaryPolylineId === shape.id),
+  startfinish: (shape, ppm) => startfinishToSvg(shape as StartFinishShape, ppm),
+  ladder: (shape, ppm) => ladderToSvg(shape as LadderShape, ppm),
+  tower: (shape, ppm) => towerToSvg(shape as TowerShape, ppm),
+  divegate: (shape, ppm) => diveGateToSvg(shape as DiveGateShape, ppm),
+};
 
 function shapeToSvg(
   shape: Shape,
   ppm: number,
   primaryPolylineId: string | null
 ): string {
-  switch (shape.kind) {
-    case "gate":
-      return gateToSvg(shape, ppm);
-    case "flag":
-      return flagToSvg(shape, ppm);
-    case "cone":
-      return coneToSvg(shape, ppm);
-    case "label":
-      return labelToSvg(shape, ppm);
-    case "polyline":
-      return polylineToSvg(shape, ppm, primaryPolylineId === shape.id);
-    case "startfinish":
-      return startfinishToSvg(shape, ppm);
-    case "ladder":
-      return ladderToSvg(shape, ppm);
-    case "divegate":
-      return diveGateToSvg(shape, ppm);
-    default:
-      return "";
-  }
+  return shapeToSvgDispatch[shape.kind](shape, ppm, primaryPolylineId);
 }
 
 function getNumberedShapeBounds(shape: Shape, ppm: number) {
@@ -286,6 +77,10 @@ function getNumberedShapeBounds(shape: Shape, ppm: number) {
     case "ladder": {
       const { width, depth } = getLadder2DShape(shape, ppm);
       return { x: -width / 2, y: -depth / 2, width, height: depth };
+    }
+    case "tower": {
+      const { width, totalDepth } = getTower2DShape(shape, ppm);
+      return { x: -width / 2, y: -totalDepth / 2, width, height: totalDepth };
     }
     case "divegate": {
       const diveGate = getDiveGate2DShape(shape, ppm);

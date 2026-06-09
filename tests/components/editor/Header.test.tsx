@@ -97,7 +97,7 @@ vi.mock("@/hooks/useTheme", () => ({
   useTheme: () => "light",
 }));
 
-vi.mock("@/hooks/useUndoRedo", () => ({
+vi.mock("@/hooks/editor/useUndoRedo", () => ({
   useUndoRedo: () => useUndoRedoMock(),
 }));
 

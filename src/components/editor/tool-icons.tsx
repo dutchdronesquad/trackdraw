@@ -13,8 +13,8 @@ import {
   Triangle,
   Type,
 } from "lucide-react";
-import type { EditorTool } from "@/lib/editor-tools";
-import { toolLabels, toolShortcuts } from "@/lib/editor-tools";
+import type { EditorTool } from "@/lib/editor/tool-registry";
+import { toolLabels, toolShortcuts } from "@/lib/editor/tool-registry";
 
 function GateIcon({ className }: { className?: string }) {
   return (
@@ -51,7 +51,7 @@ function LadderIcon({ className }: { className?: string }) {
   );
 }
 
-function _TowerIcon({ className }: { className?: string }) {
+function TowerIcon({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 14 14"
@@ -96,6 +96,8 @@ function iconForTool(tool: EditorTool, className: string): ReactNode {
       return <GateIcon className={className} />;
     case "ladder":
       return <LadderIcon className={className} />;
+    case "tower":
+      return <TowerIcon className={className} />;
     case "divegate":
       return <DiveGateIcon className={className} />;
     case "startfinish":
@@ -153,6 +155,7 @@ export const toolbarToolGroups: ToolGroup[] = [
     tools: [
       buildToolEntry("gate", "size-3.5"),
       buildToolEntry("ladder", "size-3.5"),
+      buildToolEntry("tower", "size-3.5"),
       buildToolEntry("divegate", "size-3.5"),
       buildToolEntry("flag", "size-3.5"),
       buildToolEntry("cone", "size-3.5"),
@@ -172,6 +175,7 @@ export const mobileToolEntries: ToolEntry[] = [
   buildToolEntry("preset", "size-5"),
   buildToolEntry("gate", "size-5"),
   buildToolEntry("ladder", "size-5"),
+  buildToolEntry("tower", "size-5"),
   buildToolEntry("divegate", "size-5"),
   buildToolEntry("startfinish", "size-5"),
   buildToolEntry("flag", "size-5"),

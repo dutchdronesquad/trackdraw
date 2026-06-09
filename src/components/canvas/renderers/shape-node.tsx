@@ -6,19 +6,17 @@ import type { Group as KonvaGroup } from "konva/lib/Group";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Vector2d } from "konva/lib/types";
 import { m2px, px2m } from "@/lib/track/units";
+import {
+  getMobileTouchTargetMinScreenPx,
+  getShapeCanvasRenderRotationOffset,
+} from "@/lib/track/items/registry";
 import type { PolylinePoint, Shape } from "@/lib/types";
 import {
   renderLockedIndicator,
   LockedPathSelectBadge,
   renderHoverIndicator,
-  renderGate,
-  renderFlag,
-  renderCone,
-  renderLabel,
-  renderStartFinish,
-  renderLadder,
-  renderDiveGate,
-} from "./shape-renderers";
+  renderShape2D,
+} from "./shape2d";
 import { PolylineShapeContent } from "./polyline-shape";
 import { getShapeLocalBounds } from "./shape-bounds";
 
@@ -139,7 +137,10 @@ function TrackShapeNodeComponent({
     isMobile && shape.kind !== "polyline"
       ? getShapeLocalBounds(shape, designPpm)
       : null;
-  const touchTargetMinScreenPx = shape.kind === "gate" ? 72 : 52;
+  const touchTargetMinScreenPx = Math.max(
+    52,
+    getMobileTouchTargetMinScreenPx(shape)
+  );
   const touchTargetMinCanvasPx =
     touchTargetMinScreenPx / Math.max(viewportScale, 0.1);
   const touchTargetRect = touchBounds
@@ -245,11 +246,7 @@ function TrackShapeNodeComponent({
         m2px(shape.kind === "polyline" ? 0 : shape.y, designPpm) +
         (groupDragOffsetPx?.y ?? 0)
       }
-      rotation={
-        shape.kind === "gate" || shape.kind === "ladder"
-          ? shape.rotation + 180
-          : shape.rotation
-      }
+      rotation={shape.rotation + getShapeCanvasRenderRotationOffset(shape)}
       draggable={
         allowInteraction &&
         !shape.locked &&
@@ -341,15 +338,7 @@ function TrackShapeNodeComponent({
             opacity={0.001}
           />
         )}
-        {shape.kind === "gate" && renderGate(shape, highlighted, designPpm)}
-        {shape.kind === "flag" && renderFlag(shape, highlighted, designPpm)}
-        {shape.kind === "cone" && renderCone(shape, highlighted, designPpm)}
-        {shape.kind === "label" && renderLabel(shape, highlighted)}
-        {shape.kind === "startfinish" &&
-          renderStartFinish(shape, highlighted, designPpm)}
-        {shape.kind === "ladder" && renderLadder(shape, highlighted, designPpm)}
-        {shape.kind === "divegate" &&
-          renderDiveGate(shape, highlighted, designPpm)}
+        {renderShape2D(shape, highlighted, designPpm)}
         {shape.kind === "polyline" && (
           <PolylineShapeContent
             allowInteraction={allowInteraction}

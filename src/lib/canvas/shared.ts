@@ -51,9 +51,6 @@ export const isTouchLikeEvent = (
 
 export const clipboard: Shape[] = [];
 
-export const clamp = (value: number, min: number, max: number) =>
-  Math.max(min, Math.min(max, value));
-
 export const normalizeRect = (origin: Vector2d, next: Vector2d): RectLike => {
   const width = next.x - origin.x;
   const height = next.y - origin.y;

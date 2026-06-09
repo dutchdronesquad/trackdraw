@@ -10,7 +10,7 @@ import {
   getSharesByUserId,
 } from "@/lib/server/shares";
 import { buildStoredSharePath } from "@/lib/share";
-import { parseEditorView } from "@/lib/view";
+import { parseEditorView } from "@/lib/editor/view";
 
 export async function GET(request: Request) {
   try {

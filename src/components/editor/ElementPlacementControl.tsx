@@ -8,43 +8,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  getCatalogEntriesByKind,
-  TRACKDRAW_DIVE_GATE_ELEMENT_ID,
-  TRACKDRAW_FLAG_ELEMENT_ID,
-  TRACKDRAW_GATE_ELEMENT_ID,
-  TRACKDRAW_LADDER_ELEMENT_ID,
-  type TrackElementCatalogId,
-} from "@/lib/track/elements/catalog";
+import { catalogPlacementByTool } from "@/lib/editor/placement-catalog";
 import { cn } from "@/lib/utils";
 import { useSessionActions, useUiActions } from "@/store/actions";
 import { useEditor } from "@/store/editor";
-import type { EditorTool } from "@/lib/editor-tools";
 
-const catalogEntriesByTool: Partial<
-  Record<EditorTool, ReturnType<typeof getCatalogEntriesByKind>>
-> = {
-  gate: getCatalogEntriesByKind("gate"),
-  flag: getCatalogEntriesByKind("flag"),
-  ladder: getCatalogEntriesByKind("ladder"),
-  divegate: getCatalogEntriesByKind("divegate"),
-};
-
-const defaultIdByTool: Partial<Record<EditorTool, TrackElementCatalogId>> = {
-  gate: TRACKDRAW_GATE_ELEMENT_ID,
-  flag: TRACKDRAW_FLAG_ELEMENT_ID,
-  ladder: TRACKDRAW_LADDER_ELEMENT_ID,
-  divegate: TRACKDRAW_DIVE_GATE_ELEMENT_ID,
-};
-
-const labelByTool: Partial<Record<EditorTool, string>> = {
-  gate: "Gate",
-  flag: "Flag",
-  ladder: "Ladder",
-  divegate: "Dive Gate",
-};
-
-const allEntries = Object.values(catalogEntriesByTool).flat();
+const allEntries = Object.values(catalogPlacementByTool).flatMap(
+  (viewModel) => viewModel?.entries ?? []
+);
 const controlWidthCh = Math.max(
   28,
   Math.min(42, Math.max(...allEntries.map((e) => e.name.length)) + 8)
@@ -59,15 +30,17 @@ export function ElementPlacementControl() {
   const { setActivePlacementElementId } = useUiActions();
   const { setSelection } = useSessionActions();
 
-  const entries = catalogEntriesByTool[activeTool];
+  const placementViewModel = catalogPlacementByTool[activeTool];
+  const entries = placementViewModel?.entries;
   const visible = !!entries && entries.length > 1;
   const activeId = visible
-    ? (activePlacementElementId[activeTool] ?? defaultIdByTool[activeTool])
+    ? (activePlacementElementId[activeTool] ??
+      placementViewModel?.defaultEntryId)
     : undefined;
   const activeEntry = visible
     ? (entries!.find((e) => e.id === activeId) ?? entries![0])
     : undefined;
-  const toolLabel = labelByTool[activeTool] ?? activeTool;
+  const toolLabel = placementViewModel?.label ?? activeTool;
   const controlWidthStyle = {
     width: visible ? `min(${controlWidthCh}ch, calc(100vw - 2rem))` : "auto",
   } satisfies CSSProperties;

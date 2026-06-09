@@ -2,9 +2,9 @@
 
 import { type RefObject, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { useHistorySession } from "@/hooks/useHistorySession";
+import { useHistorySession } from "@/hooks/account/useHistorySession";
 import { isPolylineShape } from "@/lib/track/shape-utils";
-import type { EditorTool } from "@/lib/editor-tools";
+import type { EditorTool } from "@/lib/editor/tool-registry";
 import type { Shape, ShapeDraft } from "@/lib/types";
 import {
   clipboard,

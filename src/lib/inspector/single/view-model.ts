@@ -1,4 +1,4 @@
-import { shapeKindLabels } from "@/lib/editor-tools";
+import { shapeKindLabels } from "@/lib/track/items/registry";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import type { Shape } from "@/lib/types";
 

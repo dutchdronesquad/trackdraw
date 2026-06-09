@@ -3,7 +3,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { toast } from "sonner";
-import { useEditorProjects } from "@/hooks/useEditorProjects";
+import { useEditorProjects } from "@/hooks/editor/useEditorProjects";
 import { createDefaultDesign } from "@/lib/track/design";
 import { encodeDesign } from "@/lib/share";
 import {

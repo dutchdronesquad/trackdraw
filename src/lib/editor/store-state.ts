@@ -1,10 +1,6 @@
 import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/planning/layout-presets";
 import { createDefaultDesign } from "@/lib/track/design";
-import {
-  TRACKDRAW_FLAG_ELEMENT_ID,
-  TRACKDRAW_GATE_ELEMENT_ID,
-  TRACKDRAW_LADDER_ELEMENT_ID,
-} from "@/lib/track/elements/catalog";
+import { toolCatalogEntryIds } from "@/lib/editor/tool-registry";
 import type {
   EditorSessionState,
   EditorTrackState,
@@ -31,9 +27,7 @@ export function createDefaultEditorUiState(
     activeTool: "select",
     activePresetId: options.activePresetId ?? DEFAULT_LAYOUT_PRESET_ID,
     activePlacementElementId: options.activePlacementElementId ?? {
-      gate: TRACKDRAW_GATE_ELEMENT_ID,
-      flag: TRACKDRAW_FLAG_ELEMENT_ID,
-      ladder: TRACKDRAW_LADDER_ELEMENT_ID,
+      ...toolCatalogEntryIds,
     },
     snapEnabled: true,
     zoom: options.zoom ?? 1,

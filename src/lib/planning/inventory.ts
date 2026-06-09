@@ -1,4 +1,4 @@
-import { shapeKindLabels } from "@/lib/editor-tools";
+import { shapeKindLabels, getInventoryKinds } from "@/lib/track/items/registry";
 import type {
   InventoryProfile,
   InventoryShapeKind,
@@ -6,14 +6,7 @@ import type {
   TrackDesign,
 } from "@/lib/types";
 
-export const inventoryKinds: InventoryShapeKind[] = [
-  "gate",
-  "ladder",
-  "divegate",
-  "startfinish",
-  "flag",
-  "cone",
-];
+export const inventoryKinds: InventoryShapeKind[] = getInventoryKinds();
 
 export function createEmptyInventoryProfile(): InventoryProfile {
   return {

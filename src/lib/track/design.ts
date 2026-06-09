@@ -8,6 +8,7 @@ import type {
   PolylineShape,
   SerializedTrackDesign,
   Shape,
+  TowerShape,
   TrackDesign,
 } from "@/lib/types";
 
@@ -60,6 +61,18 @@ export function normalizeShape(shape: Shape): Shape {
       ...rest,
       width: shape.width ?? legacySize ?? 2.8,
       frontOffsetDeg: shape.frontOffsetDeg ?? 0,
+    });
+  }
+
+  if (shape.kind === "tower") {
+    const tower = shape as TowerShape;
+    return normalizeShapeTimingMeta({
+      ...tower,
+      width: tower.width ?? 2,
+      height: tower.height ?? 2,
+      levels: Math.max(1, Math.min(4, Math.round(tower.levels ?? 1))),
+      elevation: Math.max(0, tower.elevation ?? 0),
+      frontOffsetDeg: tower.frontOffsetDeg ?? 0,
     });
   }
 
@@ -162,7 +175,11 @@ function migrateV1ShapeRotations(
 ): Record<string, Shape> {
   const result: Record<string, Shape> = {};
   for (const [id, shape] of Object.entries(shapeById)) {
-    if (shape.kind === "gate" || shape.kind === "ladder") {
+    if (
+      shape.kind === "gate" ||
+      shape.kind === "ladder" ||
+      shape.kind === "tower"
+    ) {
       result[id] = {
         ...shape,
         rotation: ((shape.rotation ?? 0) - 180 + 360) % 360,

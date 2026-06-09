@@ -6,7 +6,7 @@ import ElevationChart from "@/components/inspector/ElevationChart";
 import { MeasurementUnitToggle } from "@/components/MeasurementUnitToggle";
 import { MapReferenceDialog } from "@/components/map-reference/MapReferenceDialog";
 import { Input } from "@/components/ui/input";
-import { shapeKindLabels } from "@/lib/editor-tools";
+import { shapeKindLabels } from "@/lib/track/items/registry";
 import {
   getInventoryComparison,
   inventoryKinds,

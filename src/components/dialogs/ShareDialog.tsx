@@ -15,7 +15,7 @@ import {
   buildStoredSharePath,
   encodeDesign,
 } from "@/lib/share";
-import { parseEditorView } from "@/lib/view";
+import { parseEditorView } from "@/lib/editor/view";
 import { authClient } from "@/lib/auth-client";
 import {
   GALLERY_DESCRIPTION_MAX_LENGTH,
@@ -24,7 +24,7 @@ import {
   canSubmitGalleryMetadataUpdate as canSubmitGalleryMetadataUpdateForm,
   isGalleryDescriptionValid,
   isGalleryTitleValid,
-} from "@/lib/gallery-validation";
+} from "@/lib/gallery/validation";
 import {
   Copy,
   Check,

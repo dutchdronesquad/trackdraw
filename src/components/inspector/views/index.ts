@@ -1,3 +1,3 @@
-export { MultiInspectorView } from "./multi";
+export { MultiInspectorView } from "./multi-selection";
 export { ProjectLayoutInspectorView } from "./project-layout";
-export { SingleInspectorView } from "./single";
+export { SingleInspectorView } from "./single-shape";

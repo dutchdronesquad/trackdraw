@@ -4,11 +4,12 @@ import { useEditor } from "@/store/editor";
 import { useUiActions } from "@/store/actions";
 import { selectShapeRecordMap } from "@/store/selectors";
 import VersionTag from "@/components/VersionTag";
-import { useDeveloperMode } from "@/hooks/useDeveloperMode";
+import { useDeveloperMode } from "@/hooks/account/useDeveloperMode";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { getLayoutPresetById } from "@/lib/planning/layout-presets";
 import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
+import { toolLabels } from "@/lib/editor/tool-registry";
 import { Magnet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -16,20 +17,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/AppTooltip";
-
-const toolLabel: Record<string, string> = {
-  select: "Select",
-  grab: "Grab",
-  gate: "Gate",
-  ladder: "Ladder",
-  divegate: "Dive Gate",
-  flag: "Flag",
-  cone: "Cone",
-  label: "Label",
-  polyline: "Path",
-  startfinish: "Start / Finish",
-  preset: "Presets",
-};
 
 interface StatusBarProps {
   cursorPos?: { x: number; y: number } | null;
@@ -71,8 +58,8 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
         : null;
   const activeToolLabel =
     activeTool === "preset" && activePreset
-      ? `${toolLabel[activeTool]}: ${activePreset.name}`
-      : (toolLabel[activeTool] ?? activeTool);
+      ? `${toolLabels[activeTool]}: ${activePreset.name}`
+      : (toolLabels[activeTool] ?? activeTool);
 
   return (
     <div

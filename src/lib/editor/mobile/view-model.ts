@@ -1,4 +1,5 @@
-import type { EditorTool } from "@/lib/editor-tools";
+import type { EditorTool } from "@/lib/editor/tool-registry";
+import { getTrackItemToolConfigs } from "@/lib/track/items/registry";
 
 export function getEditorMobilePanelsViewModel(options: {
   activePresetLabel?: string | null;
@@ -25,14 +26,12 @@ export function getEditorMobilePanelsViewModel(options: {
     select: "Select",
     grab: "Grab",
     preset: "Presets",
-    gate: "Gate",
-    flag: "Flag",
-    cone: "Cone",
-    label: "Label",
-    polyline: "Path",
-    ladder: "Ladder",
-    startfinish: "Start",
-    divegate: "Dive",
+    ...Object.fromEntries(
+      getTrackItemToolConfigs().map((tool) => [
+        tool.id,
+        tool.mobileLabel ?? tool.label,
+      ])
+    ),
   };
 
   return {

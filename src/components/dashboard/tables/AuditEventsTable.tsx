@@ -14,7 +14,7 @@ import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableBody, TableHeader, TableRow } from "@/components/ui/table";
-import { getAccountRoleLabel, parseAccountRole } from "@/lib/account-roles";
+import { getAccountRoleLabel, parseAccountRole } from "@/lib/account/roles";
 import { cn } from "@/lib/utils";
 
 type AuditEventActor = {

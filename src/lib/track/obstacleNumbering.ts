@@ -1,9 +1,11 @@
 import { getDesignShapes } from "@/lib/track/design";
 import { distance2D } from "@/lib/track/geometry";
+import {
+  getObstacleRouteToleranceWidthFactor,
+  isNumberedTrackObstacle,
+} from "@/lib/track/items/registry";
 import { getPolyline2DDerived } from "@/lib/track/polyline-derived";
 import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
-
-const NUMBERED_KINDS = new Set<Shape["kind"]>(["gate", "ladder", "divegate"]);
 
 export type ObstacleNumberingStatus =
   | "empty"
@@ -51,7 +53,7 @@ interface ObstaclePathSegment {
 }
 
 export function isNumberedObstacle(shape: Shape) {
-  return NUMBERED_KINDS.has(shape.kind);
+  return isNumberedTrackObstacle(shape);
 }
 
 function getPrimaryPolyline(design: TrackDesign): PolylineShape | null {
@@ -68,15 +70,10 @@ function getObstacleNumberAnchor(shape: Shape) {
 }
 
 function getObstaclePathTolerance(shape: Shape) {
-  switch (shape.kind) {
-    case "gate":
-    case "ladder":
-      return Math.max(shape.width * 0.42, 1.15);
-    case "divegate":
-      return Math.max(shape.width * 0.38, 1.15);
-    default:
-      return 1.1;
-  }
+  const width =
+    "width" in shape && typeof shape.width === "number" ? shape.width : 0;
+  const factor = getObstacleRouteToleranceWidthFactor(shape);
+  return factor > 0 ? Math.max(width * factor, 1.15) : 1.1;
 }
 
 function getObstacleNumberingStatus(options: {

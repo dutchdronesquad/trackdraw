@@ -2,7 +2,7 @@
 
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useCompleteProfile } from "@/hooks/useCompleteProfile";
+import { useCompleteProfile } from "@/hooks/account/useCompleteProfile";
 import type { AuthUser } from "@/lib/auth-client";
 
 const mocks = vi.hoisted(() => ({

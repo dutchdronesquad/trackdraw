@@ -9,10 +9,17 @@ export const TRACKDRAW_START_FINISH_ELEMENT_ID =
   "trackdraw-generic-start-finish";
 export const TRACKDRAW_LADDER_ELEMENT_ID = "trackdraw-generic-ladder";
 export const TRACKDRAW_DIVE_GATE_ELEMENT_ID = "trackdraw-generic-dive-gate";
+export const TRACKDRAW_TOWER_ELEMENT_ID = "trackdraw-generic-tower";
 
 export const MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID = "multigp-standard-gate-5x5";
 export const MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID =
   "multigp-championship-gate-7x6";
+export const MULTIGP_TOWER_5X5_ELEMENT_ID = "multigp-tower-5x5";
+export const MULTIGP_TOWER_7X6_ELEMENT_ID = "multigp-tower-7x6";
+export const MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID =
+  "multigp-double-gate-tower-5x5";
+export const MULTIGP_DOUBLE_GATE_TOWER_7X6_ELEMENT_ID =
+  "multigp-double-gate-tower-7x6";
 export const MULTIGP_CORNER_FLAG_ELEMENT_ID = "multigp-corner-flag";
 export const MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID =
   "multigp-standard-ladder-5x5";
@@ -31,8 +38,13 @@ export type TrackElementCatalogId =
   | typeof TRACKDRAW_START_FINISH_ELEMENT_ID
   | typeof TRACKDRAW_LADDER_ELEMENT_ID
   | typeof TRACKDRAW_DIVE_GATE_ELEMENT_ID
+  | typeof TRACKDRAW_TOWER_ELEMENT_ID
   | typeof MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID
   | typeof MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID
+  | typeof MULTIGP_TOWER_5X5_ELEMENT_ID
+  | typeof MULTIGP_TOWER_7X6_ELEMENT_ID
+  | typeof MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID
+  | typeof MULTIGP_DOUBLE_GATE_TOWER_7X6_ELEMENT_ID
   | typeof MULTIGP_CORNER_FLAG_ELEMENT_ID
   | typeof MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID
   | typeof MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID
@@ -150,6 +162,20 @@ export interface PanelFrameLadderVisualSpec {
 
 export type LadderVisualSpec = PanelFrameLadderVisualSpec;
 
+export interface PanelFrameTowerVisualSpec {
+  kind: "tower";
+  variant: "panel-frame";
+  panels: {
+    left: GatePanelVisualSpec;
+    right: GatePanelVisualSpec;
+    top: GateTopPanelVisualSpec;
+  };
+  frame: GateFrameVisualSpec;
+  textures: GatePanelTextureVisualSpec;
+}
+
+export type TowerVisualSpec = PanelFrameTowerVisualSpec;
+
 export interface ArchDiveGateVisualSpec {
   kind: "divegate";
   variant: "arch";
@@ -190,6 +216,7 @@ export type TrackElementVisualSpec =
   | GateVisualSpec
   | FlagVisualSpec
   | LadderVisualSpec
+  | TowerVisualSpec
   | DiveGateVisualSpec;
 
 export interface TrackElementCatalogEntry {
@@ -241,6 +268,7 @@ function isPlaceableCatalogShapeKind(
 ): value is PlaceableCatalogShape["kind"] {
   return (
     value === "gate" ||
+    value === "tower" ||
     value === "flag" ||
     value === "cone" ||
     value === "label" ||
@@ -349,6 +377,22 @@ const panelFrameChampionshipGateVisual = {
   },
 } satisfies GateVisualSpec;
 
+const panelFrameTowerVisual = {
+  kind: "tower",
+  variant: "panel-frame",
+  panels: panelFrameGateVisual.panels,
+  frame: panelFrameGateVisual.frame,
+  textures: panelFrameGateVisual.textures,
+} satisfies TowerVisualSpec;
+
+const panelFrameChampionshipTowerVisual = {
+  kind: "tower",
+  variant: "panel-frame",
+  panels: panelFrameChampionshipGateVisual.panels,
+  frame: panelFrameChampionshipGateVisual.frame,
+  textures: panelFrameChampionshipGateVisual.textures,
+} satisfies TowerVisualSpec;
+
 export const trackElementCatalog = [
   {
     id: TRACKDRAW_GATE_ELEMENT_ID,
@@ -423,6 +467,189 @@ export const trackElementCatalog = [
     render2d: { icon: "gate" },
     render3d: { modelHint: "gate-frame" },
     visual: panelFrameChampionshipGateVisual,
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: TRACKDRAW_TOWER_ELEMENT_ID,
+    name: "TrackDraw Tower",
+    organization: "TrackDraw",
+    kind: "tower",
+    dimensions: {
+      widthMeters: 2,
+      heightMeters: 2,
+      display: { unitSystem: "metric", label: "2 x 2 m, elevated" },
+    },
+    defaultShape: {
+      kind: "tower",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: 2,
+      height: 2,
+      levels: 1,
+      elevation: 1.5,
+      thick: 0.2,
+      color: "#38bdf8",
+    } satisfies TrackElementShapeDraft,
+    tags: ["technical", "practice", "tower"],
+    render2d: { icon: "tower" },
+    render3d: { modelHint: "tower" },
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: MULTIGP_TOWER_5X5_ELEMENT_ID,
+    name: "MultiGP Tower 5x5",
+    organization: "MultiGP",
+    kind: "tower",
+    official: true,
+    editable: { color: false, dimensions: false },
+    dimensions: {
+      widthMeters: feetToMeters(5),
+      heightMeters: feetToMeters(5),
+      display: {
+        unitSystem: "imperial",
+        label: "5 ft x 5 ft, elevated 5 ft",
+      },
+    },
+    defaultShape: {
+      kind: "tower",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: feetToMeters(5),
+      height: feetToMeters(5),
+      levels: 1,
+      elevation: feetToMeters(5),
+      thick: 0.055,
+      color: "#f8fafc",
+    } satisfies TrackElementShapeDraft,
+    tags: ["race", "technical", "multigp", "tower"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
+      },
+    ],
+    render2d: { icon: "tower" },
+    render3d: { modelHint: "tower" },
+    visual: panelFrameTowerVisual,
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: MULTIGP_TOWER_7X6_ELEMENT_ID,
+    name: "MultiGP Tower 7x6",
+    organization: "MultiGP",
+    kind: "tower",
+    official: true,
+    editable: { color: false, dimensions: false },
+    dimensions: {
+      widthMeters: feetToMeters(7),
+      heightMeters: feetToMeters(6),
+      display: {
+        unitSystem: "imperial",
+        label: "7 ft x 6 ft, elevated 6 ft",
+      },
+    },
+    defaultShape: {
+      kind: "tower",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: feetToMeters(7),
+      height: feetToMeters(6),
+      levels: 1,
+      elevation: feetToMeters(6),
+      thick: 0.055,
+      color: "#f8fafc",
+    } satisfies TrackElementShapeDraft,
+    tags: ["championship", "race", "technical", "multigp", "tower"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
+      },
+    ],
+    render2d: { icon: "tower" },
+    render3d: { modelHint: "tower" },
+    visual: panelFrameChampionshipTowerVisual,
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID,
+    name: "MultiGP Double Gate Tower 5x5",
+    organization: "MultiGP",
+    kind: "tower",
+    official: true,
+    editable: { color: false, dimensions: false },
+    dimensions: {
+      widthMeters: feetToMeters(5),
+      heightMeters: feetToMeters(10),
+      display: {
+        unitSystem: "imperial",
+        label: "5 ft wide, 2 x 5 ft openings",
+      },
+    },
+    defaultShape: {
+      kind: "tower",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: feetToMeters(5),
+      height: feetToMeters(5),
+      levels: 2,
+      elevation: 0,
+      thick: 0.055,
+      color: "#f8fafc",
+    } satisfies TrackElementShapeDraft,
+    tags: ["race", "technical", "multigp", "tower"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
+      },
+    ],
+    render2d: { icon: "tower" },
+    render3d: { modelHint: "double-gate-tower" },
+    visual: panelFrameTowerVisual,
+    exportHints: { simulatorFriendly: true },
+  },
+  {
+    id: MULTIGP_DOUBLE_GATE_TOWER_7X6_ELEMENT_ID,
+    name: "MultiGP Double Gate Tower 7x6",
+    organization: "MultiGP",
+    kind: "tower",
+    official: true,
+    editable: { color: false, dimensions: false },
+    dimensions: {
+      widthMeters: feetToMeters(7),
+      heightMeters: feetToMeters(12),
+      display: {
+        unitSystem: "imperial",
+        label: "7 ft wide, 2 x 6 ft openings",
+      },
+    },
+    defaultShape: {
+      kind: "tower",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: feetToMeters(7),
+      height: feetToMeters(6),
+      levels: 2,
+      elevation: 0,
+      thick: 0.055,
+      color: "#f8fafc",
+    } satisfies TrackElementShapeDraft,
+    tags: ["championship", "race", "technical", "multigp", "tower"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
+      },
+    ],
+    render2d: { icon: "tower" },
+    render3d: { modelHint: "double-gate-tower" },
+    visual: panelFrameChampionshipTowerVisual,
     exportHints: { simulatorFriendly: true },
   },
   {
@@ -955,7 +1182,9 @@ export function getTrackElementCatalogTexturePaths(): string[] {
     if (!visual) continue;
 
     if (
-      (visual.kind === "gate" || visual.kind === "ladder") &&
+      (visual.kind === "gate" ||
+        visual.kind === "ladder" ||
+        visual.kind === "tower") &&
       visual.variant === "panel-frame"
     ) {
       paths.add(visual.textures.left);

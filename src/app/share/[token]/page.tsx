@@ -11,7 +11,7 @@ import {
   serializeJsonLd,
 } from "@/lib/seo";
 import { formatFieldSize } from "@/lib/track/units";
-import { parseEditorView } from "@/lib/view";
+import { parseEditorView } from "@/lib/editor/view";
 import ShareViewer from "../ShareViewer";
 import ShareError from "../ShareError";
 import ShareExpired from "../ShareExpired";

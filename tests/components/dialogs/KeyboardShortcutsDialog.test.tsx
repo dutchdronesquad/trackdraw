@@ -56,6 +56,8 @@ describe("KeyboardShortcutsDialog", () => {
     expect(screen.getByText("Keyboard Shortcuts")).toBeTruthy();
     expect(screen.getByText("Gate")).toBeTruthy();
     expect(screen.getByText("G")).toBeTruthy();
+    expect(screen.getByText("Tower")).toBeTruthy();
+    expect(screen.getByText("T")).toBeTruthy();
     expect(screen.queryByText("Save snapshot")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "Project" }));

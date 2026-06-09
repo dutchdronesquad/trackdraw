@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useUndoRedo } from "@/hooks/useUndoRedo";
+import { useUndoRedo } from "@/hooks/editor/useUndoRedo";
 import {
   Tooltip,
   TooltipTrigger,

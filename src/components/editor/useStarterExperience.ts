@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { createStarterLayoutDesign } from "@/lib/planning/starter-layouts";
 import { shouldShowStarterForDesign } from "@/components/editor/StarterFlow";
 import { isAccountProjectSyncConflictError } from "@/components/editor/useAccountProjectSync";
-import { useEditorHints } from "@/hooks/useEditorHints";
+import { useEditorHints } from "@/hooks/editor/useEditorHints";
 import type { TrackDesign } from "@/lib/types";
 
 type UseStarterExperienceOptions = {

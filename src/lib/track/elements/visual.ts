@@ -1,4 +1,5 @@
 import type {
+  TowerShape,
   DiveGateShape,
   FlagShape,
   GateShape,
@@ -10,6 +11,7 @@ import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
   type DiveGateVisualSpec,
+  type TowerVisualSpec,
   type FrameOnlyGateVisualSpec,
   type FlagVisualSpec,
   type GateVisualSpec,
@@ -86,6 +88,12 @@ export function getLadderVisualSpec(
 ): LadderVisualSpec | null {
   const visual = getTrackElementVisualSpec(shape);
   if (visual?.kind === "ladder") return visual;
+  return null;
+}
+
+export function getTowerVisualSpec(shape: TowerShape): TowerVisualSpec | null {
+  const visual = getTrackElementVisualSpec(shape);
+  if (visual?.kind === "tower") return visual;
   return null;
 }
 

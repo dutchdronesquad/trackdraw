@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   useDeveloperMode,
   useDeveloperModeShortcut,
-} from "@/hooks/useDeveloperMode";
+} from "@/hooks/account/useDeveloperMode";
 import { createMemoryStorage, installWindowStorage } from "../helpers/storage";
 
 let restoreStorage: (() => void) | null = null;

@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import type { ReactNode } from "react";
-import { useHistorySession } from "@/hooks/useHistorySession";
+import { useHistorySession } from "@/hooks/account/useHistorySession";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useSessionActions } from "@/store/actions";

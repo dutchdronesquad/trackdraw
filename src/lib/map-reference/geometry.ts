@@ -1,4 +1,4 @@
-import { clamp } from "@/lib/canvas/shared";
+import { clamp } from "@/lib/utils";
 import {
   MAP_REFERENCE_DEFAULT_ZOOM,
   MAP_REFERENCE_MAX_ZOOM,

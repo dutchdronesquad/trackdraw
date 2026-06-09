@@ -7,7 +7,7 @@ import type {
   ShapeDraft,
   TrackDesign,
 } from "@/lib/types";
-import type { EditorTool } from "@/lib/editor-tools";
+import type { EditorTool } from "@/lib/editor/tool-registry";
 import type { DraftPoint, RectLike } from "@/lib/canvas/shared";
 import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 

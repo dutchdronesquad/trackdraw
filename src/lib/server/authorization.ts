@@ -1,7 +1,7 @@
 import "server-only";
 
-import type { AccountRole } from "@/lib/account-roles";
-import { getAccountRoleLabel } from "@/lib/account-roles";
+import type { AccountRole } from "@/lib/account/roles";
+import { getAccountRoleLabel } from "@/lib/account/roles";
 import type { CurrentUser } from "@/lib/server/auth-session";
 
 export type AuthorizationCapability =

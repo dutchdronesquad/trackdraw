@@ -1,7 +1,7 @@
 import LZString from "lz-string";
 import { normalizeDesign, serializeDesignForShare } from "@/lib/track/design";
 import type { TrackDesign } from "./types";
-import type { EditorView } from "./view";
+import type { EditorView } from "./editor/view";
 
 const MAX_SAFE_TOKEN_LENGTH = 7500;
 

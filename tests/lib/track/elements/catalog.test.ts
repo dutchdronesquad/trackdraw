@@ -8,14 +8,19 @@ import {
   getTrackElementCatalogIdentity,
   MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
   MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID,
+  MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID,
+  MULTIGP_DOUBLE_GATE_TOWER_7X6_ELEMENT_ID,
   MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
   MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
   MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
+  MULTIGP_TOWER_5X5_ELEMENT_ID,
+  MULTIGP_TOWER_7X6_ELEMENT_ID,
   TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_LADDER_ELEMENT_ID,
+  TRACKDRAW_TOWER_ELEMENT_ID,
   trackElementCatalog,
 } from "@/lib/track/elements/catalog";
 import type { GateShape } from "@/lib/types";
@@ -55,6 +60,16 @@ describe("track element catalog", () => {
       TRACKDRAW_DIVE_GATE_ELEMENT_ID,
       MULTIGP_DIVE_GATE_7X6_ELEMENT_ID,
       MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID,
+    ]);
+  });
+
+  it("exposes tower entries for placement controls", () => {
+    expect(getCatalogEntriesByKind("tower").map((entry) => entry.id)).toEqual([
+      TRACKDRAW_TOWER_ELEMENT_ID,
+      MULTIGP_TOWER_5X5_ELEMENT_ID,
+      MULTIGP_TOWER_7X6_ELEMENT_ID,
+      MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID,
+      MULTIGP_DOUBLE_GATE_TOWER_7X6_ELEMENT_ID,
     ]);
   });
 
@@ -130,6 +145,38 @@ describe("track element catalog", () => {
     expect(championshipGate?.dimensions.heightMeters).toBeCloseTo(
       feetToMeters(6)
     );
+  });
+
+  it("documents MultiGP tower variants", () => {
+    const standardTower = getTrackElementCatalogEntry(
+      MULTIGP_TOWER_5X5_ELEMENT_ID
+    );
+    const doubleTower = getTrackElementCatalogEntry(
+      MULTIGP_DOUBLE_GATE_TOWER_7X6_ELEMENT_ID
+    );
+
+    expect(standardTower).toMatchObject({
+      name: "MultiGP Tower 5x5",
+      organization: "MultiGP",
+      kind: "tower",
+      official: true,
+      defaultShape: {
+        kind: "tower",
+        levels: 1,
+        elevation: feetToMeters(5),
+      },
+    });
+    expect(doubleTower).toMatchObject({
+      name: "MultiGP Double Gate Tower 7x6",
+      organization: "MultiGP",
+      kind: "tower",
+      official: true,
+      defaultShape: {
+        kind: "tower",
+        levels: 2,
+        elevation: 0,
+      },
+    });
   });
 
   it("documents the MultiGP Topless Ladder 7x6 variant", () => {

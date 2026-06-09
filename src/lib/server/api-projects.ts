@@ -231,6 +231,14 @@ function toOverlayObstacle(
         rungs: shape.rungs,
         elevation: shape.elevation ?? 0,
       };
+    case "tower":
+      return {
+        ...base,
+        width: shape.width,
+        height: shape.height,
+        levels: shape.levels ?? 1,
+        elevation: shape.elevation ?? 0,
+      };
     case "divegate":
       return {
         ...base,

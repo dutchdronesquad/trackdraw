@@ -41,12 +41,27 @@ vi.mock("@react-three/fiber", () => {
 
   return {
     Canvas: MockCanvas,
+    useFrame: vi.fn(),
+    useThree: vi.fn(() => ({
+      camera: { position: { distanceTo: vi.fn(() => 10) } },
+      gl: {
+        domElement: {
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+          toDataURL: vi.fn(() => ""),
+        },
+      },
+    })),
   };
 });
 
 vi.mock("@react-three/drei", () => ({
   Grid: () => <div data-testid="preview-grid" />,
   OrbitControls: () => <div data-testid="orbit-controls" />,
+  useTexture: Object.assign(
+    vi.fn(() => ({})),
+    { preload: vi.fn() }
+  ),
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({
@@ -61,11 +76,11 @@ vi.mock("@/hooks/usePerfMetric", () => ({
   usePerfMetric: () => {},
 }));
 
-vi.mock("@/hooks/useDeveloperMode", () => ({
+vi.mock("@/hooks/account/useDeveloperMode", () => ({
   useDeveloperMode: () => ({ enabled: false, setEnabled: vi.fn() }),
 }));
 
-vi.mock("@/components/canvas/trackPreview3DSharedSceneContent", () => ({
+vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
   CameraAxisTracker: () => <div data-testid="axis-tracker" />,
   CameraCapture: () => <div data-testid="camera-capture" />,
   MemoShape3D: ({
@@ -101,7 +116,7 @@ vi.mock("@/components/canvas/trackPreview3DSharedSceneContent", () => ({
   WheelBridge: () => <div data-testid="wheel-bridge" />,
 }));
 
-vi.mock("@/components/canvas/editor/trackPreview3DEditSceneContent", () => ({
+vi.mock("@/components/canvas/editor/edit-scene-content", () => ({
   DiveGateElevationHandle3D: () => null,
   DiveGateTiltHandle3D: () => null,
   GateRotateHandle3D: () => null,
@@ -111,7 +126,7 @@ vi.mock("@/components/canvas/editor/trackPreview3DEditSceneContent", () => ({
   ),
 }));
 
-vi.mock("@/components/canvas/trackPreview3DOverlays", () => ({
+vi.mock("@/components/canvas/preview3d/overlays", () => ({
   AxisGizmoOverlay: () => <div data-testid="axis-gizmo" />,
   FieldWatermark: () => <div data-testid="field-watermark" />,
   FlyThroughControlsOverlay: () => <div data-testid="fly-controls" />,

@@ -1,3 +1,4 @@
+import { isTimingMarkerTrackItem } from "@/lib/track/items/registry";
 import type { GateShape, Shape, TrackDesign } from "@/lib/types";
 
 export const TIMING_ROLES = ["start_finish", "split"] as const;
@@ -28,8 +29,6 @@ export const timingRoleColors: Record<TimingRole, string> = {
   split: "#0ea5e9",
 };
 
-const TIMING_MARKER_SHAPE_KINDS = new Set<Shape["kind"]>(["gate"]);
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -41,7 +40,7 @@ function sanitizeTimingId(value: unknown) {
 }
 
 export function isTimingMarkerShape(shape: Shape): shape is TimingMarkerShape {
-  return TIMING_MARKER_SHAPE_KINDS.has(shape.kind);
+  return isTimingMarkerTrackItem(shape);
 }
 
 export function normalizeTimingMarker(

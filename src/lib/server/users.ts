@@ -1,8 +1,8 @@
 import "server-only";
 
 import { cache } from "react";
-import { parseAccountRole, type AccountRole } from "@/lib/account-roles";
-import type { AdminUser } from "@/lib/admin-users";
+import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
+import type { AdminUser } from "@/lib/account/admin-users";
 import { getDatabase } from "@/lib/server/db";
 
 type UserRoleRow = {

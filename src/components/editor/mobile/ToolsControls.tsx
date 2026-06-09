@@ -3,33 +3,19 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Redo2, Undo2 } from "lucide-react";
 import { mobileToolEntries } from "@/components/editor/tool-icons";
+import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 import {
-  getCatalogEntriesByKind,
-  TRACKDRAW_DIVE_GATE_ELEMENT_ID,
-  TRACKDRAW_FLAG_ELEMENT_ID,
-  TRACKDRAW_GATE_ELEMENT_ID,
-  TRACKDRAW_LADDER_ELEMENT_ID,
-  type TrackElementCatalogId,
-} from "@/lib/track/elements/catalog";
-import type { EditorTool } from "@/lib/editor-tools";
+  catalogPlacementByTool,
+  catalogPlacementToolIds,
+} from "@/lib/editor/placement-catalog";
+import type { EditorTool } from "@/lib/editor/tool-registry";
 import { cn } from "@/lib/utils";
 import type { EditorViewportTab } from "./Panels";
 
-const catalogEntriesByTool = {
-  gate: getCatalogEntriesByKind("gate"),
-  flag: getCatalogEntriesByKind("flag"),
-  ladder: getCatalogEntriesByKind("ladder"),
-  divegate: getCatalogEntriesByKind("divegate"),
-} as const;
-
-const defaultIdByTool: Partial<Record<EditorTool, TrackElementCatalogId>> = {
-  gate: TRACKDRAW_GATE_ELEMENT_ID,
-  flag: TRACKDRAW_FLAG_ELEMENT_ID,
-  ladder: TRACKDRAW_LADDER_ELEMENT_ID,
-  divegate: TRACKDRAW_DIVE_GATE_ELEMENT_ID,
-};
-
-const catalogToolIds = Object.keys(catalogEntriesByTool) as EditorTool[];
+const catalogToolIdSet = new Set<EditorTool>(catalogPlacementToolIds);
+const catalogToolIds = mobileToolEntries
+  .map((tool) => tool.id)
+  .filter((toolId) => catalogToolIdSet.has(toolId));
 
 interface ToolsControlsProps {
   activeTool: EditorTool;
@@ -94,13 +80,12 @@ export function ToolsControls({
           {/* Catalog tools — active one auto-expands with type list */}
           <div className="mb-2 space-y-2">
             {catalogToolIds.map((toolId) => {
-              const entries =
-                catalogEntriesByTool[
-                  toolId as keyof typeof catalogEntriesByTool
-                ];
+              const placementViewModel = catalogPlacementByTool[toolId];
+              const entries = placementViewModel?.entries ?? [];
               const toolEntry = mobileToolEntries.find((t) => t.id === toolId);
               const activeId =
-                activePlacementElementId[toolId] ?? defaultIdByTool[toolId];
+                activePlacementElementId[toolId] ??
+                placementViewModel?.defaultEntryId;
               const activeEntry =
                 entries.find((e) => e.id === activeId) ?? entries[0];
               const isActiveTool = activeTool === toolId;

@@ -37,7 +37,7 @@ vi.mock("framer-motion", () => ({
   useReducedMotion: () => false,
 }));
 
-vi.mock("@/hooks/useDeveloperMode", () => ({
+vi.mock("@/hooks/account/useDeveloperMode", () => ({
   useDeveloperMode: () => developerModeState,
 }));
 

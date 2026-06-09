@@ -4,10 +4,10 @@ import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { useEditor } from "@/store/editor";
 import type { TrackDesign } from "@/lib/types";
-import type { EditorView } from "@/lib/view";
+import type { EditorView } from "@/lib/editor/view";
 
 const EditorShell = dynamic(
-  () => import("@/components/editor/shared/EditorShell"),
+  () => import("@/components/editor/viewer/EditorShell"),
   {
     ssr: false,
     loading: () => <div className="bg-background h-dvh" />,

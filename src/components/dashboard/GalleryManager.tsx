@@ -55,7 +55,7 @@ import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
-import type { AccountRole } from "@/lib/account-roles";
+import type { AccountRole } from "@/lib/account/roles";
 import { getSiteMediaUrl } from "@/lib/seo";
 import type {
   DashboardGalleryEntry,

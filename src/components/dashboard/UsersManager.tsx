@@ -15,8 +15,8 @@ import {
   accountRoles,
   getAccountRoleLabel,
   type AccountRole,
-} from "@/lib/account-roles";
-import type { AdminUser } from "@/lib/admin-users";
+} from "@/lib/account/roles";
+import type { AdminUser } from "@/lib/account/admin-users";
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";

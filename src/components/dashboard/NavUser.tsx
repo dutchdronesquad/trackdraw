@@ -17,7 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getAccountRoleLabel, type AccountRole } from "@/lib/account-roles";
+import { getAccountRoleLabel, type AccountRole } from "@/lib/account/roles";
 import { ChevronsUpDownIcon, LogOutIcon } from "lucide-react";
 
 type DashboardNavUserProps = {

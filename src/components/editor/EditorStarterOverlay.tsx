@@ -5,8 +5,8 @@ import { Box, Route, X } from "lucide-react";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { ContextOverlayCard } from "./ContextOverlayCard";
 import { Button } from "@/components/ui/button";
-import type { EditorTool } from "@/lib/editor-tools";
-import type { EditorView } from "@/lib/view";
+import type { EditorTool } from "@/lib/editor/tool-registry";
+import type { EditorView } from "@/lib/editor/view";
 
 const StarterSteps = dynamic(
   () =>

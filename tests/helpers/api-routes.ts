@@ -1,5 +1,5 @@
 import { createDefaultDesign } from "@/lib/track/design";
-import type { AdminUser } from "@/lib/admin-users";
+import type { AdminUser } from "@/lib/account/admin-users";
 import type { StoredGalleryEntry } from "@/lib/server/gallery";
 import type {
   StoredProject,

@@ -4,7 +4,7 @@ import {
   getAccountRoleLabel,
   isAccountRole,
   parseAccountRole,
-} from "@/lib/account-roles";
+} from "@/lib/account/roles";
 
 describe("account role helpers", () => {
   it("exposes the supported role list in a stable order", () => {

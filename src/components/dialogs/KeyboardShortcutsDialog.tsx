@@ -7,27 +7,36 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  toolLabels,
+  toolShortcuts,
+  type EditorTool,
+} from "@/lib/editor/tool-registry";
+import { getTrackItemToolConfigs } from "@/lib/track/items/registry";
 
 interface KeyboardShortcutsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const toolShortcutOrder: EditorTool[] = [
+  "select",
+  "grab",
+  ...getTrackItemToolConfigs().map((tool) => tool.id),
+];
+
+const toolShortcutItems = toolShortcutOrder
+  .map((tool) => {
+    const shortcut = toolShortcuts[tool];
+    if (!shortcut) return null;
+    return { label: toolLabels[tool], keys: [shortcut] };
+  })
+  .filter((item): item is { label: string; keys: string[] } => item !== null);
+
 const shortcutSections = [
   {
     title: "Tools",
-    items: [
-      { label: "Select", keys: ["V"] },
-      { label: "Grab", keys: ["H"] },
-      { label: "Gate", keys: ["G"] },
-      { label: "Ladder", keys: ["R"] },
-      { label: "Dive Gate", keys: ["D"] },
-      { label: "Flag", keys: ["F"] },
-      { label: "Cone", keys: ["C"] },
-      { label: "Start Pads", keys: ["S"] },
-      { label: "Label", keys: ["L"] },
-      { label: "Path", keys: ["P"] },
-    ],
+    items: toolShortcutItems,
   },
   {
     title: "Selection",

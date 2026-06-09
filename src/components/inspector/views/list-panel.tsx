@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { shapeKindLabels } from "@/lib/editor-tools";
+import { shapeKindLabels } from "@/lib/track/items/registry";
 import {
   getObstacleNumberingReport,
   isNumberedObstacle,

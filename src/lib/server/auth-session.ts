@@ -1,6 +1,6 @@
 import "server-only";
 
-import { parseAccountRole, type AccountRole } from "@/lib/account-roles";
+import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
 import { getDatabase } from "@/lib/server/db";
 
 export type CurrentUser = {

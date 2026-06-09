@@ -4,7 +4,7 @@ import type React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SingleInspectorView } from "@/components/inspector/views/single";
+import { SingleInspectorView } from "@/components/inspector/views/single-shape";
 import {
   createCatalogShapeDraft,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,

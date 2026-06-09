@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useMemo, useSyncExternalStore } from "react";
-import { useDeveloperMode } from "@/hooks/useDeveloperMode";
+import { useDeveloperMode } from "@/hooks/account/useDeveloperMode";
 import { useTheme } from "@/hooks/useTheme";
 import {
   getPerfSnapshot,

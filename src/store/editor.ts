@@ -4,16 +4,9 @@ import { create } from "zustand";
 import { temporal } from "zundo";
 import { immer } from "zustand/middleware/immer";
 import { nanoid } from "nanoid";
-import type {
-  FlagShape,
-  GateShape,
-  LadderShape,
-  PolylineShape,
-  Shape,
-  TrackDesign,
-} from "@/lib/types";
+import type { PolylineShape, Shape, TrackDesign } from "@/lib/types";
 import { normalizeMapReference } from "@/lib/map-reference/geometry";
-import { clamp } from "@/lib/canvas/shared";
+import { clamp } from "@/lib/utils";
 import {
   getDesignShapeById,
   normalizeDesign,
@@ -53,13 +46,9 @@ import {
   expandGroupedSelection,
   getShapeGroupId,
 } from "@/lib/track/shape-groups";
-import {
-  buildFlagCatalogTypePatch,
-  buildGateCatalogTypePatch,
-  buildLadderCatalogTypePatch,
-} from "@/lib/editor-tools";
+import { buildCatalogTypePatch } from "@/lib/editor/catalog-type-patch";
 
-export type { EditorTool } from "@/lib/editor-tools";
+export type { EditorTool } from "@/lib/editor/tool-registry";
 
 function sameSelection(a: string[], b: string[]) {
   return a.length === b.length && a.every((id, index) => id === b[index]);
@@ -221,24 +210,11 @@ export const useEditor = create<EditorState>()(
       updateShapesCatalogType: (ids, entryId) =>
         set((draft) => {
           let changed = false;
-          const patchBuilders = {
-            gate: (s: Shape) =>
-              buildGateCatalogTypePatch(s as GateShape, entryId),
-            flag: (s: Shape) =>
-              buildFlagCatalogTypePatch(s as FlagShape, entryId),
-            ladder: (s: Shape) =>
-              buildLadderCatalogTypePatch(s as LadderShape, entryId),
-          } as const;
 
           for (const id of ids) {
             const shape = draft.track.design.shapeById[id];
             if (!shape || shape.locked) continue;
-
-            const builder =
-              shape.kind in patchBuilders
-                ? patchBuilders[shape.kind as keyof typeof patchBuilders]
-                : null;
-            const patch = builder ? builder(shape) : null;
+            const patch = buildCatalogTypePatch(shape, entryId);
 
             if (patch && applyShapePatch(shape, patch as Partial<Shape>)) {
               changed = true;
