@@ -9,15 +9,13 @@ import { authClient } from "@/lib/auth-client";
 
 const sessionState = vi.hoisted(() => ({
   session: {
-    data: null as
-      | {
-          user?: {
-            email?: string | null;
-            name?: string | null;
-            role?: string | null;
-          } | null;
-        }
-      | null,
+    data: null as {
+      user?: {
+        email?: string | null;
+        name?: string | null;
+        role?: string | null;
+      } | null;
+    } | null,
     isPending: false,
   },
 }));
@@ -95,9 +93,9 @@ describe("AccountMenu", () => {
     sessionState.session = { data: null, isPending: false };
     rerender(<AccountMenu />);
 
-    expect(screen.getByRole("link", { name: /Sign in/ }).getAttribute("href")).toBe(
-      "/login"
-    );
+    expect(
+      screen.getByRole("link", { name: /Sign in/ }).getAttribute("href")
+    ).toBe("/login");
   });
 
   it("shows account metadata and dashboard access for moderators and admins only", () => {
@@ -116,9 +114,9 @@ describe("AccountMenu", () => {
 
     expect(screen.getAllByText("pilot@example.com").length).toBeGreaterThan(0);
     expect(screen.getByText("No display name set")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Dashboard/ }).getAttribute("href")).toBe(
-      "/dashboard"
-    );
+    expect(
+      screen.getByRole("link", { name: /Dashboard/ }).getAttribute("href")
+    ).toBe("/dashboard");
 
     sessionState.session = {
       isPending: false,

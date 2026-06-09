@@ -76,7 +76,9 @@ describe("PublicGalleryGrid", () => {
 
     expect(screen.getByText("No tracks yet.")).toBeTruthy();
     expect(
-      screen.getByText(/Gallery listings will appear here once TrackDraw pilots/)
+      screen.getByText(
+        /Gallery listings will appear here once TrackDraw pilots/
+      )
     ).toBeTruthy();
   });
 

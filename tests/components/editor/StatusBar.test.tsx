@@ -4,10 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import StatusBar from "@/components/editor/StatusBar";
 import { useEditor } from "@/store/editor";
-import {
-  gateDraft,
-  resetEditorStore,
-} from "../../helpers/editor-store";
+import { gateDraft, resetEditorStore } from "../../helpers/editor-store";
 
 const developerModeState = vi.hoisted(() => ({
   enabled: false,
