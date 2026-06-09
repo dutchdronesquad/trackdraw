@@ -107,10 +107,7 @@ vi.mock("@/components/canvas/editor/trackPreview3DEditSceneContent", () => ({
   GateRotateHandle3D: () => null,
   LadderElevationHandle3D: () => null,
   PolylineElevationHandles3D: ({ path }: { path: PolylineShape }) => (
-    <div
-      data-path-id={path.id}
-      data-testid="polyline-elevation-handles"
-    />
+    <div data-path-id={path.id} data-testid="polyline-elevation-handles" />
   ),
 }));
 
