@@ -14,6 +14,16 @@ function isFiniteSnapPoint(point: { x?: unknown; y?: unknown } | null) {
   return Boolean(point && isFiniteNumber(point.x) && isFiniteNumber(point.y));
 }
 
+function sanitizeSnapPoint(point: { x?: unknown; y?: unknown }): {
+  x: number;
+  y: number;
+} {
+  return {
+    x: isFiniteNumber(point.x) ? point.x : 0,
+    y: isFiniteNumber(point.y) ? point.y : 0,
+  };
+}
+
 interface FindNearestSnapCandidateOptions {
   candidates: Shape[];
   excludeIds?: Iterable<string>;
@@ -253,7 +263,7 @@ export function resolveSnapPosition({
   excludeIds,
 }: ResolveSnapPositionOptions): { x: number; y: number } {
   if (!isFiniteSnapPoint(pos)) {
-    return { x: 0, y: 0 };
+    return sanitizeSnapPoint(pos);
   }
 
   if (snapToShapes) {

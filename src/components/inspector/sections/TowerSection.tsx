@@ -25,6 +25,14 @@ export function TowerDimensionFields({
   hasFixedCatalogDimensions: boolean;
 }) {
   if (hasFixedCatalogDimensions) return null;
+
+  const elevationMin = getTowerElevationMin(shape);
+  const elevationMax = getTowerElevationMax(shape);
+  const displayedElevation = Math.min(
+    elevationMax ?? Infinity,
+    Math.max(elevationMin, shape.elevation ?? elevationMin)
+  );
+
   return (
     <>
       <Row label={`Width (${unitLabel})`}>
@@ -45,18 +53,18 @@ export function TowerDimensionFields({
       </Row>
       <Row label={`Elevation (${unitLabel})`}>
         <MeasurementNum
-          valueMeters={shape.elevation ?? 0}
+          valueMeters={displayedElevation}
           unitSystem={unitSystem}
           onChange={(value) =>
             updateShape(shape.id, {
               elevation: Math.min(
-                getTowerElevationMax(shape) ?? Infinity,
-                Math.max(getTowerElevationMin(shape), value)
+                elevationMax ?? Infinity,
+                Math.max(elevationMin, value)
               ),
             })
           }
-          minMeters={getTowerElevationMin(shape)}
-          maxMeters={getTowerElevationMax(shape) ?? undefined}
+          minMeters={elevationMin}
+          maxMeters={elevationMax ?? undefined}
         />
       </Row>
       <Row label={`Thickness (${unitLabel})`}>

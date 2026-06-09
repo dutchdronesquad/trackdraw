@@ -153,6 +153,30 @@ describe("canvas snap helpers", () => {
     ).toEqual({ x: 10, y: 10 });
   });
 
+  it("sanitizes non-finite positions without snapping finite axes to the origin", () => {
+    expect(
+      resolveSnapPosition({
+        pos: { x: Number.NaN, y: 8 },
+        snapToGrid: true,
+        snapToShapes: true,
+        gridStep: 1,
+        magneticRadiusMeters: 1,
+        candidates,
+      })
+    ).toEqual({ x: 0, y: 8 });
+
+    expect(
+      resolveSnapPosition({
+        pos: { x: 12, y: Number.POSITIVE_INFINITY },
+        snapToGrid: true,
+        snapToShapes: true,
+        gridStep: 1,
+        magneticRadiusMeters: 1,
+        candidates,
+      })
+    ).toEqual({ x: 12, y: 0 });
+  });
+
   it("snaps to nearby race-line segments before axis alignment and grid", () => {
     expect(
       resolveSnapPosition({

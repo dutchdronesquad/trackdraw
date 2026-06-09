@@ -594,8 +594,9 @@ export function Tower3D({
 
   useFrame(() => {
     const liveElevation = elevationOverrideRef?.current;
-    const nextElevation =
-      liveElevation == null ? elevation : Math.max(liveElevation, 0);
+    if (liveElevation == null) return;
+
+    const nextElevation = Math.max(liveElevation, 0);
     const nextTotalH = nextElevation + levelCount * h;
     const postScaleY = totalH > 0 ? nextTotalH / totalH : 1;
 
