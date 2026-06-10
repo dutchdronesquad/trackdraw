@@ -720,7 +720,7 @@ export const trackElementCatalog = [
       textures: {
         front:
           "/assets/models/textures/multigp-obstacles/feather-banners-cobranded-multigp.webp",
-        back: "/assets/models/textures/multigp-obstacles/feather-banners-cobranded-multigp-back.webp",
+        back: "/assets/models/textures/multigp-obstacles/feather-banners-cobranded-multigp-back-double-sided.webp",
       },
     } satisfies FlagVisualSpec,
     exportHints: { simulatorFriendly: true },
