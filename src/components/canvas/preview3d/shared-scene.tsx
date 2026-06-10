@@ -3,7 +3,7 @@
 import { useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { getTrackElementCatalogTexturePaths } from "@/lib/track/elements/catalog";
 import type { Shape } from "@/lib/types";
@@ -257,6 +257,61 @@ export function WheelBridge({
   });
 
   return null;
+}
+
+const SKY_VERT = `
+  varying vec3 vWorldPos;
+  void main() {
+    vWorldPos = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const SKY_FRAG = `
+  uniform vec3 topColor;
+  uniform vec3 horizonColor;
+  varying vec3 vWorldPos;
+  void main() {
+    float h = normalize(vWorldPos).y;
+    float t = pow(max(0.0, h), 0.6);
+    gl_FragColor = vec4(mix(horizonColor, topColor, t), 1.0);
+  }
+`;
+
+export function GradientSky({
+  topColor,
+  horizonColor,
+}: {
+  topColor: string;
+  horizonColor: string;
+}) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const { camera } = useThree();
+
+  const uniforms = useMemo(
+    () => ({
+      topColor: { value: new THREE.Color(topColor) },
+      horizonColor: { value: new THREE.Color(horizonColor) },
+    }),
+    [topColor, horizonColor]
+  );
+
+  useFrame(() => {
+    if (meshRef.current) meshRef.current.position.copy(camera.position);
+  });
+
+  return (
+    <mesh ref={meshRef} renderOrder={-1}>
+      <sphereGeometry args={[400, 32, 16]} />
+      <shaderMaterial
+        uniforms={uniforms}
+        vertexShader={SKY_VERT}
+        fragmentShader={SKY_FRAG}
+        side={THREE.BackSide}
+        depthWrite={false}
+      />
+    </mesh>
+  );
 }
 
 export { MemoShape3D } from "./items/TrackItem3D";

@@ -28,7 +28,9 @@ const TARGET_SPEED_MS = 7;
 const THEME = {
   dark: {
     bg: "#0b1018",
-    fog: "#0b1018",
+    fog: "#2e4870",
+    skyTop: "#182848",
+    skyHorizon: "#2e4870",
     ambientIntensity: 0.7,
     dirIntensity: 1.4,
     groundColor: "#0f1824",
@@ -36,8 +38,10 @@ const THEME = {
     gridSection: 0x3d5068,
   },
   light: {
-    bg: "#e8edf3",
-    fog: "#e8edf3",
+    bg: "#e4f0fa",
+    fog: "#e4f0fa",
+    skyTop: "#68a8de",
+    skyHorizon: "#e4f0fa",
     ambientIntensity: 1.2,
     dirIntensity: 1.8,
     groundColor: "#d0d8e4",
@@ -45,6 +49,24 @@ const THEME = {
     gridSection: 0x7a96b0,
   },
 } as const;
+
+const SKY_VERT = `
+  varying vec3 vWorldPos;
+  void main() {
+    vWorldPos = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const SKY_FRAG = `
+  uniform vec3 topColor;
+  uniform vec3 horizonColor;
+  varying vec3 vWorldPos;
+  void main() {
+    float h = normalize(vWorldPos).y;
+    float t = pow(max(0.0, h), 0.6);
+    gl_FragColor = vec4(mix(horizonColor, topColor, t), 1.0);
+  }
+`;
 
 function getOrderedShapes(design: TrackDesign): Shape[] {
   return design.shapeOrder
@@ -66,7 +88,7 @@ function loadWatermarkTexture(
       c.height = h;
       const ctx = c.getContext("2d")!;
       ctx.clearRect(0, 0, w, h);
-      ctx.globalAlpha = 0.05;
+      ctx.globalAlpha = isDark ? 0.12 : 0.06;
       ctx.drawImage(img, 0, 0, w, h);
       resolve(new THREE.CanvasTexture(c));
     };
@@ -129,7 +151,24 @@ export function exportFlythrough(
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(t.bg);
-    scene.fog = new THREE.Fog(t.fog, 80, 260);
+    scene.fog = new THREE.Fog(t.skyHorizon, 80, 260);
+
+    const skySphere = new THREE.Mesh(
+      new THREE.SphereGeometry(400, 32, 16),
+      new THREE.ShaderMaterial({
+        uniforms: {
+          topColor: { value: new THREE.Color(t.skyTop) },
+          horizonColor: { value: new THREE.Color(t.skyHorizon) },
+        },
+        vertexShader: SKY_VERT,
+        fragmentShader: SKY_FRAG,
+        side: THREE.BackSide,
+        depthWrite: false,
+        depthTest: false,
+      })
+    );
+    skySphere.renderOrder = -1;
+    scene.add(skySphere);
 
     const camera = new THREE.PerspectiveCamera(46, WIDTH / HEIGHT, 0.1, 500);
     camera.fov = FPV_CAMERA_FOV;
@@ -207,6 +246,7 @@ export function exportFlythrough(
       const pose = getFpvCameraPose(samplePoint, frame * tPerFrame, bankAngle);
       bankAngle = pose.bankAngle;
       camera.position.copy(pose.position);
+      skySphere.position.copy(pose.position);
       camera.up.set(0, 1, 0);
       camera.lookAt(pose.lookTarget);
       camera.rotateZ(bankAngle);
@@ -245,6 +285,7 @@ export function exportFlythrough(
 
         const initialPose = getInitialFpvCameraPose(samplePoint);
         camera.position.copy(initialPose.position);
+        skySphere.position.copy(initialPose.position);
         camera.lookAt(initialPose.lookTarget);
         renderer.render(scene, camera);
 

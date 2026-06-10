@@ -23,6 +23,7 @@ import { useEditor } from "@/store/editor";
 import { selectDesignShapes, selectHasPath } from "@/store/selectors";
 import {
   CameraAxisTracker,
+  GradientSky,
   MemoShape3D,
   ScreenshotHelper,
   WheelBridge,
@@ -142,8 +143,14 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
           }}
           gl={{ antialias: true, preserveDrawingBuffer: true }}
         >
-          <color attach="background" args={[t.bg]} />
+          <color attach="background" args={[t.skyHorizon]} />
           <fog attach="fog" args={[t.fog, 80, 260]} />
+          <GradientSky topColor={t.skyTop} horizonColor={t.skyHorizon} />
+          <hemisphereLight
+            color={t.hemisphereSky}
+            groundColor={t.hemisphereGround}
+            intensity={t.hemisphereIntensity}
+          />
           <ambientLight intensity={t.ambientIntensity} />
           <directionalLight
             position={[cx + 12, 28, cz + 8]}

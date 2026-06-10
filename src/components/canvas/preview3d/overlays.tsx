@@ -79,7 +79,7 @@ export function FieldWatermark({
       canvas.height = h;
       const ctx = canvas.getContext("2d")!;
       ctx.clearRect(0, 0, w, h);
-      ctx.globalAlpha = 0.05;
+      ctx.globalAlpha = isDark ? 0.12 : 0.06;
       ctx.drawImage(img, 0, 0, w, h);
       const tex = new THREE.CanvasTexture(canvas);
       setTexture((previous) => {
