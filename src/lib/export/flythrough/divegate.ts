@@ -61,7 +61,14 @@ async function createArchDiveGateGroup(
   }
   for (const { x, z, topY } of layout.legPoints) {
     if (topY > 0.02) {
-      addCylinder(group, pipeRadius, topY, [x, topY / 2, z], [0, 0, 0], frameMat);
+      addCylinder(
+        group,
+        pipeRadius,
+        topY,
+        [x, topY / 2, z],
+        [0, 0, 0],
+        frameMat
+      );
     }
   }
   for (const { height, postH, x, z } of layout.couplerPoints) {
@@ -190,7 +197,14 @@ async function createLaunchGateGroup(
   }
   for (const { x, z, topY } of layout.legPoints) {
     if (topY > 0.02) {
-      addCylinder(group, pipeRadius, topY, [x, topY / 2, z], [0, 0, 0], frameMat);
+      addCylinder(
+        group,
+        pipeRadius,
+        topY,
+        [x, topY / 2, z],
+        [0, 0, 0],
+        frameMat
+      );
     }
   }
   for (const { height, postH, x, z } of layout.couplerPoints) {

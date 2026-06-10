@@ -76,6 +76,7 @@ vi.mock("@/hooks/usePerfMetric", () => ({
 
 vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
   CameraAxisTracker: () => <div data-testid="axis-tracker" />,
+  GradientSky: () => null,
   MemoShape3D: ({ shape }: { shape: { id: string } }) => (
     <div data-shape-id={shape.id} data-testid="shape-3d" />
   ),

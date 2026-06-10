@@ -111,6 +111,7 @@ vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
       type="button"
     />
   ),
+  GradientSky: () => null,
   ScreenshotHelper: () => <div data-testid="screenshot-helper" />,
   useCatalogTextureWarmup: () => {},
   WheelBridge: () => <div data-testid="wheel-bridge" />,
