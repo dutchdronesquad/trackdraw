@@ -28,7 +28,6 @@ const TARGET_SPEED_MS = 7;
 const THEME = {
   dark: {
     bg: "#0b1018",
-    fog: "#2e4870",
     skyTop: "#182848",
     skyHorizon: "#2e4870",
     ambientIntensity: 0.7,
@@ -39,7 +38,6 @@ const THEME = {
   },
   light: {
     bg: "#e4f0fa",
-    fog: "#e4f0fa",
     skyTop: "#68a8de",
     skyHorizon: "#e4f0fa",
     ambientIntensity: 1.2,
