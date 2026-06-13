@@ -138,7 +138,7 @@ export default function TrackCanvasEditorOverlays({
             strokeWidth={m2px(0.28, designPpm)}
             lineCap="round"
             lineJoin="round"
-            opacity={0.2}
+            opacity={0.25}
           />
           <Line
             points={draftPreviewSmoothPx}
@@ -146,7 +146,7 @@ export default function TrackCanvasEditorOverlays({
             strokeWidth={m2px(0.18, designPpm)}
             lineCap="round"
             lineJoin="round"
-            opacity={0.55}
+            opacity={0.65}
           />
         </>
       ) : null}
@@ -163,7 +163,7 @@ export default function TrackCanvasEditorOverlays({
         />
       ) : null}
 
-      {draftPointsPx.length > 0 && cursor
+      {draftPointsPx.length > 0 && cursor && draftPreviewSmoothPx.length < 4
         ? (() => {
             const endX = snapTarget
               ? m2px(snapTarget.x, designPpm)
@@ -200,6 +200,21 @@ export default function TrackCanvasEditorOverlays({
             );
           })()
         : null}
+
+      {activeTool === "polyline" &&
+      draftPointsPx.length >= 2 &&
+      !draftCloseTarget ? (
+        <Group listening={false}>
+          <Circle
+            x={draftPointsPx[0]}
+            y={draftPointsPx[1]}
+            radius={Math.max(5, m2px(0.1, designPpm))}
+            stroke="#22c55e"
+            strokeWidth={1.5}
+            opacity={0.6}
+          />
+        </Group>
+      ) : null}
 
       {draftCloseTarget ? (
         <Group listening={false}>

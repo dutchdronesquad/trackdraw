@@ -44,10 +44,10 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 
 - [ ] Path editing UX (`No account required`)
       Make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model forces extra points to avoid sharp corners.
-  - [ ] Path drawing interaction improvements
-        Improve waypoint placement and drag feedback so tracing a line feels more deliberate and less error-prone, especially on touch and trackpad.
-  - [ ] Automatic curve smoothing
-        Evaluate Catmull-Rom splines or chord-length parameterization to produce smoother curves from the same waypoints without manual handle editing, with backwards-compatible geometry.
+  - [x] Path drawing interaction improvements
+        Removed the misleading straight rubber-band preview in favour of the live Catmull-Rom curve preview, added a persistent start-point ring so users can see where the path began during long-form drawing, and tightened the desktop minimum waypoint gap to 0.15 m to reduce accidental duplicate placements.
+  - [x] Automatic curve smoothing
+        Catmull-Rom splines (chord-length parameterized) were already the sole rendering path for committed polylines. The drawing overlay now also relies on the smooth preview exclusively, making the curve shape visible from the first waypoint onwards.
   - [ ] Per-waypoint curve strength (`Research`)
         Only pursue if automatic smoothing is not sufficient and if there is an interaction model that works on both desktop and mobile. Direct canvas handles are likely too fiddly on touch; validate an inspector- or gesture-based alternative first before committing to an approach.
 

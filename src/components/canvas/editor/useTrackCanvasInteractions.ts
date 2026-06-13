@@ -155,7 +155,7 @@ export function useTrackCanvasInteractions({
   const closeLoopRadiusMeters = Math.max(designField.gridStep * 1.25, 0.9);
   const minWaypointGapMeters = isMobile
     ? Math.max(designField.gridStep * 0.7, 0.45)
-    : 0.05;
+    : 0.15;
   const mobileTapMoveThresholdPx = 10;
   const lastCursorKeyRef = useRef("");
   const lastHorizontalScrollTimeRef = useRef(0);
