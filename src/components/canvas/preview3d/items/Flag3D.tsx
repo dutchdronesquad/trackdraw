@@ -151,8 +151,8 @@ function CornerMarkerFlag3D({
         <tubeGeometry args={[poleCurve, 40, poleRadius, 12, false]} />
         <meshStandardMaterial
           color={visual.poleColor}
-          roughness={0.38}
-          metalness={0.42}
+          roughness={0.65}
+          metalness={0.05}
           emissive={selected ? "#60a5fa" : "#000000"}
           emissiveIntensity={selected ? 0.14 : 0}
         />
@@ -161,8 +161,8 @@ function CornerMarkerFlag3D({
         <sphereGeometry args={[poleCapRadius, 18, 12]} />
         <meshStandardMaterial
           color={visual.poleColor}
-          roughness={0.38}
-          metalness={0.42}
+          roughness={0.65}
+          metalness={0.05}
           emissive={selected ? "#60a5fa" : "#000000"}
           emissiveIntensity={selected ? 0.14 : 0}
         />
