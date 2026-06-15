@@ -84,14 +84,12 @@ describe("project server helpers", () => {
     const selectPreviousStatement = createD1Statement({
       first: projectRow(previousDesign),
     });
-    const upsertStatement = createD1Statement();
-    const selectSavedStatement = createD1Statement({
+    const upsertStatement = createD1Statement({
       first: projectRow(nextDesign),
     });
     installD1Statements(mocks.prepare, [
       selectPreviousStatement,
       upsertStatement,
-      selectSavedStatement,
     ]);
 
     await saveProjectForUser("user-1", nextDesign, {
@@ -101,6 +99,7 @@ describe("project server helpers", () => {
     });
 
     expect(upsertStatement.sql).toContain("projects.design_json = ?");
+    expect(upsertStatement.sql).toContain("returning");
     expect(upsertStatement.bind).toHaveBeenCalledWith(
       "project-1",
       "user-1",

@@ -142,25 +142,10 @@ describe("gallery server helpers", () => {
   });
 
   it("deletes the R2 preview when a gallery entry is deleted", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
-    const entryStatement = createStatement({
-      first: {
-        id: "entry-1",
-        share_token: "share-1",
-        owner_user_id: "user-1",
-        gallery_state: "listed",
-        gallery_title: "Track",
-        gallery_description: "A public track.",
-        gallery_preview_image: "gallery/previews/entry-1.webp",
-        gallery_published_at: null,
-        moderation_hidden_at: null,
-        created_at: "2026-04-20T09:00:00.000Z",
-        updated_at: "2026-04-20T10:00:00.000Z",
-      },
+    const deleteStatement = createStatement({
+      first: { gallery_preview_image: "gallery/previews/entry-1.webp" },
     });
-    const deleteStatement = createStatement();
-    installStatements([entryStatement, deleteStatement]);
+    installStatements([deleteStatement]);
 
     await deleteGalleryEntry("share-1");
 
@@ -168,6 +153,7 @@ describe("gallery server helpers", () => {
       "gallery/previews/entry-1.webp"
     );
     expect(deleteStatement.sql).toContain("delete from gallery_entries");
+    expect(deleteStatement.sql).toContain("returning gallery_preview_image");
     expect(deleteStatement.bind).toHaveBeenCalledWith("share-1");
   });
 
@@ -284,9 +270,8 @@ describe("gallery server helpers", () => {
     expect(stmt.bind).toHaveBeenCalledWith(0, "");
   });
 
-  it("creates an unlisted gallery entry and returns it via getGalleryEntryByShareToken", async () => {
-    const insertStmt = createStatement({ run: {} });
-    const selectStmt = createStatement({
+  it("creates an unlisted gallery entry via INSERT RETURNING", async () => {
+    const insertStmt = createStatement({
       first: {
         id: "new-entry",
         share_token: "new-tok",
@@ -301,7 +286,7 @@ describe("gallery server helpers", () => {
         updated_at: "2026-06-09T00:00:00.000Z",
       },
     });
-    installStatements([insertStmt, selectStmt]);
+    installStatements([insertStmt]);
 
     const entry = await createUnlistedGalleryEntry({
       shareToken: "new-tok",
@@ -313,6 +298,8 @@ describe("gallery server helpers", () => {
     expect(entry).not.toBeNull();
     expect(entry?.galleryState).toBe("unlisted");
     expect(entry?.galleryTitle).toBe("New Entry");
+    expect(insertStmt.sql).toContain("insert into gallery_entries");
+    expect(insertStmt.sql).toContain("returning");
   });
 
   it("updateGalleryEntryMetadata runs a SQL UPDATE", async () => {
