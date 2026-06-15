@@ -354,7 +354,7 @@ export async function createUnlistedGalleryEntry(params: {
   const now = new Date().toISOString();
   const id = crypto.randomUUID();
 
-  await db
+  const row = await db
     .prepare(
       `
         insert into gallery_entries (
@@ -371,6 +371,18 @@ export async function createUnlistedGalleryEntry(params: {
           updated_at
         )
         values (?, ?, ?, 'unlisted', ?, ?, null, null, null, ?, ?)
+        returning
+          id,
+          share_token,
+          owner_user_id,
+          gallery_state,
+          gallery_title,
+          gallery_description,
+          gallery_preview_image,
+          gallery_published_at,
+          moderation_hidden_at,
+          created_at,
+          updated_at
       `
     )
     .bind(
@@ -382,9 +394,9 @@ export async function createUnlistedGalleryEntry(params: {
       now,
       now
     )
-    .run();
+    .first<GalleryEntryRow>();
 
-  return getGalleryEntryByShareToken(params.shareToken);
+  return row ? mapGalleryEntryRow(row) : null;
 }
 
 export async function moveGalleryEntryToUnlisted(shareToken: string) {
@@ -408,21 +420,20 @@ export async function moveGalleryEntryToUnlisted(shareToken: string) {
 
 export async function deleteGalleryEntry(shareToken: string) {
   const db = await getDatabase();
-  const existing = await getGalleryEntryByShareToken(shareToken);
-
-  if (existing?.galleryPreviewImage) {
-    await deleteGalleryPreviewImage(existing.galleryPreviewImage);
-  }
-
-  await db
+  const deleted = await db
     .prepare(
       `
         delete from gallery_entries
         where share_token = ?
+        returning gallery_preview_image
       `
     )
     .bind(shareToken)
-    .run();
+    .first<{ gallery_preview_image: string | null }>();
+
+  if (deleted?.gallery_preview_image) {
+    await deleteGalleryPreviewImage(deleted.gallery_preview_image);
+  }
 }
 
 export async function moveGalleryEntryToListed(shareToken: string) {

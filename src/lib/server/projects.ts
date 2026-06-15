@@ -139,7 +139,7 @@ export async function saveProjectForUser(
 
   const db = await getDatabase();
 
-  await db
+  const savedRow = await db
     .prepare(
       `
         insert into projects (
@@ -167,6 +167,18 @@ export async function saveProjectForUser(
           archived_at = null
         where projects.owner_user_id = excluded.owner_user_id
           and (? = 1 or projects.design_json = ?)
+        returning
+          id,
+          owner_user_id,
+          title,
+          description,
+          design_json,
+          field_width,
+          field_height,
+          shape_count,
+          created_at,
+          updated_at,
+          archived_at
       `
     )
     .bind(
@@ -183,27 +195,24 @@ export async function saveProjectForUser(
       options.forceWrite || !existingProject ? 1 : 0,
       existingSerializedJson ?? ""
     )
-    .run();
+    .first<ProjectRow>();
 
-  const saved = await getProjectForUser(projectId, ownerUserId);
-  if (!saved) {
-    throw new Error("Failed to load saved cloud project");
-  }
-
-  if (!options.forceWrite) {
-    const savedSerializedJson = JSON.stringify(serializeDesign(saved.design));
-    if (savedSerializedJson !== serializedJson) {
-      throw new ProjectVersionConflictError({
-        projectId,
-        title,
-        localUpdatedAt: normalized.updatedAt,
-        cloudUpdatedAt: saved.designUpdatedAt,
-        cloudProject: saved,
-      });
+  if (!savedRow) {
+    // The DO UPDATE WHERE condition failed — another write raced in between our read and write.
+    const current = await getProjectForUser(projectId, ownerUserId);
+    if (!current) {
+      throw new Error("Failed to load saved cloud project");
     }
+    throw new ProjectVersionConflictError({
+      projectId,
+      title,
+      localUpdatedAt: normalized.updatedAt,
+      cloudUpdatedAt: current.designUpdatedAt,
+      cloudProject: current,
+    });
   }
 
-  return saved;
+  return mapProjectRow(savedRow);
 }
 
 export async function getProjectForUser(
