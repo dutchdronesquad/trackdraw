@@ -15,6 +15,9 @@ describe("share retention", () => {
     expect(sql).toContain(
       "revoked_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')"
     );
+    expect(sql).toContain(
+      "expires_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')"
+    );
     expect(run).toHaveBeenCalled();
   });
 });
