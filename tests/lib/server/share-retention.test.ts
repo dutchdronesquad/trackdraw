@@ -13,7 +13,7 @@ describe("share retention", () => {
     const sql = prepare.mock.calls[0][0];
     expect(sql).toContain("share_type = 'temporary'");
     expect(sql).toContain(
-      "revoked_at < strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-30 days')"
+      "revoked_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')"
     );
     expect(run).toHaveBeenCalled();
   });
