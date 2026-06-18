@@ -372,7 +372,12 @@ export function getPolylineManeuverDetections(
     }
   }
 
-  return maneuvers;
+  return maneuvers.sort(
+    (a, b) =>
+      a.startWaypointIndex - b.startWaypointIndex ||
+      a.endWaypointIndex - b.endWaypointIndex ||
+      a.kind.localeCompare(b.kind)
+  );
 }
 
 /**

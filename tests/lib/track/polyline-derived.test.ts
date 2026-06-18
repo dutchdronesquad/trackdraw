@@ -194,6 +194,37 @@ describe("polyline derived helpers", () => {
     });
   });
 
+  it("returns mixed maneuver detections in waypoint order", () => {
+    const path: PolylineShape = {
+      id: "mixed-maneuvers",
+      kind: "polyline",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      points: [
+        { x: 0, y: 0, z: 4 },
+        { x: 0.2, y: 0, z: 1 },
+        { x: 4, y: 0, z: 1 },
+        { x: 5.2, y: 0, z: 4 },
+        { x: 4.2, y: 0, z: 1.1 },
+      ],
+    };
+
+    expect(getPolylineManeuverDetections(path)).toEqual([
+      {
+        kind: "split-s",
+        startWaypointIndex: 0,
+        endWaypointIndex: 1,
+      },
+      {
+        kind: "powerloop",
+        startWaypointIndex: 1,
+        apexWaypointIndex: 3,
+        endWaypointIndex: 4,
+      },
+    ]);
+  });
+
   it("builds warning visuals and segment colors", () => {
     const path: PolylineShape = {
       id: "visuals",

@@ -33,21 +33,25 @@ function computeWaypointArcFractions(
   if (points.length <= 1) return [0];
 
   const distances: number[] = [0];
-  for (let i = 1; i < points.length; i += 1) {
-    const previous = points[i - 1];
-    const current = points[i];
+  const segmentCount = shape.closed ? points.length : points.length - 1;
+  for (let i = 0; i < segmentCount; i += 1) {
+    const previous = points[i];
+    const current = points[(i + 1) % points.length];
     const dx = current.x - previous.x;
     const dy = current.y - previous.y;
     const dz =
       Math.max(current.z ?? 0, 0) +
       heightOffset -
       (Math.max(previous.z ?? 0, 0) + heightOffset);
-    distances.push(distances[i - 1] + Math.hypot(dx, dy, dz));
+    distances.push(distances[i] + Math.hypot(dx, dy, dz));
   }
 
   const total = distances.at(-1) ?? 0;
   if (total <= 0) {
-    return points.map((_, index) => index / Math.max(points.length - 1, 1));
+    return Array.from(
+      { length: segmentCount + 1 },
+      (_, index) => index / Math.max(segmentCount, 1)
+    );
   }
 
   return distances.map((distance) => distance / total);
@@ -100,16 +104,22 @@ export function RaceLine3D({
     );
     const verticesPerRing = TUBE_RADIAL_SEGMENTS + 1;
     const numRings = curveData.segmentCount + 1;
-    const segmentColors = shape.points.slice(0, -1).map((_, segmentIndex) => {
-      const warningKind = warningKindBySegment.get(segmentIndex);
-      return new THREE.Color(
-        getRouteWarningSegmentColor(warningKind, baseColor)
-      );
-    });
+    const pathSegmentCount = shape.closed
+      ? shape.points.length
+      : shape.points.length - 1;
+    const segmentColors = Array.from({ length: pathSegmentCount }).map(
+      (_, segmentIndex) => {
+        const warningKind = warningKindBySegment.get(segmentIndex);
+        return new THREE.Color(
+          getRouteWarningSegmentColor(warningKind, baseColor)
+        );
+      }
+    );
     const colorArray = new Float32Array(numRings * verticesPerRing * 3);
 
     for (let ring = 0; ring < numRings; ring += 1) {
-      const t = ring / curveData.segmentCount;
+      const rawT = ring / curveData.segmentCount;
+      const t = shape.closed ? rawT % 1 : rawT;
       let segmentIndex = 0;
       for (let i = 1; i < waypointFractions.length - 1; i += 1) {
         if (t >= waypointFractions[i]) segmentIndex = i;
