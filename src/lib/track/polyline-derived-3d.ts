@@ -79,6 +79,10 @@ export function getPolylineCurve3Derived(
     closed,
     "centripetal"
   );
+  // baseCurve may have hundreds of control points; the default arcLengthDivisions
+  // of 200 gives <2 samples per segment, causing unevenly-spaced getSpacedPoints
+  // which leak through as periodic kinks at segment boundaries.
+  baseCurve.arcLengthDivisions = baseVectors.length * 4;
   const segmentCount = getAdaptiveCurveSegments(smoothPoints, density);
   const spacedPoints = baseCurve.getSpacedPoints(segmentCount);
   const curve = new THREE.CatmullRomCurve3(spacedPoints, closed, "centripetal");

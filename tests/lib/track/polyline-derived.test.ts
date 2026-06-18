@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getPolylineManeuverDetections,
   getPolylineRouteWarningSegmentVisuals,
   getPolylineRouteWarningVisuals,
   getPolylineRouteWarnings,
@@ -96,6 +97,100 @@ describe("polyline derived helpers", () => {
     expect(getPolylineRouteWarnings(spacingShift)).toContainEqual({
       kind: "spacing-shift",
       waypointIndex: 1,
+    });
+  });
+
+  it("does not flag vertically separated maneuver points as close points", () => {
+    const splitSLike: PolylineShape = {
+      id: "split-s",
+      kind: "polyline",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      points: [
+        { x: 0, y: 0, z: 4 },
+        { x: 0, y: 0, z: 1 },
+      ],
+    };
+
+    expect(getPolylineRouteWarnings(splitSLike)).not.toContainEqual({
+      kind: "close-points",
+      waypointIndex: 1,
+    });
+    expect(getPolylineRouteWarnings(splitSLike)).not.toContainEqual({
+      kind: "steep",
+      waypointIndex: 1,
+    });
+  });
+
+  it("detects split-s and powerloop route sections", () => {
+    const splitSLike: PolylineShape = {
+      id: "split-s",
+      kind: "polyline",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      points: [
+        { x: 0, y: 0, z: 4 },
+        { x: 0.25, y: 0, z: 1 },
+      ],
+    };
+    const powerloopLike: PolylineShape = {
+      id: "powerloop",
+      kind: "polyline",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      points: [
+        { x: 0, y: 0, z: 1 },
+        { x: 1.2, y: 0, z: 4 },
+        { x: 0.2, y: 0, z: 1.1 },
+      ],
+    };
+
+    expect(getPolylineManeuverDetections(splitSLike)).toEqual([
+      {
+        kind: "split-s",
+        startWaypointIndex: 0,
+        endWaypointIndex: 1,
+      },
+    ]);
+    expect(getPolylineManeuverDetections(powerloopLike)).toEqual([
+      {
+        kind: "powerloop",
+        startWaypointIndex: 0,
+        apexWaypointIndex: 1,
+        endWaypointIndex: 2,
+      },
+    ]);
+    expect(getPolylineRouteWarnings(powerloopLike)).not.toContainEqual({
+      kind: "steep",
+      waypointIndex: 1,
+    });
+  });
+
+  it("detects wider multi-waypoint powerloops", () => {
+    const broadPowerloop: PolylineShape = {
+      id: "broad-powerloop",
+      kind: "polyline",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      points: [
+        { x: 0, y: 0, z: 0.5 },
+        { x: 2, y: 0, z: 2.4 },
+        { x: 4, y: 0.2, z: 4.2 },
+        { x: 5.4, y: 1.4, z: 3.4 },
+        { x: 4.1, y: 2.2, z: 1.2 },
+        { x: 2.4, y: 1.1, z: 0.8 },
+      ],
+    };
+
+    expect(getPolylineManeuverDetections(broadPowerloop)).toContainEqual({
+      kind: "powerloop",
+      startWaypointIndex: 0,
+      apexWaypointIndex: 2,
+      endWaypointIndex: 4,
     });
   });
 

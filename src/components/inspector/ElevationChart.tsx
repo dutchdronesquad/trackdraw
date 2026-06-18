@@ -5,11 +5,13 @@ import { createPortal } from "react-dom";
 import { Info } from "lucide-react";
 import { useEditor } from "@/store/editor";
 import {
+  getPolylineManeuverDetections,
   getPolylineElevationSamples,
   getRouteWarningSegmentColor,
   getPolylineRouteWarningSegmentVisuals,
   getPolylineTotalLength2D,
   getPolylineRouteWarnings,
+  type RouteManeuverDetection,
   type RouteWarning,
   type RouteWarningKind,
 } from "@/lib/track/polyline-derived";
@@ -111,6 +113,17 @@ const WARNING_SHORT_LABELS: Record<RouteWarningKind, string> = {
   "rhythm-break": "Short correction",
 };
 
+const MANEUVER_LABELS: Record<RouteManeuverDetection["kind"], string> = {
+  powerloop: "Powerloop",
+  "split-s": "Split-S",
+};
+
+function formatManeuverRange(maneuver: RouteManeuverDetection) {
+  return maneuver.startWaypointIndex === maneuver.endWaypointIndex
+    ? `waypoint ${maneuver.startWaypointIndex}`
+    : `waypoints ${maneuver.startWaypointIndex}-${maneuver.endWaypointIndex}`;
+}
+
 function isWarningKind(kind: RouteWarningKind) {
   return (
     kind === "hairpin" ||
@@ -146,6 +159,69 @@ function useGroupedWarnings(warnings: RouteWarning[]) {
     }
     return Array.from(map.entries());
   }, [warnings]);
+}
+
+function RouteManeuverSummary({
+  maneuvers,
+}: {
+  maneuvers: RouteManeuverDetection[];
+}) {
+  if (maneuvers.length === 0) return null;
+
+  const first = maneuvers[0];
+  const extraCount = maneuvers.length - 1;
+
+  return (
+    <div className="mb-2 flex items-center gap-1.5 rounded bg-sky-500/8 px-2 py-1 text-[11px] leading-snug text-sky-700 dark:text-sky-300">
+      <span className="shrink-0">↳</span>
+      <span className="min-w-0 truncate">
+        Detected {MANEUVER_LABELS[first.kind]} near{" "}
+        {formatManeuverRange(first)}
+      </span>
+      {extraCount > 0 && (
+        <span className="text-muted-foreground shrink-0">
+          +{extraCount} more
+        </span>
+      )}
+    </div>
+  );
+}
+
+function RouteManeuverDetails({
+  maneuvers,
+}: {
+  maneuvers: RouteManeuverDetection[];
+}) {
+  if (maneuvers.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <div className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+        Maneuvers
+      </div>
+      <div className="space-y-1.5">
+        {maneuvers.map((maneuver) => (
+          <div
+            key={`${maneuver.kind}-${maneuver.startWaypointIndex}-${maneuver.endWaypointIndex}`}
+            className="flex items-start gap-2 rounded bg-sky-500/8 px-2.5 py-2 text-xs leading-snug text-sky-800 dark:text-sky-300"
+          >
+            <span className="mt-px shrink-0">↳</span>
+            <span className="min-w-0">
+              <span className="block font-medium">
+                {MANEUVER_LABELS[maneuver.kind]}
+              </span>
+              <span className="text-muted-foreground block">
+                {formatManeuverRange(maneuver)}
+                {typeof maneuver.apexWaypointIndex === "number"
+                  ? `, apex ${maneuver.apexWaypointIndex}`
+                  : ""}
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function RouteWarningSummary({ warnings }: { warnings: RouteWarning[] }) {
@@ -507,6 +583,10 @@ export default function ElevationChart({ className }: { className?: string }) {
     () => (path ? getPolylineRouteWarningSegmentVisuals(path) : []),
     [path]
   );
+  const maneuvers = useMemo(
+    () => (path ? getPolylineManeuverDetections(path) : []),
+    [path]
+  );
   const warningKindBySegment = useMemo(
     () =>
       new Map(
@@ -646,6 +726,7 @@ export default function ElevationChart({ className }: { className?: string }) {
         <ElevationSvg {...chartProps} height={isMobile ? 180 : 220} />
       </div>
       <RouteColorKey kinds={warningKinds} />
+      <RouteManeuverDetails maneuvers={maneuvers} />
       <RouteWarningDetails warnings={warnings} />
     </div>
   );
@@ -708,6 +789,7 @@ export default function ElevationChart({ className }: { className?: string }) {
         </div>
       </div>
 
+      <RouteManeuverSummary maneuvers={maneuvers} />
       <RouteWarningSummary warnings={warnings} />
       <RouteColorKey kinds={warningKinds} />
       <ElevationSvg {...chartProps} height={VIEW_H} />

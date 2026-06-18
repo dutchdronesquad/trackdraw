@@ -35,7 +35,8 @@ export function createCurveSampler(
 export function getFpvCameraPose(
   samplePoint: (t: number) => THREE.Vector3,
   t: number,
-  previousBankAngle = 0
+  previousBankAngle = 0,
+  delta = 1 / 60
 ) {
   const pos = samplePoint(t);
   const behind = samplePoint(t - 0.015);
@@ -67,7 +68,12 @@ export function getFpvCameraPose(
     );
   }
 
-  const bankAngle = THREE.MathUtils.lerp(previousBankAngle, bankTarget, 0.14);
+  // k ≈ 9.05 preserves the ~60fps feel: 1 - exp(-9.05/60) ≈ 0.14
+  const bankAngle = THREE.MathUtils.lerp(
+    previousBankAngle,
+    bankTarget,
+    1 - Math.exp(-9.05 * delta)
+  );
   const tangentOffset =
     tangent.lengthSq() > 1e-6
       ? tangent.normalize().multiplyScalar(FPV_CAMERA_SETTINGS.cameraBackOffset)

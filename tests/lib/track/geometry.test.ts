@@ -72,6 +72,23 @@ describe("track geometry helpers", () => {
     expect(smoothed.at(-1)).toEqual({ x: 6, y: 4, z: 2 });
   });
 
+  it("uses vertical distance when smoothing 3d loop-like paths", () => {
+    const loopLikePoints = [
+      { x: 0, y: 0, z: 0 },
+      { x: 4, y: 0, z: 1 },
+      { x: 4, y: 0, z: 5 },
+      { x: 0, y: 0, z: 1 },
+      { x: 0, y: 0, z: 0 },
+    ];
+    const smoothed = smoothPolyline3D(loopLikePoints, 8);
+    const verticalSamples = smoothed.filter(
+      (point) => Math.abs(point.x - 4) < 0.25 && point.z > 1.2 && point.z < 4.8
+    );
+
+    expect(verticalSamples.length).toBeGreaterThan(0);
+    expect(Math.max(...smoothed.map((point) => point.z))).toBeGreaterThan(4.5);
+  });
+
   it("creates arrow markers along a path", () => {
     const markers = getPolylineArrowMarkers(path.points, 3, { closed: false });
 

@@ -20,7 +20,7 @@ The most useful next product move is deepening the race-day workflow, keeping th
 
 - Race director page with pilot line, timing/start box placement, and ops notes
 - Usability and reliability pass focused on recovery states, mobile ergonomics, editor interactions, exports, sharing, and larger layouts
-- Path editing UX improvements for smoother curves and a more natural drawing experience, including research into how powerloops can be represented in the route line
+- Path editing UX improvements for smoother curves and a more natural drawing experience, including geometry-driven 3D maneuver curve optimization for powerloops, split-S, and similar moves without requiring manual waypoint annotations
 - Catalog-backed official track elements beyond the shipped MultiGP gate, flag, ladder, dive gate, launch gate, and tower set, including a new barrier category covering hurdles, banners, fencing, and nets
 - Focused 3D item controls where direct manipulation is safer and faster than inspector-only editing
 - Account-backed custom banner texture support for official-size gates, ladders, and flags, so clubs can preview their own printed banners on MultiGP-sized hardware

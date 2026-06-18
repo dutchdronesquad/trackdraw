@@ -31,6 +31,7 @@ export function totalLength2D(path: PolylineShape): number {
 interface SmoothPolylineOptions {
   alpha?: number;
   closed?: boolean;
+  dimensions?: "2d" | "3d";
   samplesPerSegment?: number;
 }
 
@@ -41,6 +42,7 @@ function normalizeSmoothOptions(
     return {
       alpha: 0.5,
       closed: false,
+      dimensions: "2d",
       samplesPerSegment: samplesPerSegmentOrOptions,
     };
   }
@@ -48,6 +50,7 @@ function normalizeSmoothOptions(
   return {
     alpha: samplesPerSegmentOrOptions?.alpha ?? 0.5,
     closed: samplesPerSegmentOrOptions?.closed ?? false,
+    dimensions: samplesPerSegmentOrOptions?.dimensions ?? "2d",
     samplesPerSegment: samplesPerSegmentOrOptions?.samplesPerSegment ?? 8,
   };
 }
@@ -95,11 +98,16 @@ function getControlPoint(
 }
 
 function chordLength(
-  a: { x: number; y: number },
-  b: { x: number; y: number },
-  alpha: number
+  a: PolylinePoint,
+  b: PolylinePoint,
+  alpha: number,
+  dimensions: "2d" | "3d"
 ): number {
-  return Math.max(distance2D(a, b) ** alpha, 1e-4);
+  const distance =
+    dimensions === "3d"
+      ? Math.hypot(b.x - a.x, b.y - a.y, (b.z ?? 0) - (a.z ?? 0))
+      : distance2D(a, b);
+  return Math.max(distance ** alpha, 1e-4);
 }
 
 function interpolateChannel(
@@ -138,12 +146,13 @@ function sampleCatmullRomPoint(
   p1: PolylinePoint,
   p2: PolylinePoint,
   p3: PolylinePoint,
-  alpha: number
+  alpha: number,
+  dimensions: "2d" | "3d"
 ) {
   const t0 = 0;
-  const t1 = t0 + chordLength(p0, p1, alpha);
-  const t2 = t1 + chordLength(p1, p2, alpha);
-  const t3 = t2 + chordLength(p2, p3, alpha);
+  const t1 = t0 + chordLength(p0, p1, alpha, dimensions);
+  const t2 = t1 + chordLength(p1, p2, alpha, dimensions);
+  const t3 = t2 + chordLength(p2, p3, alpha, dimensions);
   const sampleT = t1 + (t2 - t1) * t;
 
   return {
@@ -177,9 +186,8 @@ function smoothPolylinePoints(
   points: PolylinePoint[],
   samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
 ) {
-  const { alpha, closed, samplesPerSegment } = normalizeSmoothOptions(
-    samplesPerSegmentOrOptions
-  );
+  const { alpha, closed, dimensions, samplesPerSegment } =
+    normalizeSmoothOptions(samplesPerSegmentOrOptions);
 
   if (points.length < 2) return points.map((point) => ({ ...point }));
   if (points.length < 3) {
@@ -209,7 +217,8 @@ function smoothPolylinePoints(
           p1,
           p2,
           p3,
-          alpha
+          alpha,
+          dimensions
         )
       );
     }
@@ -223,9 +232,8 @@ function smoothPolylinePointSegments(
   points: PolylinePoint[],
   samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
 ) {
-  const { alpha, closed, samplesPerSegment } = normalizeSmoothOptions(
-    samplesPerSegmentOrOptions
-  );
+  const { alpha, closed, dimensions, samplesPerSegment } =
+    normalizeSmoothOptions(samplesPerSegmentOrOptions);
 
   if (points.length < 2) return [];
   if (points.length < 3) {
@@ -259,7 +267,8 @@ function smoothPolylinePointSegments(
           p1,
           p2,
           p3,
-          alpha
+          alpha,
+          dimensions
         )
       );
     }
@@ -338,6 +347,19 @@ export function polylineLength(points: PolylinePoint[]): number {
   return total;
 }
 
+function polylineLength3D(points: PolylinePoint[]): number {
+  if (points.length < 2) return 0;
+  let total = 0;
+  for (let i = 1; i < points.length; i += 1) {
+    total += Math.hypot(
+      points[i].x - points[i - 1].x,
+      points[i].y - points[i - 1].y,
+      (points[i].z ?? 0) - (points[i - 1].z ?? 0)
+    );
+  }
+  return total;
+}
+
 export function getAdaptiveCurveSegments(
   points: PolylinePoint[],
   density = 6
@@ -351,13 +373,15 @@ export function getAdaptiveCurveSegments(
   ) => {
     const ax = current.x - prev.x;
     const ay = current.y - prev.y;
+    const az = (current.z ?? 0) - (prev.z ?? 0);
     const bx = next.x - current.x;
     const by = next.y - current.y;
-    const aLen = Math.hypot(ax, ay);
-    const bLen = Math.hypot(bx, by);
+    const bz = (next.z ?? 0) - (current.z ?? 0);
+    const aLen = Math.hypot(ax, ay, az);
+    const bLen = Math.hypot(bx, by, bz);
     if (aLen < 1e-4 || bLen < 1e-4) return 0;
 
-    const dot = (ax * bx + ay * by) / (aLen * bLen);
+    const dot = (ax * bx + ay * by + az * bz) / (aLen * bLen);
     const clampedDot = Math.max(-1, Math.min(1, dot));
     const turnAngle = Math.acos(clampedDot);
     const turnStrength = turnAngle / Math.PI;
@@ -365,7 +389,7 @@ export function getAdaptiveCurveSegments(
     return turnStrength * localScale;
   };
 
-  const length = polylineLength(points);
+  const length = polylineLength3D(points);
   const byLength = Math.round(length * density);
   const byPoints = (points.length - 1) * 16;
   let turnBonus = 0;
@@ -386,7 +410,15 @@ export function smoothPolyline3D(
   points: PolylinePoint[],
   samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
 ): Array<{ x: number; y: number; z: number }> {
-  return smoothPolylinePoints(points, samplesPerSegmentOrOptions).map(
+  const options =
+    typeof samplesPerSegmentOrOptions === "number"
+      ? {
+          dimensions: "3d" as const,
+          samplesPerSegment: samplesPerSegmentOrOptions,
+        }
+      : { ...samplesPerSegmentOrOptions, dimensions: "3d" as const };
+
+  return smoothPolylinePoints(points, options).map(
     ({ x, y, z }) => ({
       x,
       y,
@@ -399,7 +431,15 @@ export function getPolylineSegment3DPoints(
   points: PolylinePoint[],
   samplesPerSegmentOrOptions?: number | SmoothPolylineOptions
 ): Array<Array<{ x: number; y: number; z: number }>> {
-  return smoothPolylinePointSegments(points, samplesPerSegmentOrOptions).map(
+  const options =
+    typeof samplesPerSegmentOrOptions === "number"
+      ? {
+          dimensions: "3d" as const,
+          samplesPerSegment: samplesPerSegmentOrOptions,
+        }
+      : { ...samplesPerSegmentOrOptions, dimensions: "3d" as const };
+
+  return smoothPolylinePointSegments(points, options).map(
     (segment) =>
       segment.map(({ x, y, z }) => ({
         x,

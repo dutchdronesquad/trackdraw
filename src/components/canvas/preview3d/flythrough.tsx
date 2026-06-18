@@ -75,18 +75,19 @@ export function DroneCamera({
   const sampleFlightPoint = useMemo(
     () =>
       flightPath
-        ? createCurveSampler(flightPath.curve, flightPath.closed, "point")
+        ? createCurveSampler(flightPath.curve, flightPath.closed, "pointAt")
         : null,
     [flightPath]
   );
 
   const applyCameraPose = useCallback(
-    (t: number) => {
+    (t: number, delta: number) => {
       if (!flightPath || !sampleFlightPoint) return;
       const pose = getFpvCameraPose(
         sampleFlightPoint,
         t,
-        bankingEnabledRef.current ? bankRef.current : 0
+        bankingEnabledRef.current ? bankRef.current : 0,
+        delta
       );
       bankRef.current = bankingEnabledRef.current ? pose.bankAngle : 0;
 
@@ -111,7 +112,7 @@ export function DroneCamera({
   useFrame((_, delta) => {
     if (!playing || !flightPath) return;
     tRef.current = (tRef.current + delta * speed * 0.035) % 1;
-    applyCameraPose(tRef.current);
+    applyCameraPose(tRef.current, delta);
   });
 
   return null;

@@ -5,7 +5,6 @@ import * as THREE from "three";
 import {
   getPolylineRouteWarningSegmentVisuals,
   getRouteWarningSegmentColor,
-  getPolylineSmoothSegmentPoints3D,
 } from "@/lib/track/polyline-derived";
 import { getPolylineCurve3Derived } from "@/lib/track/polyline-derived-3d";
 import {
@@ -19,6 +18,39 @@ export function getPolylineTubeRadius(shape: PolylineShape) {
     0.02,
     (shape.strokeWidth ?? DEFAULT_POLYLINE_STROKE_WIDTH) / 2
   );
+}
+
+const TUBE_RADIAL_SEGMENTS = 10;
+
+// Compute the arc-length fraction [0, 1] for each waypoint along the 3D path.
+// This lets the single tube geometry keep per-segment warning colors without
+// splitting the line into separate meshes.
+function computeWaypointArcFractions(
+  shape: PolylineShape,
+  heightOffset: number
+): number[] {
+  const { points } = shape;
+  if (points.length <= 1) return [0];
+
+  const distances: number[] = [0];
+  for (let i = 1; i < points.length; i += 1) {
+    const previous = points[i - 1];
+    const current = points[i];
+    const dx = current.x - previous.x;
+    const dy = current.y - previous.y;
+    const dz =
+      Math.max(current.z ?? 0, 0) +
+      heightOffset -
+      (Math.max(previous.z ?? 0, 0) + heightOffset);
+    distances.push(distances[i - 1] + Math.hypot(dx, dy, dz));
+  }
+
+  const total = distances.at(-1) ?? 0;
+  if (total <= 0) {
+    return points.map((_, index) => index / Math.max(points.length - 1, 1));
+  }
+
+  return distances.map((distance) => distance / total);
 }
 
 export function RaceLine3D({
@@ -41,35 +73,10 @@ export function RaceLine3D({
       ),
     [warningSegments]
   );
-  const smoothSegmentPoints = useMemo(
-    () =>
-      getPolylineSmoothSegmentPoints3D(shape, POLYLINE_3D_HEIGHT_OFFSET, 18),
-    [shape]
-  );
   const showWarningVisuals = selected || isPrimary;
   const tubeRadius = getPolylineTubeRadius(shape);
-  const segmentedGeometries = useMemo(() => {
-    if (!showWarningVisuals || !warningSegments.length) return null;
-
-    return smoothSegmentPoints.map((points) => {
-      if (!points || points.length < 2) return null;
-
-      const vectors = points.map(([x, y, z]) => new THREE.Vector3(x, y, z));
-      const curve = new THREE.CatmullRomCurve3(vectors, false, "centripetal");
-      return new THREE.TubeGeometry(
-        curve,
-        Math.max(6, vectors.length * 2),
-        tubeRadius,
-        10,
-        false
-      );
-    });
-  }, [
-    showWarningVisuals,
-    smoothSegmentPoints,
-    tubeRadius,
-    warningSegments.length,
-  ]);
+  const baseColor = selected ? "#93c5fd" : (shape.color ?? "#3b82f6");
+  const hasWarnings = showWarningVisuals && warningSegments.length > 0;
   const geometry = useMemo(() => {
     const curveData = getPolylineCurve3Derived(shape, {
       heightOffset: POLYLINE_3D_HEIGHT_OFFSET,
@@ -77,57 +84,71 @@ export function RaceLine3D({
       density: 12,
     });
     if (!curveData) return null;
-    return new THREE.TubeGeometry(
+    const tubeGeo = new THREE.TubeGeometry(
       curveData.curve,
       curveData.segmentCount,
       tubeRadius,
-      10,
+      TUBE_RADIAL_SEGMENTS,
       shape.closed ?? false
     );
-  }, [shape, tubeRadius]);
+
+    if (!hasWarnings) return tubeGeo;
+
+    const waypointFractions = computeWaypointArcFractions(
+      shape,
+      POLYLINE_3D_HEIGHT_OFFSET
+    );
+    const verticesPerRing = TUBE_RADIAL_SEGMENTS + 1;
+    const numRings = curveData.segmentCount + 1;
+    const segmentColors = shape.points.slice(0, -1).map((_, segmentIndex) => {
+      const warningKind = warningKindBySegment.get(segmentIndex);
+      return new THREE.Color(
+        getRouteWarningSegmentColor(warningKind, baseColor)
+      );
+    });
+    const colorArray = new Float32Array(numRings * verticesPerRing * 3);
+
+    for (let ring = 0; ring < numRings; ring += 1) {
+      const t = ring / curveData.segmentCount;
+      let segmentIndex = 0;
+      for (let i = 1; i < waypointFractions.length - 1; i += 1) {
+        if (t >= waypointFractions[i]) segmentIndex = i;
+      }
+
+      const color =
+        segmentColors[Math.min(segmentIndex, segmentColors.length - 1)] ??
+        new THREE.Color(baseColor);
+      const ringStart = ring * verticesPerRing * 3;
+      for (let vertex = 0; vertex < verticesPerRing; vertex += 1) {
+        const offset = ringStart + vertex * 3;
+        colorArray[offset] = color.r;
+        colorArray[offset + 1] = color.g;
+        colorArray[offset + 2] = color.b;
+      }
+    }
+
+    tubeGeo.setAttribute("color", new THREE.BufferAttribute(colorArray, 3));
+    return tubeGeo;
+  }, [shape, tubeRadius, hasWarnings, warningKindBySegment, baseColor]);
 
   useEffect(() => {
     return () => {
-      segmentedGeometries?.forEach((geometry) => geometry?.dispose());
+      geometry?.dispose();
     };
-  }, [segmentedGeometries]);
+  }, [geometry]);
 
   if (!geometry) return null;
   return (
     <group>
-      {showWarningVisuals && warningSegments.length && segmentedGeometries ? (
-        segmentedGeometries.map((segmentGeometry, segmentIndex) => {
-          if (!segmentGeometry) return null;
-          const warningKind = warningKindBySegment.get(segmentIndex);
-          const color = getRouteWarningSegmentColor(
-            warningKind,
-            selected ? "#93c5fd" : (shape.color ?? "#3b82f6")
-          );
-
-          return (
-            <mesh
-              key={`${shape.id}-segment-${segmentIndex}`}
-              geometry={segmentGeometry}
-            >
-              <meshStandardMaterial
-                color={color}
-                emissive={selected ? "#60a5fa" : color}
-                emissiveIntensity={selected ? 0.35 : 0.08}
-                roughness={0.4}
-              />
-            </mesh>
-          );
-        })
-      ) : (
-        <mesh geometry={geometry}>
-          <meshStandardMaterial
-            color={selected ? "#93c5fd" : (shape.color ?? "#3b82f6")}
-            emissive={selected ? "#60a5fa" : "#000000"}
-            emissiveIntensity={selected ? 0.8 : 0}
-            roughness={0.4}
-          />
-        </mesh>
-      )}
+      <mesh geometry={geometry}>
+        <meshStandardMaterial
+          color={hasWarnings ? "#ffffff" : baseColor}
+          vertexColors={hasWarnings}
+          emissive={selected ? "#60a5fa" : "#000000"}
+          emissiveIntensity={selected ? 0.8 : 0}
+          roughness={0.4}
+        />
+      </mesh>
     </group>
   );
 }

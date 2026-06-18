@@ -215,13 +215,177 @@ export interface RouteWarningSegmentVisual {
   endPoint: PolylinePoint;
 }
 
+export type RouteManeuverKind = "powerloop" | "split-s";
+
+export interface RouteManeuverDetection {
+  kind: RouteManeuverKind;
+  startWaypointIndex: number;
+  endWaypointIndex: number;
+  apexWaypointIndex?: number;
+}
+
+function distance2d(a: PolylinePoint, b: PolylinePoint) {
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
+
+function getManeuverSegmentIndexes(maneuvers: RouteManeuverDetection[]) {
+  const indexes = new Set<number>();
+  for (const maneuver of maneuvers) {
+    for (
+      let index = maneuver.startWaypointIndex;
+      index < maneuver.endWaypointIndex;
+      index += 1
+    ) {
+      indexes.add(index);
+    }
+  }
+  return indexes;
+}
+
+function hasCoveredSegment(
+  coveredSegments: Set<number>,
+  startWaypointIndex: number,
+  endWaypointIndex: number
+) {
+  for (
+    let index = startWaypointIndex;
+    index < endWaypointIndex;
+    index += 1
+  ) {
+    if (coveredSegments.has(index)) return true;
+  }
+  return false;
+}
+
+function markCoveredSegments(
+  coveredSegments: Set<number>,
+  startWaypointIndex: number,
+  endWaypointIndex: number
+) {
+  for (
+    let index = startWaypointIndex;
+    index < endWaypointIndex;
+    index += 1
+  ) {
+    coveredSegments.add(index);
+  }
+}
+
+function getHorizontalPathLength(
+  points: PolylinePoint[],
+  startWaypointIndex: number,
+  endWaypointIndex: number
+) {
+  let length = 0;
+  for (
+    let index = startWaypointIndex + 1;
+    index <= endWaypointIndex;
+    index += 1
+  ) {
+    length += distance2d(points[index - 1], points[index]);
+  }
+  return length;
+}
+
+function getApexWaypointIndex(
+  points: PolylinePoint[],
+  startWaypointIndex: number,
+  endWaypointIndex: number
+) {
+  let apexIndex = startWaypointIndex + 1;
+  let apexZ = points[apexIndex]?.z ?? 0;
+  for (
+    let index = startWaypointIndex + 2;
+    index < endWaypointIndex;
+    index += 1
+  ) {
+    const z = points[index].z ?? 0;
+    if (z > apexZ) {
+      apexZ = z;
+      apexIndex = index;
+    }
+  }
+  return apexIndex;
+}
+
+export function getPolylineManeuverDetections(
+  path: PolylineShape
+): RouteManeuverDetection[] {
+  const pts = path.points;
+  if (pts.length < 2) return [];
+
+  const maneuvers: RouteManeuverDetection[] = [];
+  const coveredSegments = new Set<number>();
+
+  for (let startIndex = 0; startIndex < pts.length - 2; startIndex += 1) {
+    const maxEndIndex = Math.min(pts.length - 1, startIndex + 6);
+    for (let endIndex = startIndex + 2; endIndex <= maxEndIndex; endIndex += 1) {
+      if (hasCoveredSegment(coveredSegments, startIndex, endIndex)) continue;
+
+      const apexIndex = getApexWaypointIndex(pts, startIndex, endIndex);
+      const entry = pts[startIndex];
+      const apex = pts[apexIndex];
+      const exit = pts[endIndex];
+      const entryZ = entry.z ?? 0;
+      const apexZ = apex.z ?? 0;
+      const exitZ = exit.z ?? 0;
+      const rise = apexZ - entryZ;
+      const drop = apexZ - exitZ;
+      const horizontalPath = getHorizontalPathLength(pts, startIndex, endIndex);
+      const directSpread = distance2d(entry, exit);
+      const returnsEnough =
+        horizontalPath > 0 && directSpread / horizontalPath <= 0.72;
+
+      if (
+        rise >= 1.2 &&
+        drop >= 1.2 &&
+        horizontalPath >= 1.5 &&
+        directSpread <= 9 &&
+        returnsEnough
+      ) {
+        maneuvers.push({
+          kind: "powerloop",
+          startWaypointIndex: startIndex,
+          apexWaypointIndex: apexIndex,
+          endWaypointIndex: endIndex,
+        });
+        markCoveredSegments(coveredSegments, startIndex, endIndex);
+        break;
+      }
+    }
+  }
+
+  for (let index = 1; index < pts.length; index += 1) {
+    const previous = pts[index - 1];
+    const current = pts[index];
+    const drop = (previous.z ?? 0) - (current.z ?? 0);
+    const horizontal = distance2d(previous, current);
+    const segmentIndex = index - 1;
+
+    if (
+      drop >= 1.2 &&
+      horizontal <= 1.25 &&
+      !coveredSegments.has(segmentIndex)
+    ) {
+      maneuvers.push({
+        kind: "split-s",
+        startWaypointIndex: index - 1,
+        endWaypointIndex: index,
+      });
+      coveredSegments.add(segmentIndex);
+    }
+  }
+
+  return maneuvers;
+}
+
 /**
  * Returns lightweight route-review cues for a polyline:
  * - stub: fewer than 2 waypoints — path cannot form a route
  * - flat: no elevation data set (all z = 0)
  * - steep: segment gradient > 50%
  * - hairpin: interior vertex angle < 45°
- * - close-points: consecutive waypoints < 0.5 m apart
+ * - close-points: consecutive waypoints < 0.5 m apart in 3D
  * - spacing-shift: abrupt jump from a short segment into a much longer one
  * - rhythm-break: short corrective segment between longer sections
  */
@@ -232,6 +396,9 @@ export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
   const warnings: RouteWarning[] = [];
   const segmentLengths: number[] = [];
   const turnAnglesByWaypoint = new Map<number, number>();
+  const maneuverSegmentIndexes = getManeuverSegmentIndexes(
+    getPolylineManeuverDetections(path)
+  );
 
   const hasElevation = pts.some((p) => (p.z ?? 0) !== 0);
   if (!hasElevation) {
@@ -242,15 +409,16 @@ export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
     const prev = pts[i - 1];
     const curr = pts[i];
     const horizDist = Math.hypot(curr.x - prev.x, curr.y - prev.y);
+    const dz = Math.abs((curr.z ?? 0) - (prev.z ?? 0));
+    const routeDist = Math.hypot(horizDist, dz);
     segmentLengths.push(horizDist);
 
-    if (horizDist < 0.5) {
+    if (routeDist < 0.5) {
       warnings.push({ kind: "close-points", waypointIndex: i });
       continue;
     }
 
-    if (hasElevation) {
-      const dz = Math.abs((curr.z ?? 0) - (prev.z ?? 0));
+    if (hasElevation && horizDist >= 0.5 && !maneuverSegmentIndexes.has(i - 1)) {
       if (dz / horizDist > 0.5) {
         warnings.push({ kind: "steep", waypointIndex: i });
       }
@@ -272,7 +440,11 @@ export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
       const angleDeg =
         Math.acos(Math.max(-1, Math.min(1, cos))) * (180 / Math.PI);
       turnAnglesByWaypoint.set(i, angleDeg);
-      if (angleDeg < 45) {
+      if (
+        angleDeg < 45 &&
+        !maneuverSegmentIndexes.has(i - 1) &&
+        !maneuverSegmentIndexes.has(i)
+      ) {
         warnings.push({ kind: "hairpin", waypointIndex: i });
       }
     }
