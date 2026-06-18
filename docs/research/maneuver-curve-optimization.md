@@ -26,12 +26,14 @@ The 2D canvas representation should stay honest: the top-down view shows what th
 **What it is:** A full vertical 360° loop. The pilot performs a complete vertical circle; this can be through the same gate, the adjacent gate, or any gate near the loop section. The defining characteristic is the full-circle motion, not the gate identity.
 
 **2D signature:**
+
 - Accumulated heading change of roughly 360° (suggested tolerance: ≥ 300°) within a compact path-distance section.
 - The path-distance of the section is consistent with a loop diameter plausible for FPV (roughly 3–15 m).
 - The 2D shape forms a visually closed or near-closed curve — start and end of the section are close together in space.
 - One or more gates lie within tolerance of the loop section (used for 3D plane alignment, not for detection).
 
 **3D generation:**
+
 - Identify the gate nearest to the loop section. Use its face normal to determine the vertical plane of the loop.
 - If no gate is near, fall back to the approach tangent direction to define the loop plane.
 - Fit a circle in that vertical plane to the drawn loop waypoints.
@@ -39,6 +41,7 @@ The 2D canvas representation should stay honest: the top-down view shows what th
 - Entry and exit tangents of the circle should match the incoming and outgoing route tangents.
 
 **Open questions:**
+
 - How sensitive should the loop detection be to imperfectly drawn loops (oval, off-center)?
 - Should the vertical diameter come from the drawn waypoint extent, or be inferred from the nearest gate's height?
 - What happens when two gates are equidistant from the loop — which determines the loop plane?
@@ -50,11 +53,13 @@ The 2D canvas representation should stay honest: the top-down view shows what th
 **What it is:** Inverted half-loop. The pilot enters going one direction at altitude, rolls inverted, and pulls through a downward arc, exiting lower and going the opposite direction.
 
 **2D signature:**
+
 - Accumulated heading change of roughly 180° (± a tolerance, suggested ±40°) within a short path-distance section.
 - Z value at the end of the section is meaningfully lower than at the start (suggested: at least 1 m drop).
 - The section is tighter than a normal banked turn — the radius of the 2D arc is small relative to nearby straight segments.
 
 **3D generation:**
+
 - Identify entry point, entry tangent direction, entry Z, exit point, exit tangent direction, and exit Z.
 - Construct a half-circle in the vertical plane that contains both the entry and exit tangent vectors.
 - The arc goes downward: the peak of the half-circle is at entry altitude, the bottom is at exit altitude.
@@ -62,6 +67,7 @@ The 2D canvas representation should stay honest: the top-down view shows what th
 - Replace the curve section with this downward half-circle, blending smoothly into the preceding and following route segments with matching tangents.
 
 **Open questions:**
+
 - A tight banked turn could match the 2D signature without being a split-S — the Z drop is the distinguishing factor, but how much Z delta is required?
 - What if the user draws a split-S but forgets to set Z values? Should the optimizer infer a plausible Z drop from the gate height context, or fall back to the flat CatmullRom?
 - How does this interact with the path's existing per-waypoint Z values? The optimizer should not silently override user-set Z values — it should only fill in the 3D arc between the Z-annotated entry and exit waypoints.

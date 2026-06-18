@@ -175,8 +175,7 @@ function RouteManeuverSummary({
     <div className="mb-2 flex items-center gap-1.5 rounded bg-sky-500/8 px-2 py-1 text-[11px] leading-snug text-sky-700 dark:text-sky-300">
       <span className="shrink-0">↳</span>
       <span className="min-w-0 truncate">
-        Detected {MANEUVER_LABELS[first.kind]} near{" "}
-        {formatManeuverRange(first)}
+        Detected {MANEUVER_LABELS[first.kind]} near {formatManeuverRange(first)}
       </span>
       {extraCount > 0 && (
         <span className="text-muted-foreground shrink-0">

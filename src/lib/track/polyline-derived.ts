@@ -247,11 +247,7 @@ function hasCoveredSegment(
   startWaypointIndex: number,
   endWaypointIndex: number
 ) {
-  for (
-    let index = startWaypointIndex;
-    index < endWaypointIndex;
-    index += 1
-  ) {
+  for (let index = startWaypointIndex; index < endWaypointIndex; index += 1) {
     if (coveredSegments.has(index)) return true;
   }
   return false;
@@ -262,11 +258,7 @@ function markCoveredSegments(
   startWaypointIndex: number,
   endWaypointIndex: number
 ) {
-  for (
-    let index = startWaypointIndex;
-    index < endWaypointIndex;
-    index += 1
-  ) {
+  for (let index = startWaypointIndex; index < endWaypointIndex; index += 1) {
     coveredSegments.add(index);
   }
 }
@@ -319,7 +311,11 @@ export function getPolylineManeuverDetections(
 
   for (let startIndex = 0; startIndex < pts.length - 2; startIndex += 1) {
     const maxEndIndex = Math.min(pts.length - 1, startIndex + 6);
-    for (let endIndex = startIndex + 2; endIndex <= maxEndIndex; endIndex += 1) {
+    for (
+      let endIndex = startIndex + 2;
+      endIndex <= maxEndIndex;
+      endIndex += 1
+    ) {
       if (hasCoveredSegment(coveredSegments, startIndex, endIndex)) continue;
 
       const apexIndex = getApexWaypointIndex(pts, startIndex, endIndex);
@@ -418,7 +414,11 @@ export function getPolylineRouteWarnings(path: PolylineShape): RouteWarning[] {
       continue;
     }
 
-    if (hasElevation && horizDist >= 0.5 && !maneuverSegmentIndexes.has(i - 1)) {
+    if (
+      hasElevation &&
+      horizDist >= 0.5 &&
+      !maneuverSegmentIndexes.has(i - 1)
+    ) {
       if (dz / horizDist > 0.5) {
         warnings.push({ kind: "steep", waypointIndex: i });
       }

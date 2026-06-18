@@ -418,13 +418,11 @@ export function smoothPolyline3D(
         }
       : { ...samplesPerSegmentOrOptions, dimensions: "3d" as const };
 
-  return smoothPolylinePoints(points, options).map(
-    ({ x, y, z }) => ({
-      x,
-      y,
-      z: z ?? 0,
-    })
-  );
+  return smoothPolylinePoints(points, options).map(({ x, y, z }) => ({
+    x,
+    y,
+    z: z ?? 0,
+  }));
 }
 
 export function getPolylineSegment3DPoints(
@@ -439,13 +437,12 @@ export function getPolylineSegment3DPoints(
         }
       : { ...samplesPerSegmentOrOptions, dimensions: "3d" as const };
 
-  return smoothPolylinePointSegments(points, options).map(
-    (segment) =>
-      segment.map(({ x, y, z }) => ({
-        x,
-        y,
-        z: z ?? 0,
-      }))
+  return smoothPolylinePointSegments(points, options).map((segment) =>
+    segment.map(({ x, y, z }) => ({
+      x,
+      y,
+      z: z ?? 0,
+    }))
   );
 }
 
