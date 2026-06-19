@@ -1,9 +1,9 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useRef, useState } from "react";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
-import { X } from "lucide-react";
+import { BookmarkPlus, Pencil, Trash2, X } from "lucide-react";
 import {
   findPresetById,
   getLayoutPresetBounds,
@@ -12,7 +12,6 @@ import {
   layoutPresets,
   type LayoutPreset,
 } from "@/lib/planning/layout-presets";
-import { BookmarkPlus } from "lucide-react";
 import { useUserPresets } from "@/store/user-presets";
 import { shapeKindLabels } from "@/lib/track/items/registry";
 import { cn } from "@/lib/utils";
@@ -192,6 +191,153 @@ function PresetGrid({
   );
 }
 
+function UserPresetCard({
+  preset,
+  countSummary,
+  itemCount,
+  selected,
+  onSelect,
+}: {
+  preset: LayoutPreset;
+  countSummary: string;
+  itemCount: number;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const { renameUserPreset, removeUserPreset } = useUserPresets();
+  const [renaming, setRenaming] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function handleRenameCommit() {
+    const value = inputRef.current?.value.trim() ?? "";
+    if (value && value !== preset.name) renameUserPreset(preset.id, value);
+    setRenaming(false);
+  }
+
+  return (
+    <div
+      className={cn(
+        "border-border/60 bg-card hover:border-border flex flex-col gap-3 rounded-2xl border p-3 transition-colors",
+        selected && "border-primary/25 bg-primary/4"
+      )}
+    >
+      <button type="button" onClick={onSelect} className="cursor-pointer text-left">
+        <PresetPreview preset={preset} />
+      </button>
+
+      <div className="space-y-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            {renaming ? (
+              <input
+                ref={inputRef}
+                defaultValue={preset.name}
+                autoFocus
+                autoComplete="off"
+                spellCheck={false}
+                onBlur={handleRenameCommit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleRenameCommit();
+                  if (e.key === "Escape") setRenaming(false);
+                }}
+                className="border-border/60 bg-background focus:border-primary/50 w-full rounded-md border px-2 py-0.5 text-sm font-semibold outline-none"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={onSelect}
+                className="w-full cursor-pointer text-left text-sm font-semibold"
+              >
+                {preset.name}
+              </button>
+            )}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-0.5">
+            <span className="bg-muted text-muted-foreground mr-1 inline-flex rounded-full px-2 py-1 text-[10px] font-medium whitespace-nowrap uppercase">
+              {itemCount} items
+            </span>
+            {!confirmDelete && (
+              <button
+                type="button"
+                title="Rename preset"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmDelete(false);
+                  setRenaming(true);
+                }}
+                className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-md p-1 transition-colors"
+              >
+                <Pencil className="size-3" />
+              </button>
+            )}
+            {confirmDelete ? (
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  className="text-muted-foreground hover:text-foreground rounded-md px-1.5 py-0.5 text-[10px] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeUserPreset(preset.id)}
+                  className="rounded-md bg-red-500/10 px-1.5 py-0.5 text-[10px] text-red-500 transition-colors hover:bg-red-500/20"
+                >
+                  Delete
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                title="Delete preset"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRenaming(false);
+                  setConfirmDelete(true);
+                }}
+                className="text-muted-foreground hover:text-destructive hover:bg-muted rounded-md p-1 transition-colors"
+              >
+                <Trash2 className="size-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <p className="text-muted-foreground text-[11px]">{countSummary}</p>
+      </div>
+    </div>
+  );
+}
+
+function UserPresetGrid({
+  presets,
+  selectedPresetId,
+  onSelectPreset,
+}: {
+  presets: ReturnType<typeof preparePresets>;
+  selectedPresetId: string | null;
+  onSelectPreset: (presetId: string) => void;
+}) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {presets.map(({ preset, countSummary, itemCount }) => (
+        <UserPresetCard
+          key={preset.id}
+          preset={preset}
+          countSummary={countSummary}
+          itemCount={itemCount}
+          selected={preset.id === selectedPresetId}
+          onSelect={() => onSelectPreset(preset.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
 function LayoutPresetPickerBody({
   selectedPresetId,
   onSelectPreset,
@@ -209,7 +355,7 @@ function LayoutPresetPickerBody({
           <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
             Your presets
           </p>
-          <PresetGrid
+          <UserPresetGrid
             presets={preparedUserPresets}
             selectedPresetId={selectedPresetId}
             onSelectPreset={onSelectPreset}
@@ -375,7 +521,7 @@ export function LayoutPresetPicker({
           <div className="flex min-h-0 flex-col">
             <div className="shrink-0 px-8 pt-5">
               <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-                Curated presets
+                Presets
               </p>
             </div>
             <div className="max-h-[58vh] min-h-0 overflow-y-auto px-8 py-4">
