@@ -622,7 +622,10 @@ export function useTrackCanvasInteractions({
 
       if (activeTool !== "select" && activeTool !== "grab" && !readOnly) {
         if (activeTool === "preset") {
-          const preset = findPresetById(activePresetId, useUserPresets.getState().userPresets);
+          const preset = findPresetById(
+            activePresetId,
+            useUserPresets.getState().userPresets
+          );
           if (!preset) return;
           const ids = addShapes(placeLayoutPreset(preset, meters));
           setSelection(ids);
@@ -861,7 +864,10 @@ export function useTrackCanvasInteractions({
         const meters = pointerToMeters(pointer, snap, false);
         if (!meters) return;
         if (activeTool === "preset") {
-          const preset = findPresetById(activePresetId, useUserPresets.getState().userPresets);
+          const preset = findPresetById(
+            activePresetId,
+            useUserPresets.getState().userPresets
+          );
           if (!preset) return;
           const ids = addShapes(placeLayoutPreset(preset, meters));
           setSelection(ids);

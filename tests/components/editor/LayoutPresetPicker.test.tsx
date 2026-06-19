@@ -8,7 +8,12 @@ import type { LayoutPreset } from "@/lib/planning/layout-presets";
 
 const testPresets: LayoutPreset[] = [
   { id: "preset-a", name: "Preset A", description: "First preset", shapes: [] },
-  { id: "preset-b", name: "Preset B", description: "Second preset", shapes: [] },
+  {
+    id: "preset-b",
+    name: "Preset B",
+    description: "Second preset",
+    shapes: [],
+  },
 ];
 
 const mockUserPresetState = {
@@ -19,8 +24,9 @@ const mockUserPresetState = {
 };
 
 vi.mock("@/store/user-presets", () => ({
-  useUserPresets: (selector?: (state: typeof mockUserPresetState) => unknown) =>
-    selector ? selector(mockUserPresetState) : mockUserPresetState,
+  useUserPresets: (
+    selector?: (state: typeof mockUserPresetState) => unknown
+  ) => (selector ? selector(mockUserPresetState) : mockUserPresetState),
 }));
 
 vi.mock("@/components/MobileDrawer", () => ({

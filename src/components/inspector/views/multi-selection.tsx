@@ -135,7 +135,9 @@ export function MultiInspectorView({
   const activeGroupName =
     groupCount === 1 ? (getShapeGroupName(selectedShapes[0]) ?? "") : "";
   const canGroupSelection = selection.length > 1 && !hasGroupedShapes;
-  const placeableCount = selectedShapes.filter((s) => s.kind !== "polyline").length;
+  const placeableCount = selectedShapes.filter(
+    (s) => s.kind !== "polyline"
+  ).length;
   const batchCatalogKind = getBatchCatalogKind(selectedShapes);
   const batchCatalogEntries = batchCatalogKind
     ? getCatalogEntriesByKind(batchCatalogKind)

@@ -65,7 +65,9 @@ describe("planning layout preset helpers", () => {
 
   it("reports shape count and kind counts for a preset", () => {
     expect(getLayoutPresetShapeCount(startFinishPreset)).toBe(4);
-    expect(getLayoutPresetKindCounts(startFinishPreset).get("startfinish")).toBe(1);
+    expect(
+      getLayoutPresetKindCounts(startFinishPreset).get("startfinish")
+    ).toBe(1);
     expect(getLayoutPresetKindCounts(startFinishPreset).get("gate")).toBe(1);
     expect(getLayoutPresetKindCounts(startFinishPreset).get("flag")).toBe(2);
   });

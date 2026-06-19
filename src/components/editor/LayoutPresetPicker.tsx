@@ -175,7 +175,11 @@ function UserPresetCard({
         selected && "border-primary/25 bg-primary/4"
       )}
     >
-      <button type="button" onClick={onSelect} className="cursor-pointer text-left">
+      <button
+        type="button"
+        onClick={onSelect}
+        className="cursor-pointer text-left"
+      >
         <PresetPreview preset={preset} />
       </button>
 
@@ -227,7 +231,10 @@ function UserPresetCard({
               </button>
             )}
             {confirmDelete ? (
-              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
@@ -306,7 +313,9 @@ function MyPresetsContent({
       <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
         <BookmarkPlus className="text-muted-foreground/40 size-8" />
         <div className="space-y-1">
-          <p className="text-foreground/70 text-sm font-medium">No presets yet</p>
+          <p className="text-foreground/70 text-sm font-medium">
+            No presets yet
+          </p>
           <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
             Select multiple shapes on the canvas and use{" "}
             <strong className="text-foreground/60">Save preset</strong> in the
@@ -526,9 +535,8 @@ export function LayoutPresetPicker({
                 How it works
               </p>
               <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                Select a preset, click once on the canvas, then continue
-                editing the inserted shapes exactly like any other TrackDraw
-                content.
+                Select a preset, click once on the canvas, then continue editing
+                the inserted shapes exactly like any other TrackDraw content.
               </p>
             </div>
           </div>
