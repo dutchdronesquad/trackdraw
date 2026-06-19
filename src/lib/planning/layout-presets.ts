@@ -128,6 +128,18 @@ export function getLayoutPresetById(id: string | null | undefined) {
   return presetMap.get(id) ?? null;
 }
 
+export function findPresetById(
+  id: string | null | undefined,
+  userPresets: LayoutPreset[]
+): LayoutPreset | null {
+  if (!id) return null;
+  return (
+    presetMap.get(id) ??
+    userPresets.find((p) => p.id === id) ??
+    null
+  );
+}
+
 export function getLayoutPresetShapeCount(preset: LayoutPreset) {
   return preset.shapes.length;
 }
@@ -161,6 +173,35 @@ export function getLayoutPresetBounds(preset: LayoutPreset) {
     width: Math.max(1, maxX - minX),
     height: Math.max(1, maxY - minY),
   };
+}
+
+export function shapesToPreset(
+  shapes: Shape[],
+  name: string,
+  id: string
+): LayoutPreset {
+  const placeable = shapes.filter(
+    (shape): shape is PlaceablePresetShape => shape.kind !== "polyline"
+  );
+  const count = placeable.length;
+  const cx = count > 0 ? placeable.reduce((s, p) => s + p.x, 0) / count : 0;
+  const cy = count > 0 ? placeable.reduce((s, p) => s + p.y, 0) / count : 0;
+
+  const presetShapes: LayoutPresetShapeDraft[] = placeable.map((shape) => {
+    const {
+      id: _id,
+      locked: _locked,
+      meta: _meta,
+      ...rest
+    } = shape as unknown as {
+      id: string;
+      locked: boolean | undefined;
+      meta: Record<string, unknown> | undefined;
+    } & LayoutPresetShapeDraft;
+    return { ...rest, x: shape.x - cx, y: shape.y - cy };
+  });
+
+  return { id, name, description: "", shapes: presetShapes };
 }
 
 export function placeLayoutPreset(

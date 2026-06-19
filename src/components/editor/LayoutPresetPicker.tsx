@@ -5,17 +5,19 @@ import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { X } from "lucide-react";
 import {
+  findPresetById,
   getLayoutPresetBounds,
-  getLayoutPresetById,
   getLayoutPresetKindCounts,
   getLayoutPresetShapeCount,
   layoutPresets,
   type LayoutPreset,
 } from "@/lib/planning/layout-presets";
+import { BookmarkPlus } from "lucide-react";
+import { useUserPresets } from "@/store/user-presets";
 import { shapeKindLabels } from "@/lib/track/items/registry";
 import { cn } from "@/lib/utils";
 
-const preparedPresets = layoutPresets.map((preset) => {
+const preparedBuiltinPresets = layoutPresets.map((preset) => {
   const counts = getLayoutPresetKindCounts(preset);
 
   return {
@@ -26,6 +28,19 @@ const preparedPresets = layoutPresets.map((preset) => {
     itemCount: getLayoutPresetShapeCount(preset),
   };
 });
+
+function preparePresets(presets: LayoutPreset[]) {
+  return presets.map((preset) => {
+    const counts = getLayoutPresetKindCounts(preset);
+    return {
+      preset,
+      countSummary: Array.from(counts.entries())
+        .map(([kind, count]) => `${count} ${shapeKindLabels[kind]}`)
+        .join(" · "),
+      itemCount: getLayoutPresetShapeCount(preset),
+    };
+  });
+}
 
 const PresetPreview = memo(function PresetPreview({
   preset,
@@ -129,16 +144,18 @@ const PresetPreview = memo(function PresetPreview({
   );
 });
 
-function LayoutPresetPickerBody({
+function PresetGrid({
+  presets,
   selectedPresetId,
   onSelectPreset,
 }: {
+  presets: ReturnType<typeof preparePresets>;
   selectedPresetId: string | null;
   onSelectPreset: (presetId: string) => void;
 }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {preparedPresets.map(({ preset, countSummary, itemCount }) => {
+      {presets.map(({ preset, countSummary, itemCount }) => {
         const selected = preset.id === selectedPresetId;
 
         return (
@@ -175,6 +192,56 @@ function LayoutPresetPickerBody({
   );
 }
 
+function LayoutPresetPickerBody({
+  selectedPresetId,
+  onSelectPreset,
+}: {
+  selectedPresetId: string | null;
+  onSelectPreset: (presetId: string) => void;
+}) {
+  const userPresets = useUserPresets((state) => state.userPresets);
+  const preparedUserPresets = preparePresets(userPresets);
+
+  return (
+    <div className="space-y-5">
+      {preparedUserPresets.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+            Your presets
+          </p>
+          <PresetGrid
+            presets={preparedUserPresets}
+            selectedPresetId={selectedPresetId}
+            onSelectPreset={onSelectPreset}
+          />
+        </div>
+      )}
+      <div className="space-y-3">
+        {preparedUserPresets.length > 0 && (
+          <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+            Built-in presets
+          </p>
+        )}
+        <PresetGrid
+          presets={preparedBuiltinPresets}
+          selectedPresetId={selectedPresetId}
+          onSelectPreset={onSelectPreset}
+        />
+      </div>
+      {userPresets.length === 0 && (
+        <div className="flex items-start gap-2 rounded-xl border border-dashed border-current/15 px-4 py-3">
+          <BookmarkPlus className="text-muted-foreground/60 mt-0.5 size-3.5 shrink-0" />
+          <p className="text-muted-foreground text-[11px] leading-relaxed">
+            Select shapes on the canvas and use{" "}
+            <strong className="text-foreground/70">Save preset</strong> in the
+            inspector to save your own preset sections here.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface LayoutPresetPickerProps {
   mobile?: boolean;
   open: boolean;
@@ -190,7 +257,8 @@ export function LayoutPresetPicker({
   selectedPresetId,
   onSelectPreset,
 }: LayoutPresetPickerProps) {
-  const selectedPreset = getLayoutPresetById(selectedPresetId);
+  const userPresets = useUserPresets((state) => state.userPresets);
+  const selectedPreset = findPresetById(selectedPresetId, userPresets);
   const subtitle =
     "Choose a curated multi-shape preset. Place it once on the canvas, then edit the inserted shapes normally.";
   const selectedSummary = selectedPreset

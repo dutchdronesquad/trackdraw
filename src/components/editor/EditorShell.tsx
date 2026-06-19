@@ -18,7 +18,8 @@ import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
 import { type EditorTool } from "@/lib/editor/tool-registry";
 import { loadProject } from "@/lib/projects";
 import { downloadJsonFile } from "@/lib/export/download-json";
-import { getLayoutPresetById } from "@/lib/planning/layout-presets";
+import { findPresetById } from "@/lib/planning/layout-presets";
+import { useUserPresets } from "@/store/user-presets";
 import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
@@ -141,7 +142,8 @@ export default function EditorShell({
   const selectionLocked = useEditor(selectSelectionLocked);
   const segmentSelection = useEditor((state) => state.ui.segmentSelection);
   const vertexSelection = useEditor((state) => state.ui.vertexSelection);
-  const activePreset = getLayoutPresetById(activePresetId);
+  const userPresets = useUserPresets((state) => state.userPresets);
+  const activePreset = findPresetById(activePresetId, userPresets);
   const {
     activePresetLabel,
     canAddSelectedPolylineWaypoint,

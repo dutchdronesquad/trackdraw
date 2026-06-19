@@ -17,7 +17,7 @@ import {
   selectionHasGroupedShapes,
 } from "@/lib/track/shape-groups";
 import type { Shape } from "@/lib/types";
-import { Copy, GitMerge, Group, Trash2, Ungroup } from "lucide-react";
+import { Bookmark, Copy, GitMerge, Group, Trash2, Ungroup } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -52,6 +52,7 @@ export interface MultiInspectorViewProps {
     ids: string[],
     entryId: TrackElementCatalogId
   ) => void;
+  onSaveAsPreset?: () => void;
   mobileInline?: boolean;
 }
 
@@ -102,6 +103,7 @@ export function MultiInspectorView({
   setSelection,
   ungroupSelection,
   updateShapesCatalogType,
+  onSaveAsPreset,
   mobileInline = false,
 }: MultiInspectorViewProps) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
@@ -133,6 +135,7 @@ export function MultiInspectorView({
   const activeGroupName =
     groupCount === 1 ? (getShapeGroupName(selectedShapes[0]) ?? "") : "";
   const canGroupSelection = selection.length > 1 && !hasGroupedShapes;
+  const placeableCount = selectedShapes.filter((s) => s.kind !== "polyline").length;
   const batchCatalogKind = getBatchCatalogKind(selectedShapes);
   const batchCatalogEntries = batchCatalogKind
     ? getCatalogEntriesByKind(batchCatalogKind)
@@ -200,6 +203,15 @@ export function MultiInspectorView({
             >
               <Copy className="size-3" />
             </IconBtn>
+            {onSaveAsPreset && placeableCount > 0 && (
+              <IconBtn
+                onClick={onSaveAsPreset}
+                title="Save as preset"
+                label="Save preset"
+              >
+                <Bookmark className="size-3" />
+              </IconBtn>
+            )}
             <IconBtn
               onClick={() => {
                 removeShapes(selection);

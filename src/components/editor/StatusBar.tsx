@@ -6,7 +6,8 @@ import { selectShapeRecordMap } from "@/store/selectors";
 import VersionTag from "@/components/VersionTag";
 import { useDeveloperMode } from "@/hooks/account/useDeveloperMode";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
-import { getLayoutPresetById } from "@/lib/planning/layout-presets";
+import { findPresetById } from "@/lib/planning/layout-presets";
+import { useUserPresets } from "@/store/user-presets";
 import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import { toolLabels } from "@/lib/editor/tool-registry";
@@ -35,7 +36,8 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const selectionCount = selection.length;
   const shapeById = useEditor(selectShapeRecordMap);
   const zoom = useEditor((state) => state.ui.zoom);
-  const activePreset = getLayoutPresetById(activePresetId);
+  const userPresets = useUserPresets((state) => state.userPresets);
+  const activePreset = findPresetById(activePresetId, userPresets);
   const selectedShapes = selection.map((id) => shapeById[id]).filter(Boolean);
   const selectedGroupIds = Array.from(
     new Set(
