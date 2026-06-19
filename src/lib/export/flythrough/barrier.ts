@@ -81,7 +81,7 @@ function getBarrierDefaultColor(variant: BarrierShape["variant"]): string {
     case "banner":
       return "#ec4899";
     case "fence":
-      return "#84cc16";
+      return "#94a3b8";
     case "net":
       return "#06b6d4";
   }
