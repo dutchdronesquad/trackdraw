@@ -23,6 +23,19 @@ const mockUserPresetState = {
   addUserPreset: vi.fn(),
 };
 
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    useSession: () => ({ data: { user: { id: "test-user" } } }),
+  },
+}));
+
+vi.mock("@/store/useAccountPresetSync", () => ({
+  useAccountPresetSync: () => ({
+    renameUserPreset: vi.fn(),
+    removeUserPreset: vi.fn(),
+  }),
+}));
+
 vi.mock("@/store/user-presets", () => ({
   useUserPresets: (
     selector?: (state: typeof mockUserPresetState) => unknown
