@@ -49,18 +49,6 @@ export async function saveLayoutPresetForUser(
   const now = new Date().toISOString();
   const shapesJson = JSON.stringify(preset.shapes);
 
-  // Check upfront whether this id is already claimed by a different owner.
-  const existing = await db
-    .prepare(`SELECT owner_user_id FROM layout_presets WHERE id = ?`)
-    .bind(preset.id)
-    .first<{ owner_user_id: string }>();
-
-  if (existing && existing.owner_user_id !== ownerUserId) {
-    throw new Error(
-      `Preset id "${preset.id}" is already owned by another account.`
-    );
-  }
-
   await db
     .prepare(
       `INSERT INTO layout_presets (id, owner_user_id, name, description, shapes_json, created_at, updated_at)
@@ -69,7 +57,8 @@ export async function saveLayoutPresetForUser(
          name = excluded.name,
          description = excluded.description,
          shapes_json = excluded.shapes_json,
-         updated_at = excluded.updated_at`
+         updated_at = excluded.updated_at
+       WHERE layout_presets.owner_user_id = excluded.owner_user_id`
     )
     .bind(
       preset.id,
