@@ -54,6 +54,8 @@ import VersionTag from "@/components/VersionTag";
 
 import {
   ArrowRight,
+  Bookmark,
+  Boxes,
   Check,
   CheckCircle2,
   ClipboardCheck,
@@ -103,15 +105,15 @@ const features = [
     text: "Set the field size, place elements to scale, and work on a grid that matches the real venue.",
   },
   {
-    icon: FileText,
+    icon: Boxes,
     color: "text-brand-secondary",
     bg: "bg-brand-secondary/12",
     border: "border-brand-secondary/20",
     surface:
       "from-brand-secondary/[0.13] via-brand-secondary/[0.035] to-transparent",
     glow: "#F0761D",
-    title: "MultiGP obstacle catalog",
-    text: "Place MultiGP gates, flags, and ladders with real dimensions and source references, or use the generic set for custom builds.",
+    title: "Official obstacle catalog",
+    text: "Place official MultiGP obstacles (gates, flags, ladders, hurdles, and barriers) with real dimensions and accurate 3D rendering.",
   },
   {
     icon: Orbit,
@@ -121,7 +123,7 @@ const features = [
     surface: "from-emerald-500/[0.13] via-emerald-500/[0.035] to-transparent",
     glow: "#34d399",
     title: "Realistic 3D preview",
-    text: "Orbit the layout in 3D, add elevation to the race line, and fly through the route cinematically to catch flow problems before build day.",
+    text: "Orbit in 3D, add elevation to the race line, review maneuver curves, and fly through the route to catch flow problems before build day.",
   },
   {
     icon: Share2,
@@ -134,14 +136,14 @@ const features = [
     text: "Share a read-only layout with pilots and crew. Guest links are temporary; account-published links can stay live until revoked.",
   },
   {
-    icon: ClipboardCheck,
-    color: "text-sky-400",
-    bg: "bg-sky-500/12",
-    border: "border-sky-500/20",
-    surface: "from-sky-500/[0.13] via-sky-500/[0.035] to-transparent",
-    glow: "#38bdf8",
-    title: "Venue-ready mobile use",
-    text: "Make practical touch edits on phones and tablets when the venue forces a last-minute change.",
+    icon: Bookmark,
+    color: "text-amber-400",
+    bg: "bg-amber-500/12",
+    border: "border-amber-500/20",
+    surface: "from-amber-500/[0.13] via-amber-500/[0.035] to-transparent",
+    glow: "#f59e0b",
+    title: "Track sections",
+    text: "Save any canvas selection as a named section and place it again with one click. Sections sync with your account across devices.",
   },
   {
     icon: FileText,
@@ -182,7 +184,7 @@ const faq = [
   },
   {
     q: "Can I reuse a layout for a future event?",
-    a: "Yes. Export the project as JSON and import it whenever you want to build on an older layout.",
+    a: "Yes. Save parts of a layout as named presets and place them again in one click. To reuse a full project, export it as JSON and import it at the start of a new event.",
   },
   {
     q: "Can TrackDraw help catch route problems before race day?",
@@ -355,10 +357,10 @@ export default function Home() {
               <Reveal delay={0.23}>
                 <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-2.5">
                   {[
-                    "MultiGP catalog",
+                    "Official obstacle catalog",
+                    "Track sections",
                     "3D preview and flythrough",
                     "Race Pack PDF and SVG",
-                    "Read-only sharing",
                   ].map((item) => (
                     <li
                       key={item}

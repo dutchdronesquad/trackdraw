@@ -4,6 +4,7 @@ import {
   Plus,
   ArrowDown,
   ArrowUp,
+  Bookmark,
   Copy,
   GitMerge,
   Group,
@@ -16,6 +17,8 @@ import {
   Unlock,
   Ungroup,
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { useSavePresetTrigger } from "@/store/save-preset-trigger";
 import {
   ContextMenuContent,
   ContextMenuGroup,
@@ -79,6 +82,10 @@ export function CanvasContextMenuContent({
   onDelete,
   onDeleteWaypoint,
 }: CanvasContextMenuContentProps) {
+  const { data: authSession } = authClient.useSession();
+  const canSavePresets = Boolean(authSession?.user?.id) && contextMenu.ids.length > 1;
+  const triggerSavePreset = useSavePresetTrigger((s) => s.trigger);
+
   const pathSelectionDetail =
     contextMenu.addWaypointSegmentIndex !== null
       ? "Segment selected"
@@ -187,6 +194,18 @@ export function CanvasContextMenuContent({
           Duplicate
           <ContextMenuShortcut>Ctrl/Cmd+D</ContextMenuShortcut>
         </ContextMenuItem>
+        {canSavePresets && (
+          <ContextMenuItem
+            className="gap-2"
+            onClick={() => {
+              triggerSavePreset();
+              onClose();
+            }}
+          >
+            <Bookmark className="size-3.5" />
+            Save as preset
+          </ContextMenuItem>
+        )}
         {contextMenu.canGroup && !contextMenu.hasGroupedShapes && (
           <ContextMenuItem
             className="gap-2"

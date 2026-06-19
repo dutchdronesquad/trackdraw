@@ -22,7 +22,7 @@ Labels used below:
 
 ## Current Priority
 
-The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, remaining focused 3D item controls, generated flightpath assistance, multilingual-readiness for international users, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, user-defined layout presets replacing the current hard-coded list, and powerloop representation research in the route path.
+The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, remaining focused 3D item controls, generated flightpath assistance, multilingual-readiness for international users, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and powerloop 3D curve replacement in the route path.
 
 ## Follow-up
 
@@ -33,22 +33,22 @@ The completed release-sized work is archived below. The next TrackDraw priority 
   - [ ] 3D transform gizmo and edit mode toolbar
         Draft PVA: [3D Transform Controls PVA](../pva/3d-transform-controls-pva.md). Prototype selected-item move and rotate controls with orbit-friendly camera behavior only where the interaction is predictable across 2D and 3D. Do not add dimension handles until move/rotate are accepted.
 
-- [ ] User-defined layout presets (`No account required`, `Account-backed`)
-      Replace the current hard-coded preset list with user-created presets. A user selects shapes on the canvas and saves them as a named preset. For logged-out users the preset is stored in browser-local storage; for signed-in users it is stored in the database under their account. Both paths use the same shape payload format so placement behavior is identical. Paths and route lines are never captured in a preset — only non-polyline shapes. When a user signs in, locally saved presets can be migrated to their account. Sharing a preset with others is a follow-up, but the data model should not block it.
-  - [ ] Selection-to-preset creation flow
-        Let the user select one or more non-path shapes and trigger a "Save as preset" action. Prompt for a name, then store the normalized shape set (positions relative to centroid, no absolute coordinates) as a new preset record. Paths must be excluded from the captured shape set regardless of whether they are part of the selection; the existing `PlaceablePresetShape` type already enforces this.
-  - [ ] Local preset storage (no account required)
-        Persist user presets in browser-local storage for logged-out users using the same `LayoutPreset` shape array format. Presets are browser-local and may be lost if the user clears browser data or switches devices.
-  - [ ] Account-backed preset storage
-        Define a database schema for user presets: owner account, name, shape data, creation and update timestamps. Keep the shape payload format compatible with the existing `LayoutPreset` shape array so the placement helper (`placeLayoutPreset`) can work without changes.
-  - [ ] Local-to-account migration on sign-in
-        When a user signs in and has locally saved presets, offer to migrate them into their account following the same pattern used for local projects.
-  - [ ] Preset management UI
-        Show user presets in the preset picker with rename and delete actions per entry. Rename should be inline or in a lightweight dialog. Delete should ask for confirmation. Empty-state copy should guide users toward creating their first preset from a canvas selection.
-  - [ ] Remove hard-coded presets
-        Remove the four hard-coded presets from `layout-presets.ts` entirely. The preset picker should show only user-created presets; an empty state guides new users toward saving their first one.
-  - [ ] Preset store (`Lower priority`, `Account-backed`)
-        Let users publish a preset to a public store where others can find and add it to their own preset library. Think of it as a community-driven catalog of reusable track sections — users contribute, others browse and save. Keep this out of the first implementation slice; the account-backed storage model needs to be solid first.
+- [x] User-defined track sections (`Account-backed`)
+      Replace the hard-coded section list with a user-created, account-backed section library. A user selects shapes on the canvas and saves them as a named section. Sections are account-backed only — no local storage for logged-out users in the first version. Paths and route lines are never captured — only non-polyline shapes. Local-first storage and local-to-account migration were intentionally deferred.
+  - [x] Selection-to-section creation flow
+        Users select one or more non-path shapes and trigger "Save as track section". A dialog prompts for a name and stores the normalized shape set (positions relative to centroid) as a new section record. Paths are excluded from capture; the existing `PlaceablePresetShape` type enforces this.
+  - [ ] Local section storage — deferred
+        Intentionally not shipped in the first version. Local-first storage for logged-out users can be added later without data-model changes.
+  - [x] Account-backed section storage
+        Database schema with owner account, name, shape payload, and timestamps. Shape format stays compatible with the existing `LayoutPreset` array so `placeLayoutPreset` works unchanged.
+  - [ ] Local-to-account migration — deferred
+        No local section state exists in the first version, so migration was skipped. Can be added alongside local storage if that ships later.
+  - [x] Section management UI
+        Rename and delete actions per section in the picker. Inline rename, confirmation on delete. Empty state guides users toward saving their first section from a canvas selection.
+  - [x] Remove hard-coded sections
+        The four hard-coded presets in `layout-presets.ts` are removed. The picker shows only user-created sections.
+  - [ ] Section store (`Lower priority`, `Account-backed`)
+        Let users publish a section to a community store where others can browse and save it. Keep out of the first slice; account-backed storage needs to be solid first.
 
 - [x] Barriers (`No account required`)
       TrackDraw now has a shared barrier category for obstacles that block sightlines, mark field boundaries, or otherwise serve as physical barriers rather than fly-through gates. The first slice includes the official MultiGP Hurdle plus TrackDraw banner, fence, and net entries with non-traversable race-line behavior, catalog-backed placement, 2D/3D rendering, inspector type switching, inventory counts, and export support.
@@ -97,6 +97,13 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         Define how translated UI, mobile layouts, export PDFs/Race Packs, share pages, and legal pages are reviewed so longer translated strings do not break core workflows.
 
 ## Later Product Follow-up
+
+- [ ] Client-state persistence consolidation (`Lower priority`, `No account required`)
+      The codebase uses several patterns for localStorage: direct calls, `usePersistentBoolean`, and Zustand `persist`. Migrate the cases where state is shared across multiple components to Zustand `persist` so the read/write contract is consistent and reactive by default. Direct localStorage calls for truly local, single-consumer values (theme bootstrap, sidebar collapsed) can stay as-is.
+  - [ ] Migrate `useMeasurementUnitSystem` to Zustand `persist`
+        The hook already manages its own read/write cycle internally. Replacing it with a Zustand store + `persist` middleware removes the manual `localStorage` calls and makes the unit preference reactive across any future consumers without extra wiring.
+  - [ ] Evaluate `useEditorHints` for Zustand `persist`
+        Editor hints use five separate `localStorage` keys with manual get/set/remove calls. A single persisted store would simplify the surface and make it easier to reset all hints at once.
 
 - [ ] VelociDrone experimental export stabilization (`Lower priority`, `No account required`)
       Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping/orientation edge cases.
@@ -186,6 +193,19 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         Decide whether a wrapper should load the hosted app or require its own runtime.
   - [ ] Platform recommendation
         Recommend web-first, Electron, Capacitor, or no wrapper for now.
+
+## v1.11.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.11.0</summary>
+
+- [x] User-defined track sections (`Account-backed`)
+      The hard-coded section list is replaced with an account-backed section library. Users select non-path shapes on the canvas, name the selection, and save it as a reusable section. Sections sync with the account on sign-in and are cleared on sign-out or account switch. The section picker is hidden when not signed in. Rename, delete, and empty-state guidance are included. "Save section" is available from both the canvas context menu and the multi-selection inspector. Local-first storage and migration were intentionally deferred.
+
+- [x] 3D route maneuver review (`No account required`)
+      The 3D route review surface now surfaces maneuver quality for powerloops, split-S, and similar moves through geometry-driven signals. Route curves are rendered more accurately and consistently across elevation changes, with first-pass powerloop and split-S detection visible in the elevation review.
+
+</details>
 
 ## v1.10.0 Archive
 

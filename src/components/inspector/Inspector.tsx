@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   MultiInspectorView,
@@ -19,6 +19,7 @@ import { useEditor } from "@/store/editor";
 import { selectDesignShapes, selectSelectedShapes } from "@/store/selectors";
 import { shapesToPreset } from "@/lib/planning/layout-presets";
 import { useAccountPresetSync } from "@/store/useAccountPresetSync";
+import { useSavePresetTrigger } from "@/store/save-preset-trigger";
 
 export interface InspectorProps {
   headerAction?: ReactNode;
@@ -72,7 +73,16 @@ function Inspector({
     "project" | "layout" | "selection" | null
   >(null);
   const [saveAsPresetOpen, setSaveAsPresetOpen] = useState(false);
-  const { addUserPreset } = useAccountPresetSync();
+  const { addUserPreset, canSavePresets } = useAccountPresetSync();
+  const { pending: savePresetPending, reset: resetSavePresetTrigger } = useSavePresetTrigger();
+
+  useEffect(() => {
+    if (savePresetPending && canSavePresets) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSaveAsPresetOpen(true);
+      resetSavePresetTrigger();
+    }
+  }, [savePresetPending, canSavePresets, resetSavePresetTrigger]);
 
   const handleSaveAsPreset = useCallback(
     (name: string) => {
@@ -117,7 +127,7 @@ function Inspector({
         setSelection={setSelection}
         ungroupSelection={ungroupSelection}
         updateShapesCatalogType={updateShapesCatalogType}
-        onSaveAsPreset={() => setSaveAsPresetOpen(true)}
+        onSaveAsPreset={canSavePresets ? () => setSaveAsPresetOpen(true) : undefined}
       />
     );
   } else if (count === 1) {

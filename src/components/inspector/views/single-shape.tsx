@@ -22,7 +22,11 @@ import {
 } from "@/components/inspector/sections/TowerSection";
 import { Input } from "@/components/ui/input";
 import { buildCatalogTypePatch } from "@/lib/editor/catalog-type-patch";
-import { getSingleInspectorViewModel } from "@/lib/inspector/single/view-model";
+import {
+  getSingleInspectorViewModel,
+  inspectorActionBtnClass,
+  inspectorActionBtnPrimaryClass,
+} from "@/lib/inspector/single/view-model";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import {
   getCatalogEntriesByKind,
@@ -150,9 +154,9 @@ export function SingleInspectorView({
   const { startBatch, finishBatch } = useInspectorInputBatch();
   const { unitSystem } = useMeasurementUnitSystem();
   const unitLabel = unitSystem === "imperial" ? "ft" : "m";
+  const actionBtnClass = inspectorActionBtnClass;
+  const actionBtnPrimaryClass = inspectorActionBtnPrimaryClass;
   const {
-    actionBtnClass,
-    actionBtnPrimaryClass,
     anchorPosition,
     defaultColor,
     groupId,

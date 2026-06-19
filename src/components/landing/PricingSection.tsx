@@ -65,8 +65,29 @@ const compareSections: Array<{ title: string; rows: CompareRow[] }> = [
   {
     title: "Projects",
     rows: [
-      { label: "Cloud-synced projects", guest: false, account: true },
-      { label: "Open projects on any device", guest: false, account: true },
+      {
+        label: "Cloud-synced projects",
+        guest: false,
+        account: true,
+        info: "Projects sync with your account so you can continue on any device — from desktop at home to mobile at the venue.",
+      },
+      {
+        label: "Track sections",
+        guest: false,
+        account: true,
+        info: "Save any canvas selection as a named preset and place it again from the preset picker. Syncs with your account across devices.",
+      },
+    ],
+  },
+  {
+    title: "Integration",
+    rows: [
+      {
+        label: "REST API access",
+        guest: false,
+        account: true,
+        accountDetail: "Bearer-authenticated, API key management",
+      },
     ],
   },
 ];
@@ -88,7 +109,7 @@ const planCards: PlanCard[] = [
     title: "Account",
     priceLabel: "Free",
     description:
-      "Best for durable published links, embeds, gallery publishing, and reopening projects on another device.",
+      "Best for durable published links, embeds, gallery, track sections, REST API access, and cross-device project continuity.",
     href: "/login",
     ctaLabel: "Create account",
     highlighted: true,

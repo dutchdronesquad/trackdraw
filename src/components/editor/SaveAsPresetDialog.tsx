@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { createPortal } from "react-dom";
+import { Bookmark, Shapes } from "lucide-react";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
@@ -34,27 +35,35 @@ export function SaveAsPresetDialog({
 
   const content = (
     <div className="space-y-4">
-      {pathCount > 0 && (
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          {pathCount === 1 ? "1 path" : `${pathCount} paths`} in your selection
-          will not be included — presets only capture non-path shapes.
-        </p>
-      )}
-      <div className="space-y-2">
-        <p className="text-muted-foreground text-sm">
-          {shapeCount === 1
-            ? "1 shape will be saved."
-            : `${shapeCount} shapes will be saved.`}{" "}
-          Give this preset a name so you can find it in the picker later.
-        </p>
+      <div className="border-border/40 bg-muted/30 flex items-center gap-3 rounded-xl border px-3.5 py-3">
+        <div className="bg-primary/10 flex size-9 shrink-0 items-center justify-center rounded-lg">
+          <Shapes className="text-primary size-4" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-foreground text-[13px] font-medium">
+            {shapeCount === 1 ? "1 shape" : `${shapeCount} shapes`}
+          </p>
+          {pathCount > 0 && (
+            <p className="text-muted-foreground text-[11px] leading-snug">
+              {pathCount === 1 ? "1 path" : `${pathCount} paths`} will be
+              excluded — presets only capture non-path shapes.
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-foreground/80 text-[11px] font-medium tracking-wide uppercase">
+          Preset name
+        </label>
         <Input
           ref={inputRef}
           key={open ? "open" : "closed"}
           defaultValue=""
-          placeholder="Preset name"
+          placeholder="e.g. Timing gate setup"
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
+          autoFocus
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSave();
             if (e.key === "Escape") onCancel();
@@ -67,6 +76,7 @@ export function SaveAsPresetDialog({
           Cancel
         </Button>
         <Button type="button" onClick={handleSave}>
+          <Bookmark className="size-3.5" />
           Save preset
         </Button>
       </div>
@@ -81,7 +91,7 @@ export function SaveAsPresetDialog({
           if (!next) onCancel();
         }}
         title="Save as preset"
-        subtitle="Name your preset to place it later from the preset picker."
+        subtitle="Give your selection a name so you can place it again from the preset picker."
         bodyClassName="pt-4 pb-4"
       >
         {content}
@@ -96,7 +106,7 @@ export function SaveAsPresetDialog({
         if (!next) onCancel();
       }}
       title="Save as preset"
-      subtitle="Name your preset to place it later from the preset picker."
+      subtitle="Give your selection a name so you can place it again from the preset picker."
       maxWidth="max-w-sm"
     >
       {content}

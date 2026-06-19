@@ -110,6 +110,6 @@ export function useAccountPresetSync() {
     addUserPreset: addPreset,
     removeUserPreset: removePreset,
     renameUserPreset: renamePreset,
-    isAccountBacked: !!userId,
+    canSavePresets: !!userId,
   };
 }

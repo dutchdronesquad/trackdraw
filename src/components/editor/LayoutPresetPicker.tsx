@@ -6,6 +6,7 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import {
   Bookmark,
   BookmarkPlus,
+  Lightbulb,
   LogIn,
   Pencil,
   Store,
@@ -348,7 +349,7 @@ function MyPresetsContent({
           <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
             Select multiple shapes on the canvas and use{" "}
             <strong className="text-foreground/60">Save preset</strong> in the
-            inspector to save your own preset sections here.
+            inspector to add your first preset here.
           </p>
         </div>
       </div>
@@ -371,8 +372,7 @@ function StoreContent() {
       <div className="space-y-1">
         <p className="text-foreground/70 text-sm font-medium">Coming soon</p>
         <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
-          Community-shared presets will appear here. Save your own presets and
-          share them with the TrackDraw community.
+          Community-shared presets will appear here. Save your own presets and share them with the TrackDraw community.
         </p>
       </div>
     </div>
@@ -469,7 +469,7 @@ export function LayoutPresetPicker({
         open={open}
         onOpenChange={onOpenChange}
         title="Presets"
-        subtitle="Choose a preset, then tap once on the canvas to place the full section."
+        subtitle="Choose a preset, then tap once on the canvas to place it."
         pinnedContent={
           <>
             {selectedPreset && (
@@ -527,8 +527,7 @@ export function LayoutPresetPicker({
                 Layout presets
               </p>
               <p className="text-muted-foreground mt-1.5 max-w-none text-sm leading-relaxed">
-                Choose a multi-shape preset. Place it once on the canvas, then
-                edit the inserted shapes normally.
+                Choose a preset, place it on the canvas, then edit the inserted shapes normally.
               </p>
             </div>
             <button
@@ -559,14 +558,14 @@ export function LayoutPresetPicker({
               </div>
             )}
 
-            <div className="border-border/40 mt-auto rounded-xl border border-dashed px-4 py-3">
-              <p className="text-foreground text-xs font-medium">
-                How it works
-              </p>
-              <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                Select a preset, click once on the canvas, then continue editing
-                the inserted shapes exactly like any other TrackDraw content.
-              </p>
+            <div className="mt-auto rounded-xl border border-amber-400/20 bg-amber-400/6 px-4 py-3">
+              <div className="flex gap-2.5">
+                <Lightbulb className="mt-px size-3.5 shrink-0 text-amber-400/80" />
+                <p className="text-muted-foreground text-[11px] leading-relaxed">
+                  Select shapes on the canvas, then use{" "}
+                  <strong className="text-foreground/60">Save preset</strong> in the inspector to add your own.
+                </p>
+              </div>
             </div>
           </div>
 

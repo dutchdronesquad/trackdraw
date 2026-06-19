@@ -19,6 +19,10 @@ import {
 import type { Shape } from "@/lib/types";
 import { Bookmark, Copy, GitMerge, Group, Trash2, Ungroup } from "lucide-react";
 import {
+  inspectorActionBtnClass,
+  inspectorActionBtnDangerClass,
+} from "@/lib/inspector/single/view-model";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -26,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  IconBtn,
   Row,
   Section,
   useInspectorInputBatch,
@@ -170,77 +173,104 @@ export function MultiInspectorView({
             subtitle="Bulk actions are available here. Open a single item from the canvas when you need detailed editing."
             meta={meta.length > 0 ? meta : undefined}
           />
-          <div className="flex flex-wrap items-center gap-1.5">
-            {polylineIds.length >= 2 && (
-              <IconBtn
-                onClick={() => joinPolylines(polylineIds)}
-                title="Join paths"
-                label="Join"
-              >
-                <GitMerge className="size-3" />
-              </IconBtn>
-            )}
-            {canGroupSelection && (
-              <IconBtn
-                onClick={() => groupSelection(selection)}
-                title="Group selection"
-                label="Group"
-              >
-                <Group className="size-3" />
-              </IconBtn>
-            )}
-            {hasGroupedShapes && (
-              <IconBtn
-                onClick={() => ungroupSelection(selection)}
-                title="Ungroup selection"
-                label="Ungroup"
-              >
-                <Ungroup className="size-3" />
-              </IconBtn>
-            )}
-            <IconBtn
-              onClick={() => duplicateShapes(selection)}
-              title="Duplicate"
-              label="Duplicate"
-            >
-              <Copy className="size-3" />
-            </IconBtn>
-            {onSaveAsPreset && placeableCount > 0 && (
-              <IconBtn
-                onClick={onSaveAsPreset}
-                title="Save as preset"
-                label="Save preset"
-              >
-                <Bookmark className="size-3" />
-              </IconBtn>
-            )}
-            <IconBtn
-              onClick={() => {
-                removeShapes(selection);
-                setSelection([]);
-              }}
-              title="Delete"
-              danger
-              label="Delete"
-            >
-              <Trash2 className="size-3" />
-            </IconBtn>
-          </div>
-          <div className="grid grid-cols-2 gap-2 lg:gap-1">
-            {Object.entries(kinds)
-              .filter(([, count]) => count > 0)
-              .map(([kind, count]) => (
-                <div
-                  key={kind}
-                  className="border-border/60 bg-muted/30 rounded-md border px-2.5 py-2"
+          <div className="space-y-1.5">
+            {/* Row 1: Group/Ungroup + Duplicate + Delete (max 3) */}
+            <div className="flex gap-1.5">
+              {canGroupSelection && (
+                <button
+                  type="button"
+                  onClick={() => groupSelection(selection)}
+                  title="Group selection"
+                  aria-label="Group selection"
+                  className={`${inspectorActionBtnClass} flex-1`}
                 >
-                  <p className="text-muted-foreground text-[9px] tracking-wider uppercase">
-                    {shapeKindLabels[kind as Shape["kind"]]}
-                  </p>
-                  <p className="text-sm font-semibold">{count}×</p>
-                </div>
-              ))}
+                  <Group className="size-3" />
+                  <span>Group</span>
+                </button>
+              )}
+              {hasGroupedShapes && (
+                <button
+                  type="button"
+                  onClick={() => ungroupSelection(selection)}
+                  title="Ungroup selection"
+                  aria-label="Ungroup selection"
+                  className={`${inspectorActionBtnClass} flex-1`}
+                >
+                  <Ungroup className="size-3" />
+                  <span>Ungroup</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => duplicateShapes(selection)}
+                title="Duplicate"
+                aria-label="Duplicate"
+                className={`${inspectorActionBtnClass} flex-1`}
+              >
+                <Copy className="size-3" />
+                <span>Duplicate</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  removeShapes(selection);
+                  setSelection([]);
+                }}
+                title="Delete"
+                aria-label="Delete"
+                className={`${inspectorActionBtnDangerClass} flex-1`}
+              >
+                <Trash2 className="size-3" />
+                <span>Delete</span>
+              </button>
+            </div>
+            {/* Row 2: secondary actions (Join + Save preset) */}
+            {(polylineIds.length >= 2 || (onSaveAsPreset && placeableCount > 0)) && (
+              <div className="grid grid-cols-2 gap-1.5">
+                {onSaveAsPreset && placeableCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={onSaveAsPreset}
+                    title="Save as preset"
+                    aria-label="Save as preset"
+                    className={inspectorActionBtnClass}
+                  >
+                    <Bookmark className="size-3" />
+                    <span>Save section</span>
+                  </button>
+                )}
+                {polylineIds.length >= 2 && (
+                  <button
+                    type="button"
+                    onClick={() => joinPolylines(polylineIds)}
+                    title="Join paths"
+                    aria-label="Join paths"
+                    className={inspectorActionBtnClass}
+                  >
+                    <GitMerge className="size-3" />
+                    <span>Join paths</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
+          <Section title="Selection" collapsible={false}>
+            <div className="grid grid-cols-2 gap-2 lg:gap-1">
+              {Object.entries(kinds)
+                .filter(([, count]) => count > 0)
+                .map(([kind, count]) => (
+                  <div
+                    key={kind}
+                    className="border-border/60 bg-muted/30 rounded-md border px-2.5 py-2"
+                  >
+                    <p className="text-muted-foreground text-[9px] tracking-wider uppercase">
+                      {shapeKindLabels[kind as Shape["kind"]]}
+                    </p>
+                    <p className="text-sm font-semibold">{count}×</p>
+                  </div>
+                ))}
+            </div>
+          </Section>
           {batchCatalogEntries ? (
             <Section title="Catalog" defaultOpen>
               <Row label="Type">
@@ -300,15 +330,6 @@ export function MultiInspectorView({
                 />
               </Row>
             </Section>
-          )}
-          {polylineIds.length >= 2 && (
-            <button
-              className="border-border/60 bg-muted/35 hover:bg-muted/55 text-foreground/80 inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border px-3 text-[11px] transition-colors lg:h-8"
-              onClick={() => joinPolylines(polylineIds)}
-            >
-              <GitMerge className="size-3.5" />
-              Join selected paths
-            </button>
           )}
           <InspectorFooterMobile>
             <ElevationChart />
