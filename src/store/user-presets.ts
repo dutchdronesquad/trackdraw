@@ -10,6 +10,7 @@ interface UserPresetState {
   addUserPreset: (preset: Omit<LayoutPreset, "id">) => string;
   removeUserPreset: (id: string) => void;
   renameUserPreset: (id: string, name: string) => void;
+  setUserPresets: (presets: LayoutPreset[]) => void;
 }
 
 export const useUserPresets = create<UserPresetState>()(
@@ -35,6 +36,7 @@ export const useUserPresets = create<UserPresetState>()(
           ),
         }));
       },
+      setUserPresets: (presets) => set({ userPresets: presets }),
     }),
     {
       name: "trackdraw.userPresets",

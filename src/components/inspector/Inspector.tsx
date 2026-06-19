@@ -18,7 +18,7 @@ import {
 import { useEditor } from "@/store/editor";
 import { selectDesignShapes, selectSelectedShapes } from "@/store/selectors";
 import { shapesToPreset } from "@/lib/planning/layout-presets";
-import { useUserPresets } from "@/store/user-presets";
+import { useAccountPresetSync } from "@/store/useAccountPresetSync";
 
 export interface InspectorProps {
   headerAction?: ReactNode;
@@ -72,7 +72,7 @@ function Inspector({
     "project" | "layout" | "selection" | null
   >(null);
   const [saveAsPresetOpen, setSaveAsPresetOpen] = useState(false);
-  const { addUserPreset } = useUserPresets();
+  const { addUserPreset } = useAccountPresetSync();
 
   const handleSaveAsPreset = useCallback(
     (name: string) => {

@@ -12,6 +12,7 @@ import {
   type LayoutPreset,
 } from "@/lib/planning/layout-presets";
 import { useUserPresets } from "@/store/user-presets";
+import { useAccountPresetSync } from "@/store/useAccountPresetSync";
 import { shapeKindLabels } from "@/lib/track/items/registry";
 import { cn } from "@/lib/utils";
 
@@ -157,7 +158,7 @@ function UserPresetCard({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const { renameUserPreset, removeUserPreset } = useUserPresets();
+  const { renameUserPreset, removeUserPreset } = useAccountPresetSync();
   const [renaming, setRenaming] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -513,7 +514,7 @@ export function LayoutPresetPicker({
           </div>
         </div>
 
-        <div className="border-border/30 grid min-h-[26rem] grid-cols-[16rem_minmax(0,1fr)] border-t">
+        <div className="border-border/30 grid min-h-104 grid-cols-[16rem_minmax(0,1fr)] border-t">
           <div className="border-border/30 flex flex-col gap-6 border-r px-4 py-6">
             <SidebarNav active={section} onChange={setSection} />
 
