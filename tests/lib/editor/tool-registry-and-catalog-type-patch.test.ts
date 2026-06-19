@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCatalogTypePatch,
+  buildBarrierCatalogTypePatch,
   buildGateCatalogTypePatch,
   buildLadderCatalogTypePatch,
   buildTowerCatalogTypePatch,
@@ -20,12 +21,19 @@ import {
   MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID,
   MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID,
   MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID,
+  TRACKDRAW_BANNER_ELEMENT_ID,
+  TRACKDRAW_FENCE_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
   TRACKDRAW_GATE_ELEMENT_ID,
   TRACKDRAW_LADDER_ELEMENT_ID,
   TRACKDRAW_TOWER_ELEMENT_ID,
 } from "@/lib/track/elements/catalog";
-import type { GateShape, LadderShape, TowerShape } from "@/lib/types";
+import type {
+  BarrierShape,
+  GateShape,
+  LadderShape,
+  TowerShape,
+} from "@/lib/types";
 import { feetToMeters } from "@/lib/track/units";
 
 describe("editor tool helpers", () => {
@@ -131,6 +139,30 @@ describe("editor tool helpers", () => {
           elementId: MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID,
           assignedKind: "gate",
           official: true,
+        },
+      },
+    });
+  });
+
+  it("keeps catalog identity for generic barrier variants", () => {
+    const shape = createShapeForTool(
+      "barrier",
+      { x: 6, y: 8 },
+      {
+        activePlacementElementId: {
+          barrier: TRACKDRAW_FENCE_ELEMENT_ID,
+        },
+      }
+    );
+
+    expect(shape).toMatchObject({
+      kind: "barrier",
+      variant: "fence",
+      meta: {
+        catalog: {
+          elementId: TRACKDRAW_FENCE_ELEMENT_ID,
+          assignedKind: "barrier",
+          official: false,
         },
       },
     });
@@ -342,5 +374,36 @@ describe("buildLadderCatalogTypePatch", () => {
       color: "#14b8a6",
     });
     expect(patch?.meta?.catalog).toBeUndefined();
+  });
+});
+
+describe("buildBarrierCatalogTypePatch", () => {
+  it("switches between generic barrier variants and keeps catalog identity", () => {
+    const bannerShape = createCatalogShapeDraft(TRACKDRAW_BANNER_ELEMENT_ID, {
+      x: 3,
+      y: 4,
+      rotation: 45,
+      includeCatalogMetadata: true,
+    }) as BarrierShape & { id: string };
+    bannerShape.id = "barrier-1";
+
+    const patch = buildBarrierCatalogTypePatch(
+      bannerShape,
+      TRACKDRAW_FENCE_ELEMENT_ID
+    );
+
+    expect(patch).toMatchObject({
+      kind: "barrier",
+      variant: "fence",
+      x: 3,
+      y: 4,
+      rotation: 45,
+      meta: {
+        catalog: expect.objectContaining({
+          elementId: TRACKDRAW_FENCE_ELEMENT_ID,
+          official: false,
+        }),
+      },
+    });
   });
 });

@@ -48,11 +48,14 @@ function buildCatalogTypePatchInner<S extends CatalogPatchShape>(
         Object.entries(shape.meta).filter(([k]) => k !== "catalog")
       )
     : {};
-  const newCatalogIdentity = createTrackElementCatalogIdentity(entry);
+  const newCatalogIdentity =
+    entry.official || entry.kind === "barrier"
+      ? createTrackElementCatalogIdentity(entry)
+      : undefined;
   const newMeta =
-    Object.keys(strippedMeta).length > 0
+    newCatalogIdentity || Object.keys(strippedMeta).length > 0
       ? { ...strippedMeta, catalog: newCatalogIdentity }
-      : { catalog: newCatalogIdentity };
+      : undefined;
 
   return { ...draft, meta: newMeta } as unknown as Partial<S>;
 }
