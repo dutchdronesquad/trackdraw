@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
 import type { LayoutPreset } from "@/lib/planning/layout-presets";
 
@@ -11,25 +12,32 @@ interface UserPresetState {
   renameUserPreset: (id: string, name: string) => void;
 }
 
-export const useUserPresets = create<UserPresetState>((set) => ({
-  userPresets: [],
-  addUserPreset: (preset) => {
-    const id = nanoid();
-    set((state) => ({
-      userPresets: [...state.userPresets, { ...preset, id }],
-    }));
-    return id;
-  },
-  removeUserPreset: (id) => {
-    set((state) => ({
-      userPresets: state.userPresets.filter((p) => p.id !== id),
-    }));
-  },
-  renameUserPreset: (id, name) => {
-    set((state) => ({
-      userPresets: state.userPresets.map((p) =>
-        p.id === id ? { ...p, name } : p
-      ),
-    }));
-  },
-}));
+export const useUserPresets = create<UserPresetState>()(
+  persist(
+    (set) => ({
+      userPresets: [],
+      addUserPreset: (preset) => {
+        const id = nanoid();
+        set((state) => ({
+          userPresets: [...state.userPresets, { ...preset, id }],
+        }));
+        return id;
+      },
+      removeUserPreset: (id) => {
+        set((state) => ({
+          userPresets: state.userPresets.filter((p) => p.id !== id),
+        }));
+      },
+      renameUserPreset: (id, name) => {
+        set((state) => ({
+          userPresets: state.userPresets.map((p) =>
+            p.id === id ? { ...p, name } : p
+          ),
+        }));
+      },
+    }),
+    {
+      name: "trackdraw.userPresets",
+    }
+  )
+);
