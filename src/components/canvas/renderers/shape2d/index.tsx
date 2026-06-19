@@ -5,6 +5,7 @@ import { Group, Line, Rect, Text } from "react-konva";
 import { useTheme } from "@/hooks/useTheme";
 import type { Shape } from "@/lib/types";
 import { getShapeLocalBounds } from "../shape-bounds";
+export { renderBarrier } from "./barrier";
 export { renderCone } from "./cone";
 export { renderDiveGate } from "./divegate";
 export { renderFlag } from "./flag";
@@ -13,6 +14,7 @@ export { renderLabel } from "./label";
 export { renderLadder } from "./ladder";
 export { renderStartFinish } from "./startfinish";
 export { renderTower } from "./tower";
+import { renderBarrier } from "./barrier";
 import { renderCone } from "./cone";
 import { renderDiveGate } from "./divegate";
 import { renderFlag } from "./flag";
@@ -159,6 +161,7 @@ export function renderHoverIndicator(shape: Shape, ppm: number) {
 }
 
 export const shape2DRenderers: Shape2DRendererMap = {
+  barrier: renderBarrier,
   cone: renderCone,
   divegate: renderDiveGate,
   flag: renderFlag,

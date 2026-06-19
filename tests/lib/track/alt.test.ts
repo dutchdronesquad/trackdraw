@@ -9,6 +9,7 @@ const inventory = {
   startfinish: 0,
   ladder: 0,
   divegate: 0,
+  barrier: 0,
 };
 
 describe("track altitude helpers", () => {

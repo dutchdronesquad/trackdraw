@@ -120,6 +120,7 @@ export function MultiInspectorView({
       ladder: 0,
       tower: 0,
       divegate: 0,
+      barrier: 0,
     }
   );
   const polylineIds = selectedShapes

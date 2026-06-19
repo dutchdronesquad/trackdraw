@@ -13,6 +13,7 @@ const inventory = {
   startfinish: 1,
   ladder: 2,
   divegate: 2,
+  barrier: 0,
 };
 
 function makeDesign(shapes: Shape[]): TrackDesign {

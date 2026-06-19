@@ -17,6 +17,7 @@ import {
 } from "@/lib/track/elements/visual";
 import { POLYLINE_3D_HEIGHT_OFFSET } from "@/lib/track/constants";
 import type {
+  BarrierShape,
   ConeShape,
   DiveGateShape,
   FlagShape,
@@ -29,6 +30,7 @@ import type {
   TowerShape,
 } from "@/lib/types";
 import { assertNever } from "@/lib/utils";
+import { Barrier3D, getBarrierTopY } from "./Barrier3D";
 import { Gate3D } from "./Gate3D";
 import { Ladder3D } from "./Ladder3D";
 import { Flag3D } from "./Flag3D";
@@ -99,6 +101,7 @@ const shapeTopYDispatch: Record<ShapeKind, (shape: Shape) => number> = {
     );
   },
   divegate: (shape) => Math.max(getDiveGateTopY(shape as DiveGateShape), 0.5),
+  barrier: (shape) => getBarrierTopY(shape as BarrierShape),
 };
 
 function getShapeTopY(shape: Shape): number {
@@ -229,6 +232,27 @@ function Shape3D({
             tiltDragRef={tiltDragRef}
             elevationOverrideRef={elevationOverrideRef}
           />
+          {isSelected && <SelectionMarker3D shape={shape} />}
+        </group>
+      );
+    case "barrier":
+      return (
+        <group onClick={(event) => onSelect(event, shape.id)}>
+          <Barrier3D shape={shape} selected={isSelected} />
+          {/* Invisible hit plane so clicks anywhere on the barrier face register,
+              even between the thin wires of net/fence variants */}
+          <mesh
+            position={[shape.x, shape.height / 2, shape.y]}
+            rotation={[0, (-shape.rotation * Math.PI) / 180, 0]}
+          >
+            <planeGeometry args={[shape.width, shape.height]} />
+            <meshBasicMaterial
+              transparent
+              opacity={0}
+              side={THREE.DoubleSide}
+              depthWrite={false}
+            />
+          </mesh>
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
       );

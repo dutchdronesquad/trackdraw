@@ -1,4 +1,5 @@
 import type {
+  BarrierShape,
   DiveGateShape,
   FlagShape,
   GateShape,
@@ -41,7 +42,8 @@ type OrientationShape =
   | StartFinishShape
   | DiveGateShape
   | FlagShape
-  | LabelShape;
+  | LabelShape
+  | BarrierShape;
 
 export function resolveShapeOrientationDegrees(
   shape: OrientationShape,

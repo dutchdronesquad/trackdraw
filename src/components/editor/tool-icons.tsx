@@ -84,6 +84,31 @@ function DiveGateIcon({ className }: { className?: string }) {
   );
 }
 
+function BarrierIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* Wide banner panel */}
+      <rect x="1" y="2.5" width="12" height="7" rx="0.5" />
+      {/* Left support post */}
+      <line x1="3" y1="9.5" x2="3" y2="12.5" />
+      {/* Right support post */}
+      <line x1="11" y1="9.5" x2="11" y2="12.5" />
+      {/* Three chevron marks */}
+      <polyline points="3.5,4.2 4.8,6 3.5,7.8" strokeWidth="1.3" />
+      <polyline points="6.3,4.2 7.6,6 6.3,7.8" strokeWidth="1.3" />
+      <polyline points="9.1,4.2 10.4,6 9.1,7.8" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
 function iconForTool(tool: EditorTool, className: string): ReactNode {
   switch (tool) {
     case "select":
@@ -100,6 +125,8 @@ function iconForTool(tool: EditorTool, className: string): ReactNode {
       return <TowerIcon className={className} />;
     case "divegate":
       return <DiveGateIcon className={className} />;
+    case "barrier":
+      return <BarrierIcon className={className} />;
     case "startfinish":
       return <Target className={className} />;
     case "flag":
@@ -157,6 +184,7 @@ export const toolbarToolGroups: ToolGroup[] = [
       buildToolEntry("ladder", "size-3.5"),
       buildToolEntry("tower", "size-3.5"),
       buildToolEntry("divegate", "size-3.5"),
+      buildToolEntry("barrier", "size-3.5"),
       buildToolEntry("flag", "size-3.5"),
       buildToolEntry("cone", "size-3.5"),
     ],
@@ -177,6 +205,7 @@ export const mobileToolEntries: ToolEntry[] = [
   buildToolEntry("ladder", "size-5"),
   buildToolEntry("tower", "size-5"),
   buildToolEntry("divegate", "size-5"),
+  buildToolEntry("barrier", "size-5"),
   buildToolEntry("startfinish", "size-5"),
   buildToolEntry("flag", "size-5"),
   buildToolEntry("cone", "size-5"),

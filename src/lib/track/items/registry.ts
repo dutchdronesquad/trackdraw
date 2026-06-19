@@ -1,4 +1,5 @@
 import {
+  TRACKDRAW_BANNER_ELEMENT_ID,
   TRACKDRAW_CONE_ELEMENT_ID,
   TRACKDRAW_DIVE_GATE_ELEMENT_ID,
   TRACKDRAW_FLAG_ELEMENT_ID,
@@ -29,7 +30,8 @@ export type TrackItemToolId =
   | "startfinish"
   | "ladder"
   | "tower"
-  | "divegate";
+  | "divegate"
+  | "barrier";
 
 export type CatalogPlacementToolId = Exclude<TrackItemToolId, "polyline">;
 
@@ -286,6 +288,32 @@ export const trackItemAdapters = [
         complexity: "heavy" as const,
       };
     },
+  },
+  {
+    kind: "barrier",
+    label: "Barrier",
+    inventory: true,
+    tool: {
+      id: "barrier",
+      label: "Barrier",
+      mobileLabel: "Barrier",
+      shortcut: "B",
+      defaultCatalogEntryId: TRACKDRAW_BANNER_ELEMENT_ID,
+      catalogPlacement: true,
+    },
+    orientation: { facing: 0, canvasGuide: 90, previewGuide: 0 },
+    numberedObstacle: false,
+    setupHardObstacle: false,
+    rotateHandle3d: true,
+    canvasRenderRotationOffsetDeg: 180,
+    routeToleranceWidthFactor: 0,
+    getSetupProfile: () => ({
+      priority: 4,
+      prepMinutes: 2,
+      placeMinutes: 2,
+      note: "Set up barriers after the main gates and obstacles are positioned.",
+      complexity: "standard" as const,
+    }),
   },
 ] satisfies TrackItemAdapter[];
 

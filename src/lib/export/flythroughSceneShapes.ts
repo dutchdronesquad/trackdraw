@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import type {
+  BarrierShape,
   ConeShape,
   DiveGateShape,
   FlagShape,
@@ -10,6 +11,7 @@ import type {
   StartFinishShape,
   TowerShape,
 } from "@/lib/types";
+import { addBarrierSceneShapes } from "./flythrough/barrier";
 import { addGateSceneShapes } from "./flythrough/gate";
 import { addTowerSceneShapes } from "./flythrough/tower";
 import { addLadderSceneShapes } from "./flythrough/ladder";
@@ -24,6 +26,8 @@ type FlythroughRenderer = (
 ) => Promise<void> | void;
 
 const flythroughRenderers: Record<ShapeKind, FlythroughRenderer> = {
+  barrier: (shape, scene) =>
+    addBarrierSceneShapes(shape as BarrierShape, scene),
   gate: (shape, scene) => addGateSceneShapes(shape as GateShape, scene),
   tower: (shape, scene) => addTowerSceneShapes(shape as TowerShape, scene),
   ladder: (shape, scene) => addLadderSceneShapes(shape as LadderShape, scene),

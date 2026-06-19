@@ -1,4 +1,5 @@
 import {
+  getBarrier2DShape,
   getCone2DShape,
   getTower2DShape,
   getDiveGate2DShape,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/track/shape2d";
 import { getPolylineBounds } from "@/lib/track/polyline-derived";
 import type {
+  BarrierShape,
   ConeShape,
   DiveGateShape,
   FlagShape,
@@ -84,6 +86,10 @@ const shapeBoundsDispatch: Record<
     };
   },
   polyline: (shape, ppm) => getPolylineBounds(shape as PolylineShape, ppm),
+  barrier: (shape, ppm) => {
+    const { width, depth } = getBarrier2DShape(shape as BarrierShape, ppm);
+    return { x: -width / 2, y: -depth / 2, width, height: depth };
+  },
 };
 
 export function getShapeLocalBounds(shape: Shape, ppm: number): Bounds | null {

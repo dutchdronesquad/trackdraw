@@ -1,4 +1,5 @@
 import type {
+  BarrierShape,
   TrackDesign,
   Shape,
   ShapeKind,
@@ -27,6 +28,7 @@ import {
   getLadder2DShape,
   getTower2DShape,
 } from "../track/shape2d";
+import { barrierToSvg } from "./svg/barrier";
 import { coneToSvg } from "./svg/cone";
 import { diveGateToSvg } from "./svg/divegate";
 import { flagToSvg } from "./svg/flag";
@@ -48,6 +50,7 @@ const shapeToSvgDispatch: Record<
   ShapeKind,
   (shape: Shape, ppm: number, primaryPolylineId: string | null) => string
 > = {
+  barrier: (shape, ppm) => barrierToSvg(shape as BarrierShape, ppm),
   gate: (shape, ppm) => gateToSvg(shape as GateShape, ppm),
   flag: (shape, ppm) => flagToSvg(shape as FlagShape, ppm),
   cone: (shape, ppm) => coneToSvg(shape as ConeShape, ppm),

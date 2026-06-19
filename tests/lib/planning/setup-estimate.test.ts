@@ -9,6 +9,7 @@ const inventory = {
   startfinish: 1,
   ladder: 1,
   divegate: 1,
+  barrier: 0,
 };
 
 describe("setup estimate helpers", () => {
@@ -130,6 +131,7 @@ describe("setup estimate helpers", () => {
         startfinish: 1,
         ladder: 0,
         divegate: 0,
+        barrier: 0,
       },
       field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
       shapes: [

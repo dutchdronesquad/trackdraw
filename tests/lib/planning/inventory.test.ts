@@ -16,6 +16,7 @@ describe("planning inventory helpers", () => {
       startfinish: 0,
       flag: 0,
       cone: 0,
+      barrier: 0,
     });
 
     expect(
@@ -32,6 +33,7 @@ describe("planning inventory helpers", () => {
       startfinish: 0,
       flag: 4,
       cone: 0,
+      barrier: 0,
     });
   });
 
@@ -60,6 +62,7 @@ describe("planning inventory helpers", () => {
       gate: 1,
       flag: 1,
       cone: 0,
+      barrier: 0,
     });
 
     const design = normalizeDesign({
@@ -76,6 +79,7 @@ describe("planning inventory helpers", () => {
         startfinish: 0,
         flag: 0,
         cone: 0,
+        barrier: 0,
       },
       field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
       shapes,
@@ -104,6 +108,7 @@ describe("planning inventory helpers", () => {
         startfinish: 0,
         flag: 2,
         cone: 0,
+        barrier: 0,
       },
       field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
       shapes: [

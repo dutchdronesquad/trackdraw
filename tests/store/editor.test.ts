@@ -744,6 +744,7 @@ describe("editor store history", () => {
         startfinish: 0,
         ladder: 0,
         divegate: 0,
+        barrier: 0,
       },
       field: { width: 40, height: 20, origin: "tl", gridStep: 1, ppm: 20 },
       shapes: [],

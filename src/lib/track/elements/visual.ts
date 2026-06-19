@@ -1,4 +1,5 @@
 import type {
+  BarrierShape,
   TowerShape,
   DiveGateShape,
   FlagShape,
@@ -11,6 +12,7 @@ import {
   TRACKDRAW_TOWER_ELEMENT_ID,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
+  type BarrierVisualSpec,
   type DiveGateVisualSpec,
   type TowerVisualSpec,
   type FrameOnlyGateVisualSpec,
@@ -138,6 +140,14 @@ export function getDiveGateElevationMin(shape: DiveGateShape): number {
 export function getDiveGateElevationMax(shape: DiveGateShape): number | null {
   const entry = getTrackElementCatalogEntry(getDiveGateEntryId(shape));
   return entry?.elevationMaxMeters ?? null;
+}
+
+export function getBarrierVisualSpec(
+  shape: BarrierShape
+): BarrierVisualSpec | null {
+  const visual = getTrackElementVisualSpec(shape);
+  if (visual?.kind === "barrier") return visual;
+  return null;
 }
 
 function getFallbackGateVisualSpec(shape: GateShape): FrameOnlyGateVisualSpec {

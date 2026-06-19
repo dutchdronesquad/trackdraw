@@ -18,6 +18,7 @@ const shapeKinds: ShapeKind[] = [
   "startfinish",
   "ladder",
   "divegate",
+  "barrier",
 ];
 
 describe("track item adapters", () => {
@@ -64,6 +65,7 @@ describe("getInventoryKinds", () => {
     expect(inventoryKinds).toContain("startfinish");
     expect(inventoryKinds).toContain("ladder");
     expect(inventoryKinds).toContain("divegate");
+    expect(inventoryKinds).toContain("barrier");
   });
 
   it("excludes non-inventory kinds", () => {

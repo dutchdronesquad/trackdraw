@@ -9,11 +9,12 @@ export type ShapeKind =
   | "polyline"
   | "startfinish"
   | "ladder"
-  | "divegate";
+  | "divegate"
+  | "barrier";
 
 export type InventoryShapeKind = Extract<
   ShapeKind,
-  "gate" | "flag" | "cone" | "startfinish" | "ladder" | "divegate"
+  "gate" | "flag" | "cone" | "startfinish" | "ladder" | "divegate" | "barrier"
 >;
 
 export type InventoryProfile = Record<InventoryShapeKind, number>;
@@ -87,6 +88,15 @@ export interface DiveGateShape extends BaseShape {
   elevation?: number; // m height of frame center above ground (generic variant, default 3.0)
 }
 
+export type BarrierVariant = "hurdle" | "banner" | "fence" | "net";
+
+export interface BarrierShape extends BaseShape {
+  kind: "barrier";
+  variant: BarrierVariant;
+  width: number; // m horizontal span
+  height: number; // m height above ground (top of barrier)
+}
+
 export interface PolylinePoint {
   x: number;
   y: number;
@@ -112,7 +122,8 @@ export type Shape =
   | PolylineShape
   | StartFinishShape
   | LadderShape
-  | DiveGateShape;
+  | DiveGateShape
+  | BarrierShape;
 
 export type ShapeDraft<T extends Shape = Shape> = T extends Shape
   ? Omit<T, "id">

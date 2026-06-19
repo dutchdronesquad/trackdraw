@@ -23,6 +23,7 @@ describe("shape group helpers", () => {
       startfinish: 0,
       flag: 0,
       cone: 0,
+      barrier: 0,
     },
     field: { width: 60, height: 40, origin: "tl", gridStep: 1, ppm: 20 },
     shapes: [

@@ -16,6 +16,7 @@ export function createEmptyInventoryProfile(): InventoryProfile {
     startfinish: 0,
     flag: 0,
     cone: 0,
+    barrier: 0,
   };
 }
 

@@ -10,6 +10,7 @@ import {
   getMultiGpLaunchGateLayout,
 } from "@/lib/track/render3d-layout";
 import type {
+  BarrierShape,
   ConeShape,
   TowerShape,
   DiveGateShape,
@@ -208,6 +209,27 @@ export function getTower2DShape(shape: TowerShape, ppm: number) {
     variant: "frame-only" as const,
     width: openingWidth,
   };
+}
+
+export function getBarrier2DShape(shape: BarrierShape, ppm: number) {
+  const width = m2px(shape.width, ppm);
+  const depth = Math.max(m2px(0.15, ppm), 6);
+  const radius = Math.min(4, depth / 4);
+  const color = shape.color ?? getBarrierDefaultColor(shape.variant);
+  return { color, depth, radius, variant: shape.variant, width };
+}
+
+function getBarrierDefaultColor(variant: BarrierShape["variant"]): string {
+  switch (variant) {
+    case "hurdle":
+      return "#f59e0b";
+    case "banner":
+      return "#ec4899";
+    case "fence":
+      return "#94a3b8";
+    case "net":
+      return "#06b6d4";
+  }
 }
 
 export function getDiveGateArchPanelPath(options: {

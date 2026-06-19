@@ -1,6 +1,12 @@
 import { feetToMeters, type MeasurementUnitSystem } from "@/lib/track/units";
-import type { PolylineShape, Shape, ShapeDraft } from "@/lib/types";
+import type {
+  BarrierVariant,
+  PolylineShape,
+  Shape,
+  ShapeDraft,
+} from "@/lib/types";
 
+// TrackDraw generic elements
 export const TRACKDRAW_GATE_ELEMENT_ID = "trackdraw-generic-gate";
 export const TRACKDRAW_FLAG_ELEMENT_ID = "trackdraw-generic-flag";
 export const TRACKDRAW_CONE_ELEMENT_ID = "trackdraw-generic-cone";
@@ -10,7 +16,11 @@ export const TRACKDRAW_START_FINISH_ELEMENT_ID =
 export const TRACKDRAW_LADDER_ELEMENT_ID = "trackdraw-generic-ladder";
 export const TRACKDRAW_DIVE_GATE_ELEMENT_ID = "trackdraw-generic-dive-gate";
 export const TRACKDRAW_TOWER_ELEMENT_ID = "trackdraw-generic-tower";
+export const TRACKDRAW_BANNER_ELEMENT_ID = "trackdraw-generic-banner";
+export const TRACKDRAW_FENCE_ELEMENT_ID = "trackdraw-generic-fence";
+export const TRACKDRAW_NET_ELEMENT_ID = "trackdraw-generic-net";
 
+// MultiGP elements
 export const MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID = "multigp-standard-gate-5x5";
 export const MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID =
   "multigp-championship-gate-7x6";
@@ -29,8 +39,10 @@ export const MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID =
   "multigp-topless-ladder-7x6";
 export const MULTIGP_DIVE_GATE_7X6_ELEMENT_ID = "multigp-dive-gate-7x6";
 export const MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID = "multigp-launch-gate-7x6";
+export const MULTIGP_HURDLE_ELEMENT_ID = "multigp-hurdle";
 
 export type TrackElementCatalogId =
+  // TrackDraw
   | typeof TRACKDRAW_GATE_ELEMENT_ID
   | typeof TRACKDRAW_FLAG_ELEMENT_ID
   | typeof TRACKDRAW_CONE_ELEMENT_ID
@@ -39,6 +51,10 @@ export type TrackElementCatalogId =
   | typeof TRACKDRAW_LADDER_ELEMENT_ID
   | typeof TRACKDRAW_DIVE_GATE_ELEMENT_ID
   | typeof TRACKDRAW_TOWER_ELEMENT_ID
+  | typeof TRACKDRAW_BANNER_ELEMENT_ID
+  | typeof TRACKDRAW_FENCE_ELEMENT_ID
+  | typeof TRACKDRAW_NET_ELEMENT_ID
+  // MultiGP
   | typeof MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID
   | typeof MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID
   | typeof MULTIGP_TOWER_5X5_ELEMENT_ID
@@ -50,7 +66,8 @@ export type TrackElementCatalogId =
   | typeof MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID
   | typeof MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID
   | typeof MULTIGP_DIVE_GATE_7X6_ELEMENT_ID
-  | typeof MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID;
+  | typeof MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID
+  | typeof MULTIGP_HURDLE_ELEMENT_ID;
 
 type PlaceableCatalogShape = Exclude<Shape, PolylineShape>;
 export type TrackElementShapeDraft = ShapeDraft<PlaceableCatalogShape>;
@@ -213,12 +230,24 @@ export interface LaunchGateVisualSpec {
 
 export type DiveGateVisualSpec = ArchDiveGateVisualSpec | LaunchGateVisualSpec;
 
+export interface BannerBarrierVisualSpec {
+  kind: "barrier";
+  variant: "banner";
+  panel: {
+    color: string;
+    texture: string;
+  };
+}
+
+export type BarrierVisualSpec = BannerBarrierVisualSpec;
+
 export type TrackElementVisualSpec =
   | GateVisualSpec
   | FlagVisualSpec
   | LadderVisualSpec
   | TowerVisualSpec
-  | DiveGateVisualSpec;
+  | DiveGateVisualSpec
+  | BarrierVisualSpec;
 
 export interface TrackElementCatalogEntry {
   id: TrackElementCatalogId;
@@ -275,7 +304,8 @@ function isPlaceableCatalogShapeKind(
     value === "label" ||
     value === "startfinish" ||
     value === "ladder" ||
-    value === "divegate"
+    value === "divegate" ||
+    value === "barrier"
   );
 }
 
@@ -1186,6 +1216,123 @@ export const trackElementCatalog = [
     } satisfies DiveGateVisualSpec,
     exportHints: { simulatorFriendly: true },
   },
+  {
+    id: TRACKDRAW_BANNER_ELEMENT_ID,
+    name: "TrackDraw Banner",
+    organization: "TrackDraw",
+    kind: "barrier",
+    dimensions: {
+      widthMeters: 3,
+      heightMeters: 2,
+      display: { unitSystem: "metric", label: "3 × 2 m" },
+    },
+    defaultShape: {
+      kind: "barrier",
+      variant: "banner" as BarrierVariant,
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: 3,
+      height: 2,
+      color: "#ec4899",
+    },
+    tags: ["boundary", "banner"],
+    render2d: { icon: "barrier" },
+    render3d: { modelHint: "barrier-banner" },
+    exportHints: { simulatorFriendly: false },
+  },
+  {
+    id: TRACKDRAW_FENCE_ELEMENT_ID,
+    name: "TrackDraw Fence",
+    organization: "TrackDraw",
+    kind: "barrier",
+    dimensions: {
+      widthMeters: 3,
+      heightMeters: 1.2,
+      display: { unitSystem: "metric", label: "3 × 1.2 m" },
+    },
+    defaultShape: {
+      kind: "barrier",
+      variant: "fence" as BarrierVariant,
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: 3,
+      height: 1.2,
+      color: "#94a3b8",
+    },
+    tags: ["boundary", "fence"],
+    render2d: { icon: "barrier" },
+    render3d: { modelHint: "barrier-fence" },
+    exportHints: { simulatorFriendly: false },
+  },
+  {
+    id: TRACKDRAW_NET_ELEMENT_ID,
+    name: "TrackDraw Net",
+    organization: "TrackDraw",
+    kind: "barrier",
+    dimensions: {
+      widthMeters: 3,
+      heightMeters: 2,
+      display: { unitSystem: "metric", label: "3 × 2 m" },
+    },
+    defaultShape: {
+      kind: "barrier",
+      variant: "net" as BarrierVariant,
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: 3,
+      height: 2,
+      color: "#06b6d4",
+    },
+    tags: ["boundary", "net"],
+    render2d: { icon: "barrier" },
+    render3d: { modelHint: "barrier-net" },
+    exportHints: { simulatorFriendly: false },
+  },
+  {
+    id: MULTIGP_HURDLE_ELEMENT_ID,
+    name: "MultiGP Hurdle",
+    organization: "MultiGP",
+    kind: "barrier",
+    official: true,
+    editable: { color: false, dimensions: false },
+    dimensions: {
+      widthMeters: feetToMeters(10),
+      heightMeters: feetToMeters(5),
+      display: { unitSystem: "imperial", label: "10 ft wide, 5 ft tall" },
+    },
+    defaultShape: {
+      kind: "barrier",
+      variant: "banner" as BarrierVariant,
+      x: 0,
+      y: 0,
+      rotation: 0,
+      width: feetToMeters(10),
+      height: feetToMeters(5),
+      color: "#1e3a8a",
+    },
+    tags: ["hurdle", "fly-over", "multigp"],
+    sources: [
+      {
+        label: "MultiGP Drone Race Course Obstacles",
+        url: "https://www.multigp.com/multigp-drone-race-course-obstacles/",
+      },
+    ],
+    render2d: { icon: "barrier" },
+    render3d: { modelHint: "barrier-banner" },
+    visual: {
+      kind: "barrier",
+      variant: "banner",
+      panel: {
+        color: "#1e3a8a",
+        texture:
+          "/assets/models/textures/multigp-obstacles/5x10-hurdle-multigp.webp",
+      },
+    } satisfies BarrierVisualSpec,
+    exportHints: { simulatorFriendly: false },
+  },
 ] satisfies TrackElementCatalogEntry[];
 
 const trackElementCatalogMap = new Map(
@@ -1220,6 +1367,11 @@ export function getTrackElementCatalogTexturePaths(): string[] {
     if (visual.kind === "divegate") {
       paths.add(visual.banner.sideTexture);
       paths.add(visual.banner.topTexture);
+      continue;
+    }
+
+    if (visual.kind === "barrier") {
+      paths.add(visual.panel.texture);
     }
   }
 

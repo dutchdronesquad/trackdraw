@@ -11,6 +11,7 @@ import {
   hasCatalogPlacement,
 } from "@/lib/track/items/registry";
 import type {
+  BarrierShape,
   DiveGateShape,
   FlagShape,
   GateShape,
@@ -24,7 +25,8 @@ type CatalogPatchShape =
   | FlagShape
   | LadderShape
   | TowerShape
-  | DiveGateShape;
+  | DiveGateShape
+  | BarrierShape;
 
 function isCatalogPatchShape(shape: Shape): shape is CatalogPatchShape {
   return hasCatalogPlacement(shape.kind);
@@ -46,13 +48,11 @@ function buildCatalogTypePatchInner<S extends CatalogPatchShape>(
         Object.entries(shape.meta).filter(([k]) => k !== "catalog")
       )
     : {};
-  const newCatalogIdentity = entry.official
-    ? createTrackElementCatalogIdentity(entry)
-    : undefined;
+  const newCatalogIdentity = createTrackElementCatalogIdentity(entry);
   const newMeta =
-    newCatalogIdentity || Object.keys(strippedMeta).length > 0
+    Object.keys(strippedMeta).length > 0
       ? { ...strippedMeta, catalog: newCatalogIdentity }
-      : undefined;
+      : { catalog: newCatalogIdentity };
 
   return { ...draft, meta: newMeta } as unknown as Partial<S>;
 }
@@ -151,4 +151,14 @@ export function buildDiveGateCatalogTypePatch(
     shape,
     targetEntryId
   ) as Partial<DiveGateShape> | null;
+}
+
+export function buildBarrierCatalogTypePatch(
+  shape: BarrierShape,
+  targetEntryId: TrackElementCatalogId
+): Partial<BarrierShape> | null {
+  return buildCatalogTypePatch(
+    shape,
+    targetEntryId
+  ) as Partial<BarrierShape> | null;
 }

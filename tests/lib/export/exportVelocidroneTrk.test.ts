@@ -16,6 +16,7 @@ const inventory = {
   startfinish: 0,
   flag: 0,
   cone: 0,
+  barrier: 0,
 };
 
 function createVelocidroneReadyDesign() {

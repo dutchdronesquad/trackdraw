@@ -1,6 +1,7 @@
 "use client";
 
 import { CatalogTypeSection } from "@/components/inspector/catalog/CatalogTypeSection";
+import { BarrierDimensionFields } from "@/components/inspector/sections/BarrierSection";
 import { ConeDimensionFields } from "@/components/inspector/sections/ConeDimensionFields";
 import { DiveGateDimensionFields } from "@/components/inspector/sections/DiveGateDimensionFields";
 import { FlagDimensionFields } from "@/components/inspector/sections/FlagDimensionFields";
@@ -65,7 +66,13 @@ import {
   InspectorScrollBody,
 } from "./layout";
 
-type SingleCatalogKind = "gate" | "flag" | "ladder" | "tower" | "divegate";
+type SingleCatalogKind =
+  | "gate"
+  | "flag"
+  | "ladder"
+  | "tower"
+  | "divegate"
+  | "barrier";
 
 function getSingleDefaultCatalogEntryId(
   kind: SingleCatalogKind
@@ -83,7 +90,8 @@ function getSingleCatalogKind(shape: Shape): SingleCatalogKind | null {
     shape.kind === "flag" ||
     shape.kind === "ladder" ||
     shape.kind === "tower" ||
-    shape.kind === "divegate"
+    shape.kind === "divegate" ||
+    shape.kind === "barrier"
   ) {
     return shape.kind;
   }
@@ -563,6 +571,15 @@ export function SingleInspectorView({
                 updateShape={updateShape}
                 hasFixedCatalogDimensions={hasFixedCatalogDimensions}
                 fixedDiveGateElevationVariant={fixedDiveGateElevationVariant}
+              />
+            )}
+            {shape.kind === "barrier" && (
+              <BarrierDimensionFields
+                shape={shape}
+                unitSystem={unitSystem}
+                unitLabel={unitLabel}
+                updateShape={updateShape}
+                hasFixedCatalogDimensions={hasFixedCatalogDimensions}
               />
             )}
           </Section>
