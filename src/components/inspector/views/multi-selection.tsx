@@ -225,7 +225,8 @@ export function MultiInspectorView({
               </button>
             </div>
             {/* Row 2: secondary actions (Join + Save preset) */}
-            {(polylineIds.length >= 2 || (onSaveAsPreset && placeableCount > 0)) && (
+            {(polylineIds.length >= 2 ||
+              (onSaveAsPreset && placeableCount > 0)) && (
               <div className="grid grid-cols-2 gap-1.5">
                 {onSaveAsPreset && placeableCount > 0 && (
                   <button

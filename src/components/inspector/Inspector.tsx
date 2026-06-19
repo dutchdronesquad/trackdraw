@@ -74,7 +74,8 @@ function Inspector({
   >(null);
   const [saveAsPresetOpen, setSaveAsPresetOpen] = useState(false);
   const { addUserPreset, canSavePresets } = useAccountPresetSync();
-  const { pending: savePresetPending, reset: resetSavePresetTrigger } = useSavePresetTrigger();
+  const { pending: savePresetPending, reset: resetSavePresetTrigger } =
+    useSavePresetTrigger();
 
   useEffect(() => {
     if (savePresetPending && canSavePresets) {
@@ -127,7 +128,9 @@ function Inspector({
         setSelection={setSelection}
         ungroupSelection={ungroupSelection}
         updateShapesCatalogType={updateShapesCatalogType}
-        onSaveAsPreset={canSavePresets ? () => setSaveAsPresetOpen(true) : undefined}
+        onSaveAsPreset={
+          canSavePresets ? () => setSaveAsPresetOpen(true) : undefined
+        }
       />
     );
   } else if (count === 1) {

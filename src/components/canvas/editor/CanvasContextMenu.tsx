@@ -83,7 +83,8 @@ export function CanvasContextMenuContent({
   onDeleteWaypoint,
 }: CanvasContextMenuContentProps) {
   const { data: authSession } = authClient.useSession();
-  const canSavePresets = Boolean(authSession?.user?.id) && contextMenu.ids.length > 1;
+  const canSavePresets =
+    Boolean(authSession?.user?.id) && contextMenu.ids.length > 1;
   const triggerSavePreset = useSavePresetTrigger((s) => s.trigger);
 
   const pathSelectionDetail =

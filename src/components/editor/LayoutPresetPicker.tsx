@@ -372,7 +372,8 @@ function StoreContent() {
       <div className="space-y-1">
         <p className="text-foreground/70 text-sm font-medium">Coming soon</p>
         <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
-          Community-shared presets will appear here. Save your own presets and share them with the TrackDraw community.
+          Community-shared presets will appear here. Save your own presets and
+          share them with the TrackDraw community.
         </p>
       </div>
     </div>
@@ -527,7 +528,8 @@ export function LayoutPresetPicker({
                 Layout presets
               </p>
               <p className="text-muted-foreground mt-1.5 max-w-none text-sm leading-relaxed">
-                Choose a preset, place it on the canvas, then edit the inserted shapes normally.
+                Choose a preset, place it on the canvas, then edit the inserted
+                shapes normally.
               </p>
             </div>
             <button
@@ -563,7 +565,8 @@ export function LayoutPresetPicker({
                 <Lightbulb className="mt-px size-3.5 shrink-0 text-amber-400/80" />
                 <p className="text-muted-foreground text-[11px] leading-relaxed">
                   Select shapes on the canvas, then use{" "}
-                  <strong className="text-foreground/60">Save preset</strong> in the inspector to add your own.
+                  <strong className="text-foreground/60">Save preset</strong> in
+                  the inspector to add your own.
                 </p>
               </div>
             </div>
