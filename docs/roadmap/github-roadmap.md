@@ -22,7 +22,7 @@ Labels used below:
 
 ## Current Priority
 
-The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, remaining focused 3D item controls, generated flightpath assistance, multilingual-readiness for international users, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, a barrier element category covering hurdles, banners, fencing, and nets, user-defined layout presets replacing the current hard-coded list, and powerloop representation research in the route path.
+The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, remaining focused 3D item controls, generated flightpath assistance, multilingual-readiness for international users, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, user-defined layout presets replacing the current hard-coded list, and powerloop representation research in the route path.
 
 ## Follow-up
 
@@ -50,18 +50,18 @@ The completed release-sized work is archived below. The next TrackDraw priority 
   - [ ] Preset store (`Lower priority`, `Account-backed`)
         Let users publish a preset to a public store where others can find and add it to their own preset library. Think of it as a community-driven catalog of reusable track sections — users contribute, others browse and save. Keep this out of the first implementation slice; the account-backed storage model needs to be solid first.
 
-- [ ] Barriers (`No account required`)
-      Introduce a shared element category for obstacles that block sightlines, mark field boundaries, or otherwise serve as physical barriers rather than fly-through gates. Initial candidates include the MultiGP Hurdle (fly-over), standalone printed banners, fencing panels, and net sections. These share a common non-traversable race-line behavior (no gate-pass logic) while each carrying their own dimensions, catalog entries, 2D visual language, and 3D representation. The MultiGP Hurdle follows official dimensions; banners, fencing, and nets remain freely sizeable. Inventory counts and Race Pack material lists should reflect the barrier category separately from gates and ladders.
-  - [ ] Barrier kind, catalog entries
-        Define the shared barrier kind, catalog entries for the MultiGP Hurdle, banner, fence panel, and net section, with official dimensions where applicable and free sizing elsewhere.
-  - [ ] 2D representation
-        Give each barrier type a recognizable 2D footprint that visually distinguishes it from gates and ladders without cluttering dense layouts.
-  - [ ] 3D representation
-        Render barriers in the 3D preview with proportional geometry. The hurdle should resemble the real obstacle; banners, fencing, and nets should be lightweight but readable.
-  - [ ] Inspector and type switching
-        Show barrier catalog identity, source reference where applicable, and allow in-place type switching between barrier variants the same way gates and ladders already support it.
-  - [ ] Inventory and Race Pack integration
-        Count barriers as a distinct material category in the inventory validator and Race Pack setup output.
+- [x] Barriers (`No account required`)
+      TrackDraw now has a shared barrier category for obstacles that block sightlines, mark field boundaries, or otherwise serve as physical barriers rather than fly-through gates. The first slice includes the official MultiGP Hurdle plus TrackDraw banner, fence, and net entries with non-traversable race-line behavior, catalog-backed placement, 2D/3D rendering, inspector type switching, inventory counts, and export support.
+  - [x] Barrier kind, catalog entries
+        Defined the shared barrier kind and catalog entries for the MultiGP Hurdle, banner, fence panel, and net section, with official dimensions where applicable and free sizing elsewhere.
+  - [x] 2D representation
+        Gave each barrier type a recognizable 2D footprint that visually distinguishes it from gates and ladders without cluttering dense layouts.
+  - [x] 3D representation
+        Rendered barriers in the 3D preview with proportional geometry. The hurdle uses the official panel artwork, while banners, fencing, and nets stay lightweight and readable.
+  - [x] Inspector and type switching
+        Shows barrier catalog identity, source reference where applicable, and allows in-place type switching between barrier variants the same way gates and ladders already support it.
+  - [x] Inventory and Race Pack integration
+        Counts barriers as a distinct material category in the inventory validator and Race Pack setup output.
 
 - [ ] Path editing UX (`No account required`)
       Make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model forces extra points to avoid sharp corners.

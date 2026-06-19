@@ -1,6 +1,6 @@
 # MultiGP Obstacle Asset Workflow
 
-This document records how TrackDraw turns the MultiGP obstacle source model into runtime textures for the catalog-backed MultiGP gates, ladders, and corner flag.
+This document records how TrackDraw turns the MultiGP obstacle source model into runtime textures for the catalog-backed MultiGP gates, ladders, corner flag, and hurdle.
 
 ## Source And Attribution
 
@@ -79,7 +79,7 @@ After extracting or replacing source PNGs, downsample them and generate lossless
 npm run assets:multigp:optimize
 ```
 
-The source GLB and extracted images can be very high resolution. Runtime rendering does not need the full 4k-8k source bitmaps because the artwork is mapped onto small gate, ladder, and flag panels in an interactive 3D preview. The optimizer keeps stable basenames, preserves aspect ratios, writes optimized PNG maintenance copies, and generates lossless WebP files for the runtime catalog paths.
+The source GLB and extracted images can be very high resolution. Runtime rendering does not need the full 4k-8k source bitmaps because the artwork is mapped onto small gate, ladder, flag, and hurdle panels in an interactive 3D preview. The optimizer keeps stable basenames, preserves aspect ratios, writes optimized PNG maintenance copies, and generates lossless WebP files for the runtime catalog paths.
 
 The MultiGP corner-flag back texture is intentionally mirrored as a standalone image. The runtime back panel is rotated 180 degrees around the vertical axis, which makes the mirrored back texture read correctly in the 3D scene. Do not add an extra flag-back flip in runtime code or in the optimizer.
 
@@ -113,6 +113,7 @@ After replacing the GLB or textures:
    - MultiGP Championship Ladder 7x6
    - MultiGP Topless Ladder 7x6
    - MultiGP Corner Flag
+   - MultiGP Hurdle
 4. Confirm side-panel reading direction for gates and ladders:
    - physical left side reads bottom-to-top
    - physical right side reads top-to-bottom

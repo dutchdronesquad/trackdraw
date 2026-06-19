@@ -253,12 +253,12 @@ Current shipped foundation:
 - Toolbar placement, layout presets, and starter layouts now use shared catalog placement helpers for generic elements, keeping saved geometry meter-based and backwards compatible
 - Gate placement can now switch between the generic TrackDraw gate and catalog-backed MultiGP-style 5x5 and 7x6 gate variants through a compact desktop placement dropdown and a compact mobile Gate type picker
 - Ladder placement can switch between the generic TrackDraw ladder and catalog-backed MultiGP Standard 5x5, Championship 7x6, and Topless 7x6 ladder variants
+- Barrier placement now supports TrackDraw banner, fence, and net entries plus the official MultiGP Hurdle as a separate non-traversable obstacle category with catalog identity, 2D/3D rendering, type switching, inventory counts, and export support
 - The inspector shows catalog type, source, official size, and dimension status while keeping official gate width and height fixed in normal editing
 
 Next catalog slices:
 
 - Double Gate Tower 5x5 and 7x6: introduce as a new shape kind with its own 2D representation, 3D rendering, catalog entries, and inspector pipeline; race-line behavior is gate-like (fly through) while the physical structure resembles a two-frame tower
-- Barriers: introduce a shared element category for obstacles that block sightlines, mark field boundaries, or otherwise serve as physical barriers rather than fly-through gates; initial candidates include the MultiGP Hurdle (fly-over), standalone printed banners, fencing panels, and net sections; these share a common race-line behavior (non-traversable, no gate-pass logic) and a common 2D visual language while each having their own dimensions, catalog entries, and 3D representation; the hurdle follows official MultiGP dimensions while banners, fencing, and nets remain freely sizeable; inventory and Race Pack material counts should reflect the barrier category separately from gates and ladders
 
 #### Generated Flightpath Assistance
 

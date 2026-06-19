@@ -1,6 +1,6 @@
 # Track Element Catalog
 
-TrackDraw currently has generic editor primitives such as gate, flag, cone, ladder, dive gate, start pads, label, and race line. One useful next step is a catalog layer that knows about real track elements, official names, dimensions, 2D behavior, 3D presentation, and export/integration compatibility.
+TrackDraw currently has generic editor primitives such as gate, flag, cone, ladder, dive gate, barrier, start pads, label, and race line. One useful next step is a catalog layer that knows about real track elements, official names, dimensions, 2D behavior, 3D presentation, and export/integration compatibility.
 
 The catalog should start local and typed, not as a database. A database becomes useful later for club inventory, venue-specific kits, custom saved elements, and account-backed libraries.
 
@@ -11,6 +11,7 @@ The catalog should start local and typed, not as a database. A database becomes 
 - [x] Add initial official race-gate entries, including MultiGP-style 5x5 and 7x6 variants, without changing existing saved designs.
 - [x] Show catalog identity, official size status, and fixed official dimensions for placed catalog-backed gates.
 - [x] Extend catalog-backed MultiGP entries to gates, ladders, and the 10 ft corner flag with texture-based 3D rendering.
+- [x] Add a barrier category with TrackDraw banner/fence/net entries and the official MultiGP Hurdle.
 
 ## Reference Observations
 
@@ -77,7 +78,7 @@ Scope:
 - Add the first official gate entries after validating exact sizing and source language:
   - MultiGP Standard Gate 5x5
   - MultiGP Championship Gate 7x6
-  - Hurdles only after deciding whether they should remain `gate`-like catalog variants or become their own obstacle category
+  - Hurdles should be a separate `barrier` obstacle category rather than `gate`-like catalog variants
   - Dive gate variants only after deciding whether they should remain one `divegate` shape or become catalog-driven variants
 - Keep "Custom Gate" available through the standard TrackDraw Gate so users are not boxed into official-only dimensions.
 - Expose the official name in inspector/export summaries only when the shape was created from a catalog entry or explicitly assigned one.
@@ -93,6 +94,7 @@ Status:
 
 - Users can now place catalog-backed MultiGP-style gate variants through the normal Gate placement flow: Standard Gate 5x5 and Championship Gate 7x6. Desktop keeps the active gate type in a compact canvas placement control with a dropdown for additional variants, while mobile keeps one Gate entry in the tools drawer with a compact type picker for variants.
 - Users can also place catalog-backed MultiGP Standard Ladder 5x5, Championship Ladder 7x6, Topless Ladder 7x6, and Corner Flag entries through the same typed catalog pipeline.
+- Users can place barriers as a separate catalog-backed category, including TrackDraw banner, fence, and net entries plus the official MultiGP Hurdle.
 - Newly placed official elements remain normal TrackDraw shapes, with their source identity stored under `meta.catalog`. The inspector shows the catalog type, source, official size, and fixed official status.
 - Official sizing and color are fixed in normal editing. Custom sizing and coloring belong to the standard TrackDraw generic elements instead of modifying official catalog items.
 - Newly placed gates and ladders default with their front facing downward on the canvas so the default orientation matches the editor's front/back guide expectation.
