@@ -205,6 +205,7 @@ const TrackCanvas = memo(
     const groupDragPreview = useEditor((state) => state.ui.groupDragPreview);
     const {
       setActiveTool,
+      setActivePresetId,
       setSegmentSelection: setSegmentSel,
       setVertexSelection: setVertexSel,
       setDraftPath,
@@ -1291,6 +1292,7 @@ const TrackCanvas = memo(
       snapEnabled,
       selection,
       setActiveTool,
+      setActivePresetId,
       setCursor,
       setDraftPath,
       setIsStageDragging,

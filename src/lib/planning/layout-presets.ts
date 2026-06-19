@@ -1,10 +1,3 @@
-import {
-  createCatalogShapeDraft,
-  TRACKDRAW_FLAG_ELEMENT_ID,
-  TRACKDRAW_GATE_ELEMENT_ID,
-  TRACKDRAW_LADDER_ELEMENT_ID,
-  TRACKDRAW_START_FINISH_ELEMENT_ID,
-} from "@/lib/track/elements/catalog";
 import type { PolylineShape, Shape, ShapeDraft, ShapeKind } from "@/lib/types";
 
 type PlaceablePresetShape = Exclude<Shape, PolylineShape>;
@@ -26,118 +19,12 @@ export interface LayoutPreset {
   shapes: LayoutPresetShapeDraft[];
 }
 
-const gate = (
-  x: number,
-  y: number,
-  rotation = 0,
-  color = "#3b82f6"
-): LayoutPresetShapeDraft => ({
-  ...createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
-    x,
-    y,
-    rotation,
-    color,
-  }),
-});
-
-const ladder = (
-  x: number,
-  y: number,
-  rotation = 0,
-  color = "#14b8a6"
-): LayoutPresetShapeDraft => ({
-  ...createCatalogShapeDraft(TRACKDRAW_LADDER_ELEMENT_ID, {
-    x,
-    y,
-    rotation,
-    color,
-  }),
-});
-
-const startFinish = (
-  x: number,
-  y: number,
-  rotation = 0,
-  color = "#f59e0b"
-): LayoutPresetShapeDraft => ({
-  ...createCatalogShapeDraft(TRACKDRAW_START_FINISH_ELEMENT_ID, {
-    x,
-    y,
-    rotation,
-    color,
-  }),
-});
-
-const flag = (
-  x: number,
-  y: number,
-  rotation = 0,
-  color = "#a855f7"
-): LayoutPresetShapeDraft => ({
-  ...createCatalogShapeDraft(TRACKDRAW_FLAG_ELEMENT_ID, {
-    x,
-    y,
-    rotation,
-    color,
-  }),
-});
-
-export const layoutPresets: LayoutPreset[] = [
-  {
-    id: "start-finish-setup",
-    name: "Start / Finish Setup",
-    description:
-      "Launch pads with two side flags and a first gate to start the run.",
-    shapes: [startFinish(0, 0), gate(0, 5), flag(-2.8, 0, 180), flag(2.8, 0)],
-  },
-  {
-    id: "straight-gate-run",
-    name: "Straight Gate Run",
-    description:
-      "A compact four-gate straight for quick speed sections or early lap shaping.",
-    shapes: [gate(0, 0), gate(0, 5), gate(0, 10), gate(0, 15)],
-  },
-  {
-    id: "slalom-run",
-    name: "Slalom Run",
-    description:
-      "Five alternating flags for a readable slalom section with clear lateral movement.",
-    shapes: [
-      flag(0, 0),
-      flag(2.6, 4.5, 180),
-      flag(-2.6, 9, 0),
-      flag(2.6, 13.5, 180),
-      flag(-2.6, 18, 0),
-    ],
-  },
-  {
-    id: "ladder-section",
-    name: "Ladder Section",
-    description:
-      "Two ladders in sequence to add a tall technical section without extra setup work.",
-    shapes: [ladder(0, 0), ladder(0, 8)],
-  },
-];
-
-export const DEFAULT_LAYOUT_PRESET_ID = layoutPresets[0].id;
-
-const presetMap = new Map(layoutPresets.map((preset) => [preset.id, preset]));
-
-export function getLayoutPresetById(id: string | null | undefined) {
-  if (!id) return null;
-  return presetMap.get(id) ?? null;
-}
-
 export function findPresetById(
   id: string | null | undefined,
   userPresets: LayoutPreset[]
 ): LayoutPreset | null {
   if (!id) return null;
-  return (
-    presetMap.get(id) ??
-    userPresets.find((p) => p.id === id) ??
-    null
-  );
+  return userPresets.find((p) => p.id === id) ?? null;
 }
 
 export function getLayoutPresetShapeCount(preset: LayoutPreset) {

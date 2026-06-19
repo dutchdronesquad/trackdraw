@@ -77,6 +77,7 @@ interface TrackCanvasInteractionsParams {
   snapEnabled: boolean;
   selection: string[];
   setActiveTool: (tool: EditorTool) => void;
+  setActivePresetId: (id: string | null) => void;
   setCursor: React.Dispatch<React.SetStateAction<CursorState | null>>;
   setDraftPath: (
     value: DraftPoint[] | ((previous: DraftPoint[]) => DraftPoint[])
@@ -135,6 +136,7 @@ export function useTrackCanvasInteractions({
   snapEnabled,
   selection,
   setActiveTool,
+  setActivePresetId,
   setCursor,
   setDraftPath,
   setDraftForceClosed,
@@ -624,9 +626,8 @@ export function useTrackCanvasInteractions({
           if (!preset) return;
           const ids = addShapes(placeLayoutPreset(preset, meters));
           setSelection(ids);
-          if (isMobile) {
-            setActiveTool("select");
-          }
+          setActivePresetId(null);
+          setActiveTool("select");
           touchInteractionModeRef.current = "none";
           return;
         }
@@ -864,6 +865,8 @@ export function useTrackCanvasInteractions({
           if (!preset) return;
           const ids = addShapes(placeLayoutPreset(preset, meters));
           setSelection(ids);
+          setActivePresetId(null);
+          setActiveTool("select");
           suppressTapRef.current = true;
           return;
         }

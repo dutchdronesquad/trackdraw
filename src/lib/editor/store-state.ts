@@ -1,4 +1,3 @@
-import { DEFAULT_LAYOUT_PRESET_ID } from "@/lib/planning/layout-presets";
 import { createDefaultDesign } from "@/lib/track/design";
 import { toolCatalogEntryIds } from "@/lib/editor/tool-registry";
 import type {
@@ -25,7 +24,7 @@ export function createDefaultEditorUiState(
 ): EditorUiState {
   return {
     activeTool: "select",
-    activePresetId: options.activePresetId ?? DEFAULT_LAYOUT_PRESET_ID,
+    activePresetId: options.activePresetId ?? null,
     activePlacementElementId: options.activePlacementElementId ?? {
       ...toolCatalogEntryIds,
     },

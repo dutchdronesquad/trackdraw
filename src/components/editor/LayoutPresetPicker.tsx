@@ -3,30 +3,19 @@
 import { memo, useRef, useState } from "react";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
-import { BookmarkPlus, Pencil, Trash2, X } from "lucide-react";
+import { Bookmark, BookmarkPlus, Pencil, Store, Trash2, X } from "lucide-react";
 import {
   findPresetById,
   getLayoutPresetBounds,
   getLayoutPresetKindCounts,
   getLayoutPresetShapeCount,
-  layoutPresets,
   type LayoutPreset,
 } from "@/lib/planning/layout-presets";
 import { useUserPresets } from "@/store/user-presets";
 import { shapeKindLabels } from "@/lib/track/items/registry";
 import { cn } from "@/lib/utils";
 
-const preparedBuiltinPresets = layoutPresets.map((preset) => {
-  const counts = getLayoutPresetKindCounts(preset);
-
-  return {
-    preset,
-    countSummary: Array.from(counts.entries())
-      .map(([kind, count]) => `${count} ${shapeKindLabels[kind]}`)
-      .join(" · "),
-    itemCount: getLayoutPresetShapeCount(preset),
-  };
-});
+type NavSection = "my-presets" | "store";
 
 function preparePresets(presets: LayoutPreset[]) {
   return presets.map((preset) => {
@@ -41,6 +30,10 @@ function preparePresets(presets: LayoutPreset[]) {
   });
 }
 
+const PW = 160;
+const PH = 80;
+const PP = 14;
+
 const PresetPreview = memo(function PresetPreview({
   preset,
 }: {
@@ -48,33 +41,41 @@ const PresetPreview = memo(function PresetPreview({
 }) {
   const bounds = getLayoutPresetBounds(preset);
 
+  const contentW = PW - PP * 2;
+  const contentH = PH - PP * 2;
+  const scale = Math.min(contentW / bounds.width, contentH / bounds.height, 10);
+  const scaledW = bounds.width * scale;
+  const scaledH = bounds.height * scale;
+  const ox = PP + (contentW - scaledW) / 2;
+  const oy = PP + (contentH - scaledH) / 2;
+
+  function px(worldX: number) {
+    return ox + (worldX - bounds.minX) * scale;
+  }
+  function py(worldY: number) {
+    return oy + (worldY - bounds.minY) * scale;
+  }
+
   return (
     <svg
-      viewBox={`0 0 ${bounds.width + 12} ${bounds.height + 12}`}
-      className="h-18 w-full rounded-xl border border-white/8 bg-slate-950/90"
+      viewBox={`0 0 ${PW} ${PH}`}
+      className="h-20 w-full rounded-xl border border-white/8 bg-slate-950/90"
       role="presentation"
     >
-      <rect
-        x="0"
-        y="0"
-        width={bounds.width + 12}
-        height={bounds.height + 12}
-        rx="12"
-        fill="rgba(15,23,42,0.92)"
-      />
       {preset.shapes.map((shape, index) => {
-        const x = shape.x - bounds.minX + 6;
-        const y = shape.y - bounds.minY + 6;
+        const x = px(shape.x);
+        const y = py(shape.y);
+        const key = `${preset.id}-${index}`;
 
         if (shape.kind === "flag" || shape.kind === "cone") {
           return (
             <circle
-              key={`${preset.id}-${index}`}
+              key={key}
               cx={x}
               cy={y}
-              r={0.75}
+              r={3}
               fill={shape.color ?? "#cbd5e1"}
-              opacity="0.95"
+              opacity="0.9"
             />
           );
         }
@@ -82,14 +83,14 @@ const PresetPreview = memo(function PresetPreview({
         if (shape.kind === "startfinish") {
           return (
             <rect
-              key={`${preset.id}-${index}`}
-              x={x - 1.4}
-              y={y - 0.45}
-              width="2.8"
-              height="0.9"
-              rx="0.3"
+              key={key}
+              x={x - 7}
+              y={y - 2.5}
+              width="14"
+              height="5"
+              rx="1.5"
               fill={shape.color ?? "#f59e0b"}
-              opacity="0.95"
+              opacity="0.9"
             />
           );
         }
@@ -97,14 +98,14 @@ const PresetPreview = memo(function PresetPreview({
         if (shape.kind === "ladder") {
           return (
             <rect
-              key={`${preset.id}-${index}`}
-              x={x - 1}
-              y={y - 2.4}
-              width="2"
-              height="4.8"
-              rx="0.35"
+              key={key}
+              x={x - 3}
+              y={y - 6}
+              width="6"
+              height="12"
+              rx="1.5"
               fill={shape.color ?? "#14b8a6"}
-              opacity="0.95"
+              opacity="0.9"
             />
           );
         }
@@ -112,84 +113,36 @@ const PresetPreview = memo(function PresetPreview({
         if (shape.kind === "divegate") {
           return (
             <rect
-              key={`${preset.id}-${index}`}
-              x={x - 1.2}
-              y={y - 1.2}
-              width="2.4"
-              height="2.4"
-              rx="0.3"
+              key={key}
+              x={x - 4.5}
+              y={y - 4.5}
+              width="9"
+              height="9"
+              rx="1.5"
               fill="none"
               stroke={shape.color ?? "#f97316"}
-              strokeWidth="0.35"
-              opacity="0.95"
+              strokeWidth="1.5"
+              opacity="0.9"
             />
           );
         }
 
         return (
           <rect
-            key={`${preset.id}-${index}`}
-            x={x - 1}
-            y={y - 1}
-            width="2"
-            height="2"
-            rx="0.25"
+            key={key}
+            x={x - 4}
+            y={y - 4}
+            width="8"
+            height="8"
+            rx="1.5"
             fill={shape.color ?? "#3b82f6"}
-            opacity="0.95"
+            opacity="0.9"
           />
         );
       })}
     </svg>
   );
 });
-
-function PresetGrid({
-  presets,
-  selectedPresetId,
-  onSelectPreset,
-}: {
-  presets: ReturnType<typeof preparePresets>;
-  selectedPresetId: string | null;
-  onSelectPreset: (presetId: string) => void;
-}) {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {presets.map(({ preset, countSummary, itemCount }) => {
-        const selected = preset.id === selectedPresetId;
-
-        return (
-          <button
-            key={preset.id}
-            type="button"
-            onClick={() => onSelectPreset(preset.id)}
-            className={cn(
-              "border-border/60 bg-card hover:border-border hover:bg-muted/35 flex cursor-pointer flex-col gap-3 rounded-2xl border p-3 text-left transition-colors",
-              selected && "border-primary/25 bg-primary/4"
-            )}
-          >
-            <PresetPreview preset={preset} />
-            <div className="space-y-1">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold">{preset.name}</p>
-                  <p className="text-muted-foreground text-xs leading-relaxed">
-                    {preset.description}
-                  </p>
-                </div>
-                <span className="bg-muted text-muted-foreground inline-flex shrink-0 self-start rounded-full px-2 py-1 text-[10px] font-medium whitespace-nowrap uppercase">
-                  {itemCount} items
-                </span>
-              </div>
-              <p className="text-muted-foreground text-[11px]">
-                {countSummary}
-              </p>
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 function UserPresetCard({
   preset,
@@ -338,7 +291,7 @@ function UserPresetGrid({
   );
 }
 
-function LayoutPresetPickerBody({
+function MyPresetsContent({
   selectedPresetId,
   onSelectPreset,
 }: {
@@ -348,42 +301,107 @@ function LayoutPresetPickerBody({
   const userPresets = useUserPresets((state) => state.userPresets);
   const preparedUserPresets = preparePresets(userPresets);
 
-  return (
-    <div className="space-y-5">
-      {preparedUserPresets.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-            Your presets
-          </p>
-          <UserPresetGrid
-            presets={preparedUserPresets}
-            selectedPresetId={selectedPresetId}
-            onSelectPreset={onSelectPreset}
-          />
-        </div>
-      )}
-      <div className="space-y-3">
-        {preparedUserPresets.length > 0 && (
-          <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-            Built-in presets
-          </p>
-        )}
-        <PresetGrid
-          presets={preparedBuiltinPresets}
-          selectedPresetId={selectedPresetId}
-          onSelectPreset={onSelectPreset}
-        />
-      </div>
-      {userPresets.length === 0 && (
-        <div className="flex items-start gap-2 rounded-xl border border-dashed border-current/15 px-4 py-3">
-          <BookmarkPlus className="text-muted-foreground/60 mt-0.5 size-3.5 shrink-0" />
-          <p className="text-muted-foreground text-[11px] leading-relaxed">
-            Select shapes on the canvas and use{" "}
-            <strong className="text-foreground/70">Save preset</strong> in the
+  if (preparedUserPresets.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+        <BookmarkPlus className="text-muted-foreground/40 size-8" />
+        <div className="space-y-1">
+          <p className="text-foreground/70 text-sm font-medium">No presets yet</p>
+          <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
+            Select multiple shapes on the canvas and use{" "}
+            <strong className="text-foreground/60">Save preset</strong> in the
             inspector to save your own preset sections here.
           </p>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <UserPresetGrid
+      presets={preparedUserPresets}
+      selectedPresetId={selectedPresetId}
+      onSelectPreset={onSelectPreset}
+    />
+  );
+}
+
+function StoreContent() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+      <Store className="text-muted-foreground/40 size-8" />
+      <div className="space-y-1">
+        <p className="text-foreground/70 text-sm font-medium">Coming soon</p>
+        <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
+          Community-shared presets will appear here. Save your own presets and
+          share them with the TrackDraw community.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SidebarNav({
+  active,
+  onChange,
+}: {
+  active: NavSection;
+  onChange: (section: NavSection) => void;
+}) {
+  return (
+    <nav className="space-y-0.5">
+      <button
+        type="button"
+        onClick={() => onChange("my-presets")}
+        className={cn(
+          "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors",
+          active === "my-presets"
+            ? "bg-primary/8 text-foreground font-medium"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        )}
+      >
+        <Bookmark className="size-4 shrink-0" />
+        My Presets
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange("store")}
+        className={cn(
+          "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors",
+          active === "store"
+            ? "bg-primary/8 text-foreground font-medium"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        )}
+      >
+        <Store className="size-4 shrink-0" />
+        <span className="flex-1 text-left">Store</span>
+        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-medium uppercase">
+          Soon
+        </span>
+      </button>
+    </nav>
+  );
+}
+
+function MobilePresetsContent({
+  selectedPresetId,
+  onSelectPreset,
+}: {
+  selectedPresetId: string | null;
+  onSelectPreset: (presetId: string) => void;
+}) {
+  const [section, setSection] = useState<NavSection>("my-presets");
+
+  return (
+    <div className="space-y-4">
+      <SidebarNav active={section} onChange={setSection} />
+      {section === "my-presets" && (
+        <MyPresetsContent
+          selectedPresetId={selectedPresetId}
+          onSelectPreset={onSelectPreset}
+        />
       )}
+      {section === "store" && <StoreContent />}
     </div>
   );
 }
@@ -403,16 +421,9 @@ export function LayoutPresetPicker({
   selectedPresetId,
   onSelectPreset,
 }: LayoutPresetPickerProps) {
+  const [section, setSection] = useState<NavSection>("my-presets");
   const userPresets = useUserPresets((state) => state.userPresets);
   const selectedPreset = findPresetById(selectedPresetId, userPresets);
-  const subtitle =
-    "Choose a curated multi-shape preset. Place it once on the canvas, then edit the inserted shapes normally.";
-  const selectedSummary = selectedPreset
-    ? `Current preset: ${selectedPreset.name}`
-    : "Choose a preset";
-  const selectedDescription = selectedPreset
-    ? selectedPreset.description
-    : "Pick a preset first, then place it once on the canvas.";
 
   if (mobile) {
     return (
@@ -423,16 +434,20 @@ export function LayoutPresetPicker({
         subtitle="Choose a preset, then tap once on the canvas to place the full section."
         pinnedContent={
           <>
-            <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-4">
-              <div className="border-border/50 bg-muted/18 rounded-xl border px-4 py-3">
-                <p className="text-foreground text-sm font-medium">
-                  {selectedSummary}
-                </p>
-                <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                  {selectedDescription}
-                </p>
+            {selectedPreset && (
+              <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-4">
+                <div className="border-border/50 bg-muted/18 rounded-xl border px-4 py-3">
+                  <p className="text-foreground text-sm font-medium">
+                    {selectedPreset.name}
+                  </p>
+                  {selectedPreset.description && (
+                    <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                      {selectedPreset.description}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
             <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-3">
               <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
                 Place flow
@@ -446,7 +461,7 @@ export function LayoutPresetPicker({
         }
         bodyClassName="pt-4 pb-4"
       >
-        <LayoutPresetPickerBody
+        <MobilePresetsContent
           selectedPresetId={selectedPresetId}
           onSelectPreset={onSelectPreset}
         />
@@ -467,17 +482,15 @@ export function LayoutPresetPicker({
       subtitle={undefined}
     >
       <div className="flex flex-col overflow-hidden">
-        <div className="shrink-0 px-8 pt-8 pb-5">
+        <div className="shrink-0 px-8 pt-6 pb-4">
           <div className="flex items-start gap-4">
             <div className="min-w-0 flex-1 pr-6">
-              <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-                Studio
-              </p>
-              <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
+              <p className="text-foreground text-[1.25rem] font-semibold tracking-[-0.02em]">
                 Layout presets
               </p>
-              <p className="text-muted-foreground mt-2 max-w-none text-sm leading-relaxed">
-                {subtitle}
+              <p className="text-muted-foreground mt-1.5 max-w-none text-sm leading-relaxed">
+                Choose a multi-shape preset. Place it once on the canvas, then
+                edit the inserted shapes normally.
               </p>
             </div>
             <button
@@ -491,44 +504,44 @@ export function LayoutPresetPicker({
           </div>
         </div>
 
-        <div className="border-border/30 grid min-h-0 grid-cols-[19rem_minmax(0,1fr)] border-t">
-          <div className="border-border/30 border-r px-6 py-6">
-            <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
-              Placement
-            </p>
-            <div className="space-y-2.5">
+        <div className="border-border/30 grid min-h-[26rem] grid-cols-[16rem_minmax(0,1fr)] border-t">
+          <div className="border-border/30 flex flex-col gap-6 border-r px-4 py-6">
+            <SidebarNav active={section} onChange={setSection} />
+
+            {selectedPreset && (
               <div className="border-border/60 bg-muted/18 rounded-xl border px-4 py-3">
                 <p className="text-foreground text-sm font-medium">
-                  {selectedSummary}
+                  {selectedPreset.name}
                 </p>
-                <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                  {selectedDescription}
-                </p>
+                {selectedPreset.description && (
+                  <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                    {selectedPreset.description}
+                  </p>
+                )}
               </div>
-              <div className="border-border/40 rounded-xl border border-dashed px-4 py-3">
-                <p className="text-foreground text-xs font-medium">
-                  How it works
-                </p>
-                <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                  Select a preset, click once on the canvas, then continue
-                  editing the inserted shapes exactly like any other TrackDraw
-                  content.
-                </p>
-              </div>
+            )}
+
+            <div className="border-border/40 mt-auto rounded-xl border border-dashed px-4 py-3">
+              <p className="text-foreground text-xs font-medium">
+                How it works
+              </p>
+              <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
+                Select a preset, click once on the canvas, then continue
+                editing the inserted shapes exactly like any other TrackDraw
+                content.
+              </p>
             </div>
           </div>
 
           <div className="flex min-h-0 flex-col">
-            <div className="shrink-0 px-8 pt-5">
-              <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-                Presets
-              </p>
-            </div>
-            <div className="max-h-[58vh] min-h-0 overflow-y-auto px-8 py-4">
-              <LayoutPresetPickerBody
-                selectedPresetId={selectedPresetId}
-                onSelectPreset={onSelectPreset}
-              />
+            <div className="max-h-[58vh] min-h-0 overflow-y-auto px-8 py-6">
+              {section === "my-presets" && (
+                <MyPresetsContent
+                  selectedPresetId={selectedPresetId}
+                  onSelectPreset={onSelectPreset}
+                />
+              )}
+              {section === "store" && <StoreContent />}
             </div>
           </div>
         </div>
