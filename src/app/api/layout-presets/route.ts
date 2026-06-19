@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
+import type { LayoutPreset } from "@/lib/planning/layout-presets";
 import {
   listLayoutPresetsForUser,
   saveLayoutPresetForUser,
@@ -9,7 +10,9 @@ import {
 
 const layoutPresetShapeSchema = z
   .object({
-    kind: z.string(),
+    kind: z.string().refine((k) => k !== "polyline", {
+      message: "Polyline shapes cannot be stored in presets.",
+    }),
     x: z.number(),
     y: z.number(),
     rotation: z.number().optional(),
@@ -21,7 +24,9 @@ const savePresetRequestSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional().default(""),
-  shapes: z.array(layoutPresetShapeSchema),
+  shapes: z.array(layoutPresetShapeSchema).min(1, {
+    message: "A preset must contain at least one shape.",
+  }),
 });
 
 function unauthorizedResponse() {
@@ -64,7 +69,7 @@ export async function POST(request: Request) {
       id: body.id,
       name: body.name,
       description: body.description,
-      shapes: body.shapes as never,
+      shapes: body.shapes as LayoutPreset["shapes"],
     });
 
     return NextResponse.json({ ok: true, preset });

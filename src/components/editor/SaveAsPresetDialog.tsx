@@ -28,6 +28,7 @@ export function SaveAsPresetDialog({
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleSave() {
+    if (shapeCount === 0) return;
     const value = inputRef.current?.value.trim() ?? "";
     if (!value) return;
     onSave(value);
@@ -75,7 +76,7 @@ export function SaveAsPresetDialog({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="button" onClick={handleSave}>
+        <Button type="button" onClick={handleSave} disabled={shapeCount === 0}>
           <Bookmark className="size-3.5" />
           Save preset
         </Button>

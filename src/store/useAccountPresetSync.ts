@@ -18,26 +18,31 @@ async function fetchAccountPresets(): Promise<LayoutPreset[] | null> {
 }
 
 export async function pushPresetToAccount(preset: LayoutPreset): Promise<void> {
-  await fetch("/api/layout-presets", {
+  const res = await fetch("/api/layout-presets", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(preset),
   });
+  if (!res.ok) throw new Error(`Failed to save preset (${res.status})`);
 }
 
 async function deletePresetFromAccount(presetId: string): Promise<void> {
-  await fetch(`/api/layout-presets/${presetId}`, { method: "DELETE" });
+  const res = await fetch(`/api/layout-presets/${presetId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`Failed to delete preset (${res.status})`);
 }
 
 async function renamePresetInAccount(
   presetId: string,
   name: string
 ): Promise<void> {
-  await fetch(`/api/layout-presets/${presetId}`, {
+  const res = await fetch(`/api/layout-presets/${presetId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name }),
   });
+  if (!res.ok) throw new Error(`Failed to rename preset (${res.status})`);
 }
 
 // Tracks which userId is currently synced in this browser session.
@@ -87,21 +92,27 @@ export function useAccountPresetSync() {
       return "";
     }
     const id = addUserPreset(preset);
-    pushPresetToAccount({ ...preset, id }).catch(() => {});
+    pushPresetToAccount({ ...preset, id }).catch(() => {
+      toast.error("Failed to save preset. Please try again.");
+    });
     return id;
   }
 
   function removePreset(id: string): void {
     removeUserPreset(id);
     if (userId) {
-      deletePresetFromAccount(id).catch(() => {});
+      deletePresetFromAccount(id).catch(() => {
+        toast.error("Failed to delete preset. Please try again.");
+      });
     }
   }
 
   function renamePreset(id: string, name: string): void {
     renameUserPreset(id, name);
     if (userId) {
-      renamePresetInAccount(id, name).catch(() => {});
+      renamePresetInAccount(id, name).catch(() => {
+        toast.error("Failed to rename preset. Please try again.");
+      });
     }
   }
 

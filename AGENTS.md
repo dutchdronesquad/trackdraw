@@ -105,7 +105,7 @@ Add focused tests next to the changed ownership area. At minimum, cover registry
 
 Use the right pattern for the complexity of the state being persisted:
 
-- **Zustand `persist` middleware** — for structured state that is shared across multiple components or consumed via a Zustand store. Wrap the store creator with `persist` and give it a stable `name` key under the `trackdraw.*` namespace. Example: `useUserPresets`.
+- **Zustand `persist` middleware** — for structured state that is shared across multiple components or consumed via a Zustand store. Wrap the store creator with `persist` and give it a stable `name` key under the `trackdraw.*` namespace.
 - **`usePersistentBoolean`** — for single boolean UI preferences that are local to one component or hook. Example: sidebar collapsed, inspector collapsed.
 - **Direct `localStorage` calls** — acceptable for simple scalar values that are read once on mount and written on change within a single hook. Example: theme, measurement units. Candidates for future migration to Zustand `persist` are tracked in the roadmap.
 - **`src/lib/projects.ts`** — the project and restore-point persistence layer. Do not bypass it for project data.

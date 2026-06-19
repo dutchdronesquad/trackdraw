@@ -161,21 +161,24 @@ function UserPresetCard({
   itemCount,
   selected,
   onSelect,
+  onRename,
+  onRemove,
 }: {
   preset: LayoutPreset;
   countSummary: string;
   itemCount: number;
   selected: boolean;
   onSelect: () => void;
+  onRename: (id: string, name: string) => void;
+  onRemove: (id: string) => void;
 }) {
-  const { renameUserPreset, removeUserPreset } = useAccountPresetSync();
   const [renaming, setRenaming] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function handleRenameCommit() {
     const value = inputRef.current?.value.trim() ?? "";
-    if (value && value !== preset.name) renameUserPreset(preset.id, value);
+    if (value && value !== preset.name) onRename(preset.id, value);
     setRenaming(false);
   }
 
@@ -255,7 +258,7 @@ function UserPresetCard({
                 </button>
                 <button
                   type="button"
-                  onClick={() => removeUserPreset(preset.id)}
+                  onClick={() => onRemove(preset.id)}
                   className="rounded-md bg-red-500/10 px-1.5 py-0.5 text-[10px] text-red-500 transition-colors hover:bg-red-500/20"
                 >
                   Delete
@@ -293,6 +296,8 @@ function UserPresetGrid({
   selectedPresetId: string | null;
   onSelectPreset: (presetId: string) => void;
 }) {
+  const { renameUserPreset, removeUserPreset } = useAccountPresetSync();
+
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {presets.map(({ preset, countSummary, itemCount }) => (
@@ -303,6 +308,8 @@ function UserPresetGrid({
           itemCount={itemCount}
           selected={preset.id === selectedPresetId}
           onSelect={() => onSelectPreset(preset.id)}
+          onRename={renameUserPreset}
+          onRemove={removeUserPreset}
         />
       ))}
     </div>
