@@ -27,6 +27,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 import { useEditor } from "@/store/editor";
 import { useSessionActions, useUiActions } from "@/store/actions";
+import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { Download, FolderOpen, Import } from "lucide-react";
 
@@ -102,6 +103,8 @@ export default function Toolbar({
   const { setActiveTool } = useUiActions();
   const { setSelection } = useSessionActions();
   const theme = useTheme();
+  const { data: authSession } = authClient.useSession();
+  const isSignedIn = Boolean(authSession?.user?.id);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
 
   useEffect(() => {
@@ -242,84 +245,86 @@ export default function Toolbar({
                   <div className="h-2" />
                 ))}
               <SidebarMenu className="gap-0 space-y-1">
-                {group.tools.map((tool) => {
-                  const active = tool.id === activeTool;
-                  const btn = (
-                    <SidebarMenuButton
-                      aria-pressed={active}
-                      onClick={() => handleToolSelect(tool.id)}
-                      className={cn(
-                        "relative h-9 overflow-hidden rounded-xl border transition-all duration-150 active:scale-[0.985]",
-                        collapsed ? "justify-center px-0" : "gap-2.5",
-                        active
-                          ? "border-brand-primary/30 bg-brand-primary/14 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                          : "text-sidebar-foreground hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
-                      )}
-                    >
-                      {active && (
-                        <span className="bg-brand-primary/12 absolute inset-0 rounded-lg" />
-                      )}
-                      <span
+                {group.tools
+                  .filter((tool) => tool.id !== "preset" || isSignedIn)
+                  .map((tool) => {
+                    const active = tool.id === activeTool;
+                    const btn = (
+                      <SidebarMenuButton
+                        aria-pressed={active}
+                        onClick={() => handleToolSelect(tool.id)}
                         className={cn(
-                          "flex size-4 shrink-0 items-center justify-center transition-colors",
+                          "relative h-9 overflow-hidden rounded-xl border transition-all duration-150 active:scale-[0.985]",
+                          collapsed ? "justify-center px-0" : "gap-2.5",
                           active
-                            ? "text-brand-primary"
-                            : "text-sidebar-foreground/90 group-hover/menu-button:text-foreground"
+                            ? "border-brand-primary/30 bg-brand-primary/14 text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                            : "text-sidebar-foreground hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
                         )}
                       >
-                        {tool.icon}
-                      </span>
-                      {!collapsed && (
-                        <span className="flex-1 truncate text-[13px]">
-                          {tool.label}
-                        </span>
-                      )}
-                      {!collapsed && tool.shortcut && (
-                        <Kbd
+                        {active && (
+                          <span className="bg-brand-primary/12 absolute inset-0 rounded-lg" />
+                        )}
+                        <span
                           className={cn(
-                            "h-4 min-w-4 px-1 font-mono text-[9px] leading-none shadow-none",
+                            "flex size-4 shrink-0 items-center justify-center transition-colors",
                             active
-                              ? "bg-brand-primary/10 text-foreground/55"
-                              : "bg-muted/80 text-muted-foreground/80"
+                              ? "text-brand-primary"
+                              : "text-sidebar-foreground/90 group-hover/menu-button:text-foreground"
                           )}
                         >
-                          {tool.shortcut}
-                        </Kbd>
-                      )}
-                    </SidebarMenuButton>
-                  );
-                  return (
-                    <SidebarMenuItem key={tool.id}>
-                      {collapsed ? (
-                        <Tooltip>
-                          <TooltipTrigger
-                            onClick={() => handleToolSelect(tool.id)}
+                          {tool.icon}
+                        </span>
+                        {!collapsed && (
+                          <span className="flex-1 truncate text-[13px]">
+                            {tool.label}
+                          </span>
+                        )}
+                        {!collapsed && tool.shortcut && (
+                          <Kbd
                             className={cn(
-                              "flex h-9 w-full items-center justify-center rounded-xl border transition-colors duration-150",
+                              "h-4 min-w-4 px-1 font-mono text-[9px] leading-none shadow-none",
                               active
-                                ? "border-brand-primary/30 bg-brand-primary/14 text-brand-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                                : "text-sidebar-foreground/90 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
+                                ? "bg-brand-primary/10 text-foreground/55"
+                                : "bg-muted/80 text-muted-foreground/80"
                             )}
                           >
-                            {tool.icon}
-                          </TooltipTrigger>
-                          <TooltipContent side="right" sideOffset={8}>
-                            <span>{tool.label}</span>
-                            {tool.shortcut ? (
-                              <span className="ml-2 inline-flex">
-                                <Kbd className="h-4 min-w-4 px-1 font-mono text-[9px] shadow-none">
-                                  {tool.shortcut}
-                                </Kbd>
-                              </span>
-                            ) : null}
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        btn
-                      )}
-                    </SidebarMenuItem>
-                  );
-                })}
+                            {tool.shortcut}
+                          </Kbd>
+                        )}
+                      </SidebarMenuButton>
+                    );
+                    return (
+                      <SidebarMenuItem key={tool.id}>
+                        {collapsed ? (
+                          <Tooltip>
+                            <TooltipTrigger
+                              onClick={() => handleToolSelect(tool.id)}
+                              className={cn(
+                                "flex h-9 w-full items-center justify-center rounded-xl border transition-colors duration-150",
+                                active
+                                  ? "border-brand-primary/30 bg-brand-primary/14 text-brand-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                                  : "text-sidebar-foreground/90 hover:border-border/80 hover:bg-muted hover:text-foreground border-transparent"
+                              )}
+                            >
+                              {tool.icon}
+                            </TooltipTrigger>
+                            <TooltipContent side="right" sideOffset={8}>
+                              <span>{tool.label}</span>
+                              {tool.shortcut ? (
+                                <span className="ml-2 inline-flex">
+                                  <Kbd className="h-4 min-w-4 px-1 font-mono text-[9px] shadow-none">
+                                    {tool.shortcut}
+                                  </Kbd>
+                                </span>
+                              ) : null}
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          btn
+                        )}
+                      </SidebarMenuItem>
+                    );
+                  })}
               </SidebarMenu>
             </SidebarGroup>
           ))}

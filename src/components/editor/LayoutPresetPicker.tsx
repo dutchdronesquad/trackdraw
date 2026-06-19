@@ -3,7 +3,15 @@
 import { memo, useRef, useState } from "react";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
-import { Bookmark, BookmarkPlus, Pencil, Store, Trash2, X } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkPlus,
+  LogIn,
+  Pencil,
+  Store,
+  Trash2,
+  X,
+} from "lucide-react";
 import {
   findPresetById,
   getLayoutPresetBounds,
@@ -13,6 +21,7 @@ import {
 } from "@/lib/planning/layout-presets";
 import { useUserPresets } from "@/store/user-presets";
 import { useAccountPresetSync } from "@/store/useAccountPresetSync";
+import { authClient } from "@/lib/auth-client";
 import { shapeKindLabels } from "@/lib/track/items/registry";
 import { cn } from "@/lib/utils";
 
@@ -306,8 +315,27 @@ function MyPresetsContent({
   selectedPresetId: string | null;
   onSelectPreset: (presetId: string) => void;
 }) {
+  const { data: authSession } = authClient.useSession();
+  const isSignedIn = Boolean(authSession?.user?.id);
   const userPresets = useUserPresets((state) => state.userPresets);
   const preparedUserPresets = preparePresets(userPresets);
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+        <LogIn className="text-muted-foreground/40 size-8" />
+        <div className="space-y-1">
+          <p className="text-foreground/70 text-sm font-medium">
+            Sign in to use presets
+          </p>
+          <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
+            Presets are saved to your account so they&apos;re always available
+            across all your devices.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (preparedUserPresets.length === 0) {
     return (

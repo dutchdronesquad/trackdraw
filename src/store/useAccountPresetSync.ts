@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { useUserPresets } from "@/store/user-presets";
 import type { LayoutPreset } from "@/lib/planning/layout-presets";
@@ -16,7 +17,7 @@ async function fetchAccountPresets(): Promise<LayoutPreset[] | null> {
   }
 }
 
-async function pushPresetToAccount(preset: LayoutPreset): Promise<void> {
+export async function pushPresetToAccount(preset: LayoutPreset): Promise<void> {
   await fetch("/api/layout-presets", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -39,31 +40,54 @@ async function renamePresetInAccount(
   });
 }
 
-let syncedForUserId: string | null = null;
+// Tracks which userId is currently synced in this browser session.
+// Resets on sign-out so the next sign-in (same or different account) triggers a fresh fetch.
+let lastSyncedUserId: string | null = null;
 
 export function useAccountPresetSync() {
   const { data: authSession } = authClient.useSession();
   const userId = authSession?.user?.id ?? null;
 
-  const { userPresets, setUserPresets, addUserPreset, removeUserPreset, renameUserPreset } =
-    useUserPresets();
+  const {
+    userPresets,
+    setUserPresets,
+    addUserPreset,
+    removeUserPreset,
+    renameUserPreset,
+  } = useUserPresets();
 
   useEffect(() => {
-    if (!userId || syncedForUserId === userId) return;
-    syncedForUserId = userId;
-
-    fetchAccountPresets().then((accountPresets) => {
-      if (accountPresets) {
-        setUserPresets(accountPresets);
+    // Sign-out: clear the store
+    if (!userId) {
+      if (lastSyncedUserId !== null) {
+        setUserPresets([]);
+        lastSyncedUserId = null;
       }
+      return;
+    }
+
+    // Already synced for this user in this session
+    if (lastSyncedUserId === userId) return;
+
+    // Account switch: clear immediately before loading the new account
+    if (lastSyncedUserId !== null) {
+      setUserPresets([]);
+    }
+
+    lastSyncedUserId = userId;
+
+    fetchAccountPresets().then((presets) => {
+      if (presets) setUserPresets(presets);
     });
   }, [userId, setUserPresets]);
 
   function addPreset(preset: Omit<LayoutPreset, "id">): string {
-    const id = addUserPreset(preset);
-    if (userId) {
-      pushPresetToAccount({ ...preset, id }).catch(() => {});
+    if (!userId) {
+      toast.error("Sign in to save presets to your account");
+      return "";
     }
+    const id = addUserPreset(preset);
+    pushPresetToAccount({ ...preset, id }).catch(() => {});
     return id;
   }
 
