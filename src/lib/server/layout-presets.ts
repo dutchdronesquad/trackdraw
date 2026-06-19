@@ -96,9 +96,7 @@ export async function deleteLayoutPresetForUser(
 ): Promise<void> {
   const db = await getDatabase();
   await db
-    .prepare(
-      `DELETE FROM layout_presets WHERE id = ? AND owner_user_id = ?`
-    )
+    .prepare(`DELETE FROM layout_presets WHERE id = ? AND owner_user_id = ?`)
     .bind(presetId, ownerUserId)
     .run();
 }

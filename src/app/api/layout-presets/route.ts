@@ -7,13 +7,15 @@ import {
   saveLayoutPresetForUser,
 } from "@/lib/server/layout-presets";
 
-const layoutPresetShapeSchema = z.object({
-  kind: z.string(),
-  x: z.number(),
-  y: z.number(),
-  rotation: z.number().optional(),
-  color: z.string().optional(),
-}).passthrough();
+const layoutPresetShapeSchema = z
+  .object({
+    kind: z.string(),
+    x: z.number(),
+    y: z.number(),
+    rotation: z.number().optional(),
+    color: z.string().optional(),
+  })
+  .passthrough();
 
 const savePresetRequestSchema = z.object({
   id: z.string().min(1),
@@ -47,7 +49,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   if (!isTrustedRequest(request)) {
-    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
+    return NextResponse.json(
+      { ok: false, error: "Forbidden" },
+      { status: 403 }
+    );
   }
 
   try {
