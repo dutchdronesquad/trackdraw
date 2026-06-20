@@ -6,42 +6,43 @@ type DashboardOverviewCardsProps = {
   totalUsers: number | null;
 };
 
-type OverviewCard = {
+type KpiCard = {
   key: string;
   label: string;
   value: number;
   helper: string;
   icon: typeof ImageIcon;
-  tone: string;
+  accent: string;
+  iconTone: string;
 };
 
-function OverviewStatsGrid({ cards }: { cards: OverviewCard[] }) {
+function KpiCard({
+  label,
+  value,
+  helper,
+  icon: Icon,
+  accent,
+  iconTone,
+}: KpiCard) {
   return (
-    <div className="grid auto-rows-min grid-cols-2 gap-2 sm:gap-4 xl:grid-cols-3">
-      {cards.map((card) => {
-        const Icon = card.icon;
-
-        return (
-          <div key={card.key} className="bg-muted/50 rounded-lg p-3 sm:p-5">
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-muted-foreground truncate text-xs sm:text-sm">
-                {card.label}
-              </p>
-              <span
-                className={`inline-flex size-7 shrink-0 items-center justify-center rounded-md ${card.tone}`}
-              >
-                <Icon className="size-3.5" />
-              </span>
-            </div>
-            <p className="mt-1 text-xl font-semibold sm:mt-2 sm:text-2xl">
-              {card.value}
-            </p>
-            <p className="text-muted-foreground mt-0.5 hidden text-xs sm:mt-1 sm:block">
-              {card.helper}
-            </p>
-          </div>
-        );
-      })}
+    <div className="bg-card overflow-hidden rounded-xl border">
+      <div className={`h-1 ${accent}`} />
+      <div className="flex items-start gap-3 p-4">
+        <span
+          className={`mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}
+        >
+          <Icon className="size-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-muted-foreground truncate text-xs font-medium">
+            {label}
+          </p>
+          <p className="text-2xl leading-tight font-bold tabular-nums">
+            {value}
+          </p>
+          <p className="text-muted-foreground mt-0.5 text-xs">{helper}</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -50,14 +51,15 @@ export default function DashboardOverviewCards({
   galleryStats,
   totalUsers,
 }: DashboardOverviewCardsProps) {
-  const galleryCards = [
+  const cards: KpiCard[] = [
     {
       key: "gallery-total",
       label: "Gallery entries",
       value: galleryStats.total,
       helper: "All dashboard-managed entries",
       icon: ImageIcon,
-      tone: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+      accent: "bg-sky-500",
+      iconTone: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
     },
     {
       key: "gallery-featured",
@@ -65,7 +67,8 @@ export default function DashboardOverviewCards({
       value: galleryStats.featured,
       helper: "Pinned in the featured section",
       icon: Sparkles,
-      tone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      accent: "bg-amber-500",
+      iconTone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     },
     {
       key: "gallery-hidden",
@@ -73,12 +76,10 @@ export default function DashboardOverviewCards({
       value: galleryStats.hidden,
       helper: "Removed from public discovery",
       icon: EyeOff,
-      tone: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+      accent: "bg-rose-500",
+      iconTone: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
     },
-  ];
-
-  const accountCards =
-    totalUsers !== null
+    ...(totalUsers !== null
       ? [
           {
             key: "accounts",
@@ -86,18 +87,19 @@ export default function DashboardOverviewCards({
             value: totalUsers,
             helper: "Tracked user records",
             icon: Users,
-            tone: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-          },
+            accent: "bg-emerald-500",
+            iconTone:
+              "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+          } satisfies KpiCard,
         ]
-      : [];
+      : []),
+  ];
 
   return (
-    <div className="space-y-4">
-      <OverviewStatsGrid cards={galleryCards} />
-
-      {accountCards.length > 0 ? (
-        <OverviewStatsGrid cards={accountCards} />
-      ) : null}
+    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      {cards.map(({ key, ...card }) => (
+        <KpiCard key={key} {...card} />
+      ))}
     </div>
   );
 }

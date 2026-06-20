@@ -217,10 +217,12 @@ export async function getGalleryEntryByShareToken(shareToken: string) {
 
 export async function listGalleryEntriesForDashboard(options?: {
   state?: GalleryState | "all";
+  limit?: number;
 }) {
   const db = await getDatabase();
   const state = options?.state ?? "all";
   const hasStateFilter = state !== "all";
+  const limit = options?.limit ?? 500;
 
   const result = await db
     .prepare(
@@ -258,9 +260,10 @@ export async function listGalleryEntriesForDashboard(options?: {
           end,
           coalesce(g.gallery_published_at, g.updated_at) desc,
           g.created_at desc
+        limit ?
       `
     )
-    .bind(hasStateFilter ? 1 : 0, hasStateFilter ? state : "")
+    .bind(hasStateFilter ? 1 : 0, hasStateFilter ? state : "", limit)
     .all<DashboardGalleryEntryRow>();
 
   return result.results.map(mapDashboardGalleryEntryRow);
