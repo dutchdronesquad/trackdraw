@@ -13,7 +13,7 @@ const CONFIGURATION = JSON.stringify({
 });
 
 const HTML = `<!doctype html>
-<html>
+<html lang="en">
   <head>
     <title>TrackDraw API Docs</title>
     <meta charset="utf-8" />
@@ -21,7 +21,11 @@ const HTML = `<!doctype html>
   </head>
   <body>
     <div id="app"></div>
-    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.60.0"
+      integrity="sha384-4BdmZQQTc462+ocGPo+GP3Hi/eQjMQTmNkSU9J5w3FD6hGUEmU2PqNRnbklONt4R"
+      crossorigin="anonymous"
+    ></script>
     <script type="text/javascript">
       Scalar.createApiReference('#app', ${CONFIGURATION})
     </script>
