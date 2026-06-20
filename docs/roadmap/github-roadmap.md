@@ -101,6 +101,9 @@ The completed release-sized work is archived below. The next TrackDraw priority 
   - [x] Migrate `useEditorHints` to Zustand `persist`
         Replaced five separate `localStorage` keys and manual get/set/remove calls with a single persisted Zustand store (`src/store/editor-hints.ts`) under `trackdraw.editorHints`. All five dismissed states are now stored as one object, making `resetGuidedHints` a single store reset. Hook interface unchanged.
 
+- [ ] Remove legacy localStorage migration shims (`Lower priority`, `No account required`)
+      Two migration shims were added in v1.11.0 to preserve existing user preferences after the Zustand persist migration. Remove them once enough releases have passed that the old keys are no longer realistically present. The shims live in `src/store/measurement-unit.ts` (legacy raw-string format for `trackdraw.measurementUnitSystem`) and `src/store/editor-hints.ts` (legacy `trackdraw-hint-*-dismissed` per-key format). Safe to remove no earlier than v1.13.0.
+
 - [ ] VelociDrone experimental export stabilization (`Lower priority`, `No account required`)
       Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping/orientation edge cases.
 
