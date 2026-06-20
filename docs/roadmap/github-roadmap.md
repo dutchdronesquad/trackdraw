@@ -114,8 +114,19 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 - [ ] Gallery featured collections (`Lower priority`, `Account-backed`)
       Let admins curate small gallery collections such as indoor practice, beginner friendly, technical layouts, and race-day examples when gallery growth warrants it.
 
+- [x] Admin metrics dashboard — Tier 1 (`Account-backed`)
+      Admin Metrics page with KPI strip (total users, active users, active projects, active shares), user population cohort donut with center label, content overview bar chart, weekly new user growth area chart, plan limit simulation grouped bar chart, and detail stat rows for projects/shares/presets. All metrics derived from existing D1 tables via 14 parallel queries. Sidebar split into Platform and Admin sections. Research document: `docs/research/admin-metrics-analytics.md`.
+
 - [ ] Dashboard operator tooling (`Lower priority`, `Account-backed`)
-      Improve dashboard visibility for public gallery tracks, published shares, contextual diagnostics, and API usage after higher-priority editor and catalog work settles.
+      Give admins and moderators a way to inspect the state of specific accounts, shares, and API keys from within the existing dashboard surfaces — without digging through database records. This is about operational control over individual entities (who owns this share, why is this embed broken, which API keys are active), not aggregate product metrics. Fits as a follow-up pass on the existing Users, Gallery, and Audit modules once higher-priority editor and catalog work settles.
+  - [ ] User context panel
+        Click through from the Users table to a read-only panel showing that user's projects, active shares, gallery entries, API keys, and recent audit events.
+  - [ ] Share lifecycle inspector
+        Per share token: owner, project, token state, gallery listing, embed availability, and publish/update history in one operator view.
+  - [ ] API usage overview
+        Active API keys across all accounts, last-used timestamps, rate-limit hits, and endpoint error patterns.
+  - [ ] Public track review queue
+        A moderator view for gallery entries with preview, title, owner context, field size, obstacle count, and feature/hide/restore actions.
 
 - [ ] Race-day communication and briefing (`No account required`)
       The first Race Pack release and immediate QR/timing-marker slice are shipped. The remaining work here is larger race-day operations follow-up.
@@ -184,6 +195,15 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         Surface anchored notes clearly in read-only review.
   - [ ] Threaded comments follow-up
         Consider richer review threads only if simple notes prove useful.
+
+- [ ] Usage analytics and event tracking (`Account-backed`)
+      TrackDraw has Tier 1 internal metrics derived from existing tables. Tier 2 requires a lightweight `product_events` table to track share views, export format usage, and editor interactions. This table is kept separate from `audit_events` — audit events are identity-linked and security-sensitive, product events can be anonymous and have a different retention lifecycle. Research document: `docs/research/admin-metrics-analytics.md`.
+  - [ ] `product_events` table and schema
+        Add a narrow D1 table with event name, nullable session ID, nullable user ID, nullable project/share reference, and timestamp. No IP addresses or device fingerprints. Purgeable per user on account deletion.
+  - [ ] First event instrumentation
+        Instrument the highest-value events: `share.viewed` (public share page), `export.completed` (PDF/PNG/SVG/JSON), `editor.3d_opened` (first open per session), `editor.element_placed` (element type), `project.imported`.
+  - [ ] Tier 2 metrics in admin dashboard
+        Surface aggregate event data alongside existing Tier 1 query metrics in the admin Metrics page: share view counts, dead link detection, export format distribution, 3D preview adoption rate.
 
 - [ ] Desktop and mobile wrapper evaluation (`Research`)
       Evaluate whether Electron or Capacitor would materially improve local project handling, native file workflows, or offline resilience.

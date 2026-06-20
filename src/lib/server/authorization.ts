@@ -11,10 +11,11 @@ export type AuthorizationCapability =
   | "gallery.entries.delete"
   | "admin.users.read"
   | "admin.users.update"
+  | "admin.metrics.read"
   | "audit.read"
   | "account.role.assign";
 
-export type DashboardModule = "overview" | "gallery" | "users" | "audit";
+export type DashboardModule = "overview" | "gallery" | "users" | "audit" | "metrics";
 
 const capabilityRoles: Record<AuthorizationCapability, AccountRole[]> = {
   "dashboard.overview.read": ["moderator", "admin"],
@@ -23,6 +24,7 @@ const capabilityRoles: Record<AuthorizationCapability, AccountRole[]> = {
   "gallery.entries.delete": ["moderator", "admin"],
   "admin.users.read": ["admin"],
   "admin.users.update": ["admin"],
+  "admin.metrics.read": ["admin"],
   "audit.read": ["admin"],
   "account.role.assign": ["admin"],
 };
@@ -53,6 +55,10 @@ export function getVisibleDashboardModules(
 
   if (hasCapability(role, "admin.users.read")) {
     modules.push("users");
+  }
+
+  if (hasCapability(role, "admin.metrics.read")) {
+    modules.push("metrics");
   }
 
   if (hasCapability(role, "audit.read")) {

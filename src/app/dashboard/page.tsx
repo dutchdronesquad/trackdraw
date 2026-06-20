@@ -22,6 +22,11 @@ const moduleConfig = {
     description: "Manage access roles and inspect account presence.",
     href: "/dashboard/users",
   },
+  metrics: {
+    title: "Metrics",
+    description: "Usage statistics for projects, shares, presets, and plan limit simulation.",
+    href: "/dashboard/metrics",
+  },
   audit: {
     title: "Audit",
     description: "Platform-sensitive history and role changes.",

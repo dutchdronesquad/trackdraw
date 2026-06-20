@@ -44,6 +44,13 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Chart colors — sky, emerald, orange, violet, rose */
+  --chart-1: oklch(0.59 0.2 231);
+  --chart-2: oklch(0.66 0.21 158);
+  --chart-3: oklch(0.72 0.19 47);
+  --chart-4: oklch(0.6 0.22 280);
+  --chart-5: oklch(0.62 0.24 10);
 }
 
 .dark {
@@ -80,6 +87,13 @@
   --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
   --sidebar-border: hsl(240 3.7% 15.9%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+  /* Chart colors — brighter for dark backgrounds */
+  --chart-1: oklch(0.68 0.18 231);
+  --chart-2: oklch(0.74 0.19 158);
+  --chart-3: oklch(0.78 0.17 47);
+  --chart-4: oklch(0.7 0.2 280);
+  --chart-5: oklch(0.7 0.22 10);
 }
 
 @theme inline {

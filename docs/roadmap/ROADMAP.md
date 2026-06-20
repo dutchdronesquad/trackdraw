@@ -637,6 +637,33 @@ Suggested first slices:
 - Richer threaded comments only if simple anchored notes prove useful
   and an account-backed identity model exists
 
+#### Usage Analytics And Event Tracking (`Account-backed`)
+
+TrackDraw has Tier 1 internal metrics covering user population, content health, weekly growth, and plan limit simulation. Tier 2 requires a lightweight event log to answer questions that cannot be derived from the existing tables.
+
+Supporting research document:
+
+- `docs/research/admin-metrics-analytics.md`
+
+Why:
+
+- Share link view counts, export format distribution, 3D preview adoption, and element placement frequency cannot be derived from aggregate table queries alone
+- These signals are useful for understanding real usage patterns over time
+- A single narrow `events` table is enough for the first slice without requiring external analytics tooling
+
+Focus:
+
+- Add a `product_events` table separate from the existing `audit_events` table (audit events are identity-sensitive and actor-linked; product events can be anonymous and have a different retention lifecycle)
+- Schema: narrow, privacy-safe — event name, nullable session ID, nullable user ID, nullable project ID, nullable share token, timestamp. No IP addresses, no fingerprinting, purgeable per user on account deletion
+- Instrument the highest-value events first: `share.viewed`, `export.completed`, `editor.3d_opened`, `editor.element_placed`, `project.imported`
+- Surface aggregate event data in the existing admin Metrics page alongside Tier 1 query metrics
+
+Important boundary:
+
+- Do not store personal data or device identifiers in events
+- Do not add event tracking to private editor operations or account management flows
+- Keep the event schema narrow; resist adding fields that are not needed for a specific metric
+
 #### Research Tracks (`Research`)
 
 - Velocidrone experimental export follow-up

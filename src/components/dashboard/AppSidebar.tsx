@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
+  BarChart2,
   Home,
   Image as ImageIcon,
   LayoutDashboard,
@@ -84,7 +85,7 @@ function TrackDrawMark({ className }: { className?: string }) {
   );
 }
 
-const navItems: NavItem[] = [
+const platformNavItems: NavItem[] = [
   {
     key: "overview",
     title: "Overview",
@@ -100,12 +101,22 @@ const navItems: NavItem[] = [
     icon: ImageIcon,
     activePrefix: "/dashboard/gallery",
   },
+] as const;
+
+const adminNavItems: NavItem[] = [
   {
     key: "users",
     title: "Users",
     href: "/dashboard/users",
     icon: Users,
     activePrefix: "/dashboard/users",
+  },
+  {
+    key: "metrics",
+    title: "Metrics",
+    href: "/dashboard/metrics",
+    icon: BarChart2,
+    activePrefix: "/dashboard/metrics",
   },
   {
     key: "audit",
@@ -138,6 +149,43 @@ const footerNavItems: NavItem[] = [
   },
 ];
 
+function NavMenuItem({
+  item,
+  currentPath,
+  badge,
+}: {
+  item: NavItem;
+  currentPath: string;
+  badge?: number;
+}) {
+  const isActive = isItemActive(currentPath, item);
+  const Icon = item.icon;
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        tooltip={{ children: item.title, className: appTooltipContentClassName }}
+        isActive={isActive}
+        className={cn(
+          "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground",
+          typeof badge === "number" && "pr-9"
+        )}
+        asChild
+      >
+        <Link href={item.href} aria-current={isActive ? "page" : undefined}>
+          <Icon />
+          <span>{item.title}</span>
+        </Link>
+      </SidebarMenuButton>
+      {typeof badge === "number" ? (
+        <SidebarMenuBadge className="bg-muted text-muted-foreground">
+          {formatSidebarBadge(badge)}
+        </SidebarMenuBadge>
+      ) : null}
+    </SidebarMenuItem>
+  );
+}
+
 function isItemActive(pathname: string, item: NavItem) {
   if (!item.activePrefix) {
     return false;
@@ -164,27 +212,18 @@ export default function DashboardAppSidebar({
 }: DashboardAppSidebarProps) {
   const currentPath = usePathname();
   const theme = useTheme();
-  const filteredNavItems = navItems.filter((item) => {
-    if (item.key === "overview") {
-      return visibleModules.includes("overview");
-    }
 
-    if (item.key === "users") {
-      return visibleModules.includes("users");
-    }
+  const filteredPlatformItems = platformNavItems.filter((item) => {
+    if (item.key === "overview") return visibleModules.includes("overview");
+    if (item.key === "gallery") return visibleModules.includes("gallery");
+    return true;
+  });
 
-    if (item.key === "gallery") {
-      return visibleModules.includes("gallery");
-    }
-
-    if (item.key === "audit") {
-      return visibleModules.includes("audit");
-    }
-
-    if (item.key === "email-preview") {
-      return currentUser.role === "admin";
-    }
-
+  const filteredAdminItems = adminNavItems.filter((item) => {
+    if (item.key === "users") return visibleModules.includes("users");
+    if (item.key === "metrics") return visibleModules.includes("metrics");
+    if (item.key === "audit") return visibleModules.includes("audit");
+    if (item.key === "email-preview") return currentUser.role === "admin";
     return true;
   });
 
@@ -221,48 +260,40 @@ export default function DashboardAppSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
-              {filteredNavItems.map((item) => {
-                const isActive = isItemActive(currentPath, item);
-                const Icon = item.icon;
-                const badge = itemBadges[item.key];
-
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      tooltip={{
-                        children: item.title,
-                        className: appTooltipContentClassName,
-                      }}
-                      isActive={isActive}
-                      className={cn(
-                        "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground",
-                        typeof badge === "number" && "pr-9"
-                      )}
-                      asChild
-                    >
-                      <Link
-                        href={item.href}
-                        aria-current={isActive ? "page" : undefined}
-                      >
-                        <Icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {typeof badge === "number" ? (
-                      <SidebarMenuBadge className="bg-muted text-muted-foreground">
-                        {formatSidebarBadge(badge)}
-                      </SidebarMenuBadge>
-                    ) : null}
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {filteredPlatformItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Platform</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {filteredPlatformItems.map((item) => (
+                  <NavMenuItem
+                    key={item.title}
+                    item={item}
+                    currentPath={currentPath}
+                    badge={itemBadges[item.key]}
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        {filteredAdminItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {filteredAdminItems.map((item) => (
+                  <NavMenuItem
+                    key={item.title}
+                    item={item}
+                    currentPath={currentPath}
+                    badge={itemBadges[item.key]}
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu className="gap-1">
