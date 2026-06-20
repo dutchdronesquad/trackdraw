@@ -12,12 +12,12 @@ export const ContentOverviewChart = dynamic(
   { ssr: false }
 );
 
-export const UserGrowthChart = dynamic(
-  () => import("./MetricsCharts").then((m) => m.UserGrowthChart),
+export const UserGrowthCard = dynamic(
+  () => import("./MetricsCharts").then((m) => m.UserGrowthCard),
   { ssr: false }
 );
 
-export const PlanLimitChart = dynamic(
-  () => import("./MetricsCharts").then((m) => m.PlanLimitChart),
+export const PlanLimitSimulator = dynamic(
+  () => import("./MetricsCharts").then((m) => m.PlanLimitSimulator),
   { ssr: false }
 );

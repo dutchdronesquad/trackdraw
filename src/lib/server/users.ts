@@ -29,6 +29,7 @@ type AdminUserRow = {
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string | null;
+  projectCount: number;
 };
 
 function mapAdminUser(row: AdminUserRow): AdminUser {
@@ -41,6 +42,7 @@ function mapAdminUser(row: AdminUserRow): AdminUser {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     lastLoginAt: row.lastLoginAt ?? null,
+    projectCount: Number(row.projectCount ?? 0),
   };
 }
 
@@ -74,13 +76,20 @@ export async function listUsersForAdmin(): Promise<AdminUser[]> {
           u.role,
           u.createdAt,
           u.updatedAt,
-          ls.lastLoginAt
+          ls.lastLoginAt,
+          coalesce(pc.cnt, 0) as projectCount
         from users u
         left join (
           select userId, max(createdAt) as lastLoginAt
           from sessions
           group by userId
         ) ls on ls.userId = u.id
+        left join (
+          select owner_user_id, count(*) as cnt
+          from projects
+          where archived_at is null
+          group by owner_user_id
+        ) pc on pc.owner_user_id = u.id
         order by u.createdAt desc, u.email asc
       `
     )
@@ -118,7 +127,8 @@ export async function getAdminUserById(
           u.role,
           u.createdAt,
           u.updatedAt,
-          ls.lastLoginAt
+          ls.lastLoginAt,
+          coalesce(pc.cnt, 0) as projectCount
         from users u
         left join (
           select userId, max(createdAt) as lastLoginAt
@@ -126,6 +136,12 @@ export async function getAdminUserById(
           where userId = ?1
           group by userId
         ) ls on ls.userId = u.id
+        left join (
+          select owner_user_id, count(*) as cnt
+          from projects
+          where archived_at is null
+          group by owner_user_id
+        ) pc on pc.owner_user_id = u.id
         where u.id = ?1
         limit 1
       `

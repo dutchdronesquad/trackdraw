@@ -78,6 +78,7 @@ const stateFilters: { value: GalleryState; label: string }[] = [
   { value: "listed", label: "Listed" },
   { value: "featured", label: "Featured" },
   { value: "hidden", label: "Hidden" },
+  { value: "unlisted", label: "Unlisted (regular shares)" },
 ];
 const shareFilters: { value: ShareLifecycleState; label: string }[] = [
   { value: "active", label: "Active" },
@@ -377,7 +378,7 @@ export default function DashboardGalleryManager({
   );
   const [selectedGalleryStates, setSelectedGalleryStates] = useState<
     GalleryState[]
-  >([]);
+  >(["listed", "featured", "hidden"]);
   const [selectedShareLifecycles, setSelectedShareLifecycles] = useState<
     ShareLifecycleState[]
   >([]);

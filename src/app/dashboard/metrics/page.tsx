@@ -12,13 +12,13 @@ import {
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import {
   ContentOverviewChart,
-  PlanLimitChart,
-  UserGrowthChart,
+  PlanLimitSimulator,
+  UserGrowthCard,
   UserPopulationChart,
 } from "@/components/dashboard/MetricsChartsLoader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
-import { getAdminMetrics } from "@/lib/server/metrics";
+import { getAdminMetrics, getGrowthByRange } from "@/lib/server/metrics";
 
 export const metadata: Metadata = {
   title: "Dashboard Metrics",
@@ -72,6 +72,7 @@ type ChartCardProps = {
   description?: string;
   children: React.ReactNode;
   className?: string;
+  action?: React.ReactNode;
 };
 
 function ChartCard({
@@ -79,16 +80,20 @@ function ChartCard({
   description,
   children,
   className,
+  action,
 }: ChartCardProps) {
   return (
-    <div
-      className={`bg-card space-y-1 rounded-xl border p-4 ${className ?? ""}`}
-    >
-      <p className="text-sm font-medium">{title}</p>
-      {description ? (
-        <p className="text-muted-foreground text-xs">{description}</p>
-      ) : null}
-      <div className="pt-2">{children}</div>
+    <div className={`bg-card rounded-xl border p-4 ${className ?? ""}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-sm font-medium">{title}</p>
+          {description ? (
+            <p className="text-muted-foreground text-xs">{description}</p>
+          ) : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
+      </div>
+      <div className="pt-3">{children}</div>
     </div>
   );
 }
@@ -124,7 +129,10 @@ export default async function DashboardMetricsPage() {
     notFound();
   }
 
-  const metrics = await getAdminMetrics();
+  const [metrics, growthByRange] = await Promise.all([
+    getAdminMetrics(),
+    getGrowthByRange(),
+  ]);
 
   return (
     <>
@@ -152,9 +160,9 @@ export default async function DashboardMetricsPage() {
             iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
           />
           <KpiCard
-            label="Active projects"
+            label="Projects"
             value={metrics.projects.active}
-            sub={`${metrics.projects.archived} archived`}
+            sub={`non-archived · ${metrics.projects.archived} archived`}
             icon={FolderOpen}
             accent="bg-violet-500"
             iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
@@ -198,12 +206,7 @@ export default async function DashboardMetricsPage() {
         </div>
 
         {/* User growth */}
-        <ChartCard
-          title="New users per week"
-          description="Registrations over the last 12 weeks."
-        >
-          <UserGrowthChart userGrowth={metrics.userGrowth} />
-        </ChartCard>
+        <UserGrowthCard growthByRange={growthByRange} />
 
         {/* Detail stats */}
         <div className="grid gap-4 lg:grid-cols-3">
@@ -277,73 +280,13 @@ export default async function DashboardMetricsPage() {
           <div>
             <p className="text-sm font-medium">Plan limit simulation</p>
             <p className="text-muted-foreground mt-0.5 text-xs">
-              Users who would be affected if the free plan were capped at each
-              threshold. Use this to set limits that leave most current users
-              unaffected.
+              Each chart shows how usage is distributed across all users. Drag
+              the slider (or type a number) to set a free-plan cap and instantly
+              see how many users would exceed it — the red bars are the ones
+              that get cut off.
             </p>
           </div>
-          <div className="bg-card rounded-xl border p-4">
-            <PlanLimitChart planLimits={metrics.planLimits} />
-          </div>
-          <div className="overflow-x-auto rounded-xl border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/40 border-b">
-                  <th className="text-muted-foreground px-4 py-3 text-left text-xs font-medium">
-                    Free limit
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-right text-xs font-medium">
-                    Projects affected
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-right text-xs font-medium">
-                    Shares affected
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-right text-xs font-medium">
-                    Presets affected
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {metrics.planLimits.map((row) => (
-                  <tr
-                    key={row.limit}
-                    className="hover:bg-muted/20 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-sm font-medium">
-                      max {row.limit}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {row.usersExceedingProjects === 0 ? (
-                        <span className="text-muted-foreground text-sm">0</span>
-                      ) : (
-                        <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
-                          {row.usersExceedingProjects}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {row.usersExceedingShares === 0 ? (
-                        <span className="text-muted-foreground text-sm">0</span>
-                      ) : (
-                        <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
-                          {row.usersExceedingShares}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {row.usersExceedingPresets === 0 ? (
-                        <span className="text-muted-foreground text-sm">0</span>
-                      ) : (
-                        <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
-                          {row.usersExceedingPresets}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PlanLimitSimulator userDistribution={metrics.userDistribution} />
         </div>
       </div>
     </>

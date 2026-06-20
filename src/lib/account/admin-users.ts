@@ -9,4 +9,5 @@ export type AdminUser = {
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string | null;
+  projectCount: number;
 };

@@ -255,6 +255,26 @@ export default function DashboardUsersManager({
       },
     },
     {
+      accessorKey: "projectCount",
+      meta: { className: "hidden w-28 sm:table-cell" },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={dataTableSortButtonClassName}
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Projects
+          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-xs tabular-nums">
+          {row.original.projectCount}
+        </span>
+      ),
+    },
+    {
       accessorKey: "role",
       header: "Role",
       meta: { className: "w-32" },
