@@ -640,7 +640,7 @@ export default function DashboardGalleryManager({
         const VisibilityIcon = visibilityAction.icon;
 
         return (
-          <div className="flex justify-end">
+          <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
             <div className="hidden items-center justify-end gap-1 md:flex">
               <ActionTooltip label={featureAction.label}>
                 <Button
@@ -1034,7 +1034,7 @@ export default function DashboardGalleryManager({
                           value={formatDate(inspectCandidate.shareCreatedAt)}
                         />
                         <InspectDetail
-                          label="Share updated"
+                          label="Entry updated"
                           value={formatDate(inspectCandidate.updatedAt)}
                         />
                         {inspectCandidate.shareExpiresAt ? (

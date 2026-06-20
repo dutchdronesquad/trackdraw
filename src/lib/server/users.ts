@@ -74,12 +74,13 @@ export async function listUsersForAdmin(): Promise<AdminUser[]> {
           u.role,
           u.createdAt,
           u.updatedAt,
-          (
-            select max(s.createdAt)
-            from sessions s
-            where s.userId = u.id
-          ) as lastLoginAt
+          ls.lastLoginAt
         from users u
+        left join (
+          select userId, max(createdAt) as lastLoginAt
+          from sessions
+          group by userId
+        ) ls on ls.userId = u.id
         order by u.createdAt desc, u.email asc
       `
     )
@@ -117,13 +118,15 @@ export async function getAdminUserById(
           u.role,
           u.createdAt,
           u.updatedAt,
-          (
-            select max(s.createdAt)
-            from sessions s
-            where s.userId = u.id
-          ) as lastLoginAt
+          ls.lastLoginAt
         from users u
-        where u.id = ?
+        left join (
+          select userId, max(createdAt) as lastLoginAt
+          from sessions
+          where userId = ?1
+          group by userId
+        ) ls on ls.userId = u.id
+        where u.id = ?1
         limit 1
       `
     )
@@ -196,7 +199,7 @@ export async function getUserContextStats(
         from shares
         where owner_user_id = ?
           and revoked_at is null
-          and (expires_at is null or expires_at > strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+          and (expires_at is null or datetime(expires_at) > datetime('now'))
       `
     )
     .bind(userId)
@@ -220,6 +223,7 @@ export async function getUserContextStats(
         from apikey
         where referenceId = ?
           and enabled = 1
+          and (expiresAt is null or datetime(expiresAt) > datetime('now'))
       `
     )
     .bind(userId)

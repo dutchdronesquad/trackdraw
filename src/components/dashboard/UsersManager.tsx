@@ -134,17 +134,19 @@ export default function DashboardUsersManager({
     setInspectData(null);
 
     fetch(`/api/dashboard/users/${encodeURIComponent(inspectCandidate.id)}`)
-      .then(
-        (res) =>
-          res.json() as Promise<{
-            ok: boolean;
-            stats?: UserContextStats;
-            recentEvents?: AuditEvent[];
-          }>
-      )
-      .then((payload) => {
+      .then(async (res) => {
+        const payload = (await res.json()) as {
+          ok: boolean;
+          error?: string;
+          stats?: UserContextStats;
+          recentEvents?: AuditEvent[];
+        };
         if (cancelled) return;
-        if (payload.ok && payload.stats && payload.recentEvents) {
+        if (!res.ok || !payload.ok) {
+          toast.error(payload.error ?? "Failed to load user context.");
+          return;
+        }
+        if (payload.stats && payload.recentEvents) {
           setInspectData({
             stats: payload.stats,
             recentEvents: payload.recentEvents,

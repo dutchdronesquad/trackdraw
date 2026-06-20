@@ -321,7 +321,15 @@ function mapAdminApiKeyRow(row: AdminApiKeyRow): AdminApiKey {
     rateLimitTimeWindowMs:
       row.rateLimitTimeWindow === null ? null : Number(row.rateLimitTimeWindow),
     permissions: normalizePermissions(
-      row.permissions ? (JSON.parse(row.permissions) as unknown) : null
+      row.permissions
+        ? (() => {
+            try {
+              return JSON.parse(row.permissions) as unknown;
+            } catch {
+              return null;
+            }
+          })()
+        : null
     ),
     ownerUserId: row.referenceId,
     ownerName: row.ownerName,

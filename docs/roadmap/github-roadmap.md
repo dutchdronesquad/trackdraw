@@ -117,7 +117,7 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 - [x] Admin metrics dashboard — Tier 1 (`Account-backed`)
       Admin Metrics page with KPI strip (total users, active users, active projects, active shares), user population cohort donut with center label, content overview bar chart, weekly new user growth area chart, plan limit simulation grouped bar chart, and detail stat rows for projects/shares/presets. All metrics derived from existing D1 tables via 14 parallel queries. Sidebar split into Platform and Admin sections. Research document: `docs/research/admin-metrics-analytics.md`.
 
-- [ ] Dashboard operator tooling (`Lower priority`, `Account-backed`)
+- [x] Dashboard operator tooling (`Lower priority`, `Account-backed`)
       Give admins and moderators a way to inspect the state of specific accounts, shares, and API keys from within the existing dashboard surfaces — without digging through database records. This is about operational control over individual entities (who owns this share, why is this embed broken, which API keys are active), not aggregate product metrics. Fits as a follow-up pass on the existing Users, Gallery, and Audit modules once higher-priority editor and catalog work settles.
   - [x] User context panel
         Users table rows now open a Discord-style inspect sheet with a stats strip (projects, active shares, gallery entries, API keys), role badge, last login, created date, recent audit events, and a separate change-role section with self-role-change protection.
