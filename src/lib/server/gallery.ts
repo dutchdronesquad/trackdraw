@@ -228,13 +228,26 @@ export async function getGalleryEntryByShareToken(shareToken: string) {
 }
 
 export async function listGalleryEntriesForDashboard(options?: {
-  state?: GalleryState | "all";
+  state?: GalleryState | "all" | "public";
   limit?: number;
 }) {
   const db = await getDatabase();
   const state = options?.state ?? "all";
-  const hasStateFilter = state !== "all";
   const limit = options?.limit ?? 500;
+
+  let whereClause: string;
+  let bindings: (string | number)[];
+
+  if (state === "all") {
+    whereClause = "1 = 1";
+    bindings = [];
+  } else if (state === "public") {
+    whereClause = "g.gallery_state in ('featured', 'listed')";
+    bindings = [];
+  } else {
+    whereClause = "g.gallery_state = ?";
+    bindings = [state];
+  }
 
   const result = await db
     .prepare(
@@ -266,7 +279,7 @@ export async function listGalleryEntriesForDashboard(options?: {
         from gallery_entries g
         left join users u on u.id = g.owner_user_id
         left join shares s on s.token = g.share_token
-        where (? = 0 or g.gallery_state = ?)
+        where ${whereClause}
         order by
           case g.gallery_state
             when 'featured' then 0
@@ -279,7 +292,7 @@ export async function listGalleryEntriesForDashboard(options?: {
         limit ?
       `
     )
-    .bind(hasStateFilter ? 1 : 0, hasStateFilter ? state : "", limit)
+    .bind(...bindings, limit)
     .all<DashboardGalleryEntryRow>();
 
   return result.results.map(mapDashboardGalleryEntryRow);

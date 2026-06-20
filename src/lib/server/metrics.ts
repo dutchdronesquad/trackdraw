@@ -460,6 +460,74 @@ function buildCumulativeGrowth(
   });
 }
 
+export type RecentUser = {
+  id: string;
+  name: string | null;
+  email: string;
+  createdAt: string;
+};
+
+export type OverviewStats = {
+  totalUsers: number;
+  newUsersThisMonth: number;
+  newUsersLastMonth: number;
+  activeProjects: number;
+  activeShares: number;
+  recentUsers: RecentUser[];
+};
+
+export async function getOverviewStats(): Promise<OverviewStats> {
+  const db = await getDatabase();
+  const [usersRow, projectsRow, sharesRow, recentUsersRows] = await Promise.all(
+    [
+      db
+        .prepare(
+          `select
+            count(*) as total,
+            sum(case when createdAt > datetime('now', '-30 days') then 1 else 0 end) as new_this_month,
+            sum(case when createdAt between datetime('now', '-60 days') and datetime('now', '-30 days') then 1 else 0 end) as new_last_month
+           from users`
+        )
+        .first<{
+          total: number;
+          new_this_month: number;
+          new_last_month: number;
+        }>(),
+      db
+        .prepare(
+          `select count(*) as count from projects where archived_at is null`
+        )
+        .first<{ count: number }>(),
+      db
+        .prepare(
+          `select count(*) as count from shares
+           where revoked_at is null
+             and (expires_at is null or expires_at > datetime('now'))
+             and owner_user_id is not null`
+        )
+        .first<{ count: number }>(),
+      db
+        .prepare(
+          `select id, name, email, createdAt from users order by createdAt desc limit 6`
+        )
+        .all<{
+          id: string;
+          name: string | null;
+          email: string;
+          createdAt: string;
+        }>(),
+    ]
+  );
+  return {
+    totalUsers: usersRow?.total ?? 0,
+    newUsersThisMonth: usersRow?.new_this_month ?? 0,
+    newUsersLastMonth: usersRow?.new_last_month ?? 0,
+    activeProjects: projectsRow?.count ?? 0,
+    activeShares: sharesRow?.count ?? 0,
+    recentUsers: recentUsersRows?.results ?? [],
+  };
+}
+
 export async function getGrowthByRange(): Promise<GrowthByRange> {
   const db = await getDatabase();
   const ranges: [GrowthRange, number][] = [
