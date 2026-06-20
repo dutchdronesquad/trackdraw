@@ -487,10 +487,7 @@ Why:
 Suggested first slices:
 
 - Gallery/share inspect drawer
-  - Started with a read-only Inspect action on dashboard gallery rows that surfaces owner, share token, share lifecycle, gallery state, description, share title, field size, element count, preview media state, publish/update dates, copy/open share actions, and a copyable owner user ID
-  - Add an inspect action on gallery and share-related rows showing owner, project ID, share lifecycle, gallery state, embed availability, preview media state, and public/share links
-  - Highlight likely user-facing problems such as revoked or expired shares, missing gallery preview media, and unavailable embeds
-  - Link to existing user, gallery, share, and audit surfaces instead of duplicating moderation actions
+  - Started with a read-only inspect drawer on dashboard gallery rows that surfaces owner, share token, share lifecycle, gallery state, description, share title, field size, element count, preview media state, publish/update dates, copy/open share actions, copyable owner user ID, share type badge, embed availability (with link), project ID (copyable), share created/updated dates, and expiry/revocation detail; rows are now clickable to open the drawer directly
 - User context panel
   - Started with a user detail/inspect sheet from the Users table surfacing role badge, created/updated dates, last login, account-backed project count, active share count, gallery entry count, and API key count in a stats strip, recent account audit events, and a separate change-role section with self-role-change protection
 - Project context panel

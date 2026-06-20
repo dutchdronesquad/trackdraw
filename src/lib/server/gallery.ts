@@ -58,6 +58,10 @@ type DashboardGalleryEntryRow = {
   share_title: string | null;
   share_expires_at: string | null;
   share_revoked_at: string | null;
+  share_type: string | null;
+  share_created_at: string | null;
+  share_published_at: string | null;
+  project_id: string | null;
   field_width: number | null;
   field_height: number | null;
   shape_count: number | null;
@@ -69,6 +73,10 @@ export type DashboardGalleryEntry = StoredGalleryEntry & {
   shareTitle: string | null;
   shareExpiresAt: string | null;
   shareRevokedAt: string | null;
+  shareType: "temporary" | "published";
+  shareCreatedAt: string | null;
+  sharePublishedAt: string | null;
+  projectId: string | null;
   fieldWidth: number | null;
   fieldHeight: number | null;
   shapeCount: number | null;
@@ -156,6 +164,10 @@ function mapDashboardGalleryEntryRow(
     shareTitle: row.share_title,
     shareExpiresAt: row.share_expires_at,
     shareRevokedAt: row.share_revoked_at,
+    shareType: row.share_type === "published" ? "published" : "temporary",
+    shareCreatedAt: row.share_created_at,
+    sharePublishedAt: row.share_published_at,
+    projectId: row.project_id,
     fieldWidth:
       row.field_width === null
         ? null
@@ -244,6 +256,10 @@ export async function listGalleryEntriesForDashboard(options?: {
           s.title as share_title,
           s.expires_at as share_expires_at,
           s.revoked_at as share_revoked_at,
+          s.share_type,
+          s.created_at as share_created_at,
+          s.published_at as share_published_at,
+          s.project_id,
           s.field_width,
           s.field_height,
           s.shape_count
