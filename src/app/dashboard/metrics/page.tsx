@@ -8,7 +8,7 @@ import {
   PlanLimitChart,
   UserGrowthChart,
   UserPopulationChart,
-} from "@/components/dashboard/MetricsCharts";
+} from "@/components/dashboard/MetricsChartsLoader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 import { getAdminMetrics } from "@/lib/server/metrics";
