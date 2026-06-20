@@ -34,6 +34,7 @@ describe("authorization helpers", () => {
       "overview",
       "gallery",
       "users",
+      "metrics",
       "audit",
     ]);
   });
