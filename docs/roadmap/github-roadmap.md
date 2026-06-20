@@ -119,8 +119,8 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 
 - [ ] Dashboard operator tooling (`Lower priority`, `Account-backed`)
       Give admins and moderators a way to inspect the state of specific accounts, shares, and API keys from within the existing dashboard surfaces — without digging through database records. This is about operational control over individual entities (who owns this share, why is this embed broken, which API keys are active), not aggregate product metrics. Fits as a follow-up pass on the existing Users, Gallery, and Audit modules once higher-priority editor and catalog work settles.
-  - [ ] User context panel
-        Click through from the Users table to a read-only panel showing that user's projects, active shares, gallery entries, API keys, and recent audit events.
+  - [x] User context panel
+        Users table rows now open a Discord-style inspect sheet with a stats strip (projects, active shares, gallery entries, API keys), role badge, last login, created date, recent audit events, and a separate change-role section with self-role-change protection.
   - [ ] Share lifecycle inspector
         Per share token: owner, project, token state, gallery listing, embed availability, and publish/update history in one operator view.
   - [ ] API usage overview

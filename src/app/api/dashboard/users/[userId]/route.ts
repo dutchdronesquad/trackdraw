@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { accountRoles } from "@/lib/account/roles";
-import { createAuditEvent } from "@/lib/server/audit";
+import { createAuditEvent, listAuditEventsForUser } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
-import { canAssignAccountRole } from "@/lib/server/authorization";
+import { hasCapability, canAssignAccountRole } from "@/lib/server/authorization";
 import {
   countUsersByRole,
   getAdminUserById,
+  getUserContextStats,
   updateUserRole,
 } from "@/lib/server/users";
 
@@ -32,10 +33,56 @@ function forbiddenResponse() {
   return NextResponse.json(
     {
       ok: false,
-      error: "You do not have permission to change account roles.",
+      error: "You do not have permission to perform this action.",
     },
     { status: 403 }
   );
+}
+
+export async function GET(
+  request: Request,
+  context: DashboardUserRouteContext
+) {
+  try {
+    const actor = await getCurrentUserFromHeaders(request.headers);
+
+    if (!actor) {
+      return unauthorizedResponse();
+    }
+
+    if (!hasCapability(actor.role, "admin.users.read")) {
+      return forbiddenResponse();
+    }
+
+    const { userId } = await context.params;
+    if (!userId.trim()) {
+      return NextResponse.json(
+        { ok: false, error: "Missing user id" },
+        { status: 400 }
+      );
+    }
+
+    const user = await getAdminUserById(userId);
+    if (!user) {
+      return NextResponse.json(
+        { ok: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    const [stats, recentEvents] = await Promise.all([
+      getUserContextStats(userId),
+      listAuditEventsForUser(userId, 5),
+    ]);
+
+    return NextResponse.json({ ok: true, user, stats, recentEvents });
+  } catch (error) {
+    console.error("[TrackDraw] Failed to load user context", { error });
+    return NextResponse.json(
+      { ok: false, error: "Failed to load user context" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(
@@ -63,6 +110,13 @@ export async function PATCH(
     }
 
     const { userId } = await context.params;
+
+    if (actor.id === userId) {
+      return NextResponse.json(
+        { ok: false, error: "You cannot change your own role." },
+        { status: 403 }
+      );
+    }
     if (!userId.trim()) {
       return NextResponse.json(
         { ok: false, error: "Missing user id" },

@@ -38,6 +38,7 @@ type DataTableProps<TData> = {
   wrapperClassName?: string;
   tableClassName?: string;
   emptyClassName?: string;
+  onRowClick?: (row: Row<TData>) => void;
 };
 
 type DataTableEmptyStateProps = ComponentProps<typeof TableCell> & {
@@ -112,6 +113,7 @@ export default function DataTable<TData>({
   wrapperClassName,
   tableClassName,
   emptyClassName,
+  onRowClick,
 }: DataTableProps<TData>) {
   return (
     <DataTableFrame
@@ -144,7 +146,11 @@ export default function DataTable<TData>({
       <TableBody>
         {rows.length ? (
           rows.map((row) => (
-            <TableRow key={row.id}>
+            <TableRow
+              key={row.id}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={onRowClick ? "cursor-pointer" : undefined}
+            >
               {row.getVisibleCells().map((cell) => (
                 <DataTableBodyCell
                   key={cell.id}

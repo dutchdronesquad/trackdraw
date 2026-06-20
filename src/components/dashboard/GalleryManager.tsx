@@ -276,7 +276,7 @@ function InspectDetail({
       <dt className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
         {label}
       </dt>
-      <dd className="text-sm break-words">{value}</dd>
+      <dd className="text-sm wrap-break-word">{value}</dd>
     </div>
   );
 }
@@ -478,6 +478,15 @@ export default function DashboardGalleryManager({
       toast.success("Share link copied.");
     } catch {
       toast.error("Could not copy the share link.");
+    }
+  };
+
+  const copyToClipboard = async (value: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success(`${label} copied.`);
+    } catch {
+      toast.error(`Could not copy ${label}.`);
     }
   };
 
@@ -965,6 +974,28 @@ export default function DashboardGalleryManager({
                           value={
                             inspectCandidate.ownerEmail ??
                             inspectCandidate.ownerUserId
+                          }
+                        />
+                        <InspectDetail
+                          label="Owner ID"
+                          value={
+                            <span className="flex items-center gap-1.5">
+                              <span className="font-mono text-xs truncate">
+                                {inspectCandidate.ownerUserId}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-5 shrink-0"
+                                aria-label="Copy owner ID"
+                                onClick={() =>
+                                  void copyToClipboard(inspectCandidate.ownerUserId, "Owner ID")
+                                }
+                              >
+                                <Copy className="size-3" />
+                              </Button>
+                            </span>
                           }
                         />
                         <InspectDetail

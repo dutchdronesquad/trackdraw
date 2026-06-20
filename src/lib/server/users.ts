@@ -13,6 +13,13 @@ type CountRow = {
   count: number;
 };
 
+export type UserContextStats = {
+  projectCount: number;
+  activeShareCount: number;
+  galleryEntryCount: number;
+  apiKeyCount: number;
+};
+
 type AdminUserRow = {
   id: string;
   name: string | null;
@@ -21,6 +28,7 @@ type AdminUserRow = {
   role: string | null;
   createdAt: string;
   updatedAt: string;
+  lastLoginAt: string | null;
 };
 
 function mapAdminUser(row: AdminUserRow): AdminUser {
@@ -32,6 +40,7 @@ function mapAdminUser(row: AdminUserRow): AdminUser {
     role: parseAccountRole(row.role),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    lastLoginAt: row.lastLoginAt ?? null,
   };
 }
 
@@ -58,15 +67,20 @@ export async function listUsersForAdmin(): Promise<AdminUser[]> {
     .prepare(
       `
         select
-          id,
-          name,
-          email,
-          image,
-          role,
-          createdAt,
-          updatedAt
-        from users
-        order by createdAt desc, email asc
+          u.id,
+          u.name,
+          u.email,
+          u.image,
+          u.role,
+          u.createdAt,
+          u.updatedAt,
+          (
+            select max(s.createdAt)
+            from sessions s
+            where s.userId = u.id
+          ) as lastLoginAt
+        from users u
+        order by u.createdAt desc, u.email asc
       `
     )
     .all<AdminUserRow>();
@@ -96,15 +110,20 @@ export async function getAdminUserById(
     .prepare(
       `
         select
-          id,
-          name,
-          email,
-          image,
-          role,
-          createdAt,
-          updatedAt
-        from users
-        where id = ?
+          u.id,
+          u.name,
+          u.email,
+          u.image,
+          u.role,
+          u.createdAt,
+          u.updatedAt,
+          (
+            select max(s.createdAt)
+            from sessions s
+            where s.userId = u.id
+          ) as lastLoginAt
+        from users u
+        where u.id = ?
         limit 1
       `
     )
@@ -151,4 +170,65 @@ export async function updateUserRole(
     .first<AdminUserRow>();
 
   return row ? mapAdminUser(row) : null;
+}
+
+export async function getUserContextStats(
+  userId: string
+): Promise<UserContextStats> {
+  const db = await getDatabase();
+
+  const projectRow = await db
+    .prepare(
+      `
+        select count(*) as count
+        from projects
+        where owner_user_id = ?
+          and archived_at is null
+      `
+    )
+    .bind(userId)
+    .first<CountRow>();
+
+  const shareRow = await db
+    .prepare(
+      `
+        select count(*) as count
+        from shares
+        where owner_user_id = ?
+          and revoked_at is null
+          and (expires_at is null or expires_at > strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      `
+    )
+    .bind(userId)
+    .first<CountRow>();
+
+  const galleryRow = await db
+    .prepare(
+      `
+        select count(*) as count
+        from gallery_entries
+        where owner_user_id = ?
+      `
+    )
+    .bind(userId)
+    .first<CountRow>();
+
+  const apiKeyRow = await db
+    .prepare(
+      `
+        select count(*) as count
+        from apikey
+        where referenceId = ?
+          and enabled = 1
+      `
+    )
+    .bind(userId)
+    .first<CountRow>();
+
+  return {
+    projectCount: Number(projectRow?.count ?? 0),
+    activeShareCount: Number(shareRow?.count ?? 0),
+    galleryEntryCount: Number(galleryRow?.count ?? 0),
+    apiKeyCount: Number(apiKeyRow?.count ?? 0),
+  };
 }

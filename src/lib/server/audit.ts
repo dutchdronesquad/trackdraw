@@ -198,3 +198,42 @@ export async function listAuditEvents(
 
   return result.results.map(mapAuditEventRow);
 }
+
+export async function listAuditEventsForUser(
+  userId: string,
+  limit = 10
+): Promise<AuditEvent[]> {
+  const db = await getDatabase();
+  const safeLimit = Math.max(1, Math.min(limit, 50));
+
+  const result = await db
+    .prepare(
+      `
+        select
+          ae.id,
+          ae.actor_user_id,
+          ae.target_user_id,
+          ae.event_type,
+          ae.entity_type,
+          ae.entity_id,
+          ae.metadata_json,
+          ae.created_at,
+          actor.id as actor_id,
+          actor.name as actor_name,
+          actor.email as actor_email,
+          target.id as target_id,
+          target.name as target_name,
+          target.email as target_email
+        from audit_events ae
+        left join users actor on actor.id = ae.actor_user_id
+        left join users target on target.id = ae.target_user_id
+        where ae.actor_user_id = ? or ae.target_user_id = ?
+        order by ae.created_at desc
+        limit ?
+      `
+    )
+    .bind(userId, userId, safeLimit)
+    .all<AuditEventRow>();
+
+  return result.results.map(mapAuditEventRow);
+}

@@ -8,4 +8,5 @@ export type AdminUser = {
   role: AccountRole;
   createdAt: string;
   updatedAt: string;
+  lastLoginAt: string | null;
 };
