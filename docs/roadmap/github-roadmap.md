@@ -37,12 +37,8 @@ The completed release-sized work is archived below. The next TrackDraw priority 
       Replace the hard-coded section list with a user-created, account-backed section library. A user selects shapes on the canvas and saves them as a named section. Sections are account-backed only — no local storage for logged-out users in the first version. Paths and route lines are never captured — only non-polyline shapes. Local-first storage and local-to-account migration were intentionally deferred.
   - [x] Selection-to-section creation flow
         Users select one or more non-path shapes and trigger "Save as track section". A dialog prompts for a name and stores the normalized shape set (positions relative to centroid) as a new section record. Paths are excluded from capture; the existing `PlaceablePresetShape` type enforces this.
-  - [ ] Local section storage — deferred
-        Intentionally not shipped in the first version. Local-first storage for logged-out users can be added later without data-model changes.
   - [x] Account-backed section storage
         Database schema with owner account, name, shape payload, and timestamps. Shape format stays compatible with the existing `LayoutPreset` array so `placeLayoutPreset` works unchanged.
-  - [ ] Local-to-account migration — deferred
-        No local section state exists in the first version, so migration was skipped. Can be added alongside local storage if that ships later.
   - [x] Section management UI
         Rename and delete actions per section in the picker. Inline rename, confirmation on delete. Empty state guides users toward saving their first section from a canvas selection.
   - [x] Remove hard-coded sections
@@ -98,12 +94,12 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 
 ## Later Product Follow-up
 
-- [ ] Client-state persistence consolidation (`Lower priority`, `No account required`)
+- [x] Client-state persistence consolidation (`Lower priority`, `No account required`)
       The codebase uses several patterns for localStorage: direct calls, `usePersistentBoolean`, and Zustand `persist`. Migrate the cases where state is shared across multiple components to Zustand `persist` so the read/write contract is consistent and reactive by default. Direct localStorage calls for truly local, single-consumer values (theme bootstrap, sidebar collapsed) can stay as-is.
-  - [ ] Migrate `useMeasurementUnitSystem` to Zustand `persist`
-        The hook already manages its own read/write cycle internally. Replacing it with a Zustand store + `persist` middleware removes the manual `localStorage` calls and makes the unit preference reactive across any future consumers without extra wiring.
-  - [ ] Evaluate `useEditorHints` for Zustand `persist`
-        Editor hints use five separate `localStorage` keys with manual get/set/remove calls. A single persisted store would simplify the surface and make it easier to reset all hints at once.
+  - [x] Migrate `useMeasurementUnitSystem` to Zustand `persist`
+        Replaced the manual `useSyncExternalStore` + custom event pattern with a Zustand `persist` store (`src/store/measurement-unit.ts`). Legacy raw-string storage format is migrated transparently on first read. Hook interface unchanged.
+  - [x] Migrate `useEditorHints` to Zustand `persist`
+        Replaced five separate `localStorage` keys and manual get/set/remove calls with a single persisted Zustand store (`src/store/editor-hints.ts`) under `trackdraw.editorHints`. All five dismissed states are now stored as one object, making `resetGuidedHints` a single store reset. Hook interface unchanged.
 
 - [ ] VelociDrone experimental export stabilization (`Lower priority`, `No account required`)
       Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping/orientation edge cases.

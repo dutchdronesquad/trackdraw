@@ -30,7 +30,7 @@ The most useful next product move is deepening the race-day workflow, keeping th
 - Regional measurement units so international users can work with familiar Metric or Imperial presets while TrackDraw keeps meter-based geometry internally
 - Multilingual product experience built on the same locale-aware foundation, starting with explicit language choice and controlled translation scope
 
-Lower-priority follow-up such as share version history, gallery collections, dashboard operator tooling, Velocidrone export stabilization, AR, and build mode should stay parked until there is clearer need.
+Lower-priority follow-up such as share version history, gallery collections, Velocidrone export stabilization, AR, and build mode should stay parked until there is clearer need.
 
 ## Product Principles
 
@@ -686,6 +686,33 @@ Likely account-backed follow-up:
 - Curated gallery collections
 - Shared venue or club records, including shared inventory profiles
 - Identity-aware comments and review threads
+
+## v1.12.0 Archive
+
+<details>
+<summary>Completed release work archived with v1.12.0</summary>
+
+### Dashboard Operator Tooling (`Account-backed`)
+
+Admins and moderators can now inspect the state of specific accounts, shares, and API keys from within the existing dashboard surfaces without digging through database records.
+
+Included:
+
+- User inspect sheet opened from the users table, showing a stats strip (projects, active shares, gallery entries, API keys), role badge, last login, created date, recent audit events, and a change-role section with self-role-change protection
+- Gallery inspect dialog opened from gallery rows, showing share type, embed availability with a direct link, project ID, share created/updated dates, expiry and revocation detail, owner, gallery state, and preview media status
+- API keys overview at `/dashboard/api-keys` listing all keys across all accounts with status badge, request count, last-used timestamp, and expiry; clickable rows open an inspect sheet with rate limit config, permissions, key prefix, and owner details
+- Admin metrics dashboard with user population breakdown, active share and gallery counts, and an active API keys KPI
+
+### Client-State Persistence Consolidation (`No account required`)
+
+Editor and unit preference state that was spread across multiple localStorage patterns is now unified under Zustand `persist` stores.
+
+Included:
+
+- `useMeasurementUnitSystem` migrated from a manual `useSyncExternalStore` + custom event pattern to a Zustand `persist` store; legacy raw-string storage format is migrated transparently on first read with no change to the hook interface
+- `useEditorHints` migrated from five separate localStorage keys with manual get/set/remove calls to a single Zustand `persist` store under `trackdraw.editorHints`; all dismissed-hint states are stored as one JSON object, making `resetGuidedHints` a single store reset with no change to the hook interface
+
+</details>
 
 ## v1.11.0 Archive
 
