@@ -261,7 +261,7 @@ describe("gallery server helpers", () => {
     installStatements([stmt]);
 
     await listGalleryEntriesForDashboard({ state: "listed" });
-    expect(stmt.bind).toHaveBeenCalledWith(1, "listed", 500);
+    expect(stmt.bind).toHaveBeenCalledWith("listed", 500);
   });
 
   it("listGalleryEntriesForDashboard queries all states when state='all'", async () => {
@@ -269,7 +269,7 @@ describe("gallery server helpers", () => {
     installStatements([stmt]);
 
     await listGalleryEntriesForDashboard({ state: "all" });
-    expect(stmt.bind).toHaveBeenCalledWith(0, "", 500);
+    expect(stmt.bind).toHaveBeenCalledWith(500);
   });
 
   it("creates an unlisted gallery entry via INSERT RETURNING", async () => {
