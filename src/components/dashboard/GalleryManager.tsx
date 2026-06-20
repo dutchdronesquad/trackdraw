@@ -640,7 +640,10 @@ export default function DashboardGalleryManager({
         const VisibilityIcon = visibilityAction.icon;
 
         return (
-          <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="flex justify-end"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="hidden items-center justify-end gap-1 md:flex">
               <ActionTooltip label={featureAction.label}>
                 <Button
