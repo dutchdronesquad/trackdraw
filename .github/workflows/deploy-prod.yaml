@@ -49,7 +49,9 @@ jobs:
     name: Deploy Production
     runs-on: ubuntu-latest
     needs: migrate
-    environment: cf-prod
+    environment:
+      name: cf-prod
+      url: ${{ vars.APP_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.0
