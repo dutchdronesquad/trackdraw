@@ -39,6 +39,7 @@ type DataTableProps<TData> = {
   tableClassName?: string;
   emptyClassName?: string;
   onRowClick?: (row: Row<TData>) => void;
+  getRowAriaLabel?: (row: Row<TData>) => string;
 };
 
 type DataTableEmptyStateProps = ComponentProps<typeof TableCell> & {
@@ -114,6 +115,7 @@ export default function DataTable<TData>({
   tableClassName,
   emptyClassName,
   onRowClick,
+  getRowAriaLabel,
 }: DataTableProps<TData>) {
   return (
     <DataTableFrame
@@ -150,6 +152,7 @@ export default function DataTable<TData>({
               key={row.id}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
               className={onRowClick ? "cursor-pointer" : undefined}
+              aria-label={getRowAriaLabel ? getRowAriaLabel(row) : undefined}
             >
               {row.getVisibleCells().map((cell) => (
                 <DataTableBodyCell

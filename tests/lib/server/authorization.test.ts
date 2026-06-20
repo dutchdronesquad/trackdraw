@@ -36,6 +36,7 @@ describe("authorization helpers", () => {
       "users",
       "metrics",
       "audit",
+      "api-keys",
     ]);
   });
 

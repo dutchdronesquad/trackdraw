@@ -138,7 +138,7 @@ describe("dashboard users API routes", () => {
       expect(response.status).toBe(403);
       await expect(response.json()).resolves.toEqual({
         ok: false,
-        error: "You do not have permission to change account roles.",
+        error: "You do not have permission to perform this action.",
       });
     });
 

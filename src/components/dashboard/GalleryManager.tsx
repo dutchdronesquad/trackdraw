@@ -848,6 +848,7 @@ export default function DashboardGalleryManager({
         minWidthClassName="min-w-[920px]"
         emptyClassName="py-8"
         onRowClick={(row) => setInspectCandidate(row.original)}
+        getRowAriaLabel={(row) => `Inspect ${row.original.galleryTitle}`}
       />
 
       <p className="text-muted-foreground text-xs">
