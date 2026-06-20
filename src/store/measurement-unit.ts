@@ -27,9 +27,14 @@ const legacyAwareBackend = {
     try {
       const raw = localStorage.getItem(name);
       if (!raw) return null;
-      const parsed: unknown = JSON.parse(raw);
-      if (parsed && typeof parsed === "object" && "state" in parsed) {
-        return raw;
+      // Check for a valid Zustand envelope first
+      try {
+        const parsed: unknown = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && "state" in parsed) {
+          return raw;
+        }
+      } catch {
+        // Not valid JSON — must be a legacy raw string like "metric"/"imperial"
       }
       // Legacy raw string — wrap in Zustand envelope
       const normalized = normalizeMeasurementUnitSystem(raw);
@@ -69,3 +74,12 @@ export const useMeasurementUnitStore = create<MeasurementUnitState>()(
     }
   )
 );
+
+// Sync changes made in other browser tabs back into this store.
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (e) => {
+    if (e.key === MEASUREMENT_STORAGE_KEY) {
+      void useMeasurementUnitStore.persist.rehydrate();
+    }
+  });
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useEditorHintsStore } from "@/store/editor-hints";
 
 export function useEditorHints({
@@ -21,7 +21,7 @@ export function useEditorHints({
     dismissDesktopPreviewHint,
     dismissReview3DHint,
     dismissPostPathNudge,
-    resetGuidedHints,
+    resetGuidedHints: storeResetGuidedHints,
   } = useEditorHintsStore();
 
   const [showPostPathNudge, setShowPostPathNudge] = useState(false);
@@ -34,6 +34,11 @@ export function useEditorHints({
     }
     prevHasPath.current = hasPath;
   }, [hasPath, readOnly]);
+
+  const resetGuidedHints = useCallback(() => {
+    storeResetGuidedHints();
+    setShowPostPathNudge(false);
+  }, [storeResetGuidedHints]);
 
   return {
     gateHintDismissed,

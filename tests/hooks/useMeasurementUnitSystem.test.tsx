@@ -3,6 +3,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createMemoryStorage,
   createThrowingStorage,
   installWindowStorage,
 } from "../helpers/storage";
@@ -39,5 +40,18 @@ describe("useMeasurementUnitSystem", () => {
     });
 
     expect(result.current.unitSystem).toBe("imperial");
+  });
+
+  it("migrates legacy raw-string format on first load", async () => {
+    restoreStorage?.();
+    restoreStorage = installWindowStorage(
+      createMemoryStorage({ "trackdraw.measurementUnitSystem": "imperial" })
+    );
+
+    const { useMeasurementUnitStore } =
+      await import("@/store/measurement-unit");
+    await useMeasurementUnitStore.persist.rehydrate();
+
+    expect(useMeasurementUnitStore.getState().unitSystem).toBe("imperial");
   });
 });
