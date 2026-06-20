@@ -24,39 +24,47 @@ These are derived from TrackDraw's own database and displayed in the existing ad
 ### Candidate Metrics
 
 **User metrics:**
+
 - Total registered accounts
 - New accounts per week / month
 - Active accounts (at least one project or share action in last 30 days)
 
 **Project metrics:**
+
 - Total projects across all users
 - Projects per user (average, median, max)
 - Distribution: how many users have 1, 2-5, 6-10, 10+ projects
 
 **Share metrics:**
+
 - Total active published shares
 - Shares per user (average, median, max)
 - Share link usage (view counts if tracked)
 
 **Preset metrics:**
+
 - Total presets across all users
 - Presets per user (average, median, max)
 
 **Plan limit simulation:**
+
 - Given a proposed free limit (e.g. 5 projects), what percentage of current users would be affected?
 - This is the most actionable metric for pricing decisions.
 
 **Activation metrics:**
+
 - Users who registered but never created a project (indicates onboarding friction)
 - Time between account creation and first project created
 - Guest sessions that converted to an account registration (requires event tracking)
 
 **Retention metrics:**
+
 - Users active in multiple distinct weeks (returning users vs. one-time visitors)
 - Churned users: accounts with no activity in 90+ days
 - Week-over-week and month-over-month active user trend
 
 **Editor and content metrics:**
+
 - Which track elements are placed most often (gates, flags, obstacles, MultiGP elements)
 - Average number of elements per design (track complexity)
 - Most used export formats (PDF, PNG, SVG, JSON) — requires event tracking
@@ -64,24 +72,29 @@ These are derived from TrackDraw's own database and displayed in the existing ad
 - Import frequency vs. starting from scratch
 
 **Share engagement metrics:**
+
 - Shares created but never viewed (dead links)
 - Average number of views per share link
 - Share links still receiving traffic after 30 / 60 / 90 days (indicates long-lived use cases like club event pages)
 
 **Geographic distribution:**
+
 - Country distribution of registered users (from IP at signup or billing address)
 - Country distribution of share link viewers if view tracking is added
 
 **Growth metrics:**
+
 - New accounts per week and month, plotted as a trend
 - Projects created per week and month
 - Cumulative totals vs. rate of change
 
 **API metrics:**
+
 - Active API keys in use
 - Request volume per API key (indicates power users or integrations)
 
 **Health metrics:**
+
 - Archived vs. active projects (users tidying up vs. abandoning)
 - Revoked vs. expired vs. active share links
 
@@ -127,13 +140,13 @@ Keep it narrow: no IP addresses, no user-agent strings, no geolocation. Session 
 
 **Event catalog — first slice:**
 
-| Event | Trigger | Key fields |
-|---|---|---|
-| `share.viewed` | Public share page load | `share_token` |
-| `export.completed` | PDF/PNG/SVG/JSON export finishes | `project_id`, format in event name |
-| `editor.3d_opened` | 3D preview first opened in a session | `project_id` |
-| `editor.element_placed` | Element placed on canvas | `project_id`, element type in event name |
-| `project.imported` | JSON import completes | `user_id` (if signed in) |
+| Event                   | Trigger                              | Key fields                               |
+| ----------------------- | ------------------------------------ | ---------------------------------------- |
+| `share.viewed`          | Public share page load               | `share_token`                            |
+| `export.completed`      | PDF/PNG/SVG/JSON export finishes     | `project_id`, format in event name       |
+| `editor.3d_opened`      | 3D preview first opened in a session | `project_id`                             |
+| `editor.element_placed` | Element placed on canvas             | `project_id`, element type in event name |
+| `project.imported`      | JSON import completes                | `user_id` (if signed in)                 |
 
 **Metrics unlocked by Tier 2:**
 

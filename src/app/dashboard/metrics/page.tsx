@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import {
-  BookMarked,
-  FolderOpen,
-  Link2,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { BookMarked, FolderOpen, Link2, TrendingUp, Users } from "lucide-react";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import {
   ContentOverviewChart,
@@ -33,23 +27,32 @@ type KpiCardProps = {
   iconTone: string;
 };
 
-function KpiCard({ label, value, sub, icon: Icon, accent, iconTone }: KpiCardProps) {
+function KpiCard({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  accent,
+  iconTone,
+}: KpiCardProps) {
   return (
-    <div className="bg-card border rounded-xl overflow-hidden">
+    <div className="bg-card overflow-hidden rounded-xl border">
       <div className={`h-1 ${accent}`} />
-      <div className="p-4 flex items-start gap-3">
+      <div className="flex items-start gap-3 p-4">
         <span
           className={`mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}
         >
           <Icon className="size-4" />
         </span>
         <div className="min-w-0">
-          <p className="text-muted-foreground text-xs font-medium truncate">
+          <p className="text-muted-foreground truncate text-xs font-medium">
             {label}
           </p>
-          <p className="text-2xl font-bold leading-tight tabular-nums">{value}</p>
+          <p className="text-2xl leading-tight font-bold tabular-nums">
+            {value}
+          </p>
           {sub ? (
-            <p className="text-muted-foreground text-xs mt-0.5">{sub}</p>
+            <p className="text-muted-foreground mt-0.5 text-xs">{sub}</p>
           ) : null}
         </div>
       </div>
@@ -64,9 +67,16 @@ type ChartCardProps = {
   className?: string;
 };
 
-function ChartCard({ title, description, children, className }: ChartCardProps) {
+function ChartCard({
+  title,
+  description,
+  children,
+  className,
+}: ChartCardProps) {
   return (
-    <div className={`bg-card border rounded-xl p-4 space-y-1 ${className ?? ""}`}>
+    <div
+      className={`bg-card space-y-1 rounded-xl border p-4 ${className ?? ""}`}
+    >
       <p className="text-sm font-medium">{title}</p>
       {description ? (
         <p className="text-muted-foreground text-xs">{description}</p>
@@ -85,14 +95,14 @@ type StatRowProps = {
 
 function StatRow({ label, value, icon: Icon, tone }: StatRowProps) {
   return (
-    <div className="flex items-center justify-between py-2 border-b last:border-0">
+    <div className="flex items-center justify-between border-b py-2 last:border-0">
       <div className="flex items-center gap-2">
         <span
           className={`inline-flex size-6 shrink-0 items-center justify-center rounded-md ${tone}`}
         >
           <Icon className="size-3" />
         </span>
-        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="text-muted-foreground text-sm">{label}</span>
       </div>
       <span className="text-sm font-semibold tabular-nums">{value}</span>
     </div>
@@ -182,8 +192,8 @@ export default async function DashboardMetricsPage() {
 
         {/* Detail stats */}
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="bg-card border rounded-xl p-4 space-y-0.5">
-            <p className="text-sm font-medium mb-3">Projects</p>
+          <div className="bg-card space-y-0.5 rounded-xl border p-4">
+            <p className="mb-3 text-sm font-medium">Projects</p>
             <StatRow
               label="Avg per user"
               value={metrics.projects.avgPerUser}
@@ -203,8 +213,8 @@ export default async function DashboardMetricsPage() {
               tone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
             />
           </div>
-          <div className="bg-card border rounded-xl p-4 space-y-0.5">
-            <p className="text-sm font-medium mb-3">Share links</p>
+          <div className="bg-card space-y-0.5 rounded-xl border p-4">
+            <p className="mb-3 text-sm font-medium">Share links</p>
             <StatRow
               label="Avg per user"
               value={metrics.shares.avgPerUser}
@@ -224,8 +234,8 @@ export default async function DashboardMetricsPage() {
               tone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
             />
           </div>
-          <div className="bg-card border rounded-xl p-4 space-y-0.5">
-            <p className="text-sm font-medium mb-3">Layout presets</p>
+          <div className="bg-card space-y-0.5 rounded-xl border p-4">
+            <p className="mb-3 text-sm font-medium">Layout presets</p>
             <StatRow
               label="Total"
               value={metrics.presets.total}
@@ -257,7 +267,7 @@ export default async function DashboardMetricsPage() {
               unaffected.
             </p>
           </div>
-          <div className="bg-card border rounded-xl p-4">
+          <div className="bg-card rounded-xl border p-4">
             <PlanLimitChart planLimits={metrics.planLimits} />
           </div>
           <div className="overflow-x-auto rounded-xl border">
@@ -280,15 +290,18 @@ export default async function DashboardMetricsPage() {
               </thead>
               <tbody className="divide-y">
                 {metrics.planLimits.map((row) => (
-                  <tr key={row.limit} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-4 py-3 font-medium text-sm">
+                  <tr
+                    key={row.limit}
+                    className="hover:bg-muted/20 transition-colors"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium">
                       max {row.limit}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">
                       {row.usersExceedingProjects === 0 ? (
                         <span className="text-muted-foreground text-sm">0</span>
                       ) : (
-                        <span className="text-rose-600 dark:text-rose-400 font-semibold text-sm">
+                        <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
                           {row.usersExceedingProjects}
                         </span>
                       )}
@@ -297,7 +310,7 @@ export default async function DashboardMetricsPage() {
                       {row.usersExceedingShares === 0 ? (
                         <span className="text-muted-foreground text-sm">0</span>
                       ) : (
-                        <span className="text-rose-600 dark:text-rose-400 font-semibold text-sm">
+                        <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
                           {row.usersExceedingShares}
                         </span>
                       )}
@@ -306,7 +319,7 @@ export default async function DashboardMetricsPage() {
                       {row.usersExceedingPresets === 0 ? (
                         <span className="text-muted-foreground text-sm">0</span>
                       ) : (
-                        <span className="text-rose-600 dark:text-rose-400 font-semibold text-sm">
+                        <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">
                           {row.usersExceedingPresets}
                         </span>
                       )}

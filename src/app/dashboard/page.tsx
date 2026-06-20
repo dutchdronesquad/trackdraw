@@ -24,7 +24,8 @@ const moduleConfig = {
   },
   metrics: {
     title: "Metrics",
-    description: "Usage statistics for projects, shares, presets, and plan limit simulation.",
+    description:
+      "Usage statistics for projects, shares, presets, and plan limit simulation.",
     href: "/dashboard/metrics",
   },
   audit: {

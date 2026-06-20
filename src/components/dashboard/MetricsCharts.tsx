@@ -31,16 +31,28 @@ const populationConfig = {
   neverCreated: { label: "Never created", color: "var(--chart-5)" },
 } satisfies ChartConfig;
 
-export function UserPopulationChart({ users }: { users: AdminMetrics["users"] }) {
+export function UserPopulationChart({
+  users,
+}: {
+  users: AdminMetrics["users"];
+}) {
   const dormant = Math.max(
     0,
     users.total - users.activeLastThirtyDays - users.neverCreatedProject
   );
 
   const data = [
-    { name: "active", value: users.activeLastThirtyDays, fill: "var(--chart-2)" },
+    {
+      name: "active",
+      value: users.activeLastThirtyDays,
+      fill: "var(--chart-2)",
+    },
     { name: "dormant", value: dormant, fill: "var(--chart-3)" },
-    { name: "neverCreated", value: users.neverCreatedProject, fill: "var(--chart-5)" },
+    {
+      name: "neverCreated",
+      value: users.neverCreatedProject,
+      fill: "var(--chart-5)",
+    },
   ].filter((d) => d.value > 0);
 
   if (users.total === 0) {
@@ -52,9 +64,15 @@ export function UserPopulationChart({ users }: { users: AdminMetrics["users"] })
   }
 
   return (
-    <ChartContainer config={populationConfig} className="mx-auto h-52 w-full max-w-xs">
+    <ChartContainer
+      config={populationConfig}
+      className="mx-auto h-52 w-full max-w-xs"
+    >
       <PieChart>
-        <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="name" hideLabel />} />
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent nameKey="name" hideLabel />}
+        />
         <Pie
           data={data}
           dataKey="value"
@@ -125,11 +143,7 @@ export function ContentOverviewChart({
 
   return (
     <ChartContainer config={contentConfig} className="h-52 w-full">
-      <BarChart
-        accessibilityLayer
-        data={data}
-        margin={{ left: 4, right: 4 }}
-      >
+      <BarChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
         <CartesianGrid vertical={false} />
         <XAxis
           dataKey="key"
@@ -168,7 +182,11 @@ const growthConfig = {
   users: { label: "New users", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-export function UserGrowthChart({ userGrowth }: { userGrowth: AdminMetrics["userGrowth"] }) {
+export function UserGrowthChart({
+  userGrowth,
+}: {
+  userGrowth: AdminMetrics["userGrowth"];
+}) {
   if (userGrowth.length === 0) {
     return (
       <div className="text-muted-foreground flex h-40 items-center justify-center text-sm">
@@ -186,8 +204,16 @@ export function UserGrowthChart({ userGrowth }: { userGrowth: AdminMetrics["user
       >
         <defs>
           <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--color-users)" stopOpacity={0.8} />
-            <stop offset="95%" stopColor="var(--color-users)" stopOpacity={0.1} />
+            <stop
+              offset="5%"
+              stopColor="var(--color-users)"
+              stopOpacity={0.8}
+            />
+            <stop
+              offset="95%"
+              stopColor="var(--color-users)"
+              stopOpacity={0.1}
+            />
           </linearGradient>
         </defs>
         <CartesianGrid vertical={false} />
@@ -227,7 +253,11 @@ const planLimitConfig = {
   usersExceedingPresets: { label: "Presets", color: "var(--chart-3)" },
 } satisfies ChartConfig;
 
-export function PlanLimitChart({ planLimits }: { planLimits: AdminMetrics["planLimits"] }) {
+export function PlanLimitChart({
+  planLimits,
+}: {
+  planLimits: AdminMetrics["planLimits"];
+}) {
   const data = planLimits.map((row) => ({
     limit: `max ${row.limit}`,
     usersExceedingProjects: row.usersExceedingProjects,
@@ -258,7 +288,10 @@ export function PlanLimitChart({ planLimits }: { planLimits: AdminMetrics["planL
           tick={{ fontSize: 11 }}
           allowDecimals={false}
         />
-        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent indicator="dashed" />}
+        />
         <ChartLegend content={<ChartLegendContent />} />
         <Bar
           dataKey="usersExceedingProjects"

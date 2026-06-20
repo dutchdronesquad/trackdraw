@@ -164,7 +164,10 @@ function NavMenuItem({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        tooltip={{ children: item.title, className: appTooltipContentClassName }}
+        tooltip={{
+          children: item.title,
+          className: appTooltipContentClassName,
+        }}
         isActive={isActive}
         className={cn(
           "hover:bg-muted/80 hover:text-foreground data-active:bg-muted data-active:text-foreground",

@@ -89,7 +89,11 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         from users
       `
       )
-      .first<{ total: number; new_this_week: number; new_this_month: number }>(),
+      .first<{
+        total: number;
+        new_this_week: number;
+        new_this_month: number;
+      }>(),
 
     db
       .prepare(
@@ -197,7 +201,12 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         from gallery_entries
       `
       )
-      .first<{ total: number; listed: number; featured: number; hidden: number }>(),
+      .first<{
+        total: number;
+        listed: number;
+        featured: number;
+        hidden: number;
+      }>(),
 
     db
       .prepare(

@@ -15,7 +15,12 @@ export type AuthorizationCapability =
   | "audit.read"
   | "account.role.assign";
 
-export type DashboardModule = "overview" | "gallery" | "users" | "audit" | "metrics";
+export type DashboardModule =
+  | "overview"
+  | "gallery"
+  | "users"
+  | "audit"
+  | "metrics";
 
 const capabilityRoles: Record<AuthorizationCapability, AccountRole[]> = {
   "dashboard.overview.read": ["moderator", "admin"],
