@@ -687,10 +687,10 @@ Likely account-backed follow-up:
 - Shared venue or club records, including shared inventory profiles
 - Identity-aware comments and review threads
 
-## v1.12.0 Archive
+## v1.11.0 Archive
 
 <details>
-<summary>Completed release work archived with v1.12.0</summary>
+<summary>Completed release work archived with v1.11.0</summary>
 
 ### Dashboard Operator Tooling (`Account-backed`)
 
@@ -711,13 +711,6 @@ Included:
 
 - `useMeasurementUnitSystem` migrated from a manual `useSyncExternalStore` + custom event pattern to a Zustand `persist` store; legacy raw-string storage format is migrated transparently on first read with no change to the hook interface
 - `useEditorHints` migrated from five separate localStorage keys with manual get/set/remove calls to a single Zustand `persist` store under `trackdraw.editorHints`; all dismissed-hint states are stored as one JSON object, making `resetGuidedHints` a single store reset with no change to the hook interface
-
-</details>
-
-## v1.11.0 Archive
-
-<details>
-<summary>Completed release work archived with v1.11.0</summary>
 
 ### User-Defined Track Sections (`Account-backed`)
 
