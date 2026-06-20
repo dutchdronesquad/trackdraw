@@ -12,6 +12,7 @@ export type AuthorizationCapability =
   | "admin.users.read"
   | "admin.users.update"
   | "admin.metrics.read"
+  | "admin.api-keys.read"
   | "audit.read"
   | "account.role.assign";
 
@@ -20,7 +21,8 @@ export type DashboardModule =
   | "gallery"
   | "users"
   | "audit"
-  | "metrics";
+  | "metrics"
+  | "api-keys";
 
 const capabilityRoles: Record<AuthorizationCapability, AccountRole[]> = {
   "dashboard.overview.read": ["moderator", "admin"],
@@ -30,6 +32,7 @@ const capabilityRoles: Record<AuthorizationCapability, AccountRole[]> = {
   "admin.users.read": ["admin"],
   "admin.users.update": ["admin"],
   "admin.metrics.read": ["admin"],
+  "admin.api-keys.read": ["admin"],
   "audit.read": ["admin"],
   "account.role.assign": ["admin"],
 };
@@ -68,6 +71,10 @@ export function getVisibleDashboardModules(
 
   if (hasCapability(role, "audit.read")) {
     modules.push("audit");
+  }
+
+  if (hasCapability(role, "admin.api-keys.read")) {
+    modules.push("api-keys");
   }
 
   return modules;

@@ -8,6 +8,7 @@ import {
   getVisibleDashboardModules,
   hasCapability,
 } from "@/lib/server/authorization";
+import { countActiveApiKeysForAdmin } from "@/lib/server/api-keys";
 import { getGalleryOverviewStats } from "@/lib/server/gallery";
 import { countUsersForAdmin } from "@/lib/server/users";
 
@@ -31,9 +32,10 @@ export default async function DashboardLayout({
     user.name?.trim() || user.email?.trim() || "Dashboard user";
   const currentUserEmail = user.email?.trim() || "dashboard@trackdraw.local";
   const visibleModules = getVisibleDashboardModules(user.role);
-  const [galleryStats, totalUsers] = await Promise.all([
+  const [galleryStats, totalUsers, activeApiKeys] = await Promise.all([
     visibleModules.includes("gallery") ? getGalleryOverviewStats() : null,
     hasCapability(user.role, "admin.users.read") ? countUsersForAdmin() : null,
+    visibleModules.includes("api-keys") ? countActiveApiKeysForAdmin() : null,
   ]);
 
   return (
@@ -55,6 +57,7 @@ export default async function DashboardLayout({
         itemBadges={{
           ...(galleryStats ? { gallery: galleryStats.total } : {}),
           ...(totalUsers !== null ? { users: totalUsers } : {}),
+          ...(activeApiKeys !== null ? { "api-keys": activeApiKeys } : {}),
         }}
       />
       <SidebarInset className="ml-0!">{children}</SidebarInset>

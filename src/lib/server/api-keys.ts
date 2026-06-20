@@ -260,3 +260,125 @@ export function normalizeCreatedApiKey(key: CreateApiKeyResult) {
     key: key.key,
   };
 }
+
+type AdminApiKeyRow = {
+  id: string;
+  name: string | null;
+  start: string | null;
+  prefix: string | null;
+  enabled: number;
+  requestCount: number;
+  remaining: number | null;
+  lastRequest: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  rateLimitEnabled: number;
+  rateLimitMax: number | null;
+  rateLimitTimeWindow: number | null;
+  permissions: string | null;
+  referenceId: string;
+  ownerName: string | null;
+  ownerEmail: string | null;
+};
+
+export type AdminApiKey = {
+  id: string;
+  name: string | null;
+  start: string | null;
+  prefix: string | null;
+  enabled: boolean;
+  requestCount: number;
+  remaining: number | null;
+  lastRequest: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  rateLimitEnabled: boolean;
+  rateLimitMax: number | null;
+  rateLimitTimeWindowMs: number | null;
+  permissions: ApiKeyPermissionSet | null;
+  ownerUserId: string;
+  ownerName: string | null;
+  ownerEmail: string | null;
+};
+
+function mapAdminApiKeyRow(row: AdminApiKeyRow): AdminApiKey {
+  return {
+    id: row.id,
+    name: row.name,
+    start: row.start,
+    prefix: row.prefix,
+    enabled: row.enabled === 1,
+    requestCount: Number(row.requestCount ?? 0),
+    remaining: row.remaining === null ? null : Number(row.remaining),
+    lastRequest: row.lastRequest,
+    expiresAt: row.expiresAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    rateLimitEnabled: row.rateLimitEnabled === 1,
+    rateLimitMax: row.rateLimitMax === null ? null : Number(row.rateLimitMax),
+    rateLimitTimeWindowMs: row.rateLimitTimeWindow === null ? null : Number(row.rateLimitTimeWindow),
+    permissions: normalizePermissions(
+      row.permissions ? (JSON.parse(row.permissions) as unknown) : null
+    ),
+    ownerUserId: row.referenceId,
+    ownerName: row.ownerName,
+    ownerEmail: row.ownerEmail,
+  };
+}
+
+export async function countActiveApiKeysForAdmin(): Promise<number> {
+  const db = await getDatabase();
+  const now = new Date().toISOString();
+  const row = await db
+    .prepare(
+      `
+        select count(*) as count
+        from apikey
+        where enabled = 1
+          and (expiresAt is null or expiresAt > ?)
+      `
+    )
+    .bind(now)
+    .first<{ count: number }>();
+
+  return Number(row?.count ?? 0);
+}
+
+export async function listApiKeysForAdmin(): Promise<AdminApiKey[]> {
+  const db = await getDatabase();
+  const result = await db
+    .prepare(
+      `
+        select
+          a.id,
+          a.name,
+          a.start,
+          a.prefix,
+          a.enabled,
+          a.requestCount,
+          a.remaining,
+          a.lastRequest,
+          a.expiresAt,
+          a.createdAt,
+          a.updatedAt,
+          a.rateLimitEnabled,
+          a.rateLimitMax,
+          a.rateLimitTimeWindow,
+          a.permissions,
+          a.referenceId,
+          u.name as ownerName,
+          u.email as ownerEmail
+        from apikey a
+        left join users u on u.id = a.referenceId
+        order by
+          case when a.lastRequest is not null then 0 else 1 end,
+          a.lastRequest desc,
+          a.createdAt desc
+      `
+    )
+    .all<AdminApiKeyRow>();
+
+  return result.results.map(mapAdminApiKeyRow);
+}

@@ -8,6 +8,7 @@ import {
   BarChart2,
   Home,
   Image as ImageIcon,
+  KeyRound,
   LayoutDashboard,
   Mail,
   PenLine,
@@ -85,7 +86,7 @@ function TrackDrawMark({ className }: { className?: string }) {
   );
 }
 
-const platformNavItems: NavItem[] = [
+const topNavItems: NavItem[] = [
   {
     key: "overview",
     title: "Overview",
@@ -112,11 +113,11 @@ const adminNavItems: NavItem[] = [
     activePrefix: "/dashboard/users",
   },
   {
-    key: "metrics",
-    title: "Metrics",
-    href: "/dashboard/metrics",
-    icon: BarChart2,
-    activePrefix: "/dashboard/metrics",
+    key: "api-keys",
+    title: "API Keys",
+    href: "/dashboard/api-keys",
+    icon: KeyRound,
+    activePrefix: "/dashboard/api-keys",
   },
   {
     key: "audit",
@@ -124,6 +125,13 @@ const adminNavItems: NavItem[] = [
     href: "/dashboard/audit",
     icon: Bell,
     activePrefix: "/dashboard/audit",
+  },
+  {
+    key: "metrics",
+    title: "Metrics",
+    href: "/dashboard/metrics",
+    icon: BarChart2,
+    activePrefix: "/dashboard/metrics",
   },
   {
     key: "email-preview",
@@ -216,7 +224,7 @@ export default function DashboardAppSidebar({
   const currentPath = usePathname();
   const theme = useTheme();
 
-  const filteredPlatformItems = platformNavItems.filter((item) => {
+  const filteredTopItems = topNavItems.filter((item) => {
     if (item.key === "overview") return visibleModules.includes("overview");
     if (item.key === "gallery") return visibleModules.includes("gallery");
     return true;
@@ -226,6 +234,7 @@ export default function DashboardAppSidebar({
     if (item.key === "users") return visibleModules.includes("users");
     if (item.key === "metrics") return visibleModules.includes("metrics");
     if (item.key === "audit") return visibleModules.includes("audit");
+    if (item.key === "api-keys") return visibleModules.includes("api-keys");
     if (item.key === "email-preview") return currentUser.role === "admin";
     return true;
   });
@@ -263,12 +272,11 @@ export default function DashboardAppSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        {filteredPlatformItems.length > 0 && (
+        {filteredTopItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
-                {filteredPlatformItems.map((item) => (
+                {filteredTopItems.map((item) => (
                   <NavMenuItem
                     key={item.title}
                     item={item}
