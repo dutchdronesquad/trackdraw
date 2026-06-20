@@ -10,7 +10,13 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, Copy, ExternalLink, Loader2 } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   accountRoles,
@@ -128,11 +134,21 @@ export default function DashboardUsersManager({
     setInspectData(null);
 
     fetch(`/api/dashboard/users/${encodeURIComponent(inspectCandidate.id)}`)
-      .then((res) => res.json() as Promise<{ ok: boolean; stats?: UserContextStats; recentEvents?: AuditEvent[] }>)
+      .then(
+        (res) =>
+          res.json() as Promise<{
+            ok: boolean;
+            stats?: UserContextStats;
+            recentEvents?: AuditEvent[];
+          }>
+      )
       .then((payload) => {
         if (cancelled) return;
         if (payload.ok && payload.stats && payload.recentEvents) {
-          setInspectData({ stats: payload.stats, recentEvents: payload.recentEvents });
+          setInspectData({
+            stats: payload.stats,
+            recentEvents: payload.recentEvents,
+          });
         }
       })
       .catch(() => {
@@ -285,7 +301,9 @@ export default function DashboardUsersManager({
       ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-xs">
-          {row.original.lastLoginAt ? formatDate(row.original.lastLoginAt) : "—"}
+          {row.original.lastLoginAt
+            ? formatDate(row.original.lastLoginAt)
+            : "—"}
         </span>
       ),
     },
@@ -379,7 +397,7 @@ export default function DashboardUsersManager({
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {inspectLoading ? (
-                  <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center justify-center gap-2 py-12 text-sm">
                     <Loader2 className="size-4 animate-spin" />
                     Loading…
                   </div>
@@ -387,52 +405,95 @@ export default function DashboardUsersManager({
                   <div className="divide-y">
                     <div className="grid grid-cols-4 divide-x px-0">
                       {[
-                        { label: "Projects", value: inspectData.stats.projectCount },
-                        { label: "Shares", value: inspectData.stats.activeShareCount },
-                        { label: "Gallery", value: inspectData.stats.galleryEntryCount },
-                        { label: "API keys", value: inspectData.stats.apiKeyCount },
+                        {
+                          label: "Projects",
+                          value: inspectData.stats.projectCount,
+                        },
+                        {
+                          label: "Shares",
+                          value: inspectData.stats.activeShareCount,
+                        },
+                        {
+                          label: "Gallery",
+                          value: inspectData.stats.galleryEntryCount,
+                        },
+                        {
+                          label: "API keys",
+                          value: inspectData.stats.apiKeyCount,
+                        },
                       ].map(({ label, value }) => (
-                        <div key={label} className="flex flex-col items-center gap-0.5 py-4">
-                          <span className="text-xl font-semibold tabular-nums">{value}</span>
-                          <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">{label}</span>
+                        <div
+                          key={label}
+                          className="flex flex-col items-center gap-0.5 py-4"
+                        >
+                          <span className="text-xl font-semibold tabular-nums">
+                            {value}
+                          </span>
+                          <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                            {label}
+                          </span>
                         </div>
                       ))}
                     </div>
 
                     <div className="space-y-3 px-6 py-5">
-                      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">Account</p>
+                      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                        Account
+                      </p>
                       <dl className="space-y-2.5">
                         <div className="flex items-center justify-between gap-4">
-                          <dt className="text-muted-foreground text-xs">Member since</dt>
-                          <dd className="text-xs font-medium">{formatDate(inspectCandidate.createdAt)}</dd>
-                        </div>
-                        <div className="flex items-center justify-between gap-4">
-                          <dt className="text-muted-foreground text-xs">Last login</dt>
+                          <dt className="text-muted-foreground text-xs">
+                            Member since
+                          </dt>
                           <dd className="text-xs font-medium">
-                            {inspectCandidate.lastLoginAt ? formatDate(inspectCandidate.lastLoginAt) : "—"}
+                            {formatDate(inspectCandidate.createdAt)}
                           </dd>
                         </div>
                         <div className="flex items-center justify-between gap-4">
-                          <dt className="text-muted-foreground text-xs">Role</dt>
+                          <dt className="text-muted-foreground text-xs">
+                            Last login
+                          </dt>
+                          <dd className="text-xs font-medium">
+                            {inspectCandidate.lastLoginAt
+                              ? formatDate(inspectCandidate.lastLoginAt)
+                              : "—"}
+                          </dd>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <dt className="text-muted-foreground text-xs">
+                            Role
+                          </dt>
                           <dd>
-                            <Badge variant="outline" className={roleBadgeClassName(inspectCandidate.role)}>
+                            <Badge
+                              variant="outline"
+                              className={roleBadgeClassName(
+                                inspectCandidate.role
+                              )}
+                            >
                               {getAccountRoleLabel(inspectCandidate.role)}
                             </Badge>
                           </dd>
                         </div>
                         <div className="flex items-start justify-between gap-4">
-                          <dt className="text-muted-foreground text-xs shrink-0">User ID</dt>
+                          <dt className="text-muted-foreground shrink-0 text-xs">
+                            User ID
+                          </dt>
                           <dd className="flex min-w-0 items-center gap-1">
-                            <span className="font-mono text-[11px] truncate text-muted-foreground">
+                            <span className="text-muted-foreground truncate font-mono text-[11px]">
                               {inspectCandidate.id}
                             </span>
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon"
-                              className="size-5 shrink-0 text-muted-foreground hover:text-foreground"
+                              className="text-muted-foreground hover:text-foreground size-5 shrink-0"
                               aria-label="Copy user ID"
-                              onClick={() => void copyToClipboard(inspectCandidate.id, "User ID")}
+                              onClick={() =>
+                                void copyToClipboard(
+                                  inspectCandidate.id,
+                                  "User ID"
+                                )
+                              }
                             >
                               <Copy className="size-3" />
                             </Button>
@@ -442,9 +503,13 @@ export default function DashboardUsersManager({
                     </div>
 
                     <div className="flex items-center justify-between gap-4 px-6 py-2.5">
-                      <dt className="text-muted-foreground text-xs shrink-0">Change role</dt>
+                      <dt className="text-muted-foreground shrink-0 text-xs">
+                        Change role
+                      </dt>
                       {inspectCandidate.id === currentUserId ? (
-                        <dd className="text-muted-foreground text-xs">Cannot change own role</dd>
+                        <dd className="text-muted-foreground text-xs">
+                          Cannot change own role
+                        </dd>
                       ) : (
                         <dd className="flex items-center gap-1.5">
                           <DropdownMenu>
@@ -455,13 +520,19 @@ export default function DashboardUsersManager({
                                 disabled={pendingUserId === inspectCandidate.id}
                                 className="hover:bg-muted hover:text-foreground h-7 cursor-pointer justify-between gap-1.5 rounded-md px-2 text-xs shadow-none"
                               >
-                                {getAccountRoleLabel(draftRoles[inspectCandidate.id] ?? inspectCandidate.role)}
+                                {getAccountRoleLabel(
+                                  draftRoles[inspectCandidate.id] ??
+                                    inspectCandidate.role
+                                )}
                                 <ChevronDown className="text-muted-foreground size-3" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuRadioGroup
-                                value={draftRoles[inspectCandidate.id] ?? inspectCandidate.role}
+                                value={
+                                  draftRoles[inspectCandidate.id] ??
+                                  inspectCandidate.role
+                                }
                                 onValueChange={(val) =>
                                   setDraftRoles((prev) => ({
                                     ...prev,
@@ -486,11 +557,15 @@ export default function DashboardUsersManager({
                             variant="outline"
                             className={cn(
                               "hover:bg-muted hover:text-foreground h-7 cursor-pointer rounded-md px-2.5 text-xs shadow-none",
-                              (draftRoles[inspectCandidate.id] ?? inspectCandidate.role) !== inspectCandidate.role &&
+                              (draftRoles[inspectCandidate.id] ??
+                                inspectCandidate.role) !==
+                                inspectCandidate.role &&
                                 "border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background"
                             )}
                             disabled={
-                              (draftRoles[inspectCandidate.id] ?? inspectCandidate.role) === inspectCandidate.role ||
+                              (draftRoles[inspectCandidate.id] ??
+                                inspectCandidate.role) ===
+                                inspectCandidate.role ||
                               pendingUserId === inspectCandidate.id
                             }
                             onClick={() => void saveRole(inspectCandidate.id)}
@@ -506,20 +581,27 @@ export default function DashboardUsersManager({
                     </div>
 
                     <div className="space-y-3 px-6 py-5">
-                      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">Recent activity</p>
+                      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                        Recent activity
+                      </p>
                       {inspectData.recentEvents.length > 0 ? (
                         <ul className="space-y-1">
                           {inspectData.recentEvents.map((event) => {
-                            const isActor = event.actorUserId === inspectCandidate.id;
+                            const isActor =
+                              event.actorUserId === inspectCandidate.id;
                             return (
-                              <li key={event.id} className="flex items-start gap-3 rounded-md py-2">
-                                <div className="mt-1.5 size-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                              <li
+                                key={event.id}
+                                className="flex items-start gap-3 rounded-md py-2"
+                              >
+                                <div className="bg-muted-foreground/40 mt-1.5 size-1.5 shrink-0 rounded-full" />
                                 <div className="min-w-0 flex-1">
                                   <p className="text-sm leading-tight">
                                     {formatAuditEventType(event.eventType)}
                                   </p>
                                   <p className="text-muted-foreground mt-0.5 text-xs">
-                                    {isActor ? "Actor" : "Target"} · {formatDate(event.createdAt)}
+                                    {isActor ? "Actor" : "Target"} ·{" "}
+                                    {formatDate(event.createdAt)}
                                   </p>
                                 </div>
                               </li>

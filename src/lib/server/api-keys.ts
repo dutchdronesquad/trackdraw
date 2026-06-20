@@ -318,7 +318,8 @@ function mapAdminApiKeyRow(row: AdminApiKeyRow): AdminApiKey {
     updatedAt: row.updatedAt,
     rateLimitEnabled: row.rateLimitEnabled === 1,
     rateLimitMax: row.rateLimitMax === null ? null : Number(row.rateLimitMax),
-    rateLimitTimeWindowMs: row.rateLimitTimeWindow === null ? null : Number(row.rateLimitTimeWindow),
+    rateLimitTimeWindowMs:
+      row.rateLimitTimeWindow === null ? null : Number(row.rateLimitTimeWindow),
     permissions: normalizePermissions(
       row.permissions ? (JSON.parse(row.permissions) as unknown) : null
     ),

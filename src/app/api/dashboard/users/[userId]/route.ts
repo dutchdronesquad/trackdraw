@@ -4,7 +4,10 @@ import { accountRoles } from "@/lib/account/roles";
 import { createAuditEvent, listAuditEventsForUser } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { isTrustedRequest } from "@/lib/server/csrf";
-import { hasCapability, canAssignAccountRole } from "@/lib/server/authorization";
+import {
+  hasCapability,
+  canAssignAccountRole,
+} from "@/lib/server/authorization";
 import {
   countUsersByRole,
   getAdminUserById,

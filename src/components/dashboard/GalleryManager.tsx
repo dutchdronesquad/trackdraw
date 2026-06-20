@@ -203,12 +203,14 @@ function getPreviewImageUrl(entry: DashboardGalleryEntry) {
 
 function getEmbedAvailable(entry: DashboardGalleryEntry) {
   return (
-    entry.shareType === "published" && getShareLifecycleState(entry) === "active"
+    entry.shareType === "published" &&
+    getShareLifecycleState(entry) === "active"
   );
 }
 
 function getEmbedUnavailableReason(entry: DashboardGalleryEntry) {
-  if (entry.shareType !== "published") return "Temporary shares cannot be embedded";
+  if (entry.shareType !== "published")
+    return "Temporary shares cannot be embedded";
   const state = getShareLifecycleState(entry);
   if (state === "revoked") return "Share has been revoked";
   if (state === "expired") return "Share has expired";
@@ -967,8 +969,16 @@ export default function DashboardGalleryManager({
                         <InspectDetail
                           label="Type"
                           value={
-                            <Badge variant={inspectCandidate.shareType === "published" ? "outline" : "muted"}>
-                              {inspectCandidate.shareType === "published" ? "Published" : "Temporary"}
+                            <Badge
+                              variant={
+                                inspectCandidate.shareType === "published"
+                                  ? "outline"
+                                  : "muted"
+                              }
+                            >
+                              {inspectCandidate.shareType === "published"
+                                ? "Published"
+                                : "Temporary"}
                             </Badge>
                           }
                         />
@@ -985,7 +995,8 @@ export default function DashboardGalleryManager({
                               </Link>
                             ) : (
                               <span className="text-muted-foreground text-sm">
-                                {getEmbedUnavailableReason(inspectCandidate) ?? "Not available"}
+                                {getEmbedUnavailableReason(inspectCandidate) ??
+                                  "Not available"}
                               </span>
                             )
                           }
@@ -995,7 +1006,7 @@ export default function DashboardGalleryManager({
                             label="Project ID"
                             value={
                               <span className="flex items-center gap-1.5">
-                                <span className="font-mono text-xs truncate">
+                                <span className="truncate font-mono text-xs">
                                   {inspectCandidate.projectId}
                                 </span>
                                 <Button
@@ -1005,7 +1016,10 @@ export default function DashboardGalleryManager({
                                   className="size-5 shrink-0"
                                   aria-label="Copy project ID"
                                   onClick={() =>
-                                    void copyToClipboard(inspectCandidate.projectId!, "Project ID")
+                                    void copyToClipboard(
+                                      inspectCandidate.projectId!,
+                                      "Project ID"
+                                    )
                                   }
                                 >
                                   <Copy className="size-3" />
@@ -1054,7 +1068,7 @@ export default function DashboardGalleryManager({
                           label="Owner ID"
                           value={
                             <span className="flex items-center gap-1.5">
-                              <span className="font-mono text-xs truncate">
+                              <span className="truncate font-mono text-xs">
                                 {inspectCandidate.ownerUserId}
                               </span>
                               <Button
@@ -1064,7 +1078,10 @@ export default function DashboardGalleryManager({
                                 className="size-5 shrink-0"
                                 aria-label="Copy owner ID"
                                 onClick={() =>
-                                  void copyToClipboard(inspectCandidate.ownerUserId, "Owner ID")
+                                  void copyToClipboard(
+                                    inspectCandidate.ownerUserId,
+                                    "Owner ID"
+                                  )
                                 }
                               >
                                 <Copy className="size-3" />

@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { BookMarked, FolderOpen, KeyRound, Link2, TrendingUp, Users } from "lucide-react";
+import {
+  BookMarked,
+  FolderOpen,
+  KeyRound,
+  Link2,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import {
   ContentOverviewChart,

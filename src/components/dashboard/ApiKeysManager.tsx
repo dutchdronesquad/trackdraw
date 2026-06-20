@@ -358,7 +358,7 @@ export default function DashboardApiKeysManager({
                   },
                 ].map(({ label, value }) => (
                   <div key={label} className="px-4 py-3 text-center">
-                    <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-wide">
+                    <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                       {label}
                     </p>
                     <p className="mt-1 truncate text-sm font-medium tabular-nums">
@@ -369,7 +369,7 @@ export default function DashboardApiKeysManager({
               </div>
 
               <div className="space-y-0 px-6 py-5">
-                <p className="text-muted-foreground mb-3 text-[10px] font-medium uppercase tracking-wide">
+                <p className="text-muted-foreground mb-3 text-[10px] font-medium tracking-wide uppercase">
                   Key
                 </p>
                 <dl className="space-y-2">
@@ -399,8 +399,14 @@ export default function DashboardApiKeysManager({
                         </span>
                       ),
                     },
-                    { label: "Created", value: formatDate(inspectKey.createdAt) },
-                    { label: "Expires", value: formatDate(inspectKey.expiresAt) },
+                    {
+                      label: "Created",
+                      value: formatDate(inspectKey.createdAt),
+                    },
+                    {
+                      label: "Expires",
+                      value: formatDate(inspectKey.expiresAt),
+                    },
                     {
                       label: "Last used",
                       value: formatDateTime(inspectKey.lastRequest),
@@ -420,7 +426,7 @@ export default function DashboardApiKeysManager({
               </div>
 
               <div className="border-t px-6 py-5">
-                <p className="text-muted-foreground mb-3 text-[10px] font-medium uppercase tracking-wide">
+                <p className="text-muted-foreground mb-3 text-[10px] font-medium tracking-wide uppercase">
                   Owner
                 </p>
                 <dl className="space-y-2">
