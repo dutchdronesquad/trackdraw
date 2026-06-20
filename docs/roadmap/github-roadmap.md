@@ -123,10 +123,8 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         Users table rows now open a Discord-style inspect sheet with a stats strip (projects, active shares, gallery entries, API keys), role badge, last login, created date, recent audit events, and a separate change-role section with self-role-change protection.
   - [x] Share lifecycle inspector
         Gallery rows are now clickable and open an inspect dialog showing share type (published/temporary), embed availability with a direct link, project ID (copyable), share created/updated dates, expiry/revocation detail, owner, gallery state, preview media status, and review outcome notice.
-  - [ ] API usage overview
-        Active API keys across all accounts, last-used timestamps, rate-limit hits, and endpoint error patterns.
-  - [ ] Public track review queue
-        A moderator view for gallery entries with preview, title, owner context, field size, obstacle count, and feature/hide/restore actions.
+  - [x] API usage overview
+        New /dashboard/api-keys page listing all API keys across all accounts with status badge, request count, last-used timestamp, and expiry. Clickable rows open an inspect sheet with rate limit config (max, window, remaining), permissions, key prefix, and owner details. Endpoint error patterns require a dedicated request log table and remain a follow-up.
 
 - [ ] Race-day communication and briefing (`No account required`)
       The first Race Pack release and immediate QR/timing-marker slice are shipped. The remaining work here is larger race-day operations follow-up.

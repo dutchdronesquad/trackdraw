@@ -468,10 +468,9 @@ Why:
 Focus:
 
 - Gallery collections management: add dashboard controls for creating, ordering, publishing, and assigning curated gallery collections
-- Public track quality review: give moderators a review list with preview, title, description, field size, obstacle count, public indexing status, owner context, and feature/hide/restore/open actions
 - Share lifecycle inspector: expose share owner, project, token state, expiry/revocation, gallery listing, embed availability, and latest publish/update metadata in one operator view
 - Contextual account/project diagnostics: add inspect affordances inside existing Users, Gallery, Share, API, and Audit surfaces instead of a standalone diagnostics page
-- API usage dashboard: show API key activity, last-used timestamps, rate-limit hits, endpoint error patterns, and overlay readiness/API usage signals for account projects
+- API usage dashboard: show API key activity, last-used timestamps, rate-limit hits, endpoint error patterns, and overlay readiness/API usage signals for account projects — started with a /dashboard/api-keys page listing all keys across accounts with status, request count, last-used, expiry, and a clickable inspect sheet showing rate limit config, permissions, and owner details
 
 ##### Contextual Account/Project Diagnostics
 
