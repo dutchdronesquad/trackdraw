@@ -147,7 +147,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
       .prepare(
         `
         select
-          sum(case when revoked_at is null then 1 else 0 end) as total_active,
+          sum(case when revoked_at is null and (expires_at is null or expires_at > datetime('now')) then 1 else 0 end) as total_active,
           sum(case when revoked_at is not null then 1 else 0 end) as revoked
         from shares
         where owner_user_id is not null
@@ -164,7 +164,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         from (
           select owner_user_id, count(*) as cnt
           from shares
-          where revoked_at is null and owner_user_id is not null
+          where revoked_at is null and (expires_at is null or expires_at > datetime('now')) and owner_user_id is not null
           group by owner_user_id
         )
       `
@@ -235,7 +235,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         from (
           select owner_user_id, count(*) as cnt
           from shares
-          where revoked_at is null and owner_user_id is not null
+          where revoked_at is null and (expires_at is null or expires_at > datetime('now')) and owner_user_id is not null
           group by owner_user_id
         )
       `
