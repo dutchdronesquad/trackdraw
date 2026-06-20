@@ -93,14 +93,14 @@ export function UserPopulationChart({
                   >
                     <tspan
                       x={viewBox.cx}
-                      y={(viewBox.cy || 0) - 10}
+                      y={(viewBox.cy || 0) - 14}
                       className="fill-foreground text-2xl font-bold"
                     >
                       {users.total}
                     </tspan>
                     <tspan
                       x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 12}
+                      y={(viewBox.cy || 0) + 4}
                       className="fill-muted-foreground text-xs"
                     >
                       users

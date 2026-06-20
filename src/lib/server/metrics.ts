@@ -50,12 +50,18 @@ export type GrowthPoint = {
   users: number;
 };
 
+export type ApiKeyMetrics = {
+  active: number;
+  total: number;
+};
+
 export type AdminMetrics = {
   users: UserMetrics;
   projects: ProjectMetrics;
   shares: ShareMetrics;
   presets: PresetMetrics;
   gallery: GalleryMetrics;
+  apiKeys: ApiKeyMetrics;
   planLimits: PlanLimitRow[];
   userGrowth: GrowthPoint[];
 };
@@ -78,6 +84,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
     shareLimitsRow,
     presetLimitsRow,
     userGrowthResult,
+    apiKeyRow,
   ] = await Promise.all([
     db
       .prepare(
@@ -271,6 +278,17 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
       `
       )
       .all<{ week: string; users: number }>(),
+
+    db
+      .prepare(
+        `
+        select
+          count(*) as total,
+          sum(case when enabled = 1 and (expiresAt is null or expiresAt > datetime('now')) then 1 else 0 end) as active
+        from apikey
+      `
+      )
+      .first<{ total: number; active: number }>(),
   ]);
 
   return {
@@ -304,6 +322,10 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
       listed: galleryRow?.listed ?? 0,
       featured: galleryRow?.featured ?? 0,
       hidden: galleryRow?.hidden ?? 0,
+    },
+    apiKeys: {
+      active: apiKeyRow?.active ?? 0,
+      total: apiKeyRow?.total ?? 0,
     },
     planLimits: [
       {

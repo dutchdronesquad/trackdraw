@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { BookMarked, FolderOpen, Link2, TrendingUp, Users } from "lucide-react";
+import { BookMarked, FolderOpen, KeyRound, Link2, TrendingUp, Users } from "lucide-react";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import {
   ContentOverviewChart,
@@ -127,7 +127,7 @@ export default async function DashboardMetricsPage() {
       />
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         {/* KPI strip */}
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
           <KpiCard
             label="Total users"
             value={metrics.users.total}
@@ -159,6 +159,14 @@ export default async function DashboardMetricsPage() {
             icon={Link2}
             accent="bg-orange-500"
             iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
+          />
+          <KpiCard
+            label="Active API keys"
+            value={metrics.apiKeys.active}
+            sub={`${metrics.apiKeys.total} total`}
+            icon={KeyRound}
+            accent="bg-rose-500"
+            iconTone="bg-rose-500/10 text-rose-600 dark:text-rose-400"
           />
         </div>
 

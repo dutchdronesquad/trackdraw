@@ -324,34 +324,31 @@ export default function DashboardUsersManager({
   }));
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
-      <div>
-        <DataTableToolbar
-          searchValue={globalFilter}
-          onSearchChange={setGlobalFilter}
-          searchPlaceholder="Search by name or email..."
-          className="pb-3"
-        >
-          <DataTableFacetFilter
-            title="Role"
-            selected={selectedRoles}
-            options={roleFilterOptions}
-            onChange={setSelectedRoles}
-          />
-        </DataTableToolbar>
-
-        <DataTable
-          table={table}
-          rows={filteredRows}
-          columnsLength={columns.length}
-          emptyMessage="No users found."
-          onRowClick={(row) => setInspectCandidate(row.original)}
+    <div className="space-y-4">
+      <DataTableToolbar
+        searchValue={globalFilter}
+        onSearchChange={setGlobalFilter}
+        searchPlaceholder="Search by name or email..."
+      >
+        <DataTableFacetFilter
+          title="Role"
+          selected={selectedRoles}
+          options={roleFilterOptions}
+          onChange={setSelectedRoles}
         />
+      </DataTableToolbar>
 
-        <p className="text-muted-foreground mt-3 text-xs">
-          Showing {filteredRows.length} of {users.length} accounts.
-        </p>
-      </div>
+      <DataTable
+        table={table}
+        rows={filteredRows}
+        columnsLength={columns.length}
+        emptyMessage="No users found."
+        onRowClick={(row) => setInspectCandidate(row.original)}
+      />
+
+      <p className="text-muted-foreground text-xs">
+        Showing {filteredRows.length} of {users.length} accounts.
+      </p>
 
       <Sheet
         open={inspectCandidate !== null}
