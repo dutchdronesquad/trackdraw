@@ -19,7 +19,6 @@ import {
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
-  ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
 import {
@@ -422,74 +421,6 @@ export function UserGrowthCard({
         />
       </div>
     </div>
-  );
-}
-
-// --- Plan limit grouped bar chart ---
-
-const planLimitConfig = {
-  usersExceedingProjects: { label: "Projects", color: "var(--chart-1)" },
-  usersExceedingShares: { label: "Shares", color: "var(--chart-4)" },
-  usersExceedingPresets: { label: "Presets", color: "var(--chart-3)" },
-} satisfies ChartConfig;
-
-export function PlanLimitChart({
-  planLimits,
-}: {
-  planLimits: AdminMetrics["planLimits"];
-}) {
-  const data = planLimits.map((row) => ({
-    limit: `max ${row.limit}`,
-    usersExceedingProjects: row.usersExceedingProjects,
-    usersExceedingShares: row.usersExceedingShares,
-    usersExceedingPresets: row.usersExceedingPresets,
-  }));
-
-  return (
-    <ChartContainer config={planLimitConfig} className="h-52 w-full">
-      <BarChart
-        accessibilityLayer
-        data={data}
-        barCategoryGap="30%"
-        barGap={3}
-        margin={{ left: 4, right: 4 }}
-      >
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="limit"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          tick={{ fontSize: 11 }}
-        />
-        <YAxis
-          tickLine={false}
-          axisLine={false}
-          tick={{ fontSize: 11 }}
-          allowDecimals={false}
-        />
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent indicator="dashed" />}
-        />
-        <ChartLegend content={<ChartLegendContent />} />
-        <Bar
-          dataKey="usersExceedingProjects"
-          fill="var(--color-usersExceedingProjects)"
-          radius={4}
-        />
-        <Bar
-          dataKey="usersExceedingShares"
-          fill="var(--color-usersExceedingShares)"
-          radius={4}
-        />
-        <Bar
-          dataKey="usersExceedingPresets"
-          fill="var(--color-usersExceedingPresets)"
-          radius={4}
-        />
-      </BarChart>
-    </ChartContainer>
   );
 }
 

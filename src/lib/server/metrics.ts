@@ -72,20 +72,11 @@ export type AdminMetrics = {
   presets: PresetMetrics;
   gallery: GalleryMetrics;
   apiKeys: ApiKeyMetrics;
-  planLimits: PlanLimitRow[];
-  userGrowth: GrowthPoint[];
-  userGrowthCumulative: GrowthPoint[];
   userDistribution: [number, number, number][]; // [projects, shares, presets] per user
 };
 
-export async function getAdminMetrics(
-  options: { growthDays?: number } = {}
-): Promise<AdminMetrics> {
+export async function getAdminMetrics(): Promise<AdminMetrics> {
   const db = await getDatabase();
-  const growthDays = options.growthDays ?? 91;
-  const growthCutoff = new Date(
-    Date.now() - growthDays * 24 * 60 * 60 * 1000
-  ).toISOString();
 
   const [
     userRow,
@@ -98,14 +89,8 @@ export async function getAdminMetrics(
     presetTotalsRow,
     presetPerUserRow,
     galleryRow,
-    projectLimitsRow,
-    shareLimitsRow,
-    presetLimitsRow,
-    userGrowthResult,
     apiKeyRow,
-    anyLimitsRow,
     userDistributionResult,
-    priorUsersRow,
   ] = await Promise.all([
     db
       .prepare(
@@ -240,105 +225,12 @@ export async function getAdminMetrics(
       .prepare(
         `
         select
-          sum(case when cnt > 3 then 1 else 0 end) as exceeds_3,
-          sum(case when cnt > 5 then 1 else 0 end) as exceeds_5,
-          sum(case when cnt > 10 then 1 else 0 end) as exceeds_10
-        from (
-          select owner_user_id, count(*) as cnt
-          from projects
-          where archived_at is null
-          group by owner_user_id
-        )
-      `
-      )
-      .first<{ exceeds_3: number; exceeds_5: number; exceeds_10: number }>(),
-
-    db
-      .prepare(
-        `
-        select
-          sum(case when cnt > 3 then 1 else 0 end) as exceeds_3,
-          sum(case when cnt > 5 then 1 else 0 end) as exceeds_5,
-          sum(case when cnt > 10 then 1 else 0 end) as exceeds_10
-        from (
-          select owner_user_id, count(*) as cnt
-          from shares
-          where revoked_at is null and (expires_at is null or expires_at > datetime('now')) and owner_user_id is not null
-          group by owner_user_id
-        )
-      `
-      )
-      .first<{ exceeds_3: number; exceeds_5: number; exceeds_10: number }>(),
-
-    db
-      .prepare(
-        `
-        select
-          sum(case when cnt > 3 then 1 else 0 end) as exceeds_3,
-          sum(case when cnt > 5 then 1 else 0 end) as exceeds_5,
-          sum(case when cnt > 10 then 1 else 0 end) as exceeds_10
-        from (
-          select owner_user_id, count(*) as cnt
-          from layout_presets
-          group by owner_user_id
-        )
-      `
-      )
-      .first<{ exceeds_3: number; exceeds_5: number; exceeds_10: number }>(),
-
-    db
-      .prepare(
-        `
-        select
-          strftime('%Y-%W', createdAt) as week,
-          count(*) as users
-        from users
-        where createdAt > ?
-        group by week
-        order by week
-      `
-      )
-      .bind(growthCutoff)
-      .all<{ week: string; users: number }>(),
-
-    db
-      .prepare(
-        `
-        select
           count(*) as total,
           sum(case when enabled = 1 and (expiresAt is null or datetime(expiresAt) > datetime('now')) then 1 else 0 end) as active
         from apikey
       `
       )
       .first<{ total: number; active: number }>(),
-
-    db
-      .prepare(
-        `
-        select
-          sum(case when (coalesce(p.cnt,0) > 3 or coalesce(s.cnt,0) > 3 or coalesce(pr.cnt,0) > 3) then 1 else 0 end) as exceeds_3,
-          sum(case when (coalesce(p.cnt,0) > 5 or coalesce(s.cnt,0) > 5 or coalesce(pr.cnt,0) > 5) then 1 else 0 end) as exceeds_5,
-          sum(case when (coalesce(p.cnt,0) > 10 or coalesce(s.cnt,0) > 10 or coalesce(pr.cnt,0) > 10) then 1 else 0 end) as exceeds_10
-        from users u
-        left join (
-          select owner_user_id, count(*) as cnt
-          from projects where archived_at is null
-          group by owner_user_id
-        ) p on p.owner_user_id = u.id
-        left join (
-          select owner_user_id, count(*) as cnt
-          from shares
-          where revoked_at is null and (expires_at is null or expires_at > datetime('now')) and owner_user_id is not null
-          group by owner_user_id
-        ) s on s.owner_user_id = u.id
-        left join (
-          select owner_user_id, count(*) as cnt
-          from layout_presets
-          group by owner_user_id
-        ) pr on pr.owner_user_id = u.id
-      `
-      )
-      .first<{ exceeds_3: number; exceeds_5: number; exceeds_10: number }>(),
 
     db
       .prepare(
@@ -367,11 +259,6 @@ export async function getAdminMetrics(
         `
       )
       .all<{ proj_cnt: number; share_cnt: number; preset_cnt: number }>(),
-
-    db
-      .prepare(`select count(*) as count from users where createdAt < ?`)
-      .bind(growthCutoff)
-      .first<{ count: number }>(),
   ]);
 
   return {
@@ -410,37 +297,6 @@ export async function getAdminMetrics(
       active: apiKeyRow?.active ?? 0,
       total: apiKeyRow?.total ?? 0,
     },
-    planLimits: [
-      {
-        limit: 3,
-        usersExceedingProjects: projectLimitsRow?.exceeds_3 ?? 0,
-        usersExceedingShares: shareLimitsRow?.exceeds_3 ?? 0,
-        usersExceedingPresets: presetLimitsRow?.exceeds_3 ?? 0,
-        usersExceedingAny: anyLimitsRow?.exceeds_3 ?? 0,
-      },
-      {
-        limit: 5,
-        usersExceedingProjects: projectLimitsRow?.exceeds_5 ?? 0,
-        usersExceedingShares: shareLimitsRow?.exceeds_5 ?? 0,
-        usersExceedingPresets: presetLimitsRow?.exceeds_5 ?? 0,
-        usersExceedingAny: anyLimitsRow?.exceeds_5 ?? 0,
-      },
-      {
-        limit: 10,
-        usersExceedingProjects: projectLimitsRow?.exceeds_10 ?? 0,
-        usersExceedingShares: shareLimitsRow?.exceeds_10 ?? 0,
-        usersExceedingPresets: presetLimitsRow?.exceeds_10 ?? 0,
-        usersExceedingAny: anyLimitsRow?.exceeds_10 ?? 0,
-      },
-    ],
-    userGrowth: userGrowthResult.results.map((row) => ({
-      week: formatWeekLabel(row.week),
-      users: row.users,
-    })),
-    userGrowthCumulative: buildCumulativeGrowth(
-      userGrowthResult.results,
-      priorUsersRow?.count ?? 0
-    ),
     userDistribution: userDistributionResult.results.map((row) => [
       row.proj_cnt,
       row.share_cnt,

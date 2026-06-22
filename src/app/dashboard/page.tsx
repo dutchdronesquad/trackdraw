@@ -330,6 +330,7 @@ export default async function DashboardPage() {
   }
 
   const canReadAudit = hasCapability(actor.role, "audit.read");
+  const canReadUsers = hasCapability(actor.role, "admin.users.read");
 
   const [overviewStats, galleryStats, recentAuditEvents, recentGalleryEntries] =
     await Promise.all([
@@ -406,14 +407,22 @@ export default async function DashboardPage() {
                 <UserPlus className="text-muted-foreground size-3.5" />
                 <p className="text-sm font-medium">Recent sign-ups</p>
               </div>
-              <Link
-                href="/dashboard/users"
-                className="text-muted-foreground hover:text-foreground text-xs transition-colors"
-              >
-                View all
-              </Link>
+              {canReadUsers && (
+                <Link
+                  href="/dashboard/users"
+                  className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+                >
+                  View all
+                </Link>
+              )}
             </div>
-            <RecentSignups users={overviewStats.recentUsers} />
+            {canReadUsers ? (
+              <RecentSignups users={overviewStats.recentUsers} />
+            ) : (
+              <p className="text-muted-foreground py-6 text-center text-xs">
+                No access
+              </p>
+            )}
           </div>
 
           <div className="bg-card rounded-xl border p-4">
