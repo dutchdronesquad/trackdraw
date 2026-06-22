@@ -23,7 +23,7 @@ describe("auth email templates", () => {
 
     expect(email.subject).toBe("Your TrackDraw sign-in link");
     expect(email.htmlBody).toContain(
-      "https://preview.trackdraw.app/assets/brand/trackdraw-logo-color-darkbg.svg"
+      "https://preview.trackdraw.app/assets/brand/trackdraw-logo-color-darkbg@2x.png"
     );
     expect(email.htmlBody).toContain("Open TrackDraw");
     expect(email.textBody).toContain("Open this one-time sign-in link");
