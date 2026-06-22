@@ -44,7 +44,7 @@ function buildEmailShell({
   const escapedActionLabel = escapeHtml(actionLabel);
   const escapedNote = escapeHtml(note);
   const brandLogoUrl = escapeHtml(
-    `${getSiteUrl()}/assets/brand/trackdraw-logo-color-darkbg.svg`
+    `${getSiteUrl()}/assets/brand/trackdraw-logo-color-darkbg@2x.png`
   );
 
   return `
@@ -86,6 +86,7 @@ function buildEmailShell({
                 </tr>
                 <tr>
                   <td>
+                    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" style="width:600px;" arcsize="4%" stroke="f" fillcolor="#ffffff"><v:textbox inset="0,0,0,0"><w:txbxContent><![endif]-->
                     <div style="overflow: hidden; border-radius: 24px; background-color: #ffffff; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);">
                       <table
                         role="presentation"
@@ -141,12 +142,25 @@ function buildEmailShell({
                             >
                               <tr>
                                 <td bgcolor="#1e93db" style="border-radius: 14px; background-color: #1e93db;">
+                                  <!--[if mso]>
+                                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+                                    href="${escapedUrl}"
+                                    style="height:42px;v-text-anchor:middle;width:200px;"
+                                    arcsize="33%"
+                                    stroke="f"
+                                    fillcolor="#1e93db">
+                                    <w:anchorlock/>
+                                    <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:700;">${escapedActionLabel}</center>
+                                  </v:roundrect>
+                                  <![endif]-->
+                                  <!--[if !mso]><!-->
                                   <a
                                     href="${escapedUrl}"
-                                    style="display: inline-block; border-radius: 14px; padding: 13px 20px; font-size: 14px; font-weight: 700; line-height: 1; color: #ffffff; text-decoration: none;"
+                                    style="display: inline-block; border-radius: 14px; padding: 13px 20px; font-size: 14px; font-weight: 700; line-height: 1; color: #ffffff; text-decoration: none; font-family: Arial, sans-serif;"
                                   >
                                     ${escapedActionLabel}
                                   </a>
+                                  <!--<![endif]-->
                                 </td>
                               </tr>
                             </table>
@@ -179,6 +193,7 @@ function buildEmailShell({
                         </tr>
                       </table>
                     </div>
+                    <!--[if mso]></w:txbxContent></v:textbox></v:roundrect><![endif]-->
                   </td>
                 </tr>
               </table>
