@@ -384,8 +384,10 @@ export default async function DashboardPage() {
           />
         </div>
 
-        {/* Activity + Sign-ups + Gallery */}
-        <div className="grid gap-4 lg:grid-cols-3">
+        {/* Activity + Sign-ups (admin only) + Gallery */}
+        <div
+          className={`grid gap-4 ${canReadUsers ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}
+        >
           <div className="bg-card rounded-xl border p-4">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-medium">Recent activity</p>
@@ -401,29 +403,23 @@ export default async function DashboardPage() {
             <RecentAuditEvents events={recentAuditEvents} />
           </div>
 
-          <div className="bg-card rounded-xl border p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <UserPlus className="text-muted-foreground size-3.5" />
-                <p className="text-sm font-medium">Recent sign-ups</p>
-              </div>
-              {canReadUsers && (
+          {canReadUsers && (
+            <div className="bg-card rounded-xl border p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <UserPlus className="text-muted-foreground size-3.5" />
+                  <p className="text-sm font-medium">Recent sign-ups</p>
+                </div>
                 <Link
                   href="/dashboard/users"
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                 >
                   View all
                 </Link>
-              )}
-            </div>
-            {canReadUsers ? (
+              </div>
               <RecentSignups users={overviewStats.recentUsers} />
-            ) : (
-              <p className="text-muted-foreground py-6 text-center text-xs">
-                No access
-              </p>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="bg-card rounded-xl border p-4">
             <div className="mb-3 flex items-center justify-between">
