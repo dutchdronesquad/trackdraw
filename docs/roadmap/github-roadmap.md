@@ -55,12 +55,16 @@ The completed release-sized work is archived below. The next TrackDraw priority 
   - [ ] Drag-to-reorder obstacles (prerequisite)
         Wire up the drag handles in the track items list so users can explicitly set the intended race sequence before generating a path. The store action is ready; this is a UI-only change gated on the path generator being useful enough to justify the interaction.
 
-- [ ] Multilingual product experience (`Research`, `No account required`)
-      Use the regional measurement work as a first locale-aware foundation, then evaluate a full i18n layer for the public site, editor, share pages, and exported handoff copy.
-  - [ ] I18n architecture and text inventory
-        Audit hard-coded UI, export, share, legal-adjacent, dashboard, and error/recovery copy so translatable product text can move behind a stable message catalog without weakening type safety.
-  - [ ] Language detection and override
-        Use browser language as an initial default when no explicit language preference exists, but keep language selection manually overridable and independent from measurement units.
+- [ ] Multilingual product experience (`No account required`)
+      Use the regional measurement work as a first locale-aware foundation, then evaluate a full i18n layer for the public site, editor, share pages, and exported handoff copy. Architecture PVA: [I18n Multilingual PVA](../pva/i18n-multilingual-pva.md).
+  - [ ] I18n architecture + editor pilot
+        Install next-intl (without routing), add a Zustand locale store, wire the NextIntlClientProvider into the root layout, and convert the editor Toolbar and StatusBar as the pilot namespace. Language picker stub in account menu. See PVA phase 1.
+  - [ ] Inspector + dialogs namespace
+        Migrate inspector panels and the share, account, project, and import/export dialogs to the message catalog (~200 strings).
+  - [ ] Landing page namespace
+        Migrate all hard-coded marketing copy to the message catalog (~500+ strings).
+  - [ ] Dashboard + remaining surfaces
+        Migrate admin dashboard and any remaining hard-coded copy.
   - [ ] First language rollout
         Choose the first supported languages from actual user demand and translation-maintenance capacity, with English as the stable fallback for incomplete translations.
   - [ ] Translation QA boundary

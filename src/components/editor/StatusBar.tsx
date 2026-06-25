@@ -18,6 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/AppTooltip";
+import { useTranslations } from "next-intl";
 
 interface StatusBarProps {
   cursorPos?: { x: number; y: number } | null;
@@ -25,6 +26,7 @@ interface StatusBarProps {
 }
 
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
+  const t = useTranslations("editor");
   const { enabled, toggle } = useDeveloperMode();
   const { unitSystem } = useMeasurementUnitSystem();
   const { toggleSnapEnabled } = useUiActions();
@@ -53,10 +55,12 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
             (shape) => getShapeGroupId(shape) === selectedGroupIds[0]
           );
           const groupName = namedShape ? getShapeGroupName(namedShape) : null;
-          return groupName ? `Group: ${groupName}` : "Grouped";
+          return groupName
+            ? t("statusBar.groupNamed", { name: groupName })
+            : t("statusBar.grouped");
         })()
       : selectedGroupIds.length > 1
-        ? `${selectedGroupIds.length} groups`
+        ? t("statusBar.groups", { count: selectedGroupIds.length })
         : null;
   const activeToolLabel =
     activeTool === "preset" && activePreset
@@ -129,18 +133,22 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
               )}
             />
             <span>
-              {snapEnabled ? (snapActive ? "Snap" : "Snap On") : "Snap Off"}
+              {snapEnabled
+                ? snapActive
+                  ? t("statusBar.snapActive")
+                  : t("statusBar.snapOn")
+                : t("statusBar.snapOff")}
             </span>
           </button>
         </TooltipTrigger>
         <TooltipContent side="top" sideOffset={6} className="max-w-64">
           <span className="block font-medium">
-            {snapEnabled ? "Snap is on" : "Snap is off"}
+            {snapEnabled ? t("statusBar.snapIsOn") : t("statusBar.snapIsOff")}
           </span>
           <span className="mt-1 block opacity-80">
             {snapEnabled
-              ? "Points and drags lock to nearby grid positions, objects, and route points. Hold Alt while placing or dragging to bypass it once."
-              : "Placement and dragging stay freeform until you turn snap back on."}
+              ? t("statusBar.snapOnDescription")
+              : t("statusBar.snapOffDescription")}
           </span>
         </TooltipContent>
       </Tooltip>
@@ -150,7 +158,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {/* Selection count */}
       {selectionCount > 0 && (
         <>
-          <span className="text-foreground/75">{selectionCount} selected</span>
+          <span className="text-foreground/75">{t("statusBar.selected", { count: selectionCount })}</span>
           {selectedGroupLabel && (
             <>
               <span className="text-muted-foreground/45">·</span>
@@ -176,7 +184,7 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
             onClick={toggle}
             className="text-muted-foreground/65 hover:text-foreground hover:bg-muted pointer-events-auto inline-flex h-5 items-center rounded px-1.5 text-[11px] transition-colors"
           >
-            {enabled ? "Dev On" : "Dev"}
+            {enabled ? t("statusBar.devOn") : t("statusBar.dev")}
           </button>
           <span className="text-muted-foreground/45">·</span>
         </>

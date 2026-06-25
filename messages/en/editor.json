@@ -1,0 +1,37 @@
+{
+  "toolbar": {
+    "homepageLabel": "Go to homepage",
+    "projects": "Projects",
+    "projectsTooltip": "Manage projects",
+    "import": "Import",
+    "importTooltip": "Import JSON",
+    "export": "Export",
+    "exportTooltip": "Export track"
+  },
+  "statusBar": {
+    "snapActive": "Snap",
+    "snapOn": "Snap On",
+    "snapOff": "Snap Off",
+    "snapIsOn": "Snap is on",
+    "snapIsOff": "Snap is off",
+    "snapOnDescription": "Points and drags lock to nearby grid positions, objects, and route points. Hold Alt while placing or dragging to bypass it once.",
+    "snapOffDescription": "Placement and dragging stay freeform until you turn snap back on.",
+    "selected": "{count} selected",
+    "grouped": "Grouped",
+    "groupNamed": "Group: {name}",
+    "groups": "{count} groups",
+    "devOn": "Dev On",
+    "dev": "Dev"
+  },
+  "accountMenu": {
+    "checkingAuth": "Checking auth…",
+    "signIn": "Sign in",
+    "signedIn": "Signed in",
+    "noDisplayName": "No display name set",
+    "trackdrawAccount": "TrackDraw account",
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…"
+  }
+}

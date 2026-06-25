@@ -30,6 +30,7 @@ import { useSessionActions, useUiActions } from "@/store/actions";
 import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { Download, FolderOpen, Import } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const AccountMenu = dynamic(() => import("@/components/editor/AccountMenu"), {
   ssr: false,
@@ -99,6 +100,7 @@ export default function Toolbar({
   onOpenPresets,
   collapsed,
 }: ToolbarProps) {
+  const t = useTranslations("editor");
   const activeTool = useEditor((state) => state.ui.activeTool);
   const { setActiveTool } = useUiActions();
   const { setSelection } = useSessionActions();
@@ -212,7 +214,7 @@ export default function Toolbar({
           <Link
             href="/"
             className="flex items-center justify-center rounded-md opacity-90 transition-opacity hover:opacity-100"
-            aria-label="Go to homepage"
+            aria-label={t("toolbar.homepageLabel")}
           >
             {collapsed ? (
               <TrackDrawIcon className="text-foreground/80 size-6" />
@@ -334,22 +336,22 @@ export default function Toolbar({
           <SidebarMenu className="gap-0 space-y-1" key="projects-footer-v3">
             {renderFooterAction({
               key: "projects",
-              label: "Projects",
-              tooltip: "Manage projects",
+              label: t("toolbar.projects"),
+              tooltip: t("toolbar.projectsTooltip"),
               icon: <FolderOpen className="size-3.5" />,
               onClick: onOpenProjectManager,
             })}
             {renderFooterAction({
               key: "import",
-              label: "Import",
-              tooltip: "Import JSON",
+              label: t("toolbar.import"),
+              tooltip: t("toolbar.importTooltip"),
               icon: <Import className="size-3.5" />,
               onClick: onImport,
             })}
             {renderFooterAction({
               key: "export",
-              label: "Export",
-              tooltip: "Export track",
+              label: t("toolbar.export"),
+              tooltip: t("toolbar.exportTooltip"),
               icon: <Download className="size-3.5" />,
               onClick: onExport,
             })}

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/popover";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 function canAccessDashboard(user: unknown): boolean {
   return (
@@ -23,34 +24,19 @@ function canAccessDashboard(user: unknown): boolean {
   );
 }
 
-function getUserDisplayName(
-  user:
-    | {
-        email?: string | null;
-        name?: string | null;
-      }
-    | null
-    | undefined
-) {
-  return user?.name?.trim() || user?.email?.trim() || "Signed in";
+type UserLike = { email?: string | null; name?: string | null } | null | undefined;
+
+function getUserDisplayName(user: UserLike, signedInLabel: string) {
+  return user?.name?.trim() || user?.email?.trim() || signedInLabel;
 }
 
 function getUserSecondaryLabel(
-  user:
-    | {
-        email?: string | null;
-        name?: string | null;
-      }
-    | null
-    | undefined
+  user: UserLike,
+  labels: { trackdrawAccount: string; noDisplayName: string; signedIn: string }
 ) {
-  if (user?.name?.trim() && user.email?.trim()) {
-    return "TrackDraw account";
-  }
-  if (!user?.name?.trim() && user?.email?.trim()) {
-    return "No display name set";
-  }
-  return "Signed in";
+  if (user?.name?.trim() && user.email?.trim()) return labels.trackdrawAccount;
+  if (!user?.name?.trim() && user?.email?.trim()) return labels.noDisplayName;
+  return labels.signedIn;
 }
 
 const accountMenuItemClassName =
@@ -61,6 +47,7 @@ interface AccountMenuProps {
 }
 
 export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
+  const t = useTranslations("editor");
   const { data, isPending } = authClient.useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -86,7 +73,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
   if (isPending) {
     return (
       <span className="text-muted-foreground block px-3 pb-1 text-xs">
-        Checking auth…
+        {t("accountMenu.checkingAuth")}
       </span>
     );
   }
@@ -105,7 +92,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
         <span className="flex size-4 shrink-0 items-center justify-center">
           <LogIn className="size-3.5" />
         </span>
-        {!collapsed && <span>Sign in</span>}
+        {!collapsed && <span>{t("accountMenu.signIn")}</span>}
       </Link>
     );
   }
@@ -128,10 +115,14 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
         {!collapsed && (
           <span className="min-w-0 flex-1 text-left">
             <span className="text-foreground block truncate text-[12px] font-medium">
-              {getUserDisplayName(user)}
+              {getUserDisplayName(user, t("accountMenu.signedIn"))}
             </span>
             <span className="text-muted-foreground block truncate pt-0.5 text-[10px]">
-              {getUserSecondaryLabel(user)}
+              {getUserSecondaryLabel(user, {
+                trackdrawAccount: t("accountMenu.trackdrawAccount"),
+                noDisplayName: t("accountMenu.noDisplayName"),
+                signedIn: t("accountMenu.signedIn"),
+              })}
             </span>
           </span>
         )}
@@ -152,10 +143,10 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
             />
             <div className="min-w-0 flex-1 text-left">
               <p className="text-foreground truncate text-[12px] font-medium">
-                {getUserDisplayName(user)}
+                {getUserDisplayName(user, t("accountMenu.signedIn"))}
               </p>
               <p className="text-muted-foreground truncate pt-0.5 text-[11px]">
-                {user?.email ?? "TrackDraw account"}
+                {user?.email ?? t("accountMenu.trackdrawAccount")}
               </p>
             </div>
           </div>
@@ -174,7 +165,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
             <span className="text-muted-foreground flex size-4 shrink-0 items-center justify-center">
               <UserRound className="size-4" />
             </span>
-            <span className="flex-1">Profile</span>
+            <span className="flex-1">{t("accountMenu.profile")}</span>
           </button>
           {canAccessDashboard(user) ? (
             <Link
@@ -185,7 +176,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
               <span className="text-muted-foreground flex size-4 shrink-0 items-center justify-center">
                 <LayoutDashboard className="size-4" />
               </span>
-              <span className="flex-1">Dashboard</span>
+              <span className="flex-1">{t("accountMenu.dashboard")}</span>
             </Link>
           ) : null}
         </div>
@@ -199,7 +190,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
             className={cn(accountMenuItemClassName, "justify-start")}
           >
             <LogOut className="size-4" />
-            <span>{signingOut ? "Signing out…" : "Sign out"}</span>
+            <span>{signingOut ? t("accountMenu.signingOut") : t("accountMenu.signOut")}</span>
           </Button>
         </div>
       </PopoverContent>

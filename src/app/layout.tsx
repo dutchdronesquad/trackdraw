@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import ThemeBootstrap from "@/components/ThemeBootstrap";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -98,10 +100,12 @@ export default async function RootLayout({
     cookieStore.get(THEME_COOKIE)?.value,
     cookieStore.get(RESOLVED_THEME_COOKIE)?.value
   );
+  const locale = await getLocale();
+  const messages = await getMessages();
 
   return (
     <html
-      lang="en"
+      lang={locale}
       className={initialTheme === "dark" ? "dark" : undefined}
       style={{ colorScheme: initialTheme }}
       data-scroll-behavior="smooth"
@@ -109,7 +113,9 @@ export default async function RootLayout({
     >
       <body className="font-sans antialiased">
         <ThemeBootstrap />
-        <TooltipProvider delayDuration={500}>{children}</TooltipProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <TooltipProvider delayDuration={500}>{children}</TooltipProvider>
+        </NextIntlClientProvider>
         <Toaster position="bottom-right" richColors />
       </body>
     </html>

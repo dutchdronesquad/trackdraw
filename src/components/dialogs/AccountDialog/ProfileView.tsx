@@ -7,6 +7,7 @@ import {
   AccountDialogNotSignedIn,
 } from "./shared";
 import { getDisplayName } from "./utils";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 type ProfileUser = {
   email?: string | null;
@@ -113,6 +114,16 @@ export function AccountProfileView({
       </div>
 
       <AccountDialogError error={error} />
+
+      <div className="border-border/60 flex items-center justify-between gap-4 border-t pt-5">
+        <div>
+          <p className="text-sm font-medium">Language</p>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            Changes apply immediately
+          </p>
+        </div>
+        <LanguagePicker variant="full" className="w-40" />
+      </div>
     </div>
   );
 }

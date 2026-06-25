@@ -1,0 +1,37 @@
+{
+  "toolbar": {
+    "homepageLabel": "Naar de homepage",
+    "projects": "Projecten",
+    "projectsTooltip": "Projecten beheren",
+    "import": "Importeren",
+    "importTooltip": "JSON importeren",
+    "export": "Exporteren",
+    "exportTooltip": "Track exporteren"
+  },
+  "statusBar": {
+    "snapActive": "Snap",
+    "snapOn": "Snap aan",
+    "snapOff": "Snap uit",
+    "snapIsOn": "Snap staat aan",
+    "snapIsOff": "Snap staat uit",
+    "snapOnDescription": "Punten en slepen vergrendelen naar nabije rasterposities, objecten en routepunten. Houd Alt ingedrukt tijdens plaatsen of slepen om het eenmalig te omzeilen.",
+    "snapOffDescription": "Plaatsen en slepen blijven vrij totdat je snap weer aanzet.",
+    "selected": "{count} geselecteerd",
+    "grouped": "Gegroepeerd",
+    "groupNamed": "Groep: {name}",
+    "groups": "{count} groepen",
+    "devOn": "Dev aan",
+    "dev": "Dev"
+  },
+  "accountMenu": {
+    "checkingAuth": "Authenticatie controleren…",
+    "signIn": "Inloggen",
+    "signedIn": "Ingelogd",
+    "noDisplayName": "Geen weergavenaam ingesteld",
+    "trackdrawAccount": "TrackDraw-account",
+    "profile": "Profiel",
+    "dashboard": "Dashboard",
+    "signOut": "Uitloggen",
+    "signingOut": "Uitloggen…"
+  }
+}

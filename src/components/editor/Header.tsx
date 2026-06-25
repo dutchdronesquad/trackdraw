@@ -57,6 +57,14 @@ const ThemeToggle = dynamic(
   { ssr: false }
 );
 
+const LanguagePicker = dynamic(
+  () =>
+    import("@/components/LanguagePicker").then((mod) => ({
+      default: mod.LanguagePicker,
+    })),
+  { ssr: false }
+);
+
 const INSPECTOR_WIDTH = "21.25rem";
 
 function parseAccountDialogView(
@@ -485,6 +493,10 @@ export default function Header({
             )
           ) : null}
 
+          <div className="bg-border/80 mx-1 hidden h-5 w-px lg:block lg:h-4" />
+          <div className="hidden lg:block">
+            <LanguagePicker />
+          </div>
           <div className="bg-border/80 mx-1 hidden h-5 w-px lg:block lg:h-4" />
           <div className="hidden lg:block">
             <ThemeToggle />
