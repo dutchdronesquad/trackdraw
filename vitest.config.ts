@@ -11,6 +11,7 @@ export default defineConfig({
     environment: "node",
     fileParallelism: true,
     include: ["tests/**/*.test.{ts,tsx}"],
+    setupFiles: ["tests/setup.ts"],
     pool: "forks",
     restoreMocks: true,
     clearMocks: true,

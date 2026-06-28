@@ -98,6 +98,7 @@ Namespaces map directly to `useTranslations('editor')`, `useTranslations('inspec
 ### Rollout Order
 
 Phase 1 — architecture + editor pilot:
+
 1. Install next-intl, add `src/lib/i18n/locales.ts`
 2. `src/store/locale.ts` Zustand persist store
 3. `LocaleBootstrap` component + `NextIntlClientProvider` in root layout

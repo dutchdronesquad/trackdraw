@@ -12,7 +12,10 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 
-const localeConfig: Record<SupportedLocale, { label: string; abbr: string; flag: string }> = {
+const localeConfig: Record<
+  SupportedLocale,
+  { label: string; abbr: string; flag: string }
+> = {
   en: { label: "English", abbr: "EN", flag: "🇬🇧" },
   nl: { label: "Nederlands", abbr: "NL", flag: "🇳🇱" },
 };
@@ -22,7 +25,10 @@ interface LanguagePickerProps {
   variant?: "compact" | "full";
 }
 
-export function LanguagePicker({ className, variant = "compact" }: LanguagePickerProps) {
+export function LanguagePicker({
+  className,
+  variant = "compact",
+}: LanguagePickerProps) {
   const locale = useLocaleStore((s) => s.locale);
   const setLocale = useLocaleStore((s) => s.setLocale);
   const router = useRouter();

@@ -24,7 +24,10 @@ function canAccessDashboard(user: unknown): boolean {
   );
 }
 
-type UserLike = { email?: string | null; name?: string | null } | null | undefined;
+type UserLike =
+  | { email?: string | null; name?: string | null }
+  | null
+  | undefined;
 
 function getUserDisplayName(user: UserLike, signedInLabel: string) {
   return user?.name?.trim() || user?.email?.trim() || signedInLabel;
@@ -190,7 +193,11 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
             className={cn(accountMenuItemClassName, "justify-start")}
           >
             <LogOut className="size-4" />
-            <span>{signingOut ? t("accountMenu.signingOut") : t("accountMenu.signOut")}</span>
+            <span>
+              {signingOut
+                ? t("accountMenu.signingOut")
+                : t("accountMenu.signOut")}
+            </span>
           </Button>
         </div>
       </PopoverContent>

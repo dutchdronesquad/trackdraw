@@ -158,7 +158,9 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
       {/* Selection count */}
       {selectionCount > 0 && (
         <>
-          <span className="text-foreground/75">{t("statusBar.selected", { count: selectionCount })}</span>
+          <span className="text-foreground/75">
+            {t("statusBar.selected", { count: selectionCount })}
+          </span>
           {selectedGroupLabel && (
             <>
               <span className="text-muted-foreground/45">·</span>
