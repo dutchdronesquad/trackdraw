@@ -8,6 +8,7 @@ import {
 } from "./shared";
 import { getDisplayName } from "./utils";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { useTranslations } from "next-intl";
 
 type ProfileUser = {
   email?: string | null;
@@ -41,6 +42,8 @@ export function AccountProfileView({
   onResetError,
   onSave,
 }: ProfileViewProps) {
+  const t = useTranslations("editor");
+
   if (isPending) {
     return <AccountDialogLoading />;
   }
@@ -117,9 +120,11 @@ export function AccountProfileView({
 
       <div className="border-border/60 flex items-center justify-between gap-4 border-t pt-5">
         <div>
-          <p className="text-sm font-medium">Language</p>
+          <p className="text-sm font-medium">
+            {t("accountProfile.languageLabel")}
+          </p>
           <p className="text-muted-foreground mt-0.5 text-xs">
-            Changes apply immediately
+            {t("accountProfile.languageDescription")}
           </p>
         </div>
         <LanguagePicker variant="full" className="w-40" />

@@ -33,5 +33,12 @@
     "dashboard": "Dashboard",
     "signOut": "Uitloggen",
     "signingOut": "Uitloggen…"
+  },
+  "languagePicker": {
+    "ariaLabel": "Taal"
+  },
+  "accountProfile": {
+    "languageLabel": "Taal",
+    "languageDescription": "Wijzigingen worden direct toegepast"
   }
 }

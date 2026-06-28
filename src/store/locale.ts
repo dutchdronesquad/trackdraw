@@ -25,20 +25,67 @@ function writeCookie(locale: SupportedLocale) {
   }
 }
 
+function normalizeLocale(locale: unknown): SupportedLocale {
+  return isValidLocale(locale) ? locale : defaultLocale;
+}
+
+const localeStorageBackend = {
+  getItem: (name: string): string | null => {
+    try {
+      const raw = localStorage.getItem(name);
+      if (!raw) return null;
+
+      const parsed: unknown = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object" || !("state" in parsed)) {
+        return null;
+      }
+
+      const envelope = parsed as {
+        state?: { locale?: unknown };
+        version?: unknown;
+      };
+      return JSON.stringify({
+        ...envelope,
+        state: {
+          ...envelope.state,
+          locale: normalizeLocale(envelope.state?.locale),
+        },
+      });
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: string) => {
+    try {
+      localStorage.setItem(name, value);
+    } catch {
+      /* storage unavailable */
+    }
+  },
+  removeItem: (name: string) => {
+    try {
+      localStorage.removeItem(name);
+    } catch {
+      /* storage unavailable */
+    }
+  },
+};
+
 export const useLocaleStore = create<LocaleState>()(
   persist(
     (set) => ({
       locale: getLocaleFromBrowser(),
       setLocale: (locale) => {
-        writeCookie(locale);
-        set({ locale });
+        const nextLocale = normalizeLocale(locale);
+        writeCookie(nextLocale);
+        set({ locale: nextLocale });
       },
     }),
     {
       name: LOCALE_STORAGE_KEY,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => localeStorageBackend),
       onRehydrateStorage: () => (state) => {
-        if (state) writeCookie(state.locale);
+        if (state) writeCookie(normalizeLocale(state.locale));
       },
     }
   )

@@ -33,5 +33,12 @@
     "dashboard": "Dashboard",
     "signOut": "Sign out",
     "signingOut": "Signing out…"
+  },
+  "languagePicker": {
+    "ariaLabel": "Language"
+  },
+  "accountProfile": {
+    "languageLabel": "Language",
+    "languageDescription": "Changes apply immediately"
   }
 }

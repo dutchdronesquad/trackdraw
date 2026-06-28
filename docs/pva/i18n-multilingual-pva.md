@@ -11,7 +11,7 @@ Recommended direction:
 - use next-intl without URL routing — locale is a user preference, not a URL segment
 - store locale in a Zustand persist store under `trackdraw.locale`, using browser language as the initial default
 - use nested JSON message catalogs per namespace, one directory per locale under `messages/`
-- integrate via a single `NextIntlClientProvider` in the root layout, bootstrapped server-side from a locale cookie to prevent hydration flash
+- integrate via a single `NextIntlClientProvider` in the root layout, with `src/i18n/request.ts` resolving locale/messages server-side from the locale cookie or request language
 - roll out namespace by namespace rather than converting all surfaces at once
 - expose a language picker in the account menu / settings surface, accessible without an account
 
@@ -45,7 +45,7 @@ Go for phase 1 implementation if:
 - the locale store tab-syncs correctly, matching the behavior of the measurement unit store
 - the editor namespace can be translated without touching the catalog metadata or shape schema
 - untranslated namespaces continue to render English strings without errors
-- the ThemeBootstrap pattern can be reused for locale bootstrapping without duplication
+- locale bootstrapping stays server-side through `src/i18n/request.ts` and does not duplicate the ThemeBootstrap client pattern
 
 No-go or delay if:
 
@@ -72,9 +72,9 @@ Supported locales are defined in `src/lib/i18n/locales.ts` as a typed constant s
 
 ### Provider Integration
 
-A `LocaleBootstrap` client component (same pattern as `ThemeBootstrap`) reads the locale cookie on the server render and passes it as a prop to the root layout. The `NextIntlClientProvider` wraps the app tree just inside the root layout body, receiving the resolved locale and the matching message bundle.
+`src/i18n/request.ts` resolves the locale and message bundle for next-intl on the server. `src/app/layout.tsx` reads `getLocale()` and `getMessages()` and wraps the app tree in `NextIntlClientProvider`.
 
-The locale cookie (`trackdraw.locale`) is written by the Zustand store's `onRehydrateStorage` callback so server renders after the first visit stay in sync without an extra network round-trip.
+The locale cookie (`trackdraw-locale`) is written by the Zustand store's `onRehydrateStorage` callback so server renders after the first visit stay in sync without an extra network round-trip.
 
 ### Message Catalog Structure
 
@@ -101,7 +101,7 @@ Phase 1 — architecture + editor pilot:
 
 1. Install next-intl, add `src/lib/i18n/locales.ts`
 2. `src/store/locale.ts` Zustand persist store
-3. `LocaleBootstrap` component + `NextIntlClientProvider` in root layout
+3. `src/i18n/request.ts` server locale/message resolver + `NextIntlClientProvider` in root layout
 4. `messages/en/editor.json` covering Toolbar and StatusBar strings
 5. Convert `Toolbar.tsx` and `StatusBar.tsx` to `useTranslations('editor')`
 6. Language picker stub in account menu
