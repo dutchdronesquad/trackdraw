@@ -251,6 +251,7 @@ export function ItemOverviewList({
                   const pathNumber = numberingReport.obstacleNumberMap.get(
                     shape.id
                   );
+                  const routeStatusOff = t("listPanel.routeStatus.off");
                   return (
                     <div
                       key={shape.id}
@@ -288,8 +289,11 @@ export function ItemOverviewList({
                           #{pathNumber}
                         </span>
                       ) : unmappedObstacleIds.has(shape.id) ? (
-                        <span className="flex h-5 w-12 shrink-0 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 font-mono text-[10px] font-medium text-amber-500">
-                          {t("listPanel.routeStatus.off")}
+                        <span
+                          title={routeStatusOff}
+                          className="flex h-5 w-12 shrink-0 items-center justify-center truncate rounded-md border border-amber-500/25 bg-amber-500/10 px-1 font-mono text-[10px] font-medium text-amber-500"
+                        >
+                          {routeStatusOff}
                         </span>
                       ) : (
                         <span className="text-muted-foreground/30 flex h-5 w-12 shrink-0 items-center justify-center font-mono text-[10px]">
