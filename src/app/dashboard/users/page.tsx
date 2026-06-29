@@ -8,13 +8,18 @@ import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 import { listUsersForAdmin } from "@/lib/server/users";
 
-export const metadata: Metadata = {
-  title: "Dashboard Users",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
+
+  return {
+    title: `${tCommon("labels.dashboard")} ${t("pages.users")}`,
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
 
 export default async function DashboardUsersPage() {
   const requestHeaders = new Headers(await headers());

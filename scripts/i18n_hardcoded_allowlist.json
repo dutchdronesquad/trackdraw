@@ -1,59 +1,5 @@
 [
   {
-    "file": "src/app/dashboard/api-keys/page.tsx",
-    "kind": "metadata property title",
-    "text": "Dashboard API Keys",
-    "count": 1,
-    "group": "metadata-translate",
-    "priority": "high",
-    "note": "Hardcoded metadata should be localized or generated from translations."
-  },
-  {
-    "file": "src/app/dashboard/audit/page.tsx",
-    "kind": "metadata property title",
-    "text": "Dashboard Audit",
-    "count": 1,
-    "group": "metadata-translate",
-    "priority": "high",
-    "note": "Hardcoded metadata should be localized or generated from translations."
-  },
-  {
-    "file": "src/app/dashboard/email-preview/page.tsx",
-    "kind": "metadata property title",
-    "text": "Dashboard Email Preview",
-    "count": 1,
-    "group": "metadata-translate",
-    "priority": "high",
-    "note": "Hardcoded metadata should be localized or generated from translations."
-  },
-  {
-    "file": "src/app/dashboard/gallery/page.tsx",
-    "kind": "metadata property title",
-    "text": "Dashboard Gallery",
-    "count": 1,
-    "group": "metadata-translate",
-    "priority": "high",
-    "note": "Hardcoded metadata should be localized or generated from translations."
-  },
-  {
-    "file": "src/app/dashboard/metrics/page.tsx",
-    "kind": "metadata property title",
-    "text": "Dashboard Metrics",
-    "count": 1,
-    "group": "metadata-translate",
-    "priority": "high",
-    "note": "Hardcoded metadata should be localized or generated from translations."
-  },
-  {
-    "file": "src/app/dashboard/users/page.tsx",
-    "kind": "metadata property title",
-    "text": "Dashboard Users",
-    "count": 1,
-    "group": "metadata-translate",
-    "priority": "high",
-    "note": "Hardcoded metadata should be localized or generated from translations."
-  },
-  {
     "file": "src/app/embed/EmbedUnavailable.tsx",
     "kind": "JSX prop alt",
     "text": "TrackDraw",

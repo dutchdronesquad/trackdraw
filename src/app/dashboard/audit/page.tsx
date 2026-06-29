@@ -10,10 +10,15 @@ import { listAuditEvents } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 
-export const metadata: Metadata = {
-  title: "Dashboard Audit",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
+
+  return {
+    title: `${tCommon("labels.dashboard")} ${t("pages.audit")}`,
+    robots: { index: false, follow: false },
+  };
+}
 
 type AuditFilter = "all" | "account" | "gallery";
 

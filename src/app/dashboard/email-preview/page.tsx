@@ -13,10 +13,15 @@ import {
 import { hasCapability } from "@/lib/server/authorization";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Dashboard Email Preview",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
+
+  return {
+    title: `${tCommon("labels.dashboard")} ${t("pages.emailPreview")}`,
+    robots: { index: false, follow: false },
+  };
+}
 
 const previewKeys: AuthEmailPreviewKey[] = [
   "magic-link",

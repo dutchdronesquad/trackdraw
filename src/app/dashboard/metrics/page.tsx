@@ -21,10 +21,15 @@ import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
 import { getAdminMetrics, getGrowthByRange } from "@/lib/server/metrics";
 
-export const metadata: Metadata = {
-  title: "Dashboard Metrics",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
+
+  return {
+    title: `${tCommon("labels.dashboard")} ${t("pages.metrics")}`,
+    robots: { index: false, follow: false },
+  };
+}
 
 type KpiCardProps = {
   label: string;
