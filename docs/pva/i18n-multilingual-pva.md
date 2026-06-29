@@ -270,27 +270,23 @@ Concrete copy fixes applied:
 - dynamic translation usage outside the simple `const t = useTranslations("namespace")` pattern;
 - semantic mistakes where both locales have a key but the NL copy is wrong.
 
-Resolution: added `scripts/i18n_hardcoded_scan.mjs` (`npm run i18n:scan-hardcoded`) as a separate, conservative TypeScript/TSX parser-based scan for hardcoded JSX text, common user-facing props, and metadata fields. It uses `scripts/i18n_hardcoded_allowlist.json` as the current debt baseline, so new hardcoded UI copy fails while existing known debt can be translated down over time.
+Resolution: added `scripts/i18n_hardcoded_scan.mjs` (`npm run i18n:scan-hardcoded`) as a separate, conservative TypeScript/TSX parser-based scan for hardcoded JSX text, common user-facing props, and metadata fields. It uses `scripts/i18n_hardcoded_allowlist.json` as the baseline, so new hardcoded UI copy fails unless it is explicitly categorized.
 
-The hardcoded allowlist is categorized by `group`, `priority`, and `note` so long-lived exceptions can be separated from product UI that should be translated soon. Current categories include:
+The hardcoded allowlist is categorized by `group`, `priority`, and `note` so long-lived exceptions are separated from product UI. After the final allowlist cleanup, the remaining baseline is exception-only. Current categories include:
 
-- `product-ui-translate`
-- `metadata-translate`
 - `intentional-brand-alt`
 - `keyboard-or-unit`
 - `technical-token`
-- `dev-or-technical-ui`
 - `design-system-exception`
 
 CI status: `.github/workflows/linting.yaml` runs both `npm run i18n:check` and `npm run i18n:scan-hardcoded`.
 
-Baseline follow-up order:
+Baseline maintenance rule:
 
-1. Reduce `high:product-ui-translate` first, especially dialog, project manager, export, and data-table copy.
-2. Reduce `high:metadata-translate` after product UI, because it affects public/social surfaces but is less interactive.
-3. Review `medium:product-ui-translate` opportunistically when touching the owning surface.
-4. Leave `exception:*` entries unless the UI context changes or a screen-reader/user-facing label clearly needs localization.
-5. Keep baseline updates separate from feature work: when an entry is translated, remove or regenerate only the matching baseline entries.
+1. New product UI copy should be translated instead of allowlisted.
+2. New allowlist entries should be limited to intentional exceptions such as brand-only alt text, keyboard shortcuts, units, file extensions, coordinate labels, separators, or design-system primitive defaults without app-level i18n context.
+3. Leave existing `exception:*` entries unless the UI context changes or a screen-reader/user-facing label clearly needs localization.
+4. Keep baseline updates separate from feature work: when an entry is translated, remove or regenerate only the matching baseline entries.
 
 Remaining gap: semantic NL copy mistakes still require review or a future glossary/lint pass.
 
@@ -304,6 +300,7 @@ Remaining gap: semantic NL copy mistakes still require review or a future glossa
 6. Updated this PVA to match the implemented `lang/` structure and cookie/storage naming.
 7. Added `common` for reusable actions, labels, and states, and moved low-risk repeated usages there.
 8. Added categorized hardcoded-copy tooling and CI coverage.
+9. Reduced the hardcoded-copy allowlist to exception-only baseline entries.
 
 ### Language Picker Placement
 

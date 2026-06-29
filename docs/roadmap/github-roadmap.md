@@ -22,7 +22,7 @@ Labels used below:
 
 ## Current Priority
 
-The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, remaining focused 3D item controls, generated flightpath assistance, multilingual-readiness for international users, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and powerloop 3D curve replacement in the route path.
+The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, remaining focused 3D item controls, generated flightpath assistance, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and powerloop 3D curve replacement in the route path.
 
 ## Follow-up
 
@@ -49,26 +49,26 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         Replace detected maneuver sections with physically plausible vertical loop or half-loop curve geometry and blend cleanly into surrounding route segments. Keep this open until the 3D preview renders the corrected maneuver shape rather than only detecting and reviewing it.
 
 - [ ] Generated flightpath assistance (`Research`, `No account required`)
-      Research generated flightpaths from placed obstacles as an optional drafting aid. The intended race sequence is defined by the obstacle order in the track items list (backed by `shapeOrder`), which users can set via drag-to-reorder once this feature ships. The generator connects obstacles in that order and produces an editable race line — it assists authoring rather than replacing it.
+      Research generated flightpaths from placed obstacles as an optional drafting aid. The intended race sequence is defined by the obstacle order in the track items list (backed by `shapeOrder`), which users can set via drag-to-reorder once this feature ships. The generator connects obstacles in that order and produces an editable race line — it assists authoring rather than replacing it. Research document: `docs/research/generated-flightpath-assistance.md`.
   - [ ] Generated flightpath research
         Prototype flightpath generation from the ordered obstacle list as an assistive review/drafting feature. The output should be an editable race line, not a locked result. Validate that the sequence-based model (list order → path) is intuitive before committing to the full UI.
   - [ ] Drag-to-reorder obstacles (prerequisite)
         Wire up the drag handles in the track items list so users can explicitly set the intended race sequence before generating a path. The store action is ready; this is a UI-only change gated on the path generator being useful enough to justify the interaction.
 
-- [ ] Multilingual product experience (`No account required`)
-      Use the regional measurement work as a first locale-aware foundation, then evaluate a full i18n layer for the public site, editor, share pages, and exported handoff copy. Architecture PVA: [I18n Multilingual PVA](../pva/i18n-multilingual-pva.md).
-  - [ ] I18n architecture + editor pilot
-        Install next-intl (without routing), add a Zustand locale store, wire the NextIntlClientProvider into the root layout, and convert the editor Toolbar and StatusBar as the pilot namespace. Language picker stub in account menu. See PVA phase 1.
-  - [ ] Inspector + dialogs namespace
-        Migrate inspector panels and the share, account, project, and import/export dialogs to the message catalog (~200 strings).
-  - [ ] Landing page namespace
-        Migrate all hard-coded marketing copy to the message catalog (~500+ strings).
-  - [ ] Dashboard + remaining surfaces
-        Migrate admin dashboard and any remaining hard-coded copy.
-  - [ ] First language rollout
-        Choose the first supported languages from actual user demand and translation-maintenance capacity, with English as the stable fallback for incomplete translations.
-  - [ ] Translation QA boundary
-        Define how translated UI, mobile layouts, export PDFs/Race Packs, share pages, and legal pages are reviewed so longer translated strings do not break core workflows.
+- [x] Multilingual product experience (`No account required`)
+      Shipped the EN/NL i18n layer for the public site, editor, share/embed/gallery surfaces, dashboard, dialogs, inspector, exported handoff copy, and validation tooling. Architecture and review notes: [I18n Multilingual PVA](../pva/i18n-multilingual-pva.md).
+  - [x] I18n architecture + editor pilot
+        Installed next-intl without locale routing, added persisted language preference handling, wired route-scoped message providers, and migrated the editor pilot surfaces behind message catalogs.
+  - [x] Inspector + dialogs namespace
+        Migrated inspector panels and the share, account, project, import/export, keyboard shortcut, and profile dialogs to the message catalog.
+  - [x] Landing page namespace
+        Migrated landing, login, legal/static public copy, and placeholder content to the message catalog.
+  - [x] Dashboard + remaining surfaces
+        Migrated dashboard/admin, gallery, share/embed, metadata, API docs, mobile editor, export/PDF/Race Pack, developer HUD, and remaining hardcoded UI surfaces.
+  - [x] First language rollout
+        Shipped English and Dutch with English as the stable baseline and Dutch copy reviewed for FPV terminology such as `track`, `path`, `waypoint`, `gate`, and `race line`.
+  - [x] Translation QA boundary
+        Added locale parity/unresolved-key validation and a hardcoded-copy scan in CI. The remaining hardcoded allowlist baseline is exception-only: brand alt text, shortcuts/units, technical tokens, and design-system primitive defaults.
 
 ## Later Product Follow-up
 
@@ -84,8 +84,8 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 - [ ] Gallery featured collections (`Lower priority`, `Account-backed`)
       Let admins curate small gallery collections such as indoor practice, beginner friendly, technical layouts, and race-day examples when gallery growth warrants it.
 
-- [ ] Section store (`Lower priority`, `Account-backed`)
-      Let users publish a track section to a community store where others can browse and save it. Keep out of scope until account-backed section storage is proven in practice.
+- [ ] Presets store (`Lower priority`, `Account-backed`)
+      Let users publish a preset to a community store where others can browse and save it. Keep out of scope until account-backed preset storage is proven in practice. Research document: `docs/research/presets-store.md`.
 
 - [ ] Race-day communication and briefing (`No account required`)
       The first Race Pack release and immediate QR/timing-marker slice are shipped. The remaining work here is larger race-day operations follow-up.

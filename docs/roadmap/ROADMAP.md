@@ -17,6 +17,7 @@ TrackDraw is now strong in these areas:
 - Account-backed REST API with API key management and a live race overlay data endpoint
 - Catalog-backed official MultiGP obstacles including gates, ladders, flags, dive gate, launch gate, and a barrier category for hurdles, banners, fencing, and nets
 - Account-backed track section library where users save and reuse named canvas selections across devices
+- EN/NL multilingual product experience with explicit language choice, route-scoped message loading, and CI checks for catalog parity and new hardcoded UI copy
 
 The most useful next product move is deepening the race-day workflow, keeping the editor dependable, refining the account-backed project model, and completing the remaining 3D item control and path geometry work:
 
@@ -26,7 +27,6 @@ The most useful next product move is deepening the race-day workflow, keeping th
 - Focused 3D item controls where direct manipulation is safer and faster than inspector-only editing
 - Account-backed custom banner texture support for official-size gates, ladders, and flags, so clubs can preview their own printed banners on MultiGP-sized hardware
 - Generated flightpath research as a separate route-authoring assist
-- Multilingual product experience built on the same locale-aware foundation, starting with explicit language choice and controlled translation scope
 
 Lower-priority follow-up such as share version history, gallery collections, Velocidrone export stabilization, AR, and build mode should stay parked until there is clearer need.
 
@@ -260,7 +260,7 @@ Next catalog slices:
 
 #### Generated Flightpath Assistance
 
-TrackDraw should research generated flightpaths as route-authoring assistance, separate from the element catalog and separate from 3D preview rendering.
+TrackDraw should research generated flightpaths as route-authoring assistance, separate from the element catalog and separate from 3D preview rendering. Research document: `docs/research/generated-flightpath-assistance.md`.
 
 Why:
 
@@ -326,7 +326,7 @@ Deliberate scope decisions:
 
 - Local-first section storage for logged-out users was deferred; the first version is account-backed only, keeping the implementation simple and the data model unambiguous
 - Local-to-account migration was skipped for the same reason — there is no local section state to migrate
-- A community section store where users publish and browse each other's sections remains a deliberate future follow-up
+- A community presets store where users publish and browse each other's presets remains a deliberate future follow-up. Research document: `docs/research/presets-store.md`
 
 Supporting design doc:
 
