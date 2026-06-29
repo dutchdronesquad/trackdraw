@@ -1,9 +1,10 @@
+import { fixupConfigRules } from "@eslint/compat";
+import * as espree from "espree";
 import nextConfig from "eslint-config-next";
 import prettierConfig from "eslint-config-prettier";
-import tseslint from "typescript-eslint";
 
 const config = [
-  ...nextConfig,
+  ...fixupConfigRules(nextConfig),
   prettierConfig,
   {
     ignores: [
@@ -17,9 +18,6 @@ const config = [
   },
   {
     files: ["**/*.{ts,tsx,js,jsx}"],
-    plugins: {
-      "@typescript-eslint": tseslint.plugin,
-    },
     rules: {
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
@@ -30,6 +28,12 @@ const config = [
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+    },
+  },
+  {
+    files: ["**/*.mjs"],
+    languageOptions: {
+      parser: espree,
     },
   },
 ];
