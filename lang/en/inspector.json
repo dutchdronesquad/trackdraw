@@ -121,63 +121,93 @@
     "noItemsMatchFilter": "No items match this filter."
   },
   "layout": {
-    "mapReferenceTitle": "Map reference",
-    "opacityLabel": "Opacity",
-    "mapRotationLabel": "Rotation",
-    "removeMapTitle": "Remove map reference",
-    "editMapTitle": "Edit map reference",
-    "addMapTitle": "Add map reference",
-    "editLabel": "Edit",
-    "addMapLabel": "Add map",
-    "showMapTitle": "Show map reference",
-    "hideMapTitle": "Hide map reference",
-    "showLabel": "Show",
-    "routeNumberingTitle": "Route numbering",
-    "inventoryTitle": "Inventory",
-    "fieldTitle": "Field",
-    "unitsLabel": "Units",
-    "renderScaleLabel": "Render scale",
-    "renderScaleTooltip": "Internal canvas density in pixels per meter",
-    "titlePlaceholder": "Untitled Track",
-    "projectSubtitle": "Tune the project title, field setup, and available obstacle stock.",
-    "layoutTitle": "Current layout",
-    "layoutSubtitle": "Review placed items, route numbering, and buildability for the current layout.",
-    "emptyLayoutTitle": "No items placed yet",
-    "emptyLayoutDescription": "Add a few objects on the canvas to review the layout and compare it against your inventory.",
-    "statusBuildable": "Buildable",
-    "statusShort": "Short",
-    "missingLabel": "Missing",
-    "typesLabel": "Types",
-    "inventoryDescription": "TrackDraw compares the current layout against the obstacle stock saved in this project.",
-    "needCountSuffix": "need {count}",
-    "stockOk": "ok",
-    "pxPerMeterAriaLabel": "pixels per meter, internal canvas scale",
-    "itemsCountMeta": "{count} items",
-    "buildableMeta": "buildable",
-    "shortItemsMeta": "{count, plural, one {short 1 item} other {short {count} items}}",
-    "stockCoveredMeta": "stock covered",
-    "typesShortMeta": "{count, plural, one {1 type short} other {{count} types short}}",
-    "numberedMeta": "{count} numbered",
-    "numberingIdleMeta": "numbering idle",
-    "numberingNeedsReviewMeta": "numbering needs review"
+    "mapReference": {
+      "title": "Map reference",
+      "fields": {
+        "opacity": "Opacity",
+        "rotation": "Rotation"
+      },
+      "actions": {
+        "removeTitle": "Remove map reference",
+        "editTitle": "Edit map reference",
+        "addTitle": "Add map reference",
+        "edit": "Edit",
+        "add": "Add map",
+        "showTitle": "Show map reference",
+        "hideTitle": "Hide map reference",
+        "show": "Show"
+      }
+    },
+    "sections": {
+      "routeNumbering": "Route numbering",
+      "inventory": "Inventory",
+      "field": "Field"
+    },
+    "field": {
+      "unitsLabel": "Units",
+      "renderScaleLabel": "Render scale",
+      "renderScaleTooltip": "Internal canvas density in pixels per meter",
+      "pxPerMeterAriaLabel": "pixels per meter, internal canvas scale"
+    },
+    "project": {
+      "titlePlaceholder": "Untitled Track",
+      "subtitle": "Tune the project title, field setup, and available obstacle stock."
+    },
+    "overview": {
+      "title": "Current layout",
+      "subtitle": "Review placed items, route numbering, and buildability for the current layout.",
+      "emptyTitle": "No items placed yet",
+      "emptyDescription": "Add a few objects on the canvas to review the layout and compare it against your inventory."
+    },
+    "inventory": {
+      "status": {
+        "buildable": "Buildable",
+        "short": "Short"
+      },
+      "labels": {
+        "missing": "Missing",
+        "types": "Types"
+      },
+      "description": "TrackDraw compares the current layout against the obstacle stock saved in this project.",
+      "needCountSuffix": "need {count}",
+      "stockOk": "ok"
+    },
+    "meta": {
+      "itemsCount": "{count} items",
+      "buildable": "buildable",
+      "shortItems": "{count, plural, one {short 1 item} other {short {count} items}}",
+      "stockCovered": "stock covered",
+      "typesShort": "{count, plural, one {1 type short} other {{count} types short}}",
+      "numbered": "{count} numbered",
+      "numberingIdle": "numbering idle",
+      "numberingNeedsReview": "numbering needs review"
+    }
   },
   "routeNumbering": {
-    "numberedLabel": "Numbered",
-    "issuesLabel": "Issues",
-    "statusReady": "Ready",
-    "statusPartial": "Needs review",
-    "statusNoRouteMatches": "No matches",
-    "statusMissingRoute": "Missing route",
-    "statusNoNumberedObstacles": "No route obstacles",
-    "statusEmpty": "Empty",
-    "messageReady": "{count, plural, one {1 route obstacle numbered.} other {{count} route obstacles numbered.}}",
-    "messagePartial": "{mapped} of {total} route obstacles are numbered.",
-    "messageNoRouteMatches": "{count, plural, one {1 route obstacle found, but none sit close enough to the race line.} other {{count} route obstacles found, but none sit close enough to the race line.}}",
-    "messageMissingRoute": "{count, plural, one {1 route obstacle needs a race line before numbering can be derived.} other {{count} route obstacles need a race line before numbering can be derived.}}",
-    "messageNoNumberedObstacles": "Gates, ladders, and dive gates will appear in route numbering.",
-    "messageEmpty": "Add route obstacles and a race line to derive numbering.",
-    "offRoutePrefix": "Off route: {names}",
-    "moreSuffix": " +{count} more"
+    "status": {
+      "ready": "Ready",
+      "partial": "Needs review",
+      "noRouteMatches": "No matches",
+      "missingRoute": "Missing route",
+      "noNumberedObstacles": "No route obstacles",
+      "empty": "Empty"
+    },
+    "messages": {
+      "ready": "{count, plural, one {1 route obstacle numbered.} other {{count} route obstacles numbered.}}",
+      "partial": "{mapped} of {total} route obstacles are numbered.",
+      "noRouteMatches": "{count, plural, one {1 route obstacle found, but none sit close enough to the race line.} other {{count} route obstacles found, but none sit close enough to the race line.}}",
+      "missingRoute": "{count, plural, one {1 route obstacle needs a race line before numbering can be derived.} other {{count} route obstacles need a race line before numbering can be derived.}}",
+      "noNumberedObstacles": "Gates, ladders, and dive gates will appear in route numbering.",
+      "empty": "Add route obstacles and a race line to derive numbering."
+    },
+    "issues": {
+      "offRoutePrefix": "Off route: {names}",
+      "moreSuffix": " +{count} more"
+    },
+    "meta": {
+      "numbered": "Numbered",
+      "issues": "Issues"
+    }
   },
   "elevationChart": {
     "noRouteSelected": "No race line selected",

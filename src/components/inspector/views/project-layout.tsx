@@ -70,11 +70,11 @@ function MapReferenceSection({
     "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/8 px-2.5 text-xs font-medium text-brand-primary transition-colors hover:bg-brand-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8 lg:text-[11px]";
 
   return (
-    <Section title={t("layout.mapReferenceTitle")}>
+    <Section title={t("layout.mapReference.title")}>
       <div className="space-y-3">
         {reference ? (
           <>
-            <Row label={t("layout.opacityLabel")}>
+            <Row label={t("layout.mapReference.fields.opacity")}>
               <div className="flex min-w-0 items-center gap-2">
                 <input
                   type="range"
@@ -92,7 +92,7 @@ function MapReferenceSection({
                 </span>
               </div>
             </Row>
-            <Row label={t("layout.mapRotationLabel")}>
+            <Row label={t("layout.mapReference.fields.rotation")}>
               <Num
                 value={reference.rotationDeg}
                 onChange={setMapReferenceRotation}
@@ -113,17 +113,23 @@ function MapReferenceSection({
           <button
             type="button"
             title={
-              reference ? t("layout.editMapTitle") : t("layout.addMapTitle")
+              reference
+                ? t("layout.mapReference.actions.editTitle")
+                : t("layout.mapReference.actions.addTitle")
             }
             aria-label={
-              reference ? t("layout.editMapTitle") : t("layout.addMapTitle")
+              reference
+                ? t("layout.mapReference.actions.editTitle")
+                : t("layout.mapReference.actions.addTitle")
             }
             className={actionBtnPrimaryClass}
             onClick={() => setDialogOpen(true)}
           >
             <MapPinned className="size-4 lg:size-3" />
             <span>
-              {reference ? t("layout.editLabel") : t("layout.addMapLabel")}
+              {reference
+                ? t("layout.mapReference.actions.edit")
+                : t("layout.mapReference.actions.add")}
             </span>
           </button>
           {reference ? (
@@ -132,13 +138,13 @@ function MapReferenceSection({
                 type="button"
                 title={
                   reference.visible === false
-                    ? t("layout.showMapTitle")
-                    : t("layout.hideMapTitle")
+                    ? t("layout.mapReference.actions.showTitle")
+                    : t("layout.mapReference.actions.hideTitle")
                 }
                 aria-label={
                   reference.visible === false
-                    ? t("layout.showMapTitle")
-                    : t("layout.hideMapTitle")
+                    ? t("layout.mapReference.actions.showTitle")
+                    : t("layout.mapReference.actions.hideTitle")
                 }
                 className={actionBtnClass}
                 onClick={() =>
@@ -152,14 +158,14 @@ function MapReferenceSection({
                 )}
                 <span>
                   {reference.visible === false
-                    ? t("layout.showLabel")
+                    ? t("layout.mapReference.actions.show")
                     : tCommon("actions.hide")}
                 </span>
               </button>
               <button
                 type="button"
-                title={t("layout.removeMapTitle")}
-                aria-label={t("layout.removeMapTitle")}
+                title={t("layout.mapReference.actions.removeTitle")}
+                aria-label={t("layout.mapReference.actions.removeTitle")}
                 className={`${actionBtnClass} border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
                 onClick={clearMapReference}
               >
@@ -211,40 +217,40 @@ function RouteNumberingOverview({
     report.status === "no-numbered-obstacles";
   const statusLabel =
     report.status === "ready"
-      ? t("routeNumbering.statusReady")
+      ? t("routeNumbering.status.ready")
       : report.status === "partial"
-        ? t("routeNumbering.statusPartial")
+        ? t("routeNumbering.status.partial")
         : report.status === "no-route-matches"
-          ? t("routeNumbering.statusNoRouteMatches")
+          ? t("routeNumbering.status.noRouteMatches")
           : report.status === "missing-route"
-            ? t("routeNumbering.statusMissingRoute")
+            ? t("routeNumbering.status.missingRoute")
             : report.status === "no-numbered-obstacles"
-              ? t("routeNumbering.statusNoNumberedObstacles")
-              : t("routeNumbering.statusEmpty");
+              ? t("routeNumbering.status.noNumberedObstacles")
+              : t("routeNumbering.status.empty");
   const message =
     report.status === "ready"
-      ? t("routeNumbering.messageReady", {
+      ? t("routeNumbering.messages.ready", {
           count: report.mappedObstacleCount,
         })
       : report.status === "partial"
-        ? t("routeNumbering.messagePartial", {
+        ? t("routeNumbering.messages.partial", {
             mapped: report.mappedObstacleCount,
             total: report.totalNumberedObstacleCount,
           })
         : report.status === "no-route-matches"
-          ? t("routeNumbering.messageNoRouteMatches", {
+          ? t("routeNumbering.messages.noRouteMatches", {
               count: report.totalNumberedObstacleCount,
             })
           : report.status === "missing-route"
-            ? t("routeNumbering.messageMissingRoute", {
+            ? t("routeNumbering.messages.missingRoute", {
                 count: report.totalNumberedObstacleCount,
               })
             : report.status === "no-numbered-obstacles"
-              ? t("routeNumbering.messageNoNumberedObstacles")
-              : t("routeNumbering.messageEmpty");
+              ? t("routeNumbering.messages.noNumberedObstacles")
+              : t("routeNumbering.messages.empty");
 
   return (
-    <Section title={t("layout.routeNumberingTitle")}>
+    <Section title={t("layout.sections.routeNumbering")}>
       <div className="space-y-2">
         <div className="grid grid-cols-3 gap-2">
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
@@ -257,7 +263,7 @@ function RouteNumberingOverview({
           </div>
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {t("routeNumbering.numberedLabel")}
+              {t("routeNumbering.meta.numbered")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {report.mappedObstacleCount}/{report.totalNumberedObstacleCount}
@@ -265,7 +271,7 @@ function RouteNumberingOverview({
           </div>
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {t("routeNumbering.issuesLabel")}
+              {t("routeNumbering.meta.issues")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {report.issueCount}
@@ -282,11 +288,13 @@ function RouteNumberingOverview({
           <p className="text-[11px] leading-relaxed">{message}</p>
           {issueNames.length > 0 ? (
             <p className="mt-1 text-[10px] leading-relaxed opacity-80">
-              {t("routeNumbering.offRoutePrefix", {
+              {t("routeNumbering.issues.offRoutePrefix", {
                 names: issueNames.join(", "),
               })}
               {extraIssueCount > 0
-                ? t("routeNumbering.moreSuffix", { count: extraIssueCount })
+                ? t("routeNumbering.issues.moreSuffix", {
+                    count: extraIssueCount,
+                  })
                 : ""}
             </p>
           ) : null}
@@ -363,7 +371,7 @@ export function ProjectLayoutInspectorView({
   };
 
   const inventoryContent = (
-    <Section title={t("layout.inventoryTitle")}>
+    <Section title={t("layout.sections.inventory")}>
       <div className="space-y-3">
         <div className="grid grid-cols-3 gap-2">
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
@@ -372,13 +380,13 @@ export function ProjectLayoutInspectorView({
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {totalMissing === 0
-                ? t("layout.statusBuildable")
-                : t("layout.statusShort")}
+                ? t("layout.inventory.status.buildable")
+                : t("layout.inventory.status.short")}
             </p>
           </div>
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {t("layout.missingLabel")}
+              {t("layout.inventory.labels.missing")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {totalMissing}
@@ -386,7 +394,7 @@ export function ProjectLayoutInspectorView({
           </div>
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {t("layout.typesLabel")}
+              {t("layout.inventory.labels.types")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {kindsMissing}
@@ -394,7 +402,7 @@ export function ProjectLayoutInspectorView({
           </div>
         </div>
         <p className="text-muted-foreground/70 text-[11px] leading-relaxed">
-          {t("layout.inventoryDescription")}
+          {t("layout.inventory.description")}
         </p>
         <div className="space-y-1">
           {inventoryKinds.map((kind) => {
@@ -414,7 +422,7 @@ export function ProjectLayoutInspectorView({
                     />
                   </div>
                   <span className="text-muted-foreground/65 shrink-0 text-[10px] font-medium tracking-[0.08em] uppercase">
-                    {t("layout.needCountSuffix", {
+                    {t("layout.inventory.needCountSuffix", {
                       count: comparison?.required ?? 0,
                     })}
                   </span>
@@ -425,7 +433,9 @@ export function ProjectLayoutInspectorView({
                         : "shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/8 px-2 py-1 font-mono text-[10px] font-medium text-emerald-500"
                     }
                   >
-                    {missing > 0 ? `-${missing}` : t("layout.stockOk")}
+                    {missing > 0
+                      ? `-${missing}`
+                      : t("layout.inventory.stockOk")}
                   </span>
                 </div>
               </Row>
@@ -439,10 +449,10 @@ export function ProjectLayoutInspectorView({
   const projectContent = (
     <>
       <InspectorLead
-        title={design.title.trim() || t("layout.titlePlaceholder")}
-        subtitle={t("layout.projectSubtitle")}
+        title={design.title.trim() || t("layout.project.titlePlaceholder")}
+        subtitle={t("layout.project.subtitle")}
         meta={[
-          t("layout.itemsCountMeta", { count: shapes.length }),
+          t("layout.meta.itemsCount", { count: shapes.length }),
           formatFieldSize(design.field.width, design.field.height, unitSystem),
           `grid ${formatMeasurement(design.field.gridStep, unitSystem, {
             precision: 1,
@@ -463,12 +473,12 @@ export function ProjectLayoutInspectorView({
             }
           }}
           onChange={(event) => updateDesignMeta({ title: event.target.value })}
-          placeholder={t("layout.titlePlaceholder")}
+          placeholder={t("layout.project.titlePlaceholder")}
           className="bg-muted/40 border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-sm shadow-none focus-visible:ring-1 lg:h-7 lg:px-2 lg:text-[11px]"
         />
       </div>
-      <Section title={t("layout.fieldTitle")}>
-        <Row label={t("layout.unitsLabel")}>
+      <Section title={t("layout.sections.field")}>
+        <Row label={t("layout.field.unitsLabel")}>
           <MeasurementUnitToggle />
         </Row>
         <Row label={t("dimensions.widthLabel", { unit: fieldUnitLabel })}>
@@ -495,10 +505,10 @@ export function ProjectLayoutInspectorView({
             minMeters={0.5}
           />
         </Row>
-        <Row label={t("layout.renderScaleLabel")}>
+        <Row label={t("layout.field.renderScaleLabel")}>
           <div
             className="flex min-w-0 items-center gap-2"
-            title={t("layout.renderScaleTooltip")}
+            title={t("layout.field.renderScaleTooltip")}
           >
             <div className="min-w-0 flex-1">
               <Num
@@ -510,7 +520,7 @@ export function ProjectLayoutInspectorView({
             </div>
             <span
               className="text-muted-foreground/65 shrink-0 text-[10px] font-medium tracking-[0.08em] uppercase"
-              aria-label={t("layout.pxPerMeterAriaLabel")}
+              aria-label={t("layout.field.pxPerMeterAriaLabel")}
             >
               px/m
             </span>
@@ -524,24 +534,24 @@ export function ProjectLayoutInspectorView({
   const layoutContent = (
     <>
       <InspectorLead
-        title={t("layout.layoutTitle")}
-        subtitle={t("layout.layoutSubtitle")}
+        title={t("layout.overview.title")}
+        subtitle={t("layout.overview.subtitle")}
         meta={[
-          t("layout.itemsCountMeta", { count: shapes.length }),
+          t("layout.meta.itemsCount", { count: shapes.length }),
           totalMissing === 0
-            ? t("layout.buildableMeta")
-            : t("layout.shortItemsMeta", { count: totalMissing }),
+            ? t("layout.meta.buildable")
+            : t("layout.meta.shortItems", { count: totalMissing }),
           kindsMissing > 0
-            ? t("layout.typesShortMeta", { count: kindsMissing })
-            : t("layout.stockCoveredMeta"),
+            ? t("layout.meta.typesShort", { count: kindsMissing })
+            : t("layout.meta.stockCovered"),
           obstacleNumberingReport.status === "ready"
-            ? t("layout.numberedMeta", {
+            ? t("layout.meta.numbered", {
                 count: obstacleNumberingReport.mappedObstacleCount,
               })
             : obstacleNumberingReport.status === "no-numbered-obstacles" ||
                 obstacleNumberingReport.status === "empty"
-              ? t("layout.numberingIdleMeta")
-              : t("layout.numberingNeedsReviewMeta"),
+              ? t("layout.meta.numberingIdle")
+              : t("layout.meta.numberingNeedsReview"),
         ]}
       />
       <div className="space-y-4">
@@ -566,10 +576,10 @@ export function ProjectLayoutInspectorView({
         ) : (
           <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
             <p className="text-foreground/75 text-[11px] font-medium">
-              {t("layout.emptyLayoutTitle")}
+              {t("layout.overview.emptyTitle")}
             </p>
             <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
-              {t("layout.emptyLayoutDescription")}
+              {t("layout.overview.emptyDescription")}
             </p>
           </div>
         )}

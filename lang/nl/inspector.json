@@ -121,63 +121,93 @@
     "noItemsMatchFilter": "Geen items komen overeen met dit filter."
   },
   "layout": {
-    "mapReferenceTitle": "Kaartverwijzing",
-    "opacityLabel": "Transparantie",
-    "mapRotationLabel": "Rotatie",
-    "removeMapTitle": "Kaartverwijzing verwijderen",
-    "editMapTitle": "Kaartverwijzing bewerken",
-    "addMapTitle": "Kaartverwijzing toevoegen",
-    "editLabel": "Bewerken",
-    "addMapLabel": "Kaart toevoegen",
-    "showMapTitle": "Kaartverwijzing weergeven",
-    "hideMapTitle": "Kaartverwijzing verbergen",
-    "showLabel": "Weergeven",
-    "routeNumberingTitle": "Routenummering",
-    "inventoryTitle": "Inventaris",
-    "fieldTitle": "Veld",
-    "unitsLabel": "Eenheden",
-    "renderScaleLabel": "Renderschaal",
-    "renderScaleTooltip": "Interne canvasdichtheid in pixels per meter",
-    "titlePlaceholder": "Naamloze track",
-    "projectSubtitle": "Stel de projecttitel, veldconfiguratie en beschikbaar obstakels in.",
-    "layoutTitle": "Huidige indeling",
-    "layoutSubtitle": "Bekijk geplaatste items, routenummering en bouweigenschappen van de huidige indeling.",
-    "emptyLayoutTitle": "Nog geen items geplaatst",
-    "emptyLayoutDescription": "Voeg een paar objecten toe op het canvas om de indeling te bekijken en te vergelijken met je inventaris.",
-    "statusBuildable": "Bouwbaar",
-    "statusShort": "Tekort",
-    "missingLabel": "Ontbreekt",
-    "typesLabel": "Types",
-    "inventoryDescription": "TrackDraw vergelijkt de huidige indeling met de obstakelvoorraad die in dit project is opgeslagen.",
-    "needCountSuffix": "nodig {count}",
-    "stockOk": "ok",
-    "pxPerMeterAriaLabel": "pixels per meter, interne canvasschaal",
-    "itemsCountMeta": "{count} items",
-    "buildableMeta": "bouwbaar",
-    "shortItemsMeta": "{count, plural, one {tekort 1 item} other {tekort {count} items}}",
-    "stockCoveredMeta": "voorraad gedekt",
-    "typesShortMeta": "{count, plural, one {1 type tekort} other {{count} types tekort}}",
-    "numberedMeta": "{count} genummerd",
-    "numberingIdleMeta": "nummering inactief",
-    "numberingNeedsReviewMeta": "nummering vereist controle"
+    "mapReference": {
+      "title": "Kaartverwijzing",
+      "fields": {
+        "opacity": "Transparantie",
+        "rotation": "Rotatie"
+      },
+      "actions": {
+        "removeTitle": "Kaartverwijzing verwijderen",
+        "editTitle": "Kaartverwijzing bewerken",
+        "addTitle": "Kaartverwijzing toevoegen",
+        "edit": "Bewerken",
+        "add": "Kaart toevoegen",
+        "showTitle": "Kaartverwijzing weergeven",
+        "hideTitle": "Kaartverwijzing verbergen",
+        "show": "Weergeven"
+      }
+    },
+    "sections": {
+      "routeNumbering": "Routenummering",
+      "inventory": "Inventaris",
+      "field": "Veld"
+    },
+    "field": {
+      "unitsLabel": "Eenheden",
+      "renderScaleLabel": "Renderschaal",
+      "renderScaleTooltip": "Interne canvasdichtheid in pixels per meter",
+      "pxPerMeterAriaLabel": "pixels per meter, interne canvasschaal"
+    },
+    "project": {
+      "titlePlaceholder": "Naamloze track",
+      "subtitle": "Stel de projecttitel, veldconfiguratie en beschikbaar obstakels in."
+    },
+    "overview": {
+      "title": "Huidige indeling",
+      "subtitle": "Bekijk geplaatste items, routenummering en bouweigenschappen van de huidige indeling.",
+      "emptyTitle": "Nog geen items geplaatst",
+      "emptyDescription": "Voeg een paar objecten toe op het canvas om de indeling te bekijken en te vergelijken met je inventaris."
+    },
+    "inventory": {
+      "status": {
+        "buildable": "Bouwbaar",
+        "short": "Tekort"
+      },
+      "labels": {
+        "missing": "Ontbreekt",
+        "types": "Types"
+      },
+      "description": "TrackDraw vergelijkt de huidige indeling met de obstakelvoorraad die in dit project is opgeslagen.",
+      "needCountSuffix": "nodig {count}",
+      "stockOk": "ok"
+    },
+    "meta": {
+      "itemsCount": "{count} items",
+      "buildable": "bouwbaar",
+      "shortItems": "{count, plural, one {tekort 1 item} other {tekort {count} items}}",
+      "stockCovered": "voorraad gedekt",
+      "typesShort": "{count, plural, one {1 type tekort} other {{count} types tekort}}",
+      "numbered": "{count} genummerd",
+      "numberingIdle": "nummering inactief",
+      "numberingNeedsReview": "nummering vereist controle"
+    }
   },
   "routeNumbering": {
-    "numberedLabel": "Genummerd",
-    "issuesLabel": "Problemen",
-    "statusReady": "Gereed",
-    "statusPartial": "Controle nodig",
-    "statusNoRouteMatches": "Geen overeenkomsten",
-    "statusMissingRoute": "Route ontbreekt",
-    "statusNoNumberedObstacles": "Geen route-obstakels",
-    "statusEmpty": "Leeg",
-    "messageReady": "{count, plural, one {1 route-obstakel genummerd.} other {{count} route-obstakels genummerd.}}",
-    "messagePartial": "{mapped} van {total} route-obstakels zijn genummerd.",
-    "messageNoRouteMatches": "{count, plural, one {1 route-obstakel gevonden, maar geen ligt dicht genoeg bij de race line.} other {{count} route-obstakels gevonden, maar geen ligt dicht genoeg bij de race line.}}",
-    "messageMissingRoute": "{count, plural, one {1 route-obstakel heeft een race line nodig voordat nummering kan worden afgeleid.} other {{count} route-obstakels hebben een race line nodig voordat nummering kan worden afgeleid.}}",
-    "messageNoNumberedObstacles": "Gates, ladders en dive gates verschijnen in de routenummering.",
-    "messageEmpty": "Voeg route-obstakels en een race line toe om nummering af te leiden.",
-    "offRoutePrefix": "Niet op route: {names}",
-    "moreSuffix": " +{count} meer"
+    "status": {
+      "ready": "Gereed",
+      "partial": "Controle nodig",
+      "noRouteMatches": "Geen overeenkomsten",
+      "missingRoute": "Route ontbreekt",
+      "noNumberedObstacles": "Geen route-obstakels",
+      "empty": "Leeg"
+    },
+    "messages": {
+      "ready": "{count, plural, one {1 route-obstakel genummerd.} other {{count} route-obstakels genummerd.}}",
+      "partial": "{mapped} van {total} route-obstakels zijn genummerd.",
+      "noRouteMatches": "{count, plural, one {1 route-obstakel gevonden, maar geen ligt dicht genoeg bij de race line.} other {{count} route-obstakels gevonden, maar geen ligt dicht genoeg bij de race line.}}",
+      "missingRoute": "{count, plural, one {1 route-obstakel heeft een race line nodig voordat nummering kan worden afgeleid.} other {{count} route-obstakels hebben een race line nodig voordat nummering kan worden afgeleid.}}",
+      "noNumberedObstacles": "Gates, ladders en dive gates verschijnen in de routenummering.",
+      "empty": "Voeg route-obstakels en een race line toe om nummering af te leiden."
+    },
+    "issues": {
+      "offRoutePrefix": "Niet op route: {names}",
+      "moreSuffix": " +{count} meer"
+    },
+    "meta": {
+      "numbered": "Genummerd",
+      "issues": "Problemen"
+    }
   },
   "elevationChart": {
     "noRouteSelected": "Geen race line geselecteerd",
