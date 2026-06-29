@@ -87,6 +87,7 @@ import { resolveDiveGateElevation } from "@/lib/track/render3d-layout";
 import { useDeveloperMode } from "@/hooks/account/useDeveloperMode";
 import { useTrackPreview3DInteractions } from "@/components/canvas/editor/useTrackPreview3DInteractions";
 import { motion, useReducedMotion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 
 const DroneCamera = dynamic(
@@ -100,6 +101,7 @@ const DroneCamera = dynamic(
 const POPUP_TRANSITION = { duration: 0.16, ease: [0.22, 1, 0.36, 1] as const };
 
 function TextureDebugPopup({ catalogId }: { catalogId: string }) {
+  const t = useTranslations("editor.textureDebug");
   useOverrideVersion();
   const theme = useTheme();
   const prefersReducedMotion = useReducedMotion();
@@ -153,7 +155,7 @@ function TextureDebugPopup({ catalogId }: { catalogId: string }) {
             <p
               className={`text-[9px] font-semibold tracking-[0.2em] uppercase ${titleClass}`}
             >
-              Texture Debug
+              {t("title")}
             </p>
             <p className={`mt-1 truncate text-[11px] ${bodyClass}`}>
               {catalogId}
@@ -168,7 +170,7 @@ function TextureDebugPopup({ catalogId }: { catalogId: string }) {
                 : buttonClass
             }`}
           >
-            {copied ? "✓ Copied" : "Copy config"}
+            {copied ? `✓ ${t("copied")}` : t("copyConfig")}
           </button>
         </div>
       </div>
@@ -177,7 +179,7 @@ function TextureDebugPopup({ catalogId }: { catalogId: string }) {
       <div className="space-y-1.5 p-3">
         {panels.length === 0 ? (
           <p className={`py-1 text-center text-[11px] ${bodyClass}`}>
-            No panels registered yet
+            {t("noPanels")}
           </p>
         ) : (
           panels.map((panel) => {
@@ -198,7 +200,7 @@ function TextureDebugPopup({ catalogId }: { catalogId: string }) {
                   <span className="text-[11px]">{panel.panelName}</span>
                   <div className="flex items-center gap-1">
                     <span className={`mr-0.5 text-[9px] ${bodyClass}`}>
-                      flip
+                      {t("flip")}
                     </span>
                     {(["x", "y"] as const).map((axis) => {
                       const active = axis === "x" ? flips.flipX : flips.flipY;

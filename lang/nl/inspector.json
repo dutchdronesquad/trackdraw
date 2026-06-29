@@ -118,7 +118,10 @@
     "filterObstacles": "Obstakels",
     "itemColumn": "Item",
     "pathColumn": "Path",
-    "noItemsMatchFilter": "Geen items komen overeen met dit filter."
+    "noItemsMatchFilter": "Geen items komen overeen met dit filter.",
+    "routeStatus": {
+      "off": "naast route"
+    }
   },
   "layout": {
     "mapReference": {

@@ -429,5 +429,30 @@
   },
   "languagePicker": {
     "ariaLabel": "Language"
+  },
+  "performanceHud": {
+    "title": "Developer HUD",
+    "summary": "Tool {tool} · {count} selected",
+    "reset": "Reset",
+    "close": "Close",
+    "metrics": {
+      "canvas2d": "2D Canvas",
+      "preview3d": "3D View",
+      "inspector": "Inspector",
+      "autosave": "Autosave"
+    },
+    "levels": {
+      "noData": "No data",
+      "heavy": "Heavy",
+      "busy": "Busy",
+      "ok": "OK"
+    }
+  },
+  "textureDebug": {
+    "title": "Texture Debug",
+    "copyConfig": "Copy config",
+    "copied": "Copied",
+    "noPanels": "No panels registered yet",
+    "flip": "flip"
   }
 }

@@ -259,5 +259,9 @@
     "step3": "Probeer de route opnieuw als de pagina recent is verplaatst.",
     "goHome": "Naar home",
     "openStudio": "Open Studio"
+  },
+  "screenshotPlaceholder": {
+    "label": "Screenshot-placeholder",
+    "plannedAsset": "Geplande asset"
   }
 }

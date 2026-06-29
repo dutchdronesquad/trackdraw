@@ -429,5 +429,30 @@
   },
   "languagePicker": {
     "ariaLabel": "Taal"
+  },
+  "performanceHud": {
+    "title": "Developer-HUD",
+    "summary": "Tool {tool} · {count} geselecteerd",
+    "reset": "Resetten",
+    "close": "Sluiten",
+    "metrics": {
+      "canvas2d": "2D-canvas",
+      "preview3d": "3D-weergave",
+      "inspector": "Inspector",
+      "autosave": "Autosave"
+    },
+    "levels": {
+      "noData": "Geen data",
+      "heavy": "Zwaar",
+      "busy": "Druk",
+      "ok": "OK"
+    }
+  },
+  "textureDebug": {
+    "title": "Texture-debug",
+    "copyConfig": "Config kopiëren",
+    "copied": "Gekopieerd",
+    "noPanels": "Nog geen panels geregistreerd",
+    "flip": "flip"
   }
 }

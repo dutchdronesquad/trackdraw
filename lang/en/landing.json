@@ -259,5 +259,9 @@
     "step3": "Try the latest route again if the page moved recently.",
     "goHome": "Go Home",
     "openStudio": "Open Studio"
+  },
+  "screenshotPlaceholder": {
+    "label": "Screenshot Placeholder",
+    "plannedAsset": "Planned Asset"
   }
 }

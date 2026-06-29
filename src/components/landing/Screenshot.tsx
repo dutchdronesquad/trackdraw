@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useRef } from "react";
 
 // ── Section screenshot — scroll-triggered reveal, hover lift ──
@@ -90,6 +91,7 @@ export function ScreenshotPlaceholder({
   frameClassName?: string;
   className?: string;
 }) {
+  const t = useTranslations("landing.screenshotPlaceholder");
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const isPortrait = aspect === "portrait";
@@ -125,7 +127,7 @@ export function ScreenshotPlaceholder({
 
           <div className="mt-4 flex items-center gap-2">
             <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.18em] uppercase">
-              Screenshot Placeholder
+              {t("label")}
             </p>
             {badge ? (
               <span className="border-border/60 bg-muted/65 text-muted-foreground rounded-full border px-2 py-0.5 text-[9px] font-semibold tracking-[0.12em] uppercase">
@@ -141,7 +143,7 @@ export function ScreenshotPlaceholder({
 
           <div className="border-border/60 bg-background/72 mt-4 rounded-2xl border px-3 py-2.5 backdrop-blur-xs">
             <p className="text-muted-foreground text-[10px] tracking-[0.16em] uppercase">
-              Planned Asset
+              {t("plannedAsset")}
             </p>
             <p className="text-foreground mt-1 font-mono text-sm">{filename}</p>
           </div>

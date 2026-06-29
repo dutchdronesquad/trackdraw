@@ -54,33 +54,6 @@
     "note": "Keyboard shortcut token; not natural-language copy."
   },
   {
-    "file": "src/components/canvas/editor/TrackPreview3D.tsx",
-    "kind": "JSX text",
-    "text": "flip",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
-    "file": "src/components/canvas/editor/TrackPreview3D.tsx",
-    "kind": "JSX text",
-    "text": "No panels registered yet",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
-    "file": "src/components/canvas/editor/TrackPreview3D.tsx",
-    "kind": "JSX text",
-    "text": "Texture Debug",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
     "file": "src/components/dialogs/ImportDialog.tsx",
     "kind": "JSX text",
     "text": ".json",
@@ -135,51 +108,6 @@
     "note": "Keyboard shortcut token; not natural-language copy."
   },
   {
-    "file": "src/components/editor/PerformanceHud.tsx",
-    "kind": "JSX text",
-    "text": "Close",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
-    "file": "src/components/editor/PerformanceHud.tsx",
-    "kind": "JSX text",
-    "text": "Developer HUD",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
-    "file": "src/components/editor/PerformanceHud.tsx",
-    "kind": "JSX text",
-    "text": "Reset",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
-    "file": "src/components/editor/PerformanceHud.tsx",
-    "kind": "JSX text",
-    "text": "selected",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
-    "file": "src/components/editor/PerformanceHud.tsx",
-    "kind": "JSX text",
-    "text": "Tool",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
     "file": "src/components/editor/Toolbar.tsx",
     "kind": "JSX prop alt",
     "text": "TrackDraw",
@@ -214,15 +142,6 @@
     "group": "technical-token",
     "priority": "exception",
     "note": "Unit, file extension, coordinate label, or visual separator."
-  },
-  {
-    "file": "src/components/inspector/views/list-panel.tsx",
-    "kind": "JSX text",
-    "text": "off",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
   },
   {
     "file": "src/components/inspector/views/polyline/PolylineWaypointList.tsx",
@@ -277,24 +196,6 @@
     "group": "intentional-brand-alt",
     "priority": "exception",
     "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
-  },
-  {
-    "file": "src/components/landing/Screenshot.tsx",
-    "kind": "JSX text",
-    "text": "Planned Asset",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
-    "file": "src/components/landing/Screenshot.tsx",
-    "kind": "JSX text",
-    "text": "Screenshot Placeholder",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
   },
   {
     "file": "src/components/ui/breadcrumb.tsx",

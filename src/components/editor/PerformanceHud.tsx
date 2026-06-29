@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useMemo, useSyncExternalStore } from "react";
 import { useDeveloperMode } from "@/hooks/account/useDeveloperMode";
 import { useTheme } from "@/hooks/useTheme";
@@ -19,14 +20,25 @@ const HUD_TRANSITION = {
   ease: [0.22, 1, 0.36, 1] as const,
 };
 
-function getMetricLevel(metric: PerfMetric | undefined) {
-  if (!metric) return { label: "No data", tone: "text-slate-500" };
-  if (metric.lastMs >= 80) return { label: "Heavy", tone: "text-amber-500" };
-  if (metric.lastMs >= 32) return { label: "Busy", tone: "text-amber-400" };
-  return { label: "OK", tone: "text-emerald-500" };
+function getMetricLevel(
+  metric: PerfMetric | undefined,
+  labels: {
+    noData: string;
+    heavy: string;
+    busy: string;
+    ok: string;
+  }
+) {
+  if (!metric) return { label: labels.noData, tone: "text-slate-500" };
+  if (metric.lastMs >= 80)
+    return { label: labels.heavy, tone: "text-amber-500" };
+  if (metric.lastMs >= 32)
+    return { label: labels.busy, tone: "text-amber-400" };
+  return { label: labels.ok, tone: "text-emerald-500" };
 }
 
 export default function PerformanceHud() {
+  const t = useTranslations("editor.performanceHud");
   const { enabled, setEnabled } = useDeveloperMode();
   const prefersReducedMotion = useReducedMotion();
   const theme = useTheme();
@@ -39,19 +51,25 @@ export default function PerformanceHud() {
   );
 
   const rows = useMemo(() => {
+    const levelLabels = {
+      noData: t("levels.noData"),
+      heavy: t("levels.heavy"),
+      busy: t("levels.busy"),
+      ok: t("levels.ok"),
+    };
     const summaryRows = [
-      ["2D Canvas", metrics["render:TrackCanvas"]],
-      ["3D View", metrics["render:TrackPreview3D"]],
-      ["Inspector", metrics["render:Inspector"]],
-      ["Autosave", metrics["autosave:localStorage"]],
+      [t("metrics.canvas2d"), metrics["render:TrackCanvas"]],
+      [t("metrics.preview3d"), metrics["render:TrackPreview3D"]],
+      [t("metrics.inspector"), metrics["render:Inspector"]],
+      [t("metrics.autosave"), metrics["autosave:localStorage"]],
     ] as const;
 
     return summaryRows.map(([label, metric]) => ({
       label,
       metric,
-      level: getMetricLevel(metric),
+      level: getMetricLevel(metric, levelLabels),
     }));
-  }, [metrics]);
+  }, [metrics, t]);
 
   if (process.env.NODE_ENV === "production" || !enabled) {
     return null;
@@ -84,10 +102,10 @@ export default function PerformanceHud() {
             <p
               className={`text-[9px] font-semibold tracking-[0.2em] uppercase ${titleClass}`}
             >
-              Developer HUD
+              {t("title")}
             </p>
             <p className={`mt-1 text-[11px] ${bodyClass}`}>
-              Tool {activeTool} · {selectionCount} selected
+              {t("summary", { tool: activeTool, count: selectionCount })}
             </p>
           </div>
           <div className="flex items-center gap-1">
@@ -96,14 +114,14 @@ export default function PerformanceHud() {
               onClick={() => resetPerfMetrics()}
               className={`rounded-md border px-2 py-1 text-[9px] font-medium tracking-[0.04em] transition-colors ${buttonClass}`}
             >
-              Reset
+              {t("reset")}
             </button>
             <button
               type="button"
               onClick={() => setEnabled(false)}
               className={`rounded-md border px-2 py-1 text-[9px] font-medium tracking-[0.04em] transition-colors ${buttonClass}`}
             >
-              Close
+              {t("close")}
             </button>
           </div>
         </div>

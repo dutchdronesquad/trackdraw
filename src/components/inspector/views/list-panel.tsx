@@ -289,7 +289,7 @@ export function ItemOverviewList({
                         </span>
                       ) : unmappedObstacleIds.has(shape.id) ? (
                         <span className="flex h-5 w-12 shrink-0 items-center justify-center rounded-md border border-amber-500/25 bg-amber-500/10 font-mono text-[10px] font-medium text-amber-500">
-                          off
+                          {t("listPanel.routeStatus.off")}
                         </span>
                       ) : (
                         <span className="text-muted-foreground/30 flex h-5 w-12 shrink-0 items-center justify-center font-mono text-[10px]">

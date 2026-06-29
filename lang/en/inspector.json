@@ -118,7 +118,10 @@
     "filterObstacles": "Obstacles",
     "itemColumn": "Item",
     "pathColumn": "Path",
-    "noItemsMatchFilter": "No items match this filter."
+    "noItemsMatchFilter": "No items match this filter.",
+    "routeStatus": {
+      "off": "off"
+    }
   },
   "layout": {
     "mapReference": {
