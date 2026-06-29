@@ -7,8 +7,7 @@ import type { ApiIdentity, ApiKeyPermissionSet } from "@/lib/server/api-keys";
 const API_VERSION = "v1";
 
 export type ApiAuthResult =
-  | { ok: true; identity: ApiIdentity }
-  | { ok: false; response: NextResponse };
+  { ok: true; identity: ApiIdentity } | { ok: false; response: NextResponse };
 
 export function apiSuccess<T>(data: T, init?: ResponseInit) {
   return NextResponse.json(

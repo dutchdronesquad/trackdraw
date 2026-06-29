@@ -38,11 +38,7 @@ function getToolShortcutItems(t: Translate) {
 }
 
 type ShortcutSectionId =
-  | "tools"
-  | "selection"
-  | "pathEditing"
-  | "canvas"
-  | "project";
+  "tools" | "selection" | "pathEditing" | "canvas" | "project";
 
 function ShortcutSections() {
   const t = useTranslations("dialogs");

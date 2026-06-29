@@ -9,9 +9,7 @@ export type AuthEmailContent = {
 };
 
 export type AuthEmailPreviewKey =
-  | "magic-link"
-  | "verify-email"
-  | "change-email";
+  "magic-link" | "verify-email" | "change-email";
 
 function escapeHtml(value: string) {
   return value

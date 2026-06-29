@@ -73,12 +73,7 @@ import {
 import { useTranslations } from "next-intl";
 
 type SingleCatalogKind =
-  | "gate"
-  | "flag"
-  | "ladder"
-  | "tower"
-  | "divegate"
-  | "barrier";
+  "gate" | "flag" | "ladder" | "tower" | "divegate" | "barrier";
 
 function getSingleDefaultCatalogEntryId(
   kind: SingleCatalogKind

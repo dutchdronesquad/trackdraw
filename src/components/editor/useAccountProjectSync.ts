@@ -40,12 +40,7 @@ export type AccountShareItem = {
 
 export type ProjectSyncMeta = {
   status:
-    | "local-only"
-    | "pending"
-    | "syncing"
-    | "synced"
-    | "failed"
-    | "conflict";
+    "local-only" | "pending" | "syncing" | "synced" | "failed" | "conflict";
   lastSyncedAt?: string | null;
   fallbackSavedAt?: string | null;
   error?: string | null;
@@ -278,8 +273,7 @@ export function useAccountProjectSync({
         method: "DELETE",
       });
       const data = (await response.json()) as
-        | { ok: true }
-        | { ok: false; error?: string };
+        { ok: true } | { ok: false; error?: string };
 
       if (!response.ok || !data.ok) {
         throw new Error(

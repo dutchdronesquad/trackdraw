@@ -407,8 +407,7 @@ export default function DashboardGalleryManager({
       );
 
       const payload = (await response.json()) as
-        | { ok: true; entry: StoredGalleryEntry }
-        | { ok: false; error?: string };
+        { ok: true; entry: StoredGalleryEntry } | { ok: false; error?: string };
 
       if (!response.ok || !payload.ok) {
         throw new Error(
@@ -449,8 +448,7 @@ export default function DashboardGalleryManager({
       );
 
       const payload = (await response.json()) as
-        | { ok: true }
-        | { ok: false; error?: string };
+        { ok: true } | { ok: false; error?: string };
 
       if (!response.ok || !payload.ok) {
         throw new Error(

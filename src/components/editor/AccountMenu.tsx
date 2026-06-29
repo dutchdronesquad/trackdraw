@@ -25,9 +25,7 @@ function canAccessDashboard(user: unknown): boolean {
 }
 
 type UserLike =
-  | { email?: string | null; name?: string | null }
-  | null
-  | undefined;
+  { email?: string | null; name?: string | null } | null | undefined;
 
 function getUserDisplayName(user: UserLike, signedInLabel: string) {
   return user?.name?.trim() || user?.email?.trim() || signedInLabel;

@@ -16,11 +16,7 @@ import {
 } from "@/lib/track/items/registry";
 
 export type FrontBackShape =
-  | GateShape
-  | StartFinishShape
-  | LadderShape
-  | TowerShape
-  | DiveGateShape;
+  GateShape | StartFinishShape | LadderShape | TowerShape | DiveGateShape;
 
 export function hasFrontBackOrientation(shape: Shape): shape is FrontBackShape {
   return hasFrontBackItemOrientation(shape);
