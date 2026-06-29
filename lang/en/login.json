@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "title": "Sign in",
+    "description": "Sign in to TrackDraw with a one-time magic link."
+  },
   "goHome": "Go to homepage",
   "backToStudio": "Back to Studio",
   "pageTitle": "TrackDraw account",

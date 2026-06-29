@@ -16,38 +16,39 @@ import {
   serializeJsonLd,
 } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: {
-    absolute: "TrackDraw · Drone Race Track Builder",
-  },
-  description:
-    "TrackDraw is a drone race track builder for FPV race directors. Design tracks to scale, review track flow in 3D, and share read-only race-day layouts.",
-  keywords: SITE_KEYWORDS,
-  authors: [SITE_AUTHOR],
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: "TrackDraw | Drone Race Track Builder",
-    description:
-      "Use TrackDraw as a drone race track builder to plan FPV layouts to scale, review track flow in 3D, and share read-only race-day plans.",
-    url: "/",
-    images: [
-      {
-        url: DEFAULT_SOCIAL_IMAGE,
-        width: DEFAULT_SOCIAL_IMAGE_WIDTH,
-        height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
-        alt: DEFAULT_OG_IMAGE_ALT,
-      },
-    ],
-  },
-  twitter: {
-    title: "TrackDraw | Drone Race Track Builder",
-    description:
-      "Use TrackDraw as a drone race track builder to plan FPV layouts to scale, review track flow in 3D, and share read-only race-day plans.",
-    images: [DEFAULT_SOCIAL_IMAGE],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("landing.metadata");
+
+  return {
+    title: {
+      absolute: t("homeTitle"),
+    },
+    description: t("homeDescription"),
+    keywords: SITE_KEYWORDS,
+    authors: [SITE_AUTHOR],
+    alternates: {
+      canonical: "/",
+    },
+    openGraph: {
+      title: t("homeSocialTitle"),
+      description: t("homeSocialDescription"),
+      url: "/",
+      images: [
+        {
+          url: DEFAULT_SOCIAL_IMAGE,
+          width: DEFAULT_SOCIAL_IMAGE_WIDTH,
+          height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
+          alt: DEFAULT_OG_IMAGE_ALT,
+        },
+      ],
+    },
+    twitter: {
+      title: t("homeSocialTitle"),
+      description: t("homeSocialDescription"),
+      images: [DEFAULT_SOCIAL_IMAGE],
+    },
+  };
+}
 import Link from "next/link";
 import { Footer } from "@/components/landing/Footer";
 import { PublicSiteHeader } from "@/components/landing/PublicSiteHeader";

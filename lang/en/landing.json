@@ -1,4 +1,14 @@
 {
+  "metadata": {
+    "homeTitle": "TrackDraw · Drone Race Track Builder",
+    "homeSocialTitle": "TrackDraw | Drone Race Track Builder",
+    "homeDescription": "TrackDraw is a drone race track builder for FPV race directors. Design tracks to scale, review track flow in 3D, and share read-only race-day layouts.",
+    "homeSocialDescription": "Use TrackDraw as a drone race track builder to plan FPV layouts to scale, review track flow in 3D, and share read-only race-day plans.",
+    "studioTitle": "Drone Race Track Builder",
+    "studioSocialTitle": "TrackDraw | Drone Race Track Builder",
+    "studioDescription": "Open the TrackDraw drone race track builder to design FPV layouts to scale, add gates and obstacles, and preview track flow in 3D.",
+    "studioSocialDescription": "Design FPV drone race tracks to scale, add gates and obstacles, and preview track flow in 3D."
+  },
   "header": {
     "homeAriaLabel": "Home",
     "homeTooltip": "Back to the main landing page",

@@ -1,4 +1,8 @@
 {
+  "metadata": {
+    "title": "Inloggen",
+    "description": "Log in bij TrackDraw met een eenmalige magic link."
+  },
   "goHome": "Naar homepage",
   "backToStudio": "Terug naar Studio",
   "pageTitle": "TrackDraw-account",

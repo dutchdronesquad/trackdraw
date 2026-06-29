@@ -34,7 +34,13 @@
   },
   "metadata": {
     "title": "Track bekijken",
-    "description": "Bekijk deze FPV-racetrack die met TrackDraw is ontworpen."
+    "description": "Bekijk deze FPV-racetrack die met TrackDraw is ontworpen.",
+    "expiredTitle": "Verlopen trackshare",
+    "expiredDescription": "Deze TrackDraw-deellink is verlopen. Vraag de verzender om een nieuwe link te publiceren.",
+    "retiredTitle": "Niet-ondersteunde trackshare",
+    "retiredDescription": "Dit oudere TrackDraw-shareformaat wordt niet meer ondersteund. Vraag de verzender om een nieuwe link te publiceren.",
+    "embedTitle": "Track embed",
+    "embedDescription": "Ingesloten alleen-lezen TrackDraw-trackweergave."
   },
   "embedUnavailable": {
     "temporaryTitle": "Embed niet beschikbaar",

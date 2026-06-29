@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { getShareDescription, getShareTitle } from "@/lib/share";
 import {
   getGalleryEntryByShareToken,
@@ -51,14 +52,14 @@ function buildShareMetadataDescription(params: {
 export async function generateMetadata({
   params,
 }: ShareTokenLayoutProps): Promise<Metadata> {
+  const t = await getTranslations("share.metadata");
   const { token } = await params;
   const resolvedShare = await resolveShareView(token);
 
   if (resolvedShare.status === "expired") {
     return {
-      title: "Expired Track Share",
-      description:
-        "This TrackDraw share link has expired. Ask the sender to publish a fresh link.",
+      title: t("expiredTitle"),
+      description: t("expiredDescription"),
       robots: {
         index: false,
         follow: true,
@@ -68,9 +69,8 @@ export async function generateMetadata({
 
   if (resolvedShare.status === "retired") {
     return {
-      title: "Unsupported Track Share",
-      description:
-        "This older TrackDraw share format is no longer supported. Ask the sender to publish a fresh link.",
+      title: t("retiredTitle"),
+      description: t("retiredDescription"),
       robots: {
         index: false,
         follow: true,
@@ -80,8 +80,8 @@ export async function generateMetadata({
 
   if (resolvedShare.status !== "available") {
     return {
-      title: "View Track",
-      description: "View this FPV race track designed with TrackDraw.",
+      title: t("title"),
+      description: t("description"),
       robots: {
         index: false,
         follow: true,

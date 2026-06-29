@@ -34,7 +34,13 @@
   },
   "metadata": {
     "title": "View Track",
-    "description": "View this FPV race track designed with TrackDraw."
+    "description": "View this FPV race track designed with TrackDraw.",
+    "expiredTitle": "Expired Track Share",
+    "expiredDescription": "This TrackDraw share link has expired. Ask the sender to publish a fresh link.",
+    "retiredTitle": "Unsupported Track Share",
+    "retiredDescription": "This older TrackDraw share format is no longer supported. Ask the sender to publish a fresh link.",
+    "embedTitle": "Track Embed",
+    "embedDescription": "Embedded TrackDraw read-only track view."
   },
   "embedUnavailable": {
     "temporaryTitle": "Embed unavailable",

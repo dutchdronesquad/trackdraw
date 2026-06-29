@@ -73,7 +73,7 @@ export default function CompleteProfileDialog({
           htmlFor="complete-profile-name"
           className="text-foreground text-sm font-medium"
         >
-          Display name
+          {t("completeProfile.displayNameLabel")}
         </label>
         <input
           id="complete-profile-name"
@@ -94,8 +94,9 @@ export default function CompleteProfileDialog({
       ) : null}
 
       <p className="text-muted-foreground text-sm leading-relaxed">
-        This is the name TrackDraw will show for cloud projects and shared
-        layouts{email ? ` on ${email}` : ""}.
+        {email
+          ? t("completeProfile.descriptionWithEmail", { email })
+          : t("completeProfile.description")}
       </p>
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -105,7 +106,7 @@ export default function CompleteProfileDialog({
           onClick={() => onOpenChange(false)}
           disabled={saving}
         >
-          Skip
+          {t("completeProfile.skip")}
         </Button>
         <Button
           type="button"

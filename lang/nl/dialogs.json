@@ -423,7 +423,11 @@
   "completeProfile": {
     "title": "Voeg je naam toe",
     "subtitle": "Geef je account een duidelijke weergavenaam voor cloudprojecten en delen.",
+    "displayNameLabel": "Weergavenaam",
     "namePlaceholder": "Jouw naam",
+    "description": "Dit is de naam die TrackDraw toont bij cloudprojecten en gedeelde lay-outs.",
+    "descriptionWithEmail": "Dit is de naam die TrackDraw toont bij cloudprojecten en gedeelde lay-outs op {email}.",
+    "skip": "Overslaan",
     "save": "Naam opslaan",
     "saving": "Opslaan…",
     "nameRequired": "Vul de naam in die TrackDraw moet weergeven.",

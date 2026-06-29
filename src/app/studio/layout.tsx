@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_SOCIAL_IMAGE,
@@ -7,38 +8,39 @@ import {
 } from "@/lib/seo";
 import LanguageProvider from "@/i18n/LanguageProvider";
 
-export const metadata: Metadata = {
-  title: "Drone Race Track Builder",
-  description:
-    "Open the TrackDraw drone race track builder to design FPV layouts to scale, add gates and obstacles, and preview track flow in 3D.",
-  alternates: {
-    canonical: "/studio",
-  },
-  openGraph: {
-    title: "TrackDraw | Drone Race Track Builder",
-    description:
-      "Design FPV drone race tracks to scale, add gates and obstacles, and preview track flow in 3D.",
-    url: "/studio",
-    images: [
-      {
-        url: DEFAULT_SOCIAL_IMAGE,
-        width: DEFAULT_SOCIAL_IMAGE_WIDTH,
-        height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
-        alt: DEFAULT_OG_IMAGE_ALT,
-      },
-    ],
-  },
-  twitter: {
-    title: "TrackDraw | Drone Race Track Builder",
-    description:
-      "Design FPV drone race tracks to scale, add gates and obstacles, and preview track flow in 3D.",
-    images: [DEFAULT_SOCIAL_IMAGE],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("landing.metadata");
+
+  return {
+    title: t("studioTitle"),
+    description: t("studioDescription"),
+    alternates: {
+      canonical: "/studio",
+    },
+    openGraph: {
+      title: t("studioSocialTitle"),
+      description: t("studioSocialDescription"),
+      url: "/studio",
+      images: [
+        {
+          url: DEFAULT_SOCIAL_IMAGE,
+          width: DEFAULT_SOCIAL_IMAGE_WIDTH,
+          height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
+          alt: DEFAULT_OG_IMAGE_ALT,
+        },
+      ],
+    },
+    twitter: {
+      title: t("studioSocialTitle"),
+      description: t("studioSocialDescription"),
+      images: [DEFAULT_SOCIAL_IMAGE],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default function StudioLayout({
   children,

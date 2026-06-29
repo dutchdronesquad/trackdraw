@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import LanguageProvider from "@/i18n/LanguageProvider";
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to TrackDraw with a one-time magic link.",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("login.metadata");
+
+  return {
+    title: t("title"),
+    description: t("description"),
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
 
 export default function LoginLayout({
   children,

@@ -423,7 +423,11 @@
   "completeProfile": {
     "title": "Add your name",
     "subtitle": "Give your account a clear display name for cloud projects and sharing.",
+    "displayNameLabel": "Display name",
     "namePlaceholder": "Your name",
+    "description": "This is the name TrackDraw will show for cloud projects and shared layouts.",
+    "descriptionWithEmail": "This is the name TrackDraw will show for cloud projects and shared layouts on {email}.",
+    "skip": "Skip",
     "save": "Save name",
     "saving": "Saving…",
     "nameRequired": "Please enter the name you want TrackDraw to show.",
