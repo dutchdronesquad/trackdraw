@@ -104,7 +104,9 @@ export function MultiSelectOverlay({
           ) : (
             <Lock className="size-4" />
           )}
-          <span>{selectionLocked ? t("actions.unlock") : t("actions.lock")}</span>
+          <span>
+            {selectionLocked ? t("actions.unlock") : t("actions.lock")}
+          </span>
         </button>
         <button
           type="button"
