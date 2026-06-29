@@ -54,11 +54,12 @@
       "system": "Systeem"
     },
     "ariaLabel": "Thema: {theme}",
-    "tooltip": "{current} — klik voor {next}"
+    "tooltip": "Huidig: {current}. Klik voor {next}."
   },
   "versionTag": {
     "tooltip": {
-      "openReleaseNotes": "Release notes openen op GitHub"
+      "openReleaseNotes": "Release notes openen op GitHub",
+      "openReleaseNotesForCommit": "commit {sha} · Release notes openen op GitHub"
     }
   },
   "status": {

@@ -21,8 +21,7 @@ function formatExpiresIn(
     (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
   if (days <= 0) return t("projectManager.shares.expiredStatus");
-  if (days === 1) return t("projectManager.shares.dayLeft");
-  return t("projectManager.shares.daysLeft", { days });
+  return t("projectManager.shares.expiresInDays", { days });
 }
 
 interface ProjectManagerSharesTabProps {

@@ -90,7 +90,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       <TooltipContent>
         {t("themeToggle.tooltip", {
           current: currentThemeLabel,
-          next: nextThemeLabel.toLowerCase(),
+          next: nextThemeLabel,
         })}
       </TooltipContent>
     </Tooltip>

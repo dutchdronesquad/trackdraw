@@ -54,11 +54,12 @@
       "system": "System"
     },
     "ariaLabel": "Theme: {theme}",
-    "tooltip": "{current} — click for {next}"
+    "tooltip": "Current: {current}. Click for {next}."
   },
   "versionTag": {
     "tooltip": {
-      "openReleaseNotes": "Open release notes on GitHub"
+      "openReleaseNotes": "Open release notes on GitHub",
+      "openReleaseNotesForCommit": "commit {sha} · Open release notes on GitHub"
     }
   },
   "status": {

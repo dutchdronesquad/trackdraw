@@ -44,8 +44,9 @@ export default function VersionTag({ className }: { className?: string }) {
         </Link>
       </TooltipTrigger>
       <TooltipContent sideOffset={4}>
-        {sha ? `commit ${sha} · ` : ""}
-        {t("versionTag.tooltip.openReleaseNotes")}
+        {sha
+          ? t("versionTag.tooltip.openReleaseNotesForCommit", { sha })
+          : t("versionTag.tooltip.openReleaseNotes")}
       </TooltipContent>
     </Tooltip>
   );
