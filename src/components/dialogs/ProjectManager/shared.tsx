@@ -106,7 +106,7 @@ export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
       await navigator.clipboard.writeText(projectId);
       toast.success(t("projectManager.copyProjectIdSuccess"));
     } catch {
-      toast.error("Could not copy the project ID from this browser.");
+      toast.error(t("projectManager.copyProjectIdFailed"));
     }
   };
 
@@ -114,7 +114,7 @@ export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
     <div className="border-border/35 mt-2 flex min-w-0 items-center justify-between gap-3 border-t pt-2">
       <div className="min-w-0">
         <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase">
-          API project ID
+          {t("projectManager.copyProjectIdLabel")}
         </p>
         <p className="text-foreground/85 mt-0.5 truncate font-mono text-[11px]">
           {projectId}
@@ -130,7 +130,7 @@ export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
         aria-label={t("projectManager.copyProjectIdAriaLabel")}
       >
         <Copy className="size-3.5" />
-        Copy
+        {t("projectManager.copyAction")}
       </button>
     </div>
   );

@@ -86,6 +86,10 @@
     "canvas2d": "2D canvas",
     "preview3d": "3D preview"
   },
+  "elementPlacementControl": {
+    "official": "Official",
+    "typeLabel": "{tool} type"
+  },
   "header": {
     "untitledTitle": "Untitled",
     "statusFailed": "Failed",

@@ -385,6 +385,8 @@
       "untitled": "Untitled"
     },
     "account": {
+      "loadingProjects": "Loading account projects...",
+      "loadProjectsFailed": "Could not load account projects",
       "noProjects": "No account projects",
       "noProjectsDesc": "Sync a project to make it available across devices.",
       "conflictWarning": "This project changed on another device while you were signed out",
@@ -418,7 +420,10 @@
       "revokeLinkAriaLabel": "Revoke share link"
     },
     "copyProjectIdSuccess": "Project ID copied",
-    "copyProjectIdAriaLabel": "Copy API project ID"
+    "copyProjectIdFailed": "Could not copy the project ID from this browser.",
+    "copyProjectIdLabel": "API project ID",
+    "copyProjectIdAriaLabel": "Copy API project ID",
+    "copyAction": "Copy"
   },
   "completeProfile": {
     "title": "Add your name",

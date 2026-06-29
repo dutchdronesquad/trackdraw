@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CheckIcon, PlusCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ export default function DataTableFacetFilter<TValue extends string>({
   onChange,
   onClear,
 }: DataTableFacetFilterProps<TValue>) {
+  const t = useTranslations("common.dataTable");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
@@ -88,7 +90,7 @@ export default function DataTableFacetFilter<TValue extends string>({
                   variant="muted"
                   className="h-4 rounded-sm px-1.5 text-[10px] font-medium tracking-normal normal-case"
                 >
-                  {selected.length} selected
+                  {t("selectedCount", { count: selected.length })}
                 </Badge>
               ) : (
                 selected.map((value, index) => (
@@ -110,14 +112,16 @@ export default function DataTableFacetFilter<TValue extends string>({
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={`Filter ${title.toLowerCase()}...`}
+            placeholder={t("filterPlaceholder", {
+              title: title.toLowerCase(),
+            })}
             className="h-8 shadow-none"
           />
         </div>
         <div className="max-h-72 overflow-y-auto p-1">
           {filteredOptions.length === 0 ? (
             <p className="text-muted-foreground px-2 py-6 text-center text-sm">
-              No results found.
+              {t("noResults")}
             </p>
           ) : (
             filteredOptions.map((option) => {
@@ -164,7 +168,7 @@ export default function DataTableFacetFilter<TValue extends string>({
                 className="hover:bg-muted hover:text-foreground w-full cursor-pointer justify-center"
                 onClick={clearSelection}
               >
-                Clear filters
+                {t("clearFilters")}
               </Button>
             </div>
           </>

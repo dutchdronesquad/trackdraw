@@ -1,6 +1,7 @@
 "use client";
 
 import { Ruler } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Tooltip,
   TooltipContent,
@@ -18,17 +19,22 @@ export function MeasurementUnitToggle({
   className?: string;
   tooltip?: boolean;
 }) {
+  const t = useTranslations("common.measurementUnit");
   const { unitSystem, setUnitSystem } = useMeasurementUnitSystem();
   const nextUnitSystem = unitSystem === "metric" ? "imperial" : "metric";
-  const label = unitSystem === "metric" ? "Metric" : "Imperial";
-  const nextLabel = nextUnitSystem === "metric" ? "Metric" : "Imperial";
+  const label = unitSystem === "metric" ? t("metric") : t("imperial");
+  const nextLabel = nextUnitSystem === "metric" ? t("metric") : t("imperial");
+  const actionLabel = t("presetAriaLabel", {
+    current: label,
+    next: nextLabel,
+  });
 
   const button = (
     <button
       type="button"
       onClick={() => setUnitSystem(nextUnitSystem)}
-      aria-label={`Measurement preset: ${label}. Switch to ${nextLabel}.`}
-      title={`Measurement preset: ${label}. Switch to ${nextLabel}.`}
+      aria-label={actionLabel}
+      title={actionLabel}
       className={cn(
         "text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors lg:h-7 lg:px-2",
         className
@@ -45,10 +51,10 @@ export function MeasurementUnitToggle({
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
       <TooltipContent>
-        <span className="block font-medium">Measurement preset: {label}</span>
-        <span className="mt-1 block opacity-80">
-          Switch displayed distances and compatible inputs.
+        <span className="block font-medium">
+          {t("presetLabel", { current: label })}
         </span>
+        <span className="mt-1 block opacity-80">{t("description")}</span>
       </TooltipContent>
     </Tooltip>
   );

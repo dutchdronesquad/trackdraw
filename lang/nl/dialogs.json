@@ -385,6 +385,8 @@
       "untitled": "Naamloos"
     },
     "account": {
+      "loadingProjects": "Accountprojecten laden...",
+      "loadProjectsFailed": "Accountprojecten konden niet worden geladen",
       "noProjects": "Geen accountprojecten",
       "noProjectsDesc": "Synchroniseer een project om het op alle apparaten beschikbaar te maken.",
       "conflictWarning": "Dit project is op een ander apparaat gewijzigd terwijl je niet was aangemeld",
@@ -418,7 +420,10 @@
       "revokeLinkAriaLabel": "Deellink intrekken"
     },
     "copyProjectIdSuccess": "Project-ID gekopieerd",
-    "copyProjectIdAriaLabel": "API-project-ID kopiëren"
+    "copyProjectIdFailed": "Project-ID kon niet vanuit deze browser worden gekopieerd.",
+    "copyProjectIdLabel": "API-project-ID",
+    "copyProjectIdAriaLabel": "API-project-ID kopiëren",
+    "copyAction": "Kopiëren"
   },
   "completeProfile": {
     "title": "Voeg je naam toe",

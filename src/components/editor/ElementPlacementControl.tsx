@@ -3,6 +3,7 @@
 import { type CSSProperties, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Popover,
   PopoverContent,
@@ -22,6 +23,7 @@ const controlWidthCh = Math.max(
 );
 
 export function ElementPlacementControl() {
+  const t = useTranslations("editor.elementPlacementControl");
   const [open, setOpen] = useState(false);
   const activeTool = useEditor((state) => state.ui.activeTool);
   const activePlacementElementId = useEditor(
@@ -93,7 +95,7 @@ export function ElementPlacementControl() {
                         </span>
                         {activeEntry.official ? (
                           <span className="bg-brand-primary/14 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
-                            Official
+                            {t("official")}
                           </span>
                         ) : null}
                       </span>
@@ -116,7 +118,7 @@ export function ElementPlacementControl() {
               >
                 <div className="px-3 pt-3 pb-1.5">
                   <p className="text-muted-foreground/60 text-[10px] font-semibold tracking-widest uppercase">
-                    {toolLabel} type
+                    {t("typeLabel", { tool: toolLabel })}
                   </p>
                 </div>
                 <div className="max-h-72 space-y-0.5 overflow-y-auto px-1.5 pb-1.5">
@@ -153,7 +155,7 @@ export function ElementPlacementControl() {
                             </span>
                             {entry.official ? (
                               <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
-                                Official
+                                {t("official")}
                               </span>
                             ) : null}
                           </span>

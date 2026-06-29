@@ -34,6 +34,19 @@
     "type": "Type",
     "view": "Weergave"
   },
+  "dataTable": {
+    "filterPlaceholder": "Filter {title}...",
+    "noResults": "Geen resultaten gevonden.",
+    "selectedCount": "{count} geselecteerd",
+    "clearFilters": "Filters wissen"
+  },
+  "measurementUnit": {
+    "metric": "Metrisch",
+    "imperial": "Imperial",
+    "presetAriaLabel": "Meetpreset: {current}. Wissel naar {next}.",
+    "presetLabel": "Meetpreset: {current}",
+    "description": "Wissel weergegeven afstanden en compatibele invoer."
+  },
   "status": {
     "active": "Actief",
     "expired": "Verlopen",

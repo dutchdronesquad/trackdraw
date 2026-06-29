@@ -34,6 +34,19 @@
     "type": "Type",
     "view": "View"
   },
+  "dataTable": {
+    "filterPlaceholder": "Filter {title}...",
+    "noResults": "No results found.",
+    "selectedCount": "{count} selected",
+    "clearFilters": "Clear filters"
+  },
+  "measurementUnit": {
+    "metric": "Metric",
+    "imperial": "Imperial",
+    "presetAriaLabel": "Measurement preset: {current}. Switch to {next}.",
+    "presetLabel": "Measurement preset: {current}",
+    "description": "Switch displayed distances and compatible inputs."
+  },
   "status": {
     "active": "Active",
     "expired": "Expired",

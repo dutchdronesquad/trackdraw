@@ -117,33 +117,6 @@
     "note": "Developer/debug/technical UI; translate later if exposed to normal users."
   },
   {
-    "file": "src/components/data-table/DataTableFacetFilter.tsx",
-    "kind": "JSX text",
-    "text": "Clear filters",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
-  },
-  {
-    "file": "src/components/data-table/DataTableFacetFilter.tsx",
-    "kind": "JSX text",
-    "text": "No results found.",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
-  },
-  {
-    "file": "src/components/data-table/DataTableFacetFilter.tsx",
-    "kind": "JSX text",
-    "text": "selected",
-    "count": 1,
-    "group": "dev-or-technical-ui",
-    "priority": "low",
-    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
     "file": "src/components/dialogs/ExportDialog.tsx",
     "kind": "JSX text",
     "text": "Editable backup or read-only setup handoff.",
@@ -259,24 +232,6 @@
     "group": "technical-token",
     "priority": "exception",
     "note": "Unit, file extension, coordinate label, or visual separator."
-  },
-  {
-    "file": "src/components/dialogs/ProjectManager/AccountTab.tsx",
-    "kind": "JSX text",
-    "text": "Could not load account projects",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
-  },
-  {
-    "file": "src/components/dialogs/ProjectManager/AccountTab.tsx",
-    "kind": "JSX text",
-    "text": "Loading account projects...",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
   },
   {
     "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
@@ -486,24 +441,6 @@
     "note": "Visible product UI copy; prioritize replacing with translation keys."
   },
   {
-    "file": "src/components/dialogs/ProjectManager/shared.tsx",
-    "kind": "JSX text",
-    "text": "API project ID",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
-  },
-  {
-    "file": "src/components/dialogs/ProjectManager/shared.tsx",
-    "kind": "JSX text",
-    "text": "Copy",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
-  },
-  {
     "file": "src/components/dialogs/ProjectManager/SharesTab.tsx",
     "kind": "JSX text",
     "text": "Cancel",
@@ -700,24 +637,6 @@
     "group": "product-ui-translate",
     "priority": "medium",
     "note": "Visible product UI copy; translate when touching this surface."
-  },
-  {
-    "file": "src/components/editor/ElementPlacementControl.tsx",
-    "kind": "JSX text",
-    "text": "Official",
-    "count": 2,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
-  },
-  {
-    "file": "src/components/editor/ElementPlacementControl.tsx",
-    "kind": "JSX text",
-    "text": "type",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
   },
   {
     "file": "src/components/editor/Header.tsx",
@@ -934,24 +853,6 @@
     "group": "dev-or-technical-ui",
     "priority": "low",
     "note": "Developer/debug/technical UI; translate later if exposed to normal users."
-  },
-  {
-    "file": "src/components/MeasurementUnitToggle.tsx",
-    "kind": "JSX text",
-    "text": "Measurement preset:",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
-  },
-  {
-    "file": "src/components/MeasurementUnitToggle.tsx",
-    "kind": "JSX text",
-    "text": "Switch displayed distances and compatible inputs.",
-    "count": 1,
-    "group": "product-ui-translate",
-    "priority": "high",
-    "note": "Visible product UI copy; prioritize replacing with translation keys."
   },
   {
     "file": "src/components/ThemeToggle.tsx",

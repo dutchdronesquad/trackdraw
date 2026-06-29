@@ -61,7 +61,7 @@ export function ProjectManagerAccountTab({
         role="status"
       >
         <p className="text-muted-foreground px-1 pb-1 text-[11px]">
-          Loading account projects...
+          {t("projectManager.account.loadingProjects")}
         </p>
         <SkeletonCard />
         <SkeletonCard />
@@ -74,7 +74,7 @@ export function ProjectManagerAccountTab({
     return (
       <div className="border-destructive/20 bg-destructive/8 rounded-xl border px-4 py-3">
         <p className="text-foreground text-sm font-medium">
-          Could not load account projects
+          {t("projectManager.account.loadProjectsFailed")}
         </p>
         <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
           {error}
