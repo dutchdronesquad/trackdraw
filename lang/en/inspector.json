@@ -142,6 +142,8 @@
     "projectSubtitle": "Tune the project title, field setup, and available obstacle stock.",
     "layoutTitle": "Current layout",
     "layoutSubtitle": "Review placed items, route numbering, and buildability for the current layout.",
+    "emptyLayoutTitle": "No items placed yet",
+    "emptyLayoutDescription": "Add a few objects on the canvas to review the layout and compare it against your inventory.",
     "statusBuildable": "Buildable",
     "statusShort": "Short",
     "missingLabel": "Missing",

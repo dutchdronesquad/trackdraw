@@ -80,6 +80,7 @@
       "title": "2D Layout",
       "subtitle": "Build the track on a field that matches reality.",
       "description": "Start with the field dimensions, then place the elements crews already recognize. That makes the first version of the plan useful immediately, instead of just being a rough sketch.",
+      "screenshotAlt": "TrackDraw 2D layout editor with obstacle library and track plan",
       "bullet1": "Scale-accurate field dimensions",
       "bullet2": "Gates, flags, cones, start pads and larger features",
       "bullet3": "Race line and labels for briefing clarity"
@@ -88,6 +89,7 @@
       "title": "Fine-Tune",
       "subtitle": "Keep editing when the venue forces a change.",
       "description": "A good plan changes cleanly. Inspector controls and mobile-friendly editing make it possible to adjust object properties, reposition items and keep the design usable even when the real venue refuses to stay static.",
+      "screenshotAlt": "TrackDraw mobile editor with settings panel open",
       "bullet1": "Inspector controls for dimensions, rotation and color",
       "bullet2": "Touch-friendly editing on phones and tablets",
       "bullet3": "Fast adjustments without leaving the main plan"
@@ -96,6 +98,7 @@
       "title": "3D Preview",
       "subtitle": "Walk the track before you build it.",
       "description": "One click switches from the flat 2D plan to a live 3D scene. Assign elevation to each waypoint on the race line to model the full vertical profile. Catch dangerous approaches before a single peg is in the ground.",
+      "screenshotAlt": "TrackDraw 3D preview showing track flow and elevation",
       "bullet1": "Live 3D rendered directly from your 2D design",
       "bullet2": "Per-waypoint altitude on the race line",
       "bullet3": "Elevation graph in the inspector panel"
@@ -104,6 +107,7 @@
       "title": "Hand-Off",
       "subtitle": "Give pilots and crew the same current version.",
       "description": "A plan only matters if other people can open it. Shared read-only links and exports turn the layout into something pilots can review, crew can print and organizers can reuse later.",
+      "screenshotAlt": "TrackDraw read-only shared view open on mobile",
       "bullet1": "Read-only links that open on any device",
       "bullet2": "PDF, PNG and SVG for briefing and print workflows",
       "bullet3": "JSON export to archive and reuse layouts later",

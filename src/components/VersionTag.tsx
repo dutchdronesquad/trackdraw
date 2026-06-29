@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Tooltip,
   TooltipContent,
@@ -18,6 +19,7 @@ function isReleaseTag(version: string) {
 }
 
 export default function VersionTag({ className }: { className?: string }) {
+  const t = useTranslations("common");
   const version = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
   const sha = shortSha(process.env.NEXT_PUBLIC_COMMIT_SHA);
   const releaseHref = isReleaseTag(version)
@@ -43,7 +45,7 @@ export default function VersionTag({ className }: { className?: string }) {
       </TooltipTrigger>
       <TooltipContent sideOffset={4}>
         {sha ? `commit ${sha} · ` : ""}
-        Open release notes on GitHub
+        {t("versionTag.tooltip.openReleaseNotes")}
       </TooltipContent>
     </Tooltip>
   );

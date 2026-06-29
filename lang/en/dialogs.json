@@ -133,6 +133,34 @@
     "disableRouteNumbers": "Disable route numbers in export",
     "enableRouteNumbersMobile": "Enable route numbers",
     "disableRouteNumbersMobile": "Disable route numbers",
+    "filenameLabel": "Filename",
+    "themeLabel": "Theme",
+    "routeNumbersLabel": "Route numbers",
+    "routeNumbersHint": "In 2D exports",
+    "switchTo3dView": "Switch to 3D view",
+    "openRequiredView": "Open required view",
+    "exportFormatAriaLabel": "Export {label}",
+    "view3dUnavailable": "3D view not available — open the 3D tab first",
+    "canvasNotReady": "Canvas not ready",
+    "exported": "Exported",
+    "webmRenderingBackground": "Cinematic FPV is rendering in the background…",
+    "webmRenderingProgress": "Rendering cinematic FPV… {status}",
+    "webmReady": "Cinematic FPV export ready",
+    "webmProgressLabel": "Rendering fly-through… video {duration}",
+    "sections": {
+      "visualExports": {
+        "title": "Visual Exports",
+        "description": "Read-only captures for review, print, or sharing."
+      },
+      "projectHandoff": {
+        "title": "Project & Handoff",
+        "description": "Editable backup or read-only setup handoff."
+      },
+      "simulatorMotion": {
+        "title": "Simulator & Motion",
+        "description": "Review video and experimental simulator output."
+      }
+    },
     "formats": {
       "image": {
         "label": "Image",
@@ -204,6 +232,7 @@
     "navEmbed": "Embed",
     "navGallery": "Gallery",
     "currentSharedLink": "Current shared link",
+    "readOnlyReviewOn": "Read-only {view} review on {hostname}",
     "primaryAction": {
       "updateLink": "Update link",
       "copyLink": "Copy link",
@@ -315,9 +344,18 @@
       "iframeTitle": "TrackDraw track embed",
       "codeTitle": "Embed code",
       "codeDescription": "Account-published tracks can be embedded on club or event sites.",
+      "loadingState": "Loading embed state…",
+      "publishBeforeEmbedding": "Publish before embedding",
+      "publishBeforeEmbeddingDescription": "Embeds use the durable account-published link, so create the published link before copying iframe code.",
+      "createPublishedLink": "Create published link",
+      "temporaryLinksCannotEmbed": "Temporary links cannot be embedded",
+      "temporaryLinksCannotEmbedDescription": "Sign in and publish this track from your account to create a durable embed.",
       "refreshFirst": "Update the published link first so the embed uses the latest design.",
       "updateLink": "Update link",
       "initialView": "Initial view",
+      "iframeCodeLabel": "Iframe code",
+      "iframeCodeDescription": "Includes the selected initial view.",
+      "copyCode": "Copy code",
       "layout2dLabel": "2D layout",
       "layout2dDescription": "Open as the flat field plan",
       "preview3dLabel": "3D preview",
@@ -334,6 +372,12 @@
       "previewLink": "Preview the share link in a new window",
       "exportJson": "Export JSON instead",
       "exportJsonDescription": "Editable backup for reopening in TrackDraw"
+    },
+    "labels": {
+      "copyLink": "Copy link",
+      "linkExpiresAfter": "Link expires after",
+      "temporarySnapshotsExpire": "Temporary snapshots stay available until they expire.",
+      "revoke": "Revoke"
     }
   },
   "projectManager": {
@@ -360,29 +404,81 @@
       "description": "Active share links published from your account. Copy, open or revoke them here."
     },
     "device": {
-      "resolveConflict": "Resolve sync conflict",
-      "retrySync": "Retry sync",
-      "updateAccountCopy": "Update account copy",
-      "syncToAccount": "Sync to account",
-      "conflictDesc": "This project changed on another device. Review the version before continuing.",
-      "syncFailedDesc": "The last sync failed. Try sending the latest local version again.",
-      "pendingDesc": "Push the latest local changes to your account.",
-      "updateDesc": "Replace the synced account copy with this device version.",
-      "syncDesc": "Make this project available on your signed-in devices.",
-      "syncing": "Syncing",
-      "reviewNeeded": "Review needed",
-      "syncFailed": "Sync failed",
-      "synced": "Synced",
-      "localOnly": "Local only",
-      "localChangesWaiting": "Local changes are waiting to sync",
-      "confirmRenameTitle": "Confirm rename",
-      "resolveVersionConflict": "Resolve version conflict",
-      "exportJson": "Export JSON",
-      "moreActions": "More actions",
-      "openBadge": "open",
-      "noProjects": "No saved projects",
-      "noProjectsDesc": "Projects you save will appear here.",
-      "untitled": "Untitled"
+      "sync": {
+        "resolveConflict": "Resolve sync conflict",
+        "retry": "Retry sync",
+        "updateAccountCopy": "Update account copy",
+        "syncToAccount": "Sync to account",
+        "conflictDescription": "This project changed on another device. Review the version before continuing.",
+        "failedDescription": "The last sync failed. Try sending the latest local version again.",
+        "pendingDescription": "Push the latest local changes to your account.",
+        "updateDescription": "Replace the synced account copy with this device version.",
+        "description": "Make this project available on your signed-in devices.",
+        "localChangesWaiting": "Local changes are waiting to sync",
+        "latestLocalCopySaved": "Latest local copy saved {relativeTime}",
+        "changedOnAnotherDevice": "This project changed on another device",
+        "couldNotSyncProject": "Could not sync this project",
+        "resolveVersionConflict": "Resolve version conflict"
+      },
+      "status": {
+        "syncing": "Syncing",
+        "reviewNeeded": "Review needed",
+        "failed": "Sync failed",
+        "synced": "Synced",
+        "localOnly": "Local only"
+      },
+      "meta": {
+        "localCopyWaitingToSync": "{itemLabel} · local copy waiting to sync",
+        "localCopySynced": "{itemLabel} · local copy synced {relativeTime}",
+        "localCopy": "{itemLabel} · local copy",
+        "onlyOnThisDevice": "{itemLabel} · only on this device · {relativeTime}",
+        "onThisDeviceSubtitle": "{itemLabel} on this device"
+      },
+      "aria": {
+        "resolveVersionConflictFor": "Resolve version conflict for {title}",
+        "retrySyncFor": "Retry sync for {title}",
+        "updateAccountCopyFor": "Update account copy for {title}",
+        "syncProjectToAccount": "Sync {title} to account",
+        "exportProjectAsJson": "Export {title} as JSON",
+        "manageProject": "Manage {title}",
+        "renameProject": "Rename {title}",
+        "deleteProject": "Delete {title}"
+      },
+      "actions": {
+        "confirmRenameTitle": "Confirm rename",
+        "more": "More actions",
+        "newProject": "New project",
+        "newProjectDescription": "Start a fresh track or use a starter layout.",
+        "cleanUpLocal": "Clean up local",
+        "cleanUpLocalDescription": "Remove older copies from this device only.",
+        "renameDescription": "Give this project a clearer name.",
+        "openBadge": "open"
+      },
+      "export": {
+        "json": "Export JSON",
+        "jsonDescription": "Download this project as a reusable TrackDraw file."
+      },
+      "delete": {
+        "localProject": "Delete local project?",
+        "localProjectDescription": "Removes this local copy.",
+        "permanently": "Delete permanently?",
+        "permanentlyDescription": "This only removes the local project from this browser.",
+        "localProjectActionDescription": "Remove this local project from the device.",
+        "removeLocalProjectsTitle": "Remove {count, plural, one {# local project} other {# local projects}}?",
+        "accountSyncedCopiesStayAvailable": "Account-synced copies stay available in your account."
+      },
+      "groups": {
+        "localCopiesLinkedToAccount": "Local copies linked to account",
+        "onlyOnThisDevice": "Only on this device"
+      },
+      "empty": {
+        "noProjects": "No saved projects",
+        "noProjectsDescription": "Projects you save will appear here."
+      },
+      "fallback": {
+        "project": "project",
+        "untitled": "Untitled"
+      }
     },
     "account": {
       "loadingProjects": "Loading account projects...",
@@ -406,18 +502,32 @@
       "noSnapshotsDesktopDesc": "Press <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> or use the save button in the header.",
       "restoreTitle": "Restore this snapshot",
       "deleteTitle": "Delete snapshot",
+      "restoreSnapshotConfirm": "Restore this snapshot?",
+      "restoreAction": "Restore",
+      "restoreSnapshotAriaLabel": "Restore {title}",
+      "deleteSnapshotAriaLabel": "Delete {title}",
+      "snapshotFallback": "snapshot",
       "activeBadge": "active",
       "untitled": "Untitled"
     },
     "shares": {
+      "loadingPublishedShares": "Loading published shares...",
+      "readOnlyReviewLinks": "Shares are read-only review links. Export JSON when someone needs an editable TrackDraw backup.",
       "noShares": "No active shares",
       "noSharesDesc": "Account-published links stay live until revoked. Temporary anonymous links expire automatically and are not managed here.",
+      "publishedStatus": "published",
+      "expiredStatus": "expired",
+      "dayLeft": "1 day left",
+      "daysLeft": "{days} days left",
+      "publishedLifetime": "read-only published link, live until revoked",
+      "temporaryLifetime": "read-only temporary link, {expiresIn}",
       "copyLink": "Copy link",
       "openTab": "Open in new tab",
       "revokeLink": "Revoke link",
       "copyLinkAriaLabel": "Copy share link",
       "openTabAriaLabel": "Open share link",
-      "revokeLinkAriaLabel": "Revoke share link"
+      "revokeLinkAriaLabel": "Revoke share link",
+      "revokeLinkConfirm": "Revoke this link?"
     },
     "copyProjectIdSuccess": "Project ID copied",
     "copyProjectIdFailed": "Could not copy the project ID from this browser.",

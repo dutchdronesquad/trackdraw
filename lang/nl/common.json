@@ -47,6 +47,20 @@
     "presetLabel": "Meetpreset: {current}",
     "description": "Wissel weergegeven afstanden en compatibele invoer."
   },
+  "themeToggle": {
+    "labels": {
+      "light": "Licht",
+      "dark": "Donker",
+      "system": "Systeem"
+    },
+    "ariaLabel": "Thema: {theme}",
+    "tooltip": "{current} — klik voor {next}"
+  },
+  "versionTag": {
+    "tooltip": {
+      "openReleaseNotes": "Release notes openen op GitHub"
+    }
+  },
   "status": {
     "active": "Actief",
     "expired": "Verlopen",

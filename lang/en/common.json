@@ -47,6 +47,20 @@
     "presetLabel": "Measurement preset: {current}",
     "description": "Switch displayed distances and compatible inputs."
   },
+  "themeToggle": {
+    "labels": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "ariaLabel": "Theme: {theme}",
+    "tooltip": "{current} — click for {next}"
+  },
+  "versionTag": {
+    "tooltip": {
+      "openReleaseNotes": "Open release notes on GitHub"
+    }
+  },
   "status": {
     "active": "Active",
     "expired": "Expired",

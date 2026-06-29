@@ -182,7 +182,8 @@ function MobileFormatRow({
   description,
   isBusy,
   locked,
-  lockedLabel = "Open required view",
+  lockedLabel,
+  exportAriaLabel,
   onAction,
 }: {
   ext: string;
@@ -191,7 +192,8 @@ function MobileFormatRow({
   description: string;
   isBusy: boolean;
   locked?: boolean;
-  lockedLabel?: string;
+  lockedLabel: string;
+  exportAriaLabel: string;
   onAction: () => void;
 }) {
   const inactive = isBusy;
@@ -200,7 +202,7 @@ function MobileFormatRow({
       type="button"
       disabled={inactive}
       aria-busy={isBusy}
-      aria-label={locked ? lockedLabel : `Export ${label}`}
+      aria-label={locked ? lockedLabel : exportAriaLabel}
       onClick={onAction}
       className={cn(
         "flex w-full items-center gap-4 px-4 py-4 text-left transition-colors",
@@ -335,8 +337,8 @@ export default function ExportDialog({
 
       toast.success(
         warningText
-          ? `${options?.successMessage ?? "Exported"}. ${warningText}`
-          : (options?.successMessage ?? "Exported"),
+          ? `${options?.successMessage ?? t("export.exported")}. ${warningText}`
+          : (options?.successMessage ?? t("export.exported")),
         options?.toastId !== undefined ? { id: options.toastId } : undefined
       );
       if (!options?.closeOnStart) {
@@ -363,7 +365,7 @@ export default function ExportDialog({
         {/* Filename */}
         <label className="flex min-w-0 flex-1 cursor-text flex-col gap-1.5 px-4 py-3">
           <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-            Filename
+            {t("export.filenameLabel")}
           </span>
           <input
             type="text"
@@ -377,7 +379,7 @@ export default function ExportDialog({
         {/* Theme */}
         <div className="flex shrink-0 flex-col gap-1.5 px-4 py-3">
           <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-            Theme
+            {t("export.themeLabel")}
           </span>
           <div className="flex items-center gap-3">
             <button
@@ -420,10 +422,10 @@ export default function ExportDialog({
         <div className="flex shrink-0 items-center gap-3 px-4 py-3">
           <div className="flex flex-col gap-1.5">
             <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-              Route numbers
+              {t("export.routeNumbersLabel")}
             </span>
             <span className="text-muted-foreground/45 text-[10px]">
-              In 2D exports
+              {t("export.routeNumbersHint")}
             </span>
           </div>
           <button
@@ -449,12 +451,12 @@ export default function ExportDialog({
       <div>
         <div className="mb-1.5 flex items-center gap-3">
           <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
-            Visual Exports
+            {t("export.sections.visualExports.title")}
           </span>
           <div className="bg-border/30 h-px flex-1" />
         </div>
         <p className="text-muted-foreground mb-4 text-[11px]">
-          Read-only captures for review, print, or sharing.
+          {t("export.sections.visualExports.description")}
         </p>
         <div className="grid grid-cols-3 gap-3">
           <DesktopFormatCard
@@ -500,16 +502,16 @@ export default function ExportDialog({
             busy={busy === "3d"}
             lockedAction={
               activeTab !== "3d" && onRequest3DView
-                ? { label: "Switch to 3D view", onClick: onRequest3DView }
+                ? {
+                    label: t("export.switchTo3dView"),
+                    onClick: onRequest3DView,
+                  }
                 : undefined
             }
             onExport={() =>
               run("3d", () => {
                 const dataUrl = preview3DRef?.current?.screenshot();
-                if (!dataUrl)
-                  throw new Error(
-                    "3D view not available — open the 3D tab first"
-                  );
+                if (!dataUrl) throw new Error(t("export.view3dUnavailable"));
                 const a = document.createElement("a");
                 a.href = dataUrl;
                 a.download = `${safeName({
@@ -527,12 +529,12 @@ export default function ExportDialog({
       <div>
         <div className="mb-1.5 flex items-center gap-3">
           <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
-            Project &amp; Handoff
+            {t("export.sections.projectHandoff.title")}
           </span>
           <div className="bg-border/30 h-px flex-1" />
         </div>
         <p className="text-muted-foreground mb-4 text-[11px]">
-          Editable backup or read-only setup handoff.
+          {t("export.sections.projectHandoff.description")}
         </p>
         <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
@@ -557,7 +559,7 @@ export default function ExportDialog({
             onExport={() =>
               run("race-day-pdf", async () => {
                 const stage = canvasRef.current?.getStage();
-                if (!stage) throw new Error("Canvas not ready");
+                if (!stage) throw new Error(t("export.canvasNotReady"));
                 const { exportPdf } = await import("@/lib/export/exportPdf");
                 const shareUrl = await getRacePackShareUrl();
                 await exportPdf(
@@ -583,12 +585,12 @@ export default function ExportDialog({
       <div>
         <div className="mb-1.5 flex items-center gap-3">
           <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
-            Simulator &amp; Motion
+            {t("export.sections.simulatorMotion.title")}
           </span>
           <div className="bg-border/30 h-px flex-1" />
         </div>
         <p className="text-muted-foreground mb-4 text-[11px]">
-          Review video and experimental simulator output.
+          {t("export.sections.simulatorMotion.description")}
         </p>
         <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
@@ -606,12 +608,9 @@ export default function ExportDialog({
                   webmToastIdRef.current = toastId;
                   setWebmProgress(null);
                   webmStartTimeRef.current = Date.now();
-                  toast.loading(
-                    "Cinematic FPV is rendering in the background…",
-                    {
-                      id: toastId,
-                    }
-                  );
+                  toast.loading(t("export.webmRenderingBackground"), {
+                    id: toastId,
+                  });
                   const { exportFlythrough } =
                     await import("@/lib/export/exportFlythrough");
                   try {
@@ -622,13 +621,13 @@ export default function ExportDialog({
                       (progress) => {
                         setWebmProgress(progress);
                         toast.loading(
-                          `Rendering cinematic FPV… ${getFlythroughStatusText(
-                            progress,
-                            webmStartTimeRef.current
-                          )}`,
-                          {
-                            id: toastId,
-                          }
+                          t("export.webmRenderingProgress", {
+                            status: getFlythroughStatusText(
+                              progress,
+                              webmStartTimeRef.current
+                            ),
+                          }),
+                          { id: toastId }
                         );
                       }
                     );
@@ -640,7 +639,7 @@ export default function ExportDialog({
                 },
                 {
                   closeOnStart: true,
-                  successMessage: "Cinematic FPV export ready",
+                  successMessage: t("export.webmReady"),
                   toastId: "webm-flythrough-export",
                 }
               )
@@ -661,8 +660,9 @@ export default function ExportDialog({
           <div className="mt-3 space-y-1.5">
             <div className="text-muted-foreground flex justify-between text-[10px]">
               <span>
-                Rendering fly-through… video{" "}
-                {formatDuration(webmProgress.videoDurationSeconds)}
+                {t("export.webmProgressLabel", {
+                  duration: formatDuration(webmProgress.videoDurationSeconds),
+                })}
               </span>
               <span>
                 {getFlythroughStatusText(
@@ -688,7 +688,7 @@ export default function ExportDialog({
     <div className="space-y-5 pb-2">
       <div>
         <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          Visual Exports
+          {t("export.sections.visualExports.title")}
         </h3>
         <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
           <MobileFormatRow
@@ -698,6 +698,10 @@ export default function ExportDialog({
             color="bg-sky-500/15 text-sky-400"
             description={t("export.formats.image.descriptionShort")}
             isBusy={busy === "png"}
+            lockedLabel={t("export.openRequiredView")}
+            exportAriaLabel={t("export.exportFormatAriaLabel", {
+              label: t("export.formats.image.label"),
+            })}
             onAction={() =>
               run("png", () =>
                 exportPngFile(
@@ -717,6 +721,10 @@ export default function ExportDialog({
             color="bg-purple-500/15 text-purple-400"
             description={t("export.formats.vector.descriptionShort")}
             isBusy={busy === "svg"}
+            lockedLabel={t("export.openRequiredView")}
+            exportAriaLabel={t("export.exportFormatAriaLabel", {
+              label: t("export.formats.vector.label"),
+            })}
             onAction={() =>
               run("svg", () =>
                 exportSvgFile(
@@ -736,14 +744,18 @@ export default function ExportDialog({
             description={t("export.formats.render3d.descriptionShort")}
             isBusy={busy === "3d"}
             locked={activeTab !== "3d"}
-            lockedLabel="Switch to 3D view"
+            lockedLabel={t("export.switchTo3dView")}
+            exportAriaLabel={t("export.exportFormatAriaLabel", {
+              label: t("export.formats.render3d.label"),
+            })}
             onAction={
               activeTab !== "3d" && onRequest3DView
                 ? onRequest3DView
                 : () =>
                     run("3d", () => {
                       const dataUrl = preview3DRef?.current?.screenshot();
-                      if (!dataUrl) throw new Error("3D view not available");
+                      if (!dataUrl)
+                        throw new Error(t("export.view3dUnavailable"));
                       const a = document.createElement("a");
                       a.href = dataUrl;
                       a.download = `${safeName({ view: "3d", theme: currentTheme })}.png`;
@@ -756,7 +768,7 @@ export default function ExportDialog({
 
       <div>
         <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          Project &amp; Handoff
+          {t("export.sections.projectHandoff.title")}
         </h3>
         <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
           <MobileFormatRow
@@ -766,6 +778,10 @@ export default function ExportDialog({
             color="bg-emerald-500/15 text-emerald-400"
             description={t("export.formats.projectFile.descriptionShort")}
             isBusy={busy === "json"}
+            lockedLabel={t("export.openRequiredView")}
+            exportAriaLabel={t("export.exportFormatAriaLabel", {
+              label: t("export.formats.projectFile.label"),
+            })}
             onAction={() =>
               run("json", () => {
                 const serialized = serializeDesign(design);
@@ -780,10 +796,14 @@ export default function ExportDialog({
             color="bg-red-500/15 text-red-400"
             description={t("export.formats.racePack.descriptionShort")}
             isBusy={busy === "race-day-pdf"}
+            lockedLabel={t("export.openRequiredView")}
+            exportAriaLabel={t("export.exportFormatAriaLabel", {
+              label: t("export.formats.racePack.label"),
+            })}
             onAction={() =>
               run("race-day-pdf", async () => {
                 const stage = canvasRef.current?.getStage();
-                if (!stage) throw new Error("Canvas not ready");
+                if (!stage) throw new Error(t("export.canvasNotReady"));
                 const { exportPdf } = await import("@/lib/export/exportPdf");
                 const shareUrl = await getRacePackShareUrl();
                 await exportPdf(
@@ -807,7 +827,7 @@ export default function ExportDialog({
 
       <div>
         <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          Simulator &amp; Motion
+          {t("export.sections.simulatorMotion.title")}
         </h3>
         <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
           <MobileFormatRow
@@ -817,6 +837,10 @@ export default function ExportDialog({
             color="bg-violet-500/15 text-violet-400"
             description={t("export.formats.cinematicFpv.descriptionShort")}
             isBusy={busy === "webm"}
+            lockedLabel={t("export.openRequiredView")}
+            exportAriaLabel={t("export.exportFormatAriaLabel", {
+              label: t("export.formats.cinematicFpv.label"),
+            })}
             onAction={() =>
               run(
                 "webm",
@@ -826,12 +850,9 @@ export default function ExportDialog({
                   webmToastIdRef.current = toastId;
                   setWebmProgress(null);
                   webmStartTimeRef.current = Date.now();
-                  toast.loading(
-                    "Cinematic FPV is rendering in the background…",
-                    {
-                      id: toastId,
-                    }
-                  );
+                  toast.loading(t("export.webmRenderingBackground"), {
+                    id: toastId,
+                  });
                   const { exportFlythrough } =
                     await import("@/lib/export/exportFlythrough");
                   try {
@@ -842,13 +863,13 @@ export default function ExportDialog({
                       (progress) => {
                         setWebmProgress(progress);
                         toast.loading(
-                          `Rendering cinematic FPV… ${getFlythroughStatusText(
-                            progress,
-                            webmStartTimeRef.current
-                          )}`,
-                          {
-                            id: toastId,
-                          }
+                          t("export.webmRenderingProgress", {
+                            status: getFlythroughStatusText(
+                              progress,
+                              webmStartTimeRef.current
+                            ),
+                          }),
+                          { id: toastId }
                         );
                       }
                     );
@@ -860,7 +881,7 @@ export default function ExportDialog({
                 },
                 {
                   closeOnStart: true,
-                  successMessage: "Cinematic FPV export ready",
+                  successMessage: t("export.webmReady"),
                   toastId: "webm-flythrough-export",
                 }
               )
@@ -873,6 +894,10 @@ export default function ExportDialog({
             color="bg-lime-500/15 text-lime-400"
             description={t("export.formats.velocidrone.descriptionShort")}
             isBusy={busy === "trk"}
+            lockedLabel={t("export.openRequiredView")}
+            exportAriaLabel={t("export.exportFormatAriaLabel", {
+              label: t("export.formats.velocidrone.label"),
+            })}
             onAction={() =>
               run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))
             }
@@ -895,7 +920,7 @@ export default function ExportDialog({
             {/* Filename */}
             <label className="border-border/50 bg-muted/25 flex cursor-text items-center gap-2.5 rounded-xl border px-3.5 py-2.5">
               <span className="text-muted-foreground shrink-0 text-[11px] font-medium select-none">
-                Filename
+                {t("export.filenameLabel")}
               </span>
               <input
                 type="text"
@@ -944,7 +969,7 @@ export default function ExportDialog({
               </div>
               <div className="flex items-center gap-2.5">
                 <span className="text-muted-foreground text-[11px] font-medium select-none">
-                  Route numbers
+                  {t("export.routeNumbersLabel")}
                 </span>
                 <button
                   type="button"

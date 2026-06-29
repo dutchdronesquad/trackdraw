@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { Reveal, RevealListItem } from "@/components/motion/Reveal";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
@@ -212,11 +213,15 @@ function RecentAuditEvents({
 
   return (
     <ul className="divide-y">
-      {events.map((event) => {
+      {events.map((event, index) => {
         const cfg = eventConfig(event.eventType);
         const Icon = cfg.icon;
         return (
-          <li key={event.id} className="flex items-start gap-3 py-2.5">
+          <RevealListItem
+            key={event.id}
+            className="flex items-start gap-3 py-2.5"
+            delay={index * 0.03}
+          >
             <span
               className={`mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md ${cfg.tone}`}
             >
@@ -233,7 +238,7 @@ function RecentAuditEvents({
             <time className="text-muted-foreground mt-0.5 shrink-0 text-xs tabular-nums">
               {formatRelativeTime(event.createdAt, t)}
             </time>
-          </li>
+          </RevealListItem>
         );
       })}
     </ul>
@@ -257,10 +262,14 @@ function RecentSignups({
 
   return (
     <ul className="divide-y">
-      {users.map((user) => {
+      {users.map((user, index) => {
         const initial = (user.name ?? user.email)[0]?.toUpperCase() ?? "?";
         return (
-          <li key={user.id} className="flex items-center gap-3 py-2.5">
+          <RevealListItem
+            key={user.id}
+            className="flex items-center gap-3 py-2.5"
+            delay={index * 0.03}
+          >
             <span className="bg-muted text-muted-foreground inline-flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
               {initial}
             </span>
@@ -277,7 +286,7 @@ function RecentSignups({
             <time className="text-muted-foreground shrink-0 text-xs tabular-nums">
               {formatRelativeTime(user.createdAt, t)}
             </time>
-          </li>
+          </RevealListItem>
         );
       })}
     </ul>
@@ -319,12 +328,16 @@ function RecentGalleryEntries({
 
   return (
     <ul className="divide-y">
-      {entries.map((entry) => {
+      {entries.map((entry, index) => {
         const badge =
           GALLERY_STATE_BADGE[entry.galleryState] ??
           GALLERY_STATE_BADGE["listed"]!;
         return (
-          <li key={entry.id} className="flex items-center gap-3 py-2.5">
+          <RevealListItem
+            key={entry.id}
+            className="flex items-center gap-3 py-2.5"
+            delay={index * 0.03}
+          >
             <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
               <ImageIcon className="text-muted-foreground size-3.5" />
             </div>
@@ -341,7 +354,7 @@ function RecentGalleryEntries({
             >
               {t(`galleryState.${badge.labelKey}`)}
             </span>
-          </li>
+          </RevealListItem>
         );
       })}
     </ul>
@@ -378,55 +391,63 @@ export default async function DashboardPage() {
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         {/* KPI strip */}
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          <KpiCard
-            label={t("kpi.totalUsers")}
-            value={overviewStats.totalUsers}
-            sub={t("kpi.totalUsersSub", {
-              count: overviewStats.newUsersThisMonth,
-            })}
-            trend={{
-              current: overviewStats.newUsersThisMonth,
-              previous: overviewStats.newUsersLastMonth,
-            }}
-            vsPrevMonthLabel={t("kpi.vsPrevMonth")}
-            icon={Users}
-            accent="bg-emerald-500"
-            iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-          />
-          <KpiCard
-            label={t("kpi.activeProjects")}
-            value={overviewStats.activeProjects}
-            sub={t("kpi.activeProjectsSub")}
-            icon={FolderOpen}
-            accent="bg-violet-500"
-            iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
-          />
-          <KpiCard
-            label={t("kpi.activeShares")}
-            value={overviewStats.activeShares}
-            sub={t("kpi.activeSharesSub")}
-            icon={Link2}
-            accent="bg-orange-500"
-            iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
-          />
-          <KpiCard
-            label={t("kpi.gallery")}
-            value={galleryStats.total}
-            sub={t("kpi.gallerySub", {
-              featured: galleryStats.featured,
-              hidden: galleryStats.hidden,
-            })}
-            icon={ImageIcon}
-            accent="bg-sky-500"
-            iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
-          />
+          <Reveal>
+            <KpiCard
+              label={t("kpi.totalUsers")}
+              value={overviewStats.totalUsers}
+              sub={t("kpi.totalUsersSub", {
+                count: overviewStats.newUsersThisMonth,
+              })}
+              trend={{
+                current: overviewStats.newUsersThisMonth,
+                previous: overviewStats.newUsersLastMonth,
+              }}
+              vsPrevMonthLabel={t("kpi.vsPrevMonth")}
+              icon={Users}
+              accent="bg-emerald-500"
+              iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            />
+          </Reveal>
+          <Reveal delay={0.04}>
+            <KpiCard
+              label={t("kpi.activeProjects")}
+              value={overviewStats.activeProjects}
+              sub={t("kpi.activeProjectsSub")}
+              icon={FolderOpen}
+              accent="bg-violet-500"
+              iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
+            />
+          </Reveal>
+          <Reveal delay={0.08}>
+            <KpiCard
+              label={t("kpi.activeShares")}
+              value={overviewStats.activeShares}
+              sub={t("kpi.activeSharesSub")}
+              icon={Link2}
+              accent="bg-orange-500"
+              iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
+            />
+          </Reveal>
+          <Reveal delay={0.12}>
+            <KpiCard
+              label={t("kpi.gallery")}
+              value={galleryStats.total}
+              sub={t("kpi.gallerySub", {
+                featured: galleryStats.featured,
+                hidden: galleryStats.hidden,
+              })}
+              icon={ImageIcon}
+              accent="bg-sky-500"
+              iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
+            />
+          </Reveal>
         </div>
 
         {/* Activity + Sign-ups (admin only) + Gallery */}
         <div
           className={`grid gap-4 ${canReadUsers ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}
         >
-          <div className="bg-card rounded-xl border p-4">
+          <Reveal className="bg-card rounded-xl border p-4">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-medium">{t("recentActivity")}</p>
               {canReadAudit && (
@@ -442,10 +463,10 @@ export default async function DashboardPage() {
               events={recentAuditEvents}
               t={t as (key: string, values?: Record<string, unknown>) => string}
             />
-          </div>
+          </Reveal>
 
           {canReadUsers && (
-            <div className="bg-card rounded-xl border p-4">
+            <Reveal className="bg-card rounded-xl border p-4" delay={0.04}>
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <UserPlus className="text-muted-foreground size-3.5" />
@@ -464,10 +485,13 @@ export default async function DashboardPage() {
                   t as (key: string, values?: Record<string, unknown>) => string
                 }
               />
-            </div>
+            </Reveal>
           )}
 
-          <div className="bg-card rounded-xl border p-4">
+          <Reveal
+            className="bg-card rounded-xl border p-4"
+            delay={canReadUsers ? 0.08 : 0.04}
+          >
             <div className="mb-3 flex items-center justify-between">
               <p className="text-sm font-medium">{t("galleryCardTitle")}</p>
               <Link
@@ -481,7 +505,7 @@ export default async function DashboardPage() {
               entries={recentGalleryEntries}
               t={t as (key: string, values?: Record<string, unknown>) => string}
             />
-          </div>
+          </Reveal>
         </div>
       </div>
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { useTranslations } from "next-intl";
 import { Sun, Moon, Monitor } from "lucide-react";
 import {
   Tooltip,
@@ -22,11 +23,6 @@ const NEXT: Record<ThemePreference, ThemePreference> = {
   light: "dark",
   dark: "system",
   system: "light",
-};
-const LABEL: Record<ThemePreference, string> = {
-  light: "Light",
-  dark: "Dark",
-  system: "System",
 };
 const EVENT = "trackdraw-theme";
 
@@ -73,14 +69,17 @@ const icons: Record<ThemePreference, React.ReactNode> = {
 };
 
 export function ThemeToggle({ className }: { className?: string }) {
+  const t = useTranslations("common");
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const currentThemeLabel = t(`themeToggle.labels.${theme}`);
+  const nextThemeLabel = t(`themeToggle.labels.${NEXT[theme]}`);
 
   return (
     <Tooltip>
       <TooltipTrigger
         type="button"
         onClick={() => applyTheme(NEXT[theme])}
-        aria-label={`Theme: ${LABEL[theme]}`}
+        aria-label={t("themeToggle.ariaLabel", { theme: currentThemeLabel })}
         className={cn(
           "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 items-center justify-center rounded-md transition-colors",
           className
@@ -89,7 +88,10 @@ export function ThemeToggle({ className }: { className?: string }) {
         {icons[theme]}
       </TooltipTrigger>
       <TooltipContent>
-        {LABEL[theme]} — click for {LABEL[NEXT[theme]].toLowerCase()}
+        {t("themeToggle.tooltip", {
+          current: currentThemeLabel,
+          next: nextThemeLabel.toLowerCase(),
+        })}
       </TooltipContent>
     </Tooltip>
   );

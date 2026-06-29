@@ -566,11 +566,10 @@ export function ProjectLayoutInspectorView({
         ) : (
           <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">
             <p className="text-foreground/75 text-[11px] font-medium">
-              No items placed yet
+              {t("layout.emptyLayoutTitle")}
             </p>
             <p className="text-muted-foreground/70 mt-1 text-[11px] leading-relaxed">
-              Add a few objects on the canvas to review the layout and compare
-              it against your inventory.
+              {t("layout.emptyLayoutDescription")}
             </p>
           </div>
         )}

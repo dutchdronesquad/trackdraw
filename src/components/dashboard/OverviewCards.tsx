@@ -1,5 +1,6 @@
 import { EyeOff, ImageIcon, Sparkles, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { Reveal } from "@/components/motion/Reveal";
 import type { GalleryOverviewStats } from "@/lib/server/gallery";
 
 type DashboardOverviewCardsProps = {
@@ -7,14 +8,17 @@ type DashboardOverviewCardsProps = {
   totalUsers: number | null;
 };
 
-type KpiCard = {
-  key: string;
+type KpiCardProps = {
   label: string;
   value: number;
   helper: string;
   icon: typeof ImageIcon;
   accent: string;
   iconTone: string;
+};
+
+type KpiCardConfig = KpiCardProps & {
+  key: string;
 };
 
 function KpiCard({
@@ -24,7 +28,7 @@ function KpiCard({
   icon: Icon,
   accent,
   iconTone,
-}: KpiCard) {
+}: KpiCardProps) {
   return (
     <div className="bg-card overflow-hidden rounded-xl border">
       <div className={`h-1 ${accent}`} />
@@ -54,7 +58,7 @@ export default async function DashboardOverviewCards({
 }: DashboardOverviewCardsProps) {
   const t = await getTranslations("dashboard.overviewCards");
 
-  const cards: KpiCard[] = [
+  const cards: KpiCardConfig[] = [
     {
       key: "gallery-total",
       label: t("galleryEntries"),
@@ -93,15 +97,17 @@ export default async function DashboardOverviewCards({
             accent: "bg-emerald-500",
             iconTone:
               "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-          } satisfies KpiCard,
+          } satisfies KpiCardConfig,
         ]
       : []),
   ];
 
   return (
     <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-      {cards.map(({ key, ...card }) => (
-        <KpiCard key={key} {...card} />
+      {cards.map(({ key, ...card }, index) => (
+        <Reveal key={key} delay={index * 0.04}>
+          <KpiCard {...card} />
+        </Reveal>
       ))}
     </div>
   );

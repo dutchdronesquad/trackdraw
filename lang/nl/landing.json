@@ -80,6 +80,7 @@
       "title": "2D-lay-out",
       "subtitle": "Bouw de track op een veld dat overeenkomt met de realiteit.",
       "description": "Begin met de veldafmetingen en plaats de elementen die crews al herkennen. Dat maakt de eerste versie van het plan direct bruikbaar, in plaats van alleen maar een ruwe schets.",
+      "screenshotAlt": "TrackDraw 2D-layouteditor met obstacle library en trackplan",
       "bullet1": "Veldafmetingen op ware schaal",
       "bullet2": "Gates, flags, cones, startpads en grotere elementen",
       "bullet3": "Race line en labels voor briefingduidelijkheid"
@@ -88,6 +89,7 @@
       "title": "Verfijnen",
       "subtitle": "Blijf bewerken wanneer de locatie een wijziging vereist.",
       "description": "Een goed plan past zich netjes aan. Inspector-bedieningselementen en mobielvriendelijk bewerken maken het mogelijk om objecteigenschappen aan te passen, items te herpositioneren en het ontwerp bruikbaar te houden, zelfs wanneer de echte locatie weigert statisch te blijven.",
+      "screenshotAlt": "TrackDraw mobiele editor met instellingenpaneel geopend",
       "bullet1": "Inspector-bedieningselementen voor afmetingen, rotatie en kleur",
       "bullet2": "Touch-vriendelijk bewerken op telefoons en tablets",
       "bullet3": "Snelle aanpassingen zonder het hoofdplan te verlaten"
@@ -96,6 +98,7 @@
       "title": "3D-preview",
       "subtitle": "Loop door de track voor je hem bouwt.",
       "description": "Eén klik schakelt van het platte 2D-plan naar een live 3D-scène. Wijs hoogte toe aan elk waypoint op de race line om het volledige verticale profiel te modelleren. Ontdek gevaarlijke benaderingen voordat er één enkele paal in de grond staat.",
+      "screenshotAlt": "TrackDraw 3D-preview met track flow en hoogte",
       "bullet1": "Live 3D rechtstreeks gerenderd vanuit je 2D-ontwerp",
       "bullet2": "Hoogte per waypoint op de race line",
       "bullet3": "Hoogtegrafiek in het inspectorpaneel"
@@ -104,6 +107,7 @@
       "title": "Overdracht",
       "subtitle": "Geef piloten en crew dezelfde actuele versie.",
       "description": "Een plan is alleen waardevol als andere mensen het kunnen openen. Alleen-lezen links en exports maken de lay-out tot iets wat piloten kunnen bekijken, crew kan afdrukken en organisatoren later opnieuw kunnen gebruiken.",
+      "screenshotAlt": "TrackDraw alleen-lezen gedeelde weergave geopend op mobiel",
       "bullet1": "Alleen-lezen links die op elk apparaat openen",
       "bullet2": "PDF, PNG en SVG voor briefing- en afdrukworkflows",
       "bullet3": "JSON-export om lay-outs te archiveren en later opnieuw te gebruiken",

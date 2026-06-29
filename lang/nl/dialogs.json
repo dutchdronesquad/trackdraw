@@ -133,6 +133,34 @@
     "disableRouteNumbers": "Routenummers uitschakelen in export",
     "enableRouteNumbersMobile": "Routenummers inschakelen",
     "disableRouteNumbersMobile": "Routenummers uitschakelen",
+    "filenameLabel": "Bestandsnaam",
+    "themeLabel": "Theme",
+    "routeNumbersLabel": "Routenummers",
+    "routeNumbersHint": "In 2D-exports",
+    "switchTo3dView": "Naar 3D-weergave",
+    "openRequiredView": "Vereiste weergave openen",
+    "exportFormatAriaLabel": "{label} exporteren",
+    "view3dUnavailable": "3D-weergave niet beschikbaar — open eerst de 3D-tab",
+    "canvasNotReady": "Canvas is nog niet klaar",
+    "exported": "Geëxporteerd",
+    "webmRenderingBackground": "Cinematic FPV wordt op de achtergrond gerenderd…",
+    "webmRenderingProgress": "Cinematic FPV renderen… {status}",
+    "webmReady": "Cinematic FPV-export is klaar",
+    "webmProgressLabel": "Fly-through video renderen… {duration}",
+    "sections": {
+      "visualExports": {
+        "title": "Visuele exports",
+        "description": "Alleen-lezen captures voor review, print of delen."
+      },
+      "projectHandoff": {
+        "title": "Project & handoff",
+        "description": "Bewerkbare back-up of alleen-lezen setup-handoff."
+      },
+      "simulatorMotion": {
+        "title": "Simulator & motion",
+        "description": "Reviewvideo en experimentele simulatoroutput."
+      }
+    },
     "formats": {
       "image": {
         "label": "Afbeelding",
@@ -204,6 +232,7 @@
     "navEmbed": "Embed",
     "navGallery": "Galerij",
     "currentSharedLink": "Huidige gedeelde link",
+    "readOnlyReviewOn": "Alleen-lezen {view}-review op {hostname}",
     "primaryAction": {
       "updateLink": "Link bijwerken",
       "copyLink": "Link kopiëren",
@@ -315,9 +344,18 @@
       "iframeTitle": "TrackDraw track embed",
       "codeTitle": "Embedcode",
       "codeDescription": "Accountgepubliceerde tracks kunnen worden ingesloten op club- of eventsites.",
+      "loadingState": "Embedstatus laden…",
+      "publishBeforeEmbedding": "Publiceer voor embedden",
+      "publishBeforeEmbeddingDescription": "Embeds gebruiken de duurzame accountgepubliceerde link, dus maak de gepubliceerde link aan voordat je iframe-code kopieert.",
+      "createPublishedLink": "Gepubliceerde link aanmaken",
+      "temporaryLinksCannotEmbed": "Tijdelijke links kunnen niet worden embedded",
+      "temporaryLinksCannotEmbedDescription": "Meld je aan en publiceer deze track vanuit je account om een duurzame embed te maken.",
       "refreshFirst": "Werk eerst de gepubliceerde link bij zodat de embed het nieuwste ontwerp gebruikt.",
       "updateLink": "Link bijwerken",
       "initialView": "Startweergave",
+      "iframeCodeLabel": "Iframe-code",
+      "iframeCodeDescription": "Inclusief de geselecteerde startweergave.",
+      "copyCode": "Code kopiëren",
       "layout2dLabel": "2D-layout",
       "layout2dDescription": "Open als plat veldplan",
       "preview3dLabel": "3D-preview",
@@ -334,6 +372,12 @@
       "previewLink": "Bekijk de deellink in een nieuw venster",
       "exportJson": "JSON exporteren",
       "exportJsonDescription": "Bewerkbare back-up om opnieuw te openen in TrackDraw"
+    },
+    "labels": {
+      "copyLink": "Link kopiëren",
+      "linkExpiresAfter": "Link verloopt na",
+      "temporarySnapshotsExpire": "Tijdelijke snapshots blijven beschikbaar totdat ze verlopen.",
+      "revoke": "Intrekken"
     }
   },
   "projectManager": {
@@ -360,29 +404,81 @@
       "description": "Actieve deellinks die vanuit je account zijn gepubliceerd. Kopieer, open of trek ze hier in."
     },
     "device": {
-      "resolveConflict": "Synchronisatieconflict oplossen",
-      "retrySync": "Synchronisatie opnieuw proberen",
-      "updateAccountCopy": "Accountkopie bijwerken",
-      "syncToAccount": "Synchroniseren naar account",
-      "conflictDesc": "Dit project is op een ander apparaat gewijzigd. Bekijk de versie voor je verdergaat.",
-      "syncFailedDesc": "De laatste synchronisatie is mislukt. Probeer de nieuwste lokale versie opnieuw te sturen.",
-      "pendingDesc": "De nieuwste lokale wijzigingen naar je account pushen.",
-      "updateDesc": "De gesynchroniseerde accountkopie vervangen door deze apparaatversie.",
-      "syncDesc": "Dit project beschikbaar maken op je aangemelde apparaten.",
-      "syncing": "Synchroniseren",
-      "reviewNeeded": "Beoordeling vereist",
-      "syncFailed": "Synchronisatie mislukt",
-      "synced": "Gesynchroniseerd",
-      "localOnly": "Alleen lokaal",
-      "localChangesWaiting": "Lokale wijzigingen wachten op synchronisatie",
-      "confirmRenameTitle": "Hernoemen bevestigen",
-      "resolveVersionConflict": "Versieconflict oplossen",
-      "exportJson": "Exporteren als JSON",
-      "moreActions": "Meer acties",
-      "openBadge": "open",
-      "noProjects": "Geen opgeslagen projecten",
-      "noProjectsDesc": "Projecten die je opslaat verschijnen hier.",
-      "untitled": "Naamloos"
+      "sync": {
+        "resolveConflict": "Synchronisatieconflict oplossen",
+        "retry": "Synchronisatie opnieuw proberen",
+        "updateAccountCopy": "Accountkopie bijwerken",
+        "syncToAccount": "Synchroniseren naar account",
+        "conflictDescription": "Dit project is op een ander apparaat gewijzigd. Bekijk de versie voor je verdergaat.",
+        "failedDescription": "De laatste synchronisatie is mislukt. Probeer de nieuwste lokale versie opnieuw te sturen.",
+        "pendingDescription": "De nieuwste lokale wijzigingen naar je account pushen.",
+        "updateDescription": "De gesynchroniseerde accountkopie vervangen door deze apparaatversie.",
+        "description": "Dit project beschikbaar maken op je aangemelde apparaten.",
+        "localChangesWaiting": "Lokale wijzigingen wachten op synchronisatie",
+        "latestLocalCopySaved": "Nieuwste lokale kopie opgeslagen {relativeTime}",
+        "changedOnAnotherDevice": "Dit project is op een ander apparaat gewijzigd",
+        "couldNotSyncProject": "Dit project kon niet worden gesynchroniseerd",
+        "resolveVersionConflict": "Versieconflict oplossen"
+      },
+      "status": {
+        "syncing": "Synchroniseren",
+        "reviewNeeded": "Beoordeling vereist",
+        "failed": "Synchronisatie mislukt",
+        "synced": "Gesynchroniseerd",
+        "localOnly": "Alleen lokaal"
+      },
+      "meta": {
+        "localCopyWaitingToSync": "{itemLabel} · lokale kopie wacht op synchronisatie",
+        "localCopySynced": "{itemLabel} · lokale kopie gesynchroniseerd {relativeTime}",
+        "localCopy": "{itemLabel} · lokale kopie",
+        "onlyOnThisDevice": "{itemLabel} · alleen op dit apparaat · {relativeTime}",
+        "onThisDeviceSubtitle": "{itemLabel} op dit apparaat"
+      },
+      "aria": {
+        "resolveVersionConflictFor": "Versieconflict oplossen voor {title}",
+        "retrySyncFor": "Synchronisatie opnieuw proberen voor {title}",
+        "updateAccountCopyFor": "Accountkopie bijwerken voor {title}",
+        "syncProjectToAccount": "{title} synchroniseren naar account",
+        "exportProjectAsJson": "{title} exporteren als JSON",
+        "manageProject": "{title} beheren",
+        "renameProject": "{title} hernoemen",
+        "deleteProject": "{title} verwijderen"
+      },
+      "actions": {
+        "confirmRenameTitle": "Hernoemen bevestigen",
+        "more": "Meer acties",
+        "newProject": "Nieuw project",
+        "newProjectDescription": "Start een nieuwe track of gebruik een starter layout.",
+        "cleanUpLocal": "Lokale kopieën opruimen",
+        "cleanUpLocalDescription": "Verwijder oudere kopieën alleen van dit apparaat.",
+        "renameDescription": "Geef dit project een duidelijkere naam.",
+        "openBadge": "open"
+      },
+      "export": {
+        "json": "Exporteren als JSON",
+        "jsonDescription": "Download dit project als herbruikbaar TrackDraw-bestand."
+      },
+      "delete": {
+        "localProject": "Lokaal project verwijderen?",
+        "localProjectDescription": "Verwijdert deze lokale kopie.",
+        "permanently": "Definitief verwijderen?",
+        "permanentlyDescription": "Dit verwijdert alleen het lokale project uit deze browser.",
+        "localProjectActionDescription": "Verwijder dit lokale project van het apparaat.",
+        "removeLocalProjectsTitle": "{count, plural, one {# lokaal project verwijderen?} other {# lokale projecten verwijderen?}}",
+        "accountSyncedCopiesStayAvailable": "Account-gesynchroniseerde kopieën blijven beschikbaar in je account."
+      },
+      "groups": {
+        "localCopiesLinkedToAccount": "Lokale kopieën gekoppeld aan account",
+        "onlyOnThisDevice": "Alleen op dit apparaat"
+      },
+      "empty": {
+        "noProjects": "Geen opgeslagen projecten",
+        "noProjectsDescription": "Projecten die je opslaat verschijnen hier."
+      },
+      "fallback": {
+        "project": "project",
+        "untitled": "Naamloos"
+      }
     },
     "account": {
       "loadingProjects": "Accountprojecten laden...",
@@ -406,18 +502,32 @@
       "noSnapshotsDesktopDesc": "Druk op <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> of gebruik de opslagknop in de header.",
       "restoreTitle": "Dit snapshot herstellen",
       "deleteTitle": "Snapshot verwijderen",
+      "restoreSnapshotConfirm": "Dit snapshot herstellen?",
+      "restoreAction": "Herstellen",
+      "restoreSnapshotAriaLabel": "{title} herstellen",
+      "deleteSnapshotAriaLabel": "{title} verwijderen",
+      "snapshotFallback": "snapshot",
       "activeBadge": "actief",
       "untitled": "Naamloos"
     },
     "shares": {
+      "loadingPublishedShares": "Gepubliceerde shares laden...",
+      "readOnlyReviewLinks": "Shares zijn alleen-lezen reviewlinks. Exporteer JSON wanneer iemand een bewerkbare TrackDraw-back-up nodig heeft.",
       "noShares": "Geen actieve gedeelde items",
       "noSharesDesc": "Accountgepubliceerde links blijven actief totdat ze worden ingetrokken. Tijdelijke anonieme links verlopen automatisch en worden hier niet beheerd.",
+      "publishedStatus": "gepubliceerd",
+      "expiredStatus": "verlopen",
+      "dayLeft": "1 dag over",
+      "daysLeft": "{days} dagen over",
+      "publishedLifetime": "alleen-lezen gepubliceerde link, live tot intrekking",
+      "temporaryLifetime": "alleen-lezen tijdelijke link, {expiresIn}",
       "copyLink": "Link kopiëren",
       "openTab": "Openen in nieuw tabblad",
       "revokeLink": "Link intrekken",
       "copyLinkAriaLabel": "Deellink kopiëren",
       "openTabAriaLabel": "Deellink openen",
-      "revokeLinkAriaLabel": "Deellink intrekken"
+      "revokeLinkAriaLabel": "Deellink intrekken",
+      "revokeLinkConfirm": "Deze link intrekken?"
     },
     "copyProjectIdSuccess": "Project-ID gekopieerd",
     "copyProjectIdFailed": "Project-ID kon niet vanuit deze browser worden gekopieerd.",

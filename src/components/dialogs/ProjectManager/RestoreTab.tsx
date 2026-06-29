@@ -31,6 +31,7 @@ export function ProjectManagerRestoreTab({
   onOpenChange,
 }: ProjectManagerRestoreTabProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const isMobile = useIsMobile();
   const [confirmRestoreId, setConfirmRestoreId] = useState<string | null>(null);
 
@@ -59,6 +60,8 @@ export function ProjectManagerRestoreTab({
     <div className="space-y-2">
       {restorePoints.map((r) => {
         const isActive = r.id === activeRestorePointId;
+        const snapshotTitle =
+          r.designTitle || t("projectManager.restore.snapshotFallback");
         return (
           <div
             key={r.id}
@@ -91,7 +94,10 @@ export function ProjectManagerRestoreTab({
               {onRestorePoint && (
                 <button
                   type="button"
-                  aria-label={`Restore ${r.designTitle || "snapshot"}`}
+                  aria-label={t(
+                    "projectManager.restore.restoreSnapshotAriaLabel",
+                    { title: snapshotTitle }
+                  )}
                   onClick={() => setConfirmRestoreId(r.id)}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                   title={t("projectManager.restore.restoreTitle")}
@@ -102,7 +108,10 @@ export function ProjectManagerRestoreTab({
               {onDeleteRestorePoint && (
                 <button
                   type="button"
-                  aria-label={`Delete ${r.designTitle || "snapshot"}`}
+                  aria-label={t(
+                    "projectManager.restore.deleteSnapshotAriaLabel",
+                    { title: snapshotTitle }
+                  )}
                   onClick={() => onDeleteRestorePoint(r.id)}
                   className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                   title={t("projectManager.restore.deleteTitle")}
@@ -122,7 +131,7 @@ export function ProjectManagerRestoreTab({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <p className="text-foreground truncate text-sm font-medium">
-                    Restore this snapshot?
+                    {t("projectManager.restore.restoreSnapshotConfirm")}
                   </p>
                   <div className="flex shrink-0 items-center gap-1">
                     <button
@@ -133,13 +142,13 @@ export function ProjectManagerRestoreTab({
                       }}
                       className="bg-foreground text-background hover:bg-foreground/90 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
                     >
-                      Restore
+                      {t("projectManager.restore.restoreAction")}
                     </button>
                     <button
                       onClick={() => setConfirmRestoreId(null)}
                       className="text-muted-foreground hover:text-foreground cursor-pointer rounded-lg px-2 py-1.5 text-xs transition-colors"
                     >
-                      Cancel
+                      {tCommon("actions.cancel")}
                     </button>
                   </div>
                 </motion.div>

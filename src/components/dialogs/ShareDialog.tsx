@@ -939,7 +939,10 @@ export default function ShareDialog({
                       {t("share.currentSharedLink")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      Read-only {currentView.toUpperCase()} review on {hostname}
+                      {t("share.readOnlyReviewOn", {
+                        view: currentView.toUpperCase(),
+                        hostname,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -960,7 +963,7 @@ export default function ShareDialog({
                   ) : (
                     <Copy className="size-4" />
                   )}
-                  Copy link
+                  {t("share.labels.copyLink")}
                 </Button>
               </div>
             ) : (
@@ -969,10 +972,10 @@ export default function ShareDialog({
                   <div className="space-y-3">
                     <div>
                       <p className="text-foreground text-sm font-medium">
-                        Link expires after
+                        {t("share.labels.linkExpiresAfter")}
                       </p>
                       <p className="text-muted-foreground mt-1 text-[11px]">
-                        Temporary snapshots stay available until they expire.
+                        {t("share.labels.temporarySnapshotsExpire")}
                       </p>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -1089,7 +1092,7 @@ export default function ShareDialog({
                             className={cn(shareDialogButtonClassName, "w-full")}
                           >
                             <RefreshCw className="size-4" />
-                            Update link
+                            {t("share.primaryAction.updateLink")}
                           </Button>
                         ) : null}
                         <Button
@@ -1099,7 +1102,7 @@ export default function ShareDialog({
                           className={cn(shareDialogButtonClassName, "w-full")}
                         >
                           <Ban className="size-4" />
-                          Revoke
+                          {t("share.labels.revoke")}
                         </Button>
                       </>
                     ) : null}
@@ -1116,7 +1119,7 @@ export default function ShareDialog({
               <div className="flex items-center gap-2">
                 <Loader2 className="text-muted-foreground size-4 animate-spin" />
                 <p className="text-muted-foreground text-sm">
-                  Loading embed state…
+                  {t("share.embed.loadingState")}
                 </p>
               </div>
             ) : !share ? (
@@ -1127,11 +1130,10 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0">
                     <p className="text-foreground text-sm font-medium">
-                      Publish before embedding
+                      {t("share.embed.publishBeforeEmbedding")}
                     </p>
                     <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                      Embeds use the durable account-published link, so create
-                      the published link before copying iframe code.
+                      {t("share.embed.publishBeforeEmbeddingDescription")}
                     </p>
                   </div>
                 </div>
@@ -1145,17 +1147,16 @@ export default function ShareDialog({
                   ) : (
                     <Link2 className="size-4" />
                   )}
-                  Create published link
+                  {t("share.embed.createPublishedLink")}
                 </Button>
               </div>
             ) : share.shareType !== "published" ? (
               <div className="space-y-2">
                 <p className="text-foreground text-sm font-medium">
-                  Temporary links cannot be embedded
+                  {t("share.embed.temporaryLinksCannotEmbed")}
                 </p>
                 <p className="text-muted-foreground text-[12px] leading-relaxed">
-                  Sign in and publish this track from your account to create a
-                  durable embed.
+                  {t("share.embed.temporaryLinksCannotEmbedDescription")}
                 </p>
               </div>
             ) : linkNeedsRefresh ? (
@@ -1258,10 +1259,10 @@ export default function ShareDialog({
                   <div className="flex flex-col gap-2 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between">
                     <div>
                       <p className="text-muted-foreground text-[11px] font-medium">
-                        Iframe code
+                        {t("share.embed.iframeCodeLabel")}
                       </p>
                       <p className="text-muted-foreground/75 mt-0.5 text-[10px]">
-                        Includes the selected initial view.
+                        {t("share.embed.iframeCodeDescription")}
                       </p>
                     </div>
                     <Button
@@ -1278,7 +1279,7 @@ export default function ShareDialog({
                       ) : (
                         <Copy className="size-4" />
                       )}
-                      Copy code
+                      {t("share.embed.copyCode")}
                     </Button>
                   </div>
                   <textarea

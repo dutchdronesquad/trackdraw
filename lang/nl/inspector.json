@@ -142,6 +142,8 @@
     "projectSubtitle": "Stel de projecttitel, veldconfiguratie en beschikbaar obstakels in.",
     "layoutTitle": "Huidige indeling",
     "layoutSubtitle": "Bekijk geplaatste items, routenummering en bouweigenschappen van de huidige indeling.",
+    "emptyLayoutTitle": "Nog geen items geplaatst",
+    "emptyLayoutDescription": "Voeg een paar objecten toe op het canvas om de indeling te bekijken en te vergelijken met je inventaris.",
     "statusBuildable": "Bouwbaar",
     "statusShort": "Tekort",
     "missingLabel": "Ontbreekt",

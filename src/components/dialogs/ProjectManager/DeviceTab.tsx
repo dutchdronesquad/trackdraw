@@ -148,21 +148,22 @@ export function ProjectManagerDeviceTab({
       accountProjects.some((p) => p.id === mobileActionProject.id)
     : false;
   const mobileActionSyncTitle = mobileActionHasConflict
-    ? t("projectManager.device.resolveConflict")
+    ? t("projectManager.device.sync.resolveConflict")
     : mobileActionHasSyncFailure
-      ? t("projectManager.device.retrySync")
+      ? t("projectManager.device.sync.retry")
       : mobileActionIsSynced || mobileActionHasPendingChanges
-        ? t("projectManager.device.updateAccountCopy")
-        : t("projectManager.device.syncToAccount");
+        ? t("projectManager.device.sync.updateAccountCopy")
+        : t("projectManager.device.sync.syncToAccount");
   const mobileActionSyncDescription = mobileActionHasConflict
-    ? t("projectManager.device.conflictDesc")
+    ? t("projectManager.device.sync.conflictDescription")
     : mobileActionHasSyncFailure
-      ? t("projectManager.device.syncFailedDesc")
+      ? t("projectManager.device.sync.failedDescription")
       : mobileActionHasPendingChanges
-        ? t("projectManager.device.pendingDesc")
+        ? t("projectManager.device.sync.pendingDescription")
         : mobileActionIsSynced
-          ? t("projectManager.device.updateDesc")
-          : t("projectManager.device.syncDesc");
+          ? t("projectManager.device.sync.updateDescription")
+          : t("projectManager.device.sync.description");
+  const projectFallback = t("projectManager.device.fallback.project");
 
   function ProjectCard({ p }: { p: ProjectMeta }) {
     const isCurrent = p.id === activeDesignId;
@@ -177,38 +178,55 @@ export function ProjectManagerDeviceTab({
     const hasConflict = syncMeta?.status === "conflict";
     const hasSyncFailure = syncMeta?.status === "failed";
     const hasPendingChanges = syncMeta?.status === "pending";
+    const projectTitle = p.title || projectFallback;
+    const itemCountLabel = itemLabel(p.shapeCount);
     const fallbackLine = syncMeta?.fallbackSavedAt
-      ? `Latest local copy saved ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
+      ? t("projectManager.device.sync.latestLocalCopySaved", {
+          relativeTime: formatRelativeTime(syncMeta.fallbackSavedAt),
+        })
       : null;
     const syncLabel = isSyncing
-      ? t("projectManager.device.syncing")
+      ? t("projectManager.device.status.syncing")
       : hasConflict
-        ? t("projectManager.device.reviewNeeded")
+        ? t("projectManager.device.status.reviewNeeded")
         : hasPendingChanges
           ? tCommon("status.pending")
           : hasSyncFailure
-            ? t("projectManager.device.syncFailed")
+            ? t("projectManager.device.status.failed")
             : isSynced
-              ? t("projectManager.device.synced")
-              : t("projectManager.device.localOnly");
+              ? t("projectManager.device.status.synced")
+              : t("projectManager.device.status.localOnly");
     const syncDetail = hasConflict
-      ? (syncMeta?.error ?? "This project changed on another device")
+      ? (syncMeta?.error ??
+        t("projectManager.device.sync.changedOnAnotherDevice"))
       : hasSyncFailure
-        ? (fallbackLine ?? syncMeta?.error ?? "Could not sync this project")
+        ? (fallbackLine ??
+          syncMeta?.error ??
+          t("projectManager.device.sync.couldNotSyncProject"))
         : hasPendingChanges
-          ? t("projectManager.device.localChangesWaiting")
+          ? t("projectManager.device.sync.localChangesWaiting")
           : null;
     const metaLine = hasConflict
       ? syncDetail
       : hasSyncFailure
         ? syncDetail
         : hasPendingChanges
-          ? `${itemLabel(p.shapeCount)} · local copy waiting to sync`
+          ? t("projectManager.device.meta.localCopyWaitingToSync", {
+              itemLabel: itemCountLabel,
+            })
           : isSynced && syncMeta?.lastSyncedAt
-            ? `${itemLabel(p.shapeCount)} · local copy synced ${formatRelativeTime(syncMeta.lastSyncedAt)}`
+            ? t("projectManager.device.meta.localCopySynced", {
+                itemLabel: itemCountLabel,
+                relativeTime: formatRelativeTime(syncMeta.lastSyncedAt),
+              })
             : isSynced
-              ? `${itemLabel(p.shapeCount)} · local copy`
-              : `${itemLabel(p.shapeCount)} · only on this device · ${formatRelativeTime(p.updatedAt)}`;
+              ? t("projectManager.device.meta.localCopy", {
+                  itemLabel: itemCountLabel,
+                })
+              : t("projectManager.device.meta.onlyOnThisDevice", {
+                  itemLabel: itemCountLabel,
+                  relativeTime: formatRelativeTime(p.updatedAt),
+                });
 
     return (
       <div
@@ -244,7 +262,7 @@ export function ProjectManagerDeviceTab({
           ) : (
             <>
               <p className="text-foreground truncate text-sm font-medium">
-                {p.title || t("projectManager.device.untitled")}
+                {p.title || t("projectManager.device.fallback.untitled")}
               </p>
               {!isRenaming && !isConfirming ? (
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -292,7 +310,7 @@ export function ProjectManagerDeviceTab({
             <button
               onClick={() => commitRename(p.id)}
               className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
-              title={t("projectManager.device.confirmRenameTitle")}
+              title={t("projectManager.device.actions.confirmRenameTitle")}
             >
               <Check className="size-3.5" />
             </button>
@@ -302,24 +320,41 @@ export function ProjectManagerDeviceTab({
                 <DesktopActionTooltip
                   label={
                     hasConflict
-                      ? t("projectManager.device.resolveVersionConflict")
+                      ? t("projectManager.device.sync.resolveVersionConflict")
                       : hasSyncFailure
-                        ? t("projectManager.device.retrySync")
+                        ? t("projectManager.device.sync.retry")
                         : isSynced || hasPendingChanges
-                          ? t("projectManager.device.updateAccountCopy")
-                          : t("projectManager.device.syncToAccount")
+                          ? t("projectManager.device.sync.updateAccountCopy")
+                          : t("projectManager.device.sync.syncToAccount")
                   }
                 >
                   <button
                     type="button"
                     aria-label={
                       hasConflict
-                        ? `Resolve version conflict for ${p.title || "project"}`
+                        ? t(
+                            "projectManager.device.aria.resolveVersionConflictFor",
+                            {
+                              title: projectTitle,
+                            }
+                          )
                         : hasSyncFailure
-                          ? `Retry sync for ${p.title || "project"}`
+                          ? t("projectManager.device.aria.retrySyncFor", {
+                              title: projectTitle,
+                            })
                           : isSynced || hasPendingChanges
-                            ? `Update account copy for ${p.title || "project"}`
-                            : `Sync ${p.title || "project"} to account`
+                            ? t(
+                                "projectManager.device.aria.updateAccountCopyFor",
+                                {
+                                  title: projectTitle,
+                                }
+                              )
+                            : t(
+                                "projectManager.device.aria.syncProjectToAccount",
+                                {
+                                  title: projectTitle,
+                                }
+                              )
                     }
                     onClick={() => {
                       if (hasConflict) {
@@ -347,11 +382,16 @@ export function ProjectManagerDeviceTab({
               ) : null}
               {onExportProject && !isConfirming && !isMobile ? (
                 <DesktopActionTooltip
-                  label={t("projectManager.device.exportJson")}
+                  label={t("projectManager.device.export.json")}
                 >
                   <button
                     type="button"
-                    aria-label={`Export ${p.title || "project"} as JSON`}
+                    aria-label={t(
+                      "projectManager.device.aria.exportProjectAsJson",
+                      {
+                        title: projectTitle,
+                      }
+                    )}
                     onClick={() => onExportProject(p.id)}
                     className={cn(
                       "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors",
@@ -375,13 +415,17 @@ export function ProjectManagerDeviceTab({
                       setMobileDeleteConfirm(false);
                     }}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors"
-                    title={t("projectManager.device.moreActions")}
-                    aria-label={`Manage ${p.title || "project"}`}
+                    title={t("projectManager.device.actions.more")}
+                    aria-label={t("projectManager.device.aria.manageProject", {
+                      title: projectTitle,
+                    })}
                   >
                     <MoreHorizontal className="size-4" />
                   </button>
                 ) : isCurrent ? (
-                  <CurrentBadge label={t("projectManager.device.openBadge")} />
+                  <CurrentBadge
+                    label={t("projectManager.device.actions.openBadge")}
+                  />
                 ) : null
               ) : (
                 <>
@@ -389,7 +433,12 @@ export function ProjectManagerDeviceTab({
                     <DesktopActionTooltip label={tCommon("actions.rename")}>
                       <button
                         type="button"
-                        aria-label={`Rename ${p.title || "project"}`}
+                        aria-label={t(
+                          "projectManager.device.aria.renameProject",
+                          {
+                            title: projectTitle,
+                          }
+                        )}
                         onClick={() => startRename(p)}
                         className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100 focus-visible:opacity-100"
                       >
@@ -401,7 +450,12 @@ export function ProjectManagerDeviceTab({
                     <DesktopActionTooltip label={tCommon("actions.delete")}>
                       <button
                         type="button"
-                        aria-label={`Delete ${p.title || "project"}`}
+                        aria-label={t(
+                          "projectManager.device.aria.deleteProject",
+                          {
+                            title: projectTitle,
+                          }
+                        )}
                         onClick={() => setConfirmDeleteId(p.id)}
                         className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-0 transition-[opacity,colors] group-hover:opacity-100 focus-visible:opacity-100"
                       >
@@ -426,10 +480,10 @@ export function ProjectManagerDeviceTab({
             >
               <div className="min-w-0 flex-1">
                 <p className="text-destructive truncate text-sm font-medium">
-                  Delete local project?
+                  {t("projectManager.device.delete.localProject")}
                 </p>
                 <p className="text-muted-foreground truncate text-[11px]">
-                  Removes this local copy.
+                  {t("projectManager.device.delete.localProjectDescription")}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
@@ -440,13 +494,13 @@ export function ProjectManagerDeviceTab({
                   }}
                   className="bg-destructive/10 hover:bg-destructive/20 text-destructive cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
                 >
-                  Delete
+                  {tCommon("actions.delete")}
                 </button>
                 <button
                   onClick={() => setConfirmDeleteId(null)}
                   className="text-muted-foreground hover:text-foreground cursor-pointer rounded-lg px-2 py-1.5 text-xs transition-colors"
                 >
-                  Cancel
+                  {tCommon("actions.cancel")}
                 </button>
               </div>
             </motion.div>
@@ -490,7 +544,7 @@ export function ProjectManagerDeviceTab({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="text-foreground block text-sm font-medium">
-                      New project
+                      {t("projectManager.device.actions.newProject")}
                     </span>
                     <span
                       className={cn(
@@ -498,7 +552,7 @@ export function ProjectManagerDeviceTab({
                         isMobile && "hidden"
                       )}
                     >
-                      Start a fresh track or use a starter layout.
+                      {t("projectManager.device.actions.newProjectDescription")}
                     </span>
                   </span>
                 </button>
@@ -526,7 +580,7 @@ export function ProjectManagerDeviceTab({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="text-destructive block text-sm font-medium">
-                      Clean up local
+                      {t("projectManager.device.actions.cleanUpLocal")}
                     </span>
                     <span
                       className={cn(
@@ -534,7 +588,9 @@ export function ProjectManagerDeviceTab({
                         isMobile && "hidden"
                       )}
                     >
-                      Remove older copies from this device only.
+                      {t(
+                        "projectManager.device.actions.cleanUpLocalDescription"
+                      )}
                     </span>
                   </span>
                 </button>
@@ -552,11 +608,17 @@ export function ProjectManagerDeviceTab({
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-foreground text-[12px] font-medium">
-                    Remove {deletableOldProjectIds.length} local project
-                    {deletableOldProjectIds.length === 1 ? "" : "s"}?
+                    {t(
+                      "projectManager.device.delete.removeLocalProjectsTitle",
+                      {
+                        count: deletableOldProjectIds.length,
+                      }
+                    )}
                   </p>
                   <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
-                    Account-synced copies stay available in your account.
+                    {t(
+                      "projectManager.device.delete.accountSyncedCopiesStayAvailable"
+                    )}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
@@ -565,7 +627,7 @@ export function ProjectManagerDeviceTab({
                     onClick={() => setConfirmDeleteOldProjects(false)}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer rounded-lg px-2.5 py-1.5 text-xs transition-colors"
                   >
-                    Cancel
+                    {tCommon("actions.cancel")}
                   </button>
                   <button
                     type="button"
@@ -575,7 +637,7 @@ export function ProjectManagerDeviceTab({
                     }}
                     className="bg-destructive/10 hover:bg-destructive/20 text-destructive cursor-pointer rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
                   >
-                    Remove
+                    {tCommon("actions.remove")}
                   </button>
                 </div>
               </motion.div>
@@ -587,7 +649,7 @@ export function ProjectManagerDeviceTab({
             <>
               <div className="space-y-1.5">
                 <p className="text-muted-foreground px-1 text-[10px] font-semibold tracking-[0.12em] uppercase">
-                  Local copies linked to account
+                  {t("projectManager.device.groups.localCopiesLinkedToAccount")}
                 </p>
                 {accountLinkedLocalCopies.map((p) => (
                   <ProjectCard key={p.id} p={p} />
@@ -595,7 +657,7 @@ export function ProjectManagerDeviceTab({
               </div>
               <div className="space-y-1.5 pt-2">
                 <p className="text-muted-foreground px-1 text-[10px] font-semibold tracking-[0.12em] uppercase">
-                  Only on this device
+                  {t("projectManager.device.groups.onlyOnThisDevice")}
                 </p>
                 {deviceOnlyProjects.map((p) => (
                   <ProjectCard key={p.id} p={p} />
@@ -608,8 +670,8 @@ export function ProjectManagerDeviceTab({
         ) : (
           <EmptyState
             icon={<FolderOpen className="size-6" />}
-            title={t("projectManager.device.noProjects")}
-            description={t("projectManager.device.noProjectsDesc")}
+            title={t("projectManager.device.empty.noProjects")}
+            description={t("projectManager.device.empty.noProjectsDescription")}
           />
         )}
       </div>
@@ -625,9 +687,14 @@ export function ProjectManagerDeviceTab({
                 <MobileDrawerHeader
                   title={
                     mobileActionProject.title ||
-                    t("projectManager.device.untitled")
+                    t("projectManager.device.fallback.untitled")
                   }
-                  subtitle={`${itemLabel(mobileActionProject.shapeCount)} on this device`}
+                  subtitle={t(
+                    "projectManager.device.meta.onThisDeviceSubtitle",
+                    {
+                      itemLabel: itemLabel(mobileActionProject.shapeCount),
+                    }
+                  )}
                   className="bg-background"
                 />
                 <div className="space-y-2 px-4 pt-4">
@@ -678,10 +745,10 @@ export function ProjectManagerDeviceTab({
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="text-foreground block text-sm font-medium">
-                          Export JSON
+                          {t("projectManager.device.export.json")}
                         </span>
                         <span className="text-muted-foreground block pt-0.5 text-[11px] leading-relaxed">
-                          Download this project as a reusable TrackDraw file.
+                          {t("projectManager.device.export.jsonDescription")}
                         </span>
                       </span>
                     </button>
@@ -700,10 +767,10 @@ export function ProjectManagerDeviceTab({
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="text-foreground block text-sm font-medium">
-                          Rename
+                          {tCommon("actions.rename")}
                         </span>
                         <span className="text-muted-foreground block pt-0.5 text-[11px] leading-relaxed">
-                          Give this project a clearer name.
+                          {t("projectManager.device.actions.renameDescription")}
                         </span>
                       </span>
                     </button>
@@ -715,10 +782,12 @@ export function ProjectManagerDeviceTab({
                     {mobileDeleteConfirm ? (
                       <div className="border-destructive/20 bg-destructive/6 rounded-2xl border px-3 py-3">
                         <p className="text-destructive text-sm font-medium">
-                          Delete permanently?
+                          {t("projectManager.device.delete.permanently")}
                         </p>
                         <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                          This only removes the local project from this browser.
+                          {t(
+                            "projectManager.device.delete.permanentlyDescription"
+                          )}
                         </p>
                         <div className="mt-3 flex items-center gap-2">
                           <button
@@ -729,14 +798,14 @@ export function ProjectManagerDeviceTab({
                             }}
                             className="bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-lg px-3 py-2 text-xs font-medium transition-colors"
                           >
-                            Delete
+                            {tCommon("actions.delete")}
                           </button>
                           <button
                             type="button"
                             onClick={() => setMobileDeleteConfirm(false)}
                             className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg px-3 py-2 text-xs transition-colors"
                           >
-                            Cancel
+                            {tCommon("actions.cancel")}
                           </button>
                         </div>
                       </div>
@@ -751,10 +820,12 @@ export function ProjectManagerDeviceTab({
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block text-sm font-medium">
-                            Delete
+                            {tCommon("actions.delete")}
                           </span>
                           <span className="text-destructive/75 block pt-0.5 text-[11px] leading-relaxed">
-                            Remove this local project from the device.
+                            {t(
+                              "projectManager.device.delete.localProjectActionDescription"
+                            )}
                           </span>
                         </span>
                       </button>

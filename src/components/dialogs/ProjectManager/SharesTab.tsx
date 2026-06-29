@@ -12,14 +12,17 @@ import {
   SkeletonCard,
 } from "./shared";
 
-function formatExpiresIn(iso: string | null): string {
-  if (!iso) return "published";
+function formatExpiresIn(
+  iso: string | null,
+  t: (key: string, values?: Record<string, string | number | Date>) => string
+): string {
+  if (!iso) return t("projectManager.shares.publishedStatus");
   const days = Math.ceil(
     (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
-  if (days <= 0) return "expired";
-  if (days === 1) return "1 day left";
-  return `${days} days left`;
+  if (days <= 0) return t("projectManager.shares.expiredStatus");
+  if (days === 1) return t("projectManager.shares.dayLeft");
+  return t("projectManager.shares.daysLeft", { days });
 }
 
 interface ProjectManagerSharesTabProps {
@@ -36,6 +39,7 @@ export function ProjectManagerSharesTab({
   onRevoke,
 }: ProjectManagerSharesTabProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const [confirmRevokeToken, setConfirmRevokeToken] = useState<string | null>(
     null
   );
@@ -50,7 +54,7 @@ export function ProjectManagerSharesTab({
         role="status"
       >
         <p className="text-muted-foreground px-1 pb-1 text-[11px]">
-          Loading published shares...
+          {t("projectManager.shares.loadingPublishedShares")}
         </p>
         <SkeletonCard />
         <SkeletonCard />
@@ -71,8 +75,7 @@ export function ProjectManagerSharesTab({
   return (
     <div className="space-y-2">
       <p className="text-muted-foreground px-1 pb-1 text-[11px] leading-relaxed">
-        Shares are read-only review links. Export JSON when someone needs an
-        editable TrackDraw backup.
+        {t("projectManager.shares.readOnlyReviewLinks")}
       </p>
       {shares.map((share) => {
         const shareUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/share/${encodeURIComponent(share.token)}`;
@@ -82,8 +85,10 @@ export function ProjectManagerSharesTab({
         const displayTitle = projectTitle ?? share.title;
         const lifetimeLabel =
           share.shareType === "published"
-            ? "read-only published link, live until revoked"
-            : `read-only temporary link, ${formatExpiresIn(share.expiresAt)}`;
+            ? t("projectManager.shares.publishedLifetime")
+            : t("projectManager.shares.temporaryLifetime", {
+                expiresIn: formatExpiresIn(share.expiresAt, t),
+              });
 
         return (
           <div
@@ -161,7 +166,7 @@ export function ProjectManagerSharesTab({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <p className="text-foreground truncate text-sm font-medium">
-                    Revoke this link?
+                    {t("projectManager.shares.revokeLinkConfirm")}
                   </p>
                   <div className="flex shrink-0 items-center gap-1">
                     <button
@@ -171,13 +176,13 @@ export function ProjectManagerSharesTab({
                       }}
                       className="bg-destructive/10 hover:bg-destructive/20 text-destructive cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
                     >
-                      Revoke
+                      {t("projectManager.shares.revokeLink")}
                     </button>
                     <button
                       onClick={() => setConfirmRevokeToken(null)}
                       className="text-muted-foreground hover:text-foreground cursor-pointer rounded-lg px-2 py-1.5 text-xs transition-colors"
                     >
-                      Cancel
+                      {tCommon("actions.cancel")}
                     </button>
                   </div>
                 </motion.div>

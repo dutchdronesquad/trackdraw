@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import {
   useEffect,
   type ReactNode,
@@ -37,16 +38,22 @@ const TrackPreview3D = dynamic<TrackPreview3DProps>(
   () => loadTrackPreview3D(),
   {
     ssr: false,
-    loading: () => (
-      <div className="text-muted-foreground/40 flex h-full flex-col items-center justify-center gap-2 text-xs">
-        <Spinner className="size-5" />
-        Loading 3D…
-      </div>
-    ),
+    loading: Loading3D,
   }
 ) as ForwardRefExoticComponent<
   TrackPreview3DProps & RefAttributes<TrackPreview3DHandle>
 >;
+
+function Loading3D() {
+  const t = useTranslations("editor");
+
+  return (
+    <div className="text-muted-foreground/40 flex h-full flex-col items-center justify-center gap-2 text-xs">
+      <Spinner className="size-5" />
+      {t("shell.loading3d")}
+    </div>
+  );
+}
 
 interface EditorWorkspaceProps {
   tab: EditorView;

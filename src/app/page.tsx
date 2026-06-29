@@ -433,7 +433,7 @@ export default async function Home() {
                       src={getSiteMediaUrl(
                         "/landing/screenshots/editor-element-library.png"
                       )}
-                      alt="TrackDraw 2D layout editor with obstacle library and track plan"
+                      alt={t("workflow.layout.screenshotAlt")}
                       className="order-last lg:order-first"
                     />
                     <div className="order-first lg:order-last">
@@ -499,7 +499,7 @@ export default async function Home() {
                       src={getSiteMediaUrl(
                         "/landing/screenshots/editor-mobile-settings.png"
                       )}
-                      alt="TrackDraw mobile editor with settings panel open"
+                      alt={t("workflow.fineTune.screenshotAlt")}
                       aspect="portrait"
                       accentClassName="bg-emerald-500/16"
                       className="mx-auto w-full max-w-51.25 self-center sm:max-w-57.5 lg:max-w-62.5"
@@ -513,7 +513,7 @@ export default async function Home() {
                       src={getSiteMediaUrl(
                         "/landing/screenshots/editor-3d-flythroug.png"
                       )}
-                      alt="TrackDraw 3D preview showing track flow and elevation"
+                      alt={t("workflow.preview.screenshotAlt")}
                       className="order-last lg:order-first"
                     />
                     <div className="order-first lg:order-last">
@@ -586,7 +586,7 @@ export default async function Home() {
                       src={getSiteMediaUrl(
                         "/landing/screenshots/editor-share-readonly-mobile.png"
                       )}
-                      alt="TrackDraw read-only shared view open on mobile"
+                      alt={t("workflow.handOff.screenshotAlt")}
                       aspect="portrait"
                       accentClassName="bg-brand-secondary/18"
                       className="mx-auto w-full max-w-51.25 self-center sm:max-w-57.5 lg:max-w-62.5"
