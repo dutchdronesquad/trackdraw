@@ -87,6 +87,7 @@ export function AccountSecurityView({
   onDeletePasskey,
 }: SecurityViewProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   if (isPending) {
     return <AccountDialogLoading />;
   }
@@ -99,9 +100,11 @@ export function AccountSecurityView({
     <div className="space-y-6">
       <div className="border-border/60 space-y-4 border-b pb-5">
         <div className="space-y-1">
-          <p className="text-sm font-medium">Email address</p>
+          <p className="text-sm font-medium">
+            {t("account.security.emailAddress")}
+          </p>
           <p className="text-muted-foreground truncate text-sm">
-            {user.email ?? "TrackDraw account"}
+            {user.email ?? t("account.profile.noAccountEmail")}
           </p>
         </div>
 
@@ -110,7 +113,7 @@ export function AccountSecurityView({
             <div className="bg-muted/20 border-border/60 space-y-4 rounded-2xl border px-4 py-4">
               <label className="block">
                 <span className="text-muted-foreground mb-2 block text-xs font-medium tracking-[0.01em]">
-                  New email
+                  {t("account.security.newEmail")}
                 </span>
                 <Input
                   type="email"
@@ -123,8 +126,7 @@ export function AccountSecurityView({
               </label>
 
               <p className="text-muted-foreground text-sm leading-relaxed">
-                After saving, we will send a confirmation to your current email
-                address first. Once confirmed, you will verify the new one.
+                {t("account.security.emailChangeDescription")}
               </p>
 
               <div
@@ -143,7 +145,7 @@ export function AccountSecurityView({
                   }}
                   className="h-8 rounded-lg px-2.5"
                 >
-                  Cancel
+                  {tCommon("actions.cancel")}
                 </Button>
                 <Button
                   type="button"
@@ -153,7 +155,7 @@ export function AccountSecurityView({
                 >
                   {changingEmail
                     ? t("account.security.savingEmail")
-                    : t("account.security.saveEmail")}
+                    : tCommon("actions.save")}
                 </Button>
               </div>
             </div>
@@ -167,7 +169,7 @@ export function AccountSecurityView({
               }}
               className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
             >
-              Change email
+              {t("account.security.changeEmail")}
             </Button>
           )}
         </div>
@@ -181,9 +183,11 @@ export function AccountSecurityView({
           )}
         >
           <div className="min-w-0">
-            <p className="text-sm font-medium">Passkeys</p>
+            <p className="text-sm font-medium">
+              {t("account.security.passkeysTitle")}
+            </p>
             <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              Add a passkey for faster sign-in on supported devices.
+              {t("account.security.passkeysDescription")}
             </p>
           </div>
           <Button
@@ -209,17 +213,17 @@ export function AccountSecurityView({
         {isDevAuthShimEnabled() ? (
           <div className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-3">
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Passkeys are not available in `npm run dev`. Use `npm run preview`
-              to test the real auth flow locally.
+              {t("account.security.devAuthUnavailable")}
             </p>
           </div>
         ) : passkeyReauthRequired ? (
           <div className="border-brand-primary/25 bg-brand-primary/8 space-y-3 rounded-2xl border px-4 py-4">
             <div>
-              <p className="text-sm font-medium">Sign in again to continue</p>
+              <p className="text-sm font-medium">
+                {t("account.security.reauthTitle")}
+              </p>
               <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                Passkey setup requires a recent sign-in. You can stay signed in
-                for normal work, but this security action needs confirmation.
+                {t("account.security.reauthDescription")}
               </p>
             </div>
             <Button
@@ -228,20 +232,19 @@ export function AccountSecurityView({
               onClick={onPasskeyReauthenticate}
               className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
             >
-              Sign in again
+              {t("account.security.signInAgain")}
             </Button>
           </div>
         ) : !passkeySupported ? (
           <div className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-3">
             <p className="text-muted-foreground text-sm leading-relaxed">
-              This browser does not currently expose WebAuthn here, so passkey
-              setup is unavailable on this device.
+              {t("account.security.unsupportedBrowser")}
             </p>
           </div>
         ) : passkeysLoading ? (
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <LoaderCircle className="size-4 animate-spin" />
-            Loading passkeys...
+            {t("account.security.loadingPasskeys")}
           </div>
         ) : passkeys.length === 0 ? (
           <div className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-4">
@@ -250,9 +253,11 @@ export function AccountSecurityView({
                 <KeyRound className="size-4" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-medium">No passkeys yet</p>
+                <p className="text-sm font-medium">
+                  {t("account.security.emptyTitle")}
+                </p>
                 <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  Add one to make sign-in quicker on your trusted devices.
+                  {t("account.security.emptyDescription")}
                 </p>
               </div>
             </div>
@@ -289,8 +294,12 @@ export function AccountSecurityView({
                               t("account.security.unnamedPasskey")}
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            Added {createdAt}
-                            {passkey.backedUp ? " · synced" : ""}
+                            {t("account.security.addedDate", {
+                              date: createdAt,
+                            })}
+                            {passkey.backedUp
+                              ? ` · ${t("account.security.synced")}`
+                              : ""}
                           </p>
                         </div>
                       </div>
@@ -314,7 +323,7 @@ export function AccountSecurityView({
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {t("account.security.renameTooltip")}
+                            {tCommon("actions.rename")}
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -341,7 +350,9 @@ export function AccountSecurityView({
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          {isDeleting ? "Removing..." : "Remove from account"}
+                          {isDeleting
+                            ? t("account.security.removing")
+                            : t("account.security.removeTooltip")}
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -365,8 +376,7 @@ export function AccountSecurityView({
                       />
 
                       <p className="text-muted-foreground text-xs leading-relaxed">
-                        This only changes how the passkey is labeled in your
-                        TrackDraw account.
+                        {t("account.security.renameDescription")}
                       </p>
 
                       <div
@@ -387,7 +397,7 @@ export function AccountSecurityView({
                           }}
                           className="h-8 rounded-lg px-2.5"
                         >
-                          Cancel
+                          {tCommon("actions.cancel")}
                         </Button>
                         <Button
                           type="button"
@@ -395,7 +405,7 @@ export function AccountSecurityView({
                           disabled={passkeyLoading || !draftName.trim()}
                           className="h-8 rounded-lg px-2.5"
                         >
-                          Save name
+                          {t("account.security.saveName")}
                         </Button>
                       </div>
                     </div>

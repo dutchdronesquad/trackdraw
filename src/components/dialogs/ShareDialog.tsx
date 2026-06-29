@@ -70,9 +70,9 @@ type ActiveShare = {
 type Tab = "share" | "embed" | "gallery" | "actions";
 
 const SHARE_EXPIRY_OPTIONS = [
-  { value: 7 as const, label: "7 days" },
-  { value: 30 as const, label: "30 days" },
-  { value: 90 as const, label: "90 days" },
+  { value: 7 as const },
+  { value: 30 as const },
+  { value: 90 as const },
 ];
 
 const LS_ANON_SHARE_KEY = "trackdraw-anon-share";
@@ -136,14 +136,8 @@ function clearAnonShare() {
   }
 }
 
-function getLifetimeCopy(hostname: string, expiresInDays: 7 | 30 | 90 | null) {
-  return expiresInDays === null
-    ? `Published link on ${hostname}, stays live until revoked`
-    : `Read-only snapshot on ${hostname}, expires in ${expiresInDays} days`;
-}
-
-function buildIframeCode(embedUrl: string) {
-  return `<iframe src="${embedUrl}" title="TrackDraw track embed" loading="lazy" style="width:100%;height:600px;border:0;" allowfullscreen></iframe>`;
+function buildIframeCode(embedUrl: string, title: string) {
+  return `<iframe src="${embedUrl}" title="${title}" loading="lazy" style="width:100%;height:600px;border:0;" allowfullscreen></iframe>`;
 }
 
 const shareDialogButtonClassName =
@@ -202,6 +196,7 @@ export default function ShareDialog({
   existingShareMode = false,
 }: ShareDialogProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const design = useEditor((s) => s.track.design);
   const searchParams = useSearchParams();
   const { data: session } = authClient.useSession();
@@ -262,7 +257,9 @@ export default function ShareDialog({
             : "https://trackdraw.app"
         ).toString()
       : null;
-  const iframeCode = embedUrl ? buildIframeCode(embedUrl) : null;
+  const iframeCode = embedUrl
+    ? buildIframeCode(embedUrl, t("share.embed.iframeTitle"))
+    : null;
 
   const isGalleryVisible =
     share?.galleryState === "listed" || share?.galleryState === "featured";
@@ -797,18 +794,18 @@ export default function ShareDialog({
   const galleryVisibilityValue = !loadDone
     ? t("share.gallery.checking")
     : share?.galleryState === "featured"
-      ? "Featured"
+      ? t("share.gallery.featured")
       : share?.galleryState === "listed"
-        ? "Listed"
+        ? t("share.gallery.listed")
         : share?.galleryState === "hidden"
-          ? "Hidden"
+          ? t("share.gallery.hiddenByModeration")
           : share
             ? t("share.gallery.linkOnly")
             : t("share.gallery.noLink");
   const galleryShareLinkValue = !share
     ? t("share.gallery.noLink")
     : share.shareType === "published"
-      ? t("share.gallery.published")
+      ? tCommon("status.published")
       : share.expiresInDays === null
         ? t("share.gallery.noExpiry")
         : t("share.gallery.expiresInDays", { days: share.expiresInDays });
@@ -840,7 +837,7 @@ export default function ShareDialog({
         },
         {
           id: "actions",
-          label: t("share.navActions"),
+          label: tCommon("labels.actions"),
           icon: <ExternalLink className="size-4" />,
         },
       ]
@@ -870,7 +867,7 @@ export default function ShareDialog({
           : []),
         {
           id: "actions",
-          label: t("share.navActions"),
+          label: tCommon("labels.actions"),
           icon: <ExternalLink className="size-4" />,
         },
       ];
@@ -900,7 +897,7 @@ export default function ShareDialog({
       description: t("share.content.embedDesc"),
     },
     actions: {
-      title: t("share.content.actionsTitle"),
+      title: tCommon("labels.actions"),
       description: existingShareMode
         ? t("share.content.actionsDescExisting")
         : t("share.content.actionsDesc"),
@@ -990,7 +987,7 @@ export default function ShareDialog({
                               "border-foreground/15 bg-muted text-foreground"
                           )}
                         >
-                          {option.label}
+                          {t("share.link.expiryDays", { days: option.value })}
                         </button>
                       ))}
                     </div>
@@ -999,13 +996,13 @@ export default function ShareDialog({
                   <div className="border-border/60 bg-muted/18 rounded-xl border px-3 py-3">
                     <p className="text-foreground text-sm font-medium">
                       {isAccountProjectShare
-                        ? "Saved project link"
-                        : "New share link"}
+                        ? t("share.link.savedProjectTitle")
+                        : t("share.link.newShareTitle")}
                     </p>
                     <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
                       {isAccountProjectShare
-                        ? "This saved account project uses one durable read-only link. Updating it keeps the same URL with the latest design."
-                        : "This editable copy gets its own durable read-only link. It will not update another project's published link."}
+                        ? t("share.link.savedProjectDescription")
+                        : t("share.link.newShareDescription")}
                     </p>
                   </div>
                 )}
@@ -1020,23 +1017,28 @@ export default function ShareDialog({
                         {share
                           ? share.shareType === "published"
                             ? isAccountProjectShare
-                              ? "Saved project link"
-                              : "Separate published link"
-                            : "Temporary link"
+                              ? t("share.link.savedProjectTitle")
+                              : t("share.link.separatePublishedTitle")
+                            : t("share.link.temporaryTitle")
                           : isAuthenticated
                             ? isAccountProjectShare
-                              ? "No saved project link yet"
-                              : "No separate link yet"
-                            : "No temporary link yet"}
+                              ? t("share.link.noSavedProjectTitle")
+                              : t("share.link.noSeparateTitle")
+                            : t("share.link.noTemporaryTitle")}
                       </p>
                       <p className="text-muted-foreground text-[11px]">
                         {share
-                          ? getLifetimeCopy(hostname, share.expiresInDays)
+                          ? share.expiresInDays === null
+                            ? t("share.link.lifetimePublished", { hostname })
+                            : t("share.link.lifetimeTemporary", {
+                                hostname,
+                                days: share.expiresInDays,
+                              })
                           : isAuthenticated
                             ? isAccountProjectShare
-                              ? "Create one durable URL for this account project. Future updates can keep the same link."
-                              : "Create a durable URL for this copy without changing any earlier share."
-                            : "Choose when it expires and create a read-only snapshot."}
+                              ? t("share.link.createSavedProject")
+                              : t("share.link.createSeparate")
+                            : t("share.link.createTemporary")}
                       </p>
                     </div>
                   </div>
@@ -1054,8 +1056,8 @@ export default function ShareDialog({
                       <Share2 className="mt-0.5 size-3.5 shrink-0" />
                       <span className="leading-relaxed">
                         {shareNeedsRefresh
-                          ? "This link no longer reflects the latest design."
-                          : "This link no longer reflects the latest expiry selection."}
+                          ? t("share.link.outdatedDesign")
+                          : t("share.link.outdatedExpiry")}
                       </span>
                     </div>
                   ) : null}
@@ -1161,8 +1163,7 @@ export default function ShareDialog({
                 <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
                   <Share2 className="mt-0.5 size-3.5 shrink-0" />
                   <span className="leading-relaxed">
-                    Update the published link first so the embed uses the latest
-                    design.
+                    {t("share.embed.refreshFirst")}
                   </span>
                 </div>
                 <Button
@@ -1175,7 +1176,7 @@ export default function ShareDialog({
                   ) : (
                     <RefreshCw className="size-4" />
                   )}
-                  Update link
+                  {t("share.embed.updateLink")}
                 </Button>
               </div>
             ) : iframeCode ? (
@@ -1186,32 +1187,31 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0">
                     <p className="text-foreground text-sm font-medium">
-                      Embed code
+                      {t("share.embed.codeTitle")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      Account-published tracks can be embedded on club or event
-                      sites.
+                      {t("share.embed.codeDescription")}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <p className="text-muted-foreground text-[11px] font-medium">
-                    Initial view
+                    {t("share.embed.initialView")}
                   </p>
                   <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
                     {(
                       [
                         {
                           view: "2d",
-                          label: "2D layout",
-                          description: "Open as the flat field plan",
+                          label: t("share.embed.layout2dLabel"),
+                          description: t("share.embed.layout2dDescription"),
                           icon: Route,
                         },
                         {
                           view: "3d",
-                          label: "3D preview",
-                          description: "Open in the orbit review",
+                          label: t("share.embed.preview3dLabel"),
+                          description: t("share.embed.preview3dDescription"),
                           icon: Orbit,
                         },
                       ] as const
@@ -1321,7 +1321,7 @@ export default function ShareDialog({
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                 <div className="bg-background/55 rounded-lg px-3 py-2">
                   <p className="text-muted-foreground text-[10px] font-medium tracking-[0.12em] uppercase">
-                    Visibility
+                    {t("share.gallery.visibility")}
                   </p>
                   <p className="text-foreground mt-0.5 text-xs font-medium">
                     {galleryVisibilityValue}
@@ -1329,7 +1329,7 @@ export default function ShareDialog({
                 </div>
                 <div className="bg-background/55 rounded-lg px-3 py-2">
                   <p className="text-muted-foreground text-[10px] font-medium tracking-[0.12em] uppercase">
-                    Share link
+                    {t("share.gallery.shareLink")}
                   </p>
                   <p className="text-foreground mt-0.5 text-xs font-medium">
                     {galleryShareLinkValue}
@@ -1342,11 +1342,10 @@ export default function ShareDialog({
               <div className="border-border/60 bg-muted/12 space-y-3 rounded-xl border p-3">
                 <div>
                   <p className="text-foreground text-sm font-medium">
-                    Publish before listing
+                    {t("share.gallery.publishFirstTitle")}
                   </p>
                   <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                    The gallery uses the current published snapshot, so a share
-                    link is required before this track can be listed.
+                    {t("share.gallery.publishFirstDescription")}
                   </p>
                 </div>
                 <Button
@@ -1354,47 +1353,48 @@ export default function ShareDialog({
                   onClick={() => setActiveTab("share")}
                   className={cn(shareDialogButtonClassName, "w-full")}
                 >
-                  Create share link first
+                  {t("share.gallery.createShareFirst")}
                 </Button>
               </div>
             ) : blockedByModeration ? (
               <div className="border-destructive/25 bg-destructive/8 space-y-1.5 rounded-xl border p-3">
                 <p className="text-destructive text-sm font-medium">
-                  Moderation lock
+                  {t("share.gallery.moderationLockTitle")}
                 </p>
                 <p className="text-destructive text-[11px] leading-relaxed">
-                  This track is hidden from the gallery by moderation. The
-                  direct share link can still work until it is revoked.
+                  {t("share.gallery.moderationLockDescription")}
                 </p>
               </div>
             ) : showGalleryForm ? (
               <div className="space-y-3">
                 <div>
                   <p className="text-foreground text-sm font-medium">
-                    {isGalleryVisible ? "Gallery details" : "List in gallery"}
+                    {isGalleryVisible
+                      ? t("share.gallery.detailsTitle")
+                      : t("share.gallery.listTitle")}
                   </p>
                   <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
                     {isGalleryVisible
-                      ? "Update the title and description shown on the public gallery card."
-                      : "Add a title, description and generated preview for public browsing."}
+                      ? t("share.gallery.detailsDescription")
+                      : t("share.gallery.listDescription")}
                   </p>
                 </div>
 
                 <label className="block">
                   <span className="text-muted-foreground mb-1.5 block text-[11px] font-medium">
-                    Title
+                    {tCommon("labels.title")}
                   </span>
                   <input
                     value={galleryTitleInput}
                     onChange={(e) => setGalleryTitleInput(e.target.value)}
                     className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
-                    placeholder="Track title"
+                    placeholder={t("share.gallery.titlePlaceholder")}
                   />
                 </label>
 
                 <label className="block">
                   <span className="text-muted-foreground mb-1.5 block text-[11px] font-medium">
-                    Description
+                    {tCommon("labels.description")}
                   </span>
                   <textarea
                     value={galleryDescriptionInput}
@@ -1402,7 +1402,7 @@ export default function ShareDialog({
                     maxLength={GALLERY_DESCRIPTION_MAX_LENGTH}
                     rows={3}
                     className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 resize-none rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
-                    placeholder="Short description for the gallery card"
+                    placeholder={t("share.gallery.descriptionPlaceholder")}
                   />
                   <span className="text-muted-foreground mt-1 block text-right text-[10px]">
                     {galleryDescriptionInput.length}/
@@ -1413,11 +1413,13 @@ export default function ShareDialog({
                 {!isGalleryVisible ? (
                   <div className="space-y-2">
                     <p className="text-muted-foreground text-[11px]">
-                      Author:{" "}
+                      {t("share.gallery.authorLabel")}:{" "}
                       <span
                         className={displayNameValid ? "" : "text-destructive"}
                       >
-                        {displayNameValid ? displayName : "no display name set"}
+                        {displayNameValid
+                          ? displayName
+                          : t("share.gallery.noDisplayName")}
                       </span>
                     </p>
 
@@ -1426,14 +1428,14 @@ export default function ShareDialog({
                         <>
                           <Loader2 className="text-muted-foreground size-3.5 animate-spin" />
                           <span className="text-muted-foreground text-[11px]">
-                            Generating preview…
+                            {t("share.gallery.generatingPreview")}
                           </span>
                         </>
                       ) : (
                         <>
                           <Check className="size-3.5 text-emerald-500" />
                           <span className="text-muted-foreground text-[11px]">
-                            Preview ready
+                            {t("share.gallery.previewReady")}
                           </span>
                         </>
                       )}
@@ -1443,26 +1445,26 @@ export default function ShareDialog({
 
                 {!isGalleryVisible && shareNeedsRefresh ? (
                   <p className="text-muted-foreground text-[11px]">
-                    Update the share link first so the gallery uses the latest
-                    snapshot.
+                    {t("share.gallery.refreshShareFirst")}
                   </p>
                 ) : !galleryTitleValid ? (
                   <p className="text-destructive text-[11px]">
-                    Add a title before saving.
+                    {t("share.gallery.titleRequired")}
                   </p>
                 ) : !galleryDescriptionValid ? (
                   <p className="text-destructive text-[11px]">
-                    Use {GALLERY_DESCRIPTION_MIN_LENGTH}-
-                    {GALLERY_DESCRIPTION_MAX_LENGTH} characters for the
-                    description.
+                    {t("share.gallery.descriptionLength", {
+                      min: GALLERY_DESCRIPTION_MIN_LENGTH,
+                      max: GALLERY_DESCRIPTION_MAX_LENGTH,
+                    })}
                   </p>
                 ) : !isGalleryVisible && !displayNameValid ? (
                   <p className="text-destructive text-[11px]">
-                    Set an account display name first.
+                    {t("share.gallery.displayNameRequired")}
                   </p>
                 ) : isGalleryVisible && !hasGalleryMetadataChanges ? (
                   <p className="text-muted-foreground text-[11px]">
-                    Update the title or description to save changes.
+                    {t("share.gallery.noMetadataChanges")}
                   </p>
                 ) : null}
 
@@ -1473,7 +1475,7 @@ export default function ShareDialog({
                     disabled={busy}
                     className={shareDialogButtonClassName}
                   >
-                    Cancel
+                    {tCommon("actions.cancel")}
                   </Button>
                   <Button
                     onClick={
@@ -1489,7 +1491,9 @@ export default function ShareDialog({
                     }
                     className={shareDialogButtonClassName}
                   >
-                    {isGalleryVisible ? "Save changes" : "Add to gallery"}
+                    {isGalleryVisible
+                      ? tCommon("actions.saveChanges")
+                      : t("share.gallery.addToGallery")}
                   </Button>
                 </div>
               </div>
@@ -1500,25 +1504,30 @@ export default function ShareDialog({
                     <>
                       <div>
                         <p className="text-foreground text-sm font-medium">
-                          Gallery card
+                          {t("share.gallery.cardTitle")}
                         </p>
                         <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                          Review or update the public title and description for
-                          this track.
+                          {t("share.gallery.cardDescription")}
                         </p>
                       </div>
                       <dl className="space-y-2 text-[12px]">
                         <div className="space-y-0.5 min-[420px]:grid min-[420px]:grid-cols-[4.5rem_1fr] min-[420px]:gap-3 min-[420px]:space-y-0">
-                          <dt className="text-muted-foreground">Title</dt>
+                          <dt className="text-muted-foreground">
+                            {tCommon("labels.title")}
+                          </dt>
                           <dd className="text-foreground truncate font-medium">
-                            {share.galleryTitle || design.title || "Untitled"}
+                            {share.galleryTitle ||
+                              design.title ||
+                              t("share.gallery.untitled")}
                           </dd>
                         </div>
                         <div className="space-y-0.5 min-[420px]:grid min-[420px]:grid-cols-[4.5rem_1fr] min-[420px]:gap-3 min-[420px]:space-y-0">
-                          <dt className="text-muted-foreground">Description</dt>
+                          <dt className="text-muted-foreground">
+                            {tCommon("labels.description")}
+                          </dt>
                           <dd className="text-muted-foreground line-clamp-2 leading-relaxed">
                             {share.galleryDescription ||
-                              "No gallery description set."}
+                              t("share.gallery.noDescription")}
                           </dd>
                         </div>
                       </dl>
@@ -1531,21 +1540,22 @@ export default function ShareDialog({
                           disabled={busy}
                           className={shareDialogButtonClassName}
                         >
-                          Edit details
+                          {t("share.gallery.editDetails")}
                         </Button>
                         <Button
                           variant="outline"
                           className={shareDialogButtonClassName}
                           asChild
                         >
-                          <Link href="/gallery">View gallery</Link>
+                          <Link href="/gallery">
+                            {t("share.gallery.viewGallery")}
+                          </Link>
                         </Button>
                       </div>
                       {confirmRemoveFromGallery ? (
                         <div className="border-border/60 flex flex-col gap-2 border-t pt-3">
                           <p className="text-muted-foreground text-[11px] leading-relaxed">
-                            Remove from the public gallery? The share link
-                            itself will continue to work until it is revoked.
+                            {t("share.gallery.removeConfirm")}
                           </p>
                           <div className="flex flex-col-reverse gap-2 min-[380px]:flex-row min-[380px]:justify-end">
                             <Button
@@ -1558,7 +1568,7 @@ export default function ShareDialog({
                               onClick={() => setConfirmRemoveFromGallery(false)}
                               disabled={busy}
                             >
-                              Cancel
+                              {tCommon("actions.cancel")}
                             </Button>
                             <Button
                               variant="destructive"
@@ -1571,7 +1581,7 @@ export default function ShareDialog({
                               disabled={busy}
                             >
                               <Trash2 className="size-4" />
-                              Remove
+                              {tCommon("actions.remove")}
                             </Button>
                           </div>
                         </div>
@@ -1588,7 +1598,7 @@ export default function ShareDialog({
                             )}
                           >
                             <Trash2 className="size-4" />
-                            Remove from gallery
+                            {t("share.gallery.removeFromGallery")}
                           </Button>
                         </div>
                       )}
@@ -1597,17 +1607,15 @@ export default function ShareDialog({
                     <>
                       <div>
                         <p className="text-foreground text-sm font-medium">
-                          Ready to list
+                          {t("share.gallery.readyTitle")}
                         </p>
                         <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                          Add this published snapshot to the public gallery with
-                          its own title, description and preview.
+                          {t("share.gallery.readyDescription")}
                         </p>
                       </div>
                       {shareNeedsRefresh ? (
                         <p className="text-muted-foreground text-[11px] leading-relaxed">
-                          Update the share link first so the gallery uses the
-                          latest snapshot.
+                          {t("share.gallery.refreshShareFirst")}
                         </p>
                       ) : null}
                       <div className="border-border/60 flex border-t pt-3 min-[520px]:justify-end">
@@ -1622,7 +1630,7 @@ export default function ShareDialog({
                             "w-full min-[520px]:w-auto"
                           )}
                         >
-                          Add to gallery
+                          {t("share.gallery.addToGallery")}
                         </Button>
                       </div>
                     </>
@@ -1639,10 +1647,12 @@ export default function ShareDialog({
               <Share2 className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
               <p className="text-muted-foreground leading-relaxed">
                 {existingShareMode
-                  ? "This page is already the published read-only review link. Share it as-is, or open Studio if you want an editable copy."
+                  ? t("share.actions.existingDescription")
                   : hasPath
-                    ? `Shared links open as read-only review pages. This link opens straight into ${currentView.toUpperCase()} review, and the route is ready for fly-through.`
-                    : "Shared links open as read-only review pages. Add a path first if you want reviewers to use fly-through and elevation review."}
+                    ? t("share.actions.withPathDescription", {
+                        view: currentView.toUpperCase(),
+                      })
+                    : t("share.actions.withoutPathDescription")}
               </p>
             </div>
 
@@ -1662,10 +1672,10 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-foreground text-sm font-medium">
-                      Share via…
+                      {t("share.actions.nativeShareTitle")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      Send to apps or contacts
+                      {t("share.actions.nativeShareDescription")}
                     </p>
                   </div>
                 </button>
@@ -1696,12 +1706,12 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-foreground text-sm font-medium">
-                      Open in tab
+                      {t("share.actions.openInTab")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
                       {existingShareMode
-                        ? "Reopen the current shared link in a new tab"
-                        : "Preview the share link in a new window"}
+                        ? t("share.actions.reopenCurrent")
+                        : t("share.actions.previewLink")}
                     </p>
                   </div>
                 </button>
@@ -1717,10 +1727,10 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-foreground text-sm font-medium">
-                      Export JSON instead
+                      {t("share.actions.exportJson")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      Editable backup for reopening in TrackDraw
+                      {t("share.actions.exportJsonDescription")}
                     </p>
                   </div>
                 </button>

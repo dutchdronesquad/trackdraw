@@ -47,6 +47,7 @@ export function ProjectManagerAccountTab({
   onOpenChange,
 }: ProjectManagerAccountTabProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const sorted = [...accountProjects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
@@ -160,7 +161,7 @@ export function ProjectManagerAccountTab({
                     : hasConflict
                       ? t("projectManager.account.reviewNeeded")
                       : hasPendingChanges
-                        ? t("projectManager.account.pending")
+                        ? tCommon("status.pending")
                         : hasSyncFailure
                           ? t("projectManager.account.syncFailed")
                           : t("projectManager.account.synced")}

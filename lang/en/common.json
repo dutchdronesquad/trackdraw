@@ -1,0 +1,50 @@
+{
+  "actions": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "copy": "Copy",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "hide": "Hide",
+    "lock": "Lock",
+    "remove": "Remove",
+    "rename": "Rename",
+    "reset": "Reset",
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "select": "Select",
+    "undo": "Undo",
+    "unlock": "Unlock"
+  },
+  "labels": {
+    "account": "Account",
+    "actions": "Actions",
+    "dashboard": "Dashboard",
+    "description": "Description",
+    "expires": "Expires",
+    "language": "Language",
+    "name": "Name",
+    "owner": "Owner",
+    "profile": "Profile",
+    "project": "Project",
+    "role": "Role",
+    "status": "Status",
+    "theme": "Theme",
+    "title": "Title",
+    "type": "Type",
+    "view": "View"
+  },
+  "status": {
+    "active": "Active",
+    "expired": "Expired",
+    "featured": "Featured",
+    "hidden": "Hidden",
+    "listed": "Listed",
+    "loading": "Loading",
+    "off": "Off",
+    "on": "On",
+    "pending": "Pending",
+    "published": "Published",
+    "revoked": "Revoked"
+  }
+}

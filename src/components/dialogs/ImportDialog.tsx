@@ -34,6 +34,7 @@ export default function ImportDialog({
   onBeforeConfirm,
 }: ImportDialogProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const { replaceDesign } = useTrackActions();
   const { unitSystem } = useMeasurementUnitSystem();
   const isMobile = useIsMobile();
@@ -163,10 +164,10 @@ export default function ImportDialog({
             />
             <div className="text-center">
               <p className="text-foreground text-sm font-medium">
-                {t("import.dropFileHere")}
+                {t("import.dropFile")}
               </p>
               <p className="text-muted-foreground mt-1 text-xs">
-                {t("import.clickToBrowse")}
+                {t("import.browseFile")}
               </p>
             </div>
             <span className="text-muted-foreground/55 font-mono text-[11px]">
@@ -213,7 +214,7 @@ export default function ImportDialog({
               onClick={reset}
               className="border-border text-muted-foreground hover:bg-muted/40 flex-1 rounded-lg border px-4 py-2 text-sm transition-colors"
             >
-              {t("import.cancel")}
+              {tCommon("actions.cancel")}
             </button>
             <button
               onClick={handleConfirm}
@@ -227,7 +228,7 @@ export default function ImportDialog({
               onClick={onBackupCurrent}
               className="text-muted-foreground hover:text-foreground border-border/70 w-full rounded-lg border border-dashed px-4 py-2 text-sm transition-colors"
             >
-              {t("import.backupCurrentFirst")}
+              {t("import.backupFirst")}
             </button>
           ) : null}
         </div>

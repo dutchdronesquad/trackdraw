@@ -33,9 +33,10 @@ export function CatalogTypeSection({
   onChange,
 }: CatalogTypeSectionProps) {
   const t = useTranslations("inspector");
+  const tCommon = useTranslations("common");
   return (
     <Section title={t("catalog.sectionTitle")} defaultOpen>
-      <Row label={t("catalog.typeLabel")}>
+      <Row label={tCommon("labels.type")}>
         <Select
           value={activeEntryId}
           disabled={disabled}
@@ -76,7 +77,7 @@ export function CatalogTypeSection({
         </Row>
       ) : null}
       {catalogIdentity ? (
-        <Row label={t("catalog.officialSizeLabel")}>
+        <Row label={t("catalog.sizeLabel")}>
           <span className="text-foreground text-[12px]">
             {catalogIdentity.snapshot.dimensionsLabel}
           </span>

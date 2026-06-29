@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { LocateFixed, Minus, Plus, RotateCcw, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
@@ -139,6 +140,7 @@ export function MapReferenceDialog({
   onOpenChange: (open: boolean) => void;
   onConfirm: (reference: MapReference) => void;
 }) {
+  const t = useTranslations("inspector.mapReference");
   const isDesktop = useIsDesktopInspector();
   const [center, setCenter] = useState<LatLng>({
     lat: initialReference?.centerLat ?? 52.1326,
@@ -231,7 +233,7 @@ export function MapReferenceDialog({
 
   const handleLocate = () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocateError("Location is unavailable in this browser.");
+      setLocateError(t("locationUnavailable"));
       return;
     }
 
@@ -249,11 +251,11 @@ export function MapReferenceDialog({
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
-          setLocateError("Location permission was denied.");
+          setLocateError(t("locationPermissionDenied"));
         } else if (error.code === error.TIMEOUT) {
-          setLocateError("Location lookup timed out.");
+          setLocateError(t("locationTimeout"));
         } else {
-          setLocateError("Could not determine your location.");
+          setLocateError(t("locationError"));
         }
         setLocatePending(false);
       },
@@ -303,7 +305,7 @@ export function MapReferenceDialog({
               event.currentTarget.blur();
             }
           }}
-          placeholder="Search place or paste coordinates"
+          placeholder={t("searchPlaceholder")}
           className={
             mobile
               ? "border-border/45 bg-muted/30 focus-visible:bg-background h-9 rounded-md pr-16 pl-8 text-[13px] shadow-none"
@@ -311,7 +313,7 @@ export function MapReferenceDialog({
           }
         />
         <span className="text-muted-foreground/65 pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-[10px] font-medium">
-          {locationSearchPending ? "Searching" : "Enter"}
+          {locationSearchPending ? t("searching") : t("enterHint")}
         </span>
       </div>
       {locationSearchError || locationResults.length > 0 ? (
@@ -393,7 +395,7 @@ export function MapReferenceDialog({
       {mobile ? (
         <>
           <div className="bg-background/92 text-muted-foreground absolute top-2 left-2 z-10 rounded-md px-2 py-1 text-[10px] font-medium shadow-sm backdrop-blur-sm">
-            Zoom {zoom.toFixed(1)}
+            {t("zoomLabel", { zoom: zoom.toFixed(1) })}
           </div>
           <div
             className="absolute top-2 right-2 z-10 flex flex-col gap-1.5"
@@ -407,7 +409,7 @@ export function MapReferenceDialog({
               size="icon"
               className="bg-background/92 size-7 shadow-sm backdrop-blur-sm"
               onClick={() => syncZoom(zoomRef.current + 1)}
-              aria-label="Zoom in"
+              aria-label={t("zoomIn")}
             >
               <Plus />
             </Button>
@@ -417,7 +419,7 @@ export function MapReferenceDialog({
               size="icon"
               className="bg-background/92 size-7 shadow-sm backdrop-blur-sm"
               onClick={() => syncZoom(zoomRef.current - 1)}
-              aria-label="Zoom out"
+              aria-label={t("zoomOut")}
             >
               <Minus />
             </Button>
@@ -434,7 +436,7 @@ export function MapReferenceDialog({
     <div className="space-y-2">
       <label className="block space-y-2">
         <span className="text-muted-foreground text-[11px] font-medium">
-          Latitude
+          {t("latitude")}
         </span>
         <Input
           value={latInput}
@@ -448,7 +450,7 @@ export function MapReferenceDialog({
       </label>
       <label className="block space-y-2">
         <span className="text-muted-foreground text-[11px] font-medium">
-          Longitude
+          {t("longitude")}
         </span>
         <Input
           value={lngInput}
@@ -473,11 +475,11 @@ export function MapReferenceDialog({
         <div className="space-y-2.5">
           <div className="flex items-center justify-between gap-3">
             <label className="text-muted-foreground text-[11px] font-medium">
-              Rotation
+              {t("rotation")}
             </label>
             <div className="flex items-center gap-2">
               <span className="bg-muted/35 text-muted-foreground flex h-7 min-w-16 items-center justify-center rounded-md px-2 font-mono text-[11px]">
-                {Math.round(rotationDeg)} deg
+                {t("rotationValue", { deg: Math.round(rotationDeg) })}
               </span>
               <Button
                 type="button"
@@ -485,7 +487,7 @@ export function MapReferenceDialog({
                 size="icon"
                 className="size-7"
                 onClick={() => syncRotation(0)}
-                aria-label="Reset rotation"
+                aria-label={t("resetRotation")}
               >
                 <RotateCcw />
               </Button>
@@ -509,7 +511,7 @@ export function MapReferenceDialog({
               size="sm"
               className="h-7 rounded-lg px-2.5"
               onClick={() => nudgeRotation(-15)}
-              aria-label="Rotate left 15 degrees"
+              aria-label={t("rotateLeft15")}
             >
               -15
             </Button>
@@ -519,7 +521,7 @@ export function MapReferenceDialog({
               size="sm"
               className="h-7 rounded-lg px-2.5"
               onClick={() => nudgeRotation(-1)}
-              aria-label="Rotate left 1 degree"
+              aria-label={t("rotateLeft1")}
             >
               -1
             </Button>
@@ -529,7 +531,7 @@ export function MapReferenceDialog({
               size="sm"
               className="h-7 rounded-lg px-2.5"
               onClick={() => nudgeRotation(1)}
-              aria-label="Rotate right 1 degree"
+              aria-label={t("rotateRight1")}
             >
               +1
             </Button>
@@ -539,7 +541,7 @@ export function MapReferenceDialog({
               size="sm"
               className="h-7 rounded-lg px-2.5"
               onClick={() => nudgeRotation(15)}
-              aria-label="Rotate right 15 degrees"
+              aria-label={t("rotateRight15")}
             >
               +15
             </Button>
@@ -552,7 +554,7 @@ export function MapReferenceDialog({
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <label className="text-muted-foreground text-[11px] font-medium">
-            Rotation
+            {t("rotation")}
           </label>
           <Button
             type="button"
@@ -560,7 +562,7 @@ export function MapReferenceDialog({
             size="icon"
             className="size-6"
             onClick={() => syncRotation(0)}
-            aria-label="Reset rotation"
+            aria-label={t("resetRotation")}
           >
             <RotateCcw />
           </Button>
@@ -596,7 +598,7 @@ export function MapReferenceDialog({
       <div className="border-border/40 mt-3 space-y-4 lg:mt-0 lg:border-l lg:pl-4">
         <div className="space-y-2">
           <div className="text-muted-foreground text-[11px] font-medium">
-            View
+            {t("view")}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Button
@@ -605,10 +607,10 @@ export function MapReferenceDialog({
               size="sm"
               className="h-7 rounded-lg px-2.5"
               onClick={() => syncZoom(zoomRef.current - 1)}
-              aria-label="Zoom out"
+              aria-label={t("zoomOut")}
             >
               <Minus />
-              Out
+              {t("out")}
             </Button>
             <Button
               type="button"
@@ -616,20 +618,20 @@ export function MapReferenceDialog({
               size="sm"
               className="h-7 rounded-lg px-2.5"
               onClick={() => syncZoom(zoomRef.current + 1)}
-              aria-label="Zoom in"
+              aria-label={t("zoomIn")}
             >
               <Plus />
-              In
+              {t("in")}
             </Button>
           </div>
           <div className="bg-muted/35 text-muted-foreground flex h-8 items-center justify-center rounded-lg text-xs">
-            Preview zoom {zoom.toFixed(1)}
+            {t("previewZoom", { zoom: zoom.toFixed(1) })}
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="text-muted-foreground text-[11px] font-medium">
-            Center
+            {t("center")}
           </div>
           <Button
             type="button"
@@ -640,7 +642,7 @@ export function MapReferenceDialog({
             onClick={handleLocate}
           >
             <LocateFixed />
-            {locatePending ? "Locating" : "Use location"}
+            {locatePending ? t("locating") : t("useLocation")}
           </Button>
           {locateError ? (
             <p className="text-muted-foreground text-[11px] leading-relaxed">
@@ -663,7 +665,7 @@ export function MapReferenceDialog({
       <div className="border-border/30 space-y-3 border-t pt-3">
         <div className="flex items-center justify-between gap-3">
           <div className="text-muted-foreground text-[11px] font-medium">
-            Center
+            {t("center")}
           </div>
           <Button
             type="button"
@@ -674,7 +676,7 @@ export function MapReferenceDialog({
             onClick={handleLocate}
           >
             <LocateFixed />
-            {locatePending ? "Locating" : "Use location"}
+            {locatePending ? t("locating") : t("useLocation")}
           </Button>
         </div>
         {locateError ? (
@@ -698,14 +700,14 @@ export function MapReferenceDialog({
         onClick={() => onOpenChange(false)}
         className="h-8 cursor-pointer rounded-lg px-3 shadow-none"
       >
-        Cancel
+        {t("cancel")}
       </Button>
       <Button
         type="button"
         onClick={handleSave}
         className="h-8 cursor-pointer rounded-lg px-3"
       >
-        Save map
+        {t("saveMap")}
       </Button>
     </>
   );
@@ -720,7 +722,7 @@ export function MapReferenceDialog({
         className="h-9 w-full cursor-pointer rounded-lg"
         onClick={handleSave}
       >
-        Save map
+        {t("saveMap")}
       </Button>
     </div>
   );
@@ -730,8 +732,8 @@ export function MapReferenceDialog({
       <MobileDrawer
         open={open}
         onOpenChange={onOpenChange}
-        title="Map reference"
-        subtitle="Choose the field center and align the field footprint."
+        title={t("title")}
+        subtitle={t("subtitle")}
         contentClassName="data-[vaul-drawer-direction=bottom]:mt-8 data-[vaul-drawer-direction=bottom]:max-h-[94dvh]"
         bodyClassName="min-h-0 overscroll-contain p-0"
         footerContent={mobileFooter}
@@ -747,8 +749,8 @@ export function MapReferenceDialog({
     <DesktopModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Map reference"
-      subtitle="Choose the field center and align the field footprint."
+      title={t("title")}
+      subtitle={t("subtitle")}
       maxWidth="max-w-[min(94vw,920px)]"
       headerless
       panelClassName="flex max-h-[min(92vh,760px)] flex-col p-0"
@@ -757,17 +759,17 @@ export function MapReferenceDialog({
         <div className="border-border/40 flex shrink-0 items-start justify-between gap-4 border-b px-6 py-4">
           <div>
             <p className="text-foreground text-[1rem] font-semibold tracking-[-0.01em]">
-              Map reference
+              {t("title")}
             </p>
             <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              Choose the field center and align the field footprint.
+              {t("subtitle")}
             </p>
           </div>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
             className="text-muted-foreground/75 hover:text-foreground hover:bg-muted cursor-pointer rounded-full p-1.5 transition-colors"
-            aria-label="Close"
+            aria-label={t("close")}
           >
             <X className="size-4" />
           </button>

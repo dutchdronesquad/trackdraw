@@ -1,20 +1,16 @@
 import type { ReactNode } from "react";
 import {
   Blocks,
-  Download,
-  FilePlus,
   Flag,
-  FolderOpen,
   Hand,
-  Import,
   MousePointer2,
   Spline,
   Target,
   Triangle,
   Type,
 } from "lucide-react";
-import type { EditorTool } from "@/lib/editor/tool-registry";
-import { toolLabels, toolShortcuts } from "@/lib/editor/tool-registry";
+import type { EditorTool, Translate } from "@/lib/editor/tool-registry";
+import { getToolLabel, toolShortcuts } from "@/lib/editor/tool-registry";
 
 function GateIcon({ className }: { className?: string }) {
   return (
@@ -152,90 +148,64 @@ export type ToolGroup = {
   tools: ToolEntry[];
 };
 
-export type BottomAction = {
-  label: string;
-  tooltip: string;
-  icon: ReactNode;
-  action: "new" | "projects" | "import" | "export";
-};
-
-function buildToolEntry(tool: EditorTool, iconClassName: string): ToolEntry {
+function buildToolEntry(
+  tool: EditorTool,
+  iconClassName: string,
+  t: Translate
+): ToolEntry {
   return {
     id: tool,
-    label: toolLabels[tool],
+    label: getToolLabel(tool, t),
     shortcut: toolShortcuts[tool],
     icon: iconForTool(tool, iconClassName),
   };
 }
 
-export const toolbarToolGroups: ToolGroup[] = [
-  {
-    title: "",
-    tools: [
-      buildToolEntry("select", "size-3.5"),
-      buildToolEntry("grab", "size-3.5"),
-      buildToolEntry("preset", "size-3.5"),
-    ],
-  },
-  {
-    title: "Track",
-    tools: [
-      buildToolEntry("gate", "size-3.5"),
-      buildToolEntry("ladder", "size-3.5"),
-      buildToolEntry("tower", "size-3.5"),
-      buildToolEntry("divegate", "size-3.5"),
-      buildToolEntry("barrier", "size-3.5"),
-      buildToolEntry("flag", "size-3.5"),
-      buildToolEntry("cone", "size-3.5"),
-    ],
-  },
-  {
-    title: "Extra",
-    tools: [
-      buildToolEntry("startfinish", "size-3.5"),
-      buildToolEntry("label", "size-3.5"),
-      buildToolEntry("polyline", "size-3.5"),
-    ],
-  },
-];
+export function getToolbarToolGroups(t: Translate): ToolGroup[] {
+  return [
+    {
+      title: "",
+      tools: [
+        buildToolEntry("select", "size-3.5", t),
+        buildToolEntry("grab", "size-3.5", t),
+        buildToolEntry("preset", "size-3.5", t),
+      ],
+    },
+    {
+      title: t("toolGroups.track"),
+      tools: [
+        buildToolEntry("gate", "size-3.5", t),
+        buildToolEntry("ladder", "size-3.5", t),
+        buildToolEntry("tower", "size-3.5", t),
+        buildToolEntry("divegate", "size-3.5", t),
+        buildToolEntry("barrier", "size-3.5", t),
+        buildToolEntry("flag", "size-3.5", t),
+        buildToolEntry("cone", "size-3.5", t),
+      ],
+    },
+    {
+      title: t("toolGroups.extra"),
+      tools: [
+        buildToolEntry("startfinish", "size-3.5", t),
+        buildToolEntry("label", "size-3.5", t),
+        buildToolEntry("polyline", "size-3.5", t),
+      ],
+    },
+  ];
+}
 
-export const mobileToolEntries: ToolEntry[] = [
-  buildToolEntry("preset", "size-5"),
-  buildToolEntry("gate", "size-5"),
-  buildToolEntry("ladder", "size-5"),
-  buildToolEntry("tower", "size-5"),
-  buildToolEntry("divegate", "size-5"),
-  buildToolEntry("barrier", "size-5"),
-  buildToolEntry("startfinish", "size-5"),
-  buildToolEntry("flag", "size-5"),
-  buildToolEntry("cone", "size-5"),
-  buildToolEntry("label", "size-5"),
-  buildToolEntry("polyline", "size-5"),
-];
-
-export const bottomActions: BottomAction[] = [
-  {
-    label: "New",
-    tooltip: "Start a new project",
-    icon: <FilePlus className="size-3.5" />,
-    action: "new" as const,
-  },
-  {
-    label: "Projects",
-    tooltip: "Manage projects",
-    icon: <FolderOpen className="size-3.5" />,
-    action: "projects" as const,
-  },
-  {
-    label: "Import",
-    tooltip: "Import JSON",
-    icon: <Import className="size-3.5" />,
-    action: "import" as const,
-  },
-  {
-    label: "Export",
-    tooltip: "Export track",
-    icon: <Download className="size-3.5" />,
-    action: "export" as const,
-  },
-];
+export function getMobileToolEntries(t: Translate): ToolEntry[] {
+  return [
+    buildToolEntry("preset", "size-5", t),
+    buildToolEntry("gate", "size-5", t),
+    buildToolEntry("ladder", "size-5", t),
+    buildToolEntry("tower", "size-5", t),
+    buildToolEntry("divegate", "size-5", t),
+    buildToolEntry("barrier", "size-5", t),
+    buildToolEntry("startfinish", "size-5", t),
+    buildToolEntry("flag", "size-5", t),
+    buildToolEntry("cone", "size-5", t),
+    buildToolEntry("label", "size-5", t),
+    buildToolEntry("polyline", "size-5", t),
+  ];
+}

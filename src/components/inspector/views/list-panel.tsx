@@ -4,7 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { shapeKindLabels } from "@/lib/track/items/registry";
+import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import {
   getObstacleNumberingReport,
   isNumberedObstacle,
@@ -78,11 +78,11 @@ export function ListPanel({
   );
 }
 
-function getShapeDisplayName(shape: Shape): string {
+function getShapeDisplayName(shape: Shape, t: Translate): string {
   if (shape.name?.trim()) return shape.name.trim();
   const catalogId = getTrackElementCatalogIdentity(shape.meta)?.elementId;
   const entry = getTrackElementCatalogEntry(catalogId);
-  return entry?.name ?? shapeKindLabels[shape.kind];
+  return entry?.name ?? getShapeKindLabel(shape.kind, t);
 }
 
 type ViewFilter = "all" | "obstacles";
@@ -106,6 +106,7 @@ export function ItemOverviewList({
   obstacleNumberingReport?: ObstacleNumberingReport;
 }) {
   const t = useTranslations("inspector");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const [query, setQuery] = useState("");
   const [viewFilter, setViewFilter] = useState<ViewFilter>("all");
 
@@ -151,8 +152,8 @@ export function ItemOverviewList({
       if (viewFilter === "obstacles" && !isNumberedObstacle(shape))
         return false;
       if (!normalizedQuery) return true;
-      const displayName = getShapeDisplayName(shape);
-      const kindLabel = shapeKindLabels[shape.kind];
+      const displayName = getShapeDisplayName(shape, tShapes);
+      const kindLabel = getShapeKindLabel(shape.kind, tShapes);
       const position = `${fmt(shape.x)}, ${fmt(shape.y)}`;
       return (
         displayName.toLowerCase().includes(normalizedQuery) ||
@@ -160,7 +161,7 @@ export function ItemOverviewList({
         position.includes(normalizedQuery)
       );
     });
-  }, [shapes, viewFilter, normalizedQuery]);
+  }, [shapes, viewFilter, normalizedQuery, tShapes]);
 
   return (
     <Section
@@ -228,10 +229,10 @@ export function ItemOverviewList({
               #
             </span>
             <span className="text-muted-foreground/55 text-[10px] font-medium tracking-[0.08em] uppercase">
-              Item
+              {t("listPanel.itemColumn")}
             </span>
             <span className="text-muted-foreground/55 text-right text-[10px] font-medium tracking-[0.08em] uppercase">
-              Path
+              {t("listPanel.pathColumn")}
             </span>
             <span aria-hidden="true" />
           </div>
@@ -245,8 +246,8 @@ export function ItemOverviewList({
             <div className="divide-border/15 divide-y">
               {filteredShapes.length ? (
                 filteredShapes.map((shape) => {
-                  const displayName = getShapeDisplayName(shape);
-                  const kindLabel = shapeKindLabels[shape.kind];
+                  const displayName = getShapeDisplayName(shape, tShapes);
+                  const kindLabel = getShapeKindLabel(shape.kind, tShapes);
                   const pathNumber = numberingReport.obstacleNumberMap.get(
                     shape.id
                   );
@@ -315,7 +316,7 @@ export function ItemOverviewList({
               ) : (
                 <div className="px-3 py-4 text-center">
                   <p className="text-muted-foreground/55 text-[11px]">
-                    No items match this filter.
+                    {t("listPanel.noItemsMatchFilter")}
                   </p>
                 </div>
               )}

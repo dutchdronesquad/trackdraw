@@ -1,0 +1,66 @@
+{
+  "renderFailed": "PDF-rendering mislukt",
+  "untitledTrack": "Naamloze track",
+  "footer": {
+    "brand": "TrackDraw · {pageLabel}",
+    "pageOf": "Pagina {pageNumber} van {totalPages}",
+    "pageOverview": "Overzicht",
+    "pageTrackMap": "Trackkaart",
+    "pageBuildSheet": "Opbouwblad"
+  },
+  "sharedView": {
+    "title": "GEDEELDE WEERGAVE",
+    "scanToOpen": "Scan om de track te openen",
+    "scanDescription": "Opent de canonieke TrackDraw-deellink voor mobiele review en briefing.",
+    "noShare": "Geen gepubliceerde deellink gekoppeld",
+    "noShareDescription": "Publiceer dit project eerst als je wilt dat het Race Pack een scancode bevat."
+  },
+  "cover": {
+    "title": "Race Pack",
+    "numberingIncluded": "nummering meegenomen",
+    "numberingHidden": "nummering verborgen",
+    "statusLabel": "Status",
+    "statusBuildable": "Bouwbaar",
+    "statusShort": "Tekort",
+    "missingLabel": "Ontbreekt",
+    "obstaclesLabel": "Obstakels",
+    "intro": "Dit Race Pack is bedoeld om met de opbouwcrew op race day mee te reizen. Gebruik de kaart als plaatsingsreferentie, de materiaallijst als voorraadcheck, en de opbouwvolgorde als praktische volgorde om het parcours op het veld te krijgen. De opbouwtiming gaat uit van een typische crew van 2-3 personen en een clubgewijze workflow: uitladen, klaarzetten, voor-monteren, dan plaatsen en vastzetten.",
+    "contentsTitle": "Inhoud",
+    "contentsItem1": "1. Trackkaart en veldoverzicht",
+    "contentsItem2": "2. Materiaallijst, voorraadcheck en timingpunten",
+    "contentsItem3": "3. Opbouwvolgorde en race day-notities",
+    "summaryTitle": "Samenvatting",
+    "summaryShortage": "{count, plural, one {Deze indeling overschrijdt momenteel de beschikbare voorraad in 1 obstakeltype.} other {Deze indeling overschrijdt momenteel de beschikbare voorraad in {count} obstakeltypes.}} Verhelp tekorten voordat je dit pack als definitieve bouwreferentie gebruikt.",
+    "summaryBuildable": "Deze indeling is momenteel bouwbaar met het opgeslagen voorraadprofiel. Gebruik de volgende pagina's als referentie voor opbouw en overdracht op race day."
+  },
+  "mapPage": {
+    "title": "Trackkaart",
+    "stockShort": "Voorraad tekort van {count}",
+    "stockBuildable": "Voorraadcheck: bouwbaar",
+    "numberingShown": "nummering zichtbaar",
+    "numberingHidden": "nummering verborgen"
+  },
+  "buildSheet": {
+    "title": "Opbouwblad",
+    "materialListTitle": "Materiaallijst",
+    "obstacleColumn": "Obstakel",
+    "requiredColumn": "Benodigd",
+    "availableColumn": "Beschikbaar",
+    "missingColumn": "Ontbreekt",
+    "timingPointsTitle": "Timingpunten",
+    "noTimingPoints": "Er zijn nog geen timingpunten toegewezen. Markeer een gate als start/finish of split in de inspector voor de overdracht op race day.",
+    "setupSequenceTitle": "Opbouwvolgorde",
+    "setupIntro": "Geschatte opbouwinspanning: ongeveer {min}-{max} minuten. Algemene complexiteit: {complexity}. {summary}",
+    "crewStepLabel": "Crewstap",
+    "groupedTaskLabel": "Gegroepeerde tracktaak",
+    "obstacleNumberSuffix": "{kind} · Obstakel #{number}",
+    "minutesSuffix": "{minutes} min",
+    "noSetupSequenceNumbering": "Er is nog geen opbouwvolgorde beschikbaar. Voeg een route toe en plaats wat obstakels om een nuttiger pack te genereren.",
+    "noSetupSequenceHidden": "Nummering is verborgen in deze export. Schakel obstakelnummers in als je wilt dat de opbouwvolgorde routereferenties volgt.",
+    "notesTitle": "Race day-notities",
+    "note1": "Gebruik de kaartpagina als plaatsingsreferentie tijdens opbouw en pilotenbriefing.",
+    "note2": "Behandel de voorraadcheck als de bron van waarheid voordat je de indeling definitief maakt voor de bouw.",
+    "note3": "Verankker het parcours eerst en zet daarna obstakels met hogere inspanning zoals Dive Gates en Ladders vast voor de standaard gate-ronde.",
+    "note4": "Als de route of het obstakelaantal verandert, genereer het Race Pack opnieuw zodat kaart, voorraadlijst en opbouwvolgorde op elkaar aansluiten."
+  }
+}

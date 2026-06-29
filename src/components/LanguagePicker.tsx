@@ -36,7 +36,6 @@ export function LanguagePicker({
   className,
   variant = "compact",
 }: LanguagePickerProps) {
-  const t = useTranslations("editor");
   // useSyncExternalStore with a server snapshot ensures SSR renders defaultLocale,
   // matching the Zustand store's initial state before localStorage rehydration.
   const rawLocale = useSyncExternalStore(
@@ -47,6 +46,7 @@ export function LanguagePicker({
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
   const setLocale = useLocaleStore((s) => s.setLocale);
   const router = useRouter();
+  const t = useTranslations("common");
   const config = localeConfig[locale];
 
   function handleChange(value: string) {
@@ -64,7 +64,7 @@ export function LanguagePicker({
             "text-muted-foreground hover:bg-muted hover:text-foreground h-8 min-w-12 justify-center gap-1.5 rounded-md border-0 px-2 text-xs shadow-none [&>svg:last-child]:hidden",
             className
           )}
-          aria-label={t("languagePicker.ariaLabel")}
+          aria-label={t("labels.language")}
         >
           <Languages className="size-3.5 shrink-0" />
           <span className="font-mono">{config.abbr}</span>
@@ -75,7 +75,7 @@ export function LanguagePicker({
             "h-8 justify-center gap-2 rounded-lg px-2.5 text-sm shadow-none [&>svg:last-child]:hidden",
             className
           )}
-          aria-label={t("languagePicker.ariaLabel")}
+          aria-label={t("labels.language")}
         >
           {config.flag} {config.label}
         </SelectTrigger>

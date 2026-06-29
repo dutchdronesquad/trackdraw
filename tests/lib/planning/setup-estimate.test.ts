@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { buildSetupPlan } from "@/lib/planning/setup-estimate";
 import { normalizeDesign } from "@/lib/track/design";
+import {
+  createTestTranslate,
+  shapesTranslate,
+} from "../../helpers/shapes-translate";
+import en from "@lang/en/setupEstimate.json";
+
+const setupEstimateTranslate = createTestTranslate(en);
 
 const inventory = {
   gate: 2,
@@ -91,7 +98,11 @@ describe("setup estimate helpers", () => {
       updatedAt: "2026-04-13T10:00:00.000Z",
     });
 
-    const plan = buildSetupPlan(design);
+    const plan = buildSetupPlan(
+      design,
+      setupEstimateTranslate,
+      shapesTranslate
+    );
 
     expect(plan.steps[0]?.id).toBe("crew-unload-stage");
     expect(plan.steps.some((step) => step.id === "crew-rigging-check")).toBe(
@@ -157,7 +168,11 @@ describe("setup estimate helpers", () => {
       updatedAt: "2026-04-13T10:00:00.000Z",
     });
 
-    const plan = buildSetupPlan(design);
+    const plan = buildSetupPlan(
+      design,
+      setupEstimateTranslate,
+      shapesTranslate
+    );
 
     expect(plan.summary).toContain(
       "Most of the setup time comes from unloading"

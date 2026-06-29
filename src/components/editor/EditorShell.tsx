@@ -16,7 +16,7 @@ import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPrevi
 import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
 import { catalogPlacementToolIds } from "@/lib/editor/placement-catalog";
 import { createDefaultDesign, serializeDesign } from "@/lib/track/design";
-import { type EditorTool } from "@/lib/editor/tool-registry";
+import { type EditorTool, type Translate } from "@/lib/editor/tool-registry";
 import { loadProject } from "@/lib/projects";
 import { downloadJsonFile } from "@/lib/export/download-json";
 import { findPresetById } from "@/lib/planning/layout-presets";
@@ -101,6 +101,7 @@ export default function EditorShell({
   useDeveloperModeShortcut();
 
   const t = useTranslations("editor");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const { enabled: developerModeEnabled } = useDeveloperMode();
   const { unitSystem } = useMeasurementUnitSystem();
@@ -165,6 +166,7 @@ export default function EditorShell({
     segmentSelection,
     selection,
     shapeById,
+    t: tShapes,
     unitSystem,
     vertexSelection,
   });

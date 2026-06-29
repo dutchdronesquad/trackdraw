@@ -2,20 +2,18 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Redo2, Undo2 } from "lucide-react";
-import { mobileToolEntries } from "@/components/editor/tool-icons";
+import { useTranslations } from "next-intl";
+import { getMobileToolEntries } from "@/components/editor/tool-icons";
 import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 import {
   catalogPlacementByTool,
   catalogPlacementToolIds,
 } from "@/lib/editor/placement-catalog";
-import type { EditorTool } from "@/lib/editor/tool-registry";
+import type { EditorTool, Translate } from "@/lib/editor/tool-registry";
 import { cn } from "@/lib/utils";
 import type { EditorViewportTab } from "./Panels";
 
 const catalogToolIdSet = new Set<EditorTool>(catalogPlacementToolIds);
-const catalogToolIds = mobileToolEntries
-  .map((tool) => tool.id)
-  .filter((toolId) => catalogToolIdSet.has(toolId));
 
 interface ToolsControlsProps {
   activeTool: EditorTool;
@@ -49,6 +47,15 @@ export function ToolsControls({
   onSelectTool,
   onUndo,
 }: ToolsControlsProps) {
+  const t = useTranslations("editor");
+  const tCommon = useTranslations("common");
+  const tCatalog = useTranslations("inspector.catalog");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
+  const mobileToolEntries = getMobileToolEntries(tShapes);
+  const catalogToolIds = mobileToolEntries
+    .map((tool) => tool.id)
+    .filter((toolId) => catalogToolIdSet.has(toolId));
+
   return (
     <>
       {/* Undo / redo */}
@@ -59,7 +66,7 @@ export function ToolsControls({
           className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Undo2 className="size-3.5" />
-          Undo
+          {tCommon("actions.undo")}
         </button>
         <button
           onClick={() => runAction(onRedo)}
@@ -67,14 +74,14 @@ export function ToolsControls({
           className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Redo2 className="size-3.5" />
-          Redo
+          {t("header.redo")}
         </button>
       </div>
 
       {tab === "2d" && (
         <div>
           <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            Tools
+            {t("mobilePanels.editorPanels.tools")}
           </p>
 
           {/* Catalog tools — active one auto-expands with type list */}
@@ -130,7 +137,9 @@ export function ToolsControls({
                       </p>
                       <p className="text-muted-foreground/60 mt-0.5 truncate text-[11px]">
                         {activeEntry?.name ?? "—"}
-                        {activeEntry?.official ? " · Official" : ""}
+                        {activeEntry?.official
+                          ? ` · ${tCatalog("officialBadge")}`
+                          : ""}
                       </p>
                     </div>
                   </button>
@@ -219,7 +228,7 @@ export function ToolsControls({
                                     </span>
                                     {entry.official ? (
                                       <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-widest uppercase">
-                                        Official
+                                        {tCatalog("officialBadge")}
                                       </span>
                                     ) : null}
                                   </span>

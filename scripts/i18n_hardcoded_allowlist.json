@@ -1,0 +1,1226 @@
+[
+  {
+    "file": "src/app/dashboard/api-keys/page.tsx",
+    "kind": "metadata property title",
+    "text": "Dashboard API Keys",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/dashboard/audit/page.tsx",
+    "kind": "metadata property title",
+    "text": "Dashboard Audit",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/dashboard/email-preview/page.tsx",
+    "kind": "metadata property title",
+    "text": "Dashboard Email Preview",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/dashboard/gallery/page.tsx",
+    "kind": "metadata property title",
+    "text": "Dashboard Gallery",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/dashboard/metrics/page.tsx",
+    "kind": "metadata property title",
+    "text": "Dashboard Metrics",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/dashboard/users/page.tsx",
+    "kind": "metadata property title",
+    "text": "Dashboard Users",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/embed/EmbedUnavailable.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/app/embed/layout.tsx",
+    "kind": "metadata property description",
+    "text": "Embedded TrackDraw read-only track view.",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/embed/layout.tsx",
+    "kind": "metadata property title",
+    "text": "Track Embed",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/login/layout.tsx",
+    "kind": "metadata property description",
+    "text": "Sign in to TrackDraw with a one-time magic link.",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/login/layout.tsx",
+    "kind": "metadata property title",
+    "text": "Sign in",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/login/page.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw 2D layout editor with obstacle library and track plan",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw 3D preview showing track flow and elevation",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw mobile editor with settings panel open",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw read-only shared view open on mobile",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "kind": "metadata property description",
+    "text": "TrackDraw is a drone race track builder for FPV race directors. Design tracks to scale, review track flow in 3D, and share read-only race-day layouts.",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "kind": "metadata property description",
+    "text": "Use TrackDraw as a drone race track builder to plan FPV layouts to scale, review track flow in 3D, and share read-only race-day plans.",
+    "count": 2,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/page.tsx",
+    "kind": "metadata property title",
+    "text": "TrackDraw | Drone Race Track Builder",
+    "count": 2,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/share/[token]/layout.tsx",
+    "kind": "metadata property description",
+    "text": "This older TrackDraw share format is no longer supported. Ask the sender to publish a fresh link.",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/share/[token]/layout.tsx",
+    "kind": "metadata property description",
+    "text": "This TrackDraw share link has expired. Ask the sender to publish a fresh link.",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/share/[token]/layout.tsx",
+    "kind": "metadata property description",
+    "text": "View this FPV race track designed with TrackDraw.",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/share/[token]/layout.tsx",
+    "kind": "metadata property title",
+    "text": "Expired Track Share",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/share/[token]/layout.tsx",
+    "kind": "metadata property title",
+    "text": "Unsupported Track Share",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/share/[token]/layout.tsx",
+    "kind": "metadata property title",
+    "text": "View Track",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/share/[token]/not-found.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/app/share/ShareError.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/app/share/ShareExpired.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/app/studio/layout.tsx",
+    "kind": "metadata property description",
+    "text": "Design FPV drone race tracks to scale, add gates and obstacles, and preview track flow in 3D.",
+    "count": 2,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/studio/layout.tsx",
+    "kind": "metadata property description",
+    "text": "Open the TrackDraw drone race track builder to design FPV layouts to scale, add gates and obstacles, and preview track flow in 3D.",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/studio/layout.tsx",
+    "kind": "metadata property title",
+    "text": "Drone Race Track Builder",
+    "count": 1,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/app/studio/layout.tsx",
+    "kind": "metadata property title",
+    "text": "TrackDraw | Drone Race Track Builder",
+    "count": 2,
+    "group": "metadata-translate",
+    "priority": "high",
+    "note": "Hardcoded metadata should be localized or generated from translations."
+  },
+  {
+    "file": "src/components/canvas/editor/TrackCanvas.tsx",
+    "kind": "JSX text",
+    "text": "Esc",
+    "count": 1,
+    "group": "keyboard-or-unit",
+    "priority": "exception",
+    "note": "Keyboard shortcut token; not natural-language copy."
+  },
+  {
+    "file": "src/components/canvas/editor/TrackPreview3D.tsx",
+    "kind": "JSX text",
+    "text": "flip",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/canvas/editor/TrackPreview3D.tsx",
+    "kind": "JSX text",
+    "text": "No panels registered yet",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/canvas/editor/TrackPreview3D.tsx",
+    "kind": "JSX text",
+    "text": "Texture Debug",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/data-table/DataTableFacetFilter.tsx",
+    "kind": "JSX text",
+    "text": "Clear filters",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/data-table/DataTableFacetFilter.tsx",
+    "kind": "JSX text",
+    "text": "No results found.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/data-table/DataTableFacetFilter.tsx",
+    "kind": "JSX text",
+    "text": "selected",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/dialogs/CompleteProfileDialog.tsx",
+    "kind": "JSX text",
+    "text": "Display name",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/CompleteProfileDialog.tsx",
+    "kind": "JSX text",
+    "text": "Skip",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/CompleteProfileDialog.tsx",
+    "kind": "JSX text",
+    "text": "This is the name TrackDraw will show for cloud projects and shared layouts",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Editable backup or read-only setup handoff.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Filename",
+    "count": 2,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "In 2D exports",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Project &amp; Handoff",
+    "count": 2,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Read-only captures for review, print, or sharing.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Rendering fly-through… video",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Review video and experimental simulator output.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Route numbers",
+    "count": 2,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Simulator &amp; Motion",
+    "count": 2,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Theme",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ExportDialog.tsx",
+    "kind": "JSX text",
+    "text": "Visual Exports",
+    "count": 2,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ImportDialog.tsx",
+    "kind": "JSX text",
+    "text": ".json",
+    "count": 1,
+    "group": "technical-token",
+    "priority": "exception",
+    "note": "Unit, file extension, coordinate label, or visual separator."
+  },
+  {
+    "file": "src/components/dialogs/ImportDialog.tsx",
+    "kind": "JSX text",
+    "text": "&nbsp;·&nbsp;",
+    "count": 1,
+    "group": "technical-token",
+    "priority": "exception",
+    "note": "Unit, file extension, coordinate label, or visual separator."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/AccountTab.tsx",
+    "kind": "JSX text",
+    "text": "Could not load account projects",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/AccountTab.tsx",
+    "kind": "JSX text",
+    "text": "Loading account projects...",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Account-synced copies stay available in your account.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Cancel",
+    "count": 3,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Clean up local",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Delete",
+    "count": 3,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Delete local project?",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Delete permanently?",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Download this project as a reusable TrackDraw file.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Export JSON",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Give this project a clearer name.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Local copies linked to account",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "local project",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "New project",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Only on this device",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Remove",
+    "count": 2,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Remove older copies from this device only.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Remove this local project from the device.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Removes this local copy.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Rename",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "Start a fresh track or use a starter layout.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/DeviceTab.tsx",
+    "kind": "JSX text",
+    "text": "This only removes the local project from this browser.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/RestoreTab.tsx",
+    "kind": "JSX text",
+    "text": "Cancel",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/RestoreTab.tsx",
+    "kind": "JSX text",
+    "text": "Restore",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/RestoreTab.tsx",
+    "kind": "JSX text",
+    "text": "Restore this snapshot?",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/shared.tsx",
+    "kind": "JSX text",
+    "text": "API project ID",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/shared.tsx",
+    "kind": "JSX text",
+    "text": "Copy",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/SharesTab.tsx",
+    "kind": "JSX text",
+    "text": "Cancel",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/SharesTab.tsx",
+    "kind": "JSX text",
+    "text": "Loading published shares...",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/SharesTab.tsx",
+    "kind": "JSX text",
+    "text": "Revoke",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/SharesTab.tsx",
+    "kind": "JSX text",
+    "text": "Revoke this link?",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ProjectManager/SharesTab.tsx",
+    "kind": "JSX text",
+    "text": "Shares are read-only review links. Export JSON when someone needs an editable TrackDraw backup.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Copy code",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Copy link",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Create published link",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Embeds use the durable account-published link, so create the published link before copying iframe code.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Iframe code",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Includes the selected initial view.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Link expires after",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Loading embed state…",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Publish before embedding",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Read-only",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "review on",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Revoke",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Sign in and publish this track from your account to create a durable embed.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Temporary links cannot be embedded",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Temporary snapshots stay available until they expire.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/dialogs/ShareDialog.tsx",
+    "kind": "JSX text",
+    "text": "Update link",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/editor/EditorWorkspace.tsx",
+    "kind": "JSX text",
+    "text": "Loading 3D…",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  },
+  {
+    "file": "src/components/editor/ElementPlacementControl.tsx",
+    "kind": "JSX text",
+    "text": "Official",
+    "count": 2,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/editor/ElementPlacementControl.tsx",
+    "kind": "JSX text",
+    "text": "type",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/editor/Header.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/components/editor/Header.tsx",
+    "kind": "JSX text",
+    "text": "⌃Y",
+    "count": 1,
+    "group": "keyboard-or-unit",
+    "priority": "exception",
+    "note": "Keyboard shortcut token; not natural-language copy."
+  },
+  {
+    "file": "src/components/editor/Header.tsx",
+    "kind": "JSX text",
+    "text": "⌃Z",
+    "count": 1,
+    "group": "keyboard-or-unit",
+    "priority": "exception",
+    "note": "Keyboard shortcut token; not natural-language copy."
+  },
+  {
+    "file": "src/components/editor/Header.tsx",
+    "kind": "JSX text",
+    "text": "⌘S",
+    "count": 1,
+    "group": "keyboard-or-unit",
+    "priority": "exception",
+    "note": "Keyboard shortcut token; not natural-language copy."
+  },
+  {
+    "file": "src/components/editor/PerformanceHud.tsx",
+    "kind": "JSX text",
+    "text": "Close",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/editor/PerformanceHud.tsx",
+    "kind": "JSX text",
+    "text": "Developer HUD",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/editor/PerformanceHud.tsx",
+    "kind": "JSX text",
+    "text": "Reset",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/editor/PerformanceHud.tsx",
+    "kind": "JSX text",
+    "text": "selected",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/editor/PerformanceHud.tsx",
+    "kind": "JSX text",
+    "text": "Tool",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/editor/Toolbar.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 1,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/components/editor/viewer/Header.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/components/inspector/ElevationChart.tsx",
+    "kind": "JSX text",
+    "text": "m",
+    "count": 2,
+    "group": "technical-token",
+    "priority": "exception",
+    "note": "Unit, file extension, coordinate label, or visual separator."
+  },
+  {
+    "file": "src/components/inspector/ElevationPanel.tsx",
+    "kind": "JSX text",
+    "text": "m",
+    "count": 1,
+    "group": "technical-token",
+    "priority": "exception",
+    "note": "Unit, file extension, coordinate label, or visual separator."
+  },
+  {
+    "file": "src/components/inspector/views/list-panel.tsx",
+    "kind": "JSX text",
+    "text": "off",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/inspector/views/polyline/PolylineWaypointList.tsx",
+    "kind": "JSX text",
+    "text": "x, y",
+    "count": 1,
+    "group": "technical-token",
+    "priority": "exception",
+    "note": "Unit, file extension, coordinate label, or visual separator."
+  },
+  {
+    "file": "src/components/inspector/views/project-layout.tsx",
+    "kind": "JSX text",
+    "text": "Add a few objects on the canvas to review the layout and compare it against your inventory.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  },
+  {
+    "file": "src/components/inspector/views/project-layout.tsx",
+    "kind": "JSX text",
+    "text": "No items placed yet",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  },
+  {
+    "file": "src/components/inspector/views/project-layout.tsx",
+    "kind": "JSX text",
+    "text": "px/m",
+    "count": 1,
+    "group": "technical-token",
+    "priority": "exception",
+    "note": "Unit, file extension, coordinate label, or visual separator."
+  },
+  {
+    "file": "src/components/inspector/views/single-shape.tsx",
+    "kind": "JSX text",
+    "text": "X (",
+    "count": 1,
+    "group": "technical-token",
+    "priority": "exception",
+    "note": "Unit, file extension, coordinate label, or visual separator."
+  },
+  {
+    "file": "src/components/inspector/views/single-shape.tsx",
+    "kind": "JSX text",
+    "text": "Y (",
+    "count": 1,
+    "group": "technical-token",
+    "priority": "exception",
+    "note": "Unit, file extension, coordinate label, or visual separator."
+  },
+  {
+    "file": "src/components/landing/Footer.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/components/landing/PublicSiteHeader.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
+    "file": "src/components/landing/Screenshot.tsx",
+    "kind": "JSX text",
+    "text": "Planned Asset",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/landing/Screenshot.tsx",
+    "kind": "JSX text",
+    "text": "Screenshot Placeholder",
+    "count": 1,
+    "group": "dev-or-technical-ui",
+    "priority": "low",
+    "note": "Developer/debug/technical UI; translate later if exposed to normal users."
+  },
+  {
+    "file": "src/components/MeasurementUnitToggle.tsx",
+    "kind": "JSX text",
+    "text": "Measurement preset:",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/MeasurementUnitToggle.tsx",
+    "kind": "JSX text",
+    "text": "Switch displayed distances and compatible inputs.",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "high",
+    "note": "Visible product UI copy; prioritize replacing with translation keys."
+  },
+  {
+    "file": "src/components/ThemeToggle.tsx",
+    "kind": "JSX text",
+    "text": "— click for",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  },
+  {
+    "file": "src/components/ui/breadcrumb.tsx",
+    "kind": "JSX prop aria-label",
+    "text": "breadcrumb",
+    "count": 1,
+    "group": "design-system-exception",
+    "priority": "exception",
+    "note": "Design-system primitive default; only translate when the primitive gets app-level i18n context."
+  },
+  {
+    "file": "src/components/ui/spinner.tsx",
+    "kind": "JSX prop aria-label",
+    "text": "Loading",
+    "count": 1,
+    "group": "design-system-exception",
+    "priority": "exception",
+    "note": "Design-system primitive default; only translate when the primitive gets app-level i18n context."
+  },
+  {
+    "file": "src/components/VersionTag.tsx",
+    "kind": "JSX text",
+    "text": "Open release notes on GitHub",
+    "count": 1,
+    "group": "product-ui-translate",
+    "priority": "medium",
+    "note": "Visible product UI copy; translate when touching this surface."
+  }
+]

@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { toolbarToolGroups } from "@/components/editor/tool-icons";
+import { getToolbarToolGroups } from "@/components/editor/tool-icons";
 import { useTheme } from "@/hooks/useTheme";
 import {
   Tooltip,
@@ -31,6 +31,7 @@ import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { Download, FolderOpen, Import } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { Translate } from "@/lib/editor/tool-registry";
 
 const AccountMenu = dynamic(() => import("@/components/editor/AccountMenu"), {
   ssr: false,
@@ -101,6 +102,8 @@ export default function Toolbar({
   collapsed,
 }: ToolbarProps) {
   const t = useTranslations("editor");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
+  const toolbarToolGroups = getToolbarToolGroups(tShapes);
   const activeTool = useEditor((state) => state.ui.activeTool);
   const { setActiveTool } = useUiActions();
   const { setSelection } = useSessionActions();

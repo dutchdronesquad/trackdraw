@@ -6,30 +6,45 @@ import {
 } from "@/lib/track/elements/catalog";
 import {
   getShapeKindLabel,
+  getToolLabel as getTrackItemToolLabel,
+  getToolMobileLabel as getTrackItemToolMobileLabel,
   getTrackItemToolConfigs,
+  type Translate,
   type TrackItemToolId,
 } from "@/lib/track/items/registry";
 import type { Shape, ShapeDraft } from "@/lib/types";
 
+export type { Translate };
 export type EditorTool = "select" | "grab" | "preset" | TrackItemToolId;
 
-export function getShapeDisplayLabel(shape: Shape): string {
+const NON_TRACK_ITEM_TOOLS = new Set<EditorTool>(["select", "grab", "preset"]);
+
+function isTrackItemTool(tool: EditorTool): tool is TrackItemToolId {
+  return !NON_TRACK_ITEM_TOOLS.has(tool);
+}
+
+export function getShapeDisplayLabel(shape: Shape, t: Translate): string {
   const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
   if (catalogIdentity?.assignedKind === shape.kind) {
     return catalogIdentity.snapshot.name;
   }
 
-  return getShapeKindLabel(shape.kind);
+  return getShapeKindLabel(shape.kind, t);
 }
 
-export const toolLabels = {
-  select: "Select",
-  grab: "Grab",
-  preset: "Presets",
-  ...Object.fromEntries(
-    getTrackItemToolConfigs().map((tool) => [tool.id, tool.label])
-  ),
-} as Record<EditorTool, string>;
+export function getToolLabel(tool: EditorTool, t: Translate): string {
+  if (isTrackItemTool(tool)) {
+    return getTrackItemToolLabel(tool, t);
+  }
+  return t(`toolLabels.${tool}`);
+}
+
+export function getToolMobileLabel(tool: EditorTool, t: Translate): string {
+  if (isTrackItemTool(tool)) {
+    return getTrackItemToolMobileLabel(tool, t);
+  }
+  return t(`toolLabels.${tool}`);
+}
 
 export const toolShortcuts = {
   select: "V",

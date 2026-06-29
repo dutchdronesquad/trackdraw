@@ -1,4 +1,4 @@
-import { shapeKindLabels } from "@/lib/track/items/registry";
+import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import type { Shape } from "@/lib/types";
 
@@ -34,9 +34,10 @@ export function getShapeAnchorPosition(shape: Shape) {
   };
 }
 
-export function getSingleInspectorViewModel(shape: Shape) {
+export function getSingleInspectorViewModel(shape: Shape, t: Translate) {
   const groupId = getShapeGroupId(shape);
   const groupName = getShapeGroupName(shape) ?? "";
+  const shapeKindLabel = getShapeKindLabel(shape.kind, t);
 
   return {
     actionBtnClass:
@@ -47,8 +48,8 @@ export function getSingleInspectorViewModel(shape: Shape) {
     defaultColor: shape.color ?? "#3b82f6",
     groupId,
     groupName,
-    shapeDisplayName: shape.name?.trim() || shapeKindLabels[shape.kind],
-    shapeKindLabel: shapeKindLabels[shape.kind],
+    shapeDisplayName: shape.name?.trim() || shapeKindLabel,
+    shapeKindLabel,
     showPathActions:
       shape.kind === "polyline" && !shape.closed && shape.points.length >= 3,
   };

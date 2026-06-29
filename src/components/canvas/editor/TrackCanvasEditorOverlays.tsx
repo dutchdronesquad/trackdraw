@@ -16,6 +16,7 @@ interface TrackCanvasEditorOverlaysProps {
   draftPreviewSmoothPx: number[];
   dragSnapPreview: { x: number; y: number } | null;
   effectiveSelectionFrame: RectLike | null;
+  frontLabel: string;
   hoverCell: { x: number; y: number } | null;
   isDark: boolean;
   magneticSnapRadiusPx: number;
@@ -44,6 +45,7 @@ export default function TrackCanvasEditorOverlays({
   draftPreviewSmoothPx,
   dragSnapPreview,
   effectiveSelectionFrame,
+  frontLabel,
   hoverCell,
   isDark,
   magneticSnapRadiusPx,
@@ -71,6 +73,7 @@ export default function TrackCanvasEditorOverlays({
 
       {showRotationGuide ? (
         <RotationGuideOverlay
+          frontLabel={frontLabel}
           isDark={isDark}
           onRotateStart={onRotateStart}
           rotationGuide={rotationGuide}

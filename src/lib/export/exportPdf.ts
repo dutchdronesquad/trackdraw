@@ -1,11 +1,13 @@
 import type Konva from "konva";
 import { jsPDF } from "@/lib/vendor/jspdf";
 import {
-  getInventoryComparison,
   getRequiredInventoryCounts,
+  inventoryKinds,
+  normalizeInventoryProfile,
 } from "@/lib/planning/inventory";
 import { buildSetupPlan } from "@/lib/planning/setup-estimate";
 import { createQrCode } from "@/lib/qr-code";
+import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import { getDesignTimingMarkers, timingRoleLabels } from "@/lib/track/timing";
 import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
 import type { TrackDesign } from "../types";
@@ -17,6 +19,12 @@ import {
 
 export type ExportPdfOptions = Export2DOptions & {
   shareUrl?: string | null;
+};
+
+export type ExportPdfTranslate = {
+  t: Translate;
+  tSetup: Translate;
+  tShapes: Translate;
 };
 
 const PRINT_BG: [number, number, number] = [255, 255, 255];
@@ -89,7 +97,13 @@ function drawPageFooter(
     pageLabel,
     pageNumber,
     totalPages,
-  }: { pageLabel: string; pageNumber: number; totalPages: number }
+    t,
+  }: {
+    pageLabel: string;
+    pageNumber: number;
+    totalPages: number;
+    t: Translate;
+  }
 ) {
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
@@ -103,10 +117,13 @@ function drawPageFooter(
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
   pdf.setTextColor(...MUTED);
-  pdf.text(`TrackDraw · ${pageLabel}`, margin, footerY);
-  pdf.text(`Page ${pageNumber} of ${totalPages}`, pageW - margin, footerY, {
-    align: "right",
-  });
+  pdf.text(t("footer.brand", { pageLabel }), margin, footerY);
+  pdf.text(
+    t("footer.pageOf", { pageNumber, totalPages }),
+    pageW - margin,
+    footerY,
+    { align: "right" }
+  );
 }
 
 function drawSmallPageLogo(pdf: jsPDF, logoDataUrl: string) {
@@ -219,11 +236,13 @@ function drawSharedViewBlock(
     w,
     x,
     y,
+    t,
   }: {
     shareUrl?: string | null;
     w: number;
     x: number;
     y: number;
+    t: Translate;
   }
 ) {
   const h = 35;
@@ -237,7 +256,7 @@ function drawSharedViewBlock(
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(...MUTED);
-  pdf.text("SHARED VIEW", x + 4, y + 6.5);
+  pdf.text(t("sharedView.title"), x + 4, y + 6.5);
 
   if (shareUrl) {
     try {
@@ -250,12 +269,12 @@ function drawSharedViewBlock(
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(11);
       pdf.setTextColor(...INK);
-      pdf.text("Scan to open the track", x + 4, y + 14);
+      pdf.text(t("sharedView.scanToOpen"), x + 4, y + 14);
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(7.2);
       pdf.setTextColor(...MUTED);
       const lines = pdf.splitTextToSize(
-        "Opens the canonical TrackDraw share link for mobile review and briefing.",
+        t("sharedView.scanDescription"),
         w - qrSize - 13
       );
       pdf.text(lines, x + 4, y + 20);
@@ -268,20 +287,41 @@ function drawSharedViewBlock(
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(10);
   pdf.setTextColor(...INK);
-  pdf.text("No published share linked", x + 4, y + 14);
+  pdf.text(t("sharedView.noShare"), x + 4, y + 14);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7.5);
   pdf.setTextColor(...MUTED);
-  const lines = pdf.splitTextToSize(
-    "Publish this project first if you want the Race Pack to include a scan code.",
-    w - 8
-  );
+  const lines = pdf.splitTextToSize(t("sharedView.noShareDescription"), w - 8);
   pdf.text(lines, x + 4, y + 20);
 }
 
-function buildRacePackContext(design: TrackDesign, options?: Export2DOptions) {
+function getInventoryComparison(design: TrackDesign, tShapes: Translate) {
+  const available = normalizeInventoryProfile(design.inventory);
   const required = getRequiredInventoryCounts(design);
-  const inventoryComparison = getInventoryComparison(design);
+
+  return inventoryKinds.map((kind) => {
+    const needed = required[kind];
+    const stock = available[kind];
+    const missing = Math.max(0, needed - stock);
+
+    return {
+      kind,
+      label: getShapeKindLabel(kind, tShapes),
+      required: needed,
+      available: stock,
+      missing,
+      buildable: missing === 0,
+    };
+  });
+}
+
+function buildRacePackContext(
+  design: TrackDesign,
+  { tSetup, tShapes }: ExportPdfTranslate,
+  options?: Export2DOptions
+) {
+  const required = getRequiredInventoryCounts(design);
+  const inventoryComparison = getInventoryComparison(design, tShapes);
   const shortages = inventoryComparison.filter((item) => item.missing > 0);
   const totalMissing = shortages.reduce((sum, item) => sum + item.missing, 0);
   const totalRequired = Object.values(required).reduce(
@@ -289,7 +329,7 @@ function buildRacePackContext(design: TrackDesign, options?: Export2DOptions) {
     0
   );
   const numberingEnabled = options?.includeObstacleNumbers !== false;
-  const setupPlan = buildSetupPlan(design);
+  const setupPlan = buildSetupPlan(design, tSetup, tShapes);
   const timingMarkers = getDesignTimingMarkers(design);
 
   return {
@@ -314,6 +354,7 @@ function drawRacePackCover(
   logoDataUrl: string,
   dateText: string,
   context: ReturnType<typeof buildRacePackContext>,
+  { t }: ExportPdfTranslate,
   options?: ExportPdfOptions
 ) {
   setPageBackground(pdf);
@@ -331,19 +372,19 @@ function drawRacePackCover(
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(26);
   pdf.setTextColor(...INK);
-  pdf.text("Race Pack", margin, y);
+  pdf.text(t("cover.title"), margin, y);
 
   y += 9;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
-  pdf.text(design.title.trim() || "Untitled Track", margin, y);
+  pdf.text(design.title.trim() || t("untitledTrack"), margin, y);
 
   y += 7;
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(10);
   pdf.setTextColor(...MUTED);
   pdf.text(
-    `${formatFieldSize(design.field.width, design.field.height, options?.unitSystem ?? "metric")}  ·  ${dateText}  ·  ${context.numberingEnabled ? "numbering included" : "numbering hidden"}`,
+    `${formatFieldSize(design.field.width, design.field.height, options?.unitSystem ?? "metric")}  ·  ${dateText}  ·  ${context.numberingEnabled ? t("cover.numberingIncluded") : t("cover.numberingHidden")}`,
     margin,
     y
   );
@@ -355,8 +396,11 @@ function drawRacePackCover(
     y,
     w: cardW,
     h: 22,
-    label: "Status",
-    value: context.totalMissing === 0 ? "Buildable" : "Short",
+    label: t("cover.statusLabel"),
+    value:
+      context.totalMissing === 0
+        ? t("cover.statusBuildable")
+        : t("cover.statusShort"),
     tone: context.totalMissing > 0 ? "warn" : "neutral",
   });
   drawInfoCard(pdf, {
@@ -364,7 +408,7 @@ function drawRacePackCover(
     y,
     w: cardW,
     h: 22,
-    label: "Missing",
+    label: t("cover.missingLabel"),
     value: String(context.totalMissing),
     tone: context.totalMissing > 0 ? "warn" : "neutral",
   });
@@ -373,7 +417,7 @@ function drawRacePackCover(
     y,
     w: cardW,
     h: 22,
-    label: "Obstacles",
+    label: t("cover.obstaclesLabel"),
     value: String(context.totalRequired),
   });
 
@@ -381,19 +425,22 @@ function drawRacePackCover(
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9.5);
   pdf.setTextColor(...MUTED);
-  const intro = pdf.splitTextToSize(
-    "This Race Pack is meant to travel with the build crew on race day. Use the map as the placement reference, the material list as the stock check, and the setup sequence as the practical order to get the course on the field. The setup timing is based on a typical 2-3 person crew and a club-style workflow: unload, stage, pre-assemble, then place and secure.",
-    pageW - margin * 2
-  );
+  const intro = pdf.splitTextToSize(t("cover.intro"), pageW - margin * 2);
   pdf.text(intro, margin, y);
   y += intro.length * 5 + 6;
-  drawSectionTitle(pdf, "Contents", margin, y, pageW - margin * 2);
+  drawSectionTitle(
+    pdf,
+    t("cover.contentsTitle"),
+    margin,
+    y,
+    pageW - margin * 2
+  );
   y += 10;
 
   const contents = [
-    "1. Track map and field overview",
-    "2. Material list, stock check, and timing points",
-    "3. Setup sequence and race-day notes",
+    t("cover.contentsItem1"),
+    t("cover.contentsItem2"),
+    t("cover.contentsItem3"),
   ];
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(10.5);
@@ -404,15 +451,15 @@ function drawRacePackCover(
   });
 
   y += 8;
-  drawSectionTitle(pdf, "Summary", margin, y, pageW - margin * 2);
+  drawSectionTitle(pdf, t("cover.summaryTitle"), margin, y, pageW - margin * 2);
   y += 10;
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(10);
   pdf.setTextColor(...MUTED);
   const summary =
     context.totalMissing > 0
-      ? `This layout currently exceeds available stock in ${context.shortages.length} obstacle type${context.shortages.length === 1 ? "" : "s"}. Resolve shortages before using this pack as the final build reference.`
-      : "This layout is currently buildable with the saved inventory profile. Use the following pages as the race-day setup and handoff reference.";
+      ? t("cover.summaryShortage", { count: context.shortages.length })
+      : t("cover.summaryBuildable");
   const summaryLines = pdf.splitTextToSize(summary, pageW - margin * 2);
   pdf.text(summaryLines, margin, y);
   y += summaryLines.length * 5 + 10;
@@ -422,6 +469,7 @@ function drawRacePackCover(
     w: pageW - margin * 2,
     x: margin,
     y,
+    t,
   });
 }
 
@@ -431,7 +479,8 @@ function drawRacePackMapPage(
   mapDataUrl: string,
   logoDataUrl: string,
   dateText: string,
-  context: ReturnType<typeof buildRacePackContext>
+  context: ReturnType<typeof buildRacePackContext>,
+  { t }: ExportPdfTranslate
 ) {
   pdf.addPage("a4", "landscape");
   setPageBackground(pdf);
@@ -448,12 +497,12 @@ function drawRacePackMapPage(
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
   pdf.setTextColor(...INK);
-  pdf.text("Track map", margin, margin + 4);
+  pdf.text(t("mapPage.title"), margin, margin + 4);
 
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9.5);
   pdf.setTextColor(...MUTED);
-  pdf.text(design.title.trim() || "Untitled Track", margin, margin + 11);
+  pdf.text(design.title.trim() || t("untitledTrack"), margin, margin + 11);
   pdf.text(dateText, pageW - margin, margin + 11, { align: "right" });
 
   const scale = Math.min(
@@ -494,10 +543,10 @@ function drawRacePackMapPage(
 
   const statusText =
     context.totalMissing > 0
-      ? `Stock short by ${context.totalMissing}`
-      : "Stock check: buildable";
+      ? t("mapPage.stockShort", { count: context.totalMissing })
+      : t("mapPage.stockBuildable");
   pdf.text(
-    `${statusText}  ·  ${context.numberingEnabled ? "numbering shown" : "numbering hidden"}`,
+    `${statusText}  ·  ${context.numberingEnabled ? t("mapPage.numberingShown") : t("mapPage.numberingHidden")}`,
     margin,
     pageH - margin
   );
@@ -508,7 +557,8 @@ function drawRacePackBuildSheet(
   design: TrackDesign,
   logoDataUrl: string,
   dateText: string,
-  context: ReturnType<typeof buildRacePackContext>
+  context: ReturnType<typeof buildRacePackContext>,
+  { t }: ExportPdfTranslate
 ) {
   pdf.addPage("a4", "portrait");
   const pageW = pdf.internal.pageSize.getWidth();
@@ -526,14 +576,14 @@ function drawRacePackBuildSheet(
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(20);
     pdf.setTextColor(...INK);
-    pdf.text("Build sheet", margin, y);
+    pdf.text(t("buildSheet.title"), margin, y);
 
     y += 8;
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9.5);
     pdf.setTextColor(...MUTED);
     pdf.text(
-      `${design.title.trim() || "Untitled Track"}  ·  ${dateText}`,
+      `${design.title.trim() || t("untitledTrack")}  ·  ${dateText}`,
       margin,
       y
     );
@@ -551,22 +601,24 @@ function drawRacePackBuildSheet(
   startBuildSheetPage();
 
   y += 12;
-  drawSectionTitle(pdf, "Material list", margin, y, contentW);
+  drawSectionTitle(pdf, t("buildSheet.materialListTitle"), margin, y, contentW);
   y += 10;
 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(...MUTED);
-  pdf.text("Obstacle", margin, y);
-  pdf.text("Required", margin + 88, y, { align: "right" });
-  pdf.text("Available", margin + 118, y, { align: "right" });
-  pdf.text("Missing", margin + 148, y, { align: "right" });
+  pdf.text(t("buildSheet.obstacleColumn"), margin, y);
+  pdf.text(t("buildSheet.requiredColumn"), margin + 88, y, { align: "right" });
+  pdf.text(t("buildSheet.availableColumn"), margin + 118, y, {
+    align: "right",
+  });
+  pdf.text(t("buildSheet.missingColumn"), margin + 148, y, { align: "right" });
   y += 5;
 
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8.5);
   context.inventoryComparison.forEach((item) => {
-    ensurePageSpace(7, "Material list");
+    ensurePageSpace(7, t("buildSheet.materialListTitle"));
     pdf.setTextColor(...INK);
     pdf.text(item.label, margin, y);
     pdf.text(String(item.required), margin + 88, y, { align: "right" });
@@ -577,7 +629,7 @@ function drawRacePackBuildSheet(
   });
 
   y += 8;
-  drawSectionTitle(pdf, "Timing points", margin, y, contentW);
+  drawSectionTitle(pdf, t("buildSheet.timingPointsTitle"), margin, y, contentW);
   y += 10;
 
   pdf.setFont("helvetica", "normal");
@@ -588,7 +640,7 @@ function drawRacePackBuildSheet(
         ? `${item.title} (${item.marker.timingId})`
         : item.title;
       const detail = `${timingRoleLabels[item.marker.role]} · ${item.shape.name?.trim() || item.shape.kind} · ${formatMeasurement(item.shape.x, context.unitSystem, { precision: 1 })}, ${formatMeasurement(item.shape.y, context.unitSystem, { precision: 1 })}`;
-      ensurePageSpace(12, "Timing points");
+      ensurePageSpace(12, t("buildSheet.timingPointsTitle"));
       pdf.setTextColor(...INK);
       pdf.setFont("helvetica", "bold");
       pdf.text(item.badgeText, margin, y);
@@ -600,24 +652,32 @@ function drawRacePackBuildSheet(
       y += 6;
     });
   } else {
-    const lines = pdf.splitTextToSize(
-      "No timing points are assigned yet. Mark a gate as start/finish or split in the inspector before race-day handoff.",
-      contentW
-    );
+    const lines = pdf.splitTextToSize(t("buildSheet.noTimingPoints"), contentW);
     pdf.setTextColor(...MUTED);
     pdf.text(lines, margin, y);
     y += lines.length * 4.5 + 2;
   }
 
   y += 8;
-  drawSectionTitle(pdf, "Setup sequence", margin, y, contentW);
+  drawSectionTitle(
+    pdf,
+    t("buildSheet.setupSequenceTitle"),
+    margin,
+    y,
+    contentW
+  );
   y += 10;
 
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8.8);
   pdf.setTextColor(...INK);
   const sequenceIntro = pdf.splitTextToSize(
-    `Estimated setup effort: about ${context.estimatedSetupRange[0]}-${context.estimatedSetupRange[1]} minutes. Overall complexity: ${context.setupComplexityLabel}. ${context.setupSummary}`,
+    t("buildSheet.setupIntro", {
+      min: context.estimatedSetupRange[0],
+      max: context.estimatedSetupRange[1],
+      complexity: context.setupComplexityLabel,
+      summary: context.setupSummary,
+    }),
     contentW
   );
   pdf.setTextColor(...MUTED);
@@ -633,27 +693,33 @@ function drawRacePackBuildSheet(
       const note = pdf.splitTextToSize(item.note, contentW - 16);
       const metaLine =
         item.stepType === "crew"
-          ? "Crew step"
+          ? t("buildSheet.crewStepLabel")
           : item.stepType === "group"
-            ? "Grouped track task"
+            ? t("buildSheet.groupedTaskLabel")
             : item.obstacleNumber != null
-              ? `${item.kind} · Obstacle #${item.obstacleNumber}`
+              ? t("buildSheet.obstacleNumberSuffix", {
+                  kind: item.kind,
+                  number: item.obstacleNumber,
+                })
               : item.kind;
       const title =
         item.stepType === "item" && item.label.trim() === item.kind.trim()
           ? item.kind
           : item.label;
       const blockHeight = 10 + note.length * 4 + 3;
-      ensurePageSpace(blockHeight, "Setup sequence");
+      ensurePageSpace(blockHeight, t("buildSheet.setupSequenceTitle"));
 
       pdf.setTextColor(...INK);
       pdf.setFont("helvetica", "bold");
       pdf.text(`${index + 1}.`, margin, y);
       pdf.setFont("helvetica", "bold");
       pdf.text(title, margin + 10, y);
-      pdf.text(`${item.estimatedMinutes} min`, pageW - margin, y, {
-        align: "right",
-      });
+      pdf.text(
+        t("buildSheet.minutesSuffix", { minutes: item.estimatedMinutes }),
+        pageW - margin,
+        y,
+        { align: "right" }
+      );
       y += 4;
       pdf.setTextColor(...MUTED);
       pdf.text(metaLine, margin + 10, y);
@@ -664,8 +730,8 @@ function drawRacePackBuildSheet(
     });
   } else {
     const message = context.numberingEnabled
-      ? "No setup sequence is available yet. Add a route and place some obstacles to generate a more useful pack."
-      : "Numbering is hidden in this export. Enable obstacle numbers if you want the setup sequence to follow route references.";
+      ? t("buildSheet.noSetupSequenceNumbering")
+      : t("buildSheet.noSetupSequenceHidden");
     const lines = pdf.splitTextToSize(message, contentW);
     pdf.setTextColor(...MUTED);
     pdf.text(lines, margin, y);
@@ -673,20 +739,20 @@ function drawRacePackBuildSheet(
   }
 
   y += 8;
-  drawSectionTitle(pdf, "Race-day notes", margin, y, contentW);
+  drawSectionTitle(pdf, t("buildSheet.notesTitle"), margin, y, contentW);
   y += 10;
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8.5);
   pdf.setTextColor(...MUTED);
   const notes = [
-    "Use the map page as the placement reference during setup and pilot briefing.",
-    "Treat the stock check as the source of truth before committing the layout for build.",
-    "Anchor the course first, then secure higher-effort structures such as dive gates and ladders before the standard gate pass.",
-    "If the route or obstacle count changes, regenerate the Race Pack so the map, stock list, and setup sequence stay aligned.",
+    t("buildSheet.note1"),
+    t("buildSheet.note2"),
+    t("buildSheet.note3"),
+    t("buildSheet.note4"),
   ];
   notes.forEach((note) => {
     const wrapped = pdf.splitTextToSize(`• ${note}`, contentW);
-    ensurePageSpace(wrapped.length * 4.5 + 3, "Race-day notes");
+    ensurePageSpace(wrapped.length * 4.5 + 3, t("buildSheet.notesTitle"));
     pdf.text(wrapped, margin, y);
     y += wrapped.length * 4.5 + 1.5;
   });
@@ -696,8 +762,10 @@ async function exportRacePackPdf(
   design: TrackDesign,
   filename: string,
   theme: ExportTheme,
+  translate: ExportPdfTranslate,
   options?: ExportPdfOptions
 ) {
+  const { t } = translate;
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const dateText = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -707,22 +775,50 @@ async function exportRacePackPdf(
   const logoDataUrl = await loadBrandLogo();
   const mapDataUrl = await renderDesignPngDataUrl(design, theme, options);
   if (!mapDataUrl) {
-    throw new Error("PDF render failed");
+    throw new Error(t("renderFailed"));
   }
 
-  const context = buildRacePackContext(design, options);
-  drawRacePackCover(pdf, design, logoDataUrl, dateText, context, options);
-  drawRacePackMapPage(pdf, design, mapDataUrl, logoDataUrl, dateText, context);
-  drawRacePackBuildSheet(pdf, design, logoDataUrl, dateText, context);
+  const context = buildRacePackContext(design, translate, options);
+  drawRacePackCover(
+    pdf,
+    design,
+    logoDataUrl,
+    dateText,
+    context,
+    translate,
+    options
+  );
+  drawRacePackMapPage(
+    pdf,
+    design,
+    mapDataUrl,
+    logoDataUrl,
+    dateText,
+    context,
+    translate
+  );
+  drawRacePackBuildSheet(
+    pdf,
+    design,
+    logoDataUrl,
+    dateText,
+    context,
+    translate
+  );
 
   const totalPages = pdf.getNumberOfPages();
   for (let page = 1; page <= totalPages; page += 1) {
     pdf.setPage(page);
     drawPageFooter(pdf, {
       pageLabel:
-        page === 1 ? "Overview" : page === 2 ? "Track map" : "Build sheet",
+        page === 1
+          ? t("footer.pageOverview")
+          : page === 2
+            ? t("footer.pageTrackMap")
+            : t("footer.pageBuildSheet"),
       pageNumber: page,
       totalPages,
+      t,
     });
   }
 
@@ -733,8 +829,10 @@ async function exportStandardPdf(
   design: TrackDesign,
   filename: string,
   theme: ExportTheme,
+  translate: ExportPdfTranslate,
   options?: Export2DOptions
 ) {
+  const { t } = translate;
   const { width, height } = design.field;
   const orientation = width >= height ? "landscape" : "portrait";
   const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" });
@@ -750,7 +848,7 @@ async function exportStandardPdf(
 
   const dataUrl = await renderDesignPngDataUrl(design, theme, options);
   if (!dataUrl) {
-    throw new Error("PDF render failed");
+    throw new Error(t("renderFailed"));
   }
 
   const scale = Math.min(availW / width, availH / height);
@@ -799,7 +897,7 @@ async function exportStandardPdf(
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(...MUTED);
-  pdf.text(design.title.trim() || "Untitled Track", margin + 5, midY);
+  pdf.text(design.title.trim() || t("untitledTrack"), margin + 5, midY);
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
   pdf.text(
@@ -816,15 +914,16 @@ async function exportStandardPdf(
 export async function exportPdf(
   stage: Konva.Stage,
   design: TrackDesign,
-  filename = "track.pdf",
-  theme: ExportTheme = "dark",
+  filename: string,
+  theme: ExportTheme,
+  translate: ExportPdfTranslate,
   options?: ExportPdfOptions
 ): Promise<void> {
   void stage;
   if ((options?.preset ?? "standard") === "race-day") {
-    await exportRacePackPdf(design, filename, theme, options);
+    await exportRacePackPdf(design, filename, theme, translate, options);
     return;
   }
 
-  await exportStandardPdf(design, filename, theme, options);
+  await exportStandardPdf(design, filename, theme, translate, options);
 }

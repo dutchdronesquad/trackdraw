@@ -76,6 +76,7 @@ export default function ProjectManagerDialog({
   onRevokeShare,
 }: ProjectManagerDialogProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const isMobile = useIsMobile();
   const [view, setView] = useState<View>("device");
 
@@ -102,7 +103,7 @@ export default function ProjectManagerDialog({
       ? ([
           {
             id: "account",
-            label: t("projectManager.navAccount"),
+            label: tCommon("labels.account"),
             icon: <Cloud className="size-4" />,
             count: accountProjects.length,
           },

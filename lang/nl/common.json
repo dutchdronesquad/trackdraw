@@ -1,0 +1,50 @@
+{
+  "actions": {
+    "cancel": "Annuleren",
+    "close": "Sluiten",
+    "copy": "Kopiëren",
+    "delete": "Verwijderen",
+    "duplicate": "Dupliceren",
+    "hide": "Verbergen",
+    "lock": "Vergrendelen",
+    "remove": "Verwijderen",
+    "rename": "Hernoemen",
+    "reset": "Herstellen",
+    "save": "Opslaan",
+    "saveChanges": "Wijzigingen opslaan",
+    "select": "Selecteren",
+    "undo": "Ongedaan maken",
+    "unlock": "Ontgrendelen"
+  },
+  "labels": {
+    "account": "Account",
+    "actions": "Acties",
+    "dashboard": "Dashboard",
+    "description": "Beschrijving",
+    "expires": "Verloopt",
+    "language": "Taal",
+    "name": "Naam",
+    "owner": "Eigenaar",
+    "profile": "Profiel",
+    "project": "Project",
+    "role": "Rol",
+    "status": "Status",
+    "theme": "Thema",
+    "title": "Titel",
+    "type": "Type",
+    "view": "Weergave"
+  },
+  "status": {
+    "active": "Actief",
+    "expired": "Verlopen",
+    "featured": "Uitgelicht",
+    "hidden": "Verborgen",
+    "listed": "Vermeld",
+    "loading": "Laden",
+    "off": "Uit",
+    "on": "Aan",
+    "pending": "In wachtrij",
+    "published": "Gepubliceerd",
+    "revoked": "Ingetrokken"
+  }
+}

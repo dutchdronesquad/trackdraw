@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Info } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEditor } from "@/store/editor";
 import {
   getPolylineManeuverDetections,
@@ -30,98 +31,40 @@ import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { formatMeasurement } from "@/lib/track/units";
 
 type SegmentWarningKind = Exclude<RouteWarningKind, "flat" | "stub">;
+type Translate = (key: string, values?: Record<string, unknown>) => string;
 
-const WARNING_LABELS: Record<
-  RouteWarningKind,
-  (count: number, first?: number) => string
-> = {
-  stub: () => "Path needs at least 2 waypoints to form a route",
-  flat: () => "No elevation set - 3D preview will be flat",
-  steep: (n, first) =>
-    n === 1
-      ? `Steep grade near waypoint ${first}`
-      : `Steep grade at ${n} segments`,
-  hairpin: (n, first) =>
-    n === 1 ? `Tight turn at waypoint ${first}` : `${n} tight turns`,
-  "close-points": (n, first) =>
-    n === 1 ? `Close waypoints near ${first}` : `${n} closely spaced waypoints`,
-  "spacing-shift": (n, first) =>
-    n === 1
-      ? `Abrupt spacing shift near waypoint ${first}`
-      : `${n} abrupt spacing shifts`,
-  "rhythm-break": (n, first) =>
-    n === 1
-      ? `Short correction segment near waypoint ${first}`
-      : `${n} short correction segments`,
-};
+function getWarningSummary(
+  kind: RouteWarningKind,
+  count: number,
+  first: number | undefined,
+  t: Translate
+) {
+  return t(`warnings.${kind}.summary`, { count, first });
+}
 
-const WARNING_DETAILS: Record<
-  RouteWarningKind,
-  { title: string; problem: string; fix: string }
-> = {
-  stub: {
-    title: "Route is incomplete",
-    problem:
-      "The path needs at least two waypoints before TrackDraw can review it as a route.",
-    fix: "Add another waypoint or finish drawing the race line.",
-  },
-  flat: {
-    title: "No elevation has been set",
-    problem:
-      "All waypoints are still at 0 m, so the 3D preview and elevation chart stay flat.",
-    fix: "Set waypoint elevations in the inspector or 3D view if the route should climb or drop.",
-  },
-  steep: {
-    title: "Grade changes too quickly",
-    problem:
-      "One section climbs or drops sharply over a short distance, which can make the 3D line feel abrupt.",
-    fix: "Spread the height change across more distance or add an intermediate waypoint.",
-  },
-  hairpin: {
-    title: "Turn is very tight",
-    problem:
-      "A waypoint creates a sharp reversal that may be hard to fly cleanly at speed.",
-    fix: "Move the waypoint outward or add more room before and after the turn.",
-  },
-  "close-points": {
-    title: "Waypoints are too close",
-    problem:
-      "Two waypoints are so close together that they create a tiny route segment.",
-    fix: "Delete one of the points or move it farther away from its neighbor.",
-  },
-  "spacing-shift": {
-    title: "Gate rhythm changes abruptly",
-    problem:
-      "The distance before and after a waypoint changes suddenly, which can make the route feel uneven.",
-    fix: "Reposition nearby waypoints so the spacing changes more gradually.",
-  },
-  "rhythm-break": {
-    title: "Short correction breaks the flow",
-    problem:
-      "A short middle segment interrupts longer surrounding sections and can create an awkward wobble.",
-    fix: "Smooth the correction by moving the point, deleting it, or adding a gentler transition.",
-  },
-};
+function getWarningDetails(kind: RouteWarningKind, t: Translate) {
+  return {
+    title: t(`warnings.${kind}.title`),
+    problem: t(`warnings.${kind}.problem`),
+    fix: t(`warnings.${kind}.fix`),
+  };
+}
 
-const WARNING_SHORT_LABELS: Record<RouteWarningKind, string> = {
-  stub: "Incomplete route",
-  flat: "Flat elevation",
-  steep: "Steep grade",
-  hairpin: "Tight turn",
-  "close-points": "Close points",
-  "spacing-shift": "Spacing shift",
-  "rhythm-break": "Short correction",
-};
+function getWarningShortLabel(kind: RouteWarningKind, t: Translate) {
+  return t(`warnings.${kind}.shortLabel`);
+}
 
-const MANEUVER_LABELS: Record<RouteManeuverDetection["kind"], string> = {
-  powerloop: "Powerloop",
-  "split-s": "Split-S",
-};
+function getManeuverLabel(kind: RouteManeuverDetection["kind"], t: Translate) {
+  return t(`maneuvers.${kind}`);
+}
 
-function formatManeuverRange(maneuver: RouteManeuverDetection) {
+function formatManeuverRange(maneuver: RouteManeuverDetection, t: Translate) {
   return maneuver.startWaypointIndex === maneuver.endWaypointIndex
-    ? `waypoint ${maneuver.startWaypointIndex}`
-    : `waypoints ${maneuver.startWaypointIndex}-${maneuver.endWaypointIndex}`;
+    ? t("waypointSingle", { index: maneuver.startWaypointIndex })
+    : t("waypointRange", {
+        start: maneuver.startWaypointIndex,
+        end: maneuver.endWaypointIndex,
+      });
 }
 
 function isWarningKind(kind: RouteWarningKind) {
@@ -166,6 +109,7 @@ function RouteManeuverSummary({
 }: {
   maneuvers: RouteManeuverDetection[];
 }) {
+  const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   if (maneuvers.length === 0) return null;
 
   const first = maneuvers[0];
@@ -175,11 +119,14 @@ function RouteManeuverSummary({
     <div className="mb-2 flex items-center gap-1.5 rounded bg-sky-500/8 px-2 py-1 text-[11px] leading-snug text-sky-700 dark:text-sky-300">
       <span className="shrink-0">↳</span>
       <span className="min-w-0 truncate">
-        Detected {MANEUVER_LABELS[first.kind]} near {formatManeuverRange(first)}
+        {t("maneuverDetected", {
+          maneuver: getManeuverLabel(first.kind, t),
+          range: formatManeuverRange(first, t),
+        })}
       </span>
       {extraCount > 0 && (
         <span className="text-muted-foreground shrink-0">
-          +{extraCount} more
+          {t("moreCount", { count: extraCount })}
         </span>
       )}
     </div>
@@ -191,12 +138,13 @@ function RouteManeuverDetails({
 }: {
   maneuvers: RouteManeuverDetection[];
 }) {
+  const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   if (maneuvers.length === 0) return null;
 
   return (
     <div className="space-y-2">
       <div className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-        Maneuvers
+        {t("maneuversHeading")}
       </div>
       <div className="space-y-1.5">
         {maneuvers.map((maneuver) => (
@@ -207,12 +155,12 @@ function RouteManeuverDetails({
             <span className="mt-px shrink-0">↳</span>
             <span className="min-w-0">
               <span className="block font-medium">
-                {MANEUVER_LABELS[maneuver.kind]}
+                {getManeuverLabel(maneuver.kind, t)}
               </span>
               <span className="text-muted-foreground block">
-                {formatManeuverRange(maneuver)}
+                {formatManeuverRange(maneuver, t)}
                 {typeof maneuver.apexWaypointIndex === "number"
-                  ? `, apex ${maneuver.apexWaypointIndex}`
+                  ? t("apexSuffix", { index: maneuver.apexWaypointIndex })
                   : ""}
               </span>
             </span>
@@ -224,6 +172,7 @@ function RouteManeuverDetails({
 }
 
 function RouteWarningSummary({ warnings }: { warnings: RouteWarning[] }) {
+  const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   const grouped = useGroupedWarnings(warnings);
   if (grouped.length === 0) return null;
 
@@ -246,11 +195,11 @@ function RouteWarningSummary({ warnings }: { warnings: RouteWarning[] }) {
     >
       <span className="shrink-0">{warn ? "⚠" : "↳"}</span>
       <span className="min-w-0 truncate">
-        {WARNING_LABELS[kind](summary.count, summary.first)}
+        {getWarningSummary(kind, summary.count, summary.first, t)}
       </span>
       {extraCount > 0 && (
         <span className="text-muted-foreground shrink-0">
-          +{extraCount} more
+          {t("moreCount", { count: extraCount })}
         </span>
       )}
     </div>
@@ -258,12 +207,13 @@ function RouteWarningSummary({ warnings }: { warnings: RouteWarning[] }) {
 }
 
 function RouteWarningDetails({ warnings }: { warnings: RouteWarning[] }) {
+  const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   const grouped = useGroupedWarnings(warnings);
 
   if (grouped.length === 0) {
     return (
       <div className="text-muted-foreground rounded border border-dashed px-3 py-2 text-sm">
-        No route warnings for this path.
+        {t("noWarnings")}
       </div>
     );
   }
@@ -271,11 +221,12 @@ function RouteWarningDetails({ warnings }: { warnings: RouteWarning[] }) {
   return (
     <div className="space-y-2">
       <div className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-        Route Review
+        {t("routeReviewHeading")}
       </div>
       <div className="space-y-1.5">
         {grouped.map(([kind, { count, first }]) => {
           const warn = isWarningKind(kind);
+          const details = getWarningDetails(kind, t);
           return (
             <div
               key={kind}
@@ -288,17 +239,15 @@ function RouteWarningDetails({ warnings }: { warnings: RouteWarning[] }) {
             >
               <span className="mt-px shrink-0">{warn ? "⚠" : "↳"}</span>
               <span className="min-w-0">
-                <span className="block font-medium">
-                  {WARNING_DETAILS[kind].title}
-                </span>
+                <span className="block font-medium">{details.title}</span>
                 <span className="text-muted-foreground block">
-                  {WARNING_LABELS[kind](count, first)}
+                  {getWarningSummary(kind, count, first, t)}
                 </span>
                 <span className="text-muted-foreground mt-1 block">
-                  {WARNING_DETAILS[kind].problem}
+                  {details.problem}
                 </span>
                 <span className="text-muted-foreground mt-1 block">
-                  {WARNING_DETAILS[kind].fix}
+                  {details.fix}
                 </span>
               </span>
             </div>
@@ -310,6 +259,7 @@ function RouteWarningDetails({ warnings }: { warnings: RouteWarning[] }) {
 }
 
 function RouteColorKey({ kinds }: { kinds: RouteWarningKind[] }) {
+  const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   const warningKinds = kinds.filter(
     (kind): kind is SegmentWarningKind => kind !== "flat" && kind !== "stub"
   );
@@ -317,10 +267,10 @@ function RouteColorKey({ kinds }: { kinds: RouteWarningKind[] }) {
 
   const uniqueKinds = Array.from(new Set(warningKinds));
   const items = [
-    { color: "var(--color-primary)", label: "Normal" },
+    { color: "var(--color-primary)", label: t("normal") },
     ...uniqueKinds.map((kind) => ({
       color: getRouteWarningSegmentColor(kind, "var(--color-primary)"),
-      label: WARNING_SHORT_LABELS[kind],
+      label: getWarningShortLabel(kind, t),
     })),
   ];
 
@@ -379,6 +329,7 @@ function ElevationSvg({
   xTicks: Array<{ d: number; label: string }>;
   yTicks: Array<{ z: number; label: string }>;
 }) {
+  const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   const id = useId().replaceAll(":", "");
   const fillId = `elev-fill-${id}`;
   const clipId = `elev-clip-${id}`;
@@ -389,7 +340,7 @@ function ElevationSvg({
       width="100%"
       height={height}
       className="overflow-visible"
-      aria-label="Elevation profile chart"
+      aria-label={t("chartAriaLabel")}
     >
       <defs>
         <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
@@ -564,6 +515,7 @@ function ElevationSvg({
 }
 
 export default function ElevationChart({ className }: { className?: string }) {
+  const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   const { unitSystem } = useMeasurementUnitSystem();
   const path = useEditor(selectPrimaryPolyline);
   const isMobile = useIsMobile();
@@ -680,7 +632,7 @@ export default function ElevationChart({ className }: { className?: string }) {
           className
         )}
       >
-        No race line selected
+        {t("noRouteSelected")}
       </div>
     );
   }
@@ -715,11 +667,17 @@ export default function ElevationChart({ className }: { className?: string }) {
       <div>
         <div className="text-muted-foreground mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
           <span>
-            {formatMeasurement(totalDist, unitSystem, { precision: 1 })} route
+            {t("routeDistance", {
+              distance: formatMeasurement(totalDist, unitSystem, {
+                precision: 1,
+              }),
+            })}
           </span>
           <span>
-            {formatMeasurement(rawMinZ, unitSystem, { precision: 1 })}-
-            {formatMeasurement(rawMaxZ, unitSystem, { precision: 1 })} elevation
+            {t("elevationRange", {
+              min: formatMeasurement(rawMinZ, unitSystem, { precision: 1 }),
+              max: formatMeasurement(rawMaxZ, unitSystem, { precision: 1 }),
+            })}
           </span>
         </div>
         <ElevationSvg {...chartProps} height={isMobile ? 180 : 220} />
@@ -733,8 +691,8 @@ export default function ElevationChart({ className }: { className?: string }) {
     <MobileDrawer
       open={detailsOpen}
       onOpenChange={setDetailsOpen}
-      title="Elevation Profile"
-      subtitle="Route height, colored warning sections, and route-review notes."
+      title={t("title")}
+      subtitle={t("subtitle")}
     >
       {detailsContent}
     </MobileDrawer>
@@ -742,8 +700,8 @@ export default function ElevationChart({ className }: { className?: string }) {
     <DesktopModal
       open={detailsOpen}
       onOpenChange={setDetailsOpen}
-      title="Elevation Profile"
-      subtitle="Route height, colored warning sections, and route-review notes."
+      title={t("title")}
+      subtitle={t("subtitle")}
       maxWidth="max-w-2xl"
       panelClassName="px-7 py-7"
     >
@@ -760,7 +718,7 @@ export default function ElevationChart({ className }: { className?: string }) {
     >
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-          Elevation Profile
+          {t("title")}
         </span>
         <div className="flex min-w-0 items-center gap-1.5">
           <span className="text-muted-foreground truncate text-[11px]">
@@ -775,14 +733,14 @@ export default function ElevationChart({ className }: { className?: string }) {
                 variant="ghost"
                 size="icon"
                 className="text-muted-foreground hover:bg-muted/70 hover:text-foreground focus-visible:bg-muted/70 h-6 w-6 shrink-0"
-                aria-label="Open elevation details"
+                aria-label={t("openDetailsAria")}
                 onClick={() => setDetailsOpen(true)}
               >
                 <Info className="size-3.5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top" sideOffset={6}>
-              Elevation details
+              {t("detailsTooltip")}
             </TooltipContent>
           </Tooltip>
         </div>

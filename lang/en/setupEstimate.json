@@ -1,0 +1,48 @@
+{
+  "complexity": {
+    "light": "Light",
+    "standard": "Standard",
+    "heavy": "Heavy"
+  },
+  "kinds": {
+    "trackGroup": "Track group",
+    "crew": "Crew"
+  },
+  "flagsFinalPass": {
+    "label": "Flags final pass",
+    "note": "Finish the field with flag markers and final visibility checks once the main numbered obstacle line is in place."
+  },
+  "conesTrackWalk": {
+    "label": "Cone placement during track walk (optional)",
+    "note": "Cones can be placed during the pilot track walk to avoid a separate pass. If you prefer to set them earlier, allow a little extra time on site."
+  },
+  "crewUnloadStage": {
+    "label": "Unload and stage equipment",
+    "note": "Unload the vehicle, sort anchors and hardware, and lay out the kit so frame prep does not block field placement later."
+  },
+  "crewPreassemble": {
+    "label": "Pre-assemble frames and soft goods",
+    "noteWithSoftGoods": "Prep PVC gate frames and beach flags before walking items onto the field so the placement pass can stay focused on spacing.",
+    "noteWithoutSoftGoods": "Prep PVC gate frames before walking items onto the field so the placement pass can stay focused on spacing."
+  },
+  "crewRiggingCheck": {
+    "label": "Rigging and anchor check",
+    "note": "Confirm anchor points, overhead lines, and the clearance plan before lifting or suspending heavier structures."
+  },
+  "obstacleNoteWithNumber": "{note} Use obstacle #{number} on the map as the placement reference.",
+  "summaryHeavy": "{count, plural, one {1 higher-effort structure should be placed and secured before the standard gate pass.} other {{count} higher-effort structures should be placed and secured before the standard gate pass.}} The timing assumes a typical 2-3 person crew and may increase when overhead rigging or long carry distances are involved.",
+  "summaryLight": "Most of the setup time comes from unloading, pre-assembling frames, and then placing the numbered obstacle line cleanly with a 2-3 person crew.",
+  "crewAssumption": "Timing is based on a typical 2-3 person crew and assumes standard club-style prep: unload, stage, pre-assemble, then place and secure.",
+  "obstacleNotes": {
+    "gate": "Place and square this gate once the anchor structures are in place.",
+    "tower": "Place and secure this with the other higher-effort structures. Towers need stable feet, clean vertical alignment, and enough clearance for stacked openings.",
+    "flag": "Use flags for final visibility and edge definition after the main obstacles are in place.",
+    "cone": "Use cones in the final cleanup pass for boundary marking and spacing checks.",
+    "label": "No setup guidance is available for this item yet.",
+    "polyline": "No setup guidance is available for this item yet.",
+    "startfinish": "Set this first so the launch and finish reference is fixed before the rest of the course goes down.",
+    "ladder": "Treat this as a higher-effort item. Allow extra time if it needs overhead rigging or a careful suspend point.",
+    "divegate": "Place and secure this early. Dive gates usually need more alignment and anchoring than a standard gate.",
+    "barrier": "Set up barriers after the main gates and obstacles are positioned."
+  }
+}

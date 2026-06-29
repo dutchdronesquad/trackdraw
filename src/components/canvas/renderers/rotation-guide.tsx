@@ -9,6 +9,7 @@ export function RotationGuideOverlay({
   showFrontLabel = false,
   showAngleLabel = false,
   rotationGuide,
+  frontLabel,
 }: {
   isDark: boolean;
   onRotateStart: (event: KonvaEventObject<MouseEvent | TouchEvent>) => void;
@@ -20,6 +21,7 @@ export function RotationGuideOverlay({
     label: string;
     radius: number;
   } | null;
+  frontLabel: string;
 }) {
   if (!rotationGuide) return null;
 
@@ -112,7 +114,7 @@ export function RotationGuideOverlay({
             height={18}
             align="center"
             verticalAlign="middle"
-            text="Front"
+            text={frontLabel}
             fontSize={9}
             fontStyle="bold"
             fill="#60a5fa"

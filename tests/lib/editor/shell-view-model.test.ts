@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getEditorShellSelectionState } from "@/lib/editor/shell-view-model";
+import { shapesTranslate } from "../../helpers/shapes-translate";
 import type { Shape } from "@/lib/types";
 
 describe("editor shell view model", () => {
@@ -46,6 +47,7 @@ describe("editor shell view model", () => {
         [flag.id]: flag,
       },
       vertexSelection: null,
+      t: shapesTranslate,
     });
 
     expect(result.activePresetLabel).toBe("Tight opener");
@@ -74,6 +76,7 @@ describe("editor shell view model", () => {
         shapeId: polyline.id,
         idx: 1,
       },
+      t: shapesTranslate,
     });
 
     expect(result.singleSelectedShape?.id).toBe(polyline.id);
@@ -107,6 +110,7 @@ describe("editor shell view model", () => {
         [lockedGate.id]: lockedGate,
       },
       vertexSelection: null,
+      t: shapesTranslate,
     });
     expect(gateResult.singleSelectionCanRotate).toBe(false);
 
@@ -126,6 +130,7 @@ describe("editor shell view model", () => {
         shapeId: lockedPolyline.id,
         idx: 0,
       },
+      t: shapesTranslate,
     });
 
     expect(polylineResult.canAddSelectedPolylineWaypoint).toBe(false);

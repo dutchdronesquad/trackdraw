@@ -36,7 +36,8 @@ import {
 } from "@/lib/track/elements/catalog";
 import {
   getDefaultCatalogEntryId,
-  shapeKindLabels,
+  getShapeKindLabel,
+  type Translate,
 } from "@/lib/track/items/registry";
 import {
   getShapeTimingMarker,
@@ -153,6 +154,8 @@ export function SingleInspectorView({
   mobileInline = false,
 }: SingleInspectorViewProps) {
   const t = useTranslations("inspector");
+  const tCommon = useTranslations("common");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const { startBatch, finishBatch } = useInspectorInputBatch();
   const { unitSystem } = useMeasurementUnitSystem();
   const unitLabel = unitSystem === "imperial" ? "ft" : "m";
@@ -166,7 +169,7 @@ export function SingleInspectorView({
     shapeDisplayName,
     shapeKindLabel,
     showPathActions: showDefaultPathActions,
-  } = getSingleInspectorViewModel(shape);
+  } = getSingleInspectorViewModel(shape, tShapes);
   const showPathActions =
     shape.kind === "polyline" &&
     (Boolean(onResumeSelectedPath) || showDefaultPathActions);
@@ -203,7 +206,7 @@ export function SingleInspectorView({
     label: string;
     role: TimingRole | "none";
   }> = [
-    { label: t("raceTiming.roleOff"), role: "none" },
+    { label: tCommon("status.off"), role: "none" },
     { label: t("raceTiming.roleStart"), role: "start_finish" },
     { label: t("raceTiming.roleSplit"), role: "split" },
   ];
@@ -253,14 +256,14 @@ export function SingleInspectorView({
                 aria-label={
                   shape.locked ? t("actions.unlock") : t("actions.lock")
                 }
-                className={actionBtnClass}
+                className={`${actionBtnClass} min-w-0`}
               >
                 {shape.locked ? (
-                  <Lock className="size-3 text-amber-400" />
+                  <Lock className="size-3 shrink-0 text-amber-400" />
                 ) : (
-                  <LockOpen className="size-3" />
+                  <LockOpen className="size-3 shrink-0" />
                 )}
-                <span>
+                <span className="truncate">
                   {shape.locked ? t("actions.unlock") : t("actions.lock")}
                 </span>
               </button>
@@ -269,10 +272,10 @@ export function SingleInspectorView({
                 onClick={() => duplicateShapes([shape.id])}
                 title={t("actions.duplicate")}
                 aria-label={t("actions.duplicate")}
-                className={actionBtnClass}
+                className={`${actionBtnClass} min-w-0`}
               >
-                <Copy className="size-3" />
-                <span>{t("actions.duplicate")}</span>
+                <Copy className="size-3 shrink-0" />
+                <span className="truncate">{t("actions.duplicate")}</span>
               </button>
               <button
                 type="button"
@@ -282,10 +285,10 @@ export function SingleInspectorView({
                 }}
                 title={t("actions.delete")}
                 aria-label={t("actions.delete")}
-                className={`${actionBtnClass} border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
+                className={`${actionBtnClass} min-w-0 border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
               >
-                <Trash2 className="size-3" />
-                <span>{t("actions.delete")}</span>
+                <Trash2 className="size-3 shrink-0" />
+                <span className="truncate">{t("actions.delete")}</span>
               </button>
             </div>
             {showPathActions ? (
@@ -297,10 +300,12 @@ export function SingleInspectorView({
                     title={t("actions.continueEditing")}
                     aria-label={t("actions.continueEditing")}
                     disabled={shape.locked}
-                    className={`${actionBtnPrimaryClass} w-full`}
+                    className={`${actionBtnPrimaryClass} w-full min-w-0`}
                   >
-                    <PencilLine className="size-3" />
-                    <span>{t("actions.continueEditing")}</span>
+                    <PencilLine className="size-3 shrink-0" />
+                    <span className="truncate">
+                      {t("actions.continueEditing")}
+                    </span>
                   </button>
                 ) : null}
                 {!shape.closed && shape.points.length >= 3 ? (
@@ -310,10 +315,10 @@ export function SingleInspectorView({
                     title={t("actions.connectEnds")}
                     aria-label={t("actions.connectEnds")}
                     disabled={shape.locked}
-                    className={`${actionBtnClass} w-full`}
+                    className={`${actionBtnClass} w-full min-w-0`}
                   >
-                    <Link2 className="size-3" />
-                    <span>{t("actions.connectEnds")}</span>
+                    <Link2 className="size-3 shrink-0" />
+                    <span className="truncate">{t("actions.connectEnds")}</span>
                   </button>
                 ) : null}
               </div>
@@ -379,7 +384,7 @@ export function SingleInspectorView({
               title={t("raceTiming.sectionTitle")}
               defaultOpen={timingSectionDefaultOpen}
             >
-              <Row label={t("raceTiming.roleLabel")}>
+              <Row label={tCommon("labels.role")}>
                 <div
                   className="border-border/50 bg-background grid grid-cols-3 overflow-hidden rounded-md border p-0.5"
                   role="group"
@@ -445,7 +450,7 @@ export function SingleInspectorView({
           )}
 
           <Section title={t("transform.sectionTitle")}>
-            <Row label={t("transform.nameLabel")}>
+            <Row label={tCommon("labels.name")}>
               <Input
                 value={shape.name ?? ""}
                 onFocus={startBatch}
@@ -458,7 +463,7 @@ export function SingleInspectorView({
                 onChange={(event) =>
                   updateShape(shape.id, { name: event.target.value })
                 }
-                placeholder={`${shapeKindLabels[shape.kind]}`}
+                placeholder={getShapeKindLabel(shape.kind, tShapes)}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}

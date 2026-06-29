@@ -46,11 +46,12 @@ export default async function DashboardAuditPage({
   const initialCategories = getInitialCategories(activeFilterValue);
   const events = await listAuditEvents({ limit: 100 });
   const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.audit")}
       />
       <DashboardAuditEventsTable

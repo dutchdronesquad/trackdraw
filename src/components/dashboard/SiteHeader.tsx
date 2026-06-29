@@ -26,7 +26,7 @@ export default function DashboardSiteHeader({
   parent,
   title,
 }: DashboardSiteHeaderProps) {
-  const t = useTranslations("dashboard.siteHeader");
+  const tCommon = useTranslations("common");
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -52,7 +52,7 @@ export default function DashboardSiteHeader({
               <>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink asChild>
-                    <Link href="/dashboard">{t("dashboardCrumb")}</Link>
+                    <Link href="/dashboard">{tCommon("labels.dashboard")}</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />

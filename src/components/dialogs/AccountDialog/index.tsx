@@ -24,6 +24,7 @@ export default function AccountDialog({
   initialView = "profile",
 }: AccountDialogProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const { data, isPending } = authClient.useSession();
   const isMobile = useIsMobile();
   const user = data?.user ?? null;
@@ -564,7 +565,7 @@ export default function AccountDialog({
   const navItems = [
     {
       id: "profile" as AccountDialogView,
-      label: t("account.navProfile"),
+      label: tCommon("labels.profile"),
       icon: <UserRound className="size-4" />,
     },
     {
@@ -618,7 +619,7 @@ export default function AccountDialog({
       open={open}
       onOpenChange={onOpenChange}
       eyebrow={t("account.dialogEyebrow")}
-      title={t("account.dialogTitle")}
+      title={tCommon("labels.account")}
       mobileSubtitle={t("account.dialogMobileSubtitle")}
       navItems={navItems}
       activeItem={view}

@@ -55,6 +55,7 @@ export default async function DashboardEmailPreviewPage({
     process.env.PLUNK_FROM_EMAIL ?? "noreply@emails.trackdraw.app";
 
   const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
   const tEmail = await getTranslations("dashboard.emailPreview");
   const previewItems = previewKeys.map((key) => ({
     key,
@@ -67,7 +68,7 @@ export default async function DashboardEmailPreviewPage({
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.emailPreview")}
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

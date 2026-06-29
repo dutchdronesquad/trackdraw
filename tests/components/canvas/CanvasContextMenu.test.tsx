@@ -244,9 +244,7 @@ describe("CanvasContextMenuContent", () => {
 
   it("shows Continue editing when editablePolylineId is set", () => {
     renderContextMenu({ editablePolylineId: "path-1" });
-    expect(
-      screen.getByRole("button", { name: /continue editing/i })
-    ).toBeDefined();
+    expect(screen.getByRole("button", { name: /^continue$/i })).toBeDefined();
   });
 
   it("clicking Continue editing calls onContinueEditing with the polyline id and closes", async () => {
@@ -259,7 +257,7 @@ describe("CanvasContextMenuContent", () => {
       { onContinueEditing, onClose }
     );
 
-    await user.click(screen.getByRole("button", { name: /continue editing/i }));
+    await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
     expect(onContinueEditing).toHaveBeenCalledWith("path-1");
     expect(onClose).toHaveBeenCalledOnce();
@@ -267,7 +265,7 @@ describe("CanvasContextMenuContent", () => {
 
   it("shows Connect ends when closablePolylineId is set", () => {
     renderContextMenu({ closablePolylineId: "path-1" });
-    expect(screen.getByRole("button", { name: /connect ends/i })).toBeDefined();
+    expect(screen.getByRole("button", { name: /^connect$/i })).toBeDefined();
   });
 
   it("clicking Connect ends calls onClosePolyline with the polyline id and closes", async () => {
@@ -280,7 +278,7 @@ describe("CanvasContextMenuContent", () => {
       { onClosePolyline, onClose }
     );
 
-    await user.click(screen.getByRole("button", { name: /connect ends/i }));
+    await user.click(screen.getByRole("button", { name: /^connect$/i }));
 
     expect(onClosePolyline).toHaveBeenCalledWith("path-1");
     expect(onClose).toHaveBeenCalledOnce();
@@ -288,10 +286,8 @@ describe("CanvasContextMenuContent", () => {
 
   it("does not show path action group when neither editablePolylineId nor closablePolylineId is set", () => {
     renderContextMenu();
-    expect(
-      screen.queryByRole("button", { name: /continue editing/i })
-    ).toBeNull();
-    expect(screen.queryByRole("button", { name: /connect ends/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^continue$/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^connect$/i })).toBeNull();
   });
 
   // ── Multi-selection actions ────────────────────────────────────

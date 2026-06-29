@@ -1,9 +1,10 @@
 import {
-  shapeKindLabels,
-  isSetupHardObstacle,
+  getShapeKindLabel,
   getTrackItemAdapter,
+  isSetupHardObstacle,
   type SetupComplexity,
   type SetupProfile,
+  type Translate,
 } from "@/lib/track/items/registry";
 import {
   getObstacleNumberMap,
@@ -29,26 +30,30 @@ export type SetupPlan = {
   estimatedElapsedMinutes: number;
   estimatedElapsedRange: [number, number];
   crewAssumption: string;
-  complexityLabel: "Light" | "Standard" | "Heavy";
+  complexityLabel: string;
   summary: string;
 };
 
-function getSetupProfile(shape: Shape): SetupProfile {
-  return getTrackItemAdapter(shape.kind).getSetupProfile(shape);
+function getSetupProfile(shape: Shape, t: Translate): SetupProfile {
+  return getTrackItemAdapter(shape.kind).getSetupProfile(shape, t);
 }
 
-function getDisplayLabel(shape: Shape) {
+function getDisplayLabel(shape: Shape, tShapes: Translate) {
   const customName = shape.name?.trim();
-  return customName ? customName : shapeKindLabels[shape.kind];
+  return customName ? customName : getShapeKindLabel(shape.kind, tShapes);
 }
 
-function getComplexityLabel(totalMinutes: number) {
-  if (totalMinutes >= 70) return "Heavy" as const;
-  if (totalMinutes >= 35) return "Standard" as const;
-  return "Light" as const;
+function getComplexityLabel(totalMinutes: number, t: Translate) {
+  if (totalMinutes >= 70) return t("complexity.heavy");
+  if (totalMinutes >= 35) return t("complexity.standard");
+  return t("complexity.light");
 }
 
-export function buildSetupPlan(design: TrackDesign): SetupPlan {
+export function buildSetupPlan(
+  design: TrackDesign,
+  t: Translate,
+  tShapes: Translate
+): SetupPlan {
   const obstacleNumberMap = getObstacleNumberMap(design);
   const shapes = design.shapeOrder
     .map((id) => design.shapeById[id])
@@ -62,7 +67,7 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
 
   const obstacleSteps: SetupStep[] = mainObstacleShapes
     .map((shape, index) => {
-      const profile = getSetupProfile(shape);
+      const profile = getSetupProfile(shape, t);
       const obstacleNumber =
         isNumberedObstacle(shape) && obstacleNumberMap.has(shape.id)
           ? (obstacleNumberMap.get(shape.id) ?? null)
@@ -71,11 +76,14 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
       return {
         id: shape.id,
         stepType: "item" as const,
-        kind: shapeKindLabels[shape.kind],
-        label: getDisplayLabel(shape),
+        kind: getShapeKindLabel(shape.kind, tShapes),
+        label: getDisplayLabel(shape, tShapes),
         note:
           obstacleNumber != null
-            ? `${profile.note} Use obstacle #${obstacleNumber} on the map as the placement reference.`
+            ? t("obstacleNoteWithNumber", {
+                note: profile.note,
+                number: obstacleNumber,
+              })
             : profile.note,
         complexity: profile.complexity,
         estimatedMinutes: profile.placeMinutes,
@@ -105,15 +113,15 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
 
   if (flagShapes.length > 0) {
     const flagMinutes = flagShapes.reduce((sum, shape) => {
-      const profile = getSetupProfile(shape);
+      const profile = getSetupProfile(shape, t);
       return sum + profile.placeMinutes;
     }, 0);
     obstacleSteps.push({
       id: "flags-final-pass",
       stepType: "group",
-      kind: "Track group",
-      label: "Flags final pass",
-      note: "Finish the field with flag markers and final visibility checks once the main numbered obstacle line is in place.",
+      kind: t("kinds.trackGroup"),
+      label: t("flagsFinalPass.label"),
+      note: t("flagsFinalPass.note"),
       complexity: "light",
       estimatedMinutes: Math.max(2, Math.round(flagMinutes * 0.9)),
       obstacleNumber: null,
@@ -122,15 +130,15 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
 
   if (coneShapes.length > 0) {
     const coneMinutes = coneShapes.reduce((sum, shape) => {
-      const profile = getSetupProfile(shape);
+      const profile = getSetupProfile(shape, t);
       return sum + profile.placeMinutes;
     }, 0);
     obstacleSteps.push({
       id: "cones-track-walk",
       stepType: "group",
-      kind: "Track group",
-      label: "Cone placement during track walk (optional)",
-      note: "Cones can be placed during the pilot track walk to avoid a separate pass. If you prefer to set them earlier, allow a little extra time on site.",
+      kind: t("kinds.trackGroup"),
+      label: t("conesTrackWalk.label"),
+      note: t("conesTrackWalk.note"),
       complexity: "light",
       estimatedMinutes: Math.max(2, Math.round(coneMinutes * 0.6)),
       obstacleNumber: null,
@@ -143,16 +151,16 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
   ).length;
   const coneCount = shapes.filter((shape) => shape.kind === "cone").length;
   const heavyObstacleCount = shapes.filter(
-    (shape) => getSetupProfile(shape).complexity === "heavy"
+    (shape) => getSetupProfile(shape, t).complexity === "heavy"
   ).length;
 
   const prepSteps: SetupStep[] = [
     {
       id: "crew-unload-stage",
       stepType: "crew",
-      kind: "Crew",
-      label: "Unload and stage equipment",
-      note: "Unload the vehicle, sort anchors and hardware, and lay out the kit so frame prep does not block field placement later.",
+      kind: t("kinds.crew"),
+      label: t("crewUnloadStage.label"),
+      note: t("crewUnloadStage.note"),
       complexity: "standard",
       estimatedMinutes: 6,
       obstacleNumber: null,
@@ -163,12 +171,12 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
     prepSteps.push({
       id: "crew-preassemble",
       stepType: "crew",
-      kind: "Crew",
-      label: "Pre-assemble frames and soft goods",
+      kind: t("kinds.crew"),
+      label: t("crewPreassemble.label"),
       note:
         softGoodsToPrep > 0
-          ? "Prep PVC gate frames and beach flags before walking items onto the field so the placement pass can stay focused on spacing."
-          : "Prep PVC gate frames before walking items onto the field so the placement pass can stay focused on spacing.",
+          ? t("crewPreassemble.noteWithSoftGoods")
+          : t("crewPreassemble.noteWithoutSoftGoods"),
       complexity: gatesToPrep >= 4 ? "standard" : "light",
       estimatedMinutes: Math.max(
         5,
@@ -182,9 +190,9 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
     prepSteps.push({
       id: "crew-rigging-check",
       stepType: "crew",
-      kind: "Crew",
-      label: "Rigging and anchor check",
-      note: "Confirm anchor points, overhead lines, and the clearance plan before lifting or suspending heavier structures.",
+      kind: t("kinds.crew"),
+      label: t("crewRiggingCheck.label"),
+      note: t("crewRiggingCheck.note"),
       complexity: "standard",
       estimatedMinutes: Math.max(2, heavyObstacleCount * 2),
       obstacleNumber: null,
@@ -213,21 +221,20 @@ export function buildSetupPlan(design: TrackDesign): SetupPlan {
   const estimatedElapsedMinutes = Math.round(
     (estimatedElapsedRange[0] + estimatedElapsedRange[1]) / 2
   );
-  const complexityLabel = getComplexityLabel(estimatedElapsedMinutes);
+  const complexityLabel = getComplexityLabel(estimatedElapsedMinutes, t);
   const heavyCount = obstacleSteps.filter(
     (step) => step.complexity === "heavy"
   ).length;
   const summary =
     heavyCount > 0
-      ? `${heavyCount} higher-effort structure${heavyCount === 1 ? "" : "s"} should be placed and secured before the standard gate pass. The timing assumes a typical 2-3 person crew and may increase when overhead rigging or long carry distances are involved.`
-      : "Most of the setup time comes from unloading, pre-assembling frames, and then placing the numbered obstacle line cleanly with a 2-3 person crew.";
+      ? t("summaryHeavy", { count: heavyCount })
+      : t("summaryLight");
 
   return {
     steps,
     estimatedElapsedMinutes,
     estimatedElapsedRange,
-    crewAssumption:
-      "Timing is based on a typical 2-3 person crew and assumes standard club-style prep: unload, stage, pre-assemble, then place and secure.",
+    crewAssumption: t("crewAssumption"),
     complexityLabel,
     summary,
   };

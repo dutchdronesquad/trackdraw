@@ -3,6 +3,7 @@
 import * as React from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface DesktopModalProps {
   open: boolean;
@@ -34,6 +35,8 @@ export function DesktopModal({
   panelClassName,
   overlayClassName,
 }: DesktopModalProps) {
+  const t = useTranslations("common");
+
   if (!open) return null;
 
   return (
@@ -68,7 +71,7 @@ export function DesktopModal({
               type="button"
               onClick={() => onOpenChange(false)}
               className="text-muted-foreground/75 hover:text-foreground hover:bg-muted cursor-pointer rounded-full p-1.5 transition-colors"
-              aria-label="Close"
+              aria-label={t("actions.close")}
             >
               <X className="size-4" />
             </button>

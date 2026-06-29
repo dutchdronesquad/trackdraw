@@ -9,9 +9,10 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import { DesktopModal } from "@/components/DesktopModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  toolLabels,
+  getToolLabel,
   toolShortcuts,
   type EditorTool,
+  type Translate,
 } from "@/lib/editor/tool-registry";
 import { getTrackItemToolConfigs } from "@/lib/track/items/registry";
 
@@ -26,13 +27,15 @@ const toolShortcutOrder: EditorTool[] = [
   ...getTrackItemToolConfigs().map((tool) => tool.id),
 ];
 
-const toolShortcutItems = toolShortcutOrder
-  .map((tool) => {
-    const shortcut = toolShortcuts[tool];
-    if (!shortcut) return null;
-    return { label: toolLabels[tool], keys: [shortcut] };
-  })
-  .filter((item): item is { label: string; keys: string[] } => item !== null);
+function getToolShortcutItems(t: Translate) {
+  return toolShortcutOrder
+    .map((tool) => {
+      const shortcut = toolShortcuts[tool];
+      if (!shortcut) return null;
+      return { label: getToolLabel(tool, t), keys: [shortcut] };
+    })
+    .filter((item): item is { label: string; keys: string[] } => item !== null);
+}
 
 type ShortcutSectionId =
   | "tools"
@@ -43,6 +46,8 @@ type ShortcutSectionId =
 
 function ShortcutSections() {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const [openSection, setOpenSection] = useState<ShortcutSectionId | null>(
     "tools"
   );
@@ -55,7 +60,7 @@ function ShortcutSections() {
     {
       id: "tools",
       title: t("keyboardShortcuts.sectionTools"),
-      items: toolShortcutItems,
+      items: getToolShortcutItems(tShapes),
     },
     {
       id: "selection",
@@ -145,7 +150,7 @@ function ShortcutSections() {
     },
     {
       id: "project",
-      title: t("keyboardShortcuts.sectionProject"),
+      title: tCommon("labels.project"),
       items: [
         {
           label: t("keyboardShortcuts.shortcuts.saveSnapshot"),

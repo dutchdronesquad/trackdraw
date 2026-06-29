@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock3, Grid2X2, Ruler, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import type { PublicGalleryEntry } from "@/lib/server/gallery";
@@ -48,8 +49,10 @@ function TrackDrawMark({ className }: { className?: string }) {
   );
 }
 
-function formatDate(value: string | null) {
-  if (!value) return "Recently added";
+type Translate = (key: string, values?: Record<string, unknown>) => string;
+
+function formatDate(value: string | null, t: Translate) {
+  if (!value) return t("recentlyAdded");
 
   try {
     return new Intl.DateTimeFormat("en-GB", {
@@ -62,10 +65,11 @@ function formatDate(value: string | null) {
 
 function formatFieldSize(
   entry: PublicGalleryEntry,
-  unitSystem: "metric" | "imperial"
+  unitSystem: "metric" | "imperial",
+  t: Translate
 ) {
   if (entry.fieldWidth == null || entry.fieldHeight == null) {
-    return "Field size not set";
+    return t("fieldSizeNotSet");
   }
 
   return formatMeasurementFieldSize(
@@ -75,8 +79,8 @@ function formatFieldSize(
   );
 }
 
-function getOwnerLabel(entry: PublicGalleryEntry) {
-  return entry.ownerName?.trim() || "TrackDraw pilot";
+function getOwnerLabel(entry: PublicGalleryEntry, t: Translate) {
+  return entry.ownerName?.trim() || t("unknownPilot");
 }
 
 function buildMediaUrl(baseUrl: string, path: string) {
@@ -111,6 +115,7 @@ function GalleryCard({
   onImageError: () => void;
   unitSystem: "metric" | "imperial";
 }) {
+  const t = useTranslations("landing.gallery.grid") as unknown as Translate;
   const previewUrl = getPreviewUrl(entry, mediaBaseUrl);
 
   return (
@@ -141,7 +146,7 @@ function GalleryCard({
           <div className="absolute inset-x-0 top-0 flex items-start p-3">
             <span className="inline-flex items-center gap-1 rounded-full border border-amber-200/70 bg-amber-300 px-2.5 py-1 text-[11px] font-semibold text-slate-950 shadow-sm">
               <Sparkles className="size-3" />
-              Featured
+              {t("featuredBadge")}
             </span>
           </div>
         ) : null}
@@ -153,7 +158,7 @@ function GalleryCard({
             {entry.galleryTitle}
           </h2>
           <p className="text-muted-foreground mt-1 truncate text-sm">
-            by {getOwnerLabel(entry)}
+            {t("byOwner", { owner: getOwnerLabel(entry, t) })}
           </p>
         </div>
 
@@ -165,21 +170,21 @@ function GalleryCard({
           <span className="border-border/55 bg-muted/28 text-muted-foreground inline-flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
             <Ruler className="size-3" />
             <span className="truncate">
-              {formatFieldSize(entry, unitSystem)}
+              {formatFieldSize(entry, unitSystem, t)}
             </span>
           </span>
           <span className="border-border/55 bg-muted/28 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
             <Grid2X2 className="size-3" />
-            {entry.shapeCount} obstacles
+            {t("obstacleCount", { count: entry.shapeCount })}
           </span>
         </div>
 
         <div className="border-border/45 flex items-center justify-between gap-3 border-t pt-3">
           <p className="text-muted-foreground text-[11px]">
-            Published {formatDate(entry.galleryPublishedAt)}
+            {t("published", { date: formatDate(entry.galleryPublishedAt, t) })}
           </p>
           <div className="flex shrink-0 items-center gap-1 font-medium text-[--brand-primary]">
-            Open
+            {t("open")}
             <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
           </div>
         </div>
@@ -192,6 +197,7 @@ export default function PublicGalleryGrid({
   entries,
   mediaBaseUrl = getSiteMediaUrl(""),
 }: PublicGalleryGridProps) {
+  const t = useTranslations("landing.gallery.grid");
   const { unitSystem } = useMeasurementUnitSystem();
   const [visibleRecentCount, setVisibleRecentCount] =
     useState(RECENT_PAGE_SIZE);
@@ -214,10 +220,9 @@ export default function PublicGalleryGrid({
         <div className="text-muted-foreground bg-background/40 flex size-18 items-center justify-center rounded-full border border-dashed">
           <TrackDrawMark className="size-10" />
         </div>
-        <h2 className="mt-5 text-lg font-semibold">No tracks yet.</h2>
+        <h2 className="mt-5 text-lg font-semibold">{t("emptyTitle")}</h2>
         <p className="text-muted-foreground mt-2 max-w-md text-sm leading-6">
-          Gallery listings will appear here once TrackDraw pilots choose to
-          share them publicly.
+          {t("emptyDescription")}
         </p>
       </div>
     );
@@ -230,10 +235,10 @@ export default function PublicGalleryGrid({
           <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-[--brand-secondary]" />
-              <h2 className="text-lg font-semibold">Featured</h2>
+              <h2 className="text-lg font-semibold">{t("featuredHeading")}</h2>
             </div>
             <p className="text-muted-foreground text-sm sm:text-right">
-              Hand-picked layouts at the top of the gallery.
+              {t("featuredSubtitle")}
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -261,10 +266,10 @@ export default function PublicGalleryGrid({
           <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
             <div className="flex items-center gap-2">
               <Clock3 className="size-4 text-[--brand-primary]" />
-              <h2 className="text-lg font-semibold">Recent</h2>
+              <h2 className="text-lg font-semibold">{t("recentHeading")}</h2>
             </div>
             <p className="text-muted-foreground text-sm sm:text-right">
-              Newly listed layouts from the community.
+              {t("recentSubtitle")}
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -295,7 +300,7 @@ export default function PublicGalleryGrid({
                   "border-border/60 bg-background/72 min-w-36 rounded-full px-5"
                 )}
               >
-                Load more
+                {t("loadMore")}
               </Button>
             </div>
           ) : null}

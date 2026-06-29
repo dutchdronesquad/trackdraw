@@ -16,6 +16,8 @@
     "migrate:create": "wrangler d1 migrations create DB",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "i18n:check": "node scripts/i18n_check.mjs",
+    "i18n:scan-hardcoded": "node scripts/i18n_hardcoded_scan.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",

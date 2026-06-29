@@ -3,7 +3,7 @@
 import { type Dispatch, type SetStateAction } from "react";
 import ElevationChart from "@/components/inspector/ElevationChart";
 import { Input } from "@/components/ui/input";
-import { shapeKindLabels } from "@/lib/track/items/registry";
+import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import {
   getCatalogEntriesByKind,
   getTrackElementCatalogEntry,
@@ -111,6 +111,8 @@ export function MultiInspectorView({
   mobileInline = false,
 }: MultiInspectorViewProps) {
   const t = useTranslations("inspector");
+  const tCommon = useTranslations("common");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const { startBatch, finishBatch } = useInspectorInputBatch();
   const kinds = selectedShapes.reduce<Record<Shape["kind"], number>>(
     (accumulator, shape) => {
@@ -161,9 +163,9 @@ export function MultiInspectorView({
       : undefined;
   const meta = [
     ...(groupCount > 0
-      ? [`${groupCount} group${groupCount === 1 ? "" : "s"}`]
+      ? [t("multiSelection.groupCountMeta", { count: groupCount })]
       : []),
-    ...(polylineIds.length >= 2 ? ["join available"] : []),
+    ...(polylineIds.length >= 2 ? [t("multiSelection.joinAvailableMeta")] : []),
   ];
 
   return (
@@ -171,8 +173,10 @@ export function MultiInspectorView({
       <InspectorScrollBody mobileInline={mobileInline}>
         <div className="space-y-3 p-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-2 lg:p-3 lg:pb-3">
           <InspectorLead
-            title={`${selectedShapes.length} items selected`}
-            subtitle="Bulk actions are available here. Open a single item from the canvas when you need detailed editing."
+            title={t("multiSelection.titleSelected", {
+              count: selectedShapes.length,
+            })}
+            subtitle={t("multiSelection.subtitle")}
             meta={meta.length > 0 ? meta : undefined}
           />
           <div className="space-y-1.5">
@@ -184,10 +188,10 @@ export function MultiInspectorView({
                   onClick={() => groupSelection(selection)}
                   title={t("actions.groupSelection")}
                   aria-label={t("actions.groupSelection")}
-                  className={`${inspectorActionBtnClass} flex-1`}
+                  className={`${inspectorActionBtnClass} min-w-0 flex-1`}
                 >
-                  <Group className="size-3" />
-                  <span>Group</span>
+                  <Group className="size-3 shrink-0" />
+                  <span className="truncate">{t("actions.group")}</span>
                 </button>
               )}
               {hasGroupedShapes && (
@@ -196,10 +200,10 @@ export function MultiInspectorView({
                   onClick={() => ungroupSelection(selection)}
                   title={t("actions.ungroupSelection")}
                   aria-label={t("actions.ungroupSelection")}
-                  className={`${inspectorActionBtnClass} flex-1`}
+                  className={`${inspectorActionBtnClass} min-w-0 flex-1`}
                 >
-                  <Ungroup className="size-3" />
-                  <span>Ungroup</span>
+                  <Ungroup className="size-3 shrink-0" />
+                  <span className="truncate">{t("actions.ungroup")}</span>
                 </button>
               )}
               <button
@@ -207,10 +211,10 @@ export function MultiInspectorView({
                 onClick={() => duplicateShapes(selection)}
                 title={t("actions.duplicate")}
                 aria-label={t("actions.duplicate")}
-                className={`${inspectorActionBtnClass} flex-1`}
+                className={`${inspectorActionBtnClass} min-w-0 flex-1`}
               >
-                <Copy className="size-3" />
-                <span>Duplicate</span>
+                <Copy className="size-3 shrink-0" />
+                <span className="truncate">{t("actions.duplicate")}</span>
               </button>
               <button
                 type="button"
@@ -220,10 +224,10 @@ export function MultiInspectorView({
                 }}
                 title={t("actions.delete")}
                 aria-label={t("actions.delete")}
-                className={`${inspectorActionBtnDangerClass} flex-1`}
+                className={`${inspectorActionBtnDangerClass} min-w-0 flex-1`}
               >
-                <Trash2 className="size-3" />
-                <span>Delete</span>
+                <Trash2 className="size-3 shrink-0" />
+                <span className="truncate">{t("actions.delete")}</span>
               </button>
             </div>
             {/* Row 2: secondary actions (Join + Save preset) */}
@@ -236,10 +240,12 @@ export function MultiInspectorView({
                     onClick={onSaveAsPreset}
                     title={t("actions.savePreset")}
                     aria-label={t("actions.savePreset")}
-                    className={inspectorActionBtnClass}
+                    className={`${inspectorActionBtnClass} min-w-0`}
                   >
-                    <Bookmark className="size-3" />
-                    <span>Save section</span>
+                    <Bookmark className="size-3 shrink-0" />
+                    <span className="truncate">
+                      {t("multiSelection.saveSectionLabel")}
+                    </span>
                   </button>
                 )}
                 {polylineIds.length >= 2 && (
@@ -248,10 +254,10 @@ export function MultiInspectorView({
                     onClick={() => joinPolylines(polylineIds)}
                     title={t("actions.joinPaths")}
                     aria-label={t("actions.joinPaths")}
-                    className={inspectorActionBtnClass}
+                    className={`${inspectorActionBtnClass} min-w-0`}
                   >
-                    <GitMerge className="size-3" />
-                    <span>Join paths</span>
+                    <GitMerge className="size-3 shrink-0" />
+                    <span className="truncate">{t("actions.joinPaths")}</span>
                   </button>
                 )}
               </div>
@@ -267,7 +273,7 @@ export function MultiInspectorView({
                     className="border-border/60 bg-muted/30 rounded-md border px-2.5 py-2"
                   >
                     <p className="text-muted-foreground text-[9px] tracking-wider uppercase">
-                      {shapeKindLabels[kind as Shape["kind"]]}
+                      {getShapeKindLabel(kind as Shape["kind"], tShapes)}
                     </p>
                     <p className="text-sm font-semibold">{count}×</p>
                   </div>
@@ -276,7 +282,7 @@ export function MultiInspectorView({
           </Section>
           {batchCatalogEntries ? (
             <Section title={t("catalog.sectionTitle")} defaultOpen>
-              <Row label={t("catalog.typeLabel")}>
+              <Row label={tCommon("labels.type")}>
                 <Select
                   value={activeBatchCatalogId}
                   disabled={editableCatalogSelectionCount === 0}
@@ -307,7 +313,7 @@ export function MultiInspectorView({
               </Row>
               {editableCatalogSelectionCount < selectedShapes.length ? (
                 <p className="text-muted-foreground px-0.5 text-[10px] leading-relaxed">
-                  Locked items stay unchanged.
+                  {t("multiSelection.lockedItemsNote")}
                 </p>
               ) : null}
             </Section>

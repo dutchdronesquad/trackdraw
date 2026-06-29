@@ -18,9 +18,7 @@
     "logOut": "Uitloggen",
     "signingOut": "Uitloggen…"
   },
-  "siteHeader": {
-    "dashboardCrumb": "Dashboard"
-  },
+  "siteHeader": {},
   "layout": {
     "fallbackUserName": "Dashboardgebruiker"
   },
@@ -66,7 +64,7 @@
       "galleryEntryFeatured": "Item uitgelicht",
       "galleryEntryUnfeatured": "Item niet meer uitgelicht",
       "galleryEntryHidden": "Item verborgen",
-      "galleryEntryRestored": "Item herstelt",
+      "galleryEntryRestored": "Item hersteld",
       "galleryEntryDeleted": "Item verwijderd",
       "system": "Systeem"
     },
@@ -151,7 +149,7 @@
       "withCount": "met {qualifier}{count} {resource}",
       "freeLimit": "Free-limiet: max {limit} · balken in",
       "red": "rood",
-      "exceedIt": "overschrijden dit",
+      "exceedIt": "overschrijden de limiet",
       "affected": "{affected} / {total}",
       "pctAffected": "{pct}% getroffen",
       "totalImpact": "Totale impact",
@@ -282,7 +280,7 @@
       "galleryEntryFeatured": "Galerij-item uitgelicht",
       "galleryEntryUnfeatured": "Galerij-item niet meer uitgelicht",
       "galleryEntryHidden": "Galerij-item verborgen",
-      "galleryEntryRestored": "Galerij-item herstelt",
+      "galleryEntryRestored": "Galerij-item hersteld",
       "galleryEntryDeleted": "Galerij-item verwijderd"
     },
     "entityLabels": {
@@ -297,9 +295,6 @@
     "searchPlaceholder": "Zoek op titel, beschrijving of eigenaar...",
     "state": "Status",
     "stateValues": {
-      "listed": "Vermeld",
-      "featured": "Uitgelicht",
-      "hidden": "Verborgen",
       "unlisted": "Niet vermeld (gewone shares)",
       "unlistedBadge": "Niet vermeld"
     },

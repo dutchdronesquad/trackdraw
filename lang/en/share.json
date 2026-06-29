@@ -32,6 +32,10 @@
     "openView": "Open {view}",
     "makeEditableCopy": "Make editable copy"
   },
+  "metadata": {
+    "title": "View Track",
+    "description": "View this FPV race track designed with TrackDraw."
+  },
   "embedUnavailable": {
     "temporaryTitle": "Embed unavailable",
     "temporaryDescription": "Embeds are available for published account shares. Open the share link or sign in to publish a durable embed.",

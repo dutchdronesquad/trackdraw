@@ -1,0 +1,48 @@
+{
+  "kindLabels": {
+    "gate": "Gate",
+    "tower": "Tower",
+    "flag": "Flag",
+    "cone": "Cone",
+    "label": "Label",
+    "polyline": "Race Line",
+    "startfinish": "Start / Finish",
+    "ladder": "Ladder",
+    "divegate": "Dive Gate",
+    "barrier": "Barrier"
+  },
+  "toolLabels": {
+    "select": "Select",
+    "grab": "Grab",
+    "preset": "Presets",
+    "gate": "Gate",
+    "tower": "Tower",
+    "flag": "Flag",
+    "cone": "Cone",
+    "label": "Label",
+    "polyline": "Path",
+    "startfinish": "Start Pads",
+    "ladder": "Ladder",
+    "divegate": "Dive Gate",
+    "barrier": "Barrier"
+  },
+  "toolGroups": {
+    "track": "Track",
+    "extra": "Extra"
+  },
+  "toolMobileLabels": {
+    "startfinish": "Start",
+    "divegate": "Dive",
+    "barrier": "Barrier"
+  },
+  "mobileStatus": {
+    "multiSelect": "Multi",
+    "tool": "Tool",
+    "itemsCount": "{count} items"
+  },
+  "canvas": {
+    "selectionCount": "{count} items",
+    "selectionFallback": "Selection",
+    "frontLabel": "Front"
+  }
+}

@@ -1,4 +1,8 @@
-import { shapeKindLabels, getInventoryKinds } from "@/lib/track/items/registry";
+import {
+  getInventoryKinds,
+  getShapeKindLabel,
+  type Translate,
+} from "@/lib/track/items/registry";
 import type {
   InventoryProfile,
   InventoryShapeKind,
@@ -53,7 +57,7 @@ export function getRequiredInventoryCounts(
   return counts;
 }
 
-export function getInventoryComparison(design: TrackDesign) {
+export function getInventoryComparison(design: TrackDesign, t: Translate) {
   const available = normalizeInventoryProfile(design.inventory);
   const required = getRequiredInventoryCounts(design);
 
@@ -64,7 +68,7 @@ export function getInventoryComparison(design: TrackDesign) {
 
     return {
       kind,
-      label: shapeKindLabels[kind],
+      label: getShapeKindLabel(kind, t),
       required: needed,
       available: stock,
       missing,

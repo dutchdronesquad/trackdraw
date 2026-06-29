@@ -189,7 +189,24 @@
     "sectionLabel": "Gallery",
     "headingLine1": "Discover layouts that shape",
     "headingLine2": "your next track design.",
-    "description": "Browse public TrackDraw layouts shared by the community for inspiration. Featured tracks surface the strongest examples first, with recent community uploads right below."
+    "description": "Browse public TrackDraw layouts shared by the community for inspiration. Featured tracks surface the strongest examples first, with recent community uploads right below.",
+    "grid": {
+      "recentlyAdded": "Recently added",
+      "fieldSizeNotSet": "Field size not set",
+      "unknownPilot": "TrackDraw pilot",
+      "featuredBadge": "Featured",
+      "byOwner": "by {owner}",
+      "obstacleCount": "{count} obstacles",
+      "published": "Published {date}",
+      "open": "Open",
+      "emptyTitle": "No tracks yet.",
+      "emptyDescription": "Gallery listings will appear here once TrackDraw pilots choose to share them publicly.",
+      "featuredHeading": "Featured",
+      "featuredSubtitle": "Hand-picked layouts at the top of the gallery.",
+      "recentHeading": "Recent",
+      "recentSubtitle": "Newly listed layouts from the community.",
+      "loadMore": "Load more"
+    }
   },
   "notFound": {
     "logoAriaLabel": "TrackDraw",

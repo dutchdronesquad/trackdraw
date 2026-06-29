@@ -79,6 +79,18 @@ vi.mock("@/lib/vendor/jspdf", () => {
 });
 
 import { exportPdf } from "@/lib/export/exportPdf";
+import {
+  createTestTranslate,
+  shapesTranslate,
+} from "../../helpers/shapes-translate";
+import enExportPdf from "@lang/en/exportPdf.json";
+import enSetupEstimate from "@lang/en/setupEstimate.json";
+
+const translate = {
+  t: createTestTranslate(enExportPdf),
+  tSetup: createTestTranslate(enSetupEstimate),
+  tShapes: shapesTranslate,
+};
 
 const inventory = {
   gate: 0,
@@ -164,7 +176,7 @@ describe("exportPdf", () => {
     const design = createDefaultDesign();
     design.title = "Race Pack Smoke";
 
-    await exportPdf(null as never, design, "race-pack.pdf", "dark", {
+    await exportPdf(null as never, design, "race-pack.pdf", "dark", translate, {
       preset: "race-day",
       shareUrl: "https://trackdraw.app/share/share-token",
     });
@@ -183,7 +195,7 @@ describe("exportPdf", () => {
     const design = createDefaultDesign();
     design.title = "Standard PDF Smoke";
 
-    await exportPdf(null as never, design, "track-map.pdf", "light");
+    await exportPdf(null as never, design, "track-map.pdf", "light", translate);
 
     const pdf = pdfMock.instances[0];
     expect(pdf).toBeTruthy();
@@ -199,11 +211,18 @@ describe("exportPdf", () => {
   it("passes dense practical layouts through Race Pack PDF rendering", async () => {
     const design = createDensePracticalDesign();
 
-    await exportPdf(null as never, design, "dense-race-pack.pdf", "dark", {
-      includeObstacleNumbers: true,
-      preset: "race-day",
-      shareUrl: "https://trackdraw.app/share/share-token",
-    });
+    await exportPdf(
+      null as never,
+      design,
+      "dense-race-pack.pdf",
+      "dark",
+      translate,
+      {
+        includeObstacleNumbers: true,
+        preset: "race-day",
+        shareUrl: "https://trackdraw.app/share/share-token",
+      }
+    );
 
     const pdf = pdfMock.instances[0];
     expect(pdf.savedFilenames).toEqual(["dense-race-pack.pdf"]);

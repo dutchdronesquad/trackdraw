@@ -96,7 +96,7 @@ export function TowerSection({
   const t = useTranslations("inspector");
   if (hasFixedCatalogDimensions) return null;
   return (
-    <Section title={t("shapes.tower")} defaultOpen={defaultOpen}>
+    <Section title={t("tower.sectionTitle")} defaultOpen={defaultOpen}>
       <Row label={t("dimensions.levelsLabel")}>
         <Num
           value={shape.levels ?? 1}

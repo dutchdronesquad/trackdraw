@@ -85,7 +85,7 @@
     "preview": {
       "title": "3D-preview",
       "subtitle": "Loop door de track voor je hem bouwt.",
-      "description": "Één klik schakelt van het platte 2D-plan naar een live 3D-scène. Wijs hoogte toe aan elk waypoint op de race line om het volledige verticale profiel te modelleren. Ontdek gevaarlijke benaderingen voordat er een enkel paal in de grond staat.",
+      "description": "Eén klik schakelt van het platte 2D-plan naar een live 3D-scène. Wijs hoogte toe aan elk waypoint op de race line om het volledige verticale profiel te modelleren. Ontdek gevaarlijke benaderingen voordat er één enkele paal in de grond staat.",
       "bullet1": "Live 3D rechtstreeks gerenderd vanuit je 2D-ontwerp",
       "bullet2": "Hoogte per waypoint op de race line",
       "bullet3": "Hoogtegrafiek in het inspectorpaneel"
@@ -114,7 +114,7 @@
     "q5": "Welke exportformaten zijn beschikbaar?",
     "a5": "PDF, PNG, SVG, JSON en een cinematic FPV-video-export. Dat dekt gedrukte race-briefings, deelbare visuals, herbruikbare projectbestanden en een visuele routereview.",
     "q6": "Heb ik een account nodig om te beginnen?",
-    "a6": "Nee. Open de studio en begin meteen met ontwerpen. Een account aanmaken voegt cloudopslag, duurzame gepubliceerde links, galeriijpublicatie en embeds toe.",
+    "a6": "Nee. Open de studio en begin meteen met ontwerpen. Een account aanmaken voegt cloudopslag, duurzame gepubliceerde links, galerijpublicatie en embeds toe.",
     "q7": "Kan ik een lay-out hergebruiken voor een toekomstig evenement?",
     "a7": "Ja. Sla delen van een lay-out op als benoemde presets en plaats ze opnieuw met één klik. Om een volledig project te hergebruiken, exporteer het als JSON en importeer het aan het begin van een nieuw evenement.",
     "q8": "Kan TrackDraw helpen routeproblemen te ontdekken voor de racedag?",
@@ -189,7 +189,24 @@
     "sectionLabel": "Galerij",
     "headingLine1": "Ontdek lay-outs die",
     "headingLine2": "je volgende trackontwerp vormgeven.",
-    "description": "Blader door publieke TrackDraw-lay-outs gedeeld door de community voor inspiratie. Uitgelichte tracks tonen de sterkste voorbeelden eerst, met recente community-uploads direct daarna."
+    "description": "Blader door publieke TrackDraw-lay-outs gedeeld door de community voor inspiratie. Uitgelichte tracks tonen de sterkste voorbeelden eerst, met recente community-uploads direct daarna.",
+    "grid": {
+      "recentlyAdded": "Recent toegevoegd",
+      "fieldSizeNotSet": "Veldgrootte niet ingesteld",
+      "unknownPilot": "TrackDraw-piloot",
+      "featuredBadge": "Uitgelicht",
+      "byOwner": "door {owner}",
+      "obstacleCount": "{count} obstakels",
+      "published": "Gepubliceerd op {date}",
+      "open": "Openen",
+      "emptyTitle": "Nog geen tracks.",
+      "emptyDescription": "Galerijvermeldingen verschijnen hier zodra TrackDraw-piloten ervoor kiezen ze publiekelijk te delen.",
+      "featuredHeading": "Uitgelicht",
+      "featuredSubtitle": "Handmatig geselecteerde lay-outs boven in de galerij.",
+      "recentHeading": "Recent",
+      "recentSubtitle": "Nieuw vermelde lay-outs van de community.",
+      "loadMore": "Meer laden"
+    }
   },
   "notFound": {
     "logoAriaLabel": "TrackDraw",

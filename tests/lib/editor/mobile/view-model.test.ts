@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getEditorMobilePanelsViewModel } from "@/lib/editor/mobile/view-model";
+import { shapesTranslate } from "../../../helpers/shapes-translate";
 
 describe("editor mobile view model", () => {
   it("shows selected-count status over tool labels", () => {
@@ -12,6 +13,7 @@ describe("editor mobile view model", () => {
       readOnly: false,
       selectedCount: 3,
       tab: "2d",
+      t: shapesTranslate,
     });
 
     expect(result.mobileStatusTitle).toBe("Tool");
@@ -30,6 +32,7 @@ describe("editor mobile view model", () => {
       readOnly: false,
       selectedCount: 0,
       tab: "2d",
+      t: shapesTranslate,
     });
 
     expect(result.mobileStatusValue).toBe("Open practice");
@@ -43,6 +46,7 @@ describe("editor mobile view model", () => {
       readOnly: false,
       selectedCount: 0,
       tab: "2d",
+      t: shapesTranslate,
     });
 
     expect(pathResult.showPathBuilderOverlay).toBe(true);
@@ -60,6 +64,7 @@ describe("editor mobile view model", () => {
         readOnly: true,
         selectedCount: 1,
         tab: "2d",
+        t: shapesTranslate,
       }).showPathBuilderOverlay
     ).toBe(false);
 
@@ -73,6 +78,7 @@ describe("editor mobile view model", () => {
         readOnly: false,
         selectedCount: 1,
         tab: "2d",
+        t: shapesTranslate,
       }).showQuickAdjustOverlay
     ).toBe(false);
 
@@ -86,6 +92,7 @@ describe("editor mobile view model", () => {
         readOnly: false,
         selectedCount: 1,
         tab: "3d",
+        t: shapesTranslate,
       }).showQuickAdjustOverlay
     ).toBe(false);
   });

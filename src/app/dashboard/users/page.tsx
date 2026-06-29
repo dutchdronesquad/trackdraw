@@ -26,11 +26,12 @@ export default async function DashboardUsersPage() {
 
   const users = await listUsersForAdmin();
   const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.users")}
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

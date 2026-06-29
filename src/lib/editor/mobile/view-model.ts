@@ -1,5 +1,8 @@
-import type { EditorTool } from "@/lib/editor/tool-registry";
-import { getTrackItemToolConfigs } from "@/lib/track/items/registry";
+import {
+  getToolMobileLabel,
+  type EditorTool,
+  type Translate,
+} from "@/lib/editor/tool-registry";
 
 export function getEditorMobilePanelsViewModel(options: {
   activePresetLabel?: string | null;
@@ -9,6 +12,7 @@ export function getEditorMobilePanelsViewModel(options: {
   pathBuilderPinnedOpen: boolean;
   readOnly: boolean;
   selectedCount: number;
+  t: Translate;
   tab: "2d" | "3d";
 }) {
   const {
@@ -19,29 +23,20 @@ export function getEditorMobilePanelsViewModel(options: {
     pathBuilderPinnedOpen,
     readOnly,
     selectedCount,
+    t,
     tab,
   } = options;
 
-  const toolDisplayName: Record<string, string> = {
-    select: "Select",
-    grab: "Grab",
-    preset: "Presets",
-    ...Object.fromEntries(
-      getTrackItemToolConfigs().map((tool) => [
-        tool.id,
-        tool.mobileLabel ?? tool.label,
-      ])
-    ),
-  };
-
   return {
-    mobileStatusTitle: mobileMultiSelectEnabled ? "Multi" : "Tool",
+    mobileStatusTitle: mobileMultiSelectEnabled
+      ? t("mobileStatus.multiSelect")
+      : t("mobileStatus.tool"),
     mobileStatusValue:
       selectedCount > 0
-        ? `${selectedCount} items`
+        ? t("mobileStatus.itemsCount", { count: selectedCount })
         : activeTool === "preset" && activePresetLabel
           ? activePresetLabel
-          : (toolDisplayName[activeTool] ?? activeTool),
+          : getToolMobileLabel(activeTool, t),
     showPathBuilderOverlay:
       !readOnly &&
       tab === "2d" &&

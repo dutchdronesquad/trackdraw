@@ -6,6 +6,7 @@ import {
   normalizeInventoryProfile,
 } from "@/lib/planning/inventory";
 import { normalizeDesign } from "@/lib/track/design";
+import { shapesTranslate } from "../../helpers/shapes-translate";
 
 describe("planning inventory helpers", () => {
   it("creates and normalizes inventory profiles", () => {
@@ -143,7 +144,7 @@ describe("planning inventory helpers", () => {
       updatedAt: "2026-04-13T10:00:00.000Z",
     });
 
-    const comparison = getInventoryComparison(design);
+    const comparison = getInventoryComparison(design, shapesTranslate);
     const gate = comparison.find((item) => item.kind === "gate");
     const flag = comparison.find((item) => item.kind === "flag");
 

@@ -8,20 +8,21 @@ import {
 } from "@/lib/track/polyline-derived";
 import { formatMeasurement } from "@/lib/track/units";
 import { selectPrimaryPolyline } from "@/store/selectors";
+import { useTranslations } from "next-intl";
 
 const W = 260;
 const H = 80;
 const PAD = { top: 8, right: 8, bottom: 20, left: 32 };
 
 export default function ElevationPanel() {
+  const t = useTranslations("inspector.elevationChart");
   const { unitSystem } = useMeasurementUnitSystem();
   const path = useEditor(selectPrimaryPolyline);
 
   if (!path) {
     return (
       <div className="border-border bg-card/50 text-muted-foreground shrink-0 border-t px-4 py-3 text-xs">
-        No race line selected. Draw or select a race line to see the elevation
-        profile.
+        {t("noRouteSelected")}
       </div>
     );
   }
@@ -70,7 +71,7 @@ export default function ElevationPanel() {
     <div className="border-border bg-card/50 shrink-0 border-t px-4 py-3">
       <div className="mb-2 flex items-baseline justify-between">
         <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-          Elevation Profile
+          {t("title")}
         </p>
         <p className="text-muted-foreground text-[11px]">
           {formatMeasurement(total, unitSystem, { precision: 1 })} ·{" "}
@@ -83,7 +84,7 @@ export default function ElevationPanel() {
         viewBox={`0 0 ${W} ${H}`}
         className="w-full rounded"
         style={{ height: H }}
-        aria-label="Elevation profile chart"
+        aria-label={t("chartAriaLabel")}
       >
         {yTicks.map((t) => (
           <line

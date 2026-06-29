@@ -37,6 +37,11 @@ export type CatalogPlacementToolId = Exclude<TrackItemToolId, "polyline">;
 
 export type SetupComplexity = "light" | "standard" | "heavy";
 
+export type Translate = (
+  key: string,
+  values?: Record<string, unknown>
+) => string;
+
 export type SetupProfile = {
   priority: number;
   prepMinutes: number;
@@ -69,7 +74,7 @@ export interface TrackItemAdapter {
   canvasRenderRotationOffsetDeg?: number;
   mobileTouchTargetMinScreenPx?: number;
   routeToleranceWidthFactor?: number;
-  getSetupProfile: (shape: Shape) => SetupProfile;
+  getSetupProfile: (shape: Shape, t: Translate) => SetupProfile;
 }
 
 export type TrackItemToolConfig = NonNullable<TrackItemAdapter["tool"]>;
@@ -79,13 +84,15 @@ export type CatalogPlacementToolConfig = TrackItemToolConfig & {
   defaultCatalogEntryId: TrackElementCatalogId;
 };
 
-const _noSetupProfile: SetupProfile = {
-  priority: 99,
-  prepMinutes: 0,
-  placeMinutes: 0,
-  note: "No setup guidance is available for this item yet.",
-  complexity: "light",
-};
+function getNoSetupProfile(t: Translate): SetupProfile {
+  return {
+    priority: 99,
+    prepMinutes: 0,
+    placeMinutes: 0,
+    note: t("obstacleNotes.label"),
+    complexity: "light",
+  };
+}
 
 export const trackItemAdapters = [
   {
@@ -108,11 +115,11 @@ export const trackItemAdapters = [
     canvasRenderRotationOffsetDeg: 180,
     mobileTouchTargetMinScreenPx: 44,
     routeToleranceWidthFactor: 0.42,
-    getSetupProfile: () => ({
+    getSetupProfile: (_shape, t) => ({
       priority: 3,
       prepMinutes: 1,
       placeMinutes: 2,
-      note: "Place and square this gate once the anchor structures are in place.",
+      note: t("obstacleNotes.gate"),
       complexity: "standard" as const,
     }),
   },
@@ -134,7 +141,7 @@ export const trackItemAdapters = [
     canvasRenderRotationOffsetDeg: 180,
     mobileTouchTargetMinScreenPx: 44,
     routeToleranceWidthFactor: 0.42,
-    getSetupProfile: (shape) => {
+    getSetupProfile: (shape, t) => {
       const s = shape as TowerShape;
       const levelCount = Math.max(1, Math.min(4, Math.round(s.levels ?? 1)));
       const elevationFactor = Math.max(0, Math.round(s.elevation ?? 0));
@@ -142,7 +149,7 @@ export const trackItemAdapters = [
         priority: 2,
         prepMinutes: 4 + levelCount,
         placeMinutes: 6 + levelCount + elevationFactor,
-        note: "Place and secure this with the other higher-effort structures. Towers need stable feet, clean vertical alignment, and enough clearance for stacked openings.",
+        note: t("obstacleNotes.tower"),
         complexity: "heavy" as const,
       };
     },
@@ -160,11 +167,11 @@ export const trackItemAdapters = [
     },
     orientation: { facing: 0, canvasGuide: 0, previewGuide: -90 },
     rotateHandle3d: true,
-    getSetupProfile: () => ({
+    getSetupProfile: (_shape, t) => ({
       priority: 4,
       prepMinutes: 1,
       placeMinutes: 1,
-      note: "Use flags for final visibility and edge definition after the main obstacles are in place.",
+      note: t("obstacleNotes.flag"),
       complexity: "light" as const,
     }),
   },
@@ -179,11 +186,11 @@ export const trackItemAdapters = [
       defaultCatalogEntryId: TRACKDRAW_CONE_ELEMENT_ID,
     },
     orientation: { facing: 0, canvasGuide: -90, previewGuide: 0 },
-    getSetupProfile: () => ({
+    getSetupProfile: (_shape, t) => ({
       priority: 5,
       prepMinutes: 0,
       placeMinutes: 1,
-      note: "Use cones in the final cleanup pass for boundary marking and spacing checks.",
+      note: t("obstacleNotes.cone"),
       complexity: "light" as const,
     }),
   },
@@ -197,14 +204,14 @@ export const trackItemAdapters = [
       defaultCatalogEntryId: TRACKDRAW_LABEL_ELEMENT_ID,
     },
     orientation: { facing: 0, canvasGuide: -90, previewGuide: 0 },
-    getSetupProfile: () => _noSetupProfile,
+    getSetupProfile: (_shape, t) => getNoSetupProfile(t),
   },
   {
     kind: "polyline",
     label: "Race Line",
     tool: { id: "polyline", label: "Path", shortcut: "P" },
     orientation: { facing: 0, canvasGuide: -90, previewGuide: 0 },
-    getSetupProfile: () => _noSetupProfile,
+    getSetupProfile: (_shape, t) => getNoSetupProfile(t),
   },
   {
     kind: "startfinish",
@@ -220,11 +227,11 @@ export const trackItemAdapters = [
     orientation: { facing: 0, canvasGuide: -90, previewGuide: 0 },
     frontBack: true,
     setupHardObstacle: true,
-    getSetupProfile: () => ({
+    getSetupProfile: (_shape, t) => ({
       priority: 0,
       prepMinutes: 2,
       placeMinutes: 3,
-      note: "Set this first so the launch and finish reference is fixed before the rest of the course goes down.",
+      note: t("obstacleNotes.startfinish"),
       complexity: "standard" as const,
     }),
   },
@@ -246,13 +253,13 @@ export const trackItemAdapters = [
     rotateHandle3d: true,
     canvasRenderRotationOffsetDeg: 180,
     routeToleranceWidthFactor: 0.42,
-    getSetupProfile: (shape) => {
+    getSetupProfile: (shape, t) => {
       const s = shape as LadderShape;
       return {
         priority: 2,
         prepMinutes: 4 + Math.max(0, s.rungs - 3),
         placeMinutes: 7,
-        note: "Treat this as a higher-effort item. Allow extra time if it needs overhead rigging or a careful suspend point.",
+        note: t("obstacleNotes.ladder"),
         complexity: "heavy" as const,
       };
     },
@@ -276,7 +283,7 @@ export const trackItemAdapters = [
     rotateHandle3d: true,
     catalogPatch: { preserveDiveGateTopY: true },
     routeToleranceWidthFactor: 0.38,
-    getSetupProfile: (shape) => {
+    getSetupProfile: (shape, t) => {
       const s = shape as DiveGateShape;
       const elevationFactor = Math.max(0, (s.elevation ?? 3) - 2.5);
       const tiltFactor = (s.tilt ?? 0) > 20 ? 1 : 0;
@@ -284,7 +291,7 @@ export const trackItemAdapters = [
         priority: 1,
         prepMinutes: 5 + tiltFactor,
         placeMinutes: 8 + Math.round(elevationFactor),
-        note: "Place and secure this early. Dive gates usually need more alignment and anchoring than a standard gate.",
+        note: t("obstacleNotes.divegate"),
         complexity: "heavy" as const,
       };
     },
@@ -307,11 +314,11 @@ export const trackItemAdapters = [
     rotateHandle3d: true,
     canvasRenderRotationOffsetDeg: 180,
     routeToleranceWidthFactor: 0,
-    getSetupProfile: () => ({
+    getSetupProfile: (_shape, t) => ({
       priority: 4,
       prepMinutes: 2,
       placeMinutes: 2,
-      note: "Set up barriers after the main gates and obstacles are positioned.",
+      note: t("obstacleNotes.barrier"),
       complexity: "standard" as const,
     }),
   },
@@ -321,10 +328,6 @@ export const trackItemAdapterByKind = Object.fromEntries(
   trackItemAdapters.map((adapter) => [adapter.kind, adapter])
 ) as Record<ShapeKind, TrackItemAdapter>;
 
-export const shapeKindLabels = Object.fromEntries(
-  trackItemAdapters.map((adapter) => [adapter.kind, adapter.label])
-) as Record<ShapeKind, string>;
-
 export function getTrackItemAdapter(kind: ShapeKind): TrackItemAdapter {
   return trackItemAdapterByKind[kind];
 }
@@ -333,8 +336,22 @@ export function getTrackItemAdapterForShape(shape: Shape): TrackItemAdapter {
   return getTrackItemAdapter(shape.kind);
 }
 
-export function getShapeKindLabel(kind: ShapeKind): string {
-  return getTrackItemAdapter(kind).label;
+export function getShapeKindLabel(kind: ShapeKind, t: Translate): string {
+  return t(`kindLabels.${kind}`);
+}
+
+export function getToolLabel(toolId: TrackItemToolId, t: Translate): string {
+  return t(`toolLabels.${toolId}`);
+}
+
+export function getToolMobileLabel(
+  toolId: TrackItemToolId,
+  t: Translate
+): string {
+  const hasMobileLabel = Boolean(getTrackItemAdapter(toolId).tool?.mobileLabel);
+  return hasMobileLabel
+    ? t(`toolMobileLabels.${toolId}`)
+    : getToolLabel(toolId, t);
 }
 
 export function getDefaultCatalogEntryId(

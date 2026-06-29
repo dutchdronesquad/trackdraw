@@ -71,6 +71,7 @@ export function ProjectManagerDeviceTab({
   onOpenChange,
 }: ProjectManagerDeviceTabProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const isMobile = useIsMobile();
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -184,7 +185,7 @@ export function ProjectManagerDeviceTab({
       : hasConflict
         ? t("projectManager.device.reviewNeeded")
         : hasPendingChanges
-          ? t("projectManager.device.pending")
+          ? tCommon("status.pending")
           : hasSyncFailure
             ? t("projectManager.device.syncFailed")
             : isSynced
@@ -385,9 +386,7 @@ export function ProjectManagerDeviceTab({
               ) : (
                 <>
                   {onRenameProject && (
-                    <DesktopActionTooltip
-                      label={t("projectManager.device.rename")}
-                    >
+                    <DesktopActionTooltip label={tCommon("actions.rename")}>
                       <button
                         type="button"
                         aria-label={`Rename ${p.title || "project"}`}
@@ -399,9 +398,7 @@ export function ProjectManagerDeviceTab({
                     </DesktopActionTooltip>
                   )}
                   {onDeleteProject && !isCurrent && (
-                    <DesktopActionTooltip
-                      label={t("projectManager.device.delete")}
-                    >
+                    <DesktopActionTooltip label={tCommon("actions.delete")}>
                       <button
                         type="button"
                         aria-label={`Delete ${p.title || "project"}`}

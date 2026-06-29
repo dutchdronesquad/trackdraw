@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
 import { useTranslations } from "next-intl";
+import type { Translate } from "@/lib/editor/tool-registry";
 
 export interface ExportDialogProps {
   open: boolean;
@@ -245,6 +246,11 @@ export default function ExportDialog({
   projectId = null,
 }: ExportDialogProps) {
   const t = useTranslations("dialogs");
+  const tExportPdf = useTranslations("exportPdf") as unknown as Translate;
+  const tSetupEstimate = useTranslations(
+    "setupEstimate"
+  ) as unknown as Translate;
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const design = useEditor((s) => s.track.design);
   const { unitSystem } = useMeasurementUnitSystem();
   const currentTheme = useTheme();
@@ -559,6 +565,7 @@ export default function ExportDialog({
                   design,
                   `${baseName}_race_pack.pdf`,
                   exportTheme,
+                  { t: tExportPdf, tSetup: tSetupEstimate, tShapes },
                   {
                     includeObstacleNumbers,
                     preset: "race-day",
@@ -784,6 +791,7 @@ export default function ExportDialog({
                   design,
                   `${baseName}_race_pack.pdf`,
                   exportTheme,
+                  { t: tExportPdf, tSetup: tSetupEstimate, tShapes },
                   {
                     includeObstacleNumbers,
                     preset: "race-day",

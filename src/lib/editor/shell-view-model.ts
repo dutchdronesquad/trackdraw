@@ -1,4 +1,4 @@
-import { shapeKindLabels } from "@/lib/track/items/registry";
+import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import {
   getShapeGroupId,
   getShapeGroupName,
@@ -20,6 +20,7 @@ export function getEditorShellSelectionState(options: {
   } | null;
   selection: string[];
   shapeById: Record<string, Shape>;
+  t: Translate;
   unitSystem?: MeasurementUnitSystem;
   vertexSelection: { shapeId: string; idx: number } | null;
 }) {
@@ -29,6 +30,7 @@ export function getEditorShellSelectionState(options: {
     segmentSelection,
     selection,
     shapeById,
+    t,
     unitSystem = "metric",
     vertexSelection,
   } = options;
@@ -55,7 +57,7 @@ export function getEditorShellSelectionState(options: {
   const selectedGroupName =
     selectedGroupIds.size === 1 ? (selectedGroupNames[0] ?? "") : null;
   const singleSelectedShapeLabel = singleSelectedShape
-    ? shapeKindLabels[singleSelectedShape.kind]
+    ? getShapeKindLabel(singleSelectedShape.kind, t)
     : null;
   const selectedPolylineSegment =
     singleSelectedShape?.kind === "polyline" &&

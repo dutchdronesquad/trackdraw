@@ -93,6 +93,7 @@ export function AccountApiKeysView({
   onRefreshApiKeys,
 }: ApiKeysViewProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
   const [confirmRevokeKeyId, setConfirmRevokeKeyId] = useState<string | null>(
     null
   );
@@ -118,13 +119,13 @@ export function AccountApiKeysView({
             id="api-key-name-label"
             className="order-1 block text-sm font-medium"
           >
-            Key name
+            {t("account.apiKeys.keyNameLabel")}
           </span>
           <span
             id="api-key-expiry-label"
             className="order-3 mt-1 block text-sm font-medium sm:order-2 sm:mt-0"
           >
-            Expires
+            {tCommon("labels.expires")}
           </span>
           <span aria-hidden="true" className="hidden sm:order-3 sm:block" />
 
@@ -150,10 +151,18 @@ export function AccountApiKeysView({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="start">
-                <SelectItem value="7">7 days</SelectItem>
-                <SelectItem value="30">30 days</SelectItem>
-                <SelectItem value="90">90 days</SelectItem>
-                <SelectItem value="365">1 year</SelectItem>
+                <SelectItem value="7">
+                  {t("account.apiKeys.expiryDays", { days: 7 })}
+                </SelectItem>
+                <SelectItem value="30">
+                  {t("account.apiKeys.expiryDays", { days: 30 })}
+                </SelectItem>
+                <SelectItem value="90">
+                  {t("account.apiKeys.expiryDays", { days: 90 })}
+                </SelectItem>
+                <SelectItem value="365">
+                  {t("account.apiKeys.expiryYear")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -172,7 +181,7 @@ export function AccountApiKeysView({
             ) : (
               <Plus className="size-4" />
             )}
-            Create
+            {t("account.apiKeys.create")}
           </Button>
         </div>
 
@@ -180,10 +189,10 @@ export function AccountApiKeysView({
           <div className="space-y-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-4">
             <div>
               <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                API key created
+                {t("account.apiKeys.createdTitle")}
               </p>
               <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                This secret is shown once. Store it before closing this dialog.
+                {t("account.apiKeys.createdDescription")}
               </p>
             </div>
             <div
@@ -202,7 +211,7 @@ export function AccountApiKeysView({
                 className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
               >
                 <Clipboard className="size-4" />
-                Copy
+                {tCommon("actions.copy")}
               </Button>
             </div>
           </div>
@@ -212,7 +221,9 @@ export function AccountApiKeysView({
       <div className="space-y-4">
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium">Active API keys</p>
+            <p className="text-sm font-medium">
+              {t("account.apiKeys.activeTitle")}
+            </p>
             <Button
               type="button"
               variant="ghost"
@@ -228,14 +239,14 @@ export function AccountApiKeysView({
           </div>
           <div>
             <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              Read-only keys for trusted integrations.{" "}
+              {t("account.apiKeys.descriptionPrefix")}{" "}
               <Link
                 href="/api/docs"
                 target="_blank"
                 rel="noreferrer"
                 className="text-foreground inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
               >
-                API docs
+                {t("account.apiKeys.docsLink")}
                 <ExternalLink className="size-3" />
               </Link>
             </p>
@@ -245,7 +256,7 @@ export function AccountApiKeysView({
         {apiKeysLoading ? (
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <LoaderCircle className="size-4 animate-spin" />
-            Loading API keys...
+            {t("account.apiKeys.loading")}
           </div>
         ) : apiKeys.length === 0 ? (
           <div className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-4">
@@ -254,10 +265,11 @@ export function AccountApiKeysView({
                 <Braces className="size-4" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-medium">No API keys yet</p>
+                <p className="text-sm font-medium">
+                  {t("account.apiKeys.emptyTitle")}
+                </p>
                 <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  Create one when a trusted integration needs read-only access
-                  to your account projects.
+                  {t("account.apiKeys.emptyDescription")}
                 </p>
               </div>
             </div>
@@ -286,10 +298,14 @@ export function AccountApiKeysView({
                           </p>
                           <div className="mt-1 flex flex-wrap gap-1.5">
                             <span className="border-border/50 bg-background/60 text-muted-foreground inline-flex rounded-md border px-1.5 py-0.5 text-[11px]">
-                              Expires {formatDate(apiKey.expiresAt)}
+                              {t("account.apiKeys.expiresOn", {
+                                date: formatDate(apiKey.expiresAt),
+                              })}
                             </span>
                             <span className="border-border/50 bg-background/60 text-muted-foreground inline-flex rounded-md border px-1.5 py-0.5 text-[11px]">
-                              Last used {formatDate(apiKey.lastRequest)}
+                              {t("account.apiKeys.lastUsed", {
+                                date: formatDate(apiKey.lastRequest),
+                              })}
                             </span>
                           </div>
                         </div>
@@ -328,7 +344,7 @@ export function AccountApiKeysView({
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-foreground truncate text-sm font-medium">
-                            Revoke API key?
+                            {t("account.apiKeys.revokeConfirmTitle")}
                           </p>
                           <p className="text-muted-foreground truncate text-[11px]">
                             {isMobile
@@ -356,7 +372,7 @@ export function AccountApiKeysView({
                             disabled={isDeleting}
                             className="text-muted-foreground hover:text-foreground disabled:text-muted-foreground/50 cursor-pointer rounded-lg px-2 py-1.5 text-xs transition-colors disabled:cursor-not-allowed"
                           >
-                            Cancel
+                            {tCommon("actions.cancel")}
                           </button>
                         </div>
                       </motion.div>

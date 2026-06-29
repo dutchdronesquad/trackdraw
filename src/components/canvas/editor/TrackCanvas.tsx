@@ -72,7 +72,11 @@ import {
 import { CanvasRuler, RULER_SIZE } from "@/components/canvas/CanvasRuler";
 import { useTheme } from "@/hooks/useTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getShapeDisplayLabel } from "@/lib/editor/tool-registry";
+import { useTranslations } from "next-intl";
+import {
+  getShapeDisplayLabel,
+  type Translate,
+} from "@/lib/editor/tool-registry";
 import {
   Tooltip,
   TooltipContent,
@@ -144,6 +148,8 @@ const TrackCanvas = memo(
     ref
   ) {
     usePerfMetric("render:TrackCanvas");
+    const t = useTranslations("shapes") as unknown as Translate;
+    const tCanvas = useTranslations("editor.canvasOverlay");
     const { unitSystem } = useMeasurementUnitSystem();
     const design = useEditor((state) => state.track.design);
     const designShapes = useEditor(selectDesignShapes);
@@ -790,10 +796,10 @@ const TrackCanvas = memo(
           }),
           label:
             nextSelection.length > 1
-              ? `${nextSelection.length} items`
+              ? t("canvas.selectionCount", { count: nextSelection.length })
               : primaryShape
-                ? getShapeDisplayLabel(primaryShape)
-                : "Selection",
+                ? getShapeDisplayLabel(primaryShape, t)
+                : t("canvas.selectionFallback"),
           locked: nextSelection.every((id) => {
             const shape = shapeById[id];
             return Boolean(shape?.locked);
@@ -810,6 +816,7 @@ const TrackCanvas = memo(
         segmentSel,
         setSelection,
         shapeById,
+        t,
       ]
     );
 
@@ -1998,28 +2005,34 @@ const TrackCanvas = memo(
               {draftPath.length > 0 ? (
                 <div className="text-foreground/80 flex flex-wrap items-center gap-1.5">
                   <span className="bg-primary/8 text-primary rounded-full px-1.5 py-0.5 font-medium">
-                    Path editing
+                    {tCanvas("pathEditing")}
                   </span>
-                  <span className="text-muted-foreground/60">Add points</span>
+                  <span className="text-muted-foreground/60">
+                    {tCanvas("addPoints")}
+                  </span>
                   <span className="text-border/80">·</span>
                   <span className="inline-flex items-center gap-1">
                     <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-lg px-1 text-[10px] shadow-none">
                       Enter
                     </Kbd>
-                    <span className="text-muted-foreground/70">finish</span>
+                    <span className="text-muted-foreground/70">
+                      {tCanvas("finish")}
+                    </span>
                   </span>
                   <span className="text-border/80">·</span>
                   <span className="inline-flex items-center gap-1">
                     <Kbd className="bg-background/75 text-foreground/80 h-4 min-w-4 rounded-lg px-1 text-[10px] shadow-none">
                       Esc
                     </Kbd>
-                    <span className="text-muted-foreground/70">cancel</span>
+                    <span className="text-muted-foreground/70">
+                      {tCanvas("cancel")}
+                    </span>
                   </span>
                   {draftCloseTarget && (
                     <>
                       <span className="text-border/80">·</span>
                       <span className="rounded-full bg-amber-500/12 px-1.5 py-0.5 text-amber-600 dark:text-amber-300">
-                        Click to connect ends
+                        {tCanvas("connectEnds")}
                       </span>
                     </>
                   )}
@@ -2038,12 +2051,10 @@ const TrackCanvas = memo(
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span>{fieldLabel}</span>
                   <span className="text-border">·</span>
-                  <span>Grid {gridLabel}</span>
+                  <span>{tCanvas("grid", { grid: gridLabel })}</span>
                   <span className="text-border">·</span>
                   <span>
-                    {snapEnabled
-                      ? "Snap on: grid, objects, routes"
-                      : "Snap off: free placement"}
+                    {snapEnabled ? tCanvas("snapOn") : tCanvas("snapOff")}
                   </span>
                 </div>
               )}
@@ -2055,13 +2066,16 @@ const TrackCanvas = memo(
                 display: showDesktopCanvasChrome ? "block" : "none",
               }}
             >
-              <span className="text-foreground/60 font-medium">Mid-click</span>{" "}
-              pan ·{" "}
               <span className="text-foreground/60 font-medium">
-                Right-click
+                {tCanvas("midClick")}
               </span>{" "}
-              menu · <span className="text-foreground/60 font-medium">Alt</span>{" "}
-              bypass
+              {tCanvas("pan")} ·{" "}
+              <span className="text-foreground/60 font-medium">
+                {tCanvas("rightClick")}
+              </span>{" "}
+              {tCanvas("menu")} ·{" "}
+              <span className="text-foreground/60 font-medium">Alt</span>{" "}
+              {tCanvas("bypass")}
             </div>
             <div
               className="absolute right-2 z-20"
@@ -2077,12 +2091,12 @@ const TrackCanvas = memo(
                     fitFieldToViewport();
                   }}
                   className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
-                  aria-label="Fit to window"
+                  aria-label={tCanvas("fitToWindow")}
                 >
                   <Scan className="size-3.5" />
                 </TooltipTrigger>
                 <TooltipContent side="left">
-                  Fit to window{" "}
+                  {tCanvas("fitToWindow")}{" "}
                   <span className="ml-1 font-mono text-[11px] opacity-65">
                     0
                   </span>
@@ -2268,6 +2282,7 @@ const TrackCanvas = memo(
                   effectiveSelectionFrame={
                     selection.length > 1 ? effectiveSelectionFrame : null
                   }
+                  frontLabel={t("canvas.frontLabel")}
                   hoverCell={hoverCell}
                   isDark={isDark}
                   magneticSnapRadiusPx={magneticSnapRadiusPx}

@@ -260,6 +260,11 @@ describe("ExportDialog mobile workflow", () => {
         "New_Track_race_pack.pdf",
         "dark",
         expect.objectContaining({
+          t: expect.any(Function),
+          tSetup: expect.any(Function),
+          tShapes: expect.any(Function),
+        }),
+        expect.objectContaining({
           preset: "race-day",
           shareUrl: expect.stringMatching(/\/share\/published-token\?view=2d$/),
         })

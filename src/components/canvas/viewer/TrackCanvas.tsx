@@ -43,6 +43,7 @@ import type {
   TrackCanvasProps,
 } from "@/components/canvas/editor/TrackCanvas";
 import { ShapeNode } from "./ShapeNode";
+import { useTranslations } from "next-intl";
 
 const TrackCanvas = memo(
   forwardRef<TrackCanvasHandle, TrackCanvasProps>(function TrackCanvas(
@@ -51,6 +52,7 @@ const TrackCanvas = memo(
   ) {
     usePerfMetric("render:viewer/TrackCanvas");
 
+    const tCanvas = useTranslations("editor.canvasOverlay");
     const { unitSystem } = useMeasurementUnitSystem();
     const design = useEditor((state) => state.track.design);
     const designShapes = useEditor(selectDesignShapes);
@@ -406,9 +408,9 @@ const TrackCanvas = memo(
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>{fieldLabel}</span>
             <span className="text-border">·</span>
-            <span>Grid {gridLabel}</span>
+            <span>{tCanvas("grid", { grid: gridLabel })}</span>
             <span className="text-border">·</span>
-            <span>Drag to pan, wheel to zoom</span>
+            <span>{tCanvas("viewerPanZoom")}</span>
           </div>
         </div>
         <div
@@ -425,12 +427,12 @@ const TrackCanvas = memo(
                 fitFieldToViewport();
               }}
               className="border-border/60 bg-card/85 text-muted-foreground hover:bg-card hover:text-foreground flex size-8 items-center justify-center rounded-md border shadow-xs backdrop-blur transition-colors"
-              aria-label="Fit to window"
+              aria-label={tCanvas("fitToWindow")}
             >
               <Scan className="size-3.5" />
             </TooltipTrigger>
             <TooltipContent side="left">
-              Fit to window{" "}
+              {tCanvas("fitToWindow")}{" "}
               <span className="ml-1 font-mono text-[11px] opacity-65">0</span>
             </TooltipContent>
           </Tooltip>

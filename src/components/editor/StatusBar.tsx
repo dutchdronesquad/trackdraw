@@ -10,7 +10,7 @@ import { findPresetById } from "@/lib/planning/layout-presets";
 import { useUserPresets } from "@/store/user-presets";
 import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
 import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
-import { toolLabels } from "@/lib/editor/tool-registry";
+import { getToolLabel, type Translate } from "@/lib/editor/tool-registry";
 import { Magnet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -27,6 +27,7 @@ interface StatusBarProps {
 
 export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
   const t = useTranslations("editor");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const { enabled, toggle } = useDeveloperMode();
   const { unitSystem } = useMeasurementUnitSystem();
   const { toggleSnapEnabled } = useUiActions();
@@ -64,8 +65,8 @@ export default function StatusBar({ cursorPos, snapActive }: StatusBarProps) {
         : null;
   const activeToolLabel =
     activeTool === "preset" && activePreset
-      ? `${toolLabels[activeTool]}: ${activePreset.name}`
-      : (toolLabels[activeTool] ?? activeTool);
+      ? `${getToolLabel(activeTool, tShapes)}: ${activePreset.name}`
+      : getToolLabel(activeTool, tShapes);
 
   return (
     <div

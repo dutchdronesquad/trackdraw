@@ -12,6 +12,7 @@ import {
   Wind,
 } from "lucide-react";
 import type { QuaternionState } from "./shared-scene";
+import { useTranslations } from "next-intl";
 
 function CanvasHintPill({
   icon,
@@ -226,6 +227,7 @@ export function FlyThroughControlsOverlay({
   setSpeed: (value: number) => void;
   speed: number;
 }) {
+  const t = useTranslations("editor.preview3dOverlay");
   if (!flyMode) return null;
 
   return (
@@ -233,7 +235,7 @@ export function FlyThroughControlsOverlay({
       <button
         onClick={() => setPlaying((value) => !value)}
         className="flex size-7 items-center justify-center rounded-md text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-        title={playing ? "Pause" : "Play"}
+        title={playing ? t("pause") : t("play")}
       >
         {playing ? (
           <Pause className="size-3.5" />
@@ -242,7 +244,7 @@ export function FlyThroughControlsOverlay({
         )}
       </button>
       <div className="flex items-center gap-1.5">
-        <span className="text-[11px] text-white/60">Speed</span>
+        <span className="text-[11px] text-white/60">{t("speed")}</span>
         <input
           type="range"
           min={0.2}
@@ -264,7 +266,7 @@ export function FlyThroughControlsOverlay({
             ? "bg-white/10 text-white/85 hover:bg-white/14"
             : "text-white/45 hover:bg-white/8 hover:text-white/75"
         }`}
-        title="Toggle FPV camera behavior"
+        title={t("toggleFpv")}
         aria-pressed={bankingEnabled}
       >
         <span>FPV</span>
@@ -275,7 +277,7 @@ export function FlyThroughControlsOverlay({
               : "bg-white/6 text-white/40"
           }`}
         >
-          {bankingEnabled ? "On" : "Off"}
+          {bankingEnabled ? t("on") : t("off")}
         </span>
       </button>
       <div className="mx-0.5 h-4 w-px bg-white/10" />
@@ -286,7 +288,7 @@ export function FlyThroughControlsOverlay({
         }}
         className="px-1 text-[11px] text-white/40 transition-colors hover:text-white/80"
       >
-        Exit
+        {t("exit")}
       </button>
     </div>
   );
@@ -311,6 +313,7 @@ export function TrackPreview3DHintOverlays({
   selectedPolyline: unknown;
   onStartFlyThrough: () => void;
 }) {
+  const t = useTranslations("editor.preview3dOverlay");
   return (
     <>
       {hasPath && !flyMode && !isMobile ? (
@@ -319,23 +322,19 @@ export function TrackPreview3DHintOverlays({
           position="bottom-3 z-30"
           onClick={onStartFlyThrough}
         >
-          Fly-Through
+          {t("flyThrough")}
         </CanvasHintPill>
       ) : null}
 
       {selectedPolyline && !flyMode ? (
         <CanvasHintPill icon={<MoveVertical className="size-3" />}>
-          {isMobile
-            ? "Drag a waypoint grip up or down to adjust elevation"
-            : "Drag waypoint handles up or down to adjust elevation"}
+          {isMobile ? t("dragWaypointMobile") : t("dragWaypointDesktop")}
         </CanvasHintPill>
       ) : null}
 
       {hasSelectedDiveGate && !flyMode && !readOnly && !selectedPolyline ? (
         <CanvasHintPill icon={<RotateCcw className="size-3" />}>
-          {isMobile
-            ? "Drag ring to rotate · orange puck to tilt"
-            : "Drag ring to rotate · drag orange puck to tilt"}
+          {isMobile ? t("dragDiveGateMobile") : t("dragDiveGateDesktop")}
         </CanvasHintPill>
       ) : null}
 
@@ -345,19 +344,19 @@ export function TrackPreview3DHintOverlays({
       !readOnly &&
       !selectedPolyline ? (
         <CanvasHintPill icon={<RotateCcw className="size-3" />}>
-          Drag ring to rotate
+          {t("dragRing")}
         </CanvasHintPill>
       ) : null}
 
       {!flyMode && !isMobile && !selectedPolyline && !hasSelectedRotatable ? (
         <CanvasHintPill icon={<Move3D className="size-3" />}>
-          Orbit to inspect · scroll to zoom · middle-drag to pan
+          {t("orbitHint")}
         </CanvasHintPill>
       ) : null}
 
       {!hasPath && !readOnly && !isMobile ? (
         <CanvasHintPill icon={<Route className="size-3" />} position="bottom-4">
-          Draw the route in 2D to enable fly-through
+          {t("drawRoute")}
         </CanvasHintPill>
       ) : null}
     </>

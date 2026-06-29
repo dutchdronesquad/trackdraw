@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "View Track",
-  description: "View this FPV race track designed with TrackDraw.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("share.metadata");
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 export default function ShareLayout({
   children,

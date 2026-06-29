@@ -24,18 +24,18 @@ import {
 import { useUserPresets } from "@/store/user-presets";
 import { useAccountPresetSync } from "@/store/useAccountPresetSync";
 import { authClient } from "@/lib/auth-client";
-import { shapeKindLabels } from "@/lib/track/items/registry";
+import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import { cn } from "@/lib/utils";
 
 type NavSection = "my-presets" | "store";
 
-function preparePresets(presets: LayoutPreset[]) {
+function preparePresets(presets: LayoutPreset[], t: Translate) {
   return presets.map((preset) => {
     const counts = getLayoutPresetKindCounts(preset);
     return {
       preset,
       countSummary: Array.from(counts.entries())
-        .map(([kind, count]) => `${count} ${shapeKindLabels[kind]}`)
+        .map(([kind, count]) => `${count} ${getShapeKindLabel(kind, t)}`)
         .join(" · "),
       itemCount: getLayoutPresetShapeCount(preset),
     };
@@ -326,10 +326,11 @@ function MyPresetsContent({
   onSelectPreset: (presetId: string) => void;
 }) {
   const t = useTranslations("editor.layoutPresetPicker");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const { data: authSession } = authClient.useSession();
   const isSignedIn = Boolean(authSession?.user?.id);
   const userPresets = useUserPresets((state) => state.userPresets);
-  const preparedUserPresets = preparePresets(userPresets);
+  const preparedUserPresets = preparePresets(userPresets, tShapes);
 
   if (!isSignedIn) {
     return (

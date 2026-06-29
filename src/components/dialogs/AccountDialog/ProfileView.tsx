@@ -43,6 +43,7 @@ export function AccountProfileView({
   onSave,
 }: ProfileViewProps) {
   const t = useTranslations("dialogs");
+  const tCommon = useTranslations("common");
 
   if (isPending) {
     return <AccountDialogLoading />;
@@ -99,7 +100,7 @@ export function AccountProfileView({
           >
             {saving
               ? t("account.profile.saving")
-              : t("account.profile.saveChanges")}
+              : tCommon("actions.saveChanges")}
           </Button>
           <Button
             type="button"
@@ -115,7 +116,7 @@ export function AccountProfileView({
                 "text-muted-foreground hover:text-foreground w-full border-0 bg-transparent shadow-none"
             )}
           >
-            {t("account.profile.reset")}
+            {tCommon("actions.reset")}
           </Button>
         </div>
       </div>
@@ -124,9 +125,7 @@ export function AccountProfileView({
 
       <div className="border-border/60 flex items-center justify-between gap-4 border-t pt-5">
         <div>
-          <p className="text-sm font-medium">
-            {t("account.profile.languageLabel")}
-          </p>
+          <p className="text-sm font-medium">{tCommon("labels.language")}</p>
           <p className="text-muted-foreground mt-0.5 text-xs">
             {t("account.profile.languageDescription")}
           </p>

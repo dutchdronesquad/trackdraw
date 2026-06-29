@@ -113,14 +113,14 @@ function getStateVariant(state: GalleryState): "default" | "muted" | "outline" {
   return "outline";
 }
 
-function getStateLabel(state: GalleryState, t: Translate) {
+function getStateLabel(state: GalleryState, t: Translate, tCommon: Translate) {
   switch (state) {
     case "listed":
-      return t("stateValues.listed");
+      return tCommon("status.listed");
     case "featured":
-      return t("stateValues.featured");
+      return tCommon("status.featured");
     case "hidden":
-      return t("stateValues.hidden");
+      return tCommon("status.hidden");
     default:
       return t("stateValues.unlistedBadge");
   }
@@ -363,6 +363,7 @@ export default function DashboardGalleryManager({
   initialEntries,
 }: DashboardGalleryManagerProps) {
   const t = useTranslations("dashboard.gallery");
+  const tCommon = useTranslations("common");
   const [entries, setEntries] = useState(initialEntries);
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -547,7 +548,7 @@ export default function DashboardGalleryManager({
     {
       id: "owner",
       accessorFn: (row) => getOwnerLabel(row),
-      header: t("table.owner"),
+      header: tCommon("labels.owner"),
       meta: { className: "w-[22%] min-w-48" },
       cell: ({ row }) => (
         <div className="min-w-0">
@@ -564,7 +565,11 @@ export default function DashboardGalleryManager({
       meta: { className: "w-28" },
       cell: ({ row }) => (
         <Badge variant={getStateVariant(row.original.galleryState)}>
-          {getStateLabel(row.original.galleryState, t as unknown as Translate)}
+          {getStateLabel(
+            row.original.galleryState,
+            t as unknown as Translate,
+            tCommon as unknown as Translate
+          )}
         </Badge>
       ),
     },
@@ -870,7 +875,8 @@ export default function DashboardGalleryManager({
                     >
                       {getStateLabel(
                         inspectCandidate.galleryState,
-                        t as unknown as Translate
+                        t as unknown as Translate,
+                        tCommon as unknown as Translate
                       )}
                     </Badge>
                     <Badge

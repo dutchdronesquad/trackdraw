@@ -9,10 +9,11 @@ import {
 import {
   createShapeForTool,
   getShapeDisplayLabel,
-  toolLabels,
+  getToolLabel,
   toolShortcuts,
 } from "@/lib/editor/tool-registry";
-import { shapeKindLabels } from "@/lib/track/items/registry";
+import { getShapeKindLabel } from "@/lib/track/items/registry";
+import { shapesTranslate } from "../../helpers/shapes-translate";
 import {
   createTrackElementCatalogIdentity,
   createCatalogShapeDraft,
@@ -38,9 +39,11 @@ import { feetToMeters } from "@/lib/track/units";
 
 describe("editor tool helpers", () => {
   it("exposes stable labels and shortcuts", () => {
-    expect(shapeKindLabels.startfinish).toBe("Start / Finish");
-    expect(toolLabels.polyline).toBe("Path");
-    expect(toolLabels.tower).toBe("Tower");
+    expect(getShapeKindLabel("startfinish", shapesTranslate)).toBe(
+      "Start / Finish"
+    );
+    expect(getToolLabel("polyline", shapesTranslate)).toBe("Path");
+    expect(getToolLabel("tower", shapesTranslate)).toBe("Tower");
     expect(toolShortcuts.tower).toBe("T");
     expect(toolShortcuts.divegate).toBe("D");
     expect(toolShortcuts.preset).toBeUndefined();
@@ -203,9 +206,9 @@ describe("editor tool helpers", () => {
     );
 
     expect(shape?.kind).toBe("gate");
-    expect(getShapeDisplayLabel({ ...shape!, id: "gate-1" })).toBe(
-      "MultiGP Standard Gate 5x5"
-    );
+    expect(
+      getShapeDisplayLabel({ ...shape!, id: "gate-1" }, shapesTranslate)
+    ).toBe("MultiGP Standard Gate 5x5");
   });
 
   it("falls back to kind labels when catalog metadata does not match the shape", () => {
@@ -220,7 +223,7 @@ describe("editor tool helpers", () => {
       },
     } as GateShape;
 
-    expect(getShapeDisplayLabel(gate)).toBe("Gate");
+    expect(getShapeDisplayLabel(gate, shapesTranslate)).toBe("Gate");
   });
 });
 

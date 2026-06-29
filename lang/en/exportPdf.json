@@ -1,0 +1,66 @@
+{
+  "renderFailed": "PDF render failed",
+  "untitledTrack": "Untitled Track",
+  "footer": {
+    "brand": "TrackDraw · {pageLabel}",
+    "pageOf": "Page {pageNumber} of {totalPages}",
+    "pageOverview": "Overview",
+    "pageTrackMap": "Track map",
+    "pageBuildSheet": "Build sheet"
+  },
+  "sharedView": {
+    "title": "SHARED VIEW",
+    "scanToOpen": "Scan to open the track",
+    "scanDescription": "Opens the canonical TrackDraw share link for mobile review and briefing.",
+    "noShare": "No published share linked",
+    "noShareDescription": "Publish this project first if you want the Race Pack to include a scan code."
+  },
+  "cover": {
+    "title": "Race Pack",
+    "numberingIncluded": "numbering included",
+    "numberingHidden": "numbering hidden",
+    "statusLabel": "Status",
+    "statusBuildable": "Buildable",
+    "statusShort": "Short",
+    "missingLabel": "Missing",
+    "obstaclesLabel": "Obstacles",
+    "intro": "This Race Pack is meant to travel with the build crew on race day. Use the map as the placement reference, the material list as the stock check, and the setup sequence as the practical order to get the course on the field. The setup timing is based on a typical 2-3 person crew and a club-style workflow: unload, stage, pre-assemble, then place and secure.",
+    "contentsTitle": "Contents",
+    "contentsItem1": "1. Track map and field overview",
+    "contentsItem2": "2. Material list, stock check, and timing points",
+    "contentsItem3": "3. Setup sequence and race-day notes",
+    "summaryTitle": "Summary",
+    "summaryShortage": "{count, plural, one {This layout currently exceeds available stock in 1 obstacle type.} other {This layout currently exceeds available stock in {count} obstacle types.}} Resolve shortages before using this pack as the final build reference.",
+    "summaryBuildable": "This layout is currently buildable with the saved inventory profile. Use the following pages as the race-day setup and handoff reference."
+  },
+  "mapPage": {
+    "title": "Track map",
+    "stockShort": "Stock short by {count}",
+    "stockBuildable": "Stock check: buildable",
+    "numberingShown": "numbering shown",
+    "numberingHidden": "numbering hidden"
+  },
+  "buildSheet": {
+    "title": "Build sheet",
+    "materialListTitle": "Material list",
+    "obstacleColumn": "Obstacle",
+    "requiredColumn": "Required",
+    "availableColumn": "Available",
+    "missingColumn": "Missing",
+    "timingPointsTitle": "Timing points",
+    "noTimingPoints": "No timing points are assigned yet. Mark a gate as start/finish or split in the inspector before race-day handoff.",
+    "setupSequenceTitle": "Setup sequence",
+    "setupIntro": "Estimated setup effort: about {min}-{max} minutes. Overall complexity: {complexity}. {summary}",
+    "crewStepLabel": "Crew step",
+    "groupedTaskLabel": "Grouped track task",
+    "obstacleNumberSuffix": "{kind} · Obstacle #{number}",
+    "minutesSuffix": "{minutes} min",
+    "noSetupSequenceNumbering": "No setup sequence is available yet. Add a route and place some obstacles to generate a more useful pack.",
+    "noSetupSequenceHidden": "Numbering is hidden in this export. Enable obstacle numbers if you want the setup sequence to follow route references.",
+    "notesTitle": "Race-day notes",
+    "note1": "Use the map page as the placement reference during setup and pilot briefing.",
+    "note2": "Treat the stock check as the source of truth before committing the layout for build.",
+    "note3": "Anchor the course first, then secure higher-effort structures such as dive gates and ladders before the standard gate pass.",
+    "note4": "If the route or obstacle count changes, regenerate the Race Pack so the map, stock list, and setup sequence stay aligned."
+  }
+}

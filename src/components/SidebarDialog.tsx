@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslations } from "next-intl";
 
 export interface SidebarDialogNavItem {
   id: string;
@@ -129,11 +130,12 @@ export function SidebarDialog({
   height = "h-[34rem]",
 }: SidebarDialogProps) {
   const isMobile = useIsMobile();
+  const t = useTranslations("common");
 
   if (isMobile) {
     const mobileNav = (
       <div className="border-border/30 px-4 pt-2.5 pb-0">
-        <div className="flex min-w-full [scrollbar-width:none] items-center gap-1 overflow-x-auto [-webkit-overflow-scrolling:touch]">
+        <div className="flex min-w-full [scrollbar-width:none] items-center gap-1 overflow-x-auto [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:hidden">
           {navItems.map((item) => (
             <NavButton
               key={item.id}
@@ -249,7 +251,7 @@ export function SidebarDialog({
               type="button"
               onClick={() => onOpenChange(false)}
               className="text-muted-foreground/60 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-              aria-label="Close"
+              aria-label={t("actions.close")}
             >
               <X className="size-4" />
             </button>

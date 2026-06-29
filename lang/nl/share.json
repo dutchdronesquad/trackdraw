@@ -32,6 +32,10 @@
     "openView": "{view} openen",
     "makeEditableCopy": "Bewerkbare kopie maken"
   },
+  "metadata": {
+    "title": "Track bekijken",
+    "description": "Bekijk deze FPV-racetrack die met TrackDraw is ontworpen."
+  },
   "embedUnavailable": {
     "temporaryTitle": "Embed niet beschikbaar",
     "temporaryDescription": "Embeds zijn beschikbaar voor gepubliceerde account-shares. Open de deellink of log in om een blijvende embed te publiceren.",

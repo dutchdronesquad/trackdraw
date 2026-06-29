@@ -136,12 +136,13 @@ export default async function DashboardMetricsPage() {
   ]);
 
   const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
   const tMetrics = await getTranslations("dashboard.metrics");
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.metrics")}
       />
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">

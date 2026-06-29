@@ -17,6 +17,7 @@ import {
   Unlock,
   Ungroup,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 import { useSavePresetTrigger } from "@/store/save-preset-trigger";
 import {
@@ -82,6 +83,8 @@ export function CanvasContextMenuContent({
   onDelete,
   onDeleteWaypoint,
 }: CanvasContextMenuContentProps) {
+  const t = useTranslations("editor.contextMenu");
+  const tActions = useTranslations("inspector.actions");
   const { data: authSession } = authClient.useSession();
   const canSavePresets =
     Boolean(authSession?.user?.id) && contextMenu.ids.length > 1;
@@ -89,9 +92,9 @@ export function CanvasContextMenuContent({
 
   const pathSelectionDetail =
     contextMenu.addWaypointSegmentIndex !== null
-      ? "Segment selected"
+      ? t("segmentSelected")
       : contextMenu.deleteWaypointIndex !== null
-        ? "Waypoint selected"
+        ? t("waypointSelected")
         : null;
   const hasPathActions =
     Boolean(contextMenu.editablePolylineId) ||
@@ -115,8 +118,8 @@ export function CanvasContextMenuContent({
               : contextMenu.groupLabel
                 ? contextMenu.groupLabel
                 : contextMenu.ids.length === 1
-                  ? "Quick actions"
-                  : `${contextMenu.ids.length} selected`}
+                  ? t("quickActions")
+                  : t("selectedCount", { count: contextMenu.ids.length })}
           </div>
         </ContextMenuLabel>
       </ContextMenuGroup>
@@ -135,7 +138,7 @@ export function CanvasContextMenuContent({
                 }}
               >
                 <Plus className="size-3.5" />
-                Add waypoint
+                {t("addWaypoint")}
               </ContextMenuItem>
             )}
           {contextMenu.editablePolylineId &&
@@ -151,7 +154,7 @@ export function CanvasContextMenuContent({
                 }}
               >
                 <Trash2 className="size-3.5" />
-                Delete waypoint
+                {t("deleteWaypoint")}
               </ContextMenuItem>
             )}
           {hasWaypointActions && hasPathActions && <ContextMenuSeparator />}
@@ -164,7 +167,7 @@ export function CanvasContextMenuContent({
               }}
             >
               <PencilLine className="size-3.5" />
-              Continue editing
+              {tActions("continueEditing")}
             </ContextMenuItem>
           )}
           {contextMenu.closablePolylineId && (
@@ -176,7 +179,7 @@ export function CanvasContextMenuContent({
               }}
             >
               <Link2 className="size-3.5" />
-              Connect ends
+              {tActions("connectEnds")}
             </ContextMenuItem>
           )}
         </ContextMenuGroup>
@@ -192,7 +195,7 @@ export function CanvasContextMenuContent({
           }}
         >
           <Copy className="size-3.5" />
-          Duplicate
+          {tActions("duplicate")}
           <ContextMenuShortcut>Ctrl/Cmd+D</ContextMenuShortcut>
         </ContextMenuItem>
         {canSavePresets && (
@@ -204,7 +207,7 @@ export function CanvasContextMenuContent({
             }}
           >
             <Bookmark className="size-3.5" />
-            Save as preset
+            {tActions("savePreset")}
           </ContextMenuItem>
         )}
         {contextMenu.canGroup && !contextMenu.hasGroupedShapes && (
@@ -216,7 +219,7 @@ export function CanvasContextMenuContent({
             }}
           >
             <Group className="size-3.5" />
-            Group selection
+            {tActions("groupSelection")}
           </ContextMenuItem>
         )}
         {!contextMenu.canGroup && contextMenu.hasGroupedShapes && (
@@ -228,7 +231,7 @@ export function CanvasContextMenuContent({
             }}
           >
             <Ungroup className="size-3.5" />
-            Ungroup selection
+            {tActions("ungroupSelection")}
           </ContextMenuItem>
         )}
         {contextMenu.joinablePolylineIds.length >= 2 && (
@@ -240,7 +243,7 @@ export function CanvasContextMenuContent({
             }}
           >
             <GitMerge className="size-3.5" />
-            Join paths
+            {tActions("joinPaths")}
           </ContextMenuItem>
         )}
         <ContextMenuItem
@@ -255,7 +258,7 @@ export function CanvasContextMenuContent({
           ) : (
             <Lock className="size-3.5" />
           )}
-          {contextMenu.locked ? "Unlock" : "Lock"}
+          {contextMenu.locked ? tActions("unlock") : tActions("lock")}
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger
@@ -263,7 +266,7 @@ export function CanvasContextMenuContent({
             disabled={contextMenu.ids.length !== 1}
           >
             <ArrowUp className="size-3.5" />
-            Arrange
+            {t("arrange")}
           </ContextMenuSubTrigger>
           <ContextMenuSubContent>
             <ContextMenuItem
@@ -274,7 +277,7 @@ export function CanvasContextMenuContent({
               }}
             >
               <ArrowUp className="size-3.5" />
-              Bring forward
+              {t("bringForward")}
             </ContextMenuItem>
             <ContextMenuItem
               className="gap-2"
@@ -284,7 +287,7 @@ export function CanvasContextMenuContent({
               }}
             >
               <ArrowDown className="size-3.5" />
-              Send backward
+              {t("sendBackward")}
             </ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub>
@@ -292,7 +295,7 @@ export function CanvasContextMenuContent({
           <ContextMenuSub>
             <ContextMenuSubTrigger className="gap-2">
               <RotateCw className="size-3.5" />
-              Rotate
+              {t("rotate")}
             </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem
@@ -303,7 +306,7 @@ export function CanvasContextMenuContent({
                 }}
               >
                 <RotateCcw className="size-3.5" />
-                Rotate left
+                {t("rotateLeft")}
                 <ContextMenuShortcut>Q / [</ContextMenuShortcut>
               </ContextMenuItem>
               <ContextMenuItem
@@ -314,7 +317,7 @@ export function CanvasContextMenuContent({
                 }}
               >
                 <RotateCw className="size-3.5" />
-                Rotate right
+                {t("rotateRight")}
                 <ContextMenuShortcut>E / ]</ContextMenuShortcut>
               </ContextMenuItem>
             </ContextMenuSubContent>
@@ -331,7 +334,7 @@ export function CanvasContextMenuContent({
         }}
       >
         <Trash2 className="size-3.5" />
-        Delete
+        {tActions("delete")}
         <ContextMenuShortcut>Del</ContextMenuShortcut>
       </ContextMenuItem>
     </ContextMenuContent>

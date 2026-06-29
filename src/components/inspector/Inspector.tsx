@@ -34,6 +34,7 @@ function Inspector({
   mobileInline = false,
 }: InspectorProps) {
   const t = useTranslations("inspector");
+  const tCommon = useTranslations("common");
   usePerfMetric("render:Inspector");
   const design = useEditor((state) => state.track.design);
   const selection = useEditor((state) => state.session.selection);
@@ -179,11 +180,11 @@ function Inspector({
         <div className="border-border/60 flex items-center justify-between gap-3 border-b">
           <div
             role="tablist"
-            aria-label="Inspector panels"
+            aria-label={t("tabs.ariaLabel")}
             className="flex min-w-0 items-center gap-5"
           >
             {[
-              { id: "project" as const, label: t("tabs.project") },
+              { id: "project" as const, label: tCommon("labels.project") },
               { id: "layout" as const, label: t("tabs.layout") },
               { id: "selection" as const, label: t("tabs.selection") },
             ].map((item) => (

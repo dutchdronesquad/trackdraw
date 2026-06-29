@@ -30,7 +30,7 @@ import { ToolsControls } from "@/components/editor/mobile/ToolsControls";
 import { ViewControls } from "@/components/editor/mobile/ViewControls";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
-import type { EditorTool } from "@/lib/editor/tool-registry";
+import type { EditorTool, Translate } from "@/lib/editor/tool-registry";
 import { getEditorMobilePanelsViewModel } from "@/lib/editor/mobile/view-model";
 import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
 import { formatMeasurement } from "@/lib/track/units";
@@ -406,6 +406,7 @@ export function EditorMobilePanels({
 }: EditorMobilePanelsProps) {
   const t = useTranslations("editor.mobilePanels.editorPanels");
   const tStatusBar = useTranslations("editor.statusBar");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const { unitSystem } = useMeasurementUnitSystem();
   const mobileOverlaySurfaceClassName =
     "pointer-events-auto w-full max-w-sm rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-2 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur";
@@ -463,6 +464,7 @@ export function EditorMobilePanels({
     pathBuilderPinnedOpen,
     readOnly,
     selectedCount,
+    t: tShapes,
     tab,
   });
   const inspectorHint =

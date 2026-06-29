@@ -10,6 +10,7 @@ import {
 } from "@/lib/inspector/single/view-model";
 import { formatMeasurement } from "@/lib/track/units";
 import type { PolylinePoint, PolylineShape } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 interface PolylineWaypointListProps {
   appendPolylinePoint: (id: string, point: PolylinePoint) => void;
@@ -40,13 +41,14 @@ export function PolylineWaypointList({
   shape,
   updatePolylinePoint,
 }: PolylineWaypointListProps) {
+  const t = useTranslations("inspector.polyline");
   const { unitSystem } = useMeasurementUnitSystem();
 
   return (
     <div className="mt-3">
       <ListPanel
-        title="Waypoints"
-        subtitle="Adjust each point and its elevation."
+        title={t("waypointsTitle")}
+        subtitle={t("waypointsSubtitle")}
         meta={
           <span className="text-muted-foreground/65 text-[11px]">
             {shape.points.length}
@@ -61,10 +63,10 @@ export function PolylineWaypointList({
             x, y
           </span>
           <span className="text-muted-foreground/40 text-right text-[9px] font-semibold tracking-wider uppercase">
-            elev
+            {t("elevationColumn")}
           </span>
           <span className="text-muted-foreground/40 text-right text-[9px] font-semibold tracking-wider uppercase">
-            edit
+            {t("editColumn")}
           </span>
         </div>
         <div className="max-h-72 overflow-y-auto">
@@ -103,7 +105,7 @@ export function PolylineWaypointList({
               <div className="flex items-center justify-end gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover/row:opacity-100">
                 {index < shape.points.length - 1 && (
                   <button
-                    title="Insert point after"
+                    title={t("insertPointAfter")}
                     disabled={shape.locked}
                     className="text-muted-foreground/55 hover:bg-muted hover:text-foreground flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
                     onClick={() => {
@@ -121,7 +123,7 @@ export function PolylineWaypointList({
                   </button>
                 )}
                 <button
-                  title="Remove point"
+                  title={t("removePoint")}
                   disabled={shape.locked}
                   className="text-muted-foreground/55 hover:bg-muted hover:text-foreground flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
                   onClick={() => {
@@ -145,7 +147,7 @@ export function PolylineWaypointList({
             );
           }}
         >
-          <Plus className="size-3" /> Add point
+          <Plus className="size-3" /> {t("addPoint")}
         </button>
       </ListPanel>
     </div>

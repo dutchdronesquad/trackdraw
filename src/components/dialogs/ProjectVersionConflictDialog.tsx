@@ -96,8 +96,8 @@ export default function ProjectVersionConflictDialog({
     <DesktopModal
       open={open}
       onOpenChange={() => {}}
-      title="Choose a project version"
-      subtitle="Pick the version you want to keep using on this device."
+      title={t("versionConflict.title")}
+      subtitle={t("versionConflict.subtitle")}
       maxWidth="max-w-md"
     >
       {content}

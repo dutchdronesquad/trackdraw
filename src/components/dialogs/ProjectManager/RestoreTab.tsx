@@ -44,8 +44,10 @@ export function ProjectManagerRestoreTab({
             t("projectManager.restore.noSnapshotsDesc")
           ) : (
             <>
-              Press <Kbd>⌘S</Kbd> / <Kbd>Ctrl S</Kbd> or use the save button in
-              the header.
+              {t.rich("projectManager.restore.noSnapshotsDesktopDesc", {
+                kbdMeta: (chunks) => <Kbd>{chunks}</Kbd>,
+                kbdCtrl: (chunks) => <Kbd>{chunks}</Kbd>,
+              })}
             </>
           )
         }

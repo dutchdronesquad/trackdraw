@@ -100,7 +100,7 @@ describe("ImportDialog", () => {
     expect(toast.error).toHaveBeenCalledWith(
       "Import failed",
       expect.objectContaining({
-        description: "This does not look like a valid TrackDraw project file.",
+        description: "Choose a JSON project file exported from TrackDraw.",
       })
     );
   });

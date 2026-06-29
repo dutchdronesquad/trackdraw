@@ -1,0 +1,48 @@
+{
+  "complexity": {
+    "light": "Licht",
+    "standard": "Standaard",
+    "heavy": "Zwaar"
+  },
+  "kinds": {
+    "trackGroup": "Trackgroep",
+    "crew": "Crew"
+  },
+  "flagsFinalPass": {
+    "label": "Laatste ronde met flags",
+    "note": "Maak het veld af met flag-markeringen en een laatste zichtbaarheidscontrole zodra de genummerde obstakellijn staat."
+  },
+  "conesTrackWalk": {
+    "label": "Cones plaatsen tijdens track walk (optioneel)",
+    "note": "Cones kunnen tijdens de track walk van de piloten worden geplaatst om een aparte ronde te vermijden. Plaats je ze liever eerder, reserveer dan wat extra tijd op locatie."
+  },
+  "crewUnloadStage": {
+    "label": "Uitladen en materiaal klaarzetten",
+    "note": "Laad het voertuig uit, sorteer ankers en hardware, en leg de kit klaar zodat framevoorbereiding de plaatsing op het veld later niet vertraagt."
+  },
+  "crewPreassemble": {
+    "label": "Frames en soft goods voor-monteren",
+    "noteWithSoftGoods": "Bereid PVC gate-frames en beach flags voor voordat je items het veld op brengt, zodat de plaatsingsronde gericht kan blijven op de spacing.",
+    "noteWithoutSoftGoods": "Bereid PVC gate-frames voor voordat je items het veld op brengt, zodat de plaatsingsronde gericht kan blijven op de spacing."
+  },
+  "crewRiggingCheck": {
+    "label": "Rigging- en ankercontrole",
+    "note": "Controleer ankerpunten, bovenliggende lijnen en het vrije-ruimteplan voordat je zwaardere structuren tilt of ophangt."
+  },
+  "obstacleNoteWithNumber": "{note} Gebruik obstakel #{number} op de kaart als plaatsingsreferentie.",
+  "summaryHeavy": "{count, plural, one {1 obstakel met hogere inspanning moet worden geplaatst en vastgezet voor de standaard gate-ronde.} other {{count} obstakels met hogere inspanning moeten worden geplaatst en vastgezet voor de standaard gate-ronde.}} De timing gaat uit van een typische crew van 2-3 personen en kan toenemen bij bovenliggende rigging of lange draagafstanden.",
+  "summaryLight": "Het grootste deel van de opbouwtijd komt van uitladen, frames voor-monteren en daarna de genummerde obstakellijn netjes plaatsen met een crew van 2-3 personen.",
+  "crewAssumption": "De timing gaat uit van een typische crew van 2-3 personen en standaard clubgewijze voorbereiding: uitladen, klaarzetten, voor-monteren, dan plaatsen en vastzetten.",
+  "obstacleNotes": {
+    "gate": "Plaats en haaks deze gate zodra de ankerstructuren staan.",
+    "tower": "Plaats en zet deze vast samen met de andere obstakels met hogere inspanning. Towers hebben stabiele voeten, een nette verticale uitlijning en genoeg ruimte voor gestapelde openingen nodig.",
+    "flag": "Gebruik flags voor laatste zichtbaarheid en randdefinitie nadat de hoofdobstakels staan.",
+    "cone": "Gebruik cones in de laatste opruimronde voor grensmarkering en spacingcontroles.",
+    "label": "Er is nog geen opbouwadvies beschikbaar voor dit item.",
+    "polyline": "Er is nog geen opbouwadvies beschikbaar voor dit item.",
+    "startfinish": "Zet dit eerst zodat de start- en finishreferentie vastligt voordat de rest van het parcours wordt neergelegd.",
+    "ladder": "Behandel dit als een item met hogere inspanning. Reserveer extra tijd als het bovenliggende rigging of een voorzichtig hangpunt nodig heeft.",
+    "divegate": "Plaats en zet dit vroeg vast. Dive Gates hebben meestal meer uitlijning en verankering nodig dan een standaard gate.",
+    "barrier": "Zet barriers op nadat de hoofdgates en obstakels zijn gepositioneerd."
+  }
+}

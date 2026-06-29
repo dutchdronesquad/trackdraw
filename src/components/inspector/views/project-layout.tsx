@@ -6,7 +6,7 @@ import ElevationChart from "@/components/inspector/ElevationChart";
 import { MeasurementUnitToggle } from "@/components/MeasurementUnitToggle";
 import { MapReferenceDialog } from "@/components/map-reference/MapReferenceDialog";
 import { Input } from "@/components/ui/input";
-import { shapeKindLabels } from "@/lib/track/items/registry";
+import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import {
   getInventoryComparison,
   inventoryKinds,
@@ -39,8 +39,10 @@ import {
 import { type DesignMetaPatch, ItemOverviewList } from "./list-panel";
 import { useTranslations } from "next-intl";
 
-function getShapeDisplayName(shape: Shape, index: number) {
-  return shape.name?.trim() || `${shapeKindLabels[shape.kind]} ${index + 1}`;
+function getShapeDisplayName(shape: Shape, index: number, t: Translate) {
+  return (
+    shape.name?.trim() || `${getShapeKindLabel(shape.kind, t)} ${index + 1}`
+  );
 }
 
 function MapReferenceSection({
@@ -59,6 +61,7 @@ function MapReferenceSection({
   setMapReferenceRotation: (rotationDeg: number) => void;
 }) {
   const t = useTranslations("inspector");
+  const tCommon = useTranslations("common");
   const [dialogOpen, setDialogOpen] = useState(false);
   const reference = design.mapReference ?? null;
   const actionBtnClass =
@@ -109,13 +112,19 @@ function MapReferenceSection({
         >
           <button
             type="button"
-            title={reference ? "Edit map reference" : "Add map reference"}
-            aria-label={reference ? "Edit map reference" : "Add map reference"}
+            title={
+              reference ? t("layout.editMapTitle") : t("layout.addMapTitle")
+            }
+            aria-label={
+              reference ? t("layout.editMapTitle") : t("layout.addMapTitle")
+            }
             className={actionBtnPrimaryClass}
             onClick={() => setDialogOpen(true)}
           >
             <MapPinned className="size-4 lg:size-3" />
-            <span>{reference ? "Edit" : "Add map"}</span>
+            <span>
+              {reference ? t("layout.editLabel") : t("layout.addMapLabel")}
+            </span>
           </button>
           {reference ? (
             <>
@@ -123,13 +132,13 @@ function MapReferenceSection({
                 type="button"
                 title={
                   reference.visible === false
-                    ? "Show map reference"
-                    : "Hide map reference"
+                    ? t("layout.showMapTitle")
+                    : t("layout.hideMapTitle")
                 }
                 aria-label={
                   reference.visible === false
-                    ? "Show map reference"
-                    : "Hide map reference"
+                    ? t("layout.showMapTitle")
+                    : t("layout.hideMapTitle")
                 }
                 className={actionBtnClass}
                 onClick={() =>
@@ -141,7 +150,11 @@ function MapReferenceSection({
                 ) : (
                   <EyeOff className="size-4 lg:size-3" />
                 )}
-                <span>{reference.visible === false ? "Show" : "Hide"}</span>
+                <span>
+                  {reference.visible === false
+                    ? t("layout.showLabel")
+                    : tCommon("actions.hide")}
+                </span>
               </button>
               <button
                 type="button"
@@ -151,7 +164,7 @@ function MapReferenceSection({
                 onClick={clearMapReference}
               >
                 <Trash2 className="size-4 lg:size-3" />
-                <span>{t("layout.removeMapLabel")}</span>
+                <span>{tCommon("actions.remove")}</span>
               </button>
             </>
           ) : null}
@@ -178,6 +191,8 @@ function RouteNumberingOverview({
   shapes: Shape[];
 }) {
   const t = useTranslations("inspector");
+  const tCommon = useTranslations("common");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const report = useMemo(() => getObstacleNumberingReport(design), [design]);
   const shapeOrder = useMemo(
     () => new Map(shapes.map((shape, index) => [shape.id, index] as const)),
@@ -186,7 +201,7 @@ function RouteNumberingOverview({
   const issueNames = report.issues.slice(0, 3).map((issue) => {
     const shape = shapes[shapeOrder.get(issue.shapeId) ?? -1];
     return shape
-      ? getShapeDisplayName(shape, shapeOrder.get(shape.id) ?? 0)
+      ? getShapeDisplayName(shape, shapeOrder.get(shape.id) ?? 0, tShapes)
       : issue.shapeId;
   });
   const extraIssueCount = Math.max(0, report.unmappedObstacleCount - 3);
@@ -196,28 +211,37 @@ function RouteNumberingOverview({
     report.status === "no-numbered-obstacles";
   const statusLabel =
     report.status === "ready"
-      ? "Ready"
+      ? t("routeNumbering.statusReady")
       : report.status === "partial"
-        ? "Needs review"
+        ? t("routeNumbering.statusPartial")
         : report.status === "no-route-matches"
-          ? "No matches"
+          ? t("routeNumbering.statusNoRouteMatches")
           : report.status === "missing-route"
-            ? "Missing route"
+            ? t("routeNumbering.statusMissingRoute")
             : report.status === "no-numbered-obstacles"
-              ? "No route obstacles"
-              : "Empty";
+              ? t("routeNumbering.statusNoNumberedObstacles")
+              : t("routeNumbering.statusEmpty");
   const message =
     report.status === "ready"
-      ? `${report.mappedObstacleCount} route obstacle${report.mappedObstacleCount === 1 ? "" : "s"} numbered.`
+      ? t("routeNumbering.messageReady", {
+          count: report.mappedObstacleCount,
+        })
       : report.status === "partial"
-        ? `${report.mappedObstacleCount} of ${report.totalNumberedObstacleCount} route obstacles are numbered.`
+        ? t("routeNumbering.messagePartial", {
+            mapped: report.mappedObstacleCount,
+            total: report.totalNumberedObstacleCount,
+          })
         : report.status === "no-route-matches"
-          ? `${report.totalNumberedObstacleCount} route obstacle${report.totalNumberedObstacleCount === 1 ? "" : "s"} found, but none sit close enough to the race line.`
+          ? t("routeNumbering.messageNoRouteMatches", {
+              count: report.totalNumberedObstacleCount,
+            })
           : report.status === "missing-route"
-            ? `${report.totalNumberedObstacleCount} route obstacle${report.totalNumberedObstacleCount === 1 ? "" : "s"} need a race line before numbering can be derived.`
+            ? t("routeNumbering.messageMissingRoute", {
+                count: report.totalNumberedObstacleCount,
+              })
             : report.status === "no-numbered-obstacles"
-              ? "Gates, ladders, and dive gates will appear in route numbering."
-              : "Add route obstacles and a race line to derive numbering.";
+              ? t("routeNumbering.messageNoNumberedObstacles")
+              : t("routeNumbering.messageEmpty");
 
   return (
     <Section title={t("layout.routeNumberingTitle")}>
@@ -225,7 +249,7 @@ function RouteNumberingOverview({
         <div className="grid grid-cols-3 gap-2">
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              Status
+              {tCommon("labels.status")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {statusLabel}
@@ -233,7 +257,7 @@ function RouteNumberingOverview({
           </div>
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              Numbered
+              {t("routeNumbering.numberedLabel")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {report.mappedObstacleCount}/{report.totalNumberedObstacleCount}
@@ -241,7 +265,7 @@ function RouteNumberingOverview({
           </div>
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              Issues
+              {t("routeNumbering.issuesLabel")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {report.issueCount}
@@ -258,8 +282,12 @@ function RouteNumberingOverview({
           <p className="text-[11px] leading-relaxed">{message}</p>
           {issueNames.length > 0 ? (
             <p className="mt-1 text-[10px] leading-relaxed opacity-80">
-              Off route: {issueNames.join(", ")}
-              {extraIssueCount > 0 ? ` +${extraIssueCount} more` : ""}
+              {t("routeNumbering.offRoutePrefix", {
+                names: issueNames.join(", "),
+              })}
+              {extraIssueCount > 0
+                ? t("routeNumbering.moreSuffix", { count: extraIssueCount })
+                : ""}
             </p>
           ) : null}
         </div>
@@ -302,12 +330,14 @@ export function ProjectLayoutInspectorView({
   mobileInline = false,
 }: ProjectLayoutInspectorViewProps) {
   const t = useTranslations("inspector");
+  const tCommon = useTranslations("common");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const { startBatch, finishBatch } = useInspectorInputBatch();
   const { unitSystem } = useMeasurementUnitSystem();
   const fieldUnitLabel = unitSystem === "imperial" ? "ft" : "m";
   const isDesktop = useIsDesktopInspector();
   const inventory = normalizeInventoryProfile(design.inventory);
-  const inventoryComparison = getInventoryComparison(design);
+  const inventoryComparison = getInventoryComparison(design, tShapes);
   const totalMissing = inventoryComparison.reduce(
     (sum, item) => sum + item.missing,
     0
@@ -338,15 +368,17 @@ export function ProjectLayoutInspectorView({
         <div className="grid grid-cols-3 gap-2">
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              Status
+              {tCommon("labels.status")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
-              {totalMissing === 0 ? "Buildable" : "Short"}
+              {totalMissing === 0
+                ? t("layout.statusBuildable")
+                : t("layout.statusShort")}
             </p>
           </div>
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              Missing
+              {t("layout.missingLabel")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {totalMissing}
@@ -354,7 +386,7 @@ export function ProjectLayoutInspectorView({
           </div>
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              Types
+              {t("layout.typesLabel")}
             </p>
             <p className="text-foreground text-[12px] font-semibold">
               {kindsMissing}
@@ -362,8 +394,7 @@ export function ProjectLayoutInspectorView({
           </div>
         </div>
         <p className="text-muted-foreground/70 text-[11px] leading-relaxed">
-          TrackDraw compares the current layout against the obstacle stock saved
-          in this project.
+          {t("layout.inventoryDescription")}
         </p>
         <div className="space-y-1">
           {inventoryKinds.map((kind) => {
@@ -372,7 +403,7 @@ export function ProjectLayoutInspectorView({
             );
             const missing = comparison?.missing ?? 0;
             return (
-              <Row key={kind} label={shapeKindLabels[kind]}>
+              <Row key={kind} label={getShapeKindLabel(kind, tShapes)}>
                 <div className="flex min-w-0 items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <Num
@@ -383,7 +414,9 @@ export function ProjectLayoutInspectorView({
                     />
                   </div>
                   <span className="text-muted-foreground/65 shrink-0 text-[10px] font-medium tracking-[0.08em] uppercase">
-                    need {comparison?.required ?? 0}
+                    {t("layout.needCountSuffix", {
+                      count: comparison?.required ?? 0,
+                    })}
                   </span>
                   <span
                     className={
@@ -392,7 +425,7 @@ export function ProjectLayoutInspectorView({
                         : "shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/8 px-2 py-1 font-mono text-[10px] font-medium text-emerald-500"
                     }
                   >
-                    {missing > 0 ? `-${missing}` : "ok"}
+                    {missing > 0 ? `-${missing}` : t("layout.stockOk")}
                   </span>
                 </div>
               </Row>
@@ -406,10 +439,10 @@ export function ProjectLayoutInspectorView({
   const projectContent = (
     <>
       <InspectorLead
-        title={design.title.trim() || "Untitled Track"}
+        title={design.title.trim() || t("layout.titlePlaceholder")}
         subtitle={t("layout.projectSubtitle")}
         meta={[
-          `${shapes.length} items`,
+          t("layout.itemsCountMeta", { count: shapes.length }),
           formatFieldSize(design.field.width, design.field.height, unitSystem),
           `grid ${formatMeasurement(design.field.gridStep, unitSystem, {
             precision: 1,
@@ -418,7 +451,7 @@ export function ProjectLayoutInspectorView({
       />
       <div>
         <p className="text-muted-foreground/70 mb-1.5 text-[11px] font-medium tracking-[0.08em] uppercase">
-          Title
+          {tCommon("labels.title")}
         </p>
         <Input
           value={design.title}
@@ -438,7 +471,7 @@ export function ProjectLayoutInspectorView({
         <Row label={t("layout.unitsLabel")}>
           <MeasurementUnitToggle />
         </Row>
-        <Row label={`Width (${fieldUnitLabel})`}>
+        <Row label={t("dimensions.widthLabel", { unit: fieldUnitLabel })}>
           <MeasurementNum
             valueMeters={design.field.width}
             unitSystem={unitSystem}
@@ -446,7 +479,7 @@ export function ProjectLayoutInspectorView({
             minMeters={5}
           />
         </Row>
-        <Row label={`Height (${fieldUnitLabel})`}>
+        <Row label={t("dimensions.heightLabel", { unit: fieldUnitLabel })}>
           <MeasurementNum
             valueMeters={design.field.height}
             unitSystem={unitSystem}
@@ -454,7 +487,7 @@ export function ProjectLayoutInspectorView({
             minMeters={5}
           />
         </Row>
-        <Row label={`Grid (${fieldUnitLabel})`}>
+        <Row label={t("dimensions.gridLabel", { unit: fieldUnitLabel })}>
           <MeasurementNum
             valueMeters={design.field.gridStep}
             unitSystem={unitSystem}
@@ -477,7 +510,7 @@ export function ProjectLayoutInspectorView({
             </div>
             <span
               className="text-muted-foreground/65 shrink-0 text-[10px] font-medium tracking-[0.08em] uppercase"
-              aria-label="pixels per meter, internal canvas scale"
+              aria-label={t("layout.pxPerMeterAriaLabel")}
             >
               px/m
             </span>
@@ -494,19 +527,21 @@ export function ProjectLayoutInspectorView({
         title={t("layout.layoutTitle")}
         subtitle={t("layout.layoutSubtitle")}
         meta={[
-          `${shapes.length} items`,
+          t("layout.itemsCountMeta", { count: shapes.length }),
           totalMissing === 0
-            ? "buildable"
-            : `short ${totalMissing} item${totalMissing === 1 ? "" : "s"}`,
+            ? t("layout.buildableMeta")
+            : t("layout.shortItemsMeta", { count: totalMissing }),
           kindsMissing > 0
-            ? `${kindsMissing} type${kindsMissing === 1 ? "" : "s"} short`
-            : "stock covered",
+            ? t("layout.typesShortMeta", { count: kindsMissing })
+            : t("layout.stockCoveredMeta"),
           obstacleNumberingReport.status === "ready"
-            ? `${obstacleNumberingReport.mappedObstacleCount} numbered`
+            ? t("layout.numberedMeta", {
+                count: obstacleNumberingReport.mappedObstacleCount,
+              })
             : obstacleNumberingReport.status === "no-numbered-obstacles" ||
                 obstacleNumberingReport.status === "empty"
-              ? "numbering idle"
-              : "numbering needs review",
+              ? t("layout.numberingIdleMeta")
+              : t("layout.numberingNeedsReviewMeta"),
         ]}
       />
       <div className="space-y-4">

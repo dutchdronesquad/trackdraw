@@ -18,9 +18,7 @@
     "logOut": "Log out",
     "signingOut": "Signing out…"
   },
-  "siteHeader": {
-    "dashboardCrumb": "Dashboard"
-  },
+  "siteHeader": {},
   "layout": {
     "fallbackUserName": "Dashboard user"
   },
@@ -297,9 +295,6 @@
     "searchPlaceholder": "Search title, description or owner...",
     "state": "State",
     "stateValues": {
-      "listed": "Listed",
-      "featured": "Featured",
-      "hidden": "Hidden",
       "unlisted": "Unlisted (regular shares)",
       "unlistedBadge": "Unlisted"
     },

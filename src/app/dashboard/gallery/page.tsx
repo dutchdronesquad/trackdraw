@@ -29,11 +29,12 @@ export default async function DashboardGalleryPage() {
 
   const entries = await listGalleryEntriesForDashboard();
   const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.gallery")}
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
