@@ -125,28 +125,46 @@
     }
   },
   "export": {
-    "dialogTitle": "Export",
-    "dialogSubtitle": "Export the current track as visual assets, project handoff files, or simulator-ready outputs.",
-    "darkTheme": "Dark",
-    "lightTheme": "Light",
-    "enableRouteNumbers": "Enable route numbers in export",
-    "disableRouteNumbers": "Disable route numbers in export",
-    "enableRouteNumbersMobile": "Enable route numbers",
-    "disableRouteNumbersMobile": "Disable route numbers",
-    "filenameLabel": "Filename",
-    "themeLabel": "Theme",
-    "routeNumbersLabel": "Route numbers",
-    "routeNumbersHint": "In 2D exports",
-    "switchTo3dView": "Switch to 3D view",
-    "openRequiredView": "Open required view",
-    "exportFormatAriaLabel": "Export {label}",
-    "view3dUnavailable": "3D view not available — open the 3D tab first",
-    "canvasNotReady": "Canvas not ready",
-    "exported": "Exported",
-    "webmRenderingBackground": "Cinematic FPV is rendering in the background…",
-    "webmRenderingProgress": "Rendering cinematic FPV… {status}",
-    "webmReady": "Cinematic FPV export ready",
-    "webmProgressLabel": "Rendering fly-through… video {duration}",
+    "dialog": {
+      "title": "Export",
+      "subtitle": "Export the current track as visual assets, project handoff files, or simulator-ready outputs."
+    },
+    "fields": {
+      "filename": {
+        "label": "Filename"
+      }
+    },
+    "theme": {
+      "label": "Theme",
+      "dark": "Dark",
+      "light": "Light"
+    },
+    "routeNumbers": {
+      "label": "Route numbers",
+      "hint": "In 2D exports",
+      "enable": "Enable route numbers in export",
+      "disable": "Disable route numbers in export",
+      "enableMobile": "Enable route numbers",
+      "disableMobile": "Disable route numbers"
+    },
+    "actions": {
+      "switchTo3dView": "Switch to 3D view",
+      "openRequiredView": "Open required view"
+    },
+    "aria": {
+      "exportFormat": "Export {label}"
+    },
+    "messages": {
+      "view3dUnavailable": "3D view not available — open the 3D tab first",
+      "canvasNotReady": "Canvas not ready",
+      "exported": "Exported"
+    },
+    "webm": {
+      "renderingBackground": "Cinematic FPV is rendering in the background…",
+      "renderingProgress": "Rendering cinematic FPV… {status}",
+      "ready": "Cinematic FPV export ready",
+      "progressLabel": "Rendering fly-through… video {duration}"
+    },
     "sections": {
       "visualExports": {
         "title": "Visual Exports",

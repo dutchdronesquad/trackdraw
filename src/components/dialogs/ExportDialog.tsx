@@ -337,8 +337,8 @@ export default function ExportDialog({
 
       toast.success(
         warningText
-          ? `${options?.successMessage ?? t("export.exported")}. ${warningText}`
-          : (options?.successMessage ?? t("export.exported")),
+          ? `${options?.successMessage ?? t("export.messages.exported")}. ${warningText}`
+          : (options?.successMessage ?? t("export.messages.exported")),
         options?.toastId !== undefined ? { id: options.toastId } : undefined
       );
       if (!options?.closeOnStart) {
@@ -365,7 +365,7 @@ export default function ExportDialog({
         {/* Filename */}
         <label className="flex min-w-0 flex-1 cursor-text flex-col gap-1.5 px-4 py-3">
           <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-            {t("export.filenameLabel")}
+            {t("export.fields.filename.label")}
           </span>
           <input
             type="text"
@@ -379,7 +379,7 @@ export default function ExportDialog({
         {/* Theme */}
         <div className="flex shrink-0 flex-col gap-1.5 px-4 py-3">
           <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-            {t("export.themeLabel")}
+            {t("export.theme.label")}
           </span>
           <div className="flex items-center gap-3">
             <button
@@ -394,7 +394,7 @@ export default function ExportDialog({
               )}
             >
               <Moon className="size-3.5 shrink-0" />
-              {t("export.darkTheme")}
+              {t("export.theme.dark")}
             </button>
             <button
               type="button"
@@ -413,7 +413,7 @@ export default function ExportDialog({
                   exportTheme === "light" ? "text-amber-500" : ""
                 )}
               />
-              {t("export.lightTheme")}
+              {t("export.theme.light")}
             </button>
           </div>
         </div>
@@ -422,10 +422,10 @@ export default function ExportDialog({
         <div className="flex shrink-0 items-center gap-3 px-4 py-3">
           <div className="flex flex-col gap-1.5">
             <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-              {t("export.routeNumbersLabel")}
+              {t("export.routeNumbers.label")}
             </span>
             <span className="text-muted-foreground/45 text-[10px]">
-              {t("export.routeNumbersHint")}
+              {t("export.routeNumbers.hint")}
             </span>
           </div>
           <button
@@ -438,8 +438,8 @@ export default function ExportDialog({
             aria-pressed={includeObstacleNumbers}
             aria-label={
               includeObstacleNumbers
-                ? t("export.disableRouteNumbers")
-                : t("export.enableRouteNumbers")
+                ? t("export.routeNumbers.disable")
+                : t("export.routeNumbers.enable")
             }
           >
             <span className="bg-background block size-4 rounded-full shadow-xs" />
@@ -503,7 +503,7 @@ export default function ExportDialog({
             lockedAction={
               activeTab !== "3d" && onRequest3DView
                 ? {
-                    label: t("export.switchTo3dView"),
+                    label: t("export.actions.switchTo3dView"),
                     onClick: onRequest3DView,
                   }
                 : undefined
@@ -511,7 +511,8 @@ export default function ExportDialog({
             onExport={() =>
               run("3d", () => {
                 const dataUrl = preview3DRef?.current?.screenshot();
-                if (!dataUrl) throw new Error(t("export.view3dUnavailable"));
+                if (!dataUrl)
+                  throw new Error(t("export.messages.view3dUnavailable"));
                 const a = document.createElement("a");
                 a.href = dataUrl;
                 a.download = `${safeName({
@@ -559,7 +560,8 @@ export default function ExportDialog({
             onExport={() =>
               run("race-day-pdf", async () => {
                 const stage = canvasRef.current?.getStage();
-                if (!stage) throw new Error(t("export.canvasNotReady"));
+                if (!stage)
+                  throw new Error(t("export.messages.canvasNotReady"));
                 const { exportPdf } = await import("@/lib/export/exportPdf");
                 const shareUrl = await getRacePackShareUrl();
                 await exportPdf(
@@ -608,7 +610,7 @@ export default function ExportDialog({
                   webmToastIdRef.current = toastId;
                   setWebmProgress(null);
                   webmStartTimeRef.current = Date.now();
-                  toast.loading(t("export.webmRenderingBackground"), {
+                  toast.loading(t("export.webm.renderingBackground"), {
                     id: toastId,
                   });
                   const { exportFlythrough } =
@@ -621,7 +623,7 @@ export default function ExportDialog({
                       (progress) => {
                         setWebmProgress(progress);
                         toast.loading(
-                          t("export.webmRenderingProgress", {
+                          t("export.webm.renderingProgress", {
                             status: getFlythroughStatusText(
                               progress,
                               webmStartTimeRef.current
@@ -639,7 +641,7 @@ export default function ExportDialog({
                 },
                 {
                   closeOnStart: true,
-                  successMessage: t("export.webmReady"),
+                  successMessage: t("export.webm.ready"),
                   toastId: "webm-flythrough-export",
                 }
               )
@@ -660,7 +662,7 @@ export default function ExportDialog({
           <div className="mt-3 space-y-1.5">
             <div className="text-muted-foreground flex justify-between text-[10px]">
               <span>
-                {t("export.webmProgressLabel", {
+                {t("export.webm.progressLabel", {
                   duration: formatDuration(webmProgress.videoDurationSeconds),
                 })}
               </span>
@@ -698,8 +700,8 @@ export default function ExportDialog({
             color="bg-sky-500/15 text-sky-400"
             description={t("export.formats.image.descriptionShort")}
             isBusy={busy === "png"}
-            lockedLabel={t("export.openRequiredView")}
-            exportAriaLabel={t("export.exportFormatAriaLabel", {
+            lockedLabel={t("export.actions.openRequiredView")}
+            exportAriaLabel={t("export.aria.exportFormat", {
               label: t("export.formats.image.label"),
             })}
             onAction={() =>
@@ -721,8 +723,8 @@ export default function ExportDialog({
             color="bg-purple-500/15 text-purple-400"
             description={t("export.formats.vector.descriptionShort")}
             isBusy={busy === "svg"}
-            lockedLabel={t("export.openRequiredView")}
-            exportAriaLabel={t("export.exportFormatAriaLabel", {
+            lockedLabel={t("export.actions.openRequiredView")}
+            exportAriaLabel={t("export.aria.exportFormat", {
               label: t("export.formats.vector.label"),
             })}
             onAction={() =>
@@ -744,8 +746,8 @@ export default function ExportDialog({
             description={t("export.formats.render3d.descriptionShort")}
             isBusy={busy === "3d"}
             locked={activeTab !== "3d"}
-            lockedLabel={t("export.switchTo3dView")}
-            exportAriaLabel={t("export.exportFormatAriaLabel", {
+            lockedLabel={t("export.actions.switchTo3dView")}
+            exportAriaLabel={t("export.aria.exportFormat", {
               label: t("export.formats.render3d.label"),
             })}
             onAction={
@@ -755,7 +757,7 @@ export default function ExportDialog({
                     run("3d", () => {
                       const dataUrl = preview3DRef?.current?.screenshot();
                       if (!dataUrl)
-                        throw new Error(t("export.view3dUnavailable"));
+                        throw new Error(t("export.messages.view3dUnavailable"));
                       const a = document.createElement("a");
                       a.href = dataUrl;
                       a.download = `${safeName({ view: "3d", theme: currentTheme })}.png`;
@@ -778,8 +780,8 @@ export default function ExportDialog({
             color="bg-emerald-500/15 text-emerald-400"
             description={t("export.formats.projectFile.descriptionShort")}
             isBusy={busy === "json"}
-            lockedLabel={t("export.openRequiredView")}
-            exportAriaLabel={t("export.exportFormatAriaLabel", {
+            lockedLabel={t("export.actions.openRequiredView")}
+            exportAriaLabel={t("export.aria.exportFormat", {
               label: t("export.formats.projectFile.label"),
             })}
             onAction={() =>
@@ -796,14 +798,15 @@ export default function ExportDialog({
             color="bg-red-500/15 text-red-400"
             description={t("export.formats.racePack.descriptionShort")}
             isBusy={busy === "race-day-pdf"}
-            lockedLabel={t("export.openRequiredView")}
-            exportAriaLabel={t("export.exportFormatAriaLabel", {
+            lockedLabel={t("export.actions.openRequiredView")}
+            exportAriaLabel={t("export.aria.exportFormat", {
               label: t("export.formats.racePack.label"),
             })}
             onAction={() =>
               run("race-day-pdf", async () => {
                 const stage = canvasRef.current?.getStage();
-                if (!stage) throw new Error(t("export.canvasNotReady"));
+                if (!stage)
+                  throw new Error(t("export.messages.canvasNotReady"));
                 const { exportPdf } = await import("@/lib/export/exportPdf");
                 const shareUrl = await getRacePackShareUrl();
                 await exportPdf(
@@ -837,8 +840,8 @@ export default function ExportDialog({
             color="bg-violet-500/15 text-violet-400"
             description={t("export.formats.cinematicFpv.descriptionShort")}
             isBusy={busy === "webm"}
-            lockedLabel={t("export.openRequiredView")}
-            exportAriaLabel={t("export.exportFormatAriaLabel", {
+            lockedLabel={t("export.actions.openRequiredView")}
+            exportAriaLabel={t("export.aria.exportFormat", {
               label: t("export.formats.cinematicFpv.label"),
             })}
             onAction={() =>
@@ -850,7 +853,7 @@ export default function ExportDialog({
                   webmToastIdRef.current = toastId;
                   setWebmProgress(null);
                   webmStartTimeRef.current = Date.now();
-                  toast.loading(t("export.webmRenderingBackground"), {
+                  toast.loading(t("export.webm.renderingBackground"), {
                     id: toastId,
                   });
                   const { exportFlythrough } =
@@ -863,7 +866,7 @@ export default function ExportDialog({
                       (progress) => {
                         setWebmProgress(progress);
                         toast.loading(
-                          t("export.webmRenderingProgress", {
+                          t("export.webm.renderingProgress", {
                             status: getFlythroughStatusText(
                               progress,
                               webmStartTimeRef.current
@@ -881,7 +884,7 @@ export default function ExportDialog({
                 },
                 {
                   closeOnStart: true,
-                  successMessage: t("export.webmReady"),
+                  successMessage: t("export.webm.ready"),
                   toastId: "webm-flythrough-export",
                 }
               )
@@ -894,8 +897,8 @@ export default function ExportDialog({
             color="bg-lime-500/15 text-lime-400"
             description={t("export.formats.velocidrone.descriptionShort")}
             isBusy={busy === "trk"}
-            lockedLabel={t("export.openRequiredView")}
-            exportAriaLabel={t("export.exportFormatAriaLabel", {
+            lockedLabel={t("export.actions.openRequiredView")}
+            exportAriaLabel={t("export.aria.exportFormat", {
               label: t("export.formats.velocidrone.label"),
             })}
             onAction={() =>
@@ -912,15 +915,15 @@ export default function ExportDialog({
       <MobileDrawer
         open={open}
         onOpenChange={onOpenChange}
-        title={t("export.dialogTitle")}
-        subtitle={t("export.dialogSubtitle")}
+        title={t("export.dialog.title")}
+        subtitle={t("export.dialog.subtitle")}
         contentClassName="data-[vaul-drawer-direction=bottom]:mt-12 data-[vaul-drawer-direction=bottom]:max-h-[90dvh]"
         pinnedContent={
           <div className="border-border/40 space-y-2.5 border-b px-4 pt-2 pb-3">
             {/* Filename */}
             <label className="border-border/50 bg-muted/25 flex cursor-text items-center gap-2.5 rounded-xl border px-3.5 py-2.5">
               <span className="text-muted-foreground shrink-0 text-[11px] font-medium select-none">
-                {t("export.filenameLabel")}
+                {t("export.fields.filename.label")}
               </span>
               <input
                 type="text"
@@ -945,7 +948,7 @@ export default function ExportDialog({
                   )}
                 >
                   <Moon className="size-3.5 shrink-0" />
-                  {t("export.darkTheme")}
+                  {t("export.theme.dark")}
                 </button>
                 <button
                   type="button"
@@ -964,12 +967,12 @@ export default function ExportDialog({
                       exportTheme === "light" ? "text-amber-500" : ""
                     )}
                   />
-                  {t("export.lightTheme")}
+                  {t("export.theme.light")}
                 </button>
               </div>
               <div className="flex items-center gap-2.5">
                 <span className="text-muted-foreground text-[11px] font-medium select-none">
-                  {t("export.routeNumbersLabel")}
+                  {t("export.routeNumbers.label")}
                 </span>
                 <button
                   type="button"
@@ -985,8 +988,8 @@ export default function ExportDialog({
                   aria-pressed={includeObstacleNumbers}
                   aria-label={
                     includeObstacleNumbers
-                      ? t("export.disableRouteNumbersMobile")
-                      : t("export.enableRouteNumbersMobile")
+                      ? t("export.routeNumbers.disableMobile")
+                      : t("export.routeNumbers.enableMobile")
                   }
                 >
                   <span className="bg-background block size-5 rounded-full shadow-xs" />
@@ -1005,8 +1008,8 @@ export default function ExportDialog({
     <DesktopModal
       open={open}
       onOpenChange={onOpenChange}
-      title={t("export.dialogTitle")}
-      subtitle={t("export.dialogSubtitle")}
+      title={t("export.dialog.title")}
+      subtitle={t("export.dialog.subtitle")}
       maxWidth="max-w-2xl"
       panelClassName="px-7 py-7"
     >

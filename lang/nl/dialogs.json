@@ -125,28 +125,46 @@
     }
   },
   "export": {
-    "dialogTitle": "Exporteren",
-    "dialogSubtitle": "Exporteer de huidige track als visuele bestanden, projectoverdracht of simulatorklare output.",
-    "darkTheme": "Donker",
-    "lightTheme": "Licht",
-    "enableRouteNumbers": "Routenummers inschakelen in export",
-    "disableRouteNumbers": "Routenummers uitschakelen in export",
-    "enableRouteNumbersMobile": "Routenummers inschakelen",
-    "disableRouteNumbersMobile": "Routenummers uitschakelen",
-    "filenameLabel": "Bestandsnaam",
-    "themeLabel": "Thema",
-    "routeNumbersLabel": "Routenummers",
-    "routeNumbersHint": "In 2D-exports",
-    "switchTo3dView": "Naar 3D-weergave",
-    "openRequiredView": "Vereiste weergave openen",
-    "exportFormatAriaLabel": "{label} exporteren",
-    "view3dUnavailable": "3D-weergave niet beschikbaar — open eerst de 3D-tab",
-    "canvasNotReady": "Canvas is nog niet klaar",
-    "exported": "Geëxporteerd",
-    "webmRenderingBackground": "Cinematic FPV wordt op de achtergrond gerenderd…",
-    "webmRenderingProgress": "Cinematic FPV renderen… {status}",
-    "webmReady": "Cinematic FPV-export is klaar",
-    "webmProgressLabel": "Fly-through video renderen… {duration}",
+    "dialog": {
+      "title": "Exporteren",
+      "subtitle": "Exporteer de huidige track als visuele bestanden, projectoverdracht of simulatorklare output."
+    },
+    "fields": {
+      "filename": {
+        "label": "Bestandsnaam"
+      }
+    },
+    "theme": {
+      "label": "Thema",
+      "dark": "Donker",
+      "light": "Licht"
+    },
+    "routeNumbers": {
+      "label": "Routenummers",
+      "hint": "In 2D-exports",
+      "enable": "Routenummers inschakelen in export",
+      "disable": "Routenummers uitschakelen in export",
+      "enableMobile": "Routenummers inschakelen",
+      "disableMobile": "Routenummers uitschakelen"
+    },
+    "actions": {
+      "switchTo3dView": "Naar 3D-weergave",
+      "openRequiredView": "Vereiste weergave openen"
+    },
+    "aria": {
+      "exportFormat": "{label} exporteren"
+    },
+    "messages": {
+      "view3dUnavailable": "3D-weergave niet beschikbaar — open eerst de 3D-tab",
+      "canvasNotReady": "Canvas is nog niet klaar",
+      "exported": "Geëxporteerd"
+    },
+    "webm": {
+      "renderingBackground": "Cinematic FPV wordt op de achtergrond gerenderd…",
+      "renderingProgress": "Cinematic FPV renderen… {status}",
+      "ready": "Cinematic FPV-export is klaar",
+      "progressLabel": "Fly-through video renderen… {duration}"
+    },
     "sections": {
       "visualExports": {
         "title": "Visuele exports",
