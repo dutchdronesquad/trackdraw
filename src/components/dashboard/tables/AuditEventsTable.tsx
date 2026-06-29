@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowUpDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   DataTableBodyCell,
   DataTableEmptyState,
@@ -43,12 +44,17 @@ type AuditEventsTableProps = {
   initialCategories?: AuditEventCategory[];
 };
 
-const categoryFilters: { value: AuditEventCategory; label: string }[] = [
-  { value: "Account", label: "Account" },
-  { value: "Gallery", label: "Gallery" },
-  { value: "System", label: "System" },
+const categoryFilterValues: AuditEventCategory[] = [
+  "Account",
+  "Gallery",
+  "System",
 ];
 const unknownActorValue = "__unknown_actor__";
+
+type Translate = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
 
 type AuditSortKey = "event" | "actor" | "target" | "entity" | "createdAt";
 type AuditSortDirection = "asc" | "desc";
@@ -69,12 +75,12 @@ function formatDateTime(value: string) {
   }
 }
 
-function getUserLabel(user: AuditEventActor) {
+function getUserLabel(user: AuditEventActor, unknownUserLabel: string) {
   if (!user) {
-    return "Unknown user";
+    return unknownUserLabel;
   }
 
-  return user.name?.trim() || user.email?.trim() || "Unknown user";
+  return user.name?.trim() || user.email?.trim() || unknownUserLabel;
 }
 
 function getSecondaryLabel(user: AuditEventActor) {
@@ -93,8 +99,11 @@ function getActorFilterValue(event: DashboardAuditEvent) {
   return event.actorUserId ?? unknownActorValue;
 }
 
-function getActorFilterLabel(event: DashboardAuditEvent) {
-  const label = getUserLabel(event.actor);
+function getActorFilterLabel(
+  event: DashboardAuditEvent,
+  unknownUserLabel: string
+) {
+  const label = getUserLabel(event.actor, unknownUserLabel);
   const secondary = getSecondaryLabel(event.actor);
 
   return secondary && secondary !== label ? `${label} (${secondary})` : label;
@@ -118,29 +127,29 @@ function formatEventType(value: string) {
     .join(" ");
 }
 
-function getEventTitle(eventType: string) {
-  switch (eventType) {
-    case "account.role.changed":
-      return "Role changed";
-    case "gallery.entry.featured":
-      return "Gallery entry featured";
-    case "gallery.entry.unfeatured":
-      return "Gallery entry unfeatured";
-    case "gallery.entry.hidden":
-      return "Gallery entry hidden";
-    case "gallery.entry.restored":
-      return "Gallery entry restored";
-    case "gallery.entry.deleted":
-      return "Gallery entry deleted";
-    default:
-      return formatEventType(eventType);
-  }
+const EVENT_TITLE_KEYS: Record<string, string> = {
+  "account.role.changed": "accountRoleChanged",
+  "gallery.entry.featured": "galleryEntryFeatured",
+  "gallery.entry.unfeatured": "galleryEntryUnfeatured",
+  "gallery.entry.hidden": "galleryEntryHidden",
+  "gallery.entry.restored": "galleryEntryRestored",
+  "gallery.entry.deleted": "galleryEntryDeleted",
+};
+
+function getEventTitle(eventType: string, t: Translate) {
+  const key = EVENT_TITLE_KEYS[eventType];
+  if (key) return t(`eventTitles.${key}`);
+  return formatEventType(eventType);
 }
 
 function getEventCategory(eventType: string): AuditEventCategory {
   if (eventType.startsWith("account.")) return "Account";
   if (eventType.startsWith("gallery.")) return "Gallery";
   return "System";
+}
+
+function getEventCategoryLabel(eventType: string, t: Translate) {
+  return t(`categoryValues.${getEventCategory(eventType)}`);
 }
 
 function formatMetadataValue(value: unknown) {
@@ -159,12 +168,15 @@ function formatMetadataLabel(value: string) {
     .replace(/^./, (char) => char.toUpperCase());
 }
 
-function getEventDetailLabel(event: {
-  eventType: string;
-  entityType: string;
-  entityId: string | null;
-  metadata: Record<string, unknown> | null;
-}) {
+function getEventDetailLabel(
+  event: {
+    eventType: string;
+    entityType: string;
+    entityId: string | null;
+    metadata: Record<string, unknown> | null;
+  },
+  t: Translate
+) {
   if (event.eventType === "account.role.changed") {
     return getRoleChangeSummary(event.metadata).label;
   }
@@ -176,7 +188,9 @@ function getEventDetailLabel(event: {
   }
 
   if (event.metadata?.shareToken) {
-    return `Share ${formatMetadataValue(event.metadata.shareToken)}`;
+    return t("share", {
+      token: formatMetadataValue(event.metadata.shareToken),
+    });
   }
 
   return event.entityId
@@ -184,12 +198,12 @@ function getEventDetailLabel(event: {
     : event.entityType;
 }
 
-function getEntityTypeLabel(entityType: string) {
+function getEntityTypeLabel(entityType: string, t: Translate) {
   switch (entityType) {
     case "user":
-      return "Account";
+      return t("entityLabels.account");
     case "gallery_entry":
-      return "Gallery entry";
+      return t("entityLabels.galleryEntry");
     default:
       return formatMetadataLabel(entityType);
   }
@@ -200,10 +214,10 @@ function shortenId(value: string) {
   return `${value.slice(0, 8)}...${value.slice(-4)}`;
 }
 
-function getEntityDisplay(event: DashboardAuditEvent) {
+function getEntityDisplay(event: DashboardAuditEvent, t: Translate) {
   if (event.entityType === "user") {
     return {
-      label: "Account role",
+      label: t("entityLabels.accountRole"),
       detail: getRoleChangeSummary(event.metadata).label,
     };
   }
@@ -215,29 +229,38 @@ function getEntityDisplay(event: DashboardAuditEvent) {
         : null;
 
     return {
-      label: "Gallery entry",
+      label: t("entityLabels.galleryEntry"),
       detail: shareToken ?? (event.entityId ? shortenId(event.entityId) : null),
     };
   }
 
   return {
-    label: getEntityTypeLabel(event.entityType),
-    detail: event.entityId ? `ID ${shortenId(event.entityId)}` : null,
+    label: getEntityTypeLabel(event.entityType, t),
+    detail: event.entityId
+      ? t("entityId", { id: shortenId(event.entityId) })
+      : null,
   };
 }
 
-function getSortValue(event: DashboardAuditEvent, key: AuditSortKey) {
-  if (key === "event") return getEventTitle(event.eventType);
-  if (key === "actor") return getUserLabel(event.actor);
-  if (key === "target") return getUserLabel(event.target);
-  if (key === "entity") return getEntityDisplay(event).label;
+function getSortValue(
+  event: DashboardAuditEvent,
+  key: AuditSortKey,
+  t: Translate,
+  unknownUserLabel: string
+) {
+  if (key === "event") return getEventTitle(event.eventType, t);
+  if (key === "actor") return getUserLabel(event.actor, unknownUserLabel);
+  if (key === "target") return getUserLabel(event.target, unknownUserLabel);
+  if (key === "entity") return getEntityDisplay(event, t).label;
   return event.createdAt;
 }
 
 function compareAuditEvents(
   a: DashboardAuditEvent,
   b: DashboardAuditEvent,
-  sorting: AuditSortState
+  sorting: AuditSortState,
+  t: Translate,
+  unknownUserLabel: string
 ) {
   const direction = sorting.direction === "asc" ? 1 : -1;
 
@@ -248,8 +271,10 @@ function compareAuditEvents(
     );
   }
 
-  const primary = String(getSortValue(a, sorting.key)).localeCompare(
-    String(getSortValue(b, sorting.key)),
+  const primary = String(
+    getSortValue(a, sorting.key, t, unknownUserLabel)
+  ).localeCompare(
+    String(getSortValue(b, sorting.key, t, unknownUserLabel)),
     undefined,
     { sensitivity: "base" }
   );
@@ -259,17 +284,22 @@ function compareAuditEvents(
   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 }
 
-function eventMatchesSearch(event: DashboardAuditEvent, query: string) {
+function eventMatchesSearch(
+  event: DashboardAuditEvent,
+  query: string,
+  t: Translate,
+  unknownUserLabel: string
+) {
   if (!query) return true;
-  const entityDisplay = getEntityDisplay(event);
+  const entityDisplay = getEntityDisplay(event, t);
 
   const searchable = [
-    getEventTitle(event.eventType),
-    getEventCategory(event.eventType),
-    getEventDetailLabel(event),
-    getUserLabel(event.actor),
+    getEventTitle(event.eventType, t),
+    getEventCategoryLabel(event.eventType, t),
+    getEventDetailLabel(event, t),
+    getUserLabel(event.actor, unknownUserLabel),
     getSecondaryLabel(event.actor),
-    getUserLabel(event.target),
+    getUserLabel(event.target, unknownUserLabel),
     getSecondaryLabel(event.target),
     event.entityType,
     event.entityId,
@@ -287,6 +317,8 @@ export default function DashboardAuditEventsTable({
   events,
   initialCategories = [],
 }: AuditEventsTableProps) {
+  const t: Translate = useTranslations("dashboard.audit");
+  const unknownUserLabel = t("unknownUser");
   const [globalFilter, setGlobalFilter] = useState("");
   const [selectedCategories, setSelectedCategories] =
     useState<AuditEventCategory[]>(initialCategories);
@@ -322,7 +354,7 @@ export default function DashboardAuditEventsTable({
       size="sm"
       className={cn(dataTableSortButtonClassName, className)}
       onClick={() => toggleSort(key)}
-      aria-label={`Sort audit events by ${label.toLowerCase()}`}
+      aria-label={t("sortAriaLabel", { label: label.toLowerCase() })}
     >
       {label}
       <ArrowUpDown
@@ -336,7 +368,7 @@ export default function DashboardAuditEventsTable({
 
   const normalizedQuery = globalFilter.trim().toLowerCase();
   const searchedEvents = events.filter((event) =>
-    eventMatchesSearch(event, normalizedQuery)
+    eventMatchesSearch(event, normalizedQuery, t, unknownUserLabel)
   );
   const categoryFacetEvents = searchedEvents
     .filter((event) =>
@@ -383,24 +415,25 @@ export default function DashboardAuditEventsTable({
         : selectedActors.includes(getActorFilterValue(event))
     );
   const sortedEvents = [...filteredEvents].sort((a, b) =>
-    compareAuditEvents(a, b, sorting)
+    compareAuditEvents(a, b, sorting, t, unknownUserLabel)
   );
 
   const eventTypeFilters = Array.from(
     new Set(events.map((event) => event.eventType))
   )
-    .sort((a, b) => getEventTitle(a).localeCompare(getEventTitle(b)))
+    .sort((a, b) => getEventTitle(a, t).localeCompare(getEventTitle(b, t)))
     .map((eventType) => ({
-      label: getEventTitle(eventType),
+      label: getEventTitle(eventType, t),
       value: eventType,
       count: eventTypeFacetEvents.filter(
         (event) => event.eventType === eventType
       ).length,
     }));
-  const categoryFilterOptions = categoryFilters.map((filter) => ({
-    ...filter,
+  const categoryFilterOptions = categoryFilterValues.map((value) => ({
+    value,
+    label: t(`categoryValues.${value}`),
     count: categoryFacetEvents.filter(
-      (event) => getEventCategory(event.eventType) === filter.value
+      (event) => getEventCategory(event.eventType) === value
     ).length,
   }));
   const actorFilterOptions = Array.from(
@@ -408,7 +441,7 @@ export default function DashboardAuditEventsTable({
       searchedEvents.map((event) => [
         getActorFilterValue(event),
         {
-          label: getActorFilterLabel(event),
+          label: getActorFilterLabel(event, unknownUserLabel),
           value: getActorFilterValue(event),
         },
       ])
@@ -432,24 +465,26 @@ export default function DashboardAuditEventsTable({
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <div className="bg-muted/50 rounded-xl p-5">
-          <p className="text-muted-foreground text-sm">Visible events</p>
+          <p className="text-muted-foreground text-sm">
+            {t("stats.visibleEvents")}
+          </p>
           <p className="mt-2 text-2xl font-semibold">{filteredEvents.length}</p>
           <p className="text-muted-foreground mt-1 text-xs">
-            Matching the latest audit window
+            {t("stats.visibleEventsHelper")}
           </p>
         </div>
         <div className="bg-muted/50 rounded-xl p-5">
-          <p className="text-muted-foreground text-sm">Actors</p>
+          <p className="text-muted-foreground text-sm">{t("stats.actors")}</p>
           <p className="mt-2 text-2xl font-semibold">{uniqueActorCount}</p>
           <p className="text-muted-foreground mt-1 text-xs">
-            Distinct accounts making changes
+            {t("stats.actorsHelper")}
           </p>
         </div>
         <div className="bg-muted/50 rounded-xl p-5">
-          <p className="text-muted-foreground text-sm">Targets</p>
+          <p className="text-muted-foreground text-sm">{t("stats.targets")}</p>
           <p className="mt-2 text-2xl font-semibold">{uniqueTargetCount}</p>
           <p className="text-muted-foreground mt-1 text-xs">
-            Distinct accounts affected
+            {t("stats.targetsHelper")}
           </p>
         </div>
       </div>
@@ -457,22 +492,22 @@ export default function DashboardAuditEventsTable({
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
-        searchPlaceholder="Search event, actor, target or entity..."
+        searchPlaceholder={t("searchPlaceholder")}
       >
         <DataTableFacetFilter
-          title="Category"
+          title={t("category")}
           selected={selectedCategories}
           options={categoryFilterOptions}
           onChange={setSelectedCategories}
         />
         <DataTableFacetFilter
-          title="Event"
+          title={t("event")}
           selected={selectedEventTypes}
           options={eventTypeFilters}
           onChange={setSelectedEventTypes}
         />
         <DataTableFacetFilter
-          title="Actor"
+          title={t("actor")}
           selected={selectedActors}
           options={actorFilterOptions}
           onChange={setSelectedActors}
@@ -483,19 +518,19 @@ export default function DashboardAuditEventsTable({
         <TableHeader>
           <TableRow>
             <DataTableHeaderCell className="w-[34%]">
-              {renderSortHeader("event", "Event")}
+              {renderSortHeader("event", t("table.event"))}
             </DataTableHeaderCell>
             <DataTableHeaderCell className="w-[20%]">
-              {renderSortHeader("actor", "Actor")}
+              {renderSortHeader("actor", t("table.actor"))}
             </DataTableHeaderCell>
             <DataTableHeaderCell className="w-[20%]">
-              {renderSortHeader("target", "Target")}
+              {renderSortHeader("target", t("table.target"))}
             </DataTableHeaderCell>
             <DataTableHeaderCell className="w-[16%]">
-              {renderSortHeader("entity", "Entity")}
+              {renderSortHeader("entity", t("table.entity"))}
             </DataTableHeaderCell>
             <DataTableHeaderCell className="w-40 text-right">
-              {renderSortHeader("createdAt", "When", "ml-auto -mr-2")}
+              {renderSortHeader("createdAt", t("table.when"), "ml-auto -mr-2")}
             </DataTableHeaderCell>
           </TableRow>
         </TableHeader>
@@ -503,27 +538,27 @@ export default function DashboardAuditEventsTable({
           {sortedEvents.length > 0 ? (
             sortedEvents.map((event) => {
               const metadataEntries = Object.entries(event.metadata ?? {});
-              const entityDisplay = getEntityDisplay(event);
+              const entityDisplay = getEntityDisplay(event, t);
 
               return (
                 <TableRow key={event.id}>
                   <DataTableBodyCell>
                     <div className="min-w-0">
                       <p className="text-sm font-medium">
-                        {getEventTitle(event.eventType)}
+                        {getEventTitle(event.eventType, t)}
                       </p>
                       <div className="mt-1 flex items-center gap-2">
                         <Badge variant="outline">
-                          {getEventCategory(event.eventType)}
+                          {getEventCategoryLabel(event.eventType, t)}
                         </Badge>
                         <span className="text-muted-foreground text-xs">
-                          {getEventDetailLabel(event)}
+                          {getEventDetailLabel(event, t)}
                         </span>
                       </div>
                       {metadataEntries.length > 0 ? (
                         <details className="mt-2">
                           <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-xs">
-                            Details
+                            {t("table.details")}
                           </summary>
                           <dl className="mt-2 grid gap-1 text-xs">
                             {metadataEntries.map(([key, value]) => (
@@ -547,7 +582,7 @@ export default function DashboardAuditEventsTable({
                   <DataTableBodyCell>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">
-                        {getUserLabel(event.actor)}
+                        {getUserLabel(event.actor, unknownUserLabel)}
                       </p>
                       {getSecondaryLabel(event.actor) ? (
                         <p className="text-muted-foreground truncate text-xs">
@@ -559,7 +594,7 @@ export default function DashboardAuditEventsTable({
                   <DataTableBodyCell>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">
-                        {getUserLabel(event.target)}
+                        {getUserLabel(event.target, unknownUserLabel)}
                       </p>
                       {getSecondaryLabel(event.target) ? (
                         <p className="text-muted-foreground truncate text-xs">
@@ -587,10 +622,7 @@ export default function DashboardAuditEventsTable({
               );
             })
           ) : (
-            <DataTableEmptyState
-              colSpan={5}
-              message="No audit events match the current filters."
-            />
+            <DataTableEmptyState colSpan={5} message={t("table.noEvents")} />
           )}
         </TableBody>
       </DataTableFrame>

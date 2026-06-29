@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import {
   BookMarked,
   FolderOpen,
@@ -134,51 +135,71 @@ export default async function DashboardMetricsPage() {
     getGrowthByRange(),
   ]);
 
+  const t = await getTranslations("dashboard");
+  const tMetrics = await getTranslations("dashboard.metrics");
+
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: "Dashboard", href: "/dashboard" }}
-        title="Metrics"
+        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        title={t("pages.metrics")}
       />
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         {/* KPI strip */}
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
           <KpiCard
-            label="Total users"
+            label={tMetrics("kpi.totalUsers")}
             value={metrics.users.total}
-            sub={`+${metrics.users.newThisMonth} this month`}
+            sub={tMetrics("kpi.totalUsersSub", {
+              count: metrics.users.newThisMonth,
+            })}
             icon={Users}
             accent="bg-emerald-500"
             iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
           />
           <KpiCard
-            label="Active users (30d)"
+            label={tMetrics("kpi.activeUsers30d")}
             value={metrics.users.activeLastThirtyDays}
-            sub={`${metrics.users.total > 0 ? Math.round((metrics.users.activeLastThirtyDays / metrics.users.total) * 100) : 0}% of total`}
+            sub={tMetrics("kpi.activeUsers30dSub", {
+              pct:
+                metrics.users.total > 0
+                  ? Math.round(
+                      (metrics.users.activeLastThirtyDays /
+                        metrics.users.total) *
+                        100
+                    )
+                  : 0,
+            })}
             icon={TrendingUp}
             accent="bg-sky-500"
             iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
           />
           <KpiCard
-            label="Projects"
+            label={tMetrics("kpi.projects")}
             value={metrics.projects.active}
-            sub={`non-archived · ${metrics.projects.archived} archived`}
+            sub={tMetrics("kpi.projectsSub", {
+              archived: metrics.projects.archived,
+            })}
             icon={FolderOpen}
             accent="bg-violet-500"
             iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
           />
           <KpiCard
-            label="Active shares"
+            label={tMetrics("kpi.activeShares")}
             value={metrics.shares.totalActive}
-            sub={`${metrics.shares.revoked} revoked`}
+            sub={tMetrics("kpi.activeSharesSub", {
+              revoked: metrics.shares.revoked,
+            })}
             icon={Link2}
             accent="bg-orange-500"
             iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
           />
           <KpiCard
-            label="Active API keys"
+            label={tMetrics("kpi.activeApiKeys")}
             value={metrics.apiKeys.active}
-            sub={`${metrics.apiKeys.total} total`}
+            sub={tMetrics("kpi.activeApiKeysSub", {
+              total: metrics.apiKeys.total,
+            })}
             icon={KeyRound}
             accent="bg-rose-500"
             iconTone="bg-rose-500/10 text-rose-600 dark:text-rose-400"
@@ -188,14 +209,14 @@ export default async function DashboardMetricsPage() {
         {/* User population + Content overview */}
         <div className="grid gap-4 lg:grid-cols-2">
           <ChartCard
-            title="User population"
-            description="Active = updated a project in the last 30 days. Dormant = has projects but inactive. Never created = registered but no projects."
+            title={tMetrics("userPopulation.title")}
+            description={tMetrics("userPopulation.description")}
           >
             <UserPopulationChart users={metrics.users} />
           </ChartCard>
           <ChartCard
-            title="Content overview"
-            description="Active projects, active share links, and saved presets across all users."
+            title={tMetrics("contentOverview.title")}
+            description={tMetrics("contentOverview.description")}
           >
             <ContentOverviewChart
               projects={metrics.projects}
@@ -211,63 +232,69 @@ export default async function DashboardMetricsPage() {
         {/* Detail stats */}
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="bg-card space-y-0.5 rounded-xl border p-4">
-            <p className="mb-3 text-sm font-medium">Projects</p>
+            <p className="mb-3 text-sm font-medium">
+              {tMetrics("detail.projects")}
+            </p>
             <StatRow
-              label="Avg per user"
+              label={tMetrics("detail.avgPerUser")}
               value={metrics.projects.avgPerUser}
               icon={FolderOpen}
               tone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
             />
             <StatRow
-              label="Max on one account"
+              label={tMetrics("detail.maxPerUser")}
               value={metrics.projects.maxPerUser}
               icon={FolderOpen}
               tone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
             />
             <StatRow
-              label="Total (incl. archived)"
+              label={tMetrics("detail.totalIncludingArchived")}
               value={metrics.projects.total}
               icon={FolderOpen}
               tone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
             />
           </div>
           <div className="bg-card space-y-0.5 rounded-xl border p-4">
-            <p className="mb-3 text-sm font-medium">Share links</p>
+            <p className="mb-3 text-sm font-medium">
+              {tMetrics("detail.shareLinks")}
+            </p>
             <StatRow
-              label="Avg per user"
+              label={tMetrics("detail.avgPerUser")}
               value={metrics.shares.avgPerUser}
               icon={Link2}
               tone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
             />
             <StatRow
-              label="Max on one account"
+              label={tMetrics("detail.maxPerUser")}
               value={metrics.shares.maxPerUser}
               icon={Link2}
               tone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
             />
             <StatRow
-              label="Total revoked"
+              label={tMetrics("detail.totalRevoked")}
               value={metrics.shares.revoked}
               icon={Link2}
               tone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
             />
           </div>
           <div className="bg-card space-y-0.5 rounded-xl border p-4">
-            <p className="mb-3 text-sm font-medium">Layout presets</p>
+            <p className="mb-3 text-sm font-medium">
+              {tMetrics("detail.layoutPresets")}
+            </p>
             <StatRow
-              label="Total"
+              label={tMetrics("detail.total")}
               value={metrics.presets.total}
               icon={BookMarked}
               tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             />
             <StatRow
-              label="Avg per user"
+              label={tMetrics("detail.avgPerUser")}
               value={metrics.presets.avgPerUser}
               icon={BookMarked}
               tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             />
             <StatRow
-              label="Max on one account"
+              label={tMetrics("detail.maxPerUser")}
               value={metrics.presets.maxPerUser}
               icon={BookMarked}
               tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
@@ -278,12 +305,9 @@ export default async function DashboardMetricsPage() {
         {/* Plan limit simulation */}
         <div className="space-y-3">
           <div>
-            <p className="text-sm font-medium">Plan limit simulation</p>
+            <p className="text-sm font-medium">{tMetrics("planLimit.title")}</p>
             <p className="text-muted-foreground mt-0.5 text-xs">
-              Each chart shows how usage is distributed across all users. Drag
-              the slider (or type a number) to set a free-plan cap and instantly
-              see how many users would exceed it — the red bars are the ones
-              that get cut off.
+              {tMetrics("planLimit.description")}
             </p>
           </div>
           <PlanLimitSimulator userDistribution={metrics.userDistribution} />

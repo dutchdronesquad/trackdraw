@@ -13,6 +13,7 @@ import {
   Share2,
   UserRound,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import AccountDialog from "@/components/dialogs/AccountDialog";
 import { MobileDrawerHeader } from "@/components/MobileDrawer";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -37,9 +38,10 @@ function getUserDisplayName(
         name?: string | null;
       }
     | null
-    | undefined
+    | undefined,
+  fallback: string
 ) {
-  return user?.name?.trim() || user?.email?.trim() || "TrackDraw account";
+  return user?.name?.trim() || user?.email?.trim() || fallback;
 }
 
 function getAvatarLabel(
@@ -132,6 +134,7 @@ export default function MobileAppMenu({
   hideTrigger = false,
   onMenuOpenChange,
 }: MobileAppMenuProps) {
+  const t = useTranslations("editor.mobileAppMenu");
   const { data } = authClient.useSession();
   const [accountOpen, setAccountOpen] = useState(false);
   const [open, setOpen] = useState(defaultOpen);
@@ -187,7 +190,7 @@ export default function MobileAppMenu({
             setMenuOpen(true);
           }}
           className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-9 items-center justify-center rounded-md transition-colors lg:hidden"
-          aria-label="Open app menu"
+          aria-label={t("openAppMenu")}
         >
           <Menu className="size-4" />
         </button>
@@ -207,8 +210,8 @@ export default function MobileAppMenu({
         <DrawerContent className="border-border/70 bg-background h-dvh w-[min(85vw,22rem)] max-w-none rounded-none border-l shadow-[0_18px_44px_rgba(15,23,42,0.16)] lg:hidden">
           <div className="flex h-full flex-col">
             <MobileDrawerHeader
-              title="TrackDraw"
-              subtitle="Projects, sharing, account and app settings"
+              title={t("title")}
+              subtitle={t("subtitle")}
               className="border-border/60 bg-background"
               headerClassName="px-4 pt-3 pb-3"
             />
@@ -229,10 +232,10 @@ export default function MobileAppMenu({
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="text-foreground truncate text-[13px] font-medium">
-                        {getUserDisplayName(user)}
+                        {getUserDisplayName(user, t("trackdrawAccount"))}
                       </div>
                       <div className="text-muted-foreground truncate pt-0.5 text-[11px]">
-                        {user.email ?? "TrackDraw account"}
+                        {user.email ?? t("trackdrawAccount")}
                       </div>
                     </div>
                   </button>
@@ -247,10 +250,10 @@ export default function MobileAppMenu({
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="text-foreground text-[13px] font-medium">
-                        Sign in
+                        {t("signIn")}
                       </div>
                       <div className="text-muted-foreground truncate pt-0.5 text-[11px]">
-                        Your TrackDraw account
+                        {t("yourAccount")}
                       </div>
                     </div>
                   </Link>
@@ -258,21 +261,21 @@ export default function MobileAppMenu({
               </div>
 
               <div className="mt-3 space-y-3">
-                <MenuSection title="Projects">
+                <MenuSection title={t("projectsSection")}>
                   <MenuRow
                     icon={<FolderOpen className="size-4" />}
-                    label="Projects"
-                    description="Open and manage saved projects"
+                    label={t("projectsLabel")}
+                    description={t("projectsDescription")}
                     onClick={() => closeAndRun(onOpenProjects)}
                   />
                 </MenuSection>
 
                 {user ? (
-                  <MenuSection title="Account">
+                  <MenuSection title={t("accountSection")}>
                     <MenuRow
                       icon={<UserRound className="size-4" />}
-                      label="Profile"
-                      description="Manage profile, security and API keys"
+                      label={t("profileLabel")}
+                      description={t("profileDescription")}
                       onClick={openAccount}
                     />
                     {canAccessDashboard(user) ? (
@@ -286,10 +289,10 @@ export default function MobileAppMenu({
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="text-foreground block text-[13px] font-medium">
-                            Dashboard
+                            {t("dashboardLabel")}
                           </span>
                           <span className="text-muted-foreground block truncate pt-0.5 text-[11px] leading-relaxed">
-                            Open moderation and admin tools
+                            {t("dashboardDescription")}
                           </span>
                         </span>
                       </Link>
@@ -297,23 +300,23 @@ export default function MobileAppMenu({
                   </MenuSection>
                 ) : null}
 
-                <MenuSection title="Share and transfer">
+                <MenuSection title={t("shareSection")}>
                   <MenuRow
                     icon={<Share2 className="size-4" />}
-                    label="Share"
-                    description="Publish a read-only link for this track"
+                    label={t("shareLabel")}
+                    description={t("shareDescription")}
                     onClick={() => closeAndRun(onShare)}
                   />
                   <MenuRow
                     icon={<Import className="size-4" />}
-                    label="Import"
-                    description="Bring in a JSON project file"
+                    label={t("importLabel")}
+                    description={t("importDescription")}
                     onClick={() => closeAndRun(onImport)}
                   />
                   <MenuRow
                     icon={<Download className="size-4" />}
-                    label="Export"
-                    description="Download PNG, PDF, SVG or JSON"
+                    label={t("exportLabel")}
+                    description={t("exportDescription")}
                     onClick={() => closeAndRun(onExport)}
                   />
                 </MenuSection>
@@ -324,10 +327,10 @@ export default function MobileAppMenu({
               <div className="flex items-center justify-between rounded-xl px-2 py-1.5">
                 <div>
                   <div className="text-foreground text-[13px] font-medium">
-                    Theme
+                    {t("themeLabel")}
                   </div>
                   <div className="text-muted-foreground pt-0.5 text-[11px]">
-                    Switch light, dark or system
+                    {t("themeDescription")}
                   </div>
                 </div>
                 <ThemeToggle />
@@ -343,7 +346,7 @@ export default function MobileAppMenu({
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-lg">
                       <LogOut className="size-4" />
                     </span>
-                    <span>{signingOut ? "Signing out…" : "Sign out"}</span>
+                    <span>{signingOut ? t("signingOut") : t("signOut")}</span>
                   </button>
                 </div>
               ) : null}

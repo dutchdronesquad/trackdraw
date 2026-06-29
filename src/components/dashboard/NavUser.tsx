@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import UserAvatar from "@/components/UserAvatar";
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ type DashboardNavUserProps = {
 
 export default function DashboardNavUser({ user }: DashboardNavUserProps) {
   const { isMobile } = useSidebar();
+  const t = useTranslations("dashboard.navUser");
   const [signingOut, setSigningOut] = useState(false);
   const roleLabel = getAccountRoleLabel(user.role);
 
@@ -90,7 +92,7 @@ export default function DashboardNavUser({ user }: DashboardNavUserProps) {
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => void handleSignOut()}>
                 <LogOutIcon />
-                {signingOut ? "Signing out…" : "Log out"}
+                {signingOut ? t("signingOut") : t("logOut")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

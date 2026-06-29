@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Box, Route, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { ContextOverlayCard } from "./ContextOverlayCard";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,7 @@ export function EditorStarterOverlay({
   onShareAndDismissReview,
   onGoTo3DAndDismissNudge,
 }: EditorStarterOverlayProps) {
+  const t = useTranslations("editor.starterOverlay");
   return (
     <>
       {shouldShowStarter && isMobile ? (
@@ -89,8 +91,8 @@ export function EditorStarterOverlay({
           onOpenChange={(open) => {
             if (!open) onDismissStarter();
           }}
-          title="Welcome to TrackDraw"
-          subtitle="Place a few gates, draw the route, check 3D, then share when the track is ready."
+          title={t("title")}
+          subtitle={t("mobileSubtitle")}
           contentClassName="max-h-[96dvh]"
           bodyClassName="space-y-5 pt-3 pb-4"
         >
@@ -110,21 +112,20 @@ export function EditorStarterOverlay({
             <div className="relative">
               <div className="pr-10">
                 <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-                  Studio
+                  {t("studioEyebrow")}
                 </p>
                 <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
-                  Welcome to TrackDraw
+                  {t("title")}
                 </p>
                 <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                  Design the layout in 2D, review elevation in 3D, and share a
-                  read-only link when the track is ready.
+                  {t("desktopDescription")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={onDismissStarter}
                 className="text-muted-foreground/75 hover:text-foreground hover:bg-muted absolute top-0 right-0 cursor-pointer rounded-full p-1.5 transition-colors"
-                aria-label="Dismiss starter dialog"
+                aria-label={t("dismissAria")}
               >
                 <X className="size-4" />
               </button>
@@ -152,15 +153,15 @@ export function EditorStarterOverlay({
           <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
             <ContextOverlayCard
               icon={<Box className="size-4" />}
-              title="Place your first gate"
-              badge="Guided"
-              description="Tap or click on the canvas to drop the first gate. Add a few gates before switching to Path."
+              title={t("hints.gate.title")}
+              badge={t("hints.gate.badge")}
+              description={t("hints.gate.description")}
               action={
                 <Button size="sm" onClick={onDismissGateHint}>
-                  Got it
+                  {t("hints.gate.action")}
                 </Button>
               }
-              dismissLabel="Dismiss gate placement hint"
+              dismissLabel={t("hints.gate.dismiss")}
               onDismiss={onDismissGateHint}
             />
           </div>
@@ -178,15 +179,15 @@ export function EditorStarterOverlay({
           <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
             <ContextOverlayCard
               icon={<Route className="size-4" />}
-              title="Next, draw the route"
-              badge="Guided"
-              description="Place a few gates first, then switch to Path and trace the lap through them. Finish the route before checking 3D."
+              title={t("hints.path.title")}
+              badge={t("hints.path.badge")}
+              description={t("hints.path.description")}
               action={
                 <Button size="sm" onClick={onStartPathTool}>
-                  Start path
+                  {t("hints.path.action")}
                 </Button>
               }
-              dismissLabel="Dismiss path onboarding hint"
+              dismissLabel={t("hints.path.dismiss")}
               onDismiss={onDismissDesktopPathHint}
             />
           </div>
@@ -202,19 +203,19 @@ export function EditorStarterOverlay({
           <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
             <ContextOverlayCard
               icon={<Box className="size-4" />}
-              title="3D works best after the route"
-              badge="Preview"
-              description="Obstacle placement already previews here, but the route is what makes elevation and fly-through review useful."
+              title={t("hints.preview3d.title")}
+              badge={t("hints.preview3d.badge")}
+              description={t("hints.preview3d.description")}
               action={
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={onGoTo2DAndStartPath}
                 >
-                  Draw path in 2D
+                  {t("hints.preview3d.action")}
                 </Button>
               }
-              dismissLabel="Dismiss 3D preview onboarding hint"
+              dismissLabel={t("hints.preview3d.dismiss")}
               onDismiss={onDismissDesktopPreviewHint}
             />
           </div>
@@ -230,15 +231,15 @@ export function EditorStarterOverlay({
           <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
             <ContextOverlayCard
               icon={<Box className="size-4" />}
-              title="Now review it in 3D"
-              badge="Guided"
-              description="Orbit around the route, check elevation and spacing, then share or export once the layout feels right."
+              title={t("hints.review3d.title")}
+              badge={t("hints.review3d.badge")}
+              description={t("hints.review3d.description")}
               action={
                 <Button size="sm" onClick={onShareAndDismissReview}>
-                  Share or export next
+                  {t("hints.review3d.action")}
                 </Button>
               }
-              dismissLabel="Dismiss 3D review hint"
+              dismissLabel={t("hints.review3d.dismiss")}
               onDismiss={onDismissReview3DHint}
             />
           </div>
@@ -254,15 +255,15 @@ export function EditorStarterOverlay({
           <div className="max-w-sm lg:absolute lg:top-0 lg:left-4">
             <ContextOverlayCard
               icon={<Box className="size-4" />}
-              title="Route ready — check it in 3D"
-              badge="Next step"
-              description="Switch to the 3D tab now to review the route before refining more obstacle placement."
+              title={t("hints.postPath.title")}
+              badge={t("hints.postPath.badge")}
+              description={t("hints.postPath.description")}
               action={
                 <Button size="sm" onClick={onGoTo3DAndDismissNudge}>
-                  Switch to 3D
+                  {t("hints.postPath.action")}
                 </Button>
               }
-              dismissLabel="Dismiss post-path 3D nudge"
+              dismissLabel={t("hints.postPath.dismiss")}
               onDismiss={onDismissPostPathNudge}
             />
           </div>

@@ -2,29 +2,13 @@
 
 import { useState } from "react";
 import { Box, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Kbd } from "@/components/ui/kbd";
 import { starterLayouts } from "@/lib/planning/starter-layouts";
 import { cn } from "@/lib/utils";
 
-export const STARTER_STEPS = [
-  {
-    id: "01",
-    title: "Place a few gates and obstacles",
-    description: "Start small so the course structure appears quickly.",
-  },
-  {
-    id: "02",
-    title: "Draw the race path through them",
-    description:
-      "The path usually makes the layout click faster than obstacle tweaking alone.",
-  },
-  {
-    id: "03",
-    title: "Check 3D, then export or share",
-    description:
-      "Review the route early and send a read-only link when it is ready.",
-  },
-] as const;
+const STARTER_STEP_IDS = ["01", "02", "03"] as const;
+const STARTER_STEP_MESSAGE_KEYS = ["step1", "step2", "step3"] as const;
 
 export function shouldShowStarterForDesign(params: {
   title: string;
@@ -35,6 +19,7 @@ export function shouldShowStarterForDesign(params: {
 }
 
 export function StarterSteps({ mobile = false }: { mobile?: boolean }) {
+  const t = useTranslations("editor.starterFlow");
   return (
     <div>
       <p
@@ -44,36 +29,41 @@ export function StarterSteps({ mobile = false }: { mobile?: boolean }) {
             : "text-muted-foreground text-[11px] font-semibold tracking-widest uppercase"
         }
       >
-        Good first steps
+        {t("goodFirstSteps")}
       </p>
       <ol className={mobile ? "space-y-3" : "mt-3 space-y-3"}>
-        {STARTER_STEPS.map((step) => (
-          <li key={step.id} className="flex items-start gap-3">
-            <span className="text-primary/60 mt-px w-5 shrink-0 text-[11px] font-semibold tabular-nums">
-              {step.id}
-            </span>
-            <div>
-              <p
-                className={
-                  mobile
-                    ? "text-foreground text-[13px] font-medium"
-                    : "text-foreground text-[13px] font-medium"
-                }
-              >
-                {step.title}
-              </p>
-              <p
-                className={
-                  mobile
-                    ? "text-muted-foreground mt-0.5 text-[11px] leading-5"
-                    : "text-muted-foreground mt-0.5 text-[12px] leading-5"
-                }
-              >
-                {step.description}
-              </p>
-            </div>
-          </li>
-        ))}
+        {STARTER_STEP_IDS.map((id, index) => {
+          const messageKey = STARTER_STEP_MESSAGE_KEYS[index];
+          if (!messageKey) return null;
+
+          return (
+            <li key={id} className="flex items-start gap-3">
+              <span className="text-primary/60 mt-px w-5 shrink-0 text-[11px] font-semibold tabular-nums">
+                {id}
+              </span>
+              <div>
+                <p
+                  className={
+                    mobile
+                      ? "text-foreground text-[13px] font-medium"
+                      : "text-foreground text-[13px] font-medium"
+                  }
+                >
+                  {t(`steps.${messageKey}.title`)}
+                </p>
+                <p
+                  className={
+                    mobile
+                      ? "text-muted-foreground mt-0.5 text-[11px] leading-5"
+                      : "text-muted-foreground mt-0.5 text-[12px] leading-5"
+                  }
+                >
+                  {t(`steps.${messageKey}.description`)}
+                </p>
+              </div>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );
@@ -90,6 +80,7 @@ export function StarterActions({
   onBlank: () => void;
   onStarterLayout: (layoutId: string) => void;
 }) {
+  const t = useTranslations("editor.starterFlow");
   const [selectedStarterId, setSelectedStarterId] = useState(
     starterLayouts[0]?.id ?? null
   );
@@ -158,12 +149,10 @@ export function StarterActions({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-foreground text-sm font-medium">
-                Start with guidance
+                {t("guidedTitle")}
               </p>
               <p className="text-muted-foreground mt-1 text-xs leading-5">
-                Open an empty field with `Gate` selected so you can block out
-                the course first. Draw the path once the first obstacles are
-                down.
+                {t("guidedDescriptionDesktop")}
               </p>
             </div>
             <div className="flex h-full items-center self-stretch">
@@ -176,15 +165,15 @@ export function StarterActions({
             onClick={onBlank}
             className="text-muted-foreground hover:text-foreground mt-3 w-full cursor-pointer text-center text-sm underline-offset-2 transition-colors hover:underline"
           >
-            Continue with empty canvas
+            {t("continueEmpty")}
           </button>
         </div>
         <p className="text-muted-foreground mt-5 hidden flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] sm:flex">
-          <Kbd>G</Kbd> places gates
+          <Kbd>G</Kbd> {t("kbdGate")}
           <span className="text-muted-foreground/60">·</span>
-          <Kbd>P</Kbd> starts the route
+          <Kbd>P</Kbd> {t("kbdPath")}
           <span className="text-muted-foreground/60">·</span>
-          <Kbd>Enter</Kbd> finishes the path
+          <Kbd>Enter</Kbd> {t("kbdFinish")}
         </p>
       </>
     );
@@ -195,7 +184,7 @@ export function StarterActions({
       <div className="space-y-2.5">
         <div>
           <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            Starter layouts
+            {t("starterLayoutsLabel")}
           </p>
           <div className="space-y-2">
             {starterLayouts.map((layout) => (
@@ -223,7 +212,7 @@ export function StarterActions({
         </div>
 
         <p className="text-muted-foreground/60 pt-1 text-[11px] font-semibold tracking-widest uppercase">
-          Guided start
+          {t("guidedStartLabel")}
         </p>
 
         <button
@@ -236,18 +225,17 @@ export function StarterActions({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-foreground text-[13px] font-medium">
-              Start with guidance
+              {t("guidedTitle")}
             </p>
             <p className="text-muted-foreground mt-1 text-[11px] leading-5">
-              Open an empty field with Gate selected. Draw the path once the
-              first obstacles are down.
+              {t("guidedDescriptionMobile")}
             </p>
           </div>
           <ChevronRight className="text-muted-foreground/45 mt-0.5 size-4 shrink-0" />
         </button>
 
         <p className="text-muted-foreground/60 pt-1 text-[11px] font-semibold tracking-widest uppercase">
-          Empty start
+          {t("emptyStartLabel")}
         </p>
 
         <button
@@ -260,10 +248,10 @@ export function StarterActions({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-foreground text-[13px] font-medium">
-              Continue with empty canvas
+              {t("continueEmpty")}
             </p>
             <p className="text-muted-foreground mt-1 text-[11px] leading-5">
-              Skip the guided start and open the empty studio instead.
+              {t("emptyStartDescription")}
             </p>
           </div>
         </button>

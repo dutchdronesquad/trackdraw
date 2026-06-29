@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { RefObject } from "react";
+import { useTranslations } from "next-intl";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import type { ExportDialogProps } from "@/components/dialogs/ExportDialog";
@@ -222,6 +223,7 @@ export function EditorDialogsHost({
   onOpenCloudConflictVersion,
   onKeepLocalConflictCopy,
 }: EditorDialogsHostProps) {
+  const t = useTranslations("editor.shell");
   return (
     <>
       {shareOpen ? (
@@ -329,7 +331,7 @@ export function EditorDialogsHost({
         <ProjectVersionConflictDialog
           open={Boolean(projectVersionConflict)}
           mobile={isMobile}
-          title={projectVersionConflict.title ?? "Untitled"}
+          title={projectVersionConflict.title ?? t("untitledFallback")}
           localUpdatedAt={projectVersionConflict.localUpdatedAt}
           cloudUpdatedAt={projectVersionConflict.cloudUpdatedAt}
           onOpenCloudVersion={onOpenCloudConflictVersion}

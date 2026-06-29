@@ -1,0 +1,48 @@
+{
+  "badge": "Share View",
+  "backToHome": "Back to Home",
+  "whatToTry": "What To Try",
+  "openStudio": "Open Studio",
+  "error": {
+    "heading": "This shared track link is no longer supported",
+    "description": "TrackDraw now uses published share links instead of the older URL-embedded share format. This older link can no longer be opened directly.",
+    "whatToDo": "What To Do",
+    "step1": "Ask the sender to publish a fresh share link from <strong>Studio</strong>.",
+    "step2": "If you still need an offline handoff, ask for a <strong>JSON export</strong> and open it in Studio with Import.",
+    "step3": "New published links use the canonical `/share/[token]` route and remain the supported way to share read-only layouts.",
+    "openStudioToImport": "Open Studio to Import"
+  },
+  "expired": {
+    "heading": "This share link has expired",
+    "description": "Temporary TrackDraw share links expire after the duration chosen when they are created. Account-published project links stay live until the owner revokes them. Ask the sender to publish a fresh link if you still need this layout.",
+    "step1": "Ask the sender to publish the track again, or send an account-published link for longer-lived read-only access.",
+    "step2": "Ask for a JSON export if the layout needs a longer-lived handoff."
+  },
+  "notFound": {
+    "heading": "This shared track could not be opened",
+    "description": "The share link may have been revoked by the owner, or it may be outdated, incomplete, or miscopied. Ask the sender to confirm the link is still active or publish a fresh link. If the track is very large, a JSON export is a more reliable alternative to a share link.",
+    "step1": "Ask the sender to confirm the share is still active and copy the latest share link again.",
+    "step2": "Open the link directly from the message where it was sent.",
+    "step3": "Ask for a JSON export if the track is very large — JSON files are not subject to URL size limits."
+  },
+  "viewer": {
+    "dismissIntro": "Dismiss shared track intro",
+    "sharedByReadOnly": "Shared by {author}. Read-only, no edits are saved. Switch to {view} or make your own editable copy in Studio.",
+    "readOnlyNoAuthor": "Read-only, no edits are saved. Switch to {view} or make your own editable copy in Studio.",
+    "openView": "Open {view}",
+    "makeEditableCopy": "Make editable copy"
+  },
+  "embedUnavailable": {
+    "temporaryTitle": "Embed unavailable",
+    "temporaryDescription": "Embeds are available for published account shares. Open the share link or sign in to publish a durable embed.",
+    "expiredTitle": "This embed has expired",
+    "expiredDescription": "This temporary TrackDraw share is no longer active. Ask the owner to publish a durable account share.",
+    "revokedTitle": "This embed was revoked",
+    "revokedDescription": "The owner has revoked this TrackDraw share, so the embedded track is no longer available.",
+    "missingTitle": "Track not found",
+    "missingDescription": "This TrackDraw embed does not match an active published account share.",
+    "openShareLink": "Open share link",
+    "signIn": "Sign in",
+    "brand": "TrackDraw"
+  }
+}

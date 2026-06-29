@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import DashboardGalleryManager from "@/components/dashboard/GalleryManager";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -27,12 +28,13 @@ export default async function DashboardGalleryPage() {
   }
 
   const entries = await listGalleryEntriesForDashboard();
+  const t = await getTranslations("dashboard");
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: "Dashboard", href: "/dashboard" }}
-        title="Gallery"
+        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        title={t("pages.gallery")}
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <DashboardGalleryManager

@@ -1,4 +1,5 @@
 import { EyeOff, ImageIcon, Sparkles, Users } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import type { GalleryOverviewStats } from "@/lib/server/gallery";
 
 type DashboardOverviewCardsProps = {
@@ -47,34 +48,36 @@ function KpiCard({
   );
 }
 
-export default function DashboardOverviewCards({
+export default async function DashboardOverviewCards({
   galleryStats,
   totalUsers,
 }: DashboardOverviewCardsProps) {
+  const t = await getTranslations("dashboard.overviewCards");
+
   const cards: KpiCard[] = [
     {
       key: "gallery-total",
-      label: "Gallery entries",
+      label: t("galleryEntries"),
       value: galleryStats.total,
-      helper: "All dashboard-managed entries",
+      helper: t("galleryEntriesHelper"),
       icon: ImageIcon,
       accent: "bg-sky-500",
       iconTone: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
     },
     {
       key: "gallery-featured",
-      label: "Featured",
+      label: t("featured"),
       value: galleryStats.featured,
-      helper: "Pinned in the featured section",
+      helper: t("featuredHelper"),
       icon: Sparkles,
       accent: "bg-amber-500",
       iconTone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     },
     {
       key: "gallery-hidden",
-      label: "Hidden",
+      label: t("hidden"),
       value: galleryStats.hidden,
-      helper: "Removed from public discovery",
+      helper: t("hiddenHelper"),
       icon: EyeOff,
       accent: "bg-rose-500",
       iconTone: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
@@ -83,9 +86,9 @@ export default function DashboardOverviewCards({
       ? [
           {
             key: "accounts",
-            label: "Total accounts",
+            label: t("totalAccounts"),
             value: totalUsers,
-            helper: "Tracked user records",
+            helper: t("totalAccountsHelper"),
             icon: Users,
             accent: "bg-emerald-500",
             iconTone:

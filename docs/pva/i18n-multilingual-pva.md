@@ -108,9 +108,17 @@ Phase 1 — architecture + editor pilot:
 
 Phase 2 — inspector + dialogs (~200 strings)
 
-Phase 3 — landing page (~500+ strings)
+Phase 3 — landing, login, legal pages (~500+ strings)
 
-Phase 4 — dashboard + remaining surfaces
+Phase 4 — admin dashboard (`src/app/dashboard/**`, `src/components/dashboard/**`): users, audit, metrics, API keys, gallery management, sidebar (~190 strings)
+
+Phase 5 — editor surfaces left over from the phase 1 pilot: Header, MobileAppMenu, mobile panels, viewer header, starter overlay, layout preset picker, save-as-preset dialog, view mode switch, desktop inspector panel, and related smaller components. Explicitly excludes `tool-icons.tsx` group titles and `PerformanceHud` (dev-only HUD) — see phase 8.
+
+Phase 6 — public share/embed viewers (`src/app/share/**`, `src/app/embed/**`): read-only review links and embed error/unavailable states
+
+Phase 7 — inspector leftovers (ElevationChart, MapReferenceDialog) and the public gallery grid
+
+Phase 8 — shared tool/shape vocabulary centralization: `toolLabels` and `toolShortcuts` (`src/lib/editor/tool-registry.ts`) and `shapeKindLabels` (`src/lib/track/items/registry.ts`) are plain English object exports living outside the React tree, consumed by Toolbar, tool-icons, the inspector, canvas tooltips, export filenames, and audit logs. Translating per call site would duplicate the same gate/ladder/tower/etc. labels across many components. Phase 8 introduces a single `shapes` (or `elements`) namespace and a resolver so every consumer pulls from one translated source instead of the static lib exports.
 
 ### Language Picker Placement
 

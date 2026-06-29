@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, Link2, PencilLine, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface EditorMobilePathBuilderOverlayProps {
   className: string;
@@ -26,6 +27,9 @@ export function PathBuilderOverlay({
   onFinishPath,
   onUndoPathPoint,
 }: EditorMobilePathBuilderOverlayProps) {
+  const t = useTranslations("editor.mobilePanels.pathBuilder");
+  const lengthLabel = draftPathLengthLabel ?? `${draftPathLength.toFixed(1)} m`;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -35,14 +39,20 @@ export function PathBuilderOverlay({
       <div className="flex items-start justify-between gap-3 px-1 pb-2">
         <div className="min-w-0">
           <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
-            Path builder
+            {t("title")}
           </p>
           <p className="truncate text-[11px] text-white/70">
             {draftPathClosed
-              ? `Loop connected · ${draftPathPointCount} points · ${draftPathLengthLabel ?? `${draftPathLength.toFixed(1)} m`}`
+              ? t("loopConnected", {
+                  count: draftPathPointCount,
+                  length: lengthLabel,
+                })
               : draftPathPointCount > 0
-                ? `${draftPathPointCount} points · ${draftPathLengthLabel ?? `${draftPathLength.toFixed(1)} m`}`
-                : "Tap the canvas to place the first point"}
+                ? t("pointsCount", {
+                    count: draftPathPointCount,
+                    length: lengthLabel,
+                  })
+                : t("tapToStart")}
           </p>
         </div>
       </div>
@@ -55,7 +65,7 @@ export function PathBuilderOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
         >
           <ArrowRight className="size-4 rotate-180" />
-          <span>Undo</span>
+          <span>{t("undo")}</span>
         </button>
         <button
           type="button"
@@ -64,7 +74,7 @@ export function PathBuilderOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
         >
           <Link2 className="size-4" />
-          <span>Connect ends</span>
+          <span>{t("connectEnds")}</span>
         </button>
         <button
           type="button"
@@ -73,7 +83,7 @@ export function PathBuilderOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
         >
           <PencilLine className="size-4" />
-          <span>Finish</span>
+          <span>{t("finish")}</span>
         </button>
         <button
           type="button"
@@ -81,7 +91,7 @@ export function PathBuilderOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
         >
           <X className="size-4" />
-          <span>Cancel</span>
+          <span>{t("cancel")}</span>
         </button>
       </div>
     </motion.div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Square } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type ViewMode = "2d" | "3d";
@@ -12,22 +13,32 @@ type ViewModeSwitchProps = {
   className?: string;
 };
 
-const options: Array<{
-  value: ViewMode;
-  label: string;
-  drawerLabel: string;
-  Icon: typeof Square;
-}> = [
-  { value: "2d", label: "2D", drawerLabel: "2D Canvas", Icon: Square },
-  { value: "3d", label: "3D", drawerLabel: "3D Preview", Icon: Box },
-];
-
 export default function ViewModeSwitch({
   value,
   onValueChange,
   size = "desktop",
   className,
 }: ViewModeSwitchProps) {
+  const t = useTranslations("editor.viewModeSwitch");
+  const options: Array<{
+    value: ViewMode;
+    label: string;
+    drawerLabel: string;
+    Icon: typeof Square;
+  }> = [
+    {
+      value: "2d",
+      label: t("canvas2dShort"),
+      drawerLabel: t("canvas2dDrawer"),
+      Icon: Square,
+    },
+    {
+      value: "3d",
+      label: t("preview3dShort"),
+      drawerLabel: t("preview3dDrawer"),
+      Icon: Box,
+    },
+  ];
   const isMobile = size === "mobile";
   const isDrawer = size === "drawer";
   const outerRadiusClassName = isDrawer
@@ -44,7 +55,7 @@ export default function ViewModeSwitch({
   return (
     <div
       role="group"
-      aria-label="View mode"
+      aria-label={t("ariaLabel")}
       className={cn(
         "border-border/70 bg-sidebar/90 relative grid grid-cols-2 items-center overflow-hidden border p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur",
         isDrawer

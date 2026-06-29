@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import DashboardAuditEventsTable, {
   type AuditEventCategory,
 } from "@/components/dashboard/tables/AuditEventsTable";
@@ -44,12 +45,13 @@ export default async function DashboardAuditPage({
   const activeFilterValue = parseAuditFilter(resolvedSearchParams?.type);
   const initialCategories = getInitialCategories(activeFilterValue);
   const events = await listAuditEvents({ limit: 100 });
+  const t = await getTranslations("dashboard");
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: "Dashboard", href: "/dashboard" }}
-        title="Audit"
+        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        title={t("pages.audit")}
       />
       <DashboardAuditEventsTable
         key={activeFilterValue}

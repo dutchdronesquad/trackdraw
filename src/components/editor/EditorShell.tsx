@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useAccountProjectSync } from "./useAccountProjectSync";
 import { useEditorDialogs } from "./useEditorDialogs";
 import { useManualProjectSave } from "./useManualProjectSave";
@@ -99,6 +100,7 @@ export default function EditorShell({
   usePerfMetric("render:EditorShell");
   useDeveloperModeShortcut();
 
+  const t = useTranslations("editor");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const { enabled: developerModeEnabled } = useDeveloperMode();
   const { unitSystem } = useMeasurementUnitSystem();
@@ -498,9 +500,8 @@ export default function EditorShell({
         const exportDesign =
           projectId === design.id ? design : loadProject(projectId);
         if (!exportDesign) {
-          toast.error("Export failed", {
-            description:
-              "TrackDraw could not load this local project. Open it first or choose another saved project.",
+          toast.error(t("shell.exportFailed"), {
+            description: t("shell.exportFailedNoProjectDescription"),
           });
           return;
         }
@@ -512,14 +513,14 @@ export default function EditorShell({
         );
 
         downloadJsonFile(`${baseName}.json`, serialized);
-        toast.success("Project JSON exported");
+        toast.success(t("shell.exportSuccess"));
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Export failed";
-        toast.error("Export failed", { description: message });
+          error instanceof Error ? error.message : t("shell.exportFailed");
+        toast.error(t("shell.exportFailed"), { description: message });
       }
     },
-    [design]
+    [design, t]
   );
 
   return (
@@ -562,7 +563,7 @@ export default function EditorShell({
               hideTabsOnMobile
               collapsed={sidebarCollapsed}
               onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
-              title={design.title || "Untitled track"}
+              title={design.title || t("shell.untitledTrack")}
               studioHref={studioHref}
               lastSnapshotLabel={lastSnapshotLabel}
               statusLabel={headerStatus?.label}
@@ -578,10 +579,10 @@ export default function EditorShell({
               }
               selectionLabel={
                 selection.length > 0
-                  ? `${selection.length} selected`
+                  ? t("statusBar.selected", { count: selection.length })
                   : tab === "3d"
-                    ? "3D preview"
-                    : "2D canvas"
+                    ? t("common.preview3d")
+                    : t("common.canvas2d")
               }
             />
           )}

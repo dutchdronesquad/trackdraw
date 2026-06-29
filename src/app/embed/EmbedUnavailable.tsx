@@ -1,43 +1,33 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LockKeyhole, Unlink } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 type EmbedUnavailableReason = "temporary" | "expired" | "revoked" | "missing";
 
-const copyByReason: Record<
+const messageKeyByReason: Record<
   EmbedUnavailableReason,
   { title: string; description: string }
 > = {
-  temporary: {
-    title: "Embed unavailable",
-    description:
-      "Embeds are available for published account shares. Open the share link or sign in to publish a durable embed.",
-  },
-  expired: {
-    title: "This embed has expired",
-    description:
-      "This temporary TrackDraw share is no longer active. Ask the owner to publish a durable account share.",
-  },
-  revoked: {
-    title: "This embed was revoked",
-    description:
-      "The owner has revoked this TrackDraw share, so the embedded track is no longer available.",
-  },
-  missing: {
-    title: "Track not found",
-    description:
-      "This TrackDraw embed does not match an active published account share.",
-  },
+  temporary: { title: "temporaryTitle", description: "temporaryDescription" },
+  expired: { title: "expiredTitle", description: "expiredDescription" },
+  revoked: { title: "revokedTitle", description: "revokedDescription" },
+  missing: { title: "missingTitle", description: "missingDescription" },
 };
 
-export default function EmbedUnavailable({
+export default async function EmbedUnavailable({
   reason,
   shareHref,
 }: {
   reason: EmbedUnavailableReason;
   shareHref?: string;
 }) {
-  const copy = copyByReason[reason];
+  const t = await getTranslations("share.embedUnavailable");
+  const messageKeys = messageKeyByReason[reason];
+  const copy = {
+    title: t(messageKeys.title),
+    description: t(messageKeys.description),
+  };
   const Icon = reason === "temporary" ? LockKeyhole : Unlink;
 
   return (
@@ -77,7 +67,7 @@ export default function EmbedUnavailable({
                   target="_blank"
                   className="border-border text-foreground hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3 text-xs font-medium transition-colors"
                 >
-                  Open share link
+                  {t("openShareLink")}
                 </Link>
               ) : null}
               <Link
@@ -85,14 +75,14 @@ export default function EmbedUnavailable({
                 target="_blank"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center rounded-lg px-3 text-xs font-medium transition-colors"
               >
-                Sign in
+                {t("signIn")}
               </Link>
               <Link
                 href="/"
                 target="_blank"
                 className="border-border text-foreground hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3 text-xs font-medium transition-colors"
               >
-                TrackDraw
+                {t("brand")}
               </Link>
             </div>
           </div>

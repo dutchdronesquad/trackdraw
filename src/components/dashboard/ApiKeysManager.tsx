@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -28,11 +29,7 @@ import type { AdminApiKey } from "@/lib/server/api-keys";
 
 type ApiKeyStatus = "active" | "expired" | "disabled";
 
-const statusFilters: { value: ApiKeyStatus; label: string }[] = [
-  { value: "active", label: "Active" },
-  { value: "expired", label: "Expired" },
-  { value: "disabled", label: "Disabled" },
-];
+const statusFilterValues: ApiKeyStatus[] = ["active", "expired", "disabled"];
 
 function getApiKeyStatus(key: AdminApiKey): ApiKeyStatus {
   if (!key.enabled) return "disabled";
@@ -49,15 +46,8 @@ function getStatusVariant(
   return "muted";
 }
 
-function getStatusLabel(status: ApiKeyStatus) {
-  switch (status) {
-    case "active":
-      return "Active";
-    case "expired":
-      return "Expired";
-    case "disabled":
-      return "Disabled";
-  }
+function getStatusLabel(status: ApiKeyStatus, t: (key: string) => string) {
+  return t(`statusValues.${status}`);
 }
 
 function getOwnerLabel(key: AdminApiKey) {
@@ -102,11 +92,14 @@ function formatDateTime(value: string | null) {
   }
 }
 
-function formatRateLimitWindow(ms: number | null) {
+function formatRateLimitWindow(
+  ms: number | null,
+  t: (key: string, values?: Record<string, unknown>) => string
+) {
   if (ms === null) return "—";
   const minutes = ms / 1000 / 60;
-  if (minutes < 60) return `${minutes} min`;
-  return `${minutes / 60} hr`;
+  if (minutes < 60) return t("minutesUnit", { count: minutes });
+  return t("hoursUnit", { count: minutes / 60 });
 }
 
 function formatPermissions(permissions: AdminApiKey["permissions"]) {
@@ -123,6 +116,7 @@ type DashboardApiKeysManagerProps = {
 export default function DashboardApiKeysManager({
   initialKeys,
 }: DashboardApiKeysManagerProps) {
+  const t = useTranslations("dashboard.apiKeys");
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<ApiKeyStatus[]>([]);
@@ -140,7 +134,7 @@ export default function DashboardApiKeysManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Key
+          {t("table.key")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -159,7 +153,7 @@ export default function DashboardApiKeysManager({
     {
       id: "owner",
       accessorFn: (row) => getOwnerLabel(row),
-      header: "Owner",
+      header: t("table.owner"),
       meta: { className: "w-[25%] min-w-44" },
       cell: ({ row }) => (
         <div className="min-w-0">
@@ -173,13 +167,13 @@ export default function DashboardApiKeysManager({
     {
       id: "status",
       accessorFn: (row) => getApiKeyStatus(row),
-      header: "Status",
+      header: t("table.status"),
       meta: { className: "w-28" },
       cell: ({ row }) => {
         const status = getApiKeyStatus(row.original);
         return (
           <Badge variant={getStatusVariant(status)}>
-            {getStatusLabel(status)}
+            {getStatusLabel(status, t)}
           </Badge>
         );
       },
@@ -195,7 +189,7 @@ export default function DashboardApiKeysManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Requests
+          {t("table.requests")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -216,7 +210,7 @@ export default function DashboardApiKeysManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Last used
+          {t("table.lastUsed")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -230,7 +224,7 @@ export default function DashboardApiKeysManager({
       id: "expires",
       accessorKey: "expiresAt",
       meta: { className: "w-32 hidden lg:table-cell" },
-      header: "Expires",
+      header: t("table.expires"),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-xs">
           {formatDate(row.original.expiresAt)}
@@ -267,17 +261,15 @@ export default function DashboardApiKeysManager({
       ? true
       : selectedStatuses.includes(getApiKeyStatus(row.original))
   );
-  const statusFilterOptions = statusFilters.map((filter) => ({
-    ...filter,
-    count: allRows.filter(
-      (row) => getApiKeyStatus(row.original) === filter.value
-    ).length,
+  const statusFilterOptions = statusFilterValues.map((value) => ({
+    value,
+    label: t(`statusValues.${value}`),
+    count: allRows.filter((row) => getApiKeyStatus(row.original) === value)
+      .length,
   }));
 
   const emptyMessage =
-    initialKeys.length === 0
-      ? "No API keys found."
-      : "No API keys match the current filters.";
+    initialKeys.length === 0 ? t("emptyMessage") : t("emptyFilteredMessage");
 
   const inspectStatus = inspectKey ? getApiKeyStatus(inspectKey) : null;
 
@@ -286,10 +278,10 @@ export default function DashboardApiKeysManager({
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
-        searchPlaceholder="Search key name or owner..."
+        searchPlaceholder={t("searchPlaceholder")}
       >
         <DataTableFacetFilter
-          title="Status"
+          title={t("status")}
           selected={selectedStatuses}
           options={statusFilterOptions}
           onChange={setSelectedStatuses}
@@ -307,7 +299,10 @@ export default function DashboardApiKeysManager({
       />
 
       <p className="text-muted-foreground text-xs">
-        Showing {filteredRows.length} of {initialKeys.length} API keys.
+        {t("showing", {
+          filtered: filteredRows.length,
+          total: initialKeys.length,
+        })}
       </p>
 
       <Sheet
@@ -340,21 +335,21 @@ export default function DashboardApiKeysManager({
               <div className="grid grid-cols-3 divide-x border-b">
                 {[
                   {
-                    label: "Requests",
+                    label: t("panel.requests"),
                     value: inspectKey.requestCount.toLocaleString(),
                   },
                   {
-                    label: "Remaining",
+                    label: t("panel.remaining"),
                     value:
                       inspectKey.remaining !== null
                         ? inspectKey.remaining.toLocaleString()
                         : "—",
                   },
                   {
-                    label: "Rate limit",
+                    label: t("panel.rateLimit"),
                     value: inspectKey.rateLimitEnabled
-                      ? `${inspectKey.rateLimitMax ?? "—"}/${formatRateLimitWindow(inspectKey.rateLimitTimeWindowMs)}`
-                      : "Off",
+                      ? `${inspectKey.rateLimitMax ?? "—"}/${formatRateLimitWindow(inspectKey.rateLimitTimeWindowMs, t as (key: string, values?: Record<string, unknown>) => string)}`
+                      : t("off"),
                   },
                 ].map(({ label, value }) => (
                   <div key={label} className="px-4 py-3 text-center">
@@ -370,20 +365,20 @@ export default function DashboardApiKeysManager({
 
               <div className="space-y-0 px-6 py-5">
                 <p className="text-muted-foreground mb-3 text-[10px] font-medium tracking-wide uppercase">
-                  Key
+                  {t("panel.keySection")}
                 </p>
                 <dl className="space-y-2">
                   {[
                     {
-                      label: "Status",
+                      label: t("panel.status"),
                       value: (
                         <Badge variant={getStatusVariant(inspectStatus)}>
-                          {getStatusLabel(inspectStatus)}
+                          {getStatusLabel(inspectStatus, t)}
                         </Badge>
                       ),
                     },
                     {
-                      label: "Prefix",
+                      label: t("panel.prefix"),
                       value: (
                         <span className="font-mono text-xs">
                           {inspectKey.prefix ?? "—"}
@@ -392,7 +387,7 @@ export default function DashboardApiKeysManager({
                       ),
                     },
                     {
-                      label: "Permissions",
+                      label: t("panel.permissions"),
                       value: (
                         <span className="text-xs">
                           {formatPermissions(inspectKey.permissions)}
@@ -400,15 +395,15 @@ export default function DashboardApiKeysManager({
                       ),
                     },
                     {
-                      label: "Created",
+                      label: t("panel.created"),
                       value: formatDate(inspectKey.createdAt),
                     },
                     {
-                      label: "Expires",
+                      label: t("panel.expires"),
                       value: formatDate(inspectKey.expiresAt),
                     },
                     {
-                      label: "Last used",
+                      label: t("panel.lastUsed"),
                       value: formatDateTime(inspectKey.lastRequest),
                     },
                   ].map(({ label, value }) => (
@@ -427,14 +422,20 @@ export default function DashboardApiKeysManager({
 
               <div className="border-t px-6 py-5">
                 <p className="text-muted-foreground mb-3 text-[10px] font-medium tracking-wide uppercase">
-                  Owner
+                  {t("panel.ownerSection")}
                 </p>
                 <dl className="space-y-2">
                   {[
-                    { label: "Name", value: inspectKey.ownerName ?? "—" },
-                    { label: "Email", value: inspectKey.ownerEmail ?? "—" },
                     {
-                      label: "User ID",
+                      label: t("panel.name"),
+                      value: inspectKey.ownerName ?? "—",
+                    },
+                    {
+                      label: t("panel.email"),
+                      value: inspectKey.ownerEmail ?? "—",
+                    },
+                    {
+                      label: t("panel.userId"),
                       value: (
                         <span className="font-mono text-xs">
                           {inspectKey.ownerUserId}
@@ -459,11 +460,9 @@ export default function DashboardApiKeysManager({
             <SheetHeader className="p-6">
               <SheetTitle className="flex items-center gap-2">
                 <KeyRound className="size-4" />
-                API Key
+                {t("panel.title")}
               </SheetTitle>
-              <SheetDescription>
-                Select a key row to inspect its details.
-              </SheetDescription>
+              <SheetDescription>{t("panel.selectRow")}</SheetDescription>
             </SheetHeader>
           )}
         </SheetContent>

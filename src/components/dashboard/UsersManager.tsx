@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -54,8 +55,8 @@ type DashboardUsersManagerProps = {
   initialUsers: AdminUser[];
 };
 
-function getUserLabel(user: AdminUser) {
-  return user.name?.trim() || user.email?.trim() || "Unnamed user";
+function getUserLabel(user: AdminUser, unnamedUserLabel: string) {
+  return user.name?.trim() || user.email?.trim() || unnamedUserLabel;
 }
 
 function getSecondaryLabel(user: AdminUser) {
@@ -109,6 +110,7 @@ export default function DashboardUsersManager({
   currentUserId,
   initialUsers,
 }: DashboardUsersManagerProps) {
+  const t = useTranslations("dashboard.users");
   const [users, setUsers] = useState(initialUsers);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -143,7 +145,7 @@ export default function DashboardUsersManager({
         };
         if (cancelled) return;
         if (!res.ok || !payload.ok) {
-          toast.error(payload.error ?? "Failed to load user context.");
+          toast.error(payload.error ?? t("loadFailed"));
           return;
         }
         if (payload.stats && payload.recentEvents) {
@@ -154,7 +156,7 @@ export default function DashboardUsersManager({
         }
       })
       .catch(() => {
-        if (!cancelled) toast.error("Failed to load user context.");
+        if (!cancelled) toast.error(t("loadFailed"));
       })
       .finally(() => {
         if (!cancelled) setInspectLoading(false);
@@ -163,14 +165,14 @@ export default function DashboardUsersManager({
     return () => {
       cancelled = true;
     };
-  }, [inspectCandidate]);
+  }, [inspectCandidate, t]);
 
   const copyToClipboard = async (value: string, label: string) => {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success(`${label} copied.`);
+      toast.success(t("copySuccess", { label }));
     } catch {
-      toast.error(`Could not copy ${label}.`);
+      toast.error(t("copyFailed", { label }));
     }
   };
 
@@ -195,7 +197,7 @@ export default function DashboardUsersManager({
       };
 
       if (!response.ok || !payload.ok || !payload.user) {
-        throw new Error(payload.error ?? "Could not update role");
+        throw new Error(payload.error ?? t("updateFailed"));
       }
 
       const updated = payload.user;
@@ -205,14 +207,13 @@ export default function DashboardUsersManager({
       );
       setDraftRoles((prev) => ({ ...prev, [updated.id]: updated.role }));
       toast.success(
-        `Updated ${getUserLabel(updated)} to ${getAccountRoleLabel(updated.role)}.`
+        t("updateSuccess", {
+          name: getUserLabel(updated, t("unnamedUser")),
+          role: getAccountRoleLabel(updated.role),
+        })
       );
     } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : "Could not update the selected role."
-      );
+      toast.error(err instanceof Error ? err.message : t("updateFailed"));
     } finally {
       setPendingUserId(null);
     }
@@ -221,7 +222,7 @@ export default function DashboardUsersManager({
   const columns: ColumnDef<AdminUser>[] = [
     {
       id: "user",
-      accessorFn: (row) => getUserLabel(row),
+      accessorFn: (row) => getUserLabel(row, t("unnamedUser")),
       meta: { className: "w-[40%] min-w-56" },
       header: ({ column }) => (
         <Button
@@ -230,7 +231,7 @@ export default function DashboardUsersManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          User
+          {t("table.user")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -240,10 +241,10 @@ export default function DashboardUsersManager({
         return (
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">
-              {getUserLabel(user)}
+              {getUserLabel(user, t("unnamedUser"))}
               {isSelf && (
                 <span className="text-muted-foreground ml-1.5 text-xs font-normal">
-                  (you)
+                  {t("you")}
                 </span>
               )}
             </p>
@@ -264,7 +265,7 @@ export default function DashboardUsersManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Projects
+          {t("table.projects")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -276,7 +277,7 @@ export default function DashboardUsersManager({
     },
     {
       accessorKey: "role",
-      header: "Role",
+      header: t("table.role"),
       meta: { className: "w-32" },
       cell: ({ row }) => (
         <Badge
@@ -297,7 +298,7 @@ export default function DashboardUsersManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Joined
+          {t("table.joined")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -317,7 +318,7 @@ export default function DashboardUsersManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Last login
+          {t("table.lastLogin")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -368,10 +369,10 @@ export default function DashboardUsersManager({
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
-        searchPlaceholder="Search by name or email..."
+        searchPlaceholder={t("searchPlaceholder")}
       >
         <DataTableFacetFilter
-          title="Role"
+          title={t("role")}
           selected={selectedRoles}
           options={roleFilterOptions}
           onChange={setSelectedRoles}
@@ -382,12 +383,12 @@ export default function DashboardUsersManager({
         table={table}
         rows={filteredRows}
         columnsLength={columns.length}
-        emptyMessage="No users found."
+        emptyMessage={t("emptyMessage")}
         onRowClick={(row) => setInspectCandidate(row.original)}
       />
 
       <p className="text-muted-foreground text-xs">
-        Showing {filteredRows.length} of {users.length} accounts.
+        {t("showing", { filtered: filteredRows.length, total: users.length })}
       </p>
 
       <Sheet
@@ -408,7 +409,7 @@ export default function DashboardUsersManager({
                   </Avatar>
                   <div className="min-w-0">
                     <SheetTitle className="truncate text-base leading-tight">
-                      {getUserLabel(inspectCandidate)}
+                      {getUserLabel(inspectCandidate, t("unnamedUser"))}
                     </SheetTitle>
                     <SheetDescription className="truncate text-xs">
                       {inspectCandidate.email ?? inspectCandidate.id}
@@ -421,26 +422,26 @@ export default function DashboardUsersManager({
                 {inspectLoading ? (
                   <div className="text-muted-foreground flex items-center justify-center gap-2 py-12 text-sm">
                     <Loader2 className="size-4 animate-spin" />
-                    Loading…
+                    {t("panel.loading")}
                   </div>
                 ) : inspectData ? (
                   <div className="divide-y">
                     <div className="grid grid-cols-4 divide-x px-0">
                       {[
                         {
-                          label: "Projects",
+                          label: t("panel.stats.projects"),
                           value: inspectData.stats.projectCount,
                         },
                         {
-                          label: "Shares",
+                          label: t("panel.stats.shares"),
                           value: inspectData.stats.activeShareCount,
                         },
                         {
-                          label: "Gallery",
+                          label: t("panel.stats.gallery"),
                           value: inspectData.stats.galleryEntryCount,
                         },
                         {
-                          label: "API keys",
+                          label: t("panel.stats.apiKeys"),
                           value: inspectData.stats.apiKeyCount,
                         },
                       ].map(({ label, value }) => (
@@ -460,12 +461,12 @@ export default function DashboardUsersManager({
 
                     <div className="space-y-3 px-6 py-5">
                       <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-                        Account
+                        {t("panel.accountSection")}
                       </p>
                       <dl className="space-y-2.5">
                         <div className="flex items-center justify-between gap-4">
                           <dt className="text-muted-foreground text-xs">
-                            Member since
+                            {t("panel.memberSince")}
                           </dt>
                           <dd className="text-xs font-medium">
                             {formatDate(inspectCandidate.createdAt)}
@@ -473,7 +474,7 @@ export default function DashboardUsersManager({
                         </div>
                         <div className="flex items-center justify-between gap-4">
                           <dt className="text-muted-foreground text-xs">
-                            Last login
+                            {t("panel.lastLogin")}
                           </dt>
                           <dd className="text-xs font-medium">
                             {inspectCandidate.lastLoginAt
@@ -483,7 +484,7 @@ export default function DashboardUsersManager({
                         </div>
                         <div className="flex items-center justify-between gap-4">
                           <dt className="text-muted-foreground text-xs">
-                            Role
+                            {t("panel.role")}
                           </dt>
                           <dd>
                             <Badge
@@ -498,7 +499,7 @@ export default function DashboardUsersManager({
                         </div>
                         <div className="flex items-start justify-between gap-4">
                           <dt className="text-muted-foreground shrink-0 text-xs">
-                            User ID
+                            {t("panel.userId")}
                           </dt>
                           <dd className="flex min-w-0 items-center gap-1">
                             <span className="text-muted-foreground truncate font-mono text-[11px]">
@@ -509,11 +510,11 @@ export default function DashboardUsersManager({
                               variant="ghost"
                               size="icon"
                               className="text-muted-foreground hover:text-foreground size-5 shrink-0"
-                              aria-label="Copy user ID"
+                              aria-label={t("panel.copyUserId")}
                               onClick={() =>
                                 void copyToClipboard(
                                   inspectCandidate.id,
-                                  "User ID"
+                                  t("panel.userId")
                                 )
                               }
                             >
@@ -526,11 +527,11 @@ export default function DashboardUsersManager({
 
                     <div className="flex items-center justify-between gap-4 px-6 py-2.5">
                       <dt className="text-muted-foreground shrink-0 text-xs">
-                        Change role
+                        {t("panel.changeRole")}
                       </dt>
                       {inspectCandidate.id === currentUserId ? (
                         <dd className="text-muted-foreground text-xs">
-                          Cannot change own role
+                          {t("panel.cannotChangeOwnRole")}
                         </dd>
                       ) : (
                         <dd className="flex items-center gap-1.5">
@@ -595,7 +596,7 @@ export default function DashboardUsersManager({
                             {pendingUserId === inspectCandidate.id ? (
                               <Loader2 className="size-3 animate-spin" />
                             ) : (
-                              "Save"
+                              t("panel.save")
                             )}
                           </Button>
                         </dd>
@@ -604,7 +605,7 @@ export default function DashboardUsersManager({
 
                     <div className="space-y-3 px-6 py-5">
                       <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-                        Recent activity
+                        {t("panel.recentActivitySection")}
                       </p>
                       {inspectData.recentEvents.length > 0 ? (
                         <ul className="space-y-1">
@@ -622,8 +623,10 @@ export default function DashboardUsersManager({
                                     {formatAuditEventType(event.eventType)}
                                   </p>
                                   <p className="text-muted-foreground mt-0.5 text-xs">
-                                    {isActor ? "Actor" : "Target"} ·{" "}
-                                    {formatDate(event.createdAt)}
+                                    {isActor
+                                      ? t("panel.actor")
+                                      : t("panel.target")}{" "}
+                                    · {formatDate(event.createdAt)}
                                   </p>
                                 </div>
                               </li>
@@ -632,7 +635,7 @@ export default function DashboardUsersManager({
                         </ul>
                       ) : (
                         <p className="text-muted-foreground text-sm">
-                          No audit events recorded.
+                          {t("panel.noAuditEvents")}
                         </p>
                       )}
                     </div>
@@ -644,7 +647,7 @@ export default function DashboardUsersManager({
                 <Button asChild variant="outline" className="w-full" size="sm">
                   <Link href="/dashboard/audit">
                     <ExternalLink className="size-3.5" />
-                    View full audit trail
+                    {t("panel.viewFullAuditTrail")}
                   </Link>
                 </Button>
               </div>

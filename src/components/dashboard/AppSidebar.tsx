@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Bell,
   BarChart2,
@@ -48,7 +49,7 @@ type DashboardAppSidebarProps = {
 
 type NavItem = {
   key: SidebarNavKey;
-  title: string;
+  titleKey: string;
   href: string;
   icon: typeof LayoutDashboard;
   activePrefix?: string;
@@ -89,7 +90,7 @@ function TrackDrawMark({ className }: { className?: string }) {
 const topNavItems: NavItem[] = [
   {
     key: "overview",
-    title: "Overview",
+    titleKey: "overview",
     href: "/dashboard",
     icon: LayoutDashboard,
     activePrefix: "/dashboard",
@@ -97,7 +98,7 @@ const topNavItems: NavItem[] = [
   },
   {
     key: "gallery",
-    title: "Gallery",
+    titleKey: "gallery",
     href: "/dashboard/gallery",
     icon: ImageIcon,
     activePrefix: "/dashboard/gallery",
@@ -107,35 +108,35 @@ const topNavItems: NavItem[] = [
 const adminNavItems: NavItem[] = [
   {
     key: "users",
-    title: "Users",
+    titleKey: "users",
     href: "/dashboard/users",
     icon: Users,
     activePrefix: "/dashboard/users",
   },
   {
     key: "api-keys",
-    title: "API Keys",
+    titleKey: "apiKeys",
     href: "/dashboard/api-keys",
     icon: KeyRound,
     activePrefix: "/dashboard/api-keys",
   },
   {
     key: "audit",
-    title: "Audit",
+    titleKey: "audit",
     href: "/dashboard/audit",
     icon: Bell,
     activePrefix: "/dashboard/audit",
   },
   {
     key: "metrics",
-    title: "Metrics",
+    titleKey: "metrics",
     href: "/dashboard/metrics",
     icon: BarChart2,
     activePrefix: "/dashboard/metrics",
   },
   {
     key: "email-preview",
-    title: "Email Preview",
+    titleKey: "emailPreview",
     href: "/dashboard/email-preview",
     icon: Mail,
     activePrefix: "/dashboard/email-preview",
@@ -145,13 +146,13 @@ const adminNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
   {
     key: "overview",
-    title: "Open Studio",
+    titleKey: "openStudio",
     href: "/studio",
     icon: PenLine,
   },
   {
     key: "overview",
-    title: "Public Site",
+    titleKey: "publicSite",
     href: "/",
     icon: Home,
   },
@@ -161,10 +162,12 @@ function NavMenuItem({
   item,
   currentPath,
   badge,
+  label,
 }: {
   item: NavItem;
   currentPath: string;
   badge?: number;
+  label: string;
 }) {
   const isActive = isItemActive(currentPath, item);
   const Icon = item.icon;
@@ -173,7 +176,7 @@ function NavMenuItem({
     <SidebarMenuItem>
       <SidebarMenuButton
         tooltip={{
-          children: item.title,
+          children: label,
           className: appTooltipContentClassName,
         }}
         isActive={isActive}
@@ -185,7 +188,7 @@ function NavMenuItem({
       >
         <Link href={item.href} aria-current={isActive ? "page" : undefined}>
           <Icon />
-          <span>{item.title}</span>
+          <span>{label}</span>
         </Link>
       </SidebarMenuButton>
       {typeof badge === "number" ? (
@@ -223,6 +226,7 @@ export default function DashboardAppSidebar({
 }: DashboardAppSidebarProps) {
   const currentPath = usePathname();
   const theme = useTheme();
+  const t = useTranslations("dashboard.sidebar");
 
   const filteredTopItems = topNavItems.filter((item) => {
     if (item.key === "overview") return visibleModules.includes("overview");
@@ -254,7 +258,7 @@ export default function DashboardAppSidebar({
                   <span className="relative block h-8 w-42 group-data-[collapsible=icon]:hidden">
                     <Image
                       src={`/assets/brand/trackdraw-logo-mono-${theme === "dark" ? "darkbg" : "lightbg"}.svg`}
-                      alt="TrackDraw"
+                      alt={t("logoAlt")}
                       fill
                       unoptimized
                       className="object-contain"
@@ -278,10 +282,11 @@ export default function DashboardAppSidebar({
               <SidebarMenu className="gap-1">
                 {filteredTopItems.map((item) => (
                   <NavMenuItem
-                    key={item.title}
+                    key={item.titleKey}
                     item={item}
                     currentPath={currentPath}
                     badge={itemBadges[item.key]}
+                    label={t(`nav.${item.titleKey}`)}
                   />
                 ))}
               </SidebarMenu>
@@ -290,15 +295,16 @@ export default function DashboardAppSidebar({
         )}
         {filteredAdminItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("adminGroup")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
                 {filteredAdminItems.map((item) => (
                   <NavMenuItem
-                    key={item.title}
+                    key={item.titleKey}
                     item={item}
                     currentPath={currentPath}
                     badge={itemBadges[item.key]}
+                    label={t(`nav.${item.titleKey}`)}
                   />
                 ))}
               </SidebarMenu>
@@ -310,12 +316,13 @@ export default function DashboardAppSidebar({
         <SidebarMenu className="gap-1">
           {footerNavItems.map((item) => {
             const Icon = item.icon;
+            const label = t(`nav.${item.titleKey}`);
 
             return (
-              <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem key={item.titleKey}>
                 <SidebarMenuButton
                   tooltip={{
-                    children: item.title,
+                    children: label,
                     className: appTooltipContentClassName,
                   }}
                   className="hover:bg-muted/80 hover:text-foreground"
@@ -323,7 +330,7 @@ export default function DashboardAppSidebar({
                 >
                   <Link href={item.href}>
                     <Icon className="group-data-[collapsible=icon]:size-4.5" />
-                    <span>{item.title}</span>
+                    <span>{label}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

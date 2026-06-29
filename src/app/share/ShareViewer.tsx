@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useEditor } from "@/store/editor";
 import { ContextOverlayCard } from "@/components/editor/ContextOverlayCard";
 import { getShareTitle } from "@/lib/share";
@@ -28,18 +29,24 @@ export default function ShareViewer({
   studioSeedToken: string;
   initialTab?: EditorView;
 }) {
+  const t = useTranslations("share.viewer");
+  const tViewMode = useTranslations("editor.viewModeSwitch");
   const replaceDesign = useEditor((s) => s.replaceDesign);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const [introDismissed, setIntroDismissed] = useState(false);
   const currentView = parseEditorView(searchParams.get("view")) ?? initialTab;
   const alternateView = currentView === "3d" ? "2d" : "3d";
+  const alternateViewLabel =
+    alternateView === "3d"
+      ? tViewMode("preview3dShort")
+      : tViewMode("canvas2dShort");
   const studioHref = `/studio?token=${encodeURIComponent(studioSeedToken)}&view=${currentView}`;
   const shareTitle = getShareTitle(design);
   const authorName = design.authorName?.trim();
   const introDescription = authorName
-    ? `Shared by ${authorName}. Read-only, no edits are saved. Switch to ${alternateView.toUpperCase()} or make your own editable copy in Studio.`
-    : `Read-only, no edits are saved. Switch to ${alternateView.toUpperCase()} or make your own editable copy in Studio.`;
+    ? t("sharedByReadOnly", { author: authorName, view: alternateViewLabel })
+    : t("readOnlyNoAuthor", { view: alternateViewLabel });
 
   useEffect(() => {
     replaceDesign(design);
@@ -59,7 +66,7 @@ export default function ShareViewer({
             icon={<Eye className="size-3.5" />}
             title={shareTitle}
             description={introDescription}
-            dismissLabel="Dismiss shared track intro"
+            dismissLabel={t("dismissIntro")}
             onDismiss={() => setIntroDismissed(true)}
             variant="subtle"
             action={
@@ -68,13 +75,13 @@ export default function ShareViewer({
                   href={`${pathname}?view=${alternateView}`}
                   className="border-border bg-background hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors"
                 >
-                  Open {alternateView.toUpperCase()}
+                  {t("openView", { view: alternateViewLabel })}
                 </Link>
                 <Link
                   href={studioHref}
                   className="border-border bg-background hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors"
                 >
-                  Make editable copy
+                  {t("makeEditableCopy")}
                   <ArrowRight className="size-3.5" />
                 </Link>
               </div>

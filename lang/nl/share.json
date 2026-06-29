@@ -1,0 +1,48 @@
+{
+  "badge": "Share-weergave",
+  "backToHome": "Terug naar home",
+  "whatToTry": "Wat te proberen",
+  "openStudio": "Studio openen",
+  "error": {
+    "heading": "Deze gedeelde tracklink wordt niet meer ondersteund",
+    "description": "TrackDraw gebruikt nu gepubliceerde deellinks in plaats van het oudere URL-ingebedde shareformaat. Deze oudere link kan niet meer direct worden geopend.",
+    "whatToDo": "Wat te doen",
+    "step1": "Vraag de verzender om een nieuwe deellink te publiceren vanuit <strong>Studio</strong>.",
+    "step2": "Heb je nog een offline overdracht nodig, vraag dan om een <strong>JSON-export</strong> en open die in Studio met Importeren.",
+    "step3": "Nieuwe gepubliceerde links gebruiken de canonieke `/share/[token]` route en blijven de ondersteunde manier om alleen-lezen lay-outs te delen.",
+    "openStudioToImport": "Studio openen om te importeren"
+  },
+  "expired": {
+    "heading": "Deze deellink is verlopen",
+    "description": "Tijdelijke TrackDraw-deellinks verlopen na de gekozen duur bij het aanmaken. Account-gepubliceerde projectlinks blijven actief totdat de eigenaar ze intrekt. Vraag de verzender om een nieuwe link te publiceren als je deze lay-out nog nodig hebt.",
+    "step1": "Vraag de verzender om de track opnieuw te publiceren, of stuur een account-gepubliceerde link voor langduriger alleen-lezen toegang.",
+    "step2": "Vraag om een JSON-export als de lay-out een langduriger overdracht nodig heeft."
+  },
+  "notFound": {
+    "heading": "Deze gedeelde track kon niet worden geopend",
+    "description": "De deellink kan zijn ingetrokken door de eigenaar, of verouderd, onvolledig of verkeerd gekopieerd zijn. Vraag de verzender om te bevestigen dat de link nog actief is of een nieuwe link te publiceren. Als de track erg groot is, is een JSON-export een betrouwbaarder alternatief voor een deellink.",
+    "step1": "Vraag de verzender om te bevestigen dat de share nog actief is en de laatste deellink opnieuw te kopiëren.",
+    "step2": "Open de link direct vanuit het bericht waarin hij is verstuurd.",
+    "step3": "Vraag om een JSON-export als de track erg groot is — JSON-bestanden zijn niet onderhevig aan URL-lengtebeperkingen."
+  },
+  "viewer": {
+    "dismissIntro": "Introductie gedeelde track sluiten",
+    "sharedByReadOnly": "Gedeeld door {author}. Alleen-lezen, wijzigingen worden niet opgeslagen. Wissel naar {view} of maak je eigen bewerkbare kopie in Studio.",
+    "readOnlyNoAuthor": "Alleen-lezen, wijzigingen worden niet opgeslagen. Wissel naar {view} of maak je eigen bewerkbare kopie in Studio.",
+    "openView": "{view} openen",
+    "makeEditableCopy": "Bewerkbare kopie maken"
+  },
+  "embedUnavailable": {
+    "temporaryTitle": "Embed niet beschikbaar",
+    "temporaryDescription": "Embeds zijn beschikbaar voor gepubliceerde account-shares. Open de deellink of log in om een blijvende embed te publiceren.",
+    "expiredTitle": "Deze embed is verlopen",
+    "expiredDescription": "Deze tijdelijke TrackDraw-share is niet meer actief. Vraag de eigenaar om een blijvende account-share te publiceren.",
+    "revokedTitle": "Deze embed is ingetrokken",
+    "revokedDescription": "De eigenaar heeft deze TrackDraw-share ingetrokken, waardoor de ingesloten track niet meer beschikbaar is.",
+    "missingTitle": "Track niet gevonden",
+    "missingDescription": "Deze TrackDraw-embed komt niet overeen met een actieve gepubliceerde account-share.",
+    "openShareLink": "Deellink openen",
+    "signIn": "Inloggen",
+    "brand": "TrackDraw"
+  }
+}

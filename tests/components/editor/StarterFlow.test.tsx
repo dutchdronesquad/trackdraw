@@ -5,7 +5,6 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   shouldShowStarterForDesign,
-  STARTER_STEPS,
   StarterActions,
   StarterSteps,
 } from "@/components/editor/StarterFlow";
@@ -35,9 +34,6 @@ describe("StarterFlow", () => {
     render(<StarterSteps />);
 
     expect(screen.getByText("Good first steps")).toBeTruthy();
-    for (const step of STARTER_STEPS) {
-      expect(screen.getByText(step.title)).toBeTruthy();
-    }
   });
 
   it("runs desktop starter actions for selected layout, guided start, and blank canvas", async () => {

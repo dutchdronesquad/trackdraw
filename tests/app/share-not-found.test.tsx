@@ -48,8 +48,8 @@ describe("ShareNotFound", () => {
     cleanup();
   });
 
-  it("explains missing links may be revoked without exposing a separate state", () => {
-    render(<ShareNotFound />);
+  it("explains missing links may be revoked without exposing a separate state", async () => {
+    render(await ShareNotFound());
 
     expect(
       screen.getByText("This shared track could not be opened")

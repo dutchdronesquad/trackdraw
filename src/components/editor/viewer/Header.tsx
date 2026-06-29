@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Hash, Tag } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Tooltip,
   TooltipContent,
@@ -26,11 +27,13 @@ export default function Header({
   tab,
   onTabChange,
   embedMode = false,
-  title = "Untitled track",
+  title,
   studioHref = "/studio",
   showObstacleNumbers = false,
   onToggleObstacleNumbers,
 }: HeaderProps) {
+  const t = useTranslations("editor");
+  const resolvedTitle = title ?? t("shell.untitledTrack");
   const theme = useTheme();
 
   return (
@@ -38,7 +41,7 @@ export default function Header({
       <div className="flex min-w-0 flex-1 shrink-0 items-center gap-2">
         <Link
           href="/"
-          aria-label="Go to homepage"
+          aria-label={t("toolbar.homepageLabel")}
           className="hidden shrink-0 items-center rounded-xs opacity-90 transition-opacity hover:opacity-100 lg:flex"
         >
           <span className="relative block h-7 w-37">
@@ -64,7 +67,7 @@ export default function Header({
       <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden">
         <Link
           href="/"
-          aria-label="Go to homepage"
+          aria-label={t("toolbar.homepageLabel")}
           className="flex items-center rounded-xs opacity-90 transition-opacity hover:opacity-100"
         >
           <span className="relative block h-9 w-36 sm:w-40">
@@ -83,13 +86,15 @@ export default function Header({
       <div className="pointer-events-none absolute inset-y-0 left-1/2 z-10 hidden -translate-x-1/2 items-center justify-center lg:flex">
         <div className="flex max-w-[42vw] items-center justify-center gap-2 px-6">
           <span className="text-foreground/70 truncate text-center text-sm">
-            {title}
+            {resolvedTitle}
           </span>
           <span className="text-muted-foreground/55 hidden shrink-0 text-[11px] font-medium xl:inline">
             /
           </span>
           <span className="text-muted-foreground/70 hidden shrink-0 text-[11px] font-medium xl:inline">
-            {embedMode ? "Embed" : "Shared preview"}
+            {embedMode
+              ? t("sharedHeader.embedLabel")
+              : t("sharedHeader.sharedPreviewLabel")}
           </span>
         </div>
       </div>
@@ -117,8 +122,8 @@ export default function Header({
               )}
               aria-label={
                 showObstacleNumbers
-                  ? "Hide obstacle numbers"
-                  : "Show obstacle numbers"
+                  ? t("header.hideObstacleNumbers")
+                  : t("header.showObstacleNumbers")
               }
             >
               {showObstacleNumbers ? (
@@ -129,8 +134,8 @@ export default function Header({
             </TooltipTrigger>
             <TooltipContent>
               {showObstacleNumbers
-                ? "Hide obstacle numbers"
-                : "Show obstacle numbers"}
+                ? t("header.hideObstacleNumbers")
+                : t("header.showObstacleNumbers")}
             </TooltipContent>
           </Tooltip>
         ) : null}
@@ -142,7 +147,7 @@ export default function Header({
               href={studioHref}
               className="border-brand-primary/30 bg-brand-primary/8 text-brand-primary hover:bg-brand-primary/12 hidden h-8 items-center gap-1.5 rounded-md border px-2 text-xs font-medium transition-colors sm:inline-flex sm:h-7 sm:px-2.5"
             >
-              Make editable copy
+              {t("header.makeEditableCopy")}
             </Link>
           </>
         ) : null}

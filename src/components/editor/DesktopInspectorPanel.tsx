@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { PanelRightClose, PanelRightOpen } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { InspectorProps } from "@/components/inspector/Inspector";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ export function DesktopInspectorPanel({
 }: {
   onResumeSelectedPath?: (shapeId: string) => void;
 }) {
+  const t = useTranslations("editor.desktopInspectorPanel");
   const [collapsed, setCollapsed] = usePersistentBoolean(
     INSPECTOR_COLLAPSED_STORAGE_KEY
   );
@@ -25,7 +27,7 @@ export function DesktopInspectorPanel({
   return (
     <aside
       id="desktop-inspector-panel"
-      aria-label="Inspector"
+      aria-label={t("ariaLabel")}
       className={cn(
         "border-border/80 bg-card/95 hidden min-h-0 shrink-0 flex-col overflow-hidden border-l backdrop-blur transition-[width] duration-200 ease-out lg:flex",
         collapsed ? "w-12" : "w-85"
@@ -38,8 +40,8 @@ export function DesktopInspectorPanel({
               type="button"
               aria-controls="desktop-inspector-panel"
               aria-expanded={false}
-              aria-label="Expand inspector"
-              title="Expand inspector"
+              aria-label={t("expandTooltip")}
+              title={t("expandTooltip")}
               onClick={() => setCollapsed(false)}
               className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-8 items-center justify-center rounded-md transition-colors"
             >
@@ -48,7 +50,7 @@ export function DesktopInspectorPanel({
           </div>
           <div className="flex min-h-0 flex-1 items-start justify-center overflow-hidden px-2 py-4">
             <span className="text-muted-foreground font-mono text-[10px] tracking-[0.18em] uppercase [writing-mode:vertical-rl]">
-              Inspector
+              {t("verticalLabel")}
             </span>
           </div>
         </>
@@ -60,8 +62,8 @@ export function DesktopInspectorPanel({
                 type="button"
                 aria-controls="desktop-inspector-panel"
                 aria-expanded
-                aria-label="Collapse inspector"
-                title="Collapse inspector"
+                aria-label={t("collapseTooltip")}
+                title={t("collapseTooltip")}
                 onClick={() => setCollapsed(true)}
                 className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-8 items-center justify-center rounded-md transition-colors"
               >

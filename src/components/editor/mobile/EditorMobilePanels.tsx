@@ -22,6 +22,7 @@ import {
   Trash2,
   Unlock,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Inspector from "@/components/inspector/Inspector";
 import { MultiSelectOverlay } from "@/components/editor/mobile/MultiSelectOverlay";
 import { PathBuilderOverlay } from "@/components/editor/mobile/PathBuilderOverlay";
@@ -161,6 +162,7 @@ function MobileQuickActionsOverlay({
   singleSelectionCanRotate: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const t = useTranslations("editor.mobilePanels.editorPanels");
 
   return (
     <motion.div
@@ -171,16 +173,19 @@ function MobileQuickActionsOverlay({
       <div className="flex items-start justify-between gap-3 px-1 pb-2">
         <div className="min-w-0">
           <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
-            {expanded ? "Adjust" : "Quick actions"}
+            {expanded ? t("adjustTitle") : t("quickActionsTitle")}
           </p>
           <p className="truncate text-[11px] text-white/70">
             {canAddWaypoint
-              ? "Add point on selected segment"
+              ? t("addPointHint")
               : canDeleteWaypoint
-                ? "Delete selected waypoint"
+                ? t("deleteWaypointHint")
                 : canResumePathEditing
-                  ? "Resume or adjust this path"
-                  : `${singleSelectedShapeLabel ?? "Selection"} · ${mobilePrecisionStepLabel} step`}
+                  ? t("resumeHint")
+                  : t("selectionStepHint", {
+                      label: singleSelectedShapeLabel ?? t("selectionFallback"),
+                      step: mobilePrecisionStepLabel,
+                    })}
           </p>
         </div>
       </div>
@@ -195,7 +200,7 @@ function MobileQuickActionsOverlay({
               className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Plus className="size-4" />
-              <span>Add point</span>
+              <span>{t("addPoint")}</span>
             </button>
           ) : canResumePathEditing ? (
             <button
@@ -205,7 +210,7 @@ function MobileQuickActionsOverlay({
               className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <PencilLine className="size-4" />
-              <span>Edit path</span>
+              <span>{t("editPath")}</span>
             </button>
           ) : (
             <button
@@ -215,7 +220,7 @@ function MobileQuickActionsOverlay({
               className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
             >
               <Copy className="size-4" />
-              <span>Duplicate</span>
+              <span>{t("duplicate")}</span>
             </button>
           )}
           <button
@@ -228,7 +233,7 @@ function MobileQuickActionsOverlay({
             ) : (
               <Lock className="size-4" />
             )}
-            <span>{selectionLocked ? "Unlock" : "Lock"}</span>
+            <span>{selectionLocked ? t("unlock") : t("lock")}</span>
           </button>
           <button
             type="button"
@@ -237,7 +242,7 @@ function MobileQuickActionsOverlay({
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200 disabled:text-white/35"
           >
             <Trash2 className="size-4" />
-            <span>{canDeleteWaypoint ? "Delete point" : "Delete"}</span>
+            <span>{canDeleteWaypoint ? t("deletePoint") : t("delete")}</span>
           </button>
           <button
             type="button"
@@ -246,7 +251,7 @@ function MobileQuickActionsOverlay({
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <SlidersHorizontal className="size-4" />
-            <span>Adjust</span>
+            <span>{t("adjust")}</span>
           </button>
         </div>
       ) : (
@@ -257,7 +262,7 @@ function MobileQuickActionsOverlay({
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/62 transition-colors hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="size-4" />
-            <span>Back</span>
+            <span>{t("back")}</span>
           </button>
           <button
             type="button"
@@ -278,7 +283,7 @@ function MobileQuickActionsOverlay({
             <span>+15°</span>
           </button>
           <div className="flex items-center justify-center text-[9px] font-medium tracking-[0.08em] text-white/35 uppercase">
-            Step
+            {t("step")}
           </div>
           <button
             type="button"
@@ -287,7 +292,7 @@ function MobileQuickActionsOverlay({
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowLeft className="size-4" />
-            <span>Left</span>
+            <span>{t("left")}</span>
           </button>
           <button
             type="button"
@@ -296,7 +301,7 @@ function MobileQuickActionsOverlay({
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowUp className="size-4" />
-            <span>Up</span>
+            <span>{t("up")}</span>
           </button>
           <button
             type="button"
@@ -305,7 +310,7 @@ function MobileQuickActionsOverlay({
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowDown className="size-4" />
-            <span>Down</span>
+            <span>{t("down")}</span>
           </button>
           <button
             type="button"
@@ -314,7 +319,7 @@ function MobileQuickActionsOverlay({
             className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
           >
             <ArrowRight className="size-4" />
-            <span>Right</span>
+            <span>{t("right")}</span>
           </button>
         </div>
       )}
@@ -399,6 +404,8 @@ export function EditorMobilePanels({
   onTabChange,
   studioHref = "/studio",
 }: EditorMobilePanelsProps) {
+  const t = useTranslations("editor.mobilePanels.editorPanels");
+  const tStatusBar = useTranslations("editor.statusBar");
   const { unitSystem } = useMeasurementUnitSystem();
   const mobileOverlaySurfaceClassName =
     "pointer-events-auto w-full max-w-sm rounded-[1.35rem] border border-white/10 bg-slate-950/86 p-2 text-white shadow-[0_18px_36px_rgba(15,23,42,0.32)] backdrop-blur";
@@ -459,7 +466,9 @@ export function EditorMobilePanels({
     tab,
   });
   const inspectorHint =
-    selectedCount > 0 ? `${selectedCount} selected` : "Design settings";
+    selectedCount > 0
+      ? tStatusBar("selected", { count: selectedCount })
+      : t("designSettingsHint");
   const handleMobileSelectButton = () => {
     if (mobileMultiSelectEnabled) {
       onExitMobileMultiSelect();
@@ -495,14 +504,14 @@ export function EditorMobilePanels({
               )}
             >
               <SquareMousePointer className="size-3.5" />
-              <span>{mobileMultiSelectEnabled ? "Exit" : "Select"}</span>
+              <span>{mobileMultiSelectEnabled ? t("exit") : t("select")}</span>
             </button>
             <button
               onClick={openToolsDrawer}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <LayoutGrid className="size-3.5" />
-              <span>Tools</span>
+              <span>{t("tools")}</span>
             </button>
             <div className="min-w-0 flex-[1.25]">
               <div className="mx-auto flex max-w-34 flex-col items-center justify-center rounded-[0.95rem] border border-white/10 bg-white/8 px-1.5 py-1 text-center">
@@ -519,14 +528,14 @@ export function EditorMobilePanels({
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <SlidersHorizontal className="size-3.5" />
-              <span>Inspect</span>
+              <span>{t("inspect")}</span>
             </button>
             <button
               onClick={openViewDrawer}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white landscape:gap-0.5 landscape:px-1.5 landscape:py-1.5"
             >
               <Scan className="size-3.5" />
-              <span>View</span>
+              <span>{t("view")}</span>
             </button>
           </motion.div>
         </div>
@@ -551,21 +560,21 @@ export function EditorMobilePanels({
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Scan className="size-3.5" />
-              <span>Review</span>
+              <span>{t("review")}</span>
             </button>
             <button
               onClick={onShare}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Share2 className="size-3.5" />
-              <span>Share</span>
+              <span>{t("share")}</span>
             </button>
             <Link
               href={studioHref}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <ArrowRight className="size-3.5" />
-              <span>Edit copy</span>
+              <span>{t("editCopy")}</span>
             </Link>
           </motion.div>
         </div>
@@ -663,11 +672,11 @@ export function EditorMobilePanels({
           onOpenChange={(open) => {
             if (!open) onCloseInspector();
           }}
-          title="Inspector"
+          title={t("inspectorTitle")}
           subtitle={
             selectedCount === 0
-              ? "Design settings and placed items"
-              : "Selection properties and editing"
+              ? t("inspectorSubtitleEmpty")
+              : t("inspectorSubtitleSelected")
           }
           contentClassName="h-[82dvh] max-h-[92dvh] min-h-[72dvh] overscroll-contain"
           bodyClassName="bg-card min-h-0 touch-pan-y overscroll-y-contain [-webkit-overflow-scrolling:touch] p-0"
@@ -686,12 +695,8 @@ export function EditorMobilePanels({
         <MobileDrawer
           open={mobileToolsOpen}
           onOpenChange={onSetMobileToolsOpen}
-          title="Tools"
-          subtitle={
-            tab === "3d"
-              ? "Project actions for the current 3D session"
-              : "Drawing and editing tools"
-          }
+          title={t("toolsTitle")}
+          subtitle={tab === "3d" ? t("toolsSubtitle3d") : t("toolsSubtitle2d")}
           bodyClassName="space-y-4 pt-3 pb-4"
         >
           <ToolsControls
@@ -712,8 +717,8 @@ export function EditorMobilePanels({
         <MobileDrawer
           open={mobileViewOpen}
           onOpenChange={onSetMobileViewOpen}
-          title="View"
-          subtitle="Canvas mode, guides and viewport controls"
+          title={t("viewTitle")}
+          subtitle={t("viewSubtitle")}
           bodyClassName="space-y-5 pt-3 pb-4"
         >
           <ViewControls
@@ -743,8 +748,8 @@ export function EditorMobilePanels({
         <MobileDrawer
           open={readOnlyMenuOpen}
           onOpenChange={onSetReadOnlyMenuOpen}
-          title="View"
-          subtitle="Canvas mode, guides and viewport controls"
+          title={t("viewTitle")}
+          subtitle={t("viewSubtitle")}
           bodyClassName="space-y-5 pt-3 pb-4"
         >
           <ViewControls

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { AuthEmailPreviewFrame } from "@/components/dev/AuthEmailPreviewFrame";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -17,30 +18,20 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const previewItems: Array<{
-  key: AuthEmailPreviewKey;
-  label: string;
-  description: string;
-}> = [
-  {
-    key: "magic-link",
-    label: "Magic link",
-    description: "Primary sign-in email flow",
-  },
-  {
-    key: "verify-email",
-    label: "Verify email",
-    description: "Rare follow-up verification flow",
-  },
-  {
-    key: "change-email",
-    label: "Email change",
-    description: "Primary account email change confirmation",
-  },
+const previewKeys: AuthEmailPreviewKey[] = [
+  "magic-link",
+  "verify-email",
+  "change-email",
 ];
 
+const previewItemMessageKeys: Record<AuthEmailPreviewKey, string> = {
+  "magic-link": "magicLink",
+  "verify-email": "verifyEmail",
+  "change-email": "changeEmail",
+};
+
 function parsePreviewKey(value: string | undefined): AuthEmailPreviewKey {
-  return previewItems.some((item) => item.key === value)
+  return previewKeys.includes(value as AuthEmailPreviewKey)
     ? (value as AuthEmailPreviewKey)
     : "magic-link";
 }
@@ -60,24 +51,32 @@ export default async function DashboardEmailPreviewPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const activeKey = parsePreviewKey(resolvedSearchParams?.template);
   const content = getAuthEmailPreviewContent(activeKey);
-  const activeItem =
-    previewItems.find((item) => item.key === activeKey) ?? previewItems[0];
   const fromAddress =
     process.env.PLUNK_FROM_EMAIL ?? "noreply@emails.trackdraw.app";
+
+  const t = await getTranslations("dashboard");
+  const tEmail = await getTranslations("dashboard.emailPreview");
+  const previewItems = previewKeys.map((key) => ({
+    key,
+    label: tEmail(`items.${previewItemMessageKeys[key]}.label`),
+    description: tEmail(`items.${previewItemMessageKeys[key]}.description`),
+  }));
+  const activeItem =
+    previewItems.find((item) => item.key === activeKey) ?? previewItems[0];
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: "Dashboard", href: "/dashboard" }}
-        title="Email Preview"
+        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        title={t("pages.emailPreview")}
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="overflow-hidden rounded-xl border">
             <div className="border-b px-4 py-3">
-              <p className="text-sm font-medium">Templates</p>
+              <p className="text-sm font-medium">{tEmail("templates.title")}</p>
               <p className="text-muted-foreground mt-0.5 text-xs">
-                Switch between auth email variants
+                {tEmail("templates.description")}
               </p>
             </div>
             <div className="space-y-2 p-3">
@@ -105,7 +104,7 @@ export default async function DashboardEmailPreviewPage({
             <div className="border-b px-5 py-3">
               <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-sm font-medium">HTML Preview</p>
+                  <p className="text-sm font-medium">{tEmail("htmlPreview")}</p>
                   <p className="text-muted-foreground mt-0.5 text-xs">
                     {activeItem.label}: {activeItem.description}
                   </p>
@@ -115,10 +114,10 @@ export default async function DashboardEmailPreviewPage({
                     {fromAddress}
                   </span>
                   <span className="bg-muted rounded-full border px-2.5 py-1 font-medium">
-                    Desktop
+                    {tEmail("desktop")}
                   </span>
                   <span className="rounded-full px-2.5 py-1 font-medium opacity-60">
-                    Mobile width
+                    {tEmail("mobileWidth")}
                   </span>
                 </div>
               </div>
@@ -137,9 +136,9 @@ export default async function DashboardEmailPreviewPage({
 
         <div className="overflow-hidden rounded-xl border">
           <div className="border-b px-5 py-3">
-            <p className="text-sm font-medium">Plain Text</p>
+            <p className="text-sm font-medium">{tEmail("plainText")}</p>
             <p className="text-muted-foreground mt-0.5 text-xs">
-              Fallback body used for text-only clients
+              {tEmail("plainTextHelper")}
             </p>
           </div>
           <div className="p-5">

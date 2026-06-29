@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -74,17 +75,19 @@ type GalleryUpdateAction = "feature" | "unfeature" | "hide" | "restore";
 type ShareLifecycleState = "active" | "expired" | "revoked";
 
 const galleryManagerRoles: AccountRole[] = ["moderator", "admin"];
-const stateFilters: { value: GalleryState; label: string }[] = [
-  { value: "listed", label: "Listed" },
-  { value: "featured", label: "Featured" },
-  { value: "hidden", label: "Hidden" },
-  { value: "unlisted", label: "Unlisted (regular shares)" },
+const stateFilterValues: GalleryState[] = [
+  "listed",
+  "featured",
+  "hidden",
+  "unlisted",
 ];
-const shareFilters: { value: ShareLifecycleState; label: string }[] = [
-  { value: "active", label: "Active" },
-  { value: "expired", label: "Expired" },
-  { value: "revoked", label: "Revoked" },
+const shareFilterValues: ShareLifecycleState[] = [
+  "active",
+  "expired",
+  "revoked",
 ];
+
+type Translate = (key: string, values?: Record<string, unknown>) => string;
 
 function getOwnerLabel(entry: DashboardGalleryEntry) {
   return (
@@ -110,16 +113,16 @@ function getStateVariant(state: GalleryState): "default" | "muted" | "outline" {
   return "outline";
 }
 
-function getStateLabel(state: GalleryState) {
+function getStateLabel(state: GalleryState, t: Translate) {
   switch (state) {
     case "listed":
-      return "Listed";
+      return t("stateValues.listed");
     case "featured":
-      return "Featured";
+      return t("stateValues.featured");
     case "hidden":
-      return "Hidden";
+      return t("stateValues.hidden");
     default:
-      return "Unlisted";
+      return t("stateValues.unlistedBadge");
   }
 }
 
@@ -137,15 +140,8 @@ function getShareLifecycleState(
   return "active";
 }
 
-function getShareLifecycleLabel(state: ShareLifecycleState) {
-  switch (state) {
-    case "active":
-      return "Active";
-    case "expired":
-      return "Expired";
-    case "revoked":
-      return "Revoked";
-  }
+function getShareLifecycleLabel(state: ShareLifecycleState, t: Translate) {
+  return t(`shareValues.${state}`);
 }
 
 function getShareLifecycleVariant(
@@ -167,18 +163,20 @@ function formatDate(value: string | null) {
   }
 }
 
-function getShareLifecycleDetail(entry: DashboardGalleryEntry) {
+function getShareLifecycleDetail(entry: DashboardGalleryEntry, t: Translate) {
   const state = getShareLifecycleState(entry);
-  if (state === "revoked") return `Revoked ${formatDate(entry.shareRevokedAt)}`;
-  if (state === "expired") return `Expired ${formatDate(entry.shareExpiresAt)}`;
+  if (state === "revoked")
+    return t("revokedOn", { date: formatDate(entry.shareRevokedAt) });
+  if (state === "expired")
+    return t("expiredOn", { date: formatDate(entry.shareExpiresAt) });
   if (entry.shareExpiresAt)
-    return `Expires ${formatDate(entry.shareExpiresAt)}`;
-  return "No expiry";
+    return t("expiresOn", { date: formatDate(entry.shareExpiresAt) });
+  return t("noExpiry");
 }
 
-function formatFieldSize(entry: DashboardGalleryEntry) {
+function formatFieldSize(entry: DashboardGalleryEntry, t: Translate) {
   if (entry.fieldWidth == null || entry.fieldHeight == null) {
-    return "Not set";
+    return t("notSet");
   }
 
   return formatMeasurementFieldSize(
@@ -188,9 +186,9 @@ function formatFieldSize(entry: DashboardGalleryEntry) {
   );
 }
 
-function formatElementCount(entry: DashboardGalleryEntry) {
-  if (entry.shapeCount == null) return "Not available";
-  return `${entry.shapeCount} ${entry.shapeCount === 1 ? "element" : "elements"}`;
+function formatElementCount(entry: DashboardGalleryEntry, t: Translate) {
+  if (entry.shapeCount == null) return t("notAvailable");
+  return t("elementCount", { count: entry.shapeCount });
 }
 
 function getPreviewImageUrl(entry: DashboardGalleryEntry) {
@@ -209,59 +207,53 @@ function getEmbedAvailable(entry: DashboardGalleryEntry) {
   );
 }
 
-function getEmbedUnavailableReason(entry: DashboardGalleryEntry) {
-  if (entry.shareType !== "published")
-    return "Temporary shares cannot be embedded";
+function getEmbedUnavailableReason(entry: DashboardGalleryEntry, t: Translate) {
+  if (entry.shareType !== "published") return t("embedUnavailableTemporary");
   const state = getShareLifecycleState(entry);
-  if (state === "revoked") return "Share has been revoked";
-  if (state === "expired") return "Share has expired";
+  if (state === "revoked") return t("embedUnavailableRevoked");
+  if (state === "expired") return t("embedUnavailableExpired");
   return null;
 }
 
-function getInspectSummary(entry: DashboardGalleryEntry) {
+function getInspectSummary(entry: DashboardGalleryEntry, t: Translate) {
   const shareState = getShareLifecycleState(entry);
 
   if (shareState === "revoked") {
     return {
       tone: "warning" as const,
-      title: "Share is revoked",
-      detail:
-        "The listing can still appear in dashboard cleanup views, but the public share page will not render active track data.",
+      title: t("reviewState.revokedTitle"),
+      detail: t("reviewState.revokedDetail"),
     };
   }
 
   if (shareState === "expired") {
     return {
       tone: "warning" as const,
-      title: "Share is expired",
-      detail:
-        "The public share page will no longer render active track data until the owner republishes or updates the share.",
+      title: t("reviewState.expiredTitle"),
+      detail: t("reviewState.expiredDetail"),
     };
   }
 
   if (entry.galleryState === "hidden") {
     return {
       tone: "info" as const,
-      title: "Hidden from public gallery",
-      detail:
-        "The share is active, but this listing is currently removed from public gallery discovery.",
+      title: t("reviewState.hiddenTitle"),
+      detail: t("reviewState.hiddenDetail"),
     };
   }
 
   if (!entry.galleryPreviewImage) {
     return {
       tone: "warning" as const,
-      title: "Preview media is missing",
-      detail:
-        "The listing can be reviewed, but the public gallery card may look incomplete until preview media is regenerated.",
+      title: t("reviewState.missingPreviewTitle"),
+      detail: t("reviewState.missingPreviewDetail"),
     };
   }
 
   return {
     tone: "ok" as const,
-    title: "Ready for public review",
-    detail:
-      "The share is active and the gallery listing has the core public metadata needed for review.",
+    title: t("reviewState.readyTitle"),
+    detail: t("reviewState.readyDetail"),
   };
 }
 
@@ -370,6 +362,7 @@ export default function DashboardGalleryManager({
   currentUserRole,
   initialEntries,
 }: DashboardGalleryManagerProps) {
+  const t = useTranslations("dashboard.gallery");
   const [entries, setEntries] = useState(initialEntries);
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -394,7 +387,7 @@ export default function DashboardGalleryManager({
     action: GalleryUpdateAction
   ) => {
     if (!canManageGallery) {
-      toast.error("Only moderators and admins can update gallery entries.");
+      toast.error(t("manageRestricted"));
       return;
     }
 
@@ -418,9 +411,7 @@ export default function DashboardGalleryManager({
 
       if (!response.ok || !payload.ok) {
         throw new Error(
-          payload.ok
-            ? "Failed to update gallery entry"
-            : (payload.error ?? "Failed to update gallery entry")
+          payload.ok ? t("updateFailed") : (payload.error ?? t("updateFailed"))
         );
       }
 
@@ -432,13 +423,9 @@ export default function DashboardGalleryManager({
         )
       );
 
-      toast.success(`Gallery entry ${action}d.`);
+      toast.success(t("updateSuccess", { action }));
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to update gallery entry."
-      );
+      toast.error(error instanceof Error ? error.message : t("updateFailed"));
     } finally {
       setPendingShareToken(null);
     }
@@ -446,7 +433,7 @@ export default function DashboardGalleryManager({
 
   const deleteEntry = async (shareToken: string) => {
     if (!canManageGallery) {
-      toast.error("Only moderators and admins can delete gallery entries.");
+      toast.error(t("deleteRestricted"));
       return;
     }
 
@@ -466,9 +453,7 @@ export default function DashboardGalleryManager({
 
       if (!response.ok || !payload.ok) {
         throw new Error(
-          payload.ok
-            ? "Failed to delete gallery entry"
-            : (payload.error ?? "Failed to delete gallery entry")
+          payload.ok ? t("deleteFailed") : (payload.error ?? t("deleteFailed"))
         );
       }
 
@@ -476,13 +461,9 @@ export default function DashboardGalleryManager({
         previous.filter((entry) => entry.shareToken !== shareToken)
       );
       setDeleteCandidate(null);
-      toast.success("Gallery entry deleted.");
+      toast.success(t("deleteSuccess"));
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to delete gallery entry."
-      );
+      toast.error(error instanceof Error ? error.message : t("deleteFailed"));
     } finally {
       setPendingShareToken(null);
     }
@@ -493,18 +474,18 @@ export default function DashboardGalleryManager({
 
     try {
       await navigator.clipboard.writeText(href);
-      toast.success("Share link copied.");
+      toast.success(t("copyLinkSuccess"));
     } catch {
-      toast.error("Could not copy the share link.");
+      toast.error(t("copyLinkFailed"));
     }
   };
 
   const copyToClipboard = async (value: string, label: string) => {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success(`${label} copied.`);
+      toast.success(t("copySuccess", { label }));
     } catch {
-      toast.error(`Could not copy ${label}.`);
+      toast.error(t("copyFailed", { label }));
     }
   };
 
@@ -512,12 +493,12 @@ export default function DashboardGalleryManager({
     return entry.galleryState !== "featured"
       ? {
           action: "feature" as const,
-          label: "Feature",
+          label: t("feature"),
           icon: Sparkles,
         }
       : {
           action: "unfeature" as const,
-          label: "Unfeature",
+          label: t("unfeature"),
           icon: StarOff,
         };
   }
@@ -526,12 +507,12 @@ export default function DashboardGalleryManager({
     return entry.galleryState !== "hidden"
       ? {
           action: "hide" as const,
-          label: "Hide",
+          label: t("hide"),
           icon: EyeOff,
         }
       : {
           action: "restore" as const,
-          label: "Restore",
+          label: t("restore"),
           icon: Eye,
         };
   }
@@ -548,7 +529,7 @@ export default function DashboardGalleryManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Track
+          {t("table.track")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -566,7 +547,7 @@ export default function DashboardGalleryManager({
     {
       id: "owner",
       accessorFn: (row) => getOwnerLabel(row),
-      header: "Owner",
+      header: t("table.owner"),
       meta: { className: "w-[22%] min-w-48" },
       cell: ({ row }) => (
         <div className="min-w-0">
@@ -579,17 +560,17 @@ export default function DashboardGalleryManager({
     },
     {
       accessorKey: "galleryState",
-      header: "State",
+      header: t("table.state"),
       meta: { className: "w-28" },
       cell: ({ row }) => (
         <Badge variant={getStateVariant(row.original.galleryState)}>
-          {getStateLabel(row.original.galleryState)}
+          {getStateLabel(row.original.galleryState, t as unknown as Translate)}
         </Badge>
       ),
     },
     {
       id: "shareLifecycle",
-      header: "Share",
+      header: t("table.share"),
       accessorFn: (row) => getShareLifecycleState(row),
       meta: { className: "w-44" },
       cell: ({ row }) => {
@@ -598,10 +579,13 @@ export default function DashboardGalleryManager({
         return (
           <div className="min-w-0">
             <Badge variant={getShareLifecycleVariant(lifecycleState)}>
-              {getShareLifecycleLabel(lifecycleState)}
+              {getShareLifecycleLabel(
+                lifecycleState,
+                t as unknown as Translate
+              )}
             </Badge>
             <p className="text-muted-foreground mt-1 truncate text-xs">
-              {getShareLifecycleDetail(row.original)}
+              {getShareLifecycleDetail(row.original, t as unknown as Translate)}
             </p>
           </div>
         );
@@ -617,7 +601,7 @@ export default function DashboardGalleryManager({
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Published
+          {t("table.published")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
@@ -680,14 +664,14 @@ export default function DashboardGalleryManager({
                   <VisibilityIcon className="size-4" />
                 </Button>
               </ActionTooltip>
-              <ActionTooltip label="Delete">
+              <ActionTooltip label={t("delete")}>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   className="text-destructive hover:bg-muted hover:text-destructive size-7"
                   disabled={isPending || !canManageGallery}
-                  aria-label={`Delete ${entry.galleryTitle}`}
+                  aria-label={`${t("delete")} ${entry.galleryTitle}`}
                   onClick={() => setDeleteCandidate(entry)}
                 >
                   <Trash2 className="size-4" />
@@ -701,7 +685,7 @@ export default function DashboardGalleryManager({
                   size="sm"
                   className="text-muted-foreground hover:text-foreground ml-auto size-8 p-0 md:hidden"
                   disabled={isPending || !canManageGallery}
-                  aria-label="Open gallery entry actions"
+                  aria-label={t("openActions")}
                 >
                   {isPending ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -733,7 +717,7 @@ export default function DashboardGalleryManager({
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="size-4" />
-                  Delete
+                  {t("delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -785,16 +769,17 @@ export default function DashboardGalleryManager({
       ? true
       : selectedGalleryStates.includes(row.original.galleryState)
   );
-  const stateFilterOptions = stateFilters.map((filter) => ({
-    ...filter,
-    count: stateFacetRows.filter(
-      (row) => row.original.galleryState === filter.value
-    ).length,
+  const stateFilterOptions = stateFilterValues.map((value) => ({
+    value,
+    label: t(`stateValues.${value}`),
+    count: stateFacetRows.filter((row) => row.original.galleryState === value)
+      .length,
   }));
-  const shareFilterOptions = shareFilters.map((filter) => ({
-    ...filter,
+  const shareFilterOptions = shareFilterValues.map((value) => ({
+    value,
+    label: t(`shareValues.${value}`),
     count: shareFacetRows.filter(
-      (row) => getShareLifecycleState(row.original) === filter.value
+      (row) => getShareLifecycleState(row.original) === value
     ).length,
   }));
   const expiredShareCount = entries.filter(
@@ -804,9 +789,7 @@ export default function DashboardGalleryManager({
     (entry) => getShareLifecycleState(entry) === "revoked"
   ).length;
   const emptyMessage =
-    entries.length === 0
-      ? "No gallery entries yet."
-      : "No gallery entries match the current filters.";
+    entries.length === 0 ? t("emptyMessage") : t("emptyFilteredMessage");
   const inspectShareLifecycle = inspectCandidate
     ? getShareLifecycleState(inspectCandidate)
     : null;
@@ -814,7 +797,7 @@ export default function DashboardGalleryManager({
     ? getPreviewImageUrl(inspectCandidate)
     : null;
   const inspectSummary = inspectCandidate
-    ? getInspectSummary(inspectCandidate)
+    ? getInspectSummary(inspectCandidate, t as unknown as Translate)
     : null;
 
   return (
@@ -822,16 +805,16 @@ export default function DashboardGalleryManager({
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
-        searchPlaceholder="Search title, description or owner..."
+        searchPlaceholder={t("searchPlaceholder")}
       >
         <DataTableFacetFilter
-          title="State"
+          title={t("state")}
           selected={selectedGalleryStates}
           options={stateFilterOptions}
           onChange={setSelectedGalleryStates}
         />
         <DataTableFacetFilter
-          title="Share"
+          title={t("share")}
           selected={selectedShareLifecycles}
           options={shareFilterOptions}
           onChange={setSelectedShareLifecycles}
@@ -839,9 +822,10 @@ export default function DashboardGalleryManager({
       </DataTableToolbar>
 
       <p className="text-muted-foreground text-xs">
-        Changes apply immediately to the public gallery. {expiredShareCount}{" "}
-        expired and {revokedShareCount} revoked linked shares are visible here
-        for operator cleanup.
+        {t("cleanupNotice", {
+          expired: expiredShareCount,
+          revoked: revokedShareCount,
+        })}
       </p>
 
       <DataTable
@@ -852,11 +836,13 @@ export default function DashboardGalleryManager({
         minWidthClassName="min-w-[920px]"
         emptyClassName="py-8"
         onRowClick={(row) => setInspectCandidate(row.original)}
-        getRowAriaLabel={(row) => `Inspect ${row.original.galleryTitle}`}
+        getRowAriaLabel={(row) =>
+          t("rowAriaLabel", { title: row.original.galleryTitle })
+        }
       />
 
       <p className="text-muted-foreground text-xs">
-        Showing {filteredRows.length} of {entries.length} gallery entries.
+        {t("showing", { filtered: filteredRows.length, total: entries.length })}
       </p>
 
       <Dialog
@@ -875,24 +861,32 @@ export default function DashboardGalleryManager({
                       {inspectCandidate.galleryTitle}
                     </DialogTitle>
                     <DialogDescription className="mt-1">
-                      Inspect public gallery readiness and share lifecycle.
+                      {t("inspect.title")}
                     </DialogDescription>
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
                     <Badge
                       variant={getStateVariant(inspectCandidate.galleryState)}
                     >
-                      {getStateLabel(inspectCandidate.galleryState)}
+                      {getStateLabel(
+                        inspectCandidate.galleryState,
+                        t as unknown as Translate
+                      )}
                     </Badge>
                     <Badge
                       variant={getShareLifecycleVariant(inspectShareLifecycle)}
                     >
-                      {getShareLifecycleLabel(inspectShareLifecycle)}
+                      {getShareLifecycleLabel(
+                        inspectShareLifecycle,
+                        t as unknown as Translate
+                      )}
                     </Badge>
                     <Badge
                       variant={inspectPreviewImageUrl ? "outline" : "muted"}
                     >
-                      Preview {inspectPreviewImageUrl ? "ready" : "missing"}
+                      {inspectPreviewImageUrl
+                        ? t("inspect.previewReady")
+                        : t("inspect.previewMissing")}
                     </Badge>
                   </div>
                 </div>
@@ -914,7 +908,7 @@ export default function DashboardGalleryManager({
                         <div className="text-muted-foreground absolute inset-0 flex flex-col items-center justify-center gap-2">
                           <ImageOff className="size-8 opacity-50" />
                           <p className="text-sm font-medium">
-                            No preview media
+                            {t("inspect.noPreviewMedia")}
                           </p>
                         </div>
                       )}
@@ -922,26 +916,32 @@ export default function DashboardGalleryManager({
 
                     <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-5">
                       <InspectMetric
-                        label="Field"
-                        value={formatFieldSize(inspectCandidate)}
+                        label={t("inspect.field")}
+                        value={formatFieldSize(
+                          inspectCandidate,
+                          t as unknown as Translate
+                        )}
                       />
                       <InspectMetric
-                        label="Elements"
-                        value={formatElementCount(inspectCandidate)}
+                        label={t("inspect.elements")}
+                        value={formatElementCount(
+                          inspectCandidate,
+                          t as unknown as Translate
+                        )}
                       />
                       <InspectMetric
-                        label="Published"
+                        label={t("inspect.published")}
                         value={formatDate(inspectCandidate.galleryPublishedAt)}
                       />
                       <InspectMetric
-                        label="Updated"
+                        label={t("inspect.updated")}
                         value={formatDate(inspectCandidate.updatedAt)}
                       />
                     </dl>
                   </div>
 
                   <div className="space-y-7 p-6">
-                    <InspectSection title="Review outcome">
+                    <InspectSection title={t("inspect.reviewOutcome")}>
                       <InspectNotice
                         tone={inspectSummary.tone}
                         title={inspectSummary.title}
@@ -949,30 +949,31 @@ export default function DashboardGalleryManager({
                       />
                     </InspectSection>
 
-                    <InspectSection title="Public listing">
+                    <InspectSection title={t("inspect.publicListing")}>
                       <dl className="space-y-1">
                         <InspectDetail
-                          label="Description"
+                          label={t("inspect.description")}
                           value={
                             <span className="leading-6">
                               {inspectCandidate.galleryDescription ||
-                                "No gallery description has been provided."}
+                                t("inspect.noDescription")}
                             </span>
                           }
                         />
                         <InspectDetail
-                          label="Share title"
+                          label={t("inspect.shareTitle")}
                           value={
-                            inspectCandidate.shareTitle || "Untitled track"
+                            inspectCandidate.shareTitle ||
+                            t("inspect.untitledTrack")
                           }
                         />
                       </dl>
                     </InspectSection>
 
-                    <InspectSection title="Share lifecycle">
+                    <InspectSection title={t("inspect.shareLifecycle")}>
                       <dl className="space-y-1">
                         <InspectDetail
-                          label="Type"
+                          label={t("inspect.type")}
                           value={
                             <Badge
                               variant={
@@ -982,13 +983,13 @@ export default function DashboardGalleryManager({
                               }
                             >
                               {inspectCandidate.shareType === "published"
-                                ? "Published"
-                                : "Temporary"}
+                                ? t("inspect.published_")
+                                : t("inspect.temporary")}
                             </Badge>
                           }
                         />
                         <InspectDetail
-                          label="Embed"
+                          label={t("inspect.embed")}
                           value={
                             getEmbedAvailable(inspectCandidate) ? (
                               <Link
@@ -996,19 +997,21 @@ export default function DashboardGalleryManager({
                                 className="flex items-center gap-1 text-sm hover:underline"
                               >
                                 <Link2 className="size-3.5 shrink-0" />
-                                Available
+                                {t("inspect.available")}
                               </Link>
                             ) : (
                               <span className="text-muted-foreground text-sm">
-                                {getEmbedUnavailableReason(inspectCandidate) ??
-                                  "Not available"}
+                                {getEmbedUnavailableReason(
+                                  inspectCandidate,
+                                  t as unknown as Translate
+                                ) ?? t("notAvailable")}
                               </span>
                             )
                           }
                         />
                         {inspectCandidate.projectId ? (
                           <InspectDetail
-                            label="Project ID"
+                            label={t("inspect.projectId")}
                             value={
                               <span className="flex items-center gap-1.5">
                                 <span className="truncate font-mono text-xs">
@@ -1019,11 +1022,11 @@ export default function DashboardGalleryManager({
                                   variant="ghost"
                                   size="icon"
                                   className="size-5 shrink-0"
-                                  aria-label="Copy project ID"
+                                  aria-label={t("inspect.copyProjectId")}
                                   onClick={() =>
                                     void copyToClipboard(
                                       inspectCandidate.projectId!,
-                                      "Project ID"
+                                      t("inspect.projectId")
                                     )
                                   }
                                 >
@@ -1034,43 +1037,43 @@ export default function DashboardGalleryManager({
                           />
                         ) : null}
                         <InspectDetail
-                          label="Share created"
+                          label={t("inspect.shareCreated")}
                           value={formatDate(inspectCandidate.shareCreatedAt)}
                         />
                         <InspectDetail
-                          label="Entry updated"
+                          label={t("inspect.entryUpdated")}
                           value={formatDate(inspectCandidate.updatedAt)}
                         />
                         {inspectCandidate.shareExpiresAt ? (
                           <InspectDetail
-                            label="Expires"
+                            label={t("inspect.expires")}
                             value={formatDate(inspectCandidate.shareExpiresAt)}
                           />
                         ) : null}
                         {inspectCandidate.shareRevokedAt ? (
                           <InspectDetail
-                            label="Revoked"
+                            label={t("inspect.revoked")}
                             value={formatDate(inspectCandidate.shareRevokedAt)}
                           />
                         ) : null}
                       </dl>
                     </InspectSection>
 
-                    <InspectSection title="Record">
+                    <InspectSection title={t("inspect.record")}>
                       <dl className="space-y-1">
                         <InspectDetail
-                          label="Owner"
+                          label={t("inspect.owner")}
                           value={getOwnerLabel(inspectCandidate)}
                         />
                         <InspectDetail
-                          label="Owner email"
+                          label={t("inspect.ownerEmail")}
                           value={
                             inspectCandidate.ownerEmail ??
                             inspectCandidate.ownerUserId
                           }
                         />
                         <InspectDetail
-                          label="Owner ID"
+                          label={t("inspect.ownerId")}
                           value={
                             <span className="flex items-center gap-1.5">
                               <span className="truncate font-mono text-xs">
@@ -1081,11 +1084,11 @@ export default function DashboardGalleryManager({
                                 variant="ghost"
                                 size="icon"
                                 className="size-5 shrink-0"
-                                aria-label="Copy owner ID"
+                                aria-label={t("inspect.copyOwnerId")}
                                 onClick={() =>
                                   void copyToClipboard(
                                     inspectCandidate.ownerUserId,
-                                    "Owner ID"
+                                    t("inspect.ownerId")
                                   )
                                 }
                               >
@@ -1095,7 +1098,7 @@ export default function DashboardGalleryManager({
                           }
                         />
                         <InspectDetail
-                          label="Share token"
+                          label={t("inspect.shareToken")}
                           value={
                             <span className="font-mono text-xs">
                               {inspectCandidate.shareToken}
@@ -1104,7 +1107,7 @@ export default function DashboardGalleryManager({
                         />
                         {inspectCandidate.galleryPreviewImage ? (
                           <InspectDetail
-                            label="Preview file"
+                            label={t("inspect.previewFile")}
                             value={
                               <span className="font-mono text-xs">
                                 {inspectCandidate.galleryPreviewImage}
@@ -1120,7 +1123,7 @@ export default function DashboardGalleryManager({
 
               <DialogFooter className="border-t p-6 pt-4 sm:justify-between">
                 <DialogClose asChild>
-                  <Button variant="outline">Close</Button>
+                  <Button variant="outline">{t("inspect.close")}</Button>
                 </DialogClose>
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -1129,12 +1132,12 @@ export default function DashboardGalleryManager({
                     onClick={() => void copyShareLink(inspectCandidate)}
                   >
                     <Copy className="size-4" />
-                    Copy link
+                    {t("inspect.copyLink")}
                   </Button>
                   <Button asChild>
                     <Link href={`/share/${inspectCandidate.shareToken}`}>
                       <ExternalLink className="size-4" />
-                      Open share
+                      {t("inspect.openShare")}
                     </Link>
                   </Button>
                 </div>
@@ -1142,9 +1145,9 @@ export default function DashboardGalleryManager({
             </div>
           ) : (
             <DialogHeader className="p-6 pr-12">
-              <DialogTitle>Gallery entry</DialogTitle>
+              <DialogTitle>{t("inspect.emptyTitle")}</DialogTitle>
               <DialogDescription>
-                Select a gallery row to inspect its public context.
+                {t("inspect.emptyDescription")}
               </DialogDescription>
             </DialogHeader>
           )}
@@ -1159,29 +1162,33 @@ export default function DashboardGalleryManager({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete gallery entry?</DialogTitle>
+            <DialogTitle>{t("deleteDialog.title")}</DialogTitle>
             <DialogDescription>
-              This removes the gallery record for{" "}
-              <span className="text-foreground font-medium">
-                {deleteCandidate?.galleryTitle ?? "this track"}
-              </span>
-              . The public gallery card disappears, while the underlying share
-              link remains governed by the share record.
+              {t.rich("deleteDialog.description", {
+                title:
+                  deleteCandidate?.galleryTitle ??
+                  t("deleteDialog.fallbackTitle"),
+                strong: (chunks) => (
+                  <span className="text-foreground font-medium">{chunks}</span>
+                ),
+              })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="text-muted-foreground space-y-2 text-sm">
             <p>
-              Owner:{" "}
+              {t("deleteDialog.owner")}{" "}
               <span className="text-foreground">
-                {deleteCandidate ? getOwnerLabel(deleteCandidate) : "Unknown"}
+                {deleteCandidate
+                  ? getOwnerLabel(deleteCandidate)
+                  : t("deleteDialog.unknownOwner")}
               </span>
             </p>
           </div>
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">{t("deleteDialog.cancel")}</Button>
             </DialogClose>
             <Button
               type="button"
@@ -1200,10 +1207,10 @@ export default function DashboardGalleryManager({
               pendingShareToken === deleteCandidate.shareToken ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Deleting…
+                  {t("deleteDialog.deleting")}
                 </>
               ) : (
-                "Delete entry"
+                t("deleteDialog.deleteEntry")
               )}
             </Button>
           </DialogFooter>

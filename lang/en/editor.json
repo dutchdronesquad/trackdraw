@@ -34,6 +34,281 @@
     "signOut": "Sign out",
     "signingOut": "Signing out…"
   },
+  "common": {
+    "canvas2d": "2D canvas",
+    "preview3d": "3D preview"
+  },
+  "header": {
+    "untitledTitle": "Untitled",
+    "statusFailed": "Failed",
+    "statusPending": "Pending",
+    "statusSyncing": "Syncing",
+    "statusSynced": "Synced",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "sharedReviewBadge": "Shared review",
+    "makeEditableCopy": "Make editable copy",
+    "undo": "Undo",
+    "redo": "Redo",
+    "saveSnapshot": "Save snapshot",
+    "keyboardShortcuts": "Keyboard shortcuts",
+    "retrySync": "Retry account sync ({status})",
+    "share": "Share",
+    "export": "Export",
+    "openAppMenu": "Open app menu",
+    "hideObstacleNumbers": "Hide obstacle numbers",
+    "showObstacleNumbers": "Show obstacle numbers"
+  },
+  "sharedHeader": {
+    "embedLabel": "Embed",
+    "sharedPreviewLabel": "Shared preview"
+  },
+  "mobileAppMenu": {
+    "openAppMenu": "Open app menu",
+    "title": "TrackDraw",
+    "subtitle": "Projects, sharing, account and app settings",
+    "signIn": "Sign in",
+    "yourAccount": "Your TrackDraw account",
+    "trackdrawAccount": "TrackDraw account",
+    "projectsSection": "Projects",
+    "projectsLabel": "Projects",
+    "projectsDescription": "Open and manage saved projects",
+    "accountSection": "Account",
+    "profileLabel": "Profile",
+    "profileDescription": "Manage profile, security and API keys",
+    "dashboardLabel": "Dashboard",
+    "dashboardDescription": "Open moderation and admin tools",
+    "shareSection": "Share and transfer",
+    "shareLabel": "Share",
+    "shareDescription": "Publish a read-only link for this track",
+    "importLabel": "Import",
+    "importDescription": "Bring in a JSON project file",
+    "exportLabel": "Export",
+    "exportDescription": "Download PNG, PDF, SVG or JSON",
+    "themeLabel": "Theme",
+    "themeDescription": "Switch light, dark or system",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…"
+  },
+  "layoutPresetPicker": {
+    "itemsCount": "{count} items",
+    "renamePresetTooltip": "Rename preset",
+    "deletePresetTooltip": "Delete preset",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "signInTitle": "Sign in to use presets",
+    "signInDescription": "Presets are saved to your account so they're always available across all your devices.",
+    "noPresetsTitle": "No presets yet",
+    "noPresetsDescription": "Select multiple shapes on the canvas and use <strong>Save preset</strong> in the inspector to add your first preset here.",
+    "comingSoonTitle": "Coming soon",
+    "comingSoonDescription": "Community-shared presets will appear here. Save your own presets and share them with the TrackDraw community.",
+    "myPresetsNav": "My Presets",
+    "storeNav": "Store",
+    "soonBadge": "Soon",
+    "mobileTitle": "Presets",
+    "mobileSubtitle": "Choose a preset, then tap once on the canvas to place it.",
+    "placeFlowTitle": "Place flow",
+    "placeFlowDescription": "Select a preset here, then tap the canvas. The result expands immediately into ordinary editable shapes.",
+    "desktopTitle": "Layout presets",
+    "desktopSubtitle": "Choose a preset, place it on the canvas, then edit the inserted shapes normally.",
+    "close": "Close",
+    "tipText": "Select shapes on the canvas, then use <strong>Save preset</strong> in the inspector to add your own."
+  },
+  "starterOverlay": {
+    "title": "Welcome to TrackDraw",
+    "mobileSubtitle": "Place a few gates, draw the route, check 3D, then share when the track is ready.",
+    "studioEyebrow": "Studio",
+    "desktopDescription": "Design the layout in 2D, review elevation in 3D, and share a read-only link when the track is ready.",
+    "dismissAria": "Dismiss starter dialog",
+    "hints": {
+      "gate": {
+        "badge": "Guided",
+        "title": "Place your first gate",
+        "description": "Tap or click on the canvas to drop the first gate. Add a few gates before switching to Path.",
+        "action": "Got it",
+        "dismiss": "Dismiss gate placement hint"
+      },
+      "path": {
+        "badge": "Guided",
+        "title": "Next, draw the route",
+        "description": "Place a few gates first, then switch to Path and trace the lap through them. Finish the route before checking 3D.",
+        "action": "Start path",
+        "dismiss": "Dismiss path onboarding hint"
+      },
+      "preview3d": {
+        "badge": "Preview",
+        "title": "3D works best after the route",
+        "description": "Obstacle placement already previews here, but the route is what makes elevation and fly-through review useful.",
+        "action": "Draw path in 2D",
+        "dismiss": "Dismiss 3D preview onboarding hint"
+      },
+      "review3d": {
+        "badge": "Guided",
+        "title": "Now review it in 3D",
+        "description": "Orbit around the route, check elevation and spacing, then share or export once the layout feels right.",
+        "action": "Share or export next",
+        "dismiss": "Dismiss 3D review hint"
+      },
+      "postPath": {
+        "badge": "Next step",
+        "title": "Route ready — check it in 3D",
+        "description": "Switch to the 3D tab now to review the route before refining more obstacle placement.",
+        "action": "Switch to 3D",
+        "dismiss": "Dismiss post-path 3D nudge"
+      }
+    }
+  },
+  "starterFlow": {
+    "goodFirstSteps": "Good first steps",
+    "steps": {
+      "step1": {
+        "title": "Place a few gates and obstacles",
+        "description": "Start small so the course structure appears quickly."
+      },
+      "step2": {
+        "title": "Draw the race path through them",
+        "description": "The path usually makes the layout click faster than obstacle tweaking alone."
+      },
+      "step3": {
+        "title": "Check 3D, then export or share",
+        "description": "Review the route early and send a read-only link when it is ready."
+      }
+    },
+    "guidedTitle": "Start with guidance",
+    "guidedDescriptionDesktop": "Open an empty field with `Gate` selected so you can block out the course first. Draw the path once the first obstacles are down.",
+    "guidedDescriptionMobile": "Open an empty field with Gate selected. Draw the path once the first obstacles are down.",
+    "continueEmpty": "Continue with empty canvas",
+    "kbdGate": "places gates",
+    "kbdPath": "starts the route",
+    "kbdFinish": "finishes the path",
+    "starterLayoutsLabel": "Starter layouts",
+    "guidedStartLabel": "Guided start",
+    "emptyStartLabel": "Empty start",
+    "emptyStartDescription": "Skip the guided start and open the empty studio instead."
+  },
+  "saveAsPresetDialog": {
+    "title": "Save as preset",
+    "subtitle": "Give your selection a name so you can place it again from the preset picker.",
+    "shapeCount": "{count, plural, one {# shape} other {# shapes}}",
+    "pathsExcluded": "{count, plural, one {1 path will be excluded} other {# paths will be excluded}} — presets only capture non-path shapes.",
+    "presetNameLabel": "Preset name",
+    "presetNamePlaceholder": "e.g. Timing gate setup",
+    "cancel": "Cancel",
+    "savePreset": "Save preset"
+  },
+  "mobilePanels": {
+    "viewControls": {
+      "currentMode": "Current mode",
+      "viewModeLabel": "View mode",
+      "fitToField": "Fit to field",
+      "fitToFieldDescription": "Center the current design in view",
+      "snapLabel": "Snap",
+      "snapDescription": "Lock to nearby grid positions and objects",
+      "rulersLabel": "Rulers",
+      "rulersDescription": "Show top and left guides on mobile",
+      "obstacleNumbersLabel": "Obstacle numbers",
+      "obstacleNumbersDescription": "Show path numbers on route obstacles",
+      "flyThroughLabel": "Fly-through",
+      "flyThroughDescriptionAvailable": "Start the race-line preview camera",
+      "flyThroughDescriptionReadOnly": "No route in this shared track",
+      "flyThroughDescriptionDraw": "Draw a path in 2D first to enable this",
+      "gizmoLabel": "Gizmo",
+      "gizmoDescription": "Show the axis helper in 3D preview",
+      "shareSectionLabel": "Share",
+      "editableCopyLabel": "Editable copy",
+      "shareButtonLabel": "Share",
+      "readOnly3dWithPath": "Read-only 3D review with fly-through available for this shared track.",
+      "readOnly3dNoPath": "Read-only 3D review for this shared track. No route is available for fly-through.",
+      "readOnly2dWithPath": "Read-only 2D review for this shared track. Switch to 3D to use fly-through.",
+      "readOnly2dNoPath": "Read-only 2D review for this shared track."
+    },
+    "multiSelect": {
+      "title": "Multi-select",
+      "lockedHint": "Locked selection. Unlock before moving or resizing.",
+      "tapHint": "Tap items to add or remove them.",
+      "groupNamePlaceholder": "Group name",
+      "duplicate": "Duplicate",
+      "ungroup": "Ungroup",
+      "group": "Group",
+      "unlock": "Unlock",
+      "lock": "Lock",
+      "delete": "Delete"
+    },
+    "pathBuilder": {
+      "title": "Path builder",
+      "loopConnected": "Loop connected · {count} points · {length}",
+      "pointsCount": "{count} points · {length}",
+      "tapToStart": "Tap the canvas to place the first point",
+      "undo": "Undo",
+      "connectEnds": "Connect ends",
+      "finish": "Finish",
+      "cancel": "Cancel"
+    },
+    "editorPanels": {
+      "quickActionsTitle": "Quick actions",
+      "adjustTitle": "Adjust",
+      "addPointHint": "Add point on selected segment",
+      "deleteWaypointHint": "Delete selected waypoint",
+      "resumeHint": "Resume or adjust this path",
+      "selectionStepHint": "{label} · {step} step",
+      "selectionFallback": "Selection",
+      "addPoint": "Add point",
+      "editPath": "Edit path",
+      "duplicate": "Duplicate",
+      "unlock": "Unlock",
+      "lock": "Lock",
+      "deletePoint": "Delete point",
+      "delete": "Delete",
+      "adjust": "Adjust",
+      "back": "Back",
+      "step": "Step",
+      "left": "Left",
+      "up": "Up",
+      "down": "Down",
+      "right": "Right",
+      "exit": "Exit",
+      "select": "Select",
+      "tools": "Tools",
+      "inspect": "Inspect",
+      "view": "View",
+      "review": "Review",
+      "share": "Share",
+      "editCopy": "Edit copy",
+      "designSettingsHint": "Design settings",
+      "inspectorTitle": "Inspector",
+      "inspectorSubtitleEmpty": "Design settings and placed items",
+      "inspectorSubtitleSelected": "Selection properties and editing",
+      "toolsTitle": "Tools",
+      "toolsSubtitle3d": "Project actions for the current 3D session",
+      "toolsSubtitle2d": "Drawing and editing tools",
+      "viewTitle": "View",
+      "viewSubtitle": "Canvas mode, guides and viewport controls",
+      "preview": "Preview"
+    }
+  },
+  "viewModeSwitch": {
+    "ariaLabel": "View mode",
+    "canvas2dShort": "2D",
+    "preview3dShort": "3D",
+    "canvas2dDrawer": "2D Canvas",
+    "preview3dDrawer": "3D Preview"
+  },
+  "desktopInspectorPanel": {
+    "ariaLabel": "Inspector",
+    "expandTooltip": "Expand inspector",
+    "collapseTooltip": "Collapse inspector",
+    "verticalLabel": "Inspector"
+  },
+  "shell": {
+    "untitledTrack": "Untitled track",
+    "untitledFallback": "Untitled",
+    "exportFailed": "Export failed",
+    "exportFailedNoProjectDescription": "TrackDraw could not load this local project. Open it first or choose another saved project.",
+    "exportSuccess": "Project JSON exported",
+    "embeddedTrack": "Embedded track",
+    "sharedPreview": "Shared preview",
+    "loading3d": "Loading 3D…"
+  },
   "languagePicker": {
     "ariaLabel": "Language"
   }

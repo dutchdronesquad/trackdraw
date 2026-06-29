@@ -17,6 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
@@ -30,72 +31,75 @@ import { getOverviewStats, type RecentUser } from "@/lib/server/metrics";
 
 // --- Helpers ---
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(
+  dateStr: string,
+  t: (key: string, values: Record<string, number>) => string
+): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return t("relativeTime.minutes", { count: mins });
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
+  if (hrs < 24) return t("relativeTime.hours", { count: hrs });
   const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+  return t("relativeTime.days", { count: days });
 }
 
-function actorLabel(actor: AuditEvent["actor"]): string {
+function actorLabel(actor: AuditEvent["actor"], systemLabel: string): string {
   if (actor?.name) return actor.name;
   if (actor?.email) return actor.email;
-  return "System";
+  return systemLabel;
 }
 
 // --- Event type config ---
 
-type EventConfig = { icon: LucideIcon; label: string; tone: string };
+type EventConfig = { icon: LucideIcon; labelKey: string; tone: string };
 
 const EVENT_CONFIG: Record<string, EventConfig> = {
   "account.role.changed": {
     icon: ShieldCheck,
-    label: "Role changed",
+    labelKey: "accountRoleChanged",
     tone: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
   },
   "api_key.created": {
     icon: KeyRound,
-    label: "API key created",
+    labelKey: "apiKeyCreated",
     tone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   },
   "api_key.revoked": {
     icon: KeyRound,
-    label: "API key revoked",
+    labelKey: "apiKeyRevoked",
     tone: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
   },
   "gallery.entry.featured": {
     icon: Sparkles,
-    label: "Entry featured",
+    labelKey: "galleryEntryFeatured",
     tone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   },
   "gallery.entry.unfeatured": {
     icon: Sparkles,
-    label: "Entry unfeatured",
+    labelKey: "galleryEntryUnfeatured",
     tone: "bg-muted text-muted-foreground",
   },
   "gallery.entry.hidden": {
     icon: EyeOff,
-    label: "Entry hidden",
+    labelKey: "galleryEntryHidden",
     tone: "bg-muted text-muted-foreground",
   },
   "gallery.entry.restored": {
     icon: Eye,
-    label: "Entry restored",
+    labelKey: "galleryEntryRestored",
     tone: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   },
   "gallery.entry.deleted": {
     icon: Trash2,
-    label: "Entry deleted",
+    labelKey: "galleryEntryDeleted",
     tone: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
   },
 };
 
 const DEFAULT_EVENT_CONFIG: EventConfig = {
   icon: TrendingUp,
-  label: "",
+  labelKey: "",
   tone: "bg-muted text-muted-foreground",
 };
 
@@ -103,9 +107,12 @@ function eventConfig(eventType: string): EventConfig {
   return EVENT_CONFIG[eventType] ?? DEFAULT_EVENT_CONFIG;
 }
 
-function humanEventLabel(eventType: string): string {
+function humanEventLabel(
+  eventType: string,
+  t: (key: string) => string
+): string {
   const cfg = EVENT_CONFIG[eventType];
-  if (cfg) return cfg.label;
+  if (cfg) return t(`events.${cfg.labelKey}`);
   return eventType.replace(/[._]/g, " ");
 }
 
@@ -114,9 +121,11 @@ function humanEventLabel(eventType: string): string {
 function KpiTrend({
   current,
   previous,
+  vsPrevMonthLabel,
 }: {
   current: number;
   previous: number;
+  vsPrevMonthLabel: string;
 }) {
   if (previous === 0) return null;
   const pct = Math.round(((current - previous) / previous) * 100);
@@ -128,7 +137,7 @@ function KpiTrend({
     >
       <Icon className="size-3" />
       {up ? "+" : ""}
-      {pct}% vs prev month
+      {pct}% {vsPrevMonthLabel}
     </span>
   );
 }
@@ -138,6 +147,7 @@ function KpiCard({
   value,
   sub,
   trend,
+  vsPrevMonthLabel,
   icon: Icon,
   accent,
   iconTone,
@@ -146,6 +156,7 @@ function KpiCard({
   value: number | string;
   sub?: string;
   trend?: { current: number; previous: number };
+  vsPrevMonthLabel?: string;
   icon: LucideIcon;
   accent: string;
   iconTone: string;
@@ -171,7 +182,11 @@ function KpiCard({
           ) : null}
           {trend ? (
             <div className="mt-1">
-              <KpiTrend current={trend.current} previous={trend.previous} />
+              <KpiTrend
+                current={trend.current}
+                previous={trend.previous}
+                vsPrevMonthLabel={vsPrevMonthLabel ?? ""}
+              />
             </div>
           ) : null}
         </div>
@@ -180,11 +195,17 @@ function KpiCard({
   );
 }
 
-function RecentAuditEvents({ events }: { events: AuditEvent[] }) {
+function RecentAuditEvents({
+  events,
+  t,
+}: {
+  events: AuditEvent[];
+  t: (key: string, values?: Record<string, unknown>) => string;
+}) {
   if (events.length === 0) {
     return (
       <p className="text-muted-foreground py-6 text-center text-xs">
-        No recent activity
+        {t("noRecentActivity")}
       </p>
     );
   }
@@ -203,14 +224,14 @@ function RecentAuditEvents({ events }: { events: AuditEvent[] }) {
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
-                {actorLabel(event.actor)}
+                {actorLabel(event.actor, t("events.system"))}
               </p>
               <p className="text-muted-foreground truncate text-xs">
-                {humanEventLabel(event.eventType)}
+                {humanEventLabel(event.eventType, t)}
               </p>
             </div>
             <time className="text-muted-foreground mt-0.5 shrink-0 text-xs tabular-nums">
-              {formatRelativeTime(event.createdAt)}
+              {formatRelativeTime(event.createdAt, t)}
             </time>
           </li>
         );
@@ -219,11 +240,17 @@ function RecentAuditEvents({ events }: { events: AuditEvent[] }) {
   );
 }
 
-function RecentSignups({ users }: { users: RecentUser[] }) {
+function RecentSignups({
+  users,
+  t,
+}: {
+  users: RecentUser[];
+  t: (key: string, values?: Record<string, unknown>) => string;
+}) {
   if (users.length === 0) {
     return (
       <p className="text-muted-foreground py-6 text-center text-xs">
-        No recent sign-ups
+        {t("noRecentSignups")}
       </p>
     );
   }
@@ -248,7 +275,7 @@ function RecentSignups({ users }: { users: RecentUser[] }) {
               ) : null}
             </div>
             <time className="text-muted-foreground shrink-0 text-xs tabular-nums">
-              {formatRelativeTime(user.createdAt)}
+              {formatRelativeTime(user.createdAt, t)}
             </time>
           </li>
         );
@@ -259,31 +286,33 @@ function RecentSignups({ users }: { users: RecentUser[] }) {
 
 const GALLERY_STATE_BADGE: Record<
   string,
-  { label: string; className: string }
+  { labelKey: string; className: string }
 > = {
   featured: {
-    label: "Featured",
+    labelKey: "featured",
     className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   },
   hidden: {
-    label: "Hidden",
+    labelKey: "hidden",
     className: "bg-muted text-muted-foreground",
   },
   listed: {
-    label: "Listed",
+    labelKey: "listed",
     className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   },
 };
 
 function RecentGalleryEntries({
   entries,
+  t,
 }: {
   entries: DashboardGalleryEntry[];
+  t: (key: string, values?: Record<string, unknown>) => string;
 }) {
   if (entries.length === 0) {
     return (
       <p className="text-muted-foreground py-6 text-center text-xs">
-        No gallery entries yet
+        {t("noGalleryEntries")}
       </p>
     );
   }
@@ -301,16 +330,16 @@ function RecentGalleryEntries({
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
-                {entry.galleryTitle || entry.shareTitle || "Untitled"}
+                {entry.galleryTitle || entry.shareTitle || t("untitled")}
               </p>
               <p className="text-muted-foreground truncate text-xs">
-                {entry.ownerName ?? entry.ownerEmail ?? "Unknown"}
+                {entry.ownerName ?? entry.ownerEmail ?? t("unknownOwner")}
               </p>
             </div>
             <span
               className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.className}`}
             >
-              {badge.label}
+              {t(`galleryState.${badge.labelKey}`)}
             </span>
           </li>
         );
@@ -340,44 +369,53 @@ export default async function DashboardPage() {
       listGalleryEntriesForDashboard({ state: "public", limit: 6 }),
     ]);
 
+  const t = await getTranslations("dashboard.overview");
+  const tPages = await getTranslations("dashboard.pages");
+
   return (
     <>
-      <DashboardSiteHeader title="Overview" />
+      <DashboardSiteHeader title={tPages("overview")} />
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         {/* KPI strip */}
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <KpiCard
-            label="Total users"
+            label={t("kpi.totalUsers")}
             value={overviewStats.totalUsers}
-            sub={`+${overviewStats.newUsersThisMonth} this month`}
+            sub={t("kpi.totalUsersSub", {
+              count: overviewStats.newUsersThisMonth,
+            })}
             trend={{
               current: overviewStats.newUsersThisMonth,
               previous: overviewStats.newUsersLastMonth,
             }}
+            vsPrevMonthLabel={t("kpi.vsPrevMonth")}
             icon={Users}
             accent="bg-emerald-500"
             iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
           />
           <KpiCard
-            label="Active projects"
+            label={t("kpi.activeProjects")}
             value={overviewStats.activeProjects}
-            sub="non-archived"
+            sub={t("kpi.activeProjectsSub")}
             icon={FolderOpen}
             accent="bg-violet-500"
             iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
           />
           <KpiCard
-            label="Active shares"
+            label={t("kpi.activeShares")}
             value={overviewStats.activeShares}
-            sub="live share links"
+            sub={t("kpi.activeSharesSub")}
             icon={Link2}
             accent="bg-orange-500"
             iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
           />
           <KpiCard
-            label="Gallery"
+            label={t("kpi.gallery")}
             value={galleryStats.total}
-            sub={`${galleryStats.featured} featured · ${galleryStats.hidden} hidden`}
+            sub={t("kpi.gallerySub", {
+              featured: galleryStats.featured,
+              hidden: galleryStats.hidden,
+            })}
             icon={ImageIcon}
             accent="bg-sky-500"
             iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
@@ -390,17 +428,20 @@ export default async function DashboardPage() {
         >
           <div className="bg-card rounded-xl border p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium">Recent activity</p>
+              <p className="text-sm font-medium">{t("recentActivity")}</p>
               {canReadAudit && (
                 <Link
                   href="/dashboard/audit"
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                 >
-                  View all
+                  {t("viewAll")}
                 </Link>
               )}
             </div>
-            <RecentAuditEvents events={recentAuditEvents} />
+            <RecentAuditEvents
+              events={recentAuditEvents}
+              t={t as (key: string, values?: Record<string, unknown>) => string}
+            />
           </div>
 
           {canReadUsers && (
@@ -408,30 +449,38 @@ export default async function DashboardPage() {
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <UserPlus className="text-muted-foreground size-3.5" />
-                  <p className="text-sm font-medium">Recent sign-ups</p>
+                  <p className="text-sm font-medium">{t("recentSignups")}</p>
                 </div>
                 <Link
                   href="/dashboard/users"
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                 >
-                  View all
+                  {t("viewAll")}
                 </Link>
               </div>
-              <RecentSignups users={overviewStats.recentUsers} />
+              <RecentSignups
+                users={overviewStats.recentUsers}
+                t={
+                  t as (key: string, values?: Record<string, unknown>) => string
+                }
+              />
             </div>
           )}
 
           <div className="bg-card rounded-xl border p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium">Gallery</p>
+              <p className="text-sm font-medium">{t("galleryCardTitle")}</p>
               <Link
                 href="/dashboard/gallery"
                 className="text-muted-foreground hover:text-foreground text-xs transition-colors"
               >
-                View all
+                {t("viewAll")}
               </Link>
             </div>
-            <RecentGalleryEntries entries={recentGalleryEntries} />
+            <RecentGalleryEntries
+              entries={recentGalleryEntries}
+              t={t as (key: string, values?: Record<string, unknown>) => string}
+            />
           </div>
         </div>
       </div>

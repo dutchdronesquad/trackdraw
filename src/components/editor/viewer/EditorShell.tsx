@@ -10,6 +10,7 @@ import {
   type ForwardRefExoticComponent,
   type RefAttributes,
 } from "react";
+import { useTranslations } from "next-intl";
 import type {
   TrackCanvasHandle,
   TrackCanvasProps,
@@ -28,15 +29,20 @@ function loadTrackPreview3D() {
   return import("@/components/canvas/viewer/TrackPreview3D");
 }
 
+function Loading3DPlaceholder() {
+  const t = useTranslations("editor.shell");
+  return (
+    <div className="text-muted-foreground/40 flex h-full items-center justify-center text-xs">
+      {t("loading3d")}
+    </div>
+  );
+}
+
 const TrackPreview3D = dynamic<TrackPreview3DProps>(
   () => loadTrackPreview3D(),
   {
     ssr: false,
-    loading: () => (
-      <div className="text-muted-foreground/40 flex h-full items-center justify-center text-xs">
-        Loading 3D…
-      </div>
-    ),
+    loading: Loading3DPlaceholder,
   }
 ) as ForwardRefExoticComponent<
   TrackPreview3DProps & RefAttributes<TrackPreview3DHandle>
@@ -74,9 +80,10 @@ export default function EditorShell({
 }) {
   usePerfMetric("render:viewer/EditorShell");
 
+  const t = useTranslations("editor.shell");
   const hasPath = useEditor(selectHasPath);
   const designTitle = useEditor((state) => state.track.design.title);
-  const effectiveTitle = title ?? (designTitle || "Untitled track");
+  const effectiveTitle = title ?? (designTitle || t("untitledTrack"));
   const isMobile = useIsMobile();
   const router = useRouter();
   const pathname = usePathname();
@@ -218,7 +225,9 @@ export default function EditorShell({
             onTabChange={handleTabChange}
             onSetReadOnlyMenuOpen={setReadOnlyMenuOpen}
             readOnlyMenuOpen={readOnlyMenuOpen}
-            saveStatusLabel={embedMode ? "Embedded track" : "Shared preview"}
+            saveStatusLabel={
+              embedMode ? t("embeddedTrack") : t("sharedPreview")
+            }
             studioHref={studioHref}
             tab={tab}
           />

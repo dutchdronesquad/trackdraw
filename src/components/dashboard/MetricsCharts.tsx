@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Area,
   Bar,
@@ -36,17 +37,18 @@ import type {
 
 // --- User population donut with center label ---
 
-const populationConfig = {
-  active: { label: "Active (30d)", color: "var(--chart-2)" },
-  dormant: { label: "Dormant", color: "var(--chart-3)" },
-  neverCreated: { label: "Never created", color: "var(--chart-5)" },
-} satisfies ChartConfig;
-
 export function UserPopulationChart({
   users,
 }: {
   users: AdminMetrics["users"];
 }) {
+  const t = useTranslations("dashboard.metrics.userPopulation");
+  const populationConfig = {
+    active: { label: t("active"), color: "var(--chart-2)" },
+    dormant: { label: t("dormant"), color: "var(--chart-3)" },
+    neverCreated: { label: t("neverCreated"), color: "var(--chart-5)" },
+  } satisfies ChartConfig;
+
   const dormant = Math.max(
     0,
     users.total - users.activeLastThirtyDays - users.neverCreatedProject
@@ -69,7 +71,7 @@ export function UserPopulationChart({
   if (users.total === 0) {
     return (
       <div className="text-muted-foreground flex h-52 items-center justify-center text-sm">
-        No users yet
+        {t("noUsers")}
       </div>
     );
   }
@@ -141,7 +143,7 @@ export function UserPopulationChart({
                       y={(viewBox.cy || 0) + 4}
                       className="fill-muted-foreground text-xs"
                     >
-                      users
+                      {t("usersUnit")}
                     </tspan>
                   </text>
                 );
@@ -157,13 +159,6 @@ export function UserPopulationChart({
 
 // --- Content overview bar ---
 
-const contentConfig = {
-  count: { label: "Count" },
-  projects: { label: "Active projects", color: "var(--chart-1)" },
-  shares: { label: "Active shares", color: "var(--chart-4)" },
-  presets: { label: "Presets", color: "var(--chart-3)" },
-} satisfies ChartConfig;
-
 export function ContentOverviewChart({
   projects,
   shares,
@@ -173,6 +168,14 @@ export function ContentOverviewChart({
   shares: AdminMetrics["shares"];
   presets: AdminMetrics["presets"];
 }) {
+  const t = useTranslations("dashboard.metrics.contentOverview");
+  const contentConfig = {
+    count: { label: t("count") },
+    projects: { label: t("projects"), color: "var(--chart-1)" },
+    shares: { label: t("shares"), color: "var(--chart-4)" },
+    presets: { label: t("presets"), color: "var(--chart-3)" },
+  } satisfies ChartConfig;
+
   const data = [
     { key: "projects", count: projects.active, fill: "var(--chart-1)" },
     { key: "shares", count: shares.totalActive, fill: "var(--chart-4)" },
@@ -243,16 +246,7 @@ export function ContentOverviewChart({
 // Cumulative total as area (primary), weekly new users as bars (secondary, same axis).
 // Both share one Y-axis; bars are naturally small relative to cumulative total.
 
-const GROWTH_RANGES: { value: GrowthRange; label: string }[] = [
-  { value: "3m", label: "Last 3 months" },
-  { value: "6m", label: "Last 6 months" },
-  { value: "1y", label: "Last year" },
-];
-
-const growthComboConfig = {
-  totalUsers: { label: "Total users", color: "var(--chart-1)" },
-  newUsers: { label: "New this week", color: "var(--chart-2)" },
-} satisfies ChartConfig;
+const GROWTH_RANGE_VALUES: GrowthRange[] = ["3m", "6m", "1y"];
 
 function UserGrowthComboChart({
   userGrowth,
@@ -261,6 +255,12 @@ function UserGrowthComboChart({
   userGrowth: GrowthByRange["3m"]["userGrowth"];
   userGrowthCumulative: GrowthByRange["3m"]["userGrowthCumulative"];
 }) {
+  const t = useTranslations("dashboard.metrics.userGrowth");
+  const growthComboConfig = {
+    totalUsers: { label: t("totalUsers"), color: "var(--chart-1)" },
+    newUsers: { label: t("newThisWeek"), color: "var(--chart-2)" },
+  } satisfies ChartConfig;
+
   const data = userGrowth.map((row, i) => ({
     week: row.week,
     newUsers: row.users,
@@ -270,7 +270,7 @@ function UserGrowthComboChart({
   if (data.length === 0) {
     return (
       <div className="text-muted-foreground flex h-52 items-center justify-center text-sm">
-        No data yet
+        {t("noData")}
       </div>
     );
   }
@@ -330,7 +330,9 @@ function UserGrowthComboChart({
                         className="size-2 shrink-0 rounded-full"
                         style={{ backgroundColor: "var(--chart-1)" }}
                       />
-                      <span className="text-muted-foreground">Total users</span>
+                      <span className="text-muted-foreground">
+                        {t("totalUsers")}
+                      </span>
                     </div>
                     <span className="font-semibold tabular-nums">
                       {Number(total.value).toLocaleString()}
@@ -345,7 +347,7 @@ function UserGrowthComboChart({
                         style={{ backgroundColor: "var(--chart-2)" }}
                       />
                       <span className="text-muted-foreground">
-                        New this week
+                        {t("newThisWeek")}
                       </span>
                     </div>
                     <span className="font-semibold tabular-nums">
@@ -384,6 +386,7 @@ export function UserGrowthCard({
 }: {
   growthByRange: GrowthByRange;
 }) {
+  const t = useTranslations("dashboard.metrics.userGrowth");
   const [range, setRange] = useState<GrowthRange>("3m");
   const { userGrowth, userGrowthCumulative } = growthByRange[range];
 
@@ -391,10 +394,8 @@ export function UserGrowthCard({
     <div className="bg-card rounded-xl border p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-0.5">
-          <p className="text-sm font-medium">User growth</p>
-          <p className="text-muted-foreground text-xs">
-            Cumulative user count (area) and new registrations per week (bars).
-          </p>
+          <p className="text-sm font-medium">{t("title")}</p>
+          <p className="text-muted-foreground text-xs">{t("description")}</p>
         </div>
         <div className="shrink-0">
           <Select
@@ -405,9 +406,9 @@ export function UserGrowthCard({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {GROWTH_RANGES.map((r) => (
-                <SelectItem key={r.value} value={r.value} className="text-xs">
-                  {r.label}
+              {GROWTH_RANGE_VALUES.map((value) => (
+                <SelectItem key={value} value={value} className="text-xs">
+                  {t(`ranges.${value}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -446,8 +447,6 @@ function buildHistogram(counts: number[]) {
   }));
 }
 
-const distConfig = { users: { label: "Users" } } satisfies ChartConfig;
-
 function ResourceCard({
   title,
   counts,
@@ -461,6 +460,8 @@ function ResourceCard({
   totalUsers: number;
   onLimitChange: (v: number) => void;
 }) {
+  const t = useTranslations("dashboard.metrics.planLimit");
+  const distConfig = { users: { label: t("usersAxis") } } satisfies ChartConfig;
   const histogram = useMemo(() => buildHistogram(counts), [counts]);
   const affected = useMemo(
     () => counts.filter((c) => c > limit).length,
@@ -479,9 +480,9 @@ function ResourceCard({
               : "text-muted-foreground"
           }`}
         >
-          {affected} / {totalUsers}
+          {t("affected", { affected, total: totalUsers })}
           <br />
-          <span className="font-normal">{pct}% affected</span>
+          <span className="font-normal">{t("pctAffected", { pct })}</span>
         </span>
       </div>
 
@@ -499,7 +500,7 @@ function ResourceCard({
             tick={{ fontSize: 9 }}
             tickMargin={4}
             label={{
-              value: `${title.toLowerCase()} per user`,
+              value: t("perUserAxis", { title }),
               position: "insideBottom",
               offset: -12,
               style: { fontSize: 9, fill: "var(--muted-foreground)" },
@@ -512,7 +513,7 @@ function ResourceCard({
             allowDecimals={false}
             width={28}
             label={{
-              value: "users",
+              value: t("usersAxis"),
               angle: -90,
               position: "insideLeft",
               offset: 8,
@@ -523,17 +524,21 @@ function ResourceCard({
             cursor={false}
             content={({ active, payload, label }) => {
               if (!active || !payload?.length) return null;
-              const count = payload[0]?.value ?? 0;
-              const qualifier = label === `${MAX_SHOWN}+` ? "" : "exactly ";
+              const count = Number(payload[0]?.value ?? 0);
+              const qualifier =
+                label === `${MAX_SHOWN}+` ? "" : t("withExactly");
               const resource = title.toLowerCase();
               return (
                 <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
                   <p className="text-foreground font-semibold tabular-nums">
-                    {count} {count === 1 ? "user" : "users"}
+                    {t("usersCount", { count })}
                   </p>
                   <p className="text-muted-foreground">
-                    with {qualifier}
-                    {label} {resource}
+                    {t("withCount", {
+                      qualifier,
+                      count: String(label ?? ""),
+                      resource,
+                    })}
                   </p>
                 </div>
               );
@@ -574,9 +579,9 @@ function ResourceCard({
           />
         </div>
         <p className="text-muted-foreground text-[10px]">
-          Free limit: max {limit} · bars in{" "}
-          <span className="text-rose-600 dark:text-rose-400">red</span> exceed
-          it
+          {t("freeLimit", { limit })}{" "}
+          <span className="text-rose-600 dark:text-rose-400">{t("red")}</span>{" "}
+          {t("exceedIt")}
         </p>
       </div>
     </div>
@@ -588,6 +593,7 @@ export function PlanLimitSimulator({
 }: {
   userDistribution: DistRow[];
 }) {
+  const t = useTranslations("dashboard.metrics.planLimit");
   const [limits, setLimits] = useState({ projects: 5, shares: 5, presets: 5 });
 
   const activeDistribution = useMemo(
@@ -625,7 +631,7 @@ export function PlanLimitSimulator({
   if (userDistribution.length === 0) {
     return (
       <div className="text-muted-foreground py-8 text-center text-sm">
-        No user data yet
+        {t("noData")}
       </div>
     );
   }
@@ -634,21 +640,21 @@ export function PlanLimitSimulator({
     <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-3">
         <ResourceCard
-          title="Projects"
+          title={t("projects")}
           counts={projCounts}
           limit={limits.projects}
           totalUsers={totalUsers}
           onLimitChange={(v) => setLimits((prev) => ({ ...prev, projects: v }))}
         />
         <ResourceCard
-          title="Share links"
+          title={t("shareLinks")}
           counts={shareCounts}
           limit={limits.shares}
           totalUsers={totalUsers}
           onLimitChange={(v) => setLimits((prev) => ({ ...prev, shares: v }))}
         />
         <ResourceCard
-          title="Presets"
+          title={t("presets")}
           counts={presetCounts}
           limit={limits.presets}
           totalUsers={totalUsers}
@@ -658,9 +664,9 @@ export function PlanLimitSimulator({
 
       <div className="flex items-center justify-between rounded-xl border px-4 py-3">
         <div>
-          <p className="text-sm font-medium">Total impact</p>
+          <p className="text-sm font-medium">{t("totalImpact")}</p>
           <p className="text-muted-foreground mt-0.5 text-xs">
-            Unique users affected by at least one of the limits above
+            {t("totalImpactDescription")}
           </p>
         </div>
         <div className="text-right">
@@ -674,9 +680,9 @@ export function PlanLimitSimulator({
             {anyAffected}
           </p>
           <p className="text-muted-foreground text-xs tabular-nums">
-            {anyPct}% of {totalUsers} users with content
+            {t("pctOfUsers", { pct: anyPct, total: totalUsers })}
             {excludedCount > 0
-              ? ` · ${excludedCount} empty accounts excluded`
+              ? t("excludedAccounts", { count: excludedCount })
               : ""}
           </p>
         </div>

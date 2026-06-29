@@ -48,8 +48,8 @@ describe("ShareExpired", () => {
     cleanup();
   });
 
-  it("explains temporary expiry separately from account-published shares", () => {
-    render(<ShareExpired />);
+  it("explains temporary expiry separately from account-published shares", async () => {
+    render(await ShareExpired());
 
     expect(screen.getByText("This share link has expired")).toBeTruthy();
     expect(

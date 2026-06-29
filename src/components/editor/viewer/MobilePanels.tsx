@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Scan, Share2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { ViewControls } from "@/components/editor/mobile/ViewControls";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,7 @@ export default function MobilePanels({
   studioHref = "/studio",
   tab,
 }: MobilePanelsProps) {
+  const t = useTranslations("editor.mobilePanels.editorPanels");
   if (mobileFlyModeActive) {
     return null;
   }
@@ -73,7 +75,7 @@ export default function MobilePanels({
             )}
           >
             <Scan className="size-3.5" />
-            <span>{embedMode ? "View" : "Preview"}</span>
+            <span>{embedMode ? t("view") : t("preview")}</span>
           </button>
           {!embedMode ? (
             <button
@@ -81,7 +83,7 @@ export default function MobilePanels({
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Share2 className="size-3.5" />
-              <span>Share</span>
+              <span>{t("share")}</span>
             </button>
           ) : null}
           {!embedMode ? (
@@ -90,7 +92,7 @@ export default function MobilePanels({
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <ArrowRight className="size-3.5" />
-              <span>Edit copy</span>
+              <span>{t("editCopy")}</span>
             </Link>
           ) : null}
         </div>
@@ -99,8 +101,8 @@ export default function MobilePanels({
       <MobileDrawer
         open={readOnlyMenuOpen}
         onOpenChange={onSetReadOnlyMenuOpen}
-        title="View"
-        subtitle="Canvas mode, guides and viewport controls"
+        title={t("viewTitle")}
+        subtitle={t("viewSubtitle")}
         bodyClassName="space-y-5 pt-3 pb-4"
       >
         <ViewControls

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import DashboardUsersManager from "@/components/dashboard/UsersManager";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -24,12 +25,13 @@ export default async function DashboardUsersPage() {
   }
 
   const users = await listUsersForAdmin();
+  const t = await getTranslations("dashboard");
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: "Dashboard", href: "/dashboard" }}
-        title="Users"
+        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        title={t("pages.users")}
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <DashboardUsersManager

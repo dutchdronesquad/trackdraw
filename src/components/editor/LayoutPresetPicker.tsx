@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import {
@@ -172,6 +173,7 @@ function UserPresetCard({
   onRename: (id: string, name: string) => void;
   onRemove: (id: string) => void;
 }) {
+  const t = useTranslations("editor.layoutPresetPicker");
   const [renaming, setRenaming] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -228,12 +230,12 @@ function UserPresetCard({
 
           <div className="flex shrink-0 items-center gap-0.5">
             <span className="bg-muted text-muted-foreground mr-1 inline-flex rounded-full px-2 py-1 text-[10px] font-medium whitespace-nowrap uppercase">
-              {itemCount} items
+              {t("itemsCount", { count: itemCount })}
             </span>
             {!confirmDelete && (
               <button
                 type="button"
-                title="Rename preset"
+                title={t("renamePresetTooltip")}
                 onClick={(e) => {
                   e.stopPropagation();
                   setConfirmDelete(false);
@@ -254,20 +256,20 @@ function UserPresetCard({
                   onClick={() => setConfirmDelete(false)}
                   className="text-muted-foreground hover:text-foreground rounded-md px-1.5 py-0.5 text-[10px] transition-colors"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   type="button"
                   onClick={() => onRemove(preset.id)}
                   className="rounded-md bg-red-500/10 px-1.5 py-0.5 text-[10px] text-red-500 transition-colors hover:bg-red-500/20"
                 >
-                  Delete
+                  {t("delete")}
                 </button>
               </div>
             ) : (
               <button
                 type="button"
-                title="Delete preset"
+                title={t("deletePresetTooltip")}
                 onClick={(e) => {
                   e.stopPropagation();
                   setRenaming(false);
@@ -323,6 +325,7 @@ function MyPresetsContent({
   selectedPresetId: string | null;
   onSelectPreset: (presetId: string) => void;
 }) {
+  const t = useTranslations("editor.layoutPresetPicker");
   const { data: authSession } = authClient.useSession();
   const isSignedIn = Boolean(authSession?.user?.id);
   const userPresets = useUserPresets((state) => state.userPresets);
@@ -334,11 +337,10 @@ function MyPresetsContent({
         <LogIn className="text-muted-foreground/40 size-8" />
         <div className="space-y-1">
           <p className="text-foreground/70 text-sm font-medium">
-            Sign in to use presets
+            {t("signInTitle")}
           </p>
           <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
-            Presets are saved to your account so they&apos;re always available
-            across all your devices.
+            {t("signInDescription")}
           </p>
         </div>
       </div>
@@ -351,12 +353,14 @@ function MyPresetsContent({
         <BookmarkPlus className="text-muted-foreground/40 size-8" />
         <div className="space-y-1">
           <p className="text-foreground/70 text-sm font-medium">
-            No presets yet
+            {t("noPresetsTitle")}
           </p>
           <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
-            Select multiple shapes on the canvas and use{" "}
-            <strong className="text-foreground/60">Save preset</strong> in the
-            inspector to add your first preset here.
+            {t.rich("noPresetsDescription", {
+              strong: (chunks) => (
+                <strong className="text-foreground/60">{chunks}</strong>
+              ),
+            })}
           </p>
         </div>
       </div>
@@ -373,14 +377,16 @@ function MyPresetsContent({
 }
 
 function StoreContent() {
+  const t = useTranslations("editor.layoutPresetPicker");
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
       <Store className="text-muted-foreground/40 size-8" />
       <div className="space-y-1">
-        <p className="text-foreground/70 text-sm font-medium">Coming soon</p>
+        <p className="text-foreground/70 text-sm font-medium">
+          {t("comingSoonTitle")}
+        </p>
         <p className="text-muted-foreground max-w-xs text-xs leading-relaxed">
-          Community-shared presets will appear here. Save your own presets and
-          share them with the TrackDraw community.
+          {t("comingSoonDescription")}
         </p>
       </div>
     </div>
@@ -394,6 +400,7 @@ function SidebarNav({
   active: NavSection;
   onChange: (section: NavSection) => void;
 }) {
+  const t = useTranslations("editor.layoutPresetPicker");
   return (
     <nav className="space-y-0.5">
       <button
@@ -407,7 +414,7 @@ function SidebarNav({
         )}
       >
         <Bookmark className="size-4 shrink-0" />
-        My Presets
+        {t("myPresetsNav")}
       </button>
       <button
         type="button"
@@ -420,9 +427,9 @@ function SidebarNav({
         )}
       >
         <Store className="size-4 shrink-0" />
-        <span className="flex-1 text-left">Store</span>
+        <span className="flex-1 text-left">{t("storeNav")}</span>
         <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-medium uppercase">
-          Soon
+          {t("soonBadge")}
         </span>
       </button>
     </nav>
@@ -467,6 +474,7 @@ export function LayoutPresetPicker({
   selectedPresetId,
   onSelectPreset,
 }: LayoutPresetPickerProps) {
+  const t = useTranslations("editor.layoutPresetPicker");
   const [section, setSection] = useState<NavSection>("my-presets");
   const userPresets = useUserPresets((state) => state.userPresets);
   const selectedPreset = findPresetById(selectedPresetId, userPresets);
@@ -476,8 +484,8 @@ export function LayoutPresetPicker({
       <MobileDrawer
         open={open}
         onOpenChange={onOpenChange}
-        title="Presets"
-        subtitle="Choose a preset, then tap once on the canvas to place it."
+        title={t("mobileTitle")}
+        subtitle={t("mobileSubtitle")}
         pinnedContent={
           <>
             {selectedPreset && (
@@ -496,11 +504,10 @@ export function LayoutPresetPicker({
             )}
             <div className="border-border/30 shrink-0 border-b px-4 pt-3 pb-3">
               <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-                Place flow
+                {t("placeFlowTitle")}
               </p>
               <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                Select a preset here, then tap the canvas. The result expands
-                immediately into ordinary editable shapes.
+                {t("placeFlowDescription")}
               </p>
             </div>
           </>
@@ -521,7 +528,7 @@ export function LayoutPresetPicker({
     <DesktopModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Layout presets"
+      title={t("desktopTitle")}
       headerless
       maxWidth="max-w-4xl"
       panelClassName="flex flex-col overflow-hidden rounded-4xl p-0"
@@ -532,18 +539,17 @@ export function LayoutPresetPicker({
           <div className="flex items-start gap-4">
             <div className="min-w-0 flex-1 pr-6">
               <p className="text-foreground text-[1.25rem] font-semibold tracking-[-0.02em]">
-                Layout presets
+                {t("desktopTitle")}
               </p>
               <p className="text-muted-foreground mt-1.5 max-w-none text-sm leading-relaxed">
-                Choose a preset, place it on the canvas, then edit the inserted
-                shapes normally.
+                {t("desktopSubtitle")}
               </p>
             </div>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
               className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-              aria-label="Close"
+              aria-label={t("close")}
             >
               <X className="size-4" />
             </button>
@@ -571,9 +577,11 @@ export function LayoutPresetPicker({
               <div className="flex gap-2.5">
                 <Lightbulb className="mt-px size-3.5 shrink-0 text-amber-400/80" />
                 <p className="text-muted-foreground text-[11px] leading-relaxed">
-                  Select shapes on the canvas, then use{" "}
-                  <strong className="text-foreground/60">Save preset</strong> in
-                  the inspector to add your own.
+                  {t.rich("tipText", {
+                    strong: (chunks) => (
+                      <strong className="text-foreground/60">{chunks}</strong>
+                    ),
+                  })}
                 </p>
               </div>
             </div>

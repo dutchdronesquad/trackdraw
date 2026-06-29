@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { createPortal } from "react-dom";
 import { Bookmark, Shapes } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ export function SaveAsPresetDialog({
   onSave,
   onCancel,
 }: SaveAsPresetDialogProps) {
+  const t = useTranslations("editor.saveAsPresetDialog");
   const isMobile = useIsMobile();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -42,25 +44,24 @@ export function SaveAsPresetDialog({
         </div>
         <div className="min-w-0">
           <p className="text-foreground text-[13px] font-medium">
-            {shapeCount === 1 ? "1 shape" : `${shapeCount} shapes`}
+            {t("shapeCount", { count: shapeCount })}
           </p>
           {pathCount > 0 && (
             <p className="text-muted-foreground text-[11px] leading-snug">
-              {pathCount === 1 ? "1 path" : `${pathCount} paths`} will be
-              excluded — presets only capture non-path shapes.
+              {t("pathsExcluded", { count: pathCount })}
             </p>
           )}
         </div>
       </div>
       <div className="space-y-1.5">
         <label className="text-foreground/80 text-[11px] font-medium tracking-wide uppercase">
-          Preset name
+          {t("presetNameLabel")}
         </label>
         <Input
           ref={inputRef}
           key={open ? "open" : "closed"}
           defaultValue=""
-          placeholder="e.g. Timing gate setup"
+          placeholder={t("presetNamePlaceholder")}
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
@@ -74,11 +75,11 @@ export function SaveAsPresetDialog({
       </div>
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {t("cancel")}
         </Button>
         <Button type="button" onClick={handleSave} disabled={shapeCount === 0}>
           <Bookmark className="size-3.5" />
-          Save preset
+          {t("savePreset")}
         </Button>
       </div>
     </div>
@@ -91,8 +92,8 @@ export function SaveAsPresetDialog({
         onOpenChange={(next) => {
           if (!next) onCancel();
         }}
-        title="Save as preset"
-        subtitle="Give your selection a name so you can place it again from the preset picker."
+        title={t("title")}
+        subtitle={t("subtitle")}
         bodyClassName="pt-4 pb-4"
       >
         {content}
@@ -106,8 +107,8 @@ export function SaveAsPresetDialog({
       onOpenChange={(next) => {
         if (!next) onCancel();
       }}
-      title="Save as preset"
-      subtitle="Give your selection a name so you can place it again from the preset picker."
+      title={t("title")}
+      subtitle={t("subtitle")}
       maxWidth="max-w-sm"
     >
       {content}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import DashboardApiKeysManager from "@/components/dashboard/ApiKeysManager";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -24,12 +25,13 @@ export default async function DashboardApiKeysPage() {
   }
 
   const apiKeys = await listApiKeysForAdmin();
+  const t = await getTranslations("dashboard");
 
   return (
     <>
       <DashboardSiteHeader
-        parent={{ label: "Dashboard", href: "/dashboard" }}
-        title="API Keys"
+        parent={{ label: t("siteHeader.dashboardCrumb"), href: "/dashboard" }}
+        title={t("pages.apiKeys")}
       />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <DashboardApiKeysManager initialKeys={apiKeys} />

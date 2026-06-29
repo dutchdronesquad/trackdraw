@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useUndoRedo } from "@/hooks/editor/useUndoRedo";
 import {
   Tooltip,
@@ -118,7 +119,7 @@ export default function Header({
   readOnly = false,
   collapsed,
   onToggleCollapsed,
-  title = "Untitled",
+  title,
   studioHref = "/studio",
   lastSnapshotLabel,
   statusLabel,
@@ -127,6 +128,9 @@ export default function Header({
   showObstacleNumbers = false,
   onToggleObstacleNumbers,
 }: HeaderProps) {
+  const t = useTranslations("editor.header");
+  const tToolbar = useTranslations("editor.toolbar");
+  const resolvedTitle = title ?? t("untitledTitle");
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const theme = useTheme();
   const router = useRouter();
@@ -170,12 +174,12 @@ export default function Header({
     );
   const statusWord =
     statusTone === "error"
-      ? "Failed"
+      ? t("statusFailed")
       : statusTone === "pending"
-        ? "Pending"
+        ? t("statusPending")
         : statusTone === "syncing"
-          ? "Syncing"
-          : "Synced";
+          ? t("statusSyncing")
+          : t("statusSynced");
   const canRetryStatus = statusTone === "error" && Boolean(onRetrySync);
   const headerActionClass =
     "text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 cursor-pointer gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5";
@@ -195,7 +199,7 @@ export default function Header({
           {readOnly && (
             <Link
               href="/"
-              aria-label="Go to homepage"
+              aria-label={tToolbar("homepageLabel")}
               className="hidden shrink-0 items-center rounded-xs opacity-90 transition-opacity hover:opacity-100 lg:flex"
             >
               <span className="relative block h-7 w-37">
@@ -223,7 +227,7 @@ export default function Header({
                 )}
               </TooltipTrigger>
               <TooltipContent>
-                {collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                {collapsed ? t("expandSidebar") : t("collapseSidebar")}
               </TooltipContent>
             </Tooltip>
           )}
@@ -235,7 +239,7 @@ export default function Header({
         <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden">
           <Link
             href="/"
-            aria-label="Go to homepage"
+            aria-label={tToolbar("homepageLabel")}
             className="flex items-center rounded-xs opacity-90 transition-opacity hover:opacity-100"
           >
             <span className="relative block h-9 w-36 sm:w-40">
@@ -258,7 +262,7 @@ export default function Header({
           >
             <div className="flex max-w-md items-center gap-2 px-6">
               <span className="text-foreground/70 truncate text-center text-sm">
-                {title}
+                {resolvedTitle}
               </span>
             </div>
           </div>
@@ -281,8 +285,8 @@ export default function Header({
                 )}
                 aria-label={
                   showObstacleNumbers
-                    ? "Hide obstacle numbers"
-                    : "Show obstacle numbers"
+                    ? t("hideObstacleNumbers")
+                    : t("showObstacleNumbers")
                 }
               >
                 {showObstacleNumbers ? (
@@ -293,8 +297,8 @@ export default function Header({
               </TooltipTrigger>
               <TooltipContent>
                 {showObstacleNumbers
-                  ? "Hide obstacle numbers"
-                  : "Show obstacle numbers"}
+                  ? t("hideObstacleNumbers")
+                  : t("showObstacleNumbers")}
               </TooltipContent>
             </Tooltip>
           )}
@@ -303,14 +307,14 @@ export default function Header({
             <>
               <span className="hidden shrink-0 items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[11px] font-medium text-sky-400 sm:flex">
                 <Eye className="size-3" />
-                Shared review
+                {t("sharedReviewBadge")}
               </span>
               <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
               <Link
                 href={studioHref}
                 className="text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors sm:inline-flex sm:h-7 sm:px-2.5"
               >
-                Make editable copy
+                {t("makeEditableCopy")}
               </Link>
               <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
             </>
@@ -328,12 +332,12 @@ export default function Header({
                       : "pointer-events-none opacity-25"
                   )}
                   onClick={() => undo()}
-                  aria-label="Undo"
+                  aria-label={t("undo")}
                 >
                   <Undo2 className="size-3.5" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  Undo{" "}
+                  {t("undo")}{" "}
                   <span className="ml-1 font-mono text-[11px] opacity-65">
                     ⌃Z
                   </span>
@@ -348,12 +352,12 @@ export default function Header({
                       : "pointer-events-none opacity-25"
                   )}
                   onClick={() => redo()}
-                  aria-label="Redo"
+                  aria-label={t("redo")}
                 >
                   <Redo2 className="size-3.5" />
                 </TooltipTrigger>
                 <TooltipContent>
-                  Redo{" "}
+                  {t("redo")}{" "}
                   <span className="ml-1 font-mono text-[11px] opacity-65">
                     ⌃Y
                   </span>
@@ -364,13 +368,13 @@ export default function Header({
                   <TooltipTrigger
                     className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 cursor-pointer items-center justify-center rounded-md transition-colors lg:flex"
                     onClick={onSaveSnapshot}
-                    aria-label="Save snapshot"
+                    aria-label={t("saveSnapshot")}
                   >
                     <Save className="size-3.5" />
                   </TooltipTrigger>
                   <TooltipContent className="flex flex-col gap-0.5">
                     <span>
-                      Save snapshot{" "}
+                      {t("saveSnapshot")}{" "}
                       <span className="font-mono text-[11px] opacity-65">
                         ⌘S
                       </span>
@@ -386,11 +390,11 @@ export default function Header({
                   <TooltipTrigger
                     onClick={onOpenShortcuts}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 items-center justify-center rounded-md transition-colors sm:flex"
-                    aria-label="Keyboard shortcuts"
+                    aria-label={t("keyboardShortcuts")}
                   >
                     <Keyboard className="size-3.5" />
                   </TooltipTrigger>
-                  <TooltipContent>Keyboard shortcuts</TooltipContent>
+                  <TooltipContent>{t("keyboardShortcuts")}</TooltipContent>
                 </Tooltip>
               )}
               {statusLabel ? (
@@ -415,7 +419,7 @@ export default function Header({
                       )}
                       aria-label={
                         canRetryStatus
-                          ? `Retry account sync (${statusLabel})`
+                          ? t("retrySync", { status: statusLabel ?? "" })
                           : statusLabel
                       }
                     >
@@ -444,7 +448,7 @@ export default function Header({
               )}
             >
               <Download className="size-3.5" />
-              <span>Export</span>
+              <span>{t("export")}</span>
             </button>
           )}
 
@@ -456,7 +460,7 @@ export default function Header({
             )}
           >
             <Share2 className="size-3.5" />
-            <span>Share</span>
+            <span>{t("share")}</span>
           </button>
 
           {!readOnly && onImport && onExport && onOpenProjectManager ? (
@@ -486,7 +490,7 @@ export default function Header({
                   setShowMobileAppMenu(true);
                 }}
                 className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-md transition-colors lg:hidden"
-                aria-label="Open app menu"
+                aria-label={t("openAppMenu")}
               >
                 <Menu className="size-4" />
               </button>

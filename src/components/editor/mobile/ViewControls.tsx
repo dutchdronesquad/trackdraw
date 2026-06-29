@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Play, Scan, Share2, ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import ViewModeSwitch from "@/components/editor/ViewModeSwitch";
 import { cn } from "@/lib/utils";
 import type { EditorViewportTab } from "@/components/editor/mobile/Panels";
@@ -92,25 +93,27 @@ export function ViewControls({
   studioHref = "/studio",
   tab,
 }: EditorMobileViewControlsProps) {
+  const t = useTranslations("editor.mobilePanels.viewControls");
+  const tCommon = useTranslations("editor.common");
   const modeDescription = !readOnly
     ? `${inspectorHint}. ${saveStatusLabel}.`
     : tab === "3d"
       ? hasPath
-        ? "Read-only 3D review with fly-through available for this shared track."
-        : "Read-only 3D review for this shared track. No route is available for fly-through."
+        ? t("readOnly3dWithPath")
+        : t("readOnly3dNoPath")
       : hasPath
-        ? "Read-only 2D review for this shared track. Switch to 3D to use fly-through."
-        : "Read-only 2D review for this shared track.";
+        ? t("readOnly2dWithPath")
+        : t("readOnly2dNoPath");
 
   return (
     <>
       <div>
         <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-          {readOnly ? saveStatusLabel : "Current mode"}
+          {readOnly ? saveStatusLabel : t("currentMode")}
         </p>
         <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
           <p className="text-foreground text-sm font-medium">
-            {tab === "2d" ? "2D canvas" : "3D preview"}
+            {tab === "2d" ? tCommon("canvas2d") : tCommon("preview3d")}
           </p>
           <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
             {modeDescription}
@@ -119,7 +122,7 @@ export function ViewControls({
       </div>
       <div>
         <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-          View mode
+          {t("viewModeLabel")}
         </p>
         <ViewModeSwitch
           value={tab}
@@ -134,9 +137,9 @@ export function ViewControls({
           className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
         >
           <div>
-            <p className="text-[11px] font-medium">Fit to field</p>
+            <p className="text-[11px] font-medium">{t("fitToField")}</p>
             <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
-              Center the current design in view
+              {t("fitToFieldDescription")}
             </p>
           </div>
           <Scan className="size-4" />
@@ -154,9 +157,9 @@ export function ViewControls({
                 )}
               >
                 <div>
-                  <p className="text-[11px] font-medium">Snap</p>
+                  <p className="text-[11px] font-medium">{t("snapLabel")}</p>
                   <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
-                    Lock to nearby grid positions and objects
+                    {t("snapDescription")}
                   </p>
                 </div>
                 <div
@@ -172,14 +175,14 @@ export function ViewControls({
               </button>
             )}
             <ToggleRow
-              title="Rulers"
-              description="Show top and left guides on mobile"
+              title={t("rulersLabel")}
+              description={t("rulersDescription")}
               enabled={mobileRulersEnabled}
               onClick={() => onSetMobileRulersEnabled(!mobileRulersEnabled)}
             />
             <ToggleRow
-              title="Obstacle numbers"
-              description="Show path numbers on route obstacles"
+              title={t("obstacleNumbersLabel")}
+              description={t("obstacleNumbersDescription")}
               enabled={mobileObstacleNumbersEnabled}
               onClick={() =>
                 onSetMobileObstacleNumbersEnabled(!mobileObstacleNumbersEnabled)
@@ -202,20 +205,22 @@ export function ViewControls({
               )}
             >
               <div>
-                <p className="text-[11px] font-medium">Fly-through</p>
+                <p className="text-[11px] font-medium">
+                  {t("flyThroughLabel")}
+                </p>
                 <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                   {hasPath
-                    ? "Start the race-line preview camera"
+                    ? t("flyThroughDescriptionAvailable")
                     : readOnly
-                      ? "No route in this shared track"
-                      : "Draw a path in 2D first to enable this"}
+                      ? t("flyThroughDescriptionReadOnly")
+                      : t("flyThroughDescriptionDraw")}
                 </p>
               </div>
               <Play className="size-4" />
             </button>
             <ToggleRow
-              title="Gizmo"
-              description="Show the axis helper in 3D preview"
+              title={t("gizmoLabel")}
+              description={t("gizmoDescription")}
               enabled={mobileGizmoEnabled}
               onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
             />
@@ -225,7 +230,7 @@ export function ViewControls({
       {readOnly && showShareActions ? (
         <div>
           <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            Share
+            {t("shareSectionLabel")}
           </p>
           <div className="grid grid-cols-2 gap-2">
             <Link
@@ -234,7 +239,7 @@ export function ViewControls({
             >
               <ArrowRight className="size-4" />
               <span className="text-[11px] leading-none font-medium">
-                Editable copy
+                {t("editableCopyLabel")}
               </span>
             </Link>
             <button
@@ -243,7 +248,7 @@ export function ViewControls({
             >
               <Share2 className="size-4" />
               <span className="text-[11px] leading-none font-medium">
-                Share
+                {t("shareButtonLabel")}
               </span>
             </button>
           </div>

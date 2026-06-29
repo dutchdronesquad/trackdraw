@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, RefreshCcw, Unlink } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 function TrackDrawLogo() {
   return (
@@ -29,7 +30,9 @@ function TrackDrawLogo() {
   );
 }
 
-export default function ShareNotFound() {
+export default async function ShareNotFound() {
+  const t = await getTranslations("share");
+
   return (
     <main className="bg-background text-foreground relative min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-0">
@@ -43,54 +46,42 @@ export default function ShareNotFound() {
             <TrackDrawLogo />
             <div className="text-muted-foreground inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase">
               <Unlink className="size-3.5" />
-              Share View
+              {t("badge")}
             </div>
           </div>
 
           <div className="space-y-8">
             <div className="max-w-3xl space-y-4">
               <h1 className="text-4xl font-semibold tracking-[-0.04em] text-balance sm:text-6xl">
-                This shared track could not be opened
+                {t("notFound.heading")}
               </h1>
               <p className="text-muted-foreground max-w-2xl text-sm leading-7 sm:text-base">
-                The share link may have been revoked by the owner, or it may be
-                outdated, incomplete, or miscopied. Ask the sender to confirm
-                the link is still active or publish a fresh link. If the track
-                is very large, a JSON export is a more reliable alternative to a
-                share link.
+                {t("notFound.description")}
               </p>
             </div>
 
             <div className="max-w-4xl">
               <p className="text-muted-foreground/70 mb-3 text-[11px] font-semibold tracking-[0.16em] uppercase">
-                What To Try
+                {t("whatToTry")}
               </p>
               <ol className="text-muted-foreground text-sm leading-relaxed">
                 <li className="flex gap-3 py-2">
                   <span className="text-foreground/70 min-w-4 font-semibold tabular-nums">
                     1.
                   </span>
-                  <span>
-                    Ask the sender to confirm the share is still active and copy
-                    the latest share link again.
-                  </span>
+                  <span>{t("notFound.step1")}</span>
                 </li>
                 <li className="flex gap-3 py-2">
                   <span className="text-foreground/70 min-w-4 font-semibold tabular-nums">
                     2.
                   </span>
-                  <span>
-                    Open the link directly from the message where it was sent.
-                  </span>
+                  <span>{t("notFound.step2")}</span>
                 </li>
                 <li className="flex gap-3 py-2">
                   <span className="text-foreground/70 min-w-4 font-semibold tabular-nums">
                     3.
                   </span>
-                  <span>
-                    Ask for a JSON export if the track is very large — JSON
-                    files are not subject to URL size limits.
-                  </span>
+                  <span>{t("notFound.step3")}</span>
                 </li>
               </ol>
             </div>
@@ -101,14 +92,14 @@ export default function ShareNotFound() {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-5 text-sm font-medium transition-colors"
               >
                 <ArrowRight className="size-4" />
-                Open Studio
+                {t("openStudio")}
               </Link>
               <Link
                 href="/"
                 className="border-border/50 bg-muted/18 text-foreground hover:bg-muted/28 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border px-5 text-sm font-medium transition-colors"
               >
                 <RefreshCcw className="size-4" />
-                Back to Home
+                {t("backToHome")}
               </Link>
             </div>
           </div>
