@@ -2,6 +2,7 @@
 
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -99,10 +100,11 @@ export function CurrentBadge({ label = "current" }: { label?: string }) {
 }
 
 export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
+  const t = useTranslations("dialogs");
   const copyProjectId = async () => {
     try {
       await navigator.clipboard.writeText(projectId);
-      toast.success("Project ID copied");
+      toast.success(t("projectManager.copyProjectIdSuccess"));
     } catch {
       toast.error("Could not copy the project ID from this browser.");
     }
@@ -125,7 +127,7 @@ export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
           void copyProjectId();
         }}
         className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 text-[11px] font-medium transition-colors"
-        aria-label="Copy API project ID"
+        aria-label={t("projectManager.copyProjectIdAriaLabel")}
       >
         <Copy className="size-3.5" />
         Copy

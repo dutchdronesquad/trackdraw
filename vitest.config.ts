@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      "@lang": path.resolve(__dirname, "lang"),
     },
   },
   test: {

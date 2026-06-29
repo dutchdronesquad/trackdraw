@@ -1,6 +1,8 @@
+"use client";
 import { MeasurementNum, Row } from "@/components/inspector/shared";
 import type { MeasurementUnitSystem } from "@/lib/track/units";
 import type { BarrierShape, Shape } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 export function BarrierDimensionFields({
   shape,
@@ -15,10 +17,11 @@ export function BarrierDimensionFields({
   updateShape: (id: string, patch: Partial<Shape>) => void;
   hasFixedCatalogDimensions: boolean;
 }) {
+  const t = useTranslations("inspector");
   if (hasFixedCatalogDimensions) return null;
   return (
     <>
-      <Row label={`Width (${unitLabel})`}>
+      <Row label={t("dimensions.widthLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.width}
           unitSystem={unitSystem}
@@ -26,7 +29,7 @@ export function BarrierDimensionFields({
           minMeters={0.3}
         />
       </Row>
-      <Row label={`Height (${unitLabel})`}>
+      <Row label={t("dimensions.heightLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.height}
           unitSystem={unitSystem}

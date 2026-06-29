@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { LogIn } from "lucide-react";
 
 export function AccountDialogError({ error }: { error: string | null }) {
@@ -13,10 +16,16 @@ export function AccountDialogError({ error }: { error: string | null }) {
 }
 
 export function AccountDialogLoading() {
-  return <p className="text-muted-foreground text-sm">Loading account...</p>;
+  const t = useTranslations("dialogs");
+  return (
+    <p className="text-muted-foreground text-sm">
+      {t("account.shared.loading")}
+    </p>
+  );
 }
 
 export function AccountDialogNotSignedIn() {
+  const t = useTranslations("dialogs");
   return (
     <div className="border-border/60 bg-background/70 rounded-2xl border p-5">
       <div className="flex items-start gap-3">
@@ -24,10 +33,11 @@ export function AccountDialogNotSignedIn() {
           <LogIn className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">Sign in to manage your account</p>
+          <p className="text-sm font-medium">
+            {t("account.shared.signInTitle")}
+          </p>
           <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-            Use your email to access cloud-backed account settings and profile
-            details.
+            {t("account.shared.signInBody")}
           </p>
         </div>
       </div>

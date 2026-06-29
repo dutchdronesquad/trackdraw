@@ -1,6 +1,9 @@
+"use client";
+
 import { MeasurementNum, Row } from "@/components/inspector/shared";
 import type { MeasurementUnitSystem } from "@/lib/track/units";
 import type { GateShape, Shape } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 export function GateDimensionFields({
   shape,
@@ -15,10 +18,11 @@ export function GateDimensionFields({
   updateShape: (id: string, patch: Partial<Shape>) => void;
   hasFixedCatalogDimensions: boolean;
 }) {
+  const t = useTranslations("inspector");
   if (hasFixedCatalogDimensions) return null;
   return (
     <>
-      <Row label={`Width (${unitLabel})`}>
+      <Row label={t("dimensions.widthLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.width}
           unitSystem={unitSystem}
@@ -26,7 +30,7 @@ export function GateDimensionFields({
           minMeters={0.5}
         />
       </Row>
-      <Row label={`Height (${unitLabel})`}>
+      <Row label={t("dimensions.heightLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.height}
           unitSystem={unitSystem}
@@ -34,7 +38,7 @@ export function GateDimensionFields({
           minMeters={0.5}
         />
       </Row>
-      <Row label={`Thickness (${unitLabel})`}>
+      <Row label={t("dimensions.thicknessLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.thick ?? 0.2}
           unitSystem={unitSystem}

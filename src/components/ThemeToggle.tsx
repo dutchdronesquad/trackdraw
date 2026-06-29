@@ -16,6 +16,7 @@ import {
   THEME_STORAGE_KEY,
   type ThemePreference,
 } from "@/lib/theme";
+import { cn } from "@/lib/utils";
 
 const NEXT: Record<ThemePreference, ThemePreference> = {
   light: "dark",
@@ -71,7 +72,7 @@ const icons: Record<ThemePreference, React.ReactNode> = {
   system: <Monitor className="size-4" />,
 };
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return (
@@ -80,7 +81,10 @@ export function ThemeToggle() {
         type="button"
         onClick={() => applyTheme(NEXT[theme])}
         aria-label={`Theme: ${LABEL[theme]}`}
-        className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 items-center justify-center rounded-md transition-colors sm:size-7"
+        className={cn(
+          "text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 items-center justify-center rounded-md transition-colors",
+          className
+        )}
       >
         {icons[theme]}
       </TooltipTrigger>

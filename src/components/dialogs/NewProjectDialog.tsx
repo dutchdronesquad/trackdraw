@@ -5,6 +5,7 @@ import { MobileDrawer } from "@/components/MobileDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { starterLayouts } from "@/lib/planning/starter-layouts";
 import { Box, ChevronRight, Download, FilePlus, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface NewProjectDialogProps {
   open: boolean;
@@ -23,6 +24,7 @@ export default function NewProjectDialog({
   onBackupProject,
   hasContent,
 }: NewProjectDialogProps) {
+  const t = useTranslations("dialogs");
   const isMobile = useIsMobile();
 
   const actionRowClass =
@@ -33,11 +35,10 @@ export default function NewProjectDialog({
       {hasContent ? (
         <div className="rounded-xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
           <p className="text-foreground text-sm font-medium">
-            Current track will be saved first
+            {t("newProject.saveWarningTitle")}
           </p>
           <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            A snapshot is kept in Saved projects and Restore points before the
-            canvas is cleared.
+            {t("newProject.saveWarningBody")}
           </p>
         </div>
       ) : null}
@@ -47,9 +48,11 @@ export default function NewProjectDialog({
           <FilePlus className="size-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-foreground text-sm font-medium">Start fresh</p>
+          <p className="text-foreground text-sm font-medium">
+            {t("newProject.startFreshTitle")}
+          </p>
           <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-            An empty field where you place your first gate and build from there.
+            {t("newProject.startFreshBody")}
           </p>
         </div>
         <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
@@ -65,9 +68,11 @@ export default function NewProjectDialog({
             <Download className="size-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">Export first</p>
+            <p className="text-foreground text-sm font-medium">
+              {t("newProject.exportFirstTitle")}
+            </p>
             <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              Save a JSON backup before replacing the current project.
+              {t("newProject.exportFirstBody")}
             </p>
           </div>
           <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
@@ -105,20 +110,20 @@ export default function NewProjectDialog({
       <MobileDrawer
         open={open}
         onOpenChange={onOpenChange}
-        title="New project"
-        subtitle="Start from a blank field or use a starter layout."
+        title={t("newProject.title")}
+        subtitle={t("newProject.subtitle")}
         bodyClassName="space-y-5 pt-4 pb-4"
       >
         <div className="space-y-2.5">
           <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-            Blank canvas
+            {t("newProject.blankCanvasLabel")}
           </p>
           {newProjectBlock}
         </div>
         {starterBlock ? (
           <div className="space-y-2.5">
             <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-              Starter layouts
+              {t("newProject.starterLayoutsLabel")}
             </p>
             {starterBlock}
           </div>
@@ -131,7 +136,7 @@ export default function NewProjectDialog({
     <DesktopModal
       open={open}
       onOpenChange={onOpenChange}
-      title="New project"
+      title={t("newProject.title")}
       headerless
       maxWidth="max-w-3xl"
       panelClassName="flex flex-col overflow-hidden rounded-4xl p-0"
@@ -140,21 +145,20 @@ export default function NewProjectDialog({
         <div className="flex items-start gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-              Studio
+              {t("newProject.studioLabel")}
             </p>
             <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
-              New project
+              {t("newProject.title")}
             </p>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-              Start from a blank field or open one of TrackDraw&apos;s starter
-              layouts.
+              {t("newProject.desktopSubtitle")}
             </p>
           </div>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
             className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-            aria-label="Close"
+            aria-label={t("newProject.closeAriaLabel")}
           >
             <X className="size-4" />
           </button>
@@ -164,14 +168,14 @@ export default function NewProjectDialog({
       <div className="border-border/30 grid min-h-0 grid-cols-2 overflow-hidden border-t">
         <div className="border-border/30 overflow-y-auto border-r px-6 py-6">
           <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
-            Blank canvas
+            {t("newProject.blankCanvasLabel")}
           </p>
           {newProjectBlock}
         </div>
 
         <div className="overflow-y-auto px-6 py-6">
           <p className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
-            Starter layouts
+            {t("newProject.starterLayoutsLabel")}
           </p>
           {starterBlock}
         </div>

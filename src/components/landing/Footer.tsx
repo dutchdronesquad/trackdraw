@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Bug, Coffee, FileText, Flag, Heart, ShieldCheck } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -16,7 +17,8 @@ function GithubIcon({ className }: { className?: string }) {
 }
 import VersionTag from "@/components/VersionTag";
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("landing");
   return (
     <footer className="border-border bg-muted/20 border-t">
       <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
@@ -46,16 +48,14 @@ export function Footer() {
               <VersionTag />
             </div>
             <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-              Browser-based track designer for FPV race directors. Draw to
-              scale, preview in 3D, share a read-only link, and keep quick edits
-              moving on mobile.
+              {t("footer.tagline")}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4 md:gap-x-8">
             <div className="space-y-3">
               <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-                Product
+                {t("footer.productTitle")}
               </h3>
               <ul className="space-y-2.5 text-sm">
                 <li>
@@ -63,7 +63,7 @@ export function Footer() {
                     href="/studio"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Open Studio
+                    {t("footer.openStudio")}
                   </Link>
                 </li>
                 <li>
@@ -73,7 +73,7 @@ export function Footer() {
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Release notes
+                    {t("footer.releaseNotes")}
                   </a>
                 </li>
               </ul>
@@ -81,7 +81,7 @@ export function Footer() {
 
             <div className="space-y-3">
               <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-                Legal
+                {t("footer.legalTitle")}
               </h3>
               <ul className="space-y-2.5 text-sm">
                 <li>
@@ -90,7 +90,7 @@ export function Footer() {
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <ShieldCheck className="size-4 shrink-0" />
-                    Privacy Policy
+                    {t("footer.privacy")}
                   </Link>
                 </li>
                 <li>
@@ -99,7 +99,7 @@ export function Footer() {
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <FileText className="size-4 shrink-0" />
-                    Terms of Service
+                    {t("footer.terms")}
                   </Link>
                 </li>
               </ul>
@@ -107,7 +107,7 @@ export function Footer() {
 
             <div className="space-y-3">
               <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-                Community
+                {t("footer.communityTitle")}
               </h3>
               <ul className="space-y-2.5 text-sm">
                 <li>
@@ -118,7 +118,7 @@ export function Footer() {
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <GithubIcon className="size-4 shrink-0" />
-                    GitHub
+                    {t("footer.github")}
                   </a>
                 </li>
                 <li>
@@ -129,7 +129,7 @@ export function Footer() {
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <Flag className="size-4 shrink-0" />
-                    Dutch Drone Squad
+                    {t("footer.dutchDroneSquad")}
                   </a>
                 </li>
                 <li>
@@ -140,7 +140,7 @@ export function Footer() {
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <Bug className="size-4 shrink-0" />
-                    Report an issue
+                    {t("footer.reportIssue")}
                   </a>
                 </li>
               </ul>
@@ -148,7 +148,7 @@ export function Footer() {
 
             <div className="space-y-3">
               <h3 className="text-foreground/50 text-xs font-semibold tracking-widest uppercase">
-                Support
+                {t("footer.supportTitle")}
               </h3>
               <ul className="space-y-2.5 text-sm">
                 <li>
@@ -159,7 +159,7 @@ export function Footer() {
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <Heart className="size-4 shrink-0" />
-                    GitHub Sponsors
+                    {t("footer.githubSponsors")}
                   </a>
                 </li>
                 <li>
@@ -170,7 +170,7 @@ export function Footer() {
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <Coffee className="size-4 shrink-0" />
-                    Ko-fi
+                    {t("footer.kofi")}
                   </a>
                 </li>
               </ul>
@@ -180,22 +180,11 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="border-border text-muted-foreground flex flex-col items-center justify-between gap-3 border-t pt-6 text-sm sm:flex-row">
-          <p>
-            © {new Date().getFullYear()}{" "}
-            <a
-              href="https://dutchdronesquad.nl"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground/70 hover:text-foreground font-medium transition-colors"
-            >
-              Dutch Drone Squad
-            </a>
-            . Open source project.
-          </p>
+          <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
           <p className="flex items-center gap-1.5">
-            Made with{" "}
+            {t("footer.madeWithPre")}{" "}
             <Heart className="size-3.5 shrink-0 fill-current text-red-500" />{" "}
-            for the FPV community
+            {t("footer.madeWithPost")}
           </p>
         </div>
       </div>

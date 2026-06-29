@@ -1,3 +1,5 @@
+"use client";
+import { useTranslations } from "next-intl";
 import {
   MeasurementNum,
   Num,
@@ -24,6 +26,7 @@ export function TowerDimensionFields({
   updateShape: (id: string, patch: Partial<Shape>) => void;
   hasFixedCatalogDimensions: boolean;
 }) {
+  const t = useTranslations("inspector");
   if (hasFixedCatalogDimensions) return null;
 
   const elevationMin = getTowerElevationMin(shape);
@@ -35,7 +38,7 @@ export function TowerDimensionFields({
 
   return (
     <>
-      <Row label={`Width (${unitLabel})`}>
+      <Row label={t("dimensions.widthLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.width}
           unitSystem={unitSystem}
@@ -43,7 +46,7 @@ export function TowerDimensionFields({
           minMeters={0.5}
         />
       </Row>
-      <Row label={`Opening height (${unitLabel})`}>
+      <Row label={t("dimensions.openingHeightLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.height}
           unitSystem={unitSystem}
@@ -51,7 +54,7 @@ export function TowerDimensionFields({
           minMeters={0.5}
         />
       </Row>
-      <Row label={`Elevation (${unitLabel})`}>
+      <Row label={t("dimensions.elevationLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={displayedElevation}
           unitSystem={unitSystem}
@@ -67,7 +70,7 @@ export function TowerDimensionFields({
           maxMeters={elevationMax ?? undefined}
         />
       </Row>
-      <Row label={`Thickness (${unitLabel})`}>
+      <Row label={t("dimensions.thicknessLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.thick ?? 0.2}
           unitSystem={unitSystem}
@@ -90,10 +93,11 @@ export function TowerSection({
   hasFixedCatalogDimensions: boolean;
   defaultOpen: boolean;
 }) {
+  const t = useTranslations("inspector");
   if (hasFixedCatalogDimensions) return null;
   return (
-    <Section title="Tower" defaultOpen={defaultOpen}>
-      <Row label="Levels">
+    <Section title={t("shapes.tower")} defaultOpen={defaultOpen}>
+      <Row label={t("dimensions.levelsLabel")}>
         <Num
           value={shape.levels ?? 1}
           onChange={(value) =>

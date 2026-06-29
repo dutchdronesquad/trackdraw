@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Braces, ShieldCheck, ShieldAlert, UserRound } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { authClient, type AuthPasskey } from "@/lib/auth-client";
 import { SidebarDialog } from "@/components/SidebarDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,6 +23,7 @@ export default function AccountDialog({
   onOpenChange,
   initialView = "profile",
 }: AccountDialogProps) {
+  const t = useTranslations("dialogs");
   const { data, isPending } = authClient.useSession();
   const isMobile = useIsMobile();
   const user = data?.user ?? null;
@@ -107,7 +109,7 @@ export default function AccountDialog({
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Failed to load passkeys."
+            : t("account.errors.loadPasskeysFailed")
         );
       } finally {
         if (!cancelled) {
@@ -121,7 +123,7 @@ export default function AccountDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, passkeysLoaded, userId, view]);
+  }, [open, passkeysLoaded, userId, view, t]);
 
   useEffect(() => {
     if (!open || !userId || view !== "apiKeys" || apiKeysLoaded) return;
@@ -141,7 +143,9 @@ export default function AccountDialog({
         };
 
         if (!response.ok || !payload.ok) {
-          throw new Error(payload.error ?? "Failed to load API keys.");
+          throw new Error(
+            payload.error ?? t("account.errors.loadApiKeysFailed")
+          );
         }
 
         if (cancelled) return;
@@ -152,7 +156,7 @@ export default function AccountDialog({
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Failed to load API keys."
+            : t("account.errors.loadApiKeysFailed")
         );
       } finally {
         if (!cancelled) {
@@ -166,25 +170,25 @@ export default function AccountDialog({
     return () => {
       cancelled = true;
     };
-  }, [apiKeysLoaded, open, userId, view]);
+  }, [apiKeysLoaded, open, userId, view, t]);
 
   const handleSave = async () => {
     const normalizedName = name.trim();
     if (!normalizedName) {
-      setError("Please enter the name you want TrackDraw to show.");
+      setError(t("account.errors.profileNameRequired"));
       return;
     }
     setSaving(true);
     setError(null);
     try {
       await authClient.updateProfileName(normalizedName);
-      toast.success("Profile updated");
+      toast.success(t("account.success.profileUpdated"));
       onOpenChange(false);
     } catch (saveError) {
       setError(
         saveError instanceof Error
           ? saveError.message
-          : "Failed to update your profile."
+          : t("account.errors.profileUpdateFailed")
       );
     } finally {
       setSaving(false);
@@ -193,7 +197,7 @@ export default function AccountDialog({
 
   const handleDeleteUser = async () => {
     if (deleteConfirmation.trim().toUpperCase() !== "DELETE") {
-      setError("Type DELETE to confirm account deletion.");
+      setError(t("account.errors.deleteConfirmRequired"));
       return;
     }
     setDeleting(true);
@@ -205,7 +209,7 @@ export default function AccountDialog({
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Failed to delete your account."
+          : t("account.errors.deleteFailed")
       );
     } finally {
       setDeleting(false);
@@ -217,12 +221,12 @@ export default function AccountDialog({
     const currentEmail = user?.email?.trim().toLowerCase() ?? "";
 
     if (!normalizedEmail) {
-      setError("Please enter the email you want to use for TrackDraw.");
+      setError(t("account.errors.emailRequired"));
       return;
     }
 
     if (normalizedEmail === currentEmail) {
-      setError("Enter a different email address to change it.");
+      setError(t("account.errors.emailSame"));
       return;
     }
 
@@ -242,7 +246,7 @@ export default function AccountDialog({
       setError(
         changeEmailError instanceof Error
           ? changeEmailError.message
-          : "Failed to change your email."
+          : t("account.errors.emailChangeFailed")
       );
     } finally {
       setChangingEmail(false);
@@ -275,12 +279,12 @@ export default function AccountDialog({
           nextPasskeys.map((item) => [item.id, item.name ?? ""])
         )
       );
-      toast.success("Passkey added. You can rename or remove it below.");
+      toast.success(t("account.success.passkeyAdded"));
     } catch (passkeyError) {
       const message =
         passkeyError instanceof Error
           ? passkeyError.message
-          : "Failed to add passkey.";
+          : t("account.errors.passkeyAddFailed");
 
       if (message === "Session is not fresh") {
         setPasskeyReauthRequired(true);
@@ -311,7 +315,7 @@ export default function AccountDialog({
   const handleRenamePasskey = async (passkeyId: string) => {
     const nextName = passkeyDraftNames[passkeyId]?.trim();
     if (!nextName) {
-      setError("Please enter a passkey name before saving.");
+      setError(t("account.errors.passkeyNameRequired"));
       return;
     }
 
@@ -327,12 +331,12 @@ export default function AccountDialog({
         current.map((item) => (item.id === passkeyId ? updated : item))
       );
       setEditingPasskeyId(null);
-      toast.success("Passkey renamed");
+      toast.success(t("account.success.passkeyRenamed"));
     } catch (passkeyError) {
       setError(
         passkeyError instanceof Error
           ? passkeyError.message
-          : "Failed to rename passkey."
+          : t("account.errors.passkeyRenameFailed")
       );
     } finally {
       setPasskeyLoading(false);
@@ -364,7 +368,7 @@ export default function AccountDialog({
       setError(
         passkeyError instanceof Error
           ? passkeyError.message
-          : "Failed to remove passkey."
+          : t("account.errors.passkeyRemoveFailed")
       );
     } finally {
       setDeletingPasskeyId(null);
@@ -380,7 +384,7 @@ export default function AccountDialog({
   const handleCreateApiKey = async () => {
     const name = apiKeyName.trim();
     if (!name) {
-      setError("Enter a name for this API key.");
+      setError(t("account.errors.apiKeyNameRequired"));
       return;
     }
 
@@ -406,19 +410,21 @@ export default function AccountDialog({
       };
 
       if (!response.ok || !payload.ok || !payload.apiKey) {
-        throw new Error(payload.error ?? "Failed to create API key.");
+        throw new Error(
+          payload.error ?? t("account.errors.apiKeyCreateFailed")
+        );
       }
 
       setCreatedApiKey(payload.apiKey);
       setApiKeys((current) => [payload.apiKey as AccountApiKey, ...current]);
       setApiKeyName("");
       setApiKeyExpiryDays("90");
-      toast.success("API key created");
+      toast.success(t("account.success.apiKeyCreated"));
     } catch (createError) {
       setError(
         createError instanceof Error
           ? createError.message
-          : "Failed to create API key."
+          : t("account.errors.apiKeyCreateFailed")
       );
     } finally {
       setCreatingApiKey(false);
@@ -428,7 +434,7 @@ export default function AccountDialog({
   const handleCopyApiKey = async (key: string) => {
     try {
       await navigator.clipboard.writeText(key);
-      toast.success("API key copied");
+      toast.success(t("account.success.apiKeyCopied"));
     } catch {
       setError("Could not copy the API key from this browser.");
     }
@@ -452,17 +458,19 @@ export default function AccountDialog({
       };
 
       if (!response.ok || !payload.ok) {
-        throw new Error(payload.error ?? "Failed to revoke API key.");
+        throw new Error(
+          payload.error ?? t("account.errors.apiKeyRevokeFailed")
+        );
       }
 
       setApiKeys((current) => current.filter((item) => item.id !== keyId));
       setCreatedApiKey((current) => (current?.id === keyId ? null : current));
-      toast.success("API key revoked");
+      toast.success(t("account.success.apiKeyRevoked"));
     } catch (deleteError) {
       setError(
         deleteError instanceof Error
           ? deleteError.message
-          : "Failed to revoke API key."
+          : t("account.errors.apiKeyRevokeFailed")
       );
     } finally {
       setDeletingApiKeyId(null);
@@ -556,22 +564,22 @@ export default function AccountDialog({
   const navItems = [
     {
       id: "profile" as AccountDialogView,
-      label: "Profile",
+      label: t("account.navProfile"),
       icon: <UserRound className="size-4" />,
     },
     {
       id: "security" as AccountDialogView,
-      label: "Security",
+      label: t("account.navSecurity"),
       icon: <ShieldCheck className="size-4" />,
     },
     {
       id: "apiKeys" as AccountDialogView,
-      label: "API keys",
+      label: t("account.navApiKeys"),
       icon: <Braces className="size-4" />,
     },
     {
       id: "danger" as AccountDialogView,
-      label: "Danger zone",
+      label: t("account.navDanger"),
       icon: <ShieldAlert className="size-4" />,
       tone: "danger" as const,
     },
@@ -582,25 +590,23 @@ export default function AccountDialog({
     { title: string; description: string; content: React.ReactNode }
   > = {
     profile: {
-      title: "Your profile",
-      description: "Manage the name shown across your TrackDraw account.",
+      title: t("account.panelProfile.title"),
+      description: t("account.panelProfile.description"),
       content: profileContent,
     },
     security: {
-      title: "Security",
-      description:
-        "Manage sign-in methods, account email, and passkeys for your TrackDraw account.",
+      title: t("account.panelSecurity.title"),
+      description: t("account.panelSecurity.description"),
       content: securityContent,
     },
     apiKeys: {
-      title: "API keys",
-      description:
-        "Create and revoke expiring keys for external TrackDraw integrations.",
+      title: t("account.panelApiKeys.title"),
+      description: t("account.panelApiKeys.description"),
       content: apiKeysContent,
     },
     danger: {
-      title: "Danger zone",
-      description: "Destructive and irreversible account actions.",
+      title: t("account.panelDanger.title"),
+      description: t("account.panelDanger.description"),
       content: dangerContent,
     },
   };
@@ -611,9 +617,9 @@ export default function AccountDialog({
     <SidebarDialog
       open={open}
       onOpenChange={onOpenChange}
-      eyebrow="Studio"
-      title="Account"
-      mobileSubtitle="Manage your TrackDraw account."
+      eyebrow={t("account.dialogEyebrow")}
+      title={t("account.dialogTitle")}
+      mobileSubtitle={t("account.dialogMobileSubtitle")}
       navItems={navItems}
       activeItem={view}
       onItemChange={(id) => {

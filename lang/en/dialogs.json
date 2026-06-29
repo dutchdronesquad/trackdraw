@@ -1,0 +1,384 @@
+{
+  "account": {
+    "navProfile": "Profile",
+    "navSecurity": "Security",
+    "navApiKeys": "API keys",
+    "navDanger": "Danger zone",
+    "panelProfile": {
+      "title": "Your profile",
+      "description": "Manage the name shown across your TrackDraw account."
+    },
+    "panelSecurity": {
+      "title": "Security",
+      "description": "Manage sign-in methods, account email, and passkeys for your TrackDraw account."
+    },
+    "panelApiKeys": {
+      "title": "API keys",
+      "description": "Create and revoke expiring keys for external TrackDraw integrations."
+    },
+    "panelDanger": {
+      "title": "Danger zone",
+      "description": "Destructive and irreversible account actions."
+    },
+    "dialogEyebrow": "Studio",
+    "dialogTitle": "Account",
+    "dialogMobileSubtitle": "Manage your TrackDraw account.",
+    "profile": {
+      "displayNameLabel": "Display name",
+      "displayNamePlaceholder": "Your name",
+      "languageLabel": "Language",
+      "languageDescription": "Changes apply immediately",
+      "saveChanges": "Save changes",
+      "saving": "Saving...",
+      "reset": "Reset",
+      "noAccountEmail": "TrackDraw account"
+    },
+    "security": {
+      "emailPlaceholder": "name@example.com",
+      "saveEmail": "Save",
+      "savingEmail": "Saving...",
+      "addPasskey": "Add passkey",
+      "addingPasskey": "Adding...",
+      "renameAriaLabel": "Rename passkey",
+      "renameTooltip": "Rename",
+      "removingAriaLabel": "Removing passkey",
+      "removeAriaLabel": "Remove passkey",
+      "passkeyNamePlaceholder": "Passkey name",
+      "unnamedPasskey": "Unnamed passkey"
+    },
+    "apiKeys": {
+      "namePlaceholder": "Overlay integration",
+      "refreshAriaLabel": "Refresh API keys",
+      "unnamedKey": "Unnamed API key",
+      "revokeTooltip": "Revoke",
+      "revokeAriaLabel": "Revoke {name}",
+      "revokeWarningExpiring": "This key stops working.",
+      "revokeWarningNonExpiring": "Integrations using this key lose read-only access.",
+      "revoking": "Revoking...",
+      "revoke": "Revoke"
+    },
+    "danger": {
+      "description": "Deleting your account removes account projects, published links, API keys, and other account-backed data. Export anything account-backed that you want to keep before continuing.",
+      "typeToConfirm": "Type DELETE to confirm",
+      "deletePlaceholder": "DELETE",
+      "deleting": "Deleting...",
+      "deleteAccount": "Delete account"
+    },
+    "shared": {
+      "loading": "Loading account...",
+      "signInTitle": "Sign in to manage your account",
+      "signInBody": "Use your email to access cloud-backed account settings and profile details."
+    },
+    "errors": {
+      "loadPasskeysFailed": "Failed to load passkeys.",
+      "loadApiKeysFailed": "Failed to load API keys.",
+      "profileNameRequired": "Please enter the name you want TrackDraw to show.",
+      "profileUpdateFailed": "Failed to update your profile.",
+      "deleteConfirmRequired": "Type DELETE to confirm account deletion.",
+      "deleteFailed": "Failed to delete your account.",
+      "emailRequired": "Please enter the email you want to use for TrackDraw.",
+      "emailSame": "Enter a different email address to change it.",
+      "emailChangeFailed": "Failed to change your email.",
+      "passkeyAddFailed": "Failed to add passkey.",
+      "passkeyNameRequired": "Please enter a passkey name before saving.",
+      "passkeyRenameFailed": "Failed to rename passkey.",
+      "passkeyRemoveFailed": "Failed to remove passkey.",
+      "apiKeyNameRequired": "Enter a name for this API key.",
+      "apiKeyCreateFailed": "Failed to create API key.",
+      "apiKeyRevokeFailed": "Failed to revoke API key."
+    },
+    "success": {
+      "profileUpdated": "Profile updated",
+      "passkeyAdded": "Passkey added. You can rename or remove it below.",
+      "passkeyRenamed": "Passkey renamed",
+      "apiKeyCreated": "API key created",
+      "apiKeyCopied": "API key copied",
+      "apiKeyRevoked": "API key revoked"
+    }
+  },
+  "export": {
+    "dialogTitle": "Export",
+    "dialogSubtitle": "Export the current track as visual assets, project handoff files, or simulator-ready outputs.",
+    "darkTheme": "Dark",
+    "lightTheme": "Light",
+    "enableRouteNumbers": "Enable route numbers in export",
+    "disableRouteNumbers": "Disable route numbers in export",
+    "enableRouteNumbersMobile": "Enable route numbers",
+    "disableRouteNumbersMobile": "Disable route numbers",
+    "formats": {
+      "image": {
+        "label": "Image",
+        "descriptionFull": "High-res 2D map for print, slides, chat, or quick review.",
+        "descriptionShort": "High-res 2D map for print, chat, or review."
+      },
+      "vector": {
+        "label": "Vector",
+        "descriptionFull": "Scalable artwork for Illustrator, Figma, or Inkscape edits.",
+        "descriptionShort": "Scalable artwork for Illustrator, Figma, or Inkscape."
+      },
+      "render3d": {
+        "label": "3D Render",
+        "descriptionFull": "Screenshot of the current 3D camera view for visual review.",
+        "descriptionShort": "Current 3D camera screenshot for visual review."
+      },
+      "projectFile": {
+        "label": "Project File",
+        "descriptionFull": "Editable backup for reopening, sharing, or archiving in TrackDraw.",
+        "descriptionShort": "Editable backup for reopening or archiving in TrackDraw."
+      },
+      "racePack": {
+        "label": "Race Pack",
+        "descriptionFull": "Race-day setup handoff with map, materials, sequence, and QR.",
+        "descriptionShort": "Setup PDF with map, materials, sequence, and QR."
+      },
+      "cinematicFpv": {
+        "label": "Cinematic FPV",
+        "descriptionFull": "One-loop route video for reviewing the flow or sharing the lap.",
+        "descriptionShort": "One-loop route video for reviewing the flow."
+      },
+      "velocidrone": {
+        "label": "Velocidrone",
+        "descriptionFull": "Experimental Velocidrone track file for testing in the simulator; check the layout after import.",
+        "descriptionShort": "Experimental file for testing; check after import."
+      }
+    },
+    "errors": {
+      "exportFailed": "Export failed: {message}"
+    }
+  },
+  "import": {
+    "dialogTitle": "Open Project",
+    "dialogSubtitle": "Import a TrackDraw project from a JSON file.",
+    "errorInvalidJson": "Invalid JSON file.",
+    "errorInvalidProject": "This does not look like a TrackDraw project.",
+    "errorUnsupportedFile": "Only TrackDraw JSON project files are supported.",
+    "errorReadFailed": "TrackDraw could not read this file.",
+    "toastImportFailed": "Import failed",
+    "toastUnsupportedFile": "Choose a .json file exported from TrackDraw.",
+    "toastInvalidJson": "TrackDraw could not read this JSON file. Check the file and try again.",
+    "toastInvalidProject": "This does not look like a valid TrackDraw project file.",
+    "toastReadFailed": "TrackDraw could not read the selected file. Try again or choose another backup.",
+    "dropFileHere": "Drop a file here",
+    "clickToBrowse": "or click to browse",
+    "objectCount": "{count, plural, one {# object} other {# objects}}",
+    "replaceWarning": "The current project will be replaced. Export a JSON backup first if you want a manual restore point outside local autosave.",
+    "cancel": "Cancel",
+    "replaceProject": "Replace project",
+    "backupCurrentFirst": "Back up current project first",
+    "untitledProject": "Untitled project"
+  },
+  "share": {
+    "dialogEyebrow": "Studio",
+    "dialogEyebrowExisting": "Shared track",
+    "dialogTitle": "Share",
+    "dialogMobileSubtitle": "Share a read-only review link for this track",
+    "navShareLink": "Share link",
+    "navShare": "Share",
+    "navEmbed": "Embed",
+    "navGallery": "Gallery",
+    "navActions": "Actions",
+    "currentSharedLink": "Current shared link",
+    "primaryAction": {
+      "updateLink": "Update link",
+      "copyLink": "Copy link",
+      "createLink": "Create link",
+      "createNewLink": "Create new link"
+    },
+    "gallery": {
+      "loading": "Loading current state",
+      "featured": "Featured in gallery",
+      "listed": "Listed in gallery",
+      "hiddenByModeration": "Hidden by moderation",
+      "linkOnly": "Link only",
+      "noPublishedLink": "No published link",
+      "checkingStatus": "Checking the current gallery status.",
+      "featuredDesc": "Visible in the public gallery and pinned near the top.",
+      "listedDesc": "Visible in the public gallery.",
+      "hiddenDesc": "Hidden by moderation. The direct link still works until it is revoked.",
+      "linkOnlyDesc": "Share link only. Not visible in the public gallery.",
+      "noLinkDesc": "Create a share link first.",
+      "checking": "Checking",
+      "noLink": "No link",
+      "expiresInDays": "Expires in {days} days",
+      "noExpiry": "No expiry",
+      "published": "Published"
+    },
+    "content": {
+      "shareTitle": "Share link",
+      "shareDescExisting": "Copy or resend this published read-only link, or open Studio to make your own editable copy.",
+      "shareDescAccount": "Create or update the durable read-only link for this account project.",
+      "shareDescSeparate": "Create a separate durable read-only link for this editable copy or local track.",
+      "shareDescAnon": "Create a temporary read-only snapshot link and control how long it stays active.",
+      "galleryTitle": "Gallery visibility",
+      "galleryDesc": "Manage how this published link appears in the public gallery.",
+      "embedTitle": "Embed",
+      "embedDesc": "Copy iframe code for an account-published track that stays live until revoked.",
+      "actionsTitle": "Actions",
+      "actionsDescExisting": "Use the current published link in other apps or reopen it in a new tab.",
+      "actionsDesc": "Open, resend, revoke, or export this share without changing the track itself."
+    },
+    "errors": {
+      "createFailed": "Failed to create share link",
+      "copyFailed": "Failed to copy link",
+      "revokeFailed": "Failed to revoke link",
+      "embedCopyFailed": "Failed to copy embed code",
+      "galleryListFailed": "Failed to list in gallery",
+      "galleryUpdateFailed": "Failed to update gallery details",
+      "unableToReadLink": "Unable to read the current share link"
+    },
+    "success": {
+      "linkUpdated": "Link updated",
+      "linkCreated": "Link created",
+      "linkCopied": "Link copied",
+      "embedCopied": "Embed code copied",
+      "galleryListed": "Track listed in gallery",
+      "galleryUpdated": "Gallery details updated",
+      "linkRevoked": "Link revoked"
+    }
+  },
+  "projectManager": {
+    "dialogEyebrow": "Studio",
+    "dialogTitle": "Projects",
+    "dialogMobileSubtitle": "Open, rename, sync or restore.",
+    "navThisDevice": "This device",
+    "navAccount": "Account",
+    "navShares": "Shares",
+    "navSnapshots": "Snapshots",
+    "panelDevice": {
+      "label": "On this device",
+      "description": "Local copies saved on this device. Synced projects can also appear in Account."
+    },
+    "panelAccount": {
+      "label": "Account projects",
+      "description": "Account copies available on your signed-in devices. Open one here to refresh this browser."
+    },
+    "panelSnapshots": {
+      "label": "Snapshots",
+      "description": "Earlier saved states of the current project. Restore any point to roll back changes."
+    },
+    "panelShares": {
+      "label": "Published shares",
+      "description": "Active share links published from your account. Copy, open or revoke them here."
+    },
+    "device": {
+      "resolveConflict": "Resolve sync conflict",
+      "retrySync": "Retry sync",
+      "updateAccountCopy": "Update account copy",
+      "syncToAccount": "Sync to account",
+      "conflictDesc": "This project changed on another device. Review the version before continuing.",
+      "syncFailedDesc": "The last sync failed. Try sending the latest local version again.",
+      "pendingDesc": "Push the latest local changes to your account.",
+      "updateDesc": "Replace the synced account copy with this device version.",
+      "syncDesc": "Make this project available on your signed-in devices.",
+      "syncing": "Syncing",
+      "reviewNeeded": "Review needed",
+      "pending": "Pending",
+      "syncFailed": "Sync failed",
+      "synced": "Synced",
+      "localOnly": "Local only",
+      "localChangesWaiting": "Local changes are waiting to sync",
+      "confirmRenameTitle": "Confirm rename",
+      "resolveVersionConflict": "Resolve version conflict",
+      "exportJson": "Export JSON",
+      "moreActions": "More actions",
+      "openBadge": "open",
+      "rename": "Rename",
+      "delete": "Delete",
+      "noProjects": "No saved projects",
+      "noProjectsDesc": "Projects you save will appear here.",
+      "untitled": "Untitled"
+    },
+    "account": {
+      "noProjects": "No account projects",
+      "noProjectsDesc": "Sync a project to make it available across devices.",
+      "conflictWarning": "This project changed on another device while you were signed out",
+      "syncError": "Could not sync the latest changes",
+      "resolveConflictFirst": "Resolve the version conflict first",
+      "retrySync": "Retry sync",
+      "syncPendingChanges": "Sync pending changes",
+      "syncing": "Syncing",
+      "reviewNeeded": "Review needed",
+      "pending": "Pending",
+      "syncFailed": "Sync failed",
+      "synced": "Synced",
+      "untitled": "Untitled"
+    },
+    "restore": {
+      "noSnapshots": "No snapshots yet",
+      "noSnapshotsDesc": "Snapshots are created automatically when you open or replace a project.",
+      "restoreTitle": "Restore this snapshot",
+      "deleteTitle": "Delete snapshot",
+      "activeBadge": "active",
+      "untitled": "Untitled"
+    },
+    "shares": {
+      "noShares": "No active shares",
+      "noSharesDesc": "Account-published links stay live until revoked. Temporary anonymous links expire automatically and are not managed here.",
+      "copyLink": "Copy link",
+      "openTab": "Open in new tab",
+      "revokeLink": "Revoke link",
+      "copyLinkAriaLabel": "Copy share link",
+      "openTabAriaLabel": "Open share link",
+      "revokeLinkAriaLabel": "Revoke share link"
+    },
+    "copyProjectIdSuccess": "Project ID copied",
+    "copyProjectIdAriaLabel": "Copy API project ID"
+  },
+  "completeProfile": {
+    "title": "Add your name",
+    "subtitle": "Give your account a clear display name for cloud projects and sharing.",
+    "namePlaceholder": "Your name",
+    "save": "Save name",
+    "saving": "Saving…",
+    "nameRequired": "Please enter the name you want TrackDraw to show.",
+    "updateFailed": "Failed to update your account name.",
+    "success": "Profile updated"
+  },
+  "newProject": {
+    "title": "New project",
+    "closeAriaLabel": "Close"
+  },
+  "keyboardShortcuts": {
+    "dialogTitle": "Keyboard Shortcuts",
+    "dialogSubtitle": "Available keyboard and canvas shortcuts in the studio.",
+    "sectionTools": "Tools",
+    "sectionSelection": "Selection",
+    "sectionPathEditing": "Path Editing",
+    "sectionCanvas": "Canvas",
+    "sectionProject": "Project",
+    "shortcuts": {
+      "duplicateItems": "Duplicate selected items",
+      "copyItems": "Copy selected items",
+      "pasteItems": "Paste copied items",
+      "rotateLeft": "Rotate selected items left",
+      "rotateRight": "Rotate selected items right",
+      "mouseRotateSnap": "Mouse rotate snap",
+      "mouseRotateFine": "Fine mouse rotate",
+      "keyRotateFine": "Fine key rotate",
+      "deleteItems": "Delete selected items",
+      "nudgeItems": "Nudge selected items",
+      "fineNudge": "Fine nudge",
+      "finishPath": "Finish path",
+      "removeLastPoint": "Remove last draft point",
+      "deletePathPoint": "Delete selected path point",
+      "cancelDraft": "Cancel current draft",
+      "fitView": "Fit view to field",
+      "clearSelection": "Clear selection",
+      "panView": "Pan view",
+      "bypassSnap": "Temporarily bypass snap",
+      "zoom": "Zoom",
+      "saveSnapshot": "Save snapshot"
+    }
+  },
+  "versionConflict": {
+    "title": "Choose a project version",
+    "subtitle": "Pick the version you want to keep using on this device.",
+    "thisProject": "This project",
+    "body": "changed on another device while you were signed out. Choose which version you want to keep using on this device.",
+    "localVersion": "This device version",
+    "cloudVersion": "Account version",
+    "lastChanged": "Last changed {date}",
+    "keepLocal": "Keep this device version",
+    "useCloud": "Use account version"
+  }
+}

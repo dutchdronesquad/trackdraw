@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Cloud,
   Fingerprint,
@@ -40,6 +41,7 @@ function getLoginCallbackURL() {
 }
 
 export default function LoginPage() {
+  const t = useTranslations("login");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState(false);
   const [pending, setPending] = useState(false);
@@ -79,7 +81,7 @@ export default function LoginPage() {
         newUserCallbackURL: callbackURL,
       });
 
-      toast.success("Check your email for a sign-in link.");
+      toast.success(t("signIn.checkEmail"));
       setEmailSent(true);
     } catch (authError) {
       setError(
@@ -105,9 +107,7 @@ export default function LoginPage() {
         const normalizedMessage = rawMessage.toLowerCase();
 
         if (normalizedMessage.includes("passkey not found")) {
-          throw new Error(
-            "We couldn’t match that passkey to your TrackDraw account. Try another passkey or use your email sign-in link."
-          );
+          throw new Error(t("signIn.passkeyNotFound"));
         }
 
         throw new Error(rawMessage || "Failed to sign in.");
@@ -117,7 +117,7 @@ export default function LoginPage() {
       setError(
         authError instanceof Error
           ? authError.message
-          : "Failed to sign in with passkey."
+          : t("signIn.passkeyFailed")
       );
     } finally {
       setPasskeyPending(false);
@@ -134,7 +134,7 @@ export default function LoginPage() {
           <Link
             href="/"
             className="flex items-center rounded-sm opacity-90 transition-opacity hover:opacity-100"
-            aria-label="Go to homepage"
+            aria-label={t("goHome")}
           >
             <span className="relative block h-8 w-36 sm:h-9 sm:w-40">
               <Image
@@ -162,7 +162,7 @@ export default function LoginPage() {
             href="/studio"
             className="text-muted-foreground hover:text-foreground text-sm transition-colors"
           >
-            Back to Studio
+            {t("backToStudio")}
           </Link>
         </header>
 
@@ -171,43 +171,43 @@ export default function LoginPage() {
             <section className="hidden max-w-2xl lg:block">
               <p className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] uppercase">
                 <span className="bg-muted-foreground/50 size-1 rounded-full" />
-                TrackDraw account
+                {t("pageTitle")}
               </p>
 
               <h1 className="mt-4 max-w-xl text-4xl font-semibold tracking-tight sm:text-5xl">
-                Pick up your TrackDraw work wherever you are.
+                {t("heading")}
               </h1>
 
               <p className="text-muted-foreground mt-5 max-w-xl text-sm leading-7 sm:text-[15px]">
-                Access your layouts across devices, keep shared tracks tied to
-                your account, and jump back in with a simple email link.
+                {t("description")}
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 <div className="border-border/60 bg-card/70 rounded-2xl border px-4 py-4 backdrop-blur-sm">
                   <Cloud className="text-brand-primary size-4" />
-                  <p className="mt-3 text-sm font-medium">Across devices</p>
+                  <p className="mt-3 text-sm font-medium">
+                    {t("featureDevices.title")}
+                  </p>
                   <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                    Pick work back up on another device without changing the
-                    editor flow.
+                    {t("featureDevices.description")}
                   </p>
                 </div>
                 <div className="border-border/60 bg-card/70 rounded-2xl border px-4 py-4 backdrop-blur-sm">
                   <ShieldCheck className="text-brand-secondary size-4" />
-                  <p className="mt-3 text-sm font-medium">Ownership</p>
+                  <p className="mt-3 text-sm font-medium">
+                    {t("featureOwnership.title")}
+                  </p>
                   <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                    Give shared layouts and future account features a clear
-                    home.
+                    {t("featureOwnership.description")}
                   </p>
                 </div>
                 <div className="border-border/60 bg-card/70 rounded-2xl border px-4 py-4 backdrop-blur-sm">
                   <KeyRound className="text-foreground size-4" />
                   <p className="mt-3 text-sm font-medium">
-                    Magic link fallback
+                    {t("featureMagicLink.title")}
                   </p>
                   <p className="text-muted-foreground mt-1 text-[11px] leading-relaxed">
-                    Use a passkey when available, or fall back to a sign-in link
-                    sent to your email.
+                    {t("featureMagicLink.description")}
                   </p>
                 </div>
               </div>
@@ -216,11 +216,10 @@ export default function LoginPage() {
             <section className="border-border/70 bg-card/92 relative rounded-3xl border p-6 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:rounded-[1.75rem] sm:p-8">
               <div className="space-y-2">
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  Sign in
+                  {t("signIn.title")}
                 </h2>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Sign in with a passkey on this device, or use your email to
-                  receive a magic link without a password.
+                  {t("signIn.description")}
                 </p>
               </div>
 
@@ -233,15 +232,10 @@ export default function LoginPage() {
                       </span>
                       <div className="min-w-0">
                         <p className="text-foreground text-sm font-medium">
-                          Check your inbox
+                          {t("signIn.checkInboxTitle")}
                         </p>
                         <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                          Your one-time sign-in link was sent to{" "}
-                          <span className="text-foreground font-medium">
-                            {email}
-                          </span>
-                          . Open it on this device, or another one, to continue.
-                          If it does not show up soon, check your spam folder.
+                          {t("signIn.checkInboxBody", { email })}
                         </p>
                       </div>
                     </div>
@@ -249,11 +243,10 @@ export default function LoginPage() {
 
                   <div className="border-border/60 bg-background/55 rounded-2xl border px-3.5 py-3">
                     <p className="text-foreground text-sm font-medium">
-                      How magic link sign-in works
+                      {t("signIn.howItWorksTitle")}
                     </p>
                     <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                      Each email contains a one-time sign-in link. No password
-                      setup, just open the link and TrackDraw signs you in.
+                      {t("signIn.howItWorksBody")}
                     </p>
                   </div>
 
@@ -265,7 +258,7 @@ export default function LoginPage() {
                       setError(null);
                     }}
                   >
-                    Use a different email
+                    {t("signIn.useDifferentEmail")}
                   </Button>
                 </div>
               ) : (
@@ -288,21 +281,21 @@ export default function LoginPage() {
                   >
                     <Fingerprint className="mr-2 size-4" />
                     {passkeyPending
-                      ? "Opening passkey…"
-                      : "Sign in with passkey"}
+                      ? t("signIn.openingPasskey")
+                      : t("signIn.signInPasskey")}
                   </Button>
 
                   <div className="flex items-center gap-3">
                     <div className="bg-border h-px flex-1" />
                     <span className="text-muted-foreground text-xs font-medium uppercase">
-                      or
+                      {t("signIn.or")}
                     </span>
                     <div className="bg-border h-px flex-1" />
                   </div>
 
                   <div className="space-y-1.5">
                     <label htmlFor="email" className="text-sm font-medium">
-                      Email
+                      {t("signIn.emailLabel")}
                     </label>
                     <Input
                       id="email"
@@ -322,7 +315,7 @@ export default function LoginPage() {
                       }
                       aria-invalid={emailError || undefined}
                       className="dark:bg-background/80 h-11 rounded-xl px-3.5"
-                      placeholder="you@example.com"
+                      placeholder={t("signIn.emailPlaceholder")}
                     />
                   </div>
 
@@ -332,13 +325,12 @@ export default function LoginPage() {
                     disabled={pending || passkeyPending}
                     aria-busy={pending}
                   >
-                    {pending ? "Sending link…" : "Email me a sign-in link"}
+                    {pending ? t("signIn.sendingLink") : t("signIn.sendLink")}
                   </Button>
 
                   {passkeySupported === false ? (
                     <p className="text-muted-foreground text-xs leading-relaxed">
-                      This browser does not currently support passkeys here, so
-                      use the magic link fallback.
+                      {t("signIn.noPasskeySupport")}
                     </p>
                   ) : null}
                 </form>

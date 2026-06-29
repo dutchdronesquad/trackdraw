@@ -1,0 +1,39 @@
+{
+  "goHome": "Naar homepage",
+  "backToStudio": "Terug naar Studio",
+  "pageTitle": "TrackDraw-account",
+  "heading": "Pak je TrackDraw-werk op waar je ook bent.",
+  "description": "Toegang tot je lay-outs op alle apparaten, houd gedeelde banen gekoppeld aan je account en ga verder met een eenvoudige e-maillink.",
+  "featureDevices": {
+    "title": "Op alle apparaten",
+    "description": "Pak werk op op een ander apparaat zonder de editorflow te veranderen."
+  },
+  "featureOwnership": {
+    "title": "Eigenaarschap",
+    "description": "Geef gedeelde lay-outs en toekomstige accountfuncties een duidelijke thuis."
+  },
+  "featureMagicLink": {
+    "title": "Magic link als alternatief",
+    "description": "Gebruik een passkey indien beschikbaar, of val terug op een inloglink verzonden naar je e-mail."
+  },
+  "signIn": {
+    "title": "Inloggen",
+    "description": "Log in met een passkey op dit apparaat, of gebruik je e-mail om een magic link te ontvangen zonder wachtwoord.",
+    "checkInboxTitle": "Controleer je inbox",
+    "checkInboxBody": "Je eenmalige inloglink is verzonden naar {email}. Open hem op dit apparaat of een ander apparaat om verder te gaan. Als hij niet snel verschijnt, controleer dan je spammap.",
+    "howItWorksTitle": "Hoe inloggen met een magic link werkt",
+    "howItWorksBody": "Elke e-mail bevat een eenmalige inloglink. Geen wachtwoordinstellingen, open gewoon de link en TrackDraw logt je in.",
+    "useDifferentEmail": "Ander e-mailadres gebruiken",
+    "openingPasskey": "Passkey openen…",
+    "signInPasskey": "Inloggen met passkey",
+    "or": "of",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "jij@voorbeeld.nl",
+    "sendingLink": "Link versturen…",
+    "sendLink": "Stuur mij een inloglink",
+    "noPasskeySupport": "Deze browser ondersteunt hier momenteel geen passkeys, gebruik de magic link als alternatief.",
+    "passkeyNotFound": "We konden die passkey niet koppelen aan je TrackDraw-account. Probeer een andere passkey of gebruik je e-mailinloglink.",
+    "passkeyFailed": "Inloggen met passkey mislukt.",
+    "checkEmail": "Controleer je e-mail voor een inloglink."
+  }
+}

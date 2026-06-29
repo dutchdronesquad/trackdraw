@@ -1,3 +1,5 @@
+"use client";
+
 import { MeasurementNum, Num, Row } from "@/components/inspector/shared";
 import {
   getDiveGateElevationMax,
@@ -6,6 +8,7 @@ import {
 import { resolveDiveGateElevation } from "@/lib/track/render3d-layout";
 import type { MeasurementUnitSystem } from "@/lib/track/units";
 import type { DiveGateShape, Shape } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 export function DiveGateDimensionFields({
   shape,
@@ -22,10 +25,11 @@ export function DiveGateDimensionFields({
   hasFixedCatalogDimensions: boolean;
   fixedDiveGateElevationVariant: "arch" | "launch" | "generic";
 }) {
+  const t = useTranslations("inspector");
   if (!hasFixedCatalogDimensions) {
     return (
       <>
-        <Row label={`Size (${unitLabel})`}>
+        <Row label={t("dimensions.sizeLabel", { unit: unitLabel })}>
           <MeasurementNum
             valueMeters={shape.width}
             unitSystem={unitSystem}
@@ -33,7 +37,7 @@ export function DiveGateDimensionFields({
             minMeters={0.5}
           />
         </Row>
-        <Row label={`Elevation (${unitLabel})`}>
+        <Row label={t("dimensions.elevationLabel", { unit: unitLabel })}>
           <MeasurementNum
             valueMeters={shape.elevation ?? 3}
             unitSystem={unitSystem}
@@ -41,7 +45,7 @@ export function DiveGateDimensionFields({
             minMeters={0.1}
           />
         </Row>
-        <Row label={`Thickness (${unitLabel})`}>
+        <Row label={t("dimensions.thicknessLabel", { unit: unitLabel })}>
           <MeasurementNum
             valueMeters={shape.thick ?? 0.2}
             unitSystem={unitSystem}
@@ -49,7 +53,7 @@ export function DiveGateDimensionFields({
             minMeters={0.05}
           />
         </Row>
-        <Row label="Tilt (deg)">
+        <Row label={t("dimensions.tiltLabel")}>
           <Num
             value={shape.tilt ?? 0}
             onChange={(value) =>

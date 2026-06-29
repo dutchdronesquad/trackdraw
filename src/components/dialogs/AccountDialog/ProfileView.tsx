@@ -42,7 +42,7 @@ export function AccountProfileView({
   onResetError,
   onSave,
 }: ProfileViewProps) {
-  const t = useTranslations("editor");
+  const t = useTranslations("dialogs");
 
   if (isPending) {
     return <AccountDialogLoading />;
@@ -65,20 +65,22 @@ export function AccountProfileView({
             {getDisplayName(user)}
           </p>
           <p className="text-muted-foreground mt-0.5 text-sm">
-            {user.email ?? "TrackDraw account"}
+            {user.email ?? t("account.profile.noAccountEmail")}
           </p>
         </div>
       </div>
 
       <div className="border-border/60 space-y-4 border-t pt-5">
         <label className="block">
-          <span className="mb-2 block text-sm font-medium">Display name</span>
+          <span className="mb-2 block text-sm font-medium">
+            {t("account.profile.displayNameLabel")}
+          </span>
           <Input
             type="text"
             autoComplete="name"
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
-            placeholder="Your name"
+            placeholder={t("account.profile.displayNamePlaceholder")}
             className="h-8 rounded-lg px-2.5 shadow-none"
           />
         </label>
@@ -95,7 +97,9 @@ export function AccountProfileView({
             disabled={saving || changingEmail || !hasNameChanged}
             className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
           >
-            {saving ? "Saving..." : "Save changes"}
+            {saving
+              ? t("account.profile.saving")
+              : t("account.profile.saveChanges")}
           </Button>
           <Button
             type="button"
@@ -111,7 +115,7 @@ export function AccountProfileView({
                 "text-muted-foreground hover:text-foreground w-full border-0 bg-transparent shadow-none"
             )}
           >
-            Reset
+            {t("account.profile.reset")}
           </Button>
         </div>
       </div>
@@ -121,10 +125,10 @@ export function AccountProfileView({
       <div className="border-border/60 flex items-center justify-between gap-4 border-t pt-5">
         <div>
           <p className="text-sm font-medium">
-            {t("accountProfile.languageLabel")}
+            {t("account.profile.languageLabel")}
           </p>
           <p className="text-muted-foreground mt-0.5 text-xs">
-            {t("accountProfile.languageDescription")}
+            {t("account.profile.languageDescription")}
           </p>
         </div>
         <LanguagePicker variant="full" className="w-40" />

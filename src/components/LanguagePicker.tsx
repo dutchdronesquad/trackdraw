@@ -61,7 +61,7 @@ export function LanguagePicker({
       {variant === "compact" ? (
         <SelectTrigger
           className={cn(
-            "text-muted-foreground hover:bg-muted hover:text-foreground h-8 gap-1.5 rounded-md border-0 px-2 text-xs shadow-none lg:h-7 lg:px-2",
+            "text-muted-foreground hover:bg-muted hover:text-foreground h-8 min-w-12 justify-center gap-1.5 rounded-md border-0 px-2 text-xs shadow-none [&>svg:last-child]:hidden",
             className
           )}
           aria-label={t("languagePicker.ariaLabel")}
@@ -71,7 +71,10 @@ export function LanguagePicker({
         </SelectTrigger>
       ) : (
         <SelectTrigger
-          className={cn("h-8 rounded-lg px-2.5 text-sm shadow-none", className)}
+          className={cn(
+            "h-8 justify-center gap-2 rounded-lg px-2.5 text-sm shadow-none [&>svg:last-child]:hidden",
+            className
+          )}
           aria-label={t("languagePicker.ariaLabel")}
         >
           {config.flag} {config.label}

@@ -16,6 +16,7 @@ import { ArrowRight, Download, Loader2, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
+import { useTranslations } from "next-intl";
 
 export interface ExportDialogProps {
   open: boolean;
@@ -243,6 +244,7 @@ export default function ExportDialog({
   onRequest3DView,
   projectId = null,
 }: ExportDialogProps) {
+  const t = useTranslations("dialogs");
   const design = useEditor((s) => s.track.design);
   const { unitSystem } = useMeasurementUnitSystem();
   const currentTheme = useTheme();
@@ -337,9 +339,11 @@ export default function ExportDialog({
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       if (options?.toastId !== undefined) {
-        toast.error(`Export failed: ${message}`, { id: options.toastId });
+        toast.error(t("export.errors.exportFailed", { message }), {
+          id: options.toastId,
+        });
       } else {
-        toast.error(`Export failed: ${message}`);
+        toast.error(t("export.errors.exportFailed", { message }));
       }
     } finally {
       setBusy(null);
@@ -382,7 +386,7 @@ export default function ExportDialog({
               )}
             >
               <Moon className="size-3.5 shrink-0" />
-              Dark
+              {t("export.darkTheme")}
             </button>
             <button
               type="button"
@@ -401,7 +405,7 @@ export default function ExportDialog({
                   exportTheme === "light" ? "text-amber-500" : ""
                 )}
               />
-              Light
+              {t("export.lightTheme")}
             </button>
           </div>
         </div>
@@ -426,8 +430,8 @@ export default function ExportDialog({
             aria-pressed={includeObstacleNumbers}
             aria-label={
               includeObstacleNumbers
-                ? "Disable route numbers in export"
-                : "Enable route numbers in export"
+                ? t("export.disableRouteNumbers")
+                : t("export.enableRouteNumbers")
             }
           >
             <span className="bg-background block size-4 rounded-full shadow-xs" />
@@ -449,9 +453,9 @@ export default function ExportDialog({
         <div className="grid grid-cols-3 gap-3">
           <DesktopFormatCard
             ext="PNG"
-            label="Image"
+            label={t("export.formats.image.label")}
             color="bg-sky-500/15 text-sky-400"
-            description="High-res 2D map for print, slides, chat, or quick review."
+            description={t("export.formats.image.descriptionFull")}
             busy={busy === "png"}
             onExport={() =>
               run("png", () =>
@@ -467,9 +471,9 @@ export default function ExportDialog({
           />
           <DesktopFormatCard
             ext="SVG"
-            label="Vector"
+            label={t("export.formats.vector.label")}
             color="bg-purple-500/15 text-purple-400"
-            description="Scalable artwork for Illustrator, Figma, or Inkscape edits."
+            description={t("export.formats.vector.descriptionFull")}
             busy={busy === "svg"}
             onExport={() =>
               run("svg", () =>
@@ -484,9 +488,9 @@ export default function ExportDialog({
           />
           <DesktopFormatCard
             ext="PNG"
-            label="3D Render"
+            label={t("export.formats.render3d.label")}
             color="bg-orange-500/15 text-orange-400"
-            description="Screenshot of the current 3D camera view for visual review."
+            description={t("export.formats.render3d.descriptionFull")}
             busy={busy === "3d"}
             lockedAction={
               activeTab !== "3d" && onRequest3DView
@@ -527,9 +531,9 @@ export default function ExportDialog({
         <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
             ext="JSON"
-            label="Project File"
+            label={t("export.formats.projectFile.label")}
             color="bg-emerald-500/15 text-emerald-400"
-            description="Editable backup for reopening, sharing, or archiving in TrackDraw."
+            description={t("export.formats.projectFile.descriptionFull")}
             busy={busy === "json"}
             onExport={() =>
               run("json", () => {
@@ -540,9 +544,9 @@ export default function ExportDialog({
           />
           <DesktopFormatCard
             ext="PDF"
-            label="Race Pack"
+            label={t("export.formats.racePack.label")}
             color="bg-red-500/15 text-red-400"
-            description="Race-day setup handoff with map, materials, sequence, and QR."
+            description={t("export.formats.racePack.descriptionFull")}
             busy={busy === "race-day-pdf"}
             onExport={() =>
               run("race-day-pdf", async () => {
@@ -582,9 +586,9 @@ export default function ExportDialog({
         <div className="grid grid-cols-2 gap-3">
           <DesktopFormatCard
             ext="WebM"
-            label="Cinematic FPV"
+            label={t("export.formats.cinematicFpv.label")}
             color="bg-violet-500/15 text-violet-400"
-            description="One-loop route video for reviewing the flow or sharing the lap."
+            description={t("export.formats.cinematicFpv.descriptionFull")}
             busy={busy === "webm"}
             onExport={() =>
               run(
@@ -637,9 +641,9 @@ export default function ExportDialog({
           />
           <DesktopFormatCard
             ext="TRK"
-            label="Velocidrone"
+            label={t("export.formats.velocidrone.label")}
             color="bg-lime-500/15 text-lime-400"
-            description="Experimental Velocidrone file for testing; check placement after import."
+            description={t("export.formats.velocidrone.descriptionFull")}
             busy={busy === "trk"}
             onExport={() =>
               run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))
@@ -683,9 +687,9 @@ export default function ExportDialog({
           <MobileFormatRow
             key="png"
             ext="PNG"
-            label="Image"
+            label={t("export.formats.image.label")}
             color="bg-sky-500/15 text-sky-400"
-            description="High-res 2D map for print, chat, or review."
+            description={t("export.formats.image.descriptionShort")}
             isBusy={busy === "png"}
             onAction={() =>
               run("png", () =>
@@ -702,9 +706,9 @@ export default function ExportDialog({
           <MobileFormatRow
             key="svg"
             ext="SVG"
-            label="Vector"
+            label={t("export.formats.vector.label")}
             color="bg-purple-500/15 text-purple-400"
-            description="Scalable artwork for Illustrator, Figma, or Inkscape."
+            description={t("export.formats.vector.descriptionShort")}
             isBusy={busy === "svg"}
             onAction={() =>
               run("svg", () =>
@@ -720,9 +724,9 @@ export default function ExportDialog({
           <MobileFormatRow
             key="3d"
             ext="PNG"
-            label="3D Render"
+            label={t("export.formats.render3d.label")}
             color="bg-orange-500/15 text-orange-400"
-            description="Current 3D camera screenshot for visual review."
+            description={t("export.formats.render3d.descriptionShort")}
             isBusy={busy === "3d"}
             locked={activeTab !== "3d"}
             lockedLabel="Switch to 3D view"
@@ -751,9 +755,9 @@ export default function ExportDialog({
           <MobileFormatRow
             key="json"
             ext="JSON"
-            label="Project File"
+            label={t("export.formats.projectFile.label")}
             color="bg-emerald-500/15 text-emerald-400"
-            description="Editable backup for reopening or archiving in TrackDraw."
+            description={t("export.formats.projectFile.descriptionShort")}
             isBusy={busy === "json"}
             onAction={() =>
               run("json", () => {
@@ -765,9 +769,9 @@ export default function ExportDialog({
           <MobileFormatRow
             key="race-day-pdf"
             ext="PDF"
-            label="Race Pack"
+            label={t("export.formats.racePack.label")}
             color="bg-red-500/15 text-red-400"
-            description="Setup PDF with map, materials, sequence, and QR."
+            description={t("export.formats.racePack.descriptionShort")}
             isBusy={busy === "race-day-pdf"}
             onAction={() =>
               run("race-day-pdf", async () => {
@@ -801,9 +805,9 @@ export default function ExportDialog({
           <MobileFormatRow
             key="webm"
             ext="WebM"
-            label="Cinematic FPV"
+            label={t("export.formats.cinematicFpv.label")}
             color="bg-violet-500/15 text-violet-400"
-            description="One-loop route video for reviewing the flow."
+            description={t("export.formats.cinematicFpv.descriptionShort")}
             isBusy={busy === "webm"}
             onAction={() =>
               run(
@@ -857,9 +861,9 @@ export default function ExportDialog({
           <MobileFormatRow
             key="trk"
             ext="TRK"
-            label="Velocidrone"
+            label={t("export.formats.velocidrone.label")}
             color="bg-lime-500/15 text-lime-400"
-            description="Experimental file for testing; check after import."
+            description={t("export.formats.velocidrone.descriptionShort")}
             isBusy={busy === "trk"}
             onAction={() =>
               run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))
@@ -875,8 +879,8 @@ export default function ExportDialog({
       <MobileDrawer
         open={open}
         onOpenChange={onOpenChange}
-        title="Export"
-        subtitle="Export the current track as visual assets, project handoff files, or simulator-ready outputs."
+        title={t("export.dialogTitle")}
+        subtitle={t("export.dialogSubtitle")}
         contentClassName="data-[vaul-drawer-direction=bottom]:mt-12 data-[vaul-drawer-direction=bottom]:max-h-[90dvh]"
         pinnedContent={
           <div className="border-border/40 space-y-2.5 border-b px-4 pt-2 pb-3">
@@ -908,7 +912,7 @@ export default function ExportDialog({
                   )}
                 >
                   <Moon className="size-3.5 shrink-0" />
-                  Dark
+                  {t("export.darkTheme")}
                 </button>
                 <button
                   type="button"
@@ -927,7 +931,7 @@ export default function ExportDialog({
                       exportTheme === "light" ? "text-amber-500" : ""
                     )}
                   />
-                  Light
+                  {t("export.lightTheme")}
                 </button>
               </div>
               <div className="flex items-center gap-2.5">
@@ -948,8 +952,8 @@ export default function ExportDialog({
                   aria-pressed={includeObstacleNumbers}
                   aria-label={
                     includeObstacleNumbers
-                      ? "Disable route numbers"
-                      : "Enable route numbers"
+                      ? t("export.disableRouteNumbersMobile")
+                      : t("export.enableRouteNumbersMobile")
                   }
                 >
                   <span className="bg-background block size-5 rounded-full shadow-xs" />
@@ -968,8 +972,8 @@ export default function ExportDialog({
     <DesktopModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Export"
-      subtitle="Export the current track as visual assets, project handoff files, or simulator-ready outputs."
+      title={t("export.dialogTitle")}
+      subtitle={t("export.dialogSubtitle")}
       maxWidth="max-w-2xl"
       panelClassName="px-7 py-7"
     >

@@ -1,0 +1,206 @@
+{
+  "header": {
+    "homeAriaLabel": "Home",
+    "homeTooltip": "Terug naar de hoofdpagina",
+    "featuresNav": "Functies",
+    "featuresTooltip": "Naar het productoverzicht",
+    "galleryNav": "Galerij",
+    "galleryTooltip": "Bekijk publieke community-layouts",
+    "pricingNav": "Prijzen",
+    "pricingTooltip": "Zie plannen en prijzen",
+    "faqNav": "FAQ",
+    "faqTooltip": "Veelgestelde vragen en antwoorden",
+    "logoAriaLabel": "TrackDraw",
+    "siteNavAriaLabel": "Homepage, galerij en publieke secties",
+    "mobileNavAriaLabel": "Navigeren",
+    "themeAriaLabel": "Thema",
+    "themeTooltip": "Wissel het thema van de publieke site.",
+    "languageAriaLabel": "Taal",
+    "languageTooltip": "Wissel de taal van de site.",
+    "openStudio": "Studio openen"
+  },
+  "hero": {
+    "eyebrow": "Gemaakt voor FPV-raceorganisatoren",
+    "headingLine1": "Racedag begint",
+    "headingLine2": "met een plan.",
+    "description": "TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren. Teken op schaal in 2D, bekijk de flow in 3D, deel een alleen-lezen lay-out met piloten en crew, en houd het plan bruikbaar op desktop en mobiel.",
+    "ctaStudio": "Studio openen",
+    "ctaFeatures": "Bekijk de functies",
+    "feature1": "Officiële obstakelcatalogus",
+    "feature2": "Tracksecties",
+    "feature3": "3D-preview en flythrough",
+    "feature4": "Race Pack PDF en SVG",
+    "videoAlt": "TrackDraw drone race track builder demo",
+    "videoDescription": "Een korte productdemo die laat zien hoe TrackDraw FPV-raceorganisatoren helpt bij het ontwerpen van een drone race track-lay-out, beoordelen in 3D en delen met piloten en crew."
+  },
+  "features": {
+    "sectionTitle": "Functies",
+    "sectionHeading": "Plan, beoordeel en lever op.",
+    "sectionDescription": "TrackDraw geeft FPV-raceorganisatoren een praktische manier om tracks goed te ontwerpen: echte veldafmetingen, de juiste obstakelset en één workflow die hetzelfde plan van lay-out naar review naar teamoverdracht draagt.",
+    "trueToScale": {
+      "title": "Canvas op ware schaal",
+      "description": "Stel de veldgrootte in, plaats elementen op schaal en werk op een raster dat overeenkomt met de echte locatie."
+    },
+    "obstacleCatalog": {
+      "title": "Officiële obstakelcatalogus",
+      "description": "Plaats officiële MultiGP-obstakels (gates, flags, ladders, hurdles en barriers) met echte afmetingen en nauwkeurige 3D-rendering."
+    },
+    "preview3d": {
+      "title": "Realistische 3D-preview",
+      "description": "Orbiteer in 3D, voeg hoogte toe aan de race line, bekijk manoeuvrecurves en vlieg door de route om flowproblemen te ontdekken voor de bouwdag."
+    },
+    "shareLinks": {
+      "title": "Gedeelde reviewlinks",
+      "description": "Deel een alleen-lezen lay-out met piloten en crew. Gastlinks zijn tijdelijk; account-gepubliceerde links blijven actief totdat ze worden ingetrokken."
+    },
+    "sections": {
+      "title": "Tracksecties",
+      "description": "Sla elke canvasselectie op als een benoemde sectie en plaats hem opnieuw met één klik. Secties synchroniseren met je account op alle apparaten."
+    },
+    "export": {
+      "title": "Race Pack en export",
+      "description": "Genereer een pilotenbriefing-PDF met obstakels, routekaart en opstelnotities. Exporteer ook SVG, PNG en JSON vanuit hetzelfde ontwerp."
+    }
+  },
+  "workflow": {
+    "sectionEyebrow": "Verdieping",
+    "sectionHeading": "Van eerste lay-out tot teamoverdracht.",
+    "sectionDescription": "Het gereedschap werkt het beste als een reeks: breng de drone race track in 2D in kaart, controleer in 3D, maak praktische aanpassingen als de locatie verandert en geef hetzelfde plan door aan piloten en crew.",
+    "layout": {
+      "title": "2D-lay-out",
+      "subtitle": "Bouw de track op een veld dat overeenkomt met de realiteit.",
+      "description": "Begin met de veldafmetingen en plaats de elementen die crews al herkennen. Dat maakt de eerste versie van het plan direct bruikbaar, in plaats van alleen maar een ruwe schets.",
+      "bullet1": "Veldafmetingen op ware schaal",
+      "bullet2": "Gates, flags, cones, startpads en grotere elementen",
+      "bullet3": "Race line en labels voor briefingduidelijkheid"
+    },
+    "fineTune": {
+      "title": "Verfijnen",
+      "subtitle": "Blijf bewerken wanneer de locatie een wijziging vereist.",
+      "description": "Een goed plan past zich netjes aan. Inspector-bedieningselementen en mobielvriendelijk bewerken maken het mogelijk om objecteigenschappen aan te passen, items te herpositioneren en het ontwerp bruikbaar te houden, zelfs wanneer de echte locatie weigert statisch te blijven.",
+      "bullet1": "Inspector-bedieningselementen voor afmetingen, rotatie en kleur",
+      "bullet2": "Touch-vriendelijk bewerken op telefoons en tablets",
+      "bullet3": "Snelle aanpassingen zonder het hoofdplan te verlaten"
+    },
+    "preview": {
+      "title": "3D-preview",
+      "subtitle": "Loop door de track voor je hem bouwt.",
+      "description": "Één klik schakelt van het platte 2D-plan naar een live 3D-scène. Wijs hoogte toe aan elk waypoint op de race line om het volledige verticale profiel te modelleren. Ontdek gevaarlijke benaderingen voordat er een enkel paal in de grond staat.",
+      "bullet1": "Live 3D rechtstreeks gerenderd vanuit je 2D-ontwerp",
+      "bullet2": "Hoogte per waypoint op de race line",
+      "bullet3": "Hoogtegrafiek in het inspectorpaneel"
+    },
+    "handOff": {
+      "title": "Overdracht",
+      "subtitle": "Geef piloten en crew dezelfde actuele versie.",
+      "description": "Een plan is alleen waardevol als andere mensen het kunnen openen. Alleen-lezen links en exports maken de lay-out tot iets wat piloten kunnen bekijken, crew kan afdrukken en organisatoren later opnieuw kunnen gebruiken.",
+      "bullet1": "Alleen-lezen links die op elk apparaat openen",
+      "bullet2": "PDF, PNG en SVG voor briefing- en afdrukworkflows",
+      "bullet3": "JSON-export om lay-outs te archiveren en later opnieuw te gebruiken",
+      "gallery": "Bekijk de galerij voor inspiratie"
+    }
+  },
+  "faq": {
+    "sectionTitle": "FAQ",
+    "sectionHeading": "Goed om te weten.",
+    "q1": "Is TrackDraw een drone race track builder?",
+    "a1": "Ja. TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren die schaalnauwkeurige lay-outs, 3D-review, delen en exporteren in één workflow nodig hebben.",
+    "q2": "Wat is de beste manier om een FPV-racetrack te plannen?",
+    "a2": "Begin met de veldafmetingen, plaats de obstakels die je daadwerkelijk hebt, en bekijk de route dan in 3D voor je het plan deelt of exporteert. TrackDraw is gebouwd rond precies die volgorde.",
+    "q3": "Kunnen piloten de lay-out bekijken zonder een account?",
+    "a3": "Ja. Deellinks openen in alleen-lezen modus op elk apparaat, geen account of app vereist. Stuur hem naar piloten, judges of crew en iedereen ziet dezelfde gepubliceerde versie.",
+    "q4": "Werkt het op een tablet op de locatie?",
+    "a4": "Ja. De editor is touch-vriendelijk, dus snelle aanpassingen op een telefoon of tablet zijn praktisch wanneer de echte locatie een wijziging vereist.",
+    "q5": "Welke exportformaten zijn beschikbaar?",
+    "a5": "PDF, PNG, SVG, JSON en een cinematic FPV-video-export. Dat dekt gedrukte race-briefings, deelbare visuals, herbruikbare projectbestanden en een visuele routereview.",
+    "q6": "Heb ik een account nodig om te beginnen?",
+    "a6": "Nee. Open de studio en begin meteen met ontwerpen. Een account aanmaken voegt cloudopslag, duurzame gepubliceerde links, galeriijpublicatie en embeds toe.",
+    "q7": "Kan ik een lay-out hergebruiken voor een toekomstig evenement?",
+    "a7": "Ja. Sla delen van een lay-out op als benoemde presets en plaats ze opnieuw met één klik. Om een volledig project te hergebruiken, exporteer het als JSON en importeer het aan het begin van een nieuw evenement.",
+    "q8": "Kan TrackDraw helpen routeproblemen te ontdekken voor de racedag?",
+    "a8": "Ja. De 3D-preview en routebeoordelingswaarschuwingen helpen ongelijkmatige afstanden, ritmeproblemen en uitlijningsproblemen op te sporen voordat je de lay-out deelt of begint met bouwen."
+  },
+  "pricing": {
+    "sectionEyebrow": "Plannen",
+    "sectionHeading": "Begin nu, meld je aan wanneer je meer nodig hebt.",
+    "sectionDescription": "Beide huidige opties zijn gratis. Gastmodus houdt de kerneditor open zonder installatie; accounts voegen duurzame publicatie, embeds, galerij en projectcontinuïteit op apparaten toe.",
+    "guest": {
+      "badge": "Geen aanmelding",
+      "name": "Gast",
+      "price": "Gratis",
+      "description": "Ideaal voor snelle concepten, eenmalige tijdelijke reviewlinks en lokale export zonder een account aan te maken.",
+      "cta": "Studio openen"
+    },
+    "account": {
+      "badge": "Met account",
+      "name": "Account",
+      "price": "Gratis",
+      "description": "Ideaal voor duurzame gepubliceerde links, embeds, galerij, tracksecties, REST API-toegang en cross-device projectcontinuïteit.",
+      "cta": "Account aanmaken"
+    },
+    "features": {
+      "fullDesigner": "Volledige track designer",
+      "preview2d3d": "2D & 3D-preview",
+      "export": "PDF, SVG, PNG & JSON-export",
+      "shareLinks": "Deellinks",
+      "temporaryLinks": "Tijdelijke links",
+      "publishedLinks": "Gepubliceerd totdat ingetrokken",
+      "shareLinksNote": "Gastdeellinks zijn tijdelijk. Account-gepubliceerde links blijven actief totdat ze worden ingetrokken en kunnen ook worden ingesloten.",
+      "embeds": "Website-embeds",
+      "embedsDetail": "Insluiten op elke website via iframe",
+      "gallery": "Galerij publiceren",
+      "cloudProjects": "Cloud-gesynchroniseerde projecten",
+      "cloudProjectsDetail": "Projecten synchroniseren met je account zodat je verder kunt op elk apparaat — van desktop thuis tot mobiel op de locatie.",
+      "sections": "Tracksecties",
+      "sectionsDetail": "Sla elke canvasselectie op als een benoemde preset en plaats hem opnieuw vanuit de presetpicker. Synchroniseert met je account op alle apparaten.",
+      "api": "REST API-toegang",
+      "apiDetail": "Bearer-authenticatie, API-sleutelbeheer"
+    },
+    "categories": {
+      "design": "Ontwerpen",
+      "sharing": "Delen",
+      "projects": "Projecten",
+      "integration": "Integratie"
+    }
+  },
+  "footer": {
+    "tagline": "Browsergebaseerde track designer voor FPV-raceorganisatoren. Teken op schaal, preview in 3D, deel een alleen-lezen link en houd snelle bewerkingen gaande op mobiel.",
+    "productTitle": "Product",
+    "openStudio": "Studio openen",
+    "releaseNotes": "Releasenotes",
+    "legalTitle": "Juridisch",
+    "privacy": "Privacybeleid",
+    "terms": "Gebruiksvoorwaarden",
+    "communityTitle": "Community",
+    "github": "GitHub",
+    "dutchDroneSquad": "Dutch Drone Squad",
+    "reportIssue": "Probleem melden",
+    "supportTitle": "Ondersteuning",
+    "githubSponsors": "GitHub Sponsors",
+    "kofi": "Ko-fi",
+    "copyright": "© {year} Dutch Drone Squad. Open source project.",
+    "madeWithPre": "Gemaakt met",
+    "madeWithPost": "voor de FPV-community"
+  },
+  "gallery": {
+    "pageTitle": "FPV Drone Race Track Galerij",
+    "metaTitle": "TrackDraw | FPV Drone Race Track Galerij",
+    "metaDescription": "Blader door FPV drone race track-ontwerpen gedeeld door de TrackDraw-community.",
+    "sectionLabel": "Galerij",
+    "headingLine1": "Ontdek lay-outs die",
+    "headingLine2": "je volgende trackontwerp vormgeven.",
+    "description": "Blader door publieke TrackDraw-lay-outs gedeeld door de community voor inspiratie. Uitgelichte tracks tonen de sterkste voorbeelden eerst, met recente community-uploads direct daarna."
+  },
+  "notFound": {
+    "logoAriaLabel": "TrackDraw",
+    "badge": "Fout 404",
+    "heading": "Deze pagina is van de track afgeraakt",
+    "description": "De pagina die je zocht bestaat niet, is mogelijk verplaatst, of nam een verkeerde afslag bij de gate. De laatste track of route zou dichtbij moeten zijn.",
+    "whatToTry": "Wat te proberen",
+    "step1": "Ga terug naar de studio en open de laatste track.",
+    "step2": "Ga naar home als je hier via een oude bookmark terechtkwam.",
+    "step3": "Probeer de route opnieuw als de pagina recent is verplaatst.",
+    "goHome": "Naar home",
+    "openStudio": "Open Studio"
+  }
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -200,6 +201,7 @@ export default function ShareDialog({
   onSharePublished,
   existingShareMode = false,
 }: ShareDialogProps) {
+  const t = useTranslations("dialogs");
   const design = useEditor((s) => s.track.design);
   const searchParams = useSearchParams();
   const { data: session } = authClient.useSession();
@@ -476,10 +478,12 @@ export default function ShareDialog({
   const handlePublish = async (force = false) => {
     try {
       await doPublish(force);
-      toast.success(force ? "Link updated" : "Link created");
+      toast.success(
+        force ? t("share.success.linkUpdated") : t("share.success.linkCreated")
+      );
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to create share link"
+        err instanceof Error ? err.message : t("share.errors.createFailed")
       );
     }
   };
@@ -492,10 +496,12 @@ export default function ShareDialog({
           : await doPublish(linkNeedsRefresh);
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success("Link copied");
+      toast.success(t("share.success.linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to copy link");
+      toast.error(
+        err instanceof Error ? err.message : t("share.errors.copyFailed")
+      );
     }
   };
 
@@ -526,7 +532,7 @@ export default function ShareDialog({
       window.open(url, "_blank", "noopener,noreferrer");
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to create share link"
+        err instanceof Error ? err.message : t("share.errors.createFailed")
       );
     }
   };
@@ -545,9 +551,11 @@ export default function ShareDialog({
       setShare(null);
       setPublishedDesignToken(null);
       clearAnonShare();
-      toast.success("Link revoked");
+      toast.success(t("share.success.linkRevoked"));
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to revoke link");
+      toast.error(
+        err instanceof Error ? err.message : t("share.errors.revokeFailed")
+      );
     } finally {
       setRevoking(false);
     }
@@ -558,10 +566,10 @@ export default function ShareDialog({
     try {
       await navigator.clipboard.writeText(iframeCode);
       setCopiedEmbed(true);
-      toast.success("Embed code copied");
+      toast.success(t("share.success.embedCopied"));
       setTimeout(() => setCopiedEmbed(false), 2000);
     } catch {
-      toast.error("Failed to copy embed code");
+      toast.error(t("share.errors.embedCopyFailed"));
     }
   };
 
@@ -607,10 +615,10 @@ export default function ShareDialog({
           data.share.galleryDescription ?? galleryDescriptionInput.trim(),
       });
       setShowGalleryForm(false);
-      toast.success("Track listed in gallery");
+      toast.success(t("share.success.galleryListed"));
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to list in gallery"
+        err instanceof Error ? err.message : t("share.errors.galleryListFailed")
       );
     } finally {
       setGalleryUpdating(false);
@@ -698,10 +706,12 @@ export default function ShareDialog({
           data.share.galleryDescription ?? galleryDescriptionInput.trim(),
       });
       setShowGalleryForm(false);
-      toast.success("Gallery details updated");
+      toast.success(t("share.success.galleryUpdated"));
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to update gallery details"
+        err instanceof Error
+          ? err.message
+          : t("share.errors.galleryUpdateFailed")
       );
     } finally {
       setGalleryUpdating(false);
@@ -710,16 +720,16 @@ export default function ShareDialog({
 
   const handleCopyCurrentUrl = async () => {
     if (!currentShareUrl) {
-      toast.error("Unable to read the current share link");
+      toast.error(t("share.errors.unableToReadLink"));
       return;
     }
     try {
       await navigator.clipboard.writeText(currentShareUrl);
       setCopied(true);
-      toast.success("Link copied");
+      toast.success(t("share.success.linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy link");
+      toast.error(t("share.errors.copyFailed"));
     }
   };
 
@@ -740,13 +750,13 @@ export default function ShareDialog({
 
   const primaryActionLabel = share
     ? linkNeedsRefresh
-      ? "Update link"
-      : "Copy link"
+      ? t("share.primaryAction.updateLink")
+      : t("share.primaryAction.copyLink")
     : isAccountProjectShare
-      ? "Create link"
+      ? t("share.primaryAction.createLink")
       : isAuthenticated
-        ? "Create new link"
-        : "Create link";
+        ? t("share.primaryAction.createNewLink")
+        : t("share.primaryAction.createLink");
   const PrimaryIcon = share
     ? linkNeedsRefresh
       ? Link2
@@ -761,31 +771,31 @@ export default function ShareDialog({
     : () => handlePublish();
 
   const galleryStateLabel = !loadDone
-    ? "Loading current state"
+    ? t("share.gallery.loading")
     : share?.galleryState === "featured"
-      ? "Featured in gallery"
+      ? t("share.gallery.featured")
       : share?.galleryState === "listed"
-        ? "Listed in gallery"
+        ? t("share.gallery.listed")
         : share?.galleryState === "hidden"
-          ? "Hidden by moderation"
+          ? t("share.gallery.hiddenByModeration")
           : share
-            ? "Link only"
-            : "No published link";
+            ? t("share.gallery.linkOnly")
+            : t("share.gallery.noPublishedLink");
 
   const galleryStateDesc = !loadDone
-    ? "Checking the current gallery status."
+    ? t("share.gallery.checkingStatus")
     : share?.galleryState === "featured"
-      ? "Visible in the public gallery and pinned near the top."
+      ? t("share.gallery.featuredDesc")
       : share?.galleryState === "listed"
-        ? "Visible in the public gallery."
+        ? t("share.gallery.listedDesc")
         : share?.galleryState === "hidden"
-          ? "Hidden by moderation. The direct link still works until it is revoked."
+          ? t("share.gallery.hiddenDesc")
           : share
-            ? "Share link only. Not visible in the public gallery."
-            : "Create a share link first.";
+            ? t("share.gallery.linkOnlyDesc")
+            : t("share.gallery.noLinkDesc");
 
   const galleryVisibilityValue = !loadDone
-    ? "Checking"
+    ? t("share.gallery.checking")
     : share?.galleryState === "featured"
       ? "Featured"
       : share?.galleryState === "listed"
@@ -793,15 +803,15 @@ export default function ShareDialog({
         : share?.galleryState === "hidden"
           ? "Hidden"
           : share
-            ? "Link only"
-            : "No link";
+            ? t("share.gallery.linkOnly")
+            : t("share.gallery.noLink");
   const galleryShareLinkValue = !share
-    ? "No link"
+    ? t("share.gallery.noLink")
     : share.shareType === "published"
-      ? "Published"
+      ? t("share.gallery.published")
       : share.expiresInDays === null
-        ? "No expiry"
-        : `Expires in ${share.expiresInDays} days`;
+        ? t("share.gallery.noExpiry")
+        : t("share.gallery.expiresInDays", { days: share.expiresInDays });
   const GalleryStatusIcon = !loadDone
     ? Loader2
     : share?.galleryState === "featured"
@@ -825,22 +835,26 @@ export default function ShareDialog({
     ? [
         {
           id: "share",
-          label: "Share link",
+          label: t("share.navShareLink"),
           icon: <Link2 className="size-4" />,
         },
         {
           id: "actions",
-          label: "Actions",
+          label: t("share.navActions"),
           icon: <ExternalLink className="size-4" />,
         },
       ]
     : [
-        { id: "share", label: "Share", icon: <Link2 className="size-4" /> },
+        {
+          id: "share",
+          label: t("share.navShare"),
+          icon: <Link2 className="size-4" />,
+        },
         ...(showEmbedSection
           ? [
               {
                 id: "embed",
-                label: "Embed",
+                label: t("share.navEmbed"),
                 icon: <Code2 className="size-4" />,
               },
             ]
@@ -849,14 +863,14 @@ export default function ShareDialog({
           ? [
               {
                 id: "gallery",
-                label: "Gallery",
+                label: t("share.navGallery"),
                 icon: <ImageIcon className="size-4" />,
               },
             ]
           : []),
         {
           id: "actions",
-          label: "Actions",
+          label: t("share.navActions"),
           icon: <ExternalLink className="size-4" />,
         },
       ];
@@ -868,30 +882,28 @@ export default function ShareDialog({
 
   const contentMeta: Record<Tab, { title: string; description: string }> = {
     share: {
-      title: "Share link",
+      title: t("share.content.shareTitle"),
       description: existingShareMode
-        ? "Copy or resend this published read-only link, or open Studio to make your own editable copy."
+        ? t("share.content.shareDescExisting")
         : isAuthenticated
           ? isAccountProjectShare
-            ? "Create or update the durable read-only link for this account project."
-            : "Create a separate durable read-only link for this editable copy or local track."
-          : "Create a temporary read-only snapshot link and control how long it stays active.",
+            ? t("share.content.shareDescAccount")
+            : t("share.content.shareDescSeparate")
+          : t("share.content.shareDescAnon"),
     },
     gallery: {
-      title: "Gallery visibility",
-      description:
-        "Manage how this published link appears in the public gallery.",
+      title: t("share.content.galleryTitle"),
+      description: t("share.content.galleryDesc"),
     },
     embed: {
-      title: "Embed",
-      description:
-        "Copy iframe code for an account-published track that stays live until revoked.",
+      title: t("share.content.embedTitle"),
+      description: t("share.content.embedDesc"),
     },
     actions: {
-      title: "Actions",
+      title: t("share.content.actionsTitle"),
       description: existingShareMode
-        ? "Use the current published link in other apps or reopen it in a new tab."
-        : "Open, resend, revoke, or export this share without changing the track itself.",
+        ? t("share.content.actionsDescExisting")
+        : t("share.content.actionsDesc"),
     },
   };
 
@@ -904,9 +916,13 @@ export default function ShareDialog({
       <SidebarDialog
         open={open}
         onOpenChange={onOpenChange}
-        eyebrow={existingShareMode ? "Shared track" : "Studio"}
-        title="Share"
-        mobileSubtitle="Share a read-only review link for this track"
+        eyebrow={
+          existingShareMode
+            ? t("share.dialogEyebrowExisting")
+            : t("share.dialogEyebrow")
+        }
+        title={t("share.dialogTitle")}
+        mobileSubtitle={t("share.dialogMobileSubtitle")}
         navItems={navItems}
         activeItem={resolvedTab}
         onItemChange={(id) => setActiveTab(id as Tab)}
@@ -923,7 +939,7 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0">
                     <p className="text-foreground text-sm font-medium">
-                      Current shared link
+                      {t("share.currentSharedLink")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
                       Read-only {currentView.toUpperCase()} review on {hostname}

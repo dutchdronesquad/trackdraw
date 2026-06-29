@@ -1,0 +1,206 @@
+{
+  "header": {
+    "homeAriaLabel": "Home",
+    "homeTooltip": "Back to the main landing page",
+    "featuresNav": "Features",
+    "featuresTooltip": "Jump to the product overview",
+    "galleryNav": "Gallery",
+    "galleryTooltip": "Browse public community layouts",
+    "pricingNav": "Pricing",
+    "pricingTooltip": "See plans and pricing",
+    "faqNav": "FAQ",
+    "faqTooltip": "Read common questions and answers",
+    "logoAriaLabel": "TrackDraw",
+    "siteNavAriaLabel": "Homepage, gallery and public site sections",
+    "mobileNavAriaLabel": "Navigate",
+    "themeAriaLabel": "Theme",
+    "themeTooltip": "Switch the public site theme.",
+    "languageAriaLabel": "Language",
+    "languageTooltip": "Switch the site language.",
+    "openStudio": "Open Studio"
+  },
+  "hero": {
+    "eyebrow": "Built for FPV race directors",
+    "headingLine1": "Race day starts",
+    "headingLine2": "with a plan.",
+    "description": "TrackDraw is a browser-based drone race track builder for FPV race directors. Draw to scale in 2D, review the flow in 3D, share a read-only layout with pilots and crew, and keep the plan usable from desktop or mobile.",
+    "ctaStudio": "Open Studio",
+    "ctaFeatures": "See the features",
+    "feature1": "Official obstacle catalog",
+    "feature2": "Track sections",
+    "feature3": "3D preview and flythrough",
+    "feature4": "Race Pack PDF and SVG",
+    "videoAlt": "TrackDraw drone race track builder demo",
+    "videoDescription": "A quick product demo showing how TrackDraw helps FPV race directors build a drone race track layout, review it in 3D, and share it with pilots and crew."
+  },
+  "features": {
+    "sectionTitle": "Features",
+    "sectionHeading": "Plan, review, and hand off.",
+    "sectionDescription": "TrackDraw gives FPV race directors a practical way to design tracks properly: real field dimensions, the right obstacle set, and one workflow that carries the same plan from layout to review to team hand-off.",
+    "trueToScale": {
+      "title": "True-to-scale canvas",
+      "description": "Set the field size, place elements to scale, and work on a grid that matches the real venue."
+    },
+    "obstacleCatalog": {
+      "title": "Official obstacle catalog",
+      "description": "Place official MultiGP obstacles (gates, flags, ladders, hurdles, and barriers) with real dimensions and accurate 3D rendering."
+    },
+    "preview3d": {
+      "title": "Realistic 3D preview",
+      "description": "Orbit in 3D, add elevation to the race line, review maneuver curves, and fly through the route to catch flow problems before build day."
+    },
+    "shareLinks": {
+      "title": "Shared review links",
+      "description": "Share a read-only layout with pilots and crew. Guest links are temporary; account-published links can stay live until revoked."
+    },
+    "sections": {
+      "title": "Track sections",
+      "description": "Save any canvas selection as a named section and place it again with one click. Sections sync with your account across devices."
+    },
+    "export": {
+      "title": "Race Pack and export",
+      "description": "Generate a pilot briefing PDF with obstacle layout, route map, and setup notes. Also export SVG, PNG, and JSON from the same design."
+    }
+  },
+  "workflow": {
+    "sectionEyebrow": "In depth",
+    "sectionHeading": "From first layout to team hand-off.",
+    "sectionDescription": "The tool works best as a sequence: map the drone race track in 2D, check it in 3D, make practical edits when reality changes, then hand the same plan to pilots and crew.",
+    "layout": {
+      "title": "2D Layout",
+      "subtitle": "Build the track on a field that matches reality.",
+      "description": "Start with the field dimensions, then place the elements crews already recognize. That makes the first version of the plan useful immediately, instead of just being a rough sketch.",
+      "bullet1": "Scale-accurate field dimensions",
+      "bullet2": "Gates, flags, cones, start pads and larger features",
+      "bullet3": "Race line and labels for briefing clarity"
+    },
+    "fineTune": {
+      "title": "Fine-Tune",
+      "subtitle": "Keep editing when the venue forces a change.",
+      "description": "A good plan changes cleanly. Inspector controls and mobile-friendly editing make it possible to adjust object properties, reposition items and keep the design usable even when the real venue refuses to stay static.",
+      "bullet1": "Inspector controls for dimensions, rotation and color",
+      "bullet2": "Touch-friendly editing on phones and tablets",
+      "bullet3": "Fast adjustments without leaving the main plan"
+    },
+    "preview": {
+      "title": "3D Preview",
+      "subtitle": "Walk the track before you build it.",
+      "description": "One click switches from the flat 2D plan to a live 3D scene. Assign elevation to each waypoint on the race line to model the full vertical profile. Catch dangerous approaches before a single peg is in the ground.",
+      "bullet1": "Live 3D rendered directly from your 2D design",
+      "bullet2": "Per-waypoint altitude on the race line",
+      "bullet3": "Elevation graph in the inspector panel"
+    },
+    "handOff": {
+      "title": "Hand-Off",
+      "subtitle": "Give pilots and crew the same current version.",
+      "description": "A plan only matters if other people can open it. Shared read-only links and exports turn the layout into something pilots can review, crew can print and organizers can reuse later.",
+      "bullet1": "Read-only links that open on any device",
+      "bullet2": "PDF, PNG and SVG for briefing and print workflows",
+      "bullet3": "JSON export to archive and reuse layouts later",
+      "gallery": "Browse the gallery for inspiration"
+    }
+  },
+  "faq": {
+    "sectionTitle": "FAQ",
+    "sectionHeading": "Good to know.",
+    "q1": "Is TrackDraw a drone race track builder?",
+    "a1": "Yes. TrackDraw is a browser-based drone race track builder for FPV race directors who need scale-accurate layouts, 3D review, sharing, and export in one workflow.",
+    "q2": "What is the best way to plan an FPV race track?",
+    "a2": "Start with the field dimensions, place the obstacles you actually have, then review the route in 3D before sharing or exporting the plan. TrackDraw is built around that exact sequence.",
+    "q3": "Can pilots review the layout without an account?",
+    "a3": "Yes. Share links open in read-only mode on any device, no account or app needed. Send it to pilots, judges, or crew and everyone sees the same published version.",
+    "q4": "Does it work on a tablet at the venue?",
+    "a4": "Yes. The editor is touch-friendly, so quick adjustments on a phone or tablet are practical when the real venue forces a change.",
+    "q5": "What export formats are available?",
+    "a5": "PDF, PNG, SVG, JSON, and a cinematic FPV video export. That covers printed race briefs, shareable visuals, reusable project files, and motion-led route review.",
+    "q6": "Do I need an account to get started?",
+    "a6": "No. Open the studio and start designing right away. Creating an account adds cloud storage, durable published links, gallery publishing, and embeds.",
+    "q7": "Can I reuse a layout for a future event?",
+    "a7": "Yes. Save parts of a layout as named presets and place them again in one click. To reuse a full project, export it as JSON and import it at the start of a new event.",
+    "q8": "Can TrackDraw help catch route problems before race day?",
+    "a8": "Yes. The 3D preview and route review warnings help surface uneven spacing, rhythm breaks, and alignment issues before you share the layout or start building it."
+  },
+  "pricing": {
+    "sectionEyebrow": "Plans",
+    "sectionHeading": "Start now, sign up when you need more.",
+    "sectionDescription": "Both current options are free. Guest mode keeps the core editor open without setup; accounts add durable publishing, embeds, gallery listing, and project continuity across devices.",
+    "guest": {
+      "badge": "No sign-up",
+      "name": "Guest",
+      "price": "Free",
+      "description": "Best for quick drafts, one-off temporary review links, and local export without creating an account.",
+      "cta": "Open Studio"
+    },
+    "account": {
+      "badge": "With account",
+      "name": "Account",
+      "price": "Free",
+      "description": "Best for durable published links, embeds, gallery, track sections, REST API access, and cross-device project continuity.",
+      "cta": "Create account"
+    },
+    "features": {
+      "fullDesigner": "Full track designer",
+      "preview2d3d": "2D & 3D preview",
+      "export": "PDF, SVG, PNG & JSON export",
+      "shareLinks": "Share links",
+      "temporaryLinks": "Temporary links",
+      "publishedLinks": "Published until revoked",
+      "shareLinksNote": "Guest share links are temporary. Account-published links stay live until revoked and can also be embedded.",
+      "embeds": "Website embeds",
+      "embedsDetail": "Embed on any website via iframe",
+      "gallery": "Gallery publishing",
+      "cloudProjects": "Cloud-synced projects",
+      "cloudProjectsDetail": "Projects sync with your account so you can continue on any device — from desktop at home to mobile at the venue.",
+      "sections": "Track sections",
+      "sectionsDetail": "Save any canvas selection as a named preset and place it again from the preset picker. Syncs with your account across devices.",
+      "api": "REST API access",
+      "apiDetail": "Bearer-authenticated, API key management"
+    },
+    "categories": {
+      "design": "Design",
+      "sharing": "Sharing",
+      "projects": "Projects",
+      "integration": "Integration"
+    }
+  },
+  "footer": {
+    "tagline": "Browser-based track designer for FPV race directors. Draw to scale, preview in 3D, share a read-only link, and keep quick edits moving on mobile.",
+    "productTitle": "Product",
+    "openStudio": "Open Studio",
+    "releaseNotes": "Release notes",
+    "legalTitle": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "communityTitle": "Community",
+    "github": "GitHub",
+    "dutchDroneSquad": "Dutch Drone Squad",
+    "reportIssue": "Report an issue",
+    "supportTitle": "Support",
+    "githubSponsors": "GitHub Sponsors",
+    "kofi": "Ko-fi",
+    "copyright": "© {year} Dutch Drone Squad. Open source project.",
+    "madeWithPre": "Made with",
+    "madeWithPost": "for the FPV community"
+  },
+  "gallery": {
+    "pageTitle": "FPV Drone Race Track Gallery",
+    "metaTitle": "TrackDraw | FPV Drone Race Track Gallery",
+    "metaDescription": "Browse FPV drone race track designs shared by the TrackDraw community.",
+    "sectionLabel": "Gallery",
+    "headingLine1": "Discover layouts that shape",
+    "headingLine2": "your next track design.",
+    "description": "Browse public TrackDraw layouts shared by the community for inspiration. Featured tracks surface the strongest examples first, with recent community uploads right below."
+  },
+  "notFound": {
+    "logoAriaLabel": "TrackDraw",
+    "badge": "Error 404",
+    "heading": "This page drifted off the course",
+    "description": "The page you requested does not exist, may have moved, or may have taken a wrong turn at the gate. The latest track or route should be close by.",
+    "whatToTry": "What To Try",
+    "step1": "Jump back to the studio and open the latest track.",
+    "step2": "Return home if you came here from an old bookmark.",
+    "step3": "Try the latest route again if the page moved recently.",
+    "goHome": "Go Home",
+    "openStudio": "Open Studio"
+  }
+}

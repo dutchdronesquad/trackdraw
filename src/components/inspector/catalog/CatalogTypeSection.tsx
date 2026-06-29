@@ -13,6 +13,7 @@ import {
   type TrackElementCatalogIdentity,
 } from "@/lib/track/elements/catalog";
 import { Row, Section } from "@/components/inspector/shared";
+import { useTranslations } from "next-intl";
 
 interface CatalogTypeSectionProps {
   activeEntryId: TrackElementCatalogId;
@@ -31,9 +32,10 @@ export function CatalogTypeSection({
   entries,
   onChange,
 }: CatalogTypeSectionProps) {
+  const t = useTranslations("inspector");
   return (
-    <Section title="Catalog" defaultOpen>
-      <Row label="Type">
+    <Section title={t("catalog.sectionTitle")} defaultOpen>
+      <Row label={t("catalog.typeLabel")}>
         <Select
           value={activeEntryId}
           disabled={disabled}
@@ -56,7 +58,7 @@ export function CatalogTypeSection({
         </Select>
       </Row>
       {catalogIdentity?.snapshot.organization ? (
-        <Row label="Source">
+        <Row label={t("catalog.sourceLabel")}>
           {catalogEntry?.sources?.[0]?.url ? (
             <a
               href={catalogEntry.sources[0].url}
@@ -74,7 +76,7 @@ export function CatalogTypeSection({
         </Row>
       ) : null}
       {catalogIdentity ? (
-        <Row label="Official size">
+        <Row label={t("catalog.officialSizeLabel")}>
           <span className="text-foreground text-[12px]">
             {catalogIdentity.snapshot.dimensionsLabel}
           </span>

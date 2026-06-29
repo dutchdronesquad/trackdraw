@@ -40,6 +40,7 @@ import {
   InspectorLead,
   InspectorScrollBody,
 } from "./layout";
+import { useTranslations } from "next-intl";
 
 export interface MultiInspectorViewProps {
   selectedShapes: Shape[];
@@ -109,6 +110,7 @@ export function MultiInspectorView({
   onSaveAsPreset,
   mobileInline = false,
 }: MultiInspectorViewProps) {
+  const t = useTranslations("inspector");
   const { startBatch, finishBatch } = useInspectorInputBatch();
   const kinds = selectedShapes.reduce<Record<Shape["kind"], number>>(
     (accumulator, shape) => {
@@ -180,8 +182,8 @@ export function MultiInspectorView({
                 <button
                   type="button"
                   onClick={() => groupSelection(selection)}
-                  title="Group selection"
-                  aria-label="Group selection"
+                  title={t("actions.groupSelection")}
+                  aria-label={t("actions.groupSelection")}
                   className={`${inspectorActionBtnClass} flex-1`}
                 >
                   <Group className="size-3" />
@@ -192,8 +194,8 @@ export function MultiInspectorView({
                 <button
                   type="button"
                   onClick={() => ungroupSelection(selection)}
-                  title="Ungroup selection"
-                  aria-label="Ungroup selection"
+                  title={t("actions.ungroupSelection")}
+                  aria-label={t("actions.ungroupSelection")}
                   className={`${inspectorActionBtnClass} flex-1`}
                 >
                   <Ungroup className="size-3" />
@@ -203,8 +205,8 @@ export function MultiInspectorView({
               <button
                 type="button"
                 onClick={() => duplicateShapes(selection)}
-                title="Duplicate"
-                aria-label="Duplicate"
+                title={t("actions.duplicate")}
+                aria-label={t("actions.duplicate")}
                 className={`${inspectorActionBtnClass} flex-1`}
               >
                 <Copy className="size-3" />
@@ -216,8 +218,8 @@ export function MultiInspectorView({
                   removeShapes(selection);
                   setSelection([]);
                 }}
-                title="Delete"
-                aria-label="Delete"
+                title={t("actions.delete")}
+                aria-label={t("actions.delete")}
                 className={`${inspectorActionBtnDangerClass} flex-1`}
               >
                 <Trash2 className="size-3" />
@@ -232,8 +234,8 @@ export function MultiInspectorView({
                   <button
                     type="button"
                     onClick={onSaveAsPreset}
-                    title="Save as preset"
-                    aria-label="Save as preset"
+                    title={t("actions.savePreset")}
+                    aria-label={t("actions.savePreset")}
                     className={inspectorActionBtnClass}
                   >
                     <Bookmark className="size-3" />
@@ -244,8 +246,8 @@ export function MultiInspectorView({
                   <button
                     type="button"
                     onClick={() => joinPolylines(polylineIds)}
-                    title="Join paths"
-                    aria-label="Join paths"
+                    title={t("actions.joinPaths")}
+                    aria-label={t("actions.joinPaths")}
                     className={inspectorActionBtnClass}
                   >
                     <GitMerge className="size-3" />
@@ -255,7 +257,7 @@ export function MultiInspectorView({
               </div>
             )}
           </div>
-          <Section title="Selection" collapsible={false}>
+          <Section title={t("multiSelection.sectionTitle")} collapsible={false}>
             <div className="grid grid-cols-2 gap-2 lg:gap-1">
               {Object.entries(kinds)
                 .filter(([, count]) => count > 0)
@@ -273,8 +275,8 @@ export function MultiInspectorView({
             </div>
           </Section>
           {batchCatalogEntries ? (
-            <Section title="Catalog" defaultOpen>
-              <Row label="Type">
+            <Section title={t("catalog.sectionTitle")} defaultOpen>
+              <Row label={t("catalog.typeLabel")}>
                 <Select
                   value={activeBatchCatalogId}
                   disabled={editableCatalogSelectionCount === 0}
@@ -286,7 +288,9 @@ export function MultiInspectorView({
                   }
                 >
                   <SelectTrigger className="border-border/40 bg-muted/40 h-9 w-full text-xs shadow-none lg:h-7 lg:text-[11px]">
-                    <SelectValue placeholder="Mixed types" />
+                    <SelectValue
+                      placeholder={t("multiSelection.mixedTypesPlaceholder")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {batchCatalogEntries.map((entry) => (
@@ -309,8 +313,8 @@ export function MultiInspectorView({
             </Section>
           ) : null}
           {groupCount === 1 && (
-            <Section title="Group">
-              <Row label="Group name">
+            <Section title={t("group.sectionTitle")}>
+              <Row label={t("group.nameLabel")}>
                 <Input
                   value={activeGroupName}
                   onFocus={startBatch}
@@ -323,7 +327,7 @@ export function MultiInspectorView({
                   onChange={(event) =>
                     setGroupName(selection, event.target.value)
                   }
-                  placeholder="Optional group name"
+                  placeholder={t("group.namePlaceholder")}
                   autoComplete="off"
                   autoCorrect="off"
                   spellCheck={false}

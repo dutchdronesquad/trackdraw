@@ -1,0 +1,122 @@
+{
+  "tabs": {
+    "project": "Project",
+    "layout": "Layout",
+    "selection": "Selection"
+  },
+  "emptyState": {
+    "title": "No selection",
+    "body": "Select one or more items on the canvas to edit object properties here."
+  },
+  "actions": {
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "continueEditing": "Continue editing",
+    "connectEnds": "Connect ends",
+    "ungroup": "Ungroup",
+    "groupSelection": "Group selection",
+    "ungroupSelection": "Ungroup selection",
+    "savePreset": "Save as preset",
+    "joinPaths": "Join paths",
+    "remove": "Remove",
+    "removeItem": "Remove item"
+  },
+  "hints": {
+    "locked": "Locked on the canvas. Unlock before moving, resizing, or continuing path edits."
+  },
+  "group": {
+    "sectionTitle": "Group",
+    "nameLabel": "Group name",
+    "namePlaceholder": "Optional group name"
+  },
+  "raceTiming": {
+    "sectionTitle": "Race timing",
+    "roleLabel": "Role",
+    "ariaLabel": "Timing role",
+    "splitIdLabel": "Split ID",
+    "splitIdPlaceholder": "split-1",
+    "roleOff": "Off",
+    "roleStart": "Start",
+    "roleSplit": "Split",
+    "metaTimingStart": "timing: start",
+    "metaTimingSplit": "timing: {id}",
+    "metaGrouped": "grouped",
+    "metaLocked": "locked",
+    "metaEditable": "editable"
+  },
+  "transform": {
+    "sectionTitle": "Transform",
+    "nameLabel": "Name",
+    "positionLabel": "Position",
+    "rotationLabel": "Rotation (deg)",
+    "colorLabel": "Color",
+    "pickColorAriaLabel": "Pick color",
+    "editingSubtitle": "Editing {kind} properties and placement."
+  },
+  "ladder": {
+    "sectionTitle": "Ladder"
+  },
+  "catalog": {
+    "sectionTitle": "Catalog",
+    "typeLabel": "Type",
+    "sourceLabel": "Source",
+    "officialSizeLabel": "Official size"
+  },
+  "dimensions": {
+    "widthLabel": "Width ({unit})",
+    "heightLabel": "Height ({unit})",
+    "thicknessLabel": "Thickness ({unit})",
+    "radiusLabel": "Radius ({unit})",
+    "poleHeightLabel": "Pole height ({unit})",
+    "tiltLabel": "Tilt (deg)",
+    "gatesLabel": "Gates",
+    "elevationLabel": "Elevation ({unit})",
+    "levelsLabel": "Levels",
+    "sizeLabel": "Size ({unit})",
+    "openingHeightLabel": "Opening height ({unit})"
+  },
+  "label": {
+    "sectionTitle": "Label",
+    "textLabel": "Text",
+    "fontSizeLabel": "Font size (px)",
+    "threeDModeLabel": "3D mode",
+    "floatOption": "Float (billboard)",
+    "groundOption": "Project on ground"
+  },
+  "multiSelection": {
+    "sectionTitle": "Selection",
+    "mixedTypesPlaceholder": "Mixed types"
+  },
+  "polyline": {
+    "sectionTitle": "Race Line",
+    "flowLabel": "Flow",
+    "directionLabel": "Direction"
+  },
+  "listPanel": {
+    "panelTitle": "Track items",
+    "placedItemsTitle": "Placed items",
+    "placedItemsSubtitle": "Select an item from the list.",
+    "filterPlaceholder": "Filter items",
+    "filterAll": "All",
+    "filterObstacles": "Obstacles"
+  },
+  "layout": {
+    "mapReferenceTitle": "Map reference",
+    "opacityLabel": "Opacity",
+    "mapRotationLabel": "Rotation",
+    "removeMapLabel": "Remove",
+    "removeMapTitle": "Remove map reference",
+    "routeNumberingTitle": "Route numbering",
+    "inventoryTitle": "Inventory",
+    "fieldTitle": "Field",
+    "unitsLabel": "Units",
+    "renderScaleLabel": "Render scale",
+    "renderScaleTooltip": "Internal canvas density in pixels per meter",
+    "titlePlaceholder": "Untitled Track",
+    "projectSubtitle": "Tune the project title, field setup, and available obstacle stock.",
+    "layoutTitle": "Current layout",
+    "layoutSubtitle": "Review placed items, route numbering, and buildability for the current layout."
+  }
+}

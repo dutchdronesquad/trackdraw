@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import PublicGalleryGrid from "@/components/gallery/PublicGalleryGrid";
 import { Footer } from "@/components/landing/Footer";
 import { PublicSiteHeader } from "@/components/landing/PublicSiteHeader";
@@ -15,37 +16,38 @@ import {
   serializeJsonLd,
 } from "@/lib/seo";
 
-const title = "FPV Drone Race Track Gallery";
-const socialTitle = "TrackDraw | FPV Drone Race Track Gallery";
-const description =
-  "Browse FPV drone race track designs shared by the TrackDraw community.";
-
-export const metadata: Metadata = {
-  title,
-  description,
-  authors: [SITE_AUTHOR],
-  alternates: {
-    canonical: "/gallery",
-  },
-  openGraph: {
-    title: socialTitle,
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("landing");
+  const title = t("gallery.metaTitle");
+  const description = t("gallery.metaDescription");
+  const socialTitle = t("gallery.metaTitle");
+  return {
+    title,
     description,
-    url: "/gallery",
-    images: [
-      {
-        url: DEFAULT_SOCIAL_IMAGE,
-        width: DEFAULT_SOCIAL_IMAGE_WIDTH,
-        height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
-        alt: DEFAULT_OG_IMAGE_ALT,
-      },
-    ],
-  },
-  twitter: {
-    title: socialTitle,
-    description,
-    images: [DEFAULT_SOCIAL_IMAGE],
-  },
-};
+    authors: [SITE_AUTHOR],
+    alternates: {
+      canonical: "/gallery",
+    },
+    openGraph: {
+      title: socialTitle,
+      description,
+      url: "/gallery",
+      images: [
+        {
+          url: DEFAULT_SOCIAL_IMAGE,
+          width: DEFAULT_SOCIAL_IMAGE_WIDTH,
+          height: DEFAULT_SOCIAL_IMAGE_HEIGHT,
+          alt: DEFAULT_OG_IMAGE_ALT,
+        },
+      ],
+    },
+    twitter: {
+      title: socialTitle,
+      description,
+      images: [DEFAULT_SOCIAL_IMAGE],
+    },
+  };
+}
 
 function resolveRequestHost(requestHeaders: Headers) {
   const forwardedHost = requestHeaders.get("x-forwarded-host");
@@ -57,6 +59,8 @@ function resolveRequestHost(requestHeaders: Headers) {
 }
 
 export default async function GalleryPage() {
+  const t = await getTranslations("landing");
+  const description = t("gallery.metaDescription");
   const requestHeaders = new Headers(await headers());
   const entries = await listPublicGalleryEntries();
   const requestHost = resolveRequestHost(requestHeaders);
@@ -100,18 +104,16 @@ export default async function GalleryPage() {
             <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
               <div className="mx-auto max-w-3xl text-center">
                 <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
-                  Gallery
+                  {t("gallery.sectionLabel")}
                 </p>
                 <h1 className="mt-4 text-[clamp(34px,9vw,56px)] leading-[1.02] font-semibold tracking-[-0.04em] text-balance sm:leading-[1.08]">
-                  <span className="block">Discover layouts that shape</span>
+                  <span className="block">{t("gallery.headingLine1")}</span>
                   <span className="from-brand-primary mt-1.5 block bg-linear-to-r to-sky-300 bg-clip-text pb-1 leading-[1.12] text-transparent sm:mt-0">
-                    your next track design.
+                    {t("gallery.headingLine2")}
                   </span>
                 </h1>
                 <p className="text-muted-foreground mx-auto mt-5 max-w-2xl text-[15px] leading-7">
-                  Browse public TrackDraw layouts shared by the community for
-                  inspiration. Featured tracks surface the strongest examples
-                  first, with recent community uploads right below.
+                  {t("gallery.description")}
                 </p>
               </div>
             </div>

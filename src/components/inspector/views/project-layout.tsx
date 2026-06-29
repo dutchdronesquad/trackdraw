@@ -37,6 +37,7 @@ import {
   useIsDesktopInspector,
 } from "./layout";
 import { type DesignMetaPatch, ItemOverviewList } from "./list-panel";
+import { useTranslations } from "next-intl";
 
 function getShapeDisplayName(shape: Shape, index: number) {
   return shape.name?.trim() || `${shapeKindLabels[shape.kind]} ${index + 1}`;
@@ -57,6 +58,7 @@ function MapReferenceSection({
   setMapReferenceOpacity: (opacity: number) => void;
   setMapReferenceRotation: (rotationDeg: number) => void;
 }) {
+  const t = useTranslations("inspector");
   const [dialogOpen, setDialogOpen] = useState(false);
   const reference = design.mapReference ?? null;
   const actionBtnClass =
@@ -65,11 +67,11 @@ function MapReferenceSection({
     "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg border border-brand-primary/30 bg-brand-primary/8 px-2.5 text-xs font-medium text-brand-primary transition-colors hover:bg-brand-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8 lg:text-[11px]";
 
   return (
-    <Section title="Map reference">
+    <Section title={t("layout.mapReferenceTitle")}>
       <div className="space-y-3">
         {reference ? (
           <>
-            <Row label="Opacity">
+            <Row label={t("layout.opacityLabel")}>
               <div className="flex min-w-0 items-center gap-2">
                 <input
                   type="range"
@@ -87,7 +89,7 @@ function MapReferenceSection({
                 </span>
               </div>
             </Row>
-            <Row label="Rotation">
+            <Row label={t("layout.mapRotationLabel")}>
               <Num
                 value={reference.rotationDeg}
                 onChange={setMapReferenceRotation}
@@ -143,13 +145,13 @@ function MapReferenceSection({
               </button>
               <button
                 type="button"
-                title="Remove map reference"
-                aria-label="Remove map reference"
+                title={t("layout.removeMapTitle")}
+                aria-label={t("layout.removeMapTitle")}
                 className={`${actionBtnClass} border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
                 onClick={clearMapReference}
               >
                 <Trash2 className="size-4 lg:size-3" />
-                <span>Remove</span>
+                <span>{t("layout.removeMapLabel")}</span>
               </button>
             </>
           ) : null}
@@ -175,6 +177,7 @@ function RouteNumberingOverview({
   design: TrackDesign;
   shapes: Shape[];
 }) {
+  const t = useTranslations("inspector");
   const report = useMemo(() => getObstacleNumberingReport(design), [design]);
   const shapeOrder = useMemo(
     () => new Map(shapes.map((shape, index) => [shape.id, index] as const)),
@@ -217,7 +220,7 @@ function RouteNumberingOverview({
               : "Add route obstacles and a race line to derive numbering.";
 
   return (
-    <Section title="Route numbering">
+    <Section title={t("layout.routeNumberingTitle")}>
       <div className="space-y-2">
         <div className="grid grid-cols-3 gap-2">
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
@@ -298,6 +301,7 @@ export function ProjectLayoutInspectorView({
   setHoveredShapeId,
   mobileInline = false,
 }: ProjectLayoutInspectorViewProps) {
+  const t = useTranslations("inspector");
   const { startBatch, finishBatch } = useInspectorInputBatch();
   const { unitSystem } = useMeasurementUnitSystem();
   const fieldUnitLabel = unitSystem === "imperial" ? "ft" : "m";
@@ -329,7 +333,7 @@ export function ProjectLayoutInspectorView({
   };
 
   const inventoryContent = (
-    <Section title="Inventory">
+    <Section title={t("layout.inventoryTitle")}>
       <div className="space-y-3">
         <div className="grid grid-cols-3 gap-2">
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
@@ -403,7 +407,7 @@ export function ProjectLayoutInspectorView({
     <>
       <InspectorLead
         title={design.title.trim() || "Untitled Track"}
-        subtitle="Tune the project title, field setup, and available obstacle stock."
+        subtitle={t("layout.projectSubtitle")}
         meta={[
           `${shapes.length} items`,
           formatFieldSize(design.field.width, design.field.height, unitSystem),
@@ -426,12 +430,12 @@ export function ProjectLayoutInspectorView({
             }
           }}
           onChange={(event) => updateDesignMeta({ title: event.target.value })}
-          placeholder="Untitled Track"
+          placeholder={t("layout.titlePlaceholder")}
           className="bg-muted/40 border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-sm shadow-none focus-visible:ring-1 lg:h-7 lg:px-2 lg:text-[11px]"
         />
       </div>
-      <Section title="Field">
-        <Row label="Units">
+      <Section title={t("layout.fieldTitle")}>
+        <Row label={t("layout.unitsLabel")}>
           <MeasurementUnitToggle />
         </Row>
         <Row label={`Width (${fieldUnitLabel})`}>
@@ -458,10 +462,10 @@ export function ProjectLayoutInspectorView({
             minMeters={0.5}
           />
         </Row>
-        <Row label="Render scale">
+        <Row label={t("layout.renderScaleLabel")}>
           <div
             className="flex min-w-0 items-center gap-2"
-            title="Internal canvas density in pixels per meter"
+            title={t("layout.renderScaleTooltip")}
           >
             <div className="min-w-0 flex-1">
               <Num
@@ -487,8 +491,8 @@ export function ProjectLayoutInspectorView({
   const layoutContent = (
     <>
       <InspectorLead
-        title="Current layout"
-        subtitle="Review placed items, route numbering, and buildability for the current layout."
+        title={t("layout.layoutTitle")}
+        subtitle={t("layout.layoutSubtitle")}
         meta={[
           `${shapes.length} items`,
           totalMissing === 0

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Cloud, CloudUpload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync";
@@ -45,6 +46,7 @@ export function ProjectManagerAccountTab({
   onResolveConflict,
   onOpenChange,
 }: ProjectManagerAccountTabProps) {
+  const t = useTranslations("dialogs");
   const sorted = [...accountProjects].sort((a, b) =>
     b.updatedAt.localeCompare(a.updatedAt)
   );
@@ -84,8 +86,8 @@ export function ProjectManagerAccountTab({
     return (
       <EmptyState
         icon={<Cloud className="size-6" />}
-        title="No account projects"
-        description="Sync a project to make it available across devices."
+        title={t("projectManager.account.noProjects")}
+        description={t("projectManager.account.noProjectsDesc")}
       />
     );
   }
@@ -105,12 +107,11 @@ export function ProjectManagerAccountTab({
           ? `Latest local copy saved ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
           : null;
         const metaLine = hasConflict
-          ? (syncMeta?.error ??
-            "This project changed on another device while you were signed out")
+          ? (syncMeta?.error ?? t("projectManager.account.conflictWarning"))
           : hasSyncFailure
             ? (fallbackLine ??
               syncMeta?.error ??
-              "Could not sync the latest changes")
+              t("projectManager.account.syncError"))
             : hasPendingChanges
               ? `${itemLabel(proj.shapeCount)} · account copy waiting to sync`
               : `${itemLabel(proj.shapeCount)} · account copy synced ${formatRelativeTime(lastSyncedAt)}`;
@@ -136,7 +137,7 @@ export function ProjectManagerAccountTab({
             <ProjectAvatar id={proj.id} title={proj.title || "?"} />
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate text-sm font-medium">
-                {proj.title || "Untitled"}
+                {proj.title || t("projectManager.account.untitled")}
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
                 {isCurrent ? <CurrentBadge /> : null}
@@ -155,14 +156,14 @@ export function ProjectManagerAccountTab({
                   )}
                 >
                   {isSyncing
-                    ? "Syncing"
+                    ? t("projectManager.account.syncing")
                     : hasConflict
-                      ? "Review needed"
+                      ? t("projectManager.account.reviewNeeded")
                       : hasPendingChanges
-                        ? "Pending"
+                        ? t("projectManager.account.pending")
                         : hasSyncFailure
-                          ? "Sync failed"
-                          : "Synced"}
+                          ? t("projectManager.account.syncFailed")
+                          : t("projectManager.account.synced")}
                 </span>
               </div>
               <p
@@ -204,10 +205,10 @@ export function ProjectManagerAccountTab({
                   }
                   title={
                     hasConflict
-                      ? "Resolve the version conflict first"
+                      ? t("projectManager.account.resolveConflictFirst")
                       : hasSyncFailure
-                        ? "Retry sync"
-                        : "Sync pending changes"
+                        ? t("projectManager.account.retrySync")
+                        : t("projectManager.account.syncPendingChanges")
                   }
                 >
                   {hasConflict || hasSyncFailure ? (

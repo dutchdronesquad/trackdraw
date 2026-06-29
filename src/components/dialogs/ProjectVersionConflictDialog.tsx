@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
+import { useTranslations } from "next-intl";
 
 type ProjectVersionConflictDialogProps = {
   open: boolean;
@@ -34,39 +35,45 @@ export default function ProjectVersionConflictDialog({
   onOpenCloudVersion,
   onKeepLocalCopy,
 }: ProjectVersionConflictDialogProps) {
+  const t = useTranslations("dialogs");
   const content = (
     <div className="space-y-5">
       <p className="text-muted-foreground text-sm leading-relaxed">
         <span className="text-foreground font-medium">
-          {title || "This project"}
+          {title || t("versionConflict.thisProject")}
         </span>{" "}
-        changed on another device while you were signed out. Choose which
-        version you want to keep using on this device.
+        {t("versionConflict.body")}
       </p>
 
       <div className="space-y-2">
         <div className="border-border/50 bg-background/70 rounded-2xl border px-4 py-3">
           <p className="text-foreground text-sm font-medium">
-            This device version
+            {t("versionConflict.localVersion")}
           </p>
           <p className="text-muted-foreground mt-1 text-[12px]">
-            Last changed {formatDateTime(localUpdatedAt)}
+            {t("versionConflict.lastChanged", {
+              date: formatDateTime(localUpdatedAt),
+            })}
           </p>
         </div>
         <div className="border-border/50 bg-background/70 rounded-2xl border px-4 py-3">
-          <p className="text-foreground text-sm font-medium">Account version</p>
+          <p className="text-foreground text-sm font-medium">
+            {t("versionConflict.cloudVersion")}
+          </p>
           <p className="text-muted-foreground mt-1 text-[12px]">
-            Last changed {formatDateTime(cloudUpdatedAt)}
+            {t("versionConflict.lastChanged", {
+              date: formatDateTime(cloudUpdatedAt),
+            })}
           </p>
         </div>
       </div>
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onKeepLocalCopy}>
-          Keep this device version
+          {t("versionConflict.keepLocal")}
         </Button>
         <Button type="button" onClick={onOpenCloudVersion}>
-          Use account version
+          {t("versionConflict.useCloud")}
         </Button>
       </div>
     </div>
@@ -77,8 +84,8 @@ export default function ProjectVersionConflictDialog({
       <MobileDrawer
         open={open}
         onOpenChange={() => {}}
-        title="Choose a project version"
-        subtitle="Pick the version you want to keep using on this device."
+        title={t("versionConflict.title")}
+        subtitle={t("versionConflict.subtitle")}
       >
         {content}
       </MobileDrawer>

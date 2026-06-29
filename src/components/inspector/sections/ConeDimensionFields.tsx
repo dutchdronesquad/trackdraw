@@ -1,3 +1,5 @@
+"use client";
+import { useTranslations } from "next-intl";
 import { MeasurementNum, Row } from "@/components/inspector/shared";
 import type { MeasurementUnitSystem } from "@/lib/track/units";
 import type { ConeShape, Shape } from "@/lib/types";
@@ -13,8 +15,9 @@ export function ConeDimensionFields({
   unitLabel: string;
   updateShape: (id: string, patch: Partial<Shape>) => void;
 }) {
+  const t = useTranslations("inspector");
   return (
-    <Row label={`Radius (${unitLabel})`}>
+    <Row label={t("dimensions.radiusLabel", { unit: unitLabel })}>
       <MeasurementNum
         valueMeters={shape.radius}
         unitSystem={unitSystem}

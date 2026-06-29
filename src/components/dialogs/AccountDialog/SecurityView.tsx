@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import {
   Fingerprint,
   KeyRound,
@@ -85,6 +86,7 @@ export function AccountSecurityView({
   onRenamePasskey,
   onDeletePasskey,
 }: SecurityViewProps) {
+  const t = useTranslations("dialogs");
   if (isPending) {
     return <AccountDialogLoading />;
   }
@@ -115,7 +117,7 @@ export function AccountSecurityView({
                   autoComplete="email"
                   value={email}
                   onChange={(event) => onEmailChange(event.target.value)}
-                  placeholder="name@example.com"
+                  placeholder={t("account.security.emailPlaceholder")}
                   className="h-8 rounded-lg px-2.5 shadow-none"
                 />
               </label>
@@ -149,7 +151,9 @@ export function AccountSecurityView({
                   disabled={changingEmail || !hasEmailChanged}
                   className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
                 >
-                  {changingEmail ? "Saving..." : "Save"}
+                  {changingEmail
+                    ? t("account.security.savingEmail")
+                    : t("account.security.saveEmail")}
                 </Button>
               </div>
             </div>
@@ -196,7 +200,9 @@ export function AccountSecurityView({
               isMobile && "w-full"
             )}
           >
-            {passkeyLoading ? "Adding..." : "Add passkey"}
+            {passkeyLoading
+              ? t("account.security.addingPasskey")
+              : t("account.security.addPasskey")}
           </Button>
         </div>
 
@@ -279,7 +285,8 @@ export function AccountSecurityView({
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
-                            {passkey.name?.trim() || "Unnamed passkey"}
+                            {passkey.name?.trim() ||
+                              t("account.security.unnamedPasskey")}
                           </p>
                           <p className="text-muted-foreground text-xs">
                             Added {createdAt}
@@ -298,7 +305,7 @@ export function AccountSecurityView({
                               variant="ghost"
                               size="icon"
                               className={isMobile ? undefined : "size-7"}
-                              aria-label="Rename passkey"
+                              aria-label={t("account.security.renameAriaLabel")}
                               onClick={() =>
                                 onEditingPasskeyIdChange(passkey.id)
                               }
@@ -306,7 +313,9 @@ export function AccountSecurityView({
                               <Pencil className="size-4" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Rename</TooltipContent>
+                          <TooltipContent>
+                            {t("account.security.renameTooltip")}
+                          </TooltipContent>
                         </Tooltip>
                       )}
                       <Tooltip>
@@ -316,7 +325,9 @@ export function AccountSecurityView({
                             variant="ghost"
                             size="icon"
                             aria-label={
-                              isDeleting ? "Removing passkey" : "Remove passkey"
+                              isDeleting
+                                ? t("account.security.removingAriaLabel")
+                                : t("account.security.removeAriaLabel")
                             }
                             onClick={() => onDeletePasskey(passkey.id)}
                             disabled={isDeleting || passkeyLoading}
@@ -347,7 +358,9 @@ export function AccountSecurityView({
                             [passkey.id]: event.target.value,
                           }))
                         }
-                        placeholder="Passkey name"
+                        placeholder={t(
+                          "account.security.passkeyNamePlaceholder"
+                        )}
                         className="h-8 rounded-lg px-2.5 shadow-none"
                       />
 

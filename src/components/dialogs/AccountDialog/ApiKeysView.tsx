@@ -34,6 +34,7 @@ import {
 } from "./shared";
 import type { AccountApiKey, CreatedAccountApiKey } from "./types";
 import { formatDate } from "./utils";
+import { useTranslations } from "next-intl";
 
 function ActionTooltip({
   label,
@@ -91,6 +92,7 @@ export function AccountApiKeysView({
   onDeleteApiKey,
   onRefreshApiKeys,
 }: ApiKeysViewProps) {
+  const t = useTranslations("dialogs");
   const [confirmRevokeKeyId, setConfirmRevokeKeyId] = useState<string | null>(
     null
   );
@@ -132,7 +134,7 @@ export function AccountApiKeysView({
             value={apiKeyName}
             onChange={(event) => onApiKeyNameChange(event.target.value)}
             className="order-2 h-8 rounded-lg px-2.5 shadow-none sm:order-4"
-            placeholder="Overlay integration"
+            placeholder={t("account.apiKeys.namePlaceholder")}
             maxLength={64}
           />
 
@@ -217,7 +219,7 @@ export function AccountApiKeysView({
               onClick={onRefreshApiKeys}
               disabled={apiKeysLoading}
               className="text-muted-foreground hover:text-foreground hover:bg-muted h-7 w-7 shrink-0 rounded-lg px-0"
-              aria-label="Refresh API keys"
+              aria-label={t("account.apiKeys.refreshAriaLabel")}
             >
               <RefreshCw
                 className={cn("size-4", apiKeysLoading && "animate-spin")}
@@ -279,7 +281,8 @@ export function AccountApiKeysView({
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
-                            {apiKey.name?.trim() || "Unnamed API key"}
+                            {apiKey.name?.trim() ||
+                              t("account.apiKeys.unnamedKey")}
                           </p>
                           <div className="mt-1 flex flex-wrap gap-1.5">
                             <span className="border-border/50 bg-background/60 text-muted-foreground inline-flex rounded-md border px-1.5 py-0.5 text-[11px]">
@@ -292,13 +295,17 @@ export function AccountApiKeysView({
                         </div>
                       </div>
 
-                      <ActionTooltip label="Revoke">
+                      <ActionTooltip label={t("account.apiKeys.revokeTooltip")}>
                         <button
                           type="button"
                           onClick={() => setConfirmRevokeKeyId(apiKey.id)}
                           disabled={isDeleting}
                           className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg opacity-100 transition-colors disabled:pointer-events-none disabled:opacity-50"
-                          aria-label={`Revoke ${apiKey.name?.trim() || "API key"}`}
+                          aria-label={t("account.apiKeys.revokeAriaLabel", {
+                            name:
+                              apiKey.name?.trim() ||
+                              t("account.apiKeys.unnamedKey"),
+                          })}
                         >
                           {isDeleting ? (
                             <LoaderCircle className="size-3.5 animate-spin" />
@@ -325,8 +332,8 @@ export function AccountApiKeysView({
                           </p>
                           <p className="text-muted-foreground truncate text-[11px]">
                             {isMobile
-                              ? "This key stops working."
-                              : "Integrations using this key lose read-only access."}
+                              ? t("account.apiKeys.revokeWarningExpiring")
+                              : t("account.apiKeys.revokeWarningNonExpiring")}
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
@@ -339,7 +346,9 @@ export function AccountApiKeysView({
                             disabled={isDeleting}
                             className="bg-destructive/10 hover:bg-destructive/20 text-destructive disabled:text-destructive/60 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed"
                           >
-                            {isDeleting ? "Revoking..." : "Revoke"}
+                            {isDeleting
+                              ? t("account.apiKeys.revoking")
+                              : t("account.apiKeys.revoke")}
                           </button>
                           <button
                             type="button"

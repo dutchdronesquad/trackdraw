@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Ban, Check, Copy, ExternalLink, Link2 } from "lucide-react";
 import type { AccountShareItem } from "@/components/editor/useAccountProjectSync";
+import { useTranslations } from "next-intl";
 import {
   DesktopActionTooltip,
   EmptyState,
@@ -34,6 +35,7 @@ export function ProjectManagerSharesTab({
   accountProjectTitleById,
   onRevoke,
 }: ProjectManagerSharesTabProps) {
+  const t = useTranslations("dialogs");
   const [confirmRevokeToken, setConfirmRevokeToken] = useState<string | null>(
     null
   );
@@ -60,8 +62,8 @@ export function ProjectManagerSharesTab({
     return (
       <EmptyState
         icon={<Link2 className="size-6" />}
-        title="No active shares"
-        description="Account-published links stay live until revoked. Temporary anonymous links expire automatically and are not managed here."
+        title={t("projectManager.shares.noShares")}
+        description={t("projectManager.shares.noSharesDesc")}
       />
     );
   }
@@ -103,10 +105,10 @@ export function ProjectManagerSharesTab({
               className="flex shrink-0 items-center gap-0.5"
               onClick={(e) => e.stopPropagation()}
             >
-              <DesktopActionTooltip label="Copy link">
+              <DesktopActionTooltip label={t("projectManager.shares.copyLink")}>
                 <button
                   type="button"
-                  aria-label="Copy share link"
+                  aria-label={t("projectManager.shares.copyLinkAriaLabel")}
                   onClick={async () => {
                     await navigator.clipboard.writeText(shareUrl);
                     setCopiedToken(share.token);
@@ -121,10 +123,10 @@ export function ProjectManagerSharesTab({
                   )}
                 </button>
               </DesktopActionTooltip>
-              <DesktopActionTooltip label="Open in new tab">
+              <DesktopActionTooltip label={t("projectManager.shares.openTab")}>
                 <button
                   type="button"
-                  aria-label="Open share link"
+                  aria-label={t("projectManager.shares.openTabAriaLabel")}
                   onClick={() =>
                     window.open(shareUrl, "_blank", "noopener,noreferrer")
                   }
@@ -134,10 +136,12 @@ export function ProjectManagerSharesTab({
                 </button>
               </DesktopActionTooltip>
               {onRevoke && (
-                <DesktopActionTooltip label="Revoke link">
+                <DesktopActionTooltip
+                  label={t("projectManager.shares.revokeLink")}
+                >
                   <button
                     type="button"
-                    aria-label="Revoke share link"
+                    aria-label={t("projectManager.shares.revokeLinkAriaLabel")}
                     onClick={() => setConfirmRevokeToken(share.token)}
                     className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-100 transition-colors md:opacity-0 md:group-hover:opacity-100"
                   >

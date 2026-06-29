@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Info, Minus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/landing/Motion";
 import {
   Popover,
@@ -60,94 +61,6 @@ type CompareRow = {
   info?: string;
 };
 
-const compareSections: Array<{ title: string; rows: CompareRow[] }> = [
-  {
-    title: "Design",
-    rows: [
-      { label: "Full track designer", guest: true, account: true },
-      { label: "2D & 3D preview", guest: true, account: true },
-      { label: "PDF, SVG, PNG & JSON export", guest: true, account: true },
-    ],
-  },
-  {
-    title: "Sharing",
-    rows: [
-      {
-        label: "Share links",
-        guest: true,
-        account: true,
-        guestDetail: "Temporary links",
-        accountDetail: "Published until revoked",
-        info: "Guest share links are temporary. Account-published links stay live until revoked and can also be embedded.",
-      },
-      {
-        label: "Website embeds",
-        guest: false,
-        account: true,
-        accountDetail: "Embed on any website via iframe",
-      },
-      {
-        label: "Gallery publishing",
-        guest: false,
-        account: true,
-      },
-    ],
-  },
-  {
-    title: "Projects",
-    rows: [
-      {
-        label: "Cloud-synced projects",
-        guest: false,
-        account: true,
-        info: "Projects sync with your account so you can continue on any device — from desktop at home to mobile at the venue.",
-      },
-      {
-        label: "Track sections",
-        guest: false,
-        account: true,
-        info: "Save any canvas selection as a named preset and place it again from the preset picker. Syncs with your account across devices.",
-      },
-    ],
-  },
-  {
-    title: "Integration",
-    rows: [
-      {
-        label: "REST API access",
-        guest: false,
-        account: true,
-        accountDetail: "Bearer-authenticated, API key management",
-      },
-    ],
-  },
-];
-
-const planCards: PlanCard[] = [
-  {
-    key: "guest",
-    eyebrow: "No sign-up",
-    title: "Guest",
-    priceLabel: "Free",
-    description:
-      "Best for quick drafts, one-off temporary review links, and local export without creating an account.",
-    href: "/studio",
-    ctaLabel: "Open Studio",
-  },
-  {
-    key: "account",
-    eyebrow: "With account",
-    title: "Account",
-    priceLabel: "Free",
-    description:
-      "Best for durable published links, embeds, gallery, track sections, REST API access, and cross-device project continuity.",
-    href: "/login",
-    ctaLabel: "Create account",
-    highlighted: true,
-    delay: 0.07,
-  },
-];
-
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] uppercase">
@@ -157,7 +70,13 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PlanFeatureList({ plan }: { plan: PlanKey }) {
+function PlanFeatureList({
+  plan,
+  compareSections,
+}: {
+  plan: PlanKey;
+  compareSections: Array<{ title: string; rows: CompareRow[] }>;
+}) {
   return (
     <div className="mt-6 space-y-4">
       {compareSections.map((section) => (
@@ -215,18 +134,112 @@ function PlanFeatureList({ plan }: { plan: PlanKey }) {
 }
 
 export function PricingSection() {
+  const t = useTranslations("landing");
+
+  const compareSections: Array<{ title: string; rows: CompareRow[] }> = [
+    {
+      title: t("pricing.categories.design"),
+      rows: [
+        {
+          label: t("pricing.features.fullDesigner"),
+          guest: true,
+          account: true,
+        },
+        {
+          label: t("pricing.features.preview2d3d"),
+          guest: true,
+          account: true,
+        },
+        { label: t("pricing.features.export"), guest: true, account: true },
+      ],
+    },
+    {
+      title: t("pricing.categories.sharing"),
+      rows: [
+        {
+          label: t("pricing.features.shareLinks"),
+          guest: true,
+          account: true,
+          guestDetail: t("pricing.features.temporaryLinks"),
+          accountDetail: t("pricing.features.publishedLinks"),
+          info: t("pricing.features.shareLinksNote"),
+        },
+        {
+          label: t("pricing.features.embeds"),
+          guest: false,
+          account: true,
+          accountDetail: t("pricing.features.embedsDetail"),
+        },
+        {
+          label: t("pricing.features.gallery"),
+          guest: false,
+          account: true,
+        },
+      ],
+    },
+    {
+      title: t("pricing.categories.projects"),
+      rows: [
+        {
+          label: t("pricing.features.cloudProjects"),
+          guest: false,
+          account: true,
+          info: t("pricing.features.cloudProjectsDetail"),
+        },
+        {
+          label: t("pricing.features.sections"),
+          guest: false,
+          account: true,
+          info: t("pricing.features.sectionsDetail"),
+        },
+      ],
+    },
+    {
+      title: t("pricing.categories.integration"),
+      rows: [
+        {
+          label: t("pricing.features.api"),
+          guest: false,
+          account: true,
+          accountDetail: t("pricing.features.apiDetail"),
+        },
+      ],
+    },
+  ];
+
+  const planCards: PlanCard[] = [
+    {
+      key: "guest",
+      eyebrow: t("pricing.guest.badge"),
+      title: t("pricing.guest.name"),
+      priceLabel: t("pricing.guest.price"),
+      description: t("pricing.guest.description"),
+      href: "/studio",
+      ctaLabel: t("pricing.guest.cta"),
+    },
+    {
+      key: "account",
+      eyebrow: t("pricing.account.badge"),
+      title: t("pricing.account.name"),
+      priceLabel: t("pricing.account.price"),
+      description: t("pricing.account.description"),
+      href: "/login",
+      ctaLabel: t("pricing.account.cta"),
+      highlighted: true,
+      delay: 0.07,
+    },
+  ];
+
   return (
     <section id="plans" className="border-border/40 border-t">
       <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
         <Reveal className="mb-12">
-          <Eyebrow>Plans</Eyebrow>
+          <Eyebrow>{t("pricing.sectionEyebrow")}</Eyebrow>
           <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Start now, sign up when you need more.
+            {t("pricing.sectionHeading")}
           </h2>
           <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-            Both current options are free. Guest mode keeps the core editor open
-            without setup; accounts add durable publishing, embeds, gallery
-            listing, and project continuity across devices.
+            {t("pricing.sectionDescription")}
           </p>
         </Reveal>
 
@@ -272,7 +285,10 @@ export function PricingSection() {
                   >
                     {plan.ctaLabel} <ArrowRight className="size-3.5" />
                   </Link>
-                  <PlanFeatureList plan={plan.key} />
+                  <PlanFeatureList
+                    plan={plan.key}
+                    compareSections={compareSections}
+                  />
                 </div>
               </Reveal>
             ))}

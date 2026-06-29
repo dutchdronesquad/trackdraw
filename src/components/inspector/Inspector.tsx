@@ -20,6 +20,7 @@ import { selectDesignShapes, selectSelectedShapes } from "@/store/selectors";
 import { shapesToPreset } from "@/lib/planning/layout-presets";
 import { useAccountPresetSync } from "@/store/useAccountPresetSync";
 import { useSavePresetTrigger } from "@/store/save-preset-trigger";
+import { useTranslations } from "next-intl";
 
 export interface InspectorProps {
   headerAction?: ReactNode;
@@ -32,6 +33,7 @@ function Inspector({
   onResumeSelectedPath,
   mobileInline = false,
 }: InspectorProps) {
+  const t = useTranslations("inspector");
   usePerfMetric("render:Inspector");
   const design = useEditor((state) => state.track.design);
   const selection = useEditor((state) => state.session.selection);
@@ -106,9 +108,11 @@ function Inspector({
   let selectionView = (
     <div className="flex h-full items-center justify-center px-6 text-center">
       <div>
-        <p className="text-foreground text-sm font-medium">No selection</p>
+        <p className="text-foreground text-sm font-medium">
+          {t("emptyState.title")}
+        </p>
         <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-          Select one or more items on the canvas to edit object properties here.
+          {t("emptyState.body")}
         </p>
       </div>
     </div>
@@ -179,9 +183,9 @@ function Inspector({
             className="flex min-w-0 items-center gap-5"
           >
             {[
-              { id: "project" as const, label: "Project" },
-              { id: "layout" as const, label: "Layout" },
-              { id: "selection" as const, label: "Selection" },
+              { id: "project" as const, label: t("tabs.project") },
+              { id: "layout" as const, label: t("tabs.layout") },
+              { id: "selection" as const, label: t("tabs.selection") },
             ].map((item) => (
               <button
                 key={item.id}

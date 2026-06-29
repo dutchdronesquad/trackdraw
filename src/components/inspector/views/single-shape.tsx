@@ -69,6 +69,7 @@ import {
   InspectorLead,
   InspectorScrollBody,
 } from "./layout";
+import { useTranslations } from "next-intl";
 
 type SingleCatalogKind =
   | "gate"
@@ -151,6 +152,7 @@ export function SingleInspectorView({
   onResumeSelectedPath,
   mobileInline = false,
 }: SingleInspectorViewProps) {
+  const t = useTranslations("inspector");
   const { startBatch, finishBatch } = useInspectorInputBatch();
   const { unitSystem } = useMeasurementUnitSystem();
   const unitLabel = unitSystem === "imperial" ? "ft" : "m";
@@ -201,9 +203,9 @@ export function SingleInspectorView({
     label: string;
     role: TimingRole | "none";
   }> = [
-    { label: "Off", role: "none" },
-    { label: "Start", role: "start_finish" },
-    { label: "Split", role: "split" },
+    { label: t("raceTiming.roleOff"), role: "none" },
+    { label: t("raceTiming.roleStart"), role: "start_finish" },
+    { label: t("raceTiming.roleSplit"), role: "split" },
   ];
   const updateTimingMarker = (
     marker: {
@@ -221,19 +223,25 @@ export function SingleInspectorView({
         <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)] lg:space-y-4 lg:px-3 lg:py-3 lg:pb-3">
           <InspectorLead
             title={shapeDisplayName}
-            subtitle={`Editing ${shapeKindLabel.toLowerCase()} properties and placement.`}
+            subtitle={t("transform.editingSubtitle", {
+              kind: shapeKindLabel.toLowerCase(),
+            })}
             meta={[
               shapeKindLabel,
               `${fmt(anchorPosition.x)}, ${fmt(anchorPosition.y)}`,
               ...(timingMarker
                 ? [
                     timingMarker.role === "start_finish"
-                      ? "timing: start"
-                      : `timing: ${timingMarker.timingId || "split"}`,
+                      ? t("raceTiming.metaTimingStart")
+                      : t("raceTiming.metaTimingSplit", {
+                          id: timingMarker.timingId || "split",
+                        }),
                   ]
                 : []),
-              ...(groupId ? [groupName || "grouped"] : []),
-              shape.locked ? "locked" : "editable",
+              ...(groupId ? [groupName || t("raceTiming.metaGrouped")] : []),
+              shape.locked
+                ? t("raceTiming.metaLocked")
+                : t("raceTiming.metaEditable"),
             ]}
           />
           <div className="space-y-2.5">
@@ -241,8 +249,10 @@ export function SingleInspectorView({
               <button
                 type="button"
                 onClick={() => setShapesLocked([shape.id], !shape.locked)}
-                title={shape.locked ? "Unlock" : "Lock"}
-                aria-label={shape.locked ? "Unlock" : "Lock"}
+                title={shape.locked ? t("actions.unlock") : t("actions.lock")}
+                aria-label={
+                  shape.locked ? t("actions.unlock") : t("actions.lock")
+                }
                 className={actionBtnClass}
               >
                 {shape.locked ? (
@@ -250,17 +260,19 @@ export function SingleInspectorView({
                 ) : (
                   <LockOpen className="size-3" />
                 )}
-                <span>{shape.locked ? "Unlock" : "Lock"}</span>
+                <span>
+                  {shape.locked ? t("actions.unlock") : t("actions.lock")}
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => duplicateShapes([shape.id])}
-                title="Duplicate"
-                aria-label="Duplicate"
+                title={t("actions.duplicate")}
+                aria-label={t("actions.duplicate")}
                 className={actionBtnClass}
               >
                 <Copy className="size-3" />
-                <span>Duplicate</span>
+                <span>{t("actions.duplicate")}</span>
               </button>
               <button
                 type="button"
@@ -268,12 +280,12 @@ export function SingleInspectorView({
                   removeShapes([shape.id]);
                   setSelection([]);
                 }}
-                title="Delete"
-                aria-label="Delete"
+                title={t("actions.delete")}
+                aria-label={t("actions.delete")}
                 className={`${actionBtnClass} border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
               >
                 <Trash2 className="size-3" />
-                <span>Delete</span>
+                <span>{t("actions.delete")}</span>
               </button>
             </div>
             {showPathActions ? (
@@ -282,40 +294,42 @@ export function SingleInspectorView({
                   <button
                     type="button"
                     onClick={() => onResumeSelectedPath(shape.id)}
-                    title="Continue editing"
-                    aria-label="Continue editing"
+                    title={t("actions.continueEditing")}
+                    aria-label={t("actions.continueEditing")}
                     disabled={shape.locked}
                     className={`${actionBtnPrimaryClass} w-full`}
                   >
                     <PencilLine className="size-3" />
-                    <span>Continue editing</span>
+                    <span>{t("actions.continueEditing")}</span>
                   </button>
                 ) : null}
                 {!shape.closed && shape.points.length >= 3 ? (
                   <button
                     type="button"
                     onClick={() => closePolyline(shape.id)}
-                    title="Connect ends"
-                    aria-label="Connect ends"
+                    title={t("actions.connectEnds")}
+                    aria-label={t("actions.connectEnds")}
                     disabled={shape.locked}
                     className={`${actionBtnClass} w-full`}
                   >
                     <Link2 className="size-3" />
-                    <span>Connect ends</span>
+                    <span>{t("actions.connectEnds")}</span>
                   </button>
                 ) : null}
               </div>
             ) : null}
             {shape.locked ? (
               <p className="rounded-lg border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
-                Locked on the canvas. Unlock before moving, resizing, or
-                continuing path edits.
+                {t("hints.locked")}
               </p>
             ) : null}
           </div>
           {groupId && (
-            <Section title="Group" defaultOpen={secondarySectionDefaultOpen}>
-              <Row label="Group name">
+            <Section
+              title={t("group.sectionTitle")}
+              defaultOpen={secondarySectionDefaultOpen}
+            >
+              <Row label={t("group.nameLabel")}>
                 <Input
                   value={groupName}
                   onFocus={startBatch}
@@ -328,7 +342,7 @@ export function SingleInspectorView({
                   onChange={(event) =>
                     setGroupName([shape.id], event.target.value)
                   }
-                  placeholder="Optional group name"
+                  placeholder={t("group.namePlaceholder")}
                   autoComplete="off"
                   autoCorrect="off"
                   spellCheck={false}
@@ -338,8 +352,8 @@ export function SingleInspectorView({
               <div className="pt-1">
                 <IconBtn
                   onClick={() => ungroupSelection([shape.id])}
-                  title="Ungroup"
-                  label="Ungroup"
+                  title={t("actions.ungroup")}
+                  label={t("actions.ungroup")}
                 >
                   <Ungroup className="size-3" />
                 </IconBtn>
@@ -361,12 +375,15 @@ export function SingleInspectorView({
           ) : null}
 
           {canSetTimingMarker && (
-            <Section title="Race timing" defaultOpen={timingSectionDefaultOpen}>
-              <Row label="Role">
+            <Section
+              title={t("raceTiming.sectionTitle")}
+              defaultOpen={timingSectionDefaultOpen}
+            >
+              <Row label={t("raceTiming.roleLabel")}>
                 <div
                   className="border-border/50 bg-background grid grid-cols-3 overflow-hidden rounded-md border p-0.5"
                   role="group"
-                  aria-label="Timing role"
+                  aria-label={t("raceTiming.ariaLabel")}
                 >
                   {timingRoleOptions.map((option) => {
                     const active =
@@ -403,7 +420,7 @@ export function SingleInspectorView({
                 </div>
               </Row>
               {timingMarker?.role === "split" ? (
-                <Row label="Split ID">
+                <Row label={t("raceTiming.splitIdLabel")}>
                   <Input
                     value={timingMarker.timingId ?? ""}
                     onFocus={startBatch}
@@ -419,7 +436,7 @@ export function SingleInspectorView({
                         timingId: event.target.value,
                       })
                     }
-                    placeholder="split-1"
+                    placeholder={t("raceTiming.splitIdPlaceholder")}
                     className="bg-muted/50 border-border/70 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] focus-visible:ring-1 lg:h-7 lg:px-2"
                   />
                 </Row>
@@ -427,8 +444,8 @@ export function SingleInspectorView({
             </Section>
           )}
 
-          <Section title="Transform">
-            <Row label="Name">
+          <Section title={t("transform.sectionTitle")}>
+            <Row label={t("transform.nameLabel")}>
               <Input
                 value={shape.name ?? ""}
                 onFocus={startBatch}
@@ -441,14 +458,14 @@ export function SingleInspectorView({
                 onChange={(event) =>
                   updateShape(shape.id, { name: event.target.value })
                 }
-                placeholder={`${shapeKindLabels[shape.kind]} name`}
+                placeholder={`${shapeKindLabels[shape.kind]}`}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
                 className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
               />
             </Row>
-            <Row label="Position">
+            <Row label={t("transform.positionLabel")}>
               <div className="grid grid-cols-2 gap-2">
                 <label className="min-w-0">
                   <span className="text-muted-foreground/65 mb-1 block text-[10px] font-semibold tracking-[0.12em] uppercase">
@@ -473,7 +490,7 @@ export function SingleInspectorView({
               </div>
             </Row>
             {shape.kind !== "cone" && (
-              <Row label="Rotation (deg)">
+              <Row label={t("transform.rotationLabel")}>
                 <Num
                   value={shape.rotation}
                   onChange={(value) =>
@@ -484,7 +501,7 @@ export function SingleInspectorView({
               </Row>
             )}
             {!hasFixedCatalogColor ? (
-              <Row label="Color">
+              <Row label={t("transform.colorLabel")}>
                 <div className="flex items-center gap-2">
                   <label className="group relative block cursor-pointer">
                     <span
@@ -503,7 +520,7 @@ export function SingleInspectorView({
                       onChange={(event) =>
                         updateShape(shape.id, { color: event.target.value })
                       }
-                      aria-label="Pick color"
+                      aria-label={t("transform.pickColorAriaLabel")}
                     />
                   </label>
                   <span className="border-border/45 bg-muted/35 text-foreground/78 inline-flex h-8 items-center rounded-lg border px-2.5 font-mono text-[11px] lg:h-7">

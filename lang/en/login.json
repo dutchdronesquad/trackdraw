@@ -1,0 +1,39 @@
+{
+  "goHome": "Go to homepage",
+  "backToStudio": "Back to Studio",
+  "pageTitle": "TrackDraw account",
+  "heading": "Pick up your TrackDraw work wherever you are.",
+  "description": "Access your layouts across devices, keep shared tracks tied to your account, and jump back in with a simple email link.",
+  "featureDevices": {
+    "title": "Across devices",
+    "description": "Pick work back up on another device without changing the editor flow."
+  },
+  "featureOwnership": {
+    "title": "Ownership",
+    "description": "Give shared layouts and future account features a clear home."
+  },
+  "featureMagicLink": {
+    "title": "Magic link fallback",
+    "description": "Use a passkey when available, or fall back to a sign-in link sent to your email."
+  },
+  "signIn": {
+    "title": "Sign in",
+    "description": "Sign in with a passkey on this device, or use your email to receive a magic link without a password.",
+    "checkInboxTitle": "Check your inbox",
+    "checkInboxBody": "Your one-time sign-in link was sent to {email}. Open it on this device, or another one, to continue. If it does not show up soon, check your spam folder.",
+    "howItWorksTitle": "How magic link sign-in works",
+    "howItWorksBody": "Each email contains a one-time sign-in link. No password setup, just open the link and TrackDraw signs you in.",
+    "useDifferentEmail": "Use a different email",
+    "openingPasskey": "Opening passkey…",
+    "signInPasskey": "Sign in with passkey",
+    "or": "or",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "sendingLink": "Sending link…",
+    "sendLink": "Email me a sign-in link",
+    "noPasskeySupport": "This browser does not currently support passkeys here, so use the magic link fallback.",
+    "passkeyNotFound": "We couldn't match that passkey to your TrackDraw account. Try another passkey or use your email sign-in link.",
+    "passkeyFailed": "Failed to sign in with passkey.",
+    "checkEmail": "Check your email for a sign-in link."
+  }
+}

@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import {
   MeasurementNum,
   Num,
@@ -20,10 +23,11 @@ export function LadderDimensionFields({
   updateShape: (id: string, patch: Partial<Shape>) => void;
   hasFixedCatalogDimensions: boolean;
 }) {
+  const t = useTranslations("inspector");
   if (hasFixedCatalogDimensions) return null;
   return (
     <>
-      <Row label={`Width (${unitLabel})`}>
+      <Row label={t("dimensions.widthLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.width}
           unitSystem={unitSystem}
@@ -31,7 +35,7 @@ export function LadderDimensionFields({
           minMeters={0.5}
         />
       </Row>
-      <Row label={`Height (${unitLabel})`}>
+      <Row label={t("dimensions.heightLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.height}
           unitSystem={unitSystem}
@@ -39,7 +43,7 @@ export function LadderDimensionFields({
           minMeters={0.5}
         />
       </Row>
-      <Row label={`Elevation (${unitLabel})`}>
+      <Row label={t("dimensions.elevationLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.elevation ?? 0}
           unitSystem={unitSystem}
@@ -64,10 +68,11 @@ export function LadderSection({
   hasFixedCatalogDimensions: boolean;
   defaultOpen: boolean;
 }) {
+  const t = useTranslations("inspector");
   if (hasFixedCatalogDimensions) return null;
   return (
-    <Section title="Ladder" defaultOpen={defaultOpen}>
-      <Row label="Gates">
+    <Section title={t("ladder.sectionTitle")} defaultOpen={defaultOpen}>
+      <Row label={t("dimensions.gatesLabel")}>
         <Num
           value={shape.rungs}
           onChange={(value) => {

@@ -1,6 +1,9 @@
+"use client";
+
 import { MeasurementNum, Row } from "@/components/inspector/shared";
 import type { MeasurementUnitSystem } from "@/lib/track/units";
 import type { FlagShape, Shape } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 export function FlagDimensionFields({
   shape,
@@ -15,10 +18,11 @@ export function FlagDimensionFields({
   updateShape: (id: string, patch: Partial<Shape>) => void;
   hasFixedCatalogDimensions: boolean;
 }) {
+  const t = useTranslations("inspector");
   if (hasFixedCatalogDimensions) return null;
   return (
     <>
-      <Row label={`Radius (${unitLabel})`}>
+      <Row label={t("dimensions.radiusLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.radius}
           unitSystem={unitSystem}
@@ -26,7 +30,7 @@ export function FlagDimensionFields({
           minMeters={0.05}
         />
       </Row>
-      <Row label={`Pole height (${unitLabel})`}>
+      <Row label={t("dimensions.poleHeightLabel", { unit: unitLabel })}>
         <MeasurementNum
           valueMeters={shape.poleHeight ?? 3.5}
           unitSystem={unitSystem}

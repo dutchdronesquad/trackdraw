@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DesktopModal } from "@/components/DesktopModal";
@@ -23,6 +24,7 @@ export default function CompleteProfileDialog({
   currentName,
   onSave,
 }: CompleteProfileDialogProps) {
+  const t = useTranslations("dialogs");
   const isMobile = useIsMobile();
   const [name, setName] = useState(currentName ?? "");
   const [saving, setSaving] = useState(false);
@@ -42,7 +44,7 @@ export default function CompleteProfileDialog({
   const handleSave = async () => {
     const normalizedName = name.trim();
     if (!normalizedName) {
-      setError("Please enter the name you want TrackDraw to show.");
+      setError(t("completeProfile.nameRequired"));
       return;
     }
 
@@ -51,13 +53,13 @@ export default function CompleteProfileDialog({
 
     try {
       await onSave(normalizedName);
-      toast.success("Profile updated");
+      toast.success(t("completeProfile.success"));
       onOpenChange(false);
     } catch (saveError) {
       setError(
         saveError instanceof Error
           ? saveError.message
-          : "Failed to update your account name."
+          : t("completeProfile.updateFailed")
       );
     } finally {
       setSaving(false);
@@ -80,7 +82,7 @@ export default function CompleteProfileDialog({
           autoFocus
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Your name"
+          placeholder={t("completeProfile.namePlaceholder")}
           className="border-input bg-background/80 ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring h-11 w-full rounded-xl border px-3.5 text-sm focus-visible:ring-2 focus-visible:outline-none"
         />
       </div>
@@ -110,7 +112,7 @@ export default function CompleteProfileDialog({
           onClick={handleSave}
           disabled={saving || !name.trim()}
         >
-          {saving ? "Saving…" : "Save name"}
+          {saving ? t("completeProfile.saving") : t("completeProfile.save")}
         </Button>
       </div>
     </div>
@@ -121,8 +123,8 @@ export default function CompleteProfileDialog({
       <MobileDrawer
         open={open}
         onOpenChange={onOpenChange}
-        title="Add your name"
-        subtitle="Give your account a clear display name for cloud projects and sharing."
+        title={t("completeProfile.title")}
+        subtitle={t("completeProfile.subtitle")}
       >
         {content}
       </MobileDrawer>
@@ -133,8 +135,8 @@ export default function CompleteProfileDialog({
     <DesktopModal
       open={open}
       onOpenChange={onOpenChange}
-      title="Add your name"
-      subtitle="Give your account a clear display name for cloud projects and sharing."
+      title={t("completeProfile.title")}
+      subtitle={t("completeProfile.subtitle")}
       maxWidth="max-w-md"
     >
       {content}

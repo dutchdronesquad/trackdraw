@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
   DEFAULT_LANDING_DEMO_POSTER,
   DEFAULT_OG_IMAGE_ALT,
@@ -92,105 +93,6 @@ function Eyebrow({
 }
 
 // ── Data ────────────────────────────────────────────────────────
-const features = [
-  {
-    icon: Route,
-    color: "text-brand-primary",
-    bg: "bg-brand-primary/12",
-    border: "border-brand-primary/20",
-    surface:
-      "from-brand-primary/[0.12] via-brand-primary/[0.03] to-transparent",
-    glow: "#1E93DB",
-    title: "True-to-scale canvas",
-    text: "Set the field size, place elements to scale, and work on a grid that matches the real venue.",
-  },
-  {
-    icon: Boxes,
-    color: "text-brand-secondary",
-    bg: "bg-brand-secondary/12",
-    border: "border-brand-secondary/20",
-    surface:
-      "from-brand-secondary/[0.13] via-brand-secondary/[0.035] to-transparent",
-    glow: "#F0761D",
-    title: "Official obstacle catalog",
-    text: "Place official MultiGP obstacles (gates, flags, ladders, hurdles, and barriers) with real dimensions and accurate 3D rendering.",
-  },
-  {
-    icon: Orbit,
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/12",
-    border: "border-emerald-500/20",
-    surface: "from-emerald-500/[0.13] via-emerald-500/[0.035] to-transparent",
-    glow: "#34d399",
-    title: "Realistic 3D preview",
-    text: "Orbit in 3D, add elevation to the race line, review maneuver curves, and fly through the route to catch flow problems before build day.",
-  },
-  {
-    icon: Share2,
-    color: "text-violet-400",
-    bg: "bg-violet-500/12",
-    border: "border-violet-500/20",
-    surface: "from-violet-500/[0.13] via-violet-500/[0.035] to-transparent",
-    glow: "#a855f7",
-    title: "Shared review links",
-    text: "Share a read-only layout with pilots and crew. Guest links are temporary; account-published links can stay live until revoked.",
-  },
-  {
-    icon: Bookmark,
-    color: "text-amber-400",
-    bg: "bg-amber-500/12",
-    border: "border-amber-500/20",
-    surface: "from-amber-500/[0.13] via-amber-500/[0.035] to-transparent",
-    glow: "#f59e0b",
-    title: "Track sections",
-    text: "Save any canvas selection as a named section and place it again with one click. Sections sync with your account across devices.",
-  },
-  {
-    icon: FileText,
-    color: "text-rose-400",
-    bg: "bg-rose-500/12",
-    border: "border-rose-500/20",
-    surface: "from-rose-500/[0.13] via-rose-500/[0.035] to-transparent",
-    glow: "#fb7185",
-    title: "Race Pack and export",
-    text: "Generate a pilot briefing PDF with obstacle layout, route map, and setup notes. Also export SVG, PNG, and JSON from the same design.",
-  },
-];
-
-const faq = [
-  {
-    q: "Is TrackDraw a drone race track builder?",
-    a: "Yes. TrackDraw is a browser-based drone race track builder for FPV race directors who need scale-accurate layouts, 3D review, sharing, and export in one workflow.",
-  },
-  {
-    q: "What is the best way to plan an FPV race track?",
-    a: "Start with the field dimensions, place the obstacles you actually have, then review the route in 3D before sharing or exporting the plan. TrackDraw is built around that exact sequence.",
-  },
-  {
-    q: "Can pilots review the layout without an account?",
-    a: "Yes. Share links open in read-only mode on any device, no account or app needed. Send it to pilots, judges, or crew and everyone sees the same published version.",
-  },
-  {
-    q: "Does it work on a tablet at the venue?",
-    a: "Yes. The editor is touch-friendly, so quick adjustments on a phone or tablet are practical when the real venue forces a change.",
-  },
-  {
-    q: "What export formats are available?",
-    a: "PDF, PNG, SVG, JSON, and a cinematic FPV video export. That covers printed race briefs, shareable visuals, reusable project files, and motion-led route review.",
-  },
-  {
-    q: "Do I need an account to get started?",
-    a: "No. Open the studio and start designing right away. Creating an account adds cloud storage, durable published links, gallery publishing, and embeds.",
-  },
-  {
-    q: "Can I reuse a layout for a future event?",
-    a: "Yes. Save parts of a layout as named presets and place them again in one click. To reuse a full project, export it as JSON and import it at the start of a new event.",
-  },
-  {
-    q: "Can TrackDraw help catch route problems before race day?",
-    a: "Yes. The 3D preview and route review warnings help surface uneven spacing, rhythm breaks, and alignment issues before you share the layout or start building it.",
-  },
-];
 
 const landingDemoVideoSrc = getLandingDemoVideoUrl();
 const landingDemoPosterSrc = DEFAULT_LANDING_DEMO_POSTER;
@@ -227,19 +129,6 @@ const videoObjectJsonLd = {
   embedUrl: landingPageUrl,
 };
 
-const faqPageJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faq.map((item) => ({
-    "@type": "Question",
-    name: item.q,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: item.a,
-    },
-  })),
-};
-
 function LandingVideo({ className = "" }: { className?: string }) {
   return (
     <div className={className}>
@@ -264,7 +153,98 @@ function LandingVideo({ className = "" }: { className?: string }) {
 }
 
 // ── Page ────────────────────────────────────────────────────────
-export default function Home() {
+export default async function Home() {
+  const t = await getTranslations("landing");
+
+  const faq = [
+    { q: t("faq.q1"), a: t("faq.a1") },
+    { q: t("faq.q2"), a: t("faq.a2") },
+    { q: t("faq.q3"), a: t("faq.a3") },
+    { q: t("faq.q4"), a: t("faq.a4") },
+    { q: t("faq.q5"), a: t("faq.a5") },
+    { q: t("faq.q6"), a: t("faq.a6") },
+    { q: t("faq.q7"), a: t("faq.a7") },
+    { q: t("faq.q8"), a: t("faq.a8") },
+  ];
+
+  const features = [
+    {
+      icon: Route,
+      color: "text-brand-primary",
+      bg: "bg-brand-primary/12",
+      border: "border-brand-primary/20",
+      surface:
+        "from-brand-primary/[0.12] via-brand-primary/[0.03] to-transparent",
+      glow: "#1E93DB",
+      title: t("features.trueToScale.title"),
+      text: t("features.trueToScale.description"),
+    },
+    {
+      icon: Boxes,
+      color: "text-brand-secondary",
+      bg: "bg-brand-secondary/12",
+      border: "border-brand-secondary/20",
+      surface:
+        "from-brand-secondary/[0.13] via-brand-secondary/[0.035] to-transparent",
+      glow: "#F0761D",
+      title: t("features.obstacleCatalog.title"),
+      text: t("features.obstacleCatalog.description"),
+    },
+    {
+      icon: Orbit,
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/12",
+      border: "border-emerald-500/20",
+      surface: "from-emerald-500/[0.13] via-emerald-500/[0.035] to-transparent",
+      glow: "#34d399",
+      title: t("features.preview3d.title"),
+      text: t("features.preview3d.description"),
+    },
+    {
+      icon: Share2,
+      color: "text-violet-400",
+      bg: "bg-violet-500/12",
+      border: "border-violet-500/20",
+      surface: "from-violet-500/[0.13] via-violet-500/[0.035] to-transparent",
+      glow: "#a855f7",
+      title: t("features.shareLinks.title"),
+      text: t("features.shareLinks.description"),
+    },
+    {
+      icon: Bookmark,
+      color: "text-amber-400",
+      bg: "bg-amber-500/12",
+      border: "border-amber-500/20",
+      surface: "from-amber-500/[0.13] via-amber-500/[0.035] to-transparent",
+      glow: "#f59e0b",
+      title: t("features.sections.title"),
+      text: t("features.sections.description"),
+    },
+    {
+      icon: FileText,
+      color: "text-rose-400",
+      bg: "bg-rose-500/12",
+      border: "border-rose-500/20",
+      surface: "from-rose-500/[0.13] via-rose-500/[0.035] to-transparent",
+      glow: "#fb7185",
+      title: t("features.export.title"),
+      text: t("features.export.description"),
+    },
+  ];
+
+  const faqPageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a,
+      },
+    })),
+  };
+
   const heroPillClassName =
     "inline-flex min-h-7.5 items-center rounded-full border px-3.5 py-1 text-xs font-medium";
 
@@ -309,7 +289,7 @@ export default function Home() {
                     className={`border-brand-primary/25 bg-brand-primary/8 text-brand-primary ${heroPillClassName} gap-2`}
                   >
                     <span className="bg-brand-primary size-1.5 animate-pulse rounded-full" />
-                    Built for FPV race directors
+                    {t("hero.eyebrow")}
                   </span>
                   <VersionTag
                     className={`${heroPillClassName} border-amber-500/30 bg-amber-500/10 font-sans text-amber-500 hover:bg-amber-500/15 hover:text-amber-400`}
@@ -319,20 +299,17 @@ export default function Home() {
 
               <Reveal delay={0.07} className="mt-5">
                 <h1 className="text-[clamp(40px,11vw,58px)] leading-[1.04] font-semibold tracking-[-0.04em] sm:leading-[1.08]">
-                  Race day starts
+                  {t("hero.headingLine1")}
                   <br />
                   <span className="from-brand-primary bg-linear-to-r to-sky-300 bg-clip-text text-transparent">
-                    with a plan.
+                    {t("hero.headingLine2")}
                   </span>
                 </h1>
               </Reveal>
 
               <Reveal delay={0.13} className="mt-5">
                 <p className="text-muted-foreground max-w-sm text-[15px] leading-7">
-                  TrackDraw is a browser-based drone race track builder for FPV
-                  race directors. Draw to scale in 2D, review the flow in 3D,
-                  share a read-only layout with pilots and crew, and keep the
-                  plan usable from desktop or mobile.
+                  {t("hero.description")}
                 </p>
               </Reveal>
 
@@ -344,23 +321,23 @@ export default function Home() {
                   href="/studio"
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-6 text-sm font-medium text-white shadow-lg shadow-[#1E93DB]/25 transition hover:brightness-110"
                 >
-                  Open Studio <ArrowRight className="size-3.5" />
+                  {t("hero.ctaStudio")} <ArrowRight className="size-3.5" />
                 </Link>
                 <a
                   href="#features"
                   className="border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground inline-flex h-10 items-center justify-center gap-2 rounded-full border px-6 text-sm transition"
                 >
-                  See the features
+                  {t("hero.ctaFeatures")}
                 </a>
               </Reveal>
 
               <Reveal delay={0.23}>
                 <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-2.5">
                   {[
-                    "Official obstacle catalog",
-                    "Track sections",
-                    "3D preview and flythrough",
-                    "Race Pack PDF and SVG",
+                    t("hero.feature1"),
+                    t("hero.feature2"),
+                    t("hero.feature3"),
+                    t("hero.feature4"),
                   ].map((item) => (
                     <li
                       key={item}
@@ -389,15 +366,12 @@ export default function Home() {
         <section id="features" className="border-border/40 border-t">
           <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <Reveal className="mb-12">
-              <Eyebrow>Features</Eyebrow>
+              <Eyebrow>{t("features.sectionTitle")}</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Plan, review, and hand off.
+                {t("features.sectionHeading")}
               </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-                TrackDraw gives FPV race directors a practical way to design
-                tracks properly: real field dimensions, the right obstacle set,
-                and one workflow that carries the same plan from layout to
-                review to team hand-off.
+                {t("features.sectionDescription")}
               </p>
             </Reveal>
 
@@ -440,14 +414,12 @@ export default function Home() {
         >
           <div className="mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
             <Reveal className="mb-12 sm:mb-20">
-              <Eyebrow>In depth</Eyebrow>
+              <Eyebrow>{t("workflow.sectionEyebrow")}</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-                From first layout to team hand-off.
+                {t("workflow.sectionHeading")}
               </h2>
               <p className="text-muted-foreground mt-4 max-w-2xl text-sm leading-7">
-                The tool works best as a sequence: map the drone race track in
-                2D, check it in 3D, make practical edits when reality changes,
-                then hand the same plan to pilots and crew.
+                {t("workflow.sectionDescription")}
               </p>
             </Reveal>
 
@@ -463,22 +435,19 @@ export default function Home() {
                   />
                   <div className="order-first lg:order-last">
                     <div className="border-brand-primary/20 bg-brand-primary/8 text-brand-primary inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-[0.15em] uppercase">
-                      <Route className="size-3" /> 2D Layout
+                      <Route className="size-3" /> {t("workflow.layout.title")}
                     </div>
                     <h3 className="mt-4 text-xl font-semibold tracking-tight">
-                      Build the track on a field that matches reality.
+                      {t("workflow.layout.subtitle")}
                     </h3>
                     <p className="text-muted-foreground mt-3 text-sm leading-7">
-                      Start with the field dimensions, then place the elements
-                      crews already recognize. That makes the first version of
-                      the plan useful immediately, instead of just being a rough
-                      sketch.
+                      {t("workflow.layout.description")}
                     </p>
                     <ul className="mt-5 space-y-2.5">
                       {[
-                        "Scale-accurate field dimensions",
-                        "Gates, flags, cones, start pads and larger features",
-                        "Race line and labels for briefing clarity",
+                        t("workflow.layout.bullet1"),
+                        t("workflow.layout.bullet2"),
+                        t("workflow.layout.bullet3"),
                       ].map((b) => (
                         <li
                           key={b}
@@ -497,22 +466,20 @@ export default function Home() {
                 <div className="grid items-center gap-8 sm:gap-9 lg:grid-cols-[1.28fr_0.72fr] lg:gap-14">
                   <div>
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-emerald-400 uppercase">
-                      <ClipboardCheck className="size-3" /> Fine-Tune
+                      <ClipboardCheck className="size-3" />{" "}
+                      {t("workflow.fineTune.title")}
                     </div>
                     <h3 className="mt-4 text-xl font-semibold tracking-tight">
-                      Keep editing when the venue forces a change.
+                      {t("workflow.fineTune.subtitle")}
                     </h3>
                     <p className="text-muted-foreground mt-3 text-sm leading-7">
-                      A good plan changes cleanly. Inspector controls and
-                      mobile-friendly editing make it possible to adjust object
-                      properties, reposition items and keep the design usable
-                      even when the real venue refuses to stay static.
+                      {t("workflow.fineTune.description")}
                     </p>
                     <ul className="mt-5 space-y-2.5">
                       {[
-                        "Inspector controls for dimensions, rotation and color",
-                        "Touch-friendly editing on phones and tablets",
-                        "Fast adjustments without leaving the main plan",
+                        t("workflow.fineTune.bullet1"),
+                        t("workflow.fineTune.bullet2"),
+                        t("workflow.fineTune.bullet3"),
                       ].map((b) => (
                         <li
                           key={b}
@@ -547,22 +514,19 @@ export default function Home() {
                   />
                   <div className="order-first lg:order-last">
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/8 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] text-purple-400 uppercase">
-                      <Orbit className="size-3" /> 3D Preview
+                      <Orbit className="size-3" /> {t("workflow.preview.title")}
                     </div>
                     <h3 className="mt-4 text-xl font-semibold tracking-tight">
-                      Walk the track before you build it.
+                      {t("workflow.preview.subtitle")}
                     </h3>
                     <p className="text-muted-foreground mt-3 text-sm leading-7">
-                      One click switches from the flat 2D plan to a live 3D
-                      scene. Assign elevation to each waypoint on the race line
-                      to model the full vertical profile. Catch dangerous
-                      approaches before a single peg is in the ground.
+                      {t("workflow.preview.description")}
                     </p>
                     <ul className="mt-5 space-y-2.5">
                       {[
-                        "Live 3D rendered directly from your 2D design",
-                        "Per-waypoint altitude on the race line",
-                        "Elevation graph in the inspector panel",
+                        t("workflow.preview.bullet1"),
+                        t("workflow.preview.bullet2"),
+                        t("workflow.preview.bullet3"),
                       ].map((b) => (
                         <li
                           key={b}
@@ -581,22 +545,20 @@ export default function Home() {
                 <div className="grid items-center gap-8 sm:gap-9 lg:grid-cols-[1.28fr_0.72fr] lg:gap-14">
                   <div>
                     <div className="border-brand-secondary/20 bg-brand-secondary/8 text-brand-secondary inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-[0.15em] uppercase">
-                      <Share2 className="size-3" /> Hand-Off
+                      <Share2 className="size-3" />{" "}
+                      {t("workflow.handOff.title")}
                     </div>
                     <h3 className="mt-4 text-xl font-semibold tracking-tight">
-                      Give pilots and crew the same current version.
+                      {t("workflow.handOff.subtitle")}
                     </h3>
                     <p className="text-muted-foreground mt-3 text-sm leading-7">
-                      A plan only matters if other people can open it. Shared
-                      read-only links and exports turn the layout into something
-                      pilots can review, crew can print and organizers can reuse
-                      later.
+                      {t("workflow.handOff.description")}
                     </p>
                     <ul className="mt-5 space-y-2.5">
                       {[
-                        "Read-only links that open on any device",
-                        "PDF, PNG and SVG for briefing and print workflows",
-                        "JSON export to archive and reuse layouts later",
+                        t("workflow.handOff.bullet1"),
+                        t("workflow.handOff.bullet2"),
+                        t("workflow.handOff.bullet3"),
                       ].map((b) => (
                         <li
                           key={b}
@@ -611,7 +573,7 @@ export default function Home() {
                       href="/gallery"
                       className="text-brand-secondary hover:text-brand-secondary/85 mt-6 inline-flex items-center gap-2 text-sm font-medium transition-colors"
                     >
-                      Browse the gallery for inspiration
+                      {t("workflow.handOff.gallery")}
                       <ArrowRight className="size-3.5" />
                     </Link>
                   </div>
@@ -636,9 +598,9 @@ export default function Home() {
         <section id="faq" className="border-border/40 border-t">
           <div className="mx-auto w-full max-w-2xl px-6 py-14 sm:py-20">
             <Reveal className="mb-10">
-              <Eyebrow>FAQ</Eyebrow>
+              <Eyebrow>{t("faq.sectionTitle")}</Eyebrow>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-                Good to know.
+                {t("faq.sectionHeading")}
               </h2>
             </Reveal>
             <FaqAccordion items={faq} />

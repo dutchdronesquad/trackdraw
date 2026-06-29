@@ -1,0 +1,384 @@
+{
+  "account": {
+    "navProfile": "Profiel",
+    "navSecurity": "Beveiliging",
+    "navApiKeys": "API-sleutels",
+    "navDanger": "Gevaarzone",
+    "panelProfile": {
+      "title": "Jouw profiel",
+      "description": "Beheer de naam die zichtbaar is in je TrackDraw-account."
+    },
+    "panelSecurity": {
+      "title": "Beveiliging",
+      "description": "Beheer aanmeldmethoden, e-mailadres en passkeys voor je TrackDraw-account."
+    },
+    "panelApiKeys": {
+      "title": "API-sleutels",
+      "description": "Maak tijdelijke sleutels aan voor externe TrackDraw-integraties en trek ze in."
+    },
+    "panelDanger": {
+      "title": "Gevaarzone",
+      "description": "Destructieve en onomkeerbare accountacties."
+    },
+    "dialogEyebrow": "Studio",
+    "dialogTitle": "Account",
+    "dialogMobileSubtitle": "Beheer je TrackDraw-account.",
+    "profile": {
+      "displayNameLabel": "Weergavenaam",
+      "displayNamePlaceholder": "Jouw naam",
+      "languageLabel": "Taal",
+      "languageDescription": "Wijzigingen worden direct toegepast",
+      "saveChanges": "Wijzigingen opslaan",
+      "saving": "Opslaan...",
+      "reset": "Herstellen",
+      "noAccountEmail": "TrackDraw-account"
+    },
+    "security": {
+      "emailPlaceholder": "naam@voorbeeld.nl",
+      "saveEmail": "Opslaan",
+      "savingEmail": "Opslaan...",
+      "addPasskey": "Passkey toevoegen",
+      "addingPasskey": "Toevoegen...",
+      "renameAriaLabel": "Passkey hernoemen",
+      "renameTooltip": "Hernoemen",
+      "removingAriaLabel": "Passkey verwijderen",
+      "removeAriaLabel": "Passkey verwijderen",
+      "passkeyNamePlaceholder": "Naam passkey",
+      "unnamedPasskey": "Naamloze passkey"
+    },
+    "apiKeys": {
+      "namePlaceholder": "Overlay-integratie",
+      "refreshAriaLabel": "API-sleutels verversen",
+      "unnamedKey": "Naamloze API-sleutel",
+      "revokeTooltip": "Intrekken",
+      "revokeAriaLabel": "{name} intrekken",
+      "revokeWarningExpiring": "Deze sleutel stopt met werken.",
+      "revokeWarningNonExpiring": "Integraties die deze sleutel gebruiken verliezen leestoegang.",
+      "revoking": "Intrekken...",
+      "revoke": "Intrekken"
+    },
+    "danger": {
+      "description": "Het verwijderen van je account verwijdert accountprojecten, gepubliceerde links, API-keys en andere accountgebonden data. Exporteer wat je wilt behouden voordat je doorgaat.",
+      "typeToConfirm": "Typ DELETE om te bevestigen",
+      "deletePlaceholder": "VERWIJDEREN",
+      "deleting": "Verwijderen...",
+      "deleteAccount": "Account verwijderen"
+    },
+    "shared": {
+      "loading": "Account laden...",
+      "signInTitle": "Meld je aan om je account te beheren",
+      "signInBody": "Gebruik je e-mailadres voor cloudgekoppelde accountinstellingen en profielgegevens."
+    },
+    "errors": {
+      "loadPasskeysFailed": "Passkeys konden niet worden geladen.",
+      "loadApiKeysFailed": "API-sleutels konden niet worden geladen.",
+      "profileNameRequired": "Vul de naam in die TrackDraw moet weergeven.",
+      "profileUpdateFailed": "Profiel bijwerken mislukt.",
+      "deleteConfirmRequired": "Typ VERWIJDEREN om verwijdering van het account te bevestigen.",
+      "deleteFailed": "Account verwijderen mislukt.",
+      "emailRequired": "Vul het e-mailadres in dat je voor TrackDraw wilt gebruiken.",
+      "emailSame": "Voer een ander e-mailadres in om het te wijzigen.",
+      "emailChangeFailed": "E-mailadres wijzigen mislukt.",
+      "passkeyAddFailed": "Passkey toevoegen mislukt.",
+      "passkeyNameRequired": "Voer een naam voor de passkey in voor het opslaan.",
+      "passkeyRenameFailed": "Passkey hernoemen mislukt.",
+      "passkeyRemoveFailed": "Passkey verwijderen mislukt.",
+      "apiKeyNameRequired": "Voer een naam in voor deze API-sleutel.",
+      "apiKeyCreateFailed": "API-sleutel aanmaken mislukt.",
+      "apiKeyRevokeFailed": "API-sleutel intrekken mislukt."
+    },
+    "success": {
+      "profileUpdated": "Profiel bijgewerkt",
+      "passkeyAdded": "Passkey toegevoegd. Je kunt hem hieronder hernoemen of verwijderen.",
+      "passkeyRenamed": "Passkey hernoemd",
+      "apiKeyCreated": "API-sleutel aangemaakt",
+      "apiKeyCopied": "API-sleutel gekopieerd",
+      "apiKeyRevoked": "API-sleutel ingetrokken"
+    }
+  },
+  "export": {
+    "dialogTitle": "Exporteren",
+    "dialogSubtitle": "Exporteer de huidige track als visuele bestanden, projectoverdracht of simulatorklare output.",
+    "darkTheme": "Donker",
+    "lightTheme": "Licht",
+    "enableRouteNumbers": "Routenummers inschakelen in export",
+    "disableRouteNumbers": "Routenummers uitschakelen in export",
+    "enableRouteNumbersMobile": "Routenummers inschakelen",
+    "disableRouteNumbersMobile": "Routenummers uitschakelen",
+    "formats": {
+      "image": {
+        "label": "Afbeelding",
+        "descriptionFull": "Hoge resolutie 2D-kaart voor drukwerk, presentaties, chat of snelle review.",
+        "descriptionShort": "Hoge resolutie 2D-kaart voor drukwerk, chat of review."
+      },
+      "vector": {
+        "label": "Vector",
+        "descriptionFull": "Schaalbaar ontwerp voor Illustrator, Figma of Inkscape.",
+        "descriptionShort": "Schaalbaar ontwerp voor Illustrator, Figma of Inkscape."
+      },
+      "render3d": {
+        "label": "3D-render",
+        "descriptionFull": "Screenshot van het huidige 3D-camerastandpunt voor visuele review.",
+        "descriptionShort": "Huidige 3D-cameraschermafbeelding voor visuele review."
+      },
+      "projectFile": {
+        "label": "Projectbestand",
+        "descriptionFull": "Bewerkbare backup voor heropening, delen of archivering in TrackDraw.",
+        "descriptionShort": "Bewerkbare backup voor heropening of archivering in TrackDraw."
+      },
+      "racePack": {
+        "label": "Race Pack",
+        "descriptionFull": "Wedstrijdoverdracht met kaart, materialen, volgorde en QR.",
+        "descriptionShort": "Setup-PDF met kaart, materialen, volgorde en QR."
+      },
+      "cinematicFpv": {
+        "label": "Cinematic FPV",
+        "descriptionFull": "Routevideo van één ronde voor flow-review of het delen van de ronde.",
+        "descriptionShort": "Routevideo van één ronde voor flow-review."
+      },
+      "velocidrone": {
+        "label": "Velocidrone",
+        "descriptionFull": "Experimenteel Velocidrone trackbestand om te testen in de simulator; controleer de indeling na import.",
+        "descriptionShort": "Experimenteel bestand om te testen; controleer na import."
+      }
+    },
+    "errors": {
+      "exportFailed": "Exporteren mislukt: {message}"
+    }
+  },
+  "import": {
+    "dialogTitle": "Project openen",
+    "dialogSubtitle": "Importeer een TrackDraw-project uit een JSON-bestand.",
+    "errorInvalidJson": "Ongeldig JSON-bestand.",
+    "errorInvalidProject": "Dit lijkt geen TrackDraw-project te zijn.",
+    "errorUnsupportedFile": "Alleen TrackDraw JSON-projectbestanden worden ondersteund.",
+    "errorReadFailed": "TrackDraw kon dit bestand niet lezen.",
+    "toastImportFailed": "Importeren mislukt",
+    "toastUnsupportedFile": "Kies een .json-bestand dat uit TrackDraw is geëxporteerd.",
+    "toastInvalidJson": "TrackDraw kon dit JSON-bestand niet lezen. Controleer het bestand en probeer opnieuw.",
+    "toastInvalidProject": "Dit lijkt geen geldig TrackDraw-projectbestand te zijn.",
+    "toastReadFailed": "TrackDraw kon het geselecteerde bestand niet lezen. Probeer opnieuw of kies een andere backup.",
+    "dropFileHere": "Sleep hier een bestand naartoe",
+    "clickToBrowse": "of klik om te bladeren",
+    "objectCount": "{count, plural, one {# object} other {# objecten}}",
+    "replaceWarning": "Het huidige project wordt vervangen. Exporteer eerst een JSON-backup als je buiten lokale autosave een handmatig herstelpunt wilt.",
+    "cancel": "Annuleren",
+    "replaceProject": "Project vervangen",
+    "backupCurrentFirst": "Huidig project eerst back-uppen",
+    "untitledProject": "Naamloos project"
+  },
+  "share": {
+    "dialogEyebrow": "Studio",
+    "dialogEyebrowExisting": "Gedeelde track",
+    "dialogTitle": "Delen",
+    "dialogMobileSubtitle": "Deel een alleen-lezen reviewlink voor deze track",
+    "navShareLink": "Deellink",
+    "navShare": "Delen",
+    "navEmbed": "Embed",
+    "navGallery": "Galerij",
+    "navActions": "Acties",
+    "currentSharedLink": "Huidige gedeelde link",
+    "primaryAction": {
+      "updateLink": "Link bijwerken",
+      "copyLink": "Link kopiëren",
+      "createLink": "Link aanmaken",
+      "createNewLink": "Nieuwe link aanmaken"
+    },
+    "gallery": {
+      "loading": "Huidige status laden",
+      "featured": "Uitgelicht in galerij",
+      "listed": "Vermeld in galerij",
+      "hiddenByModeration": "Verborgen door moderatie",
+      "linkOnly": "Alleen link",
+      "noPublishedLink": "Geen gepubliceerde link",
+      "checkingStatus": "Huidige galerijstatus controleren.",
+      "featuredDesc": "Zichtbaar in de publieke galerij en bovenaan geplaatst.",
+      "listedDesc": "Zichtbaar in de publieke galerij.",
+      "hiddenDesc": "Verborgen door moderatie. De directe link werkt nog totdat deze wordt ingetrokken.",
+      "linkOnlyDesc": "Alleen deellink. Niet zichtbaar in de publieke galerij.",
+      "noLinkDesc": "Maak eerst een deellink aan.",
+      "checking": "Controleren",
+      "noLink": "Geen link",
+      "expiresInDays": "Verloopt over {days} dagen",
+      "noExpiry": "Geen verloopdatum",
+      "published": "Gepubliceerd"
+    },
+    "content": {
+      "shareTitle": "Deellink",
+      "shareDescExisting": "Kopieer of stuur deze gepubliceerde alleen-lezenlink opnieuw, of open Studio om een eigen bewerkbare kopie te maken.",
+      "shareDescAccount": "Maak de duurzame alleen-lezenlink voor dit accountproject aan of werk hem bij.",
+      "shareDescSeparate": "Maak een aparte duurzame alleen-lezenlink aan voor deze bewerkbare kopie of lokale track.",
+      "shareDescAnon": "Maak een tijdelijke alleen-lezen snapshotlink aan en bepaal hoe lang die actief blijft.",
+      "galleryTitle": "Zichtbaarheid galerij",
+      "galleryDesc": "Beheer hoe deze gepubliceerde link in de publieke galerij verschijnt.",
+      "embedTitle": "Embed",
+      "embedDesc": "Kopieer iframe-code voor een accountgepubliceerde track die actief blijft totdat ingetrokken.",
+      "actionsTitle": "Acties",
+      "actionsDescExisting": "Gebruik de huidige gepubliceerde link in andere apps of open hem in een nieuw tabblad.",
+      "actionsDesc": "Open, stuur opnieuw, trek in of exporteer dit gedeelde item zonder de track te wijzigen."
+    },
+    "errors": {
+      "createFailed": "Deellink aanmaken mislukt",
+      "copyFailed": "Link kopiëren mislukt",
+      "revokeFailed": "Link intrekken mislukt",
+      "embedCopyFailed": "Insluiting kopiëren mislukt",
+      "galleryListFailed": "Vermelden in galerij mislukt",
+      "galleryUpdateFailed": "Galerij bijwerken mislukt",
+      "unableToReadLink": "Huidige deellink kon niet worden gelezen"
+    },
+    "success": {
+      "linkUpdated": "Link bijgewerkt",
+      "linkCreated": "Link aangemaakt",
+      "linkCopied": "Link gekopieerd",
+      "embedCopied": "Insluiting gekopieerd",
+      "galleryListed": "Track vermeld in galerij",
+      "galleryUpdated": "Galerij bijgewerkt",
+      "linkRevoked": "Link ingetrokken"
+    }
+  },
+  "projectManager": {
+    "dialogEyebrow": "Studio",
+    "dialogTitle": "Projecten",
+    "dialogMobileSubtitle": "Openen, hernoemen, synchroniseren of herstellen.",
+    "navThisDevice": "Dit apparaat",
+    "navAccount": "Account",
+    "navShares": "Gedeeld",
+    "navSnapshots": "Snapshots",
+    "panelDevice": {
+      "label": "Op dit apparaat",
+      "description": "Lokale kopieën op dit apparaat. Gesynchroniseerde projecten kunnen ook onder Account verschijnen."
+    },
+    "panelAccount": {
+      "label": "Accountprojecten",
+      "description": "Accountkopieën beschikbaar op je aangemelde apparaten. Open er een hier om deze browser te vernieuwen."
+    },
+    "panelSnapshots": {
+      "label": "Snapshots",
+      "description": "Eerdere opgeslagen versies van het huidige project. Herstel elk punt om wijzigingen terug te draaien."
+    },
+    "panelShares": {
+      "label": "Gepubliceerde gedeelde items",
+      "description": "Actieve deellinks die vanuit je account zijn gepubliceerd. Kopieer, open of trek ze hier in."
+    },
+    "device": {
+      "resolveConflict": "Synchronisatieconflict oplossen",
+      "retrySync": "Synchronisatie opnieuw proberen",
+      "updateAccountCopy": "Accountkopie bijwerken",
+      "syncToAccount": "Synchroniseren naar account",
+      "conflictDesc": "Dit project is op een ander apparaat gewijzigd. Bekijk de versie voor je verdergaat.",
+      "syncFailedDesc": "De laatste synchronisatie is mislukt. Probeer de nieuwste lokale versie opnieuw te sturen.",
+      "pendingDesc": "De nieuwste lokale wijzigingen naar je account pushen.",
+      "updateDesc": "De gesynchroniseerde accountkopie vervangen door deze apparaatversie.",
+      "syncDesc": "Dit project beschikbaar maken op je aangemelde apparaten.",
+      "syncing": "Synchroniseren",
+      "reviewNeeded": "Beoordeling vereist",
+      "pending": "In wachtrij",
+      "syncFailed": "Synchronisatie mislukt",
+      "synced": "Gesynchroniseerd",
+      "localOnly": "Alleen lokaal",
+      "localChangesWaiting": "Lokale wijzigingen wachten op synchronisatie",
+      "confirmRenameTitle": "Hernoemen bevestigen",
+      "resolveVersionConflict": "Versieconflict oplossen",
+      "exportJson": "Exporteren als JSON",
+      "moreActions": "Meer acties",
+      "openBadge": "open",
+      "rename": "Hernoemen",
+      "delete": "Verwijderen",
+      "noProjects": "Geen opgeslagen projecten",
+      "noProjectsDesc": "Projecten die je opslaat verschijnen hier.",
+      "untitled": "Naamloos"
+    },
+    "account": {
+      "noProjects": "Geen accountprojecten",
+      "noProjectsDesc": "Synchroniseer een project om het op alle apparaten beschikbaar te maken.",
+      "conflictWarning": "Dit project is op een ander apparaat gewijzigd terwijl je niet was aangemeld",
+      "syncError": "Laatste wijzigingen konden niet worden gesynchroniseerd",
+      "resolveConflictFirst": "Los eerst het versieconflict op",
+      "retrySync": "Synchronisatie opnieuw proberen",
+      "syncPendingChanges": "Openstaande wijzigingen synchroniseren",
+      "syncing": "Synchroniseren",
+      "reviewNeeded": "Beoordeling vereist",
+      "pending": "In wachtrij",
+      "syncFailed": "Synchronisatie mislukt",
+      "synced": "Gesynchroniseerd",
+      "untitled": "Naamloos"
+    },
+    "restore": {
+      "noSnapshots": "Nog geen snapshots",
+      "noSnapshotsDesc": "Snapshots worden automatisch aangemaakt wanneer je een project opent of vervangt.",
+      "restoreTitle": "Dit snapshot herstellen",
+      "deleteTitle": "Snapshot verwijderen",
+      "activeBadge": "actief",
+      "untitled": "Naamloos"
+    },
+    "shares": {
+      "noShares": "Geen actieve gedeelde items",
+      "noSharesDesc": "Accountgepubliceerde links blijven actief totdat ze worden ingetrokken. Tijdelijke anonieme links verlopen automatisch en worden hier niet beheerd.",
+      "copyLink": "Link kopiëren",
+      "openTab": "Openen in nieuw tabblad",
+      "revokeLink": "Link intrekken",
+      "copyLinkAriaLabel": "Deellink kopiëren",
+      "openTabAriaLabel": "Deellink openen",
+      "revokeLinkAriaLabel": "Deellink intrekken"
+    },
+    "copyProjectIdSuccess": "Project-ID gekopieerd",
+    "copyProjectIdAriaLabel": "API-project-ID kopiëren"
+  },
+  "completeProfile": {
+    "title": "Voeg je naam toe",
+    "subtitle": "Geef je account een duidelijke weergavenaam voor cloudprojecten en delen.",
+    "namePlaceholder": "Jouw naam",
+    "save": "Naam opslaan",
+    "saving": "Opslaan…",
+    "nameRequired": "Vul de naam in die TrackDraw moet weergeven.",
+    "updateFailed": "Accountnaam bijwerken mislukt.",
+    "success": "Profiel bijgewerkt"
+  },
+  "newProject": {
+    "title": "Nieuw project",
+    "closeAriaLabel": "Sluiten"
+  },
+  "keyboardShortcuts": {
+    "dialogTitle": "Sneltoetsen",
+    "dialogSubtitle": "Beschikbare toetsenbord- en canvassneltoetsen in de studio.",
+    "sectionTools": "Gereedschappen",
+    "sectionSelection": "Selectie",
+    "sectionPathEditing": "Padbewerking",
+    "sectionCanvas": "Canvas",
+    "sectionProject": "Project",
+    "shortcuts": {
+      "duplicateItems": "Geselecteerde items dupliceren",
+      "copyItems": "Geselecteerde items kopiëren",
+      "pasteItems": "Gekopieerde items plakken",
+      "rotateLeft": "Geselecteerde items naar links draaien",
+      "rotateRight": "Geselecteerde items naar rechts draaien",
+      "mouseRotateSnap": "Muis roteren met snap",
+      "mouseRotateFine": "Nauwkeurig draaien met muis",
+      "keyRotateFine": "Nauwkeurig draaien met toets",
+      "deleteItems": "Geselecteerde items verwijderen",
+      "nudgeItems": "Geselecteerde items verschuiven",
+      "fineNudge": "Nauwkeurig verschuiven",
+      "finishPath": "Pad afronden",
+      "removeLastPoint": "Laatste conceptpunt verwijderen",
+      "deletePathPoint": "Geselecteerd padpunt verwijderen",
+      "cancelDraft": "Huidig concept annuleren",
+      "fitView": "Weergave aan veld aanpassen",
+      "clearSelection": "Selectie wissen",
+      "panView": "Weergave pannen",
+      "bypassSnap": "Snap tijdelijk uitschakelen",
+      "zoom": "Inzoomen",
+      "saveSnapshot": "Snapshot opslaan"
+    }
+  },
+  "versionConflict": {
+    "title": "Kies een projectversie",
+    "subtitle": "Kies de versie die je op dit apparaat wilt blijven gebruiken.",
+    "thisProject": "Dit project",
+    "body": "is gewijzigd op een ander apparaat terwijl je uitgelogd was. Kies welke versie je op dit apparaat wilt blijven gebruiken.",
+    "localVersion": "Versie op dit apparaat",
+    "cloudVersion": "Accountversie",
+    "lastChanged": "Laatst gewijzigd {date}",
+    "keepLocal": "Versie op dit apparaat houden",
+    "useCloud": "Accountversie gebruiken"
+  }
+}

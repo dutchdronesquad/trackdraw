@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { shapeKindLabels } from "@/lib/track/items/registry";
@@ -86,11 +87,6 @@ function getShapeDisplayName(shape: Shape): string {
 
 type ViewFilter = "all" | "obstacles";
 
-const VIEW_FILTERS: { value: ViewFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "obstacles", label: "Obstacles" },
-];
-
 export function ItemOverviewList({
   design,
   shapes,
@@ -109,8 +105,14 @@ export function ItemOverviewList({
   grow?: boolean;
   obstacleNumberingReport?: ObstacleNumberingReport;
 }) {
+  const t = useTranslations("inspector");
   const [query, setQuery] = useState("");
   const [viewFilter, setViewFilter] = useState<ViewFilter>("all");
+
+  const VIEW_FILTERS: { value: ViewFilter; label: string }[] = [
+    { value: "all", label: t("listPanel.filterAll") },
+    { value: "obstacles", label: t("listPanel.filterObstacles") },
+  ];
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -162,7 +164,7 @@ export function ItemOverviewList({
 
   return (
     <Section
-      title="Track items"
+      title={t("listPanel.panelTitle")}
       className={cn(grow && "flex min-h-0 flex-1 flex-col")}
     >
       <div
@@ -172,7 +174,7 @@ export function ItemOverviewList({
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Filter items"
+            placeholder={t("listPanel.filterPlaceholder")}
             className="bg-background border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-1 lg:h-7 lg:px-2"
           />
           <MetaPill>
@@ -212,8 +214,8 @@ export function ItemOverviewList({
         </div>
 
         <ListPanel
-          title="Placed items"
-          subtitle="Select an item from the list."
+          title={t("listPanel.placedItemsTitle")}
+          subtitle={t("listPanel.placedItemsSubtitle")}
           grow={grow}
           meta={
             <span className="text-muted-foreground/65 text-[11px]">
@@ -296,7 +298,7 @@ export function ItemOverviewList({
                       <div className="flex items-center justify-end opacity-100 transition-opacity lg:opacity-0 lg:group-hover/item:opacity-100">
                         <button
                           type="button"
-                          title="Remove item"
+                          title={t("actions.removeItem")}
                           className="text-muted-foreground/55 hover:bg-brand-primary/10 hover:text-brand-primary flex size-5 items-center justify-center rounded-md transition-colors"
                           onClick={(event) => {
                             event.stopPropagation();

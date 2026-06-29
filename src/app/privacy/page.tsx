@@ -1,88 +1,75 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Footer } from "@/components/landing/Footer";
 import { PublicSiteHeader } from "@/components/landing/PublicSiteHeader";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description:
-    "How TrackDraw handles account, project, sharing, gallery, API, and operational data.",
-  alternates: {
-    canonical: "/privacy",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("legal");
+  return {
+    title: t("privacy.metaTitle"),
+    description: t("privacy.metaDescription"),
+    alternates: {
+      canonical: "/privacy",
+    },
+  };
+}
 
-const effectiveDate = "May 28, 2026";
+export default async function PrivacyPage() {
+  const t = await getTranslations("legal");
 
-type BodyItem = string | { intro: string; list: string[] };
+  type BodyItem = string | { intro: string; list: string[] };
 
-const sections: { title: string; body: BodyItem[] }[] = [
-  {
-    title: "What this policy covers",
-    body: [
-      "This Privacy Policy explains how Dutch Drone Squad handles your data when you use trackdraw.app and its hosted features. This policy is intended to be clear and practical, but it is not a substitute for legal advice.",
-    ],
-  },
-  {
-    title: "Information we process",
-    body: [
-      {
-        intro: "TrackDraw processes the following categories of information:",
-        list: [
-          "Account information — email address, display name, sign-in state, and authentication metadata.",
-          "Project and track data — layouts, obstacle configurations, project names, and timestamps.",
-          "Sharing and gallery data — share tokens, gallery titles, preview images, and visibility state.",
-          "API data — key metadata, expiry state, and identifiers needed to serve requests.",
-          "Operational and security data — audit logs, authentication events, and error states.",
-        ],
-      },
-    ],
-  },
-  {
-    title: "How we use information",
-    body: [
-      "TrackDraw uses this information to provide and improve the product, protect accounts and the service, and display public content when you choose to publish it. Usage data helps TrackDraw debug failures, maintain security logs, and verify that core product flows are working.",
-    ],
-  },
-  {
-    title: "Public content",
-    body: [
-      "If you publish a share or list a track in the gallery, the content and metadata you provide can become public. Unlisted, expired, or revoked links are intended to stay out of search results, but anyone with an active link may still view the shared layout until it expires or is revoked.",
-    ],
-  },
-  {
-    title: "Service providers",
-    body: [
-      "TrackDraw uses service providers for hosting, storage, authentication, and email — including Cloudflare for infrastructure. These providers process information only as needed to run TrackDraw and keep the service available. Some operate outside the European Economic Area; where that is the case, TrackDraw relies on standard contractual clauses or other approved transfer mechanisms under applicable data protection law.",
-    ],
-  },
-  {
-    title: "Cookies and local storage",
-    body: [
-      "TrackDraw uses functional cookies and browser storage for sign-in sessions, theme preference, local projects, editor state, and other product features. These are used to make the application work, not to build advertising profiles. If analytics or marketing cookies are added in the future, this policy will be updated before that change ships.",
-    ],
-  },
-  {
-    title: "Data retention",
-    body: [
-      "Local projects stay on your device until you remove them or clear browser storage. Cloud projects, shares, and account data remain stored until you delete or remove them where the product allows it. Some operational and security records may be kept for longer when needed to protect the service, comply with legal obligations, or restore reliable operation.",
-    ],
-  },
-  {
-    title: "Your choices and rights",
-    body: [
-      "You can use core editing without an account. If you create an account, you can manage your account, projects, and shared content from within the product. Depending on where you live, you may have rights to access, correct, delete, or export personal data. For European Economic Area users, these rights are described by the GDPR. To exercise them, contact Dutch Drone Squad using the details below.",
-    ],
-  },
-  {
-    title: "Changes to this policy",
-    body: [
-      "TrackDraw may update this policy when the product or how it handles data changes. Material changes will be reflected here before or when they ship.",
-    ],
-  },
-];
+  const sections: { title: string; body: BodyItem[] }[] = [
+    {
+      title: t("privacy.s1Title"),
+      body: [t("privacy.s1Body")],
+    },
+    {
+      title: t("privacy.s2Title"),
+      body: [
+        {
+          intro: t("privacy.s2Intro"),
+          list: [
+            t("privacy.s2Item1"),
+            t("privacy.s2Item2"),
+            t("privacy.s2Item3"),
+            t("privacy.s2Item4"),
+            t("privacy.s2Item5"),
+          ],
+        },
+      ],
+    },
+    {
+      title: t("privacy.s3Title"),
+      body: [t("privacy.s3Body")],
+    },
+    {
+      title: t("privacy.s4Title"),
+      body: [t("privacy.s4Body")],
+    },
+    {
+      title: t("privacy.s5Title"),
+      body: [t("privacy.s5Body")],
+    },
+    {
+      title: t("privacy.s6Title"),
+      body: [t("privacy.s6Body")],
+    },
+    {
+      title: t("privacy.s7Title"),
+      body: [t("privacy.s7Body")],
+    },
+    {
+      title: t("privacy.s8Title"),
+      body: [t("privacy.s8Body")],
+    },
+    {
+      title: t("privacy.s9Title"),
+      body: [t("privacy.s9Body")],
+    },
+  ];
 
-export default function PrivacyPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <PublicSiteHeader currentPage="legal" />
@@ -91,15 +78,13 @@ export default function PrivacyPage() {
         <section className="border-border/40 border-b">
           <div className="mx-auto w-full max-w-4xl px-6 py-14 sm:py-20">
             <p className="text-brand-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
-              Legal
+              {t("privacy.breadcrumbLegal")}
             </p>
             <h1 className="mt-4 text-4xl leading-tight font-semibold tracking-normal sm:text-5xl">
-              Privacy Policy
+              {t("privacy.pageTitle")}
             </h1>
             <p className="text-muted-foreground mt-5 max-w-2xl text-sm leading-7">
-              Effective {effectiveDate}. This page explains how TrackDraw
-              handles data for accounts, projects, sharing, gallery publishing,
-              embeds, and API access.
+              {t("privacy.effectiveDate")}
             </p>
           </div>
         </section>
@@ -133,27 +118,24 @@ export default function PrivacyPage() {
 
               <section className="border-border/50 bg-muted/18 rounded-2xl border p-6">
                 <h2 className="text-xl font-semibold tracking-normal">
-                  Contact
+                  {t("privacy.s10Title")}
                 </h2>
                 <p className="text-muted-foreground mt-3 text-sm leading-7">
-                  For privacy questions or requests, email{" "}
-                  <span className="text-foreground font-medium">
-                    info@trackdraw.app
-                  </span>
-                  . Please include &ldquo;Privacy&rdquo; in the subject so the
-                  message is easier to spot.
+                  {t("privacy.s10Body")}
                 </p>
               </section>
 
               <p className="text-muted-foreground text-sm leading-7">
-                See also the{" "}
-                <Link
-                  href="/terms"
-                  className="text-brand-primary hover:text-brand-primary/85 font-medium transition-colors"
-                >
-                  Terms of Service
-                </Link>
-                .
+                {t.rich("privacy.seeTerms", {
+                  link: (chunks) => (
+                    <Link
+                      href="/terms"
+                      className="text-brand-primary hover:text-brand-primary/85 font-medium transition-colors"
+                    >
+                      {chunks}
+                    </Link>
+                  ),
+                })}
               </p>
             </div>
           </div>

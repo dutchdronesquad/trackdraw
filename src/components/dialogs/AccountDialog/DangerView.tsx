@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTranslations } from "next-intl";
 import {
   AccountDialogError,
   AccountDialogLoading,
@@ -25,6 +26,7 @@ export function AccountDangerView({
   onDeleteConfirmationChange,
   onDeleteUser,
 }: DangerViewProps) {
+  const t = useTranslations("dialogs");
   if (isPending) {
     return <AccountDialogLoading />;
   }
@@ -36,21 +38,19 @@ export function AccountDangerView({
   return (
     <div className="space-y-5">
       <p className="text-muted-foreground text-sm leading-relaxed">
-        Permanently remove this TrackDraw account, account projects, published
-        links, API keys, and profile data. Export anything account-backed that
-        you want to keep before continuing. This action cannot be undone.
+        {t("account.danger.description")}
       </p>
 
       <div className="space-y-3">
         <label className="block">
           <span className="mb-2 block text-sm font-medium">
-            Type DELETE to confirm
+            {t("account.danger.typeToConfirm")}
           </span>
           <Input
             type="text"
             value={deleteConfirmation}
             onChange={(event) => onDeleteConfirmationChange(event.target.value)}
-            placeholder="DELETE"
+            placeholder={t("account.danger.deletePlaceholder")}
             className="h-8 rounded-lg px-2.5 shadow-none"
           />
         </label>
@@ -67,7 +67,9 @@ export function AccountDangerView({
             }
             className="h-8 rounded-lg px-2.5"
           >
-            {deleting ? "Deleting..." : "Delete account"}
+            {deleting
+              ? t("account.danger.deleting")
+              : t("account.danger.deleteAccount")}
           </Button>
         </div>
       </div>

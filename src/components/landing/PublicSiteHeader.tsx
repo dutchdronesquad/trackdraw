@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import {
   ArrowRight,
@@ -11,6 +12,7 @@ import {
   ListChecks,
   Menu,
 } from "lucide-react";
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { MobileDrawerHeader } from "@/components/MobileDrawer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
@@ -26,39 +28,6 @@ type NavItem = {
   homeHref: string;
   fallbackHref: string;
 };
-
-const navItems: NavItem[] = [
-  {
-    key: "home",
-    label: "Home",
-    homeHref: "#top",
-    fallbackHref: "/",
-  },
-  {
-    key: "features",
-    label: "Features",
-    homeHref: "#features",
-    fallbackHref: "/#features",
-  },
-  {
-    key: "gallery",
-    label: "Gallery",
-    homeHref: "/gallery",
-    fallbackHref: "/gallery",
-  },
-  {
-    key: "pricing",
-    label: "Pricing",
-    homeHref: "#plans",
-    fallbackHref: "/#plans",
-  },
-  {
-    key: "faq",
-    label: "FAQ",
-    homeHref: "#faq",
-    fallbackHref: "/#faq",
-  },
-];
 
 function MenuRow({
   href,
@@ -160,7 +129,42 @@ function BrandLogo({ className = "h-8 w-auto" }: { className?: string }) {
 export function PublicSiteHeader({
   currentPage = "home",
 }: PublicSiteHeaderProps) {
+  const t = useTranslations("landing");
   const [openMobileMenu, setOpenMobileMenu] = useState(false);
+
+  const navItems: NavItem[] = [
+    {
+      key: "home",
+      label: t("header.homeAriaLabel"),
+      homeHref: "#top",
+      fallbackHref: "/",
+    },
+    {
+      key: "features",
+      label: t("header.featuresNav"),
+      homeHref: "#features",
+      fallbackHref: "/#features",
+    },
+    {
+      key: "gallery",
+      label: t("header.galleryNav"),
+      homeHref: "/gallery",
+      fallbackHref: "/gallery",
+    },
+    {
+      key: "pricing",
+      label: t("header.pricingNav"),
+      homeHref: "#plans",
+      fallbackHref: "/#plans",
+    },
+    {
+      key: "faq",
+      label: t("header.faqNav"),
+      homeHref: "#faq",
+      fallbackHref: "/#faq",
+    },
+  ];
+
   const mobileNavItems = navItems.map((item) => ({
     ...item,
     href: currentPage === "home" ? item.homeHref : item.fallbackHref,
@@ -169,14 +173,14 @@ export function PublicSiteHeader({
       (currentPage === "gallery" && item.key === "gallery"),
     description:
       item.key === "home"
-        ? "Back to the main landing page"
+        ? t("header.homeTooltip")
         : item.key === "gallery"
-          ? "Browse public community layouts"
+          ? t("header.galleryTooltip")
           : item.key === "features"
-            ? "Jump to the product overview"
+            ? t("header.featuresTooltip")
             : item.key === "pricing"
-              ? "See plans and pricing"
-              : "Read common questions and answers",
+              ? t("header.pricingTooltip")
+              : t("header.faqTooltip"),
     icon:
       item.key === "home" ? (
         <Home className="size-4" />
@@ -192,7 +196,11 @@ export function PublicSiteHeader({
   return (
     <header className="border-border/40 bg-background/75 sticky top-0 z-50 border-b backdrop-blur-xl backdrop-saturate-150">
       <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center">
+        <Link
+          href="/"
+          aria-label={t("header.logoAriaLabel")}
+          className="flex items-center"
+        >
           <BrandLogo className="h-8 w-auto sm:h-9" />
         </Link>
 
@@ -219,16 +227,21 @@ export function PublicSiteHeader({
           })}
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="hidden sm:block">
-            <ThemeToggle />
+        <div className="flex items-center">
+          <div className="hidden items-center gap-3 sm:flex">
+            <div className="flex items-center gap-1">
+              <LanguagePicker />
+              <div className="flex h-8 w-10 items-center justify-center">
+                <ThemeToggle />
+              </div>
+            </div>
+            <Link
+              href="/studio"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/30 transition hover:brightness-110"
+            >
+              {t("header.openStudio")} <ArrowRight className="size-3.5" />
+            </Link>
           </div>
-          <Link
-            href="/studio"
-            className="hidden h-9 items-center gap-1.5 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/30 transition hover:brightness-110 sm:inline-flex"
-          >
-            Open Studio <ArrowRight className="size-3.5" />
-          </Link>
 
           <div className="sm:hidden">
             <button
@@ -238,7 +251,7 @@ export function PublicSiteHeader({
                 setOpenMobileMenu(true);
               }}
               className="text-muted-foreground hover:text-foreground hover:bg-muted inline-flex size-8 items-center justify-center rounded-md transition-colors"
-              aria-label="Open navigation menu"
+              aria-label={t("header.mobileNavAriaLabel")}
             >
               <Menu className="size-4" />
             </button>
@@ -257,14 +270,14 @@ export function PublicSiteHeader({
               <DrawerContent className="border-border/70 bg-background h-dvh w-[min(85vw,22rem)] max-w-none rounded-none border-l shadow-[0_18px_44px_rgba(15,23,42,0.16)]">
                 <div className="flex h-full flex-col">
                   <MobileDrawerHeader
-                    title="TrackDraw"
-                    subtitle="Homepage, gallery and public site sections"
+                    title={t("header.logoAriaLabel")}
+                    subtitle={t("header.siteNavAriaLabel")}
                     className="border-border/60 bg-background"
                     headerClassName="px-4 pt-3 pb-3"
                   />
 
                   <div className="flex-1 overflow-y-auto px-3 py-3">
-                    <MenuSection title="Navigate">
+                    <MenuSection title={t("header.mobileNavAriaLabel")}>
                       {mobileNavItems.map((item, index) => (
                         <MenuRow
                           key={item.key}
@@ -282,12 +295,23 @@ export function PublicSiteHeader({
                   </div>
 
                   <div className="border-border/60 bg-background shrink-0 border-t px-3 py-3">
-                    <div className="border-border/60 bg-card rounded-2xl border px-3 py-3">
-                      <div className="flex items-center justify-between gap-3">
+                    <div className="border-border/60 bg-card divide-border/60 divide-y rounded-2xl border px-3 py-1">
+                      <div className="flex items-center justify-between gap-3 py-2.5">
+                        <p className="text-[13px] font-medium">
+                          {t("header.languageAriaLabel")}
+                        </p>
+                        <LanguagePicker
+                          variant="full"
+                          className="h-8 w-36 shrink-0"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between gap-3 py-2.5">
                         <div>
-                          <p className="text-[13px] font-medium">Theme</p>
+                          <p className="text-[13px] font-medium">
+                            {t("header.themeAriaLabel")}
+                          </p>
                           <p className="text-muted-foreground pt-0.5 text-[11px] leading-relaxed">
-                            Switch the public site theme.
+                            {t("header.themeTooltip")}
                           </p>
                         </div>
                         <ThemeToggle />
@@ -299,7 +323,7 @@ export function PublicSiteHeader({
                       onClick={() => setOpenMobileMenu(false)}
                       className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/25 transition hover:brightness-110"
                     >
-                      Open Studio
+                      {t("header.openStudio")}
                       <ArrowRight className="size-3.5" />
                     </Link>
                   </div>

@@ -11,6 +11,7 @@ import { ProjectManagerAccountTab } from "./AccountTab";
 import { ProjectManagerRestoreTab } from "./RestoreTab";
 import { ProjectManagerSharesTab } from "./SharesTab";
 import type { ProjectSyncMeta } from "@/components/editor/useAccountProjectSync";
+import { useTranslations } from "next-intl";
 
 interface ProjectManagerDialogProps {
   open: boolean;
@@ -74,6 +75,7 @@ export default function ProjectManagerDialog({
   accountSharesLoading = false,
   onRevokeShare,
 }: ProjectManagerDialogProps) {
+  const t = useTranslations("dialogs");
   const isMobile = useIsMobile();
   const [view, setView] = useState<View>("device");
 
@@ -92,7 +94,7 @@ export default function ProjectManagerDialog({
   const navItems: NavItem[] = [
     {
       id: "device",
-      label: "This device",
+      label: t("projectManager.navThisDevice"),
       icon: <FolderOpen className="size-4" />,
       count: projects.length,
     },
@@ -100,13 +102,13 @@ export default function ProjectManagerDialog({
       ? ([
           {
             id: "account",
-            label: "Account",
+            label: t("projectManager.navAccount"),
             icon: <Cloud className="size-4" />,
             count: accountProjects.length,
           },
           {
             id: "shares",
-            label: "Shares",
+            label: t("projectManager.navShares"),
             icon: <Link2 className="size-4" />,
             count: accountShares.length,
           },
@@ -114,7 +116,7 @@ export default function ProjectManagerDialog({
       : []),
     {
       id: "restore",
-      label: "Snapshots",
+      label: t("projectManager.navSnapshots"),
       icon: <Clock className="size-4" />,
       count: restorePoints.length,
     },
@@ -127,24 +129,20 @@ export default function ProjectManagerDialog({
 
   const viewMeta: Record<View, { label: string; description: string }> = {
     device: {
-      label: "On this device",
-      description:
-        "Local copies saved on this device. Synced projects can also appear in Account.",
+      label: t("projectManager.panelDevice.label"),
+      description: t("projectManager.panelDevice.description"),
     },
     account: {
-      label: "Account projects",
-      description:
-        "Account copies available on your signed-in devices. Open one here to refresh this browser.",
+      label: t("projectManager.panelAccount.label"),
+      description: t("projectManager.panelAccount.description"),
     },
     restore: {
-      label: "Snapshots",
-      description:
-        "Earlier saved states of the current project. Restore any point to roll back changes.",
+      label: t("projectManager.panelSnapshots.label"),
+      description: t("projectManager.panelSnapshots.description"),
     },
     shares: {
-      label: "Published shares",
-      description:
-        "Active share links published from your account. Copy, open or revoke them here.",
+      label: t("projectManager.panelShares.label"),
+      description: t("projectManager.panelShares.description"),
     },
   };
 
@@ -208,9 +206,9 @@ export default function ProjectManagerDialog({
     <SidebarDialog
       open={open}
       onOpenChange={onOpenChange}
-      eyebrow="Studio"
-      title="Projects"
-      mobileSubtitle="Open, rename, sync or restore."
+      eyebrow={t("projectManager.dialogEyebrow")}
+      title={t("projectManager.dialogTitle")}
+      mobileSubtitle={t("projectManager.dialogMobileSubtitle")}
       navItems={navItems.map((item) => ({
         id: item.id,
         label: item.label,

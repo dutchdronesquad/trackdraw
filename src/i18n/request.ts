@@ -6,13 +6,10 @@ import {
   isValidLocale,
 } from "@/lib/i18n/locales";
 import { LOCALE_COOKIE } from "@/lib/i18n/locales";
-import enEditor from "../../messages/en/editor.json";
-import nlEditor from "../../messages/nl/editor.json";
+import * as en from "@lang/en";
+import * as nl from "@lang/nl";
 
-const messages = {
-  en: { editor: enEditor },
-  nl: { editor: nlEditor },
-} as const;
+const messages = { en: { ...en }, nl: { ...nl } };
 
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();

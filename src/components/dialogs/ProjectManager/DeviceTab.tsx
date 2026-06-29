@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -69,6 +70,7 @@ export function ProjectManagerDeviceTab({
   onResolveConflict,
   onOpenChange,
 }: ProjectManagerDeviceTabProps) {
+  const t = useTranslations("dialogs");
   const isMobile = useIsMobile();
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
@@ -145,21 +147,21 @@ export function ProjectManagerDeviceTab({
       accountProjects.some((p) => p.id === mobileActionProject.id)
     : false;
   const mobileActionSyncTitle = mobileActionHasConflict
-    ? "Resolve sync conflict"
+    ? t("projectManager.device.resolveConflict")
     : mobileActionHasSyncFailure
-      ? "Retry sync"
+      ? t("projectManager.device.retrySync")
       : mobileActionIsSynced || mobileActionHasPendingChanges
-        ? "Update account copy"
-        : "Sync to account";
+        ? t("projectManager.device.updateAccountCopy")
+        : t("projectManager.device.syncToAccount");
   const mobileActionSyncDescription = mobileActionHasConflict
-    ? "This project changed on another device. Review the version before continuing."
+    ? t("projectManager.device.conflictDesc")
     : mobileActionHasSyncFailure
-      ? "The last sync failed. Try sending the latest local version again."
+      ? t("projectManager.device.syncFailedDesc")
       : mobileActionHasPendingChanges
-        ? "Push the latest local changes to your account."
+        ? t("projectManager.device.pendingDesc")
         : mobileActionIsSynced
-          ? "Replace the synced account copy with this device version."
-          : "Make this project available on your signed-in devices.";
+          ? t("projectManager.device.updateDesc")
+          : t("projectManager.device.syncDesc");
 
   function ProjectCard({ p }: { p: ProjectMeta }) {
     const isCurrent = p.id === activeDesignId;
@@ -178,22 +180,22 @@ export function ProjectManagerDeviceTab({
       ? `Latest local copy saved ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
       : null;
     const syncLabel = isSyncing
-      ? "Syncing"
+      ? t("projectManager.device.syncing")
       : hasConflict
-        ? "Review needed"
+        ? t("projectManager.device.reviewNeeded")
         : hasPendingChanges
-          ? "Pending"
+          ? t("projectManager.device.pending")
           : hasSyncFailure
-            ? "Sync failed"
+            ? t("projectManager.device.syncFailed")
             : isSynced
-              ? "Synced"
-              : "Local only";
+              ? t("projectManager.device.synced")
+              : t("projectManager.device.localOnly");
     const syncDetail = hasConflict
       ? (syncMeta?.error ?? "This project changed on another device")
       : hasSyncFailure
         ? (fallbackLine ?? syncMeta?.error ?? "Could not sync this project")
         : hasPendingChanges
-          ? "Local changes are waiting to sync"
+          ? t("projectManager.device.localChangesWaiting")
           : null;
     const metaLine = hasConflict
       ? syncDetail
@@ -241,7 +243,7 @@ export function ProjectManagerDeviceTab({
           ) : (
             <>
               <p className="text-foreground truncate text-sm font-medium">
-                {p.title || "Untitled"}
+                {p.title || t("projectManager.device.untitled")}
               </p>
               {!isRenaming && !isConfirming ? (
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -289,7 +291,7 @@ export function ProjectManagerDeviceTab({
             <button
               onClick={() => commitRename(p.id)}
               className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
-              title="Confirm rename"
+              title={t("projectManager.device.confirmRenameTitle")}
             >
               <Check className="size-3.5" />
             </button>
@@ -299,12 +301,12 @@ export function ProjectManagerDeviceTab({
                 <DesktopActionTooltip
                   label={
                     hasConflict
-                      ? "Resolve version conflict"
+                      ? t("projectManager.device.resolveVersionConflict")
                       : hasSyncFailure
-                        ? "Retry sync"
+                        ? t("projectManager.device.retrySync")
                         : isSynced || hasPendingChanges
-                          ? "Update account copy"
-                          : "Sync to account"
+                          ? t("projectManager.device.updateAccountCopy")
+                          : t("projectManager.device.syncToAccount")
                   }
                 >
                   <button
@@ -343,7 +345,9 @@ export function ProjectManagerDeviceTab({
                 </DesktopActionTooltip>
               ) : null}
               {onExportProject && !isConfirming && !isMobile ? (
-                <DesktopActionTooltip label="Export JSON">
+                <DesktopActionTooltip
+                  label={t("projectManager.device.exportJson")}
+                >
                   <button
                     type="button"
                     aria-label={`Export ${p.title || "project"} as JSON`}
@@ -370,18 +374,20 @@ export function ProjectManagerDeviceTab({
                       setMobileDeleteConfirm(false);
                     }}
                     className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-10 cursor-pointer items-center justify-center rounded-xl transition-colors"
-                    title="More actions"
+                    title={t("projectManager.device.moreActions")}
                     aria-label={`Manage ${p.title || "project"}`}
                   >
                     <MoreHorizontal className="size-4" />
                   </button>
                 ) : isCurrent ? (
-                  <CurrentBadge label="open" />
+                  <CurrentBadge label={t("projectManager.device.openBadge")} />
                 ) : null
               ) : (
                 <>
                   {onRenameProject && (
-                    <DesktopActionTooltip label="Rename">
+                    <DesktopActionTooltip
+                      label={t("projectManager.device.rename")}
+                    >
                       <button
                         type="button"
                         aria-label={`Rename ${p.title || "project"}`}
@@ -393,7 +399,9 @@ export function ProjectManagerDeviceTab({
                     </DesktopActionTooltip>
                   )}
                   {onDeleteProject && !isCurrent && (
-                    <DesktopActionTooltip label="Delete">
+                    <DesktopActionTooltip
+                      label={t("projectManager.device.delete")}
+                    >
                       <button
                         type="button"
                         aria-label={`Delete ${p.title || "project"}`}
@@ -603,8 +611,8 @@ export function ProjectManagerDeviceTab({
         ) : (
           <EmptyState
             icon={<FolderOpen className="size-6" />}
-            title="No saved projects"
-            description="Projects you save will appear here."
+            title={t("projectManager.device.noProjects")}
+            description={t("projectManager.device.noProjectsDesc")}
           />
         )}
       </div>
@@ -618,7 +626,10 @@ export function ProjectManagerDeviceTab({
             {mobileActionProject ? (
               <div className="pb-5">
                 <MobileDrawerHeader
-                  title={mobileActionProject.title || "Untitled"}
+                  title={
+                    mobileActionProject.title ||
+                    t("projectManager.device.untitled")
+                  }
                   subtitle={`${itemLabel(mobileActionProject.shapeCount)} on this device`}
                   className="bg-background"
                 />

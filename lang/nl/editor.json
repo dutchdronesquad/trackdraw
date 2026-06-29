@@ -36,9 +36,5 @@
   },
   "languagePicker": {
     "ariaLabel": "Taal"
-  },
-  "accountProfile": {
-    "languageLabel": "Taal",
-    "languageDescription": "Wijzigingen worden direct toegepast"
   }
 }

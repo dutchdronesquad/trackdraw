@@ -12,6 +12,7 @@ import { formatFieldSize } from "@/lib/track/units";
 import { Upload, FileJson, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import type { TrackDesign } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 interface ImportDialogProps {
   open: boolean;
@@ -32,6 +33,7 @@ export default function ImportDialog({
   onBackupCurrent,
   onBeforeConfirm,
 }: ImportDialogProps) {
+  const t = useTranslations("dialogs");
   const { replaceDesign } = useTrackActions();
   const { unitSystem } = useMeasurementUnitSystem();
   const isMobile = useIsMobile();
@@ -45,63 +47,63 @@ export default function ImportDialog({
     setError(null);
   };
 
-  const tryParse = useCallback((text: string) => {
-    let data: unknown;
+  const tryParse = useCallback(
+    (text: string) => {
+      let data: unknown;
 
-    try {
-      data = JSON.parse(text);
-    } catch {
-      const message = "Invalid JSON file.";
-      setError(message);
-      setParsed(null);
-      reportImportError(
-        "Import failed",
-        "TrackDraw could not read this JSON file. Check the file and try again."
-      );
-      return;
-    }
-
-    try {
-      const design = parseDesign(data);
-      if (!design) {
-        throw new Error("Invalid TrackDraw project");
+      try {
+        data = JSON.parse(text);
+      } catch {
+        setError(t("import.errorInvalidJson"));
+        setParsed(null);
+        reportImportError(
+          t("import.toastImportFailed"),
+          t("import.toastInvalidJson")
+        );
+        return;
       }
-      setParsed({
-        design,
-        shapeCount: design.shapeOrder.length,
-      });
-      setError(null);
-    } catch {
-      const message = "This does not look like a TrackDraw project.";
-      setError(message);
-      setParsed(null);
-      reportImportError(
-        "Import failed",
-        "Choose a JSON project file exported from TrackDraw."
-      );
-    }
-  }, []);
+
+      try {
+        const design = parseDesign(data);
+        if (!design) {
+          throw new Error("Invalid TrackDraw project");
+        }
+        setParsed({
+          design,
+          shapeCount: design.shapeOrder.length,
+        });
+        setError(null);
+      } catch {
+        setError(t("import.errorInvalidProject"));
+        setParsed(null);
+        reportImportError(
+          t("import.toastImportFailed"),
+          t("import.toastInvalidProject")
+        );
+      }
+    },
+    [t]
+  );
 
   const handleFile = useCallback(
     (file: File) => {
       if (!file.name.endsWith(".json")) {
-        setError("Only TrackDraw JSON project files are supported.");
+        setError(t("import.errorUnsupportedFile"));
         setParsed(null);
-        toast.error("Import failed", {
-          description: "Choose a .json file exported from TrackDraw.",
+        toast.error(t("import.toastImportFailed"), {
+          description: t("import.toastUnsupportedFile"),
         });
         return;
       }
       file.text().then(tryParse, () => {
-        setError("TrackDraw could not read this file.");
+        setError(t("import.errorReadFailed"));
         setParsed(null);
-        toast.error("Import failed", {
-          description:
-            "TrackDraw could not read the selected file. Try again or choose another backup.",
+        toast.error(t("import.toastImportFailed"), {
+          description: t("import.toastReadFailed"),
         });
       });
     },
-    [tryParse]
+    [tryParse, t]
   );
 
   const handleDrop = useCallback(
@@ -161,10 +163,10 @@ export default function ImportDialog({
             />
             <div className="text-center">
               <p className="text-foreground text-sm font-medium">
-                Drop a file here
+                {t("import.dropFileHere")}
               </p>
               <p className="text-muted-foreground mt-1 text-xs">
-                or click to browse
+                {t("import.clickToBrowse")}
               </p>
             </div>
             <span className="text-muted-foreground/55 font-mono text-[11px]">
@@ -189,7 +191,7 @@ export default function ImportDialog({
             <FileJson className="mt-0.5 size-8 shrink-0 text-emerald-400" />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">
-                {parsed.design.title || "Untitled project"}
+                {parsed.design.title || t("import.untitledProject")}
               </p>
               <p className="text-muted-foreground mt-0.5 text-xs">
                 {formatFieldSize(
@@ -198,28 +200,26 @@ export default function ImportDialog({
                   unitSystem
                 )}
                 &nbsp;·&nbsp;
-                {parsed.shapeCount}{" "}
-                {parsed.shapeCount === 1 ? "object" : "objects"}
+                {t("import.objectCount", { count: parsed.shapeCount })}
               </p>
             </div>
             <CheckCircle2 className="mt-1 size-4 shrink-0 text-emerald-400" />
           </div>
           <p className="text-muted-foreground px-0.5 text-xs">
-            The current project will be replaced. Export a JSON backup first if
-            you want a manual restore point outside local autosave.
+            {t("import.replaceWarning")}
           </p>
           <div className="flex gap-2">
             <button
               onClick={reset}
               className="border-border text-muted-foreground hover:bg-muted/40 flex-1 rounded-lg border px-4 py-2 text-sm transition-colors"
             >
-              Cancel
+              {t("import.cancel")}
             </button>
             <button
               onClick={handleConfirm}
               className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
             >
-              Replace project
+              {t("import.replaceProject")}
             </button>
           </div>
           {onBackupCurrent ? (
@@ -227,7 +227,7 @@ export default function ImportDialog({
               onClick={onBackupCurrent}
               className="text-muted-foreground hover:text-foreground border-border/70 w-full rounded-lg border border-dashed px-4 py-2 text-sm transition-colors"
             >
-              Back up current project first
+              {t("import.backupCurrentFirst")}
             </button>
           ) : null}
         </div>
@@ -248,8 +248,8 @@ export default function ImportDialog({
       <MobileDrawer
         open={open}
         onOpenChange={handleClose}
-        title="Open Project"
-        subtitle="Import a TrackDraw project from a JSON file."
+        title={t("import.dialogTitle")}
+        subtitle={t("import.dialogSubtitle")}
       >
         {body}
       </MobileDrawer>
@@ -260,8 +260,8 @@ export default function ImportDialog({
     <DesktopModal
       open={open}
       onOpenChange={handleClose}
-      title="Open Project"
-      subtitle="Import a TrackDraw project from a JSON file."
+      title={t("import.dialogTitle")}
+      subtitle={t("import.dialogSubtitle")}
     >
       {body}
     </DesktopModal>

@@ -1,0 +1,122 @@
+{
+  "tabs": {
+    "project": "Project",
+    "layout": "Indeling",
+    "selection": "Selectie"
+  },
+  "emptyState": {
+    "title": "Geen selectie",
+    "body": "Selecteer een of meer items op het canvas om hun eigenschappen te bewerken."
+  },
+  "actions": {
+    "lock": "Vergrendelen",
+    "unlock": "Ontgrendelen",
+    "duplicate": "Dupliceren",
+    "delete": "Verwijderen",
+    "continueEditing": "Bewerking voortzetten",
+    "connectEnds": "Uiteinden verbinden",
+    "ungroup": "Groep opheffen",
+    "groupSelection": "Selectie groeperen",
+    "ungroupSelection": "Groep opheffen",
+    "savePreset": "Opslaan als preset",
+    "joinPaths": "Paden samenvoegen",
+    "remove": "Verwijderen",
+    "removeItem": "Item verwijderen"
+  },
+  "hints": {
+    "locked": "Vergrendeld op het canvas. Ontgrendel voor verplaatsen, aanpassen of het voortzetten van padbewerking."
+  },
+  "group": {
+    "sectionTitle": "Groep",
+    "nameLabel": "Groepsnaam",
+    "namePlaceholder": "Optionele groepsnaam"
+  },
+  "raceTiming": {
+    "sectionTitle": "Race timing",
+    "roleLabel": "Rol",
+    "ariaLabel": "Timingrol",
+    "splitIdLabel": "Split ID",
+    "splitIdPlaceholder": "split-1",
+    "roleOff": "Uit",
+    "roleStart": "Start",
+    "roleSplit": "Split",
+    "metaTimingStart": "timing: start",
+    "metaTimingSplit": "timing: {id}",
+    "metaGrouped": "gegroepeerd",
+    "metaLocked": "vergrendeld",
+    "metaEditable": "bewerkbaar"
+  },
+  "transform": {
+    "sectionTitle": "Transformatie",
+    "nameLabel": "Naam",
+    "positionLabel": "Positie",
+    "rotationLabel": "Rotatie (graden)",
+    "colorLabel": "Kleur",
+    "pickColorAriaLabel": "Kleur kiezen",
+    "editingSubtitle": "{kind} eigenschappen en plaatsing bewerken."
+  },
+  "ladder": {
+    "sectionTitle": "Ladder"
+  },
+  "catalog": {
+    "sectionTitle": "Catalogus",
+    "typeLabel": "Type",
+    "sourceLabel": "Bron",
+    "officialSizeLabel": "Officieel formaat"
+  },
+  "dimensions": {
+    "widthLabel": "Breedte ({unit})",
+    "heightLabel": "Hoogte ({unit})",
+    "thicknessLabel": "Dikte ({unit})",
+    "radiusLabel": "Straal ({unit})",
+    "poleHeightLabel": "Masthoogte ({unit})",
+    "tiltLabel": "Kanteling (graden)",
+    "gatesLabel": "Gates",
+    "elevationLabel": "Hoogte boven grond ({unit})",
+    "levelsLabel": "Niveaus",
+    "sizeLabel": "Formaat ({unit})",
+    "openingHeightLabel": "Openingen hoogte ({unit})"
+  },
+  "label": {
+    "sectionTitle": "Opschrift",
+    "textLabel": "Tekst",
+    "fontSizeLabel": "Lettergrootte (px)",
+    "threeDModeLabel": "3D-modus",
+    "floatOption": "Zwevend (billboard)",
+    "groundOption": "Op grond projecteren"
+  },
+  "multiSelection": {
+    "sectionTitle": "Selectie",
+    "mixedTypesPlaceholder": "Gemengde typen"
+  },
+  "polyline": {
+    "sectionTitle": "Race Line",
+    "flowLabel": "Stroomrichting",
+    "directionLabel": "Richting"
+  },
+  "listPanel": {
+    "panelTitle": "Trackonderdelen",
+    "placedItemsTitle": "Geplaatste items",
+    "placedItemsSubtitle": "Selecteer een item uit de lijst.",
+    "filterPlaceholder": "Items filteren",
+    "filterAll": "Alles",
+    "filterObstacles": "Obstakels"
+  },
+  "layout": {
+    "mapReferenceTitle": "Kaartverwijzing",
+    "opacityLabel": "Transparantie",
+    "mapRotationLabel": "Rotatie",
+    "removeMapLabel": "Verwijderen",
+    "removeMapTitle": "Kaartverwijzing verwijderen",
+    "routeNumberingTitle": "Routenummering",
+    "inventoryTitle": "Inventaris",
+    "fieldTitle": "Veld",
+    "unitsLabel": "Eenheden",
+    "renderScaleLabel": "Renderschaal",
+    "renderScaleTooltip": "Interne canvasdichtheid in pixels per meter",
+    "titlePlaceholder": "Naamloze track",
+    "projectSubtitle": "Stel de projecttitel, veldconfiguratie en beschikbaar obstakels in.",
+    "layoutTitle": "Huidige indeling",
+    "layoutSubtitle": "Bekijk geplaatste items, routenummering en bouweigenschappen van de huidige indeling."
+  }
+}

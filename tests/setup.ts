@@ -2,11 +2,9 @@ import { createElement, type ReactElement, type ReactNode } from "react";
 import { vi } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import { createTranslator } from "use-intl/core";
-import enEditor from "../messages/en/editor.json";
+import * as en from "@lang/en";
 
-const messages = {
-  editor: enEditor,
-};
+const messages = { ...en };
 
 vi.mock("@testing-library/react", async (importOriginal) => {
   const actual =

@@ -2,6 +2,7 @@
 
 import { Num, Row, Section } from "@/components/inspector/shared";
 import type { LabelShape, Shape } from "@/lib/types";
+import { useTranslations } from "next-intl";
 
 export function LabelTransformField({
   shape,
@@ -10,8 +11,9 @@ export function LabelTransformField({
   shape: LabelShape;
   updateShape: (id: string, patch: Partial<Shape>) => void;
 }) {
+  const t = useTranslations("inspector");
   return (
-    <Row label="Font size (px)">
+    <Row label={t("label.fontSizeLabel")}>
       <Num
         value={shape.fontSize ?? 18}
         onChange={(value) => updateShape(shape.id, { fontSize: value })}
@@ -35,9 +37,10 @@ export function LabelSection({
   finishBatch: () => void;
   defaultOpen: boolean;
 }) {
+  const t = useTranslations("inspector");
   return (
-    <Section title="Label" defaultOpen={defaultOpen}>
-      <Row label="Text">
+    <Section title={t("label.sectionTitle")} defaultOpen={defaultOpen}>
+      <Row label={t("label.textLabel")}>
         <textarea
           rows={2}
           className="border-border/40 bg-muted/40 text-foreground placeholder:text-muted-foreground/40 focus-visible:ring-ring/30 w-full resize-none rounded-md border px-3 py-2 text-xs focus-visible:ring-1 focus-visible:outline-hidden lg:rounded lg:px-2 lg:py-1 lg:text-[11px]"
@@ -49,7 +52,7 @@ export function LabelSection({
           }
         />
       </Row>
-      <Row label="3D mode">
+      <Row label={t("label.threeDModeLabel")}>
         <select
           className="border-border/40 bg-muted/40 text-foreground h-9 w-full rounded-md border px-3 py-1 text-xs focus-visible:outline-hidden lg:h-7 lg:rounded lg:px-2 lg:text-[11px]"
           value={shape.project ? "ground" : "float"}
@@ -61,8 +64,8 @@ export function LabelSection({
             })
           }
         >
-          <option value="float">Float (billboard)</option>
-          <option value="ground">Project on ground</option>
+          <option value="float">{t("label.floatOption")}</option>
+          <option value="ground">{t("label.groundOption")}</option>
         </select>
       </Row>
     </Section>

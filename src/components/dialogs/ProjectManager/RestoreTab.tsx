@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Kbd } from "@/components/ui/kbd";
 import type { RestorePointMeta } from "@/lib/projects";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslations } from "next-intl";
 import {
   CurrentBadge,
   EmptyState,
@@ -29,6 +30,7 @@ export function ProjectManagerRestoreTab({
   onDeleteRestorePoint,
   onOpenChange,
 }: ProjectManagerRestoreTabProps) {
+  const t = useTranslations("dialogs");
   const isMobile = useIsMobile();
   const [confirmRestoreId, setConfirmRestoreId] = useState<string | null>(null);
 
@@ -36,10 +38,10 @@ export function ProjectManagerRestoreTab({
     return (
       <EmptyState
         icon={<Clock className="size-6" />}
-        title="No snapshots yet"
+        title={t("projectManager.restore.noSnapshots")}
         description={
           isMobile ? (
-            "Snapshots are created automatically when you open or replace a project."
+            t("projectManager.restore.noSnapshotsDesc")
           ) : (
             <>
               Press <Kbd>⌘S</Kbd> / <Kbd>Ctrl S</Kbd> or use the save button in
@@ -71,9 +73,13 @@ export function ProjectManagerRestoreTab({
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-1.5">
                 <p className="text-foreground truncate text-sm font-medium">
-                  {r.designTitle || "Untitled"}
+                  {r.designTitle || t("projectManager.restore.untitled")}
                 </p>
-                {isActive && <CurrentBadge label="active" />}
+                {isActive && (
+                  <CurrentBadge
+                    label={t("projectManager.restore.activeBadge")}
+                  />
+                )}
               </div>
               <p className="text-muted-foreground mt-0.5 text-[11px]">
                 {itemLabel(r.shapeCount)} · {formatRelativeTime(r.savedAt)}
@@ -86,7 +92,7 @@ export function ProjectManagerRestoreTab({
                   aria-label={`Restore ${r.designTitle || "snapshot"}`}
                   onClick={() => setConfirmRestoreId(r.id)}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
-                  title="Restore this snapshot"
+                  title={t("projectManager.restore.restoreTitle")}
                 >
                   <RotateCcw className="size-3.5" />
                 </button>
@@ -97,7 +103,7 @@ export function ProjectManagerRestoreTab({
                   aria-label={`Delete ${r.designTitle || "snapshot"}`}
                   onClick={() => onDeleteRestorePoint(r.id)}
                   className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
-                  title="Delete snapshot"
+                  title={t("projectManager.restore.deleteTitle")}
                 >
                   <Trash2 className="size-3.5" />
                 </button>
