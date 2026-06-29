@@ -81,7 +81,7 @@ export function ToolsControls({
       {tab === "2d" && (
         <div>
           <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            {t("mobilePanels.editorPanels.tools")}
+            {t("mobilePanels.editorPanels.nav.tools")}
           </p>
 
           {/* Catalog tools — active one auto-expands with type list */}

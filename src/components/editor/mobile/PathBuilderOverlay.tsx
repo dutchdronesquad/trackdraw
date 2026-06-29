@@ -39,20 +39,20 @@ export function PathBuilderOverlay({
       <div className="flex items-start justify-between gap-3 px-1 pb-2">
         <div className="min-w-0">
           <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
-            {t("title")}
+            {t("header.title")}
           </p>
           <p className="truncate text-[11px] text-white/70">
             {draftPathClosed
-              ? t("loopConnected", {
+              ? t("status.loopConnected", {
                   count: draftPathPointCount,
                   length: lengthLabel,
                 })
               : draftPathPointCount > 0
-                ? t("pointsCount", {
+                ? t("status.pointsCount", {
                     count: draftPathPointCount,
                     length: lengthLabel,
                   })
-                : t("tapToStart")}
+                : t("status.tapToStart")}
           </p>
         </div>
       </div>
@@ -65,7 +65,7 @@ export function PathBuilderOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
         >
           <ArrowRight className="size-4 rotate-180" />
-          <span>{t("undo")}</span>
+          <span>{t("actions.undo")}</span>
         </button>
         <button
           type="button"
@@ -74,7 +74,7 @@ export function PathBuilderOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
         >
           <Link2 className="size-4" />
-          <span>{t("connectEnds")}</span>
+          <span>{t("actions.connectEnds")}</span>
         </button>
         <button
           type="button"
@@ -83,7 +83,7 @@ export function PathBuilderOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/78 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
         >
           <PencilLine className="size-4" />
-          <span>{t("finish")}</span>
+          <span>{t("actions.finish")}</span>
         </button>
         <button
           type="button"
@@ -91,7 +91,7 @@ export function PathBuilderOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200"
         >
           <X className="size-4" />
-          <span>{t("cancel")}</span>
+          <span>{t("actions.cancel")}</span>
         </button>
       </div>
     </motion.div>

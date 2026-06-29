@@ -99,17 +99,17 @@ export function ViewControls({
     ? `${inspectorHint}. ${saveStatusLabel}.`
     : tab === "3d"
       ? hasPath
-        ? t("readOnly3dWithPath")
-        : t("readOnly3dNoPath")
+        ? t("readOnly.review3dWithPath")
+        : t("readOnly.review3dNoPath")
       : hasPath
-        ? t("readOnly2dWithPath")
-        : t("readOnly2dNoPath");
+        ? t("readOnly.review2dWithPath")
+        : t("readOnly.review2dNoPath");
 
   return (
     <>
       <div>
         <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-          {readOnly ? saveStatusLabel : t("currentMode")}
+          {readOnly ? saveStatusLabel : t("mode.current")}
         </p>
         <div className="border-border/50 bg-muted/18 rounded-2xl border px-3 py-3">
           <p className="text-foreground text-sm font-medium">
@@ -122,7 +122,7 @@ export function ViewControls({
       </div>
       <div>
         <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-          {t("viewModeLabel")}
+          {t("mode.viewModeLabel")}
         </p>
         <ViewModeSwitch
           value={tab}
@@ -137,9 +137,11 @@ export function ViewControls({
           className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
         >
           <div>
-            <p className="text-[11px] font-medium">{t("fitToField")}</p>
+            <p className="text-[11px] font-medium">
+              {t("controls.fitToField.label")}
+            </p>
             <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
-              {t("fitToFieldDescription")}
+              {t("controls.fitToField.description")}
             </p>
           </div>
           <Scan className="size-4" />
@@ -157,9 +159,11 @@ export function ViewControls({
                 )}
               >
                 <div>
-                  <p className="text-[11px] font-medium">{t("snapLabel")}</p>
+                  <p className="text-[11px] font-medium">
+                    {t("controls.snap.label")}
+                  </p>
                   <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
-                    {t("snapDescription")}
+                    {t("controls.snap.description")}
                   </p>
                 </div>
                 <div
@@ -175,14 +179,14 @@ export function ViewControls({
               </button>
             )}
             <ToggleRow
-              title={t("rulersLabel")}
-              description={t("rulersDescription")}
+              title={t("controls.rulers.label")}
+              description={t("controls.rulers.description")}
               enabled={mobileRulersEnabled}
               onClick={() => onSetMobileRulersEnabled(!mobileRulersEnabled)}
             />
             <ToggleRow
-              title={t("obstacleNumbersLabel")}
-              description={t("obstacleNumbersDescription")}
+              title={t("controls.obstacleNumbers.label")}
+              description={t("controls.obstacleNumbers.description")}
               enabled={mobileObstacleNumbersEnabled}
               onClick={() =>
                 onSetMobileObstacleNumbersEnabled(!mobileObstacleNumbersEnabled)
@@ -206,21 +210,21 @@ export function ViewControls({
             >
               <div>
                 <p className="text-[11px] font-medium">
-                  {t("flyThroughLabel")}
+                  {t("controls.flyThrough.label")}
                 </p>
                 <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
                   {hasPath
-                    ? t("flyThroughDescriptionAvailable")
+                    ? t("controls.flyThrough.descriptions.available")
                     : readOnly
-                      ? t("flyThroughDescriptionReadOnly")
-                      : t("flyThroughDescriptionDraw")}
+                      ? t("controls.flyThrough.descriptions.readOnly")
+                      : t("controls.flyThrough.descriptions.draw")}
                 </p>
               </div>
               <Play className="size-4" />
             </button>
             <ToggleRow
-              title={t("gizmoLabel")}
-              description={t("gizmoDescription")}
+              title={t("controls.gizmo.label")}
+              description={t("controls.gizmo.description")}
               enabled={mobileGizmoEnabled}
               onClick={() => onSetMobileGizmoEnabled(!mobileGizmoEnabled)}
             />
@@ -230,7 +234,7 @@ export function ViewControls({
       {readOnly && showShareActions ? (
         <div>
           <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            {t("shareSectionLabel")}
+            {t("share.sectionLabel")}
           </p>
           <div className="grid grid-cols-2 gap-2">
             <Link
@@ -239,7 +243,7 @@ export function ViewControls({
             >
               <ArrowRight className="size-4" />
               <span className="text-[11px] leading-none font-medium">
-                {t("editableCopyLabel")}
+                {t("share.editableCopy")}
               </span>
             </Link>
             <button
@@ -248,7 +252,7 @@ export function ViewControls({
             >
               <Share2 className="size-4" />
               <span className="text-[11px] leading-none font-medium">
-                {t("shareButtonLabel")}
+                {t("share.shareButton")}
               </span>
             </button>
           </div>

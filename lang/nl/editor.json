@@ -167,11 +167,13 @@
     "tipText": "Selecteer vormen op het canvas en gebruik <strong>Opslaan als preset</strong> in de inspector om je eigen preset toe te voegen."
   },
   "starterOverlay": {
-    "title": "Welkom bij TrackDraw",
-    "mobileSubtitle": "Plaats een paar gates, teken de route, controleer in 3D en deel zodra de track klaar is.",
-    "studioEyebrow": "Studio",
-    "desktopDescription": "Ontwerp de layout in 2D, bekijk de hoogte in 3D en deel een alleen-lezen link zodra de track klaar is.",
-    "dismissAria": "Startdialoog sluiten",
+    "dialog": {
+      "title": "Welkom bij TrackDraw",
+      "mobileSubtitle": "Plaats een paar gates, teken de route, controleer in 3D en deel zodra de track klaar is.",
+      "studioEyebrow": "Studio",
+      "desktopDescription": "Ontwerp de layout in 2D, bekijk de hoogte in 3D en deel een alleen-lezen link zodra de track klaar is.",
+      "dismissAria": "Startdialoog sluiten"
+    },
     "hints": {
       "gate": {
         "badge": "Begeleid",
@@ -211,7 +213,9 @@
     }
   },
   "starterFlow": {
-    "goodFirstSteps": "Goede eerste stappen",
+    "intro": {
+      "goodFirstSteps": "Goede eerste stappen"
+    },
     "steps": {
       "step1": {
         "title": "Plaats een paar gates en obstakels",
@@ -226,17 +230,25 @@
         "description": "Bekijk de route vroeg en stuur een alleen-lezen link zodra het klaar is."
       }
     },
-    "guidedTitle": "Start met begeleiding",
-    "guidedDescriptionDesktop": "Open een leeg veld met `Gate` geselecteerd zodat je eerst de baan kunt uitzetten. Teken het pad zodra de eerste obstakels staan.",
-    "guidedDescriptionMobile": "Open een leeg veld met Gate geselecteerd. Teken het pad zodra de eerste obstakels staan.",
-    "continueEmpty": "Doorgaan met leeg canvas",
-    "kbdGate": "plaatst gates",
-    "kbdPath": "start de route",
-    "kbdFinish": "maakt het pad af",
-    "starterLayoutsLabel": "Startlayouts",
-    "guidedStartLabel": "Begeleide start",
-    "emptyStartLabel": "Lege start",
-    "emptyStartDescription": "Sla de begeleide start over en open direct de lege studio."
+    "starterLayouts": {
+      "label": "Startlayouts"
+    },
+    "guided": {
+      "label": "Begeleide start",
+      "title": "Start met begeleiding",
+      "descriptionDesktop": "Open een leeg veld met `Gate` geselecteerd zodat je eerst de baan kunt uitzetten. Teken het pad zodra de eerste obstakels staan.",
+      "descriptionMobile": "Open een leeg veld met Gate geselecteerd. Teken het pad zodra de eerste obstakels staan."
+    },
+    "empty": {
+      "label": "Lege start",
+      "continue": "Doorgaan met leeg canvas",
+      "description": "Sla de begeleide start over en open direct de lege studio."
+    },
+    "shortcuts": {
+      "gate": "plaatst gates",
+      "path": "start de route",
+      "finish": "maakt het pad af"
+    }
   },
   "saveAsPresetDialog": {
     "title": "Opslaan als preset",
@@ -250,92 +262,146 @@
   },
   "mobilePanels": {
     "viewControls": {
-      "currentMode": "Huidige modus",
-      "viewModeLabel": "Weergavemodus",
-      "fitToField": "Passend aan veld",
-      "fitToFieldDescription": "Centreer het huidige ontwerp in beeld",
-      "snapLabel": "Snap",
-      "snapDescription": "Vergrendel naar nabije rasterposities en objecten",
-      "rulersLabel": "Linialen",
-      "rulersDescription": "Toon boven- en linkerlinialen op mobiel",
-      "obstacleNumbersLabel": "Obstakelnummers",
-      "obstacleNumbersDescription": "Toon padnummers op route-obstakels",
-      "flyThroughLabel": "Flythrough",
-      "flyThroughDescriptionAvailable": "Start de race line-previewcamera",
-      "flyThroughDescriptionReadOnly": "Geen route in deze gedeelde track",
-      "flyThroughDescriptionDraw": "Teken eerst een pad in 2D om dit te activeren",
-      "gizmoLabel": "Gizmo",
-      "gizmoDescription": "Toon de as-helper in 3D-preview",
-      "shareSectionLabel": "Delen",
-      "editableCopyLabel": "Bewerkbare kopie",
-      "shareButtonLabel": "Delen",
-      "readOnly3dWithPath": "Alleen-lezen 3D-review met flythrough beschikbaar voor deze gedeelde track.",
-      "readOnly3dNoPath": "Alleen-lezen 3D-review voor deze gedeelde track. Geen route beschikbaar voor flythrough.",
-      "readOnly2dWithPath": "Alleen-lezen 2D-review voor deze gedeelde track. Wissel naar 3D voor flythrough.",
-      "readOnly2dNoPath": "Alleen-lezen 2D-review voor deze gedeelde track."
+      "mode": {
+        "current": "Huidige modus",
+        "viewModeLabel": "Weergavemodus"
+      },
+      "controls": {
+        "fitToField": {
+          "label": "Passend aan veld",
+          "description": "Centreer het huidige ontwerp in beeld"
+        },
+        "snap": {
+          "label": "Snap",
+          "description": "Vergrendel naar nabije rasterposities en objecten"
+        },
+        "rulers": {
+          "label": "Linialen",
+          "description": "Toon boven- en linkerlinialen op mobiel"
+        },
+        "obstacleNumbers": {
+          "label": "Obstakelnummers",
+          "description": "Toon padnummers op route-obstakels"
+        },
+        "flyThrough": {
+          "label": "Flythrough",
+          "descriptions": {
+            "available": "Start de race line-previewcamera",
+            "readOnly": "Geen route in deze gedeelde track",
+            "draw": "Teken eerst een pad in 2D om dit te activeren"
+          }
+        },
+        "gizmo": {
+          "label": "Gizmo",
+          "description": "Toon de as-helper in 3D-preview"
+        }
+      },
+      "readOnly": {
+        "review3dWithPath": "Alleen-lezen 3D-review met flythrough beschikbaar voor deze gedeelde track.",
+        "review3dNoPath": "Alleen-lezen 3D-review voor deze gedeelde track. Geen route beschikbaar voor flythrough.",
+        "review2dWithPath": "Alleen-lezen 2D-review voor deze gedeelde track. Wissel naar 3D voor flythrough.",
+        "review2dNoPath": "Alleen-lezen 2D-review voor deze gedeelde track."
+      },
+      "share": {
+        "sectionLabel": "Delen",
+        "editableCopy": "Bewerkbare kopie",
+        "shareButton": "Delen"
+      }
     },
     "multiSelect": {
-      "title": "Multi-select",
-      "lockedHint": "Vergrendelde selectie. Ontgrendel voor verplaatsen of vergroten.",
-      "tapHint": "Tik op items om ze toe te voegen of te verwijderen.",
-      "groupNamePlaceholder": "Groepsnaam",
-      "duplicate": "Dupliceren",
-      "ungroup": "Groep opheffen",
-      "group": "Groeperen",
-      "unlock": "Ontgrendelen",
-      "lock": "Vergrendelen",
-      "delete": "Verwijderen"
+      "header": {
+        "title": "Multi-select",
+        "lockedHint": "Vergrendelde selectie. Ontgrendel voor verplaatsen of vergroten.",
+        "tapHint": "Tik op items om ze toe te voegen of te verwijderen."
+      },
+      "fields": {
+        "groupNamePlaceholder": "Groepsnaam"
+      },
+      "actions": {
+        "duplicate": "Dupliceren",
+        "ungroup": "Groep opheffen",
+        "group": "Groeperen",
+        "unlock": "Ontgrendelen",
+        "lock": "Vergrendelen",
+        "delete": "Verwijderen"
+      }
     },
     "pathBuilder": {
-      "title": "Path builder",
-      "loopConnected": "Loop verbonden · {count} waypoints · {length}",
-      "pointsCount": "{count} waypoints · {length}",
-      "tapToStart": "Tik op het canvas om het eerste waypoint te plaatsen",
-      "undo": "Ongedaan maken",
-      "connectEnds": "Einden verbinden",
-      "finish": "Afronden",
-      "cancel": "Annuleren"
+      "header": {
+        "title": "Path builder"
+      },
+      "status": {
+        "loopConnected": "Loop verbonden · {count} waypoints · {length}",
+        "pointsCount": "{count} waypoints · {length}",
+        "tapToStart": "Tik op het canvas om het eerste waypoint te plaatsen"
+      },
+      "actions": {
+        "undo": "Ongedaan maken",
+        "connectEnds": "Einden verbinden",
+        "finish": "Afronden",
+        "cancel": "Annuleren"
+      }
     },
     "editorPanels": {
-      "quickActionsTitle": "Snelle acties",
-      "adjustTitle": "Aanpassen",
-      "addPointHint": "Waypoint toevoegen op geselecteerd segment",
-      "deleteWaypointHint": "Geselecteerd waypoint verwijderen",
-      "resumeHint": "Hervat of pas dit pad aan",
-      "selectionStepHint": "{label} · {step} stap",
-      "selectionFallback": "Selectie",
-      "addPoint": "Waypoint toevoegen",
-      "editPath": "Path bewerken",
-      "duplicate": "Dupliceren",
-      "unlock": "Ontgrendelen",
-      "lock": "Vergrendelen",
-      "deletePoint": "Waypoint verwijderen",
-      "delete": "Verwijderen",
-      "adjust": "Aanpassen",
-      "back": "Terug",
-      "step": "Stap",
-      "left": "Links",
-      "up": "Omhoog",
-      "down": "Omlaag",
-      "right": "Rechts",
-      "exit": "Sluiten",
-      "select": "Selecteren",
-      "tools": "Tools",
-      "inspect": "Inspecteren",
-      "view": "Weergave",
-      "review": "Review",
-      "share": "Delen",
-      "editCopy": "Kopie bewerken",
-      "designSettingsHint": "Ontwerpinstellingen",
-      "inspectorTitle": "Inspector",
-      "inspectorSubtitleEmpty": "Ontwerpinstellingen en geplaatste items",
-      "inspectorSubtitleSelected": "Selectie-eigenschappen en bewerken",
-      "toolsTitle": "Tools",
-      "toolsSubtitle3d": "Projectacties voor de huidige 3D-sessie",
-      "toolsSubtitle2d": "Teken- en bewerkingstools",
-      "viewTitle": "Weergave",
-      "viewSubtitle": "Canvasmodus, hulplijnen en viewport-instellingen",
-      "preview": "Preview"
+      "quickActions": {
+        "title": "Snelle acties",
+        "adjustTitle": "Aanpassen",
+        "hints": {
+          "addPoint": "Waypoint toevoegen op geselecteerd segment",
+          "deleteWaypoint": "Geselecteerd waypoint verwijderen",
+          "resume": "Hervat of pas dit pad aan",
+          "selectionStep": "{label} · {step} stap",
+          "selectionFallback": "Selectie"
+        },
+        "actions": {
+          "addPoint": "Waypoint toevoegen",
+          "editPath": "Path bewerken",
+          "duplicate": "Dupliceren",
+          "unlock": "Ontgrendelen",
+          "lock": "Vergrendelen",
+          "deletePoint": "Waypoint verwijderen",
+          "delete": "Verwijderen",
+          "adjust": "Aanpassen",
+          "back": "Terug"
+        },
+        "adjust": {
+          "step": "Stap",
+          "left": "Links",
+          "up": "Omhoog",
+          "down": "Omlaag",
+          "right": "Rechts"
+        }
+      },
+      "nav": {
+        "exit": "Sluiten",
+        "select": "Selecteren",
+        "tools": "Tools",
+        "inspect": "Inspecteren",
+        "view": "Weergave",
+        "review": "Review",
+        "share": "Delen",
+        "editCopy": "Kopie bewerken",
+        "preview": "Preview"
+      },
+      "inspector": {
+        "designSettingsHint": "Ontwerpinstellingen",
+        "title": "Inspector",
+        "subtitles": {
+          "empty": "Ontwerpinstellingen en geplaatste items",
+          "selected": "Selectie-eigenschappen en bewerken"
+        }
+      },
+      "tools": {
+        "title": "Tools",
+        "subtitles": {
+          "preview3d": "Projectacties voor de huidige 3D-sessie",
+          "canvas2d": "Teken- en bewerkingstools"
+        }
+      },
+      "view": {
+        "title": "Weergave",
+        "subtitle": "Canvasmodus, hulplijnen en viewport-instellingen"
+      }
     }
   },
   "viewModeSwitch": {

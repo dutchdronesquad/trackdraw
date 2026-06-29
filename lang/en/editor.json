@@ -167,11 +167,13 @@
     "tipText": "Select shapes on the canvas, then use <strong>Save preset</strong> in the inspector to add your own."
   },
   "starterOverlay": {
-    "title": "Welcome to TrackDraw",
-    "mobileSubtitle": "Place a few gates, draw the route, check 3D, then share when the track is ready.",
-    "studioEyebrow": "Studio",
-    "desktopDescription": "Design the layout in 2D, review elevation in 3D, and share a read-only link when the track is ready.",
-    "dismissAria": "Dismiss starter dialog",
+    "dialog": {
+      "title": "Welcome to TrackDraw",
+      "mobileSubtitle": "Place a few gates, draw the route, check 3D, then share when the track is ready.",
+      "studioEyebrow": "Studio",
+      "desktopDescription": "Design the layout in 2D, review elevation in 3D, and share a read-only link when the track is ready.",
+      "dismissAria": "Dismiss starter dialog"
+    },
     "hints": {
       "gate": {
         "badge": "Guided",
@@ -211,7 +213,9 @@
     }
   },
   "starterFlow": {
-    "goodFirstSteps": "Good first steps",
+    "intro": {
+      "goodFirstSteps": "Good first steps"
+    },
     "steps": {
       "step1": {
         "title": "Place a few gates and obstacles",
@@ -226,17 +230,25 @@
         "description": "Review the route early and send a read-only link when it is ready."
       }
     },
-    "guidedTitle": "Start with guidance",
-    "guidedDescriptionDesktop": "Open an empty field with `Gate` selected so you can block out the course first. Draw the path once the first obstacles are down.",
-    "guidedDescriptionMobile": "Open an empty field with Gate selected. Draw the path once the first obstacles are down.",
-    "continueEmpty": "Continue with empty canvas",
-    "kbdGate": "places gates",
-    "kbdPath": "starts the route",
-    "kbdFinish": "finishes the path",
-    "starterLayoutsLabel": "Starter layouts",
-    "guidedStartLabel": "Guided start",
-    "emptyStartLabel": "Empty start",
-    "emptyStartDescription": "Skip the guided start and open the empty studio instead."
+    "starterLayouts": {
+      "label": "Starter layouts"
+    },
+    "guided": {
+      "label": "Guided start",
+      "title": "Start with guidance",
+      "descriptionDesktop": "Open an empty field with `Gate` selected so you can block out the course first. Draw the path once the first obstacles are down.",
+      "descriptionMobile": "Open an empty field with Gate selected. Draw the path once the first obstacles are down."
+    },
+    "empty": {
+      "label": "Empty start",
+      "continue": "Continue with empty canvas",
+      "description": "Skip the guided start and open the empty studio instead."
+    },
+    "shortcuts": {
+      "gate": "places gates",
+      "path": "starts the route",
+      "finish": "finishes the path"
+    }
   },
   "saveAsPresetDialog": {
     "title": "Save as preset",
@@ -250,92 +262,146 @@
   },
   "mobilePanels": {
     "viewControls": {
-      "currentMode": "Current mode",
-      "viewModeLabel": "View mode",
-      "fitToField": "Fit to field",
-      "fitToFieldDescription": "Center the current design in view",
-      "snapLabel": "Snap",
-      "snapDescription": "Lock to nearby grid positions and objects",
-      "rulersLabel": "Rulers",
-      "rulersDescription": "Show top and left guides on mobile",
-      "obstacleNumbersLabel": "Obstacle numbers",
-      "obstacleNumbersDescription": "Show path numbers on route obstacles",
-      "flyThroughLabel": "Fly-through",
-      "flyThroughDescriptionAvailable": "Start the race-line preview camera",
-      "flyThroughDescriptionReadOnly": "No route in this shared track",
-      "flyThroughDescriptionDraw": "Draw a path in 2D first to enable this",
-      "gizmoLabel": "Gizmo",
-      "gizmoDescription": "Show the axis helper in 3D preview",
-      "shareSectionLabel": "Share",
-      "editableCopyLabel": "Editable copy",
-      "shareButtonLabel": "Share",
-      "readOnly3dWithPath": "Read-only 3D review with fly-through available for this shared track.",
-      "readOnly3dNoPath": "Read-only 3D review for this shared track. No route is available for fly-through.",
-      "readOnly2dWithPath": "Read-only 2D review for this shared track. Switch to 3D to use fly-through.",
-      "readOnly2dNoPath": "Read-only 2D review for this shared track."
+      "mode": {
+        "current": "Current mode",
+        "viewModeLabel": "View mode"
+      },
+      "controls": {
+        "fitToField": {
+          "label": "Fit to field",
+          "description": "Center the current design in view"
+        },
+        "snap": {
+          "label": "Snap",
+          "description": "Lock to nearby grid positions and objects"
+        },
+        "rulers": {
+          "label": "Rulers",
+          "description": "Show top and left guides on mobile"
+        },
+        "obstacleNumbers": {
+          "label": "Obstacle numbers",
+          "description": "Show path numbers on route obstacles"
+        },
+        "flyThrough": {
+          "label": "Fly-through",
+          "descriptions": {
+            "available": "Start the race-line preview camera",
+            "readOnly": "No route in this shared track",
+            "draw": "Draw a path in 2D first to enable this"
+          }
+        },
+        "gizmo": {
+          "label": "Gizmo",
+          "description": "Show the axis helper in 3D preview"
+        }
+      },
+      "readOnly": {
+        "review3dWithPath": "Read-only 3D review with fly-through available for this shared track.",
+        "review3dNoPath": "Read-only 3D review for this shared track. No route is available for fly-through.",
+        "review2dWithPath": "Read-only 2D review for this shared track. Switch to 3D to use fly-through.",
+        "review2dNoPath": "Read-only 2D review for this shared track."
+      },
+      "share": {
+        "sectionLabel": "Share",
+        "editableCopy": "Editable copy",
+        "shareButton": "Share"
+      }
     },
     "multiSelect": {
-      "title": "Multi-select",
-      "lockedHint": "Locked selection. Unlock before moving or resizing.",
-      "tapHint": "Tap items to add or remove them.",
-      "groupNamePlaceholder": "Group name",
-      "duplicate": "Duplicate",
-      "ungroup": "Ungroup",
-      "group": "Group",
-      "unlock": "Unlock",
-      "lock": "Lock",
-      "delete": "Delete"
+      "header": {
+        "title": "Multi-select",
+        "lockedHint": "Locked selection. Unlock before moving or resizing.",
+        "tapHint": "Tap items to add or remove them."
+      },
+      "fields": {
+        "groupNamePlaceholder": "Group name"
+      },
+      "actions": {
+        "duplicate": "Duplicate",
+        "ungroup": "Ungroup",
+        "group": "Group",
+        "unlock": "Unlock",
+        "lock": "Lock",
+        "delete": "Delete"
+      }
     },
     "pathBuilder": {
-      "title": "Path builder",
-      "loopConnected": "Loop connected · {count} points · {length}",
-      "pointsCount": "{count} points · {length}",
-      "tapToStart": "Tap the canvas to place the first point",
-      "undo": "Undo",
-      "connectEnds": "Connect ends",
-      "finish": "Finish",
-      "cancel": "Cancel"
+      "header": {
+        "title": "Path builder"
+      },
+      "status": {
+        "loopConnected": "Loop connected · {count} points · {length}",
+        "pointsCount": "{count} points · {length}",
+        "tapToStart": "Tap the canvas to place the first point"
+      },
+      "actions": {
+        "undo": "Undo",
+        "connectEnds": "Connect ends",
+        "finish": "Finish",
+        "cancel": "Cancel"
+      }
     },
     "editorPanels": {
-      "quickActionsTitle": "Quick actions",
-      "adjustTitle": "Adjust",
-      "addPointHint": "Add point on selected segment",
-      "deleteWaypointHint": "Delete selected waypoint",
-      "resumeHint": "Resume or adjust this path",
-      "selectionStepHint": "{label} · {step} step",
-      "selectionFallback": "Selection",
-      "addPoint": "Add point",
-      "editPath": "Edit path",
-      "duplicate": "Duplicate",
-      "unlock": "Unlock",
-      "lock": "Lock",
-      "deletePoint": "Delete point",
-      "delete": "Delete",
-      "adjust": "Adjust",
-      "back": "Back",
-      "step": "Step",
-      "left": "Left",
-      "up": "Up",
-      "down": "Down",
-      "right": "Right",
-      "exit": "Exit",
-      "select": "Select",
-      "tools": "Tools",
-      "inspect": "Inspect",
-      "view": "View",
-      "review": "Review",
-      "share": "Share",
-      "editCopy": "Edit copy",
-      "designSettingsHint": "Design settings",
-      "inspectorTitle": "Inspector",
-      "inspectorSubtitleEmpty": "Design settings and placed items",
-      "inspectorSubtitleSelected": "Selection properties and editing",
-      "toolsTitle": "Tools",
-      "toolsSubtitle3d": "Project actions for the current 3D session",
-      "toolsSubtitle2d": "Drawing and editing tools",
-      "viewTitle": "View",
-      "viewSubtitle": "Canvas mode, guides and viewport controls",
-      "preview": "Preview"
+      "quickActions": {
+        "title": "Quick actions",
+        "adjustTitle": "Adjust",
+        "hints": {
+          "addPoint": "Add point on selected segment",
+          "deleteWaypoint": "Delete selected waypoint",
+          "resume": "Resume or adjust this path",
+          "selectionStep": "{label} · {step} step",
+          "selectionFallback": "Selection"
+        },
+        "actions": {
+          "addPoint": "Add point",
+          "editPath": "Edit path",
+          "duplicate": "Duplicate",
+          "unlock": "Unlock",
+          "lock": "Lock",
+          "deletePoint": "Delete point",
+          "delete": "Delete",
+          "adjust": "Adjust",
+          "back": "Back"
+        },
+        "adjust": {
+          "step": "Step",
+          "left": "Left",
+          "up": "Up",
+          "down": "Down",
+          "right": "Right"
+        }
+      },
+      "nav": {
+        "exit": "Exit",
+        "select": "Select",
+        "tools": "Tools",
+        "inspect": "Inspect",
+        "view": "View",
+        "review": "Review",
+        "share": "Share",
+        "editCopy": "Edit copy",
+        "preview": "Preview"
+      },
+      "inspector": {
+        "designSettingsHint": "Design settings",
+        "title": "Inspector",
+        "subtitles": {
+          "empty": "Design settings and placed items",
+          "selected": "Selection properties and editing"
+        }
+      },
+      "tools": {
+        "title": "Tools",
+        "subtitles": {
+          "preview3d": "Project actions for the current 3D session",
+          "canvas2d": "Drawing and editing tools"
+        }
+      },
+      "view": {
+        "title": "View",
+        "subtitle": "Canvas mode, guides and viewport controls"
+      }
     }
   },
   "viewModeSwitch": {

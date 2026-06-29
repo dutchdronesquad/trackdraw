@@ -75,7 +75,7 @@ export default function MobilePanels({
             )}
           >
             <Scan className="size-3.5" />
-            <span>{embedMode ? t("view") : t("preview")}</span>
+            <span>{embedMode ? t("nav.view") : t("nav.preview")}</span>
           </button>
           {!embedMode ? (
             <button
@@ -83,7 +83,7 @@ export default function MobilePanels({
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Share2 className="size-3.5" />
-              <span>{t("share")}</span>
+              <span>{t("nav.share")}</span>
             </button>
           ) : null}
           {!embedMode ? (
@@ -92,7 +92,7 @@ export default function MobilePanels({
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <ArrowRight className="size-3.5" />
-              <span>{t("editCopy")}</span>
+              <span>{t("nav.editCopy")}</span>
             </Link>
           ) : null}
         </div>
@@ -101,8 +101,8 @@ export default function MobilePanels({
       <MobileDrawer
         open={readOnlyMenuOpen}
         onOpenChange={onSetReadOnlyMenuOpen}
-        title={t("viewTitle")}
-        subtitle={t("viewSubtitle")}
+        title={t("view.title")}
+        subtitle={t("view.subtitle")}
         bodyClassName="space-y-5 pt-3 pb-4"
       >
         <ViewControls

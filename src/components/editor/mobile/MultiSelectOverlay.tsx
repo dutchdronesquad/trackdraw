@@ -47,12 +47,12 @@ export function MultiSelectOverlay({
           <p className="truncate text-[11px] font-semibold tracking-[0.08em] text-white/92 uppercase">
             {selectedCount > 0
               ? tStatusBar("selected", { count: selectedCount })
-              : t("title")}
+              : t("header.title")}
           </p>
           <p className="truncate text-[11px] text-white/70">
             {selectionLocked && selectedCount > 0
-              ? t("lockedHint")
-              : t("tapHint")}
+              ? t("header.lockedHint")
+              : t("header.tapHint")}
           </p>
         </div>
       </div>
@@ -62,7 +62,7 @@ export function MultiSelectOverlay({
           <Input
             value={selectedGroupName ?? ""}
             onChange={(event) => onSetGroupName(event.target.value)}
-            placeholder={t("groupNamePlaceholder")}
+            placeholder={t("fields.groupNamePlaceholder")}
             className="h-9 rounded-[0.9rem] border-white/12 bg-white/8 px-3 text-[12px] text-white placeholder:text-white/38"
           />
         </div>
@@ -76,7 +76,7 @@ export function MultiSelectOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
         >
           <Copy className="size-4" />
-          <span>{t("duplicate")}</span>
+          <span>{t("actions.duplicate")}</span>
         </button>
         <button
           type="button"
@@ -89,7 +89,9 @@ export function MultiSelectOverlay({
           ) : (
             <Group className="size-4" />
           )}
-          <span>{canUngroupSelection ? t("ungroup") : t("group")}</span>
+          <span>
+            {canUngroupSelection ? t("actions.ungroup") : t("actions.group")}
+          </span>
         </button>
         <button
           type="button"
@@ -102,7 +104,7 @@ export function MultiSelectOverlay({
           ) : (
             <Lock className="size-4" />
           )}
-          <span>{selectionLocked ? t("unlock") : t("lock")}</span>
+          <span>{selectionLocked ? t("actions.unlock") : t("actions.lock")}</span>
         </button>
         <button
           type="button"
@@ -111,7 +113,7 @@ export function MultiSelectOverlay({
           className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-rose-300 transition-colors hover:bg-rose-400/12 hover:text-rose-200 disabled:text-white/35"
         >
           <Trash2 className="size-4" />
-          <span>{t("delete")}</span>
+          <span>{t("actions.delete")}</span>
         </button>
       </div>
     </motion.div>

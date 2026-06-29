@@ -91,8 +91,8 @@ export function EditorStarterOverlay({
           onOpenChange={(open) => {
             if (!open) onDismissStarter();
           }}
-          title={t("title")}
-          subtitle={t("mobileSubtitle")}
+          title={t("dialog.title")}
+          subtitle={t("dialog.mobileSubtitle")}
           contentClassName="max-h-[96dvh]"
           bodyClassName="space-y-5 pt-3 pb-4"
         >
@@ -112,20 +112,20 @@ export function EditorStarterOverlay({
             <div className="relative">
               <div className="pr-10">
                 <p className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-                  {t("studioEyebrow")}
+                  {t("dialog.studioEyebrow")}
                 </p>
                 <p className="text-foreground mt-2 text-[1.25rem] font-semibold tracking-[-0.02em]">
-                  {t("title")}
+                  {t("dialog.title")}
                 </p>
                 <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                  {t("desktopDescription")}
+                  {t("dialog.desktopDescription")}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={onDismissStarter}
                 className="text-muted-foreground/75 hover:text-foreground hover:bg-muted absolute top-0 right-0 cursor-pointer rounded-full p-1.5 transition-colors"
-                aria-label={t("dismissAria")}
+                aria-label={t("dialog.dismissAria")}
               >
                 <X className="size-4" />
               </button>

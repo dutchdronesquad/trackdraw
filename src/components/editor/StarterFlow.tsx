@@ -29,7 +29,7 @@ export function StarterSteps({ mobile = false }: { mobile?: boolean }) {
             : "text-muted-foreground text-[11px] font-semibold tracking-widest uppercase"
         }
       >
-        {t("goodFirstSteps")}
+        {t("intro.goodFirstSteps")}
       </p>
       <ol className={mobile ? "space-y-3" : "mt-3 space-y-3"}>
         {STARTER_STEP_IDS.map((id, index) => {
@@ -149,10 +149,10 @@ export function StarterActions({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-foreground text-sm font-medium">
-                {t("guidedTitle")}
+                {t("guided.title")}
               </p>
               <p className="text-muted-foreground mt-1 text-xs leading-5">
-                {t("guidedDescriptionDesktop")}
+                {t("guided.descriptionDesktop")}
               </p>
             </div>
             <div className="flex h-full items-center self-stretch">
@@ -165,15 +165,15 @@ export function StarterActions({
             onClick={onBlank}
             className="text-muted-foreground hover:text-foreground mt-3 w-full cursor-pointer text-center text-sm underline-offset-2 transition-colors hover:underline"
           >
-            {t("continueEmpty")}
+            {t("empty.continue")}
           </button>
         </div>
         <p className="text-muted-foreground mt-5 hidden flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] sm:flex">
-          <Kbd>G</Kbd> {t("kbdGate")}
+          <Kbd>G</Kbd> {t("shortcuts.gate")}
           <span className="text-muted-foreground/60">·</span>
-          <Kbd>P</Kbd> {t("kbdPath")}
+          <Kbd>P</Kbd> {t("shortcuts.path")}
           <span className="text-muted-foreground/60">·</span>
-          <Kbd>Enter</Kbd> {t("kbdFinish")}
+          <Kbd>Enter</Kbd> {t("shortcuts.finish")}
         </p>
       </>
     );
@@ -184,7 +184,7 @@ export function StarterActions({
       <div className="space-y-2.5">
         <div>
           <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            {t("starterLayoutsLabel")}
+            {t("starterLayouts.label")}
           </p>
           <div className="space-y-2">
             {starterLayouts.map((layout) => (
@@ -212,7 +212,7 @@ export function StarterActions({
         </div>
 
         <p className="text-muted-foreground/60 pt-1 text-[11px] font-semibold tracking-widest uppercase">
-          {t("guidedStartLabel")}
+          {t("guided.label")}
         </p>
 
         <button
@@ -225,17 +225,17 @@ export function StarterActions({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-foreground text-[13px] font-medium">
-              {t("guidedTitle")}
+              {t("guided.title")}
             </p>
             <p className="text-muted-foreground mt-1 text-[11px] leading-5">
-              {t("guidedDescriptionMobile")}
+              {t("guided.descriptionMobile")}
             </p>
           </div>
           <ChevronRight className="text-muted-foreground/45 mt-0.5 size-4 shrink-0" />
         </button>
 
         <p className="text-muted-foreground/60 pt-1 text-[11px] font-semibold tracking-widest uppercase">
-          {t("emptyStartLabel")}
+          {t("empty.label")}
         </p>
 
         <button
@@ -248,10 +248,10 @@ export function StarterActions({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-foreground text-[13px] font-medium">
-              {t("continueEmpty")}
+              {t("empty.continue")}
             </p>
             <p className="text-muted-foreground mt-1 text-[11px] leading-5">
-              {t("emptyStartDescription")}
+              {t("empty.description")}
             </p>
           </div>
         </button>
