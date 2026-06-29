@@ -158,16 +158,12 @@ function LandingVideo({ className = "" }: { className?: string }) {
 export default async function Home() {
   const t = await getTranslations("landing");
 
-  const faq = [
-    { q: t("faq.q1"), a: t("faq.a1") },
-    { q: t("faq.q2"), a: t("faq.a2") },
-    { q: t("faq.q3"), a: t("faq.a3") },
-    { q: t("faq.q4"), a: t("faq.a4") },
-    { q: t("faq.q5"), a: t("faq.a5") },
-    { q: t("faq.q6"), a: t("faq.a6") },
-    { q: t("faq.q7"), a: t("faq.a7") },
-    { q: t("faq.q8"), a: t("faq.a8") },
-  ];
+  const faq = (
+    t.raw("faq.items") as Array<{ question: string; answer: string }>
+  ).map((item) => ({
+    q: item.question,
+    a: item.answer,
+  }));
 
   const features = [
     {
@@ -448,19 +444,17 @@ export default async function Home() {
                         {t("workflow.layout.description")}
                       </p>
                       <ul className="mt-5 space-y-2.5">
-                        {[
-                          t("workflow.layout.bullet1"),
-                          t("workflow.layout.bullet2"),
-                          t("workflow.layout.bullet3"),
-                        ].map((b) => (
-                          <li
-                            key={b}
-                            className="text-muted-foreground flex items-center gap-2.5 text-sm"
-                          >
-                            <CheckCircle2 className="text-brand-primary size-3.5 shrink-0" />{" "}
-                            {b}
-                          </li>
-                        ))}
+                        {(t.raw("workflow.layout.bullets") as string[]).map(
+                          (b) => (
+                            <li
+                              key={b}
+                              className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                            >
+                              <CheckCircle2 className="text-brand-primary size-3.5 shrink-0" />{" "}
+                              {b}
+                            </li>
+                          )
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -480,19 +474,17 @@ export default async function Home() {
                         {t("workflow.fineTune.description")}
                       </p>
                       <ul className="mt-5 space-y-2.5">
-                        {[
-                          t("workflow.fineTune.bullet1"),
-                          t("workflow.fineTune.bullet2"),
-                          t("workflow.fineTune.bullet3"),
-                        ].map((b) => (
-                          <li
-                            key={b}
-                            className="text-muted-foreground flex items-center gap-2.5 text-sm"
-                          >
-                            <CheckCircle2 className="size-3.5 shrink-0 text-emerald-400" />{" "}
-                            {b}
-                          </li>
-                        ))}
+                        {(t.raw("workflow.fineTune.bullets") as string[]).map(
+                          (b) => (
+                            <li
+                              key={b}
+                              className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                            >
+                              <CheckCircle2 className="size-3.5 shrink-0 text-emerald-400" />{" "}
+                              {b}
+                            </li>
+                          )
+                        )}
                       </ul>
                     </div>
                     <Screenshot
@@ -528,19 +520,17 @@ export default async function Home() {
                         {t("workflow.preview.description")}
                       </p>
                       <ul className="mt-5 space-y-2.5">
-                        {[
-                          t("workflow.preview.bullet1"),
-                          t("workflow.preview.bullet2"),
-                          t("workflow.preview.bullet3"),
-                        ].map((b) => (
-                          <li
-                            key={b}
-                            className="text-muted-foreground flex items-center gap-2.5 text-sm"
-                          >
-                            <CheckCircle2 className="size-3.5 shrink-0 text-purple-400" />{" "}
-                            {b}
-                          </li>
-                        ))}
+                        {(t.raw("workflow.preview.bullets") as string[]).map(
+                          (b) => (
+                            <li
+                              key={b}
+                              className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                            >
+                              <CheckCircle2 className="size-3.5 shrink-0 text-purple-400" />{" "}
+                              {b}
+                            </li>
+                          )
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -560,19 +550,17 @@ export default async function Home() {
                         {t("workflow.handOff.description")}
                       </p>
                       <ul className="mt-5 space-y-2.5">
-                        {[
-                          t("workflow.handOff.bullet1"),
-                          t("workflow.handOff.bullet2"),
-                          t("workflow.handOff.bullet3"),
-                        ].map((b) => (
-                          <li
-                            key={b}
-                            className="text-muted-foreground flex items-center gap-2.5 text-sm"
-                          >
-                            <CheckCircle2 className="text-brand-secondary size-3.5 shrink-0" />{" "}
-                            {b}
-                          </li>
-                        ))}
+                        {(t.raw("workflow.handOff.bullets") as string[]).map(
+                          (b) => (
+                            <li
+                              key={b}
+                              className="text-muted-foreground flex items-center gap-2.5 text-sm"
+                            >
+                              <CheckCircle2 className="text-brand-secondary size-3.5 shrink-0" />{" "}
+                              {b}
+                            </li>
+                          )
+                        )}
                       </ul>
                       <Link
                         href="/gallery"

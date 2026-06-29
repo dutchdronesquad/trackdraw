@@ -81,58 +81,84 @@
       "subtitle": "Build the track on a field that matches reality.",
       "description": "Start with the field dimensions, then place the elements crews already recognize. That makes the first version of the plan useful immediately, instead of just being a rough sketch.",
       "screenshotAlt": "TrackDraw 2D layout editor with obstacle library and track plan",
-      "bullet1": "Scale-accurate field dimensions",
-      "bullet2": "Gates, flags, cones, start pads and larger features",
-      "bullet3": "Race line and labels for briefing clarity"
+      "bullets": [
+        "Scale-accurate field dimensions",
+        "Gates, flags, cones, start pads and larger features",
+        "Race line and labels for briefing clarity"
+      ]
     },
     "fineTune": {
       "title": "Fine-Tune",
       "subtitle": "Keep editing when the venue forces a change.",
       "description": "A good plan changes cleanly. Inspector controls and mobile-friendly editing make it possible to adjust object properties, reposition items and keep the design usable even when the real venue refuses to stay static.",
       "screenshotAlt": "TrackDraw mobile editor with settings panel open",
-      "bullet1": "Inspector controls for dimensions, rotation and color",
-      "bullet2": "Touch-friendly editing on phones and tablets",
-      "bullet3": "Fast adjustments without leaving the main plan"
+      "bullets": [
+        "Inspector controls for dimensions, rotation and color",
+        "Touch-friendly editing on phones and tablets",
+        "Fast adjustments without leaving the main plan"
+      ]
     },
     "preview": {
       "title": "3D Preview",
       "subtitle": "Walk the track before you build it.",
       "description": "One click switches from the flat 2D plan to a live 3D scene. Assign elevation to each waypoint on the race line to model the full vertical profile. Catch dangerous approaches before a single peg is in the ground.",
       "screenshotAlt": "TrackDraw 3D preview showing track flow and elevation",
-      "bullet1": "Live 3D rendered directly from your 2D design",
-      "bullet2": "Per-waypoint altitude on the race line",
-      "bullet3": "Elevation graph in the inspector panel"
+      "bullets": [
+        "Live 3D rendered directly from your 2D design",
+        "Per-waypoint altitude on the race line",
+        "Elevation graph in the inspector panel"
+      ]
     },
     "handOff": {
       "title": "Hand-Off",
       "subtitle": "Give pilots and crew the same current version.",
       "description": "A plan only matters if other people can open it. Shared read-only links and exports turn the layout into something pilots can review, crew can print and organizers can reuse later.",
       "screenshotAlt": "TrackDraw read-only shared view open on mobile",
-      "bullet1": "Read-only links that open on any device",
-      "bullet2": "PDF, PNG and SVG for briefing and print workflows",
-      "bullet3": "JSON export to archive and reuse layouts later",
-      "gallery": "Browse the gallery for inspiration"
+      "gallery": "Browse the gallery for inspiration",
+      "bullets": [
+        "Read-only links that open on any device",
+        "PDF, PNG and SVG for briefing and print workflows",
+        "JSON export to archive and reuse layouts later"
+      ]
     }
   },
   "faq": {
     "sectionTitle": "FAQ",
     "sectionHeading": "Good to know.",
-    "q1": "Is TrackDraw a drone race track builder?",
-    "a1": "Yes. TrackDraw is a browser-based drone race track builder for FPV race directors who need scale-accurate layouts, 3D review, sharing, and export in one workflow.",
-    "q2": "What is the best way to plan an FPV race track?",
-    "a2": "Start with the field dimensions, place the obstacles you actually have, then review the route in 3D before sharing or exporting the plan. TrackDraw is built around that exact sequence.",
-    "q3": "Can pilots review the layout without an account?",
-    "a3": "Yes. Share links open in read-only mode on any device, no account or app needed. Send it to pilots, judges, or crew and everyone sees the same published version.",
-    "q4": "Does it work on a tablet at the venue?",
-    "a4": "Yes. The editor is touch-friendly, so quick adjustments on a phone or tablet are practical when the real venue forces a change.",
-    "q5": "What export formats are available?",
-    "a5": "PDF, PNG, SVG, JSON, and a cinematic FPV video export. That covers printed race briefs, shareable visuals, reusable project files, and motion-led route review.",
-    "q6": "Do I need an account to get started?",
-    "a6": "No. Open the studio and start designing right away. Creating an account adds cloud storage, durable published links, gallery publishing, and embeds.",
-    "q7": "Can I reuse a layout for a future event?",
-    "a7": "Yes. Save parts of a layout as named presets and place them again in one click. To reuse a full project, export it as JSON and import it at the start of a new event.",
-    "q8": "Can TrackDraw help catch route problems before race day?",
-    "a8": "Yes. The 3D preview and route review warnings help surface uneven spacing, rhythm breaks, and alignment issues before you share the layout or start building it."
+    "items": [
+      {
+        "question": "Is TrackDraw a drone race track builder?",
+        "answer": "Yes. TrackDraw is a browser-based drone race track builder for FPV race directors who need scale-accurate layouts, 3D review, sharing, and export in one workflow."
+      },
+      {
+        "question": "What is the best way to plan an FPV race track?",
+        "answer": "Start with the field dimensions, place the obstacles you actually have, then review the route in 3D before sharing or exporting the plan. TrackDraw is built around that exact sequence."
+      },
+      {
+        "question": "Can pilots review the layout without an account?",
+        "answer": "Yes. Share links open in read-only mode on any device, no account or app needed. Send it to pilots, judges, or crew and everyone sees the same published version."
+      },
+      {
+        "question": "Does it work on a tablet at the venue?",
+        "answer": "Yes. The editor is touch-friendly, so quick adjustments on a phone or tablet are practical when the real venue forces a change."
+      },
+      {
+        "question": "What export formats are available?",
+        "answer": "PDF, PNG, SVG, JSON, and a cinematic FPV video export. That covers printed race briefs, shareable visuals, reusable project files, and motion-led route review."
+      },
+      {
+        "question": "Do I need an account to get started?",
+        "answer": "No. Open the studio and start designing right away. Creating an account adds cloud storage, durable published links, gallery publishing, and embeds."
+      },
+      {
+        "question": "Can I reuse a layout for a future event?",
+        "answer": "Yes. Save parts of a layout as named presets and place them again in one click. To reuse a full project, export it as JSON and import it at the start of a new event."
+      },
+      {
+        "question": "Can TrackDraw help catch route problems before race day?",
+        "answer": "Yes. The 3D preview and route review warnings help surface uneven spacing, rhythm breaks, and alignment issues before you share the layout or start building it."
+      }
+    ]
   },
   "pricing": {
     "sectionEyebrow": "Plans",

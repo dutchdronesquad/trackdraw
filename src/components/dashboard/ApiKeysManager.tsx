@@ -98,8 +98,8 @@ function formatRateLimitWindow(
 ) {
   if (ms === null) return "—";
   const minutes = ms / 1000 / 60;
-  if (minutes < 60) return t("minutesUnit", { count: minutes });
-  return t("hoursUnit", { count: minutes / 60 });
+  if (minutes < 60) return t("units.minutes", { count: minutes });
+  return t("units.hours", { count: minutes / 60 });
 }
 
 function formatPermissions(permissions: AdminApiKey["permissions"]) {
@@ -269,7 +269,7 @@ export default function DashboardApiKeysManager({
   }));
 
   const emptyMessage =
-    initialKeys.length === 0 ? t("emptyMessage") : t("emptyFilteredMessage");
+    initialKeys.length === 0 ? t("empty.default") : t("empty.filtered");
 
   const inspectStatus = inspectKey ? getApiKeyStatus(inspectKey) : null;
 
@@ -278,10 +278,10 @@ export default function DashboardApiKeysManager({
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
-        searchPlaceholder={t("searchPlaceholder")}
+        searchPlaceholder={t("filters.searchPlaceholder")}
       >
         <DataTableFacetFilter
-          title={t("status")}
+          title={t("filters.status")}
           selected={selectedStatuses}
           options={statusFilterOptions}
           onChange={setSelectedStatuses}
@@ -299,7 +299,7 @@ export default function DashboardApiKeysManager({
       />
 
       <p className="text-muted-foreground text-xs">
-        {t("showing", {
+        {t("status.showing", {
           filtered: filteredRows.length,
           total: initialKeys.length,
         })}
@@ -335,21 +335,21 @@ export default function DashboardApiKeysManager({
               <div className="grid grid-cols-3 divide-x border-b">
                 {[
                   {
-                    label: t("panel.requests"),
+                    label: t("panel.stats.requests"),
                     value: inspectKey.requestCount.toLocaleString(),
                   },
                   {
-                    label: t("panel.remaining"),
+                    label: t("panel.stats.remaining"),
                     value:
                       inspectKey.remaining !== null
                         ? inspectKey.remaining.toLocaleString()
                         : "—",
                   },
                   {
-                    label: t("panel.rateLimit"),
+                    label: t("panel.stats.rateLimit"),
                     value: inspectKey.rateLimitEnabled
                       ? `${inspectKey.rateLimitMax ?? "—"}/${formatRateLimitWindow(inspectKey.rateLimitTimeWindowMs, t as (key: string, values?: Record<string, unknown>) => string)}`
-                      : t("off"),
+                      : t("status.off"),
                   },
                 ].map(({ label, value }) => (
                   <div key={label} className="px-4 py-3 text-center">
@@ -365,12 +365,12 @@ export default function DashboardApiKeysManager({
 
               <div className="space-y-0 px-6 py-5">
                 <p className="text-muted-foreground mb-3 text-[10px] font-medium tracking-wide uppercase">
-                  {t("panel.keySection")}
+                  {t("panel.sections.key")}
                 </p>
                 <dl className="space-y-2">
                   {[
                     {
-                      label: t("panel.status"),
+                      label: t("panel.fields.status"),
                       value: (
                         <Badge variant={getStatusVariant(inspectStatus)}>
                           {getStatusLabel(inspectStatus, t)}
@@ -378,7 +378,7 @@ export default function DashboardApiKeysManager({
                       ),
                     },
                     {
-                      label: t("panel.prefix"),
+                      label: t("panel.fields.prefix"),
                       value: (
                         <span className="font-mono text-xs">
                           {inspectKey.prefix ?? "—"}
@@ -387,7 +387,7 @@ export default function DashboardApiKeysManager({
                       ),
                     },
                     {
-                      label: t("panel.permissions"),
+                      label: t("panel.fields.permissions"),
                       value: (
                         <span className="text-xs">
                           {formatPermissions(inspectKey.permissions)}
@@ -395,15 +395,15 @@ export default function DashboardApiKeysManager({
                       ),
                     },
                     {
-                      label: t("panel.created"),
+                      label: t("panel.fields.created"),
                       value: formatDate(inspectKey.createdAt),
                     },
                     {
-                      label: t("panel.expires"),
+                      label: t("panel.fields.expires"),
                       value: formatDate(inspectKey.expiresAt),
                     },
                     {
-                      label: t("panel.lastUsed"),
+                      label: t("panel.fields.lastUsed"),
                       value: formatDateTime(inspectKey.lastRequest),
                     },
                   ].map(({ label, value }) => (
@@ -422,20 +422,20 @@ export default function DashboardApiKeysManager({
 
               <div className="border-t px-6 py-5">
                 <p className="text-muted-foreground mb-3 text-[10px] font-medium tracking-wide uppercase">
-                  {t("panel.ownerSection")}
+                  {t("panel.sections.owner")}
                 </p>
                 <dl className="space-y-2">
                   {[
                     {
-                      label: t("panel.name"),
+                      label: t("panel.fields.name"),
                       value: inspectKey.ownerName ?? "—",
                     },
                     {
-                      label: t("panel.email"),
+                      label: t("panel.fields.email"),
                       value: inspectKey.ownerEmail ?? "—",
                     },
                     {
-                      label: t("panel.userId"),
+                      label: t("panel.fields.userId"),
                       value: (
                         <span className="font-mono text-xs">
                           {inspectKey.ownerUserId}
@@ -462,7 +462,7 @@ export default function DashboardApiKeysManager({
                 <KeyRound className="size-4" />
                 {t("panel.title")}
               </SheetTitle>
-              <SheetDescription>{t("panel.selectRow")}</SheetDescription>
+              <SheetDescription>{t("panel.empty.selectRow")}</SheetDescription>
             </SheetHeader>
           )}
         </SheetContent>

@@ -188,7 +188,7 @@ function getEventDetailLabel(
   }
 
   if (event.metadata?.shareToken) {
-    return t("share", {
+    return t("filters.share", {
       token: formatMetadataValue(event.metadata.shareToken),
     });
   }
@@ -237,7 +237,7 @@ function getEntityDisplay(event: DashboardAuditEvent, t: Translate) {
   return {
     label: getEntityTypeLabel(event.entityType, t),
     detail: event.entityId
-      ? t("entityId", { id: shortenId(event.entityId) })
+      ? t("entity.id", { id: shortenId(event.entityId) })
       : null,
   };
 }
@@ -318,7 +318,7 @@ export default function DashboardAuditEventsTable({
   initialCategories = [],
 }: AuditEventsTableProps) {
   const t: Translate = useTranslations("dashboard.audit");
-  const unknownUserLabel = t("unknownUser");
+  const unknownUserLabel = t("fallback.unknownUser");
   const [globalFilter, setGlobalFilter] = useState("");
   const [selectedCategories, setSelectedCategories] =
     useState<AuditEventCategory[]>(initialCategories);
@@ -354,7 +354,7 @@ export default function DashboardAuditEventsTable({
       size="sm"
       className={cn(dataTableSortButtonClassName, className)}
       onClick={() => toggleSort(key)}
-      aria-label={t("sortAriaLabel", { label: label.toLowerCase() })}
+      aria-label={t("aria.sort", { label: label.toLowerCase() })}
     >
       {label}
       <ArrowUpDown
@@ -492,22 +492,22 @@ export default function DashboardAuditEventsTable({
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
-        searchPlaceholder={t("searchPlaceholder")}
+        searchPlaceholder={t("filters.searchPlaceholder")}
       >
         <DataTableFacetFilter
-          title={t("category")}
+          title={t("filters.category")}
           selected={selectedCategories}
           options={categoryFilterOptions}
           onChange={setSelectedCategories}
         />
         <DataTableFacetFilter
-          title={t("event")}
+          title={t("filters.event")}
           selected={selectedEventTypes}
           options={eventTypeFilters}
           onChange={setSelectedEventTypes}
         />
         <DataTableFacetFilter
-          title={t("actor")}
+          title={t("filters.actor")}
           selected={selectedActors}
           options={actorFilterOptions}
           onChange={setSelectedActors}

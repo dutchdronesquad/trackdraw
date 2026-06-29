@@ -154,9 +154,9 @@ export default async function DashboardMetricsPage() {
         {/* KPI strip */}
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
           <KpiCard
-            label={tMetrics("kpi.totalUsers")}
+            label={tMetrics("kpi.totalUsers.label")}
             value={metrics.users.total}
-            sub={tMetrics("kpi.totalUsersSub", {
+            sub={tMetrics("kpi.totalUsers.sub", {
               count: metrics.users.newThisMonth,
             })}
             icon={Users}
@@ -164,9 +164,9 @@ export default async function DashboardMetricsPage() {
             iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
           />
           <KpiCard
-            label={tMetrics("kpi.activeUsers30d")}
+            label={tMetrics("kpi.activeUsers30d.label")}
             value={metrics.users.activeLastThirtyDays}
-            sub={tMetrics("kpi.activeUsers30dSub", {
+            sub={tMetrics("kpi.activeUsers30d.sub", {
               pct:
                 metrics.users.total > 0
                   ? Math.round(
@@ -181,9 +181,9 @@ export default async function DashboardMetricsPage() {
             iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
           />
           <KpiCard
-            label={tMetrics("kpi.projects")}
+            label={tMetrics("kpi.projects.label")}
             value={metrics.projects.active}
-            sub={tMetrics("kpi.projectsSub", {
+            sub={tMetrics("kpi.projects.sub", {
               archived: metrics.projects.archived,
             })}
             icon={FolderOpen}
@@ -191,9 +191,9 @@ export default async function DashboardMetricsPage() {
             iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
           />
           <KpiCard
-            label={tMetrics("kpi.activeShares")}
+            label={tMetrics("kpi.activeShares.label")}
             value={metrics.shares.totalActive}
-            sub={tMetrics("kpi.activeSharesSub", {
+            sub={tMetrics("kpi.activeShares.sub", {
               revoked: metrics.shares.revoked,
             })}
             icon={Link2}
@@ -201,9 +201,9 @@ export default async function DashboardMetricsPage() {
             iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
           />
           <KpiCard
-            label={tMetrics("kpi.activeApiKeys")}
+            label={tMetrics("kpi.activeApiKeys.label")}
             value={metrics.apiKeys.active}
-            sub={tMetrics("kpi.activeApiKeysSub", {
+            sub={tMetrics("kpi.activeApiKeys.sub", {
               total: metrics.apiKeys.total,
             })}
             icon={KeyRound}

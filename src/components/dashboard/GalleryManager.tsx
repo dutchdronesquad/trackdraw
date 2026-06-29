@@ -166,17 +166,17 @@ function formatDate(value: string | null) {
 function getShareLifecycleDetail(entry: DashboardGalleryEntry, t: Translate) {
   const state = getShareLifecycleState(entry);
   if (state === "revoked")
-    return t("revokedOn", { date: formatDate(entry.shareRevokedAt) });
+    return t("lifecycle.revokedOn", { date: formatDate(entry.shareRevokedAt) });
   if (state === "expired")
-    return t("expiredOn", { date: formatDate(entry.shareExpiresAt) });
+    return t("lifecycle.expiredOn", { date: formatDate(entry.shareExpiresAt) });
   if (entry.shareExpiresAt)
-    return t("expiresOn", { date: formatDate(entry.shareExpiresAt) });
-  return t("noExpiry");
+    return t("lifecycle.expiresOn", { date: formatDate(entry.shareExpiresAt) });
+  return t("lifecycle.noExpiry");
 }
 
 function formatFieldSize(entry: DashboardGalleryEntry, t: Translate) {
   if (entry.fieldWidth == null || entry.fieldHeight == null) {
-    return t("notSet");
+    return t("fallback.notSet");
   }
 
   return formatMeasurementFieldSize(
@@ -187,8 +187,8 @@ function formatFieldSize(entry: DashboardGalleryEntry, t: Translate) {
 }
 
 function formatElementCount(entry: DashboardGalleryEntry, t: Translate) {
-  if (entry.shapeCount == null) return t("notAvailable");
-  return t("elementCount", { count: entry.shapeCount });
+  if (entry.shapeCount == null) return t("fallback.notAvailable");
+  return t("meta.elementCount", { count: entry.shapeCount });
 }
 
 function getPreviewImageUrl(entry: DashboardGalleryEntry) {
@@ -208,10 +208,10 @@ function getEmbedAvailable(entry: DashboardGalleryEntry) {
 }
 
 function getEmbedUnavailableReason(entry: DashboardGalleryEntry, t: Translate) {
-  if (entry.shareType !== "published") return t("embedUnavailableTemporary");
+  if (entry.shareType !== "published") return t("embed.unavailableTemporary");
   const state = getShareLifecycleState(entry);
-  if (state === "revoked") return t("embedUnavailableRevoked");
-  if (state === "expired") return t("embedUnavailableExpired");
+  if (state === "revoked") return t("embed.unavailableRevoked");
+  if (state === "expired") return t("embed.unavailableExpired");
   return null;
 }
 
@@ -388,7 +388,7 @@ export default function DashboardGalleryManager({
     action: GalleryUpdateAction
   ) => {
     if (!canManageGallery) {
-      toast.error(t("manageRestricted"));
+      toast.error(t("restrictions.manage"));
       return;
     }
 
@@ -411,7 +411,9 @@ export default function DashboardGalleryManager({
 
       if (!response.ok || !payload.ok) {
         throw new Error(
-          payload.ok ? t("updateFailed") : (payload.error ?? t("updateFailed"))
+          payload.ok
+            ? t("messages.updateFailed")
+            : (payload.error ?? t("messages.updateFailed"))
         );
       }
 
@@ -423,9 +425,11 @@ export default function DashboardGalleryManager({
         )
       );
 
-      toast.success(t("updateSuccess", { action }));
+      toast.success(t("messages.updateSuccess", { action }));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("updateFailed"));
+      toast.error(
+        error instanceof Error ? error.message : t("messages.updateFailed")
+      );
     } finally {
       setPendingShareToken(null);
     }
@@ -433,7 +437,7 @@ export default function DashboardGalleryManager({
 
   const deleteEntry = async (shareToken: string) => {
     if (!canManageGallery) {
-      toast.error(t("deleteRestricted"));
+      toast.error(t("restrictions.delete"));
       return;
     }
 
@@ -452,7 +456,9 @@ export default function DashboardGalleryManager({
 
       if (!response.ok || !payload.ok) {
         throw new Error(
-          payload.ok ? t("deleteFailed") : (payload.error ?? t("deleteFailed"))
+          payload.ok
+            ? t("messages.deleteFailed")
+            : (payload.error ?? t("messages.deleteFailed"))
         );
       }
 
@@ -460,9 +466,11 @@ export default function DashboardGalleryManager({
         previous.filter((entry) => entry.shareToken !== shareToken)
       );
       setDeleteCandidate(null);
-      toast.success(t("deleteSuccess"));
+      toast.success(t("messages.deleteSuccess"));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("deleteFailed"));
+      toast.error(
+        error instanceof Error ? error.message : t("messages.deleteFailed")
+      );
     } finally {
       setPendingShareToken(null);
     }
@@ -473,18 +481,18 @@ export default function DashboardGalleryManager({
 
     try {
       await navigator.clipboard.writeText(href);
-      toast.success(t("copyLinkSuccess"));
+      toast.success(t("messages.copyLinkSuccess"));
     } catch {
-      toast.error(t("copyLinkFailed"));
+      toast.error(t("messages.copyLinkFailed"));
     }
   };
 
   const copyToClipboard = async (value: string, label: string) => {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success(t("copySuccess", { label }));
+      toast.success(t("messages.copySuccess", { label }));
     } catch {
-      toast.error(t("copyFailed", { label }));
+      toast.error(t("messages.copyFailed", { label }));
     }
   };
 
@@ -492,12 +500,12 @@ export default function DashboardGalleryManager({
     return entry.galleryState !== "featured"
       ? {
           action: "feature" as const,
-          label: t("feature"),
+          label: t("actions.feature"),
           icon: Sparkles,
         }
       : {
           action: "unfeature" as const,
-          label: t("unfeature"),
+          label: t("actions.unfeature"),
           icon: StarOff,
         };
   }
@@ -506,12 +514,12 @@ export default function DashboardGalleryManager({
     return entry.galleryState !== "hidden"
       ? {
           action: "hide" as const,
-          label: t("hide"),
+          label: t("actions.hide"),
           icon: EyeOff,
         }
       : {
           action: "restore" as const,
-          label: t("restore"),
+          label: t("actions.restore"),
           icon: Eye,
         };
   }
@@ -667,14 +675,14 @@ export default function DashboardGalleryManager({
                   <VisibilityIcon className="size-4" />
                 </Button>
               </ActionTooltip>
-              <ActionTooltip label={t("delete")}>
+              <ActionTooltip label={t("actions.delete")}>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   className="text-destructive hover:bg-muted hover:text-destructive size-7"
                   disabled={isPending || !canManageGallery}
-                  aria-label={`${t("delete")} ${entry.galleryTitle}`}
+                  aria-label={`${t("actions.delete")} ${entry.galleryTitle}`}
                   onClick={() => setDeleteCandidate(entry)}
                 >
                   <Trash2 className="size-4" />
@@ -688,7 +696,7 @@ export default function DashboardGalleryManager({
                   size="sm"
                   className="text-muted-foreground hover:text-foreground ml-auto size-8 p-0 md:hidden"
                   disabled={isPending || !canManageGallery}
-                  aria-label={t("openActions")}
+                  aria-label={t("actions.open")}
                 >
                   {isPending ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -720,7 +728,7 @@ export default function DashboardGalleryManager({
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="size-4" />
-                  {t("delete")}
+                  {t("actions.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -792,7 +800,7 @@ export default function DashboardGalleryManager({
     (entry) => getShareLifecycleState(entry) === "revoked"
   ).length;
   const emptyMessage =
-    entries.length === 0 ? t("emptyMessage") : t("emptyFilteredMessage");
+    entries.length === 0 ? t("empty.default") : t("empty.filtered");
   const inspectShareLifecycle = inspectCandidate
     ? getShareLifecycleState(inspectCandidate)
     : null;
@@ -808,16 +816,16 @@ export default function DashboardGalleryManager({
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
-        searchPlaceholder={t("searchPlaceholder")}
+        searchPlaceholder={t("filters.searchPlaceholder")}
       >
         <DataTableFacetFilter
-          title={t("state")}
+          title={t("filters.state")}
           selected={selectedGalleryStates}
           options={stateFilterOptions}
           onChange={setSelectedGalleryStates}
         />
         <DataTableFacetFilter
-          title={t("share")}
+          title={t("filters.share")}
           selected={selectedShareLifecycles}
           options={shareFilterOptions}
           onChange={setSelectedShareLifecycles}
@@ -825,7 +833,7 @@ export default function DashboardGalleryManager({
       </DataTableToolbar>
 
       <p className="text-muted-foreground text-xs">
-        {t("cleanupNotice", {
+        {t("status.cleanupNotice", {
           expired: expiredShareCount,
           revoked: revokedShareCount,
         })}
@@ -840,12 +848,15 @@ export default function DashboardGalleryManager({
         emptyClassName="py-8"
         onRowClick={(row) => setInspectCandidate(row.original)}
         getRowAriaLabel={(row) =>
-          t("rowAriaLabel", { title: row.original.galleryTitle })
+          t("aria.row", { title: row.original.galleryTitle })
         }
       />
 
       <p className="text-muted-foreground text-xs">
-        {t("showing", { filtered: filteredRows.length, total: entries.length })}
+        {t("status.showing", {
+          filtered: filteredRows.length,
+          total: entries.length,
+        })}
       </p>
 
       <Dialog
@@ -1008,7 +1019,7 @@ export default function DashboardGalleryManager({
                                 {getEmbedUnavailableReason(
                                   inspectCandidate,
                                   t as unknown as Translate
-                                ) ?? t("notAvailable")}
+                                ) ?? t("fallback.notAvailable")}
                               </span>
                             )
                           }

@@ -61,27 +61,27 @@ export default async function DashboardOverviewCards({
   const cards: KpiCardConfig[] = [
     {
       key: "gallery-total",
-      label: t("galleryEntries"),
+      label: t("cards.galleryEntries.label"),
       value: galleryStats.total,
-      helper: t("galleryEntriesHelper"),
+      helper: t("cards.galleryEntries.helper"),
       icon: ImageIcon,
       accent: "bg-sky-500",
       iconTone: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
     },
     {
       key: "gallery-featured",
-      label: t("featured"),
+      label: t("cards.featured.label"),
       value: galleryStats.featured,
-      helper: t("featuredHelper"),
+      helper: t("cards.featured.helper"),
       icon: Sparkles,
       accent: "bg-amber-500",
       iconTone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     },
     {
       key: "gallery-hidden",
-      label: t("hidden"),
+      label: t("cards.hidden.label"),
       value: galleryStats.hidden,
-      helper: t("hiddenHelper"),
+      helper: t("cards.hidden.helper"),
       icon: EyeOff,
       accent: "bg-rose-500",
       iconTone: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
@@ -90,9 +90,9 @@ export default async function DashboardOverviewCards({
       ? [
           {
             key: "accounts",
-            label: t("totalAccounts"),
+            label: t("cards.totalAccounts.label"),
             value: totalUsers,
-            helper: t("totalAccountsHelper"),
+            helper: t("cards.totalAccounts.helper"),
             icon: Users,
             accent: "bg-emerald-500",
             iconTone:

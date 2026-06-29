@@ -33,25 +33,43 @@
   },
   "overview": {
     "kpi": {
-      "totalUsers": "Total users",
-      "totalUsersSub": "+{count} this month",
-      "vsPrevMonth": "vs prev month",
-      "activeProjects": "Active projects",
-      "activeProjectsSub": "non-archived",
-      "activeShares": "Active shares",
-      "activeSharesSub": "live share links",
-      "gallery": "Gallery",
-      "gallerySub": "{featured} featured · {hidden} hidden"
+      "totalUsers": {
+        "label": "Total users",
+        "sub": "+{count} this month"
+      },
+      "activeProjects": {
+        "label": "Active projects",
+        "sub": "non-archived"
+      },
+      "activeShares": {
+        "label": "Active shares",
+        "sub": "live share links"
+      },
+      "gallery": {
+        "label": "Gallery",
+        "sub": "{featured} featured · {hidden} hidden"
+      },
+      "comparison": {
+        "vsPrevMonth": "vs prev month"
+      }
     },
-    "recentActivity": "Recent activity",
-    "recentSignups": "Recent sign-ups",
-    "galleryCardTitle": "Gallery",
-    "viewAll": "View all",
-    "noRecentActivity": "No recent activity",
-    "noRecentSignups": "No recent sign-ups",
-    "noGalleryEntries": "No gallery entries yet",
-    "untitled": "Untitled",
-    "unknownOwner": "Unknown",
+    "sections": {
+      "recentActivity": "Recent activity",
+      "recentSignups": "Recent sign-ups",
+      "gallery": "Gallery"
+    },
+    "actions": {
+      "viewAll": "View all"
+    },
+    "empty": {
+      "recentActivity": "No recent activity",
+      "recentSignups": "No recent sign-ups",
+      "galleryEntries": "No gallery entries yet"
+    },
+    "fallback": {
+      "untitled": "Untitled",
+      "unknownOwner": "Unknown"
+    },
     "galleryState": {
       "featured": "Featured",
       "hidden": "Hidden",
@@ -75,27 +93,47 @@
     }
   },
   "overviewCards": {
-    "galleryEntries": "Gallery entries",
-    "galleryEntriesHelper": "All dashboard-managed entries",
-    "featured": "Featured",
-    "featuredHelper": "Pinned in the featured section",
-    "hidden": "Hidden",
-    "hiddenHelper": "Removed from public discovery",
-    "totalAccounts": "Total accounts",
-    "totalAccountsHelper": "Tracked user records"
+    "cards": {
+      "galleryEntries": {
+        "label": "Gallery entries",
+        "helper": "All dashboard-managed entries"
+      },
+      "featured": {
+        "label": "Featured",
+        "helper": "Pinned in the featured section"
+      },
+      "hidden": {
+        "label": "Hidden",
+        "helper": "Removed from public discovery"
+      },
+      "totalAccounts": {
+        "label": "Total accounts",
+        "helper": "Tracked user records"
+      }
+    }
   },
   "metrics": {
     "kpi": {
-      "totalUsers": "Total users",
-      "totalUsersSub": "+{count} this month",
-      "activeUsers30d": "Active users (30d)",
-      "activeUsers30dSub": "{pct}% of total",
-      "projects": "Projects",
-      "projectsSub": "non-archived · {archived} archived",
-      "activeShares": "Active shares",
-      "activeSharesSub": "{revoked} revoked",
-      "activeApiKeys": "Active API keys",
-      "activeApiKeysSub": "{total} total"
+      "totalUsers": {
+        "label": "Total users",
+        "sub": "+{count} this month"
+      },
+      "activeUsers30d": {
+        "label": "Active users (30d)",
+        "sub": "{pct}% of total"
+      },
+      "projects": {
+        "label": "Projects",
+        "sub": "non-archived · {archived} archived"
+      },
+      "activeShares": {
+        "label": "Active shares",
+        "sub": "{revoked} revoked"
+      },
+      "activeApiKeys": {
+        "label": "Active API keys",
+        "sub": "{total} total"
+      }
     },
     "userPopulation": {
       "title": "User population",
@@ -160,8 +198,10 @@
     }
   },
   "users": {
-    "searchPlaceholder": "Search by name or email...",
-    "role": "Role",
+    "filters": {
+      "searchPlaceholder": "Search by name or email...",
+      "role": "Role"
+    },
     "table": {
       "user": "User",
       "projects": "Projects",
@@ -169,42 +209,64 @@
       "joined": "Joined",
       "lastLogin": "Last login"
     },
-    "you": "(you)",
-    "unnamedUser": "Unnamed user",
-    "emptyMessage": "No users found.",
-    "showing": "Showing {filtered} of {total} accounts.",
-    "loadFailed": "Failed to load user context.",
-    "copySuccess": "{label} copied.",
-    "copyFailed": "Could not copy {label}.",
-    "updateFailed": "Could not update the selected role.",
-    "updateSuccess": "Updated {name} to {role}.",
+    "selfBadge": "(you)",
+    "fallback": {
+      "unnamedUser": "Unnamed user"
+    },
+    "empty": {
+      "default": "No users found."
+    },
+    "status": {
+      "showing": "Showing {filtered} of {total} accounts."
+    },
+    "messages": {
+      "loadFailed": "Failed to load user context.",
+      "copySuccess": "{label} copied.",
+      "copyFailed": "Could not copy {label}.",
+      "updateFailed": "Could not update the selected role.",
+      "updateSuccess": "Updated {name} to {role}."
+    },
     "panel": {
-      "loading": "Loading…",
+      "status": {
+        "loading": "Loading…"
+      },
       "stats": {
         "projects": "Projects",
         "shares": "Shares",
         "gallery": "Gallery",
         "apiKeys": "API keys"
       },
-      "accountSection": "Account",
-      "memberSince": "Member since",
-      "lastLogin": "Last login",
-      "role": "Role",
-      "userId": "User ID",
-      "copyUserId": "Copy user ID",
-      "changeRole": "Change role",
-      "cannotChangeOwnRole": "Cannot change own role",
-      "save": "Save",
-      "recentActivitySection": "Recent activity",
-      "noAuditEvents": "No audit events recorded.",
-      "actor": "Actor",
-      "target": "Target",
-      "viewFullAuditTrail": "View full audit trail"
+      "sections": {
+        "account": "Account",
+        "recentActivity": "Recent activity"
+      },
+      "fields": {
+        "memberSince": "Member since",
+        "lastLogin": "Last login",
+        "role": "Role",
+        "userId": "User ID"
+      },
+      "actions": {
+        "copyUserId": "Copy user ID",
+        "changeRole": "Change role",
+        "save": "Save",
+        "viewFullAuditTrail": "View full audit trail"
+      },
+      "messages": {
+        "cannotChangeOwnRole": "Cannot change own role",
+        "noAuditEvents": "No audit events recorded."
+      },
+      "relation": {
+        "actor": "Actor",
+        "target": "Target"
+      }
     }
   },
   "apiKeys": {
-    "searchPlaceholder": "Search key name or owner...",
-    "status": "Status",
+    "filters": {
+      "searchPlaceholder": "Search key name or owner...",
+      "status": "Status"
+    },
     "statusValues": {
       "active": "Active",
       "expired": "Expired",
@@ -218,45 +280,66 @@
       "lastUsed": "Last used",
       "expires": "Expires"
     },
-    "emptyMessage": "No API keys found.",
-    "emptyFilteredMessage": "No API keys match the current filters.",
-    "showing": "Showing {filtered} of {total} API keys.",
-    "off": "Off",
-    "minutesUnit": "{count} min",
-    "hoursUnit": "{count} hr",
+    "empty": {
+      "default": "No API keys found.",
+      "filtered": "No API keys match the current filters."
+    },
+    "status": {
+      "showing": "Showing {filtered} of {total} API keys.",
+      "off": "Off"
+    },
+    "units": {
+      "minutes": "{count} min",
+      "hours": "{count} hr"
+    },
     "panel": {
       "title": "API Key",
-      "selectRow": "Select a key row to inspect its details.",
-      "requests": "Requests",
-      "remaining": "Remaining",
-      "rateLimit": "Rate limit",
-      "keySection": "Key",
-      "status": "Status",
-      "prefix": "Prefix",
-      "permissions": "Permissions",
-      "created": "Created",
-      "expires": "Expires",
-      "lastUsed": "Last used",
-      "ownerSection": "Owner",
-      "name": "Name",
-      "email": "Email",
-      "userId": "User ID"
+      "empty": {
+        "selectRow": "Select a key row to inspect its details."
+      },
+      "stats": {
+        "requests": "Requests",
+        "remaining": "Remaining",
+        "rateLimit": "Rate limit"
+      },
+      "sections": {
+        "key": "Key",
+        "owner": "Owner"
+      },
+      "fields": {
+        "status": "Status",
+        "prefix": "Prefix",
+        "permissions": "Permissions",
+        "created": "Created",
+        "expires": "Expires",
+        "lastUsed": "Last used",
+        "name": "Name",
+        "email": "Email",
+        "userId": "User ID"
+      }
     }
   },
   "audit": {
-    "searchPlaceholder": "Search event, actor, target or entity...",
-    "category": "Category",
+    "filters": {
+      "searchPlaceholder": "Search event, actor, target or entity...",
+      "category": "Category",
+      "event": "Event",
+      "actor": "Actor"
+    },
     "categoryValues": {
       "Account": "Account",
       "Gallery": "Gallery",
       "System": "System"
     },
-    "event": "Event",
-    "actor": "Actor",
-    "target": "Target",
-    "entity": "Entity",
-    "when": "When",
-    "sortAriaLabel": "Sort audit events by {label}",
+    "labels": {
+      "actor": "Actor",
+      "target": "Target",
+      "entity": "Entity",
+      "when": "When"
+    },
+    "aria": {
+      "sort": "Sort audit events by {label}"
+    },
     "stats": {
       "visibleEvents": "Visible events",
       "visibleEventsHelper": "Matching the latest audit window",
@@ -274,7 +357,9 @@
       "details": "Details",
       "noEvents": "No audit events match the current filters."
     },
-    "unknownUser": "Unknown user",
+    "fallback": {
+      "unknownUser": "Unknown user"
+    },
     "eventTitles": {
       "accountRoleChanged": "Role changed",
       "galleryEntryFeatured": "Gallery entry featured",
@@ -288,17 +373,21 @@
       "galleryEntry": "Gallery entry",
       "account": "Account"
     },
-    "share": "Share {token}",
-    "entityId": "ID {id}"
+    "entity": {
+      "share": "Share {token}",
+      "id": "ID {id}"
+    }
   },
   "gallery": {
-    "searchPlaceholder": "Search title, description or owner...",
-    "state": "State",
+    "filters": {
+      "searchPlaceholder": "Search title, description or owner...",
+      "state": "State",
+      "share": "Share"
+    },
     "stateValues": {
       "unlisted": "Unlisted (regular shares)",
       "unlistedBadge": "Unlisted"
     },
-    "share": "Share",
     "shareValues": {
       "active": "Active",
       "expired": "Expired",
@@ -311,37 +400,57 @@
       "share": "Share",
       "published": "Published"
     },
-    "feature": "Feature",
-    "unfeature": "Unfeature",
-    "hide": "Hide",
-    "restore": "Restore",
-    "delete": "Delete",
-    "manageRestricted": "Only moderators and admins can update gallery entries.",
-    "deleteRestricted": "Only moderators and admins can delete gallery entries.",
-    "updateFailed": "Failed to update gallery entry.",
-    "updateSuccess": "Gallery entry {action}d.",
-    "deleteFailed": "Failed to delete gallery entry.",
-    "deleteSuccess": "Gallery entry deleted.",
-    "copyLinkSuccess": "Share link copied.",
-    "copyLinkFailed": "Could not copy the share link.",
-    "copySuccess": "{label} copied.",
-    "copyFailed": "Could not copy {label}.",
-    "openActions": "Open gallery entry actions",
-    "rowAriaLabel": "Inspect {title}",
-    "emptyMessage": "No gallery entries yet.",
-    "emptyFilteredMessage": "No gallery entries match the current filters.",
-    "cleanupNotice": "Changes apply immediately to the public gallery. {expired} expired and {revoked} revoked linked shares are visible here for operator cleanup.",
-    "showing": "Showing {filtered} of {total} gallery entries.",
-    "revokedOn": "Revoked {date}",
-    "expiredOn": "Expired {date}",
-    "expiresOn": "Expires {date}",
-    "noExpiry": "No expiry",
-    "notSet": "Not set",
-    "notAvailable": "Not available",
-    "elementCount": "{count, plural, one {# element} other {# elements}}",
-    "embedUnavailableTemporary": "Temporary shares cannot be embedded",
-    "embedUnavailableRevoked": "Share has been revoked",
-    "embedUnavailableExpired": "Share has expired",
+    "actions": {
+      "feature": "Feature",
+      "unfeature": "Unfeature",
+      "hide": "Hide",
+      "restore": "Restore",
+      "delete": "Delete",
+      "open": "Open gallery entry actions"
+    },
+    "restrictions": {
+      "manage": "Only moderators and admins can update gallery entries.",
+      "delete": "Only moderators and admins can delete gallery entries."
+    },
+    "messages": {
+      "updateFailed": "Failed to update gallery entry.",
+      "updateSuccess": "Gallery entry {action}d.",
+      "deleteFailed": "Failed to delete gallery entry.",
+      "deleteSuccess": "Gallery entry deleted.",
+      "copyLinkSuccess": "Share link copied.",
+      "copyLinkFailed": "Could not copy the share link.",
+      "copySuccess": "{label} copied.",
+      "copyFailed": "Could not copy {label}."
+    },
+    "aria": {
+      "row": "Inspect {title}"
+    },
+    "empty": {
+      "default": "No gallery entries yet.",
+      "filtered": "No gallery entries match the current filters."
+    },
+    "status": {
+      "cleanupNotice": "Changes apply immediately to the public gallery. {expired} expired and {revoked} revoked linked shares are visible here for operator cleanup.",
+      "showing": "Showing {filtered} of {total} gallery entries."
+    },
+    "lifecycle": {
+      "revokedOn": "Revoked {date}",
+      "expiredOn": "Expired {date}",
+      "expiresOn": "Expires {date}",
+      "noExpiry": "No expiry"
+    },
+    "fallback": {
+      "notSet": "Not set",
+      "notAvailable": "Not available"
+    },
+    "meta": {
+      "elementCount": "{count, plural, one {# element} other {# elements}}"
+    },
+    "embed": {
+      "unavailableTemporary": "Temporary shares cannot be embedded",
+      "unavailableRevoked": "Share has been revoked",
+      "unavailableExpired": "Share has expired"
+    },
     "inspect": {
       "title": "Inspect public gallery readiness and share lifecycle.",
       "previewReady": "Preview ready",

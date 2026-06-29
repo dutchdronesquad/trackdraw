@@ -81,58 +81,84 @@
       "subtitle": "Bouw de track op een veld dat overeenkomt met de realiteit.",
       "description": "Begin met de veldafmetingen en plaats de elementen die crews al herkennen. Dat maakt de eerste versie van het plan direct bruikbaar, in plaats van alleen maar een ruwe schets.",
       "screenshotAlt": "TrackDraw 2D-layouteditor met obstacle library en trackplan",
-      "bullet1": "Veldafmetingen op ware schaal",
-      "bullet2": "Gates, flags, cones, startpads en grotere elementen",
-      "bullet3": "Race line en labels voor briefingduidelijkheid"
+      "bullets": [
+        "Veldafmetingen op ware schaal",
+        "Gates, flags, cones, startpads en grotere elementen",
+        "Race line en labels voor briefingduidelijkheid"
+      ]
     },
     "fineTune": {
       "title": "Verfijnen",
       "subtitle": "Blijf bewerken wanneer de locatie een wijziging vereist.",
       "description": "Een goed plan past zich netjes aan. Inspector-bedieningselementen en mobielvriendelijk bewerken maken het mogelijk om objecteigenschappen aan te passen, items te herpositioneren en het ontwerp bruikbaar te houden, zelfs wanneer de echte locatie weigert statisch te blijven.",
       "screenshotAlt": "TrackDraw mobiele editor met instellingenpaneel geopend",
-      "bullet1": "Inspector-bedieningselementen voor afmetingen, rotatie en kleur",
-      "bullet2": "Touch-vriendelijk bewerken op telefoons en tablets",
-      "bullet3": "Snelle aanpassingen zonder het hoofdplan te verlaten"
+      "bullets": [
+        "Inspector-bedieningselementen voor afmetingen, rotatie en kleur",
+        "Touch-vriendelijk bewerken op telefoons en tablets",
+        "Snelle aanpassingen zonder het hoofdplan te verlaten"
+      ]
     },
     "preview": {
       "title": "3D-preview",
       "subtitle": "Loop door de track voor je hem bouwt.",
       "description": "Eén klik schakelt van het platte 2D-plan naar een live 3D-scène. Wijs hoogte toe aan elk waypoint op de race line om het volledige verticale profiel te modelleren. Ontdek gevaarlijke benaderingen voordat er één enkele paal in de grond staat.",
       "screenshotAlt": "TrackDraw 3D-preview met track flow en hoogte",
-      "bullet1": "Live 3D rechtstreeks gerenderd vanuit je 2D-ontwerp",
-      "bullet2": "Hoogte per waypoint op de race line",
-      "bullet3": "Hoogtegrafiek in het inspectorpaneel"
+      "bullets": [
+        "Live 3D rechtstreeks gerenderd vanuit je 2D-ontwerp",
+        "Hoogte per waypoint op de race line",
+        "Hoogtegrafiek in het inspectorpaneel"
+      ]
     },
     "handOff": {
       "title": "Overdracht",
       "subtitle": "Geef piloten en crew dezelfde actuele versie.",
       "description": "Een plan is alleen waardevol als andere mensen het kunnen openen. Alleen-lezen links en exports maken de lay-out tot iets wat piloten kunnen bekijken, crew kan afdrukken en organisatoren later opnieuw kunnen gebruiken.",
       "screenshotAlt": "TrackDraw alleen-lezen gedeelde weergave geopend op mobiel",
-      "bullet1": "Alleen-lezen links die op elk apparaat openen",
-      "bullet2": "PDF, PNG en SVG voor briefing- en afdrukworkflows",
-      "bullet3": "JSON-export om lay-outs te archiveren en later opnieuw te gebruiken",
-      "gallery": "Bekijk de galerij voor inspiratie"
+      "gallery": "Bekijk de galerij voor inspiratie",
+      "bullets": [
+        "Alleen-lezen links die op elk apparaat openen",
+        "PDF, PNG en SVG voor briefing- en afdrukworkflows",
+        "JSON-export om lay-outs te archiveren en later opnieuw te gebruiken"
+      ]
     }
   },
   "faq": {
     "sectionTitle": "FAQ",
     "sectionHeading": "Goed om te weten.",
-    "q1": "Is TrackDraw een drone race track builder?",
-    "a1": "Ja. TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren die schaalnauwkeurige lay-outs, 3D-review, delen en exporteren in één workflow nodig hebben.",
-    "q2": "Wat is de beste manier om een FPV-racetrack te plannen?",
-    "a2": "Begin met de veldafmetingen, plaats de obstakels die je daadwerkelijk hebt, en bekijk de route dan in 3D voor je het plan deelt of exporteert. TrackDraw is gebouwd rond precies die volgorde.",
-    "q3": "Kunnen piloten de lay-out bekijken zonder een account?",
-    "a3": "Ja. Deellinks openen in alleen-lezen modus op elk apparaat, geen account of app vereist. Stuur hem naar piloten, judges of crew en iedereen ziet dezelfde gepubliceerde versie.",
-    "q4": "Werkt het op een tablet op de locatie?",
-    "a4": "Ja. De editor is touch-vriendelijk, dus snelle aanpassingen op een telefoon of tablet zijn praktisch wanneer de echte locatie een wijziging vereist.",
-    "q5": "Welke exportformaten zijn beschikbaar?",
-    "a5": "PDF, PNG, SVG, JSON en een cinematic FPV-video-export. Dat dekt gedrukte race-briefings, deelbare visuals, herbruikbare projectbestanden en een visuele routereview.",
-    "q6": "Heb ik een account nodig om te beginnen?",
-    "a6": "Nee. Open de studio en begin meteen met ontwerpen. Een account aanmaken voegt cloudopslag, duurzame gepubliceerde links, galerijpublicatie en embeds toe.",
-    "q7": "Kan ik een lay-out hergebruiken voor een toekomstig evenement?",
-    "a7": "Ja. Sla delen van een lay-out op als benoemde presets en plaats ze opnieuw met één klik. Om een volledig project te hergebruiken, exporteer het als JSON en importeer het aan het begin van een nieuw evenement.",
-    "q8": "Kan TrackDraw helpen routeproblemen te ontdekken voor de racedag?",
-    "a8": "Ja. De 3D-preview en routebeoordelingswaarschuwingen helpen ongelijkmatige afstanden, ritmeproblemen en uitlijningsproblemen op te sporen voordat je de lay-out deelt of begint met bouwen."
+    "items": [
+      {
+        "question": "Is TrackDraw een drone race track builder?",
+        "answer": "Ja. TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren die schaalnauwkeurige lay-outs, 3D-review, delen en exporteren in één workflow nodig hebben."
+      },
+      {
+        "question": "Wat is de beste manier om een FPV-racetrack te plannen?",
+        "answer": "Begin met de veldafmetingen, plaats de obstakels die je daadwerkelijk hebt, en bekijk de route dan in 3D voor je het plan deelt of exporteert. TrackDraw is gebouwd rond precies die volgorde."
+      },
+      {
+        "question": "Kunnen piloten de lay-out bekijken zonder een account?",
+        "answer": "Ja. Deellinks openen in alleen-lezen modus op elk apparaat, geen account of app vereist. Stuur hem naar piloten, judges of crew en iedereen ziet dezelfde gepubliceerde versie."
+      },
+      {
+        "question": "Werkt het op een tablet op de locatie?",
+        "answer": "Ja. De editor is touch-vriendelijk, dus snelle aanpassingen op een telefoon of tablet zijn praktisch wanneer de echte locatie een wijziging vereist."
+      },
+      {
+        "question": "Welke exportformaten zijn beschikbaar?",
+        "answer": "PDF, PNG, SVG, JSON en een cinematic FPV-video-export. Dat dekt gedrukte race-briefings, deelbare visuals, herbruikbare projectbestanden en een visuele routereview."
+      },
+      {
+        "question": "Heb ik een account nodig om te beginnen?",
+        "answer": "Nee. Open de studio en begin meteen met ontwerpen. Een account aanmaken voegt cloudopslag, duurzame gepubliceerde links, galerijpublicatie en embeds toe."
+      },
+      {
+        "question": "Kan ik een lay-out hergebruiken voor een toekomstig evenement?",
+        "answer": "Ja. Sla delen van een lay-out op als benoemde presets en plaats ze opnieuw met één klik. Om een volledig project te hergebruiken, exporteer het als JSON en importeer het aan het begin van een nieuw evenement."
+      },
+      {
+        "question": "Kan TrackDraw helpen routeproblemen te ontdekken voor de racedag?",
+        "answer": "Ja. De 3D-preview en routebeoordelingswaarschuwingen helpen ongelijkmatige afstanden, ritmeproblemen en uitlijningsproblemen op te sporen voordat je de lay-out deelt of begint met bouwen."
+      }
+    ]
   },
   "pricing": {
     "sectionEyebrow": "Plannen",

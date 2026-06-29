@@ -206,7 +206,7 @@ function RecentAuditEvents({
   if (events.length === 0) {
     return (
       <p className="text-muted-foreground py-6 text-center text-xs">
-        {t("noRecentActivity")}
+        {t("empty.recentActivity")}
       </p>
     );
   }
@@ -255,7 +255,7 @@ function RecentSignups({
   if (users.length === 0) {
     return (
       <p className="text-muted-foreground py-6 text-center text-xs">
-        {t("noRecentSignups")}
+        {t("empty.recentSignups")}
       </p>
     );
   }
@@ -321,7 +321,7 @@ function RecentGalleryEntries({
   if (entries.length === 0) {
     return (
       <p className="text-muted-foreground py-6 text-center text-xs">
-        {t("noGalleryEntries")}
+        {t("empty.galleryEntries")}
       </p>
     );
   }
@@ -343,10 +343,14 @@ function RecentGalleryEntries({
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">
-                {entry.galleryTitle || entry.shareTitle || t("untitled")}
+                {entry.galleryTitle ||
+                  entry.shareTitle ||
+                  t("fallback.untitled")}
               </p>
               <p className="text-muted-foreground truncate text-xs">
-                {entry.ownerName ?? entry.ownerEmail ?? t("unknownOwner")}
+                {entry.ownerName ??
+                  entry.ownerEmail ??
+                  t("fallback.unknownOwner")}
               </p>
             </div>
             <span
@@ -393,16 +397,16 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <Reveal>
             <KpiCard
-              label={t("kpi.totalUsers")}
+              label={t("kpi.totalUsers.label")}
               value={overviewStats.totalUsers}
-              sub={t("kpi.totalUsersSub", {
+              sub={t("kpi.totalUsers.sub", {
                 count: overviewStats.newUsersThisMonth,
               })}
               trend={{
                 current: overviewStats.newUsersThisMonth,
                 previous: overviewStats.newUsersLastMonth,
               }}
-              vsPrevMonthLabel={t("kpi.vsPrevMonth")}
+              vsPrevMonthLabel={t("kpi.comparison.vsPrevMonth")}
               icon={Users}
               accent="bg-emerald-500"
               iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
@@ -410,9 +414,9 @@ export default async function DashboardPage() {
           </Reveal>
           <Reveal delay={0.04}>
             <KpiCard
-              label={t("kpi.activeProjects")}
+              label={t("kpi.activeProjects.label")}
               value={overviewStats.activeProjects}
-              sub={t("kpi.activeProjectsSub")}
+              sub={t("kpi.activeProjects.sub")}
               icon={FolderOpen}
               accent="bg-violet-500"
               iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
@@ -420,9 +424,9 @@ export default async function DashboardPage() {
           </Reveal>
           <Reveal delay={0.08}>
             <KpiCard
-              label={t("kpi.activeShares")}
+              label={t("kpi.activeShares.label")}
               value={overviewStats.activeShares}
-              sub={t("kpi.activeSharesSub")}
+              sub={t("kpi.activeShares.sub")}
               icon={Link2}
               accent="bg-orange-500"
               iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
@@ -430,9 +434,9 @@ export default async function DashboardPage() {
           </Reveal>
           <Reveal delay={0.12}>
             <KpiCard
-              label={t("kpi.gallery")}
+              label={t("kpi.gallery.label")}
               value={galleryStats.total}
-              sub={t("kpi.gallerySub", {
+              sub={t("kpi.gallery.sub", {
                 featured: galleryStats.featured,
                 hidden: galleryStats.hidden,
               })}
@@ -449,13 +453,15 @@ export default async function DashboardPage() {
         >
           <Reveal className="bg-card rounded-xl border p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium">{t("recentActivity")}</p>
+              <p className="text-sm font-medium">
+                {t("sections.recentActivity")}
+              </p>
               {canReadAudit && (
                 <Link
                   href="/dashboard/audit"
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                 >
-                  {t("viewAll")}
+                  {t("actions.viewAll")}
                 </Link>
               )}
             </div>
@@ -470,13 +476,15 @@ export default async function DashboardPage() {
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <UserPlus className="text-muted-foreground size-3.5" />
-                  <p className="text-sm font-medium">{t("recentSignups")}</p>
+                  <p className="text-sm font-medium">
+                    {t("sections.recentSignups")}
+                  </p>
                 </div>
                 <Link
                   href="/dashboard/users"
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                 >
-                  {t("viewAll")}
+                  {t("actions.viewAll")}
                 </Link>
               </div>
               <RecentSignups
@@ -493,12 +501,12 @@ export default async function DashboardPage() {
             delay={canReadUsers ? 0.08 : 0.04}
           >
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm font-medium">{t("galleryCardTitle")}</p>
+              <p className="text-sm font-medium">{t("sections.gallery")}</p>
               <Link
                 href="/dashboard/gallery"
                 className="text-muted-foreground hover:text-foreground text-xs transition-colors"
               >
-                {t("viewAll")}
+                {t("actions.viewAll")}
               </Link>
             </div>
             <RecentGalleryEntries

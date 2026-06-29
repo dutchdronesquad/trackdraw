@@ -33,25 +33,43 @@
   },
   "overview": {
     "kpi": {
-      "totalUsers": "Totaal gebruikers",
-      "totalUsersSub": "+{count} deze maand",
-      "vsPrevMonth": "t.o.v. vorige maand",
-      "activeProjects": "Actieve projecten",
-      "activeProjectsSub": "niet-gearchiveerd",
-      "activeShares": "Actieve shares",
-      "activeSharesSub": "live deellinks",
-      "gallery": "Galerij",
-      "gallerySub": "{featured} uitgelicht · {hidden} verborgen"
+      "totalUsers": {
+        "label": "Totaal gebruikers",
+        "sub": "+{count} deze maand"
+      },
+      "activeProjects": {
+        "label": "Actieve projecten",
+        "sub": "niet-gearchiveerd"
+      },
+      "activeShares": {
+        "label": "Actieve shares",
+        "sub": "live deellinks"
+      },
+      "gallery": {
+        "label": "Galerij",
+        "sub": "{featured} uitgelicht · {hidden} verborgen"
+      },
+      "comparison": {
+        "vsPrevMonth": "t.o.v. vorige maand"
+      }
     },
-    "recentActivity": "Recente activiteit",
-    "recentSignups": "Recente aanmeldingen",
-    "galleryCardTitle": "Galerij",
-    "viewAll": "Alles bekijken",
-    "noRecentActivity": "Geen recente activiteit",
-    "noRecentSignups": "Geen recente aanmeldingen",
-    "noGalleryEntries": "Nog geen galerij-items",
-    "untitled": "Naamloos",
-    "unknownOwner": "Onbekend",
+    "sections": {
+      "recentActivity": "Recente activiteit",
+      "recentSignups": "Recente aanmeldingen",
+      "gallery": "Galerij"
+    },
+    "actions": {
+      "viewAll": "Alles bekijken"
+    },
+    "empty": {
+      "recentActivity": "Geen recente activiteit",
+      "recentSignups": "Geen recente aanmeldingen",
+      "galleryEntries": "Nog geen galerij-items"
+    },
+    "fallback": {
+      "untitled": "Naamloos",
+      "unknownOwner": "Onbekend"
+    },
     "galleryState": {
       "featured": "Uitgelicht",
       "hidden": "Verborgen",
@@ -75,27 +93,47 @@
     }
   },
   "overviewCards": {
-    "galleryEntries": "Galerij-items",
-    "galleryEntriesHelper": "Alle dashboard-beheerde items",
-    "featured": "Uitgelicht",
-    "featuredHelper": "Vastgezet in de uitgelichte sectie",
-    "hidden": "Verborgen",
-    "hiddenHelper": "Verwijderd uit publieke ontdekking",
-    "totalAccounts": "Totaal accounts",
-    "totalAccountsHelper": "Bijgehouden gebruikersrecords"
+    "cards": {
+      "galleryEntries": {
+        "label": "Galerij-items",
+        "helper": "Alle dashboard-beheerde items"
+      },
+      "featured": {
+        "label": "Uitgelicht",
+        "helper": "Vastgezet in de uitgelichte sectie"
+      },
+      "hidden": {
+        "label": "Verborgen",
+        "helper": "Verwijderd uit publieke ontdekking"
+      },
+      "totalAccounts": {
+        "label": "Totaal accounts",
+        "helper": "Bijgehouden gebruikersrecords"
+      }
+    }
   },
   "metrics": {
     "kpi": {
-      "totalUsers": "Totaal gebruikers",
-      "totalUsersSub": "+{count} deze maand",
-      "activeUsers30d": "Actieve gebruikers (30d)",
-      "activeUsers30dSub": "{pct}% van totaal",
-      "projects": "Projecten",
-      "projectsSub": "niet-gearchiveerd · {archived} gearchiveerd",
-      "activeShares": "Actieve shares",
-      "activeSharesSub": "{revoked} ingetrokken",
-      "activeApiKeys": "Actieve API-sleutels",
-      "activeApiKeysSub": "{total} totaal"
+      "totalUsers": {
+        "label": "Totaal gebruikers",
+        "sub": "+{count} deze maand"
+      },
+      "activeUsers30d": {
+        "label": "Actieve gebruikers (30d)",
+        "sub": "{pct}% van totaal"
+      },
+      "projects": {
+        "label": "Projecten",
+        "sub": "niet-gearchiveerd · {archived} gearchiveerd"
+      },
+      "activeShares": {
+        "label": "Actieve shares",
+        "sub": "{revoked} ingetrokken"
+      },
+      "activeApiKeys": {
+        "label": "Actieve API-sleutels",
+        "sub": "{total} totaal"
+      }
     },
     "userPopulation": {
       "title": "Gebruikerspopulatie",
@@ -160,8 +198,10 @@
     }
   },
   "users": {
-    "searchPlaceholder": "Zoek op naam of e-mail...",
-    "role": "Rol",
+    "filters": {
+      "searchPlaceholder": "Zoek op naam of e-mail...",
+      "role": "Rol"
+    },
     "table": {
       "user": "Gebruiker",
       "projects": "Projecten",
@@ -169,42 +209,64 @@
       "joined": "Lid sinds",
       "lastLogin": "Laatste login"
     },
-    "you": "(jij)",
-    "unnamedUser": "Naamloze gebruiker",
-    "emptyMessage": "Geen gebruikers gevonden.",
-    "showing": "{filtered} van {total} accounts weergegeven.",
-    "loadFailed": "Gebruikerscontext laden mislukt.",
-    "copySuccess": "{label} gekopieerd.",
-    "copyFailed": "Kon {label} niet kopiëren.",
-    "updateFailed": "Kon de geselecteerde rol niet bijwerken.",
-    "updateSuccess": "{name} bijgewerkt naar {role}.",
+    "selfBadge": "(jij)",
+    "fallback": {
+      "unnamedUser": "Naamloze gebruiker"
+    },
+    "empty": {
+      "default": "Geen gebruikers gevonden."
+    },
+    "status": {
+      "showing": "{filtered} van {total} accounts weergegeven."
+    },
+    "messages": {
+      "loadFailed": "Gebruikerscontext laden mislukt.",
+      "copySuccess": "{label} gekopieerd.",
+      "copyFailed": "Kon {label} niet kopiëren.",
+      "updateFailed": "Kon de geselecteerde rol niet bijwerken.",
+      "updateSuccess": "{name} bijgewerkt naar {role}."
+    },
     "panel": {
-      "loading": "Laden…",
+      "status": {
+        "loading": "Laden…"
+      },
       "stats": {
         "projects": "Projecten",
         "shares": "Shares",
         "gallery": "Galerij",
         "apiKeys": "API-sleutels"
       },
-      "accountSection": "Account",
-      "memberSince": "Lid sinds",
-      "lastLogin": "Laatste login",
-      "role": "Rol",
-      "userId": "Gebruikers-ID",
-      "copyUserId": "Gebruikers-ID kopiëren",
-      "changeRole": "Rol wijzigen",
-      "cannotChangeOwnRole": "Kan eigen rol niet wijzigen",
-      "save": "Opslaan",
-      "recentActivitySection": "Recente activiteit",
-      "noAuditEvents": "Geen audit-events vastgelegd.",
-      "actor": "Actor",
-      "target": "Doel",
-      "viewFullAuditTrail": "Volledig audit-overzicht bekijken"
+      "sections": {
+        "account": "Account",
+        "recentActivity": "Recente activiteit"
+      },
+      "fields": {
+        "memberSince": "Lid sinds",
+        "lastLogin": "Laatste login",
+        "role": "Rol",
+        "userId": "Gebruikers-ID"
+      },
+      "actions": {
+        "copyUserId": "Gebruikers-ID kopiëren",
+        "changeRole": "Rol wijzigen",
+        "save": "Opslaan",
+        "viewFullAuditTrail": "Volledig audit-overzicht bekijken"
+      },
+      "messages": {
+        "cannotChangeOwnRole": "Kan eigen rol niet wijzigen",
+        "noAuditEvents": "Geen audit-events vastgelegd."
+      },
+      "relation": {
+        "actor": "Actor",
+        "target": "Doel"
+      }
     }
   },
   "apiKeys": {
-    "searchPlaceholder": "Zoek op sleutelnaam of eigenaar...",
-    "status": "Status",
+    "filters": {
+      "searchPlaceholder": "Zoek op sleutelnaam of eigenaar...",
+      "status": "Status"
+    },
     "statusValues": {
       "active": "Actief",
       "expired": "Verlopen",
@@ -218,45 +280,66 @@
       "lastUsed": "Laatst gebruikt",
       "expires": "Verloopt"
     },
-    "emptyMessage": "Geen API-sleutels gevonden.",
-    "emptyFilteredMessage": "Geen API-sleutels voldoen aan de huidige filters.",
-    "showing": "{filtered} van {total} API-sleutels weergegeven.",
-    "off": "Uit",
-    "minutesUnit": "{count} min",
-    "hoursUnit": "{count} uur",
+    "empty": {
+      "default": "Geen API-sleutels gevonden.",
+      "filtered": "Geen API-sleutels voldoen aan de huidige filters."
+    },
+    "status": {
+      "showing": "{filtered} van {total} API-sleutels weergegeven.",
+      "off": "Uit"
+    },
+    "units": {
+      "minutes": "{count} min",
+      "hours": "{count} uur"
+    },
     "panel": {
       "title": "API-sleutel",
-      "selectRow": "Selecteer een sleutelrij om de details te bekijken.",
-      "requests": "Aanvragen",
-      "remaining": "Resterend",
-      "rateLimit": "Rate limit",
-      "keySection": "Sleutel",
-      "status": "Status",
-      "prefix": "Prefix",
-      "permissions": "Permissies",
-      "created": "Aangemaakt",
-      "expires": "Verloopt",
-      "lastUsed": "Laatst gebruikt",
-      "ownerSection": "Eigenaar",
-      "name": "Naam",
-      "email": "E-mail",
-      "userId": "Gebruikers-ID"
+      "empty": {
+        "selectRow": "Selecteer een sleutelrij om de details te bekijken."
+      },
+      "stats": {
+        "requests": "Aanvragen",
+        "remaining": "Resterend",
+        "rateLimit": "Rate limit"
+      },
+      "sections": {
+        "key": "Sleutel",
+        "owner": "Eigenaar"
+      },
+      "fields": {
+        "status": "Status",
+        "prefix": "Prefix",
+        "permissions": "Permissies",
+        "created": "Aangemaakt",
+        "expires": "Verloopt",
+        "lastUsed": "Laatst gebruikt",
+        "name": "Naam",
+        "email": "E-mail",
+        "userId": "Gebruikers-ID"
+      }
     }
   },
   "audit": {
-    "searchPlaceholder": "Zoek op event, actor, doel of entiteit...",
-    "category": "Categorie",
+    "filters": {
+      "searchPlaceholder": "Zoek op event, actor, doel of entiteit...",
+      "category": "Categorie",
+      "event": "Event",
+      "actor": "Actor"
+    },
     "categoryValues": {
       "Account": "Account",
       "Gallery": "Galerij",
       "System": "Systeem"
     },
-    "event": "Event",
-    "actor": "Actor",
-    "target": "Doel",
-    "entity": "Entiteit",
-    "when": "Wanneer",
-    "sortAriaLabel": "Sorteer audit-events op {label}",
+    "labels": {
+      "actor": "Actor",
+      "target": "Doel",
+      "entity": "Entiteit",
+      "when": "Wanneer"
+    },
+    "aria": {
+      "sort": "Sorteer audit-events op {label}"
+    },
     "stats": {
       "visibleEvents": "Zichtbare events",
       "visibleEventsHelper": "Binnen het laatste audit-venster",
@@ -274,7 +357,9 @@
       "details": "Details",
       "noEvents": "Geen audit-events voldoen aan de huidige filters."
     },
-    "unknownUser": "Onbekende gebruiker",
+    "fallback": {
+      "unknownUser": "Onbekende gebruiker"
+    },
     "eventTitles": {
       "accountRoleChanged": "Rol gewijzigd",
       "galleryEntryFeatured": "Galerij-item uitgelicht",
@@ -288,17 +373,21 @@
       "galleryEntry": "Galerij-item",
       "account": "Account"
     },
-    "share": "Share {token}",
-    "entityId": "ID {id}"
+    "entity": {
+      "share": "Share {token}",
+      "id": "ID {id}"
+    }
   },
   "gallery": {
-    "searchPlaceholder": "Zoek op titel, beschrijving of eigenaar...",
-    "state": "Status",
+    "filters": {
+      "searchPlaceholder": "Zoek op titel, beschrijving of eigenaar...",
+      "state": "Status",
+      "share": "Share"
+    },
     "stateValues": {
       "unlisted": "Niet vermeld (gewone shares)",
       "unlistedBadge": "Niet vermeld"
     },
-    "share": "Share",
     "shareValues": {
       "active": "Actief",
       "expired": "Verlopen",
@@ -311,37 +400,57 @@
       "share": "Share",
       "published": "Gepubliceerd"
     },
-    "feature": "Uitlichten",
-    "unfeature": "Niet meer uitlichten",
-    "hide": "Verbergen",
-    "restore": "Herstellen",
-    "delete": "Verwijderen",
-    "manageRestricted": "Alleen moderators en admins kunnen galerij-items bijwerken.",
-    "deleteRestricted": "Alleen moderators en admins kunnen galerij-items verwijderen.",
-    "updateFailed": "Galerij-item bijwerken mislukt.",
-    "updateSuccess": "Galerij-item {action}.",
-    "deleteFailed": "Galerij-item verwijderen mislukt.",
-    "deleteSuccess": "Galerij-item verwijderd.",
-    "copyLinkSuccess": "Deellink gekopieerd.",
-    "copyLinkFailed": "Kon de deellink niet kopiëren.",
-    "copySuccess": "{label} gekopieerd.",
-    "copyFailed": "Kon {label} niet kopiëren.",
-    "openActions": "Galerij-itemacties openen",
-    "rowAriaLabel": "Bekijk {title}",
-    "emptyMessage": "Nog geen galerij-items.",
-    "emptyFilteredMessage": "Geen galerij-items voldoen aan de huidige filters.",
-    "cleanupNotice": "Wijzigingen worden direct toegepast op de publieke galerij. {expired} verlopen en {revoked} ingetrokken gekoppelde shares zijn hier zichtbaar voor opschoning door operators.",
-    "showing": "{filtered} van {total} galerij-items weergegeven.",
-    "revokedOn": "Ingetrokken op {date}",
-    "expiredOn": "Verlopen op {date}",
-    "expiresOn": "Verloopt op {date}",
-    "noExpiry": "Geen vervaldatum",
-    "notSet": "Niet ingesteld",
-    "notAvailable": "Niet beschikbaar",
-    "elementCount": "{count, plural, one {# element} other {# elementen}}",
-    "embedUnavailableTemporary": "Tijdelijke shares kunnen niet worden ingesloten",
-    "embedUnavailableRevoked": "Share is ingetrokken",
-    "embedUnavailableExpired": "Share is verlopen",
+    "actions": {
+      "feature": "Uitlichten",
+      "unfeature": "Niet meer uitlichten",
+      "hide": "Verbergen",
+      "restore": "Herstellen",
+      "delete": "Verwijderen",
+      "open": "Galerij-itemacties openen"
+    },
+    "restrictions": {
+      "manage": "Alleen moderators en admins kunnen galerij-items bijwerken.",
+      "delete": "Alleen moderators en admins kunnen galerij-items verwijderen."
+    },
+    "messages": {
+      "updateFailed": "Galerij-item bijwerken mislukt.",
+      "updateSuccess": "Galerij-item {action}.",
+      "deleteFailed": "Galerij-item verwijderen mislukt.",
+      "deleteSuccess": "Galerij-item verwijderd.",
+      "copyLinkSuccess": "Deellink gekopieerd.",
+      "copyLinkFailed": "Kon de deellink niet kopiëren.",
+      "copySuccess": "{label} gekopieerd.",
+      "copyFailed": "Kon {label} niet kopiëren."
+    },
+    "aria": {
+      "row": "Bekijk {title}"
+    },
+    "empty": {
+      "default": "Nog geen galerij-items.",
+      "filtered": "Geen galerij-items voldoen aan de huidige filters."
+    },
+    "status": {
+      "cleanupNotice": "Wijzigingen worden direct toegepast op de publieke galerij. {expired} verlopen en {revoked} ingetrokken gekoppelde shares zijn hier zichtbaar voor opschoning door operators.",
+      "showing": "{filtered} van {total} galerij-items weergegeven."
+    },
+    "lifecycle": {
+      "revokedOn": "Ingetrokken op {date}",
+      "expiredOn": "Verlopen op {date}",
+      "expiresOn": "Verloopt op {date}",
+      "noExpiry": "Geen vervaldatum"
+    },
+    "fallback": {
+      "notSet": "Niet ingesteld",
+      "notAvailable": "Niet beschikbaar"
+    },
+    "meta": {
+      "elementCount": "{count, plural, one {# element} other {# elementen}}"
+    },
+    "embed": {
+      "unavailableTemporary": "Tijdelijke shares kunnen niet worden ingesloten",
+      "unavailableRevoked": "Share is ingetrokken",
+      "unavailableExpired": "Share is verlopen"
+    },
     "inspect": {
       "title": "Bekijk de gereedheid voor publieke galerij en de share-levenscyclus.",
       "previewReady": "Preview gereed",
