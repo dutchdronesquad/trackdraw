@@ -66,7 +66,7 @@ export function AccountProfileView({
             {getDisplayName(user)}
           </p>
           <p className="text-muted-foreground mt-0.5 text-sm">
-            {user.email ?? t("account.profile.noAccountEmail")}
+            {user.email ?? t("account.profile.fallback.noAccountEmail")}
           </p>
         </div>
       </div>
@@ -74,14 +74,14 @@ export function AccountProfileView({
       <div className="border-border/60 space-y-4 border-t pt-5">
         <label className="block">
           <span className="mb-2 block text-sm font-medium">
-            {t("account.profile.displayNameLabel")}
+            {t("account.profile.displayName.label")}
           </span>
           <Input
             type="text"
             autoComplete="name"
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
-            placeholder={t("account.profile.displayNamePlaceholder")}
+            placeholder={t("account.profile.displayName.placeholder")}
             className="h-8 rounded-lg px-2.5 shadow-none"
           />
         </label>
@@ -99,7 +99,7 @@ export function AccountProfileView({
             className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
           >
             {saving
-              ? t("account.profile.saving")
+              ? t("account.profile.status.saving")
               : tCommon("actions.saveChanges")}
           </Button>
           <Button
@@ -127,7 +127,7 @@ export function AccountProfileView({
         <div>
           <p className="text-sm font-medium">{tCommon("labels.language")}</p>
           <p className="text-muted-foreground mt-0.5 text-xs">
-            {t("account.profile.languageDescription")}
+            {t("account.profile.language.description")}
           </p>
         </div>
         <LanguagePicker variant="full" className="w-40" />

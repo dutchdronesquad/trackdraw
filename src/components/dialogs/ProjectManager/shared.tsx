@@ -104,9 +104,9 @@ export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
   const copyProjectId = async () => {
     try {
       await navigator.clipboard.writeText(projectId);
-      toast.success(t("projectManager.copyProjectIdSuccess"));
+      toast.success(t("projectManager.projectIdCopy.success"));
     } catch {
-      toast.error(t("projectManager.copyProjectIdFailed"));
+      toast.error(t("projectManager.projectIdCopy.failed"));
     }
   };
 
@@ -114,7 +114,7 @@ export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
     <div className="border-border/35 mt-2 flex min-w-0 items-center justify-between gap-3 border-t pt-2">
       <div className="min-w-0">
         <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase">
-          {t("projectManager.copyProjectIdLabel")}
+          {t("projectManager.projectIdCopy.label")}
         </p>
         <p className="text-foreground/85 mt-0.5 truncate font-mono text-[11px]">
           {projectId}
@@ -127,10 +127,10 @@ export function ProjectIdCopyRow({ projectId }: { projectId: string }) {
           void copyProjectId();
         }}
         className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 text-[11px] font-medium transition-colors"
-        aria-label={t("projectManager.copyProjectIdAriaLabel")}
+        aria-label={t("projectManager.projectIdCopy.ariaLabel")}
       >
         <Copy className="size-3.5" />
-        {t("projectManager.copyAction")}
+        {t("projectManager.projectIdCopy.action")}
       </button>
     </div>
   );

@@ -95,7 +95,7 @@ export default function ProjectManagerDialog({
   const navItems: NavItem[] = [
     {
       id: "device",
-      label: t("projectManager.navThisDevice"),
+      label: t("projectManager.nav.thisDevice"),
       icon: <FolderOpen className="size-4" />,
       count: projects.length,
     },
@@ -109,7 +109,7 @@ export default function ProjectManagerDialog({
           },
           {
             id: "shares",
-            label: t("projectManager.navShares"),
+            label: t("projectManager.nav.shares"),
             icon: <Link2 className="size-4" />,
             count: accountShares.length,
           },
@@ -117,7 +117,7 @@ export default function ProjectManagerDialog({
       : []),
     {
       id: "restore",
-      label: t("projectManager.navSnapshots"),
+      label: t("projectManager.nav.snapshots"),
       icon: <Clock className="size-4" />,
       count: restorePoints.length,
     },
@@ -130,20 +130,20 @@ export default function ProjectManagerDialog({
 
   const viewMeta: Record<View, { label: string; description: string }> = {
     device: {
-      label: t("projectManager.panelDevice.label"),
-      description: t("projectManager.panelDevice.description"),
+      label: t("projectManager.panels.device.label"),
+      description: t("projectManager.panels.device.description"),
     },
     account: {
-      label: t("projectManager.panelAccount.label"),
-      description: t("projectManager.panelAccount.description"),
+      label: t("projectManager.panels.account.label"),
+      description: t("projectManager.panels.account.description"),
     },
     restore: {
-      label: t("projectManager.panelSnapshots.label"),
-      description: t("projectManager.panelSnapshots.description"),
+      label: t("projectManager.panels.snapshots.label"),
+      description: t("projectManager.panels.snapshots.description"),
     },
     shares: {
-      label: t("projectManager.panelShares.label"),
-      description: t("projectManager.panelShares.description"),
+      label: t("projectManager.panels.shares.label"),
+      description: t("projectManager.panels.shares.description"),
     },
   };
 
@@ -207,9 +207,9 @@ export default function ProjectManagerDialog({
     <SidebarDialog
       open={open}
       onOpenChange={onOpenChange}
-      eyebrow={t("projectManager.dialogEyebrow")}
-      title={t("projectManager.dialogTitle")}
-      mobileSubtitle={t("projectManager.dialogMobileSubtitle")}
+      eyebrow={t("projectManager.dialog.eyebrow")}
+      title={t("projectManager.dialog.title")}
+      mobileSubtitle={t("projectManager.dialog.mobileSubtitle")}
       navItems={navItems.map((item) => ({
         id: item.id,
         label: item.label,

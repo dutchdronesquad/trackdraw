@@ -16,12 +16,12 @@ function formatExpiresIn(
   iso: string | null,
   t: (key: string, values?: Record<string, string | number | Date>) => string
 ): string {
-  if (!iso) return t("projectManager.shares.publishedStatus");
+  if (!iso) return t("projectManager.shares.status.published");
   const days = Math.ceil(
     (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
-  if (days <= 0) return t("projectManager.shares.expiredStatus");
-  return t("projectManager.shares.expiresInDays", { days });
+  if (days <= 0) return t("projectManager.shares.status.expired");
+  return t("projectManager.shares.status.expiresInDays", { days });
 }
 
 interface ProjectManagerSharesTabProps {
@@ -53,7 +53,7 @@ export function ProjectManagerSharesTab({
         role="status"
       >
         <p className="text-muted-foreground px-1 pb-1 text-[11px]">
-          {t("projectManager.shares.loadingPublishedShares")}
+          {t("projectManager.shares.status.loadingPublishedShares")}
         </p>
         <SkeletonCard />
         <SkeletonCard />
@@ -65,8 +65,8 @@ export function ProjectManagerSharesTab({
     return (
       <EmptyState
         icon={<Link2 className="size-6" />}
-        title={t("projectManager.shares.noShares")}
-        description={t("projectManager.shares.noSharesDesc")}
+        title={t("projectManager.shares.empty.noShares")}
+        description={t("projectManager.shares.empty.description")}
       />
     );
   }
@@ -74,7 +74,7 @@ export function ProjectManagerSharesTab({
   return (
     <div className="space-y-2">
       <p className="text-muted-foreground px-1 pb-1 text-[11px] leading-relaxed">
-        {t("projectManager.shares.readOnlyReviewLinks")}
+        {t("projectManager.shares.messages.readOnlyReviewLinks")}
       </p>
       {shares.map((share) => {
         const shareUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/share/${encodeURIComponent(share.token)}`;
@@ -84,8 +84,8 @@ export function ProjectManagerSharesTab({
         const displayTitle = projectTitle ?? share.title;
         const lifetimeLabel =
           share.shareType === "published"
-            ? t("projectManager.shares.publishedLifetime")
-            : t("projectManager.shares.temporaryLifetime", {
+            ? t("projectManager.shares.lifetime.published")
+            : t("projectManager.shares.lifetime.temporary", {
                 expiresIn: formatExpiresIn(share.expiresAt, t),
               });
 
@@ -109,10 +109,12 @@ export function ProjectManagerSharesTab({
               className="flex shrink-0 items-center gap-0.5"
               onClick={(e) => e.stopPropagation()}
             >
-              <DesktopActionTooltip label={t("projectManager.shares.copyLink")}>
+              <DesktopActionTooltip
+                label={t("projectManager.shares.actions.copyLink")}
+              >
                 <button
                   type="button"
-                  aria-label={t("projectManager.shares.copyLinkAriaLabel")}
+                  aria-label={t("projectManager.shares.aria.copyLink")}
                   onClick={async () => {
                     await navigator.clipboard.writeText(shareUrl);
                     setCopiedToken(share.token);
@@ -127,10 +129,12 @@ export function ProjectManagerSharesTab({
                   )}
                 </button>
               </DesktopActionTooltip>
-              <DesktopActionTooltip label={t("projectManager.shares.openTab")}>
+              <DesktopActionTooltip
+                label={t("projectManager.shares.actions.openTab")}
+              >
                 <button
                   type="button"
-                  aria-label={t("projectManager.shares.openTabAriaLabel")}
+                  aria-label={t("projectManager.shares.aria.openTab")}
                   onClick={() =>
                     window.open(shareUrl, "_blank", "noopener,noreferrer")
                   }
@@ -141,11 +145,11 @@ export function ProjectManagerSharesTab({
               </DesktopActionTooltip>
               {onRevoke && (
                 <DesktopActionTooltip
-                  label={t("projectManager.shares.revokeLink")}
+                  label={t("projectManager.shares.actions.revokeLink")}
                 >
                   <button
                     type="button"
-                    aria-label={t("projectManager.shares.revokeLinkAriaLabel")}
+                    aria-label={t("projectManager.shares.aria.revokeLink")}
                     onClick={() => setConfirmRevokeToken(share.token)}
                     className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg opacity-100 transition-colors md:opacity-0 md:group-hover:opacity-100"
                   >
@@ -165,7 +169,7 @@ export function ProjectManagerSharesTab({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <p className="text-foreground truncate text-sm font-medium">
-                    {t("projectManager.shares.revokeLinkConfirm")}
+                    {t("projectManager.shares.confirm.revokeLink")}
                   </p>
                   <div className="flex shrink-0 items-center gap-1">
                     <button
@@ -175,7 +179,7 @@ export function ProjectManagerSharesTab({
                       }}
                       className="bg-destructive/10 hover:bg-destructive/20 text-destructive cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
                     >
-                      {t("projectManager.shares.revokeLink")}
+                      {t("projectManager.shares.actions.revokeLink")}
                     </button>
                     <button
                       onClick={() => setConfirmRevokeToken(null)}

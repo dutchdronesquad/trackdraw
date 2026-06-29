@@ -61,7 +61,7 @@ export function ProjectManagerAccountTab({
         role="status"
       >
         <p className="text-muted-foreground px-1 pb-1 text-[11px]">
-          {t("projectManager.account.loadingProjects")}
+          {t("projectManager.account.status.loadingProjects")}
         </p>
         <SkeletonCard />
         <SkeletonCard />
@@ -74,7 +74,7 @@ export function ProjectManagerAccountTab({
     return (
       <div className="border-destructive/20 bg-destructive/8 rounded-xl border px-4 py-3">
         <p className="text-foreground text-sm font-medium">
-          {t("projectManager.account.loadProjectsFailed")}
+          {t("projectManager.account.messages.loadFailed")}
         </p>
         <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
           {error}
@@ -87,8 +87,8 @@ export function ProjectManagerAccountTab({
     return (
       <EmptyState
         icon={<Cloud className="size-6" />}
-        title={t("projectManager.account.noProjects")}
-        description={t("projectManager.account.noProjectsDesc")}
+        title={t("projectManager.account.empty.noProjects")}
+        description={t("projectManager.account.empty.description")}
       />
     );
   }
@@ -108,11 +108,12 @@ export function ProjectManagerAccountTab({
           ? `Latest local copy saved ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
           : null;
         const metaLine = hasConflict
-          ? (syncMeta?.error ?? t("projectManager.account.conflictWarning"))
+          ? (syncMeta?.error ??
+            t("projectManager.account.messages.conflictWarning"))
           : hasSyncFailure
             ? (fallbackLine ??
               syncMeta?.error ??
-              t("projectManager.account.syncError"))
+              t("projectManager.account.messages.syncError"))
             : hasPendingChanges
               ? `${itemLabel(proj.shapeCount)} · account copy waiting to sync`
               : `${itemLabel(proj.shapeCount)} · account copy synced ${formatRelativeTime(lastSyncedAt)}`;
@@ -138,7 +139,7 @@ export function ProjectManagerAccountTab({
             <ProjectAvatar id={proj.id} title={proj.title || "?"} />
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate text-sm font-medium">
-                {proj.title || t("projectManager.account.untitled")}
+                {proj.title || t("projectManager.account.fallback.untitled")}
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
                 {isCurrent ? <CurrentBadge /> : null}
@@ -157,14 +158,14 @@ export function ProjectManagerAccountTab({
                   )}
                 >
                   {isSyncing
-                    ? t("projectManager.account.syncing")
+                    ? t("projectManager.account.status.syncing")
                     : hasConflict
-                      ? t("projectManager.account.reviewNeeded")
+                      ? t("projectManager.account.status.reviewNeeded")
                       : hasPendingChanges
                         ? tCommon("status.pending")
                         : hasSyncFailure
-                          ? t("projectManager.account.syncFailed")
-                          : t("projectManager.account.synced")}
+                          ? t("projectManager.account.status.failed")
+                          : t("projectManager.account.status.synced")}
                 </span>
               </div>
               <p
@@ -206,10 +207,12 @@ export function ProjectManagerAccountTab({
                   }
                   title={
                     hasConflict
-                      ? t("projectManager.account.resolveConflictFirst")
+                      ? t(
+                          "projectManager.account.messages.resolveConflictFirst"
+                        )
                       : hasSyncFailure
-                        ? t("projectManager.account.retrySync")
-                        : t("projectManager.account.syncPendingChanges")
+                        ? t("projectManager.account.actions.retrySync")
+                        : t("projectManager.account.actions.syncPendingChanges")
                   }
                 >
                   {hasConflict || hasSyncFailure ? (

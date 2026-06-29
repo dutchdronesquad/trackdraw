@@ -39,13 +39,13 @@ export function ProjectManagerRestoreTab({
     return (
       <EmptyState
         icon={<Clock className="size-6" />}
-        title={t("projectManager.restore.noSnapshots")}
+        title={t("projectManager.restore.empty.noSnapshots")}
         description={
           isMobile ? (
-            t("projectManager.restore.noSnapshotsDesc")
+            t("projectManager.restore.empty.description")
           ) : (
             <>
-              {t.rich("projectManager.restore.noSnapshotsDesktopDesc", {
+              {t.rich("projectManager.restore.empty.desktopDescription", {
                 kbdMeta: (chunks) => <Kbd>{chunks}</Kbd>,
                 kbdCtrl: (chunks) => <Kbd>{chunks}</Kbd>,
               })}
@@ -61,7 +61,7 @@ export function ProjectManagerRestoreTab({
       {restorePoints.map((r) => {
         const isActive = r.id === activeRestorePointId;
         const snapshotTitle =
-          r.designTitle || t("projectManager.restore.snapshotFallback");
+          r.designTitle || t("projectManager.restore.fallback.snapshot");
         return (
           <div
             key={r.id}
@@ -78,11 +78,12 @@ export function ProjectManagerRestoreTab({
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-1.5">
                 <p className="text-foreground truncate text-sm font-medium">
-                  {r.designTitle || t("projectManager.restore.untitled")}
+                  {r.designTitle ||
+                    t("projectManager.restore.fallback.untitled")}
                 </p>
                 {isActive && (
                   <CurrentBadge
-                    label={t("projectManager.restore.activeBadge")}
+                    label={t("projectManager.restore.status.active")}
                   />
                 )}
               </div>
@@ -94,13 +95,12 @@ export function ProjectManagerRestoreTab({
               {onRestorePoint && (
                 <button
                   type="button"
-                  aria-label={t(
-                    "projectManager.restore.restoreSnapshotAriaLabel",
-                    { title: snapshotTitle }
-                  )}
+                  aria-label={t("projectManager.restore.aria.restoreSnapshot", {
+                    title: snapshotTitle,
+                  })}
                   onClick={() => setConfirmRestoreId(r.id)}
                   className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
-                  title={t("projectManager.restore.restoreTitle")}
+                  title={t("projectManager.restore.actions.restoreTitle")}
                 >
                   <RotateCcw className="size-3.5" />
                 </button>
@@ -108,13 +108,12 @@ export function ProjectManagerRestoreTab({
               {onDeleteRestorePoint && (
                 <button
                   type="button"
-                  aria-label={t(
-                    "projectManager.restore.deleteSnapshotAriaLabel",
-                    { title: snapshotTitle }
-                  )}
+                  aria-label={t("projectManager.restore.aria.deleteSnapshot", {
+                    title: snapshotTitle,
+                  })}
                   onClick={() => onDeleteRestorePoint(r.id)}
                   className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
-                  title={t("projectManager.restore.deleteTitle")}
+                  title={t("projectManager.restore.actions.deleteTitle")}
                 >
                   <Trash2 className="size-3.5" />
                 </button>
@@ -131,7 +130,7 @@ export function ProjectManagerRestoreTab({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <p className="text-foreground truncate text-sm font-medium">
-                    {t("projectManager.restore.restoreSnapshotConfirm")}
+                    {t("projectManager.restore.confirm.restoreSnapshot")}
                   </p>
                   <div className="flex shrink-0 items-center gap-1">
                     <button
@@ -142,7 +141,7 @@ export function ProjectManagerRestoreTab({
                       }}
                       className="bg-foreground text-background hover:bg-foreground/90 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
                     >
-                      {t("projectManager.restore.restoreAction")}
+                      {t("projectManager.restore.actions.restore")}
                     </button>
                     <button
                       onClick={() => setConfirmRestoreId(null)}

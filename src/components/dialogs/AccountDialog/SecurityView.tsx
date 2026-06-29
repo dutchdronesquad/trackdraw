@@ -101,10 +101,10 @@ export function AccountSecurityView({
       <div className="border-border/60 space-y-4 border-b pb-5">
         <div className="space-y-1">
           <p className="text-sm font-medium">
-            {t("account.security.emailAddress")}
+            {t("account.security.email.address")}
           </p>
           <p className="text-muted-foreground truncate text-sm">
-            {user.email ?? t("account.profile.noAccountEmail")}
+            {user.email ?? t("account.profile.fallback.noAccountEmail")}
           </p>
         </div>
 
@@ -113,20 +113,20 @@ export function AccountSecurityView({
             <div className="bg-muted/20 border-border/60 space-y-4 rounded-2xl border px-4 py-4">
               <label className="block">
                 <span className="text-muted-foreground mb-2 block text-xs font-medium tracking-[0.01em]">
-                  {t("account.security.newEmail")}
+                  {t("account.security.email.newEmail")}
                 </span>
                 <Input
                   type="email"
                   autoComplete="email"
                   value={email}
                   onChange={(event) => onEmailChange(event.target.value)}
-                  placeholder={t("account.security.emailPlaceholder")}
+                  placeholder={t("account.security.email.placeholder")}
                   className="h-8 rounded-lg px-2.5 shadow-none"
                 />
               </label>
 
               <p className="text-muted-foreground text-sm leading-relaxed">
-                {t("account.security.emailChangeDescription")}
+                {t("account.security.email.changeDescription")}
               </p>
 
               <div
@@ -154,7 +154,7 @@ export function AccountSecurityView({
                   className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
                 >
                   {changingEmail
-                    ? t("account.security.savingEmail")
+                    ? t("account.security.email.saving")
                     : tCommon("actions.save")}
                 </Button>
               </div>
@@ -169,7 +169,7 @@ export function AccountSecurityView({
               }}
               className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
             >
-              {t("account.security.changeEmail")}
+              {t("account.security.email.change")}
             </Button>
           )}
         </div>
@@ -184,10 +184,10 @@ export function AccountSecurityView({
         >
           <div className="min-w-0">
             <p className="text-sm font-medium">
-              {t("account.security.passkeysTitle")}
+              {t("account.security.passkeys.title")}
             </p>
             <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              {t("account.security.passkeysDescription")}
+              {t("account.security.passkeys.description")}
             </p>
           </div>
           <Button
@@ -205,25 +205,25 @@ export function AccountSecurityView({
             )}
           >
             {passkeyLoading
-              ? t("account.security.addingPasskey")
-              : t("account.security.addPasskey")}
+              ? t("account.security.passkeys.adding")
+              : t("account.security.passkeys.add")}
           </Button>
         </div>
 
         {isDevAuthShimEnabled() ? (
           <div className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-3">
             <p className="text-muted-foreground text-sm leading-relaxed">
-              {t("account.security.devAuthUnavailable")}
+              {t("account.security.passkeys.devAuthUnavailable")}
             </p>
           </div>
         ) : passkeyReauthRequired ? (
           <div className="border-brand-primary/25 bg-brand-primary/8 space-y-3 rounded-2xl border px-4 py-4">
             <div>
               <p className="text-sm font-medium">
-                {t("account.security.reauthTitle")}
+                {t("account.security.passkeys.reauth.title")}
               </p>
               <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                {t("account.security.reauthDescription")}
+                {t("account.security.passkeys.reauth.description")}
               </p>
             </div>
             <Button
@@ -232,19 +232,19 @@ export function AccountSecurityView({
               onClick={onPasskeyReauthenticate}
               className={cn("h-8 rounded-lg px-2.5", isMobile && "w-full")}
             >
-              {t("account.security.signInAgain")}
+              {t("account.security.passkeys.reauth.action")}
             </Button>
           </div>
         ) : !passkeySupported ? (
           <div className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-3">
             <p className="text-muted-foreground text-sm leading-relaxed">
-              {t("account.security.unsupportedBrowser")}
+              {t("account.security.passkeys.unsupportedBrowser")}
             </p>
           </div>
         ) : passkeysLoading ? (
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <LoaderCircle className="size-4 animate-spin" />
-            {t("account.security.loadingPasskeys")}
+            {t("account.security.passkeys.loading")}
           </div>
         ) : passkeys.length === 0 ? (
           <div className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-4">
@@ -254,10 +254,10 @@ export function AccountSecurityView({
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-medium">
-                  {t("account.security.emptyTitle")}
+                  {t("account.security.passkeys.empty.title")}
                 </p>
                 <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  {t("account.security.emptyDescription")}
+                  {t("account.security.passkeys.empty.description")}
                 </p>
               </div>
             </div>
@@ -291,14 +291,14 @@ export function AccountSecurityView({
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
                             {passkey.name?.trim() ||
-                              t("account.security.unnamedPasskey")}
+                              t("account.security.passkeys.fallback.unnamed")}
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            {t("account.security.addedDate", {
+                            {t("account.security.passkeys.addedDate", {
                               date: createdAt,
                             })}
                             {passkey.backedUp
-                              ? ` · ${t("account.security.synced")}`
+                              ? ` · ${t("account.security.passkeys.status.synced")}`
                               : ""}
                           </p>
                         </div>
@@ -314,7 +314,9 @@ export function AccountSecurityView({
                               variant="ghost"
                               size="icon"
                               className={isMobile ? undefined : "size-7"}
-                              aria-label={t("account.security.renameAriaLabel")}
+                              aria-label={t(
+                                "account.security.passkeys.aria.rename"
+                              )}
                               onClick={() =>
                                 onEditingPasskeyIdChange(passkey.id)
                               }
@@ -335,8 +337,8 @@ export function AccountSecurityView({
                             size="icon"
                             aria-label={
                               isDeleting
-                                ? t("account.security.removingAriaLabel")
-                                : t("account.security.removeAriaLabel")
+                                ? t("account.security.passkeys.aria.removing")
+                                : t("account.security.passkeys.aria.remove")
                             }
                             onClick={() => onDeletePasskey(passkey.id)}
                             disabled={isDeleting || passkeyLoading}
@@ -351,8 +353,10 @@ export function AccountSecurityView({
                         </TooltipTrigger>
                         <TooltipContent>
                           {isDeleting
-                            ? t("account.security.removing")
-                            : t("account.security.removeTooltip")}
+                            ? t("account.security.passkeys.actions.removing")
+                            : t(
+                                "account.security.passkeys.actions.removeTooltip"
+                              )}
                         </TooltipContent>
                       </Tooltip>
                     </div>
@@ -370,13 +374,13 @@ export function AccountSecurityView({
                           }))
                         }
                         placeholder={t(
-                          "account.security.passkeyNamePlaceholder"
+                          "account.security.passkeys.fields.namePlaceholder"
                         )}
                         className="h-8 rounded-lg px-2.5 shadow-none"
                       />
 
                       <p className="text-muted-foreground text-xs leading-relaxed">
-                        {t("account.security.renameDescription")}
+                        {t("account.security.passkeys.rename.description")}
                       </p>
 
                       <div
@@ -405,7 +409,7 @@ export function AccountSecurityView({
                           disabled={passkeyLoading || !draftName.trim()}
                           className="h-8 rounded-lg px-2.5"
                         >
-                          {t("account.security.saveName")}
+                          {t("account.security.passkeys.actions.saveName")}
                         </Button>
                       </div>
                     </div>

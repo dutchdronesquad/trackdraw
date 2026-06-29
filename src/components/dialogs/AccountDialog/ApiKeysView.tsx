@@ -119,7 +119,7 @@ export function AccountApiKeysView({
             id="api-key-name-label"
             className="order-1 block text-sm font-medium"
           >
-            {t("account.apiKeys.keyNameLabel")}
+            {t("account.apiKeys.form.keyNameLabel")}
           </span>
           <span
             id="api-key-expiry-label"
@@ -135,7 +135,7 @@ export function AccountApiKeysView({
             value={apiKeyName}
             onChange={(event) => onApiKeyNameChange(event.target.value)}
             className="order-2 h-8 rounded-lg px-2.5 shadow-none sm:order-4"
-            placeholder={t("account.apiKeys.namePlaceholder")}
+            placeholder={t("account.apiKeys.form.namePlaceholder")}
             maxLength={64}
           />
 
@@ -152,16 +152,16 @@ export function AccountApiKeysView({
               </SelectTrigger>
               <SelectContent align="start">
                 <SelectItem value="7">
-                  {t("account.apiKeys.expiryDays", { days: 7 })}
+                  {t("account.apiKeys.form.expiryDays", { days: 7 })}
                 </SelectItem>
                 <SelectItem value="30">
-                  {t("account.apiKeys.expiryDays", { days: 30 })}
+                  {t("account.apiKeys.form.expiryDays", { days: 30 })}
                 </SelectItem>
                 <SelectItem value="90">
-                  {t("account.apiKeys.expiryDays", { days: 90 })}
+                  {t("account.apiKeys.form.expiryDays", { days: 90 })}
                 </SelectItem>
                 <SelectItem value="365">
-                  {t("account.apiKeys.expiryYear")}
+                  {t("account.apiKeys.form.expiryYear")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -181,7 +181,7 @@ export function AccountApiKeysView({
             ) : (
               <Plus className="size-4" />
             )}
-            {t("account.apiKeys.create")}
+            {t("account.apiKeys.form.create")}
           </Button>
         </div>
 
@@ -189,10 +189,10 @@ export function AccountApiKeysView({
           <div className="space-y-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-4">
             <div>
               <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
-                {t("account.apiKeys.createdTitle")}
+                {t("account.apiKeys.created.title")}
               </p>
               <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                {t("account.apiKeys.createdDescription")}
+                {t("account.apiKeys.created.description")}
               </p>
             </div>
             <div
@@ -222,7 +222,7 @@ export function AccountApiKeysView({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-medium">
-              {t("account.apiKeys.activeTitle")}
+              {t("account.apiKeys.active.title")}
             </p>
             <Button
               type="button"
@@ -230,7 +230,7 @@ export function AccountApiKeysView({
               onClick={onRefreshApiKeys}
               disabled={apiKeysLoading}
               className="text-muted-foreground hover:text-foreground hover:bg-muted h-7 w-7 shrink-0 rounded-lg px-0"
-              aria-label={t("account.apiKeys.refreshAriaLabel")}
+              aria-label={t("account.apiKeys.active.refreshAriaLabel")}
             >
               <RefreshCw
                 className={cn("size-4", apiKeysLoading && "animate-spin")}
@@ -239,14 +239,14 @@ export function AccountApiKeysView({
           </div>
           <div>
             <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-              {t("account.apiKeys.descriptionPrefix")}{" "}
+              {t("account.apiKeys.active.descriptionPrefix")}{" "}
               <Link
                 href="/api/docs"
                 target="_blank"
                 rel="noreferrer"
                 className="text-foreground inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
               >
-                {t("account.apiKeys.docsLink")}
+                {t("account.apiKeys.active.docsLink")}
                 <ExternalLink className="size-3" />
               </Link>
             </p>
@@ -256,7 +256,7 @@ export function AccountApiKeysView({
         {apiKeysLoading ? (
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <LoaderCircle className="size-4 animate-spin" />
-            {t("account.apiKeys.loading")}
+            {t("account.apiKeys.active.loading")}
           </div>
         ) : apiKeys.length === 0 ? (
           <div className="bg-muted/20 border-border/60 rounded-2xl border px-4 py-4">
@@ -266,10 +266,10 @@ export function AccountApiKeysView({
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-medium">
-                  {t("account.apiKeys.emptyTitle")}
+                  {t("account.apiKeys.empty.title")}
                 </p>
                 <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  {t("account.apiKeys.emptyDescription")}
+                  {t("account.apiKeys.empty.description")}
                 </p>
               </div>
             </div>
@@ -294,16 +294,16 @@ export function AccountApiKeysView({
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
                             {apiKey.name?.trim() ||
-                              t("account.apiKeys.unnamedKey")}
+                              t("account.apiKeys.fallback.unnamed")}
                           </p>
                           <div className="mt-1 flex flex-wrap gap-1.5">
                             <span className="border-border/50 bg-background/60 text-muted-foreground inline-flex rounded-md border px-1.5 py-0.5 text-[11px]">
-                              {t("account.apiKeys.expiresOn", {
+                              {t("account.apiKeys.meta.expiresOn", {
                                 date: formatDate(apiKey.expiresAt),
                               })}
                             </span>
                             <span className="border-border/50 bg-background/60 text-muted-foreground inline-flex rounded-md border px-1.5 py-0.5 text-[11px]">
-                              {t("account.apiKeys.lastUsed", {
+                              {t("account.apiKeys.meta.lastUsed", {
                                 date: formatDate(apiKey.lastRequest),
                               })}
                             </span>
@@ -311,16 +311,18 @@ export function AccountApiKeysView({
                         </div>
                       </div>
 
-                      <ActionTooltip label={t("account.apiKeys.revokeTooltip")}>
+                      <ActionTooltip
+                        label={t("account.apiKeys.revoke.tooltip")}
+                      >
                         <button
                           type="button"
                           onClick={() => setConfirmRevokeKeyId(apiKey.id)}
                           disabled={isDeleting}
                           className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg opacity-100 transition-colors disabled:pointer-events-none disabled:opacity-50"
-                          aria-label={t("account.apiKeys.revokeAriaLabel", {
+                          aria-label={t("account.apiKeys.revoke.ariaLabel", {
                             name:
                               apiKey.name?.trim() ||
-                              t("account.apiKeys.unnamedKey"),
+                              t("account.apiKeys.fallback.unnamed"),
                           })}
                         >
                           {isDeleting ? (
@@ -344,12 +346,12 @@ export function AccountApiKeysView({
                       >
                         <div className="min-w-0 flex-1">
                           <p className="text-foreground truncate text-sm font-medium">
-                            {t("account.apiKeys.revokeConfirmTitle")}
+                            {t("account.apiKeys.revoke.confirmTitle")}
                           </p>
                           <p className="text-muted-foreground truncate text-[11px]">
                             {isMobile
-                              ? t("account.apiKeys.revokeWarningExpiring")
-                              : t("account.apiKeys.revokeWarningNonExpiring")}
+                              ? t("account.apiKeys.revoke.warningExpiring")
+                              : t("account.apiKeys.revoke.warningNonExpiring")}
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
@@ -363,8 +365,8 @@ export function AccountApiKeysView({
                             className="bg-destructive/10 hover:bg-destructive/20 text-destructive disabled:text-destructive/60 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed"
                           >
                             {isDeleting
-                              ? t("account.apiKeys.revoking")
-                              : t("account.apiKeys.revoke")}
+                              ? t("account.apiKeys.revoke.revoking")
+                              : t("account.apiKeys.revoke.action")}
                           </button>
                           <button
                             type="button"

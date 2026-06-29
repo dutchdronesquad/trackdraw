@@ -1,96 +1,148 @@
 {
   "account": {
-    "navSecurity": "Security",
-    "navApiKeys": "API keys",
-    "navDanger": "Danger zone",
-    "panelProfile": {
-      "title": "Your profile",
-      "description": "Manage the name shown across your TrackDraw account."
+    "dialog": {
+      "eyebrow": "Studio",
+      "mobileSubtitle": "Manage your TrackDraw account."
     },
-    "panelSecurity": {
-      "title": "Security",
-      "description": "Manage sign-in methods, account email, and passkeys for your TrackDraw account."
+    "nav": {
+      "security": "Security",
+      "apiKeys": "API keys",
+      "danger": "Danger zone"
     },
-    "panelApiKeys": {
-      "title": "API keys",
-      "description": "Create and revoke expiring keys for external TrackDraw integrations."
+    "panels": {
+      "profile": {
+        "title": "Your profile",
+        "description": "Manage the name shown across your TrackDraw account."
+      },
+      "security": {
+        "title": "Security",
+        "description": "Manage sign-in methods, account email, and passkeys for your TrackDraw account."
+      },
+      "apiKeys": {
+        "title": "API keys",
+        "description": "Create and revoke expiring keys for external TrackDraw integrations."
+      },
+      "danger": {
+        "title": "Danger zone",
+        "description": "Destructive and irreversible account actions."
+      }
     },
-    "panelDanger": {
-      "title": "Danger zone",
-      "description": "Destructive and irreversible account actions."
-    },
-    "dialogEyebrow": "Studio",
-    "dialogMobileSubtitle": "Manage your TrackDraw account.",
     "profile": {
-      "displayNameLabel": "Display name",
-      "displayNamePlaceholder": "Your name",
-      "languageDescription": "Changes apply immediately",
-      "saving": "Saving...",
-      "noAccountEmail": "TrackDraw account"
+      "displayName": {
+        "label": "Display name",
+        "placeholder": "Your name"
+      },
+      "language": {
+        "description": "Changes apply immediately"
+      },
+      "status": {
+        "saving": "Saving..."
+      },
+      "fallback": {
+        "noAccountEmail": "TrackDraw account"
+      }
     },
     "security": {
-      "emailAddress": "Email address",
-      "newEmail": "New email",
-      "emailPlaceholder": "name@example.com",
-      "emailChangeDescription": "After saving, we will send a confirmation to your current email address first. Once confirmed, you will verify the new one.",
-      "changeEmail": "Change email",
-      "passkeysTitle": "Passkeys",
-      "passkeysDescription": "Add a passkey for faster sign-in on supported devices.",
-      "savingEmail": "Saving...",
-      "addPasskey": "Add passkey",
-      "addingPasskey": "Adding...",
-      "devAuthUnavailable": "Passkeys are not available in `npm run dev`. Use `npm run preview` to test the real auth flow locally.",
-      "reauthTitle": "Sign in again to continue",
-      "reauthDescription": "Passkey setup requires a recent sign-in. You can stay signed in for normal work, but this security action needs confirmation.",
-      "signInAgain": "Sign in again",
-      "unsupportedBrowser": "This browser does not currently expose WebAuthn here, so passkey setup is unavailable on this device.",
-      "loadingPasskeys": "Loading passkeys...",
-      "emptyTitle": "No passkeys yet",
-      "emptyDescription": "Add one to make sign-in quicker on your trusted devices.",
-      "addedDate": "Added {date}",
-      "synced": "synced",
-      "renameAriaLabel": "Rename passkey",
-      "removingAriaLabel": "Removing passkey",
-      "removeAriaLabel": "Remove passkey",
-      "removing": "Removing...",
-      "removeTooltip": "Remove from account",
-      "passkeyNamePlaceholder": "Passkey name",
-      "unnamedPasskey": "Unnamed passkey",
-      "renameDescription": "This only changes how the passkey is labeled in your TrackDraw account.",
-      "saveName": "Save name"
+      "email": {
+        "address": "Email address",
+        "newEmail": "New email",
+        "placeholder": "name@example.com",
+        "changeDescription": "After saving, we will send a confirmation to your current email address first. Once confirmed, you will verify the new one.",
+        "change": "Change email",
+        "saving": "Saving..."
+      },
+      "passkeys": {
+        "title": "Passkeys",
+        "description": "Add a passkey for faster sign-in on supported devices.",
+        "add": "Add passkey",
+        "adding": "Adding...",
+        "devAuthUnavailable": "Passkeys are not available in `npm run dev`. Use `npm run preview` to test the real auth flow locally.",
+        "unsupportedBrowser": "This browser does not currently expose WebAuthn here, so passkey setup is unavailable on this device.",
+        "loading": "Loading passkeys...",
+        "addedDate": "Added {date}",
+        "status": {
+          "synced": "synced"
+        },
+        "reauth": {
+          "title": "Sign in again to continue",
+          "description": "Passkey setup requires a recent sign-in. You can stay signed in for normal work, but this security action needs confirmation.",
+          "action": "Sign in again"
+        },
+        "empty": {
+          "title": "No passkeys yet",
+          "description": "Add one to make sign-in quicker on your trusted devices."
+        },
+        "aria": {
+          "rename": "Rename passkey",
+          "removing": "Removing passkey",
+          "remove": "Remove passkey"
+        },
+        "actions": {
+          "removing": "Removing...",
+          "removeTooltip": "Remove from account",
+          "saveName": "Save name"
+        },
+        "fields": {
+          "namePlaceholder": "Passkey name"
+        },
+        "fallback": {
+          "unnamed": "Unnamed passkey"
+        },
+        "rename": {
+          "description": "This only changes how the passkey is labeled in your TrackDraw account."
+        }
+      }
     },
     "apiKeys": {
-      "keyNameLabel": "Key name",
-      "expiryDays": "{days} days",
-      "expiryYear": "1 year",
-      "namePlaceholder": "Overlay integration",
-      "create": "Create",
-      "createdTitle": "API key created",
-      "createdDescription": "This secret is shown once. Store it before closing this dialog.",
-      "activeTitle": "Active API keys",
-      "descriptionPrefix": "Read-only keys for trusted integrations.",
-      "docsLink": "API docs",
-      "refreshAriaLabel": "Refresh API keys",
-      "loading": "Loading API keys...",
-      "emptyTitle": "No API keys yet",
-      "emptyDescription": "Create one when a trusted integration needs read-only access to your account projects.",
-      "unnamedKey": "Unnamed API key",
-      "expiresOn": "Expires {date}",
-      "lastUsed": "Last used {date}",
-      "revokeConfirmTitle": "Revoke API key?",
-      "revokeTooltip": "Revoke",
-      "revokeAriaLabel": "Revoke {name}",
-      "revokeWarningExpiring": "This key stops working.",
-      "revokeWarningNonExpiring": "Integrations using this key lose read-only access.",
-      "revoking": "Revoking...",
-      "revoke": "Revoke"
+      "form": {
+        "keyNameLabel": "Key name",
+        "expiryDays": "{days} days",
+        "expiryYear": "1 year",
+        "namePlaceholder": "Overlay integration",
+        "create": "Create"
+      },
+      "created": {
+        "title": "API key created",
+        "description": "This secret is shown once. Store it before closing this dialog."
+      },
+      "active": {
+        "title": "Active API keys",
+        "descriptionPrefix": "Read-only keys for trusted integrations.",
+        "docsLink": "API docs",
+        "refreshAriaLabel": "Refresh API keys",
+        "loading": "Loading API keys..."
+      },
+      "empty": {
+        "title": "No API keys yet",
+        "description": "Create one when a trusted integration needs read-only access to your account projects."
+      },
+      "fallback": {
+        "unnamed": "Unnamed API key"
+      },
+      "meta": {
+        "expiresOn": "Expires {date}",
+        "lastUsed": "Last used {date}"
+      },
+      "revoke": {
+        "confirmTitle": "Revoke API key?",
+        "tooltip": "Revoke",
+        "ariaLabel": "Revoke {name}",
+        "warningExpiring": "This key stops working.",
+        "warningNonExpiring": "Integrations using this key lose read-only access.",
+        "revoking": "Revoking...",
+        "action": "Revoke"
+      }
     },
     "danger": {
       "description": "Deleting your account removes account projects, published links, API keys, and other account-backed data. Export anything account-backed that you want to keep before continuing.",
-      "typeToConfirm": "Type DELETE to confirm",
-      "deletePlaceholder": "DELETE",
-      "deleting": "Deleting...",
-      "deleteAccount": "Delete account"
+      "confirm": {
+        "label": "Type DELETE to confirm",
+        "placeholder": "DELETE"
+      },
+      "actions": {
+        "deleting": "Deleting...",
+        "deleteAccount": "Delete account"
+      }
     },
     "shared": {
       "loading": "Loading account...",
@@ -241,85 +293,219 @@
     "backupFirst": "Back up current project first"
   },
   "share": {
-    "dialogEyebrow": "Studio",
-    "dialogEyebrowExisting": "Shared track",
-    "dialogTitle": "Share",
-    "dialogMobileSubtitle": "Share a read-only review link for this track",
-    "navShareLink": "Share link",
-    "navShare": "Share",
-    "navEmbed": "Embed",
-    "navGallery": "Gallery",
-    "currentSharedLink": "Current shared link",
-    "readOnlyReviewOn": "Read-only {view} review on {hostname}",
-    "primaryAction": {
-      "updateLink": "Update link",
-      "copyLink": "Copy link",
-      "createLink": "Create link",
-      "createNewLink": "Create new link"
+    "dialog": {
+      "eyebrow": "Studio",
+      "existingEyebrow": "Shared track",
+      "title": "Share",
+      "mobileSubtitle": "Share a read-only review link for this track"
     },
-    "gallery": {
-      "loading": "Loading current state",
-      "featured": "Featured in gallery",
-      "listed": "Listed in gallery",
-      "hiddenByModeration": "Hidden by moderation",
-      "linkOnly": "Link only",
-      "noPublishedLink": "No published link",
-      "checkingStatus": "Checking the current gallery status.",
-      "featuredDesc": "Visible in the public gallery and pinned near the top.",
-      "listedDesc": "Visible in the public gallery.",
-      "hiddenDesc": "Hidden by moderation. The direct link still works until it is revoked.",
-      "linkOnlyDesc": "Share link only. Not visible in the public gallery.",
-      "noLinkDesc": "Create a share link first.",
-      "checking": "Checking",
-      "noLink": "No link",
-      "expiresInDays": "Expires in {days} days",
-      "noExpiry": "No expiry",
-      "visibility": "Visibility",
+    "nav": {
       "shareLink": "Share link",
-      "publishFirstTitle": "Publish before listing",
-      "publishFirstDescription": "The gallery uses the current published snapshot, so a share link is required before this track can be listed.",
-      "createShareFirst": "Create share link first",
-      "moderationLockTitle": "Moderation lock",
-      "moderationLockDescription": "This track is hidden from the gallery by moderation. The direct share link can still work until it is revoked.",
-      "detailsTitle": "Gallery details",
-      "listTitle": "List in gallery",
-      "detailsDescription": "Update the title and description shown on the public gallery card.",
-      "listDescription": "Add a title, description and generated preview for public browsing.",
-      "titlePlaceholder": "Track title",
-      "descriptionPlaceholder": "Short description for the gallery card",
-      "authorLabel": "Author",
-      "noDisplayName": "no display name set",
-      "generatingPreview": "Generating preview...",
-      "previewReady": "Preview ready",
-      "refreshShareFirst": "Update the share link first so the gallery uses the latest snapshot.",
-      "titleRequired": "Add a title before saving.",
-      "descriptionLength": "Use {min}-{max} characters for the description.",
-      "displayNameRequired": "Set an account display name first.",
-      "noMetadataChanges": "Update the title or description to save changes.",
-      "addToGallery": "Add to gallery",
-      "cardTitle": "Gallery card",
-      "cardDescription": "Review or update the public title and description for this track.",
-      "untitled": "Untitled",
-      "noDescription": "No gallery description set.",
-      "editDetails": "Edit details",
-      "viewGallery": "View gallery",
-      "removeConfirm": "Remove from the public gallery? The share link itself will continue to work until it is revoked.",
-      "removeFromGallery": "Remove from gallery",
-      "readyTitle": "Ready to list",
-      "readyDescription": "Add this published snapshot to the public gallery with its own title, description and preview."
+      "share": "Share",
+      "embed": "Embed",
+      "gallery": "Gallery"
+    },
+    "currentLink": {
+      "title": "Current shared link",
+      "readOnlyReviewOn": "Read-only {view} review on {hostname}"
     },
     "content": {
-      "shareTitle": "Share link",
-      "shareDescExisting": "Copy or resend this published read-only link, or open Studio to make your own editable copy.",
-      "shareDescAccount": "Create or update the durable read-only link for this account project.",
-      "shareDescSeparate": "Create a separate durable read-only link for this editable copy or local track.",
-      "shareDescAnon": "Create a temporary read-only snapshot link and control how long it stays active.",
-      "galleryTitle": "Gallery visibility",
-      "galleryDesc": "Manage how this published link appears in the public gallery.",
-      "embedTitle": "Embed",
-      "embedDesc": "Copy iframe code for an account-published track that stays live until revoked.",
-      "actionsDescExisting": "Use the current published link in other apps or reopen it in a new tab.",
-      "actionsDesc": "Open, resend, revoke, or export this share without changing the track itself."
+      "share": {
+        "title": "Share link",
+        "description": {
+          "existing": "Copy or resend this published read-only link, or open Studio to make your own editable copy.",
+          "account": "Create or update the durable read-only link for this account project.",
+          "separate": "Create a separate durable read-only link for this editable copy or local track.",
+          "anonymous": "Create a temporary read-only snapshot link and control how long it stays active."
+        }
+      },
+      "gallery": {
+        "title": "Gallery visibility",
+        "description": "Manage how this published link appears in the public gallery."
+      },
+      "embed": {
+        "title": "Embed",
+        "description": "Copy iframe code for an account-published track that stays live until revoked."
+      },
+      "actions": {
+        "descriptionExisting": "Use the current published link in other apps or reopen it in a new tab.",
+        "description": "Open, resend, revoke, or export this share without changing the track itself."
+      }
+    },
+    "link": {
+      "expiry": {
+        "days": "{days} days",
+        "label": "Link expires after",
+        "description": "Temporary snapshots stay available until they expire."
+      },
+      "titles": {
+        "savedProject": "Saved project link",
+        "newShare": "New share link",
+        "separatePublished": "Separate published link",
+        "temporary": "Temporary link",
+        "noSavedProject": "No saved project link yet",
+        "noSeparate": "No separate link yet",
+        "noTemporary": "No temporary link yet"
+      },
+      "descriptions": {
+        "savedProject": "This saved account project uses one durable read-only link. Updating it keeps the same URL with the latest design.",
+        "newShare": "This editable copy gets its own durable read-only link. It will not update another project's published link.",
+        "createSavedProject": "Create one durable URL for this account project. Future updates can keep the same link.",
+        "createSeparate": "Create a durable URL for this copy without changing any earlier share.",
+        "createTemporary": "Choose when it expires and create a read-only snapshot."
+      },
+      "lifetime": {
+        "published": "Published link on {hostname}, stays live until revoked",
+        "temporary": "Read-only snapshot on {hostname}, expires in {days} days"
+      },
+      "warnings": {
+        "outdatedDesign": "This link no longer reflects the latest design.",
+        "outdatedExpiry": "This link no longer reflects the latest expiry selection."
+      }
+    },
+    "embed": {
+      "iframeTitle": "TrackDraw track embed",
+      "code": {
+        "title": "Embed code",
+        "description": "Account-published tracks can be embedded on club or event sites.",
+        "label": "Iframe code",
+        "selectedViewDescription": "Includes the selected initial view.",
+        "copy": "Copy code"
+      },
+      "state": {
+        "loading": "Loading embed state…"
+      },
+      "publish": {
+        "title": "Publish before embedding",
+        "description": "Embeds use the durable account-published link, so create the published link before copying iframe code.",
+        "action": "Create published link"
+      },
+      "temporary": {
+        "title": "Temporary links cannot be embedded",
+        "description": "Sign in and publish this track from your account to create a durable embed."
+      },
+      "refresh": {
+        "message": "Update the published link first so the embed uses the latest design.",
+        "action": "Update link"
+      },
+      "initialView": {
+        "label": "Initial view",
+        "options": {
+          "layout2d": {
+            "label": "2D layout",
+            "description": "Open as the flat field plan"
+          },
+          "preview3d": {
+            "label": "3D preview",
+            "description": "Open in the orbit review"
+          }
+        }
+      }
+    },
+    "gallery": {
+      "status": {
+        "loading": "Loading current state",
+        "featured": "Featured in gallery",
+        "listed": "Listed in gallery",
+        "hiddenByModeration": "Hidden by moderation",
+        "linkOnly": "Link only",
+        "noPublishedLink": "No published link",
+        "checking": "Checking",
+        "noLink": "No link",
+        "expiresInDays": "Expires in {days} days",
+        "noExpiry": "No expiry"
+      },
+      "descriptions": {
+        "checking": "Checking the current gallery status.",
+        "featured": "Visible in the public gallery and pinned near the top.",
+        "listed": "Visible in the public gallery.",
+        "hidden": "Hidden by moderation. The direct link still works until it is revoked.",
+        "linkOnly": "Share link only. Not visible in the public gallery.",
+        "noLink": "Create a share link first."
+      },
+      "labels": {
+        "visibility": "Visibility",
+        "shareLink": "Share link",
+        "author": "Author"
+      },
+      "publishFirst": {
+        "title": "Publish before listing",
+        "description": "The gallery uses the current published snapshot, so a share link is required before this track can be listed.",
+        "action": "Create share link first"
+      },
+      "moderation": {
+        "title": "Moderation lock",
+        "description": "This track is hidden from the gallery by moderation. The direct share link can still work until it is revoked."
+      },
+      "details": {
+        "title": "Gallery details",
+        "description": "Update the title and description shown on the public gallery card.",
+        "edit": "Edit details"
+      },
+      "list": {
+        "title": "List in gallery",
+        "description": "Add a title, description and generated preview for public browsing.",
+        "add": "Add to gallery",
+        "readyTitle": "Ready to list",
+        "readyDescription": "Add this published snapshot to the public gallery with its own title, description and preview."
+      },
+      "fields": {
+        "titlePlaceholder": "Track title",
+        "descriptionPlaceholder": "Short description for the gallery card"
+      },
+      "validation": {
+        "titleRequired": "Add a title before saving.",
+        "descriptionLength": "Use {min}-{max} characters for the description.",
+        "displayNameRequired": "Set an account display name first.",
+        "noMetadataChanges": "Update the title or description to save changes.",
+        "refreshShareFirst": "Update the share link first so the gallery uses the latest snapshot."
+      },
+      "preview": {
+        "generating": "Generating preview...",
+        "ready": "Preview ready"
+      },
+      "card": {
+        "title": "Gallery card",
+        "description": "Review or update the public title and description for this track.",
+        "untitled": "Untitled",
+        "noDescription": "No gallery description set.",
+        "viewGallery": "View gallery"
+      },
+      "remove": {
+        "confirm": "Remove from the public gallery? The share link itself will continue to work until it is revoked.",
+        "action": "Remove from gallery"
+      },
+      "fallback": {
+        "noDisplayName": "no display name set"
+      }
+    },
+    "actions": {
+      "primary": {
+        "updateLink": "Update link",
+        "copyLink": "Copy link",
+        "createLink": "Create link",
+        "createNewLink": "Create new link"
+      },
+      "copyLink": "Copy link",
+      "revoke": "Revoke",
+      "share": {
+        "existingDescription": "This page is already the published read-only review link. Share it as-is, or open Studio if you want an editable copy.",
+        "withPathDescription": "Shared links open as read-only review pages. This link opens straight into {view} review, and the route is ready for fly-through.",
+        "withoutPathDescription": "Shared links open as read-only review pages. Add a path first if you want reviewers to use fly-through and elevation review."
+      },
+      "nativeShare": {
+        "title": "Share via...",
+        "description": "Send to apps or contacts"
+      },
+      "openInTab": {
+        "label": "Open in tab",
+        "reopenCurrent": "Reopen the current shared link in a new tab",
+        "previewLink": "Preview the share link in a new window"
+      },
+      "exportJson": {
+        "label": "Export JSON instead",
+        "description": "Editable backup for reopening in TrackDraw"
+      }
     },
     "errors": {
       "createFailed": "Failed to create share link",
@@ -338,88 +524,36 @@
       "galleryListed": "Track listed in gallery",
       "galleryUpdated": "Gallery details updated",
       "linkRevoked": "Link revoked"
-    },
-    "link": {
-      "expiryDays": "{days} days",
-      "savedProjectTitle": "Saved project link",
-      "newShareTitle": "New share link",
-      "savedProjectDescription": "This saved account project uses one durable read-only link. Updating it keeps the same URL with the latest design.",
-      "newShareDescription": "This editable copy gets its own durable read-only link. It will not update another project's published link.",
-      "separatePublishedTitle": "Separate published link",
-      "temporaryTitle": "Temporary link",
-      "noSavedProjectTitle": "No saved project link yet",
-      "noSeparateTitle": "No separate link yet",
-      "noTemporaryTitle": "No temporary link yet",
-      "lifetimePublished": "Published link on {hostname}, stays live until revoked",
-      "lifetimeTemporary": "Read-only snapshot on {hostname}, expires in {days} days",
-      "createSavedProject": "Create one durable URL for this account project. Future updates can keep the same link.",
-      "createSeparate": "Create a durable URL for this copy without changing any earlier share.",
-      "createTemporary": "Choose when it expires and create a read-only snapshot.",
-      "outdatedDesign": "This link no longer reflects the latest design.",
-      "outdatedExpiry": "This link no longer reflects the latest expiry selection."
-    },
-    "embed": {
-      "iframeTitle": "TrackDraw track embed",
-      "codeTitle": "Embed code",
-      "codeDescription": "Account-published tracks can be embedded on club or event sites.",
-      "loadingState": "Loading embed state…",
-      "publishBeforeEmbedding": "Publish before embedding",
-      "publishBeforeEmbeddingDescription": "Embeds use the durable account-published link, so create the published link before copying iframe code.",
-      "createPublishedLink": "Create published link",
-      "temporaryLinksCannotEmbed": "Temporary links cannot be embedded",
-      "temporaryLinksCannotEmbedDescription": "Sign in and publish this track from your account to create a durable embed.",
-      "refreshFirst": "Update the published link first so the embed uses the latest design.",
-      "updateLink": "Update link",
-      "initialView": "Initial view",
-      "iframeCodeLabel": "Iframe code",
-      "iframeCodeDescription": "Includes the selected initial view.",
-      "copyCode": "Copy code",
-      "layout2dLabel": "2D layout",
-      "layout2dDescription": "Open as the flat field plan",
-      "preview3dLabel": "3D preview",
-      "preview3dDescription": "Open in the orbit review"
-    },
-    "actions": {
-      "existingDescription": "This page is already the published read-only review link. Share it as-is, or open Studio if you want an editable copy.",
-      "withPathDescription": "Shared links open as read-only review pages. This link opens straight into {view} review, and the route is ready for fly-through.",
-      "withoutPathDescription": "Shared links open as read-only review pages. Add a path first if you want reviewers to use fly-through and elevation review.",
-      "nativeShareTitle": "Share via...",
-      "nativeShareDescription": "Send to apps or contacts",
-      "openInTab": "Open in tab",
-      "reopenCurrent": "Reopen the current shared link in a new tab",
-      "previewLink": "Preview the share link in a new window",
-      "exportJson": "Export JSON instead",
-      "exportJsonDescription": "Editable backup for reopening in TrackDraw"
-    },
-    "labels": {
-      "copyLink": "Copy link",
-      "linkExpiresAfter": "Link expires after",
-      "temporarySnapshotsExpire": "Temporary snapshots stay available until they expire.",
-      "revoke": "Revoke"
     }
   },
   "projectManager": {
-    "dialogEyebrow": "Studio",
-    "dialogTitle": "Projects",
-    "dialogMobileSubtitle": "Open, rename, sync or restore.",
-    "navThisDevice": "This device",
-    "navShares": "Shares",
-    "navSnapshots": "Snapshots",
-    "panelDevice": {
-      "label": "On this device",
-      "description": "Local copies saved on this device. Synced projects can also appear in Account."
+    "dialog": {
+      "eyebrow": "Studio",
+      "title": "Projects",
+      "mobileSubtitle": "Open, rename, sync or restore."
     },
-    "panelAccount": {
-      "label": "Account projects",
-      "description": "Account copies available on your signed-in devices. Open one here to refresh this browser."
+    "nav": {
+      "thisDevice": "This device",
+      "shares": "Shares",
+      "snapshots": "Snapshots"
     },
-    "panelSnapshots": {
-      "label": "Snapshots",
-      "description": "Earlier saved states of the current project. Restore any point to roll back changes."
-    },
-    "panelShares": {
-      "label": "Published shares",
-      "description": "Active share links published from your account. Copy, open or revoke them here."
+    "panels": {
+      "device": {
+        "label": "On this device",
+        "description": "Local copies saved on this device. Synced projects can also appear in Account."
+      },
+      "account": {
+        "label": "Account projects",
+        "description": "Account copies available on your signed-in devices. Open one here to refresh this browser."
+      },
+      "snapshots": {
+        "label": "Snapshots",
+        "description": "Earlier saved states of the current project. Restore any point to roll back changes."
+      },
+      "shares": {
+        "label": "Published shares",
+        "description": "Active share links published from your account. Copy, open or revoke them here."
+      }
     },
     "device": {
       "sync": {
@@ -499,58 +633,96 @@
       }
     },
     "account": {
-      "loadingProjects": "Loading account projects...",
-      "loadProjectsFailed": "Could not load account projects",
-      "noProjects": "No account projects",
-      "noProjectsDesc": "Sync a project to make it available across devices.",
-      "conflictWarning": "This project changed on another device while you were signed out",
-      "syncError": "Could not sync the latest changes",
-      "resolveConflictFirst": "Resolve the version conflict first",
-      "retrySync": "Retry sync",
-      "syncPendingChanges": "Sync pending changes",
-      "syncing": "Syncing",
-      "reviewNeeded": "Review needed",
-      "syncFailed": "Sync failed",
-      "synced": "Synced",
-      "untitled": "Untitled"
+      "status": {
+        "loadingProjects": "Loading account projects...",
+        "syncing": "Syncing",
+        "reviewNeeded": "Review needed",
+        "failed": "Sync failed",
+        "synced": "Synced"
+      },
+      "empty": {
+        "noProjects": "No account projects",
+        "description": "Sync a project to make it available across devices."
+      },
+      "messages": {
+        "loadFailed": "Could not load account projects",
+        "conflictWarning": "This project changed on another device while you were signed out",
+        "syncError": "Could not sync the latest changes",
+        "resolveConflictFirst": "Resolve the version conflict first"
+      },
+      "actions": {
+        "retrySync": "Retry sync",
+        "syncPendingChanges": "Sync pending changes"
+      },
+      "fallback": {
+        "untitled": "Untitled"
+      }
     },
     "restore": {
-      "noSnapshots": "No snapshots yet",
-      "noSnapshotsDesc": "Snapshots are created automatically when you open or replace a project.",
-      "noSnapshotsDesktopDesc": "Press <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> or use the save button in the header.",
-      "restoreTitle": "Restore this snapshot",
-      "deleteTitle": "Delete snapshot",
-      "restoreSnapshotConfirm": "Restore this snapshot?",
-      "restoreAction": "Restore",
-      "restoreSnapshotAriaLabel": "Restore {title}",
-      "deleteSnapshotAriaLabel": "Delete {title}",
-      "snapshotFallback": "snapshot",
-      "activeBadge": "active",
-      "untitled": "Untitled"
+      "empty": {
+        "noSnapshots": "No snapshots yet",
+        "description": "Snapshots are created automatically when you open or replace a project.",
+        "desktopDescription": "Press <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> or use the save button in the header."
+      },
+      "actions": {
+        "restoreTitle": "Restore this snapshot",
+        "deleteTitle": "Delete snapshot",
+        "restore": "Restore"
+      },
+      "aria": {
+        "restoreSnapshot": "Restore {title}",
+        "deleteSnapshot": "Delete {title}"
+      },
+      "confirm": {
+        "restoreSnapshot": "Restore this snapshot?"
+      },
+      "status": {
+        "active": "active"
+      },
+      "fallback": {
+        "snapshot": "snapshot",
+        "untitled": "Untitled"
+      }
     },
     "shares": {
-      "loadingPublishedShares": "Loading published shares...",
-      "readOnlyReviewLinks": "Shares are read-only review links. Export JSON when someone needs an editable TrackDraw backup.",
-      "noShares": "No active shares",
-      "noSharesDesc": "Account-published links stay live until revoked. Temporary anonymous links expire automatically and are not managed here.",
-      "publishedStatus": "published",
-      "expiredStatus": "expired",
-      "expiresInDays": "{days, plural, one {1 day left} other {# days left}}",
-      "publishedLifetime": "read-only published link, live until revoked",
-      "temporaryLifetime": "read-only temporary link, {expiresIn}",
-      "copyLink": "Copy link",
-      "openTab": "Open in new tab",
-      "revokeLink": "Revoke link",
-      "copyLinkAriaLabel": "Copy share link",
-      "openTabAriaLabel": "Open share link",
-      "revokeLinkAriaLabel": "Revoke share link",
-      "revokeLinkConfirm": "Revoke this link?"
+      "status": {
+        "loadingPublishedShares": "Loading published shares...",
+        "published": "published",
+        "expired": "expired",
+        "expiresInDays": "{days, plural, one {1 day left} other {# days left}}"
+      },
+      "messages": {
+        "readOnlyReviewLinks": "Shares are read-only review links. Export JSON when someone needs an editable TrackDraw backup."
+      },
+      "empty": {
+        "noShares": "No active shares",
+        "description": "Account-published links stay live until revoked. Temporary anonymous links expire automatically and are not managed here."
+      },
+      "lifetime": {
+        "published": "read-only published link, live until revoked",
+        "temporary": "read-only temporary link, {expiresIn}"
+      },
+      "actions": {
+        "copyLink": "Copy link",
+        "openTab": "Open in new tab",
+        "revokeLink": "Revoke link"
+      },
+      "aria": {
+        "copyLink": "Copy share link",
+        "openTab": "Open share link",
+        "revokeLink": "Revoke share link"
+      },
+      "confirm": {
+        "revokeLink": "Revoke this link?"
+      }
     },
-    "copyProjectIdSuccess": "Project ID copied",
-    "copyProjectIdFailed": "Could not copy the project ID from this browser.",
-    "copyProjectIdLabel": "API project ID",
-    "copyProjectIdAriaLabel": "Copy API project ID",
-    "copyAction": "Copy"
+    "projectIdCopy": {
+      "success": "Project ID copied",
+      "failed": "Could not copy the project ID from this browser.",
+      "label": "API project ID",
+      "ariaLabel": "Copy API project ID",
+      "action": "Copy"
+    }
   },
   "completeProfile": {
     "title": "Add your name",

@@ -570,17 +570,17 @@ export default function AccountDialog({
     },
     {
       id: "security" as AccountDialogView,
-      label: t("account.navSecurity"),
+      label: t("account.nav.security"),
       icon: <ShieldCheck className="size-4" />,
     },
     {
       id: "apiKeys" as AccountDialogView,
-      label: t("account.navApiKeys"),
+      label: t("account.nav.apiKeys"),
       icon: <Braces className="size-4" />,
     },
     {
       id: "danger" as AccountDialogView,
-      label: t("account.navDanger"),
+      label: t("account.nav.danger"),
       icon: <ShieldAlert className="size-4" />,
       tone: "danger" as const,
     },
@@ -591,23 +591,23 @@ export default function AccountDialog({
     { title: string; description: string; content: React.ReactNode }
   > = {
     profile: {
-      title: t("account.panelProfile.title"),
-      description: t("account.panelProfile.description"),
+      title: t("account.panels.profile.title"),
+      description: t("account.panels.profile.description"),
       content: profileContent,
     },
     security: {
-      title: t("account.panelSecurity.title"),
-      description: t("account.panelSecurity.description"),
+      title: t("account.panels.security.title"),
+      description: t("account.panels.security.description"),
       content: securityContent,
     },
     apiKeys: {
-      title: t("account.panelApiKeys.title"),
-      description: t("account.panelApiKeys.description"),
+      title: t("account.panels.apiKeys.title"),
+      description: t("account.panels.apiKeys.description"),
       content: apiKeysContent,
     },
     danger: {
-      title: t("account.panelDanger.title"),
-      description: t("account.panelDanger.description"),
+      title: t("account.panels.danger.title"),
+      description: t("account.panels.danger.description"),
       content: dangerContent,
     },
   };
@@ -618,9 +618,9 @@ export default function AccountDialog({
     <SidebarDialog
       open={open}
       onOpenChange={onOpenChange}
-      eyebrow={t("account.dialogEyebrow")}
+      eyebrow={t("account.dialog.eyebrow")}
       title={tCommon("labels.account")}
-      mobileSubtitle={t("account.dialogMobileSubtitle")}
+      mobileSubtitle={t("account.dialog.mobileSubtitle")}
       navItems={navItems}
       activeItem={view}
       onItemChange={(id) => {

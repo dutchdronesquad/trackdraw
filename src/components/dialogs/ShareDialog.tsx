@@ -747,13 +747,13 @@ export default function ShareDialog({
 
   const primaryActionLabel = share
     ? linkNeedsRefresh
-      ? t("share.primaryAction.updateLink")
-      : t("share.primaryAction.copyLink")
+      ? t("share.actions.primary.updateLink")
+      : t("share.actions.primary.copyLink")
     : isAccountProjectShare
-      ? t("share.primaryAction.createLink")
+      ? t("share.actions.primary.createLink")
       : isAuthenticated
-        ? t("share.primaryAction.createNewLink")
-        : t("share.primaryAction.createLink");
+        ? t("share.actions.primary.createNewLink")
+        : t("share.actions.primary.createLink");
   const PrimaryIcon = share
     ? linkNeedsRefresh
       ? Link2
@@ -768,47 +768,49 @@ export default function ShareDialog({
     : () => handlePublish();
 
   const galleryStateLabel = !loadDone
-    ? t("share.gallery.loading")
+    ? t("share.gallery.status.loading")
     : share?.galleryState === "featured"
-      ? t("share.gallery.featured")
+      ? t("share.gallery.status.featured")
       : share?.galleryState === "listed"
-        ? t("share.gallery.listed")
+        ? t("share.gallery.status.listed")
         : share?.galleryState === "hidden"
-          ? t("share.gallery.hiddenByModeration")
+          ? t("share.gallery.status.hiddenByModeration")
           : share
-            ? t("share.gallery.linkOnly")
-            : t("share.gallery.noPublishedLink");
+            ? t("share.gallery.status.linkOnly")
+            : t("share.gallery.status.noPublishedLink");
 
   const galleryStateDesc = !loadDone
-    ? t("share.gallery.checkingStatus")
+    ? t("share.gallery.descriptions.checking")
     : share?.galleryState === "featured"
-      ? t("share.gallery.featuredDesc")
+      ? t("share.gallery.descriptions.featured")
       : share?.galleryState === "listed"
-        ? t("share.gallery.listedDesc")
+        ? t("share.gallery.descriptions.listed")
         : share?.galleryState === "hidden"
-          ? t("share.gallery.hiddenDesc")
+          ? t("share.gallery.descriptions.hidden")
           : share
-            ? t("share.gallery.linkOnlyDesc")
-            : t("share.gallery.noLinkDesc");
+            ? t("share.gallery.descriptions.linkOnly")
+            : t("share.gallery.descriptions.noLink");
 
   const galleryVisibilityValue = !loadDone
-    ? t("share.gallery.checking")
+    ? t("share.gallery.status.checking")
     : share?.galleryState === "featured"
-      ? t("share.gallery.featured")
+      ? t("share.gallery.status.featured")
       : share?.galleryState === "listed"
-        ? t("share.gallery.listed")
+        ? t("share.gallery.status.listed")
         : share?.galleryState === "hidden"
-          ? t("share.gallery.hiddenByModeration")
+          ? t("share.gallery.status.hiddenByModeration")
           : share
-            ? t("share.gallery.linkOnly")
-            : t("share.gallery.noLink");
+            ? t("share.gallery.status.linkOnly")
+            : t("share.gallery.status.noLink");
   const galleryShareLinkValue = !share
-    ? t("share.gallery.noLink")
+    ? t("share.gallery.status.noLink")
     : share.shareType === "published"
       ? tCommon("status.published")
       : share.expiresInDays === null
-        ? t("share.gallery.noExpiry")
-        : t("share.gallery.expiresInDays", { days: share.expiresInDays });
+        ? t("share.gallery.status.noExpiry")
+        : t("share.gallery.status.expiresInDays", {
+            days: share.expiresInDays,
+          });
   const GalleryStatusIcon = !loadDone
     ? Loader2
     : share?.galleryState === "featured"
@@ -832,7 +834,7 @@ export default function ShareDialog({
     ? [
         {
           id: "share",
-          label: t("share.navShareLink"),
+          label: t("share.nav.shareLink"),
           icon: <Link2 className="size-4" />,
         },
         {
@@ -844,14 +846,14 @@ export default function ShareDialog({
     : [
         {
           id: "share",
-          label: t("share.navShare"),
+          label: t("share.nav.share"),
           icon: <Link2 className="size-4" />,
         },
         ...(showEmbedSection
           ? [
               {
                 id: "embed",
-                label: t("share.navEmbed"),
+                label: t("share.nav.embed"),
                 icon: <Code2 className="size-4" />,
               },
             ]
@@ -860,7 +862,7 @@ export default function ShareDialog({
           ? [
               {
                 id: "gallery",
-                label: t("share.navGallery"),
+                label: t("share.nav.gallery"),
                 icon: <ImageIcon className="size-4" />,
               },
             ]
@@ -879,28 +881,28 @@ export default function ShareDialog({
 
   const contentMeta: Record<Tab, { title: string; description: string }> = {
     share: {
-      title: t("share.content.shareTitle"),
+      title: t("share.content.share.title"),
       description: existingShareMode
-        ? t("share.content.shareDescExisting")
+        ? t("share.content.share.description.existing")
         : isAuthenticated
           ? isAccountProjectShare
-            ? t("share.content.shareDescAccount")
-            : t("share.content.shareDescSeparate")
-          : t("share.content.shareDescAnon"),
+            ? t("share.content.share.description.account")
+            : t("share.content.share.description.separate")
+          : t("share.content.share.description.anonymous"),
     },
     gallery: {
-      title: t("share.content.galleryTitle"),
-      description: t("share.content.galleryDesc"),
+      title: t("share.content.gallery.title"),
+      description: t("share.content.gallery.description"),
     },
     embed: {
-      title: t("share.content.embedTitle"),
-      description: t("share.content.embedDesc"),
+      title: t("share.content.embed.title"),
+      description: t("share.content.embed.description"),
     },
     actions: {
       title: tCommon("labels.actions"),
       description: existingShareMode
-        ? t("share.content.actionsDescExisting")
-        : t("share.content.actionsDesc"),
+        ? t("share.content.actions.descriptionExisting")
+        : t("share.content.actions.description"),
     },
   };
 
@@ -915,11 +917,11 @@ export default function ShareDialog({
         onOpenChange={onOpenChange}
         eyebrow={
           existingShareMode
-            ? t("share.dialogEyebrowExisting")
-            : t("share.dialogEyebrow")
+            ? t("share.dialog.existingEyebrow")
+            : t("share.dialog.eyebrow")
         }
-        title={t("share.dialogTitle")}
-        mobileSubtitle={t("share.dialogMobileSubtitle")}
+        title={t("share.dialog.title")}
+        mobileSubtitle={t("share.dialog.mobileSubtitle")}
         navItems={navItems}
         activeItem={resolvedTab}
         onItemChange={(id) => setActiveTab(id as Tab)}
@@ -936,10 +938,10 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0">
                     <p className="text-foreground text-sm font-medium">
-                      {t("share.currentSharedLink")}
+                      {t("share.currentLink.title")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      {t("share.readOnlyReviewOn", {
+                      {t("share.currentLink.readOnlyReviewOn", {
                         view: currentView.toUpperCase(),
                         hostname,
                       })}
@@ -963,7 +965,7 @@ export default function ShareDialog({
                   ) : (
                     <Copy className="size-4" />
                   )}
-                  {t("share.labels.copyLink")}
+                  {t("share.actions.copyLink")}
                 </Button>
               </div>
             ) : (
@@ -972,10 +974,10 @@ export default function ShareDialog({
                   <div className="space-y-3">
                     <div>
                       <p className="text-foreground text-sm font-medium">
-                        {t("share.labels.linkExpiresAfter")}
+                        {t("share.link.expiry.label")}
                       </p>
                       <p className="text-muted-foreground mt-1 text-[11px]">
-                        {t("share.labels.temporarySnapshotsExpire")}
+                        {t("share.link.expiry.description")}
                       </p>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -990,7 +992,7 @@ export default function ShareDialog({
                               "border-foreground/15 bg-muted text-foreground"
                           )}
                         >
-                          {t("share.link.expiryDays", { days: option.value })}
+                          {t("share.link.expiry.days", { days: option.value })}
                         </button>
                       ))}
                     </div>
@@ -999,13 +1001,13 @@ export default function ShareDialog({
                   <div className="border-border/60 bg-muted/18 rounded-xl border px-3 py-3">
                     <p className="text-foreground text-sm font-medium">
                       {isAccountProjectShare
-                        ? t("share.link.savedProjectTitle")
-                        : t("share.link.newShareTitle")}
+                        ? t("share.link.titles.savedProject")
+                        : t("share.link.titles.newShare")}
                     </p>
                     <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
                       {isAccountProjectShare
-                        ? t("share.link.savedProjectDescription")
-                        : t("share.link.newShareDescription")}
+                        ? t("share.link.descriptions.savedProject")
+                        : t("share.link.descriptions.newShare")}
                     </p>
                   </div>
                 )}
@@ -1020,28 +1022,28 @@ export default function ShareDialog({
                         {share
                           ? share.shareType === "published"
                             ? isAccountProjectShare
-                              ? t("share.link.savedProjectTitle")
-                              : t("share.link.separatePublishedTitle")
-                            : t("share.link.temporaryTitle")
+                              ? t("share.link.titles.savedProject")
+                              : t("share.link.titles.separatePublished")
+                            : t("share.link.titles.temporary")
                           : isAuthenticated
                             ? isAccountProjectShare
-                              ? t("share.link.noSavedProjectTitle")
-                              : t("share.link.noSeparateTitle")
-                            : t("share.link.noTemporaryTitle")}
+                              ? t("share.link.titles.noSavedProject")
+                              : t("share.link.titles.noSeparate")
+                            : t("share.link.titles.noTemporary")}
                       </p>
                       <p className="text-muted-foreground text-[11px]">
                         {share
                           ? share.expiresInDays === null
-                            ? t("share.link.lifetimePublished", { hostname })
-                            : t("share.link.lifetimeTemporary", {
+                            ? t("share.link.lifetime.published", { hostname })
+                            : t("share.link.lifetime.temporary", {
                                 hostname,
                                 days: share.expiresInDays,
                               })
                           : isAuthenticated
                             ? isAccountProjectShare
-                              ? t("share.link.createSavedProject")
-                              : t("share.link.createSeparate")
-                            : t("share.link.createTemporary")}
+                              ? t("share.link.descriptions.createSavedProject")
+                              : t("share.link.descriptions.createSeparate")
+                            : t("share.link.descriptions.createTemporary")}
                       </p>
                     </div>
                   </div>
@@ -1059,8 +1061,8 @@ export default function ShareDialog({
                       <Share2 className="mt-0.5 size-3.5 shrink-0" />
                       <span className="leading-relaxed">
                         {shareNeedsRefresh
-                          ? t("share.link.outdatedDesign")
-                          : t("share.link.outdatedExpiry")}
+                          ? t("share.link.warnings.outdatedDesign")
+                          : t("share.link.warnings.outdatedExpiry")}
                       </span>
                     </div>
                   ) : null}
@@ -1092,7 +1094,7 @@ export default function ShareDialog({
                             className={cn(shareDialogButtonClassName, "w-full")}
                           >
                             <RefreshCw className="size-4" />
-                            {t("share.primaryAction.updateLink")}
+                            {t("share.actions.primary.updateLink")}
                           </Button>
                         ) : null}
                         <Button
@@ -1102,7 +1104,7 @@ export default function ShareDialog({
                           className={cn(shareDialogButtonClassName, "w-full")}
                         >
                           <Ban className="size-4" />
-                          {t("share.labels.revoke")}
+                          {t("share.actions.revoke")}
                         </Button>
                       </>
                     ) : null}
@@ -1119,7 +1121,7 @@ export default function ShareDialog({
               <div className="flex items-center gap-2">
                 <Loader2 className="text-muted-foreground size-4 animate-spin" />
                 <p className="text-muted-foreground text-sm">
-                  {t("share.embed.loadingState")}
+                  {t("share.embed.state.loading")}
                 </p>
               </div>
             ) : !share ? (
@@ -1130,10 +1132,10 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0">
                     <p className="text-foreground text-sm font-medium">
-                      {t("share.embed.publishBeforeEmbedding")}
+                      {t("share.embed.publish.title")}
                     </p>
                     <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                      {t("share.embed.publishBeforeEmbeddingDescription")}
+                      {t("share.embed.publish.description")}
                     </p>
                   </div>
                 </div>
@@ -1147,16 +1149,16 @@ export default function ShareDialog({
                   ) : (
                     <Link2 className="size-4" />
                   )}
-                  {t("share.embed.createPublishedLink")}
+                  {t("share.embed.publish.action")}
                 </Button>
               </div>
             ) : share.shareType !== "published" ? (
               <div className="space-y-2">
                 <p className="text-foreground text-sm font-medium">
-                  {t("share.embed.temporaryLinksCannotEmbed")}
+                  {t("share.embed.temporary.title")}
                 </p>
                 <p className="text-muted-foreground text-[12px] leading-relaxed">
-                  {t("share.embed.temporaryLinksCannotEmbedDescription")}
+                  {t("share.embed.temporary.description")}
                 </p>
               </div>
             ) : linkNeedsRefresh ? (
@@ -1164,7 +1166,7 @@ export default function ShareDialog({
                 <div className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/8 px-3 py-2.5 text-xs text-amber-400">
                   <Share2 className="mt-0.5 size-3.5 shrink-0" />
                   <span className="leading-relaxed">
-                    {t("share.embed.refreshFirst")}
+                    {t("share.embed.refresh.message")}
                   </span>
                 </div>
                 <Button
@@ -1177,7 +1179,7 @@ export default function ShareDialog({
                   ) : (
                     <RefreshCw className="size-4" />
                   )}
-                  {t("share.embed.updateLink")}
+                  {t("share.embed.refresh.action")}
                 </Button>
               </div>
             ) : iframeCode ? (
@@ -1188,31 +1190,39 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0">
                     <p className="text-foreground text-sm font-medium">
-                      {t("share.embed.codeTitle")}
+                      {t("share.embed.code.title")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      {t("share.embed.codeDescription")}
+                      {t("share.embed.code.description")}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <p className="text-muted-foreground text-[11px] font-medium">
-                    {t("share.embed.initialView")}
+                    {t("share.embed.initialView.label")}
                   </p>
                   <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
                     {(
                       [
                         {
                           view: "2d",
-                          label: t("share.embed.layout2dLabel"),
-                          description: t("share.embed.layout2dDescription"),
+                          label: t(
+                            "share.embed.initialView.options.layout2d.label"
+                          ),
+                          description: t(
+                            "share.embed.initialView.options.layout2d.description"
+                          ),
                           icon: Route,
                         },
                         {
                           view: "3d",
-                          label: t("share.embed.preview3dLabel"),
-                          description: t("share.embed.preview3dDescription"),
+                          label: t(
+                            "share.embed.initialView.options.preview3d.label"
+                          ),
+                          description: t(
+                            "share.embed.initialView.options.preview3d.description"
+                          ),
                           icon: Orbit,
                         },
                       ] as const
@@ -1259,10 +1269,10 @@ export default function ShareDialog({
                   <div className="flex flex-col gap-2 min-[520px]:flex-row min-[520px]:items-center min-[520px]:justify-between">
                     <div>
                       <p className="text-muted-foreground text-[11px] font-medium">
-                        {t("share.embed.iframeCodeLabel")}
+                        {t("share.embed.code.label")}
                       </p>
                       <p className="text-muted-foreground/75 mt-0.5 text-[10px]">
-                        {t("share.embed.iframeCodeDescription")}
+                        {t("share.embed.code.selectedViewDescription")}
                       </p>
                     </div>
                     <Button
@@ -1279,7 +1289,7 @@ export default function ShareDialog({
                       ) : (
                         <Copy className="size-4" />
                       )}
-                      {t("share.embed.copyCode")}
+                      {t("share.embed.code.copy")}
                     </Button>
                   </div>
                   <textarea
@@ -1322,7 +1332,7 @@ export default function ShareDialog({
               <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                 <div className="bg-background/55 rounded-lg px-3 py-2">
                   <p className="text-muted-foreground text-[10px] font-medium tracking-[0.12em] uppercase">
-                    {t("share.gallery.visibility")}
+                    {t("share.gallery.labels.visibility")}
                   </p>
                   <p className="text-foreground mt-0.5 text-xs font-medium">
                     {galleryVisibilityValue}
@@ -1330,7 +1340,7 @@ export default function ShareDialog({
                 </div>
                 <div className="bg-background/55 rounded-lg px-3 py-2">
                   <p className="text-muted-foreground text-[10px] font-medium tracking-[0.12em] uppercase">
-                    {t("share.gallery.shareLink")}
+                    {t("share.gallery.labels.shareLink")}
                   </p>
                   <p className="text-foreground mt-0.5 text-xs font-medium">
                     {galleryShareLinkValue}
@@ -1343,10 +1353,10 @@ export default function ShareDialog({
               <div className="border-border/60 bg-muted/12 space-y-3 rounded-xl border p-3">
                 <div>
                   <p className="text-foreground text-sm font-medium">
-                    {t("share.gallery.publishFirstTitle")}
+                    {t("share.gallery.publishFirst.title")}
                   </p>
                   <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                    {t("share.gallery.publishFirstDescription")}
+                    {t("share.gallery.publishFirst.description")}
                   </p>
                 </div>
                 <Button
@@ -1354,16 +1364,16 @@ export default function ShareDialog({
                   onClick={() => setActiveTab("share")}
                   className={cn(shareDialogButtonClassName, "w-full")}
                 >
-                  {t("share.gallery.createShareFirst")}
+                  {t("share.gallery.publishFirst.action")}
                 </Button>
               </div>
             ) : blockedByModeration ? (
               <div className="border-destructive/25 bg-destructive/8 space-y-1.5 rounded-xl border p-3">
                 <p className="text-destructive text-sm font-medium">
-                  {t("share.gallery.moderationLockTitle")}
+                  {t("share.gallery.moderation.title")}
                 </p>
                 <p className="text-destructive text-[11px] leading-relaxed">
-                  {t("share.gallery.moderationLockDescription")}
+                  {t("share.gallery.moderation.description")}
                 </p>
               </div>
             ) : showGalleryForm ? (
@@ -1371,13 +1381,13 @@ export default function ShareDialog({
                 <div>
                   <p className="text-foreground text-sm font-medium">
                     {isGalleryVisible
-                      ? t("share.gallery.detailsTitle")
-                      : t("share.gallery.listTitle")}
+                      ? t("share.gallery.details.title")
+                      : t("share.gallery.list.title")}
                   </p>
                   <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
                     {isGalleryVisible
-                      ? t("share.gallery.detailsDescription")
-                      : t("share.gallery.listDescription")}
+                      ? t("share.gallery.details.description")
+                      : t("share.gallery.list.description")}
                   </p>
                 </div>
 
@@ -1389,7 +1399,7 @@ export default function ShareDialog({
                     value={galleryTitleInput}
                     onChange={(e) => setGalleryTitleInput(e.target.value)}
                     className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
-                    placeholder={t("share.gallery.titlePlaceholder")}
+                    placeholder={t("share.gallery.fields.titlePlaceholder")}
                   />
                 </label>
 
@@ -1403,7 +1413,9 @@ export default function ShareDialog({
                     maxLength={GALLERY_DESCRIPTION_MAX_LENGTH}
                     rows={3}
                     className="border-border bg-background/70 text-foreground focus:ring-ring/40 w-full min-w-0 resize-none rounded-lg border px-3 py-2 text-sm outline-hidden focus:ring-1"
-                    placeholder={t("share.gallery.descriptionPlaceholder")}
+                    placeholder={t(
+                      "share.gallery.fields.descriptionPlaceholder"
+                    )}
                   />
                   <span className="text-muted-foreground mt-1 block text-right text-[10px]">
                     {galleryDescriptionInput.length}/
@@ -1414,13 +1426,13 @@ export default function ShareDialog({
                 {!isGalleryVisible ? (
                   <div className="space-y-2">
                     <p className="text-muted-foreground text-[11px]">
-                      {t("share.gallery.authorLabel")}:{" "}
+                      {t("share.gallery.labels.author")}:{" "}
                       <span
                         className={displayNameValid ? "" : "text-destructive"}
                       >
                         {displayNameValid
                           ? displayName
-                          : t("share.gallery.noDisplayName")}
+                          : t("share.gallery.fallback.noDisplayName")}
                       </span>
                     </p>
 
@@ -1429,14 +1441,14 @@ export default function ShareDialog({
                         <>
                           <Loader2 className="text-muted-foreground size-3.5 animate-spin" />
                           <span className="text-muted-foreground text-[11px]">
-                            {t("share.gallery.generatingPreview")}
+                            {t("share.gallery.preview.generating")}
                           </span>
                         </>
                       ) : (
                         <>
                           <Check className="size-3.5 text-emerald-500" />
                           <span className="text-muted-foreground text-[11px]">
-                            {t("share.gallery.previewReady")}
+                            {t("share.gallery.preview.ready")}
                           </span>
                         </>
                       )}
@@ -1446,26 +1458,26 @@ export default function ShareDialog({
 
                 {!isGalleryVisible && shareNeedsRefresh ? (
                   <p className="text-muted-foreground text-[11px]">
-                    {t("share.gallery.refreshShareFirst")}
+                    {t("share.gallery.validation.refreshShareFirst")}
                   </p>
                 ) : !galleryTitleValid ? (
                   <p className="text-destructive text-[11px]">
-                    {t("share.gallery.titleRequired")}
+                    {t("share.gallery.validation.titleRequired")}
                   </p>
                 ) : !galleryDescriptionValid ? (
                   <p className="text-destructive text-[11px]">
-                    {t("share.gallery.descriptionLength", {
+                    {t("share.gallery.validation.descriptionLength", {
                       min: GALLERY_DESCRIPTION_MIN_LENGTH,
                       max: GALLERY_DESCRIPTION_MAX_LENGTH,
                     })}
                   </p>
                 ) : !isGalleryVisible && !displayNameValid ? (
                   <p className="text-destructive text-[11px]">
-                    {t("share.gallery.displayNameRequired")}
+                    {t("share.gallery.validation.displayNameRequired")}
                   </p>
                 ) : isGalleryVisible && !hasGalleryMetadataChanges ? (
                   <p className="text-muted-foreground text-[11px]">
-                    {t("share.gallery.noMetadataChanges")}
+                    {t("share.gallery.validation.noMetadataChanges")}
                   </p>
                 ) : null}
 
@@ -1494,7 +1506,7 @@ export default function ShareDialog({
                   >
                     {isGalleryVisible
                       ? tCommon("actions.saveChanges")
-                      : t("share.gallery.addToGallery")}
+                      : t("share.gallery.list.add")}
                   </Button>
                 </div>
               </div>
@@ -1505,10 +1517,10 @@ export default function ShareDialog({
                     <>
                       <div>
                         <p className="text-foreground text-sm font-medium">
-                          {t("share.gallery.cardTitle")}
+                          {t("share.gallery.card.title")}
                         </p>
                         <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                          {t("share.gallery.cardDescription")}
+                          {t("share.gallery.card.description")}
                         </p>
                       </div>
                       <dl className="space-y-2 text-[12px]">
@@ -1519,7 +1531,7 @@ export default function ShareDialog({
                           <dd className="text-foreground truncate font-medium">
                             {share.galleryTitle ||
                               design.title ||
-                              t("share.gallery.untitled")}
+                              t("share.gallery.card.untitled")}
                           </dd>
                         </div>
                         <div className="space-y-0.5 min-[420px]:grid min-[420px]:grid-cols-[4.5rem_1fr] min-[420px]:gap-3 min-[420px]:space-y-0">
@@ -1528,7 +1540,7 @@ export default function ShareDialog({
                           </dt>
                           <dd className="text-muted-foreground line-clamp-2 leading-relaxed">
                             {share.galleryDescription ||
-                              t("share.gallery.noDescription")}
+                              t("share.gallery.card.noDescription")}
                           </dd>
                         </div>
                       </dl>
@@ -1541,7 +1553,7 @@ export default function ShareDialog({
                           disabled={busy}
                           className={shareDialogButtonClassName}
                         >
-                          {t("share.gallery.editDetails")}
+                          {t("share.gallery.details.edit")}
                         </Button>
                         <Button
                           variant="outline"
@@ -1549,14 +1561,14 @@ export default function ShareDialog({
                           asChild
                         >
                           <Link href="/gallery">
-                            {t("share.gallery.viewGallery")}
+                            {t("share.gallery.card.viewGallery")}
                           </Link>
                         </Button>
                       </div>
                       {confirmRemoveFromGallery ? (
                         <div className="border-border/60 flex flex-col gap-2 border-t pt-3">
                           <p className="text-muted-foreground text-[11px] leading-relaxed">
-                            {t("share.gallery.removeConfirm")}
+                            {t("share.gallery.remove.confirm")}
                           </p>
                           <div className="flex flex-col-reverse gap-2 min-[380px]:flex-row min-[380px]:justify-end">
                             <Button
@@ -1599,7 +1611,7 @@ export default function ShareDialog({
                             )}
                           >
                             <Trash2 className="size-4" />
-                            {t("share.gallery.removeFromGallery")}
+                            {t("share.gallery.remove.action")}
                           </Button>
                         </div>
                       )}
@@ -1608,15 +1620,15 @@ export default function ShareDialog({
                     <>
                       <div>
                         <p className="text-foreground text-sm font-medium">
-                          {t("share.gallery.readyTitle")}
+                          {t("share.gallery.list.readyTitle")}
                         </p>
                         <p className="text-muted-foreground mt-1 text-[12px] leading-relaxed">
-                          {t("share.gallery.readyDescription")}
+                          {t("share.gallery.list.readyDescription")}
                         </p>
                       </div>
                       {shareNeedsRefresh ? (
                         <p className="text-muted-foreground text-[11px] leading-relaxed">
-                          {t("share.gallery.refreshShareFirst")}
+                          {t("share.gallery.validation.refreshShareFirst")}
                         </p>
                       ) : null}
                       <div className="border-border/60 flex border-t pt-3 min-[520px]:justify-end">
@@ -1631,7 +1643,7 @@ export default function ShareDialog({
                             "w-full min-[520px]:w-auto"
                           )}
                         >
-                          {t("share.gallery.addToGallery")}
+                          {t("share.gallery.list.add")}
                         </Button>
                       </div>
                     </>
@@ -1648,12 +1660,12 @@ export default function ShareDialog({
               <Share2 className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
               <p className="text-muted-foreground leading-relaxed">
                 {existingShareMode
-                  ? t("share.actions.existingDescription")
+                  ? t("share.actions.share.existingDescription")
                   : hasPath
-                    ? t("share.actions.withPathDescription", {
+                    ? t("share.actions.share.withPathDescription", {
                         view: currentView.toUpperCase(),
                       })
-                    : t("share.actions.withoutPathDescription")}
+                    : t("share.actions.share.withoutPathDescription")}
               </p>
             </div>
 
@@ -1673,10 +1685,10 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-foreground text-sm font-medium">
-                      {t("share.actions.nativeShareTitle")}
+                      {t("share.actions.nativeShare.title")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      {t("share.actions.nativeShareDescription")}
+                      {t("share.actions.nativeShare.description")}
                     </p>
                   </div>
                 </button>
@@ -1707,12 +1719,12 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-foreground text-sm font-medium">
-                      {t("share.actions.openInTab")}
+                      {t("share.actions.openInTab.label")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
                       {existingShareMode
-                        ? t("share.actions.reopenCurrent")
-                        : t("share.actions.previewLink")}
+                        ? t("share.actions.openInTab.reopenCurrent")
+                        : t("share.actions.openInTab.previewLink")}
                     </p>
                   </div>
                 </button>
@@ -1728,10 +1740,10 @@ export default function ShareDialog({
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-foreground text-sm font-medium">
-                      {t("share.actions.exportJson")}
+                      {t("share.actions.exportJson.label")}
                     </p>
                     <p className="text-muted-foreground text-[11px]">
-                      {t("share.actions.exportJsonDescription")}
+                      {t("share.actions.exportJson.description")}
                     </p>
                   </div>
                 </button>

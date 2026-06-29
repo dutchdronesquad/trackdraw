@@ -44,13 +44,13 @@ export function AccountDangerView({
       <div className="space-y-3">
         <label className="block">
           <span className="mb-2 block text-sm font-medium">
-            {t("account.danger.typeToConfirm")}
+            {t("account.danger.confirm.label")}
           </span>
           <Input
             type="text"
             value={deleteConfirmation}
             onChange={(event) => onDeleteConfirmationChange(event.target.value)}
-            placeholder={t("account.danger.deletePlaceholder")}
+            placeholder={t("account.danger.confirm.placeholder")}
             className="h-8 rounded-lg px-2.5 shadow-none"
           />
         </label>
@@ -68,8 +68,8 @@ export function AccountDangerView({
             className="h-8 rounded-lg px-2.5"
           >
             {deleting
-              ? t("account.danger.deleting")
-              : t("account.danger.deleteAccount")}
+              ? t("account.danger.actions.deleting")
+              : t("account.danger.actions.deleteAccount")}
           </Button>
         </div>
       </div>

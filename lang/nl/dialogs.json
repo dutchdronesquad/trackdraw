@@ -1,96 +1,148 @@
 {
   "account": {
-    "navSecurity": "Beveiliging",
-    "navApiKeys": "API-sleutels",
-    "navDanger": "Gevaarzone",
-    "panelProfile": {
-      "title": "Jouw profiel",
-      "description": "Beheer de naam die zichtbaar is in je TrackDraw-account."
+    "dialog": {
+      "eyebrow": "Studio",
+      "mobileSubtitle": "Beheer je TrackDraw-account."
     },
-    "panelSecurity": {
-      "title": "Beveiliging",
-      "description": "Beheer aanmeldmethoden, e-mailadres en passkeys voor je TrackDraw-account."
+    "nav": {
+      "security": "Beveiliging",
+      "apiKeys": "API-sleutels",
+      "danger": "Gevaarzone"
     },
-    "panelApiKeys": {
-      "title": "API-sleutels",
-      "description": "Maak tijdelijke sleutels aan voor externe TrackDraw-integraties en trek ze in."
+    "panels": {
+      "profile": {
+        "title": "Jouw profiel",
+        "description": "Beheer de naam die zichtbaar is in je TrackDraw-account."
+      },
+      "security": {
+        "title": "Beveiliging",
+        "description": "Beheer aanmeldmethoden, e-mailadres en passkeys voor je TrackDraw-account."
+      },
+      "apiKeys": {
+        "title": "API-sleutels",
+        "description": "Maak tijdelijke sleutels aan voor externe TrackDraw-integraties en trek ze in."
+      },
+      "danger": {
+        "title": "Gevaarzone",
+        "description": "Destructieve en onomkeerbare accountacties."
+      }
     },
-    "panelDanger": {
-      "title": "Gevaarzone",
-      "description": "Destructieve en onomkeerbare accountacties."
-    },
-    "dialogEyebrow": "Studio",
-    "dialogMobileSubtitle": "Beheer je TrackDraw-account.",
     "profile": {
-      "displayNameLabel": "Weergavenaam",
-      "displayNamePlaceholder": "Jouw naam",
-      "languageDescription": "Wijzigingen worden direct toegepast",
-      "saving": "Opslaan...",
-      "noAccountEmail": "TrackDraw-account"
+      "displayName": {
+        "label": "Weergavenaam",
+        "placeholder": "Jouw naam"
+      },
+      "language": {
+        "description": "Wijzigingen worden direct toegepast"
+      },
+      "status": {
+        "saving": "Opslaan..."
+      },
+      "fallback": {
+        "noAccountEmail": "TrackDraw-account"
+      }
     },
     "security": {
-      "emailAddress": "E-mailadres",
-      "newEmail": "Nieuw e-mailadres",
-      "emailPlaceholder": "naam@voorbeeld.nl",
-      "emailChangeDescription": "Na het opslaan sturen we eerst een bevestiging naar je huidige e-mailadres. Daarna verifieer je het nieuwe adres.",
-      "changeEmail": "E-mailadres wijzigen",
-      "passkeysTitle": "Passkeys",
-      "passkeysDescription": "Voeg een passkey toe om sneller in te loggen op ondersteunde apparaten.",
-      "savingEmail": "Opslaan...",
-      "addPasskey": "Passkey toevoegen",
-      "addingPasskey": "Toevoegen...",
-      "devAuthUnavailable": "Passkeys zijn niet beschikbaar in `npm run dev`. Gebruik `npm run preview` om de echte auth-flow lokaal te testen.",
-      "reauthTitle": "Log opnieuw in om door te gaan",
-      "reauthDescription": "Voor het instellen van een passkey is een recente login nodig. Je kunt ingelogd blijven voor normaal werk, maar deze beveiligingsactie vraagt om bevestiging.",
-      "signInAgain": "Opnieuw inloggen",
-      "unsupportedBrowser": "Deze browser stelt WebAuthn hier momenteel niet beschikbaar, waardoor passkey-instelling op dit apparaat niet mogelijk is.",
-      "loadingPasskeys": "Passkeys laden...",
-      "emptyTitle": "Nog geen passkeys",
-      "emptyDescription": "Voeg er een toe om sneller in te loggen op je vertrouwde apparaten.",
-      "addedDate": "Toegevoegd op {date}",
-      "synced": "gesynchroniseerd",
-      "renameAriaLabel": "Passkey hernoemen",
-      "removingAriaLabel": "Passkey verwijderen",
-      "removeAriaLabel": "Passkey verwijderen",
-      "removing": "Verwijderen...",
-      "removeTooltip": "Uit account verwijderen",
-      "passkeyNamePlaceholder": "Naam passkey",
-      "unnamedPasskey": "Naamloze passkey",
-      "renameDescription": "Dit wijzigt alleen hoe de passkey in je TrackDraw-account wordt weergegeven.",
-      "saveName": "Naam opslaan"
+      "email": {
+        "address": "E-mailadres",
+        "newEmail": "Nieuw e-mailadres",
+        "placeholder": "naam@voorbeeld.nl",
+        "changeDescription": "Na het opslaan sturen we eerst een bevestiging naar je huidige e-mailadres. Daarna verifieer je het nieuwe adres.",
+        "change": "E-mailadres wijzigen",
+        "saving": "Opslaan..."
+      },
+      "passkeys": {
+        "title": "Passkeys",
+        "description": "Voeg een passkey toe om sneller in te loggen op ondersteunde apparaten.",
+        "add": "Passkey toevoegen",
+        "adding": "Toevoegen...",
+        "devAuthUnavailable": "Passkeys zijn niet beschikbaar in `npm run dev`. Gebruik `npm run preview` om de echte auth-flow lokaal te testen.",
+        "unsupportedBrowser": "Deze browser stelt WebAuthn hier momenteel niet beschikbaar, waardoor passkey-instelling op dit apparaat niet mogelijk is.",
+        "loading": "Passkeys laden...",
+        "addedDate": "Toegevoegd op {date}",
+        "status": {
+          "synced": "gesynchroniseerd"
+        },
+        "reauth": {
+          "title": "Log opnieuw in om door te gaan",
+          "description": "Voor het instellen van een passkey is een recente login nodig. Je kunt ingelogd blijven voor normaal werk, maar deze beveiligingsactie vraagt om bevestiging.",
+          "action": "Opnieuw inloggen"
+        },
+        "empty": {
+          "title": "Nog geen passkeys",
+          "description": "Voeg er een toe om sneller in te loggen op je vertrouwde apparaten."
+        },
+        "aria": {
+          "rename": "Passkey hernoemen",
+          "removing": "Passkey verwijderen",
+          "remove": "Passkey verwijderen"
+        },
+        "actions": {
+          "removing": "Verwijderen...",
+          "removeTooltip": "Uit account verwijderen",
+          "saveName": "Naam opslaan"
+        },
+        "fields": {
+          "namePlaceholder": "Naam passkey"
+        },
+        "fallback": {
+          "unnamed": "Naamloze passkey"
+        },
+        "rename": {
+          "description": "Dit wijzigt alleen hoe de passkey in je TrackDraw-account wordt weergegeven."
+        }
+      }
     },
     "apiKeys": {
-      "keyNameLabel": "Sleutelnaam",
-      "expiryDays": "{days} dagen",
-      "expiryYear": "1 jaar",
-      "namePlaceholder": "Overlay-integratie",
-      "create": "Aanmaken",
-      "createdTitle": "API-sleutel aangemaakt",
-      "createdDescription": "Dit geheim wordt één keer getoond. Bewaar het voordat je dit venster sluit.",
-      "activeTitle": "Actieve API-sleutels",
-      "descriptionPrefix": "Alleen-lezen sleutels voor vertrouwde integraties.",
-      "docsLink": "API-docs",
-      "refreshAriaLabel": "API-sleutels verversen",
-      "loading": "API-sleutels laden...",
-      "emptyTitle": "Nog geen API-sleutels",
-      "emptyDescription": "Maak er een aan wanneer een vertrouwde integratie alleen-lezen toegang nodig heeft tot je accountprojecten.",
-      "unnamedKey": "Naamloze API-sleutel",
-      "expiresOn": "Verloopt op {date}",
-      "lastUsed": "Laatst gebruikt {date}",
-      "revokeConfirmTitle": "API-sleutel intrekken?",
-      "revokeTooltip": "Intrekken",
-      "revokeAriaLabel": "{name} intrekken",
-      "revokeWarningExpiring": "Deze sleutel stopt met werken.",
-      "revokeWarningNonExpiring": "Integraties die deze sleutel gebruiken verliezen leestoegang.",
-      "revoking": "Intrekken...",
-      "revoke": "Intrekken"
+      "form": {
+        "keyNameLabel": "Sleutelnaam",
+        "expiryDays": "{days} dagen",
+        "expiryYear": "1 jaar",
+        "namePlaceholder": "Overlay-integratie",
+        "create": "Aanmaken"
+      },
+      "created": {
+        "title": "API-sleutel aangemaakt",
+        "description": "Dit geheim wordt één keer getoond. Bewaar het voordat je dit venster sluit."
+      },
+      "active": {
+        "title": "Actieve API-sleutels",
+        "descriptionPrefix": "Alleen-lezen sleutels voor vertrouwde integraties.",
+        "docsLink": "API-docs",
+        "refreshAriaLabel": "API-sleutels verversen",
+        "loading": "API-sleutels laden..."
+      },
+      "empty": {
+        "title": "Nog geen API-sleutels",
+        "description": "Maak er een aan wanneer een vertrouwde integratie alleen-lezen toegang nodig heeft tot je accountprojecten."
+      },
+      "fallback": {
+        "unnamed": "Naamloze API-sleutel"
+      },
+      "meta": {
+        "expiresOn": "Verloopt op {date}",
+        "lastUsed": "Laatst gebruikt {date}"
+      },
+      "revoke": {
+        "confirmTitle": "API-sleutel intrekken?",
+        "tooltip": "Intrekken",
+        "ariaLabel": "{name} intrekken",
+        "warningExpiring": "Deze sleutel stopt met werken.",
+        "warningNonExpiring": "Integraties die deze sleutel gebruiken verliezen leestoegang.",
+        "revoking": "Intrekken...",
+        "action": "Intrekken"
+      }
     },
     "danger": {
       "description": "Het verwijderen van je account verwijdert accountprojecten, gepubliceerde links, API-keys en andere accountgebonden data. Exporteer wat je wilt behouden voordat je doorgaat.",
-      "typeToConfirm": "Typ DELETE om te bevestigen",
-      "deletePlaceholder": "DELETE",
-      "deleting": "Verwijderen...",
-      "deleteAccount": "Account verwijderen"
+      "confirm": {
+        "label": "Typ DELETE om te bevestigen",
+        "placeholder": "DELETE"
+      },
+      "actions": {
+        "deleting": "Verwijderen...",
+        "deleteAccount": "Account verwijderen"
+      }
     },
     "shared": {
       "loading": "Account laden...",
@@ -241,85 +293,219 @@
     "backupFirst": "Eerst back-up van huidig project maken"
   },
   "share": {
-    "dialogEyebrow": "Studio",
-    "dialogEyebrowExisting": "Gedeelde track",
-    "dialogTitle": "Delen",
-    "dialogMobileSubtitle": "Deel een alleen-lezen reviewlink voor deze track",
-    "navShareLink": "Deellink",
-    "navShare": "Delen",
-    "navEmbed": "Embed",
-    "navGallery": "Galerij",
-    "currentSharedLink": "Huidige gedeelde link",
-    "readOnlyReviewOn": "Alleen-lezen {view}-review op {hostname}",
-    "primaryAction": {
-      "updateLink": "Link bijwerken",
-      "copyLink": "Link kopiëren",
-      "createLink": "Link aanmaken",
-      "createNewLink": "Nieuwe link aanmaken"
+    "dialog": {
+      "eyebrow": "Studio",
+      "existingEyebrow": "Gedeelde track",
+      "title": "Delen",
+      "mobileSubtitle": "Deel een alleen-lezen reviewlink voor deze track"
     },
-    "gallery": {
-      "loading": "Huidige status laden",
-      "featured": "Uitgelicht in galerij",
-      "listed": "Vermeld in galerij",
-      "hiddenByModeration": "Verborgen door moderatie",
-      "linkOnly": "Alleen link",
-      "noPublishedLink": "Geen gepubliceerde link",
-      "checkingStatus": "Huidige galerijstatus controleren.",
-      "featuredDesc": "Zichtbaar in de publieke galerij en bovenaan geplaatst.",
-      "listedDesc": "Zichtbaar in de publieke galerij.",
-      "hiddenDesc": "Verborgen door moderatie. De directe link werkt nog totdat deze wordt ingetrokken.",
-      "linkOnlyDesc": "Alleen deellink. Niet zichtbaar in de publieke galerij.",
-      "noLinkDesc": "Maak eerst een deellink aan.",
-      "checking": "Controleren",
-      "noLink": "Geen link",
-      "expiresInDays": "Verloopt over {days} dagen",
-      "noExpiry": "Geen verloopdatum",
-      "visibility": "Zichtbaarheid",
+    "nav": {
       "shareLink": "Deellink",
-      "publishFirstTitle": "Publiceer voordat je vermeldt",
-      "publishFirstDescription": "De galerij gebruikt de huidige gepubliceerde snapshot, dus er is een deellink nodig voordat deze track vermeld kan worden.",
-      "createShareFirst": "Eerst deellink aanmaken",
-      "moderationLockTitle": "Moderatieblokkade",
-      "moderationLockDescription": "Deze track is door moderatie verborgen uit de galerij. De directe deellink kan nog werken totdat die wordt ingetrokken.",
-      "detailsTitle": "Galerijgegevens",
-      "listTitle": "In galerij plaatsen",
-      "detailsDescription": "Werk de titel en beschrijving bij die op de publieke galerijkaart staan.",
-      "listDescription": "Voeg een titel, beschrijving en gegenereerde preview toe voor publieke weergave.",
-      "titlePlaceholder": "Tracktitel",
-      "descriptionPlaceholder": "Korte beschrijving voor de galerijkaart",
-      "authorLabel": "Auteur",
-      "noDisplayName": "geen weergavenaam ingesteld",
-      "generatingPreview": "Preview genereren...",
-      "previewReady": "Preview klaar",
-      "refreshShareFirst": "Werk eerst de deellink bij zodat de galerij de nieuwste snapshot gebruikt.",
-      "titleRequired": "Voeg een titel toe voordat je opslaat.",
-      "descriptionLength": "Gebruik {min}-{max} tekens voor de beschrijving.",
-      "displayNameRequired": "Stel eerst een accountweergavenaam in.",
-      "noMetadataChanges": "Werk de titel of beschrijving bij om wijzigingen op te slaan.",
-      "addToGallery": "Toevoegen aan galerij",
-      "cardTitle": "Galerijkaart",
-      "cardDescription": "Bekijk of wijzig de publieke titel en beschrijving voor deze track.",
-      "untitled": "Naamloos",
-      "noDescription": "Geen galerijbeschrijving ingesteld.",
-      "editDetails": "Gegevens bewerken",
-      "viewGallery": "Galerij bekijken",
-      "removeConfirm": "Verwijderen uit de publieke galerij? De deellink zelf blijft werken totdat die wordt ingetrokken.",
-      "removeFromGallery": "Uit galerij verwijderen",
-      "readyTitle": "Klaar om te vermelden",
-      "readyDescription": "Voeg deze gepubliceerde snapshot toe aan de publieke galerij met een eigen titel, beschrijving en preview."
+      "share": "Delen",
+      "embed": "Embed",
+      "gallery": "Galerij"
+    },
+    "currentLink": {
+      "title": "Huidige gedeelde link",
+      "readOnlyReviewOn": "Alleen-lezen {view}-review op {hostname}"
     },
     "content": {
-      "shareTitle": "Deellink",
-      "shareDescExisting": "Kopieer of stuur deze gepubliceerde alleen-lezenlink opnieuw, of open Studio om een eigen bewerkbare kopie te maken.",
-      "shareDescAccount": "Maak de duurzame alleen-lezenlink voor dit accountproject aan of werk hem bij.",
-      "shareDescSeparate": "Maak een aparte duurzame alleen-lezenlink aan voor deze bewerkbare kopie of lokale track.",
-      "shareDescAnon": "Maak een tijdelijke alleen-lezen snapshotlink aan en bepaal hoe lang die actief blijft.",
-      "galleryTitle": "Zichtbaarheid galerij",
-      "galleryDesc": "Beheer hoe deze gepubliceerde link in de publieke galerij verschijnt.",
-      "embedTitle": "Embed",
-      "embedDesc": "Kopieer iframe-code voor een accountgepubliceerde track die actief blijft totdat ingetrokken.",
-      "actionsDescExisting": "Gebruik de huidige gepubliceerde link in andere apps of open hem in een nieuw tabblad.",
-      "actionsDesc": "Open, stuur opnieuw, trek in of exporteer dit gedeelde item zonder de track te wijzigen."
+      "share": {
+        "title": "Deellink",
+        "description": {
+          "existing": "Kopieer of stuur deze gepubliceerde alleen-lezenlink opnieuw, of open Studio om een eigen bewerkbare kopie te maken.",
+          "account": "Maak de duurzame alleen-lezenlink voor dit accountproject aan of werk hem bij.",
+          "separate": "Maak een aparte duurzame alleen-lezenlink aan voor deze bewerkbare kopie of lokale track.",
+          "anonymous": "Maak een tijdelijke alleen-lezen snapshotlink aan en bepaal hoe lang die actief blijft."
+        }
+      },
+      "gallery": {
+        "title": "Zichtbaarheid galerij",
+        "description": "Beheer hoe deze gepubliceerde link in de publieke galerij verschijnt."
+      },
+      "embed": {
+        "title": "Embed",
+        "description": "Kopieer iframe-code voor een accountgepubliceerde track die actief blijft totdat ingetrokken."
+      },
+      "actions": {
+        "descriptionExisting": "Gebruik de huidige gepubliceerde link in andere apps of open hem in een nieuw tabblad.",
+        "description": "Open, stuur opnieuw, trek in of exporteer dit gedeelde item zonder de track te wijzigen."
+      }
+    },
+    "link": {
+      "expiry": {
+        "days": "{days} dagen",
+        "label": "Link verloopt na",
+        "description": "Tijdelijke snapshots blijven beschikbaar totdat ze verlopen."
+      },
+      "titles": {
+        "savedProject": "Opgeslagen projectlink",
+        "newShare": "Nieuwe deellink",
+        "separatePublished": "Aparte gepubliceerde link",
+        "temporary": "Tijdelijke link",
+        "noSavedProject": "Nog geen opgeslagen projectlink",
+        "noSeparate": "Nog geen aparte link",
+        "noTemporary": "Nog geen tijdelijke link"
+      },
+      "descriptions": {
+        "savedProject": "Dit opgeslagen accountproject gebruikt één duurzame alleen-lezen link. Bijwerken houdt dezelfde URL met het nieuwste ontwerp.",
+        "newShare": "Deze bewerkbare kopie krijgt een eigen duurzame alleen-lezen link. Die wijzigt geen eerder gepubliceerde projectlink.",
+        "createSavedProject": "Maak één duurzame URL voor dit accountproject. Toekomstige updates kunnen dezelfde link houden.",
+        "createSeparate": "Maak een duurzame URL voor deze kopie zonder eerdere shares te wijzigen.",
+        "createTemporary": "Kies wanneer hij verloopt en maak een alleen-lezen snapshot."
+      },
+      "lifetime": {
+        "published": "Gepubliceerde link op {hostname}, blijft live totdat die wordt ingetrokken",
+        "temporary": "Alleen-lezen snapshot op {hostname}, verloopt over {days} dagen"
+      },
+      "warnings": {
+        "outdatedDesign": "Deze link bevat niet meer het nieuwste ontwerp.",
+        "outdatedExpiry": "Deze link gebruikt niet meer de nieuwste verloopkeuze."
+      }
+    },
+    "embed": {
+      "iframeTitle": "TrackDraw track embed",
+      "code": {
+        "title": "Embedcode",
+        "description": "Accountgepubliceerde tracks kunnen worden ingesloten op club- of eventsites.",
+        "label": "Iframe-code",
+        "selectedViewDescription": "Inclusief de geselecteerde startweergave.",
+        "copy": "Code kopiëren"
+      },
+      "state": {
+        "loading": "Embedstatus laden…"
+      },
+      "publish": {
+        "title": "Publiceer voor embedden",
+        "description": "Embeds gebruiken de duurzame accountgepubliceerde link, dus maak de gepubliceerde link aan voordat je iframe-code kopieert.",
+        "action": "Gepubliceerde link aanmaken"
+      },
+      "temporary": {
+        "title": "Tijdelijke links kunnen niet worden embedded",
+        "description": "Meld je aan en publiceer deze track vanuit je account om een duurzame embed te maken."
+      },
+      "refresh": {
+        "message": "Werk eerst de gepubliceerde link bij zodat de embed het nieuwste ontwerp gebruikt.",
+        "action": "Link bijwerken"
+      },
+      "initialView": {
+        "label": "Startweergave",
+        "options": {
+          "layout2d": {
+            "label": "2D-layout",
+            "description": "Open als plat veldplan"
+          },
+          "preview3d": {
+            "label": "3D-preview",
+            "description": "Open in de orbit-review"
+          }
+        }
+      }
+    },
+    "gallery": {
+      "status": {
+        "loading": "Huidige status laden",
+        "featured": "Uitgelicht in galerij",
+        "listed": "Vermeld in galerij",
+        "hiddenByModeration": "Verborgen door moderatie",
+        "linkOnly": "Alleen link",
+        "noPublishedLink": "Geen gepubliceerde link",
+        "checking": "Controleren",
+        "noLink": "Geen link",
+        "expiresInDays": "Verloopt over {days} dagen",
+        "noExpiry": "Geen verloopdatum"
+      },
+      "descriptions": {
+        "checking": "Huidige galerijstatus controleren.",
+        "featured": "Zichtbaar in de publieke galerij en bovenaan geplaatst.",
+        "listed": "Zichtbaar in de publieke galerij.",
+        "hidden": "Verborgen door moderatie. De directe link werkt nog totdat deze wordt ingetrokken.",
+        "linkOnly": "Alleen deellink. Niet zichtbaar in de publieke galerij.",
+        "noLink": "Maak eerst een deellink aan."
+      },
+      "labels": {
+        "visibility": "Zichtbaarheid",
+        "shareLink": "Deellink",
+        "author": "Auteur"
+      },
+      "publishFirst": {
+        "title": "Publiceer voordat je vermeldt",
+        "description": "De galerij gebruikt de huidige gepubliceerde snapshot, dus er is een deellink nodig voordat deze track vermeld kan worden.",
+        "action": "Eerst deellink aanmaken"
+      },
+      "moderation": {
+        "title": "Moderatieblokkade",
+        "description": "Deze track is door moderatie verborgen uit de galerij. De directe deellink kan nog werken totdat die wordt ingetrokken."
+      },
+      "details": {
+        "title": "Galerijgegevens",
+        "description": "Werk de titel en beschrijving bij die op de publieke galerijkaart staan.",
+        "edit": "Gegevens bewerken"
+      },
+      "list": {
+        "title": "In galerij plaatsen",
+        "description": "Voeg een titel, beschrijving en gegenereerde preview toe voor publieke weergave.",
+        "add": "Toevoegen aan galerij",
+        "readyTitle": "Klaar om te vermelden",
+        "readyDescription": "Voeg deze gepubliceerde snapshot toe aan de publieke galerij met een eigen titel, beschrijving en preview."
+      },
+      "fields": {
+        "titlePlaceholder": "Tracktitel",
+        "descriptionPlaceholder": "Korte beschrijving voor de galerijkaart"
+      },
+      "validation": {
+        "titleRequired": "Voeg een titel toe voordat je opslaat.",
+        "descriptionLength": "Gebruik {min}-{max} tekens voor de beschrijving.",
+        "displayNameRequired": "Stel eerst een accountweergavenaam in.",
+        "noMetadataChanges": "Werk de titel of beschrijving bij om wijzigingen op te slaan.",
+        "refreshShareFirst": "Werk eerst de deellink bij zodat de galerij de nieuwste snapshot gebruikt."
+      },
+      "preview": {
+        "generating": "Preview genereren...",
+        "ready": "Preview klaar"
+      },
+      "card": {
+        "title": "Galerijkaart",
+        "description": "Bekijk of wijzig de publieke titel en beschrijving voor deze track.",
+        "untitled": "Naamloos",
+        "noDescription": "Geen galerijbeschrijving ingesteld.",
+        "viewGallery": "Galerij bekijken"
+      },
+      "remove": {
+        "confirm": "Verwijderen uit de publieke galerij? De deellink zelf blijft werken totdat die wordt ingetrokken.",
+        "action": "Uit galerij verwijderen"
+      },
+      "fallback": {
+        "noDisplayName": "geen weergavenaam ingesteld"
+      }
+    },
+    "actions": {
+      "primary": {
+        "updateLink": "Link bijwerken",
+        "copyLink": "Link kopiëren",
+        "createLink": "Link aanmaken",
+        "createNewLink": "Nieuwe link aanmaken"
+      },
+      "copyLink": "Link kopiëren",
+      "revoke": "Intrekken",
+      "share": {
+        "existingDescription": "Deze pagina is al de gepubliceerde alleen-lezen reviewlink. Deel hem zo, of open Studio als je een bewerkbare kopie wilt.",
+        "withPathDescription": "Gedeelde links openen als alleen-lezen reviewpagina's. Deze link opent direct in {view}-review en de route is klaar voor fly-through.",
+        "withoutPathDescription": "Gedeelde links openen als alleen-lezen reviewpagina's. Voeg eerst een pad toe als reviewers fly-through en hoogtereview moeten gebruiken."
+      },
+      "nativeShare": {
+        "title": "Delen via...",
+        "description": "Stuur naar apps of contacten"
+      },
+      "openInTab": {
+        "label": "Openen in tabblad",
+        "reopenCurrent": "Open de huidige gedeelde link opnieuw in een nieuw tabblad",
+        "previewLink": "Bekijk de deellink in een nieuw venster"
+      },
+      "exportJson": {
+        "label": "JSON exporteren",
+        "description": "Bewerkbare back-up om opnieuw te openen in TrackDraw"
+      }
     },
     "errors": {
       "createFailed": "Deellink aanmaken mislukt",
@@ -338,88 +524,36 @@
       "galleryListed": "Track vermeld in galerij",
       "galleryUpdated": "Galerij bijgewerkt",
       "linkRevoked": "Link ingetrokken"
-    },
-    "link": {
-      "expiryDays": "{days} dagen",
-      "savedProjectTitle": "Opgeslagen projectlink",
-      "newShareTitle": "Nieuwe deellink",
-      "savedProjectDescription": "Dit opgeslagen accountproject gebruikt één duurzame alleen-lezen link. Bijwerken houdt dezelfde URL met het nieuwste ontwerp.",
-      "newShareDescription": "Deze bewerkbare kopie krijgt een eigen duurzame alleen-lezen link. Die wijzigt geen eerder gepubliceerde projectlink.",
-      "separatePublishedTitle": "Aparte gepubliceerde link",
-      "temporaryTitle": "Tijdelijke link",
-      "noSavedProjectTitle": "Nog geen opgeslagen projectlink",
-      "noSeparateTitle": "Nog geen aparte link",
-      "noTemporaryTitle": "Nog geen tijdelijke link",
-      "lifetimePublished": "Gepubliceerde link op {hostname}, blijft live totdat die wordt ingetrokken",
-      "lifetimeTemporary": "Alleen-lezen snapshot op {hostname}, verloopt over {days} dagen",
-      "createSavedProject": "Maak één duurzame URL voor dit accountproject. Toekomstige updates kunnen dezelfde link houden.",
-      "createSeparate": "Maak een duurzame URL voor deze kopie zonder eerdere shares te wijzigen.",
-      "createTemporary": "Kies wanneer hij verloopt en maak een alleen-lezen snapshot.",
-      "outdatedDesign": "Deze link bevat niet meer het nieuwste ontwerp.",
-      "outdatedExpiry": "Deze link gebruikt niet meer de nieuwste verloopkeuze."
-    },
-    "embed": {
-      "iframeTitle": "TrackDraw track embed",
-      "codeTitle": "Embedcode",
-      "codeDescription": "Accountgepubliceerde tracks kunnen worden ingesloten op club- of eventsites.",
-      "loadingState": "Embedstatus laden…",
-      "publishBeforeEmbedding": "Publiceer voor embedden",
-      "publishBeforeEmbeddingDescription": "Embeds gebruiken de duurzame accountgepubliceerde link, dus maak de gepubliceerde link aan voordat je iframe-code kopieert.",
-      "createPublishedLink": "Gepubliceerde link aanmaken",
-      "temporaryLinksCannotEmbed": "Tijdelijke links kunnen niet worden embedded",
-      "temporaryLinksCannotEmbedDescription": "Meld je aan en publiceer deze track vanuit je account om een duurzame embed te maken.",
-      "refreshFirst": "Werk eerst de gepubliceerde link bij zodat de embed het nieuwste ontwerp gebruikt.",
-      "updateLink": "Link bijwerken",
-      "initialView": "Startweergave",
-      "iframeCodeLabel": "Iframe-code",
-      "iframeCodeDescription": "Inclusief de geselecteerde startweergave.",
-      "copyCode": "Code kopiëren",
-      "layout2dLabel": "2D-layout",
-      "layout2dDescription": "Open als plat veldplan",
-      "preview3dLabel": "3D-preview",
-      "preview3dDescription": "Open in de orbit-review"
-    },
-    "actions": {
-      "existingDescription": "Deze pagina is al de gepubliceerde alleen-lezen reviewlink. Deel hem zo, of open Studio als je een bewerkbare kopie wilt.",
-      "withPathDescription": "Gedeelde links openen als alleen-lezen reviewpagina's. Deze link opent direct in {view}-review en de route is klaar voor fly-through.",
-      "withoutPathDescription": "Gedeelde links openen als alleen-lezen reviewpagina's. Voeg eerst een pad toe als reviewers fly-through en hoogtereview moeten gebruiken.",
-      "nativeShareTitle": "Delen via...",
-      "nativeShareDescription": "Stuur naar apps of contacten",
-      "openInTab": "Openen in tabblad",
-      "reopenCurrent": "Open de huidige gedeelde link opnieuw in een nieuw tabblad",
-      "previewLink": "Bekijk de deellink in een nieuw venster",
-      "exportJson": "JSON exporteren",
-      "exportJsonDescription": "Bewerkbare back-up om opnieuw te openen in TrackDraw"
-    },
-    "labels": {
-      "copyLink": "Link kopiëren",
-      "linkExpiresAfter": "Link verloopt na",
-      "temporarySnapshotsExpire": "Tijdelijke snapshots blijven beschikbaar totdat ze verlopen.",
-      "revoke": "Intrekken"
     }
   },
   "projectManager": {
-    "dialogEyebrow": "Studio",
-    "dialogTitle": "Projecten",
-    "dialogMobileSubtitle": "Openen, hernoemen, synchroniseren of herstellen.",
-    "navThisDevice": "Dit apparaat",
-    "navShares": "Gedeeld",
-    "navSnapshots": "Snapshots",
-    "panelDevice": {
-      "label": "Op dit apparaat",
-      "description": "Lokale kopieën op dit apparaat. Gesynchroniseerde projecten kunnen ook onder Account verschijnen."
+    "dialog": {
+      "eyebrow": "Studio",
+      "title": "Projecten",
+      "mobileSubtitle": "Openen, hernoemen, synchroniseren of herstellen."
     },
-    "panelAccount": {
-      "label": "Accountprojecten",
-      "description": "Accountkopieën beschikbaar op je aangemelde apparaten. Open er een hier om deze browser te vernieuwen."
+    "nav": {
+      "thisDevice": "Dit apparaat",
+      "shares": "Gedeeld",
+      "snapshots": "Snapshots"
     },
-    "panelSnapshots": {
-      "label": "Snapshots",
-      "description": "Eerdere opgeslagen versies van het huidige project. Herstel elk punt om wijzigingen terug te draaien."
-    },
-    "panelShares": {
-      "label": "Gepubliceerde gedeelde items",
-      "description": "Actieve deellinks die vanuit je account zijn gepubliceerd. Kopieer, open of trek ze hier in."
+    "panels": {
+      "device": {
+        "label": "Op dit apparaat",
+        "description": "Lokale kopieën op dit apparaat. Gesynchroniseerde projecten kunnen ook onder Account verschijnen."
+      },
+      "account": {
+        "label": "Accountprojecten",
+        "description": "Accountkopieën beschikbaar op je aangemelde apparaten. Open er een hier om deze browser te vernieuwen."
+      },
+      "snapshots": {
+        "label": "Snapshots",
+        "description": "Eerdere opgeslagen versies van het huidige project. Herstel elk punt om wijzigingen terug te draaien."
+      },
+      "shares": {
+        "label": "Gepubliceerde gedeelde items",
+        "description": "Actieve deellinks die vanuit je account zijn gepubliceerd. Kopieer, open of trek ze hier in."
+      }
     },
     "device": {
       "sync": {
@@ -499,58 +633,96 @@
       }
     },
     "account": {
-      "loadingProjects": "Accountprojecten laden...",
-      "loadProjectsFailed": "Accountprojecten konden niet worden geladen",
-      "noProjects": "Geen accountprojecten",
-      "noProjectsDesc": "Synchroniseer een project om het op alle apparaten beschikbaar te maken.",
-      "conflictWarning": "Dit project is op een ander apparaat gewijzigd terwijl je niet was aangemeld",
-      "syncError": "Laatste wijzigingen konden niet worden gesynchroniseerd",
-      "resolveConflictFirst": "Los eerst het versieconflict op",
-      "retrySync": "Synchronisatie opnieuw proberen",
-      "syncPendingChanges": "Openstaande wijzigingen synchroniseren",
-      "syncing": "Synchroniseren",
-      "reviewNeeded": "Beoordeling vereist",
-      "syncFailed": "Synchronisatie mislukt",
-      "synced": "Gesynchroniseerd",
-      "untitled": "Naamloos"
+      "status": {
+        "loadingProjects": "Accountprojecten laden...",
+        "syncing": "Synchroniseren",
+        "reviewNeeded": "Beoordeling vereist",
+        "failed": "Synchronisatie mislukt",
+        "synced": "Gesynchroniseerd"
+      },
+      "empty": {
+        "noProjects": "Geen accountprojecten",
+        "description": "Synchroniseer een project om het op alle apparaten beschikbaar te maken."
+      },
+      "messages": {
+        "loadFailed": "Accountprojecten konden niet worden geladen",
+        "conflictWarning": "Dit project is op een ander apparaat gewijzigd terwijl je niet was aangemeld",
+        "syncError": "Laatste wijzigingen konden niet worden gesynchroniseerd",
+        "resolveConflictFirst": "Los eerst het versieconflict op"
+      },
+      "actions": {
+        "retrySync": "Synchronisatie opnieuw proberen",
+        "syncPendingChanges": "Openstaande wijzigingen synchroniseren"
+      },
+      "fallback": {
+        "untitled": "Naamloos"
+      }
     },
     "restore": {
-      "noSnapshots": "Nog geen snapshots",
-      "noSnapshotsDesc": "Snapshots worden automatisch aangemaakt wanneer je een project opent of vervangt.",
-      "noSnapshotsDesktopDesc": "Druk op <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> of gebruik de opslagknop in de header.",
-      "restoreTitle": "Dit snapshot herstellen",
-      "deleteTitle": "Snapshot verwijderen",
-      "restoreSnapshotConfirm": "Dit snapshot herstellen?",
-      "restoreAction": "Herstellen",
-      "restoreSnapshotAriaLabel": "{title} herstellen",
-      "deleteSnapshotAriaLabel": "{title} verwijderen",
-      "snapshotFallback": "snapshot",
-      "activeBadge": "actief",
-      "untitled": "Naamloos"
+      "empty": {
+        "noSnapshots": "Nog geen snapshots",
+        "description": "Snapshots worden automatisch aangemaakt wanneer je een project opent of vervangt.",
+        "desktopDescription": "Druk op <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> of gebruik de opslagknop in de header."
+      },
+      "actions": {
+        "restoreTitle": "Dit snapshot herstellen",
+        "deleteTitle": "Snapshot verwijderen",
+        "restore": "Herstellen"
+      },
+      "aria": {
+        "restoreSnapshot": "{title} herstellen",
+        "deleteSnapshot": "{title} verwijderen"
+      },
+      "confirm": {
+        "restoreSnapshot": "Dit snapshot herstellen?"
+      },
+      "status": {
+        "active": "actief"
+      },
+      "fallback": {
+        "snapshot": "snapshot",
+        "untitled": "Naamloos"
+      }
     },
     "shares": {
-      "loadingPublishedShares": "Gepubliceerde shares laden...",
-      "readOnlyReviewLinks": "Shares zijn alleen-lezen reviewlinks. Exporteer JSON wanneer iemand een bewerkbare TrackDraw-back-up nodig heeft.",
-      "noShares": "Geen actieve gedeelde items",
-      "noSharesDesc": "Accountgepubliceerde links blijven actief totdat ze worden ingetrokken. Tijdelijke anonieme links verlopen automatisch en worden hier niet beheerd.",
-      "publishedStatus": "gepubliceerd",
-      "expiredStatus": "verlopen",
-      "expiresInDays": "{days, plural, one {1 dag over} other {# dagen over}}",
-      "publishedLifetime": "alleen-lezen gepubliceerde link, live tot intrekking",
-      "temporaryLifetime": "alleen-lezen tijdelijke link, {expiresIn}",
-      "copyLink": "Link kopiëren",
-      "openTab": "Openen in nieuw tabblad",
-      "revokeLink": "Link intrekken",
-      "copyLinkAriaLabel": "Deellink kopiëren",
-      "openTabAriaLabel": "Deellink openen",
-      "revokeLinkAriaLabel": "Deellink intrekken",
-      "revokeLinkConfirm": "Deze link intrekken?"
+      "status": {
+        "loadingPublishedShares": "Gepubliceerde shares laden...",
+        "published": "gepubliceerd",
+        "expired": "verlopen",
+        "expiresInDays": "{days, plural, one {1 dag over} other {# dagen over}}"
+      },
+      "messages": {
+        "readOnlyReviewLinks": "Shares zijn alleen-lezen reviewlinks. Exporteer JSON wanneer iemand een bewerkbare TrackDraw-back-up nodig heeft."
+      },
+      "empty": {
+        "noShares": "Geen actieve gedeelde items",
+        "description": "Accountgepubliceerde links blijven actief totdat ze worden ingetrokken. Tijdelijke anonieme links verlopen automatisch en worden hier niet beheerd."
+      },
+      "lifetime": {
+        "published": "alleen-lezen gepubliceerde link, live tot intrekking",
+        "temporary": "alleen-lezen tijdelijke link, {expiresIn}"
+      },
+      "actions": {
+        "copyLink": "Link kopiëren",
+        "openTab": "Openen in nieuw tabblad",
+        "revokeLink": "Link intrekken"
+      },
+      "aria": {
+        "copyLink": "Deellink kopiëren",
+        "openTab": "Deellink openen",
+        "revokeLink": "Deellink intrekken"
+      },
+      "confirm": {
+        "revokeLink": "Deze link intrekken?"
+      }
     },
-    "copyProjectIdSuccess": "Project-ID gekopieerd",
-    "copyProjectIdFailed": "Project-ID kon niet vanuit deze browser worden gekopieerd.",
-    "copyProjectIdLabel": "API-project-ID",
-    "copyProjectIdAriaLabel": "API-project-ID kopiëren",
-    "copyAction": "Kopiëren"
+    "projectIdCopy": {
+      "success": "Project-ID gekopieerd",
+      "failed": "Project-ID kon niet vanuit deze browser worden gekopieerd.",
+      "label": "API-project-ID",
+      "ariaLabel": "API-project-ID kopiëren",
+      "action": "Kopiëren"
+    }
   },
   "completeProfile": {
     "title": "Voeg je naam toe",
