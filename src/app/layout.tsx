@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale } from "next-intl/server";
 import ThemeBootstrap from "@/components/ThemeBootstrap";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { isValidLocale } from "@/lib/i18n/locales";
+import { pickMessages } from "@/i18n/messages";
 import {
   DEFAULT_SOCIAL_IMAGE,
   DEFAULT_SOCIAL_IMAGE_HEIGHT,
@@ -100,8 +102,9 @@ export default async function RootLayout({
     cookieStore.get(THEME_COOKIE)?.value,
     cookieStore.get(RESOLVED_THEME_COOKIE)?.value
   );
-  const locale = await getLocale();
-  const messages = await getMessages();
+  const rawLocale = await getLocale();
+  const locale = isValidLocale(rawLocale) ? rawLocale : "en";
+  const messages = pickMessages(locale, ["common"]);
 
   return (
     <html

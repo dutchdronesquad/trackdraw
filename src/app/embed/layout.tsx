@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import LanguageProvider from "@/i18n/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "Track Embed",
@@ -14,5 +15,9 @@ export default function EmbedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <LanguageProvider namespaces={["common", "editor", "share"]}>
+      {children}
+    </LanguageProvider>
+  );
 }

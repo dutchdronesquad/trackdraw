@@ -5,6 +5,7 @@ import PublicGalleryGrid from "@/components/gallery/PublicGalleryGrid";
 import { Footer } from "@/components/landing/Footer";
 import { PublicSiteHeader } from "@/components/landing/PublicSiteHeader";
 import { listPublicGalleryEntries } from "@/lib/server/gallery";
+import LanguageProvider from "@/i18n/LanguageProvider";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_SOCIAL_IMAGE,
@@ -94,41 +95,46 @@ export default async function GalleryPage() {
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJsonLd) }}
       />
 
-      <div className="bg-background min-h-screen overflow-x-clip">
-        <PublicSiteHeader currentPage="gallery" />
+      <LanguageProvider namespaces={["common", "landing"]}>
+        <div className="bg-background min-h-screen overflow-x-clip">
+          <PublicSiteHeader currentPage="gallery" />
 
-        <main>
-          <section className="relative pb-10 sm:pb-14">
-            <div className="pointer-events-none absolute -top-32 left-0 h-150 w-150 rounded-full bg-[#1E93DB] opacity-[0.06] blur-[120px]" />
+          <main>
+            <section className="relative pb-10 sm:pb-14">
+              <div className="pointer-events-none absolute -top-32 left-0 h-150 w-150 rounded-full bg-[#1E93DB] opacity-[0.06] blur-[120px]" />
 
-            <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
-              <div className="mx-auto max-w-3xl text-center">
-                <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
-                  {t("gallery.sectionLabel")}
-                </p>
-                <h1 className="mt-4 text-[clamp(34px,9vw,56px)] leading-[1.02] font-semibold tracking-[-0.04em] text-balance sm:leading-[1.08]">
-                  <span className="block">{t("gallery.headingLine1")}</span>
-                  <span className="from-brand-primary mt-1.5 block bg-linear-to-r to-sky-300 bg-clip-text pb-1 leading-[1.12] text-transparent sm:mt-0">
-                    {t("gallery.headingLine2")}
-                  </span>
-                </h1>
-                <p className="text-muted-foreground mx-auto mt-5 max-w-2xl text-[15px] leading-7">
-                  {t("gallery.description")}
-                </p>
+              <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-14 sm:py-20">
+                <div className="mx-auto max-w-3xl text-center">
+                  <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.2em] uppercase">
+                    {t("gallery.sectionLabel")}
+                  </p>
+                  <h1 className="mt-4 text-[clamp(34px,9vw,56px)] leading-[1.02] font-semibold tracking-[-0.04em] text-balance sm:leading-[1.08]">
+                    <span className="block">{t("gallery.headingLine1")}</span>
+                    <span className="from-brand-primary mt-1.5 block bg-linear-to-r to-sky-300 bg-clip-text pb-1 leading-[1.12] text-transparent sm:mt-0">
+                      {t("gallery.headingLine2")}
+                    </span>
+                  </h1>
+                  <p className="text-muted-foreground mx-auto mt-5 max-w-2xl text-[15px] leading-7">
+                    {t("gallery.description")}
+                  </p>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <section
-            id="gallery-grid"
-            className="relative z-20 mx-auto -mt-8 max-w-6xl px-4 pb-12 sm:-mt-10 sm:px-6 sm:pb-16"
-          >
-            <PublicGalleryGrid entries={entries} mediaBaseUrl={mediaBaseUrl} />
-          </section>
-        </main>
+            <section
+              id="gallery-grid"
+              className="relative z-20 mx-auto -mt-8 max-w-6xl px-4 pb-12 sm:-mt-10 sm:px-6 sm:pb-16"
+            >
+              <PublicGalleryGrid
+                entries={entries}
+                mediaBaseUrl={mediaBaseUrl}
+              />
+            </section>
+          </main>
 
-        <Footer />
-      </div>
+          <Footer />
+        </div>
+      </LanguageProvider>
     </>
   );
 }

@@ -5,6 +5,7 @@ import {
   DEFAULT_SOCIAL_IMAGE_HEIGHT,
   DEFAULT_SOCIAL_IMAGE_WIDTH,
 } from "@/lib/seo";
+import LanguageProvider from "@/i18n/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "Drone Race Track Builder",
@@ -45,8 +46,20 @@ export default function StudioLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ "--radius": "0.375rem" } as React.CSSProperties}>
-      {children}
-    </div>
+    <LanguageProvider
+      namespaces={[
+        "common",
+        "dialogs",
+        "editor",
+        "exportPdf",
+        "inspector",
+        "setupEstimate",
+        "shapes",
+      ]}
+    >
+      <div style={{ "--radius": "0.375rem" } as React.CSSProperties}>
+        {children}
+      </div>
+    </LanguageProvider>
   );
 }

@@ -12,6 +12,7 @@ import {
 import { countActiveApiKeysForAdmin } from "@/lib/server/api-keys";
 import { getGalleryOverviewStats } from "@/lib/server/gallery";
 import { countUsersForAdmin } from "@/lib/server/users";
+import LanguageProvider from "@/i18n/LanguageProvider";
 
 export default async function DashboardLayout({
   children,
@@ -41,28 +42,30 @@ export default async function DashboardLayout({
   ]);
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--header-height": "calc(var(--spacing) * 12)",
-          "--radius": "0.625rem",
-        } as React.CSSProperties
-      }
-    >
-      <DashboardAppSidebar
-        currentUser={{
-          name: currentUserName,
-          email: currentUserEmail,
-          role: user.role,
-        }}
-        visibleModules={visibleModules}
-        itemBadges={{
-          ...(galleryStats ? { gallery: galleryStats.total } : {}),
-          ...(totalUsers !== null ? { users: totalUsers } : {}),
-          ...(activeApiKeys !== null ? { "api-keys": activeApiKeys } : {}),
-        }}
-      />
-      <SidebarInset className="ml-0!">{children}</SidebarInset>
-    </SidebarProvider>
+    <LanguageProvider namespaces={["common", "dashboard"]}>
+      <SidebarProvider
+        style={
+          {
+            "--header-height": "calc(var(--spacing) * 12)",
+            "--radius": "0.625rem",
+          } as React.CSSProperties
+        }
+      >
+        <DashboardAppSidebar
+          currentUser={{
+            name: currentUserName,
+            email: currentUserEmail,
+            role: user.role,
+          }}
+          visibleModules={visibleModules}
+          itemBadges={{
+            ...(galleryStats ? { gallery: galleryStats.total } : {}),
+            ...(totalUsers !== null ? { users: totalUsers } : {}),
+            ...(activeApiKeys !== null ? { "api-keys": activeApiKeys } : {}),
+          }}
+        />
+        <SidebarInset className="ml-0!">{children}</SidebarInset>
+      </SidebarProvider>
+    </LanguageProvider>
   );
 }

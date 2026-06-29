@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import LanguageProvider from "@/i18n/LanguageProvider";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("share.metadata");
@@ -15,5 +16,9 @@ export default function ShareLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <LanguageProvider namespaces={["common", "editor", "share"]}>
+      {children}
+    </LanguageProvider>
+  );
 }

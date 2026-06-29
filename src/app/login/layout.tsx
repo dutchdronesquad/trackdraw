@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import LanguageProvider from "@/i18n/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -14,5 +15,9 @@ export default function LoginLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <LanguageProvider namespaces={["common", "login"]}>
+      {children}
+    </LanguageProvider>
+  );
 }
