@@ -1,3 +1,5 @@
+import "server-only";
+
 import * as en from "@lang/en";
 import * as nl from "@lang/nl";
 import { defaultLocale, type SupportedLocale } from "@/lib/i18n/locales";

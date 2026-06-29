@@ -1,6 +1,6 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
-import { isValidLocale } from "@/lib/i18n/locales";
+import { defaultLocale, isValidLocale } from "@/lib/i18n/locales";
 import { pickMessages, type MessageNamespace } from "@/i18n/messages";
 
 type LanguageProviderProps = {
@@ -13,7 +13,7 @@ export default async function LanguageProvider({
   children,
 }: LanguageProviderProps) {
   const rawLocale = await getLocale();
-  const locale = isValidLocale(rawLocale) ? rawLocale : "en";
+  const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
 
   return (
     <NextIntlClientProvider
