@@ -192,9 +192,11 @@ describe("DashboardSharesManager", () => {
     );
 
     expect(
-      (screen.getByLabelText(
-        "Delete permanently Revoked Track"
-      ) as HTMLButtonElement).disabled
+      (
+        screen.getByLabelText(
+          "Delete permanently Revoked Track"
+        ) as HTMLButtonElement
+      ).disabled
     ).toBe(true);
   });
 });

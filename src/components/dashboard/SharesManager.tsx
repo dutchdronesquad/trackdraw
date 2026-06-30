@@ -66,8 +66,9 @@ export default function DashboardSharesManager({
   const [selectedTypes, setSelectedTypes] = useState<ShareTypeFilterValue[]>(
     []
   );
-  const [revokeCandidate, setRevokeCandidate] =
-    useState<DashboardShare | null>(null);
+  const [revokeCandidate, setRevokeCandidate] = useState<DashboardShare | null>(
+    null
+  );
   const [purgeCandidate, setPurgeCandidate] = useState<DashboardShare | null>(
     null
   );
@@ -94,8 +95,7 @@ export default function DashboardSharesManager({
       );
 
       const payload = (await response.json()) as
-        | { ok: true }
-        | { ok: false; error?: string };
+        { ok: true } | { ok: false; error?: string };
 
       if (!response.ok || !payload.ok) {
         throw new Error(
@@ -142,8 +142,7 @@ export default function DashboardSharesManager({
       );
 
       const payload = (await response.json()) as
-        | { ok: true }
-        | { ok: false; error?: string };
+        { ok: true } | { ok: false; error?: string };
 
       if (!response.ok || !payload.ok) {
         throw new Error(
@@ -153,7 +152,9 @@ export default function DashboardSharesManager({
         );
       }
 
-      setShares((previous) => previous.filter((share) => share.token !== token));
+      setShares((previous) =>
+        previous.filter((share) => share.token !== token)
+      );
       setPurgeCandidate(null);
       toast.success(t("messages.purgeSuccess"));
     } catch (error) {
@@ -296,7 +297,8 @@ export default function DashboardSharesManager({
             <DialogTitle>{t("revokeDialog.title")}</DialogTitle>
             <DialogDescription>
               {t.rich("revokeDialog.description", {
-                title: revokeCandidate?.title ?? t("revokeDialog.fallbackTitle"),
+                title:
+                  revokeCandidate?.title ?? t("revokeDialog.fallbackTitle"),
                 strong: (chunks) => (
                   <span className="text-foreground font-medium">{chunks}</span>
                 ),

@@ -363,7 +363,9 @@ function mapDashboardShareRow(row: DashboardShareRow): DashboardShare {
     ownerUserId: row.owner_user_id,
     ownerName: row.owner_name,
     ownerEmail: row.owner_email,
-    galleryState: row.gallery_state ? parseGalleryState(row.gallery_state) : null,
+    galleryState: row.gallery_state
+      ? parseGalleryState(row.gallery_state)
+      : null,
   };
 }
 

@@ -29,7 +29,10 @@ import type { GalleryState } from "@/lib/server/gallery";
 import type { DashboardShare } from "@/lib/server/shares";
 
 export type ShareLifecycleState = "active" | "expired" | "revoked";
-export type Translate = (key: string, values?: Record<string, unknown>) => string;
+export type Translate = (
+  key: string,
+  values?: Record<string, unknown>
+) => string;
 
 export function getOwnerLabel(share: DashboardShare, t: Translate) {
   if (!share.ownerUserId) return t("owner.anonymous");
