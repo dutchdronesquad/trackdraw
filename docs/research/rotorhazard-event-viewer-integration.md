@@ -30,11 +30,11 @@ The goal is not to make RotorHazard an editor and not to require RotorHazard use
 
 The viewer should support the same basic track-reading job as the current shared/embed viewer, but with a different deployment model:
 
-| Mode | Primary use | Dependency during event |
-| --- | --- | --- |
-| TrackDraw share/embed | Website embed, quick sharing, always-current published link | TrackDraw hosted app |
-| npm viewer package | Third-party apps that want to render TrackDraw data themselves | Installed app bundle |
-| `.tdviewer.zip` package | Offline RotorHazard event attachment | RotorHazard local server only |
+| Mode                    | Primary use                                                    | Dependency during event       |
+| ----------------------- | -------------------------------------------------------------- | ----------------------------- |
+| TrackDraw share/embed   | Website embed, quick sharing, always-current published link    | TrackDraw hosted app          |
+| npm viewer package      | Third-party apps that want to render TrackDraw data themselves | Installed app bundle          |
+| `.tdviewer.zip` package | Offline RotorHazard event attachment                           | RotorHazard local server only |
 
 This makes the npm viewer package the reusable foundation. The offline event package can include that viewer build at first, and later RotorHazard can bundle a trusted viewer version itself.
 
@@ -413,15 +413,15 @@ Success: live context enriches the event page without coupling TrackDraw viewer 
 
 ## Technical Risks
 
-| Risk | Mitigation |
-| --- | --- |
+| Risk                                                              | Mitigation                                                                                                        |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Viewer extraction is coupled to Next.js, Zustand, or editor state | Start with a spike; define a read-only data boundary; reuse renderers only where they do not pull editor behavior |
-| Bundle size is high because of Three.js/R3F | Lazy-load 3D; keep 2D fallback cheap; optimize textures; set package size warnings |
-| Uploaded package includes executable JS | Allow only for prototype; move production toward RotorHazard-bundled `@trackdraw/viewer` and data-only packages |
-| Offline assets fail because of CDN or absolute URLs | Require relative asset URLs; include fonts/textures/models in package or viewer bundle |
-| Schema drift breaks older RotorHazard installs | Version schemas; support export target versions; make compatibility errors actionable |
-| WebGL is unreliable on race laptops | Ship 2D fallback and poster preview; do not require 3D for event page usefulness |
-| Asset licensing is unclear | Provide generic fallback rendering; include attribution metadata where needed |
+| Bundle size is high because of Three.js/R3F                       | Lazy-load 3D; keep 2D fallback cheap; optimize textures; set package size warnings                                |
+| Uploaded package includes executable JS                           | Allow only for prototype; move production toward RotorHazard-bundled `@trackdraw/viewer` and data-only packages   |
+| Offline assets fail because of CDN or absolute URLs               | Require relative asset URLs; include fonts/textures/models in package or viewer bundle                            |
+| Schema drift breaks older RotorHazard installs                    | Version schemas; support export target versions; make compatibility errors actionable                             |
+| WebGL is unreliable on race laptops                               | Ship 2D fallback and poster preview; do not require 3D for event page usefulness                                  |
+| Asset licensing is unclear                                        | Provide generic fallback rendering; include attribution metadata where needed                                     |
 
 ## Open Questions for RotorHazard
 
