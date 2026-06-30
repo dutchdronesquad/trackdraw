@@ -116,6 +116,7 @@ export type PublicGalleryEntry = StoredGalleryEntry & {
 
 export type GalleryOverviewStats = {
   total: number;
+  public: number;
   listed: number;
   featured: number;
   hidden: number;
@@ -313,6 +314,7 @@ export const getGalleryOverviewStats = cache(
 
     const stats: GalleryOverviewStats = {
       total: 0,
+      public: 0,
       listed: 0,
       featured: 0,
       hidden: 0,
@@ -325,6 +327,9 @@ export const getGalleryOverviewStats = cache(
 
       stats[state] += count;
       stats.total += count;
+      if (isPublicGalleryState(state)) {
+        stats.public += count;
+      }
     }
 
     return stats;

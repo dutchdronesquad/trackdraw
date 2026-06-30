@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   KeyRound,
   LayoutDashboard,
+  Link2,
   Mail,
   PenLine,
   Users,
@@ -102,6 +103,13 @@ const topNavItems: NavItem[] = [
     href: "/dashboard/gallery",
     icon: ImageIcon,
     activePrefix: "/dashboard/gallery",
+  },
+  {
+    key: "shares",
+    titleKey: "shares",
+    href: "/dashboard/shares",
+    icon: Link2,
+    activePrefix: "/dashboard/shares",
   },
 ] as const;
 
@@ -231,6 +239,7 @@ export default function DashboardAppSidebar({
   const filteredTopItems = topNavItems.filter((item) => {
     if (item.key === "overview") return visibleModules.includes("overview");
     if (item.key === "gallery") return visibleModules.includes("gallery");
+    if (item.key === "shares") return visibleModules.includes("shares");
     return true;
   });
 

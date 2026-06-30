@@ -26,11 +26,12 @@ export type DashboardAuditEvent = {
   target: AuditEventActor;
 };
 
-export type AuditEventCategory = "Account" | "Gallery" | "System";
+export type AuditEventCategory = "Account" | "Gallery" | "Share" | "System";
 
 export const categoryFilterValues: AuditEventCategory[] = [
   "Account",
   "Gallery",
+  "Share",
   "System",
 ];
 export const unknownActorValue = "__unknown_actor__";
@@ -110,6 +111,8 @@ const EVENT_TITLE_KEYS: Record<string, string> = {
   "gallery.entry.hidden": "galleryEntryHidden",
   "gallery.entry.restored": "galleryEntryRestored",
   "gallery.entry.deleted": "galleryEntryDeleted",
+  "share.revoked": "shareRevoked",
+  "share.purged": "sharePurged",
 };
 
 export function getEventTitle(eventType: string, t: Translate) {
@@ -121,6 +124,7 @@ export function getEventTitle(eventType: string, t: Translate) {
 export function getEventCategory(eventType: string): AuditEventCategory {
   if (eventType.startsWith("account.")) return "Account";
   if (eventType.startsWith("gallery.")) return "Gallery";
+  if (eventType.startsWith("share.")) return "Share";
   return "System";
 }
 
@@ -163,9 +167,10 @@ export function getEventDetailLabel(
     return `${previousState} -> ${nextState}`;
   }
 
-  if (event.metadata?.shareToken) {
+  const shareToken = event.metadata?.shareToken ?? event.metadata?.token;
+  if (shareToken) {
     return t("filters.share", {
-      token: formatMetadataValue(event.metadata.shareToken),
+      token: formatMetadataValue(shareToken),
     });
   }
 
@@ -180,6 +185,8 @@ export function getEntityTypeLabel(entityType: string, t: Translate) {
       return t("entityLabels.account");
     case "gallery_entry":
       return t("entityLabels.galleryEntry");
+    case "share":
+      return t("entityLabels.share");
     default:
       return formatMetadataLabel(entityType);
   }
@@ -206,6 +213,20 @@ export function getEntityDisplay(event: DashboardAuditEvent, t: Translate) {
 
     return {
       label: t("entityLabels.galleryEntry"),
+      detail: shareToken ?? (event.entityId ? shortenId(event.entityId) : null),
+    };
+  }
+
+  if (event.entityType === "share") {
+    const shareToken =
+      typeof event.metadata?.shareToken === "string"
+        ? event.metadata.shareToken
+        : typeof event.metadata?.token === "string"
+          ? event.metadata.token
+          : null;
+
+    return {
+      label: t("entityLabels.share"),
       detail: shareToken ?? (event.entityId ? shortenId(event.entityId) : null),
     };
   }

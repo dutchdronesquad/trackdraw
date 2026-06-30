@@ -1,0 +1,386 @@
+"use client";
+
+import Link from "next/link";
+import type { ColumnDef } from "@tanstack/react-table";
+import {
+  ArrowUpDown,
+  Ban,
+  ExternalLink,
+  Link2,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/AppTooltip";
+import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import type { GalleryState } from "@/lib/server/gallery";
+import type { DashboardShare } from "@/lib/server/shares";
+
+export type ShareLifecycleState = "active" | "expired" | "revoked";
+export type Translate = (key: string, values?: Record<string, unknown>) => string;
+
+export function getOwnerLabel(share: DashboardShare, t: Translate) {
+  if (!share.ownerUserId) return t("owner.anonymous");
+  return (
+    share.ownerName?.trim() || share.ownerEmail?.trim() || share.ownerUserId
+  );
+}
+
+export function getLifecycleState(share: DashboardShare): ShareLifecycleState {
+  if (share.revokedAt) return "revoked";
+  if (share.expiresAt && new Date(share.expiresAt).getTime() <= Date.now()) {
+    return "expired";
+  }
+  return "active";
+}
+
+function getLifecycleVariant(
+  state: ShareLifecycleState
+): "default" | "muted" | "outline" {
+  if (state === "active") return "outline";
+  return "muted";
+}
+
+function getGalleryStateVariant(
+  state: GalleryState
+): "default" | "muted" | "outline" {
+  if (state === "featured") return "default";
+  if (state === "hidden") return "muted";
+  return "outline";
+}
+
+function getGalleryStateLabel(
+  state: GalleryState,
+  t: Translate,
+  tCommon: Translate
+) {
+  if (state === "unlisted") return t("galleryValues.unlisted");
+  return tCommon(`status.${state}`);
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "—";
+
+  try {
+    return new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+    }).format(new Date(value));
+  } catch {
+    return value;
+  }
+}
+
+function getLifecycleDetail(share: DashboardShare, t: Translate) {
+  const state = getLifecycleState(share);
+  if (state === "revoked") {
+    return t("lifecycle.revokedOn", { date: formatDate(share.revokedAt) });
+  }
+  if (state === "expired") {
+    return t("lifecycle.expiredOn", { date: formatDate(share.expiresAt) });
+  }
+  if (share.expiresAt) {
+    return t("lifecycle.expiresOn", { date: formatDate(share.expiresAt) });
+  }
+  return t("lifecycle.noExpiry");
+}
+
+function ActionTooltip({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactElement;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="top" sideOffset={6}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+type GetSharesColumnsParams = {
+  t: Translate;
+  tCommon: Translate;
+  pendingToken: string | null;
+  canManageShares: boolean;
+  canPurgeShares: boolean;
+  onCopyLink: (token: string) => void;
+  onRevokeCandidate: (share: DashboardShare) => void;
+  onPurgeCandidate: (share: DashboardShare) => void;
+};
+
+export function getSharesColumns({
+  t,
+  tCommon,
+  pendingToken,
+  canManageShares,
+  canPurgeShares,
+  onCopyLink,
+  onRevokeCandidate,
+  onPurgeCandidate,
+}: GetSharesColumnsParams): ColumnDef<DashboardShare>[] {
+  return [
+    {
+      id: "track",
+      accessorFn: (row) => row.title,
+      meta: { className: "w-[28%] min-w-56" },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={dataTableSortButtonClassName}
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t("table.track")}
+          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{row.original.title}</p>
+          <p className="text-muted-foreground truncate text-xs">
+            {row.original.token}
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "owner",
+      accessorFn: (row) => getOwnerLabel(row, t),
+      header: tCommon("labels.owner"),
+      meta: { className: "w-[20%] min-w-44" },
+      cell: ({ row }) => (
+        <div className="min-w-0">
+          <p className="truncate text-sm">{getOwnerLabel(row.original, t)}</p>
+          {row.original.ownerEmail ? (
+            <p className="text-muted-foreground truncate text-xs">
+              {row.original.ownerEmail}
+            </p>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      id: "type",
+      accessorFn: (row) => row.shareType,
+      header: t("table.type"),
+      meta: { className: "w-28" },
+      cell: ({ row }) => (
+        <Badge
+          variant={row.original.shareType === "published" ? "outline" : "muted"}
+        >
+          {t(`typeValues.${row.original.shareType}`)}
+        </Badge>
+      ),
+    },
+    {
+      id: "status",
+      accessorFn: (row) => getLifecycleState(row),
+      header: t("table.status"),
+      meta: { className: "w-56" },
+      cell: ({ row }) => {
+        const state = getLifecycleState(row.original);
+        return (
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <Badge variant={getLifecycleVariant(state)} className="shrink-0">
+              {t(`statusValues.${state}`)}
+            </Badge>
+            <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
+              {getLifecycleDetail(row.original, t)}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "gallery",
+      accessorFn: (row) => row.galleryState ?? "none",
+      header: t("table.gallery"),
+      meta: { className: "w-32" },
+      cell: ({ row }) =>
+        row.original.galleryState ? (
+          <Badge variant={getGalleryStateVariant(row.original.galleryState)}>
+            {getGalleryStateLabel(row.original.galleryState, t, tCommon)}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground text-xs">
+            {t("table.notInGallery")}
+          </span>
+        ),
+    },
+    {
+      id: "created",
+      meta: { className: "w-32" },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className={dataTableSortButtonClassName}
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t("table.created")}
+          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
+        </Button>
+      ),
+      accessorFn: (row) => row.createdAt,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-xs">
+          {formatDate(row.original.createdAt)}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      meta: { className: "w-32 text-right" },
+      cell: ({ row }) => {
+        const share = row.original;
+        const isPending = pendingToken === share.token;
+        const isRevoked = getLifecycleState(share) === "revoked";
+
+        return (
+          <div
+            className="flex justify-end"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="hidden items-center justify-end gap-1 md:flex">
+              {isRevoked ? null : (
+                <>
+                  <ActionTooltip label={t("actions.copyLink")}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="hover:bg-muted hover:text-foreground size-7"
+                      onClick={() => onCopyLink(share.token)}
+                    >
+                      <Link2 className="size-4" />
+                    </Button>
+                  </ActionTooltip>
+                  <ActionTooltip label={t("actions.open")}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="hover:bg-muted hover:text-foreground size-7"
+                      asChild
+                    >
+                      <Link
+                        href={`/share/${share.token}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="size-4" />
+                      </Link>
+                    </Button>
+                  </ActionTooltip>
+                </>
+              )}
+              {isRevoked ? null : (
+                <ActionTooltip label={t("actions.revoke")}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:bg-muted hover:text-destructive size-7"
+                    disabled={isPending || !canManageShares}
+                    aria-label={`${t("actions.revoke")} ${share.title}`}
+                    onClick={() => onRevokeCandidate(share)}
+                  >
+                    {isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Ban className="size-4" />
+                    )}
+                  </Button>
+                </ActionTooltip>
+              )}
+              {isRevoked ? (
+                <ActionTooltip label={t("actions.purge")}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:bg-muted hover:text-destructive size-7"
+                    disabled={isPending || !canPurgeShares}
+                    aria-label={`${t("actions.purge")} ${share.title}`}
+                    onClick={() => onPurgeCandidate(share)}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </ActionTooltip>
+              ) : null}
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground ml-auto size-8 p-0 md:hidden"
+                  aria-label={t("actions.openMenu")}
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-44">
+                {isRevoked ? null : (
+                  <>
+                    <DropdownMenuItem onClick={() => onCopyLink(share.token)}>
+                      <Link2 className="size-4" />
+                      {t("actions.copyLink")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href={`/share/${share.token}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="size-4" />
+                        {t("actions.open")}
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {isRevoked ? null : (
+                  <DropdownMenuItem
+                    disabled={!canManageShares}
+                    onClick={() => onRevokeCandidate(share)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Ban className="size-4" />
+                    {t("actions.revoke")}
+                  </DropdownMenuItem>
+                )}
+                {isRevoked ? (
+                  <DropdownMenuItem
+                    disabled={!canPurgeShares}
+                    onClick={() => onPurgeCandidate(share)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="size-4" />
+                    {t("actions.purge")}
+                  </DropdownMenuItem>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
+    },
+  ];
+}

@@ -11,6 +11,7 @@ import {
   deleteGalleryEntry,
   getGalleryEntryByShareToken,
   parseGalleryState,
+  type GalleryState,
 } from "@/lib/server/gallery";
 import { getShareDescription, getShareTitle } from "@/lib/share";
 import type { SerializedTrackDesign, TrackDesign } from "@/lib/types";
@@ -309,6 +310,112 @@ export async function revokeShare(token: string) {
     .run();
 
   await deleteGalleryEntry(token);
+}
+
+export async function purgeRevokedShare(token: string) {
+  const db = await getDatabase();
+
+  await db
+    .prepare(
+      `
+        delete from shares
+        where token = ? and revoked_at is not null
+      `
+    )
+    .bind(token)
+    .run();
+}
+
+type DashboardShareRow = {
+  token: string;
+  title: string | null;
+  created_at: string;
+  expires_at: string | null;
+  revoked_at: string | null;
+  share_type: string | null;
+  owner_user_id: string | null;
+  owner_name: string | null;
+  owner_email: string | null;
+  gallery_state: string | null;
+};
+
+export type DashboardShare = {
+  token: string;
+  title: string;
+  createdAt: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  shareType: ShareType;
+  ownerUserId: string | null;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  galleryState: GalleryState | null;
+};
+
+function mapDashboardShareRow(row: DashboardShareRow): DashboardShare {
+  return {
+    token: row.token,
+    title: row.title?.trim() || "Untitled track",
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    revokedAt: row.revoked_at,
+    shareType: parseShareType(row.share_type),
+    ownerUserId: row.owner_user_id,
+    ownerName: row.owner_name,
+    ownerEmail: row.owner_email,
+    galleryState: row.gallery_state ? parseGalleryState(row.gallery_state) : null,
+  };
+}
+
+export async function listSharesForDashboard(
+  options: { limit?: number } = {}
+): Promise<DashboardShare[]> {
+  const db = await getDatabase();
+  const limit = options.limit ?? 500;
+
+  const rows = await db
+    .prepare(
+      `
+        select
+          s.token,
+          s.title,
+          s.created_at,
+          s.expires_at,
+          s.revoked_at,
+          s.share_type,
+          s.owner_user_id,
+          u.name as owner_name,
+          u.email as owner_email,
+          g.gallery_state
+        from shares s
+        left join users u on u.id = s.owner_user_id
+        left join gallery_entries g on g.share_token = s.token
+        order by s.created_at desc
+        limit ?
+      `
+    )
+    .bind(limit)
+    .all<DashboardShareRow>();
+
+  return (rows.results ?? []).map(mapDashboardShareRow);
+}
+
+export async function countActiveSharesForAdmin(): Promise<number> {
+  const db = await getDatabase();
+  const now = nowIso();
+
+  const row = await db
+    .prepare(
+      `
+        select count(*) as count
+        from shares s
+        where ${ACTIVE_USER_SHARE_WHERE}
+      `
+    )
+    .bind(now)
+    .first<{ count: number }>();
+
+  return Number(row?.count ?? 0);
 }
 
 type CreateShareOptions = {

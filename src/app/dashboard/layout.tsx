@@ -11,6 +11,7 @@ import {
 } from "@/lib/server/authorization";
 import { countActiveApiKeysForAdmin } from "@/lib/server/api-keys";
 import { getGalleryOverviewStats } from "@/lib/server/gallery";
+import { countActiveSharesForAdmin } from "@/lib/server/shares";
 import { countUsersForAdmin } from "@/lib/server/users";
 import LanguageProvider from "@/i18n/LanguageProvider";
 
@@ -35,11 +36,15 @@ export default async function DashboardLayout({
     user.name?.trim() || user.email?.trim() || t("fallbackUserName");
   const currentUserEmail = user.email?.trim() || "dashboard@trackdraw.local";
   const visibleModules = getVisibleDashboardModules(user.role);
-  const [galleryStats, totalUsers, activeApiKeys] = await Promise.all([
-    visibleModules.includes("gallery") ? getGalleryOverviewStats() : null,
-    hasCapability(user.role, "admin.users.read") ? countUsersForAdmin() : null,
-    visibleModules.includes("api-keys") ? countActiveApiKeysForAdmin() : null,
-  ]);
+  const [galleryStats, totalUsers, activeApiKeys, activeShares] =
+    await Promise.all([
+      visibleModules.includes("gallery") ? getGalleryOverviewStats() : null,
+      hasCapability(user.role, "admin.users.read")
+        ? countUsersForAdmin()
+        : null,
+      visibleModules.includes("api-keys") ? countActiveApiKeysForAdmin() : null,
+      visibleModules.includes("shares") ? countActiveSharesForAdmin() : null,
+    ]);
 
   return (
     <LanguageProvider namespaces={["common", "dashboard"]}>
@@ -59,9 +64,10 @@ export default async function DashboardLayout({
           }}
           visibleModules={visibleModules}
           itemBadges={{
-            ...(galleryStats ? { gallery: galleryStats.total } : {}),
+            ...(galleryStats ? { gallery: galleryStats.public } : {}),
             ...(totalUsers !== null ? { users: totalUsers } : {}),
             ...(activeApiKeys !== null ? { "api-keys": activeApiKeys } : {}),
+            ...(activeShares !== null ? { shares: activeShares } : {}),
           }}
         />
         <SidebarInset className="ml-0!">{children}</SidebarInset>

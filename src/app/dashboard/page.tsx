@@ -175,20 +175,20 @@ function KpiCard({
           <p className="text-muted-foreground truncate text-xs font-medium">
             {label}
           </p>
-          <p className="text-2xl leading-tight font-bold tabular-nums">
-            {value}
-          </p>
-          {sub ? (
-            <p className="text-muted-foreground mt-0.5 text-xs">{sub}</p>
-          ) : null}
-          {trend ? (
-            <div className="mt-1">
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl leading-tight font-bold tabular-nums">
+              {value}
+            </p>
+            {trend ? (
               <KpiTrend
                 current={trend.current}
                 previous={trend.previous}
                 vsPrevMonthLabel={vsPrevMonthLabel ?? ""}
               />
-            </div>
+            ) : null}
+          </div>
+          {sub ? (
+            <p className="text-muted-foreground mt-0.5 text-xs">{sub}</p>
           ) : null}
         </div>
       </div>
@@ -435,10 +435,10 @@ export default async function DashboardPage() {
           <Reveal delay={0.12}>
             <KpiCard
               label={t("kpi.gallery.label")}
-              value={galleryStats.total}
+              value={galleryStats.public}
               sub={t("kpi.gallery.sub", {
                 featured: galleryStats.featured,
-                hidden: galleryStats.hidden,
+                unlisted: galleryStats.unlisted,
               })}
               icon={ImageIcon}
               accent="bg-sky-500"

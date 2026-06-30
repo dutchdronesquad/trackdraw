@@ -5,6 +5,7 @@
     "nav": {
       "overview": "Overview",
       "gallery": "Gallery",
+      "shares": "Shares",
       "users": "Users",
       "apiKeys": "API Keys",
       "audit": "Audit",
@@ -33,6 +34,8 @@
     "metrics": "Metrics",
     "gallery": "Gallery",
     "galleryIntro": "Published tracks visible to everyone on the public gallery. Feature, list, hide, or remove entries from public discovery.",
+    "shares": "Shares",
+    "sharesIntro": "Every share link, public or private. View, copy, revoke, or permanently delete share access.",
     "emailPreview": "Email Preview"
   },
   "overview": {
@@ -50,8 +53,8 @@
         "sub": "live share links"
       },
       "gallery": {
-        "label": "Gallery",
-        "sub": "{featured} featured · {hidden} hidden"
+        "label": "Public gallery",
+        "sub": "{featured} featured · {unlisted} private"
       },
       "comparison": {
         "vsPrevMonth": "vs prev month"
@@ -333,6 +336,7 @@
     "categoryValues": {
       "Account": "Account",
       "Gallery": "Gallery",
+      "Share": "Share",
       "System": "System"
     },
     "labels": {
@@ -370,12 +374,15 @@
       "galleryEntryUnfeatured": "Gallery entry unfeatured",
       "galleryEntryHidden": "Gallery entry hidden",
       "galleryEntryRestored": "Gallery entry restored",
-      "galleryEntryDeleted": "Gallery entry deleted"
+      "galleryEntryDeleted": "Gallery entry deleted",
+      "shareRevoked": "Share revoked",
+      "sharePurged": "Share permanently deleted"
     },
     "entityLabels": {
       "accountRole": "Account role",
       "galleryEntry": "Gallery entry",
-      "account": "Account"
+      "account": "Account",
+      "share": "Share"
     },
     "entity": {
       "share": "Share {token}",
@@ -434,7 +441,6 @@
       "filtered": "No gallery entries match the current filters."
     },
     "status": {
-      "cleanupNotice": "Changes apply immediately to the public gallery. {expired} expired and {revoked} revoked linked shares are visible here for operator cleanup.",
       "showing": "Showing {filtered} of {total} gallery entries."
     },
     "lifecycle": {
@@ -516,6 +522,89 @@
       "cancel": "Cancel",
       "deleting": "Deleting…",
       "deleteEntry": "Delete entry"
+    }
+  },
+  "shares": {
+    "filters": {
+      "searchPlaceholder": "Search title, owner or token...",
+      "status": "Status",
+      "type": "Type"
+    },
+    "statusValues": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "typeValues": {
+      "published": "Published",
+      "temporary": "Temporary"
+    },
+    "galleryValues": {
+      "unlisted": "Private"
+    },
+    "table": {
+      "track": "Track",
+      "type": "Type",
+      "status": "Status",
+      "gallery": "Gallery",
+      "notInGallery": "Not in gallery",
+      "created": "Created"
+    },
+    "owner": {
+      "anonymous": "Anonymous"
+    },
+    "actions": {
+      "copyLink": "Copy link",
+      "open": "Open share",
+      "revoke": "Revoke",
+      "purge": "Delete permanently",
+      "openMenu": "Open share actions"
+    },
+    "restrictions": {
+      "manage": "Only moderators and admins can manage shares.",
+      "purge": "Only admins can permanently delete shares."
+    },
+    "messages": {
+      "revokeFailed": "Failed to revoke share.",
+      "revokeSuccess": "Share revoked.",
+      "purgeFailed": "Failed to permanently delete share.",
+      "purgeSuccess": "Share permanently deleted.",
+      "copyLinkSuccess": "Share link copied.",
+      "copyLinkFailed": "Could not copy the share link."
+    },
+    "aria": {
+      "row": "Share {title}"
+    },
+    "empty": {
+      "default": "No shares yet.",
+      "filtered": "No shares match the current filters."
+    },
+    "status": {
+      "showing": "Showing {filtered} of {total} shares."
+    },
+    "lifecycle": {
+      "revokedOn": "Revoked {date}",
+      "expiredOn": "Expired {date}",
+      "expiresOn": "Expires {date}",
+      "noExpiry": "No expiry"
+    },
+    "revokeDialog": {
+      "title": "Revoke share?",
+      "description": "This immediately disables <strong>{title}</strong>. The link stops working and any linked gallery listing is removed. This cannot be undone.",
+      "fallbackTitle": "this share",
+      "owner": "Owner:",
+      "cancel": "Cancel",
+      "revoking": "Revoking…",
+      "revokeShare": "Revoke share"
+    },
+    "purgeDialog": {
+      "title": "Delete share permanently?",
+      "description": "This permanently removes the database record for <strong>{title}</strong>. This is irreversible and skips the normal 30-day cleanup window. Only revoked shares can be deleted this way.",
+      "fallbackTitle": "this share",
+      "owner": "Owner:",
+      "cancel": "Cancel",
+      "purging": "Deleting…",
+      "purgeShare": "Delete permanently"
     }
   },
   "emailPreview": {
