@@ -18,7 +18,7 @@ export default function DashboardPageIntro({
       <span
         className={`mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-lg ${accent}`}
       >
-        <Icon className="size-4.5" />
+        <Icon aria-hidden="true" className="size-4.5" />
       </span>
       <div>
         <h1 className="text-lg leading-tight font-semibold">{title}</h1>

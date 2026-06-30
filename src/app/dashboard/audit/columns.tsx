@@ -262,6 +262,9 @@ export function getAuditColumns({
   t,
   unknownUserLabel,
 }: GetAuditColumnsParams): ColumnDef<DashboardAuditEvent>[] {
+  const getSortAriaLabel = (label: string) =>
+    t("aria.sort", { label: label.toLowerCase() });
+
   return [
     {
       id: "event",
@@ -273,6 +276,7 @@ export function getAuditColumns({
           size="sm"
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          aria-label={getSortAriaLabel(t("table.event"))}
         >
           {t("table.event")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
@@ -338,6 +342,7 @@ export function getAuditColumns({
           size="sm"
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          aria-label={getSortAriaLabel(t("table.actor"))}
         >
           {t("table.actor")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
@@ -373,6 +378,7 @@ export function getAuditColumns({
           size="sm"
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          aria-label={getSortAriaLabel(t("table.target"))}
         >
           {t("table.target")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
@@ -408,6 +414,7 @@ export function getAuditColumns({
           size="sm"
           className={dataTableSortButtonClassName}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          aria-label={getSortAriaLabel(t("table.entity"))}
         >
           {t("table.entity")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
@@ -446,6 +453,7 @@ export function getAuditColumns({
           size="sm"
           className={`${dataTableSortButtonClassName} -mr-2 ml-auto`}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          aria-label={getSortAriaLabel(t("table.when"))}
         >
           {t("table.when")}
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
