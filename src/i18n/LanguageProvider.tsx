@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { defaultLocale, isValidLocale } from "@/lib/i18n/locales";
-import { pickMessages, type MessageNamespace } from "@/i18n/messages";
+import { pickCatalogNamespaces, type MessageNamespace } from "@/i18n/catalogs";
 
 type LanguageProviderProps = {
   namespaces: readonly MessageNamespace[];
@@ -18,7 +18,7 @@ export default async function LanguageProvider({
   return (
     <NextIntlClientProvider
       locale={locale}
-      messages={pickMessages(locale, namespaces)}
+      messages={pickCatalogNamespaces(locale, namespaces)}
     >
       {children}
     </NextIntlClientProvider>

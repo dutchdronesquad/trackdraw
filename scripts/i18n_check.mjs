@@ -19,6 +19,10 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const langDir = join(root, "lang");
 const srcDir = join(root, "src");
 const baseLocale = "en";
+const i18nPolicy = JSON.parse(
+  readFileSync(join(langDir, "i18n-policy.json"), "utf8")
+);
+const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
 function listLocales() {
   return readdirSync(langDir).filter((name) =>
@@ -66,9 +70,12 @@ function checkLocaleParity() {
   const locales = listLocales();
   const otherLocales = locales.filter((l) => l !== baseLocale);
   const baseNamespaces = listNamespaces(baseLocale);
+  const localizedBaseNamespaces = baseNamespaces.filter(
+    (namespace) => !englishOnlyNamespaces.has(namespace)
+  );
   let problems = 0;
 
-  for (const namespace of baseNamespaces) {
+  for (const namespace of localizedBaseNamespaces) {
     const baseMessages = flatten(loadNamespace(baseLocale, namespace));
     const baseKeys = new Set(Object.keys(baseMessages));
 
@@ -111,7 +118,7 @@ function checkLocaleParity() {
   for (const locale of otherLocales) {
     const localeNamespaces = listNamespaces(locale);
     const extraNamespaces = localeNamespaces.filter(
-      (ns) => !baseNamespaces.includes(ns)
+      (ns) => !baseNamespaces.includes(ns) && !englishOnlyNamespaces.has(ns)
     );
     for (const ns of extraNamespaces) {
       console.log(

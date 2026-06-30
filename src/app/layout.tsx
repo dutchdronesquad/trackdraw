@@ -7,7 +7,7 @@ import ThemeBootstrap from "@/components/ThemeBootstrap";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { isValidLocale } from "@/lib/i18n/locales";
-import { pickMessages } from "@/i18n/messages";
+import { pickCatalogNamespaces } from "@/i18n/catalogs";
 import {
   DEFAULT_SOCIAL_IMAGE,
   DEFAULT_SOCIAL_IMAGE_HEIGHT,
@@ -104,7 +104,7 @@ export default async function RootLayout({
   );
   const rawLocale = await getLocale();
   const locale = isValidLocale(rawLocale) ? rawLocale : "en";
-  const messages = pickMessages(locale, ["common"]);
+  const messages = pickCatalogNamespaces(locale, ["common"]);
 
   return (
     <html
