@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { KeyRound } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import DashboardPageIntro from "@/components/dashboard/PageIntro";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import DashboardApiKeysManager from "@/components/dashboard/ApiKeysManager";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -39,7 +41,13 @@ export default async function DashboardApiKeysPage() {
         parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.apiKeys")}
       />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+        <DashboardPageIntro
+          icon={KeyRound}
+          title={t("pages.apiKeys")}
+          description={t("pages.apiKeysIntro")}
+          accent="bg-violet-500/10 text-violet-600 dark:text-violet-400"
+        />
         <DashboardApiKeysManager initialKeys={apiKeys} />
       </div>
     </>

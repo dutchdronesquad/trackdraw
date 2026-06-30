@@ -25,10 +25,14 @@
   "pages": {
     "overview": "Overview",
     "users": "Users",
+    "usersIntro": "Every registered account. Review roles, activity, and account-backed content per user.",
     "apiKeys": "API Keys",
+    "apiKeysIntro": "API keys issued across all accounts. Monitor usage, expiry, and rate-limit status.",
     "audit": "Audit",
+    "auditIntro": "A timeline of moderation and account actions across the dashboard.",
     "metrics": "Metrics",
     "gallery": "Gallery",
+    "galleryIntro": "Published tracks visible to everyone on the public gallery. Feature, list, hide, or remove entries from public discovery.",
     "emailPreview": "Email Preview"
   },
   "overview": {

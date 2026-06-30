@@ -4,21 +4,21 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  type ColumnDef,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  ChevronDown,
-  Copy,
-  ExternalLink,
-  Loader2,
-} from "lucide-react";
+import { ChevronDown, Copy, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  formatDate,
+  getUserLabel,
+  getUsersColumns,
+  roleBadgeClassName,
+  type Translate,
+} from "@/app/dashboard/users/columns";
 import {
   accountRoles,
   getAccountRoleLabel,
@@ -29,7 +29,6 @@ import type { AuditEvent } from "@/lib/server/audit";
 import type { UserContextStats } from "@/lib/server/users";
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
-import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -54,35 +53,6 @@ type DashboardUsersManagerProps = {
   currentUserId: string;
   initialUsers: AdminUser[];
 };
-
-function getUserLabel(user: AdminUser, unnamedUserLabel: string) {
-  return user.name?.trim() || user.email?.trim() || unnamedUserLabel;
-}
-
-function getSecondaryLabel(user: AdminUser) {
-  if (user.name?.trim() && user.email?.trim()) return user.email;
-  return user.email?.trim() || user.id;
-}
-
-function formatDate(value: string) {
-  try {
-    return new Intl.DateTimeFormat("en-GB", {
-      dateStyle: "medium",
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
-}
-
-function roleBadgeClassName(role: AccountRole) {
-  if (role === "admin") {
-    return "border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300";
-  }
-  if (role === "moderator") {
-    return "border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300";
-  }
-  return "border-border bg-muted/50 text-muted-foreground";
-}
 
 function getUserInitials(user: AdminUser) {
   const name = user.name?.trim();
@@ -221,118 +191,7 @@ export default function DashboardUsersManager({
     }
   };
 
-  const columns: ColumnDef<AdminUser>[] = [
-    {
-      id: "user",
-      accessorFn: (row) => getUserLabel(row, t("fallback.unnamedUser")),
-      meta: { className: "w-[40%] min-w-56" },
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={dataTableSortButtonClassName}
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {t("table.user")}
-          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const user = row.original;
-        const isSelf = user.id === currentUserId;
-        return (
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">
-              {getUserLabel(user, t("fallback.unnamedUser"))}
-              {isSelf && (
-                <span className="text-muted-foreground ml-1.5 text-xs font-normal">
-                  {t("selfBadge")}
-                </span>
-              )}
-            </p>
-            <p className="text-muted-foreground truncate text-xs">
-              {getSecondaryLabel(user)}
-            </p>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "projectCount",
-      meta: { className: "hidden w-28 sm:table-cell" },
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={dataTableSortButtonClassName}
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {t("table.projects")}
-          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs tabular-nums">
-          {row.original.projectCount}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "role",
-      header: t("table.role"),
-      meta: { className: "w-32" },
-      cell: ({ row }) => (
-        <Badge
-          variant="outline"
-          className={roleBadgeClassName(row.original.role)}
-        >
-          {getAccountRoleLabel(row.original.role)}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      meta: { className: "hidden w-36 lg:table-cell" },
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={dataTableSortButtonClassName}
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {t("table.joined")}
-          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs">
-          {formatDate(row.original.createdAt)}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "lastLoginAt",
-      meta: { className: "hidden w-36 sm:table-cell" },
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          className={dataTableSortButtonClassName}
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          {t("table.lastLogin")}
-          <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs">
-          {row.original.lastLoginAt
-            ? formatDate(row.original.lastLoginAt)
-            : "—"}
-        </span>
-      ),
-    },
-  ];
+  const columns = getUsersColumns({ t: t as unknown as Translate, currentUserId });
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

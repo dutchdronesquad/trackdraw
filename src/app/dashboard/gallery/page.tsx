@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { Image as ImageIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import DashboardGalleryManager from "@/components/dashboard/GalleryManager";
+import DashboardPageIntro from "@/components/dashboard/PageIntro";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
@@ -42,7 +44,13 @@ export default async function DashboardGalleryPage() {
         parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.gallery")}
       />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+        <DashboardPageIntro
+          icon={ImageIcon}
+          title={t("pages.gallery")}
+          description={t("pages.galleryIntro")}
+          accent="bg-sky-500/10 text-sky-600 dark:text-sky-400"
+        />
         <DashboardGalleryManager
           currentUserRole={currentUser.role}
           initialEntries={entries}

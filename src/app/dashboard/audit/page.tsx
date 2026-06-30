@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { Bell } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import DashboardAuditEventsTable, {
   type AuditEventCategory,
 } from "@/components/dashboard/tables/AuditEventsTable";
+import DashboardPageIntro from "@/components/dashboard/PageIntro";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { listAuditEvents } from "@/lib/server/audit";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
@@ -59,11 +61,19 @@ export default async function DashboardAuditPage({
         parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.audit")}
       />
-      <DashboardAuditEventsTable
-        key={activeFilterValue}
-        events={events}
-        initialCategories={initialCategories}
-      />
+      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+        <DashboardPageIntro
+          icon={Bell}
+          title={t("pages.audit")}
+          description={t("pages.auditIntro")}
+          accent="bg-rose-500/10 text-rose-600 dark:text-rose-400"
+        />
+        <DashboardAuditEventsTable
+          key={activeFilterValue}
+          events={events}
+          initialCategories={initialCategories}
+        />
+      </div>
     </>
   );
 }
