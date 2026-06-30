@@ -40,6 +40,8 @@ Current research documents:
 - `ar-mode-product-shape.md` — AR product model and go/no-go criteria
 - `live-race-overlay-evaluation.md` — race overlay product model and technical analysis
 - `rotorhazard-event-viewer-integration.md` — long-term RotorHazard-hosted offline-capable TrackDraw event viewer direction
+- `presets-store.md` — community preset store publication, browse, and save-to-private-copy direction
+- `generated-flightpath-assistance.md` — obstacle-order-based generated Race Line assistance direction
 - `map-field-overlay-evaluation.md` — field overlay product model and UX analysis
 - `accounts-project-sync.md` — shipped product direction for accounts and project sync
 

@@ -104,9 +104,13 @@ Keep responsibilities separate:
 - private presets: `/api/layout-presets`, `useAccountPresetSync`, `layout_presets`
 - public store: new server module and API routes, likely `/api/preset-store/*`
 
-Useful helper:
+Existing private-preset helpers:
 
-- `src/lib/planning/preset-summary.ts` for counts, bounds, catalog ids, and display metadata
+- `src/lib/planning/layout-presets.ts` already owns basic preset counts and bounds.
+
+Future helper candidate:
+
+- Extract `src/lib/planning/preset-summary.ts` only if public-store summaries need a shared module for counts, bounds, catalog ids, official element flags, and display metadata.
 
 Do not put public store browsing inside `useAccountPresetSync`. That hook should stay focused on the signed-in user's own presets.
 
