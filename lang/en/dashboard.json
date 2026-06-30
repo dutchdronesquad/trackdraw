@@ -441,7 +441,6 @@
       "filtered": "No gallery entries match the current filters."
     },
     "status": {
-      "cleanupNotice": "Cleanup candidates: {expired} expired shares, {revoked} revoked shares.",
       "showing": "Showing {filtered} of {total} gallery entries."
     },
     "lifecycle": {

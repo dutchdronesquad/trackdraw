@@ -367,12 +367,6 @@ export default function DashboardGalleryManager({
       (row) => getShareLifecycleState(row.original) === value
     ).length,
   }));
-  const expiredShareCount = entries.filter(
-    (entry) => getShareLifecycleState(entry) === "expired"
-  ).length;
-  const revokedShareCount = entries.filter(
-    (entry) => getShareLifecycleState(entry) === "revoked"
-  ).length;
   const emptyMessage =
     entries.length === 0 ? t("empty.default") : t("empty.filtered");
   const inspectShareLifecycle = inspectCandidate
@@ -405,13 +399,6 @@ export default function DashboardGalleryManager({
           onChange={setSelectedShareLifecycles}
         />
       </DataTableToolbar>
-
-      <p className="text-muted-foreground text-xs">
-        {t("status.cleanupNotice", {
-          expired: expiredShareCount,
-          revoked: revokedShareCount,
-        })}
-      </p>
 
       <DataTable
         table={table}
