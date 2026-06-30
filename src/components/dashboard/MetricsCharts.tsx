@@ -462,7 +462,10 @@ function ResourceCard({
 }) {
   const t = useTranslations("dashboard.metrics.planLimit");
   const distConfig = { users: { label: t("usersAxis") } } satisfies ChartConfig;
-  const histogram = useMemo(() => buildHistogram(counts), [counts]);
+  const histogram = useMemo(
+    () => buildHistogram(counts).filter((entry) => entry.bucket !== 0),
+    [counts]
+  );
   const affected = useMemo(
     () => counts.filter((c) => c > limit).length,
     [counts, limit]
