@@ -79,9 +79,9 @@ export default function DashboardAuditEventsTable({
     selectedActors.length === 0 ||
     selectedActors.includes(getActorFilterValue(event));
 
-  const categoryFacetRows = rowsForCurrentSearch.filter((row) =>
-    byEventType(row.original)
-  ).filter((row) => byActor(row.original));
+  const categoryFacetRows = rowsForCurrentSearch
+    .filter((row) => byEventType(row.original))
+    .filter((row) => byActor(row.original));
   const eventTypeFacetRows = rowsForCurrentSearch
     .filter((row) => byCategory(row.original))
     .filter((row) => byActor(row.original));

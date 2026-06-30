@@ -8,7 +8,10 @@ import { dataTableSortButtonClassName } from "@/components/data-table/DataTableL
 import type { AdminUser } from "@/lib/account/admin-users";
 import { getAccountRoleLabel, type AccountRole } from "@/lib/account/roles";
 
-export type Translate = (key: string, values?: Record<string, unknown>) => string;
+export type Translate = (
+  key: string,
+  values?: Record<string, unknown>
+) => string;
 
 export function getUserLabel(user: AdminUser, unnamedUserLabel: string) {
   return user.name?.trim() || user.email?.trim() || unnamedUserLabel;

@@ -191,7 +191,10 @@ export default function DashboardUsersManager({
     }
   };
 
-  const columns = getUsersColumns({ t: t as unknown as Translate, currentUserId });
+  const columns = getUsersColumns({
+    t: t as unknown as Translate,
+    currentUserId,
+  });
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

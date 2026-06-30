@@ -8,7 +8,10 @@ import { dataTableSortButtonClassName } from "@/components/data-table/DataTableL
 import type { AdminApiKey } from "@/lib/server/api-keys";
 
 export type ApiKeyStatus = "active" | "expired" | "disabled";
-export type Translate = (key: string, values?: Record<string, unknown>) => string;
+export type Translate = (
+  key: string,
+  values?: Record<string, unknown>
+) => string;
 
 export function getApiKeyStatus(key: AdminApiKey): ApiKeyStatus {
   if (!key.enabled) return "disabled";

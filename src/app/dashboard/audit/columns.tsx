@@ -291,7 +291,9 @@ export function getAuditColumns({
 
         return (
           <div className="min-w-0">
-            <p className="text-sm font-medium">{getEventTitle(event.eventType, t)}</p>
+            <p className="text-sm font-medium">
+              {getEventTitle(event.eventType, t)}
+            </p>
             <div className="mt-1 flex items-center gap-2">
               <Badge variant="outline">
                 {getEventCategoryLabel(event.eventType, t)}
@@ -422,7 +424,9 @@ export function getAuditColumns({
         const entityDisplay = getEntityDisplay(row.original, t);
         return (
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{entityDisplay.label}</p>
+            <p className="truncate text-sm font-medium">
+              {entityDisplay.label}
+            </p>
             {entityDisplay.detail ? (
               <p className="text-muted-foreground truncate text-xs">
                 {entityDisplay.detail}
@@ -440,7 +444,7 @@ export function getAuditColumns({
         <Button
           variant="ghost"
           size="sm"
-          className={`${dataTableSortButtonClassName} ml-auto -mr-2`}
+          className={`${dataTableSortButtonClassName} -mr-2 ml-auto`}
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           {t("table.when")}

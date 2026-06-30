@@ -32,7 +32,10 @@ import { formatFieldSize as formatMeasurementFieldSize } from "@/lib/track/units
 
 export type GalleryUpdateAction = "feature" | "unfeature" | "hide" | "restore";
 export type ShareLifecycleState = "active" | "expired" | "revoked";
-export type Translate = (key: string, values?: Record<string, unknown>) => string;
+export type Translate = (
+  key: string,
+  values?: Record<string, unknown>
+) => string;
 
 export function getOwnerLabel(entry: DashboardGalleryEntry) {
   return (
@@ -400,7 +403,9 @@ export function getGalleryColumns({
                   className="hover:bg-muted hover:text-foreground size-7"
                   disabled={isPending || !canManageGallery}
                   aria-label={`${featureAction.label} ${entry.galleryTitle}`}
-                  onClick={() => onUpdateEntry(entry.shareToken, featureAction.action)}
+                  onClick={() =>
+                    onUpdateEntry(entry.shareToken, featureAction.action)
+                  }
                 >
                   {isPending ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -456,7 +461,9 @@ export function getGalleryColumns({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-44">
                 <DropdownMenuItem
-                  onClick={() => onUpdateEntry(entry.shareToken, featureAction.action)}
+                  onClick={() =>
+                    onUpdateEntry(entry.shareToken, featureAction.action)
+                  }
                 >
                   <FeatureIcon className="size-4" />
                   {featureAction.label}
