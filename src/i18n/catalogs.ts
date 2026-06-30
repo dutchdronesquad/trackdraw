@@ -16,6 +16,9 @@ const catalogs: Record<
   Partial<Record<MessageNamespace, unknown>>
 > = { en, nl };
 
+const catalogNamespaces = Object.keys(en) as MessageNamespace[];
+const catalogCache = new Map<SupportedLocale, Record<MessageNamespace, unknown>>();
+
 function getNamespaceMessages(
   locale: SupportedLocale,
   namespace: MessageNamespace
@@ -29,12 +32,19 @@ function getNamespaceMessages(
 }
 
 export function getCatalogForLocale(locale: SupportedLocale) {
-  return Object.fromEntries(
-    (Object.keys(en) as MessageNamespace[]).map((namespace) => [
+  const cachedCatalog = catalogCache.get(locale);
+  if (cachedCatalog) {
+    return cachedCatalog;
+  }
+
+  const catalog = Object.fromEntries(
+    catalogNamespaces.map((namespace) => [
       namespace,
       getNamespaceMessages(locale, namespace),
     ])
-  );
+  ) as Record<MessageNamespace, unknown>;
+  catalogCache.set(locale, catalog);
+  return catalog;
 }
 
 export function pickCatalogNamespaces(
