@@ -31,7 +31,7 @@
   },
   "hero": {
     "eyebrow": "Gebaut für FPV-Renndirektoren",
-    "headingLine1": "Der Renntag beginnt",
+    "headingLine1": "Renntag startet",
     "headingLine2": "mit einem Plan.",
     "description": "TrackDraw ist ein browserbasierter Drone-Race-Track-Builder für FPV-Renndirektoren. Zeichne maßstabsgetreu in 2D, prüfe den Flow in 3D, teile ein schreibgeschütztes Layout mit Piloten und Crew und halte den Plan auf Desktop und Mobilgerät nutzbar.",
     "ctaStudio": "Studio öffnen",
@@ -45,8 +45,8 @@
   },
   "features": {
     "sectionTitle": "Funktionen",
-    "sectionHeading": "Planen, prüfen und übergeben.",
-    "sectionDescription": "TrackDraw gibt FPV-Renndirektoren eine praktische Möglichkeit, Tracks sauber zu entwerfen: reale Feldmaße, das richtige Hindernisset und ein Workflow, der denselben Plan vom Layout über die Prüfung bis zur Übergabe ans Team trägt.",
+    "sectionHeading": "Entwerfen, prüfen und teilen.",
+    "sectionDescription": "TrackDraw gibt FPV-Renndirektoren eine praktische Möglichkeit, Tracks sauber zu entwerfen: reale Feldmaße, die passenden Hindernisse und ein Workflow, der denselben Plan vom Layout über die Prüfung bis zur Übergabe ans Team trägt.",
     "trueToScale": {
       "title": "Maßstabsgetreues Canvas",
       "description": "Lege die Feldgröße fest, platziere Elemente maßstabsgetreu und arbeite auf einem Raster, das zur realen Location passt."

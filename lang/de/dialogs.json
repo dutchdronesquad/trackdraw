@@ -726,7 +726,7 @@
   },
   "completeProfile": {
     "title": "Namen hinzufügen",
-    "subtitle": "Gib deinem Konto einen klaren Anzeigenamen für Cloud-Projekte und Teilen.",
+    "subtitle": "Gib deinem Konto einen klaren Anzeigenamen für Cloud-Projekte und geteilte Layouts.",
     "displayNameLabel": "Anzeigename",
     "namePlaceholder": "Dein Name",
     "description": "Das ist der Name, den TrackDraw für Cloud-Projekte und geteilte Layouts anzeigt.",
