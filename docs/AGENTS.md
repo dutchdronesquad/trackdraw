@@ -39,6 +39,7 @@ Current research documents:
 - `ar-mode-evaluation.md` — AR mode technical feasibility
 - `ar-mode-product-shape.md` — AR product model and go/no-go criteria
 - `live-race-overlay-evaluation.md` — race overlay product model and technical analysis
+- `rotorhazard-event-viewer-integration.md` — long-term RotorHazard-hosted offline-capable TrackDraw event viewer direction
 - `map-field-overlay-evaluation.md` — field overlay product model and UX analysis
 - `accounts-project-sync.md` — shipped product direction for accounts and project sync
 
