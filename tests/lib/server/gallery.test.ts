@@ -175,6 +175,7 @@ describe("gallery server helpers", () => {
 
     expect(stats).toEqual({
       total: 6,
+      public: 5,
       listed: 3,
       featured: 2,
       hidden: 1,

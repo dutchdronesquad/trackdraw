@@ -29,10 +29,12 @@ describe("authorization helpers", () => {
     expect(getVisibleDashboardModules("moderator")).toEqual([
       "overview",
       "gallery",
+      "shares",
     ]);
     expect(getVisibleDashboardModules("admin")).toEqual([
       "overview",
       "gallery",
+      "shares",
       "users",
       "metrics",
       "audit",
