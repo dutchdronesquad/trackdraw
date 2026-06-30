@@ -18,6 +18,7 @@ TrackDraw editor
 ```
 
 **Ownership split:**
+
 - TrackDraw owns: package schema, package generation, Track Viewer build, rendering, asset packaging.
 - RotorHazard owns: event attachment, static file serving, admin import/sync UI, public page placement, optional live race context.
 
@@ -48,6 +49,7 @@ trackdraw-event-viewer/
 ```
 
 **Two modes (future):**
+
 - Phase 1 — self-contained: viewer JS + data + assets all in one zip. Easier to test offline.
 - Phase 2 — split: RH installs Track Viewer separately, packages contain only data + assets. Smaller per-event files, safer for upload security.
 
@@ -114,7 +116,10 @@ Normalized viewer-safe shape — not raw editor JSON.
       "rotation": { "yaw": 90 },
       "dimensions": { "width": 1.52, "height": 1.52, "depth": 0.4 },
       "route_number": 1,
-      "visual": { "renderer": "catalog-gate", "asset_set": "multigp-obstacles-v1" }
+      "visual": {
+        "renderer": "catalog-gate",
+        "asset_set": "multigp-obstacles-v1"
+      }
     }
   ],
   "route": {
@@ -147,6 +152,7 @@ Read-only app. Not the full editor.
 **Out of scope:** editing, project manager, account sign-in, share publishing, export dialogs.
 
 **Camera presets:**
+
 - Overview — angled above field, all obstacles visible
 - Pilot approach — low near start/finish for route review
 - Top-down — for setup / briefing
@@ -166,6 +172,7 @@ trackdraw.track-viewer.setLiveRaceState   // deferred to Phase 7
 ```
 
 **Form factors:**
+
 - Embedded panel on `/event/{eventId}` public page
 - Standalone viewer at `/event/{eventId}/track` (for phones, tablets, briefing screens)
 
@@ -267,14 +274,14 @@ Highlight current heat, active pilot progress on route, link route anchors to RH
 
 ## Technical Risks
 
-| Risk | Mitigation |
-|------|------------|
-| **Bundle size** — Three.js/R3F pulls in a lot | Lazy-load 3D; 2D fallback cheap; optimize textures; warn on large packages |
+| Risk                                                                        | Mitigation                                                                         |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **Bundle size** — Three.js/R3F pulls in a lot                               | Lazy-load 3D; 2D fallback cheap; optimize textures; warn on large packages         |
 | **Viewer extraction** — viewer is coupled to Next.js + Zustand editor store | Start with spike; extract read-only state boundary; reuse renderer components only |
-| **Asset licensing** — MultiGP artwork may have constraints | Attribution where needed; generic fallback rendering available |
-| **Package security** — self-contained zip includes JS | Use self-contained for prototype; move to RH-bundled viewer for production |
-| **Schema drift** — renderer evolves faster than RH can release | Explicit schema versions; compatibility export target; conservative v1 |
-| **Offline browser constraints** — WebGL, cross-origin, file:// | RH must serve over local HTTP, not file://; use relative asset paths |
+| **Asset licensing** — MultiGP artwork may have constraints                  | Attribution where needed; generic fallback rendering available                     |
+| **Package security** — self-contained zip includes JS                       | Use self-contained for prototype; move to RH-bundled viewer for production         |
+| **Schema drift** — renderer evolves faster than RH can release              | Explicit schema versions; compatibility export target; conservative v1             |
+| **Offline browser constraints** — WebGL, cross-origin, file://              | RH must serve over local HTTP, not file://; use relative asset paths               |
 
 ---
 
@@ -295,12 +302,14 @@ Highlight current heat, active pilot progress on route, link route anchors to RH
 ## Go / No-Go
 
 **Move to PVA if:**
+
 - RH maintainers want a hosted/cached Track Viewer package on the event page.
 - RH can provide an event attachment point and serve static files.
 - TrackDraw can produce a standalone viewer without dragging in the full editor.
 - Both teams accept a versioned package contract.
 
 **Keep parked if:**
+
 - RH cannot host static viewer assets per event.
 - Viewer extraction would require destabilizing the editor.
 - Offline/LAN reliability is not a priority for the expected user base.
