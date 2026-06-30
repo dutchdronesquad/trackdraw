@@ -20,7 +20,7 @@
     alt="Deployment"
   /></a>
   <a href="LICENSE"><img
-    src="https://img.shields.io/badge/license-LGPL--3.0--or--later-blue"
+    src="https://img.shields.io/badge/license-AGPL--3.0--only-blue"
     alt="License"
   /></a>
 </p>
@@ -105,4 +105,6 @@ You are welcome to contribute to TrackDraw. You can find a guide on how to contr
 
 ## License
 
-Distributed under the **LGPL-3.0-only** License - see [LICENSE](LICENSE) for details.
+Distributed under the **AGPL-3.0-only** License - see [LICENSE](LICENSE) for details.
+
+The AGPL applies to the source code. See [NOTICE.md](NOTICE.md) for notes about the TrackDraw name, logos, brand assets, hosted service, and user-created content.
