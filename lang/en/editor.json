@@ -314,6 +314,10 @@
         "groupNamePlaceholder": "Group name"
       },
       "actions": {
+        "duplicate": "Duplicate",
+        "lock": "Lock",
+        "unlock": "Unlock",
+        "delete": "Delete",
         "ungroup": "Ungroup",
         "group": "Group"
       }
@@ -348,6 +352,10 @@
         "actions": {
           "addPoint": "Add point",
           "editPath": "Edit path",
+          "duplicate": "Duplicate",
+          "lock": "Lock",
+          "unlock": "Unlock",
+          "delete": "Delete",
           "deletePoint": "Delete point",
           "adjust": "Adjust",
           "back": "Back"
