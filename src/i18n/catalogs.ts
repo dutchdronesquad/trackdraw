@@ -17,7 +17,10 @@ const catalogs: Record<
 > = { en, nl };
 
 const catalogNamespaces = Object.keys(en) as MessageNamespace[];
-const catalogCache = new Map<SupportedLocale, Record<MessageNamespace, unknown>>();
+const catalogCache = new Map<
+  SupportedLocale,
+  Record<MessageNamespace, unknown>
+>();
 
 function getNamespaceMessages(
   locale: SupportedLocale,
