@@ -16,7 +16,7 @@ TrackDraw is now strong in these areas:
 - Portable outputs through PNG, SVG, PDF, 3D render capture, and JSON project files
 - Account-backed REST API with API key management and a live race overlay data endpoint
 - Catalog-backed official MultiGP obstacles including gates, ladders, flags, dive gate, launch gate, and a barrier category for hurdles, banners, fencing, and nets
-- Account-backed track section library where users save and reuse named canvas selections across devices
+- Account-backed user presets where users save and reuse named canvas selections across devices
 - EN/NL multilingual product experience with explicit language choice, route-scoped message loading, and CI checks for catalog parity and new hardcoded UI copy
 
 The most useful next product move is deepening the race-day workflow, keeping the editor dependable, refining the account-backed project model, and completing the remaining 3D item control and path geometry work:
@@ -308,24 +308,24 @@ Current shipped foundation:
 
 These items are now follow-up work rather than intentionally blocked. The first ownership model is clear enough that they can move forward when priority allows.
 
-#### User-Defined Track Sections (`Account-backed`)
+#### User-Defined Presets (`Account-backed`)
 
-User-defined track sections are now shipped. The four hard-coded presets in `layout-presets.ts` are removed and replaced with an account-backed section library where users save, name, and reuse their own canvas selections.
+User-defined presets are now shipped. The four hard-coded presets in `layout-presets.ts` are removed and replaced with an account-backed preset library where users save, name, and reuse their own canvas selections.
 
 Current shipped foundation:
 
-- The hard-coded section list is removed; the picker shows only user-created sections with an empty state that guides new users toward saving their first section from a canvas selection
-- Users select one or more non-path shapes on the canvas and save them as a named section; positions are normalized to a centroid-relative coordinate system so placement is anchor-based and consistent with how the existing `placeLayoutPreset` helper works
-- Sections are account-backed only; the sidebar sections button is hidden when not signed in, and `addUserPreset` shows a toast error if called without a valid session
-- Account sections are fetched on sign-in and cleared on sign-out or account switch; a module-level `lastSyncedUserId` guard prevents double-fetching
-- Rename and delete actions are available per section in the picker UI
-- A "Save section" action is available both from the multi-selection inspector and from the canvas context menu when multiple shapes are selected
-- Route lines and paths are never captured in a section; the `PlaceablePresetShape = Exclude<Shape, PolylineShape>` type enforces this at the type level
+- The hard-coded preset list is removed; the picker shows only user-created presets with an empty state that guides new users toward saving their first preset from a canvas selection
+- Users select one or more non-path shapes on the canvas and save them as a named preset; positions are normalized to a centroid-relative coordinate system so placement is anchor-based and consistent with how the existing `placeLayoutPreset` helper works
+- Presets are account-backed only; the sidebar presets button is hidden when not signed in, and `addUserPreset` shows a toast error if called without a valid session
+- Account presets are fetched on sign-in and cleared on sign-out or account switch; a module-level `lastSyncedUserId` guard prevents double-fetching
+- Rename and delete actions are available per preset in the picker UI
+- A "Save preset" action is available both from the multi-selection inspector and from the canvas context menu when multiple shapes are selected
+- Route lines and paths are never captured in a preset; the `PlaceablePresetShape = Exclude<Shape, PolylineShape>` type enforces this at the type level
 
 Deliberate scope decisions:
 
-- Local-first section storage for logged-out users was deferred; the first version is account-backed only, keeping the implementation simple and the data model unambiguous
-- Local-to-account migration was skipped for the same reason — there is no local section state to migrate
+- Local-first preset storage for logged-out users was deferred; the first version is account-backed only, keeping the implementation simple and the data model unambiguous
+- Local-to-account migration was skipped for the same reason — there is no local preset state to migrate
 - A community presets store where users publish and browse each other's presets remains a deliberate future follow-up. Research document: `docs/research/presets-store.md`
 
 Supporting design doc:
@@ -710,9 +710,9 @@ Included:
 - `useMeasurementUnitSystem` migrated from a manual `useSyncExternalStore` + custom event pattern to a Zustand `persist` store; legacy raw-string storage format is migrated transparently on first read with no change to the hook interface
 - `useEditorHints` migrated from five separate localStorage keys with manual get/set/remove calls to a single Zustand `persist` store under `trackdraw.editorHints`; all dismissed-hint states are stored as one JSON object, making `resetGuidedHints` a single store reset with no change to the hook interface
 
-### User-Defined Track Sections (`Account-backed`)
+### User-Defined Presets (`Account-backed`)
 
-The four hard-coded layout presets are replaced with an account-backed track section library. Users select any combination of non-path shapes on the canvas, name the selection, and save it as a reusable section. Sections sync with the account on sign-in and are cleared on sign-out or account switch. The section picker is hidden when not signed in. Rename, delete, and empty-state guidance are included. A "Save section" action is available from both the canvas context menu and the multi-selection inspector. Local-first storage and local-to-account migration were intentionally deferred.
+The four hard-coded layout presets are replaced with an account-backed preset library. Users select any combination of non-path shapes on the canvas, name the selection, and save it as a reusable preset. Presets sync with the account on sign-in and are cleared on sign-out or account switch. The preset picker is hidden when not signed in. Rename, delete, and empty-state guidance are included. A "Save preset" action is available from both the canvas context menu and the multi-selection inspector. Local-first storage and local-to-account migration were intentionally deferred.
 
 ### 3D Route Maneuver Review (`No account required`)
 

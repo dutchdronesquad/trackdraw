@@ -181,8 +181,8 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 - [x] Barriers (`No account required`)
       Dedicated barrier category for obstacles that block sightlines, mark field boundaries, or serve as physical separators. Includes the MultiGP Hurdle with official dimensions and artwork, plus TrackDraw banner, fence panel, and net entries. Catalog-backed placement, 2D/3D rendering, inspector type switching, inventory counts, and Race Pack material output.
 
-- [x] User-defined track sections (`Account-backed`)
-      The hard-coded section list is replaced with an account-backed section library. Users select non-path shapes on the canvas, name the selection, and save it as a reusable section. Sections sync with the account on sign-in and are cleared on sign-out or account switch. The section picker is hidden when not signed in. Rename, delete, and empty-state guidance are included. "Save section" is available from both the canvas context menu and the multi-selection inspector. Local-first storage and migration were intentionally deferred.
+- [x] User-defined presets (`Account-backed`)
+      The hard-coded preset list is replaced with an account-backed preset library. Users select non-path shapes on the canvas, name the selection, and save it as a reusable preset. Presets sync with the account on sign-in and are cleared on sign-out or account switch. The preset picker is hidden when not signed in. Rename, delete, and empty-state guidance are included. "Save preset" is available from both the canvas context menu and the multi-selection inspector. Local-first storage and migration were intentionally deferred.
 
 - [x] 3D route maneuver review (`No account required`)
       The 3D route review surface now surfaces maneuver quality for powerloops, split-S, and similar moves through geometry-driven signals. Route curves are rendered more accurately and consistently across elevation changes, with first-pass powerloop and split-S detection visible in the elevation review.
