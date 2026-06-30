@@ -278,9 +278,7 @@ export function SingleInspectorView({
                 className={`${actionBtnClass} min-w-0`}
               >
                 <Copy className="size-3 shrink-0" />
-                <span className="truncate">
-                  {tCommon("actions.duplicate")}
-                </span>
+                <span className="truncate">{tCommon("actions.duplicate")}</span>
               </button>
               <button
                 type="button"
