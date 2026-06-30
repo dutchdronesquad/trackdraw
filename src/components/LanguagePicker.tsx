@@ -25,6 +25,7 @@ const localeConfig: Record<
 > = {
   en: { label: "English", abbr: "EN", flag: "🇬🇧" },
   nl: { label: "Nederlands", abbr: "NL", flag: "🇳🇱" },
+  de: { label: "Deutsch", abbr: "DE", flag: "🇩🇪" },
 };
 
 interface LanguagePickerProps {

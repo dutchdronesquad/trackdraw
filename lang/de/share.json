@@ -1,0 +1,58 @@
+{
+  "badge": "Geteilte Ansicht",
+  "backToHome": "Zurück zur Startseite",
+  "whatToTry": "Was du versuchen kannst",
+  "openStudio": "Studio öffnen",
+  "error": {
+    "heading": "Dieser geteilte Track-Link wird nicht mehr unterstützt",
+    "description": "TrackDraw verwendet jetzt veröffentlichte Share-Links statt des älteren URL-eingebetteten Share-Formats. Dieser ältere Link kann nicht mehr direkt geöffnet werden.",
+    "whatToDo": "Was zu tun ist",
+    "step1": "Bitte den Absender, im <strong>Studio</strong> einen neuen Share-Link zu veröffentlichen.",
+    "step2": "Wenn du weiterhin eine Offline-Übergabe brauchst, bitte um einen <strong>JSON-Export</strong> und öffne ihn im Studio über Import.",
+    "step3": "Neue veröffentlichte Links verwenden die kanonische Route `/share/[token]` und bleiben der unterstützte Weg, schreibgeschützte Layouts zu teilen.",
+    "openStudioToImport": "Studio zum Importieren öffnen"
+  },
+  "expired": {
+    "heading": "Dieser Share-Link ist abgelaufen",
+    "description": "Temporäre TrackDraw-Share-Links laufen nach der beim Erstellen gewählten Dauer ab. Über ein Konto veröffentlichte Projektlinks bleiben aktiv, bis der Besitzer sie widerruft. Bitte den Absender, einen neuen Link zu veröffentlichen, wenn du dieses Layout noch brauchst.",
+    "step1": "Bitte den Absender, den Track erneut zu veröffentlichen oder einen über ein Konto veröffentlichten Link für längerfristigen schreibgeschützten Zugriff zu senden.",
+    "step2": "Bitte um einen JSON-Export, wenn das Layout längerfristig übergeben werden muss."
+  },
+  "notFound": {
+    "heading": "Dieser geteilte Track konnte nicht geöffnet werden",
+    "description": "Der Share-Link wurde möglicherweise vom Besitzer widerrufen oder ist veraltet, unvollständig oder falsch kopiert. Bitte den Absender, zu bestätigen, dass der Link noch aktiv ist, oder einen neuen Link zu veröffentlichen. Wenn der Track sehr groß ist, ist ein JSON-Export zuverlässiger als ein Share-Link.",
+    "step1": "Bitte den Absender, zu bestätigen, dass die Freigabe noch aktiv ist, und den neuesten Share-Link erneut zu kopieren.",
+    "step2": "Öffne den Link direkt aus der Nachricht, in der er gesendet wurde.",
+    "step3": "Bitte um einen JSON-Export, wenn der Track sehr groß ist — JSON-Dateien unterliegen keinen URL-Größenlimits."
+  },
+  "viewer": {
+    "dismissIntro": "Einführung zur geteilten Strecke schließen",
+    "sharedByReadOnly": "Geteilt von {author}. Schreibgeschützt, Änderungen werden nicht gespeichert. Wechsle zu {view} oder erstelle im Studio deine eigene bearbeitbare Kopie.",
+    "readOnlyNoAuthor": "Schreibgeschützt, Änderungen werden nicht gespeichert. Wechsle zu {view} oder erstelle im Studio deine eigene bearbeitbare Kopie.",
+    "openView": "{view} öffnen",
+    "makeEditableCopy": "Bearbeitbare Kopie erstellen"
+  },
+  "metadata": {
+    "title": "Track ansehen",
+    "description": "Sieh dir diesen mit TrackDraw entworfenen FPV-Racetrack an.",
+    "expiredTitle": "Abgelaufene Track-Freigabe",
+    "expiredDescription": "Dieser TrackDraw-Share-Link ist abgelaufen. Bitte den Absender, einen neuen Link zu veröffentlichen.",
+    "retiredTitle": "Nicht unterstützte Track-Freigabe",
+    "retiredDescription": "Dieses ältere TrackDraw-Share-Format wird nicht mehr unterstützt. Bitte den Absender, einen neuen Link zu veröffentlichen.",
+    "embedTitle": "Track-Embed",
+    "embedDescription": "Eingebettete schreibgeschützte TrackDraw-Trackansicht."
+  },
+  "embedUnavailable": {
+    "temporaryTitle": "Embed nicht verfügbar",
+    "temporaryDescription": "Embeds sind für veröffentlichte Konto-Freigaben verfügbar. Öffne den Share-Link oder melde dich an, um ein dauerhaftes Embed zu veröffentlichen.",
+    "expiredTitle": "Dieses Embed ist abgelaufen",
+    "expiredDescription": "Diese temporäre TrackDraw-Freigabe ist nicht mehr aktiv. Bitte den Besitzer, eine dauerhafte Konto-Freigabe zu veröffentlichen.",
+    "revokedTitle": "Dieses Embed wurde widerrufen",
+    "revokedDescription": "Der Besitzer hat diese TrackDraw-Freigabe widerrufen, daher ist der eingebettete Track nicht mehr verfügbar.",
+    "missingTitle": "Track nicht gefunden",
+    "missingDescription": "Dieses TrackDraw-Embed passt zu keiner aktiven veröffentlichten Konto-Freigabe.",
+    "openShareLink": "Share-Link öffnen",
+    "signIn": "Anmelden",
+    "brand": "TrackDraw"
+  }
+}

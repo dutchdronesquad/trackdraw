@@ -1,0 +1,316 @@
+{
+  "tabs": {
+    "ariaLabel": "Inspector-Panels",
+    "layout": "Layout",
+    "selection": "Auswahl"
+  },
+  "emptyState": {
+    "title": "Keine Auswahl",
+    "body": "Wähle ein oder mehrere Elemente auf dem Canvas aus, um hier Objekteigenschaften zu bearbeiten."
+  },
+  "actions": {
+    "group": "Gruppieren",
+    "continueEditing": "Fortfahren",
+    "connectEnds": "Verbinden",
+    "ungroup": "Gruppierung aufheben",
+    "groupSelection": "Auswahl gruppieren",
+    "ungroupSelection": "Auswahlgruppierung aufheben",
+    "savePreset": "Als Preset speichern",
+    "joinPaths": "Pfade verbinden",
+    "remove": "Entfernen",
+    "removeItem": "Element entfernen"
+  },
+  "hints": {
+    "locked": "Auf dem Canvas gesperrt. Vor dem Verschieben, Skalieren oder Fortsetzen von Pfadbearbeitungen entsperren."
+  },
+  "group": {
+    "sectionTitle": "Gruppe",
+    "nameLabel": "Gruppenname",
+    "namePlaceholder": "Optionaler Gruppenname"
+  },
+  "raceTiming": {
+    "sectionTitle": "Race Timing",
+    "ariaLabel": "Timing-Rolle",
+    "splitIdLabel": "Split-ID",
+    "splitIdPlaceholder": "split-1",
+    "roleStart": "Start",
+    "roleSplit": "Split",
+    "metaTimingStart": "timing: start",
+    "metaTimingSplit": "timing: {id}",
+    "metaGrouped": "gruppiert",
+    "metaLocked": "gesperrt",
+    "metaEditable": "bearbeitbar"
+  },
+  "transform": {
+    "sectionTitle": "Transformieren",
+    "positionLabel": "Position",
+    "rotationLabel": "Rotation (Grad)",
+    "colorLabel": "Farbe",
+    "pickColorAriaLabel": "Farbe wählen",
+    "editingSubtitle": "{kind}-Eigenschaften und Platzierung bearbeiten."
+  },
+  "ladder": {
+    "sectionTitle": "Ladder"
+  },
+  "tower": {
+    "sectionTitle": "Tower"
+  },
+  "catalog": {
+    "sectionTitle": "Katalog",
+    "sourceLabel": "Quelle",
+    "sizeLabel": "Größe",
+    "officialBadge": "Offiziell"
+  },
+  "dimensions": {
+    "widthLabel": "Breite ({unit})",
+    "heightLabel": "Höhe ({unit})",
+    "gridLabel": "Raster ({unit})",
+    "thicknessLabel": "Dicke ({unit})",
+    "radiusLabel": "Radius ({unit})",
+    "poleHeightLabel": "Masthöhe ({unit})",
+    "tiltLabel": "Neigung (Grad)",
+    "gatesLabel": "Gates",
+    "elevationLabel": "Höhe ({unit})",
+    "levelsLabel": "Ebenen",
+    "sizeLabel": "Größe ({unit})",
+    "openingHeightLabel": "Öffnungshöhe ({unit})"
+  },
+  "label": {
+    "sectionTitle": "Label",
+    "textLabel": "Text",
+    "fontSizeLabel": "Schriftgröße (px)",
+    "threeDModeLabel": "3D-Modus",
+    "floatOption": "Schweben (Billboard)",
+    "groundOption": "Auf Boden projizieren"
+  },
+  "multiSelection": {
+    "sectionTitle": "Auswahl",
+    "mixedTypesPlaceholder": "Gemischte Typen",
+    "titleSelected": "{count, plural, one {1 Element ausgewählt} other {{count} Elemente ausgewählt}}",
+    "subtitle": "Massenaktionen sind hier verfügbar. Öffne ein einzelnes Element vom Canvas, wenn du detaillierte Bearbeitung brauchst.",
+    "groupCountMeta": "{count, plural, one {1 Gruppe} other {{count} Gruppen}}",
+    "joinAvailableMeta": "Verbinden verfügbar",
+    "saveSectionLabel": "Abschnitt speichern",
+    "lockedItemsNote": "Gesperrte Elemente bleiben unverändert."
+  },
+  "polyline": {
+    "sectionTitle": "Rennlinie",
+    "flowLabel": "Flow",
+    "directionLabel": "Richtung",
+    "waypointsTitle": "Wegpunkte",
+    "waypointsSubtitle": "Passe jeden Punkt und seine Höhe an.",
+    "elevationColumn": "Höhe",
+    "editColumn": "Bearb.",
+    "insertPointAfter": "Punkt danach einfügen",
+    "removePoint": "Punkt entfernen",
+    "addPoint": "Punkt hinzufügen"
+  },
+  "listPanel": {
+    "panelTitle": "Track-Elemente",
+    "placedItemsTitle": "Platzierte Elemente",
+    "placedItemsSubtitle": "Wähle ein Element aus der Liste.",
+    "filterPlaceholder": "Elemente filtern",
+    "filterAll": "Alle",
+    "filterObstacles": "Hindernisse",
+    "itemColumn": "Element",
+    "pathColumn": "Pfad",
+    "noItemsMatchFilter": "Keine Elemente passen zu diesem Filter.",
+    "routeStatus": {
+      "off": "aus"
+    }
+  },
+  "layout": {
+    "mapReference": {
+      "title": "Kartenreferenz",
+      "fields": {
+        "opacity": "Deckkraft",
+        "rotation": "Rotation"
+      },
+      "actions": {
+        "removeTitle": "Kartenreferenz entfernen",
+        "editTitle": "Kartenreferenz bearbeiten",
+        "addTitle": "Kartenreferenz hinzufügen",
+        "edit": "Bearbeiten",
+        "add": "Karte hinzufügen",
+        "showTitle": "Kartenreferenz anzeigen",
+        "hideTitle": "Kartenreferenz ausblenden",
+        "show": "Anzeigen"
+      }
+    },
+    "sections": {
+      "routeNumbering": "Routennummerierung",
+      "inventory": "Inventar",
+      "field": "Feld"
+    },
+    "field": {
+      "unitsLabel": "Einheiten",
+      "renderScaleLabel": "Render-Skalierung",
+      "renderScaleTooltip": "Interne Canvas-Dichte in Pixel pro Meter",
+      "pxPerMeterAriaLabel": "Pixel pro Meter, interne Canvas-Skalierung"
+    },
+    "project": {
+      "titlePlaceholder": "Unbenannter Track",
+      "subtitle": "Passe Projekttitel, Feldeinstellungen und verfügbaren Hindernisbestand an."
+    },
+    "overview": {
+      "title": "Aktuelles Layout",
+      "subtitle": "Prüfe platzierte Elemente, Routennummerierung und Baubarkeit für das aktuelle Layout.",
+      "emptyTitle": "Noch keine Elemente platziert",
+      "emptyDescription": "Füge ein paar Objekte auf dem Canvas hinzu, um das Layout zu prüfen und mit deinem Inventar zu vergleichen."
+    },
+    "inventory": {
+      "status": {
+        "buildable": "Baubar",
+        "short": "Fehlt"
+      },
+      "labels": {
+        "missing": "Fehlend",
+        "types": "Typen"
+      },
+      "description": "TrackDraw vergleicht das aktuelle Layout mit dem in diesem Projekt gespeicherten Hindernisbestand.",
+      "needCountSuffix": "braucht {count}",
+      "stockOk": "ok"
+    },
+    "meta": {
+      "itemsCount": "{count} Elemente",
+      "buildable": "baubar",
+      "shortItems": "{count, plural, one {1 Element fehlt} other {{count} Elemente fehlen}}",
+      "stockCovered": "Bestand gedeckt",
+      "typesShort": "{count, plural, one {1 Typ fehlt} other {{count} Typen fehlen}}",
+      "numbered": "{count} nummeriert",
+      "numberingIdle": "Nummerierung inaktiv",
+      "numberingNeedsReview": "Nummerierung prüfen"
+    }
+  },
+  "routeNumbering": {
+    "status": {
+      "ready": "Bereit",
+      "partial": "Prüfung nötig",
+      "noRouteMatches": "Keine Treffer",
+      "missingRoute": "Route fehlt",
+      "noNumberedObstacles": "Keine Routenhindernisse",
+      "empty": "Leer"
+    },
+    "messages": {
+      "ready": "{count, plural, one {1 Routenhindernis nummeriert.} other {{count} Routenhindernisse nummeriert.}}",
+      "partial": "{mapped} von {total} Routenhindernissen sind nummeriert.",
+      "noRouteMatches": "{count, plural, one {1 Routenhindernis gefunden, aber keines liegt nah genug an der Rennlinie.} other {{count} Routenhindernisse gefunden, aber keines liegt nah genug an der Rennlinie.}}",
+      "missingRoute": "{count, plural, one {1 Routenhindernis benötigt eine Rennlinie, bevor die Nummerierung abgeleitet werden kann.} other {{count} Routenhindernisse benötigen eine Rennlinie, bevor die Nummerierung abgeleitet werden kann.}}",
+      "noNumberedObstacles": "Gates, Ladders und Dive Gates erscheinen in der Routennummerierung.",
+      "empty": "Füge Routenhindernisse und eine Rennlinie hinzu, um Nummerierung abzuleiten."
+    },
+    "issues": {
+      "offRoutePrefix": "Abseits der Route: {names}",
+      "moreSuffix": " +{count} weitere"
+    },
+    "meta": {
+      "numbered": "Nummeriert",
+      "issues": "Probleme"
+    }
+  },
+  "elevationChart": {
+    "noRouteSelected": "Keine Rennlinie ausgewählt",
+    "title": "Höhenprofil",
+    "subtitle": "Routenhöhe, farbige Warnabschnitte und Hinweise zur Routenprüfung.",
+    "openDetailsAria": "Höhendetails öffnen",
+    "detailsTooltip": "Höhendetails",
+    "chartAriaLabel": "Diagramm des Höhenprofils",
+    "routeDistance": "{distance} Route",
+    "elevationRange": "{min}-{max} Höhe",
+    "moreCount": "+{count} weitere",
+    "maneuversHeading": "Manöver",
+    "maneuverDetected": "{maneuver} bei {range} erkannt",
+    "apexSuffix": ", Scheitel {index}",
+    "waypointSingle": "Wegpunkt {index}",
+    "waypointRange": "Wegpunkte {start}-{end}",
+    "routeReviewHeading": "Routenprüfung",
+    "noWarnings": "Keine Routenwarnungen für diesen Pfad.",
+    "normal": "Normal",
+    "maneuvers": {
+      "powerloop": "Powerloop",
+      "split-s": "Split-S"
+    },
+    "warnings": {
+      "stub": {
+        "summary": "Pfad braucht mindestens 2 Wegpunkte, um eine Route zu bilden",
+        "shortLabel": "Unvollständige Route",
+        "title": "Route ist unvollständig",
+        "problem": "Der Pfad braucht mindestens zwei Wegpunkte, bevor TrackDraw ihn als Route prüfen kann.",
+        "fix": "Füge einen weiteren Wegpunkt hinzu oder schließe das Zeichnen der Rennlinie ab."
+      },
+      "flat": {
+        "summary": "Keine Höhe gesetzt - 3D-Vorschau bleibt flach",
+        "shortLabel": "Flache Höhe",
+        "title": "Es wurde keine Höhe gesetzt",
+        "problem": "Alle Wegpunkte stehen noch auf 0 m, daher bleiben 3D-Vorschau und Höhendiagramm flach.",
+        "fix": "Setze Wegpunkthöhen im Inspector oder in der 3D-Ansicht, wenn die Route steigen oder fallen soll."
+      },
+      "steep": {
+        "summary": "{count, plural, one {Steile Steigung bei Wegpunkt {first}} other {Steile Steigung an {count} Segmenten}}",
+        "shortLabel": "Steile Steigung",
+        "title": "Steigung ändert sich zu schnell",
+        "problem": "Ein Abschnitt steigt oder fällt stark über eine kurze Distanz, wodurch die 3D-Linie abrupt wirken kann.",
+        "fix": "Verteile die Höhenänderung über mehr Distanz oder füge einen Zwischenwegpunkt hinzu."
+      },
+      "hairpin": {
+        "summary": "{count, plural, one {Enge Kurve bei Wegpunkt {first}} other {{count} enge Kurven}}",
+        "shortLabel": "Enge Kurve",
+        "title": "Kurve ist sehr eng",
+        "problem": "Ein Wegpunkt erzeugt eine scharfe Richtungsumkehr, die bei Geschwindigkeit schwer sauber zu fliegen sein kann.",
+        "fix": "Verschiebe den Wegpunkt nach außen oder schaffe vor und nach der Kurve mehr Raum."
+      },
+      "close-points": {
+        "summary": "{count, plural, one {Nahe Wegpunkte bei {first}} other {{count} eng beieinanderliegende Wegpunkte}}",
+        "shortLabel": "Nahe Punkte",
+        "title": "Wegpunkte liegen zu nah beieinander",
+        "problem": "Zwei Wegpunkte liegen so nah beieinander, dass sie ein winziges Routensegment erzeugen.",
+        "fix": "Lösche einen der Punkte oder verschiebe ihn weiter vom Nachbarn weg."
+      },
+      "spacing-shift": {
+        "summary": "{count, plural, one {Abrupter Abstandswechsel bei Wegpunkt {first}} other {{count} abrupte Abstandswechsel}}",
+        "shortLabel": "Abstandswechsel",
+        "title": "Gate-Rhythmus ändert sich abrupt",
+        "problem": "Der Abstand vor und nach einem Wegpunkt ändert sich plötzlich, wodurch die Route ungleichmäßig wirken kann.",
+        "fix": "Positioniere nahe Wegpunkte neu, damit sich die Abstände schrittweiser ändern."
+      },
+      "rhythm-break": {
+        "summary": "{count, plural, one {Kurzes Korrektursegment bei Wegpunkt {first}} other {{count} kurze Korrektursegmente}}",
+        "shortLabel": "Kurze Korrektur",
+        "title": "Kurze Korrektur bricht den Flow",
+        "problem": "Ein kurzes mittleres Segment unterbricht längere umliegende Abschnitte und kann ein unangenehmes Wackeln erzeugen.",
+        "fix": "Glätte die Korrektur, indem du den Punkt verschiebst, ihn löschst oder einen sanfteren Übergang hinzufügst."
+      }
+    }
+  },
+  "mapReference": {
+    "title": "Kartenreferenz",
+    "subtitle": "Wähle das Feldzentrum und richte den Feldumriss aus.",
+    "searchPlaceholder": "Ort suchen oder Koordinaten einfügen",
+    "searching": "Sucht",
+    "enterHint": "Enter",
+    "zoomLabel": "Zoom {zoom}",
+    "zoomIn": "Hineinzoomen",
+    "zoomOut": "Herauszoomen",
+    "resetRotation": "Rotation zurücksetzen",
+    "rotateLeft15": "15 Grad nach links drehen",
+    "rotateLeft1": "1 Grad nach links drehen",
+    "rotateRight1": "1 Grad nach rechts drehen",
+    "rotateRight15": "15 Grad nach rechts drehen",
+    "latitude": "Breitengrad",
+    "longitude": "Längengrad",
+    "rotation": "Rotation",
+    "rotationValue": "{deg} Grad",
+    "view": "Ansicht",
+    "out": "Raus",
+    "in": "Rein",
+    "previewZoom": "Vorschau-Zoom {zoom}",
+    "center": "Zentrum",
+    "useLocation": "Standort verwenden",
+    "locating": "Standort wird ermittelt",
+    "saveMap": "Karte speichern",
+    "locationUnavailable": "Standort ist in diesem Browser nicht verfügbar.",
+    "locationPermissionDenied": "Standortberechtigung wurde verweigert.",
+    "locationTimeout": "Standortsuche hat zu lange gedauert.",
+    "locationError": "Dein Standort konnte nicht bestimmt werden."
+  }
+}

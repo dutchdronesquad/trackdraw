@@ -1,0 +1,48 @@
+{
+  "kindLabels": {
+    "gate": "Gate",
+    "tower": "Tower",
+    "flag": "Flagge",
+    "cone": "Kegel",
+    "label": "Label",
+    "polyline": "Rennlinie",
+    "startfinish": "Start / Ziel",
+    "ladder": "Ladder",
+    "divegate": "Dive Gate",
+    "barrier": "Barriere"
+  },
+  "toolLabels": {
+    "select": "Auswählen",
+    "grab": "Verschieben",
+    "preset": "Presets",
+    "gate": "Gate",
+    "tower": "Tower",
+    "flag": "Flagge",
+    "cone": "Kegel",
+    "label": "Label",
+    "polyline": "Pfad",
+    "startfinish": "Startpads",
+    "ladder": "Ladder",
+    "divegate": "Dive Gate",
+    "barrier": "Barriere"
+  },
+  "toolGroups": {
+    "track": "Track",
+    "extra": "Extra"
+  },
+  "toolMobileLabels": {
+    "startfinish": "Start",
+    "divegate": "Dive",
+    "barrier": "Barriere"
+  },
+  "mobileStatus": {
+    "multiSelect": "Multi",
+    "tool": "Werkzeug",
+    "itemsCount": "{count} Elemente"
+  },
+  "canvas": {
+    "selectionCount": "{count} Elemente",
+    "selectionFallback": "Auswahl",
+    "frontLabel": "Vorne"
+  }
+}

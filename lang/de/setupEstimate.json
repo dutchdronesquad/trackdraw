@@ -1,0 +1,48 @@
+{
+  "complexity": {
+    "light": "Leicht",
+    "standard": "Standard",
+    "heavy": "Aufwendig"
+  },
+  "kinds": {
+    "trackGroup": "Track-Gruppe",
+    "crew": "Crew"
+  },
+  "flagsFinalPass": {
+    "label": "Letzter Durchgang für Flaggen",
+    "note": "Schließe das Feld mit Flaggenmarkierungen und finalen Sichtbarkeitschecks ab, sobald die nummerierte Haupt-Hindernislinie steht."
+  },
+  "conesTrackWalk": {
+    "label": "Kegelplatzierung beim Track Walk (optional)",
+    "note": "Kegel können während des Track Walks der Piloten platziert werden, um einen separaten Durchgang zu vermeiden. Wenn du sie lieber früher setzt, plane vor Ort etwas zusätzliche Zeit ein."
+  },
+  "crewUnloadStage": {
+    "label": "Ausrüstung entladen und bereitstellen",
+    "note": "Fahrzeug entladen, Anker und Hardware sortieren und das Material auslegen, damit die Rahmenvorbereitung die spätere Feldplatzierung nicht blockiert."
+  },
+  "crewPreassemble": {
+    "label": "Rahmen und Softgoods vormontieren",
+    "noteWithSoftGoods": "Bereite PVC-Gate-Rahmen und Beachflags vor, bevor die Elemente aufs Feld getragen werden, damit der Platzierungsdurchgang auf Abstände fokussiert bleibt.",
+    "noteWithoutSoftGoods": "Bereite PVC-Gate-Rahmen vor, bevor die Elemente aufs Feld getragen werden, damit der Platzierungsdurchgang auf Abstände fokussiert bleibt."
+  },
+  "crewRiggingCheck": {
+    "label": "Rigging- und Ankercheck",
+    "note": "Prüfe Ankerpunkte, Überkopf-Leinen und den Freiraumplan, bevor schwerere Strukturen angehoben oder aufgehängt werden."
+  },
+  "obstacleNoteWithNumber": "{note} Nutze Hindernis #{number} auf der Karte als Platzierungsreferenz.",
+  "summaryHeavy": "{count, plural, one {1 aufwendigere Struktur sollte vor dem Standard-Gate-Durchgang platziert und gesichert werden.} other {{count} aufwendigere Strukturen sollten vor dem Standard-Gate-Durchgang platziert und gesichert werden.}} Die Zeitplanung geht von einer typischen Crew aus 2-3 Personen aus und kann bei Überkopf-Rigging oder langen Tragewegen steigen.",
+  "summaryLight": "Der größte Teil der Aufbauzeit entsteht durch Entladen, Vormontage der Rahmen und anschließend sauberes Platzieren der nummerierten Hindernislinie mit einer Crew aus 2-3 Personen.",
+  "crewAssumption": "Die Zeitplanung basiert auf einer typischen Crew aus 2-3 Personen und geht von einer Standard-Clubvorbereitung aus: entladen, bereitstellen, vormontieren, dann platzieren und sichern.",
+  "obstacleNotes": {
+    "gate": "Platziere und richte dieses Gate aus, sobald die Ankerstrukturen stehen.",
+    "tower": "Platziere und sichere dies zusammen mit den anderen aufwendigeren Strukturen. Towers brauchen stabile Füße, saubere vertikale Ausrichtung und genug Freiraum für gestapelte Öffnungen.",
+    "flag": "Nutze Flaggen nach dem Setzen der Haupthindernisse für finale Sichtbarkeit und Randdefinition.",
+    "cone": "Nutze Kegel im finalen Aufräumdurchgang für Begrenzungsmarkierung und Abstandschecks.",
+    "label": "Für dieses Element ist noch keine Aufbauanleitung verfügbar.",
+    "polyline": "Für dieses Element ist noch keine Aufbauanleitung verfügbar.",
+    "startfinish": "Setze dies zuerst, damit die Start- und Zielreferenz feststeht, bevor der restliche Kurs aufgebaut wird.",
+    "ladder": "Behandle dies als aufwendigeres Element. Plane zusätzliche Zeit ein, wenn Überkopf-Rigging oder ein sorgfältiger Aufhängepunkt nötig ist.",
+    "divegate": "Platziere und sichere dies früh. Dive Gates benötigen meist mehr Ausrichtung und Verankerung als ein Standard-Gate.",
+    "barrier": "Baue Barrieren auf, nachdem die Haupt-Gates und Hindernisse positioniert sind."
+  }
+}

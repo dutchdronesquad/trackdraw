@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "title": "Anmelden",
+    "description": "Melde dich mit einem einmaligen Magic Link bei TrackDraw an."
+  },
+  "goHome": "Zur Startseite",
+  "backToStudio": "Zurück zum Studio",
+  "pageTitle": "TrackDraw-Konto",
+  "heading": "Arbeite überall an deinen TrackDraw-Projekten weiter.",
+  "description": "Greife geräteübergreifend auf deine Layouts zu, verknüpfe geteilte Tracks mit deinem Konto und steige mit einem einfachen E-Mail-Link wieder ein.",
+  "featureDevices": {
+    "title": "Geräteübergreifend",
+    "description": "Setze die Arbeit auf einem anderen Gerät fort, ohne den Editor-Workflow zu ändern."
+  },
+  "featureOwnership": {
+    "title": "Besitz",
+    "description": "Gib geteilten Layouts und zukünftigen Kontofunktionen einen klaren Ort."
+  },
+  "featureMagicLink": {
+    "title": "Magic-Link-Fallback",
+    "description": "Nutze einen Passkey, wenn verfügbar, oder weiche auf einen Anmeldelink aus, der an deine E-Mail gesendet wird."
+  },
+  "signIn": {
+    "title": "Anmelden",
+    "description": "Melde dich auf diesem Gerät mit einem Passkey an oder nutze deine E-Mail, um einen Magic Link ohne Passwort zu erhalten.",
+    "checkInboxTitle": "Posteingang prüfen",
+    "checkInboxBody": "Dein einmaliger Anmeldelink wurde an {email} gesendet. Öffne ihn auf diesem oder einem anderen Gerät, um fortzufahren. Wenn er nicht bald erscheint, prüfe deinen Spam-Ordner.",
+    "howItWorksTitle": "So funktioniert die Anmeldung per Magic Link",
+    "howItWorksBody": "Jede E-Mail enthält einen einmaligen Anmeldelink. Kein Passwort-Setup: Link öffnen und TrackDraw meldet dich an.",
+    "useDifferentEmail": "Andere E-Mail verwenden",
+    "openingPasskey": "Passkey wird geöffnet…",
+    "signInPasskey": "Mit Passkey anmelden",
+    "or": "oder",
+    "emailLabel": "E-Mail",
+    "emailPlaceholder": "du@example.com",
+    "sendingLink": "Link wird gesendet…",
+    "sendLink": "Anmeldelink per E-Mail senden",
+    "noPasskeySupport": "Dieser Browser unterstützt hier derzeit keine Passkeys. Verwende daher den Magic-Link-Fallback.",
+    "passkeyNotFound": "Dieser Passkey konnte keinem TrackDraw-Konto zugeordnet werden. Versuche einen anderen Passkey oder nutze den Anmeldelink per E-Mail.",
+    "passkeyFailed": "Anmeldung mit Passkey fehlgeschlagen.",
+    "checkEmail": "Prüfe deine E-Mail auf einen Anmeldelink."
+  }
+}

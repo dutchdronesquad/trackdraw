@@ -1,5 +1,6 @@
 import "server-only";
 
+import * as de from "@lang/de";
 import * as en from "@lang/en";
 import i18nPolicy from "@lang/i18n-policy.json";
 import * as nl from "@lang/nl";
@@ -14,7 +15,7 @@ const englishOnlyNamespaceSet = new Set<MessageNamespace>(
 const catalogs: Record<
   SupportedLocale,
   Partial<Record<MessageNamespace, unknown>>
-> = { en, nl };
+> = { en, nl, de };
 
 const catalogNamespaces = Object.keys(en) as MessageNamespace[];
 const catalogCache = new Map<

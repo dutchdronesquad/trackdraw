@@ -1,0 +1,446 @@
+{
+  "toolbar": {
+    "homepageLabel": "Zur Startseite",
+    "projects": "Projekte",
+    "projectsTooltip": "Projekte verwalten",
+    "import": "Importieren",
+    "importTooltip": "JSON importieren",
+    "export": "Exportieren",
+    "exportTooltip": "Track exportieren"
+  },
+  "contextMenu": {
+    "quickActions": "Schnellaktionen",
+    "selectedCount": "{count, plural, one {1 ausgewählt} other {{count} ausgewählt}}",
+    "segmentSelected": "Segment ausgewählt",
+    "waypointSelected": "Wegpunkt ausgewählt",
+    "addWaypoint": "Wegpunkt hinzufügen",
+    "deleteWaypoint": "Wegpunkt löschen",
+    "arrange": "Anordnen",
+    "bringForward": "Nach vorne bringen",
+    "sendBackward": "Nach hinten senden",
+    "rotate": "Drehen",
+    "rotateLeft": "Nach links drehen",
+    "rotateRight": "Nach rechts drehen"
+  },
+  "canvasOverlay": {
+    "pathEditing": "Pfadbearbeitung",
+    "addPoints": "Punkte hinzufügen",
+    "finish": "abschließen",
+    "cancel": "abbrechen",
+    "connectEnds": "Klicken, um Enden zu verbinden",
+    "grid": "Raster {grid}",
+    "snapOn": "Snap aktiv: Raster, Objekte, Routen",
+    "snapOff": "Snap aus: freie Platzierung",
+    "midClick": "Mittelklick",
+    "rightClick": "Rechtsklick",
+    "pan": "verschieben",
+    "menu": "Menü",
+    "bypass": "umgehen",
+    "fitToWindow": "An Fenster anpassen",
+    "viewerPanZoom": "Ziehen zum Verschieben, Mausrad zum Zoomen"
+  },
+  "preview3dOverlay": {
+    "pause": "Pause",
+    "play": "Abspielen",
+    "speed": "Geschwindigkeit",
+    "toggleFpv": "FPV-Kameraverhalten umschalten",
+    "on": "Ein",
+    "off": "Aus",
+    "exit": "Beenden",
+    "flyThrough": "Fly-Through",
+    "dragWaypointMobile": "Ziehe einen Wegpunkt-Griff nach oben oder unten, um die Höhe anzupassen",
+    "dragWaypointDesktop": "Ziehe Wegpunkt-Griffe nach oben oder unten, um die Höhe anzupassen",
+    "dragDiveGateMobile": "Ring ziehen zum Drehen · orangefarbener Puck zum Neigen",
+    "dragDiveGateDesktop": "Ring ziehen zum Drehen · orangefarbenen Puck ziehen zum Neigen",
+    "dragRing": "Ring ziehen zum Drehen",
+    "orbitHint": "Orbit zum Prüfen · Scrollen zum Zoomen · Mitteltaste ziehen zum Verschieben",
+    "drawRoute": "Zeichne die Route in 2D, um den Fly-through zu aktivieren"
+  },
+  "statusBar": {
+    "snapActive": "Snap",
+    "snapOn": "Snap Ein",
+    "snapOff": "Snap Aus",
+    "snapIsOn": "Snap ist aktiv",
+    "snapIsOff": "Snap ist aus",
+    "snapOnDescription": "Punkte und Ziehvorgänge rasten an nahegelegenen Rasterpositionen, Objekten und Routenpunkten ein. Halte Alt beim Platzieren oder Ziehen, um es einmalig zu umgehen.",
+    "snapOffDescription": "Platzierung und Ziehen bleiben frei, bis du Snap wieder aktivierst.",
+    "selected": "{count} ausgewählt",
+    "grouped": "Gruppiert",
+    "groupNamed": "Gruppe: {name}",
+    "groups": "{count} Gruppen",
+    "devOn": "Dev Ein",
+    "dev": "Dev"
+  },
+  "accountMenu": {
+    "checkingAuth": "Authentifizierung prüfen…",
+    "signIn": "Anmelden",
+    "signedIn": "Angemeldet",
+    "noDisplayName": "Kein Anzeigename gesetzt",
+    "trackdrawAccount": "TrackDraw-Konto",
+    "profile": "Profil",
+    "dashboard": "Dashboard",
+    "signOut": "Abmelden",
+    "signingOut": "Abmeldung läuft…"
+  },
+  "common": {
+    "canvas2d": "2D-Canvas",
+    "preview3d": "3D-Vorschau"
+  },
+  "elementPlacementControl": {
+    "official": "Offiziell",
+    "typeLabel": "{tool}-Typ"
+  },
+  "header": {
+    "untitledTitle": "Unbenannt",
+    "statusFailed": "Fehlgeschlagen",
+    "statusPending": "Ausstehend",
+    "statusSyncing": "Synchronisiert",
+    "statusSynced": "Synchronisiert",
+    "expandSidebar": "Seitenleiste erweitern",
+    "collapseSidebar": "Seitenleiste einklappen",
+    "sharedReviewBadge": "Geteilte Review",
+    "makeEditableCopy": "Bearbeitbare Kopie erstellen",
+    "undo": "Rückgängig",
+    "redo": "Wiederholen",
+    "saveSnapshot": "Snapshot speichern",
+    "keyboardShortcuts": "Tastenkürzel",
+    "retrySync": "Kontosynchronisierung erneut versuchen ({status})",
+    "share": "Teilen",
+    "export": "Exportieren",
+    "openAppMenu": "App-Menü öffnen",
+    "hideObstacleNumbers": "Hindernisnummern ausblenden",
+    "showObstacleNumbers": "Hindernisnummern anzeigen"
+  },
+  "sharedHeader": {
+    "embedLabel": "Embed",
+    "sharedPreviewLabel": "Geteilte Vorschau"
+  },
+  "mobileAppMenu": {
+    "openAppMenu": "App-Menü öffnen",
+    "title": "TrackDraw",
+    "subtitle": "Projekte, Teilen, Konto und App-Einstellungen",
+    "signIn": "Anmelden",
+    "yourAccount": "Dein TrackDraw-Konto",
+    "trackdrawAccount": "TrackDraw-Konto",
+    "projectsSection": "Projekte",
+    "projectsLabel": "Projekte",
+    "projectsDescription": "Gespeicherte Projekte öffnen und verwalten",
+    "accountSection": "Konto",
+    "profileLabel": "Profil",
+    "profileDescription": "Profil, Sicherheit und API-Keys verwalten",
+    "dashboardLabel": "Dashboard",
+    "dashboardDescription": "Moderations- und Admin-Tools öffnen",
+    "shareSection": "Teilen und übertragen",
+    "shareLabel": "Teilen",
+    "shareDescription": "Schreibgeschützten Link für diesen Track veröffentlichen",
+    "importLabel": "Importieren",
+    "importDescription": "Eine JSON-Projektdatei einlesen",
+    "exportLabel": "Exportieren",
+    "exportDescription": "PNG, PDF, SVG oder JSON herunterladen",
+    "themeLabel": "Design",
+    "themeDescription": "Hell, dunkel oder System wechseln",
+    "signOut": "Abmelden",
+    "signingOut": "Abmeldung läuft…"
+  },
+  "layoutPresetPicker": {
+    "itemsCount": "{count} Elemente",
+    "renamePresetTooltip": "Preset umbenennen",
+    "deletePresetTooltip": "Preset löschen",
+    "signInTitle": "Anmelden, um Presets zu nutzen",
+    "signInDescription": "Presets werden in deinem Konto gespeichert, damit sie auf allen Geräten verfügbar sind.",
+    "noPresetsTitle": "Noch keine Presets",
+    "noPresetsDescription": "Wähle mehrere Formen auf dem Canvas aus und nutze <strong>Preset speichern</strong> im Inspector, um dein erstes Preset hier hinzuzufügen.",
+    "comingSoonTitle": "Demnächst",
+    "comingSoonDescription": "Von der Community geteilte Presets erscheinen hier. Speichere eigene Presets und teile sie mit der TrackDraw-Community.",
+    "myPresetsNav": "Meine Presets",
+    "storeNav": "Store",
+    "soonBadge": "Bald",
+    "mobileTitle": "Presets",
+    "mobileSubtitle": "Wähle ein Preset und tippe dann einmal auf das Canvas, um es zu platzieren.",
+    "placeFlowTitle": "Platzierungsflow",
+    "placeFlowDescription": "Wähle hier ein Preset und tippe dann auf das Canvas. Das Ergebnis wird sofort zu normalen bearbeitbaren Formen erweitert.",
+    "desktopTitle": "Layout-Presets",
+    "desktopSubtitle": "Wähle ein Preset, platziere es auf dem Canvas und bearbeite die eingefügten Formen anschließend normal.",
+    "tipText": "Wähle Formen auf dem Canvas aus und nutze dann <strong>Preset speichern</strong> im Inspector, um eigene Presets hinzuzufügen."
+  },
+  "starterOverlay": {
+    "dialog": {
+      "title": "Willkommen bei TrackDraw",
+      "mobileSubtitle": "Platziere ein paar Gates, zeichne die Route, prüfe 3D und teile, wenn der Track bereit ist.",
+      "studioEyebrow": "Studio",
+      "desktopDescription": "Entwirf das Layout in 2D, prüfe Höhen in 3D und teile einen schreibgeschützten Link, wenn der Track bereit ist.",
+      "dismissAria": "Startdialog schließen"
+    },
+    "hints": {
+      "gate": {
+        "badge": "Geführt",
+        "title": "Platziere dein erstes Gate",
+        "description": "Tippe oder klicke auf das Canvas, um das erste Gate zu setzen. Füge ein paar Gates hinzu, bevor du zu Pfad wechselst.",
+        "action": "Verstanden",
+        "dismiss": "Hinweis zur Gate-Platzierung schließen"
+      },
+      "path": {
+        "badge": "Geführt",
+        "title": "Als Nächstes: Route zeichnen",
+        "description": "Platziere zuerst ein paar Gates, wechsle dann zu Pfad und zeichne die Runde durch sie hindurch. Schließe die Route ab, bevor du 3D prüfst.",
+        "action": "Pfad starten",
+        "dismiss": "Pfad-Onboarding-Hinweis schließen"
+      },
+      "preview3d": {
+        "badge": "Vorschau",
+        "title": "3D funktioniert am besten nach der Route",
+        "description": "Die Hindernisplatzierung wird hier bereits angezeigt, aber die Route macht Höhen- und Fly-through-Review wirklich nützlich.",
+        "action": "Pfad in 2D zeichnen",
+        "dismiss": "3D-Vorschau-Onboarding schließen"
+      },
+      "review3d": {
+        "badge": "Geführt",
+        "title": "Jetzt in 3D prüfen",
+        "description": "Umlaufe die Route, prüfe Höhe und Abstände und teile oder exportiere, sobald sich das Layout richtig anfühlt.",
+        "action": "Als Nächstes teilen oder exportieren",
+        "dismiss": "3D-Review-Hinweis schließen"
+      },
+      "postPath": {
+        "badge": "Nächster Schritt",
+        "title": "Route bereit — in 3D prüfen",
+        "description": "Wechsle jetzt zum 3D-Tab, um die Route zu prüfen, bevor du weitere Hindernisplatzierungen verfeinerst.",
+        "action": "Zu 3D wechseln",
+        "dismiss": "Post-Pfad-3D-Hinweis schließen"
+      }
+    }
+  },
+  "starterFlow": {
+    "intro": {
+      "goodFirstSteps": "Gute erste Schritte"
+    },
+    "steps": {
+      "step1": {
+        "title": "Ein paar Gates und Hindernisse platzieren",
+        "description": "Starte klein, damit die Kursstruktur schnell sichtbar wird."
+      },
+      "step2": {
+        "title": "Rennpfad hindurch zeichnen",
+        "description": "Der Pfad macht das Layout meist schneller verständlich als reines Hindernis-Feintuning."
+      },
+      "step3": {
+        "title": "3D prüfen, dann exportieren oder teilen",
+        "description": "Prüfe die Route früh und sende einen schreibgeschützten Link, wenn sie bereit ist."
+      }
+    },
+    "starterLayouts": {
+      "label": "Starter-Layouts"
+    },
+    "guided": {
+      "label": "Geführter Start",
+      "title": "Mit Anleitung starten",
+      "descriptionDesktop": "Öffne ein leeres Feld mit ausgewähltem `Gate`, damit du zuerst den Kurs grob blocken kannst. Zeichne den Pfad, sobald die ersten Hindernisse stehen.",
+      "descriptionMobile": "Öffne ein leeres Feld mit ausgewähltem Gate. Zeichne den Pfad, sobald die ersten Hindernisse stehen."
+    },
+    "empty": {
+      "label": "Leerer Start",
+      "continue": "Mit leerem Canvas fortfahren",
+      "description": "Überspringe den geführten Start und öffne stattdessen das leere Studio."
+    },
+    "shortcuts": {
+      "gate": "platziert Gates",
+      "path": "startet die Route",
+      "finish": "schließt den Pfad ab"
+    }
+  },
+  "saveAsPresetDialog": {
+    "title": "Als Preset speichern",
+    "subtitle": "Gib deiner Auswahl einen Namen, damit du sie später erneut aus dem Preset-Picker platzieren kannst.",
+    "shapeCount": "{count, plural, one {# Form} other {# Formen}}",
+    "pathsExcluded": "{count, plural, one {1 Pfad wird ausgeschlossen} other {# Pfade werden ausgeschlossen}} — Presets erfassen nur Nicht-Pfad-Formen.",
+    "presetNameLabel": "Preset-Name",
+    "presetNamePlaceholder": "z. B. Timing-Gate-Setup",
+    "savePreset": "Preset speichern"
+  },
+  "mobilePanels": {
+    "viewControls": {
+      "mode": {
+        "current": "Aktueller Modus",
+        "viewModeLabel": "Ansichtsmodus"
+      },
+      "controls": {
+        "fitToField": {
+          "label": "Ans Feld anpassen",
+          "description": "Aktuelles Design in der Ansicht zentrieren"
+        },
+        "snap": {
+          "label": "Snap",
+          "description": "An nahegelegenen Rasterpositionen und Objekten einrasten"
+        },
+        "rulers": {
+          "label": "Lineale",
+          "description": "Obere und linke Hilfslinien auf Mobilgeräten anzeigen"
+        },
+        "obstacleNumbers": {
+          "label": "Hindernisnummern",
+          "description": "Pfadnummern auf Routenhindernissen anzeigen"
+        },
+        "flyThrough": {
+          "label": "Fly-through",
+          "descriptions": {
+            "available": "Race-Line-Vorschaukamera starten",
+            "readOnly": "Keine Route in diesem geteilten Track",
+            "draw": "Zeichne zuerst einen Pfad in 2D, um dies zu aktivieren"
+          }
+        },
+        "gizmo": {
+          "label": "Gizmo",
+          "description": "Achsenhilfe in der 3D-Vorschau anzeigen"
+        }
+      },
+      "readOnly": {
+        "review3dWithPath": "Schreibgeschützte 3D-Review mit verfügbarem Fly-through für diesen geteilten Track.",
+        "review3dNoPath": "Schreibgeschützte 3D-Review für diesen geteilten Track. Keine Route für Fly-through verfügbar.",
+        "review2dWithPath": "Schreibgeschützte 2D-Review für diesen geteilten Track. Wechsle zu 3D, um Fly-through zu nutzen.",
+        "review2dNoPath": "Schreibgeschützte 2D-Review für diesen geteilten Track."
+      },
+      "share": {
+        "sectionLabel": "Teilen",
+        "editableCopy": "Bearbeitbare Kopie",
+        "shareButton": "Teilen"
+      }
+    },
+    "multiSelect": {
+      "header": {
+        "title": "Mehrfachauswahl",
+        "lockedHint": "Gesperrte Auswahl. Vor dem Verschieben oder Skalieren entsperren.",
+        "tapHint": "Tippe Elemente an, um sie hinzuzufügen oder zu entfernen."
+      },
+      "fields": {
+        "groupNamePlaceholder": "Gruppenname"
+      },
+      "actions": {
+        "ungroup": "Gruppierung aufheben",
+        "group": "Gruppieren"
+      }
+    },
+    "pathBuilder": {
+      "header": {
+        "title": "Pfad-Builder"
+      },
+      "status": {
+        "loopConnected": "Loop verbunden · {count} Punkte · {length}",
+        "pointsCount": "{count} Punkte · {length}",
+        "tapToStart": "Tippe auf das Canvas, um den ersten Punkt zu setzen"
+      },
+      "actions": {
+        "undo": "Rückgängig",
+        "connectEnds": "Enden verbinden",
+        "finish": "Fertigstellen",
+        "cancel": "Abbrechen"
+      }
+    },
+    "editorPanels": {
+      "quickActions": {
+        "title": "Schnellaktionen",
+        "adjustTitle": "Anpassen",
+        "hints": {
+          "addPoint": "Punkt auf ausgewähltem Segment hinzufügen",
+          "deleteWaypoint": "Ausgewählten Wegpunkt löschen",
+          "resume": "Diesen Pfad fortsetzen oder anpassen",
+          "selectionStep": "{label} · {step} Schritt",
+          "selectionFallback": "Auswahl"
+        },
+        "actions": {
+          "addPoint": "Punkt hinzufügen",
+          "editPath": "Pfad bearbeiten",
+          "deletePoint": "Punkt löschen",
+          "adjust": "Anpassen",
+          "back": "Zurück"
+        },
+        "adjust": {
+          "step": "Schritt",
+          "left": "Links",
+          "up": "Hoch",
+          "down": "Runter",
+          "right": "Rechts"
+        }
+      },
+      "nav": {
+        "exit": "Beenden",
+        "select": "Auswählen",
+        "tools": "Werkzeuge",
+        "inspect": "Prüfen",
+        "view": "Ansicht",
+        "review": "Review",
+        "share": "Teilen",
+        "editCopy": "Kopie bearbeiten",
+        "preview": "Vorschau"
+      },
+      "inspector": {
+        "designSettingsHint": "Design-Einstellungen",
+        "title": "Inspector",
+        "subtitles": {
+          "empty": "Design-Einstellungen und platzierte Elemente",
+          "selected": "Auswahleigenschaften und Bearbeitung"
+        }
+      },
+      "tools": {
+        "title": "Werkzeuge",
+        "subtitles": {
+          "preview3d": "Projektaktionen für die aktuelle 3D-Sitzung",
+          "canvas2d": "Zeichen- und Bearbeitungswerkzeuge"
+        }
+      },
+      "view": {
+        "title": "Ansicht",
+        "subtitle": "Canvas-Modus, Hilfslinien und Viewport-Steuerung"
+      }
+    }
+  },
+  "viewModeSwitch": {
+    "ariaLabel": "Ansichtsmodus",
+    "canvas2dShort": "2D",
+    "preview3dShort": "3D",
+    "canvas2dDrawer": "2D-Canvas",
+    "preview3dDrawer": "3D-Vorschau"
+  },
+  "desktopInspectorPanel": {
+    "ariaLabel": "Inspector",
+    "expandTooltip": "Inspector erweitern",
+    "collapseTooltip": "Inspector einklappen",
+    "verticalLabel": "Inspector"
+  },
+  "shell": {
+    "untitledTrack": "Unbenannter Track",
+    "untitledFallback": "Unbenannt",
+    "exportFailed": "Export fehlgeschlagen",
+    "exportFailedNoProjectDescription": "TrackDraw konnte dieses lokale Projekt nicht laden. Öffne es zuerst oder wähle ein anderes gespeichertes Projekt.",
+    "exportSuccess": "Projekt-JSON exportiert",
+    "embeddedTrack": "Eingebetteter Track",
+    "sharedPreview": "Geteilte Vorschau",
+    "loading3d": "3D wird geladen…"
+  },
+  "languagePicker": {
+    "ariaLabel": "Sprache"
+  },
+  "performanceHud": {
+    "title": "Developer HUD",
+    "summary": "Werkzeug {tool} · {count} ausgewählt",
+    "reset": "Zurücksetzen",
+    "close": "Schließen",
+    "metrics": {
+      "canvas2d": "2D-Canvas",
+      "preview3d": "3D-Ansicht",
+      "inspector": "Inspector",
+      "autosave": "Autosave"
+    },
+    "levels": {
+      "noData": "Keine Daten",
+      "heavy": "Schwer",
+      "busy": "Ausgelastet",
+      "ok": "OK"
+    }
+  },
+  "textureDebug": {
+    "title": "Texture Debug",
+    "copyConfig": "Konfiguration kopieren",
+    "copied": "Kopiert",
+    "noPanels": "Noch keine Panels registriert",
+    "flip": "flip"
+  }
+}

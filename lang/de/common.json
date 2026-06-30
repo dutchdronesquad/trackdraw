@@ -1,0 +1,78 @@
+{
+  "actions": {
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "copy": "Kopieren",
+    "delete": "Löschen",
+    "duplicate": "Duplizieren",
+    "hide": "Ausblenden",
+    "lock": "Sperren",
+    "remove": "Entfernen",
+    "rename": "Umbenennen",
+    "reset": "Zurücksetzen",
+    "save": "Speichern",
+    "saveChanges": "Änderungen speichern",
+    "select": "Auswählen",
+    "undo": "Rückgängig",
+    "unlock": "Entsperren"
+  },
+  "labels": {
+    "account": "Konto",
+    "actions": "Aktionen",
+    "dashboard": "Dashboard",
+    "description": "Beschreibung",
+    "expires": "Läuft ab",
+    "language": "Sprache",
+    "name": "Name",
+    "owner": "Besitzer",
+    "profile": "Profil",
+    "project": "Projekt",
+    "role": "Rolle",
+    "status": "Status",
+    "theme": "Design",
+    "title": "Titel",
+    "type": "Typ",
+    "view": "Ansicht"
+  },
+  "dataTable": {
+    "filterPlaceholder": "{title} filtern...",
+    "noResults": "Keine Ergebnisse gefunden.",
+    "selectedCount": "{count} ausgewählt",
+    "clearFilters": "Filter löschen"
+  },
+  "measurementUnit": {
+    "metric": "Metrisch",
+    "imperial": "Imperial",
+    "presetAriaLabel": "Maßeinheiten-Voreinstellung: {current}. Zu {next} wechseln.",
+    "presetLabel": "Maßeinheiten-Voreinstellung: {current}",
+    "description": "Angezeigte Entfernungen und kompatible Eingaben umschalten."
+  },
+  "themeToggle": {
+    "labels": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    },
+    "ariaLabel": "Design: {theme}",
+    "tooltip": "Aktuell: {current}. Klicken für {next}."
+  },
+  "versionTag": {
+    "tooltip": {
+      "openReleaseNotes": "Release Notes auf GitHub öffnen",
+      "openReleaseNotesForCommit": "Commit {sha} · Release Notes auf GitHub öffnen"
+    }
+  },
+  "status": {
+    "active": "Aktiv",
+    "expired": "Abgelaufen",
+    "featured": "Hervorgehoben",
+    "hidden": "Ausgeblendet",
+    "listed": "Gelistet",
+    "loading": "Lädt",
+    "off": "Aus",
+    "on": "Ein",
+    "pending": "Ausstehend",
+    "published": "Veröffentlicht",
+    "revoked": "Widerrufen"
+  }
+}

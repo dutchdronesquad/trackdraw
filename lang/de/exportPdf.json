@@ -1,0 +1,66 @@
+{
+  "renderFailed": "PDF-Rendering fehlgeschlagen",
+  "untitledTrack": "Unbenannter Track",
+  "footer": {
+    "brand": "TrackDraw · {pageLabel}",
+    "pageOf": "Seite {pageNumber} von {totalPages}",
+    "pageOverview": "Übersicht",
+    "pageTrackMap": "Track-Karte",
+    "pageBuildSheet": "Aufbaublatt"
+  },
+  "sharedView": {
+    "title": "GETEILTE ANSICHT",
+    "scanToOpen": "Scannen, um den Track zu öffnen",
+    "scanDescription": "Öffnet den kanonischen TrackDraw-Share-Link für mobile Durchsicht und Briefing.",
+    "noShare": "Keine veröffentlichte Freigabe verknüpft",
+    "noShareDescription": "Veröffentliche dieses Projekt zuerst, wenn der Race Pack einen Scan-Code enthalten soll."
+  },
+  "cover": {
+    "title": "Race Pack",
+    "numberingIncluded": "Nummerierung enthalten",
+    "numberingHidden": "Nummerierung ausgeblendet",
+    "statusLabel": "Status",
+    "statusBuildable": "Baubar",
+    "statusShort": "Fehlt",
+    "missingLabel": "Fehlend",
+    "obstaclesLabel": "Hindernisse",
+    "intro": "Dieser Race Pack ist dafür gedacht, die Aufbaucrew am Renntag zu begleiten. Nutze die Karte als Platzierungsreferenz, die Materialliste als Bestandscheck und die Aufbaufolge als praktische Reihenfolge, um den Kurs aufs Feld zu bringen. Die Aufbauzeit basiert auf einer typischen Crew aus 2-3 Personen und einem Club-Workflow: entladen, bereitstellen, vormontieren, dann platzieren und sichern.",
+    "contentsTitle": "Inhalt",
+    "contentsItem1": "1. Track-Karte und Feldübersicht",
+    "contentsItem2": "2. Materialliste, Bestandscheck und Timingpunkte",
+    "contentsItem3": "3. Aufbaufolge und Hinweise für den Renntag",
+    "summaryTitle": "Zusammenfassung",
+    "summaryShortage": "{count, plural, one {Dieses Layout überschreitet aktuell den verfügbaren Bestand bei 1 Hindernistyp.} other {Dieses Layout überschreitet aktuell den verfügbaren Bestand bei {count} Hindernistypen.}} Behebe Engpässe, bevor du diesen Pack als finale Aufbau-Referenz nutzt.",
+    "summaryBuildable": "Dieses Layout ist mit dem gespeicherten Inventarprofil aktuell baubar. Nutze die folgenden Seiten als Aufbau- und Übergabereferenz für den Renntag."
+  },
+  "mapPage": {
+    "title": "Track-Karte",
+    "stockShort": "Bestand fehlt um {count}",
+    "stockBuildable": "Bestandscheck: baubar",
+    "numberingShown": "Nummerierung sichtbar",
+    "numberingHidden": "Nummerierung ausgeblendet"
+  },
+  "buildSheet": {
+    "title": "Aufbaublatt",
+    "materialListTitle": "Materialliste",
+    "obstacleColumn": "Hindernis",
+    "requiredColumn": "Benötigt",
+    "availableColumn": "Verfügbar",
+    "missingColumn": "Fehlend",
+    "timingPointsTitle": "Timingpunkte",
+    "noTimingPoints": "Es sind noch keine Timingpunkte zugewiesen. Markiere vor der Übergabe am Renntag im Inspector ein Gate als Start/Ziel oder Split.",
+    "setupSequenceTitle": "Aufbaufolge",
+    "setupIntro": "Geschätzter Aufbauaufwand: etwa {min}-{max} Minuten. Gesamtkomplexität: {complexity}. {summary}",
+    "crewStepLabel": "Crew-Schritt",
+    "groupedTaskLabel": "Gruppierte Track-Aufgabe",
+    "obstacleNumberSuffix": "{kind} · Hindernis #{number}",
+    "minutesSuffix": "{minutes} Min.",
+    "noSetupSequenceNumbering": "Noch keine Aufbaufolge verfügbar. Füge eine Route hinzu und platziere einige Hindernisse, um einen nützlicheren Pack zu erzeugen.",
+    "noSetupSequenceHidden": "Die Nummerierung ist in diesem Export ausgeblendet. Aktiviere Hindernisnummern, wenn die Aufbaufolge den Routenreferenzen folgen soll.",
+    "notesTitle": "Hinweise für den Renntag",
+    "note1": "Nutze die Kartenseite während Aufbau und Pilotenbriefing als Platzierungsreferenz.",
+    "note2": "Behandle den Bestandscheck als Quelle der Wahrheit, bevor du das Layout für den Aufbau freigibst.",
+    "note3": "Verankere zuerst den Kurs und sichere dann aufwendigere Strukturen wie Dive Gates und Ladders vor dem Standard-Gate-Durchgang.",
+    "note4": "Wenn sich Route oder Hinderniszahl ändern, erstelle den Race Pack neu, damit Karte, Bestandsliste und Aufbaufolge abgestimmt bleiben."
+  }
+}

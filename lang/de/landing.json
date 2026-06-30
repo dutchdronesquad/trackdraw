@@ -1,0 +1,267 @@
+{
+  "metadata": {
+    "homeTitle": "TrackDraw · Drone Race Track Builder",
+    "homeSocialTitle": "TrackDraw | Drone Race Track Builder",
+    "homeDescription": "TrackDraw ist ein Drone-Race-Track-Builder für FPV-Renndirektoren. Entwirf Tracks maßstabsgetreu, prüfe den Trackflow in 3D und teile schreibgeschützte Layouts für den Renntag.",
+    "homeSocialDescription": "Nutze TrackDraw als Drone-Race-Track-Builder, um FPV-Layouts maßstabsgetreu zu planen, den Trackflow in 3D zu prüfen und schreibgeschützte Pläne für den Renntag zu teilen.",
+    "studioTitle": "Drone Race Track Builder",
+    "studioSocialTitle": "TrackDraw | Drone Race Track Builder",
+    "studioDescription": "Öffne den TrackDraw Drone Race Track Builder, um FPV-Layouts maßstabsgetreu zu entwerfen, Gates und Hindernisse hinzuzufügen und den Trackflow in 3D zu prüfen.",
+    "studioSocialDescription": "Entwirf FPV-Drone-Race-Tracks maßstabsgetreu, füge Gates und Hindernisse hinzu und prüfe den Trackflow in 3D."
+  },
+  "header": {
+    "homeAriaLabel": "Startseite",
+    "homeTooltip": "Zur Haupt-Landingpage zurück",
+    "featuresNav": "Funktionen",
+    "featuresTooltip": "Zur Produktübersicht springen",
+    "galleryNav": "Galerie",
+    "galleryTooltip": "Öffentliche Community-Layouts ansehen",
+    "pricingNav": "Preise",
+    "pricingTooltip": "Pläne und Preise ansehen",
+    "faqNav": "FAQ",
+    "faqTooltip": "Häufige Fragen und Antworten lesen",
+    "logoAriaLabel": "TrackDraw",
+    "siteNavAriaLabel": "Startseite, Galerie und öffentliche Website-Bereiche",
+    "mobileNavAriaLabel": "Navigieren",
+    "themeAriaLabel": "Design",
+    "themeTooltip": "Design der öffentlichen Website wechseln.",
+    "languageAriaLabel": "Sprache",
+    "languageTooltip": "Sprache der Website wechseln.",
+    "openStudio": "Studio öffnen"
+  },
+  "hero": {
+    "eyebrow": "Gebaut für FPV-Renndirektoren",
+    "headingLine1": "Der Renntag beginnt",
+    "headingLine2": "mit einem Plan.",
+    "description": "TrackDraw ist ein browserbasierter Drone-Race-Track-Builder für FPV-Renndirektoren. Zeichne maßstabsgetreu in 2D, prüfe den Flow in 3D, teile ein schreibgeschütztes Layout mit Piloten und Crew und halte den Plan auf Desktop und Mobilgerät nutzbar.",
+    "ctaStudio": "Studio öffnen",
+    "ctaFeatures": "Funktionen ansehen",
+    "feature1": "Offizieller Hinderniskatalog",
+    "feature2": "Track-Abschnitte",
+    "feature3": "3D-Vorschau und Flythrough",
+    "feature4": "Race Pack PDF und SVG",
+    "videoAlt": "TrackDraw Drone Race Track Builder Demo",
+    "videoDescription": "Eine kurze Produktdemo, die zeigt, wie TrackDraw FPV-Renndirektoren hilft, ein Drone-Race-Track-Layout zu bauen, es in 3D zu prüfen und mit Piloten und Crew zu teilen."
+  },
+  "features": {
+    "sectionTitle": "Funktionen",
+    "sectionHeading": "Planen, prüfen und übergeben.",
+    "sectionDescription": "TrackDraw gibt FPV-Renndirektoren eine praktische Möglichkeit, Tracks sauber zu entwerfen: reale Feldmaße, das richtige Hindernisset und ein Workflow, der denselben Plan vom Layout über die Prüfung bis zur Übergabe ans Team trägt.",
+    "trueToScale": {
+      "title": "Maßstabsgetreues Canvas",
+      "description": "Lege die Feldgröße fest, platziere Elemente maßstabsgetreu und arbeite auf einem Raster, das zur realen Location passt."
+    },
+    "obstacleCatalog": {
+      "title": "Offizieller Hinderniskatalog",
+      "description": "Platziere offizielle MultiGP-Hindernisse (Gates, Flaggen, Ladders, Hurdles und Barrieren) mit realen Maßen und präzisem 3D-Rendering."
+    },
+    "preview3d": {
+      "title": "Realistische 3D-Vorschau",
+      "description": "Umlaufe den Track in 3D, füge der Rennlinie Höhe hinzu, prüfe Manöverkurven und fliege die Route ab, um Flow-Probleme vor dem Aufbautag zu erkennen."
+    },
+    "shareLinks": {
+      "title": "Geteilte Review-Links",
+      "description": "Teile ein schreibgeschütztes Layout mit Piloten und Crew. Gastlinks sind temporär; über Konten veröffentlichte Links bleiben aktiv, bis sie widerrufen werden."
+    },
+    "sections": {
+      "title": "Track-Abschnitte",
+      "description": "Speichere jede Canvas-Auswahl als benannten Abschnitt und platziere sie mit einem Klick erneut. Abschnitte synchronisieren sich geräteübergreifend mit deinem Konto."
+    },
+    "export": {
+      "title": "Race Pack und Export",
+      "description": "Erzeuge ein Pilotenbriefing-PDF mit Hindernis-Layout, Routenkarte und Aufbauhinweisen. Exportiere außerdem SVG, PNG und JSON aus demselben Design."
+    }
+  },
+  "workflow": {
+    "sectionEyebrow": "Im Detail",
+    "sectionHeading": "Vom ersten Layout bis zur Team-Übergabe.",
+    "sectionDescription": "Das Tool funktioniert am besten als Abfolge: Drone-Race-Track in 2D abbilden, in 3D prüfen, praktische Änderungen vornehmen, wenn die Realität sich ändert, und denselben Plan anschließend an Piloten und Crew übergeben.",
+    "layout": {
+      "title": "2D-Layout",
+      "subtitle": "Baue den Track auf einem Feld, das der Realität entspricht.",
+      "description": "Starte mit den Feldmaßen und platziere dann die Elemente, die Crews bereits kennen. So ist die erste Version des Plans sofort nützlich, statt nur eine grobe Skizze zu sein.",
+      "screenshotAlt": "TrackDraw 2D-Layout-Editor mit Hindernisbibliothek und Trackplan",
+      "bullets": [
+        "Maßstabsgetreue Feldmaße",
+        "Gates, Flaggen, Kegel, Startpads und größere Features",
+        "Rennlinie und Labels für klare Briefings"
+      ]
+    },
+    "fineTune": {
+      "title": "Feinabstimmung",
+      "subtitle": "Weiter bearbeiten, wenn die Location Änderungen erzwingt.",
+      "description": "Ein guter Plan lässt sich sauber ändern. Inspector-Steuerungen und mobilfreundliches Bearbeiten ermöglichen es, Objekteigenschaften anzupassen, Elemente zu verschieben und das Design nutzbar zu halten, selbst wenn die reale Location nicht statisch bleibt.",
+      "screenshotAlt": "TrackDraw Mobile-Editor mit geöffnetem Einstellungsbereich",
+      "bullets": [
+        "Inspector-Steuerungen für Maße, Rotation und Farbe",
+        "Touchfreundliches Bearbeiten auf Smartphones und Tablets",
+        "Schnelle Anpassungen ohne den Hauptplan zu verlassen"
+      ]
+    },
+    "preview": {
+      "title": "3D-Vorschau",
+      "subtitle": "Gehe den Track ab, bevor du ihn aufbaust.",
+      "description": "Ein Klick wechselt vom flachen 2D-Plan in eine Live-3D-Szene. Weise jedem Wegpunkt auf der Rennlinie eine Höhe zu, um das vollständige vertikale Profil zu modellieren. Erkenne gefährliche Anflüge, bevor ein einziger Hering im Boden steckt.",
+      "screenshotAlt": "TrackDraw 3D-Vorschau mit Trackflow und Höhenprofil",
+      "bullets": [
+        "Live-3D direkt aus deinem 2D-Design gerendert",
+        "Höhe pro Wegpunkt auf der Rennlinie",
+        "Höhendiagramm im Inspector-Panel"
+      ]
+    },
+    "handOff": {
+      "title": "Übergabe",
+      "subtitle": "Gib Piloten und Crew dieselbe aktuelle Version.",
+      "description": "Ein Plan zählt nur, wenn andere ihn öffnen können. Geteilte schreibgeschützte Links und Exporte machen aus dem Layout etwas, das Piloten prüfen, Crews drucken und Veranstalter später wiederverwenden können.",
+      "screenshotAlt": "Schreibgeschützte geteilte TrackDraw-Ansicht auf einem Mobilgerät",
+      "gallery": "Galerie zur Inspiration ansehen",
+      "bullets": [
+        "Schreibgeschützte Links, die auf jedem Gerät öffnen",
+        "PDF, PNG und SVG für Briefing- und Druck-Workflows",
+        "JSON-Export zum Archivieren und späteren Wiederverwenden von Layouts"
+      ]
+    }
+  },
+  "faq": {
+    "sectionTitle": "FAQ",
+    "sectionHeading": "Gut zu wissen.",
+    "items": [
+      {
+        "question": "Ist TrackDraw ein Drone Race Track Builder?",
+        "answer": "Ja. TrackDraw ist ein browserbasierter Drone Race Track Builder für FPV-Renndirektoren, die maßstabsgetreue Layouts, 3D-Review, Teilen und Export in einem Workflow brauchen."
+      },
+      {
+        "question": "Wie plant man einen FPV-Racetrack am besten?",
+        "answer": "Beginne mit den Feldmaßen, platziere die Hindernisse, die du wirklich hast, und prüfe die Route anschließend in 3D, bevor du den Plan teilst oder exportierst. TrackDraw ist genau um diese Abfolge herum gebaut."
+      },
+      {
+        "question": "Können Piloten das Layout ohne Konto ansehen?",
+        "answer": "Ja. Share-Links öffnen auf jedem Gerät im schreibgeschützten Modus, ohne Konto oder App. Sende den Link an Piloten, Judges oder Crew und alle sehen dieselbe veröffentlichte Version."
+      },
+      {
+        "question": "Funktioniert es auf einem Tablet an der Location?",
+        "answer": "Ja. Der Editor ist touchfreundlich, sodass schnelle Anpassungen auf Smartphone oder Tablet praktisch sind, wenn die reale Location eine Änderung erzwingt."
+      },
+      {
+        "question": "Welche Exportformate sind verfügbar?",
+        "answer": "PDF, PNG, SVG, JSON und ein cineastischer FPV-Videoexport. Das deckt gedruckte Race-Briefings, teilbare Visuals, wiederverwendbare Projektdateien und bewegungsbasierte Routenprüfung ab."
+      },
+      {
+        "question": "Brauche ich ein Konto, um loszulegen?",
+        "answer": "Nein. Öffne das Studio und beginne sofort mit dem Design. Ein Konto ergänzt Cloud-Speicher, dauerhafte veröffentlichte Links, Galerie-Veröffentlichung und Embeds."
+      },
+      {
+        "question": "Kann ich ein Layout für ein zukünftiges Event wiederverwenden?",
+        "answer": "Ja. Speichere Teile eines Layouts als benannte Presets und platziere sie mit einem Klick erneut. Um ein ganzes Projekt wiederzuverwenden, exportiere es als JSON und importiere es zu Beginn eines neuen Events."
+      },
+      {
+        "question": "Kann TrackDraw helfen, Routenprobleme vor dem Renntag zu erkennen?",
+        "answer": "Ja. Die 3D-Vorschau und Routenprüfungswarnungen helfen, ungleichmäßige Abstände, Rhythmusbrüche und Ausrichtungsprobleme sichtbar zu machen, bevor du das Layout teilst oder mit dem Aufbau beginnst."
+      }
+    ]
+  },
+  "pricing": {
+    "sectionEyebrow": "Pläne",
+    "sectionHeading": "Starte jetzt, registriere dich, wenn du mehr brauchst.",
+    "sectionDescription": "Beide aktuellen Optionen sind kostenlos. Der Gastmodus hält den Kerneditor ohne Einrichtung offen; Konten ergänzen dauerhafte Veröffentlichung, Embeds, Galerie-Listings und Projektkontinuität über Geräte hinweg.",
+    "guest": {
+      "badge": "Keine Registrierung",
+      "name": "Gast",
+      "price": "Kostenlos",
+      "description": "Am besten für schnelle Entwürfe, einmalige temporäre Review-Links und lokalen Export ohne Konto.",
+      "cta": "Studio öffnen"
+    },
+    "account": {
+      "badge": "Mit Konto",
+      "name": "Konto",
+      "price": "Kostenlos",
+      "description": "Am besten für dauerhafte veröffentlichte Links, Embeds, Galerie, Track-Abschnitte, REST-API-Zugriff und geräteübergreifende Projektkontinuität.",
+      "cta": "Konto erstellen"
+    },
+    "features": {
+      "fullDesigner": "Vollständiger Track-Designer",
+      "preview2d3d": "2D- und 3D-Vorschau",
+      "export": "PDF-, SVG-, PNG- und JSON-Export",
+      "shareLinks": "Share-Links",
+      "temporaryLinks": "Temporäre Links",
+      "publishedLinks": "Veröffentlicht bis zum Widerruf",
+      "shareLinksNote": "Gast-Share-Links sind temporär. Über Konten veröffentlichte Links bleiben bis zum Widerruf aktiv und können auch eingebettet werden.",
+      "embeds": "Website-Embeds",
+      "embedsDetail": "Per iframe auf jeder Website einbetten",
+      "gallery": "Galerie-Veröffentlichung",
+      "cloudProjects": "Cloud-synchronisierte Projekte",
+      "cloudProjectsDetail": "Projekte synchronisieren sich mit deinem Konto, damit du auf jedem Gerät weitermachen kannst — vom Desktop zuhause bis zum Mobilgerät an der Location.",
+      "sections": "Track-Abschnitte",
+      "sectionsDetail": "Speichere jede Canvas-Auswahl als benanntes Preset und platziere sie erneut aus dem Preset-Picker. Synchronisiert sich geräteübergreifend mit deinem Konto.",
+      "api": "REST-API-Zugriff",
+      "apiDetail": "Bearer-authentifiziert, API-Key-Verwaltung"
+    },
+    "categories": {
+      "design": "Design",
+      "sharing": "Teilen",
+      "projects": "Projekte",
+      "integration": "Integration"
+    }
+  },
+  "footer": {
+    "tagline": "Browserbasierter Track-Designer für FPV-Renndirektoren. Maßstabsgetreu zeichnen, in 3D prüfen, einen schreibgeschützten Link teilen und schnelle mobile Änderungen möglich halten.",
+    "productTitle": "Produkt",
+    "openStudio": "Studio öffnen",
+    "releaseNotes": "Release Notes",
+    "legalTitle": "Rechtliches",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Nutzungsbedingungen",
+    "communityTitle": "Community",
+    "github": "GitHub",
+    "dutchDroneSquad": "Dutch Drone Squad",
+    "reportIssue": "Problem melden",
+    "supportTitle": "Support",
+    "githubSponsors": "GitHub Sponsors",
+    "kofi": "Ko-fi",
+    "copyright": "© {year} Dutch Drone Squad. Open-Source-Projekt.",
+    "madeWithPre": "Gemacht mit",
+    "madeWithPost": "für die FPV-Community"
+  },
+  "gallery": {
+    "pageTitle": "FPV Drone Race Track Galerie",
+    "metaTitle": "TrackDraw | FPV Drone Race Track Galerie",
+    "metaDescription": "Durchstöbere FPV-Drone-Race-Track-Designs, die von der TrackDraw-Community geteilt wurden.",
+    "sectionLabel": "Galerie",
+    "headingLine1": "Entdecke Layouts, die",
+    "headingLine2": "dein nächstes Trackdesign prägen.",
+    "description": "Durchstöbere öffentliche TrackDraw-Layouts aus der Community zur Inspiration. Hervorgehobene Tracks zeigen die stärksten Beispiele zuerst, aktuelle Community-Uploads folgen direkt darunter.",
+    "grid": {
+      "recentlyAdded": "Neu hinzugefügt",
+      "fieldSizeNotSet": "Feldgröße nicht gesetzt",
+      "unknownPilot": "TrackDraw-Pilot",
+      "featuredBadge": "Hervorgehoben",
+      "byOwner": "von {owner}",
+      "obstacleCount": "{count} Hindernisse",
+      "published": "Veröffentlicht {date}",
+      "open": "Öffnen",
+      "emptyTitle": "Noch keine Tracks.",
+      "emptyDescription": "Galerie-Einträge erscheinen hier, sobald TrackDraw-Piloten sie öffentlich teilen.",
+      "featuredHeading": "Hervorgehoben",
+      "featuredSubtitle": "Handverlesene Layouts oben in der Galerie.",
+      "recentHeading": "Aktuell",
+      "recentSubtitle": "Neu gelistete Layouts aus der Community.",
+      "loadMore": "Mehr laden"
+    }
+  },
+  "notFound": {
+    "logoAriaLabel": "TrackDraw",
+    "badge": "Fehler 404",
+    "heading": "Diese Seite ist vom Kurs abgekommen",
+    "description": "Die angeforderte Seite existiert nicht, wurde möglicherweise verschoben oder hat am Gate falsch abgebogen. Der neueste Track oder die Route sollte in der Nähe sein.",
+    "whatToTry": "Was du versuchen kannst",
+    "step1": "Springe zurück ins Studio und öffne den neuesten Track.",
+    "step2": "Kehre zur Startseite zurück, wenn du über ein altes Lesezeichen gekommen bist.",
+    "step3": "Versuche die neueste Route erneut, falls die Seite kürzlich verschoben wurde.",
+    "goHome": "Zur Startseite",
+    "openStudio": "Studio öffnen"
+  },
+  "screenshotPlaceholder": {
+    "label": "Screenshot-Platzhalter",
+    "plannedAsset": "Geplantes Asset"
+  }
+}
