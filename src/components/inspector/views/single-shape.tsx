@@ -266,8 +266,8 @@ export function SingleInspectorView({
                 )}
                 <span className="truncate">
                   {shape.locked
-                    ? tCommon("actions.unlock")
-                    : tCommon("actions.lock")}
+                    ? t("actions.unlockShort")
+                    : t("actions.lockShort")}
                 </span>
               </button>
               <button
@@ -278,7 +278,7 @@ export function SingleInspectorView({
                 className={`${actionBtnClass} min-w-0`}
               >
                 <Copy className="size-3 shrink-0" />
-                <span className="truncate">{tCommon("actions.duplicate")}</span>
+                <span className="truncate">{t("actions.duplicateShort")}</span>
               </button>
               <button
                 type="button"
@@ -291,7 +291,7 @@ export function SingleInspectorView({
                 className={`${actionBtnClass} min-w-0 border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
               >
                 <Trash2 className="size-3 shrink-0" />
-                <span className="truncate">{tCommon("actions.delete")}</span>
+                <span className="truncate">{t("actions.deleteShort")}</span>
               </button>
             </div>
             {showPathActions ? (

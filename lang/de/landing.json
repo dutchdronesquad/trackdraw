@@ -33,7 +33,7 @@
     "eyebrow": "Gebaut für FPV-Renndirektoren",
     "headingLine1": "Renntag startet",
     "headingLine2": "mit einem Plan.",
-    "description": "TrackDraw ist ein browserbasierter Drone-Race-Track-Builder für FPV-Renndirektoren. Zeichne maßstabsgetreu in 2D, prüfe den Flow in 3D, teile ein schreibgeschütztes Layout mit Piloten und Crew und halte den Plan auf Desktop und Mobilgerät nutzbar.",
+    "description": "TrackDraw ist ein browserbasierter Drone-Race-Track-Builder für FPV-Renndirektoren. Zeichne maßstabsgetreu in 2D, prüfe den Flow in 3D und teile einen schreibgeschützten Plan mit Piloten und Crew.",
     "ctaStudio": "Studio öffnen",
     "ctaFeatures": "Funktionen ansehen",
     "feature1": "Offizieller Hinderniskatalog",
@@ -46,40 +46,40 @@
   "features": {
     "sectionTitle": "Funktionen",
     "sectionHeading": "Entwerfen, prüfen und teilen.",
-    "sectionDescription": "TrackDraw gibt FPV-Renndirektoren eine praktische Möglichkeit, Tracks sauber zu entwerfen: reale Feldmaße, die passenden Hindernisse und ein Workflow, der denselben Plan vom Layout über die Prüfung bis zur Übergabe ans Team trägt.",
+    "sectionDescription": "TrackDraw hilft FPV-Renndirektoren, Tracks mit realen Feldmaßen, passenden Hindernissen und einem Workflow bis zum Pilotenbriefing zu planen.",
     "trueToScale": {
       "title": "Maßstabsgetreues Canvas",
-      "description": "Lege die Feldgröße fest, platziere Elemente maßstabsgetreu und arbeite auf einem Raster, das zur realen Location passt."
+      "description": "Lege die Feldgröße fest, platziere Elemente maßstabsgetreu und arbeite auf einem Raster für die Location."
     },
     "obstacleCatalog": {
       "title": "Offizieller Hinderniskatalog",
-      "description": "Platziere offizielle MultiGP-Hindernisse (Gates, Flaggen, Ladders, Hurdles und Barrieren) mit realen Maßen und präzisem 3D-Rendering."
+      "description": "Platziere offizielle MultiGP-Hindernisse mit realen Maßen und präzisem 3D-Rendering."
     },
     "preview3d": {
       "title": "Realistische 3D-Vorschau",
-      "description": "Umlaufe den Track in 3D, füge der Rennlinie Höhe hinzu, prüfe Manöverkurven und fliege die Route ab, um Flow-Probleme vor dem Aufbautag zu erkennen."
+      "description": "Prüfe den Track in 3D, füge der Rennlinie Höhe hinzu und erkenne Flow-Probleme vor dem Aufbautag."
     },
     "shareLinks": {
       "title": "Geteilte Review-Links",
-      "description": "Teile ein schreibgeschütztes Layout mit Piloten und Crew. Gastlinks sind temporär; über Konten veröffentlichte Links bleiben aktiv, bis sie widerrufen werden."
+      "description": "Teile ein schreibgeschütztes Layout mit Piloten und Crew. Gastlinks sind temporär; Account-Links bleiben aktiv."
     },
     "sections": {
       "title": "Track-Abschnitte",
-      "description": "Speichere jede Canvas-Auswahl als benannten Abschnitt und platziere sie mit einem Klick erneut. Abschnitte synchronisieren sich geräteübergreifend mit deinem Konto."
+      "description": "Speichere Canvas-Auswahlen als Abschnitte und platziere sie erneut. Sie synchronisieren sich mit deinem Konto."
     },
     "export": {
       "title": "Race Pack und Export",
-      "description": "Erzeuge ein Pilotenbriefing-PDF mit Hindernis-Layout, Routenkarte und Aufbauhinweisen. Exportiere außerdem SVG, PNG und JSON aus demselben Design."
+      "description": "Erzeuge ein Pilotenbriefing-PDF mit Hindernissen, Routenkarte und Aufbauhinweisen. Exportiere auch SVG, PNG und JSON."
     }
   },
   "workflow": {
     "sectionEyebrow": "Im Detail",
-    "sectionHeading": "Vom ersten Layout bis zur Team-Übergabe.",
-    "sectionDescription": "Das Tool funktioniert am besten als Abfolge: Drone-Race-Track in 2D abbilden, in 3D prüfen, praktische Änderungen vornehmen, wenn die Realität sich ändert, und denselben Plan anschließend an Piloten und Crew übergeben.",
+    "sectionHeading": "Vom ersten Layout bis zum Pilotenbriefing.",
+    "sectionDescription": "Bilde den Drone-Race-Track in 2D ab, prüfe ihn in 3D, passe ihn bei Änderungen vor Ort an und gib denselben Plan an Piloten und Crew weiter.",
     "layout": {
       "title": "2D-Layout",
       "subtitle": "Baue den Track auf einem Feld, das der Realität entspricht.",
-      "description": "Starte mit den Feldmaßen und platziere dann die Elemente, die Crews bereits kennen. So ist die erste Version des Plans sofort nützlich, statt nur eine grobe Skizze zu sein.",
+      "description": "Starte mit den Feldmaßen und platziere bekannte Elemente. So ist die erste Version sofort nützlich, statt nur eine grobe Skizze zu sein.",
       "screenshotAlt": "TrackDraw 2D-Layout-Editor mit Hindernisbibliothek und Trackplan",
       "bullets": [
         "Maßstabsgetreue Feldmaße",
@@ -90,7 +90,7 @@
     "fineTune": {
       "title": "Feinabstimmung",
       "subtitle": "Weiter bearbeiten, wenn die Location Änderungen erzwingt.",
-      "description": "Ein guter Plan lässt sich sauber ändern. Inspector-Steuerungen und mobilfreundliches Bearbeiten ermöglichen es, Objekteigenschaften anzupassen, Elemente zu verschieben und das Design nutzbar zu halten, selbst wenn die reale Location nicht statisch bleibt.",
+      "description": "Ein guter Plan lässt sich schnell ändern. Inspector-Steuerungen und mobile Bearbeitung helfen, Eigenschaften anzupassen, Elemente zu verschieben und das Design nutzbar zu halten.",
       "screenshotAlt": "TrackDraw Mobile-Editor mit geöffnetem Einstellungsbereich",
       "bullets": [
         "Inspector-Steuerungen für Maße, Rotation und Farbe",
@@ -101,7 +101,7 @@
     "preview": {
       "title": "3D-Vorschau",
       "subtitle": "Gehe den Track ab, bevor du ihn aufbaust.",
-      "description": "Ein Klick wechselt vom flachen 2D-Plan in eine Live-3D-Szene. Weise jedem Wegpunkt auf der Rennlinie eine Höhe zu, um das vollständige vertikale Profil zu modellieren. Erkenne gefährliche Anflüge, bevor ein einziger Hering im Boden steckt.",
+      "description": "Wechsle mit einem Klick von 2D zu Live-3D. Gib Wegpunkten Höhe auf der Rennlinie und erkenne riskante Anflüge vor dem Aufbau.",
       "screenshotAlt": "TrackDraw 3D-Vorschau mit Trackflow und Höhenprofil",
       "bullets": [
         "Live-3D direkt aus deinem 2D-Design gerendert",
@@ -112,7 +112,7 @@
     "handOff": {
       "title": "Übergabe",
       "subtitle": "Gib Piloten und Crew dieselbe aktuelle Version.",
-      "description": "Ein Plan zählt nur, wenn andere ihn öffnen können. Geteilte schreibgeschützte Links und Exporte machen aus dem Layout etwas, das Piloten prüfen, Crews drucken und Veranstalter später wiederverwenden können.",
+      "description": "Ein Plan zählt erst, wenn andere ihn öffnen können. Schreibgeschützte Links und Exporte geben Piloten, Crew und Veranstaltern dieselbe aktuelle Version.",
       "screenshotAlt": "Schreibgeschützte geteilte TrackDraw-Ansicht auf einem Mobilgerät",
       "gallery": "Galerie zur Inspiration ansehen",
       "bullets": [
@@ -163,7 +163,7 @@
   "pricing": {
     "sectionEyebrow": "Pläne",
     "sectionHeading": "Starte jetzt, registriere dich, wenn du mehr brauchst.",
-    "sectionDescription": "Beide aktuellen Optionen sind kostenlos. Der Gastmodus hält den Kerneditor ohne Einrichtung offen; Konten ergänzen dauerhafte Veröffentlichung, Embeds, Galerie-Listings und Projektkontinuität über Geräte hinweg.",
+    "sectionDescription": "Beide Optionen sind kostenlos. Gäste können sofort loslegen; Konten ergänzen dauerhafte Veröffentlichung, Embeds, Galerie und geräteübergreifende Synchronisierung.",
     "guest": {
       "badge": "Keine Registrierung",
       "name": "Gast",
@@ -175,7 +175,7 @@
       "badge": "Mit Konto",
       "name": "Konto",
       "price": "Kostenlos",
-      "description": "Am besten für dauerhafte veröffentlichte Links, Embeds, Galerie, Track-Abschnitte, REST-API-Zugriff und geräteübergreifende Projektkontinuität.",
+      "description": "Für dauerhafte Links, Embeds, Galerie, Abschnitte, REST-API und Synchronisierung.",
       "cta": "Konto erstellen"
     },
     "features": {
@@ -204,7 +204,7 @@
     }
   },
   "footer": {
-    "tagline": "Browserbasierter Track-Designer für FPV-Renndirektoren. Maßstabsgetreu zeichnen, in 3D prüfen, einen schreibgeschützten Link teilen und schnelle mobile Änderungen möglich halten.",
+    "tagline": "Browserbasierter Track-Designer für FPV-Renndirektoren. Maßstabsgetreu zeichnen, in 3D prüfen, Link teilen und mobil schnell ändern.",
     "productTitle": "Produkt",
     "openStudio": "Studio öffnen",
     "releaseNotes": "Release Notes",
@@ -229,7 +229,7 @@
     "sectionLabel": "Galerie",
     "headingLine1": "Entdecke Layouts, die",
     "headingLine2": "dein nächstes Trackdesign prägen.",
-    "description": "Durchstöbere öffentliche TrackDraw-Layouts aus der Community zur Inspiration. Hervorgehobene Tracks zeigen die stärksten Beispiele zuerst, aktuelle Community-Uploads folgen direkt darunter.",
+    "description": "Durchstöbere öffentliche TrackDraw-Layouts aus der Community. Hervorgehobene Tracks stehen oben, aktuelle Uploads direkt darunter.",
     "grid": {
       "recentlyAdded": "Neu hinzugefügt",
       "fieldSizeNotSet": "Feldgröße nicht gesetzt",

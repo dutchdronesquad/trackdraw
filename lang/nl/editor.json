@@ -314,7 +314,11 @@
         "groupNamePlaceholder": "Groepsnaam"
       },
       "actions": {
-        "ungroup": "Groep opheffen",
+        "duplicate": "Kopieer",
+        "lock": "Vastzetten",
+        "unlock": "Losmaken",
+        "delete": "Verwijder",
+        "ungroup": "Opheffen",
         "group": "Groeperen"
       }
     },
@@ -348,7 +352,11 @@
         "actions": {
           "addPoint": "Waypoint toevoegen",
           "editPath": "Path bewerken",
-          "deletePoint": "Waypoint verwijderen",
+          "duplicate": "Kopieer",
+          "lock": "Vastzetten",
+          "unlock": "Losmaken",
+          "delete": "Verwijder",
+          "deletePoint": "Waypoint wissen",
           "adjust": "Aanpassen",
           "back": "Terug"
         },

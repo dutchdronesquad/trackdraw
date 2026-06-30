@@ -214,7 +214,7 @@ export function MultiInspectorView({
                 className={`${inspectorActionBtnClass} min-w-0 flex-1`}
               >
                 <Copy className="size-3 shrink-0" />
-                <span className="truncate">{tCommon("actions.duplicate")}</span>
+                <span className="truncate">{t("actions.duplicateShort")}</span>
               </button>
               <button
                 type="button"
@@ -227,7 +227,7 @@ export function MultiInspectorView({
                 className={`${inspectorActionBtnDangerClass} min-w-0 flex-1`}
               >
                 <Trash2 className="size-3 shrink-0" />
-                <span className="truncate">{tCommon("actions.delete")}</span>
+                <span className="truncate">{t("actions.deleteShort")}</span>
               </button>
             </div>
             {/* Row 2: secondary actions (Join + Save preset) */}

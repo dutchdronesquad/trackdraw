@@ -314,7 +314,11 @@
         "groupNamePlaceholder": "Gruppenname"
       },
       "actions": {
-        "ungroup": "Gruppierung aufheben",
+        "duplicate": "Kopieren",
+        "lock": "Sperren",
+        "unlock": "Freigeben",
+        "delete": "Löschen",
+        "ungroup": "Aufheben",
         "group": "Gruppieren"
       }
     },
@@ -348,6 +352,10 @@
         "actions": {
           "addPoint": "Punkt hinzufügen",
           "editPath": "Pfad bearbeiten",
+          "duplicate": "Kopieren",
+          "lock": "Sperren",
+          "unlock": "Freigeben",
+          "delete": "Löschen",
           "deletePoint": "Punkt löschen",
           "adjust": "Anpassen",
           "back": "Zurück"

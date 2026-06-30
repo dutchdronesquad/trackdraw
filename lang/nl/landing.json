@@ -33,7 +33,7 @@
     "eyebrow": "Gemaakt voor FPV-raceorganisatoren",
     "headingLine1": "Racedag begint",
     "headingLine2": "met een plan.",
-    "description": "TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren. Teken op schaal in 2D, bekijk de flow in 3D, deel een alleen-lezen lay-out met piloten en crew, en houd het plan bruikbaar op desktop en mobiel.",
+    "description": "TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren. Teken op schaal in 2D, check de flow in 3D en deel een alleen-lezen plan met piloten en crew.",
     "ctaStudio": "Studio openen",
     "ctaFeatures": "Bekijk de functies",
     "feature1": "Officiële obstakelcatalogus",
@@ -46,40 +46,40 @@
   "features": {
     "sectionTitle": "Functies",
     "sectionHeading": "Ontwerp, controleer en deel.",
-    "sectionDescription": "TrackDraw geeft FPV-raceorganisatoren een praktische manier om tracks goed te ontwerpen: echte veldafmetingen, de juiste obstakelset en één workflow die hetzelfde plan van lay-out naar review naar teamoverdracht draagt.",
+    "sectionDescription": "TrackDraw helpt FPV-raceorganisatoren tracks strak te plannen met echte veldafmetingen, de juiste obstakels en één workflow van lay-out tot pilot briefing.",
     "trueToScale": {
       "title": "Canvas op ware schaal",
-      "description": "Stel de veldgrootte in, plaats elementen op schaal en werk op een raster dat overeenkomt met de echte locatie."
+      "description": "Stel de veldgrootte in, plaats elementen op schaal en werk op een raster dat bij de locatie past."
     },
     "obstacleCatalog": {
       "title": "Officiële obstakelcatalogus",
-      "description": "Plaats officiële MultiGP-obstakels (gates, flags, ladders, hurdles en barriers) met echte afmetingen en nauwkeurige 3D-rendering."
+      "description": "Plaats officiële MultiGP-obstakels met echte afmetingen en nauwkeurige 3D-rendering."
     },
     "preview3d": {
       "title": "Realistische 3D-preview",
-      "description": "Orbiteer in 3D, voeg hoogte toe aan de race line, bekijk manoeuvrecurves en vlieg door de route om flowproblemen te ontdekken voor de bouwdag."
+      "description": "Bekijk de track in 3D, voeg hoogte toe aan de race line en ontdek flowproblemen voor de bouwdag."
     },
     "shareLinks": {
       "title": "Gedeelde reviewlinks",
-      "description": "Deel een alleen-lezen lay-out met piloten en crew. Gastlinks zijn tijdelijk; account-gepubliceerde links blijven actief totdat ze worden ingetrokken."
+      "description": "Deel een alleen-lezen lay-out met piloten en crew. Gastlinks zijn tijdelijk; accountlinks blijven actief."
     },
     "sections": {
       "title": "Tracksecties",
-      "description": "Sla elke canvasselectie op als een benoemde sectie en plaats hem opnieuw met één klik. Secties synchroniseren met je account op alle apparaten."
+      "description": "Sla canvasselecties op als secties en plaats ze opnieuw met één klik. Ze synchroniseren met je account."
     },
     "export": {
       "title": "Race Pack en export",
-      "description": "Genereer een pilotenbriefing-PDF met obstakels, routekaart en opstelnotities. Exporteer ook SVG, PNG en JSON vanuit hetzelfde ontwerp."
+      "description": "Genereer een pilot briefing-PDF met obstakels, routekaart en opstelnotities. Exporteer ook SVG, PNG en JSON."
     }
   },
   "workflow": {
     "sectionEyebrow": "Verdieping",
-    "sectionHeading": "Van eerste lay-out tot teamoverdracht.",
-    "sectionDescription": "Het gereedschap werkt het beste als een reeks: breng de drone race track in 2D in kaart, controleer in 3D, maak praktische aanpassingen als de locatie verandert en geef hetzelfde plan door aan piloten en crew.",
+    "sectionHeading": "Van eerste lay-out tot pilot briefing.",
+    "sectionDescription": "Breng de drone race track in 2D in kaart, controleer de flow in 3D, pas snel aan als de locatie verandert en deel hetzelfde plan met piloten, crew en organisatie.",
     "layout": {
       "title": "2D-lay-out",
       "subtitle": "Bouw de track op een veld dat overeenkomt met de realiteit.",
-      "description": "Begin met de veldafmetingen en plaats de elementen die crews al herkennen. Dat maakt de eerste versie van het plan direct bruikbaar, in plaats van alleen maar een ruwe schets.",
+      "description": "Begin met de veldafmetingen en plaats herkenbare elementen. Zo wordt de eerste versie direct bruikbaar, niet alleen een ruwe schets.",
       "screenshotAlt": "TrackDraw 2D-layouteditor met obstacle library en trackplan",
       "bullets": [
         "Veldafmetingen op ware schaal",
@@ -90,7 +90,7 @@
     "fineTune": {
       "title": "Verfijnen",
       "subtitle": "Blijf bewerken wanneer de locatie een wijziging vereist.",
-      "description": "Een goed plan past zich netjes aan. Inspector-bedieningselementen en mobielvriendelijk bewerken maken het mogelijk om objecteigenschappen aan te passen, items te herpositioneren en het ontwerp bruikbaar te houden, zelfs wanneer de echte locatie weigert statisch te blijven.",
+      "description": "Een goed plan past mee. Inspector-controls en mobiel bewerken laten je eigenschappen aanpassen, items verplaatsen en het ontwerp bruikbaar houden als de locatie verandert.",
       "screenshotAlt": "TrackDraw mobiele editor met instellingenpaneel geopend",
       "bullets": [
         "Inspector-bedieningselementen voor afmetingen, rotatie en kleur",
@@ -101,7 +101,7 @@
     "preview": {
       "title": "3D-preview",
       "subtitle": "Loop door de track voor je hem bouwt.",
-      "description": "Eén klik schakelt van het platte 2D-plan naar een live 3D-scène. Wijs hoogte toe aan elk waypoint op de race line om het volledige verticale profiel te modelleren. Ontdek gevaarlijke benaderingen voordat er één enkele paal in de grond staat.",
+      "description": "Schakel met één klik van 2D naar live 3D. Geef waypoints hoogte op de race line en ontdek riskante aanvliegroutes voordat er iets in de grond staat.",
       "screenshotAlt": "TrackDraw 3D-preview met track flow en hoogte",
       "bullets": [
         "Live 3D rechtstreeks gerenderd vanuit je 2D-ontwerp",
@@ -112,7 +112,7 @@
     "handOff": {
       "title": "Overdracht",
       "subtitle": "Geef piloten en crew dezelfde actuele versie.",
-      "description": "Een plan is alleen waardevol als andere mensen het kunnen openen. Alleen-lezen links en exports maken de lay-out tot iets wat piloten kunnen bekijken, crew kan afdrukken en organisatoren later opnieuw kunnen gebruiken.",
+      "description": "Een plan werkt pas als iedereen het kan openen. Alleen-lezen links en exports geven piloten, crew en organisatie dezelfde actuele versie.",
       "screenshotAlt": "TrackDraw alleen-lezen gedeelde weergave geopend op mobiel",
       "gallery": "Bekijk de galerij voor inspiratie",
       "bullets": [
@@ -163,7 +163,7 @@
   "pricing": {
     "sectionEyebrow": "Plannen",
     "sectionHeading": "Begin nu, meld je aan wanneer je meer nodig hebt.",
-    "sectionDescription": "Beide huidige opties zijn gratis. Gastmodus houdt de kerneditor open zonder installatie; accounts voegen duurzame publicatie, embeds, galerij en projectcontinuïteit op apparaten toe.",
+    "sectionDescription": "Beide opties zijn gratis. Gastmodus houdt de kerneditor direct beschikbaar; accounts voegen publicatie, embeds, galerij en synchronisatie toe.",
     "guest": {
       "badge": "Geen aanmelding",
       "name": "Gast",
@@ -175,7 +175,7 @@
       "badge": "Met account",
       "name": "Account",
       "price": "Gratis",
-      "description": "Ideaal voor duurzame gepubliceerde links, embeds, galerij, tracksecties, REST API-toegang en cross-device projectcontinuïteit.",
+      "description": "Ideaal voor blijvende links, embeds, galerijpublicatie, tracksecties, REST API en synchronisatie.",
       "cta": "Account aanmaken"
     },
     "features": {
@@ -204,7 +204,7 @@
     }
   },
   "footer": {
-    "tagline": "Browsergebaseerde track designer voor FPV-raceorganisatoren. Teken op schaal, preview in 3D, deel een alleen-lezen link en houd snelle bewerkingen gaande op mobiel.",
+    "tagline": "Browsergebaseerde track designer voor FPV-raceorganisatoren. Teken op schaal, preview in 3D, deel een alleen-lezen link en bewerk snel op mobiel.",
     "productTitle": "Product",
     "openStudio": "Studio openen",
     "releaseNotes": "Releasenotes",
@@ -229,7 +229,7 @@
     "sectionLabel": "Galerij",
     "headingLine1": "Ontdek lay-outs die",
     "headingLine2": "je volgende trackontwerp vormgeven.",
-    "description": "Blader door publieke TrackDraw-lay-outs gedeeld door de community voor inspiratie. Uitgelichte tracks tonen de sterkste voorbeelden eerst, met recente community-uploads direct daarna.",
+    "description": "Blader door publieke TrackDraw-lay-outs uit de community. Uitgelichte tracks staan bovenaan, met recente uploads direct daarna.",
     "grid": {
       "recentlyAdded": "Recent toegevoegd",
       "fieldSizeNotSet": "Veldgrootte niet ingesteld",
