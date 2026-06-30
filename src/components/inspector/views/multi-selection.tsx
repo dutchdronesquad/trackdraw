@@ -209,12 +209,14 @@ export function MultiInspectorView({
               <button
                 type="button"
                 onClick={() => duplicateShapes(selection)}
-                title={t("actions.duplicate")}
-                aria-label={t("actions.duplicate")}
+                title={tCommon("actions.duplicate")}
+                aria-label={tCommon("actions.duplicate")}
                 className={`${inspectorActionBtnClass} min-w-0 flex-1`}
               >
                 <Copy className="size-3 shrink-0" />
-                <span className="truncate">{t("actions.duplicate")}</span>
+                <span className="truncate">
+                  {tCommon("actions.duplicate")}
+                </span>
               </button>
               <button
                 type="button"
@@ -222,12 +224,12 @@ export function MultiInspectorView({
                   removeShapes(selection);
                   setSelection([]);
                 }}
-                title={t("actions.delete")}
-                aria-label={t("actions.delete")}
+                title={tCommon("actions.delete")}
+                aria-label={tCommon("actions.delete")}
                 className={`${inspectorActionBtnDangerClass} min-w-0 flex-1`}
               >
                 <Trash2 className="size-3 shrink-0" />
-                <span className="truncate">{t("actions.delete")}</span>
+                <span className="truncate">{tCommon("actions.delete")}</span>
               </button>
             </div>
             {/* Row 2: secondary actions (Join + Save preset) */}

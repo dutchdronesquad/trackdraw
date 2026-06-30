@@ -163,6 +163,7 @@ function MobileQuickActionsOverlay({
 }) {
   const [expanded, setExpanded] = useState(false);
   const t = useTranslations("editor.mobilePanels.editorPanels");
+  const tCommon = useTranslations("common");
 
   return (
     <motion.div
@@ -222,7 +223,7 @@ function MobileQuickActionsOverlay({
               className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
             >
               <Copy className="size-4" />
-              <span>{t("quickActions.actions.duplicate")}</span>
+              <span>{tCommon("actions.duplicate")}</span>
             </button>
           )}
           <button
@@ -237,8 +238,8 @@ function MobileQuickActionsOverlay({
             )}
             <span>
               {selectionLocked
-                ? t("quickActions.actions.unlock")
-                : t("quickActions.actions.lock")}
+                ? tCommon("actions.unlock")
+                : tCommon("actions.lock")}
             </span>
           </button>
           <button
@@ -251,7 +252,7 @@ function MobileQuickActionsOverlay({
             <span>
               {canDeleteWaypoint
                 ? t("quickActions.actions.deletePoint")
-                : t("quickActions.actions.delete")}
+                : tCommon("actions.delete")}
             </span>
           </button>
           <button

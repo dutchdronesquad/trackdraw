@@ -141,6 +141,7 @@ export function MapReferenceDialog({
   onConfirm: (reference: MapReference) => void;
 }) {
   const t = useTranslations("inspector.mapReference");
+  const tCommon = useTranslations("common");
   const isDesktop = useIsDesktopInspector();
   const [center, setCenter] = useState<LatLng>({
     lat: initialReference?.centerLat ?? 52.1326,
@@ -700,7 +701,7 @@ export function MapReferenceDialog({
         onClick={() => onOpenChange(false)}
         className="h-8 cursor-pointer rounded-lg px-3 shadow-none"
       >
-        {t("cancel")}
+        {tCommon("actions.cancel")}
       </Button>
       <Button
         type="button"
@@ -769,7 +770,7 @@ export function MapReferenceDialog({
             type="button"
             onClick={() => onOpenChange(false)}
             className="text-muted-foreground/75 hover:text-foreground hover:bg-muted cursor-pointer rounded-full p-1.5 transition-colors"
-            aria-label={t("close")}
+            aria-label={tCommon("actions.close")}
           >
             <X className="size-4" />
           </button>

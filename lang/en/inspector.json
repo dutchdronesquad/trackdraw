@@ -9,11 +9,7 @@
     "body": "Select one or more items on the canvas to edit object properties here."
   },
   "actions": {
-    "lock": "Lock",
-    "unlock": "Unlock",
     "group": "Group",
-    "duplicate": "Duplicate",
-    "delete": "Delete",
     "continueEditing": "Continue",
     "connectEnds": "Connect",
     "ungroup": "Ungroup",
@@ -289,7 +285,6 @@
   "mapReference": {
     "title": "Map reference",
     "subtitle": "Choose the field center and align the field footprint.",
-    "close": "Close",
     "searchPlaceholder": "Search place or paste coordinates",
     "searching": "Searching",
     "enterHint": "Enter",
@@ -312,7 +307,6 @@
     "center": "Center",
     "useLocation": "Use location",
     "locating": "Locating",
-    "cancel": "Cancel",
     "saveMap": "Save map",
     "locationUnavailable": "Location is unavailable in this browser.",
     "locationPermissionDenied": "Location permission was denied.",

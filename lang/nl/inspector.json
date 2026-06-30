@@ -9,11 +9,7 @@
     "body": "Selecteer een of meer items op het canvas om hun eigenschappen te bewerken."
   },
   "actions": {
-    "lock": "Vergrendel",
-    "unlock": "Ontgrendel",
     "group": "Groepeer",
-    "duplicate": "Dupliceer",
-    "delete": "Verwijder",
     "continueEditing": "Doorgaan",
     "connectEnds": "Verbinden",
     "ungroup": "Opheffen",
@@ -289,7 +285,6 @@
   "mapReference": {
     "title": "Kaartverwijzing",
     "subtitle": "Kies het veldcentrum en lijn de veldvoetafdruk uit.",
-    "close": "Sluiten",
     "searchPlaceholder": "Zoek plaats of plak coördinaten",
     "searching": "Zoeken",
     "enterHint": "Enter",
@@ -312,7 +307,6 @@
     "center": "Centrum",
     "useLocation": "Locatie gebruiken",
     "locating": "Locatie bepalen",
-    "cancel": "Annuleren",
     "saveMap": "Kaart opslaan",
     "locationUnavailable": "Locatie is niet beschikbaar in deze browser.",
     "locationPermissionDenied": "Locatietoestemming is geweigerd.",

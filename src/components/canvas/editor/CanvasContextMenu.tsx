@@ -85,6 +85,7 @@ export function CanvasContextMenuContent({
 }: CanvasContextMenuContentProps) {
   const t = useTranslations("editor.contextMenu");
   const tActions = useTranslations("inspector.actions");
+  const tCommon = useTranslations("common");
   const { data: authSession } = authClient.useSession();
   const canSavePresets =
     Boolean(authSession?.user?.id) && contextMenu.ids.length > 1;
@@ -195,7 +196,7 @@ export function CanvasContextMenuContent({
           }}
         >
           <Copy className="size-3.5" />
-          {tActions("duplicate")}
+          {tCommon("actions.duplicate")}
           <ContextMenuShortcut>Ctrl/Cmd+D</ContextMenuShortcut>
         </ContextMenuItem>
         {canSavePresets && (
@@ -258,7 +259,9 @@ export function CanvasContextMenuContent({
           ) : (
             <Lock className="size-3.5" />
           )}
-          {contextMenu.locked ? tActions("unlock") : tActions("lock")}
+          {contextMenu.locked
+            ? tCommon("actions.unlock")
+            : tCommon("actions.lock")}
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger
@@ -334,7 +337,7 @@ export function CanvasContextMenuContent({
         }}
       >
         <Trash2 className="size-3.5" />
-        {tActions("delete")}
+        {tCommon("actions.delete")}
         <ContextMenuShortcut>Del</ContextMenuShortcut>
       </ContextMenuItem>
     </ContextMenuContent>

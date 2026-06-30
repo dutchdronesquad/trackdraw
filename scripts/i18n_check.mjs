@@ -25,8 +25,10 @@ const i18nPolicy = JSON.parse(
 const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
 function listLocales() {
-  return readdirSync(langDir).filter((name) =>
-    statSync(join(langDir, name)).isDirectory()
+  return readdirSync(langDir).filter(
+    (name) =>
+      /^[a-z]{2}(?:-[A-Z]{2})?$/.test(name) &&
+      statSync(join(langDir, name)).isDirectory()
   );
 }
 

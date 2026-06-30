@@ -146,8 +146,6 @@
     "itemsCount": "{count} items",
     "renamePresetTooltip": "Rename preset",
     "deletePresetTooltip": "Delete preset",
-    "cancel": "Cancel",
-    "delete": "Delete",
     "signInTitle": "Sign in to use presets",
     "signInDescription": "Presets are saved to your account so they're always available across all your devices.",
     "noPresetsTitle": "No presets yet",
@@ -163,7 +161,6 @@
     "placeFlowDescription": "Select a preset here, then tap the canvas. The result expands immediately into ordinary editable shapes.",
     "desktopTitle": "Layout presets",
     "desktopSubtitle": "Choose a preset, place it on the canvas, then edit the inserted shapes normally.",
-    "close": "Close",
     "tipText": "Select shapes on the canvas, then use <strong>Save preset</strong> in the inspector to add your own."
   },
   "starterOverlay": {
@@ -257,7 +254,6 @@
     "pathsExcluded": "{count, plural, one {1 path will be excluded} other {# paths will be excluded}} — presets only capture non-path shapes.",
     "presetNameLabel": "Preset name",
     "presetNamePlaceholder": "e.g. Timing gate setup",
-    "cancel": "Cancel",
     "savePreset": "Save preset"
   },
   "mobilePanels": {
@@ -318,12 +314,8 @@
         "groupNamePlaceholder": "Group name"
       },
       "actions": {
-        "duplicate": "Duplicate",
         "ungroup": "Ungroup",
-        "group": "Group",
-        "unlock": "Unlock",
-        "lock": "Lock",
-        "delete": "Delete"
+        "group": "Group"
       }
     },
     "pathBuilder": {
@@ -356,11 +348,7 @@
         "actions": {
           "addPoint": "Add point",
           "editPath": "Edit path",
-          "duplicate": "Duplicate",
-          "unlock": "Unlock",
-          "lock": "Lock",
           "deletePoint": "Delete point",
-          "delete": "Delete",
           "adjust": "Adjust",
           "back": "Back"
         },

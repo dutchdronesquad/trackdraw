@@ -247,9 +247,15 @@ export function SingleInspectorView({
               <button
                 type="button"
                 onClick={() => setShapesLocked([shape.id], !shape.locked)}
-                title={shape.locked ? t("actions.unlock") : t("actions.lock")}
+                title={
+                  shape.locked
+                    ? tCommon("actions.unlock")
+                    : tCommon("actions.lock")
+                }
                 aria-label={
-                  shape.locked ? t("actions.unlock") : t("actions.lock")
+                  shape.locked
+                    ? tCommon("actions.unlock")
+                    : tCommon("actions.lock")
                 }
                 className={`${actionBtnClass} min-w-0`}
               >
@@ -259,18 +265,22 @@ export function SingleInspectorView({
                   <LockOpen className="size-3 shrink-0" />
                 )}
                 <span className="truncate">
-                  {shape.locked ? t("actions.unlock") : t("actions.lock")}
+                  {shape.locked
+                    ? tCommon("actions.unlock")
+                    : tCommon("actions.lock")}
                 </span>
               </button>
               <button
                 type="button"
                 onClick={() => duplicateShapes([shape.id])}
-                title={t("actions.duplicate")}
-                aria-label={t("actions.duplicate")}
+                title={tCommon("actions.duplicate")}
+                aria-label={tCommon("actions.duplicate")}
                 className={`${actionBtnClass} min-w-0`}
               >
                 <Copy className="size-3 shrink-0" />
-                <span className="truncate">{t("actions.duplicate")}</span>
+                <span className="truncate">
+                  {tCommon("actions.duplicate")}
+                </span>
               </button>
               <button
                 type="button"
@@ -278,12 +288,12 @@ export function SingleInspectorView({
                   removeShapes([shape.id]);
                   setSelection([]);
                 }}
-                title={t("actions.delete")}
-                aria-label={t("actions.delete")}
+                title={tCommon("actions.delete")}
+                aria-label={tCommon("actions.delete")}
                 className={`${actionBtnClass} min-w-0 border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
               >
                 <Trash2 className="size-3 shrink-0" />
-                <span className="truncate">{t("actions.delete")}</span>
+                <span className="truncate">{tCommon("actions.delete")}</span>
               </button>
             </div>
             {showPathActions ? (

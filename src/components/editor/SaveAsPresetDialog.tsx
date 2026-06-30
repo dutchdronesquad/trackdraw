@@ -26,6 +26,7 @@ export function SaveAsPresetDialog({
   onCancel,
 }: SaveAsPresetDialogProps) {
   const t = useTranslations("editor.saveAsPresetDialog");
+  const tCommon = useTranslations("common");
   const isMobile = useIsMobile();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -75,7 +76,7 @@ export function SaveAsPresetDialog({
       </div>
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" onClick={onCancel}>
-          {t("cancel")}
+          {tCommon("actions.cancel")}
         </Button>
         <Button type="button" onClick={handleSave} disabled={shapeCount === 0}>
           <Bookmark className="size-3.5" />

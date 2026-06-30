@@ -146,8 +146,6 @@
     "itemsCount": "{count} items",
     "renamePresetTooltip": "Preset hernoemen",
     "deletePresetTooltip": "Preset verwijderen",
-    "cancel": "Annuleren",
-    "delete": "Verwijderen",
     "signInTitle": "Log in om presets te gebruiken",
     "signInDescription": "Presets worden opgeslagen in je account zodat ze altijd beschikbaar zijn op al je apparaten.",
     "noPresetsTitle": "Nog geen presets",
@@ -163,7 +161,6 @@
     "placeFlowDescription": "Selecteer hier een preset en tik dan op het canvas. Het resultaat wordt direct omgezet naar gewone bewerkbare vormen.",
     "desktopTitle": "Layout-presets",
     "desktopSubtitle": "Kies een preset, plaats hem op het canvas en bewerk de geplaatste vormen daarna gewoon verder.",
-    "close": "Sluiten",
     "tipText": "Selecteer vormen op het canvas en gebruik <strong>Opslaan als preset</strong> in de inspector om je eigen preset toe te voegen."
   },
   "starterOverlay": {
@@ -257,7 +254,6 @@
     "pathsExcluded": "{count, plural, one {1 pad wordt uitgesloten} other {# paden worden uitgesloten}} — presets bevatten alleen niet-pad-vormen.",
     "presetNameLabel": "Presetnaam",
     "presetNamePlaceholder": "bijv. Timing gate setup",
-    "cancel": "Annuleren",
     "savePreset": "Preset opslaan"
   },
   "mobilePanels": {
@@ -318,12 +314,8 @@
         "groupNamePlaceholder": "Groepsnaam"
       },
       "actions": {
-        "duplicate": "Dupliceren",
         "ungroup": "Groep opheffen",
-        "group": "Groeperen",
-        "unlock": "Ontgrendelen",
-        "lock": "Vergrendelen",
-        "delete": "Verwijderen"
+        "group": "Groeperen"
       }
     },
     "pathBuilder": {
@@ -356,11 +348,7 @@
         "actions": {
           "addPoint": "Waypoint toevoegen",
           "editPath": "Path bewerken",
-          "duplicate": "Dupliceren",
-          "unlock": "Ontgrendelen",
-          "lock": "Vergrendelen",
           "deletePoint": "Waypoint verwijderen",
-          "delete": "Verwijderen",
           "adjust": "Aanpassen",
           "back": "Terug"
         },

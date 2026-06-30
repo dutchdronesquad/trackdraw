@@ -174,6 +174,7 @@ function UserPresetCard({
   onRemove: (id: string) => void;
 }) {
   const t = useTranslations("editor.layoutPresetPicker");
+  const tCommon = useTranslations("common");
   const [renaming, setRenaming] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -256,14 +257,14 @@ function UserPresetCard({
                   onClick={() => setConfirmDelete(false)}
                   className="text-muted-foreground hover:text-foreground rounded-md px-1.5 py-0.5 text-[10px] transition-colors"
                 >
-                  {t("cancel")}
+                  {tCommon("actions.cancel")}
                 </button>
                 <button
                   type="button"
                   onClick={() => onRemove(preset.id)}
                   className="rounded-md bg-red-500/10 px-1.5 py-0.5 text-[10px] text-red-500 transition-colors hover:bg-red-500/20"
                 >
-                  {t("delete")}
+                  {tCommon("actions.delete")}
                 </button>
               </div>
             ) : (
@@ -476,6 +477,7 @@ export function LayoutPresetPicker({
   onSelectPreset,
 }: LayoutPresetPickerProps) {
   const t = useTranslations("editor.layoutPresetPicker");
+  const tCommon = useTranslations("common");
   const [section, setSection] = useState<NavSection>("my-presets");
   const userPresets = useUserPresets((state) => state.userPresets);
   const selectedPreset = findPresetById(selectedPresetId, userPresets);
@@ -550,7 +552,7 @@ export function LayoutPresetPicker({
               type="button"
               onClick={() => onOpenChange(false)}
               className="text-muted-foreground/75 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-              aria-label={t("close")}
+              aria-label={tCommon("actions.close")}
             >
               <X className="size-4" />
             </button>
