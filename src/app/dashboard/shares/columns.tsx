@@ -267,6 +267,7 @@ export function getSharesColumns({
                       variant="ghost"
                       size="icon"
                       className="hover:bg-muted hover:text-foreground size-7"
+                      aria-label={`${t("actions.copyLink")} ${share.title}`}
                       onClick={() => onCopyLink(share.token)}
                     >
                       <Link2 className="size-4" />
@@ -284,6 +285,7 @@ export function getSharesColumns({
                         href={`/share/${share.token}`}
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label={`${t("actions.open")} ${share.title}`}
                       >
                         <ExternalLink className="size-4" />
                       </Link>

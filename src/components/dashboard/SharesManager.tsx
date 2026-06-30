@@ -169,7 +169,7 @@ export default function DashboardSharesManager({
     const href = `${window.location.origin}/share/${token}`;
 
     try {
-      await navigator.clipboard.writeText(href);
+      await window.navigator.clipboard.writeText(href);
       toast.success(t("messages.copyLinkSuccess"));
     } catch {
       toast.error(t("messages.copyLinkFailed"));
