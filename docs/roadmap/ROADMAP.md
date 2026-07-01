@@ -17,7 +17,7 @@ TrackDraw is now strong in these areas:
 - Account-backed REST API with API key management and a live race overlay data endpoint
 - Catalog-backed official MultiGP obstacles including gates, ladders, flags, dive gate, launch gate, and a barrier category for hurdles, banners, fencing, and nets
 - Account-backed user presets where users save and reuse named canvas selections across devices
-- EN/NL multilingual product experience with explicit language choice, route-scoped message loading, and CI checks for catalog parity and new hardcoded UI copy
+- English, Dutch, and German multilingual product experience with explicit language choice, route-scoped message loading, and CI checks for catalog parity and new hardcoded UI copy
 
 The most useful next product move is deepening the race-day workflow, keeping the editor dependable, refining the account-backed project model, and completing the remaining 3D item control and path geometry work:
 
@@ -206,12 +206,19 @@ Why:
 - Locale-aware defaults, preference storage, shared formatting helpers, and text boundaries created for unit support can reduce the later cost of full i18n
 - Translation touches high-risk surfaces such as editor tools, import/export recovery, share pages, Race Pack/PDF copy, dashboard moderation, and legal pages, so it needs deliberate QA rather than ad hoc string replacement
 
-Focus:
+Current shipped foundation:
 
-- Add an i18n architecture that moves hard-coded product copy behind typed message catalogs while preserving existing route behavior and metadata quality
-- Use browser language as a first-run default only when no saved language preference exists, and keep manual language selection separate from measurement units
-- Start with a small language set chosen from actual user demand and maintenance capacity, with English as the stable fallback for incomplete translations
-- Review translated UI on desktop and mobile, including compact buttons, inspector panels, dialogs, share pages, exported PDFs/Race Packs, and legal pages where applicable
+- `next-intl` is integrated without locale routing, preserving existing `/studio`, `/gallery`, `/share/[token]`, and `/embed/[token]` URLs
+- Browser language provides the first-run default when no saved language preference exists, while manual language choice remains separate from measurement units
+- English, Dutch, and German catalogs cover the public site, editor, share/embed/gallery surfaces, dashboard, dialogs, inspector, exported handoff copy, and metadata/API docs surfaces
+- English remains the stable fallback baseline, with route-scoped message loading and a centralized i18n catalog policy
+- Locale parity/unresolved-key validation and hardcoded-copy scanning run in CI so new UI copy is intentionally cataloged or explicitly allowlisted
+
+Maintenance focus:
+
+- Keep new product copy behind typed message catalogs instead of reopening hardcoded-copy debt
+- Add future languages only when there is enough user demand and maintenance capacity to review FPV terminology, compact UI labels, and export/legal copy
+- Continue checking translated UI on desktop and mobile, especially tight inspector panels, buttons, dialogs, share pages, exported PDFs/Race Packs, and legal pages where applicable
 
 Important boundary:
 
@@ -393,6 +400,10 @@ Focus:
 - Keep local-first publish flows simple for unauthenticated use
 - Improve operator visibility for temporary, published, revoked, gallery-linked, and embedded share states before adding deeper share administration
 
+Possible later idea (not yet scoped, separate task):
+
+- Retention policy for long-inactive published shares, roughly a one-year inactivity window, distinct from the existing 30-day cleanup of revoked/expired shares — needs its own definition of "inactive" and an owner notice before anything is removed
+
 #### Share Version History (`Lower priority`)
 
 Account-backed shares should support deliberate publish history so owners can update a published track without making existing links feel mysterious or losing the last known-good public version.
@@ -505,7 +516,7 @@ Diagnostics boundary:
 - Do not create a standalone diagnostics dashboard page as the first slice
 - Do not let operators edit a user's private project design from diagnostics surfaces
 - Do not expose API key secrets, local-only browser projects, private map location metadata beyond existing owner-visible surfaces, or raw project JSON by default
-- Do not add account takeover, password/session management, or billing support flows in this slice
+- Do not add account takeover or password/session management flows in this slice
 
 Important boundary:
 
@@ -684,6 +695,45 @@ Likely account-backed follow-up:
 - Curated gallery collections
 - Shared venue or club records, including shared inventory profiles
 - Identity-aware comments and review threads
+
+## v1.12.0 Archive
+
+<details>
+<summary>Completed release work to archive with v1.12.0</summary>
+
+### Multilingual Product Experience (`No account required`)
+
+TrackDraw now has a full multilingual product layer across the public site, Studio, share/embed/gallery surfaces, dashboard, dialogs, inspector, exported handoff copy, and metadata/API docs. English, Dutch, and German are supported through explicit language choice and browser-language first-run defaults, while existing routes such as `/studio`, `/gallery`, `/share/[token]`, and `/embed/[token]` stay unchanged.
+
+Included:
+
+- next-intl integration without locale routing, preserving existing route and share-link compatibility
+- Route-scoped message loading, persisted locale preference, server-side locale/message resolution, and a language picker that works without an account
+- Dutch rollout across editor, dialogs, inspector, dashboard, gallery, share/embed views, export/PDF/Race Pack copy, and shared shape/tool vocabulary
+- German locale support on the same route-stable i18n foundation
+- Follow-up copy QA for Dutch and German terminology, missed strings, compact labels, account/delete/export copy, and `Path`/`waypoint` terminology
+- Centralized i18n catalog policy, locale parity/unresolved-key checks, hardcoded-copy scanning in CI, and an exception-only hardcoded allowlist baseline
+
+### Open-Source Licensing Update
+
+TrackDraw source code is now licensed under AGPL-3.0-only. Package metadata, README license copy, and NOTICE guidance were updated to clarify source-code licensing versus the TrackDraw name, logo, brand assets, hosted service, and user-created content.
+
+### Research And Roadmap Alignment (`Research`)
+
+Added product-shape research for generated flightpath assistance, the presets store, and RotorHazard event viewer integration, then refreshed roadmap/research references so those future tracks are documented without turning them into the current build target.
+
+### User Account Moderation (`Account-backed`)
+
+Admins can now temporarily ban or permanently delete a user account from the Users dashboard, alongside the existing role-change action. Ban and deletion are separate, individually confirmed, individually audited actions, and both block targeting your own account the same way role changes already do.
+
+Included:
+
+- Temporary ban via `banned_at` plus a reason chosen from a predefined list (with a free-text "Other" option), ending active sessions immediately and fully reversible without touching any owned data
+- Permanent deletion that cascade-deletes owned projects, shares, gallery entries (including R2 preview images), and API keys, following the app's existing explicit-cascade pattern rather than relying on DB-level FK cascades
+- A delete confirmation dialog requiring the account's email to be typed, showing live counts of what will be removed, and explicitly warning that published gallery tracks and embeds disappear too
+- A compact moderation row in the Users inspect sheet, alongside the existing change-role action
+
+</details>
 
 ## v1.11.0 Archive
 

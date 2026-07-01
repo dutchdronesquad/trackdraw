@@ -112,12 +112,22 @@ export function getUsersColumns({
       header: t("table.role"),
       meta: { className: "w-32" },
       cell: ({ row }) => (
-        <Badge
-          variant="outline"
-          className={roleBadgeClassName(row.original.role)}
-        >
-          {getAccountRoleLabel(row.original.role)}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Badge
+            variant="outline"
+            className={roleBadgeClassName(row.original.role)}
+          >
+            {getAccountRoleLabel(row.original.role)}
+          </Badge>
+          {row.original.bannedAt && (
+            <Badge
+              variant="outline"
+              className="border-destructive/25 bg-destructive/10 text-destructive"
+            >
+              {t("table.banned")}
+            </Badge>
+          )}
+        </div>
       ),
     },
     {

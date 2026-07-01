@@ -10,4 +10,6 @@ export type AdminUser = {
   updatedAt: string;
   lastLoginAt: string | null;
   projectCount: number;
+  bannedAt: string | null;
+  banReason: string | null;
 };

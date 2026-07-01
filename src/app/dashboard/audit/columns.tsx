@@ -106,6 +106,9 @@ export function formatEventType(value: string) {
 
 const EVENT_TITLE_KEYS: Record<string, string> = {
   "account.role.changed": "accountRoleChanged",
+  "account.banned": "accountBanned",
+  "account.unbanned": "accountUnbanned",
+  "account.deleted": "accountDeleted",
   "gallery.entry.featured": "galleryEntryFeatured",
   "gallery.entry.unfeatured": "galleryEntryUnfeatured",
   "gallery.entry.hidden": "galleryEntryHidden",

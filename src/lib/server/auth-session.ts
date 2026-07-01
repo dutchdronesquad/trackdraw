@@ -18,6 +18,7 @@ type SessionUserRow = {
   image: string | null;
   role: string | null;
   expiresAt: string;
+  bannedAt: string | null;
 };
 
 const SESSION_COOKIE_NAMES = [
@@ -144,6 +145,7 @@ export async function getCurrentUserFromHeaders(
           u.name,
           u.image,
           u.role,
+          u.banned_at as bannedAt,
           s.expiresAt
         from sessions s
         inner join users u on u.id = s.userId
@@ -159,6 +161,10 @@ export async function getCurrentUserFromHeaders(
   }
 
   if (new Date(row.expiresAt).getTime() <= Date.now()) {
+    return null;
+  }
+
+  if (row.bannedAt) {
     return null;
   }
 

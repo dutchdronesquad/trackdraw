@@ -17,7 +17,9 @@ export type AuthorizationCapability =
   | "admin.metrics.read"
   | "admin.api-keys.read"
   | "audit.read"
-  | "account.role.assign";
+  | "account.role.assign"
+  | "account.ban.assign"
+  | "account.delete.assign";
 
 export type DashboardModule =
   | "overview"
@@ -42,6 +44,8 @@ const capabilityRoles: Record<AuthorizationCapability, AccountRole[]> = {
   "admin.api-keys.read": ["admin"],
   "audit.read": ["admin"],
   "account.role.assign": ["admin"],
+  "account.ban.assign": ["admin"],
+  "account.delete.assign": ["admin"],
 };
 
 export function hasCapability(

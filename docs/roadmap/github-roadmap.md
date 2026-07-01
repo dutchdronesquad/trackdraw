@@ -22,7 +22,7 @@ Labels used below:
 
 ## Current Priority
 
-The completed release-sized work is archived below. The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, remaining focused 3D item controls, generated flightpath assistance, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and powerloop 3D curve replacement in the route path.
+The next TrackDraw priority is race-day workflow depth, editor reliability follow-up, remaining focused 3D item controls, generated flightpath assistance, account-backed project lifecycle depth beyond the shipped conflict/retry baseline, and powerloop 3D curve replacement in the route path.
 
 ## Follow-up
 
@@ -54,21 +54,6 @@ The completed release-sized work is archived below. The next TrackDraw priority 
         Prototype flightpath generation from the ordered obstacle list as an assistive review/drafting feature. The output should be an editable race line, not a locked result. Validate that the sequence-based model (list order → path) is intuitive before committing to the full UI.
   - [ ] Drag-to-reorder obstacles (prerequisite)
         Wire up the drag handles in the track items list so users can explicitly set the intended race sequence before generating a path. The store action is ready; this is a UI-only change gated on the path generator being useful enough to justify the interaction.
-
-- [x] Multilingual product experience (`No account required`)
-      Shipped the EN/NL i18n layer for the public site, editor, share/embed/gallery surfaces, dashboard, dialogs, inspector, exported handoff copy, and validation tooling. Architecture and review notes: [I18n Multilingual PVA](../pva/i18n-multilingual-pva.md).
-  - [x] I18n architecture + editor pilot
-        Installed next-intl without locale routing, added persisted language preference handling, wired route-scoped message providers, and migrated the editor pilot surfaces behind message catalogs.
-  - [x] Inspector + dialogs namespace
-        Migrated inspector panels and the share, account, project, import/export, keyboard shortcut, and profile dialogs to the message catalog.
-  - [x] Landing page namespace
-        Migrated landing, login, legal/static public copy, and placeholder content to the message catalog.
-  - [x] Dashboard + remaining surfaces
-        Migrated dashboard/admin, gallery, share/embed, metadata, API docs, mobile editor, export/PDF/Race Pack, developer HUD, and remaining hardcoded UI surfaces.
-  - [x] First language rollout
-        Shipped English and Dutch with English as the stable baseline and Dutch copy reviewed for FPV terminology such as `track`, `path`, `waypoint`, `gate`, and `race line`.
-  - [x] Translation QA boundary
-        Added locale parity/unresolved-key validation and a hardcoded-copy scan in CI. The remaining hardcoded allowlist baseline is exception-only: brand alt text, shortcuts/units, technical tokens, and design-system primitive defaults.
 
 ## Later Product Follow-up
 
@@ -173,6 +158,37 @@ The completed release-sized work is archived below. The next TrackDraw priority 
   - [ ] Platform recommendation
         Recommend web-first, Electron, Capacitor, or no wrapper for now.
 
+## v1.12.0 Archive
+
+<details>
+<summary>Completed release work to archive with v1.12.0</summary>
+
+- [x] Multilingual product experience (`No account required`)
+      TrackDraw now has a full multilingual product layer across the public site, Studio, share/embed/gallery surfaces, dashboard, dialogs, inspector, exported handoff copy, and metadata/API docs. English, Dutch, and German are supported through explicit language choice and browser-language first-run defaults, while existing routes such as `/studio`, `/gallery`, `/share/[token]`, and `/embed/[token]` stay unchanged.
+  - [x] I18n architecture
+        Added next-intl without locale routing, route-scoped message loading, a persisted locale preference, server-side locale/message resolution, and a language picker that works without an account.
+  - [x] Dutch rollout and copy QA
+        Migrated the editor, dialogs, inspector, dashboard, gallery, share/embed views, export/PDF/Race Pack copy, and shared shape/tool vocabulary to message catalogs. Follow-up QA tightened Dutch FPV terminology, fixed missed strings, and corrected account/delete/export copy issues surfaced by the rollout.
+  - [x] German locale
+        Added German message catalogs on the same route-stable i18n foundation, with follow-up copy tightening across Dutch and German.
+  - [x] Translation guardrails
+        Centralized the i18n catalog policy, added locale parity and unresolved-key checks, kept hardcoded-copy scanning in CI, and reduced the hardcoded allowlist to intentional exceptions such as brand alt text, shortcuts, units, technical tokens, and design-system primitive defaults.
+
+- [x] Open-source licensing update
+      Relicensed the source code under AGPL-3.0-only, updated package metadata and README license copy, and added NOTICE guidance clarifying source-code licensing versus TrackDraw name, logo, brand assets, hosted service, and user-created content.
+
+- [x] Research and roadmap alignment (`Research`)
+      Added product-shape research for generated flightpath assistance, the presets store, and RotorHazard event viewer integration, then refreshed roadmap/research references so those future tracks are documented without turning them into the current build target.
+
+- [x] User account moderation (`Account-backed`)
+      Admins can now temporarily ban or permanently delete a user account from the Users dashboard, alongside the existing role-change action. Ban and deletion are separate, individually confirmed, individually audited actions, and both block targeting your own account the same way role changes already do.
+  - [x] Temporary ban
+        Blocks sign-in via `banned_at` plus a reason chosen from a predefined list (with a free-text "Other" option), ends active sessions immediately, and is fully reversible without touching any owned data.
+  - [x] Permanent deletion
+        Removes a user and cascade-deletes owned projects, shares, gallery entries (including R2 preview images), and API keys, following the app's existing explicit-cascade pattern rather than relying on DB-level FK cascades. The confirmation dialog requires typing the account's email, shows live counts of what will be removed, and explicitly warns that published gallery tracks and embeds disappear too.
+
+</details>
+
 ## v1.11.0 Archive
 
 <details>
@@ -229,36 +245,5 @@ The completed release-sized work is archived below. The next TrackDraw priority 
 
 - [x] Automatic curve smoothing (`No account required`)
       Catmull-Rom splines (chord-length parameterized) are now the sole rendering path for committed polylines. The drawing overlay also uses the smooth preview exclusively, making the curve shape visible from the first waypoint.
-
-</details>
-
-## v1.9.0 Archive
-
-<details>
-<summary>Completed release work archived with v1.9.0</summary>
-
-- [x] MultiGP obstacle catalog expansion (`No account required`)
-      Extended the catalog with official MultiGP Corner Flags, Standard Ladder 5x5, Championship Ladder 7x6, and Topless Ladder 7x6. These entries use the same catalog-backed identity, source references, inspector treatment, in-place type switching, and export/share compatibility as the existing official gates.
-  - [x] MultiGP Corner Flag
-        Added a 10 ft feather flag with realistic textured 3D rendering, catalog identity, inspector type switching, and an official source link.
-  - [x] MultiGP ladder variants
-        Added Standard Ladder 5x5, Championship Ladder 7x6, and Topless Ladder 7x6 with panel-frame 3D rendering that matches the real obstacles.
-
-- [x] 3D obstacle realism and loading (`No account required`)
-      Improved catalog-backed 3D rendering with texture-backed panels and more dependable direct manipulation around official obstacles. The 3D view now warms only the textures used by the current design so textured obstacles load more smoothly without delaying lighter scene details.
-  - [x] Texture-backed MultiGP obstacles
-        Render catalog-backed gates, ladders, and corner flags with panel artwork and shared layout helpers in the live 3D preview and flythrough export.
-  - [x] Focused 3D reliability fixes
-        Restored real-time flag rotation updates and improved selection, rotation, and ladder elevation behavior around catalog obstacles.
-
-- [x] Catalog editing and track item list improvements (`No account required`)
-      Catalog type switching now works better after placement, including batch edits. The track items list shows catalog-aware names and supports filters that make placed elements easier to find and inspect.
-  - [x] Batch catalog type editing
-        Let users change sets of gates, flags, or ladders without deleting and rebuilding them.
-  - [x] Catalog-aware item names and filters
-        Show clearer item names and let users focus the list on race obstacles or all elements.
-
-- [x] Path and route reliability follow-up (`No account required`)
-      Improved waypoint and path selection reliability, especially on mobile and when adjusting route elevation in 3D. Route warning geometry now shares the same 3D height offset as the visible route line and preview points.
 
 </details>

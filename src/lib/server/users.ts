@@ -4,6 +4,7 @@ import { cache } from "react";
 import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
 import type { AdminUser } from "@/lib/account/admin-users";
 import { getDatabase } from "@/lib/server/db";
+import { deleteSharesOwnedByUser } from "@/lib/server/shares";
 
 type UserRoleRow = {
   role: string | null;
@@ -30,6 +31,8 @@ type AdminUserRow = {
   updatedAt: string;
   lastLoginAt: string | null;
   projectCount: number;
+  bannedAt: string | null;
+  banReason: string | null;
 };
 
 function mapAdminUser(row: AdminUserRow): AdminUser {
@@ -43,6 +46,8 @@ function mapAdminUser(row: AdminUserRow): AdminUser {
     updatedAt: row.updatedAt,
     lastLoginAt: row.lastLoginAt ?? null,
     projectCount: Number(row.projectCount ?? 0),
+    bannedAt: row.bannedAt ?? null,
+    banReason: row.banReason ?? null,
   };
 }
 
@@ -76,6 +81,8 @@ export async function listUsersForAdmin(): Promise<AdminUser[]> {
           u.role,
           u.createdAt,
           u.updatedAt,
+          u.banned_at as bannedAt,
+          u.ban_reason as banReason,
           ls.lastLoginAt,
           coalesce(pc.cnt, 0) as projectCount
         from users u
@@ -127,6 +134,8 @@ export async function getAdminUserById(
           u.role,
           u.createdAt,
           u.updatedAt,
+          u.banned_at as bannedAt,
+          u.ban_reason as banReason,
           ls.lastLoginAt,
           coalesce(pc.cnt, 0) as projectCount
         from users u
@@ -182,13 +191,116 @@ export async function updateUserRole(
         update users
         set role = ?, updatedAt = ?
         where id = ?
-        returning id, name, email, image, role, createdAt, updatedAt
+        returning
+          id, name, email, image, role, createdAt, updatedAt,
+          banned_at as bannedAt, ban_reason as banReason
       `
     )
     .bind(role, now, userId)
     .first<AdminUserRow>();
 
   return row ? mapAdminUser(row) : null;
+}
+
+export async function banUser(
+  userId: string,
+  reason: string
+): Promise<AdminUser | null> {
+  const db = await getDatabase();
+  const now = new Date().toISOString();
+
+  const row = await db
+    .prepare(
+      `
+        update users
+        set banned_at = ?, ban_reason = ?, updatedAt = ?
+        where id = ?
+        returning
+          id, name, email, image, role, createdAt, updatedAt,
+          banned_at as bannedAt, ban_reason as banReason
+      `
+    )
+    .bind(now, reason, now, userId)
+    .first<AdminUserRow>();
+
+  await db
+    .prepare(
+      `
+        delete from sessions
+        where userId = ?
+      `
+    )
+    .bind(userId)
+    .run();
+
+  return row ? mapAdminUser(row) : null;
+}
+
+export async function unbanUser(userId: string): Promise<AdminUser | null> {
+  const db = await getDatabase();
+  const now = new Date().toISOString();
+
+  const row = await db
+    .prepare(
+      `
+        update users
+        set banned_at = null, ban_reason = null, updatedAt = ?
+        where id = ?
+        returning
+          id, name, email, image, role, createdAt, updatedAt,
+          banned_at as bannedAt, ban_reason as banReason
+      `
+    )
+    .bind(now, userId)
+    .first<AdminUserRow>();
+
+  return row ? mapAdminUser(row) : null;
+}
+
+export async function deleteUserAccount(userId: string): Promise<void> {
+  const db = await getDatabase();
+
+  await deleteSharesOwnedByUser(userId);
+
+  await db
+    .prepare(
+      `
+        delete from gallery_entries
+        where owner_user_id = ?
+      `
+    )
+    .bind(userId)
+    .run();
+
+  await db
+    .prepare(
+      `
+        delete from apikey
+        where referenceId = ?
+      `
+    )
+    .bind(userId)
+    .run();
+
+  await db
+    .prepare(
+      `
+        delete from projects
+        where owner_user_id = ?
+      `
+    )
+    .bind(userId)
+    .run();
+
+  await db
+    .prepare(
+      `
+        delete from users
+        where id = ?
+      `
+    )
+    .bind(userId)
+    .run();
 }
 
 export async function getUserContextStats(

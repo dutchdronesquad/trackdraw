@@ -10,7 +10,15 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, Copy, ExternalLink, Loader2 } from "lucide-react";
+import {
+  Ban,
+  ChevronDown,
+  Copy,
+  ExternalLink,
+  Loader2,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   formatDate,
@@ -19,6 +27,11 @@ import {
   roleBadgeClassName,
   type Translate,
 } from "@/app/dashboard/users/columns";
+import {
+  banReasonCodes,
+  getBanReasonLabel,
+  type BanReasonCode,
+} from "@/lib/account/ban-reasons";
 import {
   accountRoles,
   getAccountRoleLabel,
@@ -34,12 +47,29 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -94,6 +124,61 @@ export default function DashboardUsersManager({
   );
   const [inspectData, setInspectData] = useState<UserContextData | null>(null);
   const [inspectLoading, setInspectLoading] = useState(false);
+  const [banCandidate, setBanCandidate] = useState<AdminUser | null>(null);
+  const [banReasonCode, setBanReasonCode] = useState<BanReasonCode>("spam");
+  const [banReasonDetail, setBanReasonDetail] = useState("");
+  const [pendingBanUserId, setPendingBanUserId] = useState<string | null>(
+    null
+  );
+  const [deleteCandidate, setDeleteCandidate] = useState<AdminUser | null>(
+    null
+  );
+  const [deleteConfirmValue, setDeleteConfirmValue] = useState("");
+  const [pendingDeleteUserId, setPendingDeleteUserId] = useState<
+    string | null
+  >(null);
+  const [deleteStats, setDeleteStats] = useState<UserContextStats | null>(
+    null
+  );
+  const [deleteStatsLoading, setDeleteStatsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!deleteCandidate) {
+      setDeleteStats(null);
+      return;
+    }
+
+    let cancelled = false;
+    setDeleteStatsLoading(true);
+    setDeleteStats(null);
+
+    fetch(`/api/dashboard/users/${encodeURIComponent(deleteCandidate.id)}`)
+      .then(async (res) => {
+        const payload = (await res.json()) as {
+          ok: boolean;
+          error?: string;
+          stats?: UserContextStats;
+        };
+        if (cancelled) return;
+        if (!res.ok || !payload.ok) {
+          toast.error(payload.error ?? t("messages.loadFailed"));
+          return;
+        }
+        if (payload.stats) {
+          setDeleteStats(payload.stats);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) toast.error(t("messages.loadFailed"));
+      })
+      .finally(() => {
+        if (!cancelled) setDeleteStatsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deleteCandidate, t]);
 
   useEffect(() => {
     if (!inspectCandidate) {
@@ -191,6 +276,127 @@ export default function DashboardUsersManager({
     }
   };
 
+  const resolveBanReason = () =>
+    banReasonCode === "other"
+      ? banReasonDetail.trim()
+      : getBanReasonLabel(banReasonCode);
+
+  const submitBan = async (userId: string) => {
+    const reason = resolveBanReason();
+    if (!reason) return;
+
+    setPendingBanUserId(userId);
+
+    try {
+      const response = await fetch(`/api/dashboard/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ban", reason }),
+      });
+
+      const payload = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        user?: AdminUser;
+      };
+
+      if (!response.ok || !payload.ok || !payload.user) {
+        throw new Error(payload.error ?? t("banDialog.banFailed"));
+      }
+
+      const updated = payload.user;
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setInspectCandidate((prev) =>
+        prev?.id === updated.id ? { ...prev, ...updated } : prev
+      );
+      setBanCandidate(null);
+      setBanReasonDetail("");
+      toast.success(
+        t("banDialog.banSuccess", {
+          name: getUserLabel(updated, t("fallback.unnamedUser")),
+        })
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("banDialog.banFailed"));
+    } finally {
+      setPendingBanUserId(null);
+    }
+  };
+
+  const submitUnban = async (userId: string) => {
+    setPendingBanUserId(userId);
+
+    try {
+      const response = await fetch(`/api/dashboard/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "unban" }),
+      });
+
+      const payload = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        user?: AdminUser;
+      };
+
+      if (!response.ok || !payload.ok || !payload.user) {
+        throw new Error(payload.error ?? t("banDialog.unbanFailed"));
+      }
+
+      const updated = payload.user;
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setInspectCandidate((prev) =>
+        prev?.id === updated.id ? { ...prev, ...updated } : prev
+      );
+      toast.success(
+        t("banDialog.unbanSuccess", {
+          name: getUserLabel(updated, t("fallback.unnamedUser")),
+        })
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : t("banDialog.unbanFailed")
+      );
+    } finally {
+      setPendingBanUserId(null);
+    }
+  };
+
+  const submitDelete = async (user: AdminUser) => {
+    setPendingDeleteUserId(user.id);
+
+    try {
+      const response = await fetch(`/api/dashboard/users/${user.id}`, {
+        method: "DELETE",
+      });
+
+      const payload = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+      };
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error ?? t("deleteDialog.deleteFailed"));
+      }
+
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      setDeleteCandidate(null);
+      setDeleteConfirmValue("");
+      setInspectCandidate((prev) => (prev?.id === user.id ? null : prev));
+      toast.success(
+        t("deleteDialog.deleteSuccess", {
+          name: getUserLabel(user, t("fallback.unnamedUser")),
+        })
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : t("deleteDialog.deleteFailed")
+      );
+    } finally {
+      setPendingDeleteUserId(null);
+    }
+  };
+
   const columns = getUsersColumns({
     t: t as unknown as Translate,
     currentUserId,
@@ -275,15 +481,33 @@ export default function DashboardUsersManager({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <SheetTitle className="truncate text-base leading-tight">
-                      {getUserLabel(
-                        inspectCandidate,
-                        t("fallback.unnamedUser")
+                    <div className="flex items-center gap-1.5">
+                      <SheetTitle className="truncate text-base leading-tight">
+                        {getUserLabel(
+                          inspectCandidate,
+                          t("fallback.unnamedUser")
+                        )}
+                      </SheetTitle>
+                      {inspectCandidate.bannedAt && (
+                        <Badge
+                          variant="outline"
+                          className="border-destructive/25 bg-destructive/10 text-destructive h-5 shrink-0 px-1.5 text-[10px]"
+                        >
+                          {t("panel.badges.banned")}
+                        </Badge>
                       )}
-                    </SheetTitle>
+                    </div>
                     <SheetDescription className="truncate text-xs">
                       {inspectCandidate.email ?? inspectCandidate.id}
                     </SheetDescription>
+                    {inspectCandidate.bannedAt && (
+                      <p className="text-destructive/80 mt-0.5 truncate text-[11px]">
+                        {t("panel.messages.bannedSince", {
+                          date: formatDate(inspectCandidate.bannedAt),
+                          reason: inspectCandidate.banReason ?? "—",
+                        })}
+                      </p>
+                    )}
                   </div>
                 </div>
               </SheetHeader>
@@ -473,6 +697,64 @@ export default function DashboardUsersManager({
                       )}
                     </div>
 
+                    <div className="flex items-center justify-between gap-4 px-6 py-2.5">
+                      <dt className="text-muted-foreground shrink-0 text-xs">
+                        {t("panel.actions.moderation")}
+                      </dt>
+                      {inspectCandidate.id === currentUserId ? (
+                        <dd className="text-muted-foreground text-xs">
+                          {t("panel.messages.cannotModerateSelf")}
+                        </dd>
+                      ) : (
+                        <dd className="flex items-center gap-1.5">
+                          {inspectCandidate.bannedAt ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="hover:bg-muted hover:text-foreground h-7 cursor-pointer gap-1.5 rounded-md px-2.5 text-xs shadow-none"
+                              disabled={pendingBanUserId === inspectCandidate.id}
+                              onClick={() =>
+                                void submitUnban(inspectCandidate.id)
+                              }
+                            >
+                              {pendingBanUserId === inspectCandidate.id ? (
+                                <Loader2 className="size-3.5 animate-spin" />
+                              ) : (
+                                <ShieldCheck className="size-3.5" />
+                              )}
+                              {t("panel.actions.unban")}
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="hover:bg-muted hover:text-foreground h-7 cursor-pointer gap-1.5 rounded-md px-2.5 text-xs shadow-none"
+                              onClick={() => {
+                                setBanReasonCode("spam");
+                                setBanReasonDetail("");
+                                setBanCandidate(inspectCandidate);
+                              }}
+                            >
+                              <Ban className="size-3.5" />
+                              {t("panel.actions.ban")}
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 cursor-pointer gap-1.5 rounded-md px-2.5 text-xs shadow-none"
+                            onClick={() => {
+                              setDeleteConfirmValue("");
+                              setDeleteCandidate(inspectCandidate);
+                            }}
+                          >
+                            <Trash2 className="size-3.5" />
+                            {t("panel.actions.delete")}
+                          </Button>
+                        </dd>
+                      )}
+                    </div>
+
                     <div className="space-y-3 px-6 py-5">
                       <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                         {t("panel.sections.recentActivity")}
@@ -525,6 +807,220 @@ export default function DashboardUsersManager({
           ) : null}
         </SheetContent>
       </Sheet>
+
+      <Dialog
+        open={banCandidate !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setBanCandidate(null);
+            setBanReasonDetail("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("banDialog.title")}</DialogTitle>
+            <DialogDescription>
+              {t.rich("banDialog.description", {
+                name: banCandidate
+                  ? getUserLabel(banCandidate, t("fallback.unnamedUser"))
+                  : "",
+                strong: (chunks) => (
+                  <span className="text-foreground font-medium">{chunks}</span>
+                ),
+              })}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label className="text-muted-foreground text-xs font-medium">
+              {t("banDialog.reasonLabel")}
+            </label>
+            <Select
+              value={banReasonCode}
+              onValueChange={(value) =>
+                setBanReasonCode(value as BanReasonCode)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {banReasonCodes.map((code) => (
+                  <SelectItem key={code} value={code}>
+                    {getBanReasonLabel(code)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {banReasonCode === "other" && (
+            <div className="space-y-2">
+              <label
+                htmlFor="ban-reason-detail"
+                className="text-muted-foreground text-xs font-medium"
+              >
+                {t("banDialog.reasonDetailLabel")}
+              </label>
+              <Input
+                id="ban-reason-detail"
+                value={banReasonDetail}
+                onChange={(event) => setBanReasonDetail(event.target.value)}
+                placeholder={t("banDialog.reasonPlaceholder")}
+                maxLength={500}
+              />
+            </div>
+          )}
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">{t("banDialog.cancel")}</Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={
+                !banCandidate ||
+                !resolveBanReason() ||
+                pendingBanUserId === banCandidate.id
+              }
+              onClick={() => {
+                if (!banCandidate) return;
+                void submitBan(banCandidate.id);
+              }}
+            >
+              {banCandidate && pendingBanUserId === banCandidate.id ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  {t("banDialog.banning")}
+                </>
+              ) : (
+                t("banDialog.confirmBan")
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deleteCandidate !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteCandidate(null);
+            setDeleteConfirmValue("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("deleteDialog.title")}</DialogTitle>
+            <DialogDescription>
+              {t.rich("deleteDialog.description", {
+                name: deleteCandidate
+                  ? getUserLabel(deleteCandidate, t("fallback.unnamedUser"))
+                  : "",
+                strong: (chunks) => (
+                  <span className="text-foreground font-medium">{chunks}</span>
+                ),
+              })}
+            </DialogDescription>
+          </DialogHeader>
+
+          {deleteCandidate && (
+            <div className="grid grid-cols-4 divide-x rounded-md border">
+              {[
+                {
+                  label: t("panel.stats.projects"),
+                  value: deleteStats?.projectCount,
+                },
+                {
+                  label: t("panel.stats.shares"),
+                  value: deleteStats?.activeShareCount,
+                },
+                {
+                  label: t("panel.stats.gallery"),
+                  value: deleteStats?.galleryEntryCount,
+                },
+                {
+                  label: t("panel.stats.apiKeys"),
+                  value: deleteStats?.apiKeyCount,
+                },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center gap-0.5 py-3"
+                >
+                  <span className="text-lg font-semibold tabular-nums">
+                    {deleteStatsLoading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      (value ?? "—")
+                    )}
+                  </span>
+                  <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-muted-foreground text-sm">
+            {t("deleteDialog.galleryWarning")}
+          </p>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="delete-confirm"
+              className="text-muted-foreground text-xs font-medium"
+            >
+              {t.rich("deleteDialog.confirmLabel", {
+                email: deleteCandidate?.email ?? "",
+                strong: (chunks) => (
+                  <span className="text-foreground font-medium">{chunks}</span>
+                ),
+              })}
+            </label>
+            <Input
+              id="delete-confirm"
+              value={deleteConfirmValue}
+              onChange={(event) => setDeleteConfirmValue(event.target.value)}
+              placeholder={deleteCandidate?.email ?? ""}
+              autoComplete="off"
+            />
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">{t("deleteDialog.cancel")}</Button>
+            </DialogClose>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={
+                !deleteCandidate ||
+                !deleteCandidate.email ||
+                deleteConfirmValue.trim() !== deleteCandidate.email ||
+                pendingDeleteUserId === deleteCandidate.id
+              }
+              onClick={() => {
+                if (!deleteCandidate) return;
+                void submitDelete(deleteCandidate);
+              }}
+            >
+              {deleteCandidate && pendingDeleteUserId === deleteCandidate.id ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  {t("deleteDialog.deleting")}
+                </>
+              ) : (
+                t("deleteDialog.confirmDelete")
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

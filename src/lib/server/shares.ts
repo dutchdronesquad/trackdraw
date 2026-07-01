@@ -326,6 +326,34 @@ export async function purgeRevokedShare(token: string) {
     .run();
 }
 
+export async function deleteSharesOwnedByUser(userId: string) {
+  const db = await getDatabase();
+
+  const rows = await db
+    .prepare(
+      `
+        select token
+        from shares
+        where owner_user_id = ?
+      `
+    )
+    .bind(userId)
+    .all<{ token: string }>();
+
+  for (const row of rows.results ?? []) {
+    await deleteGalleryEntry(row.token);
+    await db
+      .prepare(
+        `
+          delete from shares
+          where token = ?
+        `
+      )
+      .bind(row.token)
+      .run();
+  }
+}
+
 type DashboardShareRow = {
   token: string;
   title: string | null;

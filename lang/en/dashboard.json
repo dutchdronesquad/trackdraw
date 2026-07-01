@@ -214,7 +214,8 @@
       "projects": "Projects",
       "role": "Role",
       "joined": "Joined",
-      "lastLogin": "Last login"
+      "lastLogin": "Last login",
+      "banned": "Banned"
     },
     "selfBadge": "(you)",
     "fallback": {
@@ -257,16 +258,50 @@
         "copyUserId": "Copy user ID",
         "changeRole": "Change role",
         "save": "Save",
-        "viewFullAuditTrail": "View full audit trail"
+        "viewFullAuditTrail": "View full audit trail",
+        "moderation": "Moderation",
+        "ban": "Ban",
+        "unban": "Unban",
+        "delete": "Delete"
+      },
+      "badges": {
+        "banned": "Banned"
       },
       "messages": {
         "cannotChangeOwnRole": "Cannot change own role",
-        "noAuditEvents": "No audit events recorded."
+        "noAuditEvents": "No audit events recorded.",
+        "cannotModerateSelf": "You cannot ban or delete your own account.",
+        "bannedSince": "Banned since {date} · {reason}"
       },
       "relation": {
         "actor": "Actor",
         "target": "Target"
       }
+    },
+    "banDialog": {
+      "title": "Ban this account?",
+      "description": "This blocks <strong>{name}</strong> from signing in and ends any active sessions immediately. It does not delete any data and can be reversed at any time.",
+      "reasonLabel": "Reason (recorded in the audit log)",
+      "reasonDetailLabel": "Details",
+      "reasonPlaceholder": "Describe the reason for this ban",
+      "cancel": "Cancel",
+      "banning": "Banning…",
+      "confirmBan": "Ban account",
+      "banFailed": "Could not ban the account.",
+      "banSuccess": "{name} has been banned.",
+      "unbanFailed": "Could not unban the account.",
+      "unbanSuccess": "{name} has been unbanned."
+    },
+    "deleteDialog": {
+      "title": "Delete this account permanently?",
+      "description": "This permanently removes <strong>{name}</strong>, including owned projects, share links, API keys, and gallery entries. Any published gallery tracks and embeds owned by this account will also disappear. This cannot be undone.",
+      "galleryWarning": "Published gallery tracks and embeds owned by this account will be removed along with everything else.",
+      "confirmLabel": "Type <strong>{email}</strong> to confirm",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete permanently",
+      "deleteFailed": "Could not delete the account.",
+      "deleteSuccess": "{name} has been permanently deleted."
     }
   },
   "apiKeys": {
@@ -370,6 +405,9 @@
     },
     "eventTitles": {
       "accountRoleChanged": "Role changed",
+      "accountBanned": "Account banned",
+      "accountUnbanned": "Account unbanned",
+      "accountDeleted": "Account deleted",
       "galleryEntryFeatured": "Gallery entry featured",
       "galleryEntryUnfeatured": "Gallery entry unfeatured",
       "galleryEntryHidden": "Gallery entry hidden",
