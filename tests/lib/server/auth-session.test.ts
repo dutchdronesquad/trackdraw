@@ -95,6 +95,33 @@ describe("auth session resolver", () => {
     });
   });
 
+  it("rejects banned users after loading the session row", async () => {
+    vi.stubEnv("BETTER_AUTH_SECRET", "test-secret");
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-09T12:00:00.000Z"));
+    installD1Statements(mocks.prepare, [
+      createD1Statement({
+        first: {
+          id: "user-1",
+          email: "pilot@example.com",
+          name: null,
+          image: null,
+          role: "user",
+          expiresAt: "2026-06-09T13:00:00.000Z",
+          bannedAt: "2026-06-01T00:00:00.000Z",
+        },
+      }),
+    ]);
+
+    await expect(
+      getCurrentUserFromHeaders(
+        new Headers({
+          cookie: await signedSessionCookie("session-token", "test-secret"),
+        })
+      )
+    ).resolves.toBeNull();
+  });
+
   it("rejects expired sessions after loading the session row", async () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "test-secret");
     vi.useFakeTimers();

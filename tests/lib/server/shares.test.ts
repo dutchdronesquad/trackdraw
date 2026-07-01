@@ -42,6 +42,7 @@ vi.mock("@/lib/server/gallery", () => ({
 
 import {
   createShare,
+  deleteSharesOwnedByUser,
   getSharesByUserId,
   resolveStoredShare,
   revokeShare,
@@ -194,6 +195,42 @@ describe("revokeShare", () => {
       "tok-revoke"
     );
     expect(mocks.deleteGalleryEntry).toHaveBeenCalledWith("tok-revoke");
+  });
+});
+
+describe("deleteSharesOwnedByUser", () => {
+  beforeEach(() => {
+    mocks.prepare.mockReset();
+    mocks.deleteGalleryEntry.mockReset();
+  });
+
+  it("does nothing when the user owns no shares", async () => {
+    const selectStmt = createD1AllStatement([]);
+    installStatements([selectStmt]);
+
+    await deleteSharesOwnedByUser("user-1");
+
+    expect(mocks.deleteGalleryEntry).not.toHaveBeenCalled();
+  });
+
+  it("deletes the gallery entry and share row for every owned share", async () => {
+    const selectStmt = createD1AllStatement([
+      { token: "tok-a" },
+      { token: "tok-b" },
+    ]);
+    const deleteA = createStatement();
+    const deleteB = createStatement();
+    installStatements([selectStmt, deleteA, deleteB]);
+
+    await deleteSharesOwnedByUser("user-1");
+
+    expect(selectStmt.bind).toHaveBeenCalledWith("user-1");
+    expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(1, "tok-a");
+    expect(deleteA.bind).toHaveBeenCalledWith("tok-a");
+    expect(deleteA.run).toHaveBeenCalledOnce();
+    expect(mocks.deleteGalleryEntry).toHaveBeenNthCalledWith(2, "tok-b");
+    expect(deleteB.bind).toHaveBeenCalledWith("tok-b");
+    expect(deleteB.run).toHaveBeenCalledOnce();
   });
 });
 
