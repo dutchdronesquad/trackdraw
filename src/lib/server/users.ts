@@ -265,16 +265,6 @@ export async function deleteUserAccount(userId: string): Promise<void> {
   await db
     .prepare(
       `
-        delete from gallery_entries
-        where owner_user_id = ?
-      `
-    )
-    .bind(userId)
-    .run();
-
-  await db
-    .prepare(
-      `
         delete from apikey
         where referenceId = ?
       `

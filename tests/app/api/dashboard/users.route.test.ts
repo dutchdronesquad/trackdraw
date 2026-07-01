@@ -286,6 +286,28 @@ describe("dashboard users API routes", () => {
       expect(banUser).not.toHaveBeenCalled();
     });
 
+    it("prevents banning the last admin", async () => {
+      const loneAdminUser = createAdminUserFixture({ role: "admin" });
+
+      vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(adminActor);
+      vi.mocked(hasCapability).mockReturnValue(true);
+      vi.mocked(getAdminUserById).mockResolvedValue(loneAdminUser);
+      vi.mocked(countUsersByRole).mockResolvedValue(1);
+
+      const response = await PATCH(
+        patchBanRequest("Spam or abuse"),
+        userContext()
+      );
+
+      expect(response.status).toBe(400);
+      await expect(response.json()).resolves.toEqual({
+        ok: false,
+        error: "TrackDraw must always keep at least one admin account.",
+      });
+      expect(banUser).not.toHaveBeenCalled();
+      expect(createAuditEvent).not.toHaveBeenCalled();
+    });
+
     it("returns 500 when the ban reason is missing", async () => {
       vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(adminActor);
 

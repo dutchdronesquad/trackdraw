@@ -314,14 +314,12 @@ describe("unbanUser", () => {
 });
 
 describe("deleteUserAccount", () => {
-  it("deletes shares, gallery entries, api keys, and projects before deleting the user row", async () => {
+  it("deletes shares (which cascades gallery entries), api keys, and projects before deleting the user row", async () => {
     mocks.deleteSharesOwnedByUser.mockResolvedValue(undefined);
-    const galleryStatement = createD1Statement();
     const apiKeyStatement = createD1Statement();
     const projectsStatement = createD1Statement();
     const usersStatement = createD1Statement();
     installD1Statements(mocks.prepare, [
-      galleryStatement,
       apiKeyStatement,
       projectsStatement,
       usersStatement,
@@ -330,15 +328,29 @@ describe("deleteUserAccount", () => {
     await deleteUserAccount("user-4");
 
     expect(mocks.deleteSharesOwnedByUser).toHaveBeenCalledWith("user-4");
-    expect(galleryStatement.sql).toContain("delete from gallery_entries");
-    expect(galleryStatement.bind).toHaveBeenCalledWith("user-4");
-    expect(galleryStatement.run).toHaveBeenCalledOnce();
     expect(apiKeyStatement.sql).toContain("delete from apikey");
     expect(apiKeyStatement.bind).toHaveBeenCalledWith("user-4");
+    expect(apiKeyStatement.run).toHaveBeenCalledOnce();
     expect(projectsStatement.sql).toContain("delete from projects");
     expect(projectsStatement.bind).toHaveBeenCalledWith("user-4");
     expect(usersStatement.sql).toContain("delete from users");
     expect(usersStatement.bind).toHaveBeenCalledWith("user-4");
     expect(usersStatement.run).toHaveBeenCalledOnce();
+  });
+
+  it("does not issue a raw gallery_entries delete (relies on deleteGalleryEntry for preview-image cleanup)", async () => {
+    mocks.deleteSharesOwnedByUser.mockResolvedValue(undefined);
+    installD1Statements(mocks.prepare, [
+      createD1Statement(),
+      createD1Statement(),
+      createD1Statement(),
+    ]);
+
+    await deleteUserAccount("user-4");
+
+    const sqlCalls = mocks.prepare.mock.calls.map(([sql]) => String(sql));
+    expect(
+      sqlCalls.some((sql) => sql.includes("delete from gallery_entries"))
+    ).toBe(false);
   });
 });

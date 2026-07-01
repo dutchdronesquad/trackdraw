@@ -154,6 +154,19 @@ export async function PATCH(
         );
       }
 
+      if (existingUser.role === "admin") {
+        const adminCount = await countUsersByRole("admin");
+        if (adminCount <= 1) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: "TrackDraw must always keep at least one admin account.",
+            },
+            { status: 400 }
+          );
+        }
+      }
+
       const updatedUser = await banUser(userId, body.reason);
       if (!updatedUser) {
         return NextResponse.json(

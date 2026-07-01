@@ -284,11 +284,14 @@ export default function DashboardUsersManager({
     setPendingBanUserId(userId);
 
     try {
-      const response = await fetch(`/api/dashboard/users/${userId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "ban", reason }),
-      });
+      const response = await fetch(
+        `/api/dashboard/users/${encodeURIComponent(userId)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "ban", reason }),
+        }
+      );
 
       const payload = (await response.json()) as {
         ok: boolean;
@@ -325,11 +328,14 @@ export default function DashboardUsersManager({
     setPendingBanUserId(userId);
 
     try {
-      const response = await fetch(`/api/dashboard/users/${userId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "unban" }),
-      });
+      const response = await fetch(
+        `/api/dashboard/users/${encodeURIComponent(userId)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "unban" }),
+        }
+      );
 
       const payload = (await response.json()) as {
         ok: boolean;
@@ -364,9 +370,10 @@ export default function DashboardUsersManager({
     setPendingDeleteUserId(user.id);
 
     try {
-      const response = await fetch(`/api/dashboard/users/${user.id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/dashboard/users/${encodeURIComponent(user.id)}`,
+        { method: "DELETE" }
+      );
 
       const payload = (await response.json()) as {
         ok: boolean;
