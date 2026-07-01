@@ -11,8 +11,7 @@ export type BanReasonCode = (typeof banReasonCodes)[number];
 
 export function isBanReasonCode(value: unknown): value is BanReasonCode {
   return (
-    typeof value === "string" &&
-    banReasonCodes.includes(value as BanReasonCode)
+    typeof value === "string" && banReasonCodes.includes(value as BanReasonCode)
   );
 }
 

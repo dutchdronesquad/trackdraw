@@ -127,19 +127,15 @@ export default function DashboardUsersManager({
   const [banCandidate, setBanCandidate] = useState<AdminUser | null>(null);
   const [banReasonCode, setBanReasonCode] = useState<BanReasonCode>("spam");
   const [banReasonDetail, setBanReasonDetail] = useState("");
-  const [pendingBanUserId, setPendingBanUserId] = useState<string | null>(
-    null
-  );
+  const [pendingBanUserId, setPendingBanUserId] = useState<string | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<AdminUser | null>(
     null
   );
   const [deleteConfirmValue, setDeleteConfirmValue] = useState("");
-  const [pendingDeleteUserId, setPendingDeleteUserId] = useState<
-    string | null
-  >(null);
-  const [deleteStats, setDeleteStats] = useState<UserContextStats | null>(
+  const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(
     null
   );
+  const [deleteStats, setDeleteStats] = useState<UserContextStats | null>(null);
   const [deleteStatsLoading, setDeleteStatsLoading] = useState(false);
 
   useEffect(() => {
@@ -317,7 +313,9 @@ export default function DashboardUsersManager({
         })
       );
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("banDialog.banFailed"));
+      toast.error(
+        err instanceof Error ? err.message : t("banDialog.banFailed")
+      );
     } finally {
       setPendingBanUserId(null);
     }
@@ -712,7 +710,9 @@ export default function DashboardUsersManager({
                               size="sm"
                               variant="outline"
                               className="hover:bg-muted hover:text-foreground h-7 cursor-pointer gap-1.5 rounded-md px-2.5 text-xs shadow-none"
-                              disabled={pendingBanUserId === inspectCandidate.id}
+                              disabled={
+                                pendingBanUserId === inspectCandidate.id
+                              }
                               onClick={() =>
                                 void submitUnban(inspectCandidate.id)
                               }
