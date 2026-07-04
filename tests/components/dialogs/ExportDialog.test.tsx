@@ -104,9 +104,11 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
-    const switchTo3D = screen.getByRole("button", {
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+
+    const switchTo3D = (await screen.findByRole("button", {
       name: "Switch to 3D view",
-    }) as HTMLButtonElement;
+    })) as HTMLButtonElement;
 
     expect(switchTo3D.disabled).toBe(false);
 
@@ -115,7 +117,9 @@ describe("ExportDialog mobile workflow", () => {
     expect(onRequest3DView).toHaveBeenCalledOnce();
   });
 
-  it("labels mobile export rows by their action", () => {
+  it("labels mobile export rows by their action", async () => {
+    const user = userEvent.setup();
+
     render(
       <ExportDialog
         activeTab="3d"
@@ -126,14 +130,22 @@ describe("ExportDialog mobile workflow", () => {
     );
 
     expect(screen.getByRole("button", { name: "Export Image" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Export Vector" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: /Vector/ }));
     expect(
-      screen.getByRole("button", { name: "Export Race Pack" })
+      await screen.findByRole("button", { name: "Export Vector" })
+    ).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
+    expect(
+      await screen.findByRole("button", { name: "Export Race Pack" })
     ).toBeTruthy();
     expect(screen.getByText("Route numbers")).toBeTruthy();
   });
 
-  it("clarifies mobile export purpose and limitations", () => {
+  it("uses sidebar navigation to select export-specific settings", async () => {
+    const user = userEvent.setup();
+
     render(
       <ExportDialog
         activeTab="3d"
@@ -143,20 +155,65 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
+    expect(screen.getByRole("button", { name: /^Visuals$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Race Day$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Project Data$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Video$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Experimental$/ })).toBeTruthy();
     expect(
-      screen.getByText("High-res 2D map for print, chat, or review.")
-    ).toBeTruthy();
+      screen.getAllByText(
+        "High-res 2D map for print, slides, chat, or quick review."
+      ).length
+    ).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
     expect(
-      screen.getByText(
-        "Editable backup for reopening or archiving in TrackDraw."
+      (
+        await screen.findAllByText(
+          "Race-day setup handoff with map, materials, sequence, and QR."
+        )
+      ).length
+    ).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: /^Project Data$/ }));
+
+    expect(
+      (
+        await screen.findAllByText(
+          "Editable backup for reopening, sharing, or archiving in TrackDraw."
+        )
+      ).length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText("Theme")).toBeNull();
+    expect(screen.queryByText("Route numbers")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: /^Video$/ }));
+
+    expect(
+      (
+        await screen.findAllByText(
+          "One-loop route video for reviewing the flow or sharing the lap."
+        )
+      ).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("Theme")).toBeTruthy();
+    expect(screen.queryByText("Route numbers")).toBeNull();
+    expect(
+      screen.queryByText(
+        "Experimental Velocidrone track file for testing in the simulator; check the layout after import."
       )
-    ).toBeTruthy();
+    ).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: /^Experimental$/ }));
+
     expect(
-      screen.getByText("Setup PDF with map, materials, sequence, and QR.")
-    ).toBeTruthy();
-    expect(
-      screen.getByText("Experimental file for testing; check after import.")
-    ).toBeTruthy();
+      (
+        await screen.findAllByText(
+          "Experimental Velocidrone track file for testing in the simulator; check the layout after import."
+        )
+      ).length
+    ).toBeGreaterThan(0);
   });
 
   it("reports JSON export failures without closing the dialog", async () => {
@@ -175,8 +232,9 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
+    await user.click(screen.getByRole("button", { name: /^Project Data$/ }));
     await user.click(
-      screen.getByRole("button", { name: "Export Project File" })
+      await screen.findByRole("button", { name: "Export Project File" })
     );
 
     await waitFor(() => {
@@ -187,7 +245,7 @@ describe("ExportDialog mobile workflow", () => {
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 
-  it("exports a desktop JSON project with a sanitized custom filename", async () => {
+  it("exports a desktop JSON project with a sanitized project filename", async () => {
     viewport.isMobile = false;
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
@@ -201,12 +259,14 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
-    await user.type(screen.getByPlaceholderText("New Track"), "Race Day #1");
-    await user.click(screen.getByRole("button", { name: /Project File/ }));
+    await user.click(screen.getByRole("button", { name: /^Project Data$/ }));
+    await user.click(
+      await screen.findByRole("button", { name: "Export Project File" })
+    );
 
     await waitFor(() => {
       expect(mocks.downloadJsonFile).toHaveBeenCalledWith(
-        "Race_Day_1.json",
+        expect.stringMatching(/^New_Track_\d{4}-\d{2}-\d{2}\.json$/),
         expect.objectContaining({ version: 2 })
       );
     });
@@ -251,13 +311,16 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /Race Pack/ }));
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+    await user.click(
+      await screen.findByRole("button", { name: "Export Race Pack" })
+    );
 
     await waitFor(() => {
       expect(mocks.exportPdf).toHaveBeenCalledWith(
         stage,
         expect.objectContaining({ version: 2 }),
-        "New_Track_race_pack.pdf",
+        expect.stringMatching(/^New_Track_race_pack_dark_\d{4}-\d{2}-\d{2}\.pdf$/),
         "dark",
         expect.objectContaining({
           t: expect.any(Function),

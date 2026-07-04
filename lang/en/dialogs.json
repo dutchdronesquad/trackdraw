@@ -217,18 +217,26 @@
       "ready": "Cinematic FPV export ready",
       "progressLabel": "Rendering fly-through… video {duration}"
     },
-    "sections": {
-      "visualExports": {
-        "title": "Visual Exports",
-        "description": "Read-only captures for review, print, or sharing."
+    "categories": {
+      "visuals": {
+        "title": "Visuals",
+        "description": "Map images, vector artwork, and the current 3D camera capture."
       },
-      "projectHandoff": {
-        "title": "Project & Handoff",
-        "description": "Editable backup or read-only setup handoff."
+      "raceDay": {
+        "title": "Race Day",
+        "description": "Setup handoff documents for crews and pilots."
       },
-      "simulatorMotion": {
-        "title": "Simulator & Motion",
-        "description": "Review video and experimental simulator output."
+      "projectData": {
+        "title": "Project Data",
+        "description": "Editable TrackDraw files for backup, reuse, and handoff."
+      },
+      "motion": {
+        "title": "Video",
+        "description": "Route review video for checking flow or sharing a lap."
+      },
+      "simulatorLab": {
+        "title": "Experimental",
+        "description": "Experimental simulator-oriented outputs that need manual review after import."
       }
     },
     "formats": {

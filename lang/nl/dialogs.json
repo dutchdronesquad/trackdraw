@@ -217,18 +217,26 @@
       "ready": "Cinematic FPV-export is klaar",
       "progressLabel": "Fly-through video renderen… {duration}"
     },
-    "sections": {
-      "visualExports": {
-        "title": "Visuele exports",
-        "description": "Alleen-lezen captures voor review, print of delen."
+    "categories": {
+      "visuals": {
+        "title": "Visueel",
+        "description": "Kaartafbeeldingen, vectorwerk en de huidige 3D-cameracapture."
       },
-      "projectHandoff": {
-        "title": "Project & handoff",
-        "description": "Bewerkbare back-up of alleen-lezen setup-handoff."
+      "raceDay": {
+        "title": "Race Day",
+        "description": "Setup-handoff documenten voor crew en piloten."
       },
-      "simulatorMotion": {
-        "title": "Simulator & motion",
-        "description": "Reviewvideo en experimentele simulatoroutput."
+      "projectData": {
+        "title": "Projectdata",
+        "description": "Bewerkbare TrackDraw-bestanden voor back-up, hergebruik en handoff."
+      },
+      "motion": {
+        "title": "Video",
+        "description": "Routevideo om flow te controleren of een ronde te delen."
+      },
+      "simulatorLab": {
+        "title": "Experimenteel",
+        "description": "Experimentele simulatorgerichte output die na import handmatige controle vraagt."
       }
     },
     "formats": {

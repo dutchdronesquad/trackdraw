@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Export handoff clarity
+
+The export dialog now uses the same sidebar-and-panel structure as Share and Project Manager, with export categories in the sidebar and the available outputs plus their filename, theme, and route-number settings scoped to the active category. The format picker adapts to a stacked layout on mobile, and default export filenames now include a date so repeat exports do not silently overwrite each other.
+
 ## [1.12.0]
 
 ### Multilingual experience

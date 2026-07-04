@@ -28,15 +28,15 @@ The next TrackDraw priority is export and handoff workflow polish first, generat
 
 - [ ] Export and handoff workflow polish (`No account required`)
       Rework the export dialog around the same clear structure as the Project Manager and Share dialogs. The goal is to make every handoff path easier to choose, explain what each export is for, and make export errors or limitations visible before users rely on the output.
-  - [ ] Export dialog information architecture
-        Group export options by user intent, such as images, documents, editable data, simulator output, and video/flythrough where applicable.
+  - [x] Export dialog information architecture
+        Group exports by category in the sidebar, then let users choose the concrete output and show only the filename, theme, route-number, and limitation details that apply to it.
   - [ ] Export purpose and limitations copy
         Make each export explain whether it is read-only, editable, race-day handoff, backup, simulator-oriented, or experimental.
   - [ ] Race Pack positioning
         Present Race Pack as the race-day handoff export inside the refreshed dialog without starting a larger race-day-ops feature first.
   - [ ] Export validation and feedback states
         Show relevant missing-data, unsupported-output, disabled-action, and failure states consistently before and after export.
-  - [ ] Mobile export drawer refresh
+  - [x] Mobile export drawer refresh
         Bring the mobile export flow closer to the same structure while preserving compact touch-friendly controls.
 
 - [ ] Generated flightpath assistance (`Research`, `No account required`)

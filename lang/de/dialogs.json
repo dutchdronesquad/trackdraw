@@ -217,18 +217,26 @@
       "ready": "Cinematic-FPV-Export bereit",
       "progressLabel": "Fly-through wird gerendert… Video {duration}"
     },
-    "sections": {
-      "visualExports": {
-        "title": "Visuelle Exporte",
-        "description": "Schreibgeschützte Captures für Review, Druck oder Teilen."
+    "categories": {
+      "visuals": {
+        "title": "Visuell",
+        "description": "Kartenbilder, Vektorgrafiken und der aktuelle 3D-Kamera-Capture."
       },
-      "projectHandoff": {
-        "title": "Projekt & Übergabe",
-        "description": "Bearbeitbares Backup oder schreibgeschützte Aufbau-Übergabe."
+      "raceDay": {
+        "title": "Race Day",
+        "description": "Setup-Übergabedokumente für Crew und Piloten."
       },
-      "simulatorMotion": {
-        "title": "Simulator & Motion",
-        "description": "Review-Video und experimentelle Simulatorausgabe."
+      "projectData": {
+        "title": "Projektdaten",
+        "description": "Bearbeitbare TrackDraw-Dateien für Backup, Wiederverwendung und Übergabe."
+      },
+      "motion": {
+        "title": "Video",
+        "description": "Routenvideo zum Prüfen des Flows oder Teilen einer Runde."
+      },
+      "simulatorLab": {
+        "title": "Experimentell",
+        "description": "Experimentelle simulatororientierte Ausgaben, die nach dem Import manuell geprüft werden müssen."
       }
     },
     "formats": {

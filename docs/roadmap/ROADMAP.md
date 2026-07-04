@@ -156,6 +156,8 @@ Suggested first slices:
   - Added locked-selection guards and shortcut feedback for duplicate/delete paths so shortcuts, context menus, and mobile overlays cannot mutate selections that include locked shapes
 - Export/share confidence pass
   - Started by clarifying which exports are read-only visuals, which JSON files are editable backups, what Race Pack is for, and where simulator export remains experimental
+  - Moved the export dialog onto the same sidebar-and-panel structure used by Share and Project Manager, with export categories in the sidebar and available outputs plus per-export filename, theme, and route-number settings in the main panel
+  - Calmed the export dialog visuals: flattened the nested format/settings cards, gave the format picker a responsive layout (stacked tiles on mobile, inline row on desktop), and gave default export filenames a consistent theme suffix plus a date stamp so repeat exports do not silently overwrite each other
   - Clarified managed shares as read-only review links and JSON export as the editable handoff path
 - Performance and large-layout stability
   - Started with bounded dense-grid rendering for SVG/PDF/PNG exports so fine grid settings do not explode export payload size
@@ -278,6 +280,11 @@ Feature tracks:
 
 - Generated flightpath research: prototype route generation from ordered elements as an optional starting point that users can accept and edit
 - Route ambiguity warnings: explore lightweight feedback for unclear order, direction, or corkscrew-like layouts before adding simulation-heavy path optimization
+
+Current foundation:
+
+- Track item registry now exposes explicit generated-route metadata for clear pass-through obstacles such as gates, ladders, towers, and dive gates
+- A pure generated-route module can create an editable Race Line draft from ordered pass-through obstacles and return warnings for unsupported or closely spaced items before any UI commits the result
 
 Important boundary:
 
