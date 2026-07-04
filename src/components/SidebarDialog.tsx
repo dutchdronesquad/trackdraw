@@ -348,9 +348,7 @@ export function SidebarDialog({
             activeItem={activeItem}
             onItemChange={onItemChange}
             sidebarFooter={sidebarFooter}
-            navClassName={
-              !unified && contentDescription ? "mt-3" : undefined
-            }
+            navClassName={!unified && contentDescription ? "mt-3" : undefined}
           />
         </div>
 

@@ -179,7 +179,7 @@ function ExportFormatChoice({
       >
         {format.icon}
       </span>
-      <span className="flex min-w-0 max-w-full flex-col items-center gap-1 md:max-w-none md:flex-1 md:flex-row md:items-center md:gap-2">
+      <span className="flex max-w-full min-w-0 flex-col items-center gap-1 md:max-w-none md:flex-1 md:flex-row md:items-center md:gap-2">
         <span className="text-foreground w-full truncate text-xs font-medium md:w-auto md:text-sm">
           {format.label}
         </span>
@@ -858,7 +858,9 @@ export default function ExportDialog({
         </div>
       ) : null}
 
-      <div className={cn(hasMultipleFormats && "border-border/40 border-t pt-5")}>
+      <div
+        className={cn(hasMultipleFormats && "border-border/40 border-t pt-5")}
+      >
         <ExportSettingsPanel
           format={selectedFormat}
           showHeader={!hasMultipleFormats}

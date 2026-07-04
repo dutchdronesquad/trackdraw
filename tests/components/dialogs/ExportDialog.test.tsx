@@ -320,7 +320,9 @@ describe("ExportDialog mobile workflow", () => {
       expect(mocks.exportPdf).toHaveBeenCalledWith(
         stage,
         expect.objectContaining({ version: 2 }),
-        expect.stringMatching(/^New_Track_race_pack_dark_\d{4}-\d{2}-\d{2}\.pdf$/),
+        expect.stringMatching(
+          /^New_Track_race_pack_dark_\d{4}-\d{2}-\d{2}\.pdf$/
+        ),
         "dark",
         expect.objectContaining({
           t: expect.any(Function),
