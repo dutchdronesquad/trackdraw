@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "homeTitle": "TrackDraw · FPV 赛道设计器",
-    "homeSocialTitle": "TrackDraw | FPV 赛道设计器",
-    "homeDescription": "TrackDraw 是一款面向 FPV 赛事组织者的穿越机竞速赛道设计器。按真实比例设计赛道，在 3D 中检查线路流畅度，并分享只读比赛日布局。",
+    "homeTitle": "TrackDraw · FPV 赛道设计工具",
+    "homeSocialTitle": "TrackDraw | FPV 赛道设计工具",
+    "homeDescription": "TrackDraw 是一款面向 FPV 赛事组织者的穿越机竞速赛道设计工具。按真实比例设计赛道，在 3D 中检查线路流畅度，并分享只读比赛日布局。",
     "homeSocialDescription": "用 TrackDraw 按真实比例规划 FPV 赛道，在 3D 中检查线路流畅度，并分享只读比赛日方案。",
-    "studioTitle": "FPV 赛道设计器",
-    "studioSocialTitle": "TrackDraw | FPV 赛道设计器",
+    "studioTitle": "FPV 赛道设计工具",
+    "studioSocialTitle": "TrackDraw | FPV 赛道设计工具",
     "studioDescription": "打开 TrackDraw，按真实比例设计 FPV 赛道布局，添加门型和障碍，并在 3D 中预览线路流畅度。",
     "studioSocialDescription": "按真实比例设计 FPV 穿越机竞速赛道，添加门型和障碍，并在 3D 中预览线路流畅度。"
   },
@@ -33,14 +33,14 @@
     "eyebrow": "为 FPV 赛事组织者打造",
     "headingLine1": "比赛日的顺畅，",
     "headingLine2": "从一张好图开始。",
-    "description": "TrackDraw 是一款基于浏览器的 FPV 穿越机竞速赛道设计器。你可以在 2D 中按比例布场，在 3D 中检查线路流畅度，把只读布局分享给飞手和布场组，而且桌面端和移动端都好用。",
+    "description": "TrackDraw 是一款基于浏览器的 FPV 穿越机竞速赛道设计工具。你可以在 2D 视图中按比例布场，在 3D 视图中检查线路流畅度，把只读布局分享给飞手和布场组，而且桌面端和移动端都好用。",
     "ctaStudio": "打开 Studio",
     "ctaFeatures": "查看功能",
     "feature1": "官方障碍目录",
     "feature2": "赛道片段",
     "feature3": "3D 预览与模拟飞行",
     "feature4": "赛事布场清单 PDF 与 SVG",
-    "videoAlt": "TrackDraw FPV 赛道设计器演示",
+    "videoAlt": "TrackDraw FPV 赛道设计工具演示",
     "videoDescription": "一个简短的产品演示，展示 TrackDraw 如何帮助 FPV 赛事组织者设计赛道、在 3D 中检查线路，并分享给飞手和布场组。"
   },
   "features": {
@@ -128,7 +128,7 @@
     "items": [
       {
         "question": "TrackDraw 是做穿越机赛道设计的吗？",
-        "answer": "是的。TrackDraw 是一款基于浏览器的 FPV 穿越机竞速赛道设计器，把按比例布局、3D 审阅、分享和导出放在同一套流程里。"
+        "answer": "是的。TrackDraw 是一款基于浏览器的 FPV 穿越机竞速赛道设计工具，把按比例布局、3D 审阅、分享和导出放在同一套流程里。"
       },
       {
         "question": "规划一条 FPV 赛道最好的方式是什么？",
@@ -179,7 +179,7 @@
       "cta": "创建账户"
     },
     "features": {
-      "fullDesigner": "完整赛道设计器",
+      "fullDesigner": "完整赛道设计工具",
       "preview2d3d": "2D 与 3D 预览",
       "export": "PDF、SVG、PNG 与 JSON 导出",
       "shareLinks": "共享链接",
@@ -204,7 +204,7 @@
     }
   },
   "footer": {
-    "tagline": "面向 FPV 赛事组织者的浏览器赛道设计器。按比例画图，3D 预览，分享只读链接，在移动端也能快速改图。",
+    "tagline": "面向 FPV 赛事组织者的浏览器赛道设计工具。按比例画图，3D 预览，分享只读链接，在移动端也能快速改图。",
     "productTitle": "产品",
     "openStudio": "打开 Studio",
     "releaseNotes": "更新日志",
@@ -219,8 +219,8 @@
     "githubSponsors": "GitHub Sponsors",
     "kofi": "Ko-fi",
     "copyright": "© {year} Dutch Drone Squad。开源项目。",
-    "madeWithPre": "为 FPV 社区打造，",
-    "madeWithPost": "持续打磨中"
+    "madeWithPre": "用",
+    "madeWithPost": "为 FPV 社区打造，由 Licardo 汉化"
   },
   "gallery": {
     "pageTitle": "FPV 穿越机竞速赛道图库",
