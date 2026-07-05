@@ -4,7 +4,10 @@ import { useState } from "react";
 import { Box, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Kbd } from "@/components/ui/kbd";
-import { starterLayouts } from "@/lib/planning/starter-layouts";
+import {
+  getStarterLayoutCopy,
+  starterLayouts,
+} from "@/lib/planning/starter-layouts";
 import { cn } from "@/lib/utils";
 
 const STARTER_STEP_IDS = ["01", "02", "03"] as const;
@@ -81,6 +84,7 @@ export function StarterActions({
   onStarterLayout: (layoutId: string) => void;
 }) {
   const t = useTranslations("editor.starterFlow");
+  const tStarterLayouts = useTranslations("editor.starterLayoutCatalog");
   const [selectedStarterId, setSelectedStarterId] = useState(
     starterLayouts[0]?.id ?? null
   );
@@ -88,6 +92,9 @@ export function StarterActions({
     starterLayouts.find((layout) => layout.id === selectedStarterId) ??
     starterLayouts[0] ??
     null;
+  const selectedStarterCopy = selectedStarter
+    ? getStarterLayoutCopy(selectedStarter, tStarterLayouts)
+    : null;
 
   if (!mobile) {
     return (
@@ -96,6 +103,7 @@ export function StarterActions({
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
               {starterLayouts.map((layout) => {
+                const layoutCopy = getStarterLayoutCopy(layout, tStarterLayouts);
                 const selected = layout.id === selectedStarter?.id;
                 return (
                   <button
@@ -109,13 +117,13 @@ export function StarterActions({
                         : "border-border/60 bg-background text-muted-foreground hover:bg-muted/35 hover:text-foreground"
                     )}
                   >
-                    {layout.name}
+                    {layoutCopy?.name ?? layout.name}
                   </button>
                 );
               })}
             </div>
 
-            {selectedStarter ? (
+            {selectedStarter && selectedStarterCopy ? (
               <button
                 type="button"
                 onClick={() => onStarterLayout(selectedStarter.id)}
@@ -126,10 +134,10 @@ export function StarterActions({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-foreground text-sm font-medium">
-                    {selectedStarter.name}
+                    {selectedStarterCopy.name}
                   </p>
                   <p className="text-muted-foreground mt-1 text-xs leading-5">
-                    {selectedStarter.description}
+                    {selectedStarterCopy.description}
                   </p>
                 </div>
                 <div className="flex h-full items-center self-stretch">
@@ -187,27 +195,30 @@ export function StarterActions({
             {t("starterLayouts.label")}
           </p>
           <div className="space-y-2">
-            {starterLayouts.map((layout) => (
-              <button
-                key={layout.id}
-                type="button"
-                onClick={() => onStarterLayout(layout.id)}
-                className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex w-full cursor-pointer items-start gap-3 rounded-2xl border px-3 py-2.5 text-left transition-all"
-              >
-                <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-                  <Box className="size-3.5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground text-[13px] leading-4 font-medium">
-                    {layout.name}
-                  </p>
-                  <p className="text-muted-foreground mt-0.5 line-clamp-1 text-[11px] leading-4">
-                    {layout.description}
-                  </p>
-                </div>
-                <ChevronRight className="text-muted-foreground/45 mt-0.5 size-3.5 shrink-0" />
-              </button>
-            ))}
+            {starterLayouts.map((layout) => {
+              const layoutCopy = getStarterLayoutCopy(layout, tStarterLayouts);
+              return (
+                <button
+                  key={layout.id}
+                  type="button"
+                  onClick={() => onStarterLayout(layout.id)}
+                  className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex w-full cursor-pointer items-start gap-3 rounded-2xl border px-3 py-2.5 text-left transition-all"
+                >
+                  <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
+                    <Box className="size-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-foreground text-[13px] leading-4 font-medium">
+                      {layoutCopy?.name ?? layout.name}
+                    </p>
+                    <p className="text-muted-foreground mt-0.5 line-clamp-1 text-[11px] leading-4">
+                      {layoutCopy?.description ?? layout.description}
+                    </p>
+                  </div>
+                  <ChevronRight className="text-muted-foreground/45 mt-0.5 size-3.5 shrink-0" />
+                </button>
+              );
+            })}
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock3, Grid2X2, Ruler, Sparkles } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import type { PublicGalleryEntry } from "@/lib/server/gallery";
@@ -51,11 +51,11 @@ function TrackDrawMark({ className }: { className?: string }) {
 
 type Translate = (key: string, values?: Record<string, unknown>) => string;
 
-function formatDate(value: string | null, t: Translate) {
+function formatDate(value: string | null, locale: string, t: Translate) {
   if (!value) return t("recentlyAdded");
 
   try {
-    return new Intl.DateTimeFormat("en-GB", {
+    return new Intl.DateTimeFormat(locale, {
       dateStyle: "medium",
     }).format(new Date(value));
   } catch {
@@ -116,6 +116,7 @@ function GalleryCard({
   unitSystem: "metric" | "imperial";
 }) {
   const t = useTranslations("landing.gallery.grid") as unknown as Translate;
+  const locale = useLocale();
   const previewUrl = getPreviewUrl(entry, mediaBaseUrl);
 
   return (
@@ -181,7 +182,9 @@ function GalleryCard({
 
         <div className="border-border/45 flex items-center justify-between gap-3 border-t pt-3">
           <p className="text-muted-foreground text-[11px]">
-            {t("published", { date: formatDate(entry.galleryPublishedAt, t) })}
+            {t("published", {
+              date: formatDate(entry.galleryPublishedAt, locale, t),
+            })}
           </p>
           <div className="flex shrink-0 items-center gap-1 font-medium text-[--brand-primary]">
             {t("open")}

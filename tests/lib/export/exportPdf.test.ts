@@ -7,6 +7,8 @@ import { designToSvg } from "@/lib/export/exportSvg";
 const pdfMock = vi.hoisted(() => ({
   instances: [] as Array<{
     addImageCalls: unknown[][];
+    addFileToVFSCalls: unknown[][];
+    addFontCalls: unknown[][];
     pages: number;
     rectCalls: unknown[][];
     savedFilenames: string[];
@@ -24,6 +26,8 @@ vi.mock("@/lib/export/exportSvg", () => ({
 vi.mock("@/lib/vendor/jspdf", () => {
   class MockPdf {
     addImageCalls: unknown[][] = [];
+    addFileToVFSCalls: unknown[][] = [];
+    addFontCalls: unknown[][] = [];
     pages = 1;
     rectCalls: unknown[][] = [];
     savedFilenames: string[] = [];
@@ -37,6 +41,12 @@ vi.mock("@/lib/vendor/jspdf", () => {
 
     addImage(...args: unknown[]) {
       this.addImageCalls.push(args);
+    }
+    addFileToVFS(...args: unknown[]) {
+      this.addFileToVFSCalls.push(args);
+    }
+    addFont(...args: unknown[]) {
+      this.addFontCalls.push(args);
     }
     addPage() {
       this.pages += 1;
@@ -235,5 +245,27 @@ describe("exportPdf", () => {
         preset: "race-day",
       })
     );
+  });
+
+  it("loads a CJK font when exporting Chinese PDF copy", async () => {
+    const design = createDefaultDesign();
+    design.title = "中文布场清单";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new Uint8Array([0, 1, 2, 3]).buffer,
+      }))
+    );
+
+    await exportPdf(null as never, design, "race-pack-zh.pdf", "dark", translate, {
+      locale: "zh",
+      preset: "race-day",
+    });
+
+    const pdf = pdfMock.instances[0];
+    expect(pdf.addFileToVFSCalls).toHaveLength(1);
+    expect(pdf.addFontCalls.length).toBeGreaterThanOrEqual(2);
   });
 });

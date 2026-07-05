@@ -3,7 +3,10 @@
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { starterLayouts } from "@/lib/planning/starter-layouts";
+import {
+  getStarterLayoutCopy,
+  starterLayouts,
+} from "@/lib/planning/starter-layouts";
 import { Box, ChevronRight, Download, FilePlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -25,6 +28,7 @@ export default function NewProjectDialog({
   hasContent,
 }: NewProjectDialogProps) {
   const t = useTranslations("dialogs");
+  const tStarterLayouts = useTranslations("editor.starterLayoutCatalog");
   const isMobile = useIsMobile();
 
   const actionRowClass =
@@ -83,25 +87,30 @@ export default function NewProjectDialog({
 
   const starterBlock = onStartStarterLayout ? (
     <div className="space-y-2.5">
-      {starterLayouts.map((layout) => (
-        <button
-          key={layout.id}
-          type="button"
-          onClick={() => onStartStarterLayout(layout.id)}
-          className={actionRowClass}
-        >
-          <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-            <Box className="size-4" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">{layout.name}</p>
-            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              {layout.description}
-            </p>
-          </div>
-          <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
-        </button>
-      ))}
+      {starterLayouts.map((layout) => {
+        const layoutCopy = getStarterLayoutCopy(layout, tStarterLayouts);
+        return (
+          <button
+            key={layout.id}
+            type="button"
+            onClick={() => onStartStarterLayout(layout.id)}
+            className={actionRowClass}
+          >
+            <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
+              <Box className="size-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-foreground text-sm font-medium">
+                {layoutCopy?.name ?? layout.name}
+              </p>
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                {layoutCopy?.description ?? layout.description}
+              </p>
+            </div>
+            <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />
+          </button>
+        );
+      })}
     </div>
   ) : null;
 

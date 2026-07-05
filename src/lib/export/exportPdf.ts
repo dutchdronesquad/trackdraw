@@ -7,6 +7,7 @@ import {
 } from "@/lib/planning/inventory";
 import { buildSetupPlan } from "@/lib/planning/setup-estimate";
 import { createQrCode } from "@/lib/qr-code";
+import { getDesignShapes } from "@/lib/track/design";
 import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import { getDesignTimingMarkers, timingRoleLabels } from "@/lib/track/timing";
 import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
@@ -34,6 +35,12 @@ const BORDER: [number, number, number] = [215, 223, 235];
 const PANEL: [number, number, number] = [245, 248, 252];
 const WARN: [number, number, number] = [180, 83, 9];
 const BRAND_LOGO_ASPECT = 1027 / 200;
+const CJK_FONT_FILE = "NotoSansSC-VF-subset.ttf";
+const CJK_FONT_FAMILY = "NotoSansSCSubset";
+const CJK_FONT_PATH = "/assets/fonts/NotoSansSC-VF-subset.ttf";
+const CJK_TEXT_RE = /[\u3400-\u9FFF\uF900-\uFAFF]/u;
+
+let cjkFontBase64Promise: Promise<string> | null = null;
 
 async function loadSvgAsPng(
   svgUrl: string,
@@ -82,6 +89,97 @@ async function loadBrandLogo() {
     799,
     200
   );
+}
+
+function containsCjkText(value: string | null | undefined) {
+  return typeof value === "string" && CJK_TEXT_RE.test(value);
+}
+
+function designHasCjkText(design: TrackDesign) {
+  if (containsCjkText(design.title) || containsCjkText(design.description)) {
+    return true;
+  }
+
+  return getDesignShapes(design).some((shape) => {
+    if ("name" in shape && containsCjkText(shape.name)) {
+      return true;
+    }
+
+    return "text" in shape && containsCjkText(shape.text);
+  });
+}
+
+function shouldUseCjkPdfFont(
+  design: TrackDesign,
+  options?: Pick<ExportPdfOptions, "locale">
+) {
+  return options?.locale?.toLowerCase().startsWith("zh") || designHasCjkText(design);
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  let binary = "";
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
+}
+
+async function loadCjkPdfFontBase64() {
+  cjkFontBase64Promise ??= (async () => {
+    const response = await fetch(CJK_FONT_PATH);
+    if (!response.ok) {
+      throw new Error(`Failed to load PDF font: ${response.status}`);
+    }
+
+    return arrayBufferToBase64(await response.arrayBuffer());
+  })();
+
+  return cjkFontBase64Promise;
+}
+
+async function configureExportPdfFont(
+  pdf: jsPDF,
+  design: TrackDesign,
+  options?: Pick<ExportPdfOptions, "locale">
+) {
+  if (!shouldUseCjkPdfFont(design, options)) {
+    return;
+  }
+
+  const fontBase64 = await loadCjkPdfFontBase64();
+  pdf.addFileToVFS(CJK_FONT_FILE, fontBase64);
+  pdf.addFont(CJK_FONT_FILE, CJK_FONT_FAMILY, "normal");
+  pdf.addFont(CJK_FONT_FILE, CJK_FONT_FAMILY, "bold");
+
+  const originalSetFont = pdf.setFont.bind(pdf);
+  pdf.setFont = ((fontName, fontStyle, fontWeight) => {
+    const resolvedFontName =
+      !fontName || fontName === "helvetica" ? CJK_FONT_FAMILY : fontName;
+    return originalSetFont(resolvedFontName, fontStyle, fontWeight);
+  }) as typeof pdf.setFont;
+
+  pdf.setFont(CJK_FONT_FAMILY, "normal");
+}
+
+function formatExportDate(locale?: string) {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+  } catch {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+  }
 }
 
 function setPageBackground(pdf: jsPDF) {
@@ -767,11 +865,8 @@ async function exportRacePackPdf(
 ) {
   const { t } = translate;
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const dateText = new Date().toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  await configureExportPdfFont(pdf, design, options);
+  const dateText = formatExportDate(options?.locale);
   const logoDataUrl = await loadBrandLogo();
   const mapDataUrl = await renderDesignPngDataUrl(design, theme, options);
   if (!mapDataUrl) {
@@ -836,6 +931,7 @@ async function exportStandardPdf(
   const { width, height } = design.field;
   const orientation = width >= height ? "landscape" : "portrait";
   const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" });
+  await configureExportPdfFont(pdf, design, options);
   setPageBackground(pdf);
 
   const pageW = pdf.internal.pageSize.getWidth();
@@ -888,11 +984,7 @@ async function exportStandardPdf(
   pdf.setFillColor(...PANEL);
   pdf.setDrawColor(...BORDER);
   pdf.roundedRect(margin, footerY, availW, footerH, 2.5, 2.5, "FD");
-  const dateText = new Date().toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const dateText = formatExportDate(options?.locale);
   const midY = footerY + footerH / 2 + 1.2;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);

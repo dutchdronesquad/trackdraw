@@ -4,6 +4,7 @@ import * as de from "@lang/de";
 import * as en from "@lang/en";
 import i18nPolicy from "@lang/i18n-policy.json";
 import * as nl from "@lang/nl";
+import * as zh from "@lang/zh";
 import { defaultLocale, type SupportedLocale } from "@/lib/i18n/locales";
 
 export type MessageNamespace = keyof typeof en;
@@ -15,7 +16,7 @@ const englishOnlyNamespaceSet = new Set<MessageNamespace>(
 const catalogs: Record<
   SupportedLocale,
   Partial<Record<MessageNamespace, unknown>>
-> = { en, nl, de };
+> = { en, nl, de, zh };
 
 const catalogNamespaces = Object.keys(en) as MessageNamespace[];
 const catalogCache = new Map<

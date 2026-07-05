@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import {
   getCatalogEntriesByKind,
+  getTrackElementCatalogDisplayName,
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
   type TrackElementCatalogId,
@@ -305,7 +306,7 @@ export function MultiInspectorView({
                         value={entry.id}
                         className="text-xs lg:text-[11px]"
                       >
-                        {entry.name}
+                        {getTrackElementCatalogDisplayName(entry, tShapes)}
                       </SelectItem>
                     ))}
                   </SelectContent>
