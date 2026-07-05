@@ -120,7 +120,7 @@ export function getStarterLayoutById(id: string | null | undefined) {
   return starterLayoutMap.get(id) ?? null;
 }
 
-export function getStarterLayoutCopy(
+export function getLocalizedStarterLayout(
   layout: StarterLayout | string | null | undefined,
   t?: StarterLayoutTranslate
 ) {

@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   createStarterLayoutDesign,
-  getStarterLayoutCopy,
+  getLocalizedStarterLayout,
 } from "@/lib/planning/starter-layouts";
 import { shouldShowStarterForDesign } from "@/components/editor/StarterFlow";
 import { isAccountProjectSyncConflictError } from "@/components/editor/useAccountProjectSync";
@@ -144,7 +144,7 @@ export function useStarterExperience({
 
   const applyStarterLayout = useCallback(
     (layoutId: string) => {
-      const layoutCopy = getStarterLayoutCopy(layoutId, tStarterLayouts);
+      const layoutCopy = getLocalizedStarterLayout(layoutId, tStarterLayouts);
       const nextDesign = createStarterLayoutDesign(layoutId, {
         title: layoutCopy?.title,
       });

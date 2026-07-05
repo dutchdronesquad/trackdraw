@@ -4,7 +4,7 @@ import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  getStarterLayoutCopy,
+  getLocalizedStarterLayout,
   starterLayouts,
 } from "@/lib/planning/starter-layouts";
 import { Box, ChevronRight, Download, FilePlus, X } from "lucide-react";
@@ -88,7 +88,7 @@ export default function NewProjectDialog({
   const starterBlock = onStartStarterLayout ? (
     <div className="space-y-2.5">
       {starterLayouts.map((layout) => {
-        const layoutCopy = getStarterLayoutCopy(layout, tStarterLayouts);
+        const layoutCopy = getLocalizedStarterLayout(layout, tStarterLayouts);
         return (
           <button
             key={layout.id}
