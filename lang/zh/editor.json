@@ -68,8 +68,8 @@
     "grouped": "已分组",
     "groupNamed": "分组：{name}",
     "groups": "{count} 个分组",
-    "devOn": "开发开",
-    "dev": "开发"
+    "devOn": "开发模式 开",
+    "dev": "开发模式"
   },
   "accountMenu": {
     "checkingAuth": "正在检查登录状态…",
@@ -444,7 +444,7 @@
     "ariaLabel": "语言"
   },
   "performanceHud": {
-    "title": "开发 HUD",
+    "title": "开发模式 HUD",
     "summary": "工具 {tool} · 已选 {count} 项",
     "reset": "重置",
     "close": "关闭",
