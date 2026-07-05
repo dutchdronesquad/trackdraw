@@ -5,7 +5,7 @@ import { Box, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Kbd } from "@/components/ui/kbd";
 import {
-  getStarterLayoutCopy,
+  getLocalizedStarterLayout,
   starterLayouts,
 } from "@/lib/planning/starter-layouts";
 import { cn } from "@/lib/utils";
@@ -93,7 +93,7 @@ export function StarterActions({
     starterLayouts[0] ??
     null;
   const selectedStarterCopy = selectedStarter
-    ? getStarterLayoutCopy(selectedStarter, tStarterLayouts)
+    ? getLocalizedStarterLayout(selectedStarter, tStarterLayouts)
     : null;
 
   if (!mobile) {
@@ -103,7 +103,10 @@ export function StarterActions({
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
               {starterLayouts.map((layout) => {
-                const layoutCopy = getStarterLayoutCopy(layout, tStarterLayouts);
+                const layoutCopy = getLocalizedStarterLayout(
+                  layout,
+                  tStarterLayouts
+                );
                 const selected = layout.id === selectedStarter?.id;
                 return (
                   <button
@@ -196,7 +199,10 @@ export function StarterActions({
           </p>
           <div className="space-y-2">
             {starterLayouts.map((layout) => {
-              const layoutCopy = getStarterLayoutCopy(layout, tStarterLayouts);
+              const layoutCopy = getLocalizedStarterLayout(
+                layout,
+                tStarterLayouts
+              );
               return (
                 <button
                   key={layout.id}
