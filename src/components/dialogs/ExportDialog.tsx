@@ -16,7 +16,7 @@ import { ArrowRight, Download, Loader2, Moon, Sun } from "lucide-react";
 import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Translate } from "@/lib/editor/tool-registry";
 
 export interface ExportDialogProps {
@@ -253,6 +253,7 @@ export default function ExportDialog({
     "setupEstimate"
   ) as unknown as Translate;
   const tShapes = useTranslations("shapes") as unknown as Translate;
+  const locale = useLocale();
   const design = useEditor((s) => s.track.design);
   const { unitSystem } = useMeasurementUnitSystem();
   const currentTheme = useTheme();
@@ -572,8 +573,10 @@ export default function ExportDialog({
                   { t: tExportPdf, tSetup: tSetupEstimate, tShapes },
                   {
                     includeObstacleNumbers,
+                    locale,
                     preset: "race-day",
                     shareUrl,
+                    titleFallback: tExportPdf("untitledTrack"),
                     unitSystem,
                   }
                 );
@@ -733,7 +736,12 @@ export default function ExportDialog({
                   design,
                   `${safeName({ view: "2d", theme: exportTheme })}.svg`,
                   exportTheme,
-                  { includeObstacleNumbers, unitSystem }
+                  {
+                    includeObstacleNumbers,
+                    locale,
+                    titleFallback: tExportPdf("untitledTrack"),
+                    unitSystem,
+                  }
                 )
               )
             }
@@ -817,8 +825,10 @@ export default function ExportDialog({
                   { t: tExportPdf, tSetup: tSetupEstimate, tShapes },
                   {
                     includeObstacleNumbers,
+                    locale,
                     preset: "race-day",
                     shareUrl,
+                    titleFallback: tExportPdf("untitledTrack"),
                     unitSystem,
                   }
                 );

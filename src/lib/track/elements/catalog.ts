@@ -289,6 +289,11 @@ export interface TrackElementCatalogIdentity {
   };
 }
 
+export type CatalogTranslate = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -327,6 +332,117 @@ function isTrackElementCatalogIdentity(
     return false;
   }
   return typeof value.snapshot.dimensionsLabel === "string";
+}
+
+function getTrackElementCatalogTranslationKey(
+  id: TrackElementCatalogId
+): string | null {
+  switch (id) {
+    case TRACKDRAW_GATE_ELEMENT_ID:
+      return "catalogEntries.trackdrawGate";
+    case MULTIGP_STANDARD_GATE_5X5_ELEMENT_ID:
+      return "catalogEntries.multigpStandardGate5x5";
+    case MULTIGP_CHAMPIONSHIP_GATE_7X6_ELEMENT_ID:
+      return "catalogEntries.multigpChampionshipGate7x6";
+    case TRACKDRAW_TOWER_ELEMENT_ID:
+      return "catalogEntries.trackdrawTower";
+    case MULTIGP_TOWER_5X5_ELEMENT_ID:
+      return "catalogEntries.multigpTower5x5";
+    case MULTIGP_TOWER_7X6_ELEMENT_ID:
+      return "catalogEntries.multigpTower7x6";
+    case MULTIGP_DOUBLE_GATE_TOWER_5X5_ELEMENT_ID:
+      return "catalogEntries.multigpDoubleGateTower5x5";
+    case MULTIGP_DOUBLE_GATE_TOWER_7X6_ELEMENT_ID:
+      return "catalogEntries.multigpDoubleGateTower7x6";
+    case TRACKDRAW_FLAG_ELEMENT_ID:
+      return "catalogEntries.trackdrawFlag";
+    case MULTIGP_CORNER_FLAG_ELEMENT_ID:
+      return "catalogEntries.multigpCornerFlag";
+    case TRACKDRAW_CONE_ELEMENT_ID:
+      return "catalogEntries.trackdrawCone";
+    case TRACKDRAW_LABEL_ELEMENT_ID:
+      return "catalogEntries.trackdrawLabel";
+    case TRACKDRAW_START_FINISH_ELEMENT_ID:
+      return "catalogEntries.trackdrawStartFinish";
+    case TRACKDRAW_LADDER_ELEMENT_ID:
+      return "catalogEntries.trackdrawLadder";
+    case MULTIGP_STANDARD_LADDER_5X5_ELEMENT_ID:
+      return "catalogEntries.multigpStandardLadder5x5";
+    case MULTIGP_CHAMPIONSHIP_LADDER_7X6_ELEMENT_ID:
+      return "catalogEntries.multigpChampionshipLadder7x6";
+    case MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID:
+      return "catalogEntries.multigpToplessLadder7x6";
+    case TRACKDRAW_DIVE_GATE_ELEMENT_ID:
+      return "catalogEntries.trackdrawDiveGate";
+    case MULTIGP_DIVE_GATE_7X6_ELEMENT_ID:
+      return "catalogEntries.multigpDiveGate7x6";
+    case MULTIGP_LAUNCH_GATE_7X6_ELEMENT_ID:
+      return "catalogEntries.multigpLaunchGate7x6";
+    case TRACKDRAW_BANNER_ELEMENT_ID:
+      return "catalogEntries.trackdrawBanner";
+    case TRACKDRAW_FENCE_ELEMENT_ID:
+      return "catalogEntries.trackdrawFence";
+    case TRACKDRAW_NET_ELEMENT_ID:
+      return "catalogEntries.trackdrawNet";
+    case MULTIGP_HURDLE_ELEMENT_ID:
+      return "catalogEntries.multigpHurdle";
+    default:
+      return null;
+  }
+}
+
+function resolveTrackElementCatalogEntry(
+  value:
+    | TrackElementCatalogEntry
+    | TrackElementCatalogIdentity
+    | TrackElementCatalogId
+    | null
+    | undefined
+) {
+  if (!value) return null;
+  if (typeof value === "string") {
+    return getTrackElementCatalogEntry(value);
+  }
+  if (isTrackElementCatalogIdentity(value)) {
+    return getTrackElementCatalogEntry(value.elementId);
+  }
+  return value;
+}
+
+export function getTrackElementCatalogDisplayName(
+  value:
+    | TrackElementCatalogEntry
+    | TrackElementCatalogIdentity
+    | TrackElementCatalogId
+    | null
+    | undefined,
+  t?: CatalogTranslate
+) {
+  const entry = resolveTrackElementCatalogEntry(value);
+  const fallback = isTrackElementCatalogIdentity(value)
+    ? value.snapshot.name
+    : entry?.name ?? "";
+  const key = entry ? getTrackElementCatalogTranslationKey(entry.id) : null;
+
+  return key && t ? t(`${key}.name`) : fallback;
+}
+
+export function getTrackElementCatalogDimensionsLabel(
+  value:
+    | TrackElementCatalogEntry
+    | TrackElementCatalogIdentity
+    | TrackElementCatalogId
+    | null
+    | undefined,
+  t?: CatalogTranslate
+) {
+  const entry = resolveTrackElementCatalogEntry(value);
+  const fallback = isTrackElementCatalogIdentity(value)
+    ? value.snapshot.dimensionsLabel
+    : entry?.dimensions.display.label ?? "";
+  const key = entry ? getTrackElementCatalogTranslationKey(entry.id) : null;
+
+  return key && t ? t(`${key}.dimensions`) : fallback;
 }
 
 const frameOnlyGateDefaults = {

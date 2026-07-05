@@ -26,6 +26,7 @@ const localeConfig: Record<
   en: { label: "English", abbr: "EN", flag: "🇬🇧" },
   nl: { label: "Nederlands", abbr: "NL", flag: "🇳🇱" },
   de: { label: "Deutsch", abbr: "DE", flag: "🇩🇪" },
+  zh: { label: "简体中文", abbr: "ZH", flag: "🇨🇳" },
 };
 
 interface LanguagePickerProps {

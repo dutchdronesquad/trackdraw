@@ -8,6 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  getTrackElementCatalogDimensionsLabel,
+  getTrackElementCatalogDisplayName,
   type TrackElementCatalogEntry,
   type TrackElementCatalogId,
   type TrackElementCatalogIdentity,
@@ -34,6 +36,7 @@ export function CatalogTypeSection({
 }: CatalogTypeSectionProps) {
   const t = useTranslations("inspector");
   const tCommon = useTranslations("common");
+  const tShapes = useTranslations("shapes");
   return (
     <Section title={t("catalog.sectionTitle")} defaultOpen>
       <Row label={tCommon("labels.type")}>
@@ -52,7 +55,7 @@ export function CatalogTypeSection({
                 value={entry.id}
                 className="text-xs lg:text-[11px]"
               >
-                {entry.name}
+                {getTrackElementCatalogDisplayName(entry, tShapes)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -79,7 +82,7 @@ export function CatalogTypeSection({
       {catalogIdentity ? (
         <Row label={t("catalog.sizeLabel")}>
           <span className="text-foreground text-[12px]">
-            {catalogIdentity.snapshot.dimensionsLabel}
+            {getTrackElementCatalogDimensionsLabel(catalogIdentity, tShapes)}
           </span>
         </Row>
       ) : null}

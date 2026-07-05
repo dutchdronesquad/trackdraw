@@ -17,6 +17,11 @@ export interface StarterLayout {
   shapes: ShapeDraft[];
 }
 
+export type StarterLayoutTranslate = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
+
 const gate = (x: number, y: number, rotation = 0, color = "#3b82f6") => ({
   ...createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
     x,
@@ -115,8 +120,45 @@ export function getStarterLayoutById(id: string | null | undefined) {
   return starterLayoutMap.get(id) ?? null;
 }
 
+export function getStarterLayoutCopy(
+  layout: StarterLayout | string | null | undefined,
+  t?: StarterLayoutTranslate
+) {
+  const resolvedLayout =
+    typeof layout === "string" ? getStarterLayoutById(layout) : layout;
+  if (!resolvedLayout) return null;
+  if (!t) return resolvedLayout;
+
+  switch (resolvedLayout.id) {
+    case "open-practice":
+      return {
+        ...resolvedLayout,
+        name: t("openPractice.name"),
+        title: t("openPractice.title"),
+        description: t("openPractice.description"),
+      };
+    case "compact-race-start":
+      return {
+        ...resolvedLayout,
+        name: t("compactRaceStart.name"),
+        title: t("compactRaceStart.title"),
+        description: t("compactRaceStart.description"),
+      };
+    case "technical-ladder-line":
+      return {
+        ...resolvedLayout,
+        name: t("technicalLadderLine.name"),
+        title: t("technicalLadderLine.title"),
+        description: t("technicalLadderLine.description"),
+      };
+    default:
+      return resolvedLayout;
+  }
+}
+
 export function createStarterLayoutDesign(
-  layoutId: string
+  layoutId: string,
+  options?: { title?: string }
 ): TrackDesign | null {
   const layout = getStarterLayoutById(layoutId);
   if (!layout) return null;
@@ -141,7 +183,7 @@ export function createStarterLayoutDesign(
 
   return {
     ...base,
-    title: layout.title,
+    title: options?.title?.trim() || layout.title,
     shapeOrder: shapes.map((shape) => shape.id),
     shapeById: Object.fromEntries(shapes.map((shape) => [shape.id, shape])),
     updatedAt: timestamp,

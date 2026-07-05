@@ -1,6 +1,8 @@
 // @vitest-environment happy-dom
 
 import { act, cleanup, renderHook } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import * as en from "@lang/en";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useStarterExperience } from "@/components/editor/useStarterExperience";
 import { AccountProjectSyncConflictError } from "@/components/editor/useAccountProjectSync";
@@ -11,6 +13,7 @@ import {
 } from "../../helpers/storage";
 
 let restoreStorage: (() => void) | null = null;
+const messages = { ...en };
 
 function renderStarterExperience(
   overrides: Partial<Parameters<typeof useStarterExperience>[0]> = {}
@@ -42,7 +45,13 @@ function renderStarterExperience(
   return {
     options,
     blankDesign,
-    ...renderHook(() => useStarterExperience(options)),
+    ...renderHook(() => useStarterExperience(options), {
+      wrapper: ({ children }) => (
+        <NextIntlClientProvider locale="en" messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      ),
+    }),
   };
 }
 

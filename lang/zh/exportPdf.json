@@ -1,0 +1,66 @@
+{
+  "renderFailed": "PDF 导出失败",
+  "untitledTrack": "未命名赛道",
+  "footer": {
+    "brand": "TrackDraw · {pageLabel}",
+    "pageOf": "第 {pageNumber} / {totalPages} 页",
+    "pageOverview": "概览",
+    "pageTrackMap": "赛道图",
+    "pageBuildSheet": "布场清单"
+  },
+  "sharedView": {
+    "title": "共享视图",
+    "scanToOpen": "扫码打开赛道",
+    "scanDescription": "打开 TrackDraw 规范共享链接，方便手机端审阅和现场讲解。",
+    "noShare": "未关联已发布共享链接",
+    "noShareDescription": "如果你希望在布场清单里带上扫码入口，请先发布这个项目。"
+  },
+  "cover": {
+    "title": "赛事布场清单",
+    "numberingIncluded": "已含编号",
+    "numberingHidden": "已隐藏编号",
+    "statusLabel": "状态",
+    "statusBuildable": "可布场",
+    "statusShort": "库存不足",
+    "missingLabel": "缺口",
+    "obstaclesLabel": "障碍数",
+    "intro": "这份布场清单是给比赛日布场组随身携带用的。地图页用于现场摆放参考，物料页用于核对库存，布场顺序页则给出更实际的进场搭建顺序。时间估算基于常见 2-3 人俱乐部布场流程：卸车、摊器材、预组，然后进场摆放与固定。",
+    "contentsTitle": "内容",
+    "contentsItem1": "1. 赛道图与场地概览",
+    "contentsItem2": "2. 物料清单、库存核对与计时点",
+    "contentsItem3": "3. 布场顺序与比赛日备注",
+    "summaryTitle": "概要",
+    "summaryShortage": "{count, plural, one {当前布局在 1 类障碍上超出可用库存。} other {当前布局在 {count} 类障碍上超出可用库存。}} 在把这份布场清单作为最终参考前，请先补齐缺口。",
+    "summaryBuildable": "当前布局可由已保存的器材库存完成布场。以下页面可直接作为比赛日布场和交接参考。"
+  },
+  "mapPage": {
+    "title": "赛道图",
+    "stockShort": "库存差 {count}",
+    "stockBuildable": "库存检查：可布场",
+    "numberingShown": "显示编号",
+    "numberingHidden": "隐藏编号"
+  },
+  "buildSheet": {
+    "title": "布场清单",
+    "materialListTitle": "物料清单",
+    "obstacleColumn": "障碍",
+    "requiredColumn": "需求",
+    "availableColumn": "现有",
+    "missingColumn": "缺口",
+    "timingPointsTitle": "计时点",
+    "noTimingPoints": "目前还没有指定计时点。比赛日前交接前，请先在检查器里把门设置为起终点或分段点。",
+    "setupSequenceTitle": "布场顺序",
+    "setupIntro": "预计布场用时：约 {min}-{max} 分钟。总体复杂度：{complexity}。{summary}",
+    "crewStepLabel": "布场步骤",
+    "groupedTaskLabel": "分组任务",
+    "obstacleNumberSuffix": "{kind} · 障碍 #{number}",
+    "minutesSuffix": "{minutes} 分钟",
+    "noSetupSequenceNumbering": "当前还没有可用的布场顺序。先补一条路径并摆放一些障碍，才能生成更实用的布场清单。",
+    "noSetupSequenceHidden": "这次导出隐藏了编号。如果你希望布场顺序能按路径编号走，请开启障碍编号。",
+    "notesTitle": "比赛日备注",
+    "note1": "布场和飞手讲解时，请以赛道图页作为现场摆放参考。",
+    "note2": "决定是否按当前布局布场前，请把库存核对结果当作最终依据。",
+    "note3": "先把赛道主骨架落位，再去固定重力门、目字门等高工作量结构，最后完成常规穿越门。",
+    "note4": "如果路径或障碍数量发生变化，请重新导出布场清单，确保地图、库存表和布场顺序保持一致。"
+  }
+}

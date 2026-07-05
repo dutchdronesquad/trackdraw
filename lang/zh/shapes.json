@@ -1,0 +1,143 @@
+{
+  "kindLabels": {
+    "gate": "穿越门",
+    "tower": "日字门",
+    "flag": "标旗",
+    "cone": "锥桶",
+    "label": "标注",
+    "polyline": "路径",
+    "startfinish": "起终点",
+    "ladder": "目字门",
+    "divegate": "重力门",
+    "barrier": "围挡"
+  },
+  "toolLabels": {
+    "select": "选择",
+    "grab": "拖移",
+    "preset": "预设",
+    "gate": "穿越门",
+    "tower": "日字门",
+    "flag": "标旗",
+    "cone": "锥桶",
+    "label": "标注",
+    "polyline": "路径",
+    "startfinish": "起飞区",
+    "ladder": "目字门",
+    "divegate": "重力门",
+    "barrier": "围挡"
+  },
+  "toolGroups": {
+    "track": "赛道",
+    "extra": "附加"
+  },
+  "toolMobileLabels": {
+    "startfinish": "起飞",
+    "divegate": "重力门",
+    "barrier": "围挡"
+  },
+  "mobileStatus": {
+    "multiSelect": "多选",
+    "tool": "工具",
+    "itemsCount": "{count} 个项目"
+  },
+  "canvas": {
+    "selectionCount": "{count} 个项目",
+    "selectionFallback": "选择",
+    "frontLabel": "前方"
+  },
+  "catalogEntries": {
+    "trackdrawGate": { "name": "TrackDraw 穿越门", "dimensions": "2 x 2 米" },
+    "multigpStandardGate5x5": {
+      "name": "MultiGP 标准穿越门 5x5",
+      "dimensions": "5 英尺 x 5 英尺"
+    },
+    "multigpChampionshipGate7x6": {
+      "name": "MultiGP 锦标赛穿越门 7x6",
+      "dimensions": "7 英尺 x 6 英尺"
+    },
+    "trackdrawTower": {
+      "name": "TrackDraw 日字门",
+      "dimensions": "2 x 2 米，抬升"
+    },
+    "multigpTower5x5": {
+      "name": "MultiGP 日字门 5x5",
+      "dimensions": "5 英尺 x 5 英尺，抬升 5 英尺"
+    },
+    "multigpTower7x6": {
+      "name": "MultiGP 日字门 7x6",
+      "dimensions": "7 英尺 x 6 英尺，抬升 6 英尺"
+    },
+    "multigpDoubleGateTower5x5": {
+      "name": "MultiGP 双层日字门 5x5",
+      "dimensions": "宽 5 英尺，2 个 5 英尺开口"
+    },
+    "multigpDoubleGateTower7x6": {
+      "name": "MultiGP 双层日字门 7x6",
+      "dimensions": "宽 7 英尺，2 个 6 英尺开口"
+    },
+    "trackdrawFlag": {
+      "name": "TrackDraw 标旗",
+      "dimensions": "半径 0.25 米，杆高 3.5 米"
+    },
+    "multigpCornerFlag": {
+      "name": "MultiGP 转角标旗",
+      "dimensions": "10 英尺"
+    },
+    "trackdrawCone": {
+      "name": "TrackDraw 锥桶",
+      "dimensions": "半径 0.2 米"
+    },
+    "trackdrawLabel": {
+      "name": "TrackDraw 标注",
+      "dimensions": "文本标注"
+    },
+    "trackdrawStartFinish": {
+      "name": "TrackDraw 起终点",
+      "dimensions": "宽 3 米"
+    },
+    "trackdrawLadder": {
+      "name": "TrackDraw 目字门",
+      "dimensions": "2 x 6 米，3 层"
+    },
+    "multigpStandardLadder5x5": {
+      "name": "MultiGP 标准目字门 5x5",
+      "dimensions": "宽 5 英尺，3 段 5 英尺"
+    },
+    "multigpChampionshipLadder7x6": {
+      "name": "MultiGP 锦标赛目字门 7x6",
+      "dimensions": "宽 7 英尺，3 个 6 英尺开口"
+    },
+    "multigpToplessLadder7x6": {
+      "name": "MultiGP 无顶目字门 7x6",
+      "dimensions": "宽 7 英尺，3 个 6 英尺无顶开口"
+    },
+    "trackdrawDiveGate": {
+      "name": "TrackDraw 重力门",
+      "dimensions": "2.8 米见方"
+    },
+    "multigpDiveGate7x6": {
+      "name": "MultiGP 重力门 7x6",
+      "dimensions": "7 英尺 x 6 英尺"
+    },
+    "multigpLaunchGate7x6": {
+      "name": "MultiGP 发射门 7x6",
+      "dimensions": "7 英尺 x 6 英尺"
+    },
+    "trackdrawBanner": {
+      "name": "TrackDraw 横幅围挡",
+      "dimensions": "3 x 2 米"
+    },
+    "trackdrawFence": {
+      "name": "TrackDraw 围栏",
+      "dimensions": "3 x 1.2 米"
+    },
+    "trackdrawNet": {
+      "name": "TrackDraw 防护网",
+      "dimensions": "3 x 2 米"
+    },
+    "multigpHurdle": {
+      "name": "MultiGP 跨栏",
+      "dimensions": "宽 10 英尺，高 5 英尺"
+    }
+  }
+}

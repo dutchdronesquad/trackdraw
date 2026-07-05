@@ -1,0 +1,58 @@
+{
+  "badge": "共享视图",
+  "backToHome": "返回首页",
+  "whatToTry": "可以试试",
+  "openStudio": "打开 Studio",
+  "error": {
+    "heading": "这个共享赛道链接已不再受支持",
+    "description": "TrackDraw 现在使用已发布共享链接，不再支持旧的 URL 内嵌共享格式。这个旧链接已经无法直接打开。",
+    "whatToDo": "该怎么做",
+    "step1": "请让发送者从 <strong>Studio</strong> 重新发布一个新的共享链接。",
+    "step2": "如果你仍然需要离线交接，请让对方发送一份 <strong>JSON 导出</strong>，然后在 Studio 里通过导入打开。",
+    "step3": "新的已发布链接使用规范的 `/share/[token]` 路由，也是当前唯一受支持的只读分享方式。",
+    "openStudioToImport": "打开 Studio 导入"
+  },
+  "expired": {
+    "heading": "这个共享链接已过期",
+    "description": "临时 TrackDraw 共享链接会在创建时选择的时长后过期；账户发布的项目链接则会一直有效，直到所有者主动撤销。如果你还需要这个布局，请让发送者重新发布。",
+    "step1": "请让发送者重新发布这个赛道，或发送一个账户发布链接来提供更长期的只读访问。",
+    "step2": "如果需要更长期的交接方式，请让对方发送 JSON 导出。"
+  },
+  "notFound": {
+    "heading": "无法打开这个共享赛道",
+    "description": "这个共享链接可能已被所有者撤销，也可能已经过时、不完整，或者复制时出错。请让发送者确认链接仍然有效，或重新发布一个新的链接。如果赛道特别大，JSON 导出会比共享链接更稳妥。",
+    "step1": "请让发送者确认分享仍然有效，并重新复制最新的共享链接。",
+    "step2": "尽量直接从原始消息里打开链接。",
+    "step3": "如果赛道特别大，请改用 JSON 导出；JSON 文件不受 URL 长度限制。"
+  },
+  "viewer": {
+    "dismissIntro": "关闭共享赛道介绍",
+    "sharedByReadOnly": "由 {author} 分享。当前为只读模式，不会保存修改。可切换到 {view}，或在 Studio 中另存为可编辑副本。",
+    "readOnlyNoAuthor": "当前为只读模式，不会保存修改。可切换到 {view}，或在 Studio 中另存为可编辑副本。",
+    "openView": "打开 {view}",
+    "makeEditableCopy": "创建可编辑副本"
+  },
+  "metadata": {
+    "title": "查看赛道",
+    "description": "查看这条用 TrackDraw 设计的 FPV 赛道。",
+    "expiredTitle": "赛道共享已过期",
+    "expiredDescription": "这个 TrackDraw 共享链接已过期。请让发送者重新发布一个新的链接。",
+    "retiredTitle": "旧版赛道共享不再受支持",
+    "retiredDescription": "旧版 TrackDraw 共享格式已不再受支持。请让发送者重新发布一个新的链接。",
+    "embedTitle": "赛道嵌入",
+    "embedDescription": "TrackDraw 只读赛道嵌入视图。"
+  },
+  "embedUnavailable": {
+    "temporaryTitle": "暂时无法嵌入",
+    "temporaryDescription": "只有账户发布的共享内容才支持嵌入。你可以直接打开共享链接，或登录后发布一个长期可用的嵌入。",
+    "expiredTitle": "这个嵌入已过期",
+    "expiredDescription": "这个临时 TrackDraw 共享已经失效。请让所有者发布一个长期有效的账户共享。",
+    "revokedTitle": "这个嵌入已被撤销",
+    "revokedDescription": "所有者已经撤销了这个 TrackDraw 共享，因此嵌入的赛道也无法继续查看。",
+    "missingTitle": "未找到赛道",
+    "missingDescription": "这个 TrackDraw 嵌入未对应到任何有效的账户发布共享。",
+    "openShareLink": "打开共享链接",
+    "signIn": "登录",
+    "brand": "TrackDraw"
+  }
+}
