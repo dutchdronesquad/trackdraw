@@ -5,8 +5,8 @@ import {
 } from "@/components/inspector/views/list-panel";
 import type { Shape } from "@/lib/types";
 
-function fakeShape(id: string): Shape {
-  return { id } as unknown as Shape;
+function fakeShape(id: string, kind: Shape["kind"] = "gate"): Shape {
+  return { id, kind } as unknown as Shape;
 }
 
 describe("computeReorderBeforeId", () => {
@@ -18,6 +18,16 @@ describe("computeReorderBeforeId", () => {
   it("returns null when the dragged item is now last", () => {
     const order = [fakeShape("b"), fakeShape("c"), fakeShape("a")];
     expect(computeReorderBeforeId(order, "a")).toBeNull();
+  });
+
+  it("keeps track items before trailing race lines when the dragged item is last in the visible list", () => {
+    const route = fakeShape("route-1", "polyline");
+    const gate = fakeShape("gate-1");
+    const flag = fakeShape("flag-1", "flag");
+
+    expect(
+      computeReorderBeforeId([flag, gate], "gate-1", [gate, flag, route])
+    ).toBe("route-1");
   });
 
   it("returns null when the dragged item isn't found", () => {

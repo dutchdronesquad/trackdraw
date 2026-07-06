@@ -94,11 +94,23 @@ export function getListableTrackItems(shapes: Shape[]): Shape[] {
 
 export function computeReorderBeforeId(
   orderedShapes: Shape[],
-  draggedId: string
+  draggedId: string,
+  fullOrderedShapes: Shape[] = orderedShapes
 ): string | null {
-  const index = orderedShapes.findIndex((shape) => shape.id === draggedId);
-  if (index === -1 || index === orderedShapes.length - 1) return null;
-  return orderedShapes[index + 1].id;
+  if (!orderedShapes.some((shape) => shape.id === draggedId)) return null;
+
+  const nextListableShapes = [...orderedShapes];
+  const mergedOrder =
+    fullOrderedShapes.length === orderedShapes.length
+      ? orderedShapes
+      : fullOrderedShapes.map((shape) => {
+          if (shape.kind === "polyline") return shape;
+          return nextListableShapes.shift() ?? shape;
+        });
+
+  const index = mergedOrder.findIndex((shape) => shape.id === draggedId);
+  if (index === -1 || index === mergedOrder.length - 1) return null;
+  return mergedOrder[index + 1].id;
 }
 
 function ItemRow({
@@ -335,7 +347,7 @@ export function ItemOverviewList({
   const removeItemTitle = t("actions.removeItem");
 
   function handleDragEnd(draggedId: string) {
-    const beforeId = computeReorderBeforeId(localOrder, draggedId);
+    const beforeId = computeReorderBeforeId(localOrder, draggedId, shapes);
     reorderShapes(draggedId, beforeId);
   }
 
