@@ -277,9 +277,7 @@ function RecentSignups({
               {initial}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                {displayName}
-              </p>
+              <p className="truncate text-sm font-medium">{displayName}</p>
               {user.name?.trim() && email ? (
                 <p className="text-muted-foreground truncate text-xs">
                   {email}
