@@ -219,24 +219,19 @@
     },
     "categories": {
       "visuals": {
-        "title": "Visuals",
-        "description": "Map images, vector artwork, and the current 3D camera capture."
+        "title": "Visuals"
       },
       "raceDay": {
-        "title": "Race Day",
-        "description": "Setup handoff documents for crews and pilots."
+        "title": "Race Day"
       },
       "projectData": {
-        "title": "Project Data",
-        "description": "Editable TrackDraw files for backup, reuse, and handoff."
+        "title": "Project Data"
       },
       "motion": {
-        "title": "Video",
-        "description": "Route review video for checking flow or sharing a lap."
+        "title": "Video"
       },
       "simulatorLab": {
-        "title": "Experimental",
-        "description": "Experimental simulator-oriented outputs that need manual review after import."
+        "title": "Experimental"
       }
     },
     "formats": {

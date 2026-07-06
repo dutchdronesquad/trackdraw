@@ -219,24 +219,19 @@
     },
     "categories": {
       "visuals": {
-        "title": "Visuell",
-        "description": "Kartenbilder, Vektorgrafiken und der aktuelle 3D-Kamera-Capture."
+        "title": "Visuell"
       },
       "raceDay": {
-        "title": "Race Day",
-        "description": "Setup-Übergabedokumente für Crew und Piloten."
+        "title": "Race Day"
       },
       "projectData": {
-        "title": "Projektdaten",
-        "description": "Bearbeitbare TrackDraw-Dateien für Backup, Wiederverwendung und Übergabe."
+        "title": "Projektdaten"
       },
       "motion": {
-        "title": "Video",
-        "description": "Routenvideo zum Prüfen des Flows oder Teilen einer Runde."
+        "title": "Video"
       },
       "simulatorLab": {
-        "title": "Experimentell",
-        "description": "Experimentelle simulatororientierte Ausgaben, die nach dem Import manuell geprüft werden müssen."
+        "title": "Experimentell"
       }
     },
     "formats": {

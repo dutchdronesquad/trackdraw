@@ -669,7 +669,7 @@ export default function ExportDialog({
       case "velocidrone":
         return [baseName, dateStamp].join("_");
       case "webm":
-        return [baseName, "flythrough", dateStamp].join("_");
+        return [baseName, "flythrough", exportTheme, dateStamp].join("_");
     }
   };
 
@@ -841,7 +841,7 @@ export default function ExportDialog({
   const activeContent = (
     <div className="space-y-5">
       {hasMultipleFormats ? (
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid gap-1 sm:grid-cols-3">
           {activeFormats.map((format) => (
             <ExportFormatChoice
               key={format.id}

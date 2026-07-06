@@ -210,6 +210,7 @@ export function SidebarDialog({
 }: SidebarDialogProps) {
   const isMobile = useIsMobile();
   const t = useTranslations("common");
+  const resolvedContentTitle = contentTitle ?? title;
 
   if (isMobile) {
     const mobileNav = (
@@ -370,7 +371,7 @@ export function SidebarDialog({
                     transition={{ duration: 0.1, ease: "easeOut" }}
                   >
                     <p className="text-foreground text-[15px] font-semibold tracking-[-0.01em]">
-                      {contentTitle}
+                      {resolvedContentTitle}
                     </p>
                     {contentDescription && (
                       <p className="text-muted-foreground mt-1 truncate text-[13px] leading-relaxed">

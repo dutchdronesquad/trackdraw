@@ -219,24 +219,19 @@
     },
     "categories": {
       "visuals": {
-        "title": "Visueel",
-        "description": "Kaartafbeeldingen, vectorwerk en de huidige 3D-cameracapture."
+        "title": "Visueel"
       },
       "raceDay": {
-        "title": "Race Day",
-        "description": "Setup-handoff documenten voor crew en piloten."
+        "title": "Race Day"
       },
       "projectData": {
-        "title": "Projectdata",
-        "description": "Bewerkbare TrackDraw-bestanden voor back-up, hergebruik en handoff."
+        "title": "Projectdata"
       },
       "motion": {
-        "title": "Video",
-        "description": "Routevideo om flow te controleren of een ronde te delen."
+        "title": "Video"
       },
       "simulatorLab": {
-        "title": "Experimenteel",
-        "description": "Experimentele simulatorgerichte output die na import handmatige controle vraagt."
+        "title": "Experimenteel"
       }
     },
     "formats": {

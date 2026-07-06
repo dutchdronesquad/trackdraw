@@ -10,8 +10,10 @@ import { useEditor } from "@/store/editor";
 
 const mocks = vi.hoisted(() => ({
   downloadJsonFile: vi.fn(),
+  exportFlythrough: vi.fn(),
   exportPdf: vi.fn(),
   toastError: vi.fn(),
+  toastLoading: vi.fn(),
   toastSuccess: vi.fn(),
 }));
 
@@ -67,9 +69,14 @@ vi.mock("@/lib/export/exportPdf", () => ({
   exportPdf: mocks.exportPdf,
 }));
 
+vi.mock("@/lib/export/exportFlythrough", () => ({
+  exportFlythrough: mocks.exportFlythrough,
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     error: mocks.toastError,
+    loading: mocks.toastLoading,
     success: mocks.toastSuccess,
   },
 }));
@@ -80,8 +87,10 @@ describe("ExportDialog mobile workflow", () => {
     useEditor.getState().clearHistory();
     viewport.isMobile = true;
     mocks.downloadJsonFile.mockReset();
+    mocks.exportFlythrough.mockReset();
     mocks.exportPdf.mockReset();
     mocks.toastError.mockReset();
+    mocks.toastLoading.mockReset();
     mocks.toastSuccess.mockReset();
   });
 
@@ -214,6 +223,36 @@ describe("ExportDialog mobile workflow", () => {
         )
       ).length
     ).toBeGreaterThan(0);
+  });
+
+  it("includes the selected theme in default WebM filenames", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Video$/ }));
+    await user.click(await screen.findByRole("button", { name: "Light" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Export Cinematic FPV" })
+    );
+
+    await waitFor(() => {
+      expect(mocks.exportFlythrough).toHaveBeenCalledWith(
+        expect.objectContaining({ version: 2 }),
+        expect.stringMatching(
+          /^New_Track_flythrough_light_\d{4}-\d{2}-\d{2}\.webm$/
+        ),
+        "light",
+        expect.any(Function)
+      );
+    });
   });
 
   it("reports JSON export failures without closing the dialog", async () => {
