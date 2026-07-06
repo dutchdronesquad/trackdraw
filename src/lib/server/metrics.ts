@@ -98,7 +98,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         select
           count(*) as total,
           sum(case when createdAt > datetime('now', '-7 days') then 1 else 0 end) as new_this_week,
-          sum(case when createdAt > datetime('now', '-30 days') then 1 else 0 end) as new_this_month
+          sum(case when createdAt >= date('now', 'start of month') then 1 else 0 end) as new_this_month
         from users
       `
       )
@@ -319,7 +319,7 @@ function buildCumulativeGrowth(
 export type RecentUser = {
   id: string;
   name: string | null;
-  email: string;
+  email: string | null;
   createdAt: string;
 };
 
@@ -340,8 +340,8 @@ export async function getOverviewStats(): Promise<OverviewStats> {
         .prepare(
           `select
             count(*) as total,
-            sum(case when createdAt > datetime('now', '-30 days') then 1 else 0 end) as new_this_month,
-            sum(case when createdAt between datetime('now', '-60 days') and datetime('now', '-30 days') then 1 else 0 end) as new_last_month
+            sum(case when createdAt >= date('now', 'start of month') then 1 else 0 end) as new_this_month,
+            sum(case when createdAt >= date('now', 'start of month', '-1 month') and createdAt < date('now', 'start of month') then 1 else 0 end) as new_last_month
            from users`
         )
         .first<{
@@ -369,7 +369,7 @@ export async function getOverviewStats(): Promise<OverviewStats> {
         .all<{
           id: string;
           name: string | null;
-          email: string;
+          email: string | null;
           createdAt: string;
         }>(),
     ]
