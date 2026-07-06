@@ -507,16 +507,10 @@ export function PolylineShapeContent({
       const selection = selectNearestSegment(pointer);
       if (!selection) return;
       event.cancelBubble = true;
-      if (!isSelected) setSelection([path.id]);
+      setSelection([path.id]);
       commitSegmentSelection(selection);
     },
-    [
-      commitSegmentSelection,
-      isSelected,
-      path.id,
-      selectNearestSegment,
-      setSelection,
-    ]
+    [commitSegmentSelection, path.id, selectNearestSegment, setSelection]
   );
 
   const handlePathContextMenu = useCallback(
@@ -526,13 +520,12 @@ export function PolylineShapeContent({
       const selection = selectNearestSegment(pointer);
       if (!selection) return;
       event.cancelBubble = true;
-      if (!isSelected) setSelection([path.id]);
+      setSelection([path.id]);
       commitSegmentSelection(selection);
       onPathContextMenu?.(selection.segmentIndex);
     },
     [
       commitSegmentSelection,
-      isSelected,
       onPathContextMenu,
       path.id,
       selectNearestSegment,

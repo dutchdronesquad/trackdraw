@@ -272,6 +272,7 @@ function TrackShapeNodeComponent({
           // Preserve an existing multiselect when starting a drag from within it.
           return;
         } else if (selected && selectionCount === 1) {
+          onSelectOnly(shape.id);
           return;
         } else {
           onSelectOnly(shape.id);
@@ -293,6 +294,7 @@ function TrackShapeNodeComponent({
           return;
         }
         if (selected && selectionCount === 1) {
+          onSelectOnly(shape.id);
           return;
         }
         onSelectOnly(shape.id);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getGeneratedRouteProfile,
   getCatalogPlacementToolConfigs,
   getInventoryKinds,
   hasCatalogPlacement,
@@ -42,6 +43,44 @@ describe("track item adapters", () => {
       expect(entry).toBeTruthy();
       expect(entry?.kind).toBe(adapter?.kind);
     }
+  });
+
+  it("marks only clear pass-through obstacles for generated routes", () => {
+    const generatedRouteKinds = trackItemAdapters
+      .filter((adapter) => adapter.generatedRoute?.traversal === "through")
+      .map((adapter) => adapter.kind)
+      .sort();
+
+    expect(generatedRouteKinds).toEqual([
+      "divegate",
+      "gate",
+      "ladder",
+      "tower",
+    ]);
+  });
+
+  it("exposes generated route profiles through shapes", () => {
+    expect(
+      getGeneratedRouteProfile({
+        id: "gate-1",
+        kind: "gate",
+        x: 10,
+        y: 8,
+        rotation: 0,
+        width: 2,
+        height: 2,
+      })?.traversal
+    ).toBe("through");
+    expect(
+      getGeneratedRouteProfile({
+        id: "cone-1",
+        kind: "cone",
+        x: 10,
+        y: 8,
+        rotation: 0,
+        radius: 0.25,
+      })
+    ).toBeNull();
   });
 });
 

@@ -199,7 +199,7 @@
       "ready": "{count, plural, one {1 route-obstakel genummerd.} other {{count} route-obstakels genummerd.}}",
       "partial": "{mapped} van {total} route-obstakels zijn genummerd.",
       "noRouteMatches": "{count, plural, one {1 route-obstakel gevonden, maar geen ligt dicht genoeg bij de race line.} other {{count} route-obstakels gevonden, maar geen ligt dicht genoeg bij de race line.}}",
-      "missingRoute": "{count, plural, one {1 route-obstakel heeft een race line nodig voordat nummering kan worden afgeleid.} other {{count} route-obstakels hebben een race line nodig voordat nummering kan worden afgeleid.}}",
+      "missingRoute": "Ondersteunde obstakels zijn klaar voor een race line.",
       "noNumberedObstacles": "Gates, ladders en dive gates verschijnen in de routenummering.",
       "empty": "Voeg route-obstakels en een race line toe om nummering af te leiden."
     },
@@ -209,7 +209,21 @@
     },
     "meta": {
       "numbered": "Genummerd",
-      "issues": "Problemen"
+      "issues": "Problemen",
+      "raceLine": "Race line"
+    },
+    "generate": {
+      "button": "Race line genereren",
+      "regenerateButton": "Race line opnieuw genereren",
+      "success": "Race line gegenereerd.",
+      "errors": {
+        "noObstacles": "Kan geen race line genereren — voeg eerst minimaal twee ondersteunde obstakels toe (gates, ladders of dive gates)."
+      },
+      "warnings": {
+        "unsupportedShapes": "{count, plural, one {1 obstakel wordt nog niet ondersteund en is overgeslagen.} other {{count} obstakels worden nog niet ondersteund en zijn overgeslagen.}}",
+        "tooFewObstacles": "Voeg meer ondersteunde obstakels toe voor een bruikbaardere race line.",
+        "closeObstacles": "{count, plural, one {1 paar obstakels staat erg dicht bij elkaar — controleer het gegenereerde pad.} other {{count} paar obstakels staan erg dicht bij elkaar — controleer het gegenereerde pad.}}"
+      }
     }
   },
   "elevationChart": {

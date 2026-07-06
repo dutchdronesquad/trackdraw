@@ -199,7 +199,7 @@
       "ready": "{count, plural, one {1 Routenhindernis nummeriert.} other {{count} Routenhindernisse nummeriert.}}",
       "partial": "{mapped} von {total} Routenhindernissen sind nummeriert.",
       "noRouteMatches": "{count, plural, one {1 Routenhindernis gefunden, aber keines liegt nah genug an der Rennlinie.} other {{count} Routenhindernisse gefunden, aber keines liegt nah genug an der Rennlinie.}}",
-      "missingRoute": "{count, plural, one {1 Routenhindernis benötigt eine Rennlinie, bevor die Nummerierung abgeleitet werden kann.} other {{count} Routenhindernisse benötigen eine Rennlinie, bevor die Nummerierung abgeleitet werden kann.}}",
+      "missingRoute": "Unterstützte Hindernisse sind bereit für eine Rennlinie.",
       "noNumberedObstacles": "Gates, Ladders und Dive Gates erscheinen in der Routennummerierung.",
       "empty": "Füge Routenhindernisse und eine Rennlinie hinzu, um Nummerierung abzuleiten."
     },
@@ -209,7 +209,21 @@
     },
     "meta": {
       "numbered": "Nummeriert",
-      "issues": "Probleme"
+      "issues": "Probleme",
+      "raceLine": "Rennlinie"
+    },
+    "generate": {
+      "button": "Rennlinie generieren",
+      "regenerateButton": "Rennlinie erneut generieren",
+      "success": "Rennlinie generiert.",
+      "errors": {
+        "noObstacles": "Rennlinie konnte nicht generiert werden — füge zuerst mindestens zwei unterstützte Hindernisse hinzu (Gates, Ladders oder Dive Gates)."
+      },
+      "warnings": {
+        "unsupportedShapes": "{count, plural, one {1 Hindernis wird noch nicht unterstützt und wurde übersprungen.} other {{count} Hindernisse werden noch nicht unterstützt und wurden übersprungen.}}",
+        "tooFewObstacles": "Füge weitere unterstützte Hindernisse hinzu für eine nützlichere Rennlinie.",
+        "closeObstacles": "{count, plural, one {1 Hindernispaar liegt sehr nah beieinander — prüfe den generierten Pfad.} other {{count} Hindernispaare liegen sehr nah beieinander — prüfe den generierten Pfad.}}"
+      }
     }
   },
   "elevationChart": {

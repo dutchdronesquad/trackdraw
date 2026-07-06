@@ -199,7 +199,7 @@
       "ready": "{count, plural, one {1 route obstacle numbered.} other {{count} route obstacles numbered.}}",
       "partial": "{mapped} of {total} route obstacles are numbered.",
       "noRouteMatches": "{count, plural, one {1 route obstacle found, but none sit close enough to the race line.} other {{count} route obstacles found, but none sit close enough to the race line.}}",
-      "missingRoute": "{count, plural, one {1 route obstacle needs a race line before numbering can be derived.} other {{count} route obstacles need a race line before numbering can be derived.}}",
+      "missingRoute": "Supported obstacles are ready for a race line.",
       "noNumberedObstacles": "Gates, ladders, and dive gates will appear in route numbering.",
       "empty": "Add route obstacles and a race line to derive numbering."
     },
@@ -209,7 +209,21 @@
     },
     "meta": {
       "numbered": "Numbered",
-      "issues": "Issues"
+      "issues": "Issues",
+      "raceLine": "Race line"
+    },
+    "generate": {
+      "button": "Generate race line",
+      "regenerateButton": "Regenerate race line",
+      "success": "Race line generated.",
+      "errors": {
+        "noObstacles": "Couldn't generate a race line — add at least two supported obstacles (gates, ladders, or dive gates) first."
+      },
+      "warnings": {
+        "unsupportedShapes": "{count, plural, one {1 obstacle isn't supported yet and was skipped.} other {{count} obstacles aren't supported yet and were skipped.}}",
+        "tooFewObstacles": "Add more supported obstacles for a more useful race line.",
+        "closeObstacles": "{count, plural, one {1 pair of obstacles is very close together — check the generated path.} other {{count} pairs of obstacles are very close together — check the generated path.}}"
+      }
     }
   },
   "elevationChart": {
