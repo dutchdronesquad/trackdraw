@@ -335,12 +335,7 @@ describe("generateRaceLineDraft", () => {
     );
     const topless = generateRaceLineDraft(
       makeDesign([
-        catalogShape(
-          "ladder-1",
-          MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID,
-          30,
-          12
-        ),
+        catalogShape("ladder-1", MULTIGP_TOPLESS_LADDER_7X6_ELEMENT_ID, 30, 12),
       ])
     );
 
@@ -393,10 +388,7 @@ describe("generateRaceLineDraft", () => {
 
     const anchorPoint = result.draft?.points[1];
     expect(anchorPoint).toMatchObject({ x: 30, y: 12 });
-    expect(renderedLineElevation(anchorPoint)).toBeCloseTo(
-      feetToMeters(15),
-      5
-    );
+    expect(renderedLineElevation(anchorPoint)).toBeCloseTo(feetToMeters(15), 5);
   });
 
   it("routes around a flag on the side its own rotation points to, not straight through it", () => {

@@ -208,10 +208,7 @@ function getLadderRouteElevation(shape: LadderShape): number {
     return Math.max(0.4, (shape.elevation ?? 0) + openingHeight * 1.25);
   }
 
-  return Math.max(
-    0.4,
-    (shape.elevation ?? 0) + openingHeight / 2
-  );
+  return Math.max(0.4, (shape.elevation ?? 0) + openingHeight / 2);
 }
 
 function getDiveGateRouteElevation(shape: DiveGateShape): number {
