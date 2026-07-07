@@ -1001,7 +1001,9 @@ describe("editor store history", () => {
     const joinedId = state.joinPolylines([firstId, secondId]);
 
     expect(joinedId).toBeTruthy();
-    expect(useEditor.getState().track.design.shapeById[firstId]).toBeUndefined();
+    expect(
+      useEditor.getState().track.design.shapeById[firstId]
+    ).toBeUndefined();
     expect(
       useEditor.getState().track.design.shapeById[secondId]
     ).toBeUndefined();
@@ -1019,7 +1021,9 @@ describe("editor store history", () => {
     ).toBeUndefined();
 
     runHistoryStep(useEditor.temporal.getState().redo);
-    expect(useEditor.getState().track.design.shapeById[firstId]).toBeUndefined();
+    expect(
+      useEditor.getState().track.design.shapeById[firstId]
+    ).toBeUndefined();
     expect(
       useEditor.getState().track.design.shapeById[secondId]
     ).toBeUndefined();

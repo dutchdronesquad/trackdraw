@@ -152,7 +152,10 @@ function touchTrackDesign(state: EditorState) {
 
 function clearPolylineEditSelections(state: EditorState, ids: string[]) {
   const idSet = new Set(ids);
-  if (state.ui.segmentSelection && idSet.has(state.ui.segmentSelection.shapeId)) {
+  if (
+    state.ui.segmentSelection &&
+    idSet.has(state.ui.segmentSelection.shapeId)
+  ) {
     state.ui.segmentSelection = null;
   }
   if (state.ui.vertexSelection && idSet.has(state.ui.vertexSelection.shapeId)) {

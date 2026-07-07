@@ -792,9 +792,7 @@ const TrackCanvas = memo(
           ids: nextSelection,
           joinablePolylineIds: nextSelection.filter((id) => {
             const shape = shapeById[id];
-            return (
-              shape?.kind === "polyline" && !shape.closed && !shape.locked
-            );
+            return shape?.kind === "polyline" && !shape.closed && !shape.locked;
           }),
           label:
             nextSelection.length > 1
