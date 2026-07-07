@@ -64,18 +64,40 @@ describe("mobile editor controls", () => {
     expect(screen.getByRole("button", { name: "Redo" }).className).toContain(
       "min-h-12"
     );
+    expect(screen.getByText("Track items")).toBeTruthy();
+    expect(screen.getByText("Canvas tools")).toBeTruthy();
     expect(
       screen
         .getAllByRole("button", { name: /Gate/ })
         .some((button) => button.className.includes("min-h-14"))
     ).toBe(true);
-    expect(screen.getByRole("button", { name: "Path" }).className).toContain(
-      "min-h-16"
+    const catalogToolHeaders = screen
+      .getAllByRole("button")
+      .filter((button) => button.className.includes("min-h-14"));
+    for (const button of catalogToolHeaders) {
+      const iconWrapper = button.querySelector("span");
+      expect(iconWrapper?.className).toContain("bg-slate-950");
+      expect(iconWrapper?.className).toContain("text-white");
+      expect(iconWrapper?.className).not.toContain("opacity-");
+    }
+    const pathButton = screen.getByRole("button", {
+      name: "Path Draw or edit the race line",
+    });
+    const startPadsButton = screen.getByRole("button", {
+      name: "Start Pads Mark launch or timing pads",
+    });
+    const mobileButtons = screen.getAllByRole("button");
+    expect(mobileButtons.indexOf(pathButton)).toBeLessThan(
+      mobileButtons.indexOf(startPadsButton)
     );
-    expect(
-      screen.getByRole("button", { name: "Path" }).querySelector("span")
-        ?.className
-    ).toContain("truncate");
+    expect(pathButton.className).toContain("min-h-14");
+    expect(pathButton.querySelectorAll("span").item(2).className).toContain(
+      "truncate"
+    );
+    expect(pathButton.querySelectorAll("span").item(3).className).toContain(
+      "truncate"
+    );
+    expect(screen.getByText("Draw or edit the race line")).toBeTruthy();
   });
 
   it("keeps view drawer actions and toggles at mobile target size", () => {

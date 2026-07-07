@@ -389,6 +389,16 @@
       },
       "tools": {
         "title": "Tools",
+        "sections": {
+          "items": "Trackitems",
+          "tools": "Canvastools"
+        },
+        "toolDescriptions": {
+          "startfinish": "Markeer start- of timingpads",
+          "cone": "Plaats parcoursmarkeringen",
+          "label": "Voeg notities toe op het canvas",
+          "polyline": "Teken of bewerk de racelijn"
+        },
         "subtitles": {
           "preview3d": "Projectacties voor de huidige 3D-sessie",
           "canvas2d": "Teken- en bewerkingstools"

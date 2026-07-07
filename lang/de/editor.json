@@ -389,6 +389,16 @@
       },
       "tools": {
         "title": "Werkzeuge",
+        "sections": {
+          "items": "Track-Elemente",
+          "tools": "Canvas-Werkzeuge"
+        },
+        "toolDescriptions": {
+          "startfinish": "Start- oder Timing-Pads markieren",
+          "cone": "Streckenmarkierungen platzieren",
+          "label": "Notizen auf dem Canvas hinzufügen",
+          "polyline": "Rennlinie zeichnen oder bearbeiten"
+        },
         "subtitles": {
           "preview3d": "Projektaktionen für die aktuelle 3D-Sitzung",
           "canvas2d": "Zeichen- und Bearbeitungswerkzeuge"

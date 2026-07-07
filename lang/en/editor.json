@@ -389,6 +389,16 @@
       },
       "tools": {
         "title": "Tools",
+        "sections": {
+          "items": "Track items",
+          "tools": "Canvas tools"
+        },
+        "toolDescriptions": {
+          "startfinish": "Mark launch or timing pads",
+          "cone": "Place course markers",
+          "label": "Add notes on the canvas",
+          "polyline": "Draw or edit the race line"
+        },
         "subtitles": {
           "preview3d": "Project actions for the current 3D session",
           "canvas2d": "Drawing and editing tools"
