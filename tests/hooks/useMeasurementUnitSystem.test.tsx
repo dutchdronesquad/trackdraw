@@ -42,7 +42,7 @@ describe("useMeasurementUnitSystem", () => {
     expect(result.current.unitSystem).toBe("imperial");
   });
 
-  it("migrates legacy raw-string format on first load", async () => {
+  it("ignores the removed legacy raw-string format on first load", async () => {
     restoreStorage?.();
     restoreStorage = installWindowStorage(
       createMemoryStorage({ "trackdraw.measurementUnitSystem": "imperial" })
@@ -52,6 +52,6 @@ describe("useMeasurementUnitSystem", () => {
       await import("@/store/measurement-unit");
     await useMeasurementUnitStore.persist.rehydrate();
 
-    expect(useMeasurementUnitStore.getState().unitSystem).toBe("imperial");
+    expect(useMeasurementUnitStore.getState().unitSystem).toBe("metric");
   });
 });

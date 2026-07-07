@@ -5,7 +5,6 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import {
   getMeasurementUnitSystemFromLocales,
   MEASUREMENT_STORAGE_KEY,
-  normalizeMeasurementUnitSystem,
   type MeasurementUnitSystem,
 } from "@/lib/track/units";
 
@@ -19,29 +18,10 @@ function getBrowserDefault(): MeasurementUnitSystem {
   return getMeasurementUnitSystemFromLocales(navigator.languages);
 }
 
-// Handles legacy format: the old hook stored a raw string ("metric" / "imperial")
-// directly in localStorage instead of a Zustand JSON envelope. On first read we
-// migrate transparently so existing user preferences are preserved.
-const legacyAwareBackend = {
+const safeLocalStorageBackend = {
   getItem: (name: string): string | null => {
     try {
-      const raw = localStorage.getItem(name);
-      if (!raw) return null;
-      // Check for a valid Zustand envelope first
-      try {
-        const parsed: unknown = JSON.parse(raw);
-        if (parsed && typeof parsed === "object" && "state" in parsed) {
-          return raw;
-        }
-      } catch {
-        // Not valid JSON — must be a legacy raw string like "metric"/"imperial"
-      }
-      // Legacy raw string — wrap in Zustand envelope
-      const normalized = normalizeMeasurementUnitSystem(raw);
-      return JSON.stringify({
-        state: { unitSystem: normalized ?? getBrowserDefault() },
-        version: 0,
-      });
+      return localStorage.getItem(name);
     } catch {
       return null;
     }
@@ -70,7 +50,7 @@ export const useMeasurementUnitStore = create<MeasurementUnitState>()(
     }),
     {
       name: MEASUREMENT_STORAGE_KEY,
-      storage: createJSONStorage(() => legacyAwareBackend),
+      storage: createJSONStorage(() => safeLocalStorageBackend),
     }
   )
 );

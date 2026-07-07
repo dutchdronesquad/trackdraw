@@ -87,8 +87,8 @@ The next TrackDraw priority is export and handoff workflow polish first, editor 
 
 ## Later Product Follow-up
 
-- [ ] Remove legacy localStorage migration shims (`Lower priority`, `No account required`)
-      Two migration shims were added in v1.11.0 to preserve existing user preferences after the Zustand persist migration. Remove them once enough releases have passed that the old keys are no longer realistically present. The shims live in `src/store/measurement-unit.ts` (legacy raw-string format for `trackdraw.measurementUnitSystem`) and `src/store/editor-hints.ts` (legacy `trackdraw-hint-*-dismissed` per-key format). Safe to remove no earlier than v1.13.0.
+- [x] Remove legacy localStorage migration shims (`Lower priority`, `No account required`)
+      Removed the v1.11.0 one-time migration shims for the old raw-string `trackdraw.measurementUnitSystem` value and the old per-key `trackdraw-hint-*-dismissed` hint flags. The active Zustand persist keys remain unchanged.
 
 - [ ] VelociDrone experimental export stabilization (`Lower priority`, `No account required`)
       Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping/orientation edge cases.
