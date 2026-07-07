@@ -241,9 +241,18 @@
     "apexSuffix": ", apex {index}",
     "waypointSingle": "waypoint {index}",
     "waypointRange": "waypoints {start}-{end}",
+    "waypointMarkerAria": "Selecteer waypoint {index} in het hoogteprofiel",
+    "warningMarkerAria": "Spring naar {warning}-segment {segment}",
+    "timingMarkerAria": "Selecteer timingmarker {label} in het hoogteprofiel",
+    "obstacleMarkerAria": "Selecteer obstakel {index} in het hoogteprofiel",
     "routeReviewHeading": "Route-review",
+    "warningSegmentsHeading": "Waarschuwingssegmenten",
+    "jumpToSegment": "Spring naar segment {segment}",
     "noWarnings": "Geen routewaarschuwingen voor dit pad.",
     "normal": "Normaal",
+    "timingMarkersLegend": "Timing",
+    "obstacleMarkersLegend": "Obstakels",
+    "warningMarkersLegend": "Waarschuwingen",
     "maneuvers": {
       "powerloop": "Powerloop",
       "split-s": "Split-S"

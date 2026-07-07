@@ -241,9 +241,18 @@
     "apexSuffix": ", apex {index}",
     "waypointSingle": "waypoint {index}",
     "waypointRange": "waypoints {start}-{end}",
+    "waypointMarkerAria": "Select waypoint {index} in elevation profile",
+    "warningMarkerAria": "Jump to {warning} segment {segment}",
+    "timingMarkerAria": "Select timing marker {label} in elevation profile",
+    "obstacleMarkerAria": "Select obstacle {index} in elevation profile",
     "routeReviewHeading": "Route Review",
+    "warningSegmentsHeading": "Warning segments",
+    "jumpToSegment": "Jump to segment {segment}",
     "noWarnings": "No route warnings for this path.",
     "normal": "Normal",
+    "timingMarkersLegend": "Timing",
+    "obstacleMarkersLegend": "Obstacles",
+    "warningMarkersLegend": "Warnings",
     "maneuvers": {
       "powerloop": "Powerloop",
       "split-s": "Split-S"

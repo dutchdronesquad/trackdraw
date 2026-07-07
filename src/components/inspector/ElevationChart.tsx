@@ -1,6 +1,12 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import {
+  useCallback,
+  useId,
+  useMemo,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import { Info } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -16,7 +22,13 @@ import {
   type RouteWarning,
   type RouteWarningKind,
 } from "@/lib/track/polyline-derived";
-import { selectPrimaryPolyline } from "@/store/selectors";
+import { isNumberedObstacle } from "@/lib/track/obstacleNumbering";
+import {
+  getShapeTimingMarker,
+  getTimingMarkerColor,
+  getTimingMarkerTitle,
+} from "@/lib/track/timing";
+import { selectDesignShapes, selectPrimaryPolyline } from "@/store/selectors";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DesktopModal } from "@/components/DesktopModal";
@@ -29,9 +41,130 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { formatMeasurement } from "@/lib/track/units";
+import type { PolylineShape, Shape } from "@/lib/types";
 
 type SegmentWarningKind = Exclude<RouteWarningKind, "flat" | "stub">;
 type Translate = (key: string, values?: Record<string, unknown>) => string;
+
+type ChartRouteMarker = {
+  ariaLabel: string;
+  color: string;
+  d: number;
+  id: string;
+  shapeId: string;
+  type: "obstacle" | "timing";
+};
+
+type ChartWarningMarker = {
+  d: number;
+  kind: SegmentWarningKind;
+  label: string;
+  segmentIndex: number;
+};
+
+type RouteProjection = {
+  d: number;
+  pathDistance: number;
+  projectedPoint: { x: number; y: number };
+  segmentIndex: number;
+};
+
+function getPolylinePointAtDistance(
+  samples: Array<{ d: number; z: number }>,
+  distance: number
+) {
+  if (samples.length === 0) return { d: 0, z: 0 };
+  if (distance <= samples[0].d) return samples[0];
+
+  for (let index = 1; index < samples.length; index += 1) {
+    const previous = samples[index - 1];
+    const current = samples[index];
+    if (distance <= current.d) {
+      const span = Math.max(current.d - previous.d, 1e-6);
+      const progress = (distance - previous.d) / span;
+      return {
+        d: distance,
+        z: previous.z + (current.z - previous.z) * progress,
+      };
+    }
+  }
+
+  return samples[samples.length - 1];
+}
+
+function getSegmentMidpoint(path: PolylineShape, segmentIndex: number) {
+  const start = path.points[segmentIndex];
+  const end = path.points[segmentIndex + 1];
+  if (!start || !end) return null;
+  return {
+    x: +(start.x + (end.x - start.x) / 2).toFixed(2),
+    y: +(start.y + (end.y - start.y) / 2).toFixed(2),
+  };
+}
+
+function projectPointOntoRoute(
+  path: PolylineShape,
+  point: { x: number; y: number }
+): RouteProjection | null {
+  let runningDistance = 0;
+  let best: RouteProjection | null = null;
+
+  for (
+    let segmentIndex = 1;
+    segmentIndex < path.points.length;
+    segmentIndex += 1
+  ) {
+    const start = path.points[segmentIndex - 1];
+    const end = path.points[segmentIndex];
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const lengthSquared = dx * dx + dy * dy;
+    const segmentLength = Math.sqrt(lengthSquared);
+    const progress =
+      lengthSquared <= 1e-9
+        ? 0
+        : Math.max(
+            0,
+            Math.min(
+              1,
+              ((point.x - start.x) * dx + (point.y - start.y) * dy) /
+                lengthSquared
+            )
+          );
+    const projectedPoint = {
+      x: start.x + dx * progress,
+      y: start.y + dy * progress,
+    };
+    const pathDistance = Math.hypot(
+      point.x - projectedPoint.x,
+      point.y - projectedPoint.y
+    );
+    const d = runningDistance + segmentLength * progress;
+
+    if (!best || pathDistance < best.pathDistance) {
+      best = {
+        d,
+        pathDistance,
+        projectedPoint,
+        segmentIndex: segmentIndex - 1,
+      };
+    }
+
+    runningDistance += segmentLength;
+  }
+
+  return best;
+}
+
+function getRouteMarkerTolerance(shape: Shape) {
+  const width =
+    "width" in shape && typeof shape.width === "number" ? shape.width : 0;
+  return Math.max(width * 0.75, 1.4);
+}
+
+function isEnterOrSpace(event: KeyboardEvent<SVGGElement>) {
+  return event.key === "Enter" || event.key === " ";
+}
 
 function getWarningSummary(
   kind: RouteWarningKind,
@@ -206,7 +339,17 @@ function RouteWarningSummary({ warnings }: { warnings: RouteWarning[] }) {
   );
 }
 
-function RouteWarningDetails({ warnings }: { warnings: RouteWarning[] }) {
+function RouteWarningDetails({
+  activeSegmentIndex,
+  onJumpToSegment,
+  warningSegments,
+  warnings,
+}: {
+  activeSegmentIndex: number | null;
+  onJumpToSegment: (segmentIndex: number) => void;
+  warningSegments: ChartWarningMarker[];
+  warnings: RouteWarning[];
+}) {
   const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   const grouped = useGroupedWarnings(warnings);
 
@@ -219,41 +362,85 @@ function RouteWarningDetails({ warnings }: { warnings: RouteWarning[] }) {
   }
 
   return (
-    <div className="space-y-2">
-      <div className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
-        {t("routeReviewHeading")}
+    <div className="space-y-3">
+      <div className="space-y-2">
+        <div className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+          {t("routeReviewHeading")}
+        </div>
+        <div className="space-y-1.5">
+          {grouped.map(([kind, { count, first }]) => {
+            const warn = isWarningKind(kind);
+            const details = getWarningDetails(kind, t);
+            return (
+              <div
+                key={kind}
+                className={cn(
+                  "flex items-start gap-2 rounded px-2.5 py-2 text-xs leading-snug",
+                  warn
+                    ? "bg-amber-500/8 text-amber-700 dark:text-amber-300"
+                    : "bg-muted/40 text-muted-foreground"
+                )}
+              >
+                <span className="mt-px shrink-0">{warn ? "⚠" : "↳"}</span>
+                <span className="min-w-0">
+                  <span className="block font-medium">{details.title}</span>
+                  <span className="text-muted-foreground block">
+                    {getWarningSummary(kind, count, first, t)}
+                  </span>
+                  <span className="text-muted-foreground mt-1 block">
+                    {details.problem}
+                  </span>
+                  <span className="text-muted-foreground mt-1 block">
+                    {details.fix}
+                  </span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <div className="space-y-1.5">
-        {grouped.map(([kind, { count, first }]) => {
-          const warn = isWarningKind(kind);
-          const details = getWarningDetails(kind, t);
-          return (
-            <div
-              key={kind}
-              className={cn(
-                "flex items-start gap-2 rounded px-2.5 py-2 text-xs leading-snug",
-                warn
-                  ? "bg-amber-500/8 text-amber-700 dark:text-amber-300"
-                  : "bg-muted/40 text-muted-foreground"
-              )}
-            >
-              <span className="mt-px shrink-0">{warn ? "⚠" : "↳"}</span>
-              <span className="min-w-0">
-                <span className="block font-medium">{details.title}</span>
-                <span className="text-muted-foreground block">
-                  {getWarningSummary(kind, count, first, t)}
+      {warningSegments.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+            {t("warningSegmentsHeading")}
+          </div>
+          <div className="grid gap-1.5 sm:grid-cols-2">
+            {warningSegments.map((segment) => (
+              <button
+                key={`${segment.kind}-${segment.segmentIndex}`}
+                type="button"
+                onClick={() => onJumpToSegment(segment.segmentIndex)}
+                className={cn(
+                  "border-border/60 hover:bg-muted/60 focus-visible:ring-ring/40 flex min-h-10 cursor-pointer items-center gap-2 rounded border px-2.5 py-2 text-left text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                  activeSegmentIndex === segment.segmentIndex &&
+                    "border-primary/60 bg-primary/8"
+                )}
+              >
+                <span
+                  className="h-2 w-5 shrink-0 rounded-full"
+                  style={{
+                    backgroundColor: getRouteWarningSegmentColor(
+                      segment.kind,
+                      "var(--color-primary)"
+                    ),
+                  }}
+                  aria-hidden="true"
+                />
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">
+                    {t("jumpToSegment", {
+                      segment: segment.segmentIndex + 1,
+                    })}
+                  </span>
+                  <span className="text-muted-foreground block truncate">
+                    {segment.label}
+                  </span>
                 </span>
-                <span className="text-muted-foreground mt-1 block">
-                  {details.problem}
-                </span>
-                <span className="text-muted-foreground mt-1 block">
-                  {details.fix}
-                </span>
-              </span>
-            </div>
-          );
-        })}
-      </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -290,6 +477,49 @@ function RouteColorKey({ kinds }: { kinds: RouteWarningKind[] }) {
   );
 }
 
+function RouteMarkerKey({
+  routeMarkers,
+  warningMarkers,
+}: {
+  routeMarkers: ChartRouteMarker[];
+  warningMarkers: ChartWarningMarker[];
+}) {
+  const t = useTranslations("inspector.elevationChart") as unknown as Translate;
+  const hasTiming = routeMarkers.some((marker) => marker.type === "timing");
+  const hasObstacles = routeMarkers.some(
+    (marker) => marker.type === "obstacle"
+  );
+  const hasWarnings = warningMarkers.length > 0;
+  if (!hasTiming && !hasObstacles && !hasWarnings) return null;
+
+  const items = [
+    ...(hasTiming
+      ? [{ color: "#0ea5e9", label: t("timingMarkersLegend") }]
+      : []),
+    ...(hasObstacles
+      ? [{ color: "#64748b", label: t("obstacleMarkersLegend") }]
+      : []),
+    ...(hasWarnings
+      ? [{ color: "#f59e0b", label: t("warningMarkersLegend") }]
+      : []),
+  ];
+
+  return (
+    <div className="text-muted-foreground mb-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] leading-tight">
+      {items.map((item) => (
+        <span key={item.label} className="inline-flex items-center gap-1.5">
+          <span
+            className="size-2 rounded-full"
+            style={{ backgroundColor: item.color }}
+            aria-hidden="true"
+          />
+          <span>{item.label}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 const VIEW_W = 400;
 const VIEW_H = 120;
 const PAD_LEFT = 36;
@@ -307,24 +537,48 @@ function niceStep(range: number, targetTicks: number): number {
 }
 
 function ElevationSvg({
+  activeSegmentIndex,
+  activeWaypointIndex,
   fillPath,
   height,
+  interactive,
   minSample,
   maxSample,
+  onClearHoveredRouteMarker,
+  onClearHoveredWaypoint,
+  onRouteMarkerHover,
+  onRouteMarkerSelect,
+  onWarningSegmentSelect,
+  onWaypointHover,
+  onWaypointSelect,
+  routeMarkers,
   samples,
   toX,
   toY,
+  warningMarkers,
   warningKindBySegment,
   xTicks,
   yTicks,
 }: {
+  activeSegmentIndex: number | null;
+  activeWaypointIndex: number | null;
   fillPath: string;
   height: number;
+  interactive: boolean;
   minSample: { d: number; z: number };
   maxSample: { d: number; z: number };
+  onClearHoveredRouteMarker: () => void;
+  onClearHoveredWaypoint: () => void;
+  onRouteMarkerHover: (shapeId: string) => void;
+  onRouteMarkerSelect: (shapeId: string) => void;
+  onWarningSegmentSelect: (segmentIndex: number) => void;
+  onWaypointHover: (idx: number) => void;
+  onWaypointSelect: (idx: number) => void;
   samples: Array<{ d: number; z: number }>;
   toX: (d: number) => number;
   toY: (z: number) => number;
+  routeMarkers: ChartRouteMarker[];
+  warningMarkers: ChartWarningMarker[];
   warningKindBySegment: Map<number, SegmentWarningKind>;
   xTicks: Array<{ d: number; label: string }>;
   yTicks: Array<{ z: number; label: string }>;
@@ -394,13 +648,120 @@ function ElevationSvg({
             d={`M${toX(previous.d).toFixed(2)},${toY(previous.z).toFixed(2)} L${toX(sample.d).toFixed(2)},${toY(sample.z).toFixed(2)}`}
             fill="none"
             stroke={stroke}
-            strokeWidth="1.9"
+            strokeWidth={activeSegmentIndex === index ? "3.4" : "1.9"}
             strokeLinejoin="round"
             strokeLinecap="round"
             clipPath={`url(#${clipId})`}
           />
         );
       })}
+
+      {interactive &&
+        routeMarkers.map((marker) => {
+          const markerSample = getPolylinePointAtDistance(samples, marker.d);
+          const x = toX(marker.d);
+          const y = toY(markerSample.z);
+
+          return (
+            <g
+              key={marker.id}
+              role="button"
+              tabIndex={0}
+              aria-label={marker.ariaLabel}
+              onClick={() => onRouteMarkerSelect(marker.shapeId)}
+              onFocus={() => onRouteMarkerHover(marker.shapeId)}
+              onBlur={onClearHoveredRouteMarker}
+              onMouseEnter={() => onRouteMarkerHover(marker.shapeId)}
+              onMouseLeave={onClearHoveredRouteMarker}
+              onKeyDown={(event) => {
+                if (!isEnterOrSpace(event)) return;
+                event.preventDefault();
+                onRouteMarkerSelect(marker.shapeId);
+              }}
+              className="cursor-pointer outline-none"
+            >
+              <title>{marker.ariaLabel}</title>
+              <path
+                d={`M${x.toFixed(2)},${(y - 6).toFixed(2)} L${(x + 5).toFixed(2)},${y.toFixed(2)} L${x.toFixed(2)},${(y + 6).toFixed(2)} L${(x - 5).toFixed(2)},${y.toFixed(2)} Z`}
+                fill={marker.color}
+                stroke="var(--color-background)"
+                strokeWidth="1.4"
+                clipPath={`url(#${clipId})`}
+              />
+            </g>
+          );
+        })}
+
+      {interactive &&
+        warningMarkers.map((marker) => {
+          const markerSample = getPolylinePointAtDistance(samples, marker.d);
+          const x = toX(marker.d);
+          const y = toY(markerSample.z);
+          const color = getRouteWarningSegmentColor(
+            marker.kind,
+            "var(--color-primary)"
+          );
+
+          return (
+            <g
+              key={`${marker.kind}-${marker.segmentIndex}`}
+              role="button"
+              tabIndex={0}
+              aria-label={marker.label}
+              onClick={() => onWarningSegmentSelect(marker.segmentIndex)}
+              onKeyDown={(event) => {
+                if (!isEnterOrSpace(event)) return;
+                event.preventDefault();
+                onWarningSegmentSelect(marker.segmentIndex);
+              }}
+              className="cursor-pointer outline-none"
+            >
+              <title>{marker.label}</title>
+              <path
+                d={`M${x.toFixed(2)},${(y - 8).toFixed(2)} L${(x + 6).toFixed(2)},${(y + 4).toFixed(2)} L${(x - 6).toFixed(2)},${(y + 4).toFixed(2)} Z`}
+                fill={color}
+                stroke="var(--color-background)"
+                strokeWidth="1.2"
+                clipPath={`url(#${clipId})`}
+              />
+            </g>
+          );
+        })}
+
+      {interactive &&
+        samples.map((sample, index) => (
+          <g
+            key={`waypoint-${index}`}
+            role="button"
+            tabIndex={0}
+            aria-label={t("waypointMarkerAria", { index })}
+            onClick={() => onWaypointSelect(index)}
+            onFocus={() => onWaypointHover(index)}
+            onBlur={onClearHoveredWaypoint}
+            onMouseEnter={() => onWaypointHover(index)}
+            onMouseLeave={onClearHoveredWaypoint}
+            onKeyDown={(event) => {
+              if (!isEnterOrSpace(event)) return;
+              event.preventDefault();
+              onWaypointSelect(index);
+            }}
+            className="cursor-pointer outline-none"
+          >
+            <title>{t("waypointMarkerAria", { index })}</title>
+            <circle
+              cx={toX(sample.d)}
+              cy={toY(sample.z)}
+              r={activeWaypointIndex === index ? "4.6" : "3"}
+              fill={
+                activeWaypointIndex === index
+                  ? "var(--color-primary)"
+                  : "var(--color-background)"
+              }
+              stroke="var(--color-primary)"
+              strokeWidth={activeWaypointIndex === index ? "2" : "1.3"}
+            />
+          </g>
+        ))}
 
       {minSample.d !== maxSample.d && (
         <>
@@ -518,6 +879,16 @@ export default function ElevationChart({ className }: { className?: string }) {
   const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   const { unitSystem } = useMeasurementUnitSystem();
   const path = useEditor(selectPrimaryPolyline);
+  const designShapes = useEditor(selectDesignShapes);
+  const activeSegmentSelection = useEditor(
+    (state) => state.ui.segmentSelection
+  );
+  const activeVertexSelection = useEditor((state) => state.ui.vertexSelection);
+  const setHoveredShapeId = useEditor((state) => state.setHoveredShapeId);
+  const setHoveredWaypoint = useEditor((state) => state.setHoveredWaypoint);
+  const setSegmentSelection = useEditor((state) => state.setSegmentSelection);
+  const setSelection = useEditor((state) => state.setSelection);
+  const setVertexSelection = useEditor((state) => state.setVertexSelection);
   const isMobile = useIsMobile();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const portalRoot = typeof document === "undefined" ? null : document.body;
@@ -545,6 +916,14 @@ export default function ElevationChart({ className }: { className?: string }) {
       ),
     [warningSegments]
   );
+  const activeSegmentIndex =
+    path && activeSegmentSelection?.shapeId === path.id
+      ? activeSegmentSelection.segmentIndex
+      : null;
+  const activeWaypointIndex =
+    path && activeVertexSelection?.shapeId === path.id
+      ? activeVertexSelection.idx
+      : null;
 
   const chartData = useMemo(() => {
     if (!path) return null;
@@ -624,6 +1003,104 @@ export default function ElevationChart({ className }: { className?: string }) {
     };
   }, [path]);
 
+  const routeMarkers = useMemo<ChartRouteMarker[]>(() => {
+    if (!path) return [];
+
+    let splitIndex = 0;
+    return designShapes
+      .filter((shape) => shape.id !== path.id)
+      .flatMap((shape, index): ChartRouteMarker[] => {
+        const marker = getShapeTimingMarker(shape);
+        if (marker?.role === "split") splitIndex += 1;
+        const projection = projectPointOntoRoute(path, shape);
+        if (!projection) return [];
+        if (projection.pathDistance > getRouteMarkerTolerance(shape)) return [];
+
+        if (marker) {
+          const title = getTimingMarkerTitle(marker, splitIndex);
+          const ariaLabel = t("timingMarkerAria", {
+            label: title,
+          });
+          return [
+            {
+              ariaLabel,
+              color: getTimingMarkerColor(marker),
+              d: projection.d,
+              id: `timing-${shape.id}`,
+              shapeId: shape.id,
+              type: "timing",
+            },
+          ];
+        }
+
+        if (!isNumberedObstacle(shape)) return [];
+
+        return [
+          {
+            ariaLabel: t("obstacleMarkerAria", { index: index + 1 }),
+            color: "#64748b",
+            d: projection.d,
+            id: `obstacle-${shape.id}`,
+            shapeId: shape.id,
+            type: "obstacle",
+          },
+        ];
+      })
+      .sort(
+        (left, right) => left.d - right.d || left.id.localeCompare(right.id)
+      );
+  }, [designShapes, path, t]);
+
+  const warningMarkers = useMemo<ChartWarningMarker[]>(() => {
+    if (!path) return [];
+    const samples = getPolylineElevationSamples(path);
+
+    return warningSegments.flatMap((segment): ChartWarningMarker[] => {
+      const start = samples[segment.segmentIndex];
+      const end = samples[segment.segmentIndex + 1];
+      if (!start || !end) return [];
+      return [
+        {
+          d: start.d + (end.d - start.d) / 2,
+          kind: segment.kind,
+          label: t("warningMarkerAria", {
+            segment: segment.segmentIndex + 1,
+            warning: getWarningShortLabel(segment.kind, t),
+          }),
+          segmentIndex: segment.segmentIndex,
+        },
+      ];
+    });
+  }, [path, t, warningSegments]);
+
+  const selectWaypoint = useCallback(
+    (idx: number) => {
+      if (!path) return;
+      setSelection([path.id]);
+      setVertexSelection({ shapeId: path.id, idx });
+    },
+    [path, setSelection, setVertexSelection]
+  );
+
+  const selectWarningSegment = useCallback(
+    (segmentIndex: number) => {
+      if (!path) return;
+      const point = getSegmentMidpoint(path, segmentIndex);
+      if (!point) return;
+      setSelection([path.id]);
+      setSegmentSelection({ shapeId: path.id, segmentIndex, point });
+      setDetailsOpen(false);
+    },
+    [path, setSegmentSelection, setSelection]
+  );
+
+  const selectRouteMarker = useCallback(
+    (shapeId: string) => {
+      setSelection([shapeId]);
+    },
+    [setSelection]
+  );
+
   if (!path || !chartData) {
     return (
       <div
@@ -652,19 +1129,32 @@ export default function ElevationChart({ className }: { className?: string }) {
   } = chartData;
 
   const chartProps = {
+    activeSegmentIndex,
+    activeWaypointIndex,
     fillPath,
+    interactive: true,
     minSample,
     maxSample,
+    onClearHoveredRouteMarker: () => setHoveredShapeId(null),
+    onClearHoveredWaypoint: () => setHoveredWaypoint(null),
+    onRouteMarkerHover: setHoveredShapeId,
+    onRouteMarkerSelect: selectRouteMarker,
+    onWarningSegmentSelect: selectWarningSegment,
+    onWaypointHover: (idx: number) =>
+      setHoveredWaypoint({ shapeId: path.id, idx }),
+    onWaypointSelect: selectWaypoint,
+    routeMarkers,
     samples,
     toX,
     toY,
+    warningMarkers,
     warningKindBySegment,
     xTicks,
     yTicks,
   };
   const detailsContent = (
     <div className="space-y-4">
-      <div>
+      <section>
         <div className="text-muted-foreground mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
           <span>
             {t("routeDistance", {
@@ -681,10 +1171,19 @@ export default function ElevationChart({ className }: { className?: string }) {
           </span>
         </div>
         <ElevationSvg {...chartProps} height={isMobile ? 180 : 220} />
-      </div>
+      </section>
       <RouteColorKey kinds={warningKinds} />
+      <RouteMarkerKey
+        routeMarkers={routeMarkers}
+        warningMarkers={warningMarkers}
+      />
       <RouteManeuverDetails maneuvers={maneuvers} />
-      <RouteWarningDetails warnings={warnings} />
+      <RouteWarningDetails
+        activeSegmentIndex={activeSegmentIndex}
+        onJumpToSegment={selectWarningSegment}
+        warningSegments={warningMarkers}
+        warnings={warnings}
+      />
     </div>
   );
   const detailsOverlay = isMobile ? (
@@ -749,7 +1248,7 @@ export default function ElevationChart({ className }: { className?: string }) {
       <RouteManeuverSummary maneuvers={maneuvers} />
       <RouteWarningSummary warnings={warnings} />
       <RouteColorKey kinds={warningKinds} />
-      <ElevationSvg {...chartProps} height={VIEW_H} />
+      <ElevationSvg {...chartProps} height={VIEW_H} interactive={false} />
       {portalRoot && detailsOpen
         ? createPortal(detailsOverlay, portalRoot)
         : null}
