@@ -43,23 +43,24 @@ function ToggleRow({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn(
-        "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+        "border-border/50 bg-muted/18 mt-2.5 flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors",
         enabled
           ? "text-foreground"
           : "text-muted-foreground hover:text-foreground"
       )}
     >
-      <div>
+      <div className="min-w-0">
         <p className="text-[11px] font-medium">{title}</p>
-        <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+        <p className="text-muted-foreground/75 pt-0.5 text-[11px] leading-snug">
           {description}
         </p>
       </div>
       <div
         className={cn(
-          "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+          "flex h-6 w-10 shrink-0 items-center rounded-full p-0.5 transition-colors",
           enabled
             ? "bg-foreground/90 justify-end"
             : "bg-border/80 justify-start"
@@ -133,42 +134,44 @@ export function ViewControls({
           size="drawer"
         />
         <button
+          type="button"
           onClick={onFitView}
-          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors"
+          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground mt-2.5 flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors"
         >
-          <div>
+          <div className="min-w-0">
             <p className="text-[11px] font-medium">
               {t("controls.fitToField.label")}
             </p>
-            <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+            <p className="text-muted-foreground/75 pt-0.5 text-[11px] leading-snug">
               {t("controls.fitToField.description")}
             </p>
           </div>
-          <Scan className="size-4" />
+          <Scan className="size-4 shrink-0" />
         </button>
         {tab === "2d" ? (
           <>
             {onToggleSnapEnabled && (
               <button
+                type="button"
                 onClick={onToggleSnapEnabled}
                 className={cn(
-                  "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                  "border-border/50 bg-muted/18 mt-2.5 flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors",
                   snapEnabled
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <div>
+                <div className="min-w-0">
                   <p className="text-[11px] font-medium">
                     {t("controls.snap.label")}
                   </p>
-                  <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+                  <p className="text-muted-foreground/75 pt-0.5 text-[11px] leading-snug">
                     {t("controls.snap.description")}
                   </p>
                 </div>
                 <div
                   className={cn(
-                    "flex h-6 w-10 items-center rounded-full p-0.5 transition-colors",
+                    "flex h-6 w-10 shrink-0 items-center rounded-full p-0.5 transition-colors",
                     snapEnabled
                       ? "bg-foreground/90 justify-end"
                       : "bg-border/80 justify-start"
@@ -196,23 +199,24 @@ export function ViewControls({
         ) : (
           <>
             <button
+              type="button"
               onClick={() => {
                 closePanel?.();
                 onStartFlyThrough();
               }}
               disabled={!hasPath}
               className={cn(
-                "border-border/50 bg-muted/18 mt-2.5 flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition-colors",
+                "border-border/50 bg-muted/18 mt-2.5 flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors",
                 hasPath
                   ? "text-muted-foreground hover:bg-muted/28 hover:text-foreground"
                   : "text-muted-foreground/45 cursor-not-allowed"
               )}
             >
-              <div>
+              <div className="min-w-0">
                 <p className="text-[11px] font-medium">
                   {t("controls.flyThrough.label")}
                 </p>
-                <p className="text-muted-foreground/75 pt-0.5 text-[11px]">
+                <p className="text-muted-foreground/75 pt-0.5 text-[11px] leading-snug">
                   {hasPath
                     ? t("controls.flyThrough.descriptions.available")
                     : readOnly
@@ -220,7 +224,7 @@ export function ViewControls({
                       : t("controls.flyThrough.descriptions.draw")}
                 </p>
               </div>
-              <Play className="size-4" />
+              <Play className="size-4 shrink-0" />
             </button>
             <ToggleRow
               title={t("controls.gizmo.label")}
@@ -239,19 +243,20 @@ export function ViewControls({
           <div className="grid grid-cols-2 gap-2">
             <Link
               href={studioHref}
-              className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
+              className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
             >
               <ArrowRight className="size-4" />
-              <span className="text-[11px] leading-none font-medium">
+              <span className="max-w-full truncate text-[11px] leading-none font-medium">
                 {t("share.editableCopy")}
               </span>
             </Link>
             <button
+              type="button"
               onClick={onShare}
-              className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
+              className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
             >
               <Share2 className="size-4" />
-              <span className="text-[11px] leading-none font-medium">
+              <span className="max-w-full truncate text-[11px] leading-none font-medium">
                 {t("share.shareButton")}
               </span>
             </button>

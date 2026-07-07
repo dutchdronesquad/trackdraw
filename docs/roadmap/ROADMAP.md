@@ -157,6 +157,7 @@ Suggested focused slices:
   - Improved mobile map-reference controls with larger action targets and easier opacity adjustment
   - Enlarged mobile inspector section headers so collapsible panels are easier to open and close on touch screens
   - Improved mobile Project Manager action targets for opening and scanning local-project actions
+  - Completed with steadier mobile drawer/input handling, larger and fixed mobile tool/view controls, truncation-safe path and multi-select overlay labels, grouped-selection naming touch targets, bottom toolbar sizing, and existing Project Manager/map reference/inspector mobile coverage still passing
 - Recovery and failure states
   - Started with a local autosave failure state that reports storage/quota failures and offers retry before users continue editing blindly
   - Added clearer import failure states for invalid JSON, wrong file types, unreadable files, and non-TrackDraw project data

@@ -61,20 +61,22 @@ export function ToolsControls({
       {/* Undo / redo */}
       <div className="grid grid-cols-2 gap-2">
         <button
+          type="button"
           onClick={() => runAction(onUndo)}
           disabled={!canUndo}
-          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
+          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Undo2 className="size-3.5" />
-          {tCommon("actions.undo")}
+          <span className="max-w-full truncate">{tCommon("actions.undo")}</span>
         </button>
         <button
+          type="button"
           onClick={() => runAction(onRedo)}
           disabled={!canRedo}
-          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
+          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Redo2 className="size-3.5" />
-          {t("header.redo")}
+          <span className="max-w-full truncate">{t("header.redo")}</span>
         </button>
       </div>
 
@@ -112,7 +114,7 @@ export function ToolsControls({
                   <button
                     type="button"
                     onClick={() => runAction(() => onSelectTool(toolId))}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                    className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left"
                   >
                     <span
                       className={cn(
@@ -193,7 +195,7 @@ export function ToolsControls({
                                   )
                                 }
                                 className={cn(
-                                  "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
+                                  "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
                                   isActiveType
                                     ? "bg-brand-primary/10 text-foreground"
                                     : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
@@ -258,17 +260,18 @@ export function ToolsControls({
                 const active = activeTool === tool.id;
                 return (
                   <button
+                    type="button"
                     key={tool.id}
                     onClick={() => runAction(() => onSelectTool(tool.id))}
                     className={cn(
-                      "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
+                      "flex min-h-16 min-w-0 flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
                       active
                         ? "border-brand-primary/25 bg-brand-primary/8 text-brand-primary"
                         : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
                     )}
                   >
                     {tool.icon}
-                    <span className="text-[11px] leading-none font-medium">
+                    <span className="max-w-full truncate text-center text-[11px] leading-none font-medium">
                       {tool.label}
                     </span>
                   </button>

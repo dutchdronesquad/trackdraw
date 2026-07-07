@@ -54,8 +54,9 @@ The next TrackDraw priority is export and handoff workflow polish first, editor 
         Harden waypoint insert, delete, drag, segment and vertex selection clearing, route close/join, snapping, undo/redo, and mobile path controls.
   - [x] Transform and snapping regression pass
         Validate move, nudge, rotate, resize handles, snapping, grouped selections, mixed locked/editable selections, and no-op history behavior.
-  - [ ] Mobile editor ergonomics pass
+  - [x] Mobile editor ergonomics pass
         Tighten drawers, touch targets, compact labels, Project Manager flows, path tools, multi-select actions, map reference controls, and inspector panels.
+        Completed with steadier mobile drawer/input handling, larger and fixed mobile tool/view controls, truncation-safe path and multi-select overlay labels, grouped-selection naming touch targets, bottom toolbar sizing, and existing Project Manager/map reference/inspector mobile coverage still passing.
   - [ ] Recovery and failure states
         Make autosave, import, export, share, account sync, and runtime failures explain what happened and what the user can do next.
   - [ ] Large-layout stability pass
