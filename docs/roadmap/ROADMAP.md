@@ -146,6 +146,8 @@ Suggested focused slices:
 - Route editing regression pass
   - Harden waypoint insert, delete, drag, segment and vertex selection clearing, route close/join, snapping, undo/redo, and mobile path controls
   - Started by clearing stale segment and vertex selections after structural route edits such as waypoint insert/remove, append, reverse, route close, and route join
+  - Added route insert bounds guards and undo/redo coverage for route reverse, close, and join
+  - Completed with existing route snapping and context-menu coverage still passing alongside the expanded store regression coverage
 - Transform and snapping regression pass
   - Validate move, nudge, rotate, resize handles, snapping, grouped selections, mixed locked/editable selections, and no-op history behavior
 - Mobile editor ergonomics pass

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   applyShapePatch,
+  insertPolylinePoint,
   setPolylinePoints,
   updatePolylinePoint,
 } from "@/lib/editor/shape-mutations";
@@ -99,6 +100,40 @@ describe("shape mutations", () => {
 
     expect(updatePolylinePoint(polyline, 1, { z: 2 })).toBe(true);
     expect(polyline.points[1]).toEqual({ x: 2, y: 0, z: 2 });
+  });
+
+  it("rejects out-of-range polyline insert positions", () => {
+    const polyline: PolylineShape = {
+      id: "line-5",
+      kind: "polyline",
+      x: 0,
+      y: 0,
+      rotation: 0,
+      points: [
+        { x: 0, y: 0, z: 0 },
+        { x: 2, y: 0, z: 1 },
+      ],
+    };
+
+    expect(
+      insertPolylinePoint(polyline, -1, { x: 1, y: 1, z: 0 })
+    ).toBe(false);
+    expect(
+      insertPolylinePoint(polyline, 3, { x: 1, y: 1, z: 0 })
+    ).toBe(false);
+    expect(polyline.points).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 2, y: 0, z: 1 },
+    ]);
+
+    expect(
+      insertPolylinePoint(polyline, 2, { x: 4, y: 0, z: 0 })
+    ).toBe(true);
+    expect(polyline.points).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 2, y: 0, z: 1 },
+      { x: 4, y: 0, z: 0 },
+    ]);
   });
 
   it("applies and reports real changes", () => {

@@ -50,9 +50,8 @@ The next TrackDraw priority is export and handoff workflow polish first, editor 
       Run focused stability passes over shipped editor workflows before adding another large surface. Keep each slice small enough to validate without risking import/export, autosave, share publish/read, read-only viewing, or mobile editor flows.
   - [x] Locked selection action safeguards
         Locked selections consistently block destructive or confusing actions such as duplicate, delete, route join, and route close across store actions, shortcuts, context menus, inspector controls, item lists, and mobile overlays, while group organization remains available.
-  - [ ] Route editing regression pass
+  - [x] Route editing regression pass
         Harden waypoint insert, delete, drag, segment and vertex selection clearing, route close/join, snapping, undo/redo, and mobile path controls.
-        Started by clearing stale segment and vertex selections after structural route edits such as waypoint insert/remove, append, reverse, route close, and route join.
   - [ ] Transform and snapping regression pass
         Validate move, nudge, rotate, resize handles, snapping, grouped selections, mixed locked/editable selections, and no-op history behavior.
   - [ ] Mobile editor ergonomics pass

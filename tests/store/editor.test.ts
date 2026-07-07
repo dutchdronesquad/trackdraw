@@ -780,6 +780,30 @@ describe("editor store history", () => {
     expect(useEditor.getState().ui.vertexSelection).toBeNull();
   });
 
+  it("does not insert route waypoints outside valid bounds or create history", () => {
+    const state = useEditor.getState();
+    const routeId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 0, y: 0, z: 0 },
+          { x: 4, y: 0, z: 0 },
+        ],
+      })
+    );
+
+    const beforeUpdatedAt = clearHistoryAndCaptureUpdatedAt();
+
+    state.insertPolylinePoint(routeId, -1, { x: 1, y: 1, z: 0 });
+    state.insertPolylinePoint(routeId, 3, { x: 1, y: 1, z: 0 });
+
+    const route = useEditor.getState().track.design.shapeById[routeId];
+    expect(route?.kind === "polyline" ? route.points : []).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 4, y: 0, z: 0 },
+    ]);
+    expectNoDesignHistoryChange(beforeUpdatedAt);
+  });
+
   it("clears stale route edit selections when joining routes", () => {
     const state = useEditor.getState();
     const firstId = state.addShape(
@@ -811,6 +835,129 @@ describe("editor store history", () => {
     expect(useEditor.getState().session.selection).toEqual([joinedId]);
     expect(useEditor.getState().ui.segmentSelection).toBeNull();
     expect(useEditor.getState().ui.vertexSelection).toBeNull();
+  });
+
+  it("keeps route reverse undoable and redoable", () => {
+    const state = useEditor.getState();
+    const routeId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 0, y: 0, z: 0 },
+          { x: 2, y: 0, z: 1 },
+          { x: 4, y: 0, z: 2 },
+        ],
+      })
+    );
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:11:10.000Z");
+    state.reversePolylinePoints(routeId);
+
+    let route = useEditor.getState().track.design.shapeById[routeId];
+    expect(route?.kind === "polyline" ? route.points : []).toEqual([
+      { x: 4, y: 0, z: 2 },
+      { x: 2, y: 0, z: 1 },
+      { x: 0, y: 0, z: 0 },
+    ]);
+    expectDesignUpdatedAt("2026-04-13T10:11:10.000Z");
+    expectPastStatesCount(1);
+
+    runHistoryStep(useEditor.temporal.getState().undo);
+    route = useEditor.getState().track.design.shapeById[routeId];
+    expect(route?.kind === "polyline" ? route.points : []).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 2, y: 0, z: 1 },
+      { x: 4, y: 0, z: 2 },
+    ]);
+
+    runHistoryStep(useEditor.temporal.getState().redo);
+    route = useEditor.getState().track.design.shapeById[routeId];
+    expect(route?.kind === "polyline" ? route.points : []).toEqual([
+      { x: 4, y: 0, z: 2 },
+      { x: 2, y: 0, z: 1 },
+      { x: 0, y: 0, z: 0 },
+    ]);
+  });
+
+  it("keeps route close undoable and redoable", () => {
+    const state = useEditor.getState();
+    const routeId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 0, y: 0, z: 0 },
+          { x: 2, y: 0, z: 0 },
+          { x: 4, y: 0, z: 0 },
+        ],
+      })
+    );
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:11:11.000Z");
+    expect(state.closePolyline(routeId)).toBe(true);
+
+    let route = useEditor.getState().track.design.shapeById[routeId];
+    expect(route).toMatchObject({ kind: "polyline", closed: true });
+    expectDesignUpdatedAt("2026-04-13T10:11:11.000Z");
+    expectPastStatesCount(1);
+
+    runHistoryStep(useEditor.temporal.getState().undo);
+    route = useEditor.getState().track.design.shapeById[routeId];
+    expect(route?.kind === "polyline" ? route.closed : null).toBeFalsy();
+
+    runHistoryStep(useEditor.temporal.getState().redo);
+    route = useEditor.getState().track.design.shapeById[routeId];
+    expect(route).toMatchObject({ kind: "polyline", closed: true });
+  });
+
+  it("keeps route join undoable and redoable", () => {
+    const state = useEditor.getState();
+    const firstId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 0, y: 0, z: 0 },
+          { x: 2, y: 0, z: 0 },
+        ],
+      })
+    );
+    const secondId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 2, y: 0, z: 0 },
+          { x: 4, y: 1, z: 0 },
+        ],
+      })
+    );
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:11:12.000Z");
+    const joinedId = state.joinPolylines([firstId, secondId]);
+
+    expect(joinedId).toBeTruthy();
+    expect(useEditor.getState().track.design.shapeById[firstId]).toBeUndefined();
+    expect(
+      useEditor.getState().track.design.shapeById[secondId]
+    ).toBeUndefined();
+    expect(useEditor.getState().track.design.shapeById[joinedId!]?.kind).toBe(
+      "polyline"
+    );
+    expectDesignUpdatedAt("2026-04-13T10:11:12.000Z");
+    expectPastStatesCount(1);
+
+    runHistoryStep(useEditor.temporal.getState().undo);
+    expect(useEditor.getState().track.design.shapeById[firstId]).toBeTruthy();
+    expect(useEditor.getState().track.design.shapeById[secondId]).toBeTruthy();
+    expect(
+      useEditor.getState().track.design.shapeById[joinedId!]
+    ).toBeUndefined();
+
+    runHistoryStep(useEditor.temporal.getState().redo);
+    expect(useEditor.getState().track.design.shapeById[firstId]).toBeUndefined();
+    expect(
+      useEditor.getState().track.design.shapeById[secondId]
+    ).toBeUndefined();
+    expect(useEditor.getState().track.design.shapeById[joinedId!]?.kind).toBe(
+      "polyline"
+    );
   });
 
   it("keeps route waypoint insertion undoable and clears stale segment selection", () => {

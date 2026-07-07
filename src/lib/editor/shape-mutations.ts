@@ -132,6 +132,7 @@ export function insertPolylinePoint(
   point: PolylinePoint
 ) {
   if (!shape || shape.kind !== "polyline") return false;
+  if (index < 0 || index > shape.points.length) return false;
   shape.points.splice(index, 0, point);
   return true;
 }
