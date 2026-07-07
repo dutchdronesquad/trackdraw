@@ -421,17 +421,17 @@ export function getTrackElementCatalogDisplayName(
   const entry = resolveTrackElementCatalogEntry(value);
   const fallback = isTrackElementCatalogIdentity(value)
     ? value.snapshot.name
-    : entry?.name ?? "";
+    : (entry?.name ?? "");
   const key = entry ? getTrackElementCatalogTranslationKey(entry.id) : null;
 
   if (key && t) {
-     try {
-       return t(`${key}.name`);
-     } catch {
-       return fallback;
-     }
-   }
-   return fallback;
+    try {
+      return t(`${key}.name`);
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
 }
 
 export function getTrackElementCatalogDimensionsLabel(
@@ -446,17 +446,17 @@ export function getTrackElementCatalogDimensionsLabel(
   const entry = resolveTrackElementCatalogEntry(value);
   const fallback = isTrackElementCatalogIdentity(value)
     ? value.snapshot.dimensionsLabel
-    : entry?.dimensions.display.label ?? "";
+    : (entry?.dimensions.display.label ?? "");
   const key = entry ? getTrackElementCatalogTranslationKey(entry.id) : null;
 
   if (key && t) {
-     try {
-       return t(`${key}.dimensions`);
-     } catch {
-       return fallback;
-     }
-   }
-   return fallback;
+    try {
+      return t(`${key}.dimensions`);
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
 }
 
 const frameOnlyGateDefaults = {

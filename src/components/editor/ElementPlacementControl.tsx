@@ -92,7 +92,10 @@ export function ElementPlacementControl() {
                       className="block min-w-0"
                     >
                       <span className="text-foreground block truncate text-[13px] leading-none font-semibold">
-                        {getTrackElementCatalogDisplayName(activeEntry, tShapes)}
+                        {getTrackElementCatalogDisplayName(
+                          activeEntry,
+                          tShapes
+                        )}
                       </span>
                       <span className="mt-1.5 flex min-w-0 items-center gap-1.5">
                         <span className="text-muted-foreground/70 truncate text-[11px] leading-none">

@@ -27,7 +27,7 @@ function isTrackItemTool(tool: EditorTool): tool is TrackItemToolId {
 export function getShapeDisplayLabel(shape: Shape, t: Translate): string {
   const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
   if (catalogIdentity?.assignedKind === shape.kind) {
-    return getTrackElementCatalogDisplayName(catalogIdentity, t)
+    return getTrackElementCatalogDisplayName(catalogIdentity, t);
   }
 
   return getShapeKindLabel(shape.kind, t);
