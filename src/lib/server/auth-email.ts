@@ -56,7 +56,7 @@ function buildEmailShell({
         <meta name="supported-color-schemes" content="light dark" />
         <title>${escapedTitle}</title>
       </head>
-      <body style="margin: 0; padding: 0; color: #111827;">
+      <body bgcolor="#f6f8fb" style="margin: 0; padding: 0; background-color: #f6f8fb; color: #111827;">
         <table
           role="presentation"
           cellpadding="0"
@@ -67,6 +67,11 @@ function buildEmailShell({
         >
           <tr>
             <td align="center" style="padding: 40px 16px;">
+              <!--[if mso]>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" align="center">
+                <tr>
+                  <td>
+              <![endif]-->
               <table
                 role="presentation"
                 cellpadding="0"
@@ -83,118 +88,134 @@ function buildEmailShell({
                   </td>
                 </tr>
                 <tr>
-                  <td>
-                    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" style="width:600px;" arcsize="4%" stroke="f" fillcolor="#ffffff"><v:textbox inset="0,0,0,0"><w:txbxContent><![endif]-->
-                    <div style="overflow: hidden; border-radius: 24px; background-color: #ffffff; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);">
-                      <table
-                        role="presentation"
-                        cellpadding="0"
-                        cellspacing="0"
-                        border="0"
-                        width="100%"
-                        style="border-collapse: collapse; width: 100%;"
-                      >
-                        <tr>
-                          <td bgcolor="#0f172a" style="padding: 28px 30px 24px; background-color: #0f172a; border-top-left-radius: 24px; border-top-right-radius: 24px;">
-                            <div style="margin: 0 0 22px;">
-                              <img
-                                src="${brandLogoUrl}"
-                                alt="TrackDraw"
-                                width="154"
-                                height="30"
-                                style="display: block; width: 154px; height: auto; max-width: 100%;"
-                              />
-                            </div>
-                            <table
-                              role="presentation"
-                              cellpadding="0"
-                              cellspacing="0"
-                              border="0"
-                              width="420"
-                              style="border-collapse: collapse; width: 100%; max-width: 420px;"
-                            >
-                              <tr>
-                                <td>
-                                  <h1 style="margin: 0 0 10px; font-size: 30px; line-height: 1.15; font-weight: 700; letter-spacing: -0.03em; color: #ffffff;">
-                                    ${escapedTitle}
-                                  </h1>
-                                  <p style="margin: 0; font-size: 13px; line-height: 1.65; color: #dbe5f0;">
-                                    Access your TrackDraw projects and planning tools.
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 30px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;">
-                            <p style="margin: 0 0 24px; font-size: 15px; line-height: 1.75; color: #334155;">
-                              ${escapedIntro}
-                            </p>
-                            <table
-                              role="presentation"
-                              cellpadding="0"
-                              cellspacing="0"
-                              border="0"
-                              style="border-collapse: separate; margin: 0 0 24px;"
-                            >
-                              <tr>
-                                <td bgcolor="#1e93db" style="border-radius: 14px; background-color: #1e93db;">
-                                  <!--[if mso]>
-                                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-                                    href="${escapedUrl}"
-                                    style="height:42px;v-text-anchor:middle;width:200px;"
-                                    arcsize="33%"
-                                    stroke="f"
-                                    fillcolor="#1e93db">
-                                    <w:anchorlock/>
-                                    <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:700;">${escapedActionLabel}</center>
-                                  </v:roundrect>
-                                  <![endif]-->
-                                  <!--[if !mso]><!-->
-                                  <a
-                                    href="${escapedUrl}"
-                                    style="display: inline-block; border-radius: 14px; padding: 13px 20px; font-size: 14px; font-weight: 700; line-height: 1; color: #ffffff; text-decoration: none; font-family: Arial, sans-serif;"
-                                  >
-                                    ${escapedActionLabel}
-                                  </a>
-                                  <!--<![endif]-->
-                                </td>
-                              </tr>
-                            </table>
-                            <table
-                              role="presentation"
-                              cellpadding="0"
-                              cellspacing="0"
-                              border="0"
-                              width="100%"
-                              style="border-collapse: collapse; width: 100%; margin: 0 0 22px;"
-                            >
-                              <tr>
-                                <td style="border-left: 4px solid #f0761d; border-top-right-radius: 14px; border-bottom-right-radius: 14px; padding: 16px 18px;">
-                                  <p style="margin: 0; font-size: 13px; line-height: 1.7; color: #475569;">
-                                    ${escapedNote}
-                                  </p>
-                                </td>
-                              </tr>
-                            </table>
-                            <div style="margin: 0 0 22px; border-top: 1px solid #e2e8f0;"></div>
-                            <p style="margin: 0 0 8px; font-size: 12px; line-height: 1.6; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #64748b;">
-                              Direct link
-                            </p>
-                            <p style="margin: 0; word-break: break-all; font-size: 13px; line-height: 1.7;">
-                              <a href="${escapedUrl}" style="color: #1e4d8f; text-decoration: underline;">
-                                ${escapedUrl}
-                              </a>
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
-                    <!--[if mso]></w:txbxContent></v:textbox></v:roundrect><![endif]-->
+                  <td bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 24px; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08); overflow: hidden;">
+                    <table
+                      role="presentation"
+                      cellpadding="0"
+                      cellspacing="0"
+                      border="0"
+                      width="100%"
+                      bgcolor="#ffffff"
+                      style="border-collapse: collapse; width: 100%; background-color: #ffffff;"
+                    >
+                      <tr>
+                        <td bgcolor="#0f172a" style="padding: 28px 30px 24px; background-color: #0f172a; border-top-left-radius: 24px; border-top-right-radius: 24px;">
+                          <table
+                            role="presentation"
+                            cellpadding="0"
+                            cellspacing="0"
+                            border="0"
+                            width="100%"
+                            style="border-collapse: collapse; width: 100%;"
+                          >
+                            <tr>
+                              <td style="padding: 0 0 22px;">
+                                <img
+                                  src="${brandLogoUrl}"
+                                  alt="TrackDraw"
+                                  width="154"
+                                  height="30"
+                                  style="display: block; width: 154px; height: auto; max-width: 100%; border: 0; outline: none; text-decoration: none;"
+                                />
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="max-width: 420px;">
+                                <h1 style="margin: 0 0 10px; font-size: 30px; line-height: 36px; font-weight: 700; color: #ffffff;">
+                                  ${escapedTitle}
+                                </h1>
+                                <p style="margin: 0; font-size: 13px; line-height: 21px; color: #dbe5f0;">
+                                  Access your TrackDraw projects and planning tools.
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 30px;">
+                          <p style="margin: 0 0 24px; font-size: 15px; line-height: 26px; color: #334155;">
+                            ${escapedIntro}
+                          </p>
+                          <table
+                            role="presentation"
+                            cellpadding="0"
+                            cellspacing="0"
+                            border="0"
+                            style="border-collapse: separate; margin: 0 0 24px;"
+                          >
+                            <tr>
+                              <td bgcolor="#1e93db" style="border-radius: 14px; background-color: #1e93db;">
+                                <!--[if mso]>
+                                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+                                  href="${escapedUrl}"
+                                  style="height:42px;v-text-anchor:middle;width:200px;"
+                                  arcsize="33%"
+                                  stroke="f"
+                                  fillcolor="#1e93db">
+                                  <w:anchorlock/>
+                                  <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:700;">${escapedActionLabel}</center>
+                                </v:roundrect>
+                                <![endif]-->
+                                <!--[if !mso]><!-->
+                                <a
+                                  href="${escapedUrl}"
+                                  style="display: inline-block; border-radius: 14px; padding: 13px 20px; font-size: 14px; font-weight: 700; line-height: 16px; color: #ffffff; text-decoration: none; font-family: Arial, sans-serif;"
+                                >
+                                  ${escapedActionLabel}
+                                </a>
+                                <!--<![endif]-->
+                              </td>
+                            </tr>
+                          </table>
+                          <table
+                            role="presentation"
+                            cellpadding="0"
+                            cellspacing="0"
+                            border="0"
+                            width="100%"
+                            style="border-collapse: collapse; width: 100%; margin: 0 0 22px;"
+                          >
+                            <tr>
+                              <td width="4" bgcolor="#f0761d" style="width: 4px; background-color: #f0761d; font-size: 1px; line-height: 1px;">&nbsp;</td>
+                              <td style="padding: 16px 18px;">
+                                <p style="margin: 0; font-size: 13px; line-height: 22px; color: #475569;">
+                                  ${escapedNote}
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                          <table
+                            role="presentation"
+                            cellpadding="0"
+                            cellspacing="0"
+                            border="0"
+                            width="100%"
+                            style="border-collapse: collapse; width: 100%; margin: 0 0 22px;"
+                          >
+                            <tr>
+                              <td height="1" bgcolor="#e2e8f0" style="height: 1px; background-color: #e2e8f0; font-size: 1px; line-height: 1px;">&nbsp;</td>
+                            </tr>
+                          </table>
+                          <p style="margin: 0 0 8px; font-size: 12px; line-height: 19px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #64748b;">
+                            Direct link
+                          </p>
+                          <p style="margin: 0; word-break: break-all; font-size: 13px; line-height: 22px;">
+                            <a href="${escapedUrl}" style="color: #1e4d8f; text-decoration: underline;">
+                              ${escapedUrl}
+                            </a>
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
+              <!--[if mso]>
+                  </td>
+                </tr>
+              </table>
+              <![endif]-->
             </td>
           </tr>
         </table>
