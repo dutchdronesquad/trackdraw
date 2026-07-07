@@ -150,6 +150,7 @@ Suggested focused slices:
   - Completed with existing route snapping and context-menu coverage still passing alongside the expanded store regression coverage
 - Transform and snapping regression pass
   - Validate move, nudge, rotate, resize handles, snapping, grouped selections, mixed locked/editable selections, and no-op history behavior
+  - Completed with no-op nudge/rotation history guards, mixed locked/editable rotate/resize/nudge coverage, grouped transform undo/redo coverage, and snap helper coverage for grid, object, route-line, route-waypoint, selected-item exclusion, and snap-toggle behavior
 - Mobile editor ergonomics pass
   - Started with larger, more consistent mobile app-menu touch targets for project, share, transfer, account, dashboard, and sign-out actions
   - Added steadier touch targets for path builder, quick adjust, and multi-select overlay actions during mobile editing

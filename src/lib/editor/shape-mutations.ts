@@ -173,7 +173,9 @@ export function rotateShapes(
     if (shape.kind === "polyline" || shape.kind === "cone" || shape.locked) {
       continue;
     }
-    shape.rotation = (((shape.rotation + delta) % 360) + 360) % 360;
+    const nextRotation = (((shape.rotation + delta) % 360) + 360) % 360;
+    if (Object.is(shape.rotation, nextRotation)) continue;
+    shape.rotation = nextRotation;
     changed = true;
   }
 
@@ -186,6 +188,8 @@ export function nudgeShapes(
   dx: number,
   dy: number
 ) {
+  if (dx === 0 && dy === 0) return false;
+
   let changed = false;
 
   for (const id of ids) {

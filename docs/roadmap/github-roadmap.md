@@ -52,7 +52,7 @@ The next TrackDraw priority is export and handoff workflow polish first, editor 
         Locked selections consistently block destructive or confusing actions such as duplicate, delete, route join, and route close across store actions, shortcuts, context menus, inspector controls, item lists, and mobile overlays, while group organization remains available.
   - [x] Route editing regression pass
         Harden waypoint insert, delete, drag, segment and vertex selection clearing, route close/join, snapping, undo/redo, and mobile path controls.
-  - [ ] Transform and snapping regression pass
+  - [x] Transform and snapping regression pass
         Validate move, nudge, rotate, resize handles, snapping, grouped selections, mixed locked/editable selections, and no-op history behavior.
   - [ ] Mobile editor ergonomics pass
         Tighten drawers, touch targets, compact labels, Project Manager flows, path tools, multi-select actions, map reference controls, and inspector panels.

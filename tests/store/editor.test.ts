@@ -127,6 +127,44 @@ describe("editor store history", () => {
     expectPastStatesCount(1);
   });
 
+  it("does not create history for no-op rotations", () => {
+    const state = useEditor.getState();
+    const gateId = state.addShape(gateDraft({ rotation: 45 }));
+
+    const beforeUpdatedAt = clearHistoryAndCaptureUpdatedAt();
+
+    state.rotateShapes([gateId], 0);
+    state.rotateShapes([gateId], 360);
+
+    expect(useEditor.getState().track.design.shapeById[gateId]).toMatchObject({
+      rotation: 45,
+    });
+    expectNoDesignHistoryChange(beforeUpdatedAt);
+  });
+
+  it("rotates only editable shapes in a mixed locked selection", () => {
+    const state = useEditor.getState();
+    const lockedGateId = state.addShape(
+      gateDraft({ rotation: 10, locked: true })
+    );
+    const editableGateId = state.addShape(gateDraft({ x: 12, rotation: 20 }));
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:06:26.000Z");
+
+    state.rotateShapes([lockedGateId, editableGateId], 15);
+
+    const nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[lockedGateId]).toMatchObject({
+      rotation: 10,
+    });
+    expect(nextDesign.shapeById[editableGateId]).toMatchObject({
+      rotation: 35,
+    });
+    expectDesignUpdatedAt("2026-04-13T10:06:26.000Z");
+    expectPastStatesCount(1);
+  });
+
   it("undoes and redoes a real design change through the temporal store", () => {
     const state = useEditor.getState();
     const gateId = state.addShape(gateDraft({ width: 2.2, height: 1.9 }));
@@ -178,6 +216,36 @@ describe("editor store history", () => {
       width: 3,
       height: 2,
     });
+  });
+
+  it("resizes only editable shapes in a mixed locked selection", () => {
+    const state = useEditor.getState();
+    const lockedGateId = state.addShape(
+      gateDraft({ locked: true, width: 2, height: 2 })
+    );
+    const editableGateId = state.addShape(
+      gateDraft({ x: 12, y: 9, width: 2.5, height: 1.5 })
+    );
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:06:29.000Z");
+
+    state.updateShapes([lockedGateId, editableGateId], {
+      width: 3,
+      height: 2,
+    });
+
+    const nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[lockedGateId]).toMatchObject({
+      width: 2,
+      height: 2,
+    });
+    expect(nextDesign.shapeById[editableGateId]).toMatchObject({
+      width: 3,
+      height: 2,
+    });
+    expectDesignUpdatedAt("2026-04-13T10:06:29.000Z");
+    expectPastStatesCount(1);
   });
 
   it("sanitizeHistoryState clears transient session and ui state after history steps", () => {
@@ -1129,6 +1197,10 @@ describe("editor store history", () => {
       x: 3,
       y: 1,
     });
+    expect(useEditor.getState().track.design.updatedAt).toBe(
+      "2026-04-13T10:12:10.000Z"
+    );
+    expectPastStatesCount(1);
 
     expect(useEditor.getState().track.design.shapeOrder).toEqual([
       firstId,
@@ -1147,6 +1219,82 @@ describe("editor store history", () => {
       thirdId,
       firstId,
     ]);
+  });
+
+  it("keeps nudge and rotation transform changes undoable and redoable", () => {
+    const state = useEditor.getState();
+    const gateId = state.addShape(gateDraft({ x: 1, y: 2, rotation: 5 }));
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:12:12.000Z");
+    state.nudgeShapes([gateId], 2, -1);
+    setEditorTestTime("2026-04-13T10:12:13.000Z");
+    state.rotateShapes([gateId], 30);
+
+    expect(useEditor.getState().track.design.shapeById[gateId]).toMatchObject({
+      x: 3,
+      y: 1,
+      rotation: 35,
+    });
+    expectDesignUpdatedAt("2026-04-13T10:12:13.000Z");
+    expectPastStatesCount(2);
+
+    runHistoryStep(useEditor.temporal.getState().undo);
+    expect(useEditor.getState().track.design.shapeById[gateId]).toMatchObject({
+      x: 3,
+      y: 1,
+      rotation: 5,
+    });
+
+    runHistoryStep(useEditor.temporal.getState().undo);
+    expect(useEditor.getState().track.design.shapeById[gateId]).toMatchObject({
+      x: 1,
+      y: 2,
+      rotation: 5,
+    });
+
+    runHistoryStep(useEditor.temporal.getState().redo);
+    expect(useEditor.getState().track.design.shapeById[gateId]).toMatchObject({
+      x: 3,
+      y: 1,
+      rotation: 5,
+    });
+
+    runHistoryStep(useEditor.temporal.getState().redo);
+    expect(useEditor.getState().track.design.shapeById[gateId]).toMatchObject({
+      x: 3,
+      y: 1,
+      rotation: 35,
+    });
+  });
+
+  it("keeps grouped selection nudges as one undoable transform", () => {
+    const state = useEditor.getState();
+    const firstId = state.addShape(gateDraft({ x: 5, y: 6 }));
+    const secondId = state.addShape(flagDraft({ x: 7, y: 8 }));
+    const groupId = state.groupSelection([firstId, secondId]);
+
+    expect(groupId).toBeTruthy();
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:12:14.000Z");
+
+    state.nudgeShapes(useEditor.getState().session.selection, 2, -1);
+
+    let nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[firstId]).toMatchObject({ x: 7, y: 5 });
+    expect(nextDesign.shapeById[secondId]).toMatchObject({ x: 9, y: 7 });
+    expectDesignUpdatedAt("2026-04-13T10:12:14.000Z");
+    expectPastStatesCount(1);
+
+    runHistoryStep(useEditor.temporal.getState().undo);
+    nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[firstId]).toMatchObject({ x: 5, y: 6 });
+    expect(nextDesign.shapeById[secondId]).toMatchObject({ x: 7, y: 8 });
+
+    runHistoryStep(useEditor.temporal.getState().redo);
+    nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[firstId]).toMatchObject({ x: 7, y: 5 });
+    expect(nextDesign.shapeById[secondId]).toMatchObject({ x: 9, y: 7 });
   });
 
   it("reorderShapes moves a shape before another", () => {

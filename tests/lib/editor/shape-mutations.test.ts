@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   applyShapePatch,
   insertPolylinePoint,
+  nudgeShapes,
+  rotateShapes,
   setPolylinePoints,
   updatePolylinePoint,
 } from "@/lib/editor/shape-mutations";
-import type { GateShape, PolylineShape } from "@/lib/types";
+import type { GateShape, PolylineShape, TrackDesign } from "@/lib/types";
 
 describe("shape mutations", () => {
   it("returns false for unchanged non-polyline patches", () => {
@@ -149,5 +151,29 @@ describe("shape mutations", () => {
 
     expect(applyShapePatch(shape, { rotation: 15 })).toBe(true);
     expect(shape.rotation).toBe(15);
+  });
+
+  it("reports no-op transform mutations accurately", () => {
+    const gate: GateShape = {
+      id: "gate-3",
+      kind: "gate",
+      x: 3,
+      y: 5,
+      rotation: 45,
+      width: 2,
+      height: 2,
+    };
+    const shapeById: TrackDesign["shapeById"] = {
+      [gate.id]: gate,
+    };
+
+    expect(rotateShapes(shapeById, [gate.id], 0)).toBe(false);
+    expect(rotateShapes(shapeById, [gate.id], 360)).toBe(false);
+    expect(nudgeShapes(shapeById, [gate.id], 0, 0)).toBe(false);
+    expect(gate).toMatchObject({ x: 3, y: 5, rotation: 45 });
+
+    expect(rotateShapes(shapeById, [gate.id], -90)).toBe(true);
+    expect(nudgeShapes(shapeById, [gate.id], 1, -2)).toBe(true);
+    expect(gate).toMatchObject({ x: 4, y: 3, rotation: 315 });
   });
 });

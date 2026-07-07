@@ -933,7 +933,7 @@ export default function ExportDialog({
   const activeContent = (
     <div className="space-y-5">
       {hasMultipleFormats ? (
-        <div className="grid gap-1 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-1">
           {activeFormats.map((format) => (
             <ExportFormatChoice
               key={format.id}
