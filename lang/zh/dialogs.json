@@ -211,24 +211,35 @@
       "canvasNotReady": "画布尚未就绪",
       "exported": "已导出"
     },
+    "readiness": {
+      "open3d": "导出这个渲染前请先打开 3D 视图。",
+      "canvasNotReady": "2D 画布仍在加载，请稍后再试。",
+      "emptyRacePack": "导出布场清单前，请先在赛道里添加至少一个项目。",
+      "missingRaceLine": "导出 Cinematic FPV 视频前，请先画出路径。",
+      "emptyVelocidrone": "导出 Velocidrone 文件前，请先在赛道里添加至少一个项目。",
+      "experimentalSimulator": "部分 TrackDraw 物件导入 Velocidrone 后的效果可能会不同。"
+    },
     "webm": {
       "renderingBackground": "Cinematic FPV 正在后台渲染…",
       "renderingProgress": "正在渲染 cinematic FPV… {status}",
       "ready": "Cinematic FPV 导出已完成",
       "progressLabel": "正在渲染模拟飞行… 视频长度 {duration}"
     },
-    "sections": {
-      "visualExports": {
-        "title": "视觉导出",
-        "description": "用于审阅、打印或分享的只读画面。"
+    "categories": {
+      "visuals": {
+        "title": "视觉内容"
       },
-      "projectHandoff": {
-        "title": "项目与交接",
-        "description": "可编辑备份，或只读的布场交接文件。"
+      "raceDay": {
+        "title": "比赛日"
       },
-      "simulatorMotion": {
-        "title": "模拟器与动态",
-        "description": "用于线路审阅的视频和实验性模拟器输出。"
+      "projectData": {
+        "title": "项目数据"
+      },
+      "motion": {
+        "title": "视频"
+      },
+      "simulatorLab": {
+        "title": "实验性"
       }
     },
     "formats": {

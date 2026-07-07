@@ -259,13 +259,70 @@ describe("exportPdf", () => {
       }))
     );
 
-    await exportPdf(null as never, design, "race-pack-zh.pdf", "dark", translate, {
-      locale: "zh",
-      preset: "race-day",
-    });
+    await exportPdf(
+      null as never,
+      design,
+      "race-pack-zh.pdf",
+      "dark",
+      translate,
+      {
+        locale: "zh",
+        preset: "race-day",
+      }
+    );
 
     const pdf = pdfMock.instances[0];
     expect(pdf.addFileToVFSCalls).toHaveLength(1);
     expect(pdf.addFontCalls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("retries loading the CJK font after a failed fetch", async () => {
+    vi.resetModules();
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: async () => new Uint8Array([0, 1, 2, 3]).buffer,
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { exportPdf: exportPdfWithFreshCache } =
+      await import("@/lib/export/exportPdf");
+
+    const design = createDefaultDesign();
+    design.title = "中文重试";
+
+    await expect(
+      exportPdfWithFreshCache(
+        null as never,
+        design,
+        "race-pack-zh-retry.pdf",
+        "dark",
+        translate,
+        {
+          locale: "zh",
+          preset: "race-day",
+        }
+      )
+    ).rejects.toThrow("Failed to load PDF font: 503");
+
+    await exportPdfWithFreshCache(
+      null as never,
+      design,
+      "race-pack-zh-retry.pdf",
+      "dark",
+      translate,
+      {
+        locale: "zh",
+        preset: "race-day",
+      }
+    );
+
+    const pdf = pdfMock.instances.at(-1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(pdf?.addFileToVFSCalls).toHaveLength(1);
+    expect(pdf?.addFontCalls.length).toBeGreaterThanOrEqual(2);
   });
 });

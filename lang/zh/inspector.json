@@ -199,7 +199,7 @@
       "ready": "已编号 {count} 个路径障碍。",
       "partial": "{mapped} / {total} 个路径障碍已编号。",
       "noRouteMatches": "找到 {count} 个路径障碍，但都没有离路径足够近。",
-      "missingRoute": "{count} 个路径障碍需要先有路径，才能自动生成编号。",
+      "missingRoute": "支持的障碍已经准备好，可以生成比赛路径。",
       "noNumberedObstacles": "穿越门、目字门和重力门会出现在路径编号里。",
       "empty": "添加路径障碍和路径后即可生成编号。"
     },
@@ -209,7 +209,21 @@
     },
     "meta": {
       "numbered": "已编号",
-      "issues": "问题"
+      "issues": "问题",
+      "raceLine": "比赛路径"
+    },
+    "generate": {
+      "button": "生成比赛路径",
+      "regenerateButton": "重新生成比赛路径",
+      "success": "比赛路径已生成。",
+      "errors": {
+        "noObstacles": "无法生成比赛路径——请先添加至少两个受支持的障碍（穿越门、目字门或重力门）。"
+      },
+      "warnings": {
+        "unsupportedShapes": "{count, plural, one {有 1 个障碍暂不支持，已跳过。} other {有 {count} 个障碍暂不支持，已跳过。}}",
+        "tooFewObstacles": "再添加一些受支持的障碍，生成的比赛路径会更有参考价值。",
+        "closeObstacles": "{count, plural, one {有 1 对障碍距离非常近，请检查生成的路径。} other {有 {count} 对障碍距离非常近，请检查生成的路径。}}"
+      }
     }
   },
   "elevationChart": {

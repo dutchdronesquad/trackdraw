@@ -424,7 +424,14 @@ export function getTrackElementCatalogDisplayName(
     : entry?.name ?? "";
   const key = entry ? getTrackElementCatalogTranslationKey(entry.id) : null;
 
-  return key && t ? t(`${key}.name`) : fallback;
+  if (key && t) {
+     try {
+       return t(`${key}.name`);
+     } catch {
+       return fallback;
+     }
+   }
+   return fallback;
 }
 
 export function getTrackElementCatalogDimensionsLabel(
@@ -442,7 +449,14 @@ export function getTrackElementCatalogDimensionsLabel(
     : entry?.dimensions.display.label ?? "";
   const key = entry ? getTrackElementCatalogTranslationKey(entry.id) : null;
 
-  return key && t ? t(`${key}.dimensions`) : fallback;
+  if (key && t) {
+     try {
+       return t(`${key}.dimensions`);
+     } catch {
+       return fallback;
+     }
+   }
+   return fallback;
 }
 
 const frameOnlyGateDefaults = {

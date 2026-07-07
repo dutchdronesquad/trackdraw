@@ -113,7 +113,9 @@ function shouldUseCjkPdfFont(
   design: TrackDesign,
   options?: Pick<ExportPdfOptions, "locale">
 ) {
-  return options?.locale?.toLowerCase().startsWith("zh") || designHasCjkText(design);
+  return (
+    options?.locale?.toLowerCase().startsWith("zh") || designHasCjkText(design)
+  );
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
@@ -130,14 +132,19 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 }
 
 async function loadCjkPdfFontBase64() {
-  cjkFontBase64Promise ??= (async () => {
-    const response = await fetch(CJK_FONT_PATH);
-    if (!response.ok) {
-      throw new Error(`Failed to load PDF font: ${response.status}`);
-    }
+  if (!cjkFontBase64Promise) {
+    cjkFontBase64Promise = (async () => {
+      const response = await fetch(CJK_FONT_PATH);
+      if (!response.ok) {
+        throw new Error(`Failed to load PDF font: ${response.status}`);
+      }
 
-    return arrayBufferToBase64(await response.arrayBuffer());
-  })();
+      return arrayBufferToBase64(await response.arrayBuffer());
+    })().catch((error) => {
+      cjkFontBase64Promise = null;
+      throw error;
+    });
+  }
 
   return cjkFontBase64Promise;
 }

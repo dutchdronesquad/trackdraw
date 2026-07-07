@@ -247,6 +247,23 @@
       "finish": "schließt den Pfad ab"
     }
   },
+  "starterLayoutCatalog": {
+    "openPractice": {
+      "name": "Open practice",
+      "title": "Open Practice Layout",
+      "description": "Open flow with a start area and room to build your own lap."
+    },
+    "compactRaceStart": {
+      "name": "Compact race start",
+      "title": "Compact Race Start",
+      "description": "Tight opening with an immediate gate line and early turn."
+    },
+    "technicalLadderLine": {
+      "name": "Technical ladder line",
+      "title": "Technical Ladder Line",
+      "description": "First gate, two ladders, and a follow-up gate for quick rhythm."
+    }
+  },
   "saveAsPresetDialog": {
     "title": "Als Preset speichern",
     "subtitle": "Gib deiner Auswahl einen Namen, damit du sie später erneut aus dem Preset-Picker platzieren kannst.",

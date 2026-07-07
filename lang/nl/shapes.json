@@ -44,5 +44,100 @@
     "selectionCount": "{count} items",
     "selectionFallback": "Selectie",
     "frontLabel": "Voor"
+  },
+  "catalogEntries": {
+    "trackdrawGate": { "name": "TrackDraw Gate", "dimensions": "2 x 2 m" },
+    "multigpStandardGate5x5": {
+      "name": "MultiGP Standard Gate 5x5",
+      "dimensions": "5 ft x 5 ft"
+    },
+    "multigpChampionshipGate7x6": {
+      "name": "MultiGP Championship Gate 7x6",
+      "dimensions": "7 ft x 6 ft"
+    },
+    "trackdrawTower": {
+      "name": "TrackDraw Tower",
+      "dimensions": "2 x 2 m, elevated"
+    },
+    "multigpTower5x5": {
+      "name": "MultiGP Tower 5x5",
+      "dimensions": "5 ft x 5 ft, elevated 5 ft"
+    },
+    "multigpTower7x6": {
+      "name": "MultiGP Tower 7x6",
+      "dimensions": "7 ft x 6 ft, elevated 6 ft"
+    },
+    "multigpDoubleGateTower5x5": {
+      "name": "MultiGP Double Gate Tower 5x5",
+      "dimensions": "5 ft wide, 2 x 5 ft openings"
+    },
+    "multigpDoubleGateTower7x6": {
+      "name": "MultiGP Double Gate Tower 7x6",
+      "dimensions": "7 ft wide, 2 x 6 ft openings"
+    },
+    "trackdrawFlag": {
+      "name": "TrackDraw Flag",
+      "dimensions": "0.25 m radius, 3.5 m pole"
+    },
+    "multigpCornerFlag": {
+      "name": "MultiGP Corner Flag",
+      "dimensions": "10 ft"
+    },
+    "trackdrawCone": {
+      "name": "TrackDraw Cone",
+      "dimensions": "0.2 m radius"
+    },
+    "trackdrawLabel": {
+      "name": "TrackDraw Label",
+      "dimensions": "Text label"
+    },
+    "trackdrawStartFinish": {
+      "name": "TrackDraw Start / Finish",
+      "dimensions": "3 m wide"
+    },
+    "trackdrawLadder": {
+      "name": "TrackDraw Ladder",
+      "dimensions": "2 x 6 m, 3 rungs"
+    },
+    "multigpStandardLadder5x5": {
+      "name": "MultiGP Standard Ladder 5x5",
+      "dimensions": "5 ft wide, 3 × 5 ft sections"
+    },
+    "multigpChampionshipLadder7x6": {
+      "name": "MultiGP Championship Ladder 7x6",
+      "dimensions": "7 ft wide, 3 × 6 ft openings"
+    },
+    "multigpToplessLadder7x6": {
+      "name": "MultiGP Topless Ladder 7x6",
+      "dimensions": "7 ft wide, 3 x 6 ft topless"
+    },
+    "trackdrawDiveGate": {
+      "name": "TrackDraw Dive Gate",
+      "dimensions": "2.8 m square"
+    },
+    "multigpDiveGate7x6": {
+      "name": "MultiGP Dive Gate 7x6",
+      "dimensions": "7 ft x 6 ft"
+    },
+    "multigpLaunchGate7x6": {
+      "name": "MultiGP Launch Gate 7x6",
+      "dimensions": "7 ft x 6 ft"
+    },
+    "trackdrawBanner": {
+      "name": "TrackDraw Banner",
+      "dimensions": "3 × 2 m"
+    },
+    "trackdrawFence": {
+      "name": "TrackDraw Fence",
+      "dimensions": "3 × 1.2 m"
+    },
+    "trackdrawNet": {
+      "name": "TrackDraw Net",
+      "dimensions": "3 × 2 m"
+    },
+    "multigpHurdle": {
+      "name": "MultiGP Hurdle",
+      "dimensions": "10 ft wide, 5 ft tall"
+    }
   }
 }
