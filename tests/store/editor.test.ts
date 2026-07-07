@@ -667,6 +667,11 @@ describe("editor store history", () => {
       "polyline"
     );
 
+    state.setSegmentSelection({
+      shapeId: joinedId!,
+      segmentIndex: 0,
+      point: { x: 1, y: 0 },
+    });
     expect(state.closePolyline(joinedId!)).toBe(true);
     expect(
       useEditor.getState().track.design.shapeById[joinedId!]
@@ -674,6 +679,7 @@ describe("editor store history", () => {
       kind: "polyline",
       closed: true,
     });
+    expect(useEditor.getState().ui.segmentSelection).toBeNull();
   });
 
   it("does not join or close locked polylines", () => {
@@ -743,6 +749,68 @@ describe("editor store history", () => {
     expect(
       useEditor.getState().track.design.shapeById[secondId]
     ).toBeUndefined();
+  });
+
+  it("clears stale route edit selections after structural route edits", () => {
+    const state = useEditor.getState();
+    const routeId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 0, y: 0, z: 0 },
+          { x: 2, y: 0, z: 0 },
+          { x: 4, y: 0, z: 0 },
+        ],
+      })
+    );
+
+    state.setVertexSelection({ shapeId: routeId, idx: 1 });
+    state.removePolylinePoint(routeId, 1);
+    expect(useEditor.getState().ui.vertexSelection).toBeNull();
+
+    state.setSegmentSelection({
+      shapeId: routeId,
+      segmentIndex: 0,
+      point: { x: 1, y: 0 },
+    });
+    state.appendPolylinePoint(routeId, { x: 6, y: 0, z: 0 });
+    expect(useEditor.getState().ui.segmentSelection).toBeNull();
+
+    state.setVertexSelection({ shapeId: routeId, idx: 1 });
+    state.reversePolylinePoints(routeId);
+    expect(useEditor.getState().ui.vertexSelection).toBeNull();
+  });
+
+  it("clears stale route edit selections when joining routes", () => {
+    const state = useEditor.getState();
+    const firstId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 0, y: 0, z: 0 },
+          { x: 2, y: 0, z: 0 },
+        ],
+      })
+    );
+    const secondId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 2, y: 0, z: 0 },
+          { x: 4, y: 1, z: 0 },
+        ],
+      })
+    );
+
+    state.setSegmentSelection({
+      shapeId: firstId,
+      segmentIndex: 0,
+      point: { x: 1, y: 0 },
+    });
+
+    const joinedId = state.joinPolylines([firstId, secondId]);
+
+    expect(joinedId).toBeTruthy();
+    expect(useEditor.getState().session.selection).toEqual([joinedId]);
+    expect(useEditor.getState().ui.segmentSelection).toBeNull();
+    expect(useEditor.getState().ui.vertexSelection).toBeNull();
   });
 
   it("keeps route waypoint insertion undoable and clears stale segment selection", () => {

@@ -150,6 +150,16 @@ function touchTrackDesign(state: EditorState) {
   state.track.design.updatedAt = nowIso();
 }
 
+function clearPolylineEditSelections(state: EditorState, ids: string[]) {
+  const idSet = new Set(ids);
+  if (state.ui.segmentSelection && idSet.has(state.ui.segmentSelection.shapeId)) {
+    state.ui.segmentSelection = null;
+  }
+  if (state.ui.vertexSelection && idSet.has(state.ui.vertexSelection.shapeId)) {
+    state.ui.vertexSelection = null;
+  }
+}
+
 export const useEditor = create<EditorState>()(
   temporal(
     immer<EditorState>((set) => ({
@@ -266,7 +276,7 @@ export const useEditor = create<EditorState>()(
           if (shape?.locked || !insertPolylinePoint(shape, index, point)) {
             return;
           }
-          draft.ui.segmentSelection = null;
+          clearPolylineEditSelections(draft, [id]);
           touchTrackDesign(draft);
         }),
 
@@ -276,7 +286,7 @@ export const useEditor = create<EditorState>()(
           if (shape?.locked || !removePolylinePoint(shape, index)) {
             return;
           }
-          draft.ui.segmentSelection = null;
+          clearPolylineEditSelections(draft, [id]);
           touchTrackDesign(draft);
         }),
 
@@ -286,6 +296,7 @@ export const useEditor = create<EditorState>()(
           if (shape?.locked || !appendPolylinePoint(shape, point)) {
             return;
           }
+          clearPolylineEditSelections(draft, [id]);
           touchTrackDesign(draft);
         }),
 
@@ -293,6 +304,7 @@ export const useEditor = create<EditorState>()(
         set((draft) => {
           const shape = draft.track.design.shapeById[id];
           if (shape?.locked || !reversePolylinePoints(shape)) return;
+          clearPolylineEditSelections(draft, [id]);
           touchTrackDesign(draft);
         }),
 
@@ -467,6 +479,10 @@ export const useEditor = create<EditorState>()(
                 : `Joined ${polylineShapes.length} paths`,
           });
           draft.session.selection = [nextId];
+          clearPolylineEditSelections(
+            draft,
+            polylineShapes.map((shape) => shape.id)
+          );
           touchTrackDesign(draft);
           created = true;
         });
@@ -481,6 +497,7 @@ export const useEditor = create<EditorState>()(
           const shape = getDesignShapeById(draft.track.design, id);
           if (shape?.locked || !closePolyline(shape ?? undefined)) return;
           draft.session.selection = [id];
+          clearPolylineEditSelections(draft, [id]);
           touchTrackDesign(draft);
           closed = true;
         });
