@@ -427,6 +427,7 @@
     "untitledTrack": "Naamloze track",
     "untitledFallback": "Naamloos",
     "exportFailed": "Exporteren mislukt",
+    "exportFailedDescription": "{message} Probeer opnieuw, of open Exporteren en download daar een project-JSON-back-up.",
     "exportFailedNoProjectDescription": "TrackDraw kon dit lokale project niet laden. Open het eerst of kies een ander opgeslagen project.",
     "exportSuccess": "Project-JSON geëxporteerd",
     "embeddedTrack": "Ingesloten track",

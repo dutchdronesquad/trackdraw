@@ -89,9 +89,9 @@ export function useStarterExperience({
 
         markProjectSyncFailed(
           nextDesign.id,
-          error instanceof Error ? error.message : "Cloud sync failed"
+          error instanceof Error ? error.message : "Account sync failed"
         );
-        setSaveStatusLabel("Cloud sync failed");
+        setSaveStatusLabel("Account sync failed; saved locally");
         console.error(logLabel, error);
       });
     },

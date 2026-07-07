@@ -235,7 +235,13 @@ describe("ShareDialog", () => {
     await user.click(screen.getByRole("button", { name: /Create new link/i }));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("Failed to publish share");
+      expect(toast.error).toHaveBeenCalledWith(
+        "Could not create share link",
+        expect.objectContaining({
+          description:
+            "TrackDraw could not publish the current snapshot. Check your connection and try again; export JSON if you need to hand it off now.",
+        })
+      );
     });
     expect(screen.queryByLabelText("share-url-input")).toBeNull();
     expect(localStorage.getItem("trackdraw-anon-share")).toBeNull();

@@ -280,7 +280,8 @@
       }
     },
     "errors": {
-      "exportFailed": "Exporteren mislukt: {message}"
+      "exportFailed": "Exporteren mislukt",
+      "exportFailedDescription": "{message} Probeer opnieuw, kies een ander exportformaat of exporteer de project-JSON als handmatige back-up."
     }
   },
   "import": {
@@ -289,9 +290,13 @@
     "dropFile": "Sleep hier een bestand naartoe",
     "browseFile": "of klik om te bladeren",
     "errorInvalidJson": "Ongeldig JSON-bestand.",
+    "errorInvalidJsonHelp": "Ongeldig JSON-bestand. Kies een volledige .json-export uit TrackDraw en probeer opnieuw.",
     "errorInvalidProject": "Dit lijkt geen TrackDraw-project te zijn.",
+    "errorInvalidProjectHelp": "Dit lijkt geen TrackDraw-project te zijn. Kies een JSON-projectbestand dat uit TrackDraw is geëxporteerd.",
     "errorUnsupportedFile": "Alleen TrackDraw JSON-projectbestanden worden ondersteund.",
+    "errorUnsupportedFileHelp": "Alleen TrackDraw JSON-projectbestanden worden ondersteund. Kies een .json-back-up die uit TrackDraw is geëxporteerd.",
     "errorReadFailed": "TrackDraw kon dit bestand niet lezen.",
+    "errorReadFailedHelp": "TrackDraw kon dit bestand niet lezen. Probeer opnieuw of kies een andere back-up.",
     "toastImportFailed": "Importeren mislukt",
     "toastUnsupportedFile": "Kies een .json-bestand dat uit TrackDraw is geëxporteerd.",
     "toastInvalidJson": "TrackDraw kon dit JSON-bestand niet lezen. Controleer het bestand en probeer opnieuw.",
@@ -519,13 +524,24 @@
       }
     },
     "errors": {
-      "createFailed": "Deellink aanmaken mislukt",
-      "copyFailed": "Link kopiëren mislukt",
-      "revokeFailed": "Link intrekken mislukt",
-      "embedCopyFailed": "Insluiting kopiëren mislukt",
-      "galleryListFailed": "Vermelden in galerij mislukt",
-      "galleryUpdateFailed": "Galerij bijwerken mislukt",
-      "unableToReadLink": "Huidige deellink kon niet worden gelezen"
+      "createFailed": "Deellink kon niet worden aangemaakt",
+      "createFailedDescription": "TrackDraw kon de huidige snapshot niet publiceren. Controleer je verbinding en probeer opnieuw; exporteer JSON als je de track nu moet overdragen.",
+      "copyFailed": "Link kon niet worden gekopieerd",
+      "copyFailedDescription": "De link staat mogelijk nog in het veld. Selecteer hem en kopieer handmatig als de browser klembordtoegang blokkeert.",
+      "nativeShareFailed": "Delen kon niet worden geopend",
+      "nativeShareFailedDescription": "Deze browser kon het systeemdeelvenster niet openen. Kopieer de link in plaats daarvan.",
+      "revokeFailed": "Link kon niet worden ingetrokken",
+      "revokeFailedDescription": "De link kan nog actief zijn. Probeer opnieuw vanuit dit venster of via het tabblad Gedeeld in Project Manager.",
+      "embedCopyFailed": "Embedcode kon niet worden gekopieerd",
+      "embedCopyFailedDescription": "De embedcode is nog zichtbaar. Selecteer hem en kopieer handmatig als de browser klembordtoegang blokkeert.",
+      "galleryListFailed": "Kon niet in galerij worden geplaatst",
+      "galleryListFailedDescription": "De deellink is niet toegevoegd aan de publieke galerij. Controleer titel, beschrijving, preview en verbinding voordat je opnieuw probeert.",
+      "galleryRemoveFailed": "Kon niet uit galerij worden verwijderd",
+      "galleryRemoveFailedDescription": "De galerijvermelding kan nog zichtbaar zijn. Probeer opnieuw, of trek de deellink in als deze niet meer toegankelijk mag zijn.",
+      "galleryUpdateFailed": "Galerijgegevens konden niet worden bijgewerkt",
+      "galleryUpdateFailedDescription": "De gepubliceerde galerijkaart is niet gewijzigd. Controleer titel en beschrijving en probeer opnieuw.",
+      "unableToReadLink": "Huidige deellink kon niet worden gelezen",
+      "unableToReadLinkDescription": "Herlaad deze deelpagina, of open de link via Project Manager als dit een accountgepubliceerde share is."
     },
     "success": {
       "linkUpdated": "Link bijgewerkt",
@@ -657,8 +673,10 @@
       },
       "messages": {
         "loadFailed": "Accountprojecten konden niet worden geladen",
+        "loadFailedDescription": "Lokale projecten op dit apparaat blijven beschikbaar. Controleer je verbinding of log opnieuw in en open Project Manager daarna opnieuw.",
         "conflictWarning": "Dit project is op een ander apparaat gewijzigd terwijl je niet was aangemeld",
         "syncError": "Laatste wijzigingen konden niet worden gesynchroniseerd",
+        "localCopySavedAfterFailure": "Nieuwste lokale kopie opgeslagen {relativeTime}",
         "resolveConflictFirst": "Los eerst het versieconflict op"
       },
       "actions": {

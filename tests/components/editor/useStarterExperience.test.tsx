@@ -121,7 +121,7 @@ describe("useStarterExperience", () => {
       "Cloud unavailable"
     );
     expect(options.setSaveStatusLabel).toHaveBeenCalledWith(
-      "Cloud sync failed"
+      "Account sync failed; saved locally"
     );
     expect(consoleError).toHaveBeenCalledWith(
       "[TrackDraw new-project sync]",

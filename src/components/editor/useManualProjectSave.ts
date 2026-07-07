@@ -58,11 +58,12 @@ export function useManualProjectSave({
       }
 
       const message =
-        error instanceof Error ? error.message : "Could not sync project";
+        error instanceof Error ? error.message : "Account sync failed";
       markProjectSyncFailed(design.id, message);
-      setSaveStatusLabel("Cloud sync failed");
-      toast.error("Could not sync project", {
-        description: message,
+      setSaveStatusLabel("Account sync failed; snapshot saved");
+      toast.error("Account sync failed", {
+        description:
+          "TrackDraw saved a snapshot on this device, but could not update the account copy. Retry sync, or export JSON if you need a manual backup.",
       });
     }
   }, [

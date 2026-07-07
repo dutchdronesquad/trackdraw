@@ -280,7 +280,8 @@
       }
     },
     "errors": {
-      "exportFailed": "Export fehlgeschlagen: {message}"
+      "exportFailed": "Export fehlgeschlagen",
+      "exportFailedDescription": "{message} Versuche es erneut, wechsle das Exportformat oder exportiere die Projekt-JSON als manuelles Backup."
     }
   },
   "import": {
@@ -289,9 +290,13 @@
     "dropFile": "Datei hier ablegen",
     "browseFile": "oder klicken zum Durchsuchen",
     "errorInvalidJson": "Ungültige JSON-Datei.",
+    "errorInvalidJsonHelp": "Ungültige JSON-Datei. Wähle einen vollständigen .json-Export aus TrackDraw und versuche es erneut.",
     "errorInvalidProject": "Das sieht nicht wie ein TrackDraw-Projekt aus.",
+    "errorInvalidProjectHelp": "Das sieht nicht wie ein TrackDraw-Projekt aus. Wähle eine JSON-Projektdatei, die aus TrackDraw exportiert wurde.",
     "errorUnsupportedFile": "Nur TrackDraw-JSON-Projektdateien werden unterstützt.",
+    "errorUnsupportedFileHelp": "Nur TrackDraw-JSON-Projektdateien werden unterstützt. Wähle ein aus TrackDraw exportiertes .json-Backup.",
     "errorReadFailed": "TrackDraw konnte diese Datei nicht lesen.",
+    "errorReadFailedHelp": "TrackDraw konnte diese Datei nicht lesen. Versuche es erneut oder wähle ein anderes Backup.",
     "toastImportFailed": "Import fehlgeschlagen",
     "toastUnsupportedFile": "Wähle eine aus TrackDraw exportierte .json-Datei.",
     "toastInvalidJson": "TrackDraw konnte diese JSON-Datei nicht lesen. Prüfe die Datei und versuche es erneut.",
@@ -520,12 +525,23 @@
     },
     "errors": {
       "createFailed": "Share-Link konnte nicht erstellt werden",
+      "createFailedDescription": "TrackDraw konnte den aktuellen Snapshot nicht veröffentlichen. Prüfe deine Verbindung und versuche es erneut; exportiere JSON, wenn du den Track jetzt weitergeben musst.",
       "copyFailed": "Link konnte nicht kopiert werden",
+      "copyFailedDescription": "Der Link ist möglicherweise noch im Feld verfügbar. Markiere ihn und kopiere manuell, wenn der Browser den Clipboard-Zugriff blockiert.",
+      "nativeShareFailed": "Teilen konnte nicht geöffnet werden",
+      "nativeShareFailedDescription": "Dieser Browser konnte das System-Teilen nicht öffnen. Kopiere stattdessen den Link.",
       "revokeFailed": "Link konnte nicht widerrufen werden",
+      "revokeFailedDescription": "Der Link ist möglicherweise noch aktiv. Versuche es erneut in diesem Dialog oder im Freigaben-Tab des Projektmanagers.",
       "embedCopyFailed": "Embed-Code konnte nicht kopiert werden",
+      "embedCopyFailedDescription": "Der Embed-Code ist weiterhin sichtbar. Markiere ihn und kopiere manuell, wenn der Browser den Clipboard-Zugriff blockiert.",
       "galleryListFailed": "Konnte nicht in Galerie gelistet werden",
+      "galleryListFailedDescription": "Der Share-Link wurde nicht zur öffentlichen Galerie hinzugefügt. Prüfe Titel, Beschreibung, Vorschau und Verbindung, bevor du es erneut versuchst.",
+      "galleryRemoveFailed": "Konnte nicht aus Galerie entfernt werden",
+      "galleryRemoveFailedDescription": "Der Galerieeintrag ist möglicherweise noch sichtbar. Versuche es erneut oder widerrufe den Share-Link, wenn er nicht mehr erreichbar sein darf.",
       "galleryUpdateFailed": "Galeriedetails konnten nicht aktualisiert werden",
-      "unableToReadLink": "Aktueller Share-Link konnte nicht gelesen werden"
+      "galleryUpdateFailedDescription": "Die veröffentlichte Galerie-Karte wurde nicht geändert. Prüfe Titel und Beschreibung und versuche es erneut.",
+      "unableToReadLink": "Aktueller Share-Link konnte nicht gelesen werden",
+      "unableToReadLinkDescription": "Lade diese Share-Seite neu oder öffne den Link über den Projektmanager, wenn es eine über das Konto veröffentlichte Freigabe ist."
     },
     "success": {
       "linkUpdated": "Link aktualisiert",
@@ -657,8 +673,10 @@
       },
       "messages": {
         "loadFailed": "Kontoprojekte konnten nicht geladen werden",
+        "loadFailedDescription": "Lokale Projekte auf diesem Gerät bleiben verfügbar. Prüfe deine Verbindung oder melde dich erneut an und öffne danach den Projektmanager erneut.",
         "conflictWarning": "Dieses Projekt wurde auf einem anderen Gerät geändert, während du abgemeldet warst",
         "syncError": "Neueste Änderungen konnten nicht synchronisiert werden",
+        "localCopySavedAfterFailure": "Neueste lokale Kopie gespeichert {relativeTime}",
         "resolveConflictFirst": "Löse zuerst den Versionskonflikt"
       },
       "actions": {

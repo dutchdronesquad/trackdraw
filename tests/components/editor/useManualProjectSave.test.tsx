@@ -86,10 +86,11 @@ describe("useManualProjectSave", () => {
       "D1 unavailable"
     );
     expect(options.setSaveStatusLabel).toHaveBeenCalledWith(
-      "Cloud sync failed"
+      "Account sync failed; snapshot saved"
     );
-    expect(toast.error).toHaveBeenCalledWith("Could not sync project", {
-      description: "D1 unavailable",
+    expect(toast.error).toHaveBeenCalledWith("Account sync failed", {
+      description:
+        "TrackDraw saved a snapshot on this device, but could not update the account copy. Retry sync, or export JSON if you need a manual backup.",
     });
   });
 

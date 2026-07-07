@@ -478,10 +478,10 @@ export default function ShareDialog({
       toast.success(
         force ? t("share.success.linkUpdated") : t("share.success.linkCreated")
       );
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t("share.errors.createFailed")
-      );
+    } catch {
+      toast.error(t("share.errors.createFailed"), {
+        description: t("share.errors.createFailedDescription"),
+      });
     }
   };
 
@@ -495,10 +495,10 @@ export default function ShareDialog({
       setCopied(true);
       toast.success(t("share.success.linkCopied"));
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t("share.errors.copyFailed")
-      );
+    } catch {
+      toast.error(t("share.errors.copyFailed"), {
+        description: t("share.errors.copyFailedDescription"),
+      });
     }
   };
 
@@ -515,7 +515,9 @@ export default function ShareDialog({
       });
     } catch (err) {
       if (err instanceof Error && err.name !== "AbortError") {
-        toast.error(err.message);
+        toast.error(t("share.errors.nativeShareFailed"), {
+          description: t("share.errors.nativeShareFailedDescription"),
+        });
       }
     }
   };
@@ -527,10 +529,10 @@ export default function ShareDialog({
           ? share.url
           : await doPublish(linkNeedsRefresh);
       window.open(url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t("share.errors.createFailed")
-      );
+    } catch {
+      toast.error(t("share.errors.createFailed"), {
+        description: t("share.errors.createFailedDescription"),
+      });
     }
   };
 
@@ -549,10 +551,10 @@ export default function ShareDialog({
       setPublishedDesignToken(null);
       clearAnonShare();
       toast.success(t("share.success.linkRevoked"));
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t("share.errors.revokeFailed")
-      );
+    } catch {
+      toast.error(t("share.errors.revokeFailed"), {
+        description: t("share.errors.revokeFailedDescription"),
+      });
     } finally {
       setRevoking(false);
     }
@@ -566,7 +568,9 @@ export default function ShareDialog({
       toast.success(t("share.success.embedCopied"));
       setTimeout(() => setCopiedEmbed(false), 2000);
     } catch {
-      toast.error(t("share.errors.embedCopyFailed"));
+      toast.error(t("share.errors.embedCopyFailed"), {
+        description: t("share.errors.embedCopyFailedDescription"),
+      });
     }
   };
 
@@ -613,10 +617,10 @@ export default function ShareDialog({
       });
       setShowGalleryForm(false);
       toast.success(t("share.success.galleryListed"));
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t("share.errors.galleryListFailed")
-      );
+    } catch {
+      toast.error(t("share.errors.galleryListFailed"), {
+        description: t("share.errors.galleryListFailedDescription"),
+      });
     } finally {
       setGalleryUpdating(false);
     }
@@ -652,10 +656,10 @@ export default function ShareDialog({
       });
       setConfirmRemoveFromGallery(false);
       toast.success("Track removed from gallery");
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to remove from gallery"
-      );
+    } catch {
+      toast.error(t("share.errors.galleryRemoveFailed"), {
+        description: t("share.errors.galleryRemoveFailedDescription"),
+      });
     } finally {
       setGalleryUpdating(false);
     }
@@ -704,12 +708,10 @@ export default function ShareDialog({
       });
       setShowGalleryForm(false);
       toast.success(t("share.success.galleryUpdated"));
-    } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : t("share.errors.galleryUpdateFailed")
-      );
+    } catch {
+      toast.error(t("share.errors.galleryUpdateFailed"), {
+        description: t("share.errors.galleryUpdateFailedDescription"),
+      });
     } finally {
       setGalleryUpdating(false);
     }
@@ -717,7 +719,9 @@ export default function ShareDialog({
 
   const handleCopyCurrentUrl = async () => {
     if (!currentShareUrl) {
-      toast.error(t("share.errors.unableToReadLink"));
+      toast.error(t("share.errors.unableToReadLink"), {
+        description: t("share.errors.unableToReadLinkDescription"),
+      });
       return;
     }
     try {
@@ -726,7 +730,9 @@ export default function ShareDialog({
       toast.success(t("share.success.linkCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error(t("share.errors.copyFailed"));
+      toast.error(t("share.errors.copyFailed"), {
+        description: t("share.errors.copyFailedDescription"),
+      });
     }
   };
 
@@ -740,7 +746,9 @@ export default function ShareDialog({
       });
     } catch (err) {
       if (err instanceof Error && err.name !== "AbortError") {
-        toast.error(err.message);
+        toast.error(t("share.errors.nativeShareFailed"), {
+          description: t("share.errors.nativeShareFailedDescription"),
+        });
       }
     }
   };

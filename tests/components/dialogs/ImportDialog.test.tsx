@@ -52,7 +52,7 @@ describe("ImportDialog", () => {
     );
 
     expect(screen.getByRole("alert").textContent).toContain(
-      "Invalid JSON file."
+      "Invalid JSON file. Choose a complete .json export from TrackDraw and try again."
     );
     expect(toast.error).toHaveBeenCalledWith(
       "Import failed",
@@ -73,7 +73,7 @@ describe("ImportDialog", () => {
     );
 
     expect(screen.getByRole("alert").textContent).toContain(
-      "Only TrackDraw JSON project files are supported."
+      "Only TrackDraw JSON project files are supported. Choose a .json backup exported from TrackDraw."
     );
     expect(toast.error).toHaveBeenCalledWith(
       "Import failed",
@@ -95,7 +95,7 @@ describe("ImportDialog", () => {
     );
 
     expect(screen.getByRole("alert").textContent).toContain(
-      "This does not look like a TrackDraw project."
+      "This does not look like a TrackDraw project. Choose a JSON project file exported from TrackDraw."
     );
     expect(toast.error).toHaveBeenCalledWith(
       "Import failed",
@@ -118,7 +118,7 @@ describe("ImportDialog", () => {
     await user.upload(input, unreadableFile);
 
     expect(screen.getByRole("alert").textContent).toContain(
-      "TrackDraw could not read this file."
+      "TrackDraw could not read this file. Try again or choose another backup."
     );
     expect(toast.error).toHaveBeenCalledWith(
       "Import failed",

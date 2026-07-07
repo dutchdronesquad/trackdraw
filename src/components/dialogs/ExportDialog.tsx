@@ -582,12 +582,16 @@ export default function ExportDialog({
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      const description = t("export.errors.exportFailedDescription", {
+        message,
+      });
       if (options?.toastId !== undefined) {
-        toast.error(t("export.errors.exportFailed", { message }), {
+        toast.error(t("export.errors.exportFailed"), {
+          description,
           id: options.toastId,
         });
       } else {
-        toast.error(t("export.errors.exportFailed", { message }));
+        toast.error(t("export.errors.exportFailed"), { description });
       }
     } finally {
       setBusy(null);

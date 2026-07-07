@@ -427,6 +427,7 @@
     "untitledTrack": "Untitled track",
     "untitledFallback": "Untitled",
     "exportFailed": "Export failed",
+    "exportFailedDescription": "{message} Try again, or open Export and download a project JSON backup from there.",
     "exportFailedNoProjectDescription": "TrackDraw could not load this local project. Open it first or choose another saved project.",
     "exportSuccess": "Project JSON exported",
     "embeddedTrack": "Embedded track",

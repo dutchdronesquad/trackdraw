@@ -77,6 +77,9 @@ export function ProjectManagerAccountTab({
           {t("projectManager.account.messages.loadFailed")}
         </p>
         <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+          {t("projectManager.account.messages.loadFailedDescription")}
+        </p>
+        <p className="text-muted-foreground/70 mt-2 text-[11px] leading-relaxed">
           {error}
         </p>
       </div>
@@ -105,7 +108,9 @@ export function ProjectManagerAccountTab({
         const hasPendingChanges = syncMeta?.status === "pending";
         const lastSyncedAt = syncMeta?.lastSyncedAt ?? proj.updatedAt;
         const fallbackLine = syncMeta?.fallbackSavedAt
-          ? `Latest local copy saved ${formatRelativeTime(syncMeta.fallbackSavedAt)}`
+          ? t("projectManager.account.messages.localCopySavedAfterFailure", {
+              relativeTime: formatRelativeTime(syncMeta.fallbackSavedAt),
+            })
           : null;
         const metaLine = hasConflict
           ? (syncMeta?.error ??

@@ -62,6 +62,14 @@
       "openReleaseNotesForCommit": "commit {sha} · Release notes openen op GitHub"
     }
   },
+  "runtimeError": {
+    "badge": "Runtimefout",
+    "title": "TrackDraw liep vast op deze weergave.",
+    "description": "Het huidige scherm kon niet verder renderen. Je lokale projectdata staat meestal nog in deze browser, maar sluit het tabblad niet voordat je herstel hebt geprobeerd.",
+    "tryAgain": "Opnieuw proberen",
+    "openStudio": "Studio openen",
+    "nextStep": "Als dit blijft gebeuren, open Studio opnieuw en exporteer een JSON-back-up voordat je grote wijzigingen maakt."
+  },
   "status": {
     "active": "Actief",
     "expired": "Verlopen",

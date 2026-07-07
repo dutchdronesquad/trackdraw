@@ -105,29 +105,29 @@ export function useEditorProjects({
     (error: unknown, onRecovered?: () => void) => {
       const localSaveError = toLocalSaveError(error);
 
-      setSaveStatusLabel("Local save failed");
+      setSaveStatusLabel("Local autosave failed");
       console.error("[TrackDraw local autosave]", localSaveError);
-      toast.error("Local save failed", {
+      toast.error("Local autosave failed", {
         description:
-          "TrackDraw could not save the latest local copy. Retry, or export a JSON backup if this keeps happening.",
+          "The latest edits are still on the canvas, but TrackDraw could not save a local copy. Retry now, or export a JSON backup before leaving this browser.",
         action: {
           label: "Retry",
           onClick: () => {
             try {
               saveDesignLocally(useEditor.getState().track.design);
               onRecovered?.();
-              toast.success("Local save recovered", {
+              toast.success("Local autosave recovered", {
                 description: "The latest local copy was saved.",
               });
             } catch (retryError) {
-              setSaveStatusLabel("Local save failed");
+              setSaveStatusLabel("Local autosave failed");
               console.error(
                 "[TrackDraw local autosave retry]",
                 toLocalSaveError(retryError)
               );
-              toast.error("Local save still failing", {
+              toast.error("Local autosave still failing", {
                 description:
-                  "Export a JSON backup before making more changes if storage keeps failing.",
+                  "Export a JSON backup before making more changes if browser storage keeps failing.",
               });
             }
           },
