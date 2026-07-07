@@ -63,6 +63,50 @@ function setupRoute() {
   return { routeId, timingGateId };
 }
 
+function setupRouteWithSplitMarkers() {
+  const state = resetEditorStore();
+  const routeId = state.addShape(
+    polylineDraft({
+      points: [
+        { x: 0, y: 0, z: 0 },
+        { x: 4, y: 0, z: 1 },
+      ],
+    })
+  );
+  state.addShape(
+    gateDraft({
+      x: 50,
+      y: 50,
+      meta: { timing: { role: "split" } },
+    })
+  );
+  const visibleSplitId = state.addShape(
+    gateDraft({
+      x: 4,
+      y: 0,
+      meta: { timing: { role: "split" } },
+    })
+  );
+  state.setSelection([routeId]);
+  return { routeId, visibleSplitId };
+}
+
+function setupRouteWithOffRouteObstacle() {
+  const state = resetEditorStore();
+  const routeId = state.addShape(
+    polylineDraft({
+      points: [
+        { x: 0, y: 0, z: 0 },
+        { x: 4, y: 0, z: 1 },
+      ],
+    })
+  );
+  state.addShape(gateDraft({ x: 50, y: 50 }));
+  const visibleGateId = state.addShape(gateDraft({ x: 4, y: 0 }));
+  state.setSelection([routeId]);
+  return { routeId, visibleGateId };
+}
+
 describe("ElevationChart", () => {
   afterEach(() => {
     cleanup();
@@ -140,6 +184,64 @@ describe("ElevationChart", () => {
     );
 
     expect(useEditor.getState().session.selection).toEqual([timingGateId]);
+  });
+
+  it("numbers visible split timing markers without counting off-route splits", () => {
+    const { visibleSplitId } = setupRouteWithSplitMarkers();
+    renderElevationChart();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open elevation details" })
+    );
+
+    expect(
+      screen.queryByRole("button", {
+        name: "Select timing marker Split 2 in elevation profile",
+      })
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Select timing marker Split 1 in elevation profile",
+      })
+    );
+
+    expect(useEditor.getState().session.selection).toEqual([visibleSplitId]);
+  });
+
+  it("uses the rendered timing marker color in the marker legend", () => {
+    setupRoute();
+    renderElevationChart();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open elevation details" })
+    );
+
+    const timingLegendDot = screen.getByText("Timing")
+      .previousElementSibling as HTMLElement | null;
+
+    expect(timingLegendDot?.style.background).toBe("#f59e0b");
+  });
+
+  it("labels obstacle markers with route obstacle numbers", () => {
+    const { visibleGateId } = setupRouteWithOffRouteObstacle();
+    renderElevationChart();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open elevation details" })
+    );
+
+    expect(
+      screen.queryByRole("button", {
+        name: "Select obstacle 2 in elevation profile",
+      })
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Select obstacle 1 in elevation profile",
+      })
+    );
+
+    expect(useEditor.getState().session.selection).toEqual([visibleGateId]);
   });
 
   it("offers warning segment jump actions in the details dialog", () => {

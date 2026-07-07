@@ -22,7 +22,10 @@ import {
   type RouteWarning,
   type RouteWarningKind,
 } from "@/lib/track/polyline-derived";
-import { isNumberedObstacle } from "@/lib/track/obstacleNumbering";
+import {
+  getObstacleNumberMap,
+  isNumberedObstacle,
+} from "@/lib/track/obstacleNumbering";
 import {
   getShapeTimingMarker,
   getTimingMarkerColor,
@@ -54,6 +57,25 @@ type ChartRouteMarker = {
   shapeId: string;
   type: "obstacle" | "timing";
 };
+
+type ChartTimingRouteMarkerCandidate = Omit<
+  ChartRouteMarker,
+  "ariaLabel" | "type"
+> & {
+  timingTitle: string;
+  type: "timing";
+};
+
+type ChartObstacleRouteMarkerCandidate = Omit<
+  ChartRouteMarker,
+  "ariaLabel" | "type"
+> & {
+  obstacleNumber?: number;
+  type: "obstacle";
+};
+
+type ChartRouteMarkerCandidate =
+  ChartObstacleRouteMarkerCandidate | ChartTimingRouteMarkerCandidate;
 
 type ChartWarningMarker = {
   d: number;
@@ -485,7 +507,14 @@ function RouteMarkerKey({
   warningMarkers: ChartWarningMarker[];
 }) {
   const t = useTranslations("inspector.elevationChart") as unknown as Translate;
-  const hasTiming = routeMarkers.some((marker) => marker.type === "timing");
+  const timingColors = Array.from(
+    new Set(
+      routeMarkers
+        .filter((marker) => marker.type === "timing")
+        .map((marker) => marker.color)
+    )
+  );
+  const hasTiming = timingColors.length > 0;
   const hasObstacles = routeMarkers.some(
     (marker) => marker.type === "obstacle"
   );
@@ -494,13 +523,21 @@ function RouteMarkerKey({
 
   const items = [
     ...(hasTiming
-      ? [{ color: "#0ea5e9", label: t("timingMarkersLegend") }]
+      ? [
+          {
+            background:
+              timingColors.length === 1
+                ? timingColors[0]
+                : `linear-gradient(90deg, ${timingColors.join(", ")})`,
+            label: t("timingMarkersLegend"),
+          },
+        ]
       : []),
     ...(hasObstacles
-      ? [{ color: "#64748b", label: t("obstacleMarkersLegend") }]
+      ? [{ background: "#64748b", label: t("obstacleMarkersLegend") }]
       : []),
     ...(hasWarnings
-      ? [{ color: "#f59e0b", label: t("warningMarkersLegend") }]
+      ? [{ background: "#f59e0b", label: t("warningMarkersLegend") }]
       : []),
   ];
 
@@ -510,7 +547,7 @@ function RouteMarkerKey({
         <span key={item.label} className="inline-flex items-center gap-1.5">
           <span
             className="size-2 rounded-full"
-            style={{ backgroundColor: item.color }}
+            style={{ background: item.background }}
             aria-hidden="true"
           />
           <span>{item.label}</span>
@@ -879,6 +916,7 @@ export default function ElevationChart({ className }: { className?: string }) {
   const t = useTranslations("inspector.elevationChart") as unknown as Translate;
   const { unitSystem } = useMeasurementUnitSystem();
   const path = useEditor(selectPrimaryPolyline);
+  const design = useEditor((state) => state.track.design);
   const designShapes = useEditor(selectDesignShapes);
   const activeSegmentSelection = useEditor(
     (state) => state.ui.segmentSelection
@@ -1006,28 +1044,26 @@ export default function ElevationChart({ className }: { className?: string }) {
   const routeMarkers = useMemo<ChartRouteMarker[]>(() => {
     if (!path) return [];
 
+    const obstacleNumberMap = getObstacleNumberMap(design);
     let splitIndex = 0;
-    return designShapes
+    const markerCandidates = designShapes
       .filter((shape) => shape.id !== path.id)
-      .flatMap((shape, index): ChartRouteMarker[] => {
+      .flatMap((shape): ChartRouteMarkerCandidate[] => {
         const marker = getShapeTimingMarker(shape);
-        if (marker?.role === "split") splitIndex += 1;
         const projection = projectPointOntoRoute(path, shape);
         if (!projection) return [];
         if (projection.pathDistance > getRouteMarkerTolerance(shape)) return [];
 
         if (marker) {
+          if (marker.role === "split") splitIndex += 1;
           const title = getTimingMarkerTitle(marker, splitIndex);
-          const ariaLabel = t("timingMarkerAria", {
-            label: title,
-          });
           return [
             {
-              ariaLabel,
               color: getTimingMarkerColor(marker),
               d: projection.d,
               id: `timing-${shape.id}`,
               shapeId: shape.id,
+              timingTitle: title,
               type: "timing",
             },
           ];
@@ -1037,19 +1073,40 @@ export default function ElevationChart({ className }: { className?: string }) {
 
         return [
           {
-            ariaLabel: t("obstacleMarkerAria", { index: index + 1 }),
             color: "#64748b",
             d: projection.d,
             id: `obstacle-${shape.id}`,
+            obstacleNumber: obstacleNumberMap.get(shape.id),
             shapeId: shape.id,
             type: "obstacle",
           },
         ];
-      })
+      });
+
+    let fallbackObstacleIndex = 0;
+    return markerCandidates
       .sort(
         (left, right) => left.d - right.d || left.id.localeCompare(right.id)
-      );
-  }, [designShapes, path, t]);
+      )
+      .map((marker) => {
+        if (marker.type === "timing") {
+          const { timingTitle, ...routeMarker } = marker;
+          return {
+            ...routeMarker,
+            ariaLabel: t("timingMarkerAria", { label: timingTitle }),
+          };
+        }
+
+        fallbackObstacleIndex += 1;
+        const { obstacleNumber, ...routeMarker } = marker;
+        return {
+          ...routeMarker,
+          ariaLabel: t("obstacleMarkerAria", {
+            index: obstacleNumber ?? fallbackObstacleIndex,
+          }),
+        };
+      });
+  }, [design, designShapes, path, t]);
 
   const warningMarkers = useMemo<ChartWarningMarker[]>(() => {
     if (!path) return [];
