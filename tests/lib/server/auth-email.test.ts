@@ -34,8 +34,8 @@ describe("auth email templates", () => {
       "https://trackdraw.app/api/auth/magic-link/verify?token=abc"
     );
 
-    expect(email.htmlBody).toContain(
-      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" align="center">'
+    expect(email.htmlBody).toMatch(
+      /<!--\[if mso\]>[\s\S]*?<table\b(?=[^>]*\swidth=["']600["'])(?=[^>]*\salign=["']center["'])[^>]*>[\s\S]*?<!\[endif\]-->/
     );
     expect(email.htmlBody).toContain("<v:roundrect");
     expect(email.htmlBody).not.toContain("<v:textbox");
