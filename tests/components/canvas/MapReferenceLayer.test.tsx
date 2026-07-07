@@ -128,4 +128,45 @@ describe("MapReferenceLayer", () => {
       expectedTileCount + shiftedTileCount + expectedTileCount
     );
   });
+
+  it("preserves pending tile requests while the map reference is hidden", () => {
+    const hiddenReference: MapReference = {
+      ...mapReference,
+      visible: false,
+    };
+    const expectedTileCount = getFieldMapTileCoverage({
+      field,
+      mapReference,
+    }).length;
+
+    const { rerender } = render(
+      <MapReferenceLayer
+        field={field}
+        heightPx={800}
+        mapReference={mapReference}
+        widthPx={1200}
+      />
+    );
+
+    expect(imageInstances).toHaveLength(expectedTileCount);
+
+    rerender(
+      <MapReferenceLayer
+        field={field}
+        heightPx={800}
+        mapReference={hiddenReference}
+        widthPx={1200}
+      />
+    );
+    rerender(
+      <MapReferenceLayer
+        field={field}
+        heightPx={800}
+        mapReference={mapReference}
+        widthPx={1200}
+      />
+    );
+
+    expect(imageInstances).toHaveLength(expectedTileCount);
+  });
 });
