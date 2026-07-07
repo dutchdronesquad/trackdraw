@@ -81,6 +81,30 @@ vi.mock("sonner", () => ({
   },
 }));
 
+function addRaceLine() {
+  useEditor.getState().addShape({
+    kind: "polyline",
+    x: 0,
+    y: 0,
+    rotation: 0,
+    points: [
+      { x: 0, y: 0, z: 0 },
+      { x: 8, y: 0, z: 0 },
+    ],
+  });
+}
+
+function addGate() {
+  useEditor.getState().addShape({
+    kind: "gate",
+    x: 10,
+    y: 8,
+    rotation: 0,
+    width: 2,
+    height: 2,
+  });
+}
+
 describe("ExportDialog mobile workflow", () => {
   beforeEach(() => {
     useEditor.getState().newProject();
@@ -114,6 +138,10 @@ describe("ExportDialog mobile workflow", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /3D Render/ }));
+
+    expect(
+      await screen.findByText("Open the 3D view before exporting this render.")
+    ).toBeTruthy();
 
     const switchTo3D = (await screen.findByRole("button", {
       name: "Switch to 3D view",
@@ -225,8 +253,176 @@ describe("ExportDialog mobile workflow", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("blocks Cinematic FPV export until a race line exists", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Video$/ }));
+
+    expect(
+      await screen.findByText(
+        "Add a race line before exporting a cinematic FPV video."
+      )
+    ).toBeTruthy();
+    const exportWebm = (await screen.findByRole("button", {
+      name: "Export Cinematic FPV",
+    })) as HTMLButtonElement;
+    expect(exportWebm.disabled).toBe(true);
+  });
+
+  it("blocks Race Pack export until the track has content", async () => {
+    const user = userEvent.setup();
+    const canvasRef = {
+      current: {
+        getStage: () => ({ id: "stage-1" }),
+      } as unknown as TrackCanvasHandle,
+    };
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={canvasRef}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
+    expect(
+      await screen.findByText(
+        "Add at least one item to the track before exporting a Race Pack."
+      )
+    ).toBeTruthy();
+    const exportRacePack = (await screen.findByRole("button", {
+      name: "Export Race Pack",
+    })) as HTMLButtonElement;
+    expect(exportRacePack.disabled).toBe(true);
+  });
+
+  it("blocks Race Pack export until the 2D canvas is ready", async () => {
+    const user = userEvent.setup();
+    addGate();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
+    expect(
+      await screen.findByText(
+        "The 2D canvas is still loading; try again in a moment."
+      )
+    ).toBeTruthy();
+    const exportRacePack = (await screen.findByRole("button", {
+      name: "Export Race Pack",
+    })) as HTMLButtonElement;
+    expect(exportRacePack.disabled).toBe(true);
+  });
+
+  it("enables Race Pack export when the 2D stage becomes ready after opening", async () => {
+    const user = userEvent.setup();
+    addGate();
+    const canvasRef: { current: TrackCanvasHandle | null } = { current: null };
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={canvasRef}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
+    const exportRacePack = (await screen.findByRole("button", {
+      name: "Export Race Pack",
+    })) as HTMLButtonElement;
+    expect(exportRacePack.disabled).toBe(true);
+
+    canvasRef.current = {
+      getStage: () => ({ id: "stage-1" }),
+    } as unknown as TrackCanvasHandle;
+
+    await waitFor(() => {
+      expect(exportRacePack.disabled).toBe(false);
+    });
+    expect(
+      screen.queryByText(
+        "The 2D canvas is still loading; try again in a moment."
+      )
+    ).toBeNull();
+  });
+
+  it("blocks Velocidrone export until the track has content", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Experimental$/ }));
+
+    expect(
+      await screen.findByText(
+        "Add at least one item to the track before exporting a Velocidrone file."
+      )
+    ).toBeTruthy();
+    const exportVelocidrone = (await screen.findByRole("button", {
+      name: "Export Velocidrone",
+    })) as HTMLButtonElement;
+    expect(exportVelocidrone.disabled).toBe(true);
+  });
+
+  it("warns that Velocidrone export is experimental without blocking track content", async () => {
+    const user = userEvent.setup();
+    addGate();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Experimental$/ }));
+
+    expect(
+      await screen.findByText(
+        "Some TrackDraw items may import differently in Velocidrone."
+      )
+    ).toBeTruthy();
+    const exportVelocidrone = (await screen.findByRole("button", {
+      name: "Export Velocidrone",
+    })) as HTMLButtonElement;
+    expect(exportVelocidrone.disabled).toBe(false);
+  });
+
   it("includes the selected theme in default WebM filenames", async () => {
     const user = userEvent.setup();
+    addRaceLine();
 
     render(
       <ExportDialog
@@ -317,6 +513,7 @@ describe("ExportDialog mobile workflow", () => {
     viewport.isMobile = false;
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
+    addGate();
     const stage = { id: "stage-1" };
     const canvasRef = {
       current: {

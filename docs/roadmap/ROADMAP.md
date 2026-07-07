@@ -285,6 +285,8 @@ Current foundation:
 
 - Track item registry now exposes explicit generated-route metadata for clear pass-through obstacles such as gates, ladders, towers, and dive gates
 - A pure generated-route module can create an editable Race Line draft from ordered pass-through obstacles and return warnings for unsupported or closely spaced items before any UI commits the result
+- The layout inspector can generate a normal editable Race Line from the ordered track item list and show route-generation warnings before the route is accepted
+- The track item list supports drag-to-reorder for the intended obstacle sequence while keeping Race Lines outside the track-item stack ordering
 
 Important boundary:
 

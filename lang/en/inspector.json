@@ -201,7 +201,7 @@
       "noRouteMatches": "{count, plural, one {1 route obstacle found, but none sit close enough to the race line.} other {{count} route obstacles found, but none sit close enough to the race line.}}",
       "missingRoute": "Supported obstacles are ready for a race line.",
       "noNumberedObstacles": "Gates, ladders, and dive gates will appear in route numbering.",
-      "empty": "Add route obstacles and a race line to derive numbering."
+      "empty": "Add route obstacles first."
     },
     "issues": {
       "offRoutePrefix": "Off route: {names}",

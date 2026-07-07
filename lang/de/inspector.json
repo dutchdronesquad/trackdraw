@@ -201,7 +201,7 @@
       "noRouteMatches": "{count, plural, one {1 Routenhindernis gefunden, aber keines liegt nah genug an der Rennlinie.} other {{count} Routenhindernisse gefunden, aber keines liegt nah genug an der Rennlinie.}}",
       "missingRoute": "Unterstützte Hindernisse sind bereit für eine Rennlinie.",
       "noNumberedObstacles": "Gates, Ladders und Dive Gates erscheinen in der Routennummerierung.",
-      "empty": "Füge Routenhindernisse und eine Rennlinie hinzu, um Nummerierung abzuleiten."
+      "empty": "Füge zuerst Routenhindernisse hinzu."
     },
     "issues": {
       "offRoutePrefix": "Abseits der Route: {names}",

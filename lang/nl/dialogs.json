@@ -211,6 +211,14 @@
       "canvasNotReady": "Canvas is nog niet klaar",
       "exported": "Geëxporteerd"
     },
+    "readiness": {
+      "open3d": "Open de 3D-weergave voordat je deze render exporteert.",
+      "canvasNotReady": "Het 2D-canvas wordt nog geladen; probeer het zo opnieuw.",
+      "emptyRacePack": "Voeg minstens één item toe aan de track voordat je een Race Pack exporteert.",
+      "missingRaceLine": "Voeg een race line toe voordat je een cinematic FPV-video exporteert.",
+      "emptyVelocidrone": "Voeg minstens één item toe aan de track voordat je een Velocidrone-bestand exporteert.",
+      "experimentalSimulator": "Sommige TrackDraw-items kunnen anders overkomen in Velocidrone."
+    },
     "webm": {
       "renderingBackground": "Cinematic FPV wordt op de achtergrond gerenderd…",
       "renderingProgress": "Cinematic FPV renderen… {status}",

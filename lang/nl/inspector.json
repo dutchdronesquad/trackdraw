@@ -201,7 +201,7 @@
       "noRouteMatches": "{count, plural, one {1 route-obstakel gevonden, maar geen ligt dicht genoeg bij de race line.} other {{count} route-obstakels gevonden, maar geen ligt dicht genoeg bij de race line.}}",
       "missingRoute": "Ondersteunde obstakels zijn klaar voor een race line.",
       "noNumberedObstacles": "Gates, ladders en dive gates verschijnen in de routenummering.",
-      "empty": "Voeg route-obstakels en een race line toe om nummering af te leiden."
+      "empty": "Voeg eerst route-obstakels toe."
     },
     "issues": {
       "offRoutePrefix": "Niet op route: {names}",

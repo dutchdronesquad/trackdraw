@@ -14,6 +14,7 @@ import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 import { cn } from "@/lib/utils";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
 import {
+  AlertTriangle,
   ArrowRight,
   Database,
   Download,
@@ -59,6 +60,11 @@ type ExportFormat = {
   busyId: string;
   showTheme?: boolean;
   showRouteNumbers?: boolean;
+};
+
+type ExportReadiness = {
+  status: "blocked" | "warning";
+  message: string;
 };
 
 const DEFAULT_SELECTED_FORMAT_BY_CATEGORY: Record<
@@ -200,6 +206,7 @@ function ExportSettingsPanel({
   format,
   busy,
   lockedAction,
+  readiness,
   filenameStem,
   exportTheme,
   includeObstacleNumbers,
@@ -215,6 +222,7 @@ function ExportSettingsPanel({
   format: ExportFormat;
   busy: string | null;
   lockedAction?: { label: string; onClick: () => void };
+  readiness?: ExportReadiness;
   filenameStem: string;
   exportTheme: Theme;
   includeObstacleNumbers: boolean;
@@ -232,6 +240,7 @@ function ExportSettingsPanel({
     ? lockedAction.label
     : t("export.aria.exportFormat", { label: format.label });
   const hasOptions = !!format.showTheme || !!format.showRouteNumbers;
+  const isBlocked = readiness?.status === "blocked" && !lockedAction;
 
   return (
     <div className="space-y-5">
@@ -324,14 +333,28 @@ function ExportSettingsPanel({
           </div>
         )}
 
+        {readiness ? (
+          <div
+            className={cn(
+              "flex items-start gap-2 rounded-md border px-2.5 py-2 text-xs leading-snug",
+              readiness.status === "blocked"
+                ? "border-destructive/25 bg-destructive/8 text-destructive"
+                : "border-amber-500/25 bg-amber-500/8 text-amber-700 dark:text-amber-400"
+            )}
+          >
+            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+            <p>{readiness.message}</p>
+          </div>
+        ) : null}
+
         <button
           type="button"
-          disabled={isBusy}
+          disabled={isBusy || isBlocked}
           aria-label={actionLabel}
           onClick={lockedAction?.onClick ?? onExport}
           className={cn(
             "bg-foreground text-background hover:bg-foreground/90 flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors",
-            isBusy && "cursor-not-allowed opacity-65"
+            (isBusy || isBlocked) && "cursor-not-allowed opacity-65"
           )}
         >
           {isBusy ? (
@@ -472,11 +495,24 @@ export default function ExportDialog({
   const [webmStartedAt, setWebmStartedAt] = useState<number | null>(null);
   const [exportTheme, setExportTheme] = useState<Theme>("dark");
   const [includeObstacleNumbers, setIncludeObstacleNumbers] = useState(true);
+  const [canvasReady, setCanvasReady] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setExportTheme(currentTheme);
   }, [currentTheme]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const sampleCanvasReady = () => {
+      setCanvasReady(Boolean(canvasRef.current?.getStage()));
+    };
+
+    sampleCanvasReady();
+    const intervalId = window.setInterval(sampleCanvasReady, 100);
+    return () => window.clearInterval(intervalId);
+  }, [canvasRef, open]);
 
   const baseName = sanitizeFilenameStem(design.title, "track");
 
@@ -683,6 +719,14 @@ export default function ExportDialog({
   const filenameFor = (format: ExportFormat) =>
     `${filenameStemFor(format)}.${format.fileExtension}`;
 
+  const hasFlythroughRoute = design.shapeOrder.some((shapeId) => {
+    const shape = design.shapeById[shapeId];
+    return shape?.kind === "polyline" && shape.points.length >= 2;
+  });
+  const hasTrackContent = design.shapeOrder.some((shapeId) =>
+    Boolean(design.shapeById[shapeId])
+  );
+
   const handleExport = (formatId: ExportFormatId) => {
     const format = exportFormats.find((item) => item.id === formatId);
     if (!format) return;
@@ -836,6 +880,54 @@ export default function ExportDialog({
         }
       : undefined;
 
+  function getExportReadiness(
+    format: ExportFormat
+  ): ExportReadiness | undefined {
+    switch (format.id) {
+      case "render3d":
+        if (activeTab === "3d") return undefined;
+        return {
+          status: "blocked",
+          message: t("export.readiness.open3d"),
+        };
+      case "racePack":
+        if (!hasTrackContent) {
+          return {
+            status: "blocked",
+            message: t("export.readiness.emptyRacePack"),
+          };
+        }
+        if (!canvasReady) {
+          return {
+            status: "blocked",
+            message: t("export.readiness.canvasNotReady"),
+          };
+        }
+        return undefined;
+      case "webm":
+        if (hasFlythroughRoute) return undefined;
+        return {
+          status: "blocked",
+          message: t("export.readiness.missingRaceLine"),
+        };
+      case "velocidrone":
+        if (!hasTrackContent) {
+          return {
+            status: "blocked",
+            message: t("export.readiness.emptyVelocidrone"),
+          };
+        }
+        return {
+          status: "warning",
+          message: t("export.readiness.experimentalSimulator"),
+        };
+      default:
+        return undefined;
+    }
+  }
+
+  const selectedReadiness = getExportReadiness(selectedFormat);
+
   const hasMultipleFormats = activeFormats.length > 1;
 
   const activeContent = (
@@ -866,6 +958,7 @@ export default function ExportDialog({
           showHeader={!hasMultipleFormats}
           busy={busy}
           lockedAction={selectedLockedAction}
+          readiness={selectedReadiness}
           filenameStem={
             filenameByFormat[selectedFormat.id] ??
             defaultFilenameStem(selectedFormat.id)

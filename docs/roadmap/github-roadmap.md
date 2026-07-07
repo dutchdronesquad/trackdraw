@@ -22,29 +22,29 @@ Labels used below:
 
 ## Current Priority
 
-The next TrackDraw priority is export and handoff workflow polish first, generated flightpath assistance second, and editor reliability polish third. Keep larger race-day, account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
+The next TrackDraw priority is export and handoff workflow polish first, editor reliability polish second, and post-prototype generated flightpath validation third. Keep larger race-day, account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
 
 ## Follow-up
 
-- [ ] Export and handoff workflow polish (`No account required`)
+- [x] Export and handoff workflow polish (`No account required`)
       Rework the export dialog around the same clear structure as the Project Manager and Share dialogs. The goal is to make every handoff path easier to choose, explain what each export is for, and make export errors or limitations visible before users rely on the output.
   - [x] Export dialog information architecture
         Group exports by category in the sidebar, then let users choose the concrete output and show only the filename, theme, route-number, and limitation details that apply to it.
-  - [ ] Export purpose and limitations copy
-        Make each export explain whether it is read-only, editable, race-day handoff, backup, simulator-oriented, or experimental.
-  - [ ] Race Pack positioning
+  - [x] Race Pack positioning
         Present Race Pack as the race-day handoff export inside the refreshed dialog without starting a larger race-day-ops feature first.
-  - [ ] Export validation and feedback states
+  - [x] Export validation and feedback states
         Show relevant missing-data, unsupported-output, disabled-action, and failure states consistently before and after export.
   - [x] Mobile export drawer refresh
         Bring the mobile export flow closer to the same structure while preserving compact touch-friendly controls.
 
-- [ ] Generated flightpath assistance (`Research`, `No account required`)
-      Prototype generated flightpaths from placed obstacles as an optional drafting aid. The intended race sequence is defined by the obstacle order in the track items list (backed by `shapeOrder`), which users can set via drag-to-reorder once this feature ships. The generator connects obstacles in that order and produces an editable race line — it assists authoring rather than replacing it. Research document: `docs/research/generated-flightpath-assistance.md`.
-  - [ ] Generated flightpath prototype
-        Build the smallest useful route-generation prototype from the ordered obstacle list. The output should be a normal editable race line, not a locked result. Validate that the sequence-based model (list order → path) is intuitive before committing to the full UI.
-  - [ ] Drag-to-reorder obstacles (prerequisite)
-        Wire up the drag handles in the track items list so users can explicitly set the intended race sequence before generating a path. The store action is ready; this is a UI-only change gated on the path generator being useful enough to justify the interaction.
+- [x] Generated flightpath assistance (`Research`, `No account required`)
+      Shipped the first generated flightpath slice as an optional drafting aid. The intended race sequence is defined by the obstacle order in the track items list (backed by `shapeOrder`), and users can drag-to-reorder track items before generating a normal editable race line. The generator assists authoring rather than replacing explicit route editing. Research document: `docs/research/generated-flightpath-assistance.md`.
+  - [x] Generated flightpath prototype
+        Built the smallest useful route-generation prototype from the ordered obstacle list. The output is a normal editable race line, and the layout inspector surfaces unsupported or too-close obstacle warnings before users accept the result.
+  - [x] Drag-to-reorder obstacles (prerequisite)
+        Wired up drag handles in the track items list so users can explicitly set the intended race sequence before generating a path, while keeping race lines out of the track-item stack ordering.
+  - [ ] Generated flightpath validation follow-up
+        Validate real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid.
 
 - [ ] Editor reliability polish (`No account required`, `Account-backed`)
       Run a focused stability pass over shipped workflows before adding another large surface. Prioritize recovery states, mobile ergonomics, selection/transforms, autosave/account sync edge cases, imports/exports, sharing, read-only viewing, and larger layouts.
