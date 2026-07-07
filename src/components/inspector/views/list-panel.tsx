@@ -197,9 +197,11 @@ function ItemRow({
         <button
           type="button"
           title={removeItemTitle}
-          className="text-muted-foreground/55 hover:bg-brand-primary/10 hover:text-brand-primary flex size-5 items-center justify-center rounded-md transition-colors"
+          disabled={shape.locked}
+          className="text-muted-foreground/55 hover:bg-brand-primary/10 hover:text-brand-primary flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
           onClick={(event) => {
             event.stopPropagation();
+            if (shape.locked) return;
             removeShapes([shape.id]);
             setHoveredShapeId(null);
           }}

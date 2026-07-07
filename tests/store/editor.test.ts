@@ -508,10 +508,11 @@ describe("editor store history", () => {
 
   it("does not remove grouped selections when one grouped member is locked", () => {
     const state = useEditor.getState();
-    const lockedId = state.addShape(gateDraft({ x: 5, y: 5, locked: true }));
+    const lockedId = state.addShape(gateDraft({ x: 5, y: 5 }));
     const editableId = state.addShape(flagDraft());
 
     state.groupSelection([lockedId, editableId]);
+    state.setShapesLocked([lockedId], true);
     state.setSelection([lockedId]);
     const beforeUpdatedAt = clearHistoryAndCaptureUpdatedAt();
 
@@ -522,6 +523,29 @@ describe("editor store history", () => {
     expect(nextState.track.design.shapeById[editableId]).toBeTruthy();
     expect(nextState.session.selection).toEqual([lockedId, editableId]);
     expectNoDesignHistoryChange(beforeUpdatedAt);
+  });
+
+  it("groups selections that include locked shapes", () => {
+    const state = useEditor.getState();
+    const lockedId = state.addShape(gateDraft({ x: 5, y: 5, locked: true }));
+    const editableId = state.addShape(flagDraft());
+
+    state.clearHistory();
+    setEditorTestTime("2026-04-13T10:10:22.000Z");
+
+    const groupId = state.groupSelection([lockedId, editableId]);
+
+    const nextState = useEditor.getState();
+    expect(groupId).toBeTruthy();
+    expect(nextState.track.design.shapeById[lockedId]?.meta).toMatchObject({
+      groupId,
+    });
+    expect(nextState.track.design.shapeById[editableId]?.meta).toMatchObject({
+      groupId,
+    });
+    expect(nextState.session.selection).toEqual([lockedId, editableId]);
+    expectDesignUpdatedAt("2026-04-13T10:10:22.000Z");
+    expectPastStatesCount(1);
   });
 
   it("does not remove locked-only selections or create history", () => {
@@ -576,6 +600,40 @@ describe("editor store history", () => {
     ).toBeUndefined();
   });
 
+  it("renames and ungroups groups with locked members", () => {
+    const state = useEditor.getState();
+    const lockedId = state.addShape(gateDraft({ x: 5, y: 5 }));
+    const editableId = state.addShape(flagDraft());
+    const groupId = state.groupSelection([lockedId, editableId]);
+
+    state.setShapesLocked([lockedId], true);
+    state.clearHistory();
+
+    setEditorTestTime("2026-04-13T10:10:23.000Z");
+    state.setGroupName([editableId], "Locked group");
+
+    let nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[lockedId]?.meta).toMatchObject({
+      groupId,
+      groupName: "Locked group",
+    });
+    expect(nextDesign.shapeById[editableId]?.meta).toMatchObject({
+      groupId,
+      groupName: "Locked group",
+    });
+    expectDesignUpdatedAt("2026-04-13T10:10:23.000Z");
+
+    setEditorTestTime("2026-04-13T10:10:24.000Z");
+    state.ungroupSelection([editableId]);
+
+    nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[lockedId]?.locked).toBe(true);
+    expect(nextDesign.shapeById[lockedId]?.meta).toBeUndefined();
+    expect(nextDesign.shapeById[editableId]?.meta).toBeUndefined();
+    expectDesignUpdatedAt("2026-04-13T10:10:24.000Z");
+    expectPastStatesCount(2);
+  });
+
   it("joins and closes polylines when possible", () => {
     const state = useEditor.getState();
     const firstId = state.addShape(
@@ -616,6 +674,75 @@ describe("editor store history", () => {
       kind: "polyline",
       closed: true,
     });
+  });
+
+  it("does not join or close locked polylines", () => {
+    const state = useEditor.getState();
+    const lockedId = state.addShape(
+      polylineDraft({
+        locked: true,
+        points: [
+          { x: 0, y: 0, z: 0 },
+          { x: 2, y: 0, z: 0 },
+          { x: 4, y: 0, z: 0 },
+        ],
+      })
+    );
+    const editableId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 4, y: 0, z: 0 },
+          { x: 6, y: 1, z: 0 },
+        ],
+      })
+    );
+
+    const beforeUpdatedAt = clearHistoryAndCaptureUpdatedAt();
+
+    expect(state.joinPolylines([lockedId, editableId])).toBeNull();
+    expect(state.closePolyline(lockedId)).toBe(false);
+
+    const nextDesign = useEditor.getState().track.design;
+    expect(nextDesign.shapeById[lockedId]?.kind).toBe("polyline");
+    expect(nextDesign.shapeById[editableId]?.kind).toBe("polyline");
+    expect(
+      nextDesign.shapeById[lockedId]?.kind === "polyline"
+        ? nextDesign.shapeById[lockedId].closed
+        : null
+    ).toBeFalsy();
+    expectNoDesignHistoryChange(beforeUpdatedAt);
+  });
+
+  it("does not remove or let unrelated locked shapes block joining polylines", () => {
+    const state = useEditor.getState();
+    const firstId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 0, y: 0, z: 0 },
+          { x: 2, y: 0, z: 0 },
+        ],
+      })
+    );
+    const secondId = state.addShape(
+      polylineDraft({
+        points: [
+          { x: 2, y: 0, z: 0 },
+          { x: 4, y: 1, z: 0 },
+        ],
+      })
+    );
+    const gateId = state.addShape(gateDraft({ x: 8, y: 8, locked: true }));
+
+    const joinedId = state.joinPolylines([firstId, gateId, secondId]);
+
+    expect(joinedId).toBeTruthy();
+    expect(useEditor.getState().track.design.shapeById[gateId]).toBeTruthy();
+    expect(
+      useEditor.getState().track.design.shapeById[firstId]
+    ).toBeUndefined();
+    expect(
+      useEditor.getState().track.design.shapeById[secondId]
+    ).toBeUndefined();
   });
 
   it("keeps route waypoint insertion undoable and clears stale segment selection", () => {

@@ -222,6 +222,14 @@ describe("SingleInspectorView race timing controls", () => {
         "Locked on the canvas. Unlock before moving, resizing, or continuing path edits."
       )
     ).toBeTruthy();
+    expect(
+      (screen.getByRole("button", { name: "Duplicate" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
+    expect(
+      (screen.getByRole("button", { name: "Delete" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true);
   });
 
   it("hides fixed official gate size and color controls", () => {

@@ -59,6 +59,28 @@ describe("editor shell view model", () => {
     expect(result.mobilePrecisionStepLabel).toBe("0.1 m");
   });
 
+  it("keeps grouped selection affordances available when the selection is locked", () => {
+    const lockedGate: Shape = {
+      ...gate,
+      locked: true,
+    };
+    const result = getEditorShellSelectionState({
+      activePresetName: null,
+      designGridStep: 0.25,
+      segmentSelection: null,
+      selection: [lockedGate.id, flag.id],
+      shapeById: {
+        [lockedGate.id]: lockedGate,
+        [flag.id]: flag,
+      },
+      vertexSelection: null,
+      t: shapesTranslate,
+    });
+
+    expect(result.canUngroupSelection).toBe(true);
+    expect(result.selectedGroupName).toBe("Section A");
+  });
+
   it("derives polyline editing affordances from single selection", () => {
     const result = getEditorShellSelectionState({
       activePresetName: null,

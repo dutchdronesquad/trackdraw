@@ -60,7 +60,7 @@ describe("MultiSelectOverlay", () => {
     ).toBe(true);
   });
 
-  it("disables destructive actions when any selected item is locked", () => {
+  it("disables duplicate and destructive actions when any selected item is locked", () => {
     renderMultiSelectOverlay({
       hasLockedSelection: true,
       selectionLocked: false,
@@ -74,6 +74,10 @@ describe("MultiSelectOverlay", () => {
       (screen.getByRole("button", { name: "Delete" }) as HTMLButtonElement)
         .disabled
     ).toBe(true);
+    expect(
+      (screen.getByRole("button", { name: "Group" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(false);
     expect(
       (screen.getByRole("button", { name: "Lock" }) as HTMLButtonElement)
         .disabled

@@ -154,6 +154,7 @@ Suggested first slices:
 - Selection and transform reliability pass
   - Started with store-level locked-shape guards for direct patches, batch patches, and route waypoint edits
   - Added locked-selection guards and shortcut feedback for duplicate/delete paths so shortcuts, context menus, and mobile overlays cannot mutate selections that include locked shapes
+  - Extended locked-selection guards to path-combine actions so path joining and path closing respect locked route objects while grouping remains available as an organization action
 - Export/share confidence pass
   - Started by clarifying which exports are read-only visuals, which JSON files are editable backups, what Race Pack is for, and where simulator export remains experimental
   - Moved the export dialog onto the same sidebar-and-panel structure used by Share and Project Manager, with export categories in the sidebar and available outputs plus per-export filename, theme, and route-number settings in the main panel

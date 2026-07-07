@@ -133,8 +133,11 @@ export function MultiInspectorView({
     }
   );
   const polylineIds = selectedShapes
-    .filter((shape) => shape.kind === "polyline" && !shape.closed)
+    .filter(
+      (shape) => shape.kind === "polyline" && !shape.closed && !shape.locked
+    )
     .map((shape) => shape.id);
+  const hasLockedSelection = selectedShapes.some((shape) => shape.locked);
   const hasGroupedShapes = selectionHasGroupedShapes(selectedShapes);
   const groupCount = new Set(
     selectedShapes.map((shape) => getShapeGroupId(shape)).filter(Boolean)
@@ -211,6 +214,7 @@ export function MultiInspectorView({
                 onClick={() => duplicateShapes(selection)}
                 title={tCommon("actions.duplicate")}
                 aria-label={tCommon("actions.duplicate")}
+                disabled={hasLockedSelection}
                 className={`${inspectorActionBtnClass} min-w-0 flex-1`}
               >
                 <Copy className="size-3 shrink-0" />
@@ -224,6 +228,7 @@ export function MultiInspectorView({
                 }}
                 title={tCommon("actions.delete")}
                 aria-label={tCommon("actions.delete")}
+                disabled={hasLockedSelection}
                 className={`${inspectorActionBtnDangerClass} min-w-0 flex-1`}
               >
                 <Trash2 className="size-3 shrink-0" />

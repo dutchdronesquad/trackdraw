@@ -54,6 +54,8 @@ The next TrackDraw priority is export and handoff workflow polish first, editor 
         Tighten drawers, touch targets, compact labels, Project Manager flows, path tools, multi-select actions, map reference controls, and inspector panels.
   - [ ] Selection and transform regression pass
         Harden locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, undo/redo, shortcuts, and mobile overlays.
+    - [x] Locked selection action safeguards
+          Locked selections now consistently block destructive or confusing actions such as duplicate, delete, route join, and route close across store actions, shortcuts, context menus, inspector controls, item lists, and mobile overlays, while group organization remains available.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.

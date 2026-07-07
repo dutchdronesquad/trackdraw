@@ -451,10 +451,13 @@ export const useEditor = create<EditorState>()(
               (shape): shape is PolylineShape =>
                 Boolean(shape) && shape.kind === "polyline"
             );
+          if (polylineShapes.some((shape) => shape.locked)) return;
           const merged = joinPolylineShapes(polylineShapes);
           if (!merged) return;
 
-          ids.forEach((id) => removeShapeRecord(draft.track.design, id));
+          polylineShapes.forEach((shape) =>
+            removeShapeRecord(draft.track.design, shape.id)
+          );
           addShapeRecord(draft.track.design, {
             ...merged,
             id: nextId,
@@ -476,7 +479,7 @@ export const useEditor = create<EditorState>()(
 
         set((draft) => {
           const shape = getDesignShapeById(draft.track.design, id);
-          if (!closePolyline(shape ?? undefined)) return;
+          if (shape?.locked || !closePolyline(shape ?? undefined)) return;
           draft.session.selection = [id];
           touchTrackDesign(draft);
           closed = true;

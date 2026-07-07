@@ -9,7 +9,7 @@ export const inspectorActionBtnPrimaryClass =
   "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/25 bg-primary/8 px-2.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
 
 export const inspectorActionBtnDangerClass =
-  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/6 px-2.5 text-[11px] font-medium text-red-500 transition-colors hover:bg-red-500/12 lg:h-8";
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/6 px-2.5 text-[11px] font-medium text-red-500 transition-colors hover:bg-red-500/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
 
 function finiteOrZero(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
