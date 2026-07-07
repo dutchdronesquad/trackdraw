@@ -165,6 +165,7 @@ Suggested focused slices:
 - Large-layout stability pass
   - Started with bounded dense-grid rendering for SVG/PDF/PNG exports so fine grid settings do not explode export payload size
   - Added long-route obstacle-numbering coverage with bounded route-segment scans for dense gate layouts
+  - Completed with bounded map-reference tile coverage for large high-density fields, duplicate in-flight map tile load prevention, and existing dense SVG/PDF export, long-route numbering, and large 3D preview coverage still passing
 - Export/share confidence pass
   - Started by clarifying which exports are read-only visuals, which JSON files are editable backups, what Race Pack is for, and where simulator export remains experimental
   - Moved the export dialog onto the same sidebar-and-panel structure used by Share and Project Manager, with export categories in the sidebar and available outputs plus per-export filename, theme, and route-number settings in the main panel

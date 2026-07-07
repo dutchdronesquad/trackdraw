@@ -10,6 +10,7 @@ import type { FieldSpec, MapReference } from "@/lib/types";
 const EARTH_RADIUS_METERS = 6378137;
 const EARTH_CIRCUMFERENCE_METERS = 2 * Math.PI * EARTH_RADIUS_METERS;
 const MAX_MERCATOR_LAT = 85.05112878;
+export const MAP_REFERENCE_MAX_RENDER_TILES = 64;
 
 export interface GlobalPixel {
   x: number;
@@ -154,17 +155,15 @@ export function getMapReferenceRenderZoom({
   );
 }
 
-export function getFieldMapTileCoverage({
+function getCoverageBounds({
   field,
   mapReference,
+  tileZoom,
 }: {
   field: Pick<FieldSpec, "width" | "height" | "ppm">;
   mapReference: MapReference;
-}): MapReferenceTile[] {
-  const tileZoom = getMapReferenceRenderZoom({
-    lat: mapReference.centerLat,
-    ppm: field.ppm,
-  });
+  tileZoom: number;
+}) {
   const centerPixel = latLngToGlobalPixel(
     mapReference.centerLat,
     mapReference.centerLng,
@@ -177,26 +176,89 @@ export function getFieldMapTileCoverage({
   const tileCanvasSize = MAP_REFERENCE_TILE_SIZE * metersPerPixel * field.ppm;
   const fieldDiagonalMeters = Math.hypot(field.width, field.height);
   const halfFieldDiagonalMapPx = fieldDiagonalMeters / metersPerPixel / 2;
-  const minTileX = Math.floor(
-    (centerPixel.x - halfFieldDiagonalMapPx) / MAP_REFERENCE_TILE_SIZE
-  );
-  const maxTileX = Math.floor(
-    (centerPixel.x + halfFieldDiagonalMapPx) / MAP_REFERENCE_TILE_SIZE
-  );
-  const minTileY = Math.floor(
-    (centerPixel.y - halfFieldDiagonalMapPx) / MAP_REFERENCE_TILE_SIZE
-  );
-  const maxTileY = Math.floor(
-    (centerPixel.y + halfFieldDiagonalMapPx) / MAP_REFERENCE_TILE_SIZE
-  );
+  const minTileX =
+    Math.floor(
+      (centerPixel.x - halfFieldDiagonalMapPx) / MAP_REFERENCE_TILE_SIZE
+    ) - 1;
+  const maxTileX =
+    Math.floor(
+      (centerPixel.x + halfFieldDiagonalMapPx) / MAP_REFERENCE_TILE_SIZE
+    ) + 1;
+  const minTileY =
+    Math.floor(
+      (centerPixel.y - halfFieldDiagonalMapPx) / MAP_REFERENCE_TILE_SIZE
+    ) - 1;
+  const maxTileY =
+    Math.floor(
+      (centerPixel.y + halfFieldDiagonalMapPx) / MAP_REFERENCE_TILE_SIZE
+    ) + 1;
   const maxTile = 2 ** tileZoom;
+  const clampedMinTileY = Math.max(0, minTileY);
+  const clampedMaxTileY = Math.min(maxTile - 1, maxTileY);
+  const tileColumnCount = Math.max(0, maxTileX - minTileX + 1);
+  const tileRowCount =
+    clampedMaxTileY >= clampedMinTileY
+      ? clampedMaxTileY - clampedMinTileY + 1
+      : 0;
+
+  return {
+    centerPixel,
+    clampedMaxTileY,
+    clampedMinTileY,
+    maxTile,
+    maxTileX,
+    metersPerPixel,
+    minTileX,
+    tileCanvasSize,
+    tileCount: tileColumnCount * tileRowCount,
+  };
+}
+
+export function getFieldMapTileCoverage({
+  field,
+  mapReference,
+}: {
+  field: Pick<FieldSpec, "width" | "height" | "ppm">;
+  mapReference: MapReference;
+}): MapReferenceTile[] {
+  if (
+    !Number.isFinite(field.width) ||
+    !Number.isFinite(field.height) ||
+    !Number.isFinite(field.ppm) ||
+    field.width <= 0 ||
+    field.height <= 0 ||
+    field.ppm <= 0
+  ) {
+    return [];
+  }
+
+  let tileZoom = getMapReferenceRenderZoom({
+    lat: mapReference.centerLat,
+    ppm: field.ppm,
+  });
+  let coverage = getCoverageBounds({ field, mapReference, tileZoom });
+  while (
+    coverage.tileCount > MAP_REFERENCE_MAX_RENDER_TILES &&
+    tileZoom > MAP_REFERENCE_MIN_ZOOM
+  ) {
+    tileZoom -= 1;
+    coverage = getCoverageBounds({ field, mapReference, tileZoom });
+  }
+
   const tiles: MapReferenceTile[] = [];
 
-  for (let tileY = minTileY - 1; tileY <= maxTileY + 1; tileY += 1) {
-    if (tileY < 0 || tileY >= maxTile) continue;
-
-    for (let tileX = minTileX - 1; tileX <= maxTileX + 1; tileX += 1) {
-      const wrappedTileX = ((tileX % maxTile) + maxTile) % maxTile;
+  for (
+    let tileY = coverage.clampedMinTileY;
+    tileY <= coverage.clampedMaxTileY;
+    tileY += 1
+  ) {
+    for (
+      let tileX = coverage.minTileX;
+      tileX <= coverage.maxTileX;
+      tileX += 1
+    ) {
+      const wrappedTileX =
+        ((tileX % coverage.maxTile) + coverage.maxTile) % coverage.maxTile;
       const tilePixelX = tileX * MAP_REFERENCE_TILE_SIZE;
       const tilePixelY = tileY * MAP_REFERENCE_TILE_SIZE;
 
@@ -204,9 +266,15 @@ export function getFieldMapTileCoverage({
         x: wrappedTileX,
         y: tileY,
         z: tileZoom,
-        canvasX: (tilePixelX - centerPixel.x) * metersPerPixel * field.ppm,
-        canvasY: (tilePixelY - centerPixel.y) * metersPerPixel * field.ppm,
-        canvasSize: tileCanvasSize,
+        canvasX:
+          (tilePixelX - coverage.centerPixel.x) *
+          coverage.metersPerPixel *
+          field.ppm,
+        canvasY:
+          (tilePixelY - coverage.centerPixel.y) *
+          coverage.metersPerPixel *
+          field.ppm,
+        canvasSize: coverage.tileCanvasSize,
       });
     }
   }

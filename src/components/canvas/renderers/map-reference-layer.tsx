@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Group, Image as KonvaImage } from "react-konva";
 import {
   getFieldMapTileCoverage,
@@ -25,21 +25,25 @@ export function MapReferenceLayer({
     return getFieldMapTileCoverage({ field, mapReference });
   }, [field, mapReference]);
   const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
+  const pendingTileUrlsRef = useRef(new Set<string>());
 
   useEffect(() => {
     if (!mapReference?.visible) return;
 
     const tileUrls = new Set(tiles.map(getMapReferenceTileUrl));
     let mounted = true;
-    const missingTiles = tiles.filter(
-      (tile) => !images[getMapReferenceTileUrl(tile)]
-    );
+    const missingTiles = tiles.filter((tile) => {
+      const url = getMapReferenceTileUrl(tile);
+      return !images[url] && !pendingTileUrlsRef.current.has(url);
+    });
 
     for (const tile of missingTiles) {
       const url = getMapReferenceTileUrl(tile);
+      pendingTileUrlsRef.current.add(url);
       const image = new window.Image();
       image.crossOrigin = "anonymous";
       image.onload = () => {
+        pendingTileUrlsRef.current.delete(url);
         if (!mounted) return;
         setImages((current) => {
           const next: Record<string, HTMLImageElement> = {};
@@ -49,6 +53,9 @@ export function MapReferenceLayer({
           if (!next[url]) next[url] = image;
           return next;
         });
+      };
+      image.onerror = () => {
+        pendingTileUrlsRef.current.delete(url);
       };
       image.src = url;
     }

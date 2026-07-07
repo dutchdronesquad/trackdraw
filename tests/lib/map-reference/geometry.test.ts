@@ -5,6 +5,7 @@ import {
   getMapTileZoom,
   globalPixelToLatLng,
   latLngToGlobalPixel,
+  MAP_REFERENCE_MAX_RENDER_TILES,
   metersPerPixelAtLatitude,
   normalizeMapReference,
   panLatLngByPixels,
@@ -116,6 +117,39 @@ describe("map reference geometry", () => {
       highPickerZoomTiles[0]?.canvasSize ?? 0,
       6
     );
+  });
+
+  it("bounds tile coverage for very large high-density fields", () => {
+    const tiles = getFieldMapTileCoverage({
+      field: { width: 500, height: 500, ppm: 80 },
+      mapReference: reference,
+    });
+    const preferredZoom = getMapReferenceRenderZoom({
+      lat: reference.centerLat,
+      ppm: 80,
+    });
+    const tileZooms = new Set(tiles.map((tile) => tile.z));
+
+    expect(tiles.length).toBeGreaterThan(0);
+    expect(tiles.length).toBeLessThanOrEqual(MAP_REFERENCE_MAX_RENDER_TILES);
+    expect(tileZooms.size).toBe(1);
+    expect(tiles[0]?.z).toBeLessThan(preferredZoom);
+    expect(tiles.every((tile) => tile.canvasSize > 0)).toBe(true);
+  });
+
+  it("skips map tile coverage for invalid field dimensions", () => {
+    expect(
+      getFieldMapTileCoverage({
+        field: { width: 0, height: 40, ppm: 20 },
+        mapReference: reference,
+      })
+    ).toEqual([]);
+    expect(
+      getFieldMapTileCoverage({
+        field: { width: 60, height: 40, ppm: Number.NaN },
+        mapReference: reference,
+      })
+    ).toEqual([]);
   });
 
   it("pans lat/lng by screen pixels", () => {
