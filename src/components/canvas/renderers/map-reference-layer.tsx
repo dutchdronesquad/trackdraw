@@ -28,9 +28,15 @@ export function MapReferenceLayer({
   const pendingTileUrlsRef = useRef(new Set<string>());
 
   useEffect(() => {
+    const tileUrls = new Set(tiles.map(getMapReferenceTileUrl));
+    for (const pendingUrl of pendingTileUrlsRef.current) {
+      if (!tileUrls.has(pendingUrl)) {
+        pendingTileUrlsRef.current.delete(pendingUrl);
+      }
+    }
+
     if (!mapReference?.visible) return;
 
-    const tileUrls = new Set(tiles.map(getMapReferenceTileUrl));
     let mounted = true;
     const missingTiles = tiles.filter((tile) => {
       const url = getMapReferenceTileUrl(tile);

@@ -77,4 +77,55 @@ describe("MapReferenceLayer", () => {
 
     expect(imageInstances).toHaveLength(expectedTileCount);
   });
+
+  it("prunes stale pending tile requests when coverage changes", () => {
+    const shiftedReference: MapReference = {
+      ...mapReference,
+      centerLat: 48.8566,
+      centerLng: 2.3522,
+    };
+    const expectedTileCount = getFieldMapTileCoverage({
+      field,
+      mapReference,
+    }).length;
+    const shiftedTileCount = getFieldMapTileCoverage({
+      field,
+      mapReference: shiftedReference,
+    }).length;
+
+    const { rerender } = render(
+      <MapReferenceLayer
+        field={field}
+        heightPx={800}
+        mapReference={mapReference}
+        widthPx={1200}
+      />
+    );
+
+    expect(imageInstances).toHaveLength(expectedTileCount);
+
+    rerender(
+      <MapReferenceLayer
+        field={field}
+        heightPx={800}
+        mapReference={shiftedReference}
+        widthPx={1200}
+      />
+    );
+
+    expect(imageInstances).toHaveLength(expectedTileCount + shiftedTileCount);
+
+    rerender(
+      <MapReferenceLayer
+        field={field}
+        heightPx={800}
+        mapReference={mapReference}
+        widthPx={1200}
+      />
+    );
+
+    expect(imageInstances).toHaveLength(
+      expectedTileCount + shiftedTileCount + expectedTileCount
+    );
+  });
 });
