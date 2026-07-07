@@ -86,8 +86,10 @@ export function LanguagePicker({
           )}
           aria-label={t("labels.language")}
         >
-          <LocaleBadge abbr={config.abbr} />
-          {config.label}
+          <div className="flex min-w-0 items-center gap-2">
+            <LocaleBadge abbr={config.abbr} />
+            <span className="truncate">{config.label}</span>
+          </div>
         </SelectTrigger>
       )}
       <SelectContent>
