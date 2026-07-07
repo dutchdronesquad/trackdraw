@@ -263,7 +263,10 @@ function RecentSignups({
   return (
     <ul className="divide-y">
       {users.map((user, index) => {
-        const initial = (user.name ?? user.email)[0]?.toUpperCase() ?? "?";
+        const displayName =
+          user.name?.trim() || user.email?.trim() || t("fallback.unknownUser");
+        const email = user.email?.trim();
+        const initial = displayName[0]?.toUpperCase() ?? "U";
         return (
           <RevealListItem
             key={user.id}
@@ -274,12 +277,10 @@ function RecentSignups({
               {initial}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                {user.name ?? user.email}
-              </p>
-              {user.name ? (
+              <p className="truncate text-sm font-medium">{displayName}</p>
+              {user.name?.trim() && email ? (
                 <p className="text-muted-foreground truncate text-xs">
-                  {user.email}
+                  {email}
                 </p>
               ) : null}
             </div>

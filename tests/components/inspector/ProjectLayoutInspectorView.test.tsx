@@ -31,11 +31,13 @@ function withMapReference(): TrackDesign {
 function renderProjectLayoutInspector(design = withMapReference()) {
   render(
     <ProjectLayoutInspectorView
+      addShape={vi.fn()}
       clearMapReference={vi.fn()}
       design={design}
       mobileInline
       panel="layout"
       removeShapes={vi.fn()}
+      reorderShapes={vi.fn()}
       setHoveredShapeId={vi.fn()}
       setMapReference={vi.fn()}
       setMapReferenceOpacity={vi.fn()}

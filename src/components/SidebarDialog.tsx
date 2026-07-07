@@ -22,16 +22,94 @@ export interface SidebarDialogProps {
   onOpenChange: (open: boolean) => void;
   eyebrow?: string;
   title: string;
+  subtitle?: string;
   mobileSubtitle?: string;
   navItems: SidebarDialogNavItem[];
   activeItem: string;
   onItemChange: (id: string) => void;
-  contentTitle: string;
+  contentTitle?: string;
   contentDescription?: string;
   children: React.ReactNode;
   sidebarFooter?: React.ReactNode;
   maxWidth?: string;
   height?: string;
+}
+
+function DesktopNavList({
+  navItems,
+  activeItem,
+  onItemChange,
+  sidebarFooter,
+  navClassName,
+}: {
+  navItems: SidebarDialogNavItem[];
+  activeItem: string;
+  onItemChange: (id: string) => void;
+  sidebarFooter?: React.ReactNode;
+  navClassName?: string;
+}) {
+  return (
+    <>
+      <nav className={cn("flex-1 space-y-0.5 px-2", navClassName)}>
+        {navItems.map((item) => (
+          <NavButton
+            key={item.id}
+            item={item}
+            active={activeItem === item.id}
+            layoutId="sidebarDialogDesktopNavPill"
+            onClick={() => onItemChange(item.id)}
+          />
+        ))}
+      </nav>
+
+      {sidebarFooter ? (
+        <div className="border-border/50 mt-4 border-t px-3 pt-4">
+          {sidebarFooter}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function CloseDialogButton({
+  onClick,
+  label,
+}: {
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="text-muted-foreground/60 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
+      aria-label={label}
+    >
+      <X className="size-4" />
+    </button>
+  );
+}
+
+function AnimatedContentPanel({
+  activeItem,
+  children,
+}: {
+  activeItem: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={activeItem}
+        initial={{ opacity: 0, x: 4 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -2 }}
+        transition={{ duration: 0.12, ease: "easeOut" }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 function NavButton({
@@ -118,6 +196,7 @@ export function SidebarDialog({
   onOpenChange,
   eyebrow,
   title,
+  subtitle,
   mobileSubtitle,
   navItems,
   activeItem,
@@ -131,6 +210,7 @@ export function SidebarDialog({
 }: SidebarDialogProps) {
   const isMobile = useIsMobile();
   const t = useTranslations("common");
+  const resolvedContentTitle = contentTitle ?? title;
 
   if (isMobile) {
     const mobileNav = (
@@ -177,6 +257,8 @@ export function SidebarDialog({
     );
   }
 
+  const unified = !!subtitle;
+
   return (
     <DesktopModal
       open={open}
@@ -184,92 +266,135 @@ export function SidebarDialog({
       title={title}
       headerless
       maxWidth={maxWidth}
-      panelClassName={cn("flex overflow-hidden rounded-4xl p-0", height)}
+      panelClassName={cn(
+        "relative flex overflow-hidden rounded-4xl p-0",
+        unified && "flex-col",
+        height
+      )}
     >
-      <div className="bg-muted/30 border-border/60 flex w-52 shrink-0 flex-col border-r pt-7 pb-6">
-        <div className="px-4 pb-4">
-          {eyebrow && (
-            <p className="text-muted-foreground/50 text-[10px] font-semibold tracking-[0.14em] uppercase">
-              {eyebrow}
-            </p>
-          )}
-          <p
-            className={cn(
-              "text-foreground text-lg font-semibold tracking-[-0.02em]",
-              eyebrow ? "mt-1.5" : ""
-            )}
-          >
-            {title}
-          </p>
-        </div>
-
-        <div className="border-border/50 mb-3 border-t" />
-
-        <nav className="flex-1 space-y-0.5 px-2">
-          {navItems.map((item) => (
-            <NavButton
-              key={item.id}
-              item={item}
-              active={activeItem === item.id}
-              layoutId="sidebarDialogDesktopNavPill"
-              onClick={() => onItemChange(item.id)}
-            />
-          ))}
-        </nav>
-
-        {sidebarFooter ? (
-          <div className="border-border/50 mt-4 border-t px-3 pt-4">
-            {sidebarFooter}
-          </div>
-        ) : null}
-      </div>
-
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="flex shrink-0 items-start justify-between gap-4 px-7 pt-7 pb-4">
-          <div className="min-w-0 flex-1">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeItem}
-                initial={{ opacity: 0, y: 3 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -3 }}
-                transition={{ duration: 0.12, ease: "easeOut" }}
-              >
-                <p className="text-foreground text-[15px] font-semibold tracking-[-0.01em]">
-                  {contentTitle}
+      {unified ? (
+        <>
+          <div className="flex shrink-0 items-start justify-between gap-4 px-7 pt-7 pb-4">
+            <div className="min-w-0 flex-1">
+              {eyebrow && (
+                <p className="text-muted-foreground/50 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                  {eyebrow}
                 </p>
-                {contentDescription && (
-                  <p className="text-muted-foreground mt-1 text-[13px] leading-relaxed">
-                    {contentDescription}
+              )}
+              <p
+                className={cn(
+                  "text-foreground text-lg font-semibold tracking-[-0.02em]",
+                  eyebrow && "mt-1.5"
+                )}
+              >
+                {title}
+              </p>
+              <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
+                {subtitle}
+              </p>
+            </div>
+            <CloseDialogButton
+              onClick={() => onOpenChange(false)}
+              label={t("actions.close")}
+            />
+          </div>
+          <div className="border-border/30 border-t" />
+        </>
+      ) : (
+        contentDescription && (
+          <div className="border-border/30 pointer-events-none absolute inset-x-0 top-[86px] z-20 border-t" />
+        )
+      )}
+
+      <div className={cn("flex min-h-0 flex-1", unified && "min-h-0")}>
+        <div
+          className={cn(
+            "flex w-52 shrink-0 flex-col border-r",
+            unified
+              ? "border-border/30 py-4"
+              : "bg-muted/30 border-border/60 pb-6"
+          )}
+        >
+          {!unified && (
+            <>
+              <div
+                className={cn(
+                  "border-border/30 px-4 pt-7 pb-4",
+                  contentDescription && "h-[86px]"
+                )}
+              >
+                {eyebrow && (
+                  <p className="text-muted-foreground/50 text-[10px] font-semibold tracking-[0.14em] uppercase">
+                    {eyebrow}
                   </p>
                 )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="text-muted-foreground/60 hover:text-foreground hover:bg-muted shrink-0 cursor-pointer rounded-full p-1.5 transition-colors"
-              aria-label={t("actions.close")}
-            >
-              <X className="size-4" />
-            </button>
-          </div>
+                <p
+                  className={cn(
+                    "text-foreground text-lg font-semibold tracking-[-0.02em]",
+                    eyebrow && "mt-1.5"
+                  )}
+                >
+                  {title}
+                </p>
+              </div>
+
+              {!contentDescription && (
+                <div className="border-border/30 mb-3 border-t" />
+              )}
+            </>
+          )}
+
+          <DesktopNavList
+            navItems={navItems}
+            activeItem={activeItem}
+            onItemChange={onItemChange}
+            sidebarFooter={sidebarFooter}
+            navClassName={!unified && contentDescription ? "mt-3" : undefined}
+          />
         </div>
 
-        <div className="border-border/30 min-h-0 flex-1 overflow-y-auto border-t px-7 py-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeItem}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          {!unified && (
+            <div
+              className={cn(
+                "flex shrink-0 items-start justify-between gap-4 px-7 pt-7 pb-4",
+                contentDescription && "h-[86px]"
+              )}
             >
+              <div className="min-w-0 flex-1">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeItem}
+                    initial={{ opacity: 0, x: 3 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -2 }}
+                    transition={{ duration: 0.1, ease: "easeOut" }}
+                  >
+                    <p className="text-foreground text-[15px] font-semibold tracking-[-0.01em]">
+                      {resolvedContentTitle}
+                    </p>
+                    {contentDescription && (
+                      <p className="text-muted-foreground mt-1 truncate text-[13px] leading-relaxed">
+                        {contentDescription}
+                      </p>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <CloseDialogButton
+                  onClick={() => onOpenChange(false)}
+                  label={t("actions.close")}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-7 py-6">
+            <AnimatedContentPanel activeItem={activeItem}>
               {children}
-            </motion.div>
-          </AnimatePresence>
+            </AnimatedContentPanel>
+          </div>
         </div>
       </div>
     </DesktopModal>

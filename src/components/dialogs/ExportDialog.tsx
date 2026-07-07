@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MobileDrawer } from "@/components/MobileDrawer";
-import { DesktopModal } from "@/components/DesktopModal";
-import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  SidebarDialog,
+  type SidebarDialogNavItem,
+} from "@/components/SidebarDialog";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
 import { buildStoredSharePath } from "@/lib/share";
 import { serializeDesign } from "@/lib/track/design";
@@ -12,11 +13,23 @@ import { useEditor } from "@/store/editor";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 import { cn } from "@/lib/utils";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
-import { ArrowRight, Download, Loader2, Moon, Sun } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Database,
+  Download,
+  FileText,
+  FlaskConical,
+  ImageIcon,
+  Loader2,
+  Moon,
+  Sun,
+  Video,
+} from "lucide-react";
 import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { Translate } from "@/lib/editor/tool-registry";
 
 export interface ExportDialogProps {
@@ -30,6 +43,40 @@ export interface ExportDialogProps {
 }
 
 type Theme = FlythroughTheme;
+type ExportCategoryId =
+  "visuals" | "raceDay" | "projectData" | "motion" | "simulatorLab";
+type ExportFormatId =
+  "png" | "svg" | "render3d" | "racePack" | "json" | "webm" | "velocidrone";
+
+type ExportFormat = {
+  id: ExportFormatId;
+  category: ExportCategoryId;
+  ext: string;
+  fileExtension: string;
+  label: string;
+  color: string;
+  icon: React.ReactNode;
+  description: string;
+  busyId: string;
+  showTheme?: boolean;
+  showRouteNumbers?: boolean;
+};
+
+type ExportReadiness = {
+  status: "blocked" | "warning";
+  message: string;
+};
+
+const DEFAULT_SELECTED_FORMAT_BY_CATEGORY: Record<
+  ExportCategoryId,
+  ExportFormatId
+> = {
+  visuals: "png",
+  raceDay: "racePack",
+  projectData: "json",
+  motion: "webm",
+  simulatorLab: "velocidrone",
+};
 
 async function exportPngFile(
   ...args: Parameters<typeof import("@/lib/export/exportPng").exportPng>
@@ -53,6 +100,13 @@ async function exportVelocidroneFile(
   const { exportVelocidroneTrk } =
     await import("@/lib/export/exportVelocidroneTrk");
   return exportVelocidroneTrk(...args);
+}
+
+function formatDateStamp(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function formatDuration(seconds: number) {
@@ -86,155 +140,332 @@ function getFlythroughStatusText(
   return `${percent}% - ${formatDuration(remainingSeconds)} left`;
 }
 
-function DesktopFormatCard({
-  ext,
-  label,
-  color,
-  description,
-  busy,
-  disabled,
-  lockedAction,
-  onExport,
-}: {
-  ext: string;
-  label: string;
-  color: string;
-  description: string;
-  busy: boolean;
-  disabled?: boolean;
-  lockedAction?: { label: string; onClick: () => void };
-  onExport: () => void;
-}) {
-  const isLocked = !!lockedAction;
-  const inactive = busy || disabled;
+function sanitizeFilenameStem(
+  value: string,
+  fallback: string,
+  extension?: string
+) {
+  const extensionSuffix = extension ? `.${extension.toLowerCase()}` : "";
+  const withoutExtension =
+    extensionSuffix && value.toLowerCase().endsWith(extensionSuffix)
+      ? value.slice(0, -extensionSuffix.length)
+      : value;
+  const sanitized = (withoutExtension.trim() || fallback)
+    .replace(/[^a-z0-9-_]+/gi, "_")
+    .replace(/^_+|_+$/g, "");
 
-  return (
-    <div
-      role="button"
-      tabIndex={inactive || isLocked ? -1 : 0}
-      onClick={inactive || isLocked ? undefined : onExport}
-      onKeyDown={
-        inactive || isLocked
-          ? undefined
-          : (e) => {
-              if (e.key === "Enter" || e.key === " ") onExport();
-            }
-      }
-      className={cn(
-        "group flex w-full flex-col rounded-2xl border px-4 py-3.5 transition-all",
-        inactive
-          ? "border-border/35 cursor-not-allowed opacity-40"
-          : isLocked
-            ? "border-border/45 bg-background/10"
-            : "border-border/55 bg-background/15 hover:border-border/80 hover:bg-muted/10 cursor-pointer"
-      )}
-    >
-      <div className="mb-3 flex items-start justify-between">
-        <span
-          className={cn(
-            "rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold tracking-wide",
-            isLocked ? "opacity-40" : "",
-            color
-          )}
-        >
-          {ext}
-        </span>
-        {busy ? (
-          <Loader2 className="text-muted-foreground/60 mt-0.5 size-4 animate-spin" />
-        ) : (
-          <Download
-            className={cn(
-              "mt-0.5 size-4 transition-colors",
-              inactive || isLocked
-                ? "text-muted-foreground/20"
-                : "text-muted-foreground/30 group-hover:text-muted-foreground/60"
-            )}
-          />
-        )}
-      </div>
-      <div className={cn("space-y-1.5", isLocked && "opacity-40")}>
-        <p className="text-foreground text-sm font-semibold">{label}</p>
-        <p className="text-muted-foreground text-[11px] leading-relaxed">
-          {description}
-        </p>
-      </div>
-      {lockedAction && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            lockedAction.onClick();
-          }}
-          className="border-border/20 text-muted-foreground/60 hover:text-foreground mt-3 flex items-center gap-1.5 border-t pt-2.5 text-[11px] font-medium transition-colors"
-        >
-          <ArrowRight className="size-3 shrink-0" />
-          {lockedAction.label}
-        </button>
-      )}
-    </div>
-  );
+  return sanitized || fallback;
 }
 
-function MobileFormatRow({
-  ext,
-  label,
-  color,
-  description,
-  isBusy,
-  locked,
-  lockedLabel,
-  exportAriaLabel,
-  onAction,
+function ExportFormatChoice({
+  format,
+  selected,
+  onSelect,
 }: {
-  ext: string;
-  label: string;
-  color: string;
-  description: string;
-  isBusy: boolean;
-  locked?: boolean;
-  lockedLabel: string;
-  exportAriaLabel: string;
-  onAction: () => void;
+  format: ExportFormat;
+  selected: boolean;
+  onSelect: () => void;
 }) {
-  const inactive = isBusy;
   return (
     <button
       type="button"
-      disabled={inactive}
-      aria-busy={isBusy}
-      aria-label={locked ? lockedLabel : exportAriaLabel}
-      onClick={onAction}
+      aria-pressed={selected}
+      onClick={onSelect}
       className={cn(
-        "flex w-full items-center gap-4 px-4 py-4 text-left transition-colors",
-        inactive ? "opacity-50" : "active:bg-muted/30",
-        locked && !inactive && "opacity-70"
+        "flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl px-2 py-3 text-center transition-colors",
+        "md:min-h-14 md:flex-row md:items-center md:gap-3 md:px-3 md:py-2.5 md:text-left",
+        selected ? "bg-muted/60" : "hover:bg-muted/30"
       )}
     >
       <span
         className={cn(
-          "w-10 shrink-0 rounded-md py-0.5 text-center font-mono text-[11px] font-bold tracking-wide",
-          color
+          "flex size-8 shrink-0 items-center justify-center rounded-lg",
+          format.color
         )}
       >
-        {ext}
+        {format.icon}
       </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-foreground text-sm font-medium">{label}</p>
-        <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
-          {description}
-        </p>
-      </div>
-      {isBusy ? (
-        <Loader2 className="text-muted-foreground/60 size-4 shrink-0 animate-spin" />
-      ) : locked ? (
-        <span className="text-muted-foreground/50 flex shrink-0 items-center gap-1 text-[11px]">
-          <ArrowRight className="size-3" />
-          {lockedLabel}
+      <span className="flex max-w-full min-w-0 flex-col items-center gap-1 md:max-w-none md:flex-1 md:flex-row md:items-center md:gap-2">
+        <span className="text-foreground w-full truncate text-xs font-medium md:w-auto md:text-sm">
+          {format.label}
         </span>
-      ) : (
-        <Download className="text-muted-foreground/40 size-4 shrink-0" />
-      )}
+        <span
+          className={cn(
+            "shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wide",
+            format.color
+          )}
+        >
+          {format.ext}
+        </span>
+      </span>
     </button>
+  );
+}
+
+function ExportSettingsPanel({
+  format,
+  busy,
+  lockedAction,
+  readiness,
+  filenameStem,
+  exportTheme,
+  includeObstacleNumbers,
+  onFilenameStemChange,
+  onThemeChange,
+  onIncludeObstacleNumbersChange,
+  onExport,
+  webmProgress,
+  webmStartedAt,
+  showHeader = true,
+  t,
+}: {
+  format: ExportFormat;
+  busy: string | null;
+  lockedAction?: { label: string; onClick: () => void };
+  readiness?: ExportReadiness;
+  filenameStem: string;
+  exportTheme: Theme;
+  includeObstacleNumbers: boolean;
+  onFilenameStemChange: (value: string) => void;
+  onThemeChange: (theme: Theme) => void;
+  onIncludeObstacleNumbersChange: (value: boolean) => void;
+  onExport: () => void;
+  webmProgress: FlythroughProgress | null;
+  webmStartedAt: number | null;
+  showHeader?: boolean;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const isBusy = busy === format.busyId;
+  const actionLabel = lockedAction
+    ? lockedAction.label
+    : t("export.aria.exportFormat", { label: format.label });
+  const hasOptions = !!format.showTheme || !!format.showRouteNumbers;
+  const isBlocked = readiness?.status === "blocked" && !lockedAction;
+
+  return (
+    <div className="space-y-5">
+      {showHeader ? (
+        <div className="flex items-start gap-3">
+          <span
+            className={cn(
+              "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg",
+              format.color
+            )}
+          >
+            {format.icon}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="text-foreground block truncate text-sm font-medium">
+                {format.label}
+              </span>
+              <span
+                className={cn(
+                  "shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold tracking-wide",
+                  format.color
+                )}
+              >
+                {format.ext}
+              </span>
+            </span>
+            <span className="text-muted-foreground mt-1 block text-xs leading-relaxed">
+              {format.description}
+            </span>
+          </span>
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          {format.description}
+        </p>
+      )}
+
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor={`export-filename-${format.id}`}
+            className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none"
+          >
+            {t("export.fields.filename.label")}
+          </label>
+          <div className="border-border/60 bg-background/70 focus-within:ring-ring/40 mt-1.5 flex min-w-0 overflow-hidden rounded-lg border focus-within:ring-1">
+            <input
+              id={`export-filename-${format.id}`}
+              value={filenameStem}
+              onChange={(event) => onFilenameStemChange(event.target.value)}
+              className="text-foreground min-w-0 flex-1 bg-transparent px-3 py-2 text-sm outline-hidden"
+            />
+            <span className="border-border/50 text-muted-foreground flex shrink-0 items-center border-l px-3 font-mono text-xs">
+              .{format.fileExtension}
+            </span>
+          </div>
+        </div>
+
+        {hasOptions ? (
+          <ExportOptionsStrip
+            exportTheme={exportTheme}
+            includeObstacleNumbers={includeObstacleNumbers}
+            showTheme={format.showTheme}
+            showRouteNumbers={format.showRouteNumbers}
+            onThemeChange={onThemeChange}
+            onIncludeObstacleNumbersChange={onIncludeObstacleNumbersChange}
+            t={t}
+          />
+        ) : null}
+
+        {format.id === "webm" && webmProgress !== null && (
+          <div className="space-y-1.5">
+            <div className="text-muted-foreground flex justify-between text-[10px]">
+              <span>
+                {t("export.webm.progressLabel", {
+                  duration: formatDuration(webmProgress.videoDurationSeconds),
+                })}
+              </span>
+              <span>
+                {getFlythroughStatusText(webmProgress, webmStartedAt ?? null)}
+              </span>
+            </div>
+            <div className="bg-border/30 h-1 w-full overflow-hidden rounded-full">
+              <div
+                className="h-full rounded-full bg-violet-500 transition-all duration-100"
+                style={{ width: `${webmProgress.progress * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {readiness ? (
+          <div
+            className={cn(
+              "flex items-start gap-2 rounded-md border px-2.5 py-2 text-xs leading-snug",
+              readiness.status === "blocked"
+                ? "border-destructive/25 bg-destructive/8 text-destructive"
+                : "border-amber-500/25 bg-amber-500/8 text-amber-700 dark:text-amber-400"
+            )}
+          >
+            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+            <p>{readiness.message}</p>
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          disabled={isBusy || isBlocked}
+          aria-label={actionLabel}
+          onClick={lockedAction?.onClick ?? onExport}
+          className={cn(
+            "bg-foreground text-background hover:bg-foreground/90 flex h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors",
+            (isBusy || isBlocked) && "cursor-not-allowed opacity-65"
+          )}
+        >
+          {isBusy ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : lockedAction ? (
+            <ArrowRight className="size-4" />
+          ) : (
+            <Download className="size-4" />
+          )}
+          {actionLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+function ExportOptionsStrip({
+  exportTheme,
+  includeObstacleNumbers,
+  showTheme = false,
+  showRouteNumbers = false,
+  onThemeChange,
+  onIncludeObstacleNumbersChange,
+  t,
+}: {
+  exportTheme: Theme;
+  includeObstacleNumbers: boolean;
+  showTheme?: boolean;
+  showRouteNumbers?: boolean;
+  onThemeChange: (theme: Theme) => void;
+  onIncludeObstacleNumbersChange: (value: boolean) => void;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  if (!showTheme && !showRouteNumbers) return null;
+
+  const labelClassName =
+    "text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none";
+
+  return (
+    <div className="flex flex-wrap items-end gap-3 pt-1">
+      {showTheme ? (
+        <div className="w-32">
+          <p className={labelClassName}>{t("export.theme.label")}</p>
+          <div className="border-border/60 bg-muted/50 mt-1.5 grid grid-cols-2 gap-1 rounded-lg border p-1">
+            <button
+              type="button"
+              onClick={() => onThemeChange("dark")}
+              aria-pressed={exportTheme === "dark"}
+              className={cn(
+                "flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors",
+                exportTheme === "dark"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Moon className="size-3.5" />
+              {t("export.theme.dark")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onThemeChange("light")}
+              aria-pressed={exportTheme === "light"}
+              className={cn(
+                "flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md text-xs font-medium transition-colors",
+                exportTheme === "light"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Sun
+                className={cn(
+                  "size-3.5",
+                  exportTheme === "light" ? "text-amber-500" : ""
+                )}
+              />
+              {t("export.theme.light")}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {showRouteNumbers ? (
+        <div className="w-36">
+          <p className={labelClassName}>{t("export.routeNumbers.label")}</p>
+          <button
+            type="button"
+            onClick={() =>
+              onIncludeObstacleNumbersChange(!includeObstacleNumbers)
+            }
+            className="bg-muted/40 text-foreground hover:bg-muted/60 mt-1.5 flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2 text-xs transition-colors"
+            aria-pressed={includeObstacleNumbers}
+            aria-label={
+              includeObstacleNumbers
+                ? t("export.routeNumbers.disable")
+                : t("export.routeNumbers.enable")
+            }
+          >
+            <span className="truncate">{t("export.routeNumbers.hint")}</span>
+            <span
+              className={cn(
+                "flex h-5 w-8 shrink-0 items-center rounded-full p-0.5 transition-colors",
+                includeObstacleNumbers
+                  ? "bg-foreground/90 justify-end"
+                  : "bg-border/80 justify-start"
+              )}
+            >
+              <span className="bg-background block size-4 rounded-full shadow-xs" />
+            </span>
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -253,33 +484,37 @@ export default function ExportDialog({
     "setupEstimate"
   ) as unknown as Translate;
   const tShapes = useTranslations("shapes") as unknown as Translate;
-  const locale = useLocale();
   const design = useEditor((s) => s.track.design);
   const { unitSystem } = useMeasurementUnitSystem();
   const currentTheme = useTheme();
-  const isMobile = useIsMobile();
   const [busy, setBusy] = useState<string | null>(null);
   const [webmProgress, setWebmProgress] = useState<FlythroughProgress | null>(
     null
   );
-  const webmStartTimeRef = useRef<number | null>(null);
   const webmToastIdRef = useRef<string | number | null>(null);
+  const [webmStartedAt, setWebmStartedAt] = useState<number | null>(null);
   const [exportTheme, setExportTheme] = useState<Theme>("dark");
   const [includeObstacleNumbers, setIncludeObstacleNumbers] = useState(true);
-  const [filename, setFilename] = useState("");
+  const [canvasReady, setCanvasReady] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setExportTheme(currentTheme);
   }, [currentTheme]);
 
-  const baseName = (filename.trim() || design.title.trim() || "track").replace(
-    /[^a-z0-9-_]+/gi,
-    "_"
-  );
-  const safeName = ({ theme, view }: { theme?: Theme; view: "2d" | "3d" }) => {
-    return [baseName, view, theme].filter(Boolean).join("_");
-  };
+  useEffect(() => {
+    if (!open) return;
+
+    const sampleCanvasReady = () => {
+      setCanvasReady(Boolean(canvasRef.current?.getStage()));
+    };
+
+    sampleCanvasReady();
+    const intervalId = window.setInterval(sampleCanvasReady, 100);
+    return () => window.clearInterval(intervalId);
+  }, [canvasRef, open]);
+
+  const baseName = sanitizeFilenameStem(design.title, "track");
 
   const getRacePackShareUrl = async () => {
     if (!projectId) return null;
@@ -359,671 +594,406 @@ export default function ExportDialog({
     }
   };
 
-  const desktopContent = (
-    <div className="space-y-6">
-      {/* Settings bar — unified card */}
-      <div className="border-border/35 bg-background/50 divide-border/30 flex min-w-0 items-stretch divide-x overflow-hidden rounded-xl border">
-        {/* Filename */}
-        <label className="flex min-w-0 flex-1 cursor-text flex-col gap-1.5 px-4 py-3">
-          <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-            {t("export.fields.filename.label")}
-          </span>
-          <input
-            type="text"
-            placeholder={design.title.trim() || "track"}
-            value={filename}
-            onChange={(e) => setFilename(e.target.value)}
-            className="text-foreground placeholder:text-muted-foreground/30 w-full min-w-0 bg-transparent text-sm outline-hidden"
-          />
-        </label>
+  const [activeCategory, setActiveCategory] =
+    useState<ExportCategoryId>("visuals");
+  const [selectedFormatByCategory, setSelectedFormatByCategory] = useState<
+    Record<ExportCategoryId, ExportFormatId>
+  >(DEFAULT_SELECTED_FORMAT_BY_CATEGORY);
+  const [filenameByFormat, setFilenameByFormat] = useState<
+    Partial<Record<ExportFormatId, string>>
+  >({});
 
-        {/* Theme */}
-        <div className="flex shrink-0 flex-col gap-1.5 px-4 py-3">
-          <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-            {t("export.theme.label")}
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setExportTheme("dark")}
-              aria-pressed={exportTheme === "dark"}
-              className={cn(
-                "flex items-center gap-1.5 text-[11px] font-medium transition-colors",
-                exportTheme === "dark"
-                  ? "text-foreground"
-                  : "text-muted-foreground/40 hover:text-muted-foreground/65"
-              )}
-            >
-              <Moon className="size-3.5 shrink-0" />
-              {t("export.theme.dark")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setExportTheme("light")}
-              aria-pressed={exportTheme === "light"}
-              className={cn(
-                "flex items-center gap-1.5 text-[11px] font-medium transition-colors",
-                exportTheme === "light"
-                  ? "text-foreground"
-                  : "text-muted-foreground/40 hover:text-muted-foreground/65"
-              )}
-            >
-              <Sun
-                className={cn(
-                  "size-3.5 shrink-0",
-                  exportTheme === "light" ? "text-amber-500" : ""
-                )}
-              />
-              {t("export.theme.light")}
-            </button>
-          </div>
-        </div>
+  const exportFormats: ExportFormat[] = [
+    {
+      id: "png",
+      category: "visuals",
+      ext: "PNG",
+      fileExtension: "png",
+      label: t("export.formats.image.label"),
+      color: "bg-sky-500/15 text-sky-400",
+      icon: <ImageIcon className="size-4" />,
+      description: t("export.formats.image.descriptionFull"),
+      busyId: "png",
+      showTheme: true,
+      showRouteNumbers: true,
+    },
+    {
+      id: "svg",
+      category: "visuals",
+      ext: "SVG",
+      fileExtension: "svg",
+      label: t("export.formats.vector.label"),
+      color: "bg-purple-500/15 text-purple-400",
+      icon: <FileText className="size-4" />,
+      description: t("export.formats.vector.descriptionFull"),
+      busyId: "svg",
+      showTheme: true,
+      showRouteNumbers: true,
+    },
+    {
+      id: "render3d",
+      category: "visuals",
+      ext: "PNG",
+      fileExtension: "png",
+      label: t("export.formats.render3d.label"),
+      color: "bg-orange-500/15 text-orange-400",
+      icon: <ImageIcon className="size-4" />,
+      description: t("export.formats.render3d.descriptionFull"),
+      busyId: "3d",
+    },
+    {
+      id: "racePack",
+      category: "raceDay",
+      ext: "PDF",
+      fileExtension: "pdf",
+      label: t("export.formats.racePack.label"),
+      color: "bg-red-500/15 text-red-400",
+      icon: <FileText className="size-4" />,
+      description: t("export.formats.racePack.descriptionFull"),
+      busyId: "race-day-pdf",
+      showTheme: true,
+      showRouteNumbers: true,
+    },
+    {
+      id: "json",
+      category: "projectData",
+      ext: "JSON",
+      fileExtension: "json",
+      label: t("export.formats.projectFile.label"),
+      color: "bg-emerald-500/15 text-emerald-400",
+      icon: <Database className="size-4" />,
+      description: t("export.formats.projectFile.descriptionFull"),
+      busyId: "json",
+    },
+    {
+      id: "webm",
+      category: "motion",
+      ext: "WebM",
+      fileExtension: "webm",
+      label: t("export.formats.cinematicFpv.label"),
+      color: "bg-violet-500/15 text-violet-400",
+      icon: <Video className="size-4" />,
+      description: t("export.formats.cinematicFpv.descriptionFull"),
+      busyId: "webm",
+      showTheme: true,
+    },
+    {
+      id: "velocidrone",
+      category: "simulatorLab",
+      ext: "TRK",
+      fileExtension: "trk",
+      label: t("export.formats.velocidrone.label"),
+      color: "bg-lime-500/15 text-lime-400",
+      icon: <FlaskConical className="size-4" />,
+      description: t("export.formats.velocidrone.descriptionFull"),
+      busyId: "trk",
+    },
+  ];
 
-        {/* Route numbers */}
-        <div className="flex shrink-0 items-center gap-3 px-4 py-3">
-          <div className="flex flex-col gap-1.5">
-            <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase select-none">
-              {t("export.routeNumbers.label")}
-            </span>
-            <span className="text-muted-foreground/45 text-[10px]">
-              {t("export.routeNumbers.hint")}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIncludeObstacleNumbers((v) => !v)}
-            className={cn(
-              "relative h-5 w-8 shrink-0 rounded-full p-0.5 transition-colors",
-              includeObstacleNumbers ? "bg-foreground/80" : "bg-border/70"
-            )}
-            aria-pressed={includeObstacleNumbers}
-            aria-label={
-              includeObstacleNumbers
-                ? t("export.routeNumbers.disable")
-                : t("export.routeNumbers.enable")
-            }
-          >
-            <span className="bg-background block size-4 rounded-full shadow-xs" />
-          </button>
-        </div>
-      </div>
+  const dateStamp = formatDateStamp(new Date());
 
-      {/* Visual exports */}
-      <div>
-        <div className="mb-1.5 flex items-center gap-3">
-          <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
-            {t("export.sections.visualExports.title")}
-          </span>
-          <div className="bg-border/30 h-px flex-1" />
-        </div>
-        <p className="text-muted-foreground mb-4 text-[11px]">
-          {t("export.sections.visualExports.description")}
-        </p>
-        <div className="grid grid-cols-3 gap-3">
-          <DesktopFormatCard
-            ext="PNG"
-            label={t("export.formats.image.label")}
-            color="bg-sky-500/15 text-sky-400"
-            description={t("export.formats.image.descriptionFull")}
-            busy={busy === "png"}
-            onExport={() =>
-              run("png", () =>
-                exportPngFile(
-                  design,
-                  `${safeName({ view: "2d", theme: exportTheme })}.png`,
-                  exportTheme,
-                  3,
-                  { includeObstacleNumbers, unitSystem }
-                )
-              )
-            }
-          />
-          <DesktopFormatCard
-            ext="SVG"
-            label={t("export.formats.vector.label")}
-            color="bg-purple-500/15 text-purple-400"
-            description={t("export.formats.vector.descriptionFull")}
-            busy={busy === "svg"}
-            onExport={() =>
-              run("svg", () =>
-                exportSvgFile(
-                  design,
-                  `${safeName({ view: "2d", theme: exportTheme })}.svg`,
-                  exportTheme,
-                  { includeObstacleNumbers, unitSystem }
-                )
-              )
-            }
-          />
-          <DesktopFormatCard
-            ext="PNG"
-            label={t("export.formats.render3d.label")}
-            color="bg-orange-500/15 text-orange-400"
-            description={t("export.formats.render3d.descriptionFull")}
-            busy={busy === "3d"}
-            lockedAction={
-              activeTab !== "3d" && onRequest3DView
-                ? {
-                    label: t("export.actions.switchTo3dView"),
-                    onClick: onRequest3DView,
-                  }
-                : undefined
-            }
-            onExport={() =>
-              run("3d", () => {
-                const dataUrl = preview3DRef?.current?.screenshot();
-                if (!dataUrl)
-                  throw new Error(t("export.messages.view3dUnavailable"));
-                const a = document.createElement("a");
-                a.href = dataUrl;
-                a.download = `${safeName({
-                  view: "3d",
-                  theme: currentTheme,
-                })}.png`;
-                a.click();
-              })
-            }
-          />
-        </div>
-      </div>
+  const defaultFilenameStem = (formatId: ExportFormatId) => {
+    switch (formatId) {
+      case "png":
+      case "svg":
+        return [baseName, "2d", exportTheme, dateStamp].join("_");
+      case "render3d":
+        return [baseName, "3d", currentTheme, dateStamp].join("_");
+      case "racePack":
+        return [baseName, "race_pack", exportTheme, dateStamp].join("_");
+      case "json":
+      case "velocidrone":
+        return [baseName, dateStamp].join("_");
+      case "webm":
+        return [baseName, "flythrough", exportTheme, dateStamp].join("_");
+    }
+  };
 
-      {/* Project & handoff */}
-      <div>
-        <div className="mb-1.5 flex items-center gap-3">
-          <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
-            {t("export.sections.projectHandoff.title")}
-          </span>
-          <div className="bg-border/30 h-px flex-1" />
-        </div>
-        <p className="text-muted-foreground mb-4 text-[11px]">
-          {t("export.sections.projectHandoff.description")}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <DesktopFormatCard
-            ext="JSON"
-            label={t("export.formats.projectFile.label")}
-            color="bg-emerald-500/15 text-emerald-400"
-            description={t("export.formats.projectFile.descriptionFull")}
-            busy={busy === "json"}
-            onExport={() =>
-              run("json", () => {
-                const serialized = serializeDesign(design);
-                downloadJsonFile(`${baseName}.json`, serialized);
-              })
-            }
-          />
-          <DesktopFormatCard
-            ext="PDF"
-            label={t("export.formats.racePack.label")}
-            color="bg-red-500/15 text-red-400"
-            description={t("export.formats.racePack.descriptionFull")}
-            busy={busy === "race-day-pdf"}
-            onExport={() =>
-              run("race-day-pdf", async () => {
-                const stage = canvasRef.current?.getStage();
-                if (!stage)
-                  throw new Error(t("export.messages.canvasNotReady"));
-                const { exportPdf } = await import("@/lib/export/exportPdf");
-                const shareUrl = await getRacePackShareUrl();
-                await exportPdf(
-                  stage,
-                  design,
-                  `${baseName}_race_pack.pdf`,
-                  exportTheme,
-                  { t: tExportPdf, tSetup: tSetupEstimate, tShapes },
-                  {
-                    includeObstacleNumbers,
-                    locale,
-                    preset: "race-day",
-                    shareUrl,
-                    titleFallback: tExportPdf("untitledTrack"),
-                    unitSystem,
-                  }
-                );
-              })
-            }
-          />
-        </div>
-      </div>
-
-      {/* Simulator & motion */}
-      <div>
-        <div className="mb-1.5 flex items-center gap-3">
-          <span className="text-muted-foreground/70 shrink-0 text-[10px] font-semibold tracking-[0.15em] uppercase">
-            {t("export.sections.simulatorMotion.title")}
-          </span>
-          <div className="bg-border/30 h-px flex-1" />
-        </div>
-        <p className="text-muted-foreground mb-4 text-[11px]">
-          {t("export.sections.simulatorMotion.description")}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <DesktopFormatCard
-            ext="WebM"
-            label={t("export.formats.cinematicFpv.label")}
-            color="bg-violet-500/15 text-violet-400"
-            description={t("export.formats.cinematicFpv.descriptionFull")}
-            busy={busy === "webm"}
-            onExport={() =>
-              run(
-                "webm",
-                async () => {
-                  const toastId =
-                    webmToastIdRef.current ?? "webm-flythrough-export";
-                  webmToastIdRef.current = toastId;
-                  setWebmProgress(null);
-                  webmStartTimeRef.current = Date.now();
-                  toast.loading(t("export.webm.renderingBackground"), {
-                    id: toastId,
-                  });
-                  const { exportFlythrough } =
-                    await import("@/lib/export/exportFlythrough");
-                  try {
-                    await exportFlythrough(
-                      design,
-                      `${baseName}_flythrough.webm`,
-                      exportTheme,
-                      (progress) => {
-                        setWebmProgress(progress);
-                        toast.loading(
-                          t("export.webm.renderingProgress", {
-                            status: getFlythroughStatusText(
-                              progress,
-                              webmStartTimeRef.current
-                            ),
-                          }),
-                          { id: toastId }
-                        );
-                      }
-                    );
-                  } finally {
-                    setWebmProgress(null);
-                    webmStartTimeRef.current = null;
-                    webmToastIdRef.current = null;
-                  }
-                },
-                {
-                  closeOnStart: true,
-                  successMessage: t("export.webm.ready"),
-                  toastId: "webm-flythrough-export",
-                }
-              )
-            }
-          />
-          <DesktopFormatCard
-            ext="TRK"
-            label={t("export.formats.velocidrone.label")}
-            color="bg-lime-500/15 text-lime-400"
-            description={t("export.formats.velocidrone.descriptionFull")}
-            busy={busy === "trk"}
-            onExport={() =>
-              run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))
-            }
-          />
-        </div>
-        {webmProgress !== null && (
-          <div className="mt-3 space-y-1.5">
-            <div className="text-muted-foreground flex justify-between text-[10px]">
-              <span>
-                {t("export.webm.progressLabel", {
-                  duration: formatDuration(webmProgress.videoDurationSeconds),
-                })}
-              </span>
-              <span>
-                {getFlythroughStatusText(
-                  webmProgress,
-                  // eslint-disable-next-line react-hooks/refs
-                  webmStartTimeRef.current
-                )}
-              </span>
-            </div>
-            <div className="bg-border/30 h-1 w-full overflow-hidden rounded-full">
-              <div
-                className="h-full rounded-full bg-violet-500 transition-all duration-100"
-                style={{ width: `${webmProgress.progress * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const mobileList = (
-    <div className="space-y-5 pb-2">
-      <div>
-        <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          {t("export.sections.visualExports.title")}
-        </h3>
-        <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
-          <MobileFormatRow
-            key="png"
-            ext="PNG"
-            label={t("export.formats.image.label")}
-            color="bg-sky-500/15 text-sky-400"
-            description={t("export.formats.image.descriptionShort")}
-            isBusy={busy === "png"}
-            lockedLabel={t("export.actions.openRequiredView")}
-            exportAriaLabel={t("export.aria.exportFormat", {
-              label: t("export.formats.image.label"),
-            })}
-            onAction={() =>
-              run("png", () =>
-                exportPngFile(
-                  design,
-                  `${safeName({ view: "2d", theme: exportTheme })}.png`,
-                  exportTheme,
-                  3,
-                  { includeObstacleNumbers, unitSystem }
-                )
-              )
-            }
-          />
-          <MobileFormatRow
-            key="svg"
-            ext="SVG"
-            label={t("export.formats.vector.label")}
-            color="bg-purple-500/15 text-purple-400"
-            description={t("export.formats.vector.descriptionShort")}
-            isBusy={busy === "svg"}
-            lockedLabel={t("export.actions.openRequiredView")}
-            exportAriaLabel={t("export.aria.exportFormat", {
-              label: t("export.formats.vector.label"),
-            })}
-            onAction={() =>
-              run("svg", () =>
-                exportSvgFile(
-                  design,
-                  `${safeName({ view: "2d", theme: exportTheme })}.svg`,
-                  exportTheme,
-                  {
-                    includeObstacleNumbers,
-                    locale,
-                    titleFallback: tExportPdf("untitledTrack"),
-                    unitSystem,
-                  }
-                )
-              )
-            }
-          />
-          <MobileFormatRow
-            key="3d"
-            ext="PNG"
-            label={t("export.formats.render3d.label")}
-            color="bg-orange-500/15 text-orange-400"
-            description={t("export.formats.render3d.descriptionShort")}
-            isBusy={busy === "3d"}
-            locked={activeTab !== "3d"}
-            lockedLabel={t("export.actions.switchTo3dView")}
-            exportAriaLabel={t("export.aria.exportFormat", {
-              label: t("export.formats.render3d.label"),
-            })}
-            onAction={
-              activeTab !== "3d" && onRequest3DView
-                ? onRequest3DView
-                : () =>
-                    run("3d", () => {
-                      const dataUrl = preview3DRef?.current?.screenshot();
-                      if (!dataUrl)
-                        throw new Error(t("export.messages.view3dUnavailable"));
-                      const a = document.createElement("a");
-                      a.href = dataUrl;
-                      a.download = `${safeName({ view: "3d", theme: currentTheme })}.png`;
-                      a.click();
-                    })
-            }
-          />
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          {t("export.sections.projectHandoff.title")}
-        </h3>
-        <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
-          <MobileFormatRow
-            key="json"
-            ext="JSON"
-            label={t("export.formats.projectFile.label")}
-            color="bg-emerald-500/15 text-emerald-400"
-            description={t("export.formats.projectFile.descriptionShort")}
-            isBusy={busy === "json"}
-            lockedLabel={t("export.actions.openRequiredView")}
-            exportAriaLabel={t("export.aria.exportFormat", {
-              label: t("export.formats.projectFile.label"),
-            })}
-            onAction={() =>
-              run("json", () => {
-                const serialized = serializeDesign(design);
-                downloadJsonFile(`${baseName}.json`, serialized);
-              })
-            }
-          />
-          <MobileFormatRow
-            key="race-day-pdf"
-            ext="PDF"
-            label={t("export.formats.racePack.label")}
-            color="bg-red-500/15 text-red-400"
-            description={t("export.formats.racePack.descriptionShort")}
-            isBusy={busy === "race-day-pdf"}
-            lockedLabel={t("export.actions.openRequiredView")}
-            exportAriaLabel={t("export.aria.exportFormat", {
-              label: t("export.formats.racePack.label"),
-            })}
-            onAction={() =>
-              run("race-day-pdf", async () => {
-                const stage = canvasRef.current?.getStage();
-                if (!stage)
-                  throw new Error(t("export.messages.canvasNotReady"));
-                const { exportPdf } = await import("@/lib/export/exportPdf");
-                const shareUrl = await getRacePackShareUrl();
-                await exportPdf(
-                  stage,
-                  design,
-                  `${baseName}_race_pack.pdf`,
-                  exportTheme,
-                  { t: tExportPdf, tSetup: tSetupEstimate, tShapes },
-                  {
-                    includeObstacleNumbers,
-                    locale,
-                    preset: "race-day",
-                    shareUrl,
-                    titleFallback: tExportPdf("untitledTrack"),
-                    unitSystem,
-                  }
-                );
-              })
-            }
-          />
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-muted-foreground mb-2 px-1 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          {t("export.sections.simulatorMotion.title")}
-        </h3>
-        <div className="border-border/35 divide-border/25 divide-y overflow-hidden rounded-xl border">
-          <MobileFormatRow
-            key="webm"
-            ext="WebM"
-            label={t("export.formats.cinematicFpv.label")}
-            color="bg-violet-500/15 text-violet-400"
-            description={t("export.formats.cinematicFpv.descriptionShort")}
-            isBusy={busy === "webm"}
-            lockedLabel={t("export.actions.openRequiredView")}
-            exportAriaLabel={t("export.aria.exportFormat", {
-              label: t("export.formats.cinematicFpv.label"),
-            })}
-            onAction={() =>
-              run(
-                "webm",
-                async () => {
-                  const toastId =
-                    webmToastIdRef.current ?? "webm-flythrough-export";
-                  webmToastIdRef.current = toastId;
-                  setWebmProgress(null);
-                  webmStartTimeRef.current = Date.now();
-                  toast.loading(t("export.webm.renderingBackground"), {
-                    id: toastId,
-                  });
-                  const { exportFlythrough } =
-                    await import("@/lib/export/exportFlythrough");
-                  try {
-                    await exportFlythrough(
-                      design,
-                      `${baseName}_flythrough.webm`,
-                      exportTheme,
-                      (progress) => {
-                        setWebmProgress(progress);
-                        toast.loading(
-                          t("export.webm.renderingProgress", {
-                            status: getFlythroughStatusText(
-                              progress,
-                              webmStartTimeRef.current
-                            ),
-                          }),
-                          { id: toastId }
-                        );
-                      }
-                    );
-                  } finally {
-                    setWebmProgress(null);
-                    webmStartTimeRef.current = null;
-                    webmToastIdRef.current = null;
-                  }
-                },
-                {
-                  closeOnStart: true,
-                  successMessage: t("export.webm.ready"),
-                  toastId: "webm-flythrough-export",
-                }
-              )
-            }
-          />
-          <MobileFormatRow
-            key="trk"
-            ext="TRK"
-            label={t("export.formats.velocidrone.label")}
-            color="bg-lime-500/15 text-lime-400"
-            description={t("export.formats.velocidrone.descriptionShort")}
-            isBusy={busy === "trk"}
-            lockedLabel={t("export.actions.openRequiredView")}
-            exportAriaLabel={t("export.aria.exportFormat", {
-              label: t("export.formats.velocidrone.label"),
-            })}
-            onAction={() =>
-              run("trk", () => exportVelocidroneFile(design, `${baseName}.trk`))
-            }
-          />
-        </div>
-      </div>
-    </div>
-  );
-
-  if (isMobile) {
-    return (
-      <MobileDrawer
-        open={open}
-        onOpenChange={onOpenChange}
-        title={t("export.dialog.title")}
-        subtitle={t("export.dialog.subtitle")}
-        contentClassName="data-[vaul-drawer-direction=bottom]:mt-12 data-[vaul-drawer-direction=bottom]:max-h-[90dvh]"
-        pinnedContent={
-          <div className="border-border/40 space-y-2.5 border-b px-4 pt-2 pb-3">
-            {/* Filename */}
-            <label className="border-border/50 bg-muted/25 flex cursor-text items-center gap-2.5 rounded-xl border px-3.5 py-2.5">
-              <span className="text-muted-foreground shrink-0 text-[11px] font-medium select-none">
-                {t("export.fields.filename.label")}
-              </span>
-              <input
-                type="text"
-                placeholder={design.title.trim() || "track"}
-                value={filename}
-                onChange={(e) => setFilename(e.target.value)}
-                className="text-foreground placeholder:text-muted-foreground/45 min-w-0 flex-1 bg-transparent text-sm outline-hidden"
-              />
-            </label>
-            {/* Theme + Numbers */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setExportTheme("dark")}
-                  aria-pressed={exportTheme === "dark"}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors",
-                    exportTheme === "dark"
-                      ? "border-border/60 bg-muted/35 text-foreground"
-                      : "text-muted-foreground/60 hover:text-muted-foreground/80 border-transparent"
-                  )}
-                >
-                  <Moon className="size-3.5 shrink-0" />
-                  {t("export.theme.dark")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setExportTheme("light")}
-                  aria-pressed={exportTheme === "light"}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors",
-                    exportTheme === "light"
-                      ? "border-border/60 bg-muted/35 text-foreground"
-                      : "text-muted-foreground/60 hover:text-muted-foreground/80 border-transparent"
-                  )}
-                >
-                  <Sun
-                    className={cn(
-                      "size-3.5 shrink-0",
-                      exportTheme === "light" ? "text-amber-500" : ""
-                    )}
-                  />
-                  {t("export.theme.light")}
-                </button>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-muted-foreground text-[11px] font-medium select-none">
-                  {t("export.routeNumbers.label")}
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setIncludeObstacleNumbers((current) => !current)
-                  }
-                  className={cn(
-                    "flex h-6 w-10 shrink-0 items-center rounded-full p-0.5 transition-colors",
-                    includeObstacleNumbers
-                      ? "bg-foreground/90 justify-end"
-                      : "bg-border/80 justify-start"
-                  )}
-                  aria-pressed={includeObstacleNumbers}
-                  aria-label={
-                    includeObstacleNumbers
-                      ? t("export.routeNumbers.disableMobile")
-                      : t("export.routeNumbers.enableMobile")
-                  }
-                >
-                  <span className="bg-background block size-5 rounded-full shadow-xs" />
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-      >
-        {mobileList}
-      </MobileDrawer>
+  const filenameStemFor = (format: ExportFormat) =>
+    sanitizeFilenameStem(
+      filenameByFormat[format.id] ?? defaultFilenameStem(format.id),
+      defaultFilenameStem(format.id),
+      format.fileExtension
     );
+
+  const filenameFor = (format: ExportFormat) =>
+    `${filenameStemFor(format)}.${format.fileExtension}`;
+
+  const hasFlythroughRoute = design.shapeOrder.some((shapeId) => {
+    const shape = design.shapeById[shapeId];
+    return shape?.kind === "polyline" && shape.points.length >= 2;
+  });
+  const hasTrackContent = design.shapeOrder.some((shapeId) =>
+    Boolean(design.shapeById[shapeId])
+  );
+
+  const handleExport = (formatId: ExportFormatId) => {
+    const format = exportFormats.find((item) => item.id === formatId);
+    if (!format) return;
+
+    switch (formatId) {
+      case "png":
+        return run("png", () =>
+          exportPngFile(design, filenameFor(format), exportTheme, 3, {
+            includeObstacleNumbers,
+            unitSystem,
+          })
+        );
+      case "svg":
+        return run("svg", () =>
+          exportSvgFile(design, filenameFor(format), exportTheme, {
+            includeObstacleNumbers,
+            unitSystem,
+          })
+        );
+      case "render3d":
+        return run("3d", () => {
+          const dataUrl = preview3DRef?.current?.screenshot();
+          if (!dataUrl) throw new Error(t("export.messages.view3dUnavailable"));
+          const a = document.createElement("a");
+          a.href = dataUrl;
+          a.download = filenameFor(format);
+          a.click();
+        });
+      case "racePack":
+        return run("race-day-pdf", async () => {
+          const stage = canvasRef.current?.getStage();
+          if (!stage) throw new Error(t("export.messages.canvasNotReady"));
+          const { exportPdf } = await import("@/lib/export/exportPdf");
+          const shareUrl = await getRacePackShareUrl();
+          await exportPdf(
+            stage,
+            design,
+            filenameFor(format),
+            exportTheme,
+            { t: tExportPdf, tSetup: tSetupEstimate, tShapes },
+            {
+              includeObstacleNumbers,
+              preset: "race-day",
+              shareUrl,
+              unitSystem,
+            }
+          );
+        });
+      case "json":
+        return run("json", () => {
+          const serialized = serializeDesign(design);
+          downloadJsonFile(filenameFor(format), serialized);
+        });
+      case "webm":
+        return run(
+          "webm",
+          async () => {
+            const toastId = webmToastIdRef.current ?? "webm-flythrough-export";
+            const startedAt = Date.now();
+            webmToastIdRef.current = toastId;
+            setWebmProgress(null);
+            setWebmStartedAt(startedAt);
+            toast.loading(t("export.webm.renderingBackground"), {
+              id: toastId,
+            });
+            const { exportFlythrough } =
+              await import("@/lib/export/exportFlythrough");
+            try {
+              await exportFlythrough(
+                design,
+                filenameFor(format),
+                exportTheme,
+                (progress) => {
+                  setWebmProgress(progress);
+                  toast.loading(
+                    t("export.webm.renderingProgress", {
+                      status: getFlythroughStatusText(progress, startedAt),
+                    }),
+                    { id: toastId }
+                  );
+                }
+              );
+            } finally {
+              setWebmProgress(null);
+              setWebmStartedAt(null);
+              webmToastIdRef.current = null;
+            }
+          },
+          {
+            closeOnStart: true,
+            successMessage: t("export.webm.ready"),
+            toastId: "webm-flythrough-export",
+          }
+        );
+      case "velocidrone":
+        return run("trk", () =>
+          exportVelocidroneFile(design, filenameFor(format))
+        );
+    }
+  };
+
+  const categoryMeta: Record<
+    ExportCategoryId,
+    { title: string; icon: React.ReactNode }
+  > = {
+    visuals: {
+      title: t("export.categories.visuals.title"),
+      icon: <ImageIcon className="size-4" />,
+    },
+    raceDay: {
+      title: t("export.categories.raceDay.title"),
+      icon: <FileText className="size-4" />,
+    },
+    projectData: {
+      title: t("export.categories.projectData.title"),
+      icon: <Database className="size-4" />,
+    },
+    motion: {
+      title: t("export.categories.motion.title"),
+      icon: <Video className="size-4" />,
+    },
+    simulatorLab: {
+      title: t("export.categories.simulatorLab.title"),
+      icon: <FlaskConical className="size-4" />,
+    },
+  };
+
+  const navItems: SidebarDialogNavItem[] = (
+    ["visuals", "raceDay", "projectData", "motion", "simulatorLab"] as const
+  ).map((id) => ({
+    id,
+    label: categoryMeta[id].title,
+    icon: categoryMeta[id].icon,
+  }));
+
+  const activeFormats = exportFormats.filter(
+    (format) => format.category === activeCategory
+  );
+
+  const selectedFormat =
+    exportFormats.find(
+      (format) => format.id === selectedFormatByCategory[activeCategory]
+    ) ??
+    activeFormats[0] ??
+    exportFormats[0];
+  const selectedLockedAction =
+    selectedFormat?.id === "render3d" && activeTab !== "3d" && onRequest3DView
+      ? {
+          label: t("export.actions.switchTo3dView"),
+          onClick: onRequest3DView,
+        }
+      : undefined;
+
+  function getExportReadiness(
+    format: ExportFormat
+  ): ExportReadiness | undefined {
+    switch (format.id) {
+      case "render3d":
+        if (activeTab === "3d") return undefined;
+        return {
+          status: "blocked",
+          message: t("export.readiness.open3d"),
+        };
+      case "racePack":
+        if (!hasTrackContent) {
+          return {
+            status: "blocked",
+            message: t("export.readiness.emptyRacePack"),
+          };
+        }
+        if (!canvasReady) {
+          return {
+            status: "blocked",
+            message: t("export.readiness.canvasNotReady"),
+          };
+        }
+        return undefined;
+      case "webm":
+        if (hasFlythroughRoute) return undefined;
+        return {
+          status: "blocked",
+          message: t("export.readiness.missingRaceLine"),
+        };
+      case "velocidrone":
+        if (!hasTrackContent) {
+          return {
+            status: "blocked",
+            message: t("export.readiness.emptyVelocidrone"),
+          };
+        }
+        return {
+          status: "warning",
+          message: t("export.readiness.experimentalSimulator"),
+        };
+      default:
+        return undefined;
+    }
   }
 
+  const selectedReadiness = getExportReadiness(selectedFormat);
+
+  const hasMultipleFormats = activeFormats.length > 1;
+
+  const activeContent = (
+    <div className="space-y-5">
+      {hasMultipleFormats ? (
+        <div className="grid gap-1 sm:grid-cols-3">
+          {activeFormats.map((format) => (
+            <ExportFormatChoice
+              key={format.id}
+              format={format}
+              selected={selectedFormat.id === format.id}
+              onSelect={() =>
+                setSelectedFormatByCategory((current) => ({
+                  ...current,
+                  [activeCategory]: format.id,
+                }))
+              }
+            />
+          ))}
+        </div>
+      ) : null}
+
+      <div
+        className={cn(hasMultipleFormats && "border-border/40 border-t pt-5")}
+      >
+        <ExportSettingsPanel
+          format={selectedFormat}
+          showHeader={!hasMultipleFormats}
+          busy={busy}
+          lockedAction={selectedLockedAction}
+          readiness={selectedReadiness}
+          filenameStem={
+            filenameByFormat[selectedFormat.id] ??
+            defaultFilenameStem(selectedFormat.id)
+          }
+          exportTheme={exportTheme}
+          includeObstacleNumbers={includeObstacleNumbers}
+          onFilenameStemChange={(value) =>
+            setFilenameByFormat((current) => ({
+              ...current,
+              [selectedFormat.id]: value,
+            }))
+          }
+          onThemeChange={setExportTheme}
+          onIncludeObstacleNumbersChange={setIncludeObstacleNumbers}
+          onExport={() => handleExport(selectedFormat.id)}
+          webmProgress={selectedFormat.id === "webm" ? webmProgress : null}
+          webmStartedAt={selectedFormat.id === "webm" ? webmStartedAt : null}
+          t={t}
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <DesktopModal
+    <SidebarDialog
       open={open}
       onOpenChange={onOpenChange}
       title={t("export.dialog.title")}
       subtitle={t("export.dialog.subtitle")}
-      maxWidth="max-w-2xl"
-      panelClassName="px-7 py-7"
+      mobileSubtitle={t("export.dialog.subtitle")}
+      navItems={navItems}
+      activeItem={activeCategory}
+      onItemChange={(id) => setActiveCategory(id as ExportCategoryId)}
     >
-      {desktopContent}
-    </DesktopModal>
+      {activeContent}
+    </SidebarDialog>
   );
 }

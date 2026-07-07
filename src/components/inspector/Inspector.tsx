@@ -1,6 +1,13 @@
 "use client";
 
-import { memo, useCallback, useEffect, useState, type ReactNode } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { motion } from "framer-motion";
 import {
   MultiInspectorView,
@@ -61,6 +68,8 @@ function Inspector({
     setMapReferenceVisibility,
     setMapReferenceOpacity,
     setMapReferenceRotation,
+    addShape,
+    reorderShapes,
   } = useTrackActions();
   const { setSelection } = useSessionActions();
   const { setHoveredShapeId, setHoveredWaypoint } = useUiActions();
@@ -75,6 +84,7 @@ function Inspector({
   const [panelOverride, setPanelOverride] = useState<
     "project" | "layout" | "selection" | null
   >(null);
+  const hasObservedSelectionRef = useRef(false);
   const [saveAsPresetOpen, setSaveAsPresetOpen] = useState(false);
   const { addUserPreset, canSavePresets } = useAccountPresetSync();
   const { pending: savePresetPending, reset: resetSavePresetTrigger } =
@@ -87,6 +97,28 @@ function Inspector({
       resetSavePresetTrigger();
     }
   }, [savePresetPending, canSavePresets, resetSavePresetTrigger]);
+
+  useEffect(() => {
+    if (!hasObservedSelectionRef.current) {
+      hasObservedSelectionRef.current = true;
+      return;
+    }
+
+    if (selection.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPanelOverride("selection");
+    }
+  }, [selection]);
+
+  const selectAndOpenSelectionPanel = useCallback(
+    (ids: string[]) => {
+      setSelection(ids);
+      if (ids.length > 0) {
+        setPanelOverride("selection");
+      }
+    },
+    [setSelection]
+  );
 
   const handleSaveAsPreset = useCallback(
     (name: string) => {
@@ -130,7 +162,7 @@ function Inspector({
         joinPolylines={joinPolylines}
         removeShapes={removeShapes}
         setGroupName={setGroupName}
-        setSelection={setSelection}
+        setSelection={selectAndOpenSelectionPanel}
         ungroupSelection={ungroupSelection}
         updateShapesCatalogType={updateShapesCatalogType}
         onSaveAsPreset={
@@ -161,7 +193,7 @@ function Inspector({
         duplicateShapes={duplicateShapes}
         removeShapes={removeShapes}
         setGroupName={setGroupName}
-        setSelection={setSelection}
+        setSelection={selectAndOpenSelectionPanel}
         ungroupSelection={ungroupSelection}
         setHoveredWaypoint={setHoveredWaypoint}
         onResumeSelectedPath={onResumeSelectedPath}
@@ -243,7 +275,7 @@ function Inspector({
             panel={panel}
             design={design}
             shapes={designShapes}
-            setSelection={setSelection}
+            setSelection={selectAndOpenSelectionPanel}
             updateField={updateField}
             updateDesignMeta={updateDesignMeta}
             setMapReference={setMapReference}
@@ -253,6 +285,8 @@ function Inspector({
             setMapReferenceRotation={setMapReferenceRotation}
             removeShapes={removeShapes}
             setHoveredShapeId={setHoveredShapeId}
+            addShape={addShape}
+            reorderShapes={reorderShapes}
           />
         ) : (
           selectionView

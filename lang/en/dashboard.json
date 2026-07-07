@@ -75,7 +75,8 @@
     },
     "fallback": {
       "untitled": "Untitled",
-      "unknownOwner": "Unknown"
+      "unknownOwner": "Unknown",
+      "unknownUser": "Unknown user"
     },
     "galleryState": {
       "featured": "Featured",

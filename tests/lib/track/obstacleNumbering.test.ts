@@ -117,9 +117,9 @@ describe("obstacle numbering", () => {
   });
 
   it("keeps non-numbered layouts idle", () => {
-    const flagOnly: Shape = {
-      id: "flag-1",
-      kind: "flag",
+    const coneOnly: Shape = {
+      id: "cone-1",
+      kind: "cone",
       x: 5,
       y: 5,
       rotation: 0,
@@ -128,12 +128,32 @@ describe("obstacle numbering", () => {
 
     expect(getObstacleNumberingReport(makeDesign([])).status).toBe("empty");
     expect(
-      getObstacleNumberingReport(makeDesign([raceLine, flagOnly]))
+      getObstacleNumberingReport(makeDesign([raceLine, coneOnly]))
     ).toMatchObject({
       issueCount: 0,
       mappedObstacleCount: 0,
       status: "no-numbered-obstacles",
       totalNumberedObstacleCount: 0,
+    });
+  });
+
+  it("numbers flags placed near the race line", () => {
+    const flagOnRoute: Shape = {
+      id: "flag-1",
+      kind: "flag",
+      x: 5,
+      y: 5,
+      rotation: 0,
+      radius: 0.25,
+    };
+
+    expect(
+      getObstacleNumberingReport(makeDesign([raceLine, flagOnRoute]))
+    ).toMatchObject({
+      issueCount: 0,
+      mappedObstacleCount: 1,
+      status: "ready",
+      totalNumberedObstacleCount: 1,
     });
   });
 

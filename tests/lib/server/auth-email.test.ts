@@ -29,6 +29,19 @@ describe("auth email templates", () => {
     expect(email.textBody).toContain("Open this one-time sign-in link");
   });
 
+  it("keeps the Outlook layout on tables without wrapping the full email card in VML", () => {
+    const email = buildMagicLinkEmail(
+      "https://trackdraw.app/api/auth/magic-link/verify?token=abc"
+    );
+
+    expect(email.htmlBody).toMatch(
+      /<!--\[if mso\]>[\s\S]*?<table\b(?=[^>]*\swidth=["']600["'])(?=[^>]*\salign=["']center["'])[^>]*>[\s\S]*?<!\[endif\]-->/
+    );
+    expect(email.htmlBody).toContain("<v:roundrect");
+    expect(email.htmlBody).not.toContain("<v:textbox");
+    expect(email.htmlBody).not.toContain("<w:txbxContent");
+  });
+
   it("escapes verification email values in HTML while keeping plain text readable", () => {
     const email = buildEmailVerificationEmail(
       'https://trackdraw.app/verify?token=<bad>&next="/studio"',

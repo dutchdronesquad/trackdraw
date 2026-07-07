@@ -10,10 +10,25 @@ import {
   TRACKDRAW_TOWER_ELEMENT_ID,
   type TrackElementCatalogId,
 } from "@/lib/track/elements/catalog";
+import { POLYLINE_3D_HEIGHT_OFFSET } from "@/lib/track/constants";
+import {
+  getDiveGateVisualSpec,
+  getGateVisualSpec,
+  getLadderVisualSpec,
+  getTowerVisualSpec,
+} from "@/lib/track/elements/visual";
+import {
+  getMultiGpDiveGateArchLayout,
+  getMultiGpLaunchGateLayout,
+  getPanelFrameLadderLayout,
+} from "@/lib/track/render3d-layout";
 import type {
   DiveGateShape,
+  FlagShape,
+  GateShape,
   InventoryShapeKind,
   LadderShape,
+  PolylinePoint,
   Shape,
   ShapeKind,
   TowerShape,
@@ -50,6 +65,15 @@ export type SetupProfile = {
   complexity: SetupComplexity;
 };
 
+export type RouteGenerationTraversal = "through" | "around" | "marker" | "none";
+
+export type RouteGenerationProfile = {
+  traversal: RouteGenerationTraversal;
+  getAnchor?: (shape: Shape) => PolylinePoint;
+  getHeadingDeg?: (shape: Shape) => number;
+  getApproachDistance?: (shape: Shape) => number;
+};
+
 export interface TrackItemAdapter {
   kind: ShapeKind;
   label: string;
@@ -68,6 +92,7 @@ export interface TrackItemAdapter {
   timingMarker?: boolean;
   setupHardObstacle?: boolean;
   rotateHandle3d?: boolean;
+  generatedRoute?: RouteGenerationProfile;
   catalogPatch?: {
     preserveDiveGateTopY?: boolean;
   };
@@ -94,6 +119,153 @@ function getNoSetupProfile(t: Translate): SetupProfile {
   };
 }
 
+function getShapeAnchorAtElevation(
+  shape: Shape,
+  targetRouteElevation: number
+): PolylinePoint {
+  return {
+    x: shape.x,
+    y: shape.y,
+    z: toGeneratedRouteWaypointElevation(targetRouteElevation),
+  };
+}
+
+function toGeneratedRouteWaypointElevation(targetRouteElevation: number) {
+  return Math.max(0, targetRouteElevation - POLYLINE_3D_HEIGHT_OFFSET);
+}
+
+function getGateRouteAnchor(shape: Shape): PolylinePoint {
+  return getShapeAnchorAtElevation(
+    shape,
+    getGateRouteElevation(shape as GateShape)
+  );
+}
+
+function getTowerRouteAnchor(shape: Shape): PolylinePoint {
+  return getShapeAnchorAtElevation(
+    shape,
+    getTowerRouteElevation(shape as TowerShape)
+  );
+}
+
+function getFlagRouteAnchor(shape: Shape): PolylinePoint {
+  return getShapeAnchorAtElevation(shape, getFlagRouteElevation());
+}
+
+function getLadderRouteAnchor(shape: Shape): PolylinePoint {
+  return getShapeAnchorAtElevation(
+    shape,
+    getLadderRouteElevation(shape as LadderShape)
+  );
+}
+
+function getDiveGateRouteAnchor(shape: Shape): PolylinePoint {
+  return getShapeAnchorAtElevation(
+    shape,
+    getDiveGateRouteElevation(shape as DiveGateShape)
+  );
+}
+
+function getGateRouteElevation(shape: GateShape): number {
+  const visual = getGateVisualSpec(shape);
+  if (visual.variant === "frame-only") {
+    return 0;
+  }
+
+  return Math.max(0.4, shape.height / 2);
+}
+
+function getFlagRouteElevation(): number {
+  return 0;
+}
+
+function getTowerRouteElevation(shape: TowerShape): number {
+  const visual = getTowerVisualSpec(shape);
+  if (visual?.variant === "panel-frame") {
+    // MultiGP tower visuals add a lower banner panel for a single-level tower,
+    // but the generated route should target the nominal elevated opening, not
+    // drift upward by the banner height.
+    return Math.max(0.4, Math.max(shape.elevation ?? 0, 0) + shape.height / 2);
+  }
+
+  return Math.max(0.4, (shape.elevation ?? 0) + shape.height / 2);
+}
+
+function getLadderRouteElevation(shape: LadderShape): number {
+  const visual = getLadderVisualSpec(shape);
+  if (visual?.variant === "panel-frame") {
+    const layout = getPanelFrameLadderLayout(shape, visual);
+    const lowerSection = layout.sections[0];
+    return Math.max(
+      0.4,
+      layout.baseY + (lowerSection?.openingMidY ?? layout.openingH)
+    );
+  }
+
+  const rungs = Math.max(1, Math.round(shape.rungs ?? 1));
+  const openingHeight = shape.height / rungs;
+  if (rungs > 1) {
+    return Math.max(0.4, (shape.elevation ?? 0) + openingHeight * 1.25);
+  }
+
+  return Math.max(0.4, (shape.elevation ?? 0) + openingHeight / 2);
+}
+
+function getDiveGateRouteElevation(shape: DiveGateShape): number {
+  const visual = getDiveGateVisualSpec(shape);
+  if (visual?.variant === "arch") {
+    return Math.max(0.4, getMultiGpDiveGateArchLayout(shape).centerY);
+  }
+  if (visual?.variant === "launch") {
+    return Math.max(0.4, getMultiGpLaunchGateLayout(shape).topY);
+  }
+
+  return Math.max(0.4, shape.elevation ?? (shape.height ?? shape.width) * 0.5);
+}
+
+function getRouteHeadingDeg(shape: Shape): number {
+  return (
+    shape.rotation +
+    getShapeOrientationBaseOffset(shape.kind, "canvasGuide") +
+    (shape.frontOffsetDeg ?? 0) +
+    180
+  );
+}
+
+function getRouteMarkerOffsetHeadingDeg(shape: Shape): number {
+  return (
+    shape.rotation +
+    getShapeOrientationBaseOffset(shape.kind, "canvasGuide") +
+    (shape.frontOffsetDeg ?? 0) +
+    180
+  );
+}
+
+function getGateApproachDistance(shape: Shape): number {
+  const gate = shape as GateShape;
+  return Math.max(2, gate.width * 0.8);
+}
+
+function getTowerApproachDistance(shape: Shape): number {
+  const tower = shape as TowerShape;
+  return Math.max(2.5, tower.width * 0.75);
+}
+
+function getLadderApproachDistance(shape: Shape): number {
+  const ladder = shape as LadderShape;
+  return Math.max(2.5, ladder.width * 0.75);
+}
+
+function getDiveGateApproachDistance(shape: Shape): number {
+  const diveGate = shape as DiveGateShape;
+  return Math.max(3, diveGate.width * 0.75);
+}
+
+function getFlagClearanceDistance(shape: Shape): number {
+  const flag = shape as FlagShape;
+  return Math.max(1, (flag.radius ?? 0.25) + 0.8);
+}
+
 export const trackItemAdapters = [
   {
     kind: "gate",
@@ -112,6 +284,12 @@ export const trackItemAdapters = [
     timingMarker: true,
     setupHardObstacle: true,
     rotateHandle3d: true,
+    generatedRoute: {
+      traversal: "through",
+      getAnchor: getGateRouteAnchor,
+      getHeadingDeg: getRouteHeadingDeg,
+      getApproachDistance: getGateApproachDistance,
+    },
     canvasRenderRotationOffsetDeg: 180,
     mobileTouchTargetMinScreenPx: 44,
     routeToleranceWidthFactor: 0.42,
@@ -138,6 +316,12 @@ export const trackItemAdapters = [
     numberedObstacle: true,
     setupHardObstacle: true,
     rotateHandle3d: true,
+    generatedRoute: {
+      traversal: "through",
+      getAnchor: getTowerRouteAnchor,
+      getHeadingDeg: getRouteHeadingDeg,
+      getApproachDistance: getTowerApproachDistance,
+    },
     canvasRenderRotationOffsetDeg: 180,
     mobileTouchTargetMinScreenPx: 44,
     routeToleranceWidthFactor: 0.42,
@@ -167,6 +351,13 @@ export const trackItemAdapters = [
     },
     orientation: { facing: 0, canvasGuide: 0, previewGuide: -90 },
     rotateHandle3d: true,
+    numberedObstacle: true,
+    generatedRoute: {
+      traversal: "marker",
+      getAnchor: getFlagRouteAnchor,
+      getHeadingDeg: getRouteMarkerOffsetHeadingDeg,
+      getApproachDistance: getFlagClearanceDistance,
+    },
     getSetupProfile: (_shape, t) => ({
       priority: 4,
       prepMinutes: 1,
@@ -251,6 +442,12 @@ export const trackItemAdapters = [
     numberedObstacle: true,
     setupHardObstacle: true,
     rotateHandle3d: true,
+    generatedRoute: {
+      traversal: "through",
+      getAnchor: getLadderRouteAnchor,
+      getHeadingDeg: getRouteHeadingDeg,
+      getApproachDistance: getLadderApproachDistance,
+    },
     canvasRenderRotationOffsetDeg: 180,
     routeToleranceWidthFactor: 0.42,
     getSetupProfile: (shape, t) => {
@@ -281,6 +478,12 @@ export const trackItemAdapters = [
     numberedObstacle: true,
     setupHardObstacle: true,
     rotateHandle3d: true,
+    generatedRoute: {
+      traversal: "through",
+      getAnchor: getDiveGateRouteAnchor,
+      getHeadingDeg: getRouteHeadingDeg,
+      getApproachDistance: getDiveGateApproachDistance,
+    },
     catalogPatch: { preserveDiveGateTopY: true },
     routeToleranceWidthFactor: 0.38,
     getSetupProfile: (shape, t) => {
@@ -410,6 +613,13 @@ export function has3dRotateHandle(shape: Shape): boolean {
 
 export function getObstacleRouteToleranceWidthFactor(shape: Shape): number {
   return getTrackItemAdapterForShape(shape).routeToleranceWidthFactor ?? 0;
+}
+
+export function getGeneratedRouteProfile(
+  shape: Shape
+): RouteGenerationProfile | null {
+  const profile = getTrackItemAdapterForShape(shape).generatedRoute;
+  return profile?.traversal === "none" ? null : (profile ?? null);
 }
 
 export function getCatalogPlacementToolIds(): CatalogPlacementToolId[] {

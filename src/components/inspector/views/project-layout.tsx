@@ -1,11 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, MapPinned, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  MapPinned,
+  Route,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
 import ElevationChart from "@/components/inspector/ElevationChart";
 import { MeasurementUnitToggle } from "@/components/MeasurementUnitToggle";
 import { MapReferenceDialog } from "@/components/map-reference/MapReferenceDialog";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import {
   getInventoryComparison,
@@ -13,11 +24,18 @@ import {
   normalizeInventoryProfile,
 } from "@/lib/planning/inventory";
 import { getObstacleNumberingReport } from "@/lib/track/obstacleNumbering";
+import {
+  generateRaceLineDraft,
+  isGeneratedRaceLine,
+  type GeneratedRouteWarning,
+} from "@/lib/track/generated-route";
 import type {
   FieldSpec,
   InventoryShapeKind,
   MapReference,
+  PolylineShape,
   Shape,
+  ShapeDraft,
   TrackDesign,
 } from "@/lib/types";
 import {
@@ -36,7 +54,11 @@ import {
   InspectorScrollBody,
   useIsDesktopInspector,
 } from "./layout";
-import { type DesignMetaPatch, ItemOverviewList } from "./list-panel";
+import {
+  getListableTrackItems,
+  type DesignMetaPatch,
+  ItemOverviewList,
+} from "./list-panel";
 import { useTranslations } from "next-intl";
 
 function getShapeDisplayName(shape: Shape, index: number, t: Translate) {
@@ -189,15 +211,56 @@ function MapReferenceSection({
   );
 }
 
+function summarizeGeneratedRouteWarnings(
+  warnings: GeneratedRouteWarning[],
+  t: ReturnType<typeof useTranslations<"inspector">>
+): string {
+  const unsupportedCount = warnings.filter(
+    (warning) => warning.type === "unsupported-shape"
+  ).length;
+  const tooFewObstacles = warnings.some(
+    (warning) => warning.type === "too-few-obstacles"
+  );
+  const closeObstacleCount = warnings.filter(
+    (warning) => warning.type === "close-obstacles"
+  ).length;
+
+  const parts: string[] = [];
+  if (unsupportedCount > 0) {
+    parts.push(
+      t("routeNumbering.generate.warnings.unsupportedShapes", {
+        count: unsupportedCount,
+      })
+    );
+  }
+  if (tooFewObstacles) {
+    parts.push(t("routeNumbering.generate.warnings.tooFewObstacles"));
+  }
+  if (closeObstacleCount > 0) {
+    parts.push(
+      t("routeNumbering.generate.warnings.closeObstacles", {
+        count: closeObstacleCount,
+      })
+    );
+  }
+
+  return parts.join(" ");
+}
+
 function RouteNumberingOverview({
   design,
   shapes,
+  addShape,
+  removeShapes,
+  setSelection,
 }: {
   design: TrackDesign;
   shapes: Shape[];
+  addShape: (draft: ShapeDraft<PolylineShape>) => string;
+  removeShapes: (ids: string[]) => void;
+  setSelection: (ids: string[]) => void;
 }) {
   const t = useTranslations("inspector");
-  const tCommon = useTranslations("common");
   const tShapes = useTranslations("shapes") as unknown as Translate;
   const report = useMemo(() => getObstacleNumberingReport(design), [design]);
   const shapeOrder = useMemo(
@@ -215,6 +278,13 @@ function RouteNumberingOverview({
     report.status === "ready" ||
     report.status === "empty" ||
     report.status === "no-numbered-obstacles";
+  const hasExistingRaceLine = Boolean(report.primaryPolylineId);
+  const generatedRaceLine = shapes.find(isGeneratedRaceLine) ?? null;
+  const hasGeneratedRaceLine = Boolean(generatedRaceLine);
+  const hasWarnings =
+    report.status === "partial" ||
+    report.status === "no-route-matches" ||
+    report.status === "missing-route";
   const statusLabel =
     report.status === "ready"
       ? t("routeNumbering.status.ready")
@@ -242,25 +312,114 @@ function RouteNumberingOverview({
               count: report.totalNumberedObstacleCount,
             })
           : report.status === "missing-route"
-            ? t("routeNumbering.messages.missingRoute", {
-                count: report.totalNumberedObstacleCount,
-              })
+            ? t("routeNumbering.messages.missingRoute")
             : report.status === "no-numbered-obstacles"
               ? t("routeNumbering.messages.noNumberedObstacles")
               : t("routeNumbering.messages.empty");
 
+  const canGenerate =
+    report.status === "missing-route" ||
+    report.status === "ready" ||
+    report.status === "partial" ||
+    report.status === "no-route-matches";
+
+  function handleGenerateRaceLine() {
+    const { draft, report: genReport } = generateRaceLineDraft(design);
+    if (!draft) {
+      toast.error(t("routeNumbering.generate.errors.noObstacles"));
+      return;
+    }
+
+    if (generatedRaceLine) {
+      removeShapes([generatedRaceLine.id]);
+    }
+
+    const newId = addShape(draft);
+    setSelection([newId]);
+
+    const warningText = summarizeGeneratedRouteWarnings(genReport.warnings, t);
+    toast.success(
+      warningText
+        ? `${t("routeNumbering.generate.success")}. ${warningText}`
+        : t("routeNumbering.generate.success")
+    );
+  }
+
   return (
     <Section title={t("layout.sections.routeNumbering")}>
-      <div className="space-y-2">
-        <div className="grid grid-cols-3 gap-2">
-          <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
-            <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {tCommon("labels.status")}
-            </p>
-            <p className="text-foreground text-[12px] font-semibold">
-              {statusLabel}
-            </p>
+      <div className="space-y-3">
+        <div
+          className={cn(
+            "rounded-md border px-2.5 py-2",
+            hasWarnings
+              ? "border-amber-500/25 bg-amber-500/8"
+              : isClear
+                ? "border-emerald-500/20 bg-emerald-500/8"
+                : "border-border/40 bg-muted/25"
+          )}
+        >
+          <div className="flex items-start gap-2">
+            <span
+              className={cn(
+                "mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-sm",
+                hasWarnings
+                  ? "bg-amber-500/12 text-amber-600"
+                  : isClear
+                    ? "bg-emerald-500/12 text-emerald-600"
+                    : "bg-muted text-muted-foreground"
+              )}
+              aria-hidden="true"
+            >
+              {hasWarnings ? (
+                <AlertTriangle className="size-3" />
+              ) : isClear ? (
+                <CheckCircle2 className="size-3" />
+              ) : (
+                <Route className="size-3" />
+              )}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <p
+                  className={cn(
+                    "text-[12px] font-semibold",
+                    hasWarnings
+                      ? "text-amber-600"
+                      : isClear
+                        ? "text-emerald-600"
+                        : "text-foreground"
+                  )}
+                >
+                  {statusLabel}
+                </p>
+                {hasExistingRaceLine ? (
+                  <span className="border-border/45 bg-background/65 text-muted-foreground inline-flex items-center rounded-sm border px-1.5 py-px text-[10px] font-medium">
+                    {t("routeNumbering.meta.raceLine")}
+                  </span>
+                ) : null}
+                {message ? (
+                  <span className="text-muted-foreground/80 text-[11px] leading-snug">
+                    {message}
+                  </span>
+                ) : null}
+              </div>
+              {issueNames.length > 0 ? (
+                <p className="mt-1 text-[10px] leading-snug text-amber-600/85">
+                  {t("routeNumbering.issues.offRoutePrefix", {
+                    names: issueNames.join(", "),
+                  })}
+                  {extraIssueCount > 0
+                    ? t("routeNumbering.issues.moreSuffix", {
+                        count: extraIssueCount,
+                      })
+                    : ""}
+                </p>
+              ) : null}
+            </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
           <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
             <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
               {t("routeNumbering.meta.numbered")}
@@ -278,27 +437,26 @@ function RouteNumberingOverview({
             </p>
           </div>
         </div>
-        <div
-          className={
-            isClear
-              ? "rounded-md border border-emerald-500/20 bg-emerald-500/8 px-2.5 py-2 text-emerald-500"
-              : "rounded-md border border-amber-500/25 bg-amber-500/10 px-2.5 py-2 text-amber-500"
-          }
-        >
-          <p className="text-[11px] leading-relaxed">{message}</p>
-          {issueNames.length > 0 ? (
-            <p className="mt-1 text-[10px] leading-relaxed opacity-80">
-              {t("routeNumbering.issues.offRoutePrefix", {
-                names: issueNames.join(", "),
-              })}
-              {extraIssueCount > 0
-                ? t("routeNumbering.issues.moreSuffix", {
-                    count: extraIssueCount,
-                  })
-                : ""}
-            </p>
-          ) : null}
-        </div>
+
+        {canGenerate ? (
+          <button
+            type="button"
+            onClick={handleGenerateRaceLine}
+            className={cn(
+              "inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors lg:h-8 lg:text-[11px]",
+              hasWarnings
+                ? "border-amber-500/25 bg-amber-500/10 text-amber-700 hover:bg-amber-500/16 dark:text-amber-400"
+                : "border-emerald-500/25 bg-emerald-500/8 text-emerald-700 hover:bg-emerald-500/14 dark:text-emerald-400"
+            )}
+          >
+            <Sparkles className="size-4 lg:size-3" />
+            <span>
+              {hasGeneratedRaceLine
+                ? t("routeNumbering.generate.regenerateButton")
+                : t("routeNumbering.generate.button")}
+            </span>
+          </button>
+        ) : null}
       </div>
     </Section>
   );
@@ -318,6 +476,8 @@ export interface ProjectLayoutInspectorViewProps {
   setMapReferenceRotation: (rotationDeg: number) => void;
   removeShapes: (ids: string[]) => void;
   setHoveredShapeId: (shapeId: string | null) => void;
+  addShape: (draft: ShapeDraft<PolylineShape>) => string;
+  reorderShapes: (fromId: string, beforeId: string | null) => void;
   mobileInline?: boolean;
 }
 
@@ -335,6 +495,8 @@ export function ProjectLayoutInspectorView({
   setMapReferenceRotation,
   removeShapes,
   setHoveredShapeId,
+  addShape,
+  reorderShapes,
   mobileInline = false,
 }: ProjectLayoutInspectorViewProps) {
   const t = useTranslations("inspector");
@@ -356,6 +518,10 @@ export function ProjectLayoutInspectorView({
   const obstacleNumberingReport = useMemo(
     () => getObstacleNumberingReport(design),
     [design]
+  );
+  const trackItemShapes = useMemo(
+    () => getListableTrackItems(shapes),
+    [shapes]
   );
 
   const updateInventoryCount = (kind: InventoryShapeKind, value: number) => {
@@ -537,7 +703,7 @@ export function ProjectLayoutInspectorView({
         title={t("layout.overview.title")}
         subtitle={t("layout.overview.subtitle")}
         meta={[
-          t("layout.meta.itemsCount", { count: shapes.length }),
+          t("layout.meta.itemsCount", { count: trackItemShapes.length }),
           totalMissing === 0
             ? t("layout.meta.buildable")
             : t("layout.meta.shortItems", { count: totalMissing }),
@@ -563,8 +729,14 @@ export function ProjectLayoutInspectorView({
           setMapReferenceOpacity={setMapReferenceOpacity}
           setMapReferenceRotation={setMapReferenceRotation}
         />
-        <RouteNumberingOverview design={design} shapes={shapes} />
-        {shapes.length > 0 ? (
+        <RouteNumberingOverview
+          design={design}
+          shapes={shapes}
+          addShape={addShape}
+          removeShapes={removeShapes}
+          setSelection={setSelection}
+        />
+        {trackItemShapes.length > 0 ? (
           <ItemOverviewList
             design={design}
             shapes={shapes}
@@ -572,6 +744,7 @@ export function ProjectLayoutInspectorView({
             removeShapes={removeShapes}
             setHoveredShapeId={setHoveredShapeId}
             obstacleNumberingReport={obstacleNumberingReport}
+            reorderShapes={reorderShapes}
           />
         ) : (
           <div className="border-border/40 rounded-lg border border-dashed px-3 py-4 text-center">

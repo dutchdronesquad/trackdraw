@@ -10,8 +10,10 @@ import { useEditor } from "@/store/editor";
 
 const mocks = vi.hoisted(() => ({
   downloadJsonFile: vi.fn(),
+  exportFlythrough: vi.fn(),
   exportPdf: vi.fn(),
   toastError: vi.fn(),
+  toastLoading: vi.fn(),
   toastSuccess: vi.fn(),
 }));
 
@@ -67,12 +69,41 @@ vi.mock("@/lib/export/exportPdf", () => ({
   exportPdf: mocks.exportPdf,
 }));
 
+vi.mock("@/lib/export/exportFlythrough", () => ({
+  exportFlythrough: mocks.exportFlythrough,
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     error: mocks.toastError,
+    loading: mocks.toastLoading,
     success: mocks.toastSuccess,
   },
 }));
+
+function addRaceLine() {
+  useEditor.getState().addShape({
+    kind: "polyline",
+    x: 0,
+    y: 0,
+    rotation: 0,
+    points: [
+      { x: 0, y: 0, z: 0 },
+      { x: 8, y: 0, z: 0 },
+    ],
+  });
+}
+
+function addGate() {
+  useEditor.getState().addShape({
+    kind: "gate",
+    x: 10,
+    y: 8,
+    rotation: 0,
+    width: 2,
+    height: 2,
+  });
+}
 
 describe("ExportDialog mobile workflow", () => {
   beforeEach(() => {
@@ -80,8 +111,10 @@ describe("ExportDialog mobile workflow", () => {
     useEditor.getState().clearHistory();
     viewport.isMobile = true;
     mocks.downloadJsonFile.mockReset();
+    mocks.exportFlythrough.mockReset();
     mocks.exportPdf.mockReset();
     mocks.toastError.mockReset();
+    mocks.toastLoading.mockReset();
     mocks.toastSuccess.mockReset();
   });
 
@@ -104,9 +137,15 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
-    const switchTo3D = screen.getByRole("button", {
+    await user.click(screen.getByRole("button", { name: /3D Render/ }));
+
+    expect(
+      await screen.findByText("Open the 3D view before exporting this render.")
+    ).toBeTruthy();
+
+    const switchTo3D = (await screen.findByRole("button", {
       name: "Switch to 3D view",
-    }) as HTMLButtonElement;
+    })) as HTMLButtonElement;
 
     expect(switchTo3D.disabled).toBe(false);
 
@@ -115,7 +154,9 @@ describe("ExportDialog mobile workflow", () => {
     expect(onRequest3DView).toHaveBeenCalledOnce();
   });
 
-  it("labels mobile export rows by their action", () => {
+  it("labels mobile export rows by their action", async () => {
+    const user = userEvent.setup();
+
     render(
       <ExportDialog
         activeTab="3d"
@@ -126,14 +167,22 @@ describe("ExportDialog mobile workflow", () => {
     );
 
     expect(screen.getByRole("button", { name: "Export Image" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Export Vector" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: /Vector/ }));
     expect(
-      screen.getByRole("button", { name: "Export Race Pack" })
+      await screen.findByRole("button", { name: "Export Vector" })
+    ).toBeTruthy();
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
+    expect(
+      await screen.findByRole("button", { name: "Export Race Pack" })
     ).toBeTruthy();
     expect(screen.getByText("Route numbers")).toBeTruthy();
   });
 
-  it("clarifies mobile export purpose and limitations", () => {
+  it("uses sidebar navigation to select export-specific settings", async () => {
+    const user = userEvent.setup();
+
     render(
       <ExportDialog
         activeTab="3d"
@@ -143,20 +192,263 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
+    expect(screen.getByRole("button", { name: /^Visuals$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Race Day$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Project Data$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Video$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Experimental$/ })).toBeTruthy();
     expect(
-      screen.getByText("High-res 2D map for print, chat, or review.")
-    ).toBeTruthy();
+      screen.getAllByText(
+        "High-res 2D map for print, slides, chat, or quick review."
+      ).length
+    ).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
     expect(
-      screen.getByText(
-        "Editable backup for reopening or archiving in TrackDraw."
+      (
+        await screen.findAllByText(
+          "Race-day setup handoff with map, materials, sequence, and QR."
+        )
+      ).length
+    ).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: /^Project Data$/ }));
+
+    expect(
+      (
+        await screen.findAllByText(
+          "Editable backup for reopening, sharing, or archiving in TrackDraw."
+        )
+      ).length
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText("Theme")).toBeNull();
+    expect(screen.queryByText("Route numbers")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: /^Video$/ }));
+
+    expect(
+      (
+        await screen.findAllByText(
+          "One-loop route video for reviewing the flow or sharing the lap."
+        )
+      ).length
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("Theme")).toBeTruthy();
+    expect(screen.queryByText("Route numbers")).toBeNull();
+    expect(
+      screen.queryByText(
+        "Experimental Velocidrone track file for testing in the simulator; check the layout after import."
+      )
+    ).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: /^Experimental$/ }));
+
+    expect(
+      (
+        await screen.findAllByText(
+          "Experimental Velocidrone track file for testing in the simulator; check the layout after import."
+        )
+      ).length
+    ).toBeGreaterThan(0);
+  });
+
+  it("blocks Cinematic FPV export until a race line exists", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Video$/ }));
+
+    expect(
+      await screen.findByText(
+        "Add a race line before exporting a cinematic FPV video."
       )
     ).toBeTruthy();
+    const exportWebm = (await screen.findByRole("button", {
+      name: "Export Cinematic FPV",
+    })) as HTMLButtonElement;
+    expect(exportWebm.disabled).toBe(true);
+  });
+
+  it("blocks Race Pack export until the track has content", async () => {
+    const user = userEvent.setup();
+    const canvasRef = {
+      current: {
+        getStage: () => ({ id: "stage-1" }),
+      } as unknown as TrackCanvasHandle,
+    };
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={canvasRef}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
     expect(
-      screen.getByText("Setup PDF with map, materials, sequence, and QR.")
+      await screen.findByText(
+        "Add at least one item to the track before exporting a Race Pack."
+      )
     ).toBeTruthy();
+    const exportRacePack = (await screen.findByRole("button", {
+      name: "Export Race Pack",
+    })) as HTMLButtonElement;
+    expect(exportRacePack.disabled).toBe(true);
+  });
+
+  it("blocks Race Pack export until the 2D canvas is ready", async () => {
+    const user = userEvent.setup();
+    addGate();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
     expect(
-      screen.getByText("Experimental file for testing; check after import.")
+      await screen.findByText(
+        "The 2D canvas is still loading; try again in a moment."
+      )
     ).toBeTruthy();
+    const exportRacePack = (await screen.findByRole("button", {
+      name: "Export Race Pack",
+    })) as HTMLButtonElement;
+    expect(exportRacePack.disabled).toBe(true);
+  });
+
+  it("enables Race Pack export when the 2D stage becomes ready after opening", async () => {
+    const user = userEvent.setup();
+    addGate();
+    const canvasRef: { current: TrackCanvasHandle | null } = { current: null };
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={canvasRef}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+
+    const exportRacePack = (await screen.findByRole("button", {
+      name: "Export Race Pack",
+    })) as HTMLButtonElement;
+    expect(exportRacePack.disabled).toBe(true);
+
+    canvasRef.current = {
+      getStage: () => ({ id: "stage-1" }),
+    } as unknown as TrackCanvasHandle;
+
+    await waitFor(() => {
+      expect(exportRacePack.disabled).toBe(false);
+    });
+    expect(
+      screen.queryByText(
+        "The 2D canvas is still loading; try again in a moment."
+      )
+    ).toBeNull();
+  });
+
+  it("blocks Velocidrone export until the track has content", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Experimental$/ }));
+
+    expect(
+      await screen.findByText(
+        "Add at least one item to the track before exporting a Velocidrone file."
+      )
+    ).toBeTruthy();
+    const exportVelocidrone = (await screen.findByRole("button", {
+      name: "Export Velocidrone",
+    })) as HTMLButtonElement;
+    expect(exportVelocidrone.disabled).toBe(true);
+  });
+
+  it("warns that Velocidrone export is experimental without blocking track content", async () => {
+    const user = userEvent.setup();
+    addGate();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Experimental$/ }));
+
+    expect(
+      await screen.findByText(
+        "Some TrackDraw items may import differently in Velocidrone."
+      )
+    ).toBeTruthy();
+    const exportVelocidrone = (await screen.findByRole("button", {
+      name: "Export Velocidrone",
+    })) as HTMLButtonElement;
+    expect(exportVelocidrone.disabled).toBe(false);
+  });
+
+  it("includes the selected theme in default WebM filenames", async () => {
+    const user = userEvent.setup();
+    addRaceLine();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /^Video$/ }));
+    await user.click(await screen.findByRole("button", { name: "Light" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Export Cinematic FPV" })
+    );
+
+    await waitFor(() => {
+      expect(mocks.exportFlythrough).toHaveBeenCalledWith(
+        expect.objectContaining({ version: 2 }),
+        expect.stringMatching(
+          /^New_Track_flythrough_light_\d{4}-\d{2}-\d{2}\.webm$/
+        ),
+        "light",
+        expect.any(Function)
+      );
+    });
   });
 
   it("reports JSON export failures without closing the dialog", async () => {
@@ -175,8 +467,9 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
+    await user.click(screen.getByRole("button", { name: /^Project Data$/ }));
     await user.click(
-      screen.getByRole("button", { name: "Export Project File" })
+      await screen.findByRole("button", { name: "Export Project File" })
     );
 
     await waitFor(() => {
@@ -187,7 +480,7 @@ describe("ExportDialog mobile workflow", () => {
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 
-  it("exports a desktop JSON project with a sanitized custom filename", async () => {
+  it("exports a desktop JSON project with a sanitized project filename", async () => {
     viewport.isMobile = false;
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
@@ -201,12 +494,14 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
-    await user.type(screen.getByPlaceholderText("New Track"), "Race Day #1");
-    await user.click(screen.getByRole("button", { name: /Project File/ }));
+    await user.click(screen.getByRole("button", { name: /^Project Data$/ }));
+    await user.click(
+      await screen.findByRole("button", { name: "Export Project File" })
+    );
 
     await waitFor(() => {
       expect(mocks.downloadJsonFile).toHaveBeenCalledWith(
-        "Race_Day_1.json",
+        expect.stringMatching(/^New_Track_\d{4}-\d{2}-\d{2}\.json$/),
         expect.objectContaining({ version: 2 })
       );
     });
@@ -218,6 +513,7 @@ describe("ExportDialog mobile workflow", () => {
     viewport.isMobile = false;
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
+    addGate();
     const stage = { id: "stage-1" };
     const canvasRef = {
       current: {
@@ -251,13 +547,18 @@ describe("ExportDialog mobile workflow", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /Race Pack/ }));
+    await user.click(screen.getByRole("button", { name: /^Race Day$/ }));
+    await user.click(
+      await screen.findByRole("button", { name: "Export Race Pack" })
+    );
 
     await waitFor(() => {
       expect(mocks.exportPdf).toHaveBeenCalledWith(
         stage,
         expect.objectContaining({ version: 2 }),
-        "New_Track_race_pack.pdf",
+        expect.stringMatching(
+          /^New_Track_race_pack_dark_\d{4}-\d{2}-\d{2}\.pdf$/
+        ),
         "dark",
         expect.objectContaining({
           t: expect.any(Function),
