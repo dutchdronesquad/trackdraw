@@ -19,14 +19,22 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 
-const localeConfig: Record<
-  SupportedLocale,
-  { label: string; abbr: string; flag: string }
-> = {
-  en: { label: "English", abbr: "EN", flag: "🇬🇧" },
-  nl: { label: "Nederlands", abbr: "NL", flag: "🇳🇱" },
-  de: { label: "Deutsch", abbr: "DE", flag: "🇩🇪" },
+const localeConfig: Record<SupportedLocale, { label: string; abbr: string }> = {
+  en: { label: "English", abbr: "EN" },
+  nl: { label: "Nederlands", abbr: "NL" },
+  de: { label: "Deutsch", abbr: "DE" },
 };
+
+function LocaleBadge({ abbr }: { abbr: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="bg-foreground text-background inline-flex h-5 min-w-7 shrink-0 items-center justify-center rounded-md px-1.5 font-mono text-[11px] font-semibold shadow-xs"
+    >
+      {abbr}
+    </span>
+  );
+}
 
 interface LanguagePickerProps {
   className?: string;
@@ -78,13 +86,17 @@ export function LanguagePicker({
           )}
           aria-label={t("labels.language")}
         >
-          {config.flag} {config.label}
+          <LocaleBadge abbr={config.abbr} />
+          {config.label}
         </SelectTrigger>
       )}
       <SelectContent>
         {supportedLocales.map((l) => (
           <SelectItem key={l} value={l}>
-            {localeConfig[l].flag} {localeConfig[l].label}
+            <span className="flex items-center gap-2">
+              <LocaleBadge abbr={localeConfig[l].abbr} />
+              {localeConfig[l].label}
+            </span>
           </SelectItem>
         ))}
       </SelectContent>
