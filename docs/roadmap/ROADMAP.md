@@ -139,29 +139,38 @@ Important boundary:
 - Do not use this track to introduce new editing modes, social features, or simulation-heavy analysis
 - Keep changes small enough that import/export, autosave, share publish/read, read-only viewing, and mobile editor flows can be validated after each slice
 
-Suggested first slices:
+Suggested focused slices:
 
-- Editor recovery and failure states
-  - Started with a local autosave failure state that reports storage/quota failures and offers retry before users continue editing blindly
-  - Added clearer import failure states for invalid JSON, wrong file types, unreadable files, and non-TrackDraw project data
-  - Added shared JSON export feedback so Project Manager export failures are reported instead of silently ignored
+- Locked selection action safeguards
+  - Locked selections consistently block destructive or confusing actions such as duplicate, delete, route join, and route close across store actions, shortcuts, context menus, inspector controls, item lists, and mobile overlays, while group organization remains available
+- Route editing regression pass
+  - Harden waypoint insert, delete, drag, segment and vertex selection clearing, route close/join, snapping, undo/redo, and mobile path controls
+  - Started by clearing stale segment and vertex selections after structural route edits such as waypoint insert/remove, append, reverse, route close, and route join
+  - Added route insert bounds guards and undo/redo coverage for route reverse, close, and join
+  - Completed with existing route snapping and context-menu coverage still passing alongside the expanded store regression coverage
+- Transform and snapping regression pass
+  - Validate move, nudge, rotate, resize handles, snapping, grouped selections, mixed locked/editable selections, and no-op history behavior
+  - Completed with no-op nudge/rotation history guards, mixed locked/editable rotate/resize/nudge coverage, grouped transform undo/redo coverage, and snap helper coverage for grid, object, route-line, route-waypoint, selected-item exclusion, and snap-toggle behavior
 - Mobile editor ergonomics pass
   - Started with larger, more consistent mobile app-menu touch targets for project, share, transfer, account, dashboard, and sign-out actions
   - Added steadier touch targets for path builder, quick adjust, and multi-select overlay actions during mobile editing
   - Improved mobile map-reference controls with larger action targets and easier opacity adjustment
   - Enlarged mobile inspector section headers so collapsible panels are easier to open and close on touch screens
   - Improved mobile Project Manager action targets for opening and scanning local-project actions
-- Selection and transform reliability pass
-  - Started with store-level locked-shape guards for direct patches, batch patches, and route waypoint edits
-  - Added locked-selection guards and shortcut feedback for duplicate/delete paths so shortcuts, context menus, and mobile overlays cannot mutate selections that include locked shapes
+  - Completed with steadier mobile drawer/input handling, larger and fixed mobile tool/view controls, truncation-safe path and multi-select overlay labels, grouped-selection naming touch targets, bottom toolbar sizing, and existing Project Manager/map reference/inspector mobile coverage still passing
+- Recovery and failure states
+  - Started with a local autosave failure state that reports storage/quota failures and offers retry before users continue editing blindly
+  - Added clearer import failure states for invalid JSON, wrong file types, unreadable files, and non-TrackDraw project data
+  - Added shared JSON export feedback so Project Manager export failures are reported instead of silently ignored
+- Large-layout stability pass
+  - Started with bounded dense-grid rendering for SVG/PDF/PNG exports so fine grid settings do not explode export payload size
+  - Added long-route obstacle-numbering coverage with bounded route-segment scans for dense gate layouts
+  - Completed with bounded map-reference tile coverage for large high-density fields, duplicate in-flight map tile load prevention, and existing dense SVG/PDF export, long-route numbering, and large 3D preview coverage still passing
 - Export/share confidence pass
   - Started by clarifying which exports are read-only visuals, which JSON files are editable backups, what Race Pack is for, and where simulator export remains experimental
   - Moved the export dialog onto the same sidebar-and-panel structure used by Share and Project Manager, with export categories in the sidebar and available outputs plus per-export filename, theme, and route-number settings in the main panel
   - Calmed the export dialog visuals: flattened the nested format/settings cards, gave the format picker a responsive layout (stacked tiles on mobile, inline row on desktop), and gave default export filenames a consistent theme suffix plus a date stamp so repeat exports do not silently overwrite each other
   - Clarified managed shares as read-only review links and JSON export as the editable handoff path
-- Performance and large-layout stability
-  - Started with bounded dense-grid rendering for SVG/PDF/PNG exports so fine grid settings do not explode export payload size
-  - Added long-route obstacle-numbering coverage with bounded route-segment scans for dense gate layouts
 
 #### Regional Measurement Units
 

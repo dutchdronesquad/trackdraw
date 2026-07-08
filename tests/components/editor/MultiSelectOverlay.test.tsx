@@ -60,7 +60,7 @@ describe("MultiSelectOverlay", () => {
     ).toBe(true);
   });
 
-  it("disables destructive actions when any selected item is locked", () => {
+  it("disables duplicate and destructive actions when any selected item is locked", () => {
     renderMultiSelectOverlay({
       hasLockedSelection: true,
       selectionLocked: false,
@@ -75,6 +75,10 @@ describe("MultiSelectOverlay", () => {
         .disabled
     ).toBe(true);
     expect(
+      (screen.getByRole("button", { name: "Group" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(false);
+    expect(
       (screen.getByRole("button", { name: "Lock" }) as HTMLButtonElement)
         .disabled
     ).toBe(false);
@@ -84,9 +88,22 @@ describe("MultiSelectOverlay", () => {
     renderMultiSelectOverlay();
 
     for (const label of ["Duplicate", "Group", "Lock", "Delete"]) {
-      expect(screen.getByRole("button", { name: label }).className).toContain(
-        "min-h-14"
-      );
+      const button = screen.getByRole("button", { name: label });
+      expect(button.className).toContain("min-h-14");
+      expect(button.className).toContain("min-w-0");
+      expect(button.querySelector("span")?.className).toContain("truncate");
     }
+  });
+
+  it("keeps grouped selection naming reachable as a mobile touch control", () => {
+    renderMultiSelectOverlay({
+      canUngroupSelection: true,
+      onSetGroupName: vi.fn(),
+      selectedGroupName: "Start section",
+    });
+
+    const input = screen.getByPlaceholderText("Group name");
+    expect(input.className).toContain("h-11");
+    expect(input.className).toContain("text-[13px]");
   });
 });

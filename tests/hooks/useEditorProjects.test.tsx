@@ -63,17 +63,19 @@ describe("useEditorProjects", () => {
       vi.advanceTimersByTime(350);
     });
 
-    expect(result.current.saveStatusLabel).toBe("Local save failed");
+    expect(result.current.saveStatusLabel).toBe("Local autosave failed");
     expect(toast.error).toHaveBeenCalledWith(
-      "Local save failed",
+      "Local autosave failed",
       expect.objectContaining({
+        description:
+          "The latest edits are still on the canvas, but TrackDraw could not save a local copy. Retry now, or export a JSON backup before leaving this browser.",
         action: expect.objectContaining({ label: "Retry" }),
       })
     );
 
     const saveFailureToast = vi
       .mocked(toast.error)
-      .mock.calls.find(([message]) => message === "Local save failed");
+      .mock.calls.find(([message]) => message === "Local autosave failed");
     const retryAction = (
       saveFailureToast?.[1] as { action?: { onClick?: () => void } } | undefined
     )?.action;
@@ -89,7 +91,7 @@ describe("useEditorProjects", () => {
     });
 
     expect(toast.success).toHaveBeenCalledWith(
-      "Local save recovered",
+      "Local autosave recovered",
       expect.any(Object)
     );
     expect(result.current.saveStatusLabel).toContain("Saved locally at");

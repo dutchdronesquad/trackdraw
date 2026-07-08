@@ -406,6 +406,16 @@
       },
       "tools": {
         "title": "Werkzeuge",
+        "sections": {
+          "items": "Track-Elemente",
+          "tools": "Canvas-Werkzeuge"
+        },
+        "toolDescriptions": {
+          "startfinish": "Start- oder Timing-Pads markieren",
+          "cone": "Streckenmarkierungen platzieren",
+          "label": "Notizen auf dem Canvas hinzufügen",
+          "polyline": "Rennlinie zeichnen oder bearbeiten"
+        },
         "subtitles": {
           "preview3d": "Projektaktionen für die aktuelle 3D-Sitzung",
           "canvas2d": "Zeichen- und Bearbeitungswerkzeuge"
@@ -434,6 +444,7 @@
     "untitledTrack": "Unbenannter Track",
     "untitledFallback": "Unbenannt",
     "exportFailed": "Export fehlgeschlagen",
+    "exportFailedDescription": "{message} Versuche es erneut oder öffne Exportieren und lade dort ein Projekt-JSON-Backup herunter.",
     "exportFailedNoProjectDescription": "TrackDraw konnte dieses lokale Projekt nicht laden. Öffne es zuerst oder wähle ein anderes gespeichertes Projekt.",
     "exportSuccess": "Projekt-JSON exportiert",
     "embeddedTrack": "Eingebetteter Track",

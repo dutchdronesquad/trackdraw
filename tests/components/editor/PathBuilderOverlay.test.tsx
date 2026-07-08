@@ -60,9 +60,10 @@ describe("PathBuilderOverlay", () => {
     renderPathBuilderOverlay();
 
     for (const label of ["Undo", "Connect ends", "Finish", "Cancel"]) {
-      expect(screen.getByRole("button", { name: label }).className).toContain(
-        "min-h-14"
-      );
+      const button = screen.getByRole("button", { name: label });
+      expect(button.className).toContain("min-h-14");
+      expect(button.className).toContain("min-w-0");
+      expect(button.querySelector("span")?.className).toContain("truncate");
     }
   });
 });

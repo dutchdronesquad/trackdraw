@@ -474,7 +474,11 @@ describe("ExportDialog mobile workflow", () => {
 
     await waitFor(() => {
       expect(mocks.toastError).toHaveBeenCalledWith(
-        "Export failed: JSON payload could not be serialized"
+        "Export failed",
+        expect.objectContaining({
+          description:
+            "JSON payload could not be serialized Try again, switch export format, or export the project JSON as a manual backup.",
+        })
       );
     });
     expect(onOpenChange).not.toHaveBeenCalledWith(false);

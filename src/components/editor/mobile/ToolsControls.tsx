@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 import type { EditorViewportTab } from "./Panels";
 
 const catalogToolIdSet = new Set<EditorTool>(catalogPlacementToolIds);
+const canvasToolPriority: Partial<Record<EditorTool, number>> = {
+  polyline: 0,
+};
 
 interface ToolsControlsProps {
   activeTool: EditorTool;
@@ -61,27 +64,29 @@ export function ToolsControls({
       {/* Undo / redo */}
       <div className="grid grid-cols-2 gap-2">
         <button
+          type="button"
           onClick={() => runAction(onUndo)}
           disabled={!canUndo}
-          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
+          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Undo2 className="size-3.5" />
-          {tCommon("actions.undo")}
+          <span className="max-w-full truncate">{tCommon("actions.undo")}</span>
         </button>
         <button
+          type="button"
           onClick={() => runAction(onRedo)}
           disabled={!canRedo}
-          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
+          className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border px-3 py-2.5 text-[11px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Redo2 className="size-3.5" />
-          {t("header.redo")}
+          <span className="max-w-full truncate">{t("header.redo")}</span>
         </button>
       </div>
 
       {tab === "2d" && (
         <div>
           <p className="text-muted-foreground/60 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
-            {t("mobilePanels.editorPanels.nav.tools")}
+            {t("mobilePanels.editorPanels.tools.sections.items")}
           </p>
 
           {/* Catalog tools — active one auto-expands with type list */}
@@ -112,16 +117,9 @@ export function ToolsControls({
                   <button
                     type="button"
                     onClick={() => runAction(() => onSelectTool(toolId))}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                    className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left"
                   >
-                    <span
-                      className={cn(
-                        "flex size-10 shrink-0 items-center justify-center rounded-xl border transition-all",
-                        isActiveTool
-                          ? "border-brand-primary/30 bg-brand-primary/10 text-brand-primary"
-                          : "border-border/45 bg-background/50 text-muted-foreground"
-                      )}
-                    >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-950 bg-slate-950 text-white shadow-[0_8px_18px_rgba(15,23,42,0.12)] transition-all">
                       {toolEntry?.icon}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -193,7 +191,7 @@ export function ToolsControls({
                                   )
                                 }
                                 className={cn(
-                                  "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
+                                  "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
                                   isActiveType
                                     ? "bg-brand-primary/10 text-foreground"
                                     : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
@@ -245,8 +243,11 @@ export function ToolsControls({
             })}
           </div>
 
-          {/* Remaining tools — compact 3-col grid */}
-          <div className="grid grid-cols-3 gap-2">
+          {/* Remaining tools — compact rows matching catalog headers */}
+          <p className="text-muted-foreground/60 mt-4 mb-2.5 text-[11px] font-semibold tracking-widest uppercase">
+            {t("mobilePanels.editorPanels.tools.sections.tools")}
+          </p>
+          <div className="space-y-2">
             {mobileToolEntries
               .filter(
                 (tool) =>
@@ -254,22 +255,43 @@ export function ToolsControls({
                   tool.id !== "preset" &&
                   !catalogToolIds.includes(tool.id as EditorTool)
               )
+              .sort(
+                (a, b) =>
+                  (canvasToolPriority[a.id] ?? 1) -
+                  (canvasToolPriority[b.id] ?? 1)
+              )
               .map((tool) => {
                 const active = activeTool === tool.id;
+                const toolDescription = t(
+                  `mobilePanels.editorPanels.tools.toolDescriptions.${tool.id}`
+                );
                 return (
                   <button
+                    type="button"
                     key={tool.id}
                     onClick={() => runAction(() => onSelectTool(tool.id))}
                     className={cn(
-                      "flex flex-col items-center gap-1.5 rounded-2xl border px-2 py-3 transition-all",
+                      "flex min-h-14 w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all",
                       active
                         ? "border-brand-primary/25 bg-brand-primary/8 text-brand-primary"
                         : "border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground"
                     )}
                   >
-                    {tool.icon}
-                    <span className="text-[11px] leading-none font-medium">
-                      {tool.label}
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-950 bg-slate-950 text-white shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
+                      {tool.icon}
+                    </span>
+                    <span
+                      className={cn(
+                        "min-w-0 flex-1",
+                        active ? "text-foreground" : "text-foreground/75"
+                      )}
+                    >
+                      <span className="block truncate text-sm leading-tight font-semibold">
+                        {tool.label}
+                      </span>
+                      <span className="text-muted-foreground/60 mt-0.5 block truncate text-[11px]">
+                        {toolDescription}
+                      </span>
                     </span>
                   </button>
                 );

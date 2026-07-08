@@ -605,7 +605,7 @@ export function useAccountProjectSync({
           const fallbackSavedAt = saveLocalSyncFallback(targetDesign);
           markProjectSyncFailed(
             targetDesign.id,
-            error instanceof Error ? error.message : "Could not sync project",
+            error instanceof Error ? error.message : "Account sync failed",
             fallbackSavedAt
           );
         }
@@ -645,7 +645,10 @@ export function useAccountProjectSync({
           : loadProject(projectId);
 
       if (!targetDesign) {
-        toast.error("Could not load local project");
+        toast.error("Could not load local project", {
+          description:
+            "TrackDraw could not read the saved copy on this device. Try opening another local project or export a JSON backup from the current canvas.",
+        });
         return;
       }
 
@@ -667,11 +670,11 @@ export function useAccountProjectSync({
 
         markProjectSyncFailed(
           projectId,
-          error instanceof Error ? error.message : "Could not sync project"
+          error instanceof Error ? error.message : "Account sync failed"
         );
-        toast.error("Could not sync project", {
+        toast.error("Account sync failed", {
           description:
-            error instanceof Error ? error.message : "Please try again.",
+            "A local copy was saved on this device. Retry sync when the connection or account service is available, or export JSON if you need a manual backup.",
         });
       } finally {
         setSyncingProjectId(null);
@@ -760,12 +763,12 @@ export function useAccountProjectSync({
 
         markProjectSyncFailed(
           currentDesignId,
-          error instanceof Error ? error.message : "Cloud sync failed"
+          error instanceof Error ? error.message : "Account sync failed"
         );
-        setSaveStatusLabel("Cloud sync failed");
-        toast.error("Could not sync project", {
+        setSaveStatusLabel("Account sync failed; saved locally");
+        toast.error("Account sync failed", {
           description:
-            error instanceof Error ? error.message : "Please try again.",
+            "TrackDraw saved the latest copy on this device, but could not update the account copy. Retry sync when the connection is back.",
           action: {
             label: "Retry",
             onClick: () => {
@@ -842,10 +845,10 @@ export function useAccountProjectSync({
         setProjectVersionConflict(null);
         setSaveStatusLabel("Project opened from account");
         return true;
-      } catch (error) {
+      } catch {
         toast.error("Could not open project", {
           description:
-            error instanceof Error ? error.message : "Please try again.",
+            "TrackDraw could not load the account copy. Try again, or keep working from the local project if one is available.",
         });
         return false;
       }

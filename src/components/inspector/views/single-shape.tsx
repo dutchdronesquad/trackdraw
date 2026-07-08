@@ -25,6 +25,7 @@ import { buildCatalogTypePatch } from "@/lib/editor/catalog-type-patch";
 import {
   getSingleInspectorViewModel,
   inspectorActionBtnClass,
+  inspectorActionBtnDangerClass,
   inspectorActionBtnPrimaryClass,
 } from "@/lib/inspector/single/view-model";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
@@ -275,6 +276,7 @@ export function SingleInspectorView({
                 onClick={() => duplicateShapes([shape.id])}
                 title={tCommon("actions.duplicate")}
                 aria-label={tCommon("actions.duplicate")}
+                disabled={shape.locked}
                 className={`${actionBtnClass} min-w-0`}
               >
                 <Copy className="size-3 shrink-0" />
@@ -288,7 +290,8 @@ export function SingleInspectorView({
                 }}
                 title={tCommon("actions.delete")}
                 aria-label={tCommon("actions.delete")}
-                className={`${actionBtnClass} min-w-0 border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12`}
+                disabled={shape.locked}
+                className={`${inspectorActionBtnDangerClass} min-w-0`}
               >
                 <Trash2 className="size-3 shrink-0" />
                 <span className="truncate">{t("actions.deleteShort")}</span>

@@ -270,6 +270,34 @@ describe("canvas snap helpers", () => {
     ).toEqual({ x: 8, y: 9 });
   });
 
+  it("excludes selected shape and route ids while resolving snap positions", () => {
+    expect(
+      resolveSnapPosition({
+        pos: { x: 10.2, y: 10.1 },
+        snapToGrid: false,
+        snapToShapes: true,
+        gridStep: 1,
+        magneticRadiusMeters: 1,
+        candidates,
+        routeCandidates: [route],
+        excludeIds: ["gate-1"],
+      })
+    ).toEqual({ x: 10.2, y: 10.1 });
+
+    expect(
+      resolveSnapPosition({
+        pos: { x: 7.3, y: 6.2 },
+        snapToGrid: false,
+        snapToShapes: true,
+        gridStep: 1,
+        magneticRadiusMeters: 1,
+        candidates: [],
+        routeCandidates: [route],
+        excludeIds: ["route-1"],
+      })
+    ).toEqual({ x: 7.3, y: 6.2 });
+  });
+
   it("falls back to grid snapping or raw positions as configured", () => {
     expect(
       resolveSnapPosition({

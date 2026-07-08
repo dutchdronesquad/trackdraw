@@ -46,14 +46,20 @@ The next TrackDraw priority is export and handoff workflow polish first, editor 
   - [ ] Generated flightpath validation follow-up
         Validate real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid.
 
-- [ ] Editor reliability polish (`No account required`, `Account-backed`)
-      Run a focused stability pass over shipped workflows before adding another large surface. Prioritize recovery states, mobile ergonomics, selection/transforms, autosave/account sync edge cases, imports/exports, sharing, read-only viewing, and larger layouts.
-  - [ ] Recovery and failure states
-        Make autosave, import, export, share, account sync, and runtime failures explain what happened and what the user can do next.
-  - [ ] Mobile editor ergonomics pass
+- [x] Editor reliability polish (`No account required`, `Account-backed`)
+      Run focused stability passes over shipped editor workflows before adding another large surface. Keep each slice small enough to validate without risking import/export, autosave, share publish/read, read-only viewing, or mobile editor flows.
+  - [x] Locked selection action safeguards
+        Locked selections consistently block destructive or confusing actions such as duplicate, delete, route join, and route close across store actions, shortcuts, context menus, inspector controls, item lists, and mobile overlays, while group organization remains available.
+  - [x] Route editing regression pass
+        Harden waypoint insert, delete, drag, segment and vertex selection clearing, route close/join, snapping, undo/redo, and mobile path controls.
+  - [x] Transform and snapping regression pass
+        Validate move, nudge, rotate, resize handles, snapping, grouped selections, mixed locked/editable selections, and no-op history behavior.
+  - [x] Mobile editor ergonomics pass
         Tighten drawers, touch targets, compact labels, Project Manager flows, path tools, multi-select actions, map reference controls, and inspector panels.
-  - [ ] Selection and transform regression pass
-        Harden locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, undo/redo, shortcuts, and mobile overlays.
+  - [x] Recovery and failure states
+        Make autosave, import, export, share, account sync, and runtime failures explain what happened and what the user can do next.
+  - [x] Large-layout stability pass
+        Stress-test dense layouts, long routes, map references, 3D preview, PDF/export, and make targeted performance or debounce fixes.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.
@@ -70,8 +76,8 @@ The next TrackDraw priority is export and handoff workflow polish first, editor 
         Catmull-Rom splines (chord-length parameterized) were already the sole rendering path for committed polylines. The drawing overlay now also relies on the smooth preview exclusively, making the curve shape visible from the first waypoint onwards.
   - [ ] Per-waypoint curve strength (`Research`)
         Only pursue if automatic smoothing is not sufficient and if there is an interaction model that works on both desktop and mobile. Direct canvas handles are likely too fiddly on touch; validate an inspector- or gesture-based alternative first before committing to an approach.
-  - [ ] Interactive elevation profile dialog
-        Improve the Elevation Profile dialog as a route-review surface, not just a static chart. Add clearer dialog structure, hover/selection links between the profile and route, obstacle/timing/warning markers, and jump-to-segment behavior for warnings. Keep direct elevation editing in the chart out of the first slice until navigation and review interactions feel solid.
+  - [x] Interactive elevation profile dialog
+        Turned the Elevation Profile into a route-review surface with focusable waypoint markers, obstacle/timing/warning markers, warning-segment jump actions, and profile-to-canvas selection/hover links. Direct elevation editing remains out of scope until navigation and review interactions have settled.
   - [ ] 3D maneuver curve optimization (`Research`)
         Powerloops, split-S maneuvers, and similar moves are inherently 3D: a powerloop is a full vertical circle back through a gate, a split-S is a downward half-loop with a direction reversal. The current CatmullRom route renders these as flat horizontal curves, which is physically wrong. The goal is geometry-driven optimization with no manual annotation — the user just draws waypoints that describe the spatial intent (a tight loop near a gate, a 180° arc with elevation change), and the optimizer automatically detects the pattern and generates the correct 3D curve. The 2D canvas shows a recognizable indicator for the detected maneuver section; the 3D preview renders the actual vertical loop or half-loop. Research document: `docs/research/maneuver-curve-optimization.md`.
   - [x] Research note and first-pass maneuver signals
@@ -81,8 +87,8 @@ The next TrackDraw priority is export and handoff workflow polish first, editor 
 
 ## Later Product Follow-up
 
-- [ ] Remove legacy localStorage migration shims (`Lower priority`, `No account required`)
-      Two migration shims were added in v1.11.0 to preserve existing user preferences after the Zustand persist migration. Remove them once enough releases have passed that the old keys are no longer realistically present. The shims live in `src/store/measurement-unit.ts` (legacy raw-string format for `trackdraw.measurementUnitSystem`) and `src/store/editor-hints.ts` (legacy `trackdraw-hint-*-dismissed` per-key format). Safe to remove no earlier than v1.13.0.
+- [x] Remove legacy localStorage migration shims (`Lower priority`, `No account required`)
+      Removed the v1.11.0 one-time migration shims for the old raw-string `trackdraw.measurementUnitSystem` value and the old per-key `trackdraw-hint-*-dismissed` hint flags. The active Zustand persist keys remain unchanged.
 
 - [ ] VelociDrone experimental export stabilization (`Lower priority`, `No account required`)
       Keep this parked until there is appetite to validate more real layouts and tighten prefab mapping/orientation edge cases.

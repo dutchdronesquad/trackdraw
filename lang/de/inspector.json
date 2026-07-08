@@ -241,9 +241,18 @@
     "apexSuffix": ", Scheitel {index}",
     "waypointSingle": "Wegpunkt {index}",
     "waypointRange": "Wegpunkte {start}-{end}",
+    "waypointMarkerAria": "Wegpunkt {index} im Höhenprofil auswählen",
+    "warningMarkerAria": "Zu {warning}-Segment {segment} springen",
+    "timingMarkerAria": "Timing-Marker {label} im Höhenprofil auswählen",
+    "obstacleMarkerAria": "Hindernis {index} im Höhenprofil auswählen",
     "routeReviewHeading": "Routenprüfung",
+    "warningSegmentsHeading": "Warnsegmente",
+    "jumpToSegment": "Zu Segment {segment} springen",
     "noWarnings": "Keine Routenwarnungen für diesen Pfad.",
     "normal": "Normal",
+    "timingMarkersLegend": "Timing",
+    "obstacleMarkersLegend": "Hindernisse",
+    "warningMarkersLegend": "Warnungen",
     "maneuvers": {
       "powerloop": "Powerloop",
       "split-s": "Split-S"

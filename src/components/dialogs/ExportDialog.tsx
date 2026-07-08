@@ -582,12 +582,16 @@ export default function ExportDialog({
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      const description = t("export.errors.exportFailedDescription", {
+        message,
+      });
       if (options?.toastId !== undefined) {
-        toast.error(t("export.errors.exportFailed", { message }), {
+        toast.error(t("export.errors.exportFailed"), {
+          description,
           id: options.toastId,
         });
       } else {
-        toast.error(t("export.errors.exportFailed", { message }));
+        toast.error(t("export.errors.exportFailed"), { description });
       }
     } finally {
       setBusy(null);
@@ -933,7 +937,7 @@ export default function ExportDialog({
   const activeContent = (
     <div className="space-y-5">
       {hasMultipleFormats ? (
-        <div className="grid gap-1 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-1">
           {activeFormats.map((format) => (
             <ExportFormatChoice
               key={format.id}

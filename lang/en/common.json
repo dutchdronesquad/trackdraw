@@ -62,6 +62,14 @@
       "openReleaseNotesForCommit": "commit {sha} · Open release notes on GitHub"
     }
   },
+  "runtimeError": {
+    "badge": "Runtime error",
+    "title": "TrackDraw hit a problem.",
+    "description": "The current screen stopped rendering. Your local project data is usually still stored in this browser, but avoid closing the tab until you have tried to recover.",
+    "tryAgain": "Try again",
+    "openStudio": "Open Studio",
+    "nextStep": "If this keeps happening, reopen Studio and export a JSON backup before continuing with major edits."
+  },
   "status": {
     "active": "Active",
     "expired": "Expired",

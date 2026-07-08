@@ -519,7 +519,9 @@ export default function EditorShell({
       } catch (error) {
         const message =
           error instanceof Error ? error.message : t("shell.exportFailed");
-        toast.error(t("shell.exportFailed"), { description: message });
+        toast.error(t("shell.exportFailed"), {
+          description: t("shell.exportFailedDescription", { message }),
+        });
       }
     },
     [design, t]

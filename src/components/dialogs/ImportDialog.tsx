@@ -55,7 +55,7 @@ export default function ImportDialog({
       try {
         data = JSON.parse(text);
       } catch {
-        setError(t("import.errorInvalidJson"));
+        setError(t("import.errorInvalidJsonHelp"));
         setParsed(null);
         reportImportError(
           t("import.toastImportFailed"),
@@ -75,7 +75,7 @@ export default function ImportDialog({
         });
         setError(null);
       } catch {
-        setError(t("import.errorInvalidProject"));
+        setError(t("import.errorInvalidProjectHelp"));
         setParsed(null);
         reportImportError(
           t("import.toastImportFailed"),
@@ -89,7 +89,7 @@ export default function ImportDialog({
   const handleFile = useCallback(
     (file: File) => {
       if (!file.name.endsWith(".json")) {
-        setError(t("import.errorUnsupportedFile"));
+        setError(t("import.errorUnsupportedFileHelp"));
         setParsed(null);
         toast.error(t("import.toastImportFailed"), {
           description: t("import.toastUnsupportedFile"),
@@ -97,7 +97,7 @@ export default function ImportDialog({
         return;
       }
       file.text().then(tryParse, () => {
-        setError(t("import.errorReadFailed"));
+        setError(t("import.errorReadFailedHelp"));
         setParsed(null);
         toast.error(t("import.toastImportFailed"), {
           description: t("import.toastReadFailed"),

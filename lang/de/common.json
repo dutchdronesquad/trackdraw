@@ -62,6 +62,14 @@
       "openReleaseNotesForCommit": "Commit {sha} · Release Notes auf GitHub öffnen"
     }
   },
+  "runtimeError": {
+    "badge": "Laufzeitfehler",
+    "title": "TrackDraw ist in dieser Ansicht abgestürzt.",
+    "description": "Der aktuelle Bildschirm konnte nicht weiter gerendert werden. Deine lokalen Projektdaten sind normalerweise weiterhin in diesem Browser gespeichert, aber schließe den Tab erst, nachdem du die Wiederherstellung versucht hast.",
+    "tryAgain": "Erneut versuchen",
+    "openStudio": "Studio öffnen",
+    "nextStep": "Wenn das weiter passiert, öffne Studio erneut und exportiere ein JSON-Backup, bevor du größere Änderungen machst."
+  },
   "status": {
     "active": "Aktiv",
     "expired": "Abgelaufen",

@@ -280,7 +280,8 @@
       }
     },
     "errors": {
-      "exportFailed": "Export failed: {message}"
+      "exportFailed": "Export failed",
+      "exportFailedDescription": "{message} Try again, switch export format, or export the project JSON as a manual backup."
     }
   },
   "import": {
@@ -289,9 +290,13 @@
     "dropFile": "Drop a file here",
     "browseFile": "or click to browse",
     "errorInvalidJson": "Invalid JSON file.",
+    "errorInvalidJsonHelp": "Invalid JSON file. Choose a complete .json export from TrackDraw and try again.",
     "errorInvalidProject": "This does not look like a TrackDraw project.",
+    "errorInvalidProjectHelp": "This does not look like a TrackDraw project. Choose a JSON project file exported from TrackDraw.",
     "errorUnsupportedFile": "Only TrackDraw JSON project files are supported.",
+    "errorUnsupportedFileHelp": "Only TrackDraw JSON project files are supported. Choose a .json backup exported from TrackDraw.",
     "errorReadFailed": "TrackDraw could not read this file.",
+    "errorReadFailedHelp": "TrackDraw could not read this file. Try again or choose another backup.",
     "toastImportFailed": "Import failed",
     "toastUnsupportedFile": "Choose a .json file exported from TrackDraw.",
     "toastInvalidJson": "TrackDraw could not read this JSON file. Check the file and try again.",
@@ -519,13 +524,24 @@
       }
     },
     "errors": {
-      "createFailed": "Failed to create share link",
-      "copyFailed": "Failed to copy link",
-      "revokeFailed": "Failed to revoke link",
-      "embedCopyFailed": "Failed to copy embed code",
-      "galleryListFailed": "Failed to list in gallery",
-      "galleryUpdateFailed": "Failed to update gallery details",
-      "unableToReadLink": "Unable to read the current share link"
+      "createFailed": "Could not create share link",
+      "createFailedDescription": "TrackDraw could not publish the current snapshot. Check your connection and try again; export JSON if you need to hand it off now.",
+      "copyFailed": "Could not copy link",
+      "copyFailedDescription": "The link may still be available in the field. Select it and copy manually if the browser blocks clipboard access.",
+      "nativeShareFailed": "Could not open sharing",
+      "nativeShareFailedDescription": "This browser could not open the system share sheet. Copy the link instead.",
+      "revokeFailed": "Could not revoke link",
+      "revokeFailedDescription": "The link may still be active. Try again from this dialog or the Project Manager shares tab.",
+      "embedCopyFailed": "Could not copy embed code",
+      "embedCopyFailedDescription": "The embed code is still visible. Select it and copy manually if the browser blocks clipboard access.",
+      "galleryListFailed": "Could not list in gallery",
+      "galleryListFailedDescription": "The share link was not added to the public gallery. Check the title, description, preview, and connection before trying again.",
+      "galleryRemoveFailed": "Could not remove from gallery",
+      "galleryRemoveFailedDescription": "The gallery entry may still be visible. Try again, or revoke the share link if it must stop being accessible.",
+      "galleryUpdateFailed": "Could not update gallery details",
+      "galleryUpdateFailedDescription": "The published gallery card was not changed. Check the title and description, then try again.",
+      "unableToReadLink": "Unable to read the current share link",
+      "unableToReadLinkDescription": "Reload this share page, or open the link from Project Manager if it is an account-published share."
     },
     "success": {
       "linkUpdated": "Link updated",
@@ -657,8 +673,10 @@
       },
       "messages": {
         "loadFailed": "Could not load account projects",
+        "loadFailedDescription": "Local projects on this device remain available. Check your connection or sign in again, then reopen Project Manager.",
         "conflictWarning": "This project changed on another device while you were signed out",
         "syncError": "Could not sync the latest changes",
+        "localCopySavedAfterFailure": "Latest local copy saved {relativeTime}",
         "resolveConflictFirst": "Resolve the version conflict first"
       },
       "actions": {

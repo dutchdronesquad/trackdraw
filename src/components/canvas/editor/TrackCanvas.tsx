@@ -731,6 +731,9 @@ const TrackCanvas = memo(
           );
         });
         const selectedShapes = nextSelection.map((id) => shapeById[id]);
+        const selectedHasLockedShapes = selectedShapes.some((shape) =>
+          Boolean(shape?.locked)
+        );
         const selectedGroupIds = Array.from(
           new Set(
             selectedShapes
@@ -785,14 +788,11 @@ const TrackCanvas = memo(
               : null,
           groupLabel,
           hasGroupedShapes: selectionHasGroupedShapes(selectedShapes),
-          hasLockedShapes: nextSelection.some((id) => {
-            const shape = shapeById[id];
-            return Boolean(shape?.locked);
-          }),
+          hasLockedShapes: selectedHasLockedShapes,
           ids: nextSelection,
           joinablePolylineIds: nextSelection.filter((id) => {
             const shape = shapeById[id];
-            return shape?.kind === "polyline" && !shape.closed;
+            return shape?.kind === "polyline" && !shape.closed && !shape.locked;
           }),
           label:
             nextSelection.length > 1
