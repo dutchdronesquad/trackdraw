@@ -30,6 +30,7 @@ import {
   getShapeTimingMarker,
   getTimingMarkerColor,
   getTimingMarkerTitle,
+  type ShapeTimingMarker,
 } from "@/lib/track/timing";
 import { selectDesignShapes, selectPrimaryPolyline } from "@/store/selectors";
 import { cn } from "@/lib/utils";
@@ -62,7 +63,7 @@ type ChartTimingRouteMarkerCandidate = Omit<
   ChartRouteMarker,
   "ariaLabel" | "type"
 > & {
-  timingTitle: string;
+  marker: ShapeTimingMarker;
   type: "timing";
 };
 
@@ -1044,8 +1045,11 @@ export default function ElevationChart({ className }: { className?: string }) {
   const routeMarkers = useMemo<ChartRouteMarker[]>(() => {
     if (!path) return [];
 
-    const obstacleNumberMap = getObstacleNumberMap(design);
-    let splitIndex = 0;
+    const primaryPolylineId = designShapes.find(
+      (shape): shape is PolylineShape => shape.kind === "polyline"
+    )?.id;
+    const obstacleNumberMap =
+      path.id === primaryPolylineId ? getObstacleNumberMap(design) : null;
     const markerCandidates = designShapes
       .filter((shape) => shape.id !== path.id)
       .flatMap((shape): ChartRouteMarkerCandidate[] => {
@@ -1055,15 +1059,13 @@ export default function ElevationChart({ className }: { className?: string }) {
         if (projection.pathDistance > getRouteMarkerTolerance(shape)) return [];
 
         if (marker) {
-          if (marker.role === "split") splitIndex += 1;
-          const title = getTimingMarkerTitle(marker, splitIndex);
           return [
             {
               color: getTimingMarkerColor(marker),
               d: projection.d,
               id: `timing-${shape.id}`,
+              marker,
               shapeId: shape.id,
-              timingTitle: title,
               type: "timing",
             },
           ];
@@ -1076,13 +1078,14 @@ export default function ElevationChart({ className }: { className?: string }) {
             color: "#64748b",
             d: projection.d,
             id: `obstacle-${shape.id}`,
-            obstacleNumber: obstacleNumberMap.get(shape.id),
+            obstacleNumber: obstacleNumberMap?.get(shape.id),
             shapeId: shape.id,
             type: "obstacle",
           },
         ];
       });
 
+    let splitIndex = 0;
     let fallbackObstacleIndex = 0;
     return markerCandidates
       .sort(
@@ -1090,10 +1093,12 @@ export default function ElevationChart({ className }: { className?: string }) {
       )
       .map((marker) => {
         if (marker.type === "timing") {
-          const { timingTitle, ...routeMarker } = marker;
+          if (marker.marker.role === "split") splitIndex += 1;
+          const title = getTimingMarkerTitle(marker.marker, splitIndex);
+          const { marker: _marker, ...routeMarker } = marker;
           return {
             ...routeMarker,
-            ariaLabel: t("timingMarkerAria", { label: timingTitle }),
+            ariaLabel: t("timingMarkerAria", { label: title }),
           };
         }
 
