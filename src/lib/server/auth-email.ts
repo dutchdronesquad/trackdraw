@@ -224,7 +224,16 @@ function buildEmailShell({
   `.trim();
 }
 
+export function buildMagicLinkConfirmationUrl(url: string) {
+  const verifyUrl = new URL(url);
+  const confirmationUrl = new URL("/login/magic-link", verifyUrl.origin);
+  confirmationUrl.search = verifyUrl.search;
+  return confirmationUrl.toString();
+}
+
 export function buildMagicLinkEmail(url: string): AuthEmailContent {
+  const confirmationUrl = buildMagicLinkConfirmationUrl(url);
+
   return {
     subject: "Your TrackDraw sign-in link",
     htmlBody: buildEmailShell({
@@ -233,12 +242,12 @@ export function buildMagicLinkEmail(url: string): AuthEmailContent {
       intro:
         "Use the button below to sign in and reopen your TrackDraw projects. This link expires in 10 minutes.",
       actionLabel: "Open TrackDraw",
-      url,
+      url: confirmationUrl,
       note: "This sign-in link is intended for you only. If you did not request it, you can safely ignore this email.",
     }),
     textBody:
       `Sign in to TrackDraw\n\n` +
-      `Open this one-time sign-in link within 10 minutes:\n${url}\n\n` +
+      `Open this one-time sign-in link within 10 minutes:\n${confirmationUrl}\n\n` +
       `If you did not request this email, you can ignore it.`,
   };
 }

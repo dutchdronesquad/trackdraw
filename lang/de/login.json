@@ -39,5 +39,24 @@
     "passkeyNotFound": "Dieser Passkey konnte keinem TrackDraw-Konto zugeordnet werden. Versuche einen anderen Passkey oder nutze den Anmeldelink per E-Mail.",
     "passkeyFailed": "Anmeldung mit Passkey fehlgeschlagen.",
     "checkEmail": "Prüfe deine E-Mail auf einen Anmeldelink."
+  },
+  "magicLinkVerify": {
+    "eyebrow": "Sichere Anmeldung",
+    "secureSession": "Geschützte Magic-Link-Übergabe",
+    "needsNewLink": "Neuer Link erforderlich",
+    "autoTitle": "Du wirst angemeldet",
+    "autoDescription": "TrackDraw öffnet deinen Arbeitsbereich mit dem Anmeldelink aus deiner E-Mail.",
+    "title": "TrackDraw öffnen",
+    "description": "Fahre in diesem Browser fort, um die Anmeldung abzuschließen. So bleibt dein einmaliger Link vor automatischen E-Mail-Sicherheitsprüfungen geschützt.",
+    "statusEmail": "E-Mail-Link empfangen",
+    "statusVerify": "Anmeldelink wird geprüft",
+    "statusStudio": "Arbeitsbereich wird geöffnet",
+    "continue": "Weiter zu TrackDraw",
+    "continuing": "Weiter...",
+    "requestNewLink": "Neuen Link anfordern",
+    "backToLogin": "Zurück zur Anmeldung",
+    "invalidTitle": "Dieser Anmeldelink ist unvollständig",
+    "invalidDescription": "Fordere einen neuen Anmeldelink an und öffne die neueste TrackDraw-E-Mail.",
+    "failed": "Dieser Anmeldelink konnte nicht verwendet werden. Fordere einen neuen Link an und versuche es erneut."
   }
 }

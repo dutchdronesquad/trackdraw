@@ -39,5 +39,24 @@
     "passkeyNotFound": "We couldn't match that passkey to your TrackDraw account. Try another passkey or use your email sign-in link.",
     "passkeyFailed": "Failed to sign in with passkey.",
     "checkEmail": "Check your email for a sign-in link."
+  },
+  "magicLinkVerify": {
+    "eyebrow": "Secure sign-in",
+    "secureSession": "Protected magic-link handoff",
+    "needsNewLink": "Fresh link needed",
+    "autoTitle": "Signing you in",
+    "autoDescription": "TrackDraw is opening your workspace with the sign-in link from your email.",
+    "title": "Open TrackDraw",
+    "description": "Continue from this browser to finish signing in. This protects your one-time link from automatic email security checks.",
+    "statusEmail": "Email link received",
+    "statusVerify": "Verifying your sign-in link",
+    "statusStudio": "Opening your workspace",
+    "continue": "Continue to TrackDraw",
+    "continuing": "Continuing...",
+    "requestNewLink": "Request a new link",
+    "backToLogin": "Back to login",
+    "invalidTitle": "This sign-in link is incomplete",
+    "invalidDescription": "Request a new sign-in link and open it from the latest TrackDraw email.",
+    "failed": "This sign-in link could not be used. Request a new link and try again."
   }
 }

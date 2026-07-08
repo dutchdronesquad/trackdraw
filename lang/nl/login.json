@@ -39,5 +39,24 @@
     "passkeyNotFound": "We konden die passkey niet koppelen aan je TrackDraw-account. Probeer een andere passkey of gebruik je e-mailinloglink.",
     "passkeyFailed": "Inloggen met passkey mislukt.",
     "checkEmail": "Controleer je e-mail voor een inloglink."
+  },
+  "magicLinkVerify": {
+    "eyebrow": "Veilig inloggen",
+    "secureSession": "Beschermde magic-link overdracht",
+    "needsNewLink": "Nieuwe link nodig",
+    "autoTitle": "Je wordt ingelogd",
+    "autoDescription": "TrackDraw opent je werkruimte met de inloglink uit je e-mail.",
+    "title": "Open TrackDraw",
+    "description": "Ga verder vanuit deze browser om het inloggen af te ronden. Zo blijft je eenmalige link beschermd tegen automatische e-mailcontroles.",
+    "statusEmail": "E-maillink ontvangen",
+    "statusVerify": "Je inloglink controleren",
+    "statusStudio": "Je werkruimte openen",
+    "continue": "Verder naar TrackDraw",
+    "continuing": "Doorgaan...",
+    "requestNewLink": "Nieuwe link aanvragen",
+    "backToLogin": "Terug naar inloggen",
+    "invalidTitle": "Deze inloglink is niet compleet",
+    "invalidDescription": "Vraag een nieuwe inloglink aan en open de nieuwste TrackDraw-mail.",
+    "failed": "Deze inloglink kon niet worden gebruikt. Vraag een nieuwe link aan en probeer het opnieuw."
   }
 }

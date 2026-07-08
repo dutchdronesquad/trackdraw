@@ -14,7 +14,11 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { authClient, isDevAuthShimEnabled } from "@/lib/auth-client";
+import {
+  authClient,
+  isDevAuthShimEnabled,
+  markMagicLinkRequested,
+} from "@/lib/auth-client";
 
 function getLoginCallbackURL() {
   if (typeof window === "undefined") {
@@ -81,6 +85,7 @@ export default function LoginPage() {
         newUserCallbackURL: callbackURL,
       });
 
+      markMagicLinkRequested(callbackURL);
       toast.success(t("signIn.checkEmail"));
       setEmailSent(true);
     } catch (authError) {

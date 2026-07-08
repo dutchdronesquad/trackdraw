@@ -9,6 +9,7 @@ const signOutMock = vi.fn();
 const deleteUserMock = vi.fn();
 const updateUserMock = vi.fn();
 const magicLinkMock = vi.fn();
+const magicLinkVerifyMock = vi.fn();
 const passkeySignInMock = vi.fn();
 let restoreStorage: (() => void) | null = null;
 
@@ -29,6 +30,9 @@ vi.mock("better-auth/react", () => ({
     signIn: {
       magicLink: magicLinkMock,
       passkey: passkeySignInMock,
+    },
+    magicLink: {
+      verify: magicLinkVerifyMock,
     },
   })),
 }));
@@ -55,6 +59,7 @@ describe("authClient session resolution", () => {
 
     signOutMock.mockResolvedValue(undefined);
     deleteUserMock.mockResolvedValue(undefined);
+    magicLinkVerifyMock.mockResolvedValue({ data: {}, error: null });
 
     vi.stubGlobal(
       "fetch",
@@ -200,6 +205,74 @@ describe("authClient session resolution", () => {
       callbackURL: "/studio",
     });
     expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("omits duplicate new-user callback URLs from magic-link sign-in", async () => {
+    const { authClient } = await import("@/lib/auth-client");
+
+    await authClient.signIn.magicLink({
+      email: "pilot@trackdraw.local",
+      callbackURL: "/studio/2/project-1",
+      newUserCallbackURL: "/studio/2/project-1",
+    });
+
+    expect(magicLinkMock).toHaveBeenCalledWith({
+      email: "pilot@trackdraw.local",
+      callbackURL: "/studio/2/project-1",
+    });
+  });
+
+  it("keeps distinct new-user callback URLs for magic-link sign-in", async () => {
+    const { authClient } = await import("@/lib/auth-client");
+
+    await authClient.signIn.magicLink({
+      email: "pilot@trackdraw.local",
+      callbackURL: "/studio",
+      newUserCallbackURL: "/studio/2/project-1",
+    });
+
+    expect(magicLinkMock).toHaveBeenCalledWith({
+      email: "pilot@trackdraw.local",
+      callbackURL: "/studio",
+      newUserCallbackURL: "/studio/2/project-1",
+    });
+  });
+
+  it("tracks recent magic-link requests for same-browser handoff", async () => {
+    const {
+      canAutoVerifyMagicLink,
+      clearMagicLinkRequestMarker,
+      markMagicLinkRequested,
+    } = await import("@/lib/auth-client");
+
+    expect(canAutoVerifyMagicLink("/studio")).toBe(false);
+
+    markMagicLinkRequested("/studio");
+
+    expect(canAutoVerifyMagicLink("/studio")).toBe(true);
+    expect(canAutoVerifyMagicLink(null)).toBe(true);
+    expect(canAutoVerifyMagicLink("/gallery")).toBe(false);
+
+    clearMagicLinkRequestMarker();
+
+    expect(canAutoVerifyMagicLink("/studio")).toBe(false);
+  });
+
+  it("verifies magic links through Better Auth without forwarding redirect URLs", async () => {
+    const { authClient } = await import("@/lib/auth-client");
+
+    await authClient.magicLink.verify({
+      token: "token-1",
+      callbackURL: "/studio/2/project-1",
+      newUserCallbackURL: "/welcome",
+      errorCallbackURL: "/login",
+    });
+
+    expect(magicLinkVerifyMock).toHaveBeenCalledWith({
+      query: {
+        token: "token-1",
+      },
+    });
   });
 
   it("trims profile names before updating the Better Auth user", async () => {

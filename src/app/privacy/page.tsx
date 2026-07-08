@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Footer } from "@/components/landing/Footer";
 import { PublicSiteHeader } from "@/components/landing/PublicSiteHeader";
+import LanguageProvider from "@/i18n/LanguageProvider";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("legal");
@@ -71,78 +72,80 @@ export default async function PrivacyPage() {
   ];
 
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <PublicSiteHeader currentPage="legal" />
+    <LanguageProvider namespaces={["common", "landing"]}>
+      <div className="bg-background text-foreground min-h-screen">
+        <PublicSiteHeader currentPage="legal" />
 
-      <main>
-        <section className="border-border/40 border-b">
-          <div className="mx-auto w-full max-w-4xl px-6 py-14 sm:py-20">
-            <p className="text-brand-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
-              {t("privacy.breadcrumbLegal")}
-            </p>
-            <h1 className="mt-4 text-4xl leading-tight font-semibold tracking-normal sm:text-5xl">
-              {t("privacy.pageTitle")}
-            </h1>
-            <p className="text-muted-foreground mt-5 max-w-2xl text-sm leading-7">
-              {t("privacy.effectiveDate")}
-            </p>
-          </div>
-        </section>
-
-        <section>
-          <div className="mx-auto w-full max-w-4xl px-6 py-12 sm:py-16">
-            <div className="space-y-10">
-              {sections.map((section) => (
-                <section key={section.title}>
-                  <h2 className="text-xl font-semibold tracking-normal">
-                    {section.title}
-                  </h2>
-                  <div className="text-muted-foreground mt-3 space-y-3 text-sm leading-7">
-                    {section.body.map((item, i) =>
-                      typeof item === "string" ? (
-                        <p key={i}>{item}</p>
-                      ) : (
-                        <div key={i} className="space-y-2">
-                          <p>{item.intro}</p>
-                          <ul className="list-disc space-y-1.5 pl-5">
-                            {item.list.map((li) => (
-                              <li key={li}>{li}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </section>
-              ))}
-
-              <section className="border-border/50 bg-muted/18 rounded-2xl border p-6">
-                <h2 className="text-xl font-semibold tracking-normal">
-                  {t("privacy.s10Title")}
-                </h2>
-                <p className="text-muted-foreground mt-3 text-sm leading-7">
-                  {t("privacy.s10Body")}
-                </p>
-              </section>
-
-              <p className="text-muted-foreground text-sm leading-7">
-                {t.rich("privacy.seeTerms", {
-                  link: (chunks) => (
-                    <Link
-                      href="/terms"
-                      className="text-brand-primary hover:text-brand-primary/85 font-medium transition-colors"
-                    >
-                      {chunks}
-                    </Link>
-                  ),
-                })}
+        <main>
+          <section className="border-border/40 border-b">
+            <div className="mx-auto w-full max-w-4xl px-6 py-14 sm:py-20">
+              <p className="text-brand-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
+                {t("privacy.breadcrumbLegal")}
+              </p>
+              <h1 className="mt-4 text-4xl leading-tight font-semibold tracking-normal sm:text-5xl">
+                {t("privacy.pageTitle")}
+              </h1>
+              <p className="text-muted-foreground mt-5 max-w-2xl text-sm leading-7">
+                {t("privacy.effectiveDate")}
               </p>
             </div>
-          </div>
-        </section>
-      </main>
+          </section>
 
-      <Footer />
-    </div>
+          <section>
+            <div className="mx-auto w-full max-w-4xl px-6 py-12 sm:py-16">
+              <div className="space-y-10">
+                {sections.map((section) => (
+                  <section key={section.title}>
+                    <h2 className="text-xl font-semibold tracking-normal">
+                      {section.title}
+                    </h2>
+                    <div className="text-muted-foreground mt-3 space-y-3 text-sm leading-7">
+                      {section.body.map((item, i) =>
+                        typeof item === "string" ? (
+                          <p key={i}>{item}</p>
+                        ) : (
+                          <div key={i} className="space-y-2">
+                            <p>{item.intro}</p>
+                            <ul className="list-disc space-y-1.5 pl-5">
+                              {item.list.map((li) => (
+                                <li key={li}>{li}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </section>
+                ))}
+
+                <section className="border-border/50 bg-muted/18 rounded-2xl border p-6">
+                  <h2 className="text-xl font-semibold tracking-normal">
+                    {t("privacy.s10Title")}
+                  </h2>
+                  <p className="text-muted-foreground mt-3 text-sm leading-7">
+                    {t("privacy.s10Body")}
+                  </p>
+                </section>
+
+                <p className="text-muted-foreground text-sm leading-7">
+                  {t.rich("privacy.seeTerms", {
+                    link: (chunks) => (
+                      <Link
+                        href="/terms"
+                        className="text-brand-primary hover:text-brand-primary/85 font-medium transition-colors"
+                      >
+                        {chunks}
+                      </Link>
+                    ),
+                  })}
+                </p>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <Footer />
+      </div>
+    </LanguageProvider>
   );
 }

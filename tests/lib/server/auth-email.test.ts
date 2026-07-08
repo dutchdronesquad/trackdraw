@@ -5,6 +5,7 @@ vi.mock("server-only", () => ({}));
 import {
   buildChangeEmailConfirmationEmail,
   buildEmailVerificationEmail,
+  buildMagicLinkConfirmationUrl,
   buildMagicLinkEmail,
   getAuthEmailPreviewContent,
 } from "@/lib/server/auth-email";
@@ -26,7 +27,24 @@ describe("auth email templates", () => {
       "https://preview.trackdraw.app/assets/brand/trackdraw-logo-color-darkbg@2x.png"
     );
     expect(email.htmlBody).toContain("Open TrackDraw");
+    expect(email.htmlBody).toContain(
+      "https://preview.trackdraw.app/login/magic-link?token=abc"
+    );
+    expect(email.htmlBody).not.toContain("/api/auth/magic-link/verify");
     expect(email.textBody).toContain("Open this one-time sign-in link");
+    expect(email.textBody).toContain(
+      "https://preview.trackdraw.app/login/magic-link?token=abc"
+    );
+  });
+
+  it("rewrites magic-link verification URLs to the confirmation page", () => {
+    expect(
+      buildMagicLinkConfirmationUrl(
+        "https://trackdraw.app/api/auth/magic-link/verify?token=abc&callbackURL=%2Fstudio%2F2%2Fproject-1"
+      )
+    ).toBe(
+      "https://trackdraw.app/login/magic-link?token=abc&callbackURL=%2Fstudio%2F2%2Fproject-1"
+    );
   });
 
   it("keeps the Outlook layout on tables without wrapping the full email card in VML", () => {
