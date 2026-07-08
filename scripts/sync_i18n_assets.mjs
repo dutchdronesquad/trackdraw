@@ -5,6 +5,7 @@ import {
   rmSync,
   copyFileSync,
   readdirSync,
+  readFileSync,
   statSync,
 } from "node:fs";
 import { join } from "node:path";
@@ -14,7 +15,10 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const langDir = join(root, "lang");
 const outDir = join(root, "public", "locales");
 const sourceLocale = "en";
-const englishOnlyNamespaces = new Set(["dashboard", "legal"]);
+const i18nPolicy = JSON.parse(
+  readFileSync(join(langDir, "i18n-policy.json"), "utf8")
+);
+const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
 function listLocales() {
   return readdirSync(langDir).filter(

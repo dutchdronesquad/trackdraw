@@ -142,10 +142,13 @@ async function readNamespaceWithFallback(
   if (messages !== undefined) return messages;
 
   if (locale !== defaultLocale) {
-    return (await readNamespaceAsset(defaultLocale, namespace)) ?? {};
+    const fallbackMessages = await readNamespaceAsset(defaultLocale, namespace);
+    if (fallbackMessages !== undefined) return fallbackMessages;
   }
 
-  return {};
+  throw new Error(
+    `Missing i18n namespace "${namespace}" for locale "${locale}" and fallback locale "${defaultLocale}".`
+  );
 }
 
 export function getCatalogForLocale(locale: SupportedLocale) {
