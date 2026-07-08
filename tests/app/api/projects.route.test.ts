@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultDesign } from "@/lib/track/design";
 import type { StoredProject } from "@/lib/server/projects";
 import {
@@ -75,6 +75,10 @@ describe("projects API route", () => {
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("lists account projects with design version metadata", async () => {
     const project = createStoredProjectFixture({
       updatedAt: "2026-04-20T12:00:00.000Z",
@@ -121,6 +125,27 @@ describe("projects API route", () => {
       forceWrite: undefined,
       baseDesignUpdatedAt: "2026-04-20T10:00:00.000Z",
     });
+  });
+
+  it("returns bad request for invalid project save payloads without logging an error", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    const response = await POST(
+      postRequest({
+        title: "Race layout",
+        forceWrite: "yes",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Invalid project payload",
+    });
+    expect(saveProjectForUser).not.toHaveBeenCalled();
+    expect(consoleError).not.toHaveBeenCalled();
   });
 
   it("returns a version conflict without overwriting the account project", async () => {
@@ -172,5 +197,36 @@ describe("projects API route", () => {
         shapeCount: 0,
       },
     });
+  });
+
+  it("logs useful details for unexpected project save failures", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    const design = createDefaultDesign();
+    vi.mocked(saveProjectForUser).mockRejectedValue(
+      new Error("D1 insert failed")
+    );
+
+    const response = await POST(
+      postRequest({
+        projectId: "project-1",
+        title: "Race layout",
+        design,
+      })
+    );
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Failed to save project",
+    });
+    expect(consoleError).toHaveBeenCalledWith(
+      "[TrackDraw] Failed to save project: Error: D1 insert failed",
+      expect.objectContaining({
+        name: "Error",
+        message: "D1 insert failed",
+      })
+    );
   });
 });
