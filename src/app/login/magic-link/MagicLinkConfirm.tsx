@@ -103,15 +103,16 @@ export function MagicLinkConfirm() {
   }, [canAutoVerify, handleContinue, verifyOptions]);
 
   const readyToVerify = Boolean(verifyOptions);
+  const isVerifying = pending || canAutoVerify;
   const showContinueButton = readyToVerify && !canAutoVerify;
   const title = !readyToVerify
     ? t("magicLinkVerify.invalidTitle")
-    : pending || canAutoVerify
+    : isVerifying
       ? t("magicLinkVerify.autoTitle")
       : t("magicLinkVerify.title");
   const description = !readyToVerify
     ? t("magicLinkVerify.invalidDescription")
-    : pending || canAutoVerify
+    : isVerifying
       ? t("magicLinkVerify.autoDescription")
       : t("magicLinkVerify.description");
   const statusItems = [
@@ -121,7 +122,7 @@ export function MagicLinkConfirm() {
     },
     {
       label: t("magicLinkVerify.statusVerify"),
-      state: readyToVerify ? "active" : "idle",
+      state: isVerifying ? "active" : "idle",
     },
     {
       label: t("magicLinkVerify.statusStudio"),
@@ -176,8 +177,10 @@ export function MagicLinkConfirm() {
             <div className="border-border/55 bg-muted/18 border-b px-6 py-5 sm:px-8">
               <div className="flex items-center gap-3">
                 <div className="bg-background text-foreground border-border/60 flex size-10 items-center justify-center rounded-2xl border">
-                  {readyToVerify ? (
+                  {isVerifying ? (
                     <Loader2 className="size-4 animate-spin" />
+                  ) : readyToVerify ? (
+                    <MailCheck className="size-4" />
                   ) : (
                     <AlertTriangle className="size-4" />
                   )}

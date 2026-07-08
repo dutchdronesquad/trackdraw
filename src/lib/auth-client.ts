@@ -104,6 +104,14 @@ const betterAuthClient = createAuthClient({
   plugins: [magicLinkClient(), passkeyClient()],
 });
 
+function removeLocalStorageItem(key: string) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Storage may be blocked in private or hardened browser contexts.
+  }
+}
+
 export function isDevAuthShimEnabled() {
   return process.env.NODE_ENV === "development";
 }
@@ -139,7 +147,7 @@ function readMagicLinkRequestMarker(now = Date.now()) {
         : null;
 
     if (!requestedAt || now - requestedAt > MAGIC_LINK_REQUEST_TTL_MS) {
-      window.localStorage.removeItem(MAGIC_LINK_REQUEST_KEY);
+      removeLocalStorageItem(MAGIC_LINK_REQUEST_KEY);
       return null;
     }
 
@@ -151,7 +159,7 @@ function readMagicLinkRequestMarker(now = Date.now()) {
           : null,
     };
   } catch {
-    window.localStorage.removeItem(MAGIC_LINK_REQUEST_KEY);
+    removeLocalStorageItem(MAGIC_LINK_REQUEST_KEY);
     return null;
   }
 }
@@ -161,13 +169,17 @@ export function markMagicLinkRequested(callbackURL: string) {
     return;
   }
 
-  window.localStorage.setItem(
-    MAGIC_LINK_REQUEST_KEY,
-    JSON.stringify({
-      requestedAt: Date.now(),
-      callbackURL,
-    })
-  );
+  try {
+    window.localStorage.setItem(
+      MAGIC_LINK_REQUEST_KEY,
+      JSON.stringify({
+        requestedAt: Date.now(),
+        callbackURL,
+      })
+    );
+  } catch {
+    // Magic-link sign-in should still work when browser storage is unavailable.
+  }
 }
 
 export function clearMagicLinkRequestMarker() {
@@ -175,7 +187,7 @@ export function clearMagicLinkRequestMarker() {
     return;
   }
 
-  window.localStorage.removeItem(MAGIC_LINK_REQUEST_KEY);
+  removeLocalStorageItem(MAGIC_LINK_REQUEST_KEY);
 }
 
 export function canAutoVerifyMagicLink(callbackURL: string | null) {

@@ -18,6 +18,15 @@
     "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
   },
   {
+    "file": "src/app/login/magic-link/MagicLinkConfirm.tsx",
+    "kind": "JSX prop alt",
+    "text": "TrackDraw",
+    "count": 2,
+    "group": "intentional-brand-alt",
+    "priority": "exception",
+    "note": "Brand-only alt text is intentionally stable unless the image needs descriptive alt copy."
+  },
+  {
     "file": "src/app/share/[token]/not-found.tsx",
     "kind": "JSX prop alt",
     "text": "TrackDraw",

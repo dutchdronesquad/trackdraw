@@ -2,7 +2,11 @@
 
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createMemoryStorage, installWindowStorage } from "../helpers/storage";
+import {
+  createMemoryStorage,
+  createThrowingStorage,
+  installWindowStorage,
+} from "../helpers/storage";
 
 const useSessionMock = vi.fn();
 const signOutMock = vi.fn();
@@ -256,6 +260,20 @@ describe("authClient session resolution", () => {
     clearMagicLinkRequestMarker();
 
     expect(canAutoVerifyMagicLink("/studio")).toBe(false);
+  });
+
+  it("keeps magic-link sign-in usable when browser storage is unavailable", async () => {
+    restoreStorage?.();
+    restoreStorage = installWindowStorage(createThrowingStorage());
+    const {
+      canAutoVerifyMagicLink,
+      clearMagicLinkRequestMarker,
+      markMagicLinkRequested,
+    } = await import("@/lib/auth-client");
+
+    expect(() => markMagicLinkRequested("/studio")).not.toThrow();
+    expect(canAutoVerifyMagicLink("/studio")).toBe(false);
+    expect(() => clearMagicLinkRequestMarker()).not.toThrow();
   });
 
   it("verifies magic links through Better Auth without forwarding redirect URLs", async () => {
