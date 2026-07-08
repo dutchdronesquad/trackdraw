@@ -1,38 +1,151 @@
 import "server-only";
 
-import * as de from "@lang/de";
-import * as en from "@lang/en";
 import i18nPolicy from "@lang/i18n-policy.json";
-import * as nl from "@lang/nl";
 import { defaultLocale, type SupportedLocale } from "@/lib/i18n/locales";
 
-export type MessageNamespace = keyof typeof en;
+const catalogNamespaces = [
+  "common",
+  "dashboard",
+  "dialogs",
+  "editor",
+  "exportPdf",
+  "inspector",
+  "landing",
+  "legal",
+  "login",
+  "setupEstimate",
+  "shapes",
+  "share",
+] as const;
+
+export type MessageNamespace = (typeof catalogNamespaces)[number];
+
+type AssetsBinding = {
+  fetch(input: Request): Promise<Response>;
+};
+
+type CloudflareAssetsContext = {
+  env?: {
+    ASSETS?: AssetsBinding;
+  };
+};
 
 const englishOnlyNamespaceSet = new Set<MessageNamespace>(
   i18nPolicy.englishOnlyNamespaces as MessageNamespace[]
 );
 
-const catalogs: Record<
-  SupportedLocale,
-  Partial<Record<MessageNamespace, unknown>>
-> = { en, nl, de };
-
-const catalogNamespaces = Object.keys(en) as MessageNamespace[];
 const catalogCache = new Map<
   SupportedLocale,
-  Record<MessageNamespace, unknown>
+  Promise<Record<MessageNamespace, unknown>>
 >();
+const namespaceCache = new Map<string, Promise<unknown>>();
+let cloudflareAssetsBindingPromise: Promise<AssetsBinding | undefined> | null =
+  null;
+const ASSET_REQUEST_ORIGIN = "https://assets.local";
+
+async function getCloudflareAssetsBinding() {
+  if (cloudflareAssetsBindingPromise) {
+    return cloudflareAssetsBindingPromise;
+  }
+
+  cloudflareAssetsBindingPromise = resolveCloudflareAssetsBinding();
+  return cloudflareAssetsBindingPromise;
+}
+
+async function resolveCloudflareAssetsBinding() {
+  try {
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const { env } = (await getCloudflareContext({
+      async: true,
+    })) as CloudflareAssetsContext;
+    return env?.ASSETS;
+  } catch {
+    return undefined;
+  }
+}
+
+async function readNamespaceFromCloudflareAssets(assetPath: string) {
+  const assets = await getCloudflareAssetsBinding();
+  if (!assets) return undefined;
+
+  try {
+    const response = await assets.fetch(
+      new Request(`${ASSET_REQUEST_ORIGIN}/${assetPath}`)
+    );
+    if (!response.ok) return undefined;
+    return (await response.json()) as unknown;
+  } catch {
+    return undefined;
+  }
+}
+
+async function readJsonFile(pathParts: string[]) {
+  try {
+    const [{ readFile }, { join }] = await Promise.all([
+      import("node:fs/promises"),
+      import("node:path"),
+    ]);
+    const contents = await readFile(join(process.cwd(), ...pathParts), {
+      encoding: "utf8",
+    });
+    return JSON.parse(contents) as unknown;
+  } catch {
+    return undefined;
+  }
+}
+
+async function readNamespaceFromGeneratedAsset(assetPath: string) {
+  return readJsonFile(["public", assetPath]);
+}
+
+async function readNamespaceFromSourceFile(
+  locale: SupportedLocale,
+  namespace: MessageNamespace
+) {
+  return readJsonFile(["lang", locale, `${namespace}.json`]);
+}
+
+async function readNamespaceAsset(
+  locale: SupportedLocale,
+  namespace: MessageNamespace
+) {
+  const assetPath = `locales/${locale}/${namespace}.json`;
+  return (
+    (await readNamespaceFromCloudflareAssets(assetPath)) ??
+    (await readNamespaceFromSourceFile(locale, namespace)) ??
+    (await readNamespaceFromGeneratedAsset(assetPath))
+  );
+}
 
 function getNamespaceMessages(
   locale: SupportedLocale,
   namespace: MessageNamespace
 ) {
-  if (englishOnlyNamespaceSet.has(namespace)) {
-    return en[namespace];
+  const resolvedLocale = englishOnlyNamespaceSet.has(namespace)
+    ? defaultLocale
+    : locale;
+  const cacheKey = `${resolvedLocale}:${namespace}`;
+
+  let namespacePromise = namespaceCache.get(cacheKey);
+  if (!namespacePromise) {
+    namespacePromise = readNamespaceWithFallback(resolvedLocale, namespace);
+    namespaceCache.set(cacheKey, namespacePromise);
+  }
+  return namespacePromise;
+}
+
+async function readNamespaceWithFallback(
+  locale: SupportedLocale,
+  namespace: MessageNamespace
+) {
+  const messages = await readNamespaceAsset(locale, namespace);
+  if (messages !== undefined) return messages;
+
+  if (locale !== defaultLocale) {
+    return (await readNamespaceAsset(defaultLocale, namespace)) ?? {};
   }
 
-  const catalog = catalogs[locale] ?? catalogs[defaultLocale];
-  return catalog[namespace] ?? en[namespace];
+  return {};
 }
 
 export function getCatalogForLocale(locale: SupportedLocale) {
@@ -41,24 +154,29 @@ export function getCatalogForLocale(locale: SupportedLocale) {
     return cachedCatalog;
   }
 
-  const catalog = Object.fromEntries(
-    catalogNamespaces.map((namespace) => [
+  const catalog = Promise.all(
+    catalogNamespaces.map(async (namespace) => [
       namespace,
-      getNamespaceMessages(locale, namespace),
+      await getNamespaceMessages(locale, namespace),
     ])
-  ) as Record<MessageNamespace, unknown>;
+  ).then(
+    (entries) =>
+      Object.fromEntries(entries) as Record<MessageNamespace, unknown>
+  );
   catalogCache.set(locale, catalog);
   return catalog;
 }
 
-export function pickCatalogNamespaces(
+export async function pickCatalogNamespaces(
   locale: SupportedLocale,
   namespaces: readonly MessageNamespace[]
 ) {
   return Object.fromEntries(
-    namespaces.map((namespace) => [
-      namespace,
-      getNamespaceMessages(locale, namespace),
-    ])
+    await Promise.all(
+      namespaces.map(async (namespace) => [
+        namespace,
+        await getNamespaceMessages(locale, namespace),
+      ])
+    )
   );
 }

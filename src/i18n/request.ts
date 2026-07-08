@@ -14,6 +14,6 @@ export default getRequestConfig(async () => {
 
   return {
     locale,
-    messages: getCatalogForLocale(locale),
+    messages: await getCatalogForLocale(locale),
   };
 });

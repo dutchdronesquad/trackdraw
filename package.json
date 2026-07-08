@@ -5,7 +5,7 @@
   "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run i18n:sync-assets && next build",
     "analyze": "next experimental-analyze",
     "start": "next start",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview --env dev",
@@ -17,6 +17,7 @@
     "migrate:create": "wrangler d1 migrations create DB",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "i18n:sync-assets": "node scripts/sync_i18n_assets.mjs",
     "i18n:check": "node scripts/i18n_check.mjs",
     "i18n:scan-hardcoded": "node scripts/i18n_hardcoded_scan.mjs",
     "test": "vitest run",

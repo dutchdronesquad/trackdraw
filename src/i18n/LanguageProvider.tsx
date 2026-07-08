@@ -14,12 +14,10 @@ export default async function LanguageProvider({
 }: LanguageProviderProps) {
   const rawLocale = await getLocale();
   const locale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const messages = await pickCatalogNamespaces(locale, namespaces);
 
   return (
-    <NextIntlClientProvider
-      locale={locale}
-      messages={pickCatalogNamespaces(locale, namespaces)}
-    >
+    <NextIntlClientProvider locale={locale} messages={messages}>
       {children}
     </NextIntlClientProvider>
   );

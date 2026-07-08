@@ -211,6 +211,14 @@ Example URL shape used by the site code:
 
 Gallery previews use the same public media host. For gallery opt-in to upload preview images from the app runtime, add a Cloudflare R2 binding named `MEDIA_BUCKET` that points at the public media bucket exposed on `media.trackdraw.app`.
 
+### Locale catalog assets
+
+Translation catalogs are generated into `public/locales/` by `npm run i18n:sync-assets`. The directory is ignored by git and is refreshed inside the production build script. Preview and deploy run the OpenNext build step, which calls `npm run build` and therefore uses the same generated assets. Local dev and tests can read directly from `lang/{locale}` and do not need generated assets.
+
+OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. The Worker keeps only the namespace list and loading logic in code; `en`, `nl`, `de`, and future contributor languages are loaded per namespace from static assets. This keeps translation catalogs from becoming static imports in the Worker script.
+
+`dashboard` and `legal` remain English-only and are intentionally generated only under `public/locales/en/`.
+
 ## Mail deliverability
 
 If magic-link emails arrive in spam, treat that as a deliverability problem rather than a template problem.

@@ -25,6 +25,7 @@ __pycache__/
 
 # production
 /build
+/public/locales/
 
 # misc
 .DS_Store

@@ -104,7 +104,7 @@ export default async function RootLayout({
   );
   const rawLocale = await getLocale();
   const locale = isValidLocale(rawLocale) ? rawLocale : "en";
-  const messages = pickCatalogNamespaces(locale, ["common"]);
+  const messages = await pickCatalogNamespaces(locale, ["common"]);
 
   return (
     <html
