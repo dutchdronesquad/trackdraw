@@ -29,6 +29,28 @@ function unauthorizedResponse() {
   );
 }
 
+function invalidProjectPayloadResponse() {
+  return NextResponse.json(
+    { ok: false, error: "Invalid project payload" },
+    { status: 400 }
+  );
+}
+
+function getErrorLogDetails(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  return {
+    name: "UnknownError",
+    message: String(error),
+  };
+}
+
 export async function GET(request: Request) {
   try {
     const user = await getCurrentUserFromHeaders(request.headers);
@@ -112,11 +134,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const message =
-      error instanceof z.ZodError
-        ? "Invalid project payload"
-        : "Failed to save project";
-    console.error("[TrackDraw] Failed to save project", { error });
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    if (error instanceof z.ZodError || error instanceof SyntaxError) {
+      return invalidProjectPayloadResponse();
+    }
+
+    const errorDetails = getErrorLogDetails(error);
+    console.error(
+      `[TrackDraw] Failed to save project: ${errorDetails.name}: ${errorDetails.message}`,
+      errorDetails
+    );
+    return NextResponse.json(
+      { ok: false, error: "Failed to save project" },
+      { status: 500 }
+    );
   }
 }
