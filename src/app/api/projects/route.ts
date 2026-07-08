@@ -48,6 +48,7 @@ function getErrorLogDetails(error: unknown) {
   return {
     name: "UnknownError",
     message: String(error),
+    thrown: error,
   };
 }
 
