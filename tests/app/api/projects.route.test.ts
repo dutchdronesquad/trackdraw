@@ -69,6 +69,14 @@ function postRequest(body: unknown) {
   return jsonRequest("http://localhost/api/projects", "POST", body);
 }
 
+function malformedJsonPostRequest() {
+  return new Request("http://localhost/api/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{",
+  });
+}
+
 describe("projects API route", () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -138,6 +146,22 @@ describe("projects API route", () => {
         forceWrite: "yes",
       })
     );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Invalid project payload",
+    });
+    expect(saveProjectForUser).not.toHaveBeenCalled();
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
+  it("returns bad request for malformed project save JSON without logging an error", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    const response = await POST(malformedJsonPostRequest());
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
@@ -226,6 +250,37 @@ describe("projects API route", () => {
       expect.objectContaining({
         name: "Error",
         message: "D1 insert failed",
+      })
+    );
+  });
+
+  it("keeps the raw thrown value when logging unexpected non-error failures", async () => {
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    const design = createDefaultDesign();
+    const thrown = { code: "D1_BUSY", retryable: true };
+    vi.mocked(saveProjectForUser).mockRejectedValue(thrown);
+
+    const response = await POST(
+      postRequest({
+        projectId: "project-1",
+        title: "Race layout",
+        design,
+      })
+    );
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Failed to save project",
+    });
+    expect(consoleError).toHaveBeenCalledWith(
+      "[TrackDraw] Failed to save project: UnknownError: [object Object]",
+      expect.objectContaining({
+        name: "UnknownError",
+        message: "[object Object]",
+        thrown,
       })
     );
   });
