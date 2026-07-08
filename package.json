@@ -17,7 +17,7 @@
     "migrate:create": "wrangler d1 migrations create DB",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "i18n:sync-assets": "node scripts/sync_i18n_assets.mjs",
+    "i18n:sync-assets": "node scripts/i18n_sync_assets.mjs",
     "i18n:check": "node scripts/i18n_check.mjs",
     "i18n:scan-hardcoded": "node scripts/i18n_hardcoded_scan.mjs",
     "test": "vitest run",
