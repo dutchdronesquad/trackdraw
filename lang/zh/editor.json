@@ -1,0 +1,465 @@
+{
+  "toolbar": {
+    "homepageLabel": "返回首页",
+    "projects": "项目",
+    "projectsTooltip": "管理项目",
+    "import": "导入",
+    "importTooltip": "导入 JSON",
+    "export": "导出",
+    "exportTooltip": "导出赛道"
+  },
+  "contextMenu": {
+    "quickActions": "快捷操作",
+    "selectedCount": "已选择 {count} 项",
+    "segmentSelected": "已选择线段",
+    "waypointSelected": "已选择路径点",
+    "addWaypoint": "添加路径点",
+    "deleteWaypoint": "删除路径点",
+    "arrange": "排列",
+    "bringForward": "上移一层",
+    "sendBackward": "下移一层",
+    "rotate": "旋转",
+    "rotateLeft": "向左旋转",
+    "rotateRight": "向右旋转"
+  },
+  "canvasOverlay": {
+    "pathEditing": "路径编辑",
+    "addPoints": "添加点",
+    "finish": "完成",
+    "cancel": "取消",
+    "connectEnds": "点击连接首尾",
+    "grid": "网格 {grid}",
+    "snapOn": "吸附开：网格、物件、路线",
+    "snapOff": "吸附关：自由摆放",
+    "midClick": "中键",
+    "rightClick": "右键",
+    "pan": "平移",
+    "menu": "菜单",
+    "bypass": "临时绕过",
+    "fitToWindow": "适应窗口",
+    "viewerPanZoom": "拖动画布平移，滚轮缩放"
+  },
+  "preview3dOverlay": {
+    "pause": "暂停",
+    "play": "播放",
+    "speed": "速度",
+    "toggleFpv": "切换 FPV 相机行为",
+    "on": "开",
+    "off": "关",
+    "exit": "退出",
+    "flyThrough": "模拟飞行",
+    "dragWaypointMobile": "上下拖动路径点控制点来调整高度",
+    "dragWaypointDesktop": "上下拖动路径点控制柄来调整高度",
+    "dragDiveGateMobile": "拖动圆环旋转 · 拖动橙色控制点调倾角",
+    "dragDiveGateDesktop": "拖动圆环旋转 · 拖动橙色控制点调倾角",
+    "dragRing": "拖动圆环旋转",
+    "orbitHint": "拖拽环绕查看 · 滚轮缩放 · 中键拖动平移",
+    "drawRoute": "先在 2D 里画出路径，才能启用模拟飞行"
+  },
+  "statusBar": {
+    "snapActive": "吸附",
+    "snapOn": "吸附开",
+    "snapOff": "吸附关",
+    "snapIsOn": "吸附已开启",
+    "snapIsOff": "吸附已关闭",
+    "snapOnDescription": "拖拽和摆放会锁到附近网格、物件和路径点。放置或拖动时按住 Alt 可临时绕过一次。",
+    "snapOffDescription": "摆放和拖动保持自由状态，直到你重新开启吸附。",
+    "selected": "已选 {count} 项",
+    "grouped": "已分组",
+    "groupNamed": "分组：{name}",
+    "groups": "{count} 个分组",
+    "devOn": "开发模式 开",
+    "dev": "开发模式"
+  },
+  "accountMenu": {
+    "checkingAuth": "正在检查登录状态…",
+    "signIn": "登录",
+    "signedIn": "已登录",
+    "noDisplayName": "未设置显示名",
+    "trackdrawAccount": "TrackDraw 账户",
+    "profile": "个人资料",
+    "dashboard": "后台",
+    "signOut": "退出登录",
+    "signingOut": "正在退出…"
+  },
+  "common": {
+    "canvas2d": "2D 画布",
+    "preview3d": "3D 预览"
+  },
+  "elementPlacementControl": {
+    "official": "官方",
+    "typeLabel": "{tool} 类型"
+  },
+  "header": {
+    "untitledTitle": "未命名",
+    "statusFailed": "失败",
+    "statusPending": "等待中",
+    "statusSyncing": "同步中",
+    "statusSynced": "已同步",
+    "expandSidebar": "展开侧边栏",
+    "collapseSidebar": "收起侧边栏",
+    "sharedReviewBadge": "共享审阅",
+    "makeEditableCopy": "创建可编辑副本",
+    "undo": "撤销",
+    "redo": "重做",
+    "saveSnapshot": "保存快照",
+    "keyboardShortcuts": "快捷键",
+    "retrySync": "重试账户同步 ({status})",
+    "share": "分享",
+    "export": "导出",
+    "openAppMenu": "打开应用菜单",
+    "hideObstacleNumbers": "隐藏障碍编号",
+    "showObstacleNumbers": "显示障碍编号"
+  },
+  "sharedHeader": {
+    "embedLabel": "嵌入",
+    "sharedPreviewLabel": "共享预览"
+  },
+  "mobileAppMenu": {
+    "openAppMenu": "打开应用菜单",
+    "title": "TrackDraw",
+    "subtitle": "项目、分享、账户和应用设置",
+    "signIn": "登录",
+    "yourAccount": "你的 TrackDraw 账户",
+    "trackdrawAccount": "TrackDraw 账户",
+    "projectsSection": "项目",
+    "projectsLabel": "项目",
+    "projectsDescription": "打开并管理已保存项目",
+    "accountSection": "账户",
+    "profileLabel": "个人资料",
+    "profileDescription": "管理个人资料、安全设置和 API 密钥",
+    "dashboardLabel": "后台",
+    "dashboardDescription": "打开审核和管理工具",
+    "shareSection": "分享与传输",
+    "shareLabel": "分享",
+    "shareDescription": "发布这条赛道的只读链接",
+    "importLabel": "导入",
+    "importDescription": "导入 JSON 项目文件",
+    "exportLabel": "导出",
+    "exportDescription": "下载 PNG、PDF、SVG 或 JSON",
+    "themeLabel": "主题",
+    "themeDescription": "切换浅色、深色或跟随系统",
+    "signOut": "退出登录",
+    "signingOut": "正在退出…"
+  },
+  "layoutPresetPicker": {
+    "itemsCount": "{count} 个项目",
+    "renamePresetTooltip": "重命名预设",
+    "deletePresetTooltip": "删除预设",
+    "signInTitle": "登录后使用预设",
+    "signInDescription": "预设会保存到你的账户中，这样你在所有设备上都能直接使用。",
+    "noPresetsTitle": "还没有预设",
+    "noPresetsDescription": "在画布上选中多个图形，然后在检查器里使用 <strong>保存为预设</strong>，就能把第一个预设加到这里。",
+    "comingSoonTitle": "即将推出",
+    "comingSoonDescription": "社区共享预设会显示在这里。先保存你自己的预设，之后也可以分享给 TrackDraw 社区。",
+    "myPresetsNav": "我的预设",
+    "storeNav": "商店",
+    "soonBadge": "即将推出",
+    "mobileTitle": "预设",
+    "mobileSubtitle": "先选一个预设，再在画布上点一下即可放置。",
+    "placeFlowTitle": "放置流程",
+    "placeFlowDescription": "在这里选择预设后点一下画布，结果会立即展开成普通可编辑图形。",
+    "desktopTitle": "布局预设",
+    "desktopSubtitle": "选择一个预设放到画布上，然后像普通图形一样继续编辑。",
+    "tipText": "在画布上选中图形，然后在检查器里使用 <strong>保存为预设</strong> 添加你自己的预设。"
+  },
+  "starterOverlay": {
+    "dialog": {
+      "title": "欢迎使用 TrackDraw",
+      "mobileSubtitle": "先摆几个门，画出路径，看看 3D，赛道准备好后再分享。",
+      "studioEyebrow": "Studio",
+      "desktopDescription": "先在 2D 里搭好布局，再到 3D 检查高度，赛道准备好后再分享只读链接。",
+      "dismissAria": "关闭新手引导"
+    },
+    "hints": {
+      "gate": {
+        "badge": "引导",
+        "title": "先放第一个门",
+        "description": "在画布上点一下就能放下第一个穿越门。先摆几个门，再切到路径工具。",
+        "action": "知道了",
+        "dismiss": "关闭穿越门摆放提示"
+      },
+      "path": {
+        "badge": "引导",
+        "title": "接下来画路径",
+        "description": "先摆几个门，再切到路径工具，把一圈线路串起来。画完路径后再去看 3D。",
+        "action": "开始画路径",
+        "dismiss": "关闭路径引导提示"
+      },
+      "preview3d": {
+        "badge": "预览",
+        "title": "先有路径，3D 才更有用",
+        "description": "这里已经能预览障碍摆放，但真正让高度和模拟飞行审阅有意义的，还是路径本身。",
+        "action": "去 2D 画路径",
+        "dismiss": "关闭 3D 预览引导提示"
+      },
+      "review3d": {
+        "badge": "引导",
+        "title": "现在去 3D 看看",
+        "description": "绕着路径看看高度和门距，感觉顺了以后再去分享或导出。",
+        "action": "下一步去分享或导出",
+        "dismiss": "关闭 3D 审阅提示"
+      },
+      "postPath": {
+        "badge": "下一步",
+        "title": "路径已就绪，去 3D 检查",
+        "description": "现在切到 3D 标签页，先检查这条线路，再继续细调障碍摆放。",
+        "action": "切换到 3D",
+        "dismiss": "关闭路径完成后的 3D 提示"
+      }
+    }
+  },
+  "starterFlow": {
+    "intro": {
+      "goodFirstSteps": "推荐的起步方式"
+    },
+    "steps": {
+      "step1": {
+        "title": "先摆几个门和障碍",
+        "description": "先从小布局开始，让赛道骨架尽快出现。"
+      },
+      "step2": {
+        "title": "再把比赛路径画出来",
+        "description": "很多时候，先把路径画出来，比单纯调障碍位置更快看出问题。"
+      },
+      "step3": {
+        "title": "检查 3D，然后导出或分享",
+        "description": "尽早检查路径，准备好后再发出只读链接。"
+      }
+    },
+    "starterLayouts": {
+      "label": "起始布局"
+    },
+    "guided": {
+      "label": "引导式开始",
+      "title": "按引导开始",
+      "descriptionDesktop": "打开一个空场地，并默认选中 `Gate`，先把赛道框架摆出来。等第一批障碍落位后，再去画路径。",
+      "descriptionMobile": "打开空场地并默认选中 Gate。第一批障碍落位后再去画路径。"
+    },
+    "empty": {
+      "label": "空白开始",
+      "continue": "以空白画布继续",
+      "description": "跳过引导，直接进入空白 Studio。"
+    },
+    "shortcuts": {
+      "gate": "放置穿越门",
+      "path": "开始画路径",
+      "finish": "完成路径"
+    }
+  },
+  "saveAsPresetDialog": {
+    "title": "保存为预设",
+    "subtitle": "给当前选择起个名字，之后就能从预设选择器里再次放置。",
+    "shapeCount": "{count} 个图形",
+    "pathsExcluded": "将排除 {count} 条路径——预设只会记录非路径图形。",
+    "presetNameLabel": "预设名称",
+    "presetNamePlaceholder": "例如：计时门组合",
+    "savePreset": "保存预设"
+  },
+  "mobilePanels": {
+    "viewControls": {
+      "mode": {
+        "current": "当前模式",
+        "viewModeLabel": "视图模式"
+      },
+      "controls": {
+        "fitToField": {
+          "label": "适应场地",
+          "description": "将当前设计居中显示"
+        },
+        "snap": {
+          "label": "吸附",
+          "description": "吸附到附近网格和物件"
+        },
+        "rulers": {
+          "label": "标尺",
+          "description": "在移动端显示上侧和左侧辅助标尺"
+        },
+        "obstacleNumbers": {
+          "label": "障碍编号",
+          "description": "在路径障碍上显示路径编号"
+        },
+        "flyThrough": {
+          "label": "模拟飞行",
+          "descriptions": {
+            "available": "启动路径预览相机",
+            "readOnly": "这条共享赛道没有路径",
+            "draw": "先在 2D 里画出路径后才能启用"
+          }
+        },
+        "gizmo": {
+          "label": "坐标轴",
+          "description": "在 3D 预览中显示坐标轴辅助器"
+        }
+      },
+      "readOnly": {
+        "review3dWithPath": "当前共享赛道为只读 3D 审阅，且可用模拟飞行。",
+        "review3dNoPath": "当前共享赛道为只读 3D 审阅，但没有路径可用于模拟飞行。",
+        "review2dWithPath": "当前共享赛道为只读 2D 审阅。切到 3D 后可使用模拟飞行。",
+        "review2dNoPath": "当前共享赛道为只读 2D 审阅。"
+      },
+      "share": {
+        "sectionLabel": "分享",
+        "editableCopy": "可编辑副本",
+        "shareButton": "分享"
+      }
+    },
+    "multiSelect": {
+      "header": {
+        "title": "多选",
+        "lockedHint": "当前选择已锁定。先解锁后才能移动或缩放。",
+        "tapHint": "点按项目可将其加入或移出选择。"
+      },
+      "fields": {
+        "groupNamePlaceholder": "分组名称"
+      },
+      "actions": {
+        "duplicate": "复制",
+        "lock": "锁定",
+        "unlock": "解锁",
+        "delete": "删除",
+        "ungroup": "取消分组",
+        "group": "分组"
+      }
+    },
+    "pathBuilder": {
+      "header": {
+        "title": "路径绘制"
+      },
+      "status": {
+        "loopConnected": "闭环已连接 · {count} 个点 · {length}",
+        "pointsCount": "{count} 个点 · {length}",
+        "tapToStart": "点按画布放置第一个点"
+      },
+      "actions": {
+        "undo": "撤销",
+        "connectEnds": "连接首尾",
+        "finish": "完成",
+        "cancel": "取消"
+      }
+    },
+    "editorPanels": {
+      "quickActions": {
+        "title": "快捷操作",
+        "adjustTitle": "微调",
+        "hints": {
+          "addPoint": "在线段上添加点",
+          "deleteWaypoint": "删除选中的路径点",
+          "resume": "继续编辑或调整这条路径",
+          "selectionStep": "{label} · 步进 {step}",
+          "selectionFallback": "选择"
+        },
+        "actions": {
+          "addPoint": "添加点",
+          "editPath": "编辑路径",
+          "duplicate": "复制",
+          "lock": "锁定",
+          "unlock": "解锁",
+          "delete": "删除",
+          "deletePoint": "删除点",
+          "adjust": "微调",
+          "back": "返回"
+        },
+        "adjust": {
+          "step": "步进",
+          "left": "左",
+          "up": "上",
+          "down": "下",
+          "right": "右"
+        }
+      },
+      "nav": {
+        "exit": "退出",
+        "select": "选择",
+        "tools": "工具",
+        "inspect": "检查",
+        "view": "视图",
+        "review": "审阅",
+        "share": "分享",
+        "editCopy": "编辑副本",
+        "preview": "预览"
+      },
+      "inspector": {
+        "designSettingsHint": "设计设置",
+        "title": "检查器",
+        "subtitles": {
+          "empty": "设计设置和已放置项目",
+          "selected": "当前选择的属性与编辑"
+        }
+      },
+      "tools": {
+        "title": "工具",
+        "sections": {
+          "items": "赛道项目",
+          "tools": "画布工具"
+        },
+        "toolDescriptions": {
+          "startfinish": "标记起飞区或计时起终点",
+          "cone": "放置赛道标记物",
+          "label": "在画布上添加备注",
+          "polyline": "绘制或编辑比赛路径"
+        },
+        "subtitles": {
+          "preview3d": "当前 3D 会话的项目操作",
+          "canvas2d": "绘制与编辑工具"
+        }
+      },
+      "view": {
+        "title": "视图",
+        "subtitle": "画布模式、辅助线和视口控制"
+      }
+    }
+  },
+  "viewModeSwitch": {
+    "ariaLabel": "视图模式",
+    "canvas2dShort": "2D",
+    "preview3dShort": "3D",
+    "canvas2dDrawer": "2D 画布",
+    "preview3dDrawer": "3D 预览"
+  },
+  "desktopInspectorPanel": {
+    "ariaLabel": "检查器",
+    "expandTooltip": "展开检查器",
+    "collapseTooltip": "收起检查器",
+    "verticalLabel": "检查器"
+  },
+  "shell": {
+    "untitledTrack": "未命名赛道",
+    "untitledFallback": "未命名",
+    "exportFailed": "导出失败",
+    "exportFailedDescription": "{message} 请重试，或打开导出面板，从那里下载项目 JSON 备份。",
+    "exportFailedNoProjectDescription": "TrackDraw 无法加载这个本地项目。请先打开它，或改选另一个已保存项目。",
+    "exportSuccess": "项目 JSON 已导出",
+    "embeddedTrack": "嵌入赛道",
+    "sharedPreview": "共享预览",
+    "loading3d": "正在加载 3D…"
+  },
+  "languagePicker": {
+    "ariaLabel": "语言"
+  },
+  "performanceHud": {
+    "title": "开发模式 HUD",
+    "summary": "工具 {tool} · 已选 {count} 项",
+    "reset": "重置",
+    "close": "关闭",
+    "metrics": {
+      "canvas2d": "2D 画布",
+      "preview3d": "3D 视图",
+      "inspector": "检查器",
+      "autosave": "自动保存"
+    },
+    "levels": {
+      "noData": "无数据",
+      "heavy": "负载高",
+      "busy": "繁忙",
+      "ok": "正常"
+    }
+  },
+  "textureDebug": {
+    "title": "贴图调试",
+    "copyConfig": "复制配置",
+    "copied": "已复制",
+    "noPanels": "还没有注册任何面板",
+    "flip": "翻转"
+  }
+}

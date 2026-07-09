@@ -1,0 +1,267 @@
+{
+  "metadata": {
+    "homeTitle": "TrackDraw · FPV 赛道设计工具",
+    "homeSocialTitle": "TrackDraw | FPV 赛道设计工具",
+    "homeDescription": "TrackDraw 是一款面向 FPV 赛事组织者的穿越机竞速赛道设计工具。按真实比例设计赛道，在 3D 中检查线路流畅度，并分享只读比赛日布局。",
+    "homeSocialDescription": "用 TrackDraw 按真实比例规划 FPV 赛道，在 3D 中检查线路流畅度，并分享只读比赛日方案。",
+    "studioTitle": "FPV 赛道设计工具",
+    "studioSocialTitle": "TrackDraw | FPV 赛道设计工具",
+    "studioDescription": "打开 TrackDraw，按真实比例设计 FPV 赛道布局，添加门型和障碍，并在 3D 中预览线路流畅度。",
+    "studioSocialDescription": "按真实比例设计 FPV 穿越机竞速赛道，添加门型和障碍，并在 3D 中预览线路流畅度。"
+  },
+  "header": {
+    "homeAriaLabel": "首页",
+    "homeTooltip": "返回主站首页",
+    "featuresNav": "功能",
+    "featuresTooltip": "跳到产品概览",
+    "galleryNav": "图库",
+    "galleryTooltip": "浏览社区公开布局",
+    "pricingNav": "方案",
+    "pricingTooltip": "查看方案与价格",
+    "faqNav": "FAQ",
+    "faqTooltip": "查看常见问题与解答",
+    "logoAriaLabel": "TrackDraw",
+    "siteNavAriaLabel": "首页、图库和公开站点导航",
+    "mobileNavAriaLabel": "导航",
+    "themeAriaLabel": "主题",
+    "themeTooltip": "切换公开站点主题。",
+    "languageAriaLabel": "语言",
+    "languageTooltip": "切换站点语言。",
+    "openStudio": "打开 Studio"
+  },
+  "hero": {
+    "eyebrow": "为 FPV 赛事组织者打造",
+    "headingLine1": "比赛日的顺畅，",
+    "headingLine2": "从一张好图开始。",
+    "description": "TrackDraw 是一款基于浏览器的 FPV 穿越机竞速赛道设计工具。你可以在 2D 视图中按比例布场，在 3D 视图中检查线路流畅度，把只读布局分享给飞手和布场组，而且桌面端和移动端都好用。",
+    "ctaStudio": "打开 Studio",
+    "ctaFeatures": "查看功能",
+    "feature1": "官方障碍目录",
+    "feature2": "赛道片段",
+    "feature3": "3D 预览与模拟飞行",
+    "feature4": "赛事布场清单 PDF 与 SVG",
+    "videoAlt": "TrackDraw FPV 赛道设计工具演示",
+    "videoDescription": "一个简短的产品演示，展示 TrackDraw 如何帮助 FPV 赛事组织者设计赛道、在 3D 中检查线路，并分享给飞手和布场组。"
+  },
+  "features": {
+    "sectionTitle": "功能",
+    "sectionHeading": "设计、检查、分享。",
+    "sectionDescription": "TrackDraw 让 FPV 赛事组织者能更实际地规划赛道：真实场地尺寸、正确的障碍类型，以及从布局到审阅再到现场交接的一体化流程。",
+    "trueToScale": {
+      "title": "真实比例画布",
+      "description": "设置场地尺寸，按比例摆放障碍，并在与真实场地一致的网格上工作。"
+    },
+    "obstacleCatalog": {
+      "title": "官方障碍目录",
+      "description": "放置带真实尺寸的官方 MultiGP 障碍，包括穿越门、标旗、目字门、跨栏和围挡，并获得准确的 3D 渲染。"
+    },
+    "preview3d": {
+      "title": "更接近实飞的 3D 预览",
+      "description": "在 3D 中环绕查看、给路径加高度、检查动作弧线，并通过模拟飞行提前发现节奏问题。"
+    },
+    "shareLinks": {
+      "title": "共享审阅链接",
+      "description": "把只读布局发给飞手和布场组。游客链接是临时的，账户发布链接则可一直保留到你撤销为止。"
+    },
+    "sections": {
+      "title": "赛道片段",
+      "description": "把任意画布选择保存成命名片段，一键再次放置。片段会跟随你的账户在设备间同步。"
+    },
+    "export": {
+      "title": "布场清单与导出",
+      "description": "生成包含障碍布局、路径图和布场备注的飞手说明 PDF，同时还能导出 SVG、PNG 和 JSON。"
+    }
+  },
+  "workflow": {
+    "sectionEyebrow": "深入看看",
+    "sectionHeading": "从第一版布局到现场交接。",
+    "sectionDescription": "最顺手的方式通常是按流程走：先在 2D 里把赛道搭起来，再到 3D 检查，场地临时变化时快速调整，最后把同一份方案交给飞手和布场组。",
+    "layout": {
+      "title": "2D 布局",
+      "subtitle": "先在和真实场地一致的画布上搭赛道。",
+      "description": "从场地尺寸开始，再摆放布场组和飞手都熟悉的门型与障碍。这样第一版方案就能立刻派上用场，而不是只是一张草图。",
+      "screenshotAlt": "TrackDraw 2D 赛道编辑器，带障碍目录和赛道方案",
+      "bullets": [
+        "按比例设置场地尺寸",
+        "穿越门、标旗、锥桶、起飞区和大件障碍",
+        "用于讲解的路径和标注"
+      ]
+    },
+    "fineTune": {
+      "title": "细调",
+      "subtitle": "场地有变化，也能继续改。",
+      "description": "好方案必须经得起现场变化。检查器控制项和移动端友好编辑，让你能快速改属性、挪障碍，即使现场条件变了，也能把方案继续用下去。",
+      "screenshotAlt": "TrackDraw 移动端编辑器，设置面板已展开",
+      "bullets": [
+        "尺寸、旋转和颜色的检查器控制",
+        "手机和平板也能顺手操作",
+        "不离开主方案就能快速修正"
+      ]
+    },
+    "preview": {
+      "title": "3D 预览",
+      "subtitle": "先走线，再进场。",
+      "description": "一键从 2D 平面切到实时 3D 场景。给路径上的每个路径点设置高度，就能把整个垂直剖面模拟出来，在地钉还没入地前先把风险线路看出来。",
+      "screenshotAlt": "TrackDraw 3D 预览，显示赛道流向与高度",
+      "bullets": [
+        "直接由 2D 设计生成的实时 3D 场景",
+        "路径路径点支持逐点设置高度",
+        "检查器内可查看高度剖面图"
+      ]
+    },
+    "handOff": {
+      "title": "交接",
+      "subtitle": "给飞手和布场组同一份当前版本。",
+      "description": "方案只有别人也能打开才有价值。只读共享链接和导出文件，能让飞手预看、布场组打印、主办方后续复用，看到的都是同一份内容。",
+      "screenshotAlt": "TrackDraw 只读共享视图在手机上打开",
+      "gallery": "去图库找灵感",
+      "bullets": [
+        "任何设备都能打开的只读链接",
+        "适合讲解和打印的 PDF、PNG 与 SVG",
+        "方便归档与复用的 JSON 导出"
+      ]
+    }
+  },
+  "faq": {
+    "sectionTitle": "FAQ",
+    "sectionHeading": "这些你可能会关心。",
+    "items": [
+      {
+        "question": "TrackDraw 是做穿越机赛道设计的吗？",
+        "answer": "是的。TrackDraw 是一款基于浏览器的 FPV 穿越机竞速赛道设计工具，把按比例布局、3D 审阅、分享和导出放在同一套流程里。"
+      },
+      {
+        "question": "规划一条 FPV 赛道最好的方式是什么？",
+        "answer": "先按场地尺寸起图，再摆上你实际有的障碍，然后在 3D 里检查路径，最后再分享或导出。TrackDraw 的整个流程就是围绕这个顺序设计的。"
+      },
+      {
+        "question": "飞手不用账户也能看布局吗？",
+        "answer": "可以。共享链接会以只读模式在任何设备上打开，不需要账户，也不用安装 App。发给飞手、裁判或布场组，大家看到的都是同一个已发布版本。"
+      },
+      {
+        "question": "在现场用平板改图行吗？",
+        "answer": "可以。编辑器对触摸操作做了适配，所以当现场条件变化时，用手机或平板快速微调是完全可行的。"
+      },
+      {
+        "question": "支持导出哪些格式？",
+        "answer": "支持 PDF、PNG、SVG、JSON，以及一条 cinematic FPV 视频导出。既能做打印版 briefing，也能发群里看图，或把项目留档复用。"
+      },
+      {
+        "question": "一开始就必须注册账户吗？",
+        "answer": "不用。你可以直接打开 Studio 开始设计。注册账户之后，才会额外获得云端项目、长期发布链接、图库发布和嵌入能力。"
+      },
+      {
+        "question": "以后办活动还能复用旧布局吗？",
+        "answer": "可以。你可以把布局中的一部分存成命名预设，一键再次摆放；如果要复用整张图，就把项目导出为 JSON，在新活动开始时再导入。"
+      },
+      {
+        "question": "TrackDraw 能帮我提前看出路径问题吗？",
+        "answer": "可以。3D 预览和路径审阅警告会提前暴露出门距不匀、节奏断裂和线路对位问题，让你在分享出去或开始布场前先修掉它们。"
+      }
+    ]
+  },
+  "pricing": {
+    "sectionEyebrow": "方案",
+    "sectionHeading": "先直接用，需要更多时再注册。",
+    "sectionDescription": "当前两种方式都免费。游客模式无需注册即可使用核心编辑器；账户模式则带来长期发布、嵌入、图库展示，以及跨设备项目连续性。",
+    "guest": {
+      "badge": "无需注册",
+      "name": "游客",
+      "price": "免费",
+      "description": "适合快速草图、一次性的临时审阅链接，以及不登录情况下的本地导出。",
+      "cta": "打开 Studio"
+    },
+    "account": {
+      "badge": "账户模式",
+      "name": "账户",
+      "price": "免费",
+      "description": "适合长期发布链接、嵌入、图库、赛道片段、REST API 和跨设备继续编辑。",
+      "cta": "创建账户"
+    },
+    "features": {
+      "fullDesigner": "完整赛道设计工具",
+      "preview2d3d": "2D 与 3D 预览",
+      "export": "PDF、SVG、PNG 与 JSON 导出",
+      "shareLinks": "共享链接",
+      "temporaryLinks": "临时链接",
+      "publishedLinks": "发布后持续有效，直到撤销",
+      "shareLinksNote": "游客分享链接是临时的。账户发布链接会一直保留到你撤销为止，也可以直接嵌入网页。",
+      "embeds": "网页嵌入",
+      "embedsDetail": "通过 iframe 嵌入任意网站",
+      "gallery": "发布到图库",
+      "cloudProjects": "云端同步项目",
+      "cloudProjectsDetail": "项目跟随账户同步，让你可以在任何设备上继续，从家里的桌面端一路接到现场的手机端。",
+      "sections": "赛道片段",
+      "sectionsDetail": "把任意画布选择保存成命名预设，并从预设选择器里再次放置。会跟随账户在多设备间同步。",
+      "api": "REST API 访问",
+      "apiDetail": "Bearer 鉴权，支持 API Key 管理"
+    },
+    "categories": {
+      "design": "设计",
+      "sharing": "分享",
+      "projects": "项目",
+      "integration": "集成"
+    }
+  },
+  "footer": {
+    "tagline": "面向 FPV 赛事组织者的浏览器赛道设计工具。按比例画图，3D 预览，分享只读链接，在移动端也能快速改图。",
+    "productTitle": "产品",
+    "openStudio": "打开 Studio",
+    "releaseNotes": "更新日志",
+    "legalTitle": "法律",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "communityTitle": "社区",
+    "github": "GitHub",
+    "dutchDroneSquad": "Dutch Drone Squad",
+    "reportIssue": "反馈问题",
+    "supportTitle": "支持项目",
+    "githubSponsors": "GitHub Sponsors",
+    "kofi": "Ko-fi",
+    "copyright": "© {year} Dutch Drone Squad。开源项目。",
+    "madeWithPre": "用",
+    "madeWithPost": "为 FPV 社区打造"
+  },
+  "gallery": {
+    "pageTitle": "FPV 穿越机竞速赛道图库",
+    "metaTitle": "TrackDraw | FPV 赛道图库",
+    "metaDescription": "浏览 TrackDraw 社区分享的 FPV 穿越机竞速赛道布局。",
+    "sectionLabel": "图库",
+    "headingLine1": "看看别人怎么摆，",
+    "headingLine2": "启发你的下一条赛道。",
+    "description": "浏览社区公开分享的 TrackDraw 布局找灵感。精选赛道会优先显示，其次是最新发布的社区作品。",
+    "grid": {
+      "recentlyAdded": "刚刚发布",
+      "fieldSizeNotSet": "未设置场地尺寸",
+      "unknownPilot": "TrackDraw 飞手",
+      "featuredBadge": "精选",
+      "byOwner": "作者：{owner}",
+      "obstacleCount": "{count} 个障碍",
+      "published": "发布于 {date}",
+      "open": "打开",
+      "emptyTitle": "这里还没有赛道。",
+      "emptyDescription": "等 TrackDraw 用户选择公开分享后，图库内容就会出现在这里。",
+      "featuredHeading": "精选",
+      "featuredSubtitle": "我们挑出来、优先推荐的布局。",
+      "recentHeading": "最新",
+      "recentSubtitle": "社区刚刚发布的新布局。",
+      "loadMore": "加载更多"
+    }
+  },
+  "notFound": {
+    "logoAriaLabel": "TrackDraw",
+    "badge": "错误 404",
+    "heading": "这个页面飞出赛道了",
+    "description": "你访问的页面不存在、可能已经移动，或者在门后拐错了方向。最新的赛道或路线应该就在附近。",
+    "whatToTry": "可以试试",
+    "step1": "回到 Studio，打开最新的赛道。",
+    "step2": "如果你是从旧书签进来的，先回首页。",
+    "step3": "如果页面最近调整过，重新打开最新链接再试一次。",
+    "goHome": "返回首页",
+    "openStudio": "打开 Studio"
+  },
+  "screenshotPlaceholder": {
+    "label": "截图占位",
+    "plannedAsset": "待补素材"
+  }
+}

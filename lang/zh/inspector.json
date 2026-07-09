@@ -1,0 +1,343 @@
+{
+  "tabs": {
+    "ariaLabel": "检查器面板",
+    "layout": "布局",
+    "selection": "选择"
+  },
+  "emptyState": {
+    "title": "当前未选择内容",
+    "body": "在画布上选择一个或多个项目后，就能在这里编辑它们的属性。"
+  },
+  "actions": {
+    "group": "分组",
+    "continueEditing": "继续",
+    "connectEnds": "连接",
+    "deleteShort": "删除",
+    "duplicateShort": "复制",
+    "ungroup": "取消分组",
+    "groupSelection": "选中项分组",
+    "ungroupSelection": "取消选中项分组",
+    "lockShort": "锁定",
+    "unlockShort": "解锁",
+    "savePreset": "保存为预设",
+    "joinPaths": "合并路径",
+    "remove": "移除",
+    "removeItem": "移除项目"
+  },
+  "hints": {
+    "locked": "当前项目已在画布上锁定。解锁后才能移动、缩放或继续编辑路径。"
+  },
+  "group": {
+    "sectionTitle": "分组",
+    "nameLabel": "分组名称",
+    "namePlaceholder": "可选分组名称"
+  },
+  "raceTiming": {
+    "sectionTitle": "计时",
+    "ariaLabel": "计时角色",
+    "splitIdLabel": "分段 ID",
+    "splitIdPlaceholder": "split-1",
+    "roleStart": "起点",
+    "roleSplit": "分段",
+    "metaTimingStart": "计时：起点",
+    "metaTimingSplit": "计时：{id}",
+    "metaGrouped": "已分组",
+    "metaLocked": "已锁定",
+    "metaEditable": "可编辑"
+  },
+  "transform": {
+    "sectionTitle": "变换",
+    "positionLabel": "位置",
+    "rotationLabel": "旋转（度）",
+    "colorLabel": "颜色",
+    "pickColorAriaLabel": "选择颜色",
+    "editingSubtitle": "正在编辑 {kind} 的属性和摆放。"
+  },
+  "ladder": {
+    "sectionTitle": "目字门"
+  },
+  "tower": {
+    "sectionTitle": "日字门"
+  },
+  "catalog": {
+    "sectionTitle": "目录",
+    "sourceLabel": "来源",
+    "sizeLabel": "尺寸",
+    "officialBadge": "官方"
+  },
+  "dimensions": {
+    "widthLabel": "宽度（{unit}）",
+    "heightLabel": "高度（{unit}）",
+    "gridLabel": "网格（{unit}）",
+    "thicknessLabel": "厚度（{unit}）",
+    "radiusLabel": "半径（{unit}）",
+    "poleHeightLabel": "杆高（{unit}）",
+    "tiltLabel": "倾角（度）",
+    "gatesLabel": "门数",
+    "elevationLabel": "高度（{unit}）",
+    "levelsLabel": "层数",
+    "sizeLabel": "尺寸（{unit}）",
+    "openingHeightLabel": "开口高度（{unit}）"
+  },
+  "label": {
+    "sectionTitle": "标注",
+    "textLabel": "文本",
+    "fontSizeLabel": "字号（px）",
+    "threeDModeLabel": "3D 模式",
+    "floatOption": "悬浮（看板）",
+    "groundOption": "投射到地面"
+  },
+  "multiSelection": {
+    "sectionTitle": "选择",
+    "mixedTypesPlaceholder": "混合类型",
+    "titleSelected": "已选择 {count} 个项目",
+    "subtitle": "这里可以做批量操作。需要精细编辑时，请回到画布选中单个项目。",
+    "groupCountMeta": "{count} 个分组",
+    "joinAvailableMeta": "可合并",
+    "saveSectionLabel": "保存片段",
+    "lockedItemsNote": "已锁定的项目不会被改动。"
+  },
+  "polyline": {
+    "sectionTitle": "路径",
+    "flowLabel": "流向",
+    "directionLabel": "方向",
+    "waypointsTitle": "路径点",
+    "waypointsSubtitle": "调整每个点及其高度。",
+    "elevationColumn": "高",
+    "editColumn": "编",
+    "insertPointAfter": "在后面插入点",
+    "removePoint": "移除点",
+    "addPoint": "添加点"
+  },
+  "listPanel": {
+    "panelTitle": "赛道项目",
+    "placedItemsTitle": "已放置项目",
+    "placedItemsSubtitle": "从列表中选择一个项目。",
+    "filterPlaceholder": "筛选项目",
+    "filterAll": "全部",
+    "filterObstacles": "障碍",
+    "itemColumn": "项目",
+    "pathColumn": "路径",
+    "noItemsMatchFilter": "没有项目匹配当前筛选。",
+    "routeStatus": {
+      "off": "关"
+    }
+  },
+  "layout": {
+    "mapReference": {
+      "title": "地图参考",
+      "fields": {
+        "opacity": "透明度",
+        "rotation": "旋转"
+      },
+      "actions": {
+        "removeTitle": "移除地图参考",
+        "editTitle": "编辑地图参考",
+        "addTitle": "添加地图参考",
+        "edit": "编辑",
+        "add": "添加地图",
+        "showTitle": "显示地图参考",
+        "hideTitle": "隐藏地图参考",
+        "show": "显示"
+      }
+    },
+    "sections": {
+      "routeNumbering": "路径编号",
+      "inventory": "库存",
+      "field": "场地"
+    },
+    "field": {
+      "unitsLabel": "单位",
+      "renderScaleLabel": "渲染比例",
+      "renderScaleTooltip": "画布内部密度，单位为每米像素数",
+      "pxPerMeterAriaLabel": "每米像素数，画布内部比例"
+    },
+    "project": {
+      "titlePlaceholder": "未命名赛道",
+      "subtitle": "调整项目标题、场地设置和可用障碍库存。"
+    },
+    "overview": {
+      "title": "当前布局",
+      "subtitle": "查看当前布局的已放置项目、路径编号和可布场性。",
+      "emptyTitle": "还没有放置任何项目",
+      "emptyDescription": "先在画布上放几个障碍，再回来检查布局并和你的库存做对照。"
+    },
+    "inventory": {
+      "status": {
+        "buildable": "可布场",
+        "short": "库存不足"
+      },
+      "labels": {
+        "missing": "缺口",
+        "types": "类型"
+      },
+      "description": "TrackDraw 会把当前布局和这个项目里保存的障碍库存做对比。",
+      "needCountSuffix": "需求 {count}",
+      "stockOk": "足够"
+    },
+    "meta": {
+      "itemsCount": "{count} 个项目",
+      "buildable": "可布场",
+      "shortItems": "缺少 {count} 项",
+      "stockCovered": "库存已覆盖",
+      "typesShort": "缺 {count} 类",
+      "numbered": "已编号 {count}",
+      "numberingIdle": "编号未生成",
+      "numberingNeedsReview": "编号需复核"
+    }
+  },
+  "routeNumbering": {
+    "status": {
+      "ready": "就绪",
+      "partial": "需复核",
+      "noRouteMatches": "无匹配",
+      "missingRoute": "缺少路径",
+      "noNumberedObstacles": "无路径障碍",
+      "empty": "空"
+    },
+    "messages": {
+      "ready": "已编号 {count} 个路径障碍。",
+      "partial": "{mapped} / {total} 个路径障碍已编号。",
+      "noRouteMatches": "找到 {count} 个路径障碍，但都没有离路径足够近。",
+      "missingRoute": "支持的障碍已经准备好，可以生成比赛路径。",
+      "noNumberedObstacles": "穿越门、目字门和重力门会出现在路径编号里。",
+      "empty": "添加路径障碍和路径后即可生成编号。"
+    },
+    "issues": {
+      "offRoutePrefix": "偏离路径：{names}",
+      "moreSuffix": " 另有 {count} 个"
+    },
+    "meta": {
+      "numbered": "已编号",
+      "issues": "问题",
+      "raceLine": "比赛路径"
+    },
+    "generate": {
+      "button": "生成比赛路径",
+      "regenerateButton": "重新生成比赛路径",
+      "success": "比赛路径已生成。",
+      "errors": {
+        "noObstacles": "无法生成比赛路径——请先添加至少两个受支持的障碍（穿越门、目字门或重力门）。"
+      },
+      "warnings": {
+        "unsupportedShapes": "{count, plural, one {有 1 个障碍暂不支持，已跳过。} other {有 {count} 个障碍暂不支持，已跳过。}}",
+        "tooFewObstacles": "再添加一些受支持的障碍，生成的比赛路径会更有参考价值。",
+        "closeObstacles": "{count, plural, one {有 1 对障碍距离非常近，请检查生成的路径。} other {有 {count} 对障碍距离非常近，请检查生成的路径。}}"
+      }
+    }
+  },
+  "elevationChart": {
+    "noRouteSelected": "未选择路径",
+    "title": "高度剖面",
+    "subtitle": "路径高度、着色警告区段和线路审阅提示。",
+    "openDetailsAria": "打开高度详情",
+    "detailsTooltip": "高度详情",
+    "chartAriaLabel": "高度剖面图",
+    "routeDistance": "{distance} 路径",
+    "elevationRange": "高度 {min}-{max}",
+    "moreCount": "另有 {count} 个",
+    "maneuversHeading": "动作识别",
+    "maneuverDetected": "在 {range} 附近检测到 {maneuver}",
+    "apexSuffix": "，顶点 {index}",
+    "waypointSingle": "路径点 {index}",
+    "waypointRange": "路径点 {start}-{end}",
+    "waypointMarkerAria": "在高度剖面中选中路径点 {index}",
+    "warningMarkerAria": "跳转到 {warning} 的第 {segment} 段",
+    "timingMarkerAria": "在高度剖面中选中计时点 {label}",
+    "obstacleMarkerAria": "在高度剖面中选中障碍 {index}",
+    "routeReviewHeading": "路径审阅",
+    "warningSegmentsHeading": "警告区段",
+    "jumpToSegment": "跳转到第 {segment} 段",
+    "noWarnings": "这条路径当前没有路径警告。",
+    "normal": "正常",
+    "timingMarkersLegend": "计时",
+    "obstacleMarkersLegend": "障碍",
+    "warningMarkersLegend": "警告",
+    "maneuvers": {
+      "powerloop": "Powerloop",
+      "split-s": "Split-S"
+    },
+    "warnings": {
+      "stub": {
+        "summary": "路径至少需要 2 个路径点才能形成路径",
+        "shortLabel": "路线不完整",
+        "title": "路径还没画完整",
+        "problem": "路径至少需要两个路径点，TrackDraw 才能把它当成完整路径来审阅。",
+        "fix": "再添加一个路径点，或先把当前路径画完。"
+      },
+      "flat": {
+        "summary": "还没设置高度，3D 预览会保持平面",
+        "shortLabel": "高度平直",
+        "title": "还没有设置高度",
+        "problem": "所有路径点目前都还是 0 米，所以 3D 预览和高度剖面都会保持平的。",
+        "fix": "如果这条线路需要爬升或下落，请在检查器或 3D 视图里设置路径点高度。"
+      },
+      "steep": {
+        "summary": "{count, plural, one {路径点 {first} 附近坡度过大} other {{count} 段坡度过大}}",
+        "shortLabel": "坡度过大",
+        "title": "高度变化过于突然",
+        "problem": "有一段线路在很短距离内急升或急降，会让 3D 线路显得很突兀。",
+        "fix": "把高度变化拉长，或增加一个中间路径点。"
+      },
+      "hairpin": {
+        "summary": "{count, plural, one {路径点 {first} 处转向过急} other {{count} 个急转}}",
+        "shortLabel": "急转",
+        "title": "转向过于紧凑",
+        "problem": "某个路径点形成了近乎折返的急转，高速飞行时可能很难顺畅通过。",
+        "fix": "把路径点往外挪，或在转弯前后留出更多空间。"
+      },
+      "close-points": {
+        "summary": "{count, plural, one {路径点 {first} 附近点距过近} other {{count} 处路径点间距过近}}",
+        "shortLabel": "点距过近",
+        "title": "路径点之间太近",
+        "problem": "两个路径点距离太近，导致中间出现极短的路径段。",
+        "fix": "删除其中一个点，或把它移远一些。"
+      },
+      "spacing-shift": {
+        "summary": "{count, plural, one {路径点 {first} 附近节奏突变} other {{count} 处节奏突变}}",
+        "shortLabel": "节奏突变",
+        "title": "门距节奏变化过猛",
+        "problem": "某个路径点前后的距离变化太突然，会让整条线路节奏不均匀。",
+        "fix": "调整附近路径点，让间距变化更平滑。"
+      },
+      "rhythm-break": {
+        "summary": "{count, plural, one {路径点 {first} 附近有短修正段} other {{count} 段短修正}}",
+        "shortLabel": "短修正",
+        "title": "短修正打断流畅度",
+        "problem": "较长线路中夹了一个很短的中间线段，容易产生别扭的小摆动。",
+        "fix": "移动这个点、删除它，或加一个更平顺的过渡点。"
+      }
+    }
+  },
+  "mapReference": {
+    "title": "地图参考",
+    "subtitle": "选择场地中心并对齐场地轮廓。",
+    "searchPlaceholder": "搜索地点或粘贴坐标",
+    "searching": "搜索中",
+    "enterHint": "回车",
+    "zoomLabel": "缩放 {zoom}",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "resetRotation": "重置旋转",
+    "rotateLeft15": "向左旋转 15 度",
+    "rotateLeft1": "向左旋转 1 度",
+    "rotateRight1": "向右旋转 1 度",
+    "rotateRight15": "向右旋转 15 度",
+    "latitude": "纬度",
+    "longitude": "经度",
+    "rotation": "旋转",
+    "rotationValue": "{deg} 度",
+    "view": "视图",
+    "out": "缩小",
+    "in": "放大",
+    "previewZoom": "预览缩放 {zoom}",
+    "center": "居中",
+    "useLocation": "使用当前位置",
+    "locating": "正在定位",
+    "saveMap": "保存地图",
+    "locationUnavailable": "当前浏览器不支持定位。",
+    "locationPermissionDenied": "定位权限被拒绝。",
+    "locationTimeout": "定位超时。",
+    "locationError": "无法确定你的位置。"
+  }
+}

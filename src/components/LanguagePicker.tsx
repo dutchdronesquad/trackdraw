@@ -23,6 +23,7 @@ const localeConfig: Record<SupportedLocale, { label: string; abbr: string }> = {
   en: { label: "English", abbr: "EN" },
   nl: { label: "Nederlands", abbr: "NL" },
   de: { label: "Deutsch", abbr: "DE" },
+  zh: { label: "简体中文", abbr: "ZH" },
 };
 
 function LocaleBadge({ abbr }: { abbr: string }) {
