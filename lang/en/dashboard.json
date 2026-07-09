@@ -657,7 +657,8 @@
       "expiredOn": "Expired {date}",
       "expiresOn": "Expires {date}",
       "noExpiry": "No expiry",
-      "expectedCleanup": "Expected cleanup {date}"
+      "expectedCleanup": "Expected cleanup {date}",
+      "statusWithCleanup": "{status}. {cleanup}"
     },
     "revokeDialog": {
       "title": "Revoke share?",

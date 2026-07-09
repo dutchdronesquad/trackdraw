@@ -228,10 +228,17 @@ export function getSharesColumns({
       meta: { className: "w-64 min-w-64" },
       cell: ({ row }) => {
         const state = getLifecycleState(row.original);
+        const lifecycleLabel = t(`statusValues.${state}`);
         const expectedCleanupDate = getExpectedCleanupDate(row.original);
         const expectedCleanupLabel = expectedCleanupDate
           ? t("lifecycle.expectedCleanup", { date: expectedCleanupDate })
           : null;
+        const accessibleLifecycleLabel = expectedCleanupLabel
+          ? t("lifecycle.statusWithCleanup", {
+              status: lifecycleLabel,
+              cleanup: expectedCleanupLabel,
+            })
+          : lifecycleLabel;
         return (
           <div className="flex min-w-0 items-center gap-2">
             {expectedCleanupLabel ? (
@@ -240,10 +247,10 @@ export function getSharesColumns({
                   <Badge
                     variant={getLifecycleVariant(state)}
                     tabIndex={0}
-                    aria-label={expectedCleanupLabel}
+                    aria-label={accessibleLifecycleLabel}
                     className="focus-visible:ring-ring/40 shrink-0 cursor-help rounded-md outline-none focus-visible:ring-2"
                   >
-                    {t(`statusValues.${state}`)}
+                    {lifecycleLabel}
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent side="top" sideOffset={6}>
@@ -252,7 +259,7 @@ export function getSharesColumns({
               </Tooltip>
             ) : (
               <Badge variant={getLifecycleVariant(state)} className="shrink-0">
-                {t(`statusValues.${state}`)}
+                {lifecycleLabel}
               </Badge>
             )}
             <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">

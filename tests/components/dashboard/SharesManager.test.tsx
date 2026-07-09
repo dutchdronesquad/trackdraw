@@ -214,9 +214,12 @@ describe("DashboardSharesManager", () => {
       />
     );
 
-    expect(screen.getByLabelText("Expected cleanup 22 May 2026")).toBeTruthy();
-    expect(screen.getByLabelText("Expected cleanup 20 Jun 2026")).toBeTruthy();
-    expect(screen.getAllByLabelText(/^Expected cleanup/)).toHaveLength(2);
+    const revokedCleanup = screen.getByLabelText(
+      /Expected cleanup 22 May 2026$/
+    );
+    expect(revokedCleanup.getAttribute("aria-label")).toMatch(/^Revoked\./);
+    expect(screen.getByLabelText(/Expected cleanup 20 Jun 2026$/)).toBeTruthy();
+    expect(screen.getAllByLabelText(/Expected cleanup/)).toHaveLength(2);
   });
 
   it("revokes active shares with a PATCH request", async () => {
