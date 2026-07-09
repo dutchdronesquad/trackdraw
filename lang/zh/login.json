@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "title": "登录",
+    "description": "使用一次性魔法链接登录 TrackDraw。"
+  },
+  "goHome": "返回首页",
+  "backToStudio": "返回 Studio",
+  "pageTitle": "TrackDraw 账户",
+  "heading": "无论你在哪，都能继续你的 TrackDraw 工作。",
+  "description": "跨设备访问你的赛道布局，让共享赛道绑定到你的账户，并通过简单的邮件链接快速继续。",
+  "featureDevices": {
+    "title": "跨设备继续",
+    "description": "在另一台设备上接着做，不用改变原来的编辑流程。"
+  },
+  "featureOwnership": {
+    "title": "归属清晰",
+    "description": "让共享布局和后续账户功能都有明确归属。"
+  },
+  "featureMagicLink": {
+    "title": "魔法链接兜底",
+    "description": "支持时可用 passkey 登录，不支持时可退回到邮箱魔法链接。"
+  },
+  "signIn": {
+    "title": "登录",
+    "description": "在当前设备上用 passkey 登录，或通过邮箱接收无需密码的魔法链接。",
+    "checkInboxTitle": "请查收邮箱",
+    "checkInboxBody": "一次性登录链接已发送到 {email}。可在当前设备或另一台设备上打开继续。如果一时没收到，也请检查垃圾邮件箱。",
+    "howItWorksTitle": "魔法链接登录方式",
+    "howItWorksBody": "每封邮件都会带一个一次性登录链接。无需设置密码，直接打开链接即可登录 TrackDraw。",
+    "useDifferentEmail": "换个邮箱",
+    "openingPasskey": "正在打开 passkey…",
+    "signInPasskey": "使用 passkey 登录",
+    "or": "或",
+    "emailLabel": "邮箱",
+    "emailPlaceholder": "you@example.com",
+    "sendingLink": "正在发送链接…",
+    "sendLink": "发送登录链接到我的邮箱",
+    "noPasskeySupport": "当前浏览器这里还不支持 passkey，请改用魔法链接登录。",
+    "passkeyNotFound": "这个 passkey 没有关联到你的 TrackDraw 账户。请换一个 passkey，或改用邮箱登录链接。",
+    "passkeyFailed": "passkey 登录失败。",
+    "checkEmail": "请到邮箱查收登录链接。"
+  },
+  "magicLinkVerify": {
+    "eyebrow": "安全登录",
+    "secureSession": "受保护的魔法链接交接",
+    "needsNewLink": "需要新的链接",
+    "autoTitle": "正在为你登录",
+    "autoDescription": "TrackDraw 正在用你邮箱里的登录链接打开工作区。",
+    "title": "打开 TrackDraw",
+    "description": "请在当前浏览器继续完成登录。这能防止一次性链接被邮件安全检测自动消耗。",
+    "statusEmail": "已收到邮件链接",
+    "statusVerify": "正在验证登录链接",
+    "statusStudio": "正在打开工作区",
+    "continue": "继续前往 TrackDraw",
+    "continuing": "正在继续...",
+    "requestNewLink": "重新申请链接",
+    "backToLogin": "返回登录",
+    "invalidTitle": "这个登录链接不完整",
+    "invalidDescription": "请重新申请一个登录链接，并从最新的 TrackDraw 邮件中打开它。",
+    "failed": "这个登录链接无法使用。请重新申请一个新的链接后再试。"
+  }
+}
