@@ -9,7 +9,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Loader2 } from "lucide-react";
+import { Clock3, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   getLifecycleState,
@@ -40,6 +40,7 @@ type DashboardSharesManagerProps = {
 };
 
 type ShareTypeFilterValue = "published" | "temporary";
+type ShareOwnerFilterValue = "anonymous" | "account";
 
 const sharesManagerRoles: AccountRole[] = ["moderator", "admin"];
 const purgeManagerRoles: AccountRole[] = ["admin"];
@@ -49,6 +50,11 @@ const lifecycleFilterValues: ShareLifecycleState[] = [
   "revoked",
 ];
 const typeFilterValues: ShareTypeFilterValue[] = ["published", "temporary"];
+const ownerFilterValues: ShareOwnerFilterValue[] = ["anonymous", "account"];
+
+function getOwnerFilterValue(share: DashboardShare): ShareOwnerFilterValue {
+  return share.ownerUserId ? "account" : "anonymous";
+}
 
 export default function DashboardSharesManager({
   currentUserRole,
@@ -64,6 +70,9 @@ export default function DashboardSharesManager({
     ShareLifecycleState[]
   >([]);
   const [selectedTypes, setSelectedTypes] = useState<ShareTypeFilterValue[]>(
+    []
+  );
+  const [selectedOwners, setSelectedOwners] = useState<ShareOwnerFilterValue[]>(
     []
   );
   const [revokeCandidate, setRevokeCandidate] = useState<DashboardShare | null>(
@@ -212,25 +221,31 @@ export default function DashboardSharesManager({
   });
 
   const rowsForCurrentSearch = table.getRowModel().rows;
-  const lifecycleFilteredRows = rowsForCurrentSearch.filter((row) =>
-    selectedLifecycles.length === 0
-      ? true
-      : selectedLifecycles.includes(getLifecycleState(row.original))
+  const matchesLifecycleFilter = (share: DashboardShare) =>
+    selectedLifecycles.length === 0 ||
+    selectedLifecycles.includes(getLifecycleState(share));
+  const matchesTypeFilter = (share: DashboardShare) =>
+    selectedTypes.length === 0 || selectedTypes.includes(share.shareType);
+  const matchesOwnerFilter = (share: DashboardShare) =>
+    selectedOwners.length === 0 ||
+    selectedOwners.includes(getOwnerFilterValue(share));
+
+  const filteredRows = rowsForCurrentSearch.filter(
+    (row) =>
+      matchesLifecycleFilter(row.original) &&
+      matchesTypeFilter(row.original) &&
+      matchesOwnerFilter(row.original)
   );
-  const filteredRows = lifecycleFilteredRows.filter((row) =>
-    selectedTypes.length === 0
-      ? true
-      : selectedTypes.includes(row.original.shareType)
+  const lifecycleFacetRows = rowsForCurrentSearch.filter(
+    (row) => matchesTypeFilter(row.original) && matchesOwnerFilter(row.original)
   );
-  const lifecycleFacetRows = rowsForCurrentSearch.filter((row) =>
-    selectedTypes.length === 0
-      ? true
-      : selectedTypes.includes(row.original.shareType)
+  const typeFacetRows = rowsForCurrentSearch.filter(
+    (row) =>
+      matchesLifecycleFilter(row.original) && matchesOwnerFilter(row.original)
   );
-  const typeFacetRows = rowsForCurrentSearch.filter((row) =>
-    selectedLifecycles.length === 0
-      ? true
-      : selectedLifecycles.includes(getLifecycleState(row.original))
+  const ownerFacetRows = rowsForCurrentSearch.filter(
+    (row) =>
+      matchesLifecycleFilter(row.original) && matchesTypeFilter(row.original)
   );
   const lifecycleFilterOptions = lifecycleFilterValues.map((value) => ({
     value,
@@ -245,11 +260,28 @@ export default function DashboardSharesManager({
     count: typeFacetRows.filter((row) => row.original.shareType === value)
       .length,
   }));
+  const ownerFilterOptions = ownerFilterValues.map((value) => ({
+    value,
+    label: t(`ownerValues.${value}`),
+    count: ownerFacetRows.filter(
+      (row) => getOwnerFilterValue(row.original) === value
+    ).length,
+  }));
   const emptyMessage =
     shares.length === 0 ? t("empty.default") : t("empty.filtered");
 
   return (
     <div className="space-y-4">
+      <div className="bg-muted/35 flex items-start gap-3 rounded-lg border px-4 py-3">
+        <Clock3 className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+        <div className="space-y-0.5 text-sm">
+          <p className="font-medium">{t("retention.title")}</p>
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            {t("retention.description")}
+          </p>
+        </div>
+      </div>
+
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
@@ -266,6 +298,12 @@ export default function DashboardSharesManager({
           selected={selectedTypes}
           options={typeFilterOptions}
           onChange={setSelectedTypes}
+        />
+        <DataTableFacetFilter
+          title={t("filters.owner")}
+          selected={selectedOwners}
+          options={ownerFilterOptions}
+          onChange={setSelectedOwners}
         />
       </DataTableToolbar>
 

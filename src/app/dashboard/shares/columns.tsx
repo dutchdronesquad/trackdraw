@@ -34,6 +34,10 @@ export type Translate = (
   values?: Record<string, unknown>
 ) => string;
 
+const SHARE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+const SHARE_CLEANUP_UTC_HOUR = 3;
+const SHARE_CLEANUP_UTC_MINUTE = 17;
+
 export function getOwnerLabel(share: DashboardShare, t: Translate) {
   if (!share.ownerUserId) return t("owner.anonymous");
   return (
@@ -83,6 +87,35 @@ function formatDate(value: string | null) {
   } catch {
     return value;
   }
+}
+
+function formatCleanupDate(value: Date) {
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(value);
+}
+
+function getExpectedCleanupDate(share: DashboardShare) {
+  const anchor = share.revokedAt
+    ? share.revokedAt
+    : share.shareType === "temporary"
+      ? share.expiresAt
+      : null;
+  if (!anchor) return null;
+
+  const anchorTime = new Date(anchor).getTime();
+  if (!Number.isFinite(anchorTime)) return null;
+
+  const eligibleAt = anchorTime + SHARE_RETENTION_MS;
+  const cleanupAt = new Date(eligibleAt);
+  cleanupAt.setUTCHours(SHARE_CLEANUP_UTC_HOUR, SHARE_CLEANUP_UTC_MINUTE, 0, 0);
+
+  if (cleanupAt.getTime() < eligibleAt) {
+    cleanupAt.setUTCDate(cleanupAt.getUTCDate() + 1);
+  }
+
+  return formatCleanupDate(cleanupAt);
 }
 
 function getLifecycleDetail(share: DashboardShare, t: Translate) {
@@ -156,9 +189,6 @@ export function getSharesColumns({
       cell: ({ row }) => (
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{row.original.title}</p>
-          <p className="text-muted-foreground truncate text-xs">
-            {row.original.token}
-          </p>
         </div>
       ),
     },
@@ -195,14 +225,39 @@ export function getSharesColumns({
       id: "status",
       accessorFn: (row) => getLifecycleState(row),
       header: t("table.status"),
-      meta: { className: "w-56" },
+      meta: { className: "w-64 min-w-64" },
       cell: ({ row }) => {
         const state = getLifecycleState(row.original);
+        const expectedCleanupDate = getExpectedCleanupDate(row.original);
+        const expectedCleanupLabel = expectedCleanupDate
+          ? t("lifecycle.expectedCleanup", { date: expectedCleanupDate })
+          : null;
         return (
-          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <Badge variant={getLifecycleVariant(state)} className="shrink-0">
-              {t(`statusValues.${state}`)}
-            </Badge>
+          <div className="flex min-w-0 items-center gap-2">
+            {expectedCleanupLabel ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant={getLifecycleVariant(state)}
+                    tabIndex={0}
+                    aria-label={expectedCleanupLabel}
+                    className="focus-visible:ring-ring/40 shrink-0 cursor-help rounded-md outline-none focus-visible:ring-2"
+                  >
+                    {t(`statusValues.${state}`)}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={6}>
+                  {expectedCleanupLabel}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Badge
+                variant={getLifecycleVariant(state)}
+                className="shrink-0"
+              >
+                {t(`statusValues.${state}`)}
+              </Badge>
+            )}
             <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
               {getLifecycleDetail(row.original, t)}
             </span>
