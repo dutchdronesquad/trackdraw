@@ -1,0 +1,827 @@
+{
+  "account": {
+    "dialog": {
+      "eyebrow": "Studio",
+      "mobileSubtitle": "管理你的 TrackDraw 账户。"
+    },
+    "nav": {
+      "security": "安全",
+      "apiKeys": "API 密钥",
+      "danger": "危险操作"
+    },
+    "panels": {
+      "profile": {
+        "title": "个人资料",
+        "description": "管理在 TrackDraw 账户中显示的名称。"
+      },
+      "security": {
+        "title": "安全",
+        "description": "管理 TrackDraw 账户的登录方式、账户邮箱和通行密钥。"
+      },
+      "apiKeys": {
+        "title": "API 密钥",
+        "description": "为外部 TrackDraw 集成创建和撤销带过期时间的密钥。"
+      },
+      "danger": {
+        "title": "危险操作",
+        "description": "具有破坏性且不可逆的账户操作。"
+      }
+    },
+    "profile": {
+      "displayName": {
+        "label": "显示名称",
+        "placeholder": "你的名字"
+      },
+      "language": {
+        "description": "更改会立即生效"
+      },
+      "status": {
+        "saving": "正在保存..."
+      },
+      "fallback": {
+        "noAccountEmail": "TrackDraw 账户"
+      }
+    },
+    "security": {
+      "email": {
+        "address": "邮箱地址",
+        "newEmail": "新邮箱",
+        "placeholder": "name@example.com",
+        "changeDescription": "保存后，我们会先向你当前邮箱发送确认邮件。确认后，你再去验证新的邮箱地址。",
+        "change": "更换邮箱",
+        "saving": "正在保存..."
+      },
+      "passkeys": {
+        "title": "通行密钥",
+        "description": "在支持的设备上添加通行密钥，登录会更快。",
+        "add": "添加通行密钥",
+        "adding": "正在添加...",
+        "devAuthUnavailable": "在 `npm run dev` 下无法使用通行密钥。请用 `npm run preview` 在本地测试真实认证流程。",
+        "unsupportedBrowser": "当前浏览器这里没有暴露 WebAuthn，所以这台设备暂时不能设置通行密钥。",
+        "loading": "正在加载通行密钥...",
+        "addedDate": "添加于 {date}",
+        "status": {
+          "synced": "已同步"
+        },
+        "reauth": {
+          "title": "请重新登录后继续",
+          "description": "设置通行密钥需要近期登录状态。平时你可以保持登录，但这类安全操作需要再次确认。",
+          "action": "重新登录"
+        },
+        "empty": {
+          "title": "还没有通行密钥",
+          "description": "添加一个后，在你信任的设备上登录会更快。"
+        },
+        "aria": {
+          "rename": "重命名通行密钥",
+          "removing": "正在移除通行密钥",
+          "remove": "移除通行密钥"
+        },
+        "actions": {
+          "removing": "正在移除...",
+          "removeTooltip": "从账户移除",
+          "saveName": "保存名称"
+        },
+        "fields": {
+          "namePlaceholder": "通行密钥名称"
+        },
+        "fallback": {
+          "unnamed": "未命名通行密钥"
+        },
+        "rename": {
+          "description": "这只会改变它在你 TrackDraw 账户里的显示名称。"
+        }
+      }
+    },
+    "apiKeys": {
+      "form": {
+        "keyNameLabel": "密钥名称",
+        "expiryDays": "{days} 天",
+        "expiryYear": "1 年",
+        "namePlaceholder": "Overlay 集成",
+        "create": "创建"
+      },
+      "created": {
+        "title": "API 密钥已创建",
+        "description": "这个密钥只显示一次。请在关闭对话框前妥善保存。"
+      },
+      "active": {
+        "title": "有效的 API 密钥",
+        "descriptionPrefix": "供受信任集成使用的只读密钥。",
+        "docsLink": "API 文档",
+        "refreshAriaLabel": "刷新 API 密钥",
+        "loading": "正在加载 API 密钥..."
+      },
+      "empty": {
+        "title": "还没有 API 密钥",
+        "description": "当受信任的集成需要只读访问你账户内的项目时，再创建一个即可。"
+      },
+      "fallback": {
+        "unnamed": "未命名 API 密钥"
+      },
+      "meta": {
+        "expiresOn": "过期于 {date}",
+        "lastUsed": "最后使用于 {date}"
+      },
+      "revoke": {
+        "confirmTitle": "撤销这个 API 密钥？",
+        "tooltip": "撤销",
+        "ariaLabel": "撤销 {name}",
+        "warningExpiring": "撤销后这个密钥会立即失效。",
+        "warningNonExpiring": "使用这个密钥的集成会失去只读访问权限。",
+        "revoking": "正在撤销...",
+        "action": "撤销"
+      }
+    },
+    "danger": {
+      "description": "删除账户会移除账户项目、已发布链接、API 密钥以及其他账户关联数据。继续前，请先导出你想保留的账户数据。",
+      "confirm": {
+        "label": "输入 DELETE 确认",
+        "placeholder": "DELETE"
+      },
+      "actions": {
+        "deleting": "正在删除...",
+        "deleteAccount": "删除账户"
+      }
+    },
+    "shared": {
+      "loading": "正在加载账户...",
+      "signInTitle": "登录后管理账户",
+      "signInBody": "使用邮箱登录，即可访问云端账户设置和个人资料。"
+    },
+    "errors": {
+      "loadPasskeysFailed": "加载通行密钥失败。",
+      "loadApiKeysFailed": "加载 API 密钥失败。",
+      "profileNameRequired": "请输入希望 TrackDraw 显示的名称。",
+      "profileUpdateFailed": "更新个人资料失败。",
+      "deleteConfirmRequired": "请输入 DELETE 以确认删除账户。",
+      "deleteFailed": "删除账户失败。",
+      "emailRequired": "请输入你要用于 TrackDraw 的邮箱地址。",
+      "emailSame": "请输入不同的邮箱地址来完成更换。",
+      "emailChangeFailed": "更换邮箱失败。",
+      "passkeyAddFailed": "添加通行密钥失败。",
+      "passkeyNameRequired": "保存前请输入通行密钥名称。",
+      "passkeyRenameFailed": "重命名通行密钥失败。",
+      "passkeyRemoveFailed": "移除通行密钥失败。",
+      "apiKeyNameRequired": "请为这个 API 密钥命名。",
+      "apiKeyCreateFailed": "创建 API 密钥失败。",
+      "apiKeyRevokeFailed": "撤销 API 密钥失败。"
+    },
+    "success": {
+      "profileUpdated": "个人资料已更新",
+      "passkeyAdded": "通行密钥已添加。你可以在下面继续重命名或移除它。",
+      "passkeyRenamed": "通行密钥已重命名",
+      "apiKeyCreated": "API 密钥已创建",
+      "apiKeyCopied": "API 密钥已复制",
+      "apiKeyRevoked": "API 密钥已撤销"
+    }
+  },
+  "export": {
+    "dialog": {
+      "title": "导出",
+      "subtitle": "把当前赛道导出为视觉素材、项目交接文件或可用于模拟器的输出。"
+    },
+    "fields": {
+      "filename": {
+        "label": "文件名"
+      }
+    },
+    "theme": {
+      "label": "主题",
+      "dark": "深色",
+      "light": "浅色"
+    },
+    "routeNumbers": {
+      "label": "路径编号",
+      "hint": "用于 2D 导出",
+      "enable": "导出中显示路径编号",
+      "disable": "导出中隐藏路径编号",
+      "enableMobile": "显示路径编号",
+      "disableMobile": "隐藏路径编号"
+    },
+    "actions": {
+      "switchTo3dView": "切换到 3D 视图",
+      "openRequiredView": "打开所需视图"
+    },
+    "aria": {
+      "exportFormat": "导出 {label}"
+    },
+    "messages": {
+      "view3dUnavailable": "3D 视图不可用——请先打开 3D 标签页",
+      "canvasNotReady": "画布尚未就绪",
+      "exported": "已导出"
+    },
+    "readiness": {
+      "open3d": "导出这个渲染前请先打开 3D 视图。",
+      "canvasNotReady": "2D 画布仍在加载，请稍后再试。",
+      "emptyRacePack": "导出布场清单前，请先在赛道里添加至少一个项目。",
+      "missingRaceLine": "导出 Cinematic FPV 视频前，请先画出路径。",
+      "emptyVelocidrone": "导出 Velocidrone 文件前，请先在赛道里添加至少一个项目。",
+      "experimentalSimulator": "部分 TrackDraw 物件导入 Velocidrone 后的效果可能会不同。"
+    },
+    "webm": {
+      "renderingBackground": "Cinematic FPV 正在后台渲染…",
+      "renderingProgress": "正在渲染 cinematic FPV… {status}",
+      "ready": "Cinematic FPV 导出已完成",
+      "progressLabel": "正在渲染模拟飞行… 视频长度 {duration}"
+    },
+    "categories": {
+      "visuals": {
+        "title": "视觉内容"
+      },
+      "raceDay": {
+        "title": "比赛日"
+      },
+      "projectData": {
+        "title": "项目数据"
+      },
+      "motion": {
+        "title": "视频"
+      },
+      "simulatorLab": {
+        "title": "实验性"
+      }
+    },
+    "formats": {
+      "image": {
+        "label": "图片",
+        "descriptionFull": "高分辨率 2D 平面图，适合打印、讲解页、聊天或快速审阅。",
+        "descriptionShort": "高分辨率 2D 平面图，适合打印、聊天或审阅。"
+      },
+      "vector": {
+        "label": "矢量图",
+        "descriptionFull": "可缩放图稿，适合在 Illustrator、Figma 或 Inkscape 中继续编辑。",
+        "descriptionShort": "可缩放图稿，适合在 Illustrator、Figma 或 Inkscape 中继续编辑。"
+      },
+      "render3d": {
+        "label": "3D 渲染",
+        "descriptionFull": "截取当前 3D 相机视角，用于视觉审阅。",
+        "descriptionShort": "当前 3D 相机截图，用于视觉审阅。"
+      },
+      "projectFile": {
+        "label": "项目文件",
+        "descriptionFull": "可编辑备份，方便在 TrackDraw 中再次打开、分享或归档。",
+        "descriptionShort": "可编辑备份，方便在 TrackDraw 中再次打开或归档。"
+      },
+      "racePack": {
+        "label": "布场清单",
+        "descriptionFull": "比赛日布场交接 PDF，包含地图、物料、顺序和二维码。",
+        "descriptionShort": "包含地图、物料、顺序和二维码的布场 PDF。"
+      },
+      "cinematicFpv": {
+        "label": "Cinematic FPV",
+        "descriptionFull": "单圈线路视频，适合检查 flow 或直接分享整圈。",
+        "descriptionShort": "单圈线路视频，用于检查 flow。"
+      },
+      "velocidrone": {
+        "label": "Velocidrone",
+        "descriptionFull": "实验性的 Velocidrone 赛道文件，可作为模拟器测试起点；导入后请自行复核布局。",
+        "descriptionShort": "实验性模拟器文件；导入后请自行复核。"
+      }
+    },
+    "errors": {
+      "exportFailed": "导出失败",
+      "exportFailedDescription": "{message} 请重试、切换导出格式，或导出项目 JSON 作为手动备份。"
+    }
+  },
+  "import": {
+    "dialogTitle": "打开项目",
+    "dialogSubtitle": "从 JSON 文件导入一个 TrackDraw 项目。",
+    "dropFile": "把文件拖到这里",
+    "browseFile": "或点击浏览",
+    "errorInvalidJson": "无效的 JSON 文件。",
+    "errorInvalidJsonHelp": "无效的 JSON 文件。请选择一份完整的 TrackDraw `.json` 导出文件后重试。",
+    "errorInvalidProject": "这看起来不像是一个 TrackDraw 项目。",
+    "errorInvalidProjectHelp": "这看起来不像是一个 TrackDraw 项目。请选择一份从 TrackDraw 导出的 JSON 项目文件。",
+    "errorUnsupportedFile": "目前只支持 TrackDraw 的 JSON 项目文件。",
+    "errorUnsupportedFileHelp": "目前只支持 TrackDraw 的 JSON 项目文件。请选择一份从 TrackDraw 导出的 `.json` 备份。",
+    "errorReadFailed": "TrackDraw 无法读取这个文件。",
+    "errorReadFailedHelp": "TrackDraw 无法读取这个文件。请重试，或换一份备份文件。",
+    "toastImportFailed": "导入失败",
+    "toastUnsupportedFile": "请选择一个从 TrackDraw 导出的 .json 文件。",
+    "toastInvalidJson": "TrackDraw 无法读取这个 JSON 文件。请检查文件后重试。",
+    "toastInvalidProject": "请选择一个从 TrackDraw 导出的 JSON 项目文件。",
+    "toastReadFailed": "TrackDraw 无法读取所选文件。请重试或换一个备份文件。",
+    "untitledProject": "未命名项目",
+    "objectCount": "{count} 个对象",
+    "replaceWarning": "当前项目会被替换。如果你想保留一份不依赖本地自动保存的手动恢复点，请先导出 JSON 备份。",
+    "replaceProject": "替换项目",
+    "backupFirst": "先备份当前项目"
+  },
+  "share": {
+    "dialog": {
+      "eyebrow": "Studio",
+      "existingEyebrow": "共享赛道",
+      "title": "分享",
+      "mobileSubtitle": "分享这条赛道的只读审阅链接"
+    },
+    "nav": {
+      "shareLink": "共享链接",
+      "share": "分享",
+      "embed": "嵌入",
+      "gallery": "图库"
+    },
+    "currentLink": {
+      "title": "当前共享链接",
+      "readOnlyReviewOn": "{hostname} 上的只读 {view} 审阅"
+    },
+    "content": {
+      "share": {
+        "title": "共享链接",
+        "description": {
+          "existing": "复制或再次发送当前已发布的只读链接；如果你想自己继续编辑，请打开 Studio 创建可编辑副本。",
+          "account": "为这个账户项目创建或更新长期有效的只读链接。",
+          "separate": "为这个可编辑副本或本地赛道创建一条独立的长期只读链接。",
+          "anonymous": "创建一条临时只读快照链接，并控制它的有效时间。"
+        }
+      },
+      "gallery": {
+        "title": "图库可见性",
+        "description": "管理这条已发布链接在公开图库中的展示方式。"
+      },
+      "embed": {
+        "title": "嵌入",
+        "description": "为已通过账户发布的赛道复制 iframe 嵌入代码，链接会一直有效，直到你撤销为止。"
+      },
+      "actions": {
+        "descriptionExisting": "在其他应用中使用当前已发布链接，或在新标签页里重新打开它。",
+        "description": "打开、再次发送、撤销或导出这个分享，不会改动赛道本身。"
+      }
+    },
+    "link": {
+      "expiry": {
+        "days": "{days} 天",
+        "label": "链接过期时间",
+        "description": "临时快照会一直可用，直到过期。"
+      },
+      "titles": {
+        "savedProject": "已保存项目链接",
+        "newShare": "新的共享链接",
+        "separatePublished": "独立发布链接",
+        "temporary": "临时链接",
+        "noSavedProject": "还没有已保存项目链接",
+        "noSeparate": "还没有独立链接",
+        "noTemporary": "还没有临时链接"
+      },
+      "descriptions": {
+        "savedProject": "这个已保存的账户项目使用同一条长期只读链接。更新它时，URL 不变，但内容会切到最新设计。",
+        "newShare": "这个可编辑副本会拥有自己的长期只读链接，不会覆盖其他项目已发布的链接。",
+        "createSavedProject": "为这个账户项目创建一条长期 URL，后续更新可以继续沿用同一条链接。",
+        "createSeparate": "为当前副本创建一条长期 URL，不会改动任何之前的分享。",
+        "createTemporary": "选择过期时间，然后创建一个只读快照。"
+      },
+      "lifetime": {
+        "published": "{hostname} 上的已发布链接，会一直有效直到撤销",
+        "temporary": "{hostname} 上的只读快照，将在 {days} 天后过期"
+      },
+      "warnings": {
+        "outdatedDesign": "这条链接已经不是最新设计内容。",
+        "outdatedExpiry": "这条链接已经不是最新的过期设置。"
+      }
+    },
+    "embed": {
+      "iframeTitle": "TrackDraw 赛道嵌入",
+      "code": {
+        "title": "嵌入代码",
+        "description": "通过账户发布的赛道可以嵌入到俱乐部或赛事网站中。",
+        "label": "Iframe 代码",
+        "selectedViewDescription": "会包含你选定的初始视图。",
+        "copy": "复制代码"
+      },
+      "state": {
+        "loading": "正在加载嵌入状态…"
+      },
+      "publish": {
+        "title": "先发布再嵌入",
+        "description": "嵌入使用的是账户发布的长期链接，所以请先创建发布链接，再复制 iframe 代码。",
+        "action": "创建发布链接"
+      },
+      "temporary": {
+        "title": "临时链接不能嵌入",
+        "description": "请先登录，并通过你的账户发布这条赛道，才能创建长期有效的嵌入。"
+      },
+      "refresh": {
+        "message": "请先更新已发布链接，这样嵌入内容才会切到最新设计。",
+        "action": "更新链接"
+      },
+      "initialView": {
+        "label": "初始视图",
+        "options": {
+          "layout2d": {
+            "label": "2D 布局",
+            "description": "以平面场地图打开"
+          },
+          "preview3d": {
+            "label": "3D 预览",
+            "description": "以环绕审阅视角打开"
+          }
+        }
+      }
+    },
+    "gallery": {
+      "status": {
+        "loading": "正在加载当前状态",
+        "featured": "已在图库置顶推荐",
+        "listed": "已展示在图库中",
+        "hiddenByModeration": "因审核被隐藏",
+        "linkOnly": "仅链接可见",
+        "noPublishedLink": "尚未发布链接",
+        "checking": "检查中",
+        "noLink": "无链接",
+        "expiresInDays": "{days} 天后过期",
+        "noExpiry": "不过期"
+      },
+      "descriptions": {
+        "checking": "正在检查当前图库状态。",
+        "featured": "已显示在公开图库中，并置顶推荐。",
+        "listed": "已显示在公开图库中。",
+        "hidden": "已因审核被隐藏。只要未撤销，直链仍然可以使用。",
+        "linkOnly": "只保留分享链接，不会出现在公开图库中。",
+        "noLink": "请先创建共享链接。"
+      },
+      "labels": {
+        "visibility": "可见性",
+        "shareLink": "共享链接",
+        "author": "作者"
+      },
+      "publishFirst": {
+        "title": "先发布再上架",
+        "description": "图库使用的是当前已发布快照，所以想把这条赛道展示到图库里，必须先有一条共享链接。",
+        "action": "先创建共享链接"
+      },
+      "moderation": {
+        "title": "审核锁定",
+        "description": "这条赛道已因审核被隐藏，不会出现在图库中。但只要未撤销，直链仍可能可用。"
+      },
+      "details": {
+        "title": "图库信息",
+        "description": "更新这条赛道在公开图库卡片上的标题和描述。",
+        "edit": "编辑信息"
+      },
+      "list": {
+        "title": "添加到图库",
+        "description": "填写标题、描述并生成预览图后，就能公开展示给其他人浏览。",
+        "add": "添加到图库",
+        "readyTitle": "已准备好上架",
+        "readyDescription": "把这个已发布快照加到公开图库中，并给它设置单独的标题、描述和预览图。"
+      },
+      "fields": {
+        "titlePlaceholder": "赛道标题",
+        "descriptionPlaceholder": "用于图库卡片的简短描述"
+      },
+      "validation": {
+        "titleRequired": "保存前请先填写标题。",
+        "descriptionLength": "描述请控制在 {min}-{max} 个字符之间。",
+        "displayNameRequired": "请先设置账户显示名。",
+        "noMetadataChanges": "请修改标题或描述后再保存。",
+        "refreshShareFirst": "请先更新共享链接，这样图库使用的才是最新快照。"
+      },
+      "preview": {
+        "generating": "正在生成预览图...",
+        "ready": "预览图已就绪"
+      },
+      "card": {
+        "title": "图库卡片",
+        "description": "查看或更新这条赛道对外展示的标题和描述。",
+        "untitled": "未命名",
+        "noDescription": "还没有设置图库描述。",
+        "viewGallery": "查看图库"
+      },
+      "remove": {
+        "confirm": "要从公开图库中移除吗？共享链接本身仍会继续有效，直到你主动撤销为止。",
+        "action": "从图库移除"
+      },
+      "fallback": {
+        "noDisplayName": "未设置显示名"
+      }
+    },
+    "actions": {
+      "primary": {
+        "updateLink": "更新链接",
+        "copyLink": "复制链接",
+        "createLink": "创建链接",
+        "createNewLink": "创建新链接"
+      },
+      "copyLink": "复制链接",
+      "revoke": "撤销",
+      "share": {
+        "existingDescription": "这个页面本身已经是已发布的只读审阅链接。你可以直接分享它，或打开 Studio 创建可编辑副本。",
+        "withPathDescription": "共享链接会以只读审阅页打开。这个链接会直接进入 {view} 审阅，并且路径已可用于模拟飞行。",
+        "withoutPathDescription": "共享链接会以只读审阅页打开。如果你希望审阅者使用模拟飞行和高度审阅，请先补一条路径。"
+      },
+      "nativeShare": {
+        "title": "通过以下方式分享...",
+        "description": "发送到应用或联系人"
+      },
+      "openInTab": {
+        "label": "在标签页中打开",
+        "reopenCurrent": "在新标签页里重新打开当前共享链接",
+        "previewLink": "在新窗口里预览共享链接"
+      },
+      "exportJson": {
+        "label": "改为导出 JSON",
+        "description": "用于在 TrackDraw 里再次打开的可编辑备份"
+      }
+    },
+    "errors": {
+      "createFailed": "创建共享链接失败",
+      "createFailedDescription": "TrackDraw 无法发布当前快照。请检查网络后重试；如果现在就需要交接，请先导出 JSON。",
+      "copyFailed": "复制链接失败",
+      "copyFailedDescription": "链接可能仍显示在输入框中。如果浏览器阻止剪贴板访问，请手动选中并复制。",
+      "nativeShareFailed": "无法打开分享面板",
+      "nativeShareFailedDescription": "当前浏览器无法打开系统分享面板。请改用复制链接。",
+      "revokeFailed": "撤销链接失败",
+      "revokeFailedDescription": "链接可能仍然处于可用状态。请在这个对话框里重试，或去 Project Manager 的共享标签页操作。",
+      "embedCopyFailed": "复制嵌入代码失败",
+      "embedCopyFailedDescription": "嵌入代码仍显示在文本框中。如果浏览器阻止剪贴板访问，请手动选中并复制。",
+      "galleryListFailed": "添加到图库失败",
+      "galleryListFailedDescription": "这条共享链接未被加入公开图库。请检查标题、描述、预览图和网络连接后再试。",
+      "galleryRemoveFailed": "无法从图库移除",
+      "galleryRemoveFailedDescription": "图库条目可能仍然可见。请重试；如果必须立刻停止访问，也可以直接撤销共享链接。",
+      "galleryUpdateFailed": "更新图库信息失败",
+      "galleryUpdateFailedDescription": "已发布的图库卡片没有被更新。请检查标题和描述后重试。",
+      "unableToReadLink": "无法读取当前共享链接",
+      "unableToReadLinkDescription": "请刷新这个分享页面；如果这是通过账户发布的共享，也可以从 Project Manager 中打开该链接。"
+    },
+    "success": {
+      "linkUpdated": "链接已更新",
+      "linkCreated": "链接已创建",
+      "linkCopied": "链接已复制",
+      "embedCopied": "嵌入代码已复制",
+      "galleryListed": "赛道已加入图库",
+      "galleryUpdated": "图库信息已更新",
+      "linkRevoked": "链接已撤销"
+    }
+  },
+  "projectManager": {
+    "dialog": {
+      "eyebrow": "Studio",
+      "title": "项目",
+      "mobileSubtitle": "打开、重命名、同步或恢复。"
+    },
+    "nav": {
+      "thisDevice": "本机",
+      "shares": "共享",
+      "snapshots": "快照"
+    },
+    "panels": {
+      "device": {
+        "label": "保存在本机",
+        "description": "保存在当前设备上的本地副本。已同步项目也可能同时出现在账户里。"
+      },
+      "account": {
+        "label": "账户项目",
+        "description": "登录设备之间可访问的账户副本。在这里打开它，即可刷新当前浏览器内容。"
+      },
+      "snapshots": {
+        "label": "快照",
+        "description": "当前项目过去保存的状态。恢复任意一个快照即可回退改动。"
+      },
+      "shares": {
+        "label": "已发布共享",
+        "description": "你从账户发布的有效共享链接。可在这里复制、打开或撤销。"
+      }
+    },
+    "device": {
+      "sync": {
+        "resolveConflict": "处理同步冲突",
+        "retry": "重试同步",
+        "updateAccountCopy": "更新账户副本",
+        "syncToAccount": "同步到账户",
+        "conflictDescription": "这个项目在另一台设备上已被改动。继续前请先检查版本。",
+        "failedDescription": "上次同步失败了。请尝试重新推送最新本地版本。",
+        "pendingDescription": "把最新本地改动推送到你的账户。",
+        "updateDescription": "用当前设备上的版本覆盖账户里的同步副本。",
+        "description": "让这个项目能在你已登录的其他设备上继续使用。",
+        "localChangesWaiting": "有本地改动等待同步",
+        "latestLocalCopySaved": "最新本地副本保存于 {relativeTime}",
+        "changedOnAnotherDevice": "这个项目在另一台设备上被改过",
+        "couldNotSyncProject": "无法同步这个项目",
+        "resolveVersionConflict": "处理版本冲突"
+      },
+      "status": {
+        "syncing": "同步中",
+        "reviewNeeded": "需复核",
+        "failed": "同步失败",
+        "synced": "已同步",
+        "localOnly": "仅本机"
+      },
+      "meta": {
+        "localCopyWaitingToSync": "{itemLabel} · 本地副本等待同步",
+        "localCopySynced": "{itemLabel} · 本地副本已于 {relativeTime} 同步",
+        "localCopy": "{itemLabel} · 本地副本",
+        "onlyOnThisDevice": "{itemLabel} · 仅本机 · {relativeTime}",
+        "onThisDeviceSubtitle": "本机上的 {itemLabel}"
+      },
+      "aria": {
+        "resolveVersionConflictFor": "处理 {title} 的版本冲突",
+        "retrySyncFor": "重试 {title} 的同步",
+        "updateAccountCopyFor": "更新 {title} 的账户副本",
+        "syncProjectToAccount": "把 {title} 同步到账户",
+        "exportProjectAsJson": "把 {title} 导出为 JSON",
+        "manageProject": "管理 {title}",
+        "renameProject": "重命名 {title}",
+        "deleteProject": "删除 {title}"
+      },
+      "actions": {
+        "confirmRenameTitle": "确认重命名",
+        "more": "更多操作",
+        "newProject": "新建项目",
+        "newProjectDescription": "开始一条全新赛道，或使用起始布局。",
+        "cleanUpLocal": "清理本地项目",
+        "cleanUpLocalDescription": "只移除当前设备上的旧副本。",
+        "renameDescription": "给这个项目起个更清晰的名字。",
+        "openBadge": "已打开"
+      },
+      "export": {
+        "json": "导出 JSON",
+        "jsonDescription": "把这个项目下载成可复用的 TrackDraw 文件。"
+      },
+      "delete": {
+        "localProject": "删除本地项目？",
+        "localProjectDescription": "会移除这个本地副本。",
+        "permanently": "永久删除？",
+        "permanentlyDescription": "这只会把本地项目从当前浏览器中移除。",
+        "localProjectActionDescription": "把这个本地项目从当前设备删除。",
+        "removeLocalProjectsTitle": "删除 {count} 个本地项目？",
+        "accountSyncedCopiesStayAvailable": "已同步到账户的副本仍然会保留在你的账户中。"
+      },
+      "groups": {
+        "localCopiesLinkedToAccount": "已关联到账户的本地副本",
+        "onlyOnThisDevice": "仅保存在本机"
+      },
+      "empty": {
+        "noProjects": "还没有已保存项目",
+        "noProjectsDescription": "你保存的项目会显示在这里。"
+      },
+      "fallback": {
+        "project": "项目",
+        "untitled": "未命名"
+      }
+    },
+    "account": {
+      "status": {
+        "loadingProjects": "正在加载账户项目...",
+        "syncing": "同步中",
+        "reviewNeeded": "需复核",
+        "failed": "同步失败",
+        "synced": "已同步"
+      },
+      "empty": {
+        "noProjects": "还没有账户项目",
+        "description": "先同步一个项目，才能在多设备间继续使用。"
+      },
+      "messages": {
+        "loadFailed": "无法加载账户项目",
+        "loadFailedDescription": "当前设备上的本地项目仍然可用。请检查网络连接或重新登录，然后再打开 Project Manager。",
+        "conflictWarning": "你离线期间，这个项目在另一台设备上被改动过",
+        "syncError": "无法同步最新改动",
+        "localCopySavedAfterFailure": "最新本地副本保存于 {relativeTime}",
+        "resolveConflictFirst": "请先处理版本冲突"
+      },
+      "actions": {
+        "retrySync": "重试同步",
+        "syncPendingChanges": "同步待处理改动"
+      },
+      "fallback": {
+        "untitled": "未命名"
+      }
+    },
+    "restore": {
+      "empty": {
+        "noSnapshots": "还没有快照",
+        "description": "打开或替换项目时，会自动创建快照。",
+        "desktopDescription": "按 <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl>，或使用顶部的保存按钮。"
+      },
+      "actions": {
+        "restoreTitle": "恢复这个快照",
+        "deleteTitle": "删除快照",
+        "restore": "恢复"
+      },
+      "aria": {
+        "restoreSnapshot": "恢复 {title}",
+        "deleteSnapshot": "删除 {title}"
+      },
+      "confirm": {
+        "restoreSnapshot": "恢复这个快照？"
+      },
+      "status": {
+        "active": "当前"
+      },
+      "fallback": {
+        "snapshot": "快照",
+        "untitled": "未命名"
+      }
+    },
+    "shares": {
+      "status": {
+        "loadingPublishedShares": "正在加载已发布共享...",
+        "published": "已发布",
+        "expired": "已过期",
+        "expiresInDays": "剩余 {days} 天"
+      },
+      "messages": {
+        "readOnlyReviewLinks": "共享内容都是只读审阅链接。如果对方需要可编辑备份，请导出 JSON。"
+      },
+      "empty": {
+        "noShares": "还没有有效共享",
+        "description": "账户发布链接会一直保留到你撤销为止。匿名临时链接会自动过期，也不会在这里管理。"
+      },
+      "lifetime": {
+        "published": "只读发布链接，会一直有效直到撤销",
+        "temporary": "只读临时链接，{expiresIn}"
+      },
+      "actions": {
+        "copyLink": "复制链接",
+        "openTab": "在新标签页打开",
+        "revokeLink": "撤销链接"
+      },
+      "aria": {
+        "copyLink": "复制共享链接",
+        "openTab": "打开共享链接",
+        "revokeLink": "撤销共享链接"
+      },
+      "confirm": {
+        "revokeLink": "撤销这条链接？"
+      }
+    },
+    "projectIdCopy": {
+      "success": "项目 ID 已复制",
+      "failed": "当前浏览器无法复制项目 ID。",
+      "label": "API 项目 ID",
+      "ariaLabel": "复制 API 项目 ID",
+      "action": "复制"
+    }
+  },
+  "completeProfile": {
+    "title": "补充你的名字",
+    "subtitle": "给账户设置一个清晰的显示名称，用于云端项目和分享。",
+    "displayNameLabel": "显示名称",
+    "namePlaceholder": "你的名字",
+    "description": "这是 TrackDraw 在云端项目和共享布局中显示给别人的名字。",
+    "descriptionWithEmail": "这是 TrackDraw 在 {email} 账户下的云端项目和共享布局中显示给别人的名字。",
+    "skip": "跳过",
+    "save": "保存名称",
+    "saving": "正在保存…",
+    "nameRequired": "请输入希望 TrackDraw 显示的名称。",
+    "updateFailed": "更新账户名称失败。",
+    "success": "个人资料已更新"
+  },
+  "newProject": {
+    "title": "新建项目",
+    "closeAriaLabel": "关闭",
+    "subtitle": "从空白画布开始，或选择一个起始布局继续搭建。",
+    "desktopSubtitle": "从空白画布开始，或选择一个起始布局继续搭建。",
+    "studioLabel": "Studio",
+    "blankCanvasLabel": "空白画布",
+    "starterLayoutsLabel": "起始布局",
+    "saveWarningTitle": "请先保存当前赛道",
+    "saveWarningBody": "开始新项目会替换当前画布内容。如果你还想保留它，请先导出或备份。",
+    "startFreshTitle": "从空白画布开始",
+    "startFreshBody": "清空当前场地，从零搭建你的赛道。",
+    "exportFirstTitle": "先备份当前项目",
+    "exportFirstBody": "开始新项目之前，先把当前赛道保存一份副本。"
+  },
+  "keyboardShortcuts": {
+    "dialogTitle": "快捷键",
+    "dialogSubtitle": "Studio 中可用的键盘与画布快捷操作。",
+    "sectionTools": "工具",
+    "sectionSelection": "选择",
+    "sectionPathEditing": "路径编辑",
+    "sectionCanvas": "画布",
+    "shortcuts": {
+      "duplicateItems": "复制当前选中项目",
+      "copyItems": "复制当前选中项目",
+      "pasteItems": "粘贴已复制项目",
+      "rotateLeft": "向左旋转选中项目",
+      "rotateRight": "向右旋转选中项目",
+      "mouseRotateSnap": "鼠标旋转吸附",
+      "mouseRotateFine": "鼠标精细旋转",
+      "keyRotateFine": "按键精细旋转",
+      "deleteItems": "删除当前选中项目",
+      "nudgeItems": "微移当前选中项目",
+      "fineNudge": "精细微移",
+      "finishPath": "完成路径",
+      "removeLastPoint": "移除最后一个草稿点",
+      "deletePathPoint": "删除选中的路径点",
+      "cancelDraft": "取消当前草稿",
+      "fitView": "视图适应场地",
+      "clearSelection": "清空选择",
+      "panView": "平移视图",
+      "bypassSnap": "临时绕过吸附",
+      "zoom": "缩放",
+      "saveSnapshot": "保存快照"
+    }
+  },
+  "versionConflict": {
+    "title": "选择要保留的项目版本",
+    "subtitle": "选择你希望在当前设备上继续使用的版本。",
+    "thisProject": "这个项目",
+    "body": "在你离线期间，这个项目在另一台设备上被改动过。请选择当前设备要继续使用哪一个版本。",
+    "localVersion": "当前设备版本",
+    "cloudVersion": "账户版本",
+    "lastChanged": "最后更改于 {date}",
+    "keepLocal": "保留当前设备版本",
+    "useCloud": "使用账户版本"
+  }
+}

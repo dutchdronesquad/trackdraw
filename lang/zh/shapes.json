@@ -1,0 +1,48 @@
+{
+  "kindLabels": {
+    "gate": "穿越门",
+    "tower": "日字门",
+    "flag": "标旗",
+    "cone": "锥桶",
+    "label": "标注",
+    "polyline": "路径",
+    "startfinish": "起终点",
+    "ladder": "目字门",
+    "divegate": "重力门",
+    "barrier": "围挡"
+  },
+  "toolLabels": {
+    "select": "选择",
+    "grab": "拖移",
+    "preset": "预设",
+    "gate": "穿越门",
+    "tower": "日字门",
+    "flag": "标旗",
+    "cone": "锥桶",
+    "label": "标注",
+    "polyline": "路径",
+    "startfinish": "起飞区",
+    "ladder": "目字门",
+    "divegate": "重力门",
+    "barrier": "围挡"
+  },
+  "toolGroups": {
+    "track": "赛道",
+    "extra": "附加"
+  },
+  "toolMobileLabels": {
+    "startfinish": "起飞",
+    "divegate": "重力门",
+    "barrier": "围挡"
+  },
+  "mobileStatus": {
+    "multiSelect": "多选",
+    "tool": "工具",
+    "itemsCount": "{count} 个项目"
+  },
+  "canvas": {
+    "selectionCount": "{count} 个项目",
+    "selectionFallback": "选择",
+    "frontLabel": "前方"
+  }
+}
