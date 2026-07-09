@@ -37,15 +37,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type {
-  AdminMetrics,
-  GrowthByRange,
-  GrowthCustomRange,
-  GrowthData,
-  GrowthPresetRange,
-  GrowthRange,
-  GrowthTimeline,
-} from "@/lib/server/metrics";
+import {
+  buildCustomGrowthData,
+  formatCalendarDateKey,
+  formatShortDashboardDate,
+  parseCalendarDateKey,
+  type GrowthCustomRange,
+  type GrowthData,
+  type GrowthPresetRange,
+  type GrowthRange,
+  type GrowthTimeline,
+} from "@/lib/metrics-growth";
+import type { AdminMetrics, GrowthByRange } from "@/lib/server/metrics";
 
 // --- User population donut with center label ---
 
@@ -266,162 +269,12 @@ const GROWTH_RANGE_VALUES: GrowthPresetRange[] = [
   "previousYear",
 ];
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function parseUtcDateKey(value: string): Date {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1));
-}
-
-function parseCalendarDateKey(value: string): Date {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year ?? 1970, (month ?? 1) - 1, day ?? 1);
-}
-
-function formatDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatUtcDateKey(date: Date): string {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function startOfUtcWeek(date: Date): Date {
-  const start = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  );
-  const day = start.getUTCDay();
-  const offset = day === 0 ? -6 : 1 - day;
-  start.setUTCDate(start.getUTCDate() + offset);
-  return start;
-}
-
-function startOfUtcMonth(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
-}
-
-function addUtcDays(date: Date, days: number): Date {
-  const next = new Date(date);
-  next.setUTCDate(next.getUTCDate() + days);
-  return next;
-}
-
-function addUtcWeeks(date: Date, weeks: number): Date {
-  return addUtcDays(date, weeks * 7);
-}
-
-function addUtcMonths(date: Date, months: number): Date {
-  return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1)
-  );
-}
-
 function startOfCalendarMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
 function addCalendarMonths(date: Date, months: number): Date {
   return new Date(date.getFullYear(), date.getMonth() + months, 1);
-}
-
-function getBucketForRange(from: Date, to: Date): GrowthData["bucket"] {
-  const days = Math.round((to.getTime() - from.getTime()) / DAY_MS) + 1;
-  if (days <= 45) return "day";
-  if (days <= 183) return "week";
-  return "month";
-}
-
-function getBucketStart(date: Date, bucket: GrowthData["bucket"]): Date {
-  if (bucket === "month") return startOfUtcMonth(date);
-  if (bucket === "week") return startOfUtcWeek(date);
-  return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  );
-}
-
-function addBucket(date: Date, bucket: GrowthData["bucket"]): Date {
-  if (bucket === "month") return addUtcMonths(date, 1);
-  if (bucket === "week") return addUtcWeeks(date, 1);
-  return addUtcDays(date, 1);
-}
-
-function getBucketStarts(from: Date, to: Date, bucket: GrowthData["bucket"]) {
-  const starts: Date[] = [];
-  const end = getBucketStart(to, bucket);
-  for (let cursor = getBucketStart(from, bucket); cursor <= end;) {
-    starts.push(cursor);
-    cursor = addBucket(cursor, bucket);
-  }
-  return starts;
-}
-
-function formatGrowthLabel(date: Date, bucket: GrowthData["bucket"]) {
-  return date.toLocaleDateString("en", {
-    month: "short",
-    ...(bucket === "month" ? { year: "numeric" } : { day: "numeric" }),
-    timeZone: "UTC",
-  });
-}
-
-function formatShortDate(value: string) {
-  return parseCalendarDateKey(value).toLocaleDateString("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function buildCustomGrowthData(
-  timeline: GrowthTimeline,
-  range: GrowthCustomRange
-): GrowthData {
-  const from = parseUtcDateKey(range.from);
-  const to = parseUtcDateKey(range.to);
-  const bucket = getBucketForRange(from, to);
-  const bucketStarts = getBucketStarts(from, to, bucket);
-  const countsByPeriod = new Map<string, number>();
-  let priorCount = 0;
-
-  for (const row of timeline.dailyGrowth) {
-    const rowDate = parseUtcDateKey(row.date);
-    if (rowDate < from) {
-      priorCount += row.users;
-      continue;
-    }
-    if (rowDate > to) continue;
-
-    const period = formatUtcDateKey(getBucketStart(rowDate, bucket));
-    countsByPeriod.set(period, (countsByPeriod.get(period) ?? 0) + row.users);
-  }
-
-  const userGrowth = bucketStarts.map((start) => {
-    const period = formatUtcDateKey(start);
-    return {
-      period,
-      label: formatGrowthLabel(start, bucket),
-      users: countsByPeriod.get(period) ?? 0,
-    };
-  });
-
-  let running = priorCount;
-  const userGrowthCumulative = userGrowth.map((row) => {
-    running += row.users;
-    return { ...row, users: running };
-  });
-
-  return {
-    bucket,
-    from: range.from,
-    to: range.to,
-    userGrowth,
-    userGrowthCumulative,
-  };
 }
 
 function UserGrowthComboChart({
@@ -618,8 +471,8 @@ function normalizeDraftRange(range: DateRange | undefined) {
   const orderedFrom = from <= to ? from : to;
   const orderedTo = from <= to ? to : from;
   return {
-    from: formatDateKey(orderedFrom),
-    to: formatDateKey(orderedTo),
+    from: formatCalendarDateKey(orderedFrom),
+    to: formatCalendarDateKey(orderedTo),
   } satisfies GrowthCustomRange;
 }
 
@@ -702,7 +555,7 @@ function RangePickerContent({
     startOfCalendarMonth(draftRange?.from ?? todayDate)
   );
   const customRangeLabel = normalizedDraft
-    ? `${formatShortDate(normalizedDraft.from)} - ${formatShortDate(normalizedDraft.to)}`
+    ? `${formatShortDashboardDate(normalizedDraft.from)} - ${formatShortDashboardDate(normalizedDraft.to)}`
     : t("picker.customPlaceholder");
   const todayMonth = startOfCalendarMonth(todayDate);
   const changeVisibleMonth = (offset: number) => {
@@ -878,7 +731,7 @@ function UserGrowthRangePicker({
   const normalizedDraft = normalizeDraftRange(draftRange);
   const triggerLabel =
     activeRange === "custom" && customRange
-      ? `${formatShortDate(customRange.from)} - ${formatShortDate(customRange.to)}`
+      ? `${formatShortDashboardDate(customRange.from)} - ${formatShortDashboardDate(customRange.to)}`
       : getGrowthRangeLabel(activeRange, today, t);
 
   const resetDraft = () =>

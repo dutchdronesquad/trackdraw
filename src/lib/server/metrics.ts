@@ -1,6 +1,39 @@
 import "server-only";
 
+import {
+  addUtcDays,
+  addUtcMonths,
+  addUtcWeeks,
+  buildCumulativeGrowth,
+  formatGrowthLabel,
+  formatPeriodKey,
+  formatUtcDateKey,
+  getCustomGrowthBucket,
+  getCustomGrowthBucketStarts,
+  parseUtcDateKey,
+  startOfUtcDay,
+  startOfUtcMonth,
+  startOfUtcWeek,
+  type GrowthBucket,
+  type GrowthCustomRange,
+  type GrowthDailyPoint,
+  type GrowthData,
+  type GrowthPresetRange,
+  type GrowthRange,
+  type GrowthTimeline,
+} from "@/lib/metrics-growth";
 import { getDatabase } from "@/lib/server/db";
+
+export type {
+  GrowthBucket,
+  GrowthCustomRange,
+  GrowthDailyPoint,
+  GrowthData,
+  GrowthPoint,
+  GrowthPresetRange,
+  GrowthRange,
+  GrowthTimeline,
+} from "@/lib/metrics-growth";
 
 export type UserMetrics = {
   total: number;
@@ -46,44 +79,8 @@ export type PlanLimitRow = {
   usersExceedingAny: number;
 };
 
-export type GrowthBucket = "day" | "week" | "month";
-
-export type GrowthPoint = {
-  period: string;
-  label: string;
-  users: number;
-};
-
-export type GrowthPresetRange = "3m" | "6m" | "12m" | "ytd" | "previousYear";
-
-export type GrowthRange = GrowthPresetRange | "custom";
-
-export type GrowthCustomRange = {
-  from: string;
-  to: string;
-};
-
-export type GrowthData = {
-  bucket: GrowthBucket;
-  from: string;
-  to: string;
-  userGrowth: GrowthPoint[];
-  userGrowthCumulative: GrowthPoint[];
-};
-
 export type GrowthByRange = Record<GrowthPresetRange, GrowthData> &
   Partial<Record<"custom", GrowthData>>;
-
-export type GrowthDailyPoint = {
-  date: string;
-  users: number;
-};
-
-export type GrowthTimeline = {
-  dailyGrowth: GrowthDailyPoint[];
-  totalUsers: number;
-  today: string;
-};
 
 export type ApiKeyMetrics = {
   active: number;
@@ -330,17 +327,6 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
   };
 }
 
-function buildCumulativeGrowth(
-  rows: GrowthPoint[],
-  priorCount: number
-): GrowthPoint[] {
-  let running = priorCount;
-  return rows.map((row) => {
-    running += row.users;
-    return { ...row, users: running };
-  });
-}
-
 export type RecentUser = {
   id: string;
   name: string | null;
@@ -456,8 +442,8 @@ export async function getGrowthByRange(options?: {
         range,
         {
           bucket,
-          from: formatDateKey(from),
-          to: formatDateKey(addUtcDays(toExclusive, -1)),
+          from: formatUtcDateKey(from),
+          to: formatUtcDateKey(addUtcDays(toExclusive, -1)),
           userGrowth: growthRows,
           userGrowthCumulative: buildCumulativeGrowth(
             growthRows,
@@ -488,7 +474,7 @@ export async function getGrowthTimeline(): Promise<GrowthTimeline> {
   return {
     dailyGrowth: growthResult.results,
     totalUsers: totalRow?.count ?? 0,
-    today: formatDateKey(startOfUtcDay(new Date())),
+    today: formatUtcDateKey(startOfUtcDay(new Date())),
   };
 }
 
@@ -553,43 +539,6 @@ function getCustomGrowthRangeSpec(range: GrowthCustomRange): GrowthRangeSpec {
   };
 }
 
-function getCustomGrowthBucket(from: Date, to: Date): GrowthBucket {
-  const days = differenceInUtcDays(from, to) + 1;
-  if (days <= 45) return "day";
-  if (days <= 183) return "week";
-  return "month";
-}
-
-function getCustomGrowthBucketStarts(
-  from: Date,
-  to: Date,
-  bucket: GrowthBucket
-): Date[] {
-  const start =
-    bucket === "month"
-      ? startOfUtcMonth(from)
-      : bucket === "week"
-        ? startOfUtcWeek(from)
-        : startOfUtcDay(from);
-  const end =
-    bucket === "month"
-      ? startOfUtcMonth(to)
-      : bucket === "week"
-        ? startOfUtcWeek(to)
-        : startOfUtcDay(to);
-  const starts: Date[] = [];
-  for (let cursor = start; cursor <= end;) {
-    starts.push(cursor);
-    cursor =
-      bucket === "month"
-        ? addUtcMonths(cursor, 1)
-        : bucket === "week"
-          ? addUtcWeeks(cursor, 1)
-          : addUtcDays(cursor, 1);
-  }
-  return starts;
-}
-
 function getRollingGrowthBucketStarts(
   now: Date,
   bucket: GrowthBucket,
@@ -620,88 +569,6 @@ function getCalendarYearBucketStarts(year: number): Date[] {
   );
 }
 
-function startOfUtcWeek(date: Date): Date {
-  const start = startOfUtcDay(date);
-  const day = start.getUTCDay();
-  const offset = day === 0 ? -6 : 1 - day;
-  start.setUTCDate(start.getUTCDate() + offset);
-  return start;
-}
-
-function startOfUtcMonth(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
-}
-
-function startOfUtcDay(date: Date): Date {
-  return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  );
-}
-
-function addUtcWeeks(date: Date, weeks: number): Date {
-  const next = new Date(date);
-  next.setUTCDate(next.getUTCDate() + weeks * 7);
-  return next;
-}
-
-function addUtcDays(date: Date, days: number): Date {
-  const next = new Date(date);
-  next.setUTCDate(next.getUTCDate() + days);
-  return next;
-}
-
-function addUtcMonths(date: Date, months: number): Date {
-  return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1)
-  );
-}
-
-function differenceInUtcDays(from: Date, to: Date): number {
-  const msPerDay = 24 * 60 * 60 * 1000;
-  return Math.round(
-    (startOfUtcDay(to).getTime() - startOfUtcDay(from).getTime()) / msPerDay
-  );
-}
-
-function formatPeriodKey(date: Date, bucket: GrowthBucket): string {
-  if (bucket === "day") return formatDateKey(date);
-  if (bucket === "week") return formatDateKey(date);
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(
-    2,
-    "0"
-  )}-01`;
-}
-
-function formatDateKey(date: Date): string {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseUtcDateKey(value: string): Date | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-  const [year, month, day] = value.split("-").map(Number);
-  if (!year || !month || !day) return null;
-  const date = new Date(Date.UTC(year, month - 1, day));
-  if (
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() !== month - 1 ||
-    date.getUTCDate() !== day
-  ) {
-    return null;
-  }
-  return date;
-}
-
-function formatGrowthLabel(date: Date, bucket: GrowthBucket): string {
-  return date.toLocaleDateString("en", {
-    month: "short",
-    ...(bucket === "month" ? { year: "numeric" } : { day: "numeric" }),
-    timeZone: "UTC",
-  });
-}
-
 export function normalizeGrowthCustomRange(
   fromValue: string | string[] | undefined,
   toValue: string | string[] | undefined
@@ -717,7 +584,7 @@ export function normalizeGrowthCustomRange(
   const orderedFrom = from <= to ? from : to;
   const orderedTo = from <= to ? to : from;
   return {
-    from: formatDateKey(orderedFrom),
-    to: formatDateKey(orderedTo),
+    from: formatUtcDateKey(orderedFrom),
+    to: formatUtcDateKey(orderedTo),
   };
 }
