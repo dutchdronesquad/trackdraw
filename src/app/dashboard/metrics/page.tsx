@@ -19,7 +19,11 @@ import {
 } from "@/components/dashboard/MetricsChartsLoader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
-import { getAdminMetrics, getGrowthByRange } from "@/lib/server/metrics";
+import {
+  getAdminMetrics,
+  getGrowthByRange,
+  getGrowthTimeline,
+} from "@/lib/server/metrics";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("dashboard");
@@ -49,23 +53,25 @@ function KpiCard({
   iconTone,
 }: KpiCardProps) {
   return (
-    <div className="bg-card overflow-hidden rounded-xl border">
+    <div className="bg-card min-w-0 overflow-hidden rounded-xl border">
       <div className={`h-1 ${accent}`} />
-      <div className="flex items-start gap-3 p-4">
+      <div className="flex items-start gap-2 p-3 sm:gap-3 sm:p-4">
         <span
-          className={`mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}
+          className={`mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg sm:size-8 ${iconTone}`}
         >
-          <Icon className="size-4" />
+          <Icon className="size-3.5 sm:size-4" />
         </span>
         <div className="min-w-0">
           <p className="text-muted-foreground truncate text-xs font-medium">
             {label}
           </p>
-          <p className="text-2xl leading-tight font-bold tabular-nums">
+          <p className="text-lg leading-tight font-bold tabular-nums sm:text-2xl">
             {value}
           </p>
           {sub ? (
-            <p className="text-muted-foreground mt-0.5 text-xs">{sub}</p>
+            <p className="text-muted-foreground mt-0.5 truncate text-[11px] sm:text-xs">
+              {sub}
+            </p>
           ) : null}
         </div>
       </div>
@@ -89,12 +95,16 @@ function ChartCard({
   action,
 }: ChartCardProps) {
   return (
-    <div className={`bg-card rounded-xl border p-4 ${className ?? ""}`}>
-      <div className="flex items-start justify-between gap-3">
+    <div
+      className={`bg-card min-w-0 rounded-xl border p-3 sm:p-4 ${className ?? ""}`}
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-0.5">
           <p className="text-sm font-medium">{title}</p>
           {description ? (
-            <p className="text-muted-foreground text-xs">{description}</p>
+            <p className="text-muted-foreground hidden text-xs sm:block">
+              {description}
+            </p>
           ) : null}
         </div>
         {action ? <div className="shrink-0">{action}</div> : null}
@@ -113,16 +123,18 @@ type StatRowProps = {
 
 function StatRow({ label, value, icon: Icon, tone }: StatRowProps) {
   return (
-    <div className="flex items-center justify-between border-b py-2 last:border-0">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between gap-3 border-b py-2 last:border-0">
+      <div className="flex min-w-0 items-center gap-2">
         <span
           className={`inline-flex size-6 shrink-0 items-center justify-center rounded-md ${tone}`}
         >
           <Icon className="size-3" />
         </span>
-        <span className="text-muted-foreground text-sm">{label}</span>
+        <span className="text-muted-foreground truncate text-sm">{label}</span>
       </div>
-      <span className="text-sm font-semibold tabular-nums">{value}</span>
+      <span className="shrink-0 text-sm font-semibold tabular-nums">
+        {value}
+      </span>
     </div>
   );
 }
@@ -135,9 +147,10 @@ export default async function DashboardMetricsPage() {
     notFound();
   }
 
-  const [metrics, growthByRange] = await Promise.all([
+  const [metrics, growthByRange, growthTimeline] = await Promise.all([
     getAdminMetrics(),
     getGrowthByRange(),
+    getGrowthTimeline(),
   ]);
 
   const t = await getTranslations("dashboard");
@@ -150,9 +163,9 @@ export default async function DashboardMetricsPage() {
         parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.metrics")}
       />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <div className="flex min-w-0 flex-1 flex-col gap-4 p-3 pt-0 sm:gap-6 sm:p-4 sm:pt-0">
         {/* KPI strip */}
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+        <div className="grid min-w-0 grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-5">
           <KpiCard
             label={tMetrics("kpi.totalUsers.label")}
             value={metrics.users.total}
@@ -213,7 +226,7 @@ export default async function DashboardMetricsPage() {
         </div>
 
         {/* User population + Content overview */}
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
           <ChartCard
             title={tMetrics("userPopulation.title")}
             description={tMetrics("userPopulation.description")}
@@ -233,11 +246,14 @@ export default async function DashboardMetricsPage() {
         </div>
 
         {/* User growth */}
-        <UserGrowthCard growthByRange={growthByRange} />
+        <UserGrowthCard
+          growthByRange={growthByRange}
+          growthTimeline={growthTimeline}
+        />
 
         {/* Detail stats */}
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div className="bg-card space-y-0.5 rounded-xl border p-4">
+        <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-3">
+          <div className="bg-card min-w-0 space-y-0.5 rounded-xl border p-4">
             <p className="mb-3 text-sm font-medium">
               {tMetrics("detail.projects")}
             </p>
@@ -260,7 +276,7 @@ export default async function DashboardMetricsPage() {
               tone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
             />
           </div>
-          <div className="bg-card space-y-0.5 rounded-xl border p-4">
+          <div className="bg-card min-w-0 space-y-0.5 rounded-xl border p-4">
             <p className="mb-3 text-sm font-medium">
               {tMetrics("detail.shareLinks")}
             </p>
@@ -283,7 +299,7 @@ export default async function DashboardMetricsPage() {
               tone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
             />
           </div>
-          <div className="bg-card space-y-0.5 rounded-xl border p-4">
+          <div className="bg-card min-w-0 space-y-0.5 rounded-xl border p-4">
             <p className="mb-3 text-sm font-medium">
               {tMetrics("detail.layoutPresets")}
             </p>
@@ -312,7 +328,7 @@ export default async function DashboardMetricsPage() {
         <div className="space-y-3">
           <div>
             <p className="text-sm font-medium">{tMetrics("planLimit.title")}</p>
-            <p className="text-muted-foreground mt-0.5 text-xs">
+            <p className="text-muted-foreground mt-0.5 hidden text-xs sm:block">
               {tMetrics("planLimit.description")}
             </p>
           </div>
