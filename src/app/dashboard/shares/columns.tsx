@@ -251,10 +251,7 @@ export function getSharesColumns({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <Badge
-                variant={getLifecycleVariant(state)}
-                className="shrink-0"
-              >
+              <Badge variant={getLifecycleVariant(state)} className="shrink-0">
                 {t(`statusValues.${state}`)}
               </Badge>
             )}
