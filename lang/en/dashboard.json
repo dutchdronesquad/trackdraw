@@ -162,14 +162,36 @@
     },
     "userGrowth": {
       "title": "User growth",
-      "description": "Cumulative user count (area) and new registrations per week (bars).",
+      "description": "Cumulative user count (area) and new registrations per selected period (bars).",
       "totalUsers": "Total users",
+      "newThisDay": "New this day",
       "newThisWeek": "New this week",
+      "newThisMonth": "New this month",
       "noData": "No data yet",
       "ranges": {
         "3m": "Last 3 months",
         "6m": "Last 6 months",
-        "1y": "Last year"
+        "12m": "Last 12 months",
+        "ytd": "This year"
+      },
+      "periods": {
+        "day": "day",
+        "week": "week",
+        "month": "month"
+      },
+      "picker": {
+        "range": "Range",
+        "presets": "Presets",
+        "custom": "Custom range",
+        "customPlaceholder": "Select a date range",
+        "apply": "Apply"
+      },
+      "summary": {
+        "newInRange": "New in range",
+        "avgPerPeriod": "Avg per {period}",
+        "strongestPeriod": "Strongest {period}",
+        "strongestValue": "{label} · +{count}",
+        "noPeriod": "n/a"
       }
     },
     "detail": {
