@@ -368,8 +368,8 @@ export async function getOverviewStats(): Promise<OverviewStats> {
         .prepare(
           `select
             count(*) as count,
-            sum(case when created_at >= date('now', 'start of month') then 1 else 0 end) as new_this_month,
-            sum(case when created_at >= date('now', 'start of month', '-1 month') and created_at < date('now', 'start of month') then 1 else 0 end) as new_last_month
+            coalesce(sum(case when created_at >= date('now', 'start of month') then 1 else 0 end), 0) as new_this_month,
+            coalesce(sum(case when created_at >= date('now', 'start of month', '-1 month') and created_at < date('now', 'start of month') then 1 else 0 end), 0) as new_last_month
            from projects
            where archived_at is null`
         )
@@ -382,8 +382,8 @@ export async function getOverviewStats(): Promise<OverviewStats> {
         .prepare(
           `select
             count(*) as count,
-            sum(case when created_at >= date('now', 'start of month') then 1 else 0 end) as new_this_month,
-            sum(case when created_at >= date('now', 'start of month', '-1 month') and created_at < date('now', 'start of month') then 1 else 0 end) as new_last_month
+            coalesce(sum(case when created_at >= date('now', 'start of month') then 1 else 0 end), 0) as new_this_month,
+            coalesce(sum(case when created_at >= date('now', 'start of month', '-1 month') and created_at < date('now', 'start of month') then 1 else 0 end), 0) as new_last_month
            from shares
            where revoked_at is null
              and (expires_at is null or expires_at > datetime('now'))

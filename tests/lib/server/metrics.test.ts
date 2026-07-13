@@ -114,7 +114,13 @@ describe("dashboard metrics", () => {
     );
     expect(String(mocks.prepare.mock.calls[0][0])).not.toContain("-30 days");
     expect(String(mocks.prepare.mock.calls[1][0])).toContain(
+      "coalesce(sum(case"
+    );
+    expect(String(mocks.prepare.mock.calls[1][0])).toContain(
       "created_at >= date('now', 'start of month')"
+    );
+    expect(String(mocks.prepare.mock.calls[2][0])).toContain(
+      "coalesce(sum(case"
     );
     expect(String(mocks.prepare.mock.calls[2][0])).toContain(
       "created_at >= date('now', 'start of month', '-1 month')"
