@@ -46,11 +46,11 @@
       },
       "activeProjects": {
         "label": "Active projects",
-        "sub": "non-archived"
+        "sub": "+{count} this month"
       },
       "activeShares": {
         "label": "Active shares",
-        "sub": "live share links"
+        "sub": "+{count} this month"
       },
       "gallery": {
         "label": "Public gallery",
