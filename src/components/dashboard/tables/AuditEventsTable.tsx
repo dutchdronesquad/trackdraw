@@ -123,24 +123,27 @@ export default function DashboardAuditEventsTable({
       (row) => getEventCategory(row.original.eventType) === value
     ).length,
   }));
-  const actorFilterOptions = Array.from(
-    new Map(
-      actorFacetRows.map((row) => [
-        getActorFilterValue(row.original),
-        {
-          label: getActorFilterLabel(row.original, unknownUserLabel),
-          value: getActorFilterValue(row.original),
-        },
-      ])
-    ).values()
-  )
-    .sort((a, b) => a.label.localeCompare(b.label))
-    .map((filter) => ({
-      ...filter,
-      count: actorFacetRows.filter(
-        (row) => getActorFilterValue(row.original) === filter.value
-      ).length,
-    }));
+  const actorFiltersByValue = new Map<
+    string,
+    { label: string; value: string; count: number }
+  >();
+  for (const row of actorFacetRows) {
+    const value = getActorFilterValue(row.original);
+    const existingFilter = actorFiltersByValue.get(value);
+    if (existingFilter) {
+      existingFilter.count += 1;
+      continue;
+    }
+
+    actorFiltersByValue.set(value, {
+      label: getActorFilterLabel(row.original, unknownUserLabel),
+      value,
+      count: 1,
+    });
+  }
+  const actorFilterOptions = Array.from(actorFiltersByValue.values()).sort(
+    (a, b) => a.label.localeCompare(b.label)
+  );
 
   const uniqueActorCount = new Set(
     filteredRows.map((row) => row.original.actorUserId).filter(Boolean)

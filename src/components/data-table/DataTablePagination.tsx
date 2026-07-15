@@ -39,7 +39,7 @@ export default function DataTablePagination<TData>({
           onValueChange={(value) => table.setPageSize(Number(value))}
         >
           <SelectTrigger
-            className="h-8 w-18 text-xs"
+            className="h-8 w-20 text-xs"
             aria-label={t("rowsPerPage")}
           >
             <SelectValue />

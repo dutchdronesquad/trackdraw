@@ -46,4 +46,36 @@ describe("DashboardAuditEventsTable", () => {
     expect(screen.getByText("Page 2 of 2")).toBeTruthy();
     expect(screen.getByText("System Event 2")).toBeTruthy();
   });
+
+  it("counts actor facet options in the filtered row set", async () => {
+    const user = userEvent.setup();
+    const moderatorEvent = {
+      ...createEvent(3),
+      actorUserId: "moderator-1",
+      actor: {
+        id: "moderator-1",
+        name: "Moderator",
+        email: "moderator@trackdraw.local",
+      },
+    };
+
+    render(
+      <DashboardAuditEventsTable
+        events={[createEvent(1), createEvent(2), moderatorEvent]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Actor" }));
+
+    expect(
+      screen.getByRole("button", {
+        name: "Admin (admin@trackdraw.local) 2",
+      })
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", {
+        name: "Moderator (moderator@trackdraw.local) 1",
+      })
+    ).toBeTruthy();
+  });
 });
