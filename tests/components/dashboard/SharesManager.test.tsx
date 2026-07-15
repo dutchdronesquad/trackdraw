@@ -282,4 +282,28 @@ describe("DashboardSharesManager", () => {
       ).disabled
     ).toBe(true);
   });
+
+  it("paginates shares", async () => {
+    const user = userEvent.setup();
+    const shares = Array.from({ length: 12 }, (_, index) => ({
+      ...activeShare,
+      token: `share-token-${index + 1}`,
+      title: `Track ${index + 1}`,
+    }));
+
+    render(
+      <DashboardSharesManager
+        currentUserRole="moderator"
+        initialShares={shares}
+      />
+    );
+
+    expect(screen.getByText("Page 1 of 2")).toBeTruthy();
+    expect(screen.queryByText("Track 11")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+
+    expect(screen.getByText("Page 2 of 2")).toBeTruthy();
+    expect(screen.getByText("Track 11")).toBeTruthy();
+  });
 });

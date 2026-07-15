@@ -38,7 +38,11 @@
     "filterPlaceholder": "Filter {title}...",
     "noResults": "No results found.",
     "selectedCount": "{count} selected",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "rowsPerPage": "Rows per page",
+    "page": "Page {current} of {total}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   },
   "measurementUnit": {
     "metric": "Metric",

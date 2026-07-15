@@ -38,7 +38,11 @@
     "filterPlaceholder": "Filter {title}...",
     "noResults": "Geen resultaten gevonden.",
     "selectedCount": "{count} geselecteerd",
-    "clearFilters": "Filters wissen"
+    "clearFilters": "Filters wissen",
+    "rowsPerPage": "Rijen per pagina",
+    "page": "Pagina {current} van {total}",
+    "previousPage": "Vorige pagina",
+    "nextPage": "Volgende pagina"
   },
   "measurementUnit": {
     "metric": "Metrisch",

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   getCoreRowModel,
+  getFacetedRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
@@ -175,33 +177,57 @@ export default function DashboardSharesManager({
     }
   };
 
-  const copyShareLink = async (token: string) => {
-    const href = `${window.location.origin}/share/${token}`;
+  const copyShareLink = useCallback(
+    async (token: string) => {
+      const href = `${window.location.origin}/share/${token}`;
 
-    try {
-      await window.navigator.clipboard.writeText(href);
-      toast.success(t("messages.copyLinkSuccess"));
-    } catch {
-      toast.error(t("messages.copyLinkFailed"));
-    }
-  };
+      try {
+        await window.navigator.clipboard.writeText(href);
+        toast.success(t("messages.copyLinkSuccess"));
+      } catch {
+        toast.error(t("messages.copyLinkFailed"));
+      }
+    },
+    [t]
+  );
 
-  const columns = getSharesColumns({
-    t: t as unknown as Translate,
-    tCommon: tCommon as unknown as Translate,
-    pendingToken,
-    canManageShares,
-    canPurgeShares,
-    onCopyLink: (token) => void copyShareLink(token),
-    onRevokeCandidate: setRevokeCandidate,
-    onPurgeCandidate: setPurgeCandidate,
-  });
+  const columns = useMemo(
+    () =>
+      getSharesColumns({
+        t: t as unknown as Translate,
+        tCommon: tCommon as unknown as Translate,
+        pendingToken,
+        canManageShares,
+        canPurgeShares,
+        onCopyLink: (token) => void copyShareLink(token),
+        onRevokeCandidate: setRevokeCandidate,
+        onPurgeCandidate: setPurgeCandidate,
+      }),
+    [canManageShares, canPurgeShares, copyShareLink, pendingToken, t, tCommon]
+  );
+  const columnFilters = useMemo(
+    () => [
+      ...(selectedLifecycles.length > 0
+        ? [{ id: "status", value: selectedLifecycles }]
+        : []),
+      ...(selectedTypes.length > 0
+        ? [{ id: "type", value: selectedTypes }]
+        : []),
+      ...(selectedOwners.length > 0
+        ? [{ id: "owner", value: selectedOwners }]
+        : []),
+    ],
+    [selectedLifecycles, selectedOwners, selectedTypes]
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: shares,
     columns,
-    state: { globalFilter, sorting },
+    state: { globalFilter, sorting, columnFilters },
+    initialState: {
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
     globalFilterFn: (row, _columnId, filterValue: string) => {
@@ -217,36 +243,18 @@ export default function DashboardSharesManager({
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const rowsForCurrentSearch = table.getRowModel().rows;
-  const matchesLifecycleFilter = (share: DashboardShare) =>
-    selectedLifecycles.length === 0 ||
-    selectedLifecycles.includes(getLifecycleState(share));
-  const matchesTypeFilter = (share: DashboardShare) =>
-    selectedTypes.length === 0 || selectedTypes.includes(share.shareType);
-  const matchesOwnerFilter = (share: DashboardShare) =>
-    selectedOwners.length === 0 ||
-    selectedOwners.includes(getOwnerFilterValue(share));
-
-  const filteredRows = rowsForCurrentSearch.filter(
-    (row) =>
-      matchesLifecycleFilter(row.original) &&
-      matchesTypeFilter(row.original) &&
-      matchesOwnerFilter(row.original)
-  );
-  const lifecycleFacetRows = rowsForCurrentSearch.filter(
-    (row) => matchesTypeFilter(row.original) && matchesOwnerFilter(row.original)
-  );
-  const typeFacetRows = rowsForCurrentSearch.filter(
-    (row) =>
-      matchesLifecycleFilter(row.original) && matchesOwnerFilter(row.original)
-  );
-  const ownerFacetRows = rowsForCurrentSearch.filter(
-    (row) =>
-      matchesLifecycleFilter(row.original) && matchesTypeFilter(row.original)
-  );
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const lifecycleFacetRows =
+    table.getColumn("status")?.getFacetedRowModel().rows ?? [];
+  const typeFacetRows =
+    table.getColumn("type")?.getFacetedRowModel().rows ?? [];
+  const ownerFacetRows =
+    table.getColumn("owner")?.getFacetedRowModel().rows ?? [];
   const lifecycleFilterOptions = lifecycleFilterValues.map((value) => ({
     value,
     label: t(`statusValues.${value}`),
@@ -309,20 +317,22 @@ export default function DashboardSharesManager({
 
       <DataTable
         table={table}
-        rows={filteredRows}
         columnsLength={columns.length}
         emptyMessage={emptyMessage}
         minWidthClassName="min-w-[920px]"
         emptyClassName="py-8"
         getRowAriaLabel={(row) => t("aria.row", { title: row.original.title })}
+        pagination={{
+          summary: (
+            <p className="text-muted-foreground text-xs">
+              {t("status.showing", {
+                filtered: filteredRowCount,
+                total: shares.length,
+              })}
+            </p>
+          ),
+        }}
       />
-
-      <p className="text-muted-foreground text-xs">
-        {t("status.showing", {
-          filtered: filteredRows.length,
-          total: shares.length,
-        })}
-      </p>
 
       <Dialog
         open={revokeCandidate !== null}

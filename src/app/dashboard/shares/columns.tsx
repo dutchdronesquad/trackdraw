@@ -195,6 +195,11 @@ export function getSharesColumns({
     {
       id: "owner",
       accessorFn: (row) => getOwnerLabel(row, t),
+      filterFn: (row, _columnId, filterValue: string[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(
+          row.original.ownerUserId ? "account" : "anonymous"
+        ),
       header: tCommon("labels.owner"),
       meta: { className: "w-[20%] min-w-44" },
       cell: ({ row }) => (
@@ -211,6 +216,9 @@ export function getSharesColumns({
     {
       id: "type",
       accessorFn: (row) => row.shareType,
+      filterFn: (row, columnId, filterValue: string[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(row.getValue<string>(columnId)),
       header: t("table.type"),
       meta: { className: "w-28" },
       cell: ({ row }) => (
@@ -224,6 +232,9 @@ export function getSharesColumns({
     {
       id: "status",
       accessorFn: (row) => getLifecycleState(row),
+      filterFn: (row, columnId, filterValue: string[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(row.getValue<string>(columnId)),
       header: t("table.status"),
       meta: { className: "w-64 min-w-64" },
       cell: ({ row }) => {

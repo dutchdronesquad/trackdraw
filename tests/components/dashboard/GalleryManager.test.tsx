@@ -177,4 +177,29 @@ describe("DashboardGalleryManager", () => {
       method: "DELETE",
     });
   });
+
+  it("paginates gallery entries", async () => {
+    const user = userEvent.setup();
+    const entries = Array.from({ length: 12 }, (_, index) => ({
+      ...entry,
+      id: `entry-${index + 1}`,
+      shareToken: `share-token-${index + 1}`,
+      galleryTitle: `Track ${index + 1}`,
+    }));
+
+    render(
+      <DashboardGalleryManager
+        currentUserRole="moderator"
+        initialEntries={entries}
+      />
+    );
+
+    expect(screen.getByText("Page 1 of 2")).toBeTruthy();
+    expect(screen.queryByText("Track 11")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+
+    expect(screen.getByText("Page 2 of 2")).toBeTruthy();
+    expect(screen.getByText("Track 11")).toBeTruthy();
+  });
 });

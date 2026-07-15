@@ -109,6 +109,9 @@ export function getUsersColumns({
     },
     {
       accessorKey: "role",
+      filterFn: (row, columnId, filterValue: AccountRole[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(row.getValue<AccountRole>(columnId)),
       header: t("table.role"),
       meta: { className: "w-32" },
       cell: ({ row }) => (
