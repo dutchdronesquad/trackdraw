@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   getCoreRowModel,
+  getFacetedRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
@@ -190,57 +192,58 @@ export default function DashboardGalleryManager({
 
   const canManageGallery = galleryManagerRoles.includes(currentUserRole);
 
-  const updateEntry = async (
-    shareToken: string,
-    action: GalleryUpdateAction
-  ) => {
-    if (!canManageGallery) {
-      toast.error(t("restrictions.manage"));
-      return;
-    }
-
-    setPendingShareToken(shareToken);
-
-    try {
-      const response = await fetch(
-        `/api/dashboard/gallery/${encodeURIComponent(shareToken)}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ action }),
-        }
-      );
-
-      const payload = (await response.json()) as
-        { ok: true; entry: StoredGalleryEntry } | { ok: false; error?: string };
-
-      if (!response.ok || !payload.ok) {
-        throw new Error(
-          payload.ok
-            ? t("messages.updateFailed")
-            : (payload.error ?? t("messages.updateFailed"))
-        );
+  const updateEntry = useCallback(
+    async (shareToken: string, action: GalleryUpdateAction) => {
+      if (!canManageGallery) {
+        toast.error(t("restrictions.manage"));
+        return;
       }
 
-      setEntries((previous) =>
-        previous.map((entry) =>
-          entry.shareToken === payload.entry.shareToken
-            ? { ...entry, ...payload.entry }
-            : entry
-        )
-      );
+      setPendingShareToken(shareToken);
 
-      toast.success(t("messages.updateSuccess", { action }));
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("messages.updateFailed")
-      );
-    } finally {
-      setPendingShareToken(null);
-    }
-  };
+      try {
+        const response = await fetch(
+          `/api/dashboard/gallery/${encodeURIComponent(shareToken)}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ action }),
+          }
+        );
+
+        const payload = (await response.json()) as
+          | { ok: true; entry: StoredGalleryEntry }
+          | { ok: false; error?: string };
+
+        if (!response.ok || !payload.ok) {
+          throw new Error(
+            payload.ok
+              ? t("messages.updateFailed")
+              : (payload.error ?? t("messages.updateFailed"))
+          );
+        }
+
+        setEntries((previous) =>
+          previous.map((entry) =>
+            entry.shareToken === payload.entry.shareToken
+              ? { ...entry, ...payload.entry }
+              : entry
+          )
+        );
+
+        toast.success(t("messages.updateSuccess", { action }));
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : t("messages.updateFailed")
+        );
+      } finally {
+        setPendingShareToken(null);
+      }
+    },
+    [canManageGallery, t]
+  );
 
   const deleteEntry = async (shareToken: string) => {
     if (!canManageGallery) {
@@ -303,20 +306,39 @@ export default function DashboardGalleryManager({
     }
   };
 
-  const columns = getGalleryColumns({
-    t: t as unknown as Translate,
-    tCommon: tCommon as unknown as Translate,
-    pendingShareToken,
-    canManageGallery,
-    onUpdateEntry: (shareToken, action) => void updateEntry(shareToken, action),
-    onDeleteCandidate: setDeleteCandidate,
-  });
+  const columns = useMemo(
+    () =>
+      getGalleryColumns({
+        t: t as unknown as Translate,
+        tCommon: tCommon as unknown as Translate,
+        pendingShareToken,
+        canManageGallery,
+        onUpdateEntry: (shareToken, action) =>
+          void updateEntry(shareToken, action),
+        onDeleteCandidate: setDeleteCandidate,
+      }),
+    [canManageGallery, pendingShareToken, t, tCommon, updateEntry]
+  );
+  const columnFilters = useMemo(
+    () => [
+      ...(selectedGalleryStates.length > 0
+        ? [{ id: "galleryState", value: selectedGalleryStates }]
+        : []),
+      ...(selectedShareLifecycles.length > 0
+        ? [{ id: "shareLifecycle", value: selectedShareLifecycles }]
+        : []),
+    ],
+    [selectedGalleryStates, selectedShareLifecycles]
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: entries,
     columns,
-    state: { globalFilter, sorting },
+    state: { globalFilter, sorting, columnFilters },
+    initialState: {
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
     globalFilterFn: (row, _columnId, filterValue: string) => {
@@ -330,30 +352,16 @@ export default function DashboardGalleryManager({
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const rowsForCurrentSearch = table.getRowModel().rows;
-  const stateFilteredRows = rowsForCurrentSearch.filter((row) =>
-    selectedGalleryStates.length === 0
-      ? true
-      : selectedGalleryStates.includes(row.original.galleryState)
-  );
-  const filteredRows = stateFilteredRows.filter((row) =>
-    selectedShareLifecycles.length === 0
-      ? true
-      : selectedShareLifecycles.includes(getShareLifecycleState(row.original))
-  );
-  const stateFacetRows = rowsForCurrentSearch.filter((row) =>
-    selectedShareLifecycles.length === 0
-      ? true
-      : selectedShareLifecycles.includes(getShareLifecycleState(row.original))
-  );
-  const shareFacetRows = rowsForCurrentSearch.filter((row) =>
-    selectedGalleryStates.length === 0
-      ? true
-      : selectedGalleryStates.includes(row.original.galleryState)
-  );
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const stateFacetRows =
+    table.getColumn("galleryState")?.getFacetedRowModel().rows ?? [];
+  const shareFacetRows =
+    table.getColumn("shareLifecycle")?.getFacetedRowModel().rows ?? [];
   const stateFilterOptions = stateFilterValues.map((value) => ({
     value,
     label: t(`stateValues.${value}`),
@@ -402,7 +410,6 @@ export default function DashboardGalleryManager({
 
       <DataTable
         table={table}
-        rows={filteredRows}
         columnsLength={columns.length}
         emptyMessage={emptyMessage}
         minWidthClassName="min-w-[920px]"
@@ -411,14 +418,17 @@ export default function DashboardGalleryManager({
         getRowAriaLabel={(row) =>
           t("aria.row", { title: row.original.galleryTitle })
         }
+        pagination={{
+          summary: (
+            <p className="text-muted-foreground text-xs">
+              {t("status.showing", {
+                filtered: filteredRowCount,
+                total: entries.length,
+              })}
+            </p>
+          ),
+        }}
       />
-
-      <p className="text-muted-foreground text-xs">
-        {t("status.showing", {
-          filtered: filteredRows.length,
-          total: entries.length,
-        })}
-      </p>
 
       <Dialog
         open={inspectCandidate !== null}

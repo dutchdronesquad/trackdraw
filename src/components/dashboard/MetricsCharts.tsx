@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { forwardRef, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { CalendarIcon } from "lucide-react";
 import type { DateRange } from "react-day-picker";
@@ -24,7 +24,7 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { MetricsRangeCalendar } from "@/components/dashboard/MetricsRangeCalendar";
 import {
   Drawer,
@@ -49,6 +49,7 @@ import {
   type GrowthTimeline,
 } from "@/lib/metrics-growth";
 import type { AdminMetrics, GrowthByRange } from "@/lib/server/metrics";
+import { cn } from "@/lib/utils";
 
 // --- User population donut with center label ---
 
@@ -498,22 +499,30 @@ function getGrowthRangeLabel(
   return t(`ranges.${range}`);
 }
 
-function RangePickerTrigger({
-  label,
-  onClick,
-}: {
+type RangePickerTriggerProps = Omit<
+  ButtonProps,
+  "children" | "size" | "variant"
+> & {
   label: string;
-  onClick?: () => void;
-}) {
+};
+
+const RangePickerTrigger = forwardRef<
+  HTMLButtonElement,
+  RangePickerTriggerProps
+>(({ label, className, ...triggerProps }, ref) => {
   const t = useTranslations("dashboard.metrics.userGrowth");
 
   return (
     <Button
+      ref={ref}
       type="button"
       variant="ghost"
       size="sm"
-      onClick={onClick}
-      className="border-input bg-background hover:bg-accent hover:text-accent-foreground data-[state=open]:bg-accent h-9 w-auto max-w-[9.5rem] justify-start gap-2 rounded-lg border px-2.5 text-left font-normal shadow-xs sm:w-56 sm:max-w-none"
+      className={cn(
+        "border-input bg-background hover:bg-muted hover:text-foreground data-[state=open]:bg-muted h-9 w-auto max-w-[9.5rem] justify-start gap-2 rounded-lg border px-2.5 text-left font-normal shadow-xs sm:w-56 sm:max-w-none",
+        className
+      )}
+      {...triggerProps}
     >
       <CalendarIcon className="text-muted-foreground size-4 shrink-0" />
       <span className="min-w-0 flex-1">
@@ -524,7 +533,8 @@ function RangePickerTrigger({
       </span>
     </Button>
   );
-}
+});
+RangePickerTrigger.displayName = "RangePickerTrigger";
 
 function RangePickerContent({
   activeRange,

@@ -115,6 +115,9 @@ export function getApiKeysColumns({
     {
       id: "status",
       accessorFn: (row) => getApiKeyStatus(row),
+      filterFn: (row, columnId, filterValue: ApiKeyStatus[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(row.getValue<ApiKeyStatus>(columnId)),
       header: t("table.status"),
       meta: { className: "w-28" },
       cell: ({ row }) => {

@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 import {
-  DrawerContent,
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
@@ -20,8 +19,10 @@ interface MobileDrawerProps {
   footerContent?: React.ReactNode;
   nested?: boolean;
   repositionInputs?: boolean;
+  handleOnly?: boolean;
   bodyClassName?: string;
   contentClassName?: string;
+  overlayClassName?: string;
 }
 
 interface MobileDrawerHeaderProps {
@@ -70,30 +71,47 @@ export function MobileDrawer({
   footerContent,
   nested = false,
   repositionInputs = false,
+  handleOnly = true,
   bodyClassName,
   contentClassName,
+  overlayClassName,
 }: MobileDrawerProps) {
   const content = (
-    <DrawerContent
-      className={cn(
-        "border-border/50 bg-card max-h-[85dvh] gap-0 overflow-hidden rounded-t-[1.35rem] border shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden",
-        contentClassName
-      )}
-    >
-      <MobileDrawerHeader title={title} subtitle={subtitle} />
-      {pinnedContent}
-      <div
-        className={cn("flex-1 overflow-y-auto px-4 pt-3 pb-6", bodyClassName)}
+    <DrawerPrimitive.Portal>
+      <DrawerPrimitive.Overlay
+        data-slot="mobile-drawer-overlay"
+        className={cn(
+          "data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 z-50 bg-black/20",
+          overlayClassName
+        )}
+      />
+      <DrawerPrimitive.Content
+        data-slot="mobile-drawer-content"
+        className={cn(
+          "group/drawer-content border-border/50 bg-card fixed inset-x-0 bottom-0 z-50 flex h-auto max-h-[85dvh] flex-col gap-0 overflow-hidden rounded-t-[1.35rem] border text-sm shadow-[0_-16px_36px_rgba(0,0,0,0.14)] lg:hidden",
+          contentClassName
+        )}
       >
-        {children}
-      </div>
-      {footerContent}
-    </DrawerContent>
+        <DrawerPrimitive.Handle className="mx-auto mt-3 h-1 w-25 shrink-0 self-center rounded-full bg-black/14 dark:bg-white/72" />
+        <MobileDrawerHeader title={title} subtitle={subtitle} />
+        {pinnedContent}
+        <div
+          className={cn(
+            "min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 pt-3 pb-6 [-webkit-overflow-scrolling:touch]",
+            bodyClassName
+          )}
+        >
+          {children}
+        </div>
+        {footerContent}
+      </DrawerPrimitive.Content>
+    </DrawerPrimitive.Portal>
   );
 
   const drawerProps = {
     direction: "bottom" as const,
     modal: true,
+    handleOnly,
     onOpenChange,
     open,
     repositionInputs,

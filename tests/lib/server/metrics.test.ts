@@ -77,8 +77,12 @@ describe("dashboard metrics", () => {
       createD1Statement({
         first: { total: 12, new_this_month: 4, new_last_month: 3 },
       }),
-      createD1Statement({ first: { count: 7 } }),
-      createD1Statement({ first: { count: 5 } }),
+      createD1Statement({
+        first: { count: 7, new_this_month: 3, new_last_month: 2 },
+      }),
+      createD1Statement({
+        first: { count: 5, new_this_month: 2, new_last_month: 4 },
+      }),
       createD1AllStatement([
         {
           id: "user-1",
@@ -93,6 +97,10 @@ describe("dashboard metrics", () => {
 
     expect(stats.newUsersThisMonth).toBe(4);
     expect(stats.newUsersLastMonth).toBe(3);
+    expect(stats.newActiveProjectsThisMonth).toBe(3);
+    expect(stats.newActiveProjectsLastMonth).toBe(2);
+    expect(stats.newActiveSharesThisMonth).toBe(2);
+    expect(stats.newActiveSharesLastMonth).toBe(4);
     expect(stats.recentUsers[0]).toMatchObject({
       id: "user-1",
       name: null,
@@ -105,6 +113,18 @@ describe("dashboard metrics", () => {
       "createdAt >= date('now', 'start of month', '-1 month')"
     );
     expect(String(mocks.prepare.mock.calls[0][0])).not.toContain("-30 days");
+    expect(String(mocks.prepare.mock.calls[1][0])).toContain(
+      "coalesce(sum(case"
+    );
+    expect(String(mocks.prepare.mock.calls[1][0])).toContain(
+      "created_at >= date('now', 'start of month')"
+    );
+    expect(String(mocks.prepare.mock.calls[2][0])).toContain(
+      "coalesce(sum(case"
+    );
+    expect(String(mocks.prepare.mock.calls[2][0])).toContain(
+      "created_at >= date('now', 'start of month', '-1 month')"
+    );
   });
 
   it("separates rolling ranges from calendar-year growth buckets with empty periods filled", async () => {

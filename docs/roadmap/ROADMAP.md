@@ -131,6 +131,7 @@ Focus:
 
 - Improve editor recovery and failure states so autosave, import, export, share, account sync, and runtime errors explain what happened and what the user can do next
 - Run a mobile editor ergonomics pass across Project Manager, inspector drawers, path builder, multi-select, map reference controls, and app/menu actions
+- Keep the shipped Studio mobile drawer smoothness pass covered: dedicated-handle dragging, contained momentum scrolling, lighter animated overlays, and stable inspector callbacks without changing the existing mobile workflow model
 - Harden selection and transform behavior around locked objects, grouped selections, route waypoint editing, snapping, rotation, resize handles, and undo/redo
 - Improve export and share confidence by clarifying what each output includes, what is intentionally excluded, and which limitations matter for race-day use
 - Stress-test larger layouts and dense projects with map references, 3D preview, PDF/export, and longer routes, then make targeted performance or debounce fixes

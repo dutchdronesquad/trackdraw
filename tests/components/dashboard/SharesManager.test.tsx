@@ -90,6 +90,18 @@ const revokedShare: DashboardShare = {
   galleryState: null,
 };
 
+const anonymousShare: DashboardShare = {
+  ...activeShare,
+  token: "anonymous-token",
+  title: "Anonymous Track",
+  expiresAt: "2026-05-20T10:00:00.000Z",
+  shareType: "temporary",
+  ownerUserId: null,
+  ownerName: null,
+  ownerEmail: null,
+  galleryState: null,
+};
+
 describe("DashboardSharesManager", () => {
   const writeText = vi.fn();
 
@@ -137,6 +149,77 @@ describe("DashboardSharesManager", () => {
     expect(
       screen.getByLabelText("Open share Track One").getAttribute("href")
     ).toBe("/share/share-token");
+  });
+
+  it("keeps share tokens searchable without displaying them in the table", async () => {
+    const user = userEvent.setup();
+    render(
+      <DashboardSharesManager
+        currentUserRole="moderator"
+        initialShares={[activeShare, anonymousShare]}
+      />
+    );
+
+    expect(screen.queryByText("share-token")).toBeNull();
+
+    await user.type(
+      screen.getByPlaceholderText("Search title, owner or token..."),
+      "share-token"
+    );
+
+    expect(screen.getByText("Track One")).toBeTruthy();
+    expect(screen.queryByText("Anonymous Track")).toBeNull();
+  });
+
+  it("filters shares by anonymous ownership", async () => {
+    const user = userEvent.setup();
+    render(
+      <DashboardSharesManager
+        currentUserRole="moderator"
+        initialShares={[activeShare, anonymousShare]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Owner" }));
+    await user.click(screen.getByRole("button", { name: "Anonymous 1" }));
+
+    expect(screen.getByText("Anonymous Track")).toBeTruthy();
+    expect(screen.queryByText("Track One")).toBeNull();
+    expect(screen.getByText("Showing 1 of 2 shares.")).toBeTruthy();
+  });
+
+  it("explains the scheduled share cleanup policy", () => {
+    render(
+      <DashboardSharesManager
+        currentUserRole="moderator"
+        initialShares={[activeShare]}
+      />
+    );
+
+    expect(screen.getByText("Automatic cleanup is active")).toBeTruthy();
+    expect(
+      screen.getByText(/background job runs daily at 03:17 UTC/i)
+    ).toBeTruthy();
+    expect(screen.getByText(/revoked for more than 30 days/i)).toBeTruthy();
+    expect(
+      screen.getByText(/temporary shares expired for more than 30 days/i)
+    ).toBeTruthy();
+  });
+
+  it("shows the expected cleanup date for each retained share", () => {
+    render(
+      <DashboardSharesManager
+        currentUserRole="admin"
+        initialShares={[activeShare, revokedShare, anonymousShare]}
+      />
+    );
+
+    const revokedCleanup = screen.getByLabelText(
+      /Expected cleanup 22 May 2026$/
+    );
+    expect(revokedCleanup.getAttribute("aria-label")).toMatch(/^Revoked\./);
+    expect(screen.getByLabelText(/Expected cleanup 20 Jun 2026$/)).toBeTruthy();
+    expect(screen.getAllByLabelText(/Expected cleanup/)).toHaveLength(2);
   });
 
   it("revokes active shares with a PATCH request", async () => {
@@ -198,5 +281,29 @@ describe("DashboardSharesManager", () => {
         ) as HTMLButtonElement
       ).disabled
     ).toBe(true);
+  });
+
+  it("paginates shares", async () => {
+    const user = userEvent.setup();
+    const shares = Array.from({ length: 12 }, (_, index) => ({
+      ...activeShare,
+      token: `share-token-${index + 1}`,
+      title: `Track ${index + 1}`,
+    }));
+
+    render(
+      <DashboardSharesManager
+        currentUserRole="moderator"
+        initialShares={shares}
+      />
+    );
+
+    expect(screen.getByText("Page 1 of 2")).toBeTruthy();
+    expect(screen.queryByText("Track 11")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Next page" }));
+
+    expect(screen.getByText("Page 2 of 2")).toBeTruthy();
+    expect(screen.getByText("Track 11")).toBeTruthy();
   });
 });

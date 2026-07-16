@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
@@ -402,16 +405,32 @@ export default function DashboardUsersManager({
     }
   };
 
-  const columns = getUsersColumns({
-    t: t as unknown as Translate,
-    currentUserId,
-  });
+  const columns = useMemo(
+    () =>
+      getUsersColumns({
+        t: t as unknown as Translate,
+        currentUserId,
+      }),
+    [currentUserId, t]
+  );
+  const columnFilters = useMemo(
+    () =>
+      selectedRoles.length > 0 ? [{ id: "role", value: selectedRoles }] : [],
+    [selectedRoles]
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: users,
     columns,
-    state: { globalFilter, sorting },
+    state: {
+      globalFilter,
+      sorting,
+      columnFilters,
+    },
+    initialState: {
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
     globalFilterFn: (row, _columnId, filterValue: string) => {
@@ -424,19 +443,17 @@ export default function DashboardUsersManager({
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
-  const rowsForCurrentSearch = table.getRowModel().rows;
-  const filteredRows = rowsForCurrentSearch.filter((row) =>
-    selectedRoles.length === 0
-      ? true
-      : selectedRoles.includes(row.original.role)
-  );
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const roleCounts = table.getColumn("role")?.getFacetedUniqueValues();
   const roleFilterOptions = accountRoles.map((role) => ({
     label: getAccountRoleLabel(role),
     value: role,
-    count: rowsForCurrentSearch.filter((row) => row.original.role === role)
-      .length,
+    count: roleCounts?.get(role) ?? 0,
   }));
 
   return (
@@ -456,18 +473,20 @@ export default function DashboardUsersManager({
 
       <DataTable
         table={table}
-        rows={filteredRows}
         columnsLength={columns.length}
         emptyMessage={t("empty.default")}
         onRowClick={(row) => setInspectCandidate(row.original)}
+        pagination={{
+          summary: (
+            <p className="text-muted-foreground text-xs">
+              {t("status.showing", {
+                filtered: filteredRowCount,
+                total: users.length,
+              })}
+            </p>
+          ),
+        }}
       />
-
-      <p className="text-muted-foreground text-xs">
-        {t("status.showing", {
-          filtered: filteredRows.length,
-          total: users.length,
-        })}
-      </p>
 
       <Sheet
         open={inspectCandidate !== null}

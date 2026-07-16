@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
@@ -79,13 +82,26 @@ export default function DashboardApiKeysManager({
   const [selectedStatuses, setSelectedStatuses] = useState<ApiKeyStatus[]>([]);
   const [inspectKey, setInspectKey] = useState<AdminApiKey | null>(null);
 
-  const columns = getApiKeysColumns({ t: t as unknown as Translate });
+  const columns = useMemo(
+    () => getApiKeysColumns({ t: t as unknown as Translate }),
+    [t]
+  );
+  const columnFilters = useMemo(
+    () =>
+      selectedStatuses.length > 0
+        ? [{ id: "status", value: selectedStatuses }]
+        : [],
+    [selectedStatuses]
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: initialKeys,
     columns,
-    state: { globalFilter, sorting },
+    state: { globalFilter, sorting, columnFilters },
+    initialState: {
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
     globalFilterFn: (row, _columnId, filterValue: string) => {
@@ -100,20 +116,18 @@ export default function DashboardApiKeysManager({
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const allRows = table.getRowModel().rows;
-  const filteredRows = allRows.filter((row) =>
-    selectedStatuses.length === 0
-      ? true
-      : selectedStatuses.includes(getApiKeyStatus(row.original))
-  );
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const statusCounts = table.getColumn("status")?.getFacetedUniqueValues();
   const statusFilterOptions = statusFilterValues.map((value) => ({
     value,
     label: t(`statusValues.${value}`),
-    count: allRows.filter((row) => getApiKeyStatus(row.original) === value)
-      .length,
+    count: statusCounts?.get(value) ?? 0,
   }));
 
   const emptyMessage =
@@ -138,20 +152,22 @@ export default function DashboardApiKeysManager({
 
       <DataTable
         table={table}
-        rows={filteredRows}
         columnsLength={columns.length}
         emptyMessage={emptyMessage}
         minWidthClassName="min-w-[860px]"
         emptyClassName="py-8"
         onRowClick={(row) => setInspectKey(row.original)}
+        pagination={{
+          summary: (
+            <p className="text-muted-foreground text-xs">
+              {t("status.showing", {
+                filtered: filteredRowCount,
+                total: initialKeys.length,
+              })}
+            </p>
+          ),
+        }}
       />
-
-      <p className="text-muted-foreground text-xs">
-        {t("status.showing", {
-          filtered: filteredRows.length,
-          total: initialKeys.length,
-        })}
-      </p>
 
       <Sheet
         open={inspectKey !== null}

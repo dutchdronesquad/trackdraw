@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   getCoreRowModel,
+  getFacetedRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Loader2 } from "lucide-react";
+import { Clock3, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   getLifecycleState,
@@ -40,6 +42,7 @@ type DashboardSharesManagerProps = {
 };
 
 type ShareTypeFilterValue = "published" | "temporary";
+type ShareOwnerFilterValue = "anonymous" | "account";
 
 const sharesManagerRoles: AccountRole[] = ["moderator", "admin"];
 const purgeManagerRoles: AccountRole[] = ["admin"];
@@ -49,6 +52,11 @@ const lifecycleFilterValues: ShareLifecycleState[] = [
   "revoked",
 ];
 const typeFilterValues: ShareTypeFilterValue[] = ["published", "temporary"];
+const ownerFilterValues: ShareOwnerFilterValue[] = ["anonymous", "account"];
+
+function getOwnerFilterValue(share: DashboardShare): ShareOwnerFilterValue {
+  return share.ownerUserId ? "account" : "anonymous";
+}
 
 export default function DashboardSharesManager({
   currentUserRole,
@@ -64,6 +72,9 @@ export default function DashboardSharesManager({
     ShareLifecycleState[]
   >([]);
   const [selectedTypes, setSelectedTypes] = useState<ShareTypeFilterValue[]>(
+    []
+  );
+  const [selectedOwners, setSelectedOwners] = useState<ShareOwnerFilterValue[]>(
     []
   );
   const [revokeCandidate, setRevokeCandidate] = useState<DashboardShare | null>(
@@ -166,33 +177,57 @@ export default function DashboardSharesManager({
     }
   };
 
-  const copyShareLink = async (token: string) => {
-    const href = `${window.location.origin}/share/${token}`;
+  const copyShareLink = useCallback(
+    async (token: string) => {
+      const href = `${window.location.origin}/share/${token}`;
 
-    try {
-      await window.navigator.clipboard.writeText(href);
-      toast.success(t("messages.copyLinkSuccess"));
-    } catch {
-      toast.error(t("messages.copyLinkFailed"));
-    }
-  };
+      try {
+        await window.navigator.clipboard.writeText(href);
+        toast.success(t("messages.copyLinkSuccess"));
+      } catch {
+        toast.error(t("messages.copyLinkFailed"));
+      }
+    },
+    [t]
+  );
 
-  const columns = getSharesColumns({
-    t: t as unknown as Translate,
-    tCommon: tCommon as unknown as Translate,
-    pendingToken,
-    canManageShares,
-    canPurgeShares,
-    onCopyLink: (token) => void copyShareLink(token),
-    onRevokeCandidate: setRevokeCandidate,
-    onPurgeCandidate: setPurgeCandidate,
-  });
+  const columns = useMemo(
+    () =>
+      getSharesColumns({
+        t: t as unknown as Translate,
+        tCommon: tCommon as unknown as Translate,
+        pendingToken,
+        canManageShares,
+        canPurgeShares,
+        onCopyLink: (token) => void copyShareLink(token),
+        onRevokeCandidate: setRevokeCandidate,
+        onPurgeCandidate: setPurgeCandidate,
+      }),
+    [canManageShares, canPurgeShares, copyShareLink, pendingToken, t, tCommon]
+  );
+  const columnFilters = useMemo(
+    () => [
+      ...(selectedLifecycles.length > 0
+        ? [{ id: "status", value: selectedLifecycles }]
+        : []),
+      ...(selectedTypes.length > 0
+        ? [{ id: "type", value: selectedTypes }]
+        : []),
+      ...(selectedOwners.length > 0
+        ? [{ id: "owner", value: selectedOwners }]
+        : []),
+    ],
+    [selectedLifecycles, selectedOwners, selectedTypes]
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: shares,
     columns,
-    state: { globalFilter, sorting },
+    state: { globalFilter, sorting, columnFilters },
+    initialState: {
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
     globalFilterFn: (row, _columnId, filterValue: string) => {
@@ -208,30 +243,18 @@ export default function DashboardSharesManager({
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const rowsForCurrentSearch = table.getRowModel().rows;
-  const lifecycleFilteredRows = rowsForCurrentSearch.filter((row) =>
-    selectedLifecycles.length === 0
-      ? true
-      : selectedLifecycles.includes(getLifecycleState(row.original))
-  );
-  const filteredRows = lifecycleFilteredRows.filter((row) =>
-    selectedTypes.length === 0
-      ? true
-      : selectedTypes.includes(row.original.shareType)
-  );
-  const lifecycleFacetRows = rowsForCurrentSearch.filter((row) =>
-    selectedTypes.length === 0
-      ? true
-      : selectedTypes.includes(row.original.shareType)
-  );
-  const typeFacetRows = rowsForCurrentSearch.filter((row) =>
-    selectedLifecycles.length === 0
-      ? true
-      : selectedLifecycles.includes(getLifecycleState(row.original))
-  );
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const lifecycleFacetRows =
+    table.getColumn("status")?.getFacetedRowModel().rows ?? [];
+  const typeFacetRows =
+    table.getColumn("type")?.getFacetedRowModel().rows ?? [];
+  const ownerFacetRows =
+    table.getColumn("owner")?.getFacetedRowModel().rows ?? [];
   const lifecycleFilterOptions = lifecycleFilterValues.map((value) => ({
     value,
     label: t(`statusValues.${value}`),
@@ -245,11 +268,28 @@ export default function DashboardSharesManager({
     count: typeFacetRows.filter((row) => row.original.shareType === value)
       .length,
   }));
+  const ownerFilterOptions = ownerFilterValues.map((value) => ({
+    value,
+    label: t(`ownerValues.${value}`),
+    count: ownerFacetRows.filter(
+      (row) => getOwnerFilterValue(row.original) === value
+    ).length,
+  }));
   const emptyMessage =
     shares.length === 0 ? t("empty.default") : t("empty.filtered");
 
   return (
     <div className="space-y-4">
+      <div className="bg-muted/35 flex items-start gap-3 rounded-lg border px-4 py-3">
+        <Clock3 className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+        <div className="space-y-0.5 text-sm">
+          <p className="font-medium">{t("retention.title")}</p>
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            {t("retention.description")}
+          </p>
+        </div>
+      </div>
+
       <DataTableToolbar
         searchValue={globalFilter}
         onSearchChange={setGlobalFilter}
@@ -267,24 +307,32 @@ export default function DashboardSharesManager({
           options={typeFilterOptions}
           onChange={setSelectedTypes}
         />
+        <DataTableFacetFilter
+          title={t("filters.owner")}
+          selected={selectedOwners}
+          options={ownerFilterOptions}
+          onChange={setSelectedOwners}
+        />
       </DataTableToolbar>
 
       <DataTable
         table={table}
-        rows={filteredRows}
         columnsLength={columns.length}
         emptyMessage={emptyMessage}
         minWidthClassName="min-w-[920px]"
         emptyClassName="py-8"
         getRowAriaLabel={(row) => t("aria.row", { title: row.original.title })}
+        pagination={{
+          summary: (
+            <p className="text-muted-foreground text-xs">
+              {t("status.showing", {
+                filtered: filteredRowCount,
+                total: shares.length,
+              })}
+            </p>
+          ),
+        }}
       />
-
-      <p className="text-muted-foreground text-xs">
-        {t("status.showing", {
-          filtered: filteredRows.length,
-          total: shares.length,
-        })}
-      </p>
 
       <Dialog
         open={revokeCandidate !== null}

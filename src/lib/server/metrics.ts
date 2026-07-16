@@ -339,7 +339,11 @@ export type OverviewStats = {
   newUsersThisMonth: number;
   newUsersLastMonth: number;
   activeProjects: number;
+  newActiveProjectsThisMonth: number;
+  newActiveProjectsLastMonth: number;
   activeShares: number;
+  newActiveSharesThisMonth: number;
+  newActiveSharesLastMonth: number;
   recentUsers: RecentUser[];
 };
 
@@ -362,17 +366,34 @@ export async function getOverviewStats(): Promise<OverviewStats> {
         }>(),
       db
         .prepare(
-          `select count(*) as count from projects where archived_at is null`
+          `select
+            count(*) as count,
+            coalesce(sum(case when created_at >= date('now', 'start of month') then 1 else 0 end), 0) as new_this_month,
+            coalesce(sum(case when created_at >= date('now', 'start of month', '-1 month') and created_at < date('now', 'start of month') then 1 else 0 end), 0) as new_last_month
+           from projects
+           where archived_at is null`
         )
-        .first<{ count: number }>(),
+        .first<{
+          count: number;
+          new_this_month: number;
+          new_last_month: number;
+        }>(),
       db
         .prepare(
-          `select count(*) as count from shares
+          `select
+            count(*) as count,
+            coalesce(sum(case when created_at >= date('now', 'start of month') then 1 else 0 end), 0) as new_this_month,
+            coalesce(sum(case when created_at >= date('now', 'start of month', '-1 month') and created_at < date('now', 'start of month') then 1 else 0 end), 0) as new_last_month
+           from shares
            where revoked_at is null
              and (expires_at is null or expires_at > datetime('now'))
              and owner_user_id is not null`
         )
-        .first<{ count: number }>(),
+        .first<{
+          count: number;
+          new_this_month: number;
+          new_last_month: number;
+        }>(),
       db
         .prepare(
           `select id, name, email, createdAt from users order by createdAt desc limit 6`
@@ -390,7 +411,11 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     newUsersThisMonth: usersRow?.new_this_month ?? 0,
     newUsersLastMonth: usersRow?.new_last_month ?? 0,
     activeProjects: projectsRow?.count ?? 0,
+    newActiveProjectsThisMonth: projectsRow?.new_this_month ?? 0,
+    newActiveProjectsLastMonth: projectsRow?.new_last_month ?? 0,
     activeShares: sharesRow?.count ?? 0,
+    newActiveSharesThisMonth: sharesRow?.new_this_month ?? 0,
+    newActiveSharesLastMonth: sharesRow?.new_last_month ?? 0,
     recentUsers: recentUsersRows?.results ?? [],
   };
 }

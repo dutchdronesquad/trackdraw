@@ -293,6 +293,9 @@ export function getAuditColumns({
     {
       id: "event",
       accessorFn: (row) => getEventTitle(row.eventType, t),
+      filterFn: (row, _columnId, filterValue: string[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(row.original.eventType),
       meta: { className: "w-[34%]" },
       header: ({ column }) => (
         <Button
@@ -359,6 +362,9 @@ export function getAuditColumns({
     {
       id: "actor",
       accessorFn: (row) => getUserLabel(row.actor, unknownUserLabel),
+      filterFn: (row, _columnId, filterValue: string[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(getActorFilterValue(row.original)),
       meta: { className: "w-[20%]" },
       header: ({ column }) => (
         <Button
@@ -491,6 +497,13 @@ export function getAuditColumns({
           {formatDateTime(row.original.createdAt)}
         </span>
       ),
+    },
+    {
+      id: "eventCategory",
+      accessorFn: (row) => getEventCategory(row.eventType),
+      filterFn: (row, columnId, filterValue: AuditEventCategory[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(row.getValue<AuditEventCategory>(columnId)),
     },
   ];
 }

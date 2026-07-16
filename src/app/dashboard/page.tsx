@@ -417,7 +417,14 @@ export default async function DashboardPage() {
             <KpiCard
               label={t("kpi.activeProjects.label")}
               value={overviewStats.activeProjects}
-              sub={t("kpi.activeProjects.sub")}
+              sub={t("kpi.activeProjects.sub", {
+                count: overviewStats.newActiveProjectsThisMonth,
+              })}
+              trend={{
+                current: overviewStats.newActiveProjectsThisMonth,
+                previous: overviewStats.newActiveProjectsLastMonth,
+              }}
+              vsPrevMonthLabel={t("kpi.comparison.vsPrevMonth")}
               icon={FolderOpen}
               accent="bg-violet-500"
               iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
@@ -427,7 +434,14 @@ export default async function DashboardPage() {
             <KpiCard
               label={t("kpi.activeShares.label")}
               value={overviewStats.activeShares}
-              sub={t("kpi.activeShares.sub")}
+              sub={t("kpi.activeShares.sub", {
+                count: overviewStats.newActiveSharesThisMonth,
+              })}
+              trend={{
+                current: overviewStats.newActiveSharesThisMonth,
+                previous: overviewStats.newActiveSharesLastMonth,
+              }}
+              vsPrevMonthLabel={t("kpi.comparison.vsPrevMonth")}
               icon={Link2}
               accent="bg-orange-500"
               iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"

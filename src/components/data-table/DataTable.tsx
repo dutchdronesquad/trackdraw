@@ -22,6 +22,7 @@ import {
   dataTableWrapperClassName,
   getDataTableColumnClassName,
 } from "./DataTableLayout";
+import DataTablePagination from "./DataTablePagination";
 
 type DataTableFrameProps = ComponentProps<"div"> & {
   minWidthClassName?: string;
@@ -40,6 +41,10 @@ type DataTableProps<TData> = {
   emptyClassName?: string;
   onRowClick?: (row: Row<TData>) => void;
   getRowAriaLabel?: (row: Row<TData>) => string;
+  pagination?: {
+    summary?: ReactNode;
+    pageSizeOptions?: number[];
+  };
 };
 
 type DataTableEmptyStateProps = ComponentProps<typeof TableCell> & {
@@ -116,76 +121,94 @@ export default function DataTable<TData>({
   emptyClassName,
   onRowClick,
   getRowAriaLabel,
+  pagination,
 }: DataTableProps<TData>) {
   return (
-    <DataTableFrame
-      className={wrapperClassName}
-      minWidthClassName={minWidthClassName}
-      tableClassName={tableClassName}
-    >
-      <TableHeader>
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <DataTableHeaderCell
-                key={header.id}
-                className={getDataTableColumnClassName(
-                  header.column.columnDef.meta,
-                  "header"
-                )}
-              >
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-              </DataTableHeaderCell>
-            ))}
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody>
-        {rows.length ? (
-          rows.map((row) => (
-            <TableRow
-              key={row.id}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-              onKeyDown={
-                onRowClick
-                  ? (e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onRowClick(row);
-                      }
-                    }
-                  : undefined
-              }
-              tabIndex={onRowClick ? 0 : undefined}
-              className={onRowClick ? "cursor-pointer" : undefined}
-              aria-label={getRowAriaLabel ? getRowAriaLabel(row) : undefined}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <DataTableBodyCell
-                  key={cell.id}
+    <div className="space-y-3">
+      <DataTableFrame
+        className={wrapperClassName}
+        minWidthClassName={minWidthClassName}
+        tableClassName={tableClassName}
+      >
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <DataTableHeaderCell
+                  key={header.id}
                   className={getDataTableColumnClassName(
-                    cell.column.columnDef.meta,
-                    "cell"
+                    header.column.columnDef.meta,
+                    "header"
                   )}
                 >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </DataTableBodyCell>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </DataTableHeaderCell>
               ))}
             </TableRow>
-          ))
-        ) : (
-          <DataTableEmptyState
-            colSpan={columnsLength}
-            message={emptyMessage}
-            className={emptyClassName}
+          ))}
+        </TableHeader>
+        <TableBody>
+          {rows.length ? (
+            rows.map((row) => (
+              <TableRow
+                key={row.id}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                onKeyDown={
+                  onRowClick
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onRowClick(row);
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={onRowClick ? 0 : undefined}
+                className={onRowClick ? "cursor-pointer" : undefined}
+                aria-label={getRowAriaLabel ? getRowAriaLabel(row) : undefined}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <DataTableBodyCell
+                    key={cell.id}
+                    className={getDataTableColumnClassName(
+                      cell.column.columnDef.meta,
+                      "cell"
+                    )}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </DataTableBodyCell>
+                ))}
+              </TableRow>
+            ))
+          ) : (
+            <DataTableEmptyState
+              colSpan={columnsLength}
+              message={emptyMessage}
+              className={emptyClassName}
+            />
+          )}
+        </TableBody>
+      </DataTableFrame>
+
+      {pagination ? (
+        <div
+          className={cn(
+            "flex flex-col gap-3 sm:flex-row sm:items-center",
+            pagination.summary ? "sm:justify-between" : "sm:justify-end"
+          )}
+        >
+          {pagination.summary}
+          <DataTablePagination
+            table={table}
+            pageSizeOptions={pagination.pageSizeOptions}
           />
-        )}
-      </TableBody>
-    </DataTableFrame>
+        </div>
+      ) : null}
+    </div>
   );
 }

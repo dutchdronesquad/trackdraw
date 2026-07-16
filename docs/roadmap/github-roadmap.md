@@ -47,6 +47,9 @@ The next TrackDraw priority is generated flightpath validation first, translatio
   - [ ] 3D transform gizmo and edit mode toolbar
         Draft PVA: [3D Transform Controls PVA](../pva/3d-transform-controls-pva.md). Prototype selected-item move and rotate controls with orbit-friendly camera behavior only where the interaction is predictable across 2D and 3D. Do not add dimension handles until move/rotate are accepted.
 
+- [x] Mobile Studio drawer smoothness pass (`No account required`)
+      Reduced intermittent drawer stutter without changing the mobile workflow: Studio bottom drawers now keep drag work on a dedicated handle, contain momentum scrolling inside the drawer, avoid animating a full-screen backdrop blur, and keep expensive inspector callbacks stable. Added regression coverage for the specialized mobile drawer shell while leaving the shared drawer UI primitive stock.
+
 - [ ] Path editing UX (`No account required`)
       Make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model forces extra points to avoid sharp corners.
   - [ ] Per-waypoint curve strength (`Research`)

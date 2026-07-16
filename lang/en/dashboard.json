@@ -46,11 +46,11 @@
       },
       "activeProjects": {
         "label": "Active projects",
-        "sub": "non-archived"
+        "sub": "+{count} this month"
       },
       "activeShares": {
         "label": "Active shares",
-        "sub": "live share links"
+        "sub": "+{count} this month"
       },
       "gallery": {
         "label": "Public gallery",
@@ -589,7 +589,8 @@
     "filters": {
       "searchPlaceholder": "Search title, owner or token...",
       "status": "Status",
-      "type": "Type"
+      "type": "Type",
+      "owner": "Owner"
     },
     "statusValues": {
       "active": "Active",
@@ -599,6 +600,10 @@
     "typeValues": {
       "published": "Published",
       "temporary": "Temporary"
+    },
+    "ownerValues": {
+      "anonymous": "Anonymous",
+      "account": "Account owner"
     },
     "galleryValues": {
       "unlisted": "Private"
@@ -643,11 +648,17 @@
     "status": {
       "showing": "Showing {filtered} of {total} shares."
     },
+    "retention": {
+      "title": "Automatic cleanup is active",
+      "description": "A background job runs daily at 03:17 UTC. It permanently deletes shares revoked for more than 30 days and temporary shares expired for more than 30 days."
+    },
     "lifecycle": {
       "revokedOn": "Revoked {date}",
       "expiredOn": "Expired {date}",
       "expiresOn": "Expires {date}",
-      "noExpiry": "No expiry"
+      "noExpiry": "No expiry",
+      "expectedCleanup": "Expected cleanup {date}",
+      "statusWithCleanup": "{status}. {cleanup}"
     },
     "revokeDialog": {
       "title": "Revoke share?",

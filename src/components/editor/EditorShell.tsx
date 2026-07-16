@@ -479,6 +479,23 @@ export default function EditorShell({
     [handleTabChange, shapeById]
   );
 
+  const closeMobileInspector = useCallback(() => {
+    setMobileInspectorOpen(false);
+  }, []);
+
+  const handleResumeMobileSelectedPath = useCallback(
+    (shapeId?: string) => {
+      const targetId =
+        shapeId ?? (selection.length === 1 ? selection[0] : undefined);
+      const shape = targetId ? shapeById[targetId] : null;
+      if (!shape || shape.kind !== "polyline" || shape.locked) return;
+
+      setMobilePathBuilderPinnedOpen(true);
+      handleResumeSelectedPath(shape.id);
+    },
+    [handleResumeSelectedPath, selection, shapeById]
+  );
+
   const openPresetPicker = useCallback(() => {
     setPresetPickerOpen(true);
   }, [setPresetPickerOpen]);
@@ -702,7 +719,7 @@ export default function EditorShell({
             selectedGroupName={selectedGroupName}
             saveStatusLabel={saveStatusLabel}
             tab={tab}
-            onCloseInspector={() => setMobileInspectorOpen(false)}
+            onCloseInspector={closeMobileInspector}
             onFitView={() => canvasRef.current?.fitToWindow()}
             onCancelPath={() => {
               canvasRef.current?.cancelDraftPath();
@@ -719,13 +736,7 @@ export default function EditorShell({
               setMobileMultiSelectEnabled(false);
               setMobileInspectorOpen(true);
             }}
-            onResumeSelectedPath={() => {
-              const selectedShape =
-                selection.length === 1 ? shapeById[selection[0]] : null;
-              if (!selectedShape || selectedShape.kind !== "polyline") return;
-              setMobilePathBuilderPinnedOpen(true);
-              canvasRef.current?.resumePolylineEditing(selectedShape.id);
-            }}
+            onResumeSelectedPath={handleResumeMobileSelectedPath}
             onOpenReadOnlyMenu={() => setReadOnlyMenuOpen(true)}
             onOpenTools={() => {
               setMobileInspectorOpen(false);

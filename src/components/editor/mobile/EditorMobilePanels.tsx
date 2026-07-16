@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -93,7 +93,7 @@ interface EditorMobilePanelsProps {
   onOpenTools: () => void;
   onOpenView: () => void;
   onRotateSelection: (delta: number) => void;
-  onResumeSelectedPath: () => void;
+  onResumeSelectedPath: (shapeId?: string) => void;
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onSetMobileGizmoEnabled: (enabled: boolean) => void;
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
@@ -209,7 +209,7 @@ function MobileQuickActionsOverlay({
           ) : canResumePathEditing ? (
             <button
               type="button"
-              onClick={onResumeSelectedPath}
+              onClick={() => onResumeSelectedPath?.()}
               disabled={selectionHasLockedShapes}
               className="flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-[0.95rem] px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white disabled:text-white/35"
             >
@@ -467,6 +467,14 @@ export function EditorMobilePanels({
     onOpenView();
   };
 
+  const resumeSelectedPathFromInspector = useCallback(
+    (shapeId: string) => {
+      onCloseInspector();
+      onResumeSelectedPath(shapeId);
+    },
+    [onCloseInspector, onResumeSelectedPath]
+  );
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(
       "(max-width: 1023px) and (orientation: landscape)"
@@ -722,10 +730,7 @@ export function EditorMobilePanels({
         >
           <Inspector
             mobileInline
-            onResumeSelectedPath={() => {
-              onCloseInspector();
-              onResumeSelectedPath();
-            }}
+            onResumeSelectedPath={resumeSelectedPathFromInspector}
           />
         </MobileDrawer>
       )}

@@ -325,6 +325,9 @@ export function getGalleryColumns({
     },
     {
       accessorKey: "galleryState",
+      filterFn: (row, columnId, filterValue: GalleryState[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(row.getValue<GalleryState>(columnId)),
       header: t("table.state"),
       meta: { className: "w-28" },
       cell: ({ row }) => (
@@ -337,6 +340,9 @@ export function getGalleryColumns({
       id: "shareLifecycle",
       header: t("table.share"),
       accessorFn: (row) => getShareLifecycleState(row),
+      filterFn: (row, columnId, filterValue: string[]) =>
+        filterValue.length === 0 ||
+        filterValue.includes(row.getValue<string>(columnId)),
       meta: { className: "w-56" },
       cell: ({ row }) => {
         const lifecycleState = getShareLifecycleState(row.original);
