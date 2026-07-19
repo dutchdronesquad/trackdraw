@@ -95,7 +95,7 @@
     "eslint-config-next": "^16.1.0",
     "eslint-config-prettier": "^10.1.8",
     "happy-dom": "^20.8.9",
-    "node-pg-migrate": "^8.0.3",
+    "node-pg-migrate": "^9.0.0",
     "pg": "^8.20.0",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
