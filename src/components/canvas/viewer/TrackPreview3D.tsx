@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Grid, OrbitControls } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
@@ -20,12 +20,17 @@ import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useTheme } from "@/hooks/useTheme";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import { useEditor } from "@/store/editor";
-import { selectDesignShapes, selectHasPath } from "@/store/selectors";
+import {
+  selectDesignShapes,
+  selectHasPath,
+  selectPrimaryPolyline,
+} from "@/store/selectors";
 import {
   CameraAxisTracker,
   GradientSky,
   MemoShape3D,
   ScreenshotHelper,
+  TrackSurface3D,
   WheelBridge,
   type QuaternionState,
   useCatalogTextureWarmup,
@@ -58,6 +63,9 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
 
     const field = useEditor((state) => state.track.design.field);
     const shapes = useEditor(selectDesignShapes);
+    const primaryPolylineId = useEditor(
+      (state) => selectPrimaryPolyline(state)?.id ?? null
+    );
     useCatalogTextureWarmup(shapes);
     const hasPath = useEditor(selectHasPath);
     const theme = useTheme();
@@ -112,14 +120,15 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
         shapes.map((shape) => (
           <Suspense key={shape.id} fallback={null}>
             <MemoShape3D
-              isPrimaryPolyline={false}
+              isPrimaryPolyline={primaryPolylineId === shape.id}
               isSelected={false}
               onSelect={handleShapeSelect}
               shape={shape}
+              theme={t}
             />
           </Suspense>
         )),
-      [handleShapeSelect, shapes]
+      [handleShapeSelect, primaryPolylineId, shapes, t]
     );
 
     return (
@@ -178,30 +187,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             color="#60a5fa"
           />
 
-          <mesh
-            position={[cx, -0.01, cz]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            receiveShadow
-          >
-            <planeGeometry args={[field.width, field.height]} />
-            <meshStandardMaterial
-              color={t.groundColor}
-              roughness={0.98}
-              metalness={0}
-            />
-          </mesh>
-
-          <Grid
-            position={[cx, 0, cz]}
-            args={[field.width, field.height]}
-            cellSize={field.gridStep}
-            cellColor={t.gridCell}
-            sectionSize={field.gridStep * 5}
-            sectionColor={t.gridSection}
-            fadeDistance={Math.max(90, longest * 2)}
-            fadeStrength={1.15}
-            infiniteGrid={false}
-          />
+          <TrackSurface3D field={field} theme={t} />
 
           {shapeNodes}
 

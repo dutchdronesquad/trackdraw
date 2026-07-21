@@ -1,10 +1,11 @@
 "use client";
 
-import { useTexture } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
+import { Grid, useTexture } from "@react-three/drei";
+import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import type { Scene3DTheme } from "@/components/canvas/preview3d/theme";
 import { getTrackElementCatalogTexturePaths } from "@/lib/track/elements/catalog";
 import type { Shape } from "@/lib/types";
 
@@ -46,6 +47,190 @@ export function ScreenshotHelper({
 export function useCatalogTextureWarmup(_shapes?: readonly Shape[]) {
   // Module-level preload (above) already covers all catalog textures eagerly.
   // This hook is kept for call-site compatibility.
+}
+
+function hexToRgba(hex: string): [number, number, number, number] {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255, 255];
+}
+
+export function createTrackSurfaceTexture({
+  baseColor,
+  checkerColor,
+  gridStep,
+  width,
+  height,
+}: {
+  baseColor: string;
+  checkerColor: string;
+  gridStep: number;
+  width: number;
+  height: number;
+}) {
+  const base = hexToRgba(baseColor);
+  const checker = hexToRgba(checkerColor);
+  const size = 64;
+  const cellSize = size / 2;
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const color = x < cellSize === y < cellSize ? base : checker;
+      data.set(color, (y * size + x) * 4);
+    }
+  }
+  const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.magFilter = THREE.NearestFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  const checkerTileSize = gridStep * 10;
+  texture.repeat.set(width / checkerTileSize, height / checkerTileSize);
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function createRectangularRingShape({
+  innerHeight,
+  innerWidth,
+  outerHeight,
+  outerWidth,
+}: {
+  innerHeight: number;
+  innerWidth: number;
+  outerHeight: number;
+  outerWidth: number;
+}) {
+  const shape = new THREE.Shape();
+  shape.moveTo(-outerWidth / 2, -outerHeight / 2);
+  shape.lineTo(outerWidth / 2, -outerHeight / 2);
+  shape.lineTo(outerWidth / 2, outerHeight / 2);
+  shape.lineTo(-outerWidth / 2, outerHeight / 2);
+  shape.closePath();
+
+  const hole = new THREE.Path();
+  hole.moveTo(-innerWidth / 2, -innerHeight / 2);
+  hole.lineTo(-innerWidth / 2, innerHeight / 2);
+  hole.lineTo(innerWidth / 2, innerHeight / 2);
+  hole.lineTo(innerWidth / 2, -innerHeight / 2);
+  hole.closePath();
+  shape.holes.push(hole);
+  return shape;
+}
+
+export function TrackSurface3D({
+  field,
+  onGroundClick,
+  theme,
+}: {
+  field: { width: number; height: number; gridStep: number };
+  onGroundClick?: (event: ThreeEvent<MouseEvent>) => void;
+  theme: Scene3DTheme;
+}) {
+  const { width, height, gridStep } = field;
+  const cx = width / 2;
+  const cz = height / 2;
+  const longest = Math.max(width, height);
+  const terrainSize = Math.max(longest * 3, longest + 80);
+  const borderWidth = 0.45;
+  const borderHeight = 0.08;
+  const borderOuterWidth = width + borderWidth * 2;
+  const borderOuterHeight = height + borderWidth * 2;
+  const texture = useMemo(
+    () =>
+      createTrackSurfaceTexture({
+        baseColor: theme.groundColor,
+        checkerColor: theme.groundChecker,
+        gridStep,
+        width,
+        height,
+      }),
+    [gridStep, height, theme.groundChecker, theme.groundColor, width]
+  );
+  const terrainGeometry = useMemo(
+    () =>
+      new THREE.ShapeGeometry(
+        createRectangularRingShape({
+          innerHeight: borderOuterHeight,
+          innerWidth: borderOuterWidth,
+          outerHeight: terrainSize,
+          outerWidth: terrainSize,
+        })
+      ),
+    [borderOuterHeight, borderOuterWidth, terrainSize]
+  );
+  const borderGeometry = useMemo(
+    () =>
+      new THREE.ExtrudeGeometry(
+        createRectangularRingShape({
+          innerHeight: height,
+          innerWidth: width,
+          outerHeight: borderOuterHeight,
+          outerWidth: borderOuterWidth,
+        }),
+        {
+          bevelEnabled: false,
+          depth: borderHeight,
+          steps: 1,
+        }
+      ),
+    [borderOuterHeight, borderOuterWidth, height, width]
+  );
+
+  useEffect(() => () => texture.dispose(), [texture]);
+  useEffect(() => () => terrainGeometry.dispose(), [terrainGeometry]);
+  useEffect(() => () => borderGeometry.dispose(), [borderGeometry]);
+
+  return (
+    <group>
+      <mesh
+        geometry={terrainGeometry}
+        position={[cx, -0.075, cz]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        onClick={onGroundClick}
+      >
+        <meshBasicMaterial color={theme.terrainColor} />
+      </mesh>
+
+      <mesh
+        geometry={borderGeometry}
+        position={[cx, -borderHeight - 0.01, cz]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        onClick={onGroundClick}
+      >
+        <meshStandardMaterial
+          color={theme.groundBorder}
+          roughness={0.98}
+          metalness={0}
+        />
+      </mesh>
+
+      <mesh
+        position={[cx, -0.009, cz]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        onClick={onGroundClick}
+      >
+        <planeGeometry args={[width, height]} />
+        <meshStandardMaterial map={texture} roughness={0.98} metalness={0} />
+      </mesh>
+
+      <Grid
+        position={[cx, 0.006, cz]}
+        args={[width, height]}
+        cellSize={gridStep}
+        cellColor={theme.gridCell}
+        cellThickness={theme.gridCellThickness}
+        sectionSize={gridStep * 5}
+        sectionColor={theme.gridSection}
+        sectionThickness={theme.gridSectionThickness}
+        fadeDistance={Math.max(90, longest * 2)}
+        fadeStrength={1.15}
+        infiniteGrid={false}
+      />
+    </group>
+  );
 }
 
 export function CameraAxisTracker({

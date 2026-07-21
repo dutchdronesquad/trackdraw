@@ -24,6 +24,9 @@ const WIDTH = 1280;
 const HEIGHT = 720;
 // Target drone speed in m/s: determines video duration from track length.
 const TARGET_SPEED_MS = 7;
+const MAX_GRID_CELLS_PER_AXIS = 4096;
+const TRACK_BORDER_WIDTH = 0.45;
+const TRACK_BORDER_HEIGHT = 0.08;
 
 const THEME = {
   dark: {
@@ -32,9 +35,17 @@ const THEME = {
     skyHorizon: "#2e4870",
     ambientIntensity: 0.7,
     dirIntensity: 1.4,
-    groundColor: "#0f1824",
-    gridCell: 0x1e293b,
-    gridSection: 0x3d5068,
+    terrainColor: "#080e15",
+    groundColor: "#142234",
+    groundChecker: "#192b40",
+    groundBorder: "#2b435a",
+    gridCell: 0x425a70,
+    gridSection: 0x6f8498,
+    gridCellThickness: 0.45,
+    gridSectionThickness: 0.9,
+    routeColor: "#93c5fd",
+    routeEmissive: "#60a5fa",
+    routeEmissiveIntensity: 0.8,
   },
   light: {
     bg: "#e4f0fa",
@@ -42,11 +53,57 @@ const THEME = {
     skyHorizon: "#e4f0fa",
     ambientIntensity: 1.2,
     dirIntensity: 1.8,
+    terrainColor: "#b7c4cf",
     groundColor: "#d0d8e4",
-    gridCell: 0xb0bcc8,
-    gridSection: 0x7a96b0,
+    groundChecker: "#c2ccd7",
+    groundBorder: "#8da3b8",
+    gridCell: 0x7890a6,
+    gridSection: 0x526f8b,
+    gridCellThickness: 0.75,
+    gridSectionThickness: 1.15,
+    routeColor: "#1d4ed8",
+    routeEmissive: "#1e40af",
+    routeEmissiveIntensity: 0.15,
   },
 } as const;
+
+const GRID_VERT = `
+  varying vec2 vWorldXZ;
+  void main() {
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    vWorldXZ = worldPosition.xz;
+    gl_Position = projectionMatrix * viewMatrix * worldPosition;
+  }
+`;
+const GRID_FRAG = `
+  uniform vec3 cellColor;
+  uniform vec3 sectionColor;
+  uniform float cellSize;
+  uniform float sectionSize;
+  uniform float cellThickness;
+  uniform float sectionThickness;
+  varying vec2 vWorldXZ;
+
+  float gridLine(vec2 position, float size, float thickness) {
+    vec2 coordinate = position / size;
+    vec2 derivative = max(fwidth(coordinate), vec2(0.000001));
+    vec2 distanceToLine = abs(fract(coordinate - 0.5) - 0.5);
+    vec2 line = 1.0 - smoothstep(
+      derivative * thickness * 0.35,
+      derivative * thickness * 0.85,
+      distanceToLine
+    );
+    return max(line.x, line.y);
+  }
+
+  void main() {
+    float minor = gridLine(vWorldXZ, cellSize, cellThickness);
+    float major = gridLine(vWorldXZ, sectionSize, sectionThickness);
+    float alpha = max(minor * 0.72, major * 0.96);
+    if (alpha < 0.01) discard;
+    gl_FragColor = vec4(mix(cellColor, sectionColor, major), alpha);
+  }
+`;
 
 const SKY_VERT = `
   varying vec3 vWorldPos;
@@ -70,6 +127,225 @@ function getOrderedShapes(design: TrackDesign): Shape[] {
   return design.shapeOrder
     .map((id) => design.shapeById[id])
     .filter((shape): shape is Shape => Boolean(shape));
+}
+
+type FlythroughSurfaceField = Pick<
+  TrackDesign["field"],
+  "width" | "height" | "gridStep"
+>;
+
+export function resolveFlythroughGridStep({
+  width,
+  height,
+  gridStep,
+}: FlythroughSurfaceField) {
+  const longest = Math.max(width, height);
+  const safeGridStep = Number.isFinite(gridStep) && gridStep > 0 ? gridStep : 1;
+  return Math.max(safeGridStep, longest / MAX_GRID_CELLS_PER_AXIS);
+}
+
+function hexToRgba(hex: string): [number, number, number, number] {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255, 255];
+}
+
+function createFlythroughCheckerTexture({
+  baseColor,
+  checkerColor,
+  width,
+  height,
+  gridStep,
+}: {
+  baseColor: string;
+  checkerColor: string;
+  width: number;
+  height: number;
+  gridStep: number;
+}) {
+  const base = hexToRgba(baseColor);
+  const checker = hexToRgba(checkerColor);
+  const size = 64;
+  const checkerPixelSize = size / 2;
+  const data = new Uint8Array(size * size * 4);
+
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const color =
+        x < checkerPixelSize === y < checkerPixelSize ? base : checker;
+      data.set(color, (y * size + x) * 4);
+    }
+  }
+
+  const texture = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.magFilter = THREE.NearestFilter;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  const textureSizeMeters = gridStep * 10;
+  texture.repeat.set(width / textureSizeMeters, height / textureSizeMeters);
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function createRectangularRingShape({
+  innerHeight,
+  innerWidth,
+  outerHeight,
+  outerWidth,
+}: {
+  innerHeight: number;
+  innerWidth: number;
+  outerHeight: number;
+  outerWidth: number;
+}) {
+  const shape = new THREE.Shape();
+  shape.moveTo(-outerWidth / 2, -outerHeight / 2);
+  shape.lineTo(outerWidth / 2, -outerHeight / 2);
+  shape.lineTo(outerWidth / 2, outerHeight / 2);
+  shape.lineTo(-outerWidth / 2, outerHeight / 2);
+  shape.closePath();
+
+  const hole = new THREE.Path();
+  hole.moveTo(-innerWidth / 2, -innerHeight / 2);
+  hole.lineTo(-innerWidth / 2, innerHeight / 2);
+  hole.lineTo(innerWidth / 2, innerHeight / 2);
+  hole.lineTo(innerWidth / 2, -innerHeight / 2);
+  hole.closePath();
+  shape.holes.push(hole);
+  return shape;
+}
+
+export function createFlythroughSurface(
+  field: FlythroughSurfaceField,
+  themeName: FlythroughTheme
+) {
+  const { width, height } = field;
+  const cx = width / 2;
+  const cz = height / 2;
+  const longest = Math.max(width, height);
+  const terrainSize = Math.max(longest * 3, longest + 80);
+  const gridStep = resolveFlythroughGridStep(field);
+  const sectionSize = gridStep * 5;
+  const theme = THEME[themeName];
+  const group = new THREE.Group();
+  group.name = "flythrough-track-surface";
+  const borderOuterWidth = width + TRACK_BORDER_WIDTH * 2;
+  const borderOuterHeight = height + TRACK_BORDER_WIDTH * 2;
+
+  const terrain = new THREE.Mesh(
+    new THREE.ShapeGeometry(
+      createRectangularRingShape({
+        innerHeight: borderOuterHeight,
+        innerWidth: borderOuterWidth,
+        outerHeight: terrainSize,
+        outerWidth: terrainSize,
+      })
+    ),
+    new THREE.MeshBasicMaterial({ color: theme.terrainColor })
+  );
+  terrain.name = "flythrough-terrain";
+  terrain.rotation.x = -Math.PI / 2;
+  terrain.position.set(cx, -0.075, cz);
+  group.add(terrain);
+
+  const border = new THREE.Mesh(
+    new THREE.ExtrudeGeometry(
+      createRectangularRingShape({
+        innerHeight: height,
+        innerWidth: width,
+        outerHeight: borderOuterHeight,
+        outerWidth: borderOuterWidth,
+      }),
+      { bevelEnabled: false, depth: TRACK_BORDER_HEIGHT, steps: 1 }
+    ),
+    new THREE.MeshStandardMaterial({
+      color: theme.groundBorder,
+      roughness: 0.98,
+      metalness: 0,
+    })
+  );
+  border.name = "flythrough-track-border";
+  border.position.set(cx, -TRACK_BORDER_HEIGHT - 0.01, cz);
+  border.rotation.x = -Math.PI / 2;
+  group.add(border);
+
+  const checkerTexture = createFlythroughCheckerTexture({
+    baseColor: theme.groundColor,
+    checkerColor: theme.groundChecker,
+    width,
+    height,
+    gridStep,
+  });
+  const mat = new THREE.Mesh(
+    new THREE.PlaneGeometry(width, height),
+    new THREE.MeshStandardMaterial({
+      map: checkerTexture,
+      roughness: 0.98,
+      metalness: 0,
+    })
+  );
+  mat.name = "flythrough-track-mat";
+  mat.rotation.x = -Math.PI / 2;
+  mat.position.set(cx, -0.009, cz);
+  group.add(mat);
+
+  const grid = new THREE.Mesh(
+    new THREE.PlaneGeometry(width, height),
+    new THREE.ShaderMaterial({
+      uniforms: {
+        cellColor: { value: new THREE.Color(theme.gridCell) },
+        sectionColor: { value: new THREE.Color(theme.gridSection) },
+        cellSize: { value: gridStep },
+        sectionSize: { value: sectionSize },
+        cellThickness: { value: theme.gridCellThickness },
+        sectionThickness: { value: theme.gridSectionThickness },
+      },
+      vertexShader: GRID_VERT,
+      fragmentShader: GRID_FRAG,
+      transparent: true,
+      depthWrite: false,
+    })
+  );
+  grid.name = "flythrough-track-grid";
+  grid.rotation.x = -Math.PI / 2;
+  grid.position.set(cx, 0.006, cz);
+  grid.renderOrder = 1;
+  group.add(grid);
+
+  return {
+    group,
+    ownedTextures: [checkerTexture] as THREE.Texture[],
+    gridStep,
+    sectionSize,
+    terrainSize,
+  };
+}
+
+export function disposeFlythroughSceneResources(
+  root: THREE.Object3D,
+  ownedTextures: Iterable<THREE.Texture>
+) {
+  const geometries = new Set<THREE.BufferGeometry>();
+  const materials = new Set<THREE.Material>();
+
+  root.traverse((object) => {
+    if (
+      object instanceof THREE.Mesh ||
+      object instanceof THREE.Line ||
+      object instanceof THREE.LineSegments
+    ) {
+      geometries.add(object.geometry);
+      const objectMaterials = Array.isArray(object.material)
+        ? object.material
+        : [object.material];
+      for (const material of objectMaterials) materials.add(material);
+    }
+  });
+
+  for (const geometry of geometries) geometry.dispose();
+  for (const material of materials) material.dispose();
+  for (const texture of ownedTextures) texture.dispose();
 }
 
 function loadWatermarkTexture(
@@ -185,42 +461,26 @@ export function exportFlythrough(
       scene.add(blueLight);
     }
 
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(fw * 3, fh * 3),
-      new THREE.MeshStandardMaterial({
-        color: t.groundColor,
-        roughness: 0.98,
-        metalness: 0,
-      })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.set(cx, -0.01, cz);
-    scene.add(ground);
+    const surface = createFlythroughSurface(design.field, themeName);
+    scene.add(surface.group);
+    const ownedTextures = new Set<THREE.Texture>(surface.ownedTextures);
 
     const tubeSegments = Math.min(curveResult.segmentCount * 3, 800);
     const tube = new THREE.Mesh(
       new THREE.TubeGeometry(curve, tubeSegments, 0.06, 6, closed),
       new THREE.MeshStandardMaterial({
-        color: "#93c5fd",
-        emissive: "#3b82f6",
-        emissiveIntensity: 0.5,
+        color: t.routeColor,
+        emissive: t.routeEmissive,
+        emissiveIntensity: t.routeEmissiveIntensity,
       })
     );
     scene.add(tube);
 
-    const gridStep = design.field.gridStep;
-    const gridSize = Math.max(fw, fh) * 1.5;
-    const gridDivisions = Math.round(gridSize / gridStep);
-    const gridHelper = new THREE.GridHelper(
-      gridSize,
-      gridDivisions,
-      t.gridSection,
-      t.gridCell
-    );
-    gridHelper.position.set(cx, 0.001, cz);
-    scene.add(gridHelper);
-
+    let cleanedUp = false;
     const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      disposeFlythroughSceneResources(scene, ownedTextures);
       renderer.dispose();
       if (document.body.contains(canvas)) document.body.removeChild(canvas);
     };
@@ -265,6 +525,7 @@ export function exportFlythrough(
 
         const wmTex = await loadWatermarkTexture(isDark);
         if (wmTex) {
+          ownedTextures.add(wmTex);
           const aspect = wmTex.image.width / wmTex.image.height;
           const planeW = Math.min(fw * 0.55, fh * 0.55 * aspect);
           const planeH = planeW / aspect;

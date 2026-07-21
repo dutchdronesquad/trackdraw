@@ -4,6 +4,7 @@ import { getTowerTopY, Tower3D } from "./Tower3D";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { memo, useRef, type Ref, type RefObject } from "react";
 import * as THREE from "three";
+import type { Scene3DTheme } from "@/components/canvas/preview3d/theme";
 import {
   getMultiGpDiveGateArchTopY,
   getMultiGpLaunchGateTopY,
@@ -142,6 +143,7 @@ function Shape3D({
   outerRef,
   tiltDragRef,
   elevationOverrideRef,
+  theme,
 }: {
   isPrimaryPolyline: boolean;
   isSelected: boolean;
@@ -150,6 +152,7 @@ function Shape3D({
   outerRef?: Ref<THREE.Group>;
   tiltDragRef?: RefObject<number | null>;
   elevationOverrideRef?: RefObject<number | null>;
+  theme: Scene3DTheme;
 }) {
   switch (shape.kind) {
     case "gate":
@@ -199,6 +202,7 @@ function Shape3D({
             isPrimary={isPrimaryPolyline}
             shape={shape}
             selected={isSelected}
+            theme={theme}
           />
           {isSelected && <SelectionMarker3D shape={shape} />}
         </group>
@@ -270,5 +274,6 @@ export const MemoShape3D = memo(
     prev.onSelect === next.onSelect &&
     prev.outerRef === next.outerRef &&
     prev.tiltDragRef === next.tiltDragRef &&
-    prev.elevationOverrideRef === next.elevationOverrideRef
+    prev.elevationOverrideRef === next.elevationOverrideRef &&
+    prev.theme === next.theme
 );

@@ -5,9 +5,12 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ThreeEvent } from "@react-three/fiber";
 import TrackPreview3D from "@/components/canvas/editor/TrackPreview3D";
+import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import { normalizeDesign } from "@/lib/track/design";
 import type { PolylineShape, Shape } from "@/lib/types";
 import { useEditor } from "@/store/editor";
+
+const previewTestState = vi.hoisted(() => ({ isMobile: false }));
 
 vi.mock("next/dynamic", () => ({
   default: () =>
@@ -65,7 +68,7 @@ vi.mock("@react-three/drei", () => ({
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({
-  useIsMobile: () => false,
+  useIsMobile: () => previewTestState.isMobile,
 }));
 
 vi.mock("@/hooks/useTheme", () => ({
@@ -113,6 +116,30 @@ vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
   ),
   GradientSky: () => null,
   ScreenshotHelper: () => <div data-testid="screenshot-helper" />,
+  TrackSurface3D: ({
+    field,
+    onGroundClick,
+    theme,
+  }: {
+    field: { width: number; height: number; gridStep: number };
+    onGroundClick?: (event: ThreeEvent<MouseEvent>) => void;
+    theme: { gridCell: string; gridSection: string };
+  }) => (
+    <button
+      data-field={`${field.width}x${field.height}@${field.gridStep}`}
+      data-grid-cell={theme.gridCell}
+      data-grid-section={theme.gridSection}
+      data-has-ground-click={String(Boolean(onGroundClick))}
+      data-testid="preview-grid"
+      onClick={() =>
+        onGroundClick?.({
+          delta: 0,
+          stopPropagation: vi.fn(),
+        } as unknown as ThreeEvent<MouseEvent>)
+      }
+      type="button"
+    />
+  ),
   useCatalogTextureWarmup: () => {},
   WheelBridge: () => <div data-testid="wheel-bridge" />,
 }));
@@ -132,11 +159,17 @@ vi.mock("@/components/canvas/preview3d/overlays", () => ({
   FieldWatermark: () => <div data-testid="field-watermark" />,
   FlyThroughControlsOverlay: () => <div data-testid="fly-controls" />,
   TrackPreview3DHintOverlays: ({
+    isMobile,
+    readOnly,
     selectedPolyline,
   }: {
+    isMobile: boolean;
+    readOnly: boolean;
     selectedPolyline: PolylineShape | null;
   }) => (
     <div
+      data-is-mobile={String(isMobile)}
+      data-read-only={String(readOnly)}
       data-selected-polyline-id={selectedPolyline?.id ?? ""}
       data-testid="preview-hints"
     />
@@ -194,6 +227,7 @@ function createPreviewDesign(routeLocked: boolean) {
 
 describe("TrackPreview3D editor interactions", () => {
   beforeEach(() => {
+    previewTestState.isMobile = false;
     useEditor.getState().newProject();
     useEditor.getState().clearHistory();
   });
@@ -253,5 +287,33 @@ describe("TrackPreview3D editor interactions", () => {
         .getByTestId("preview-hints")
         .getAttribute("data-selected-polyline-id")
     ).toBe("route-1");
+  });
+
+  it("keeps the shared surface wiring and read-only mobile assumptions intact", () => {
+    previewTestState.isMobile = true;
+    const state = useEditor.getState();
+    state.replaceDesign(createPreviewDesign(false));
+    state.setSelection(["gate-1"]);
+
+    render(<TrackPreview3D readOnly />);
+
+    const surface = screen.getByTestId("preview-grid");
+    expect(surface.getAttribute("data-field")).toBe("60x40@1");
+    expect(surface.getAttribute("data-grid-cell")).toBe(
+      SCENE_3D_THEME.dark.gridCell
+    );
+    expect(surface.getAttribute("data-grid-section")).toBe(
+      SCENE_3D_THEME.dark.gridSection
+    );
+    expect(surface.getAttribute("data-has-ground-click")).toBe("true");
+    expect(
+      screen.getByTestId("preview-hints").getAttribute("data-is-mobile")
+    ).toBe("true");
+    expect(
+      screen.getByTestId("preview-hints").getAttribute("data-read-only")
+    ).toBe("true");
+
+    fireEvent.click(surface);
+    expect(useEditor.getState().session.selection).toEqual([]);
   });
 });

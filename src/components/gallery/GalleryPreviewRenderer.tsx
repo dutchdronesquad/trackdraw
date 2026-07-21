@@ -1,15 +1,15 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Grid } from "@react-three/drei";
 import { Suspense, useCallback, useMemo } from "react";
 import { useEditor } from "@/store/editor";
-import { selectDesignShapes } from "@/store/selectors";
+import { selectDesignShapes, selectPrimaryPolyline } from "@/store/selectors";
 import { useTheme } from "@/hooks/useTheme";
 import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import {
   MemoShape3D,
   ScreenshotHelper,
+  TrackSurface3D,
 } from "@/components/canvas/preview3d/shared-scene";
 
 type Props = {
@@ -24,6 +24,9 @@ type Props = {
 export function GalleryPreviewRenderer({ onCapture }: Props) {
   const field = useEditor((s) => s.track.design.field);
   const shapes = useEditor(selectDesignShapes);
+  const primaryPolylineId = useEditor(
+    (state) => selectPrimaryPolyline(state)?.id ?? null
+  );
   const theme = useTheme();
   const t = SCENE_3D_THEME[theme];
 
@@ -38,13 +41,14 @@ export function GalleryPreviewRenderer({ onCapture }: Props) {
       shapes.map((shape) => (
         <MemoShape3D
           key={shape.id}
-          isPrimaryPolyline={false}
+          isPrimaryPolyline={primaryPolylineId === shape.id}
           isSelected={false}
           onSelect={noop}
           shape={shape}
+          theme={t}
         />
       )),
-    [noop, shapes]
+    [noop, primaryPolylineId, shapes, t]
   );
 
   const handleReady = useCallback(
@@ -109,29 +113,7 @@ export function GalleryPreviewRenderer({ onCapture }: Props) {
           shadow-camera-far={longest * 2 + 60}
         />
         <Suspense fallback={null}>
-          <mesh
-            position={[cx, -0.01, cz]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            receiveShadow
-          >
-            <planeGeometry args={[field.width, field.height]} />
-            <meshStandardMaterial
-              color={t.groundColor}
-              roughness={0.98}
-              metalness={0}
-            />
-          </mesh>
-          <Grid
-            position={[cx, 0, cz]}
-            args={[field.width, field.height]}
-            cellSize={field.gridStep}
-            cellColor={t.gridCell}
-            sectionSize={field.gridStep * 5}
-            sectionColor={t.gridSection}
-            fadeDistance={Math.max(90, longest * 2)}
-            fadeStrength={1.15}
-            infiniteGrid={false}
-          />
+          <TrackSurface3D field={field} theme={t} />
           {shapeNodes}
           <ScreenshotHelper onReady={handleReady} />
         </Suspense>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import type { Scene3DTheme } from "@/components/canvas/preview3d/theme";
 import {
   getPolylineRouteWarningSegmentVisuals,
   getRouteWarningSegmentColor,
@@ -61,10 +62,12 @@ export function RaceLine3D({
   isPrimary = false,
   selected = false,
   shape,
+  theme,
 }: {
   isPrimary?: boolean;
   selected?: boolean;
   shape: PolylineShape;
+  theme: Scene3DTheme;
 }) {
   const warningSegments = useMemo(
     () => getPolylineRouteWarningSegmentVisuals(shape),
@@ -79,14 +82,20 @@ export function RaceLine3D({
   );
   const showWarningVisuals = selected || isPrimary;
   const tubeRadius = getPolylineTubeRadius(shape);
-  const baseColor = selected ? "#93c5fd" : (shape.color ?? "#3b82f6");
+  const baseColor = selected
+    ? theme.routeSelectedColor
+    : (shape.color ?? "#3b82f6");
   const hasWarnings = showWarningVisuals && warningSegments.length > 0;
+  const curveData = useMemo(
+    () =>
+      getPolylineCurve3Derived(shape, {
+        heightOffset: POLYLINE_3D_HEIGHT_OFFSET,
+        samplesPerSegment: 18,
+        density: 12,
+      }),
+    [shape]
+  );
   const geometry = useMemo(() => {
-    const curveData = getPolylineCurve3Derived(shape, {
-      heightOffset: POLYLINE_3D_HEIGHT_OFFSET,
-      samplesPerSegment: 18,
-      density: 12,
-    });
     if (!curveData) return null;
     const tubeGeo = new THREE.TubeGeometry(
       curveData.curve,
@@ -139,8 +148,14 @@ export function RaceLine3D({
 
     tubeGeo.setAttribute("color", new THREE.BufferAttribute(colorArray, 3));
     return tubeGeo;
-  }, [shape, tubeRadius, hasWarnings, warningKindBySegment, baseColor]);
-
+  }, [
+    shape,
+    tubeRadius,
+    hasWarnings,
+    warningKindBySegment,
+    baseColor,
+    curveData,
+  ]);
   useEffect(() => {
     return () => {
       geometry?.dispose();
@@ -154,8 +169,10 @@ export function RaceLine3D({
         <meshStandardMaterial
           color={hasWarnings ? "#ffffff" : baseColor}
           vertexColors={hasWarnings}
-          emissive={selected ? "#60a5fa" : "#000000"}
-          emissiveIntensity={selected ? 0.8 : 0}
+          emissive={selected ? theme.routeSelectedEmissive : "#000000"}
+          emissiveIntensity={
+            selected ? theme.routeSelectedEmissiveIntensity : 0
+          }
           roughness={0.4}
         />
       </mesh>

@@ -4,8 +4,11 @@ import React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TrackPreview3D from "@/components/canvas/viewer/TrackPreview3D";
+import { SCENE_3D_THEME } from "@/components/canvas/preview3d/theme";
 import { normalizeDesign } from "@/lib/track/design";
 import { useEditor } from "@/store/editor";
+
+const previewTestState = vi.hoisted(() => ({ isMobile: false }));
 
 vi.mock("next/dynamic", () => ({
   default: () =>
@@ -55,7 +58,19 @@ vi.mock("@react-three/fiber", () => {
 
 vi.mock("@react-three/drei", () => ({
   Grid: () => <div data-testid="preview-grid" />,
-  OrbitControls: () => <div data-testid="orbit-controls" />,
+  OrbitControls: ({
+    enableZoom,
+    touches,
+  }: {
+    enableZoom?: boolean;
+    touches?: unknown;
+  }) => (
+    <div
+      data-enable-zoom={String(enableZoom)}
+      data-has-touch-controls={String(Boolean(touches))}
+      data-testid="orbit-controls"
+    />
+  ),
   useTexture: Object.assign(
     vi.fn(() => ({})),
     { preload: vi.fn() }
@@ -63,7 +78,7 @@ vi.mock("@react-three/drei", () => ({
 }));
 
 vi.mock("@/hooks/use-mobile", () => ({
-  useIsMobile: () => false,
+  useIsMobile: () => previewTestState.isMobile,
 }));
 
 vi.mock("@/hooks/useTheme", () => ({
@@ -81,6 +96,23 @@ vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
     <div data-shape-id={shape.id} data-testid="shape-3d" />
   ),
   ScreenshotHelper: () => <div data-testid="screenshot-helper" />,
+  TrackSurface3D: ({
+    field,
+    onGroundClick,
+    theme,
+  }: {
+    field: { width: number; height: number; gridStep: number };
+    onGroundClick?: unknown;
+    theme: { gridCell: string; gridSection: string };
+  }) => (
+    <div
+      data-field={`${field.width}x${field.height}@${field.gridStep}`}
+      data-grid-cell={theme.gridCell}
+      data-grid-section={theme.gridSection}
+      data-has-ground-click={String(Boolean(onGroundClick))}
+      data-testid="preview-grid"
+    />
+  ),
   useCatalogTextureWarmup: () => {},
   WheelBridge: () => <div data-testid="wheel-bridge" />,
 }));
@@ -89,7 +121,19 @@ vi.mock("@/components/canvas/preview3d/overlays", () => ({
   AxisGizmoOverlay: () => <div data-testid="axis-gizmo" />,
   FieldWatermark: () => <div data-testid="field-watermark" />,
   FlyThroughControlsOverlay: () => <div data-testid="fly-controls" />,
-  TrackPreview3DHintOverlays: () => <div data-testid="preview-hints" />,
+  TrackPreview3DHintOverlays: ({
+    isMobile,
+    readOnly,
+  }: {
+    isMobile: boolean;
+    readOnly: boolean;
+  }) => (
+    <div
+      data-is-mobile={String(isMobile)}
+      data-read-only={String(readOnly)}
+      data-testid="preview-hints"
+    />
+  ),
 }));
 
 const inventory = {
@@ -156,6 +200,7 @@ function createDensePreviewDesign() {
 
 describe("TrackPreview3D large layouts", () => {
   beforeEach(() => {
+    previewTestState.isMobile = false;
     useEditor.getState().newProject();
     useEditor.getState().clearHistory();
     useEditor.getState().replaceDesign(createDensePreviewDesign());
@@ -176,5 +221,32 @@ describe("TrackPreview3D large layouts", () => {
     expect(screen.getByTestId("preview-grid")).toBeTruthy();
     expect(shapeNodes).toHaveLength(90);
     expect(shapeNodes[0]?.getAttribute("data-shape-id")).toBe("long-route");
+  });
+
+  it("uses the shared themed surface and read-only touch controls on mobile", () => {
+    previewTestState.isMobile = true;
+
+    render(<TrackPreview3D />);
+
+    const surface = screen.getByTestId("preview-grid");
+    expect(surface.getAttribute("data-field")).toBe("90x70@0.2");
+    expect(surface.getAttribute("data-grid-cell")).toBe(
+      SCENE_3D_THEME.dark.gridCell
+    );
+    expect(surface.getAttribute("data-grid-section")).toBe(
+      SCENE_3D_THEME.dark.gridSection
+    );
+    expect(surface.getAttribute("data-has-ground-click")).toBe("false");
+    expect(
+      screen
+        .getByTestId("orbit-controls")
+        .getAttribute("data-has-touch-controls")
+    ).toBe("true");
+    expect(
+      screen.getByTestId("preview-hints").getAttribute("data-is-mobile")
+    ).toBe("true");
+    expect(
+      screen.getByTestId("preview-hints").getAttribute("data-read-only")
+    ).toBe("true");
   });
 });
