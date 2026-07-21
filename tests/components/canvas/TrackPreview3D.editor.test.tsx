@@ -115,6 +115,8 @@ vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
     />
   ),
   GradientSky: () => null,
+  OrbitGroundConstraint: () => <div data-testid="orbit-ground-constraint" />,
+  ORBIT_MAX_POLAR_ANGLE: Math.PI / 2 - (4 * Math.PI) / 180,
   ScreenshotHelper: () => <div data-testid="screenshot-helper" />,
   TrackSurface3D: ({
     field,

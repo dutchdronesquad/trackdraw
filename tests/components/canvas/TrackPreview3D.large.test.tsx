@@ -60,14 +60,17 @@ vi.mock("@react-three/drei", () => ({
   Grid: () => <div data-testid="preview-grid" />,
   OrbitControls: ({
     enableZoom,
+    maxPolarAngle,
     touches,
   }: {
     enableZoom?: boolean;
+    maxPolarAngle?: number;
     touches?: unknown;
   }) => (
     <div
       data-enable-zoom={String(enableZoom)}
       data-has-touch-controls={String(Boolean(touches))}
+      data-max-polar-angle={String(maxPolarAngle)}
       data-testid="orbit-controls"
     />
   ),
@@ -92,6 +95,8 @@ vi.mock("@/hooks/usePerfMetric", () => ({
 vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
   CameraAxisTracker: () => <div data-testid="axis-tracker" />,
   GradientSky: () => null,
+  OrbitGroundConstraint: () => <div data-testid="orbit-ground-constraint" />,
+  ORBIT_MAX_POLAR_ANGLE: Math.PI / 2 - (4 * Math.PI) / 180,
   MemoShape3D: ({ shape }: { shape: { id: string } }) => (
     <div data-shape-id={shape.id} data-testid="shape-3d" />
   ),
@@ -242,6 +247,14 @@ describe("TrackPreview3D large layouts", () => {
         .getByTestId("orbit-controls")
         .getAttribute("data-has-touch-controls")
     ).toBe("true");
+    expect(
+      Number(
+        screen
+          .getByTestId("orbit-controls")
+          .getAttribute("data-max-polar-angle")
+      )
+    ).toBeLessThan(Math.PI / 2);
+    expect(screen.getByTestId("orbit-ground-constraint")).toBeTruthy();
     expect(
       screen.getByTestId("preview-hints").getAttribute("data-is-mobile")
     ).toBe("true");

@@ -20,6 +20,10 @@ if (typeof window !== "undefined") {
 type WebKitGestureEvent = Event & { scale: number };
 export type QuaternionState = [number, number, number, number];
 
+// Leave a small angle above the horizon so the camera cannot skim underneath
+// the field when the orbit target is at ground level.
+export const ORBIT_MAX_POLAR_ANGLE = Math.PI / 2 - THREE.MathUtils.degToRad(4);
+
 export function CameraCapture({
   onCamera,
 }: {
@@ -250,6 +254,35 @@ export function CameraAxisTracker({
       lastKeyRef.current = key;
       onChange(next);
     }
+  });
+
+  return null;
+}
+
+export function clampOrbitTargetAboveGround(
+  camera: THREE.Camera,
+  controls: Pick<OrbitControlsImpl, "target" | "update">,
+  minTargetHeight = 0
+) {
+  const lift = minTargetHeight - controls.target.y;
+  if (lift <= 0) return false;
+
+  controls.target.y = minTargetHeight;
+  camera.position.y += lift;
+  return true;
+}
+
+export function OrbitGroundConstraint({
+  controlsRef,
+}: {
+  controlsRef: { current: OrbitControlsImpl | null };
+}) {
+  const { camera } = useThree();
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (!controls || !controls.enabled) return;
+    if (clampOrbitTargetAboveGround(camera, controls)) controls.update();
   });
 
   return null;

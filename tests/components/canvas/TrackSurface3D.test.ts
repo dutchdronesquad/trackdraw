@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import {
+  clampOrbitTargetAboveGround,
   createTrackSurfaceTexture,
   TrackSurface3D,
 } from "@/components/canvas/preview3d/shared-scene";
@@ -37,6 +38,20 @@ afterEach(() => {
 });
 
 describe("track surface texture", () => {
+  it("lifts a panned orbit target and camera back to ground level", () => {
+    const camera = new THREE.PerspectiveCamera();
+    camera.position.set(12, 4, 18);
+    const controls = {
+      target: new THREE.Vector3(10, -3, 10),
+      update: vi.fn(),
+    };
+
+    expect(clampOrbitTargetAboveGround(camera, controls)).toBe(true);
+    expect(controls.target.y).toBe(0);
+    expect(camera.position.y).toBe(7);
+    expect(clampOrbitTargetAboveGround(camera, controls)).toBe(false);
+  });
+
   it("maps each checker cell to five metres across the configured field", () => {
     const texture = createTrackSurfaceTexture({
       baseColor: "#d0d8e4",

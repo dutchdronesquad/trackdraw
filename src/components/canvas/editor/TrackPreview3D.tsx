@@ -53,6 +53,8 @@ import {
   CameraCapture,
   GradientSky,
   MemoShape3D,
+  OrbitGroundConstraint,
+  ORBIT_MAX_POLAR_ANGLE,
   ScreenshotHelper,
   TrackSurface3D,
   WheelBridge,
@@ -745,6 +747,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
             minDistance={8}
             maxDistance={Math.max(120, longest * 3)}
           />
+          <OrbitGroundConstraint controlsRef={orbitControlsRef} />
           {showGizmo ? (
             <CameraAxisTracker onChange={setAxisQuaternion} />
           ) : null}
@@ -773,7 +776,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               dampingFactor={0.08}
               screenSpacePanning
               target={[cx, 0, cz]}
-              maxPolarAngle={Math.PI / 2}
+              maxPolarAngle={ORBIT_MAX_POLAR_ANGLE}
               minDistance={8}
               maxDistance={Math.max(120, longest * 3)}
               mouseButtons={{
@@ -803,7 +806,7 @@ const TrackPreview3D = forwardRef<TrackPreview3DHandle, TrackPreview3DProps>(
               enableZoom={false}
               screenSpacePanning
               target={[cx, 0, cz]}
-              maxPolarAngle={Math.PI / 2}
+              maxPolarAngle={ORBIT_MAX_POLAR_ANGLE}
               minDistance={8}
               maxDistance={Math.max(120, longest * 3)}
               mouseButtons={{
