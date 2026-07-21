@@ -8,6 +8,7 @@ import {
   WebMOutputFormat,
 } from "mediabunny";
 import { addFlythroughShapes } from "@/lib/export/flythroughSceneShapes";
+import { isSharedFlythroughTexture } from "@/lib/export/flythrough/shared";
 import type { FlythroughProgress, FlythroughTheme } from "@/lib/export/shared";
 import {
   createCurveSampler,
@@ -68,7 +69,7 @@ const THEME = {
 } as const;
 
 const GRID_VERT = `
-  varying vec2 vWorldXZ;
+  out vec2 vWorldXZ;
   void main() {
     vec4 worldPosition = modelMatrix * vec4(position, 1.0);
     vWorldXZ = worldPosition.xz;
@@ -82,7 +83,8 @@ const GRID_FRAG = `
   uniform float sectionSize;
   uniform float cellThickness;
   uniform float sectionThickness;
-  varying vec2 vWorldXZ;
+  in vec2 vWorldXZ;
+  out vec4 gridColor;
 
   float gridLine(vec2 position, float size, float thickness) {
     vec2 coordinate = position / size;
@@ -101,7 +103,7 @@ const GRID_FRAG = `
     float major = gridLine(vWorldXZ, sectionSize, sectionThickness);
     float alpha = max(minor * 0.72, major * 0.96);
     if (alpha < 0.01) discard;
-    gl_FragColor = vec4(mix(cellColor, sectionColor, major), alpha);
+    gridColor = vec4(mix(cellColor, sectionColor, major), alpha);
   }
 `;
 
@@ -303,6 +305,7 @@ export function createFlythroughSurface(
       },
       vertexShader: GRID_VERT,
       fragmentShader: GRID_FRAG,
+      glslVersion: THREE.GLSL3,
       transparent: true,
       depthWrite: false,
     })
@@ -328,6 +331,7 @@ export function disposeFlythroughSceneResources(
 ) {
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
+  const textures = new Set(ownedTextures);
 
   root.traverse((object) => {
     if (
@@ -339,13 +343,23 @@ export function disposeFlythroughSceneResources(
       const objectMaterials = Array.isArray(object.material)
         ? object.material
         : [object.material];
-      for (const material of objectMaterials) materials.add(material);
+      for (const material of objectMaterials) {
+        materials.add(material);
+        for (const value of Object.values(material)) {
+          if (
+            value instanceof THREE.Texture &&
+            !isSharedFlythroughTexture(value)
+          ) {
+            textures.add(value);
+          }
+        }
+      }
     }
   });
 
   for (const geometry of geometries) geometry.dispose();
   for (const material of materials) material.dispose();
-  for (const texture of ownedTextures) texture.dispose();
+  for (const texture of textures) texture.dispose();
 }
 
 function loadWatermarkTexture(

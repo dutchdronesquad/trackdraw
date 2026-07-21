@@ -5,6 +5,10 @@ import {
   disposeFlythroughSceneResources,
   resolveFlythroughGridStep,
 } from "@/lib/export/exportFlythrough";
+import {
+  cloneTextureForPanel,
+  loadTexture,
+} from "@/lib/export/flythrough/shared";
 
 describe("flythrough track surface", () => {
   it("builds the bounded live-scene hierarchy with five minor cells per section", () => {
@@ -34,6 +38,7 @@ describe("flythrough track surface", () => {
     ) as THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;
     expect(grid).toBeTruthy();
     expect(grid.geometry.getAttribute("position").count).toBe(4);
+    expect(grid.material.glslVersion).toBe(THREE.GLSL3);
     expect(grid.material.uniforms.cellSize.value).toBe(1);
     expect(grid.material.uniforms.sectionSize.value).toBe(5);
     expect(surface.sectionSize / surface.gridStep).toBe(5);
@@ -96,5 +101,40 @@ describe("flythrough track surface", () => {
     expect(geometryDispose).toHaveBeenCalledOnce();
     expect(materialDispose).toHaveBeenCalledOnce();
     expect(textureDispose).toHaveBeenCalledOnce();
+  });
+
+  it("disposes per-export material textures but preserves shared cache entries", async () => {
+    const sharedTexture = new THREE.Texture({} as HTMLImageElement);
+    const textureLoad = vi
+      .spyOn(THREE.TextureLoader.prototype, "load")
+      .mockImplementation((_url, onLoad) => {
+        onLoad?.(sharedTexture);
+        return sharedTexture;
+      });
+    const cachedTexture = await loadTexture(
+      `/tests/flythrough-cache-${crypto.randomUUID()}.png`
+    );
+    const exportTexture = cloneTextureForPanel(cachedTexture, {
+      flipX: true,
+    });
+    const sharedDispose = vi.spyOn(cachedTexture, "dispose");
+    const exportDispose = vi.spyOn(exportTexture, "dispose");
+    const root = new THREE.Group();
+    root.add(
+      new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 2),
+        new THREE.MeshStandardMaterial({ map: cachedTexture })
+      ),
+      new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 2),
+        new THREE.MeshStandardMaterial({ map: exportTexture })
+      )
+    );
+
+    disposeFlythroughSceneResources(root, []);
+
+    expect(sharedDispose).not.toHaveBeenCalled();
+    expect(exportDispose).toHaveBeenCalledOnce();
+    textureLoad.mockRestore();
   });
 });

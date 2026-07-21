@@ -77,6 +77,11 @@ export function getGateLadderYawRadians(rotation: number) {
 
 const textureLoader = new THREE.TextureLoader();
 const textureCache = new Map<string, Promise<THREE.Texture>>();
+const sharedTextureCacheEntries = new WeakSet<THREE.Texture>();
+
+export function isSharedFlythroughTexture(texture: THREE.Texture) {
+  return sharedTextureCacheEntries.has(texture);
+}
 
 export function loadTexture(path: string): Promise<THREE.Texture> {
   const cached = textureCache.get(path);
@@ -88,6 +93,7 @@ export function loadTexture(path: string): Promise<THREE.Texture> {
       (texture) => {
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.anisotropy = 4;
+        sharedTextureCacheEntries.add(texture);
         resolve(texture);
       },
       undefined,
