@@ -81,10 +81,10 @@ describe("ClientLanguageProvider", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Taal")).toBeTruthy();
+      expect(document.documentElement.lang).toBe("nl");
     });
 
     expect(fetchMock).toHaveBeenCalledWith("/locales/nl/common.json");
-    expect(document.documentElement.lang).toBe("nl");
   });
 
   it("keeps English-only namespaces while loading translated assets", async () => {
