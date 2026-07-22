@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Reliable Simplified Chinese PDF export
+
+Chinese PDF and Race Pack exports now embed the required characters instead of falling back to a font without Chinese glyphs. Export dates also follow the selected product language.
+
 ### Faster public app shell
 
 The landing page, anonymous Studio shell, privacy policy, and terms are now pre-rendered and served from a read-only static asset cache without starting a Next.js page render. Saved theme and language preferences still apply in the browser, while gallery, shared tracks, embeds, account pages, and APIs remain dynamic.

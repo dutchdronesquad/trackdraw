@@ -570,6 +570,7 @@ describe("ExportDialog mobile workflow", () => {
           tShapes: expect.any(Function),
         }),
         expect.objectContaining({
+          locale: "en",
           preset: "race-day",
           shareUrl: expect.stringMatching(/\/share\/published-token\?view=2d$/),
         })

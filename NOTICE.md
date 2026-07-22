@@ -7,3 +7,7 @@ The TrackDraw name, logos, and brand assets are part of the project's identity. 
 If you publish or host a modified version, make its relationship to TrackDraw clear.
 
 Track designs, project data, uploads, and exports created by users remain owned by their creators. Hosted TrackDraw features may also be covered by the applicable service terms.
+
+## Third-Party Assets
+
+TrackDraw includes Noto Sans Simplified Chinese for PDF export. The font is distributed by Google Fonts and the Noto project under the SIL Open Font License 1.1. Its license and provenance are included in [`public/assets/fonts/noto-sans-sc/`](public/assets/fonts/noto-sans-sc/).
