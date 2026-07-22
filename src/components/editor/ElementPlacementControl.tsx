@@ -9,7 +9,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  getTrackElementCatalogDimensionsLabel,
+  getTrackElementCatalogName,
+} from "@/lib/track/elements/catalog";
+import { getToolLabel } from "@/lib/editor/tool-registry";
 import { catalogPlacementByTool } from "@/lib/editor/placement-catalog";
+import type { Translate } from "@/lib/track/items/registry";
 import { cn } from "@/lib/utils";
 import { useSessionActions, useUiActions } from "@/store/actions";
 import { useEditor } from "@/store/editor";
@@ -24,6 +30,7 @@ const controlWidthCh = Math.max(
 
 export function ElementPlacementControl() {
   const t = useTranslations("editor.elementPlacementControl");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   const [open, setOpen] = useState(false);
   const activeTool = useEditor((state) => state.ui.activeTool);
   const activePlacementElementId = useEditor(
@@ -42,7 +49,7 @@ export function ElementPlacementControl() {
   const activeEntry = visible
     ? (entries!.find((e) => e.id === activeId) ?? entries![0])
     : undefined;
-  const toolLabel = placementViewModel?.label ?? activeTool;
+  const toolLabel = getToolLabel(activeTool, tShapes);
   const controlWidthStyle = {
     width: visible ? `min(${controlWidthCh}ch, calc(100vw - 2rem))` : "auto",
   } satisfies CSSProperties;
@@ -87,11 +94,14 @@ export function ElementPlacementControl() {
                       className="block min-w-0"
                     >
                       <span className="text-foreground block truncate text-[13px] leading-none font-semibold">
-                        {activeEntry.name}
+                        {getTrackElementCatalogName(activeEntry, tShapes)}
                       </span>
                       <span className="mt-1.5 flex min-w-0 items-center gap-1.5">
                         <span className="text-muted-foreground/70 truncate text-[11px] leading-none">
-                          {activeEntry.dimensions.display.label}
+                          {getTrackElementCatalogDimensionsLabel(
+                            activeEntry,
+                            tShapes
+                          )}
                         </span>
                         {activeEntry.official ? (
                           <span className="bg-brand-primary/14 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">
@@ -147,11 +157,14 @@ export function ElementPlacementControl() {
                               active ? "text-foreground" : "text-foreground/80"
                             )}
                           >
-                            {entry.name}
+                            {getTrackElementCatalogName(entry, tShapes)}
                           </span>
                           <span className="mt-1 flex min-w-0 items-center gap-1.5">
                             <span className="text-muted-foreground/65 truncate text-[11px] leading-none">
-                              {entry.dimensions.display.label}
+                              {getTrackElementCatalogDimensionsLabel(
+                                entry,
+                                tShapes
+                              )}
                             </span>
                             {entry.official ? (
                               <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] uppercase">

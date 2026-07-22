@@ -582,6 +582,16 @@
         "description": "Active share links published from your account. Copy, open or revoke them here."
       }
     },
+    "shared": {
+      "currentBadge": "current",
+      "itemCount": "{count, plural, one {# item} other {# items}}",
+      "relativeTime": {
+        "justNow": "just now",
+        "minutes": "{count}m ago",
+        "hours": "{count}h ago",
+        "days": "{count}d ago"
+      }
+    },
     "device": {
       "sync": {
         "resolveConflict": "Resolve sync conflict",
@@ -660,6 +670,15 @@
       }
     },
     "account": {
+      "aria": {
+        "resolveVersionConflictFor": "Resolve version conflict for {title}",
+        "retrySyncFor": "Retry sync for {title}",
+        "syncPendingChangesFor": "Sync pending changes for {title}"
+      },
+      "meta": {
+        "accountCopyWaitingToSync": "{itemLabel} · account copy waiting to sync",
+        "accountCopySynced": "{itemLabel} · account copy synced {relativeTime}"
+      },
       "status": {
         "loadingProjects": "Loading account projects...",
         "syncing": "Syncing",

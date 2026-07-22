@@ -4,7 +4,11 @@ import { useState } from "react";
 import { Box, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Kbd } from "@/components/ui/kbd";
-import { starterLayouts } from "@/lib/planning/starter-layouts";
+import {
+  getStarterLayoutDescription,
+  getStarterLayoutName,
+  starterLayouts,
+} from "@/lib/planning/starter-layouts";
 import { cn } from "@/lib/utils";
 
 const STARTER_STEP_IDS = ["01", "02", "03"] as const;
@@ -109,7 +113,7 @@ export function StarterActions({
                         : "border-border/60 bg-background text-muted-foreground hover:bg-muted/35 hover:text-foreground"
                     )}
                   >
-                    {layout.name}
+                    {getStarterLayoutName(layout, t)}
                   </button>
                 );
               })}
@@ -126,10 +130,10 @@ export function StarterActions({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-foreground text-sm font-medium">
-                    {selectedStarter.name}
+                    {getStarterLayoutName(selectedStarter, t)}
                   </p>
                   <p className="text-muted-foreground mt-1 text-xs leading-5">
-                    {selectedStarter.description}
+                    {getStarterLayoutDescription(selectedStarter, t)}
                   </p>
                 </div>
                 <div className="flex h-full items-center self-stretch">
@@ -199,10 +203,10 @@ export function StarterActions({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-foreground text-[13px] leading-4 font-medium">
-                    {layout.name}
+                    {getStarterLayoutName(layout, t)}
                   </p>
                   <p className="text-muted-foreground mt-0.5 line-clamp-1 text-[11px] leading-4">
-                    {layout.description}
+                    {getStarterLayoutDescription(layout, t)}
                   </p>
                 </div>
                 <ChevronRight className="text-muted-foreground/45 mt-0.5 size-3.5 shrink-0" />

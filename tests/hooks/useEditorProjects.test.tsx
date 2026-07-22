@@ -2,7 +2,9 @@
 
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { NextIntlClientProvider } from "next-intl";
 import { toast } from "sonner";
+import * as en from "@lang/en";
 import { useEditorProjects } from "@/hooks/editor/useEditorProjects";
 import { createDefaultDesign } from "@/lib/track/design";
 import { encodeDesign } from "@/lib/share";
@@ -23,6 +25,15 @@ vi.mock("sonner", () => ({
     success: vi.fn(),
   },
 }));
+
+const render = (callback: () => ReturnType<typeof useEditorProjects>) =>
+  renderHook(callback, {
+    wrapper: ({ children }) => (
+      <NextIntlClientProvider locale="en" messages={en}>
+        {children}
+      </NextIntlClientProvider>
+    ),
+  });
 
 describe("useEditorProjects", () => {
   beforeEach(() => {
@@ -49,7 +60,7 @@ describe("useEditorProjects", () => {
     design.id = "project-1";
     design.title = "Race day layout";
 
-    const { result } = renderHook(() =>
+    const { result } = render(() =>
       useEditorProjects({
         readOnly: false,
         design,
@@ -110,7 +121,7 @@ describe("useEditorProjects", () => {
     const replaceDesign = vi.fn();
     const onSeedTokenImported = vi.fn();
 
-    const { result } = renderHook(() =>
+    const { result } = render(() =>
       useEditorProjects({
         readOnly: false,
         seedToken: encodeDesign(sharedDesign),
@@ -153,7 +164,7 @@ describe("useEditorProjects", () => {
     saveProject(savedDesign);
     const replaceDesign = vi.fn();
 
-    const { result } = renderHook(() =>
+    const { result } = render(() =>
       useEditorProjects({
         readOnly: false,
         design: activeDesign,
@@ -190,7 +201,7 @@ describe("useEditorProjects", () => {
     const restorePoint = createRestorePoint(design);
     const replaceDesign = vi.fn();
 
-    const { result } = renderHook(() =>
+    const { result } = render(() =>
       useEditorProjects({
         readOnly: false,
         design,
@@ -223,7 +234,7 @@ describe("useEditorProjects", () => {
     createRestorePoint(design);
     useEditor.getState().replaceDesign(design);
 
-    const { result } = renderHook(() =>
+    const { result } = render(() =>
       useEditorProjects({
         readOnly: false,
         design,

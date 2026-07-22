@@ -44,5 +44,103 @@
     "selectionCount": "{count} 个项目",
     "selectionFallback": "选择",
     "frontLabel": "前方"
+  },
+  "catalogEntries": {
+    "trackdraw-generic-gate": {
+      "name": "TrackDraw 穿越门",
+      "size": "2 × 2 米"
+    },
+    "multigp-standard-gate-5x5": {
+      "name": "MultiGP 标准穿越门 5x5",
+      "size": "5 英尺 × 5 英尺"
+    },
+    "multigp-championship-gate-7x6": {
+      "name": "MultiGP 锦标赛穿越门 7x6",
+      "size": "7 英尺 × 6 英尺"
+    },
+    "trackdraw-generic-tower": {
+      "name": "TrackDraw 日字门",
+      "size": "2 × 2 米，抬高"
+    },
+    "multigp-tower-5x5": {
+      "name": "MultiGP 日字门 5x5",
+      "size": "5 英尺 × 5 英尺，抬高 5 英尺"
+    },
+    "multigp-tower-7x6": {
+      "name": "MultiGP 日字门 7x6",
+      "size": "7 英尺 × 6 英尺，抬高 6 英尺"
+    },
+    "multigp-double-gate-tower-5x5": {
+      "name": "MultiGP 双层日字门 5x5",
+      "size": "5 英尺宽，2 个 5 英尺开口"
+    },
+    "multigp-double-gate-tower-7x6": {
+      "name": "MultiGP 双层日字门 7x6",
+      "size": "7 英尺宽，2 个 6 英尺开口"
+    },
+    "trackdraw-generic-flag": {
+      "name": "TrackDraw 标旗",
+      "size": "半径 0.25 米，杆高 3.5 米"
+    },
+    "multigp-corner-flag": {
+      "name": "MultiGP 角旗",
+      "size": "10 英尺"
+    },
+    "trackdraw-generic-cone": {
+      "name": "TrackDraw 锥桶",
+      "size": "半径 0.2 米"
+    },
+    "trackdraw-generic-label": {
+      "name": "TrackDraw 标注",
+      "size": "文本标注"
+    },
+    "trackdraw-generic-start-finish": {
+      "name": "TrackDraw 起终点",
+      "size": "3 米宽"
+    },
+    "trackdraw-generic-ladder": {
+      "name": "TrackDraw 目字门",
+      "size": "2 × 6 米，3 层"
+    },
+    "multigp-standard-ladder-5x5": {
+      "name": "MultiGP 标准目字门 5x5",
+      "size": "5 英尺宽，3 段，每段 5 英尺"
+    },
+    "multigp-championship-ladder-7x6": {
+      "name": "MultiGP 锦标赛目字门 7x6",
+      "size": "7 英尺宽，3 个 6 英尺开口"
+    },
+    "multigp-topless-ladder-7x6": {
+      "name": "MultiGP 无顶目字门 7x6",
+      "size": "7 英尺宽，3 个 6 英尺无顶开口"
+    },
+    "trackdraw-generic-dive-gate": {
+      "name": "TrackDraw 重力门",
+      "size": "2.8 米方形"
+    },
+    "multigp-dive-gate-7x6": {
+      "name": "MultiGP 重力门 7x6",
+      "size": "7 英尺 × 6 英尺"
+    },
+    "multigp-launch-gate-7x6": {
+      "name": "MultiGP 发射门 7x6",
+      "size": "7 英尺 × 6 英尺"
+    },
+    "trackdraw-generic-banner": {
+      "name": "TrackDraw 横幅围挡",
+      "size": "3 × 2 米"
+    },
+    "trackdraw-generic-fence": {
+      "name": "TrackDraw 栅栏围挡",
+      "size": "3 × 1.2 米"
+    },
+    "trackdraw-generic-net": {
+      "name": "TrackDraw 网围挡",
+      "size": "3 × 2 米"
+    },
+    "multigp-hurdle": {
+      "name": "MultiGP 跨栏",
+      "size": "10 英尺宽，5 英尺高"
+    }
   }
 }

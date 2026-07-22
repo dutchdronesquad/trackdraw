@@ -582,6 +582,16 @@
         "description": "Aktive Share-Links, die über dein Konto veröffentlicht wurden. Kopiere, öffne oder widerrufe sie hier."
       }
     },
+    "shared": {
+      "currentBadge": "aktuell",
+      "itemCount": "{count, plural, one {# Element} other {# Elemente}}",
+      "relativeTime": {
+        "justNow": "gerade eben",
+        "minutes": "vor {count} Min.",
+        "hours": "vor {count} Std.",
+        "days": "vor {count} Tg."
+      }
+    },
     "device": {
       "sync": {
         "resolveConflict": "Synchronisierungskonflikt lösen",
@@ -660,6 +670,15 @@
       }
     },
     "account": {
+      "aria": {
+        "resolveVersionConflictFor": "Versionskonflikt für {title} lösen",
+        "retrySyncFor": "Synchronisierung für {title} erneut versuchen",
+        "syncPendingChangesFor": "Ausstehende Änderungen für {title} synchronisieren"
+      },
+      "meta": {
+        "accountCopyWaitingToSync": "{itemLabel} · Kontokopie wartet auf Synchronisierung",
+        "accountCopySynced": "{itemLabel} · Kontokopie synchronisiert {relativeTime}"
+      },
       "status": {
         "loadingProjects": "Kontoprojekte werden geladen...",
         "syncing": "Synchronisiert",

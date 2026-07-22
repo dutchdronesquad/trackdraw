@@ -2,6 +2,8 @@
 
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { NextIntlClientProvider } from "next-intl";
+import * as en from "@lang/en";
 import { useStarterExperience } from "@/components/editor/useStarterExperience";
 import { AccountProjectSyncConflictError } from "@/components/editor/useAccountProjectSync";
 import { createDefaultDesign } from "@/lib/track/design";
@@ -42,7 +44,13 @@ function renderStarterExperience(
   return {
     options,
     blankDesign,
-    ...renderHook(() => useStarterExperience(options)),
+    ...renderHook(() => useStarterExperience(options), {
+      wrapper: ({ children }) => (
+        <NextIntlClientProvider locale="en" messages={en}>
+          {children}
+        </NextIntlClientProvider>
+      ),
+    }),
   };
 }
 

@@ -17,6 +17,13 @@ export interface StarterLayout {
   shapes: ShapeDraft[];
 }
 
+export type StarterLayoutTranslate = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
+
+type StarterLayoutTextField = "name" | "title" | "description";
+
 const gate = (x: number, y: number, rotation = 0, color = "#3b82f6") => ({
   ...createCatalogShapeDraft(TRACKDRAW_GATE_ELEMENT_ID, {
     x,
@@ -110,9 +117,38 @@ const starterLayoutMap = new Map(
   starterLayouts.map((layout) => [layout.id, layout])
 );
 
+function getStarterLayoutText(
+  layout: StarterLayout,
+  field: StarterLayoutTextField,
+  t: StarterLayoutTranslate
+) {
+  return t(`starterLayouts.layouts.${layout.id}.${field}`);
+}
+
 export function getStarterLayoutById(id: string | null | undefined) {
   if (!id) return null;
   return starterLayoutMap.get(id) ?? null;
+}
+
+export function getStarterLayoutName(
+  layout: StarterLayout,
+  t: StarterLayoutTranslate
+) {
+  return getStarterLayoutText(layout, "name", t);
+}
+
+export function getStarterLayoutTitle(
+  layout: StarterLayout,
+  t: StarterLayoutTranslate
+) {
+  return getStarterLayoutText(layout, "title", t);
+}
+
+export function getStarterLayoutDescription(
+  layout: StarterLayout,
+  t: StarterLayoutTranslate
+) {
+  return getStarterLayoutText(layout, "description", t);
 }
 
 export function createStarterLayoutDesign(

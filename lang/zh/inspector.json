@@ -148,7 +148,7 @@
     },
     "field": {
       "unitsLabel": "单位",
-      "renderScaleLabel": "渲染比例",
+      "renderScaleLabel": "显示比例",
       "renderScaleTooltip": "画布内部密度，单位为每米像素数",
       "pxPerMeterAriaLabel": "每米像素数，画布内部比例"
     },
@@ -177,6 +177,7 @@
     },
     "meta": {
       "itemsCount": "{count} 个项目",
+      "grid": "网格 {grid}",
       "buildable": "可布场",
       "shortItems": "缺少 {count} 项",
       "stockCovered": "库存已覆盖",

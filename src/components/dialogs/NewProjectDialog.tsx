@@ -3,7 +3,11 @@
 import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { starterLayouts } from "@/lib/planning/starter-layouts";
+import {
+  getStarterLayoutDescription,
+  getStarterLayoutName,
+  starterLayouts,
+} from "@/lib/planning/starter-layouts";
 import { Box, ChevronRight, Download, FilePlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -25,6 +29,7 @@ export default function NewProjectDialog({
   hasContent,
 }: NewProjectDialogProps) {
   const t = useTranslations("dialogs");
+  const tStarter = useTranslations("editor.starterFlow");
   const isMobile = useIsMobile();
 
   const actionRowClass =
@@ -94,9 +99,11 @@ export default function NewProjectDialog({
             <Box className="size-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-foreground text-sm font-medium">{layout.name}</p>
+            <p className="text-foreground text-sm font-medium">
+              {getStarterLayoutName(layout, tStarter)}
+            </p>
             <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              {layout.description}
+              {getStarterLayoutDescription(layout, tStarter)}
             </p>
           </div>
           <ChevronRight className="text-muted-foreground/40 mt-0.5 size-4 shrink-0" />

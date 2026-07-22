@@ -582,6 +582,16 @@
         "description": "你从账户发布的有效共享链接。可在这里复制、打开或撤销。"
       }
     },
+    "shared": {
+      "currentBadge": "当前",
+      "itemCount": "{count} 个项目",
+      "relativeTime": {
+        "justNow": "刚刚",
+        "minutes": "{count} 分钟前",
+        "hours": "{count} 小时前",
+        "days": "{count} 天前"
+      }
+    },
     "device": {
       "sync": {
         "resolveConflict": "处理同步冲突",
@@ -660,6 +670,15 @@
       }
     },
     "account": {
+      "aria": {
+        "resolveVersionConflictFor": "处理 {title} 的版本冲突",
+        "retrySyncFor": "重试 {title} 的同步",
+        "syncPendingChangesFor": "同步 {title} 的待处理改动"
+      },
+      "meta": {
+        "accountCopyWaitingToSync": "{itemLabel} · 账户副本等待同步",
+        "accountCopySynced": "{itemLabel} · 账户副本已于 {relativeTime} 同步"
+      },
       "status": {
         "loadingProjects": "正在加载账户项目...",
         "syncing": "同步中",

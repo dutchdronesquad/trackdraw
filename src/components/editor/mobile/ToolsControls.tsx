@@ -4,7 +4,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Redo2, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getMobileToolEntries } from "@/components/editor/tool-icons";
-import type { TrackElementCatalogId } from "@/lib/track/elements/catalog";
+import {
+  getTrackElementCatalogDimensionsLabel,
+  getTrackElementCatalogName,
+  type TrackElementCatalogId,
+} from "@/lib/track/elements/catalog";
 import {
   catalogPlacementByTool,
   catalogPlacementToolIds,
@@ -134,7 +138,9 @@ export function ToolsControls({
                         {toolLabel}
                       </p>
                       <p className="text-muted-foreground/60 mt-0.5 truncate text-[11px]">
-                        {activeEntry?.name ?? "—"}
+                        {activeEntry
+                          ? getTrackElementCatalogName(activeEntry, tShapes)
+                          : "—"}
                         {activeEntry?.official
                           ? ` · ${tCatalog("officialBadge")}`
                           : ""}
@@ -218,11 +224,14 @@ export function ToolsControls({
                                         : "text-foreground/80"
                                     )}
                                   >
-                                    {entry.name}
+                                    {getTrackElementCatalogName(entry, tShapes)}
                                   </span>
                                   <span className="text-muted-foreground/60 mt-0.5 flex items-center gap-1.5 text-[11px]">
                                     <span className="truncate">
-                                      {entry.dimensions.display.label}
+                                      {getTrackElementCatalogDimensionsLabel(
+                                        entry,
+                                        tShapes
+                                      )}
                                     </span>
                                     {entry.official ? (
                                       <span className="bg-brand-primary/12 text-brand-primary shrink-0 rounded-full px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-widest uppercase">

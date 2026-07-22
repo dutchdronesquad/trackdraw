@@ -177,6 +177,7 @@
     },
     "meta": {
       "itemsCount": "{count} items",
+      "grid": "raster {grid}",
       "buildable": "bouwbaar",
       "shortItems": "{count, plural, one {tekort 1 item} other {tekort {count} items}}",
       "stockCovered": "voorraad gedekt",

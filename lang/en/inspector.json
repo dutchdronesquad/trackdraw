@@ -177,6 +177,7 @@
     },
     "meta": {
       "itemsCount": "{count} items",
+      "grid": "grid {grid}",
       "buildable": "buildable",
       "shortItems": "{count, plural, one {short 1 item} other {short {count} items}}",
       "stockCovered": "stock covered",

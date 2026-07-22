@@ -102,7 +102,7 @@ export function ProjectManagerSharesTab({
                 {displayTitle}
               </p>
               <p className="text-muted-foreground mt-0.5 text-[11px]">
-                {itemLabel(share.shapeCount)} · {lifetimeLabel}
+                {itemLabel(share.shapeCount, t)} · {lifetimeLabel}
               </p>
             </div>
             <div

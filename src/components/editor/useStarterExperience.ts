@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { createStarterLayoutDesign } from "@/lib/planning/starter-layouts";
+import { useTranslations } from "next-intl";
+import {
+  createStarterLayoutDesign,
+  getStarterLayoutById,
+  getStarterLayoutTitle,
+} from "@/lib/planning/starter-layouts";
 import { shouldShowStarterForDesign } from "@/components/editor/StarterFlow";
 import { isAccountProjectSyncConflictError } from "@/components/editor/useAccountProjectSync";
 import { useEditorHints } from "@/hooks/editor/useEditorHints";
@@ -47,6 +52,7 @@ export function useStarterExperience({
   closeProjectAndToolSurfaces,
   createBlankDesign,
 }: UseStarterExperienceOptions) {
+  const tStarter = useTranslations("editor.starterFlow");
   const [starterDismissed, setStarterDismissed] = useState(false);
   const [starterMode, setStarterMode] = useState<"guided" | "blank" | null>(
     null
@@ -139,10 +145,14 @@ export function useStarterExperience({
 
   const applyStarterLayout = useCallback(
     (layoutId: string) => {
+      const layout = getStarterLayoutById(layoutId);
       const nextDesign = createStarterLayoutDesign(layoutId);
-      if (!nextDesign) return;
+      if (!layout || !nextDesign) return;
 
-      replaceDesign(nextDesign);
+      replaceDesign({
+        ...nextDesign,
+        title: getStarterLayoutTitle(layout, tStarter),
+      });
       setStarterDismissed(true);
       setStarterMode(null);
       resetSelectionState();
@@ -164,6 +174,7 @@ export function useStarterExperience({
       resetSelectionState,
       setActiveTool,
       syncStarterDesign,
+      tStarter,
     ]
   );
 

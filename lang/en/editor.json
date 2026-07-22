@@ -228,7 +228,24 @@
       }
     },
     "starterLayouts": {
-      "label": "Starter layouts"
+      "label": "Starter layouts",
+      "layouts": {
+        "open-practice": {
+          "name": "Open practice",
+          "title": "Open Practice Layout",
+          "description": "Open flow with a start area and room to build your own lap."
+        },
+        "compact-race-start": {
+          "name": "Compact race start",
+          "title": "Compact Race Start",
+          "description": "Tight opening with an immediate gate line and early turn."
+        },
+        "technical-ladder-line": {
+          "name": "Technical ladder line",
+          "title": "Technical Ladder Line",
+          "description": "First gate, two ladders, and a follow-up gate for quick rhythm."
+        }
+      }
     },
     "guided": {
       "label": "Guided start",
@@ -426,6 +443,26 @@
   "shell": {
     "untitledTrack": "Untitled track",
     "untitledFallback": "Untitled",
+    "untitledTrackCopy": "Untitled track copy",
+    "copyOfTitle": "Copy of {title}",
+    "savingLocally": "Saving locally…",
+    "savedLocallyAt": "Saved locally at {time}",
+    "localAutosaveFailed": "Local autosave failed",
+    "localAutosaveFailedDescription": "The latest edits are still on the canvas, but TrackDraw could not save a local copy. Retry now, or export a JSON backup before leaving this browser.",
+    "retry": "Retry",
+    "localAutosaveRecovered": "Local autosave recovered",
+    "latestLocalCopySaved": "The latest local copy was saved.",
+    "localAutosaveStillFailing": "Local autosave still failing",
+    "localAutosaveStillFailingDescription": "Export a JSON backup before making more changes if browser storage keeps failing.",
+    "editableCopyCreated": "Editable copy created",
+    "restoredFromLocalDraft": "Restored from local draft",
+    "freshLocalProject": "Fresh local project",
+    "editing": "Editing…",
+    "snapshotSaved": "Snapshot saved",
+    "snapshotSavedAt": "Snapshot saved at {time}",
+    "restorePointCreatedAt": "Restore point created at {time}",
+    "projectOpened": "Project opened",
+    "restoredFromSnapshot": "Restored from snapshot",
     "exportFailed": "Export failed",
     "exportFailedDescription": "{message} Try again, or open Export and download a project JSON backup from there.",
     "exportFailedNoProjectDescription": "TrackDraw could not load this local project. Open it first or choose another saved project.",

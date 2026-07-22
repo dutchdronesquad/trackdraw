@@ -620,9 +620,11 @@ export function ProjectLayoutInspectorView({
         meta={[
           t("layout.meta.itemsCount", { count: shapes.length }),
           formatFieldSize(design.field.width, design.field.height, unitSystem),
-          `grid ${formatMeasurement(design.field.gridStep, unitSystem, {
-            precision: 1,
-          })}`,
+          t("layout.meta.grid", {
+            grid: formatMeasurement(design.field.gridStep, unitSystem, {
+              precision: 1,
+            }),
+          }),
         ]}
       />
       <div>

@@ -228,7 +228,24 @@
       }
     },
     "starterLayouts": {
-      "label": "Starter-Layouts"
+      "label": "Starter-Layouts",
+      "layouts": {
+        "open-practice": {
+          "name": "Open practice",
+          "title": "Open Practice Layout",
+          "description": "Open flow with a start area and room to build your own lap."
+        },
+        "compact-race-start": {
+          "name": "Compact race start",
+          "title": "Compact Race Start",
+          "description": "Tight opening with an immediate gate line and early turn."
+        },
+        "technical-ladder-line": {
+          "name": "Technical ladder line",
+          "title": "Technical Ladder Line",
+          "description": "First gate, two ladders, and a follow-up gate for quick rhythm."
+        }
+      }
     },
     "guided": {
       "label": "Geführter Start",
@@ -426,6 +443,26 @@
   "shell": {
     "untitledTrack": "Unbenannter Track",
     "untitledFallback": "Unbenannt",
+    "untitledTrackCopy": "Kopie eines unbenannten Tracks",
+    "copyOfTitle": "Kopie von {title}",
+    "savingLocally": "Wird lokal gespeichert…",
+    "savedLocallyAt": "Lokal gespeichert um {time}",
+    "localAutosaveFailed": "Lokales Autosave fehlgeschlagen",
+    "localAutosaveFailedDescription": "Die neuesten Änderungen sind noch auf dem Canvas, aber TrackDraw konnte keine lokale Kopie speichern. Versuche es jetzt erneut oder exportiere ein JSON-Backup, bevor du diesen Browser verlässt.",
+    "retry": "Erneut versuchen",
+    "localAutosaveRecovered": "Lokales Autosave wiederhergestellt",
+    "latestLocalCopySaved": "Die neueste lokale Kopie wurde gespeichert.",
+    "localAutosaveStillFailing": "Lokales Autosave schlägt weiterhin fehl",
+    "localAutosaveStillFailingDescription": "Exportiere ein JSON-Backup, bevor du weitere Änderungen machst, wenn der Browserspeicher weiter fehlschlägt.",
+    "editableCopyCreated": "Bearbeitbare Kopie erstellt",
+    "restoredFromLocalDraft": "Aus lokalem Entwurf wiederhergestellt",
+    "freshLocalProject": "Neues lokales Projekt",
+    "editing": "Wird bearbeitet…",
+    "snapshotSaved": "Snapshot gespeichert",
+    "snapshotSavedAt": "Snapshot gespeichert um {time}",
+    "restorePointCreatedAt": "Wiederherstellungspunkt erstellt um {time}",
+    "projectOpened": "Projekt geöffnet",
+    "restoredFromSnapshot": "Aus Snapshot wiederhergestellt",
     "exportFailed": "Export fehlgeschlagen",
     "exportFailedDescription": "{message} Versuche es erneut oder öffne Exportieren und lade dort ein Projekt-JSON-Backup herunter.",
     "exportFailedNoProjectDescription": "TrackDraw konnte dieses lokale Projekt nicht laden. Öffne es zuerst oder wähle ein anderes gespeichertes Projekt.",

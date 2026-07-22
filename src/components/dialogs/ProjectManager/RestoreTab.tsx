@@ -12,6 +12,7 @@ import {
   CurrentBadge,
   EmptyState,
   formatRelativeTime,
+  getDisplayTitle,
   itemLabel,
 } from "./shared";
 
@@ -60,8 +61,10 @@ export function ProjectManagerRestoreTab({
     <div className="space-y-2">
       {restorePoints.map((r) => {
         const isActive = r.id === activeRestorePointId;
-        const snapshotTitle =
-          r.designTitle || t("projectManager.restore.fallback.snapshot");
+        const snapshotTitle = getDisplayTitle(
+          r.designTitle,
+          t("projectManager.restore.fallback.untitled")
+        );
         return (
           <div
             key={r.id}
@@ -78,8 +81,7 @@ export function ProjectManagerRestoreTab({
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-1.5">
                 <p className="text-foreground truncate text-sm font-medium">
-                  {r.designTitle ||
-                    t("projectManager.restore.fallback.untitled")}
+                  {snapshotTitle}
                 </p>
                 {isActive && (
                   <CurrentBadge
@@ -88,7 +90,8 @@ export function ProjectManagerRestoreTab({
                 )}
               </div>
               <p className="text-muted-foreground mt-0.5 text-[11px]">
-                {itemLabel(r.shapeCount)} · {formatRelativeTime(r.savedAt)}
+                {itemLabel(r.shapeCount, t)} ·{" "}
+                {formatRelativeTime(r.savedAt, t)}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-0.5">

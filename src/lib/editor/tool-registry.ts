@@ -1,5 +1,6 @@
 import {
   createCatalogShapeDraft,
+  getTrackElementCatalogName,
   getTrackElementCatalogIdentity,
   getTrackElementCatalogEntry,
   type TrackElementCatalogId,
@@ -26,7 +27,7 @@ function isTrackItemTool(tool: EditorTool): tool is TrackItemToolId {
 export function getShapeDisplayLabel(shape: Shape, t: Translate): string {
   const catalogIdentity = getTrackElementCatalogIdentity(shape.meta);
   if (catalogIdentity?.assignedKind === shape.kind) {
-    return catalogIdentity.snapshot.name;
+    return getTrackElementCatalogName(catalogIdentity.elementId, t);
   }
 
   return getShapeKindLabel(shape.kind, t);

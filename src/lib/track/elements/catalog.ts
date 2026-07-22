@@ -289,6 +289,11 @@ export interface TrackElementCatalogIdentity {
   };
 }
 
+export type TrackElementCatalogTranslate = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -1339,6 +1344,14 @@ const trackElementCatalogMap = new Map(
   trackElementCatalog.map((entry) => [entry.id, entry])
 );
 
+function resolveTrackElementCatalogEntry(
+  entryOrId: TrackElementCatalogEntry | TrackElementCatalogId | null | undefined
+) {
+  return typeof entryOrId === "string"
+    ? getTrackElementCatalogEntry(entryOrId)
+    : entryOrId;
+}
+
 export function getTrackElementCatalogTexturePaths(): string[] {
   const paths = new Set<string>();
 
@@ -1383,6 +1396,26 @@ export function getTrackElementCatalogEntry(
 ): TrackElementCatalogEntry | null {
   if (!id) return null;
   return trackElementCatalogMap.get(id as TrackElementCatalogId) ?? null;
+}
+
+export function getTrackElementCatalogName(
+  entryOrId:
+    TrackElementCatalogEntry | TrackElementCatalogId | null | undefined,
+  t: TrackElementCatalogTranslate
+) {
+  const entry = resolveTrackElementCatalogEntry(entryOrId);
+  if (!entry) return "";
+  return t(`catalogEntries.${entry.id}.name`);
+}
+
+export function getTrackElementCatalogDimensionsLabel(
+  entryOrId:
+    TrackElementCatalogEntry | TrackElementCatalogId | null | undefined,
+  t: TrackElementCatalogTranslate
+) {
+  const entry = resolveTrackElementCatalogEntry(entryOrId);
+  if (!entry) return "";
+  return t(`catalogEntries.${entry.id}.size`);
 }
 
 export function getCatalogEntriesByKind<

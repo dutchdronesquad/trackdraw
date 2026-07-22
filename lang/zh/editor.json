@@ -228,7 +228,24 @@
       }
     },
     "starterLayouts": {
-      "label": "起始布局"
+      "label": "起始布局",
+      "layouts": {
+        "open-practice": {
+          "name": "开放练习",
+          "title": "开放练习布局",
+          "description": "开阔流线，带起飞区，并预留足够空间让你自行延展整圈线路。"
+        },
+        "compact-race-start": {
+          "name": "紧凑竞速起跑",
+          "title": "紧凑竞速起跑布局",
+          "description": "开局更紧凑，前方立刻进入门组，并很早就需要转向。"
+        },
+        "technical-ladder-line": {
+          "name": "技术目字门线路",
+          "title": "技术目字门线路布局",
+          "description": "首门后接两个目字门，再接后续穿越门，适合快速检查节奏感。"
+        }
+      }
     },
     "guided": {
       "label": "引导式开始",
@@ -426,6 +443,26 @@
   "shell": {
     "untitledTrack": "未命名赛道",
     "untitledFallback": "未命名",
+    "untitledTrackCopy": "未命名赛道副本",
+    "copyOfTitle": "{title} 的副本",
+    "savingLocally": "正在保存到本机…",
+    "savedLocallyAt": "{time} 已保存到本机",
+    "localAutosaveFailed": "本机自动保存失败",
+    "localAutosaveFailedDescription": "最新改动还保留在画布上，但 TrackDraw 无法保存本地副本。请立即重试，或在离开当前浏览器前导出一份 JSON 备份。",
+    "retry": "重试",
+    "localAutosaveRecovered": "本机自动保存已恢复",
+    "latestLocalCopySaved": "最新本地副本已保存。",
+    "localAutosaveStillFailing": "本机自动保存仍然失败",
+    "localAutosaveStillFailingDescription": "如果浏览器存储持续失败，请先导出一份 JSON 备份，再继续修改。",
+    "editableCopyCreated": "已创建可编辑副本",
+    "restoredFromLocalDraft": "已从本地草稿恢复",
+    "freshLocalProject": "新的本地项目",
+    "editing": "编辑中…",
+    "snapshotSaved": "快照已保存",
+    "snapshotSavedAt": "{time} 已保存快照",
+    "restorePointCreatedAt": "{time} 已创建恢复点",
+    "projectOpened": "项目已打开",
+    "restoredFromSnapshot": "已从快照恢复",
     "exportFailed": "导出失败",
     "exportFailedDescription": "{message} 请重试，或打开导出面板，从那里下载项目 JSON 备份。",
     "exportFailedNoProjectDescription": "TrackDraw 无法加载这个本地项目。请先打开它，或改选另一个已保存项目。",

@@ -18,6 +18,7 @@ import { MetaPill } from "./layout";
 import {
   getTrackElementCatalogEntry,
   getTrackElementCatalogIdentity,
+  getTrackElementCatalogName,
 } from "@/lib/track/elements/catalog";
 
 export type DesignMetaPatch = Partial<
@@ -83,7 +84,9 @@ function getShapeDisplayName(shape: Shape, t: Translate): string {
   if (shape.name?.trim()) return shape.name.trim();
   const catalogId = getTrackElementCatalogIdentity(shape.meta)?.elementId;
   const entry = getTrackElementCatalogEntry(catalogId);
-  return entry?.name ?? getShapeKindLabel(shape.kind, t);
+  return entry
+    ? getTrackElementCatalogName(entry, t)
+    : getShapeKindLabel(shape.kind, t);
 }
 
 type ViewFilter = "all" | "obstacles";

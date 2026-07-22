@@ -582,6 +582,16 @@
         "description": "Actieve deellinks die vanuit je account zijn gepubliceerd. Kopieer, open of trek ze hier in."
       }
     },
+    "shared": {
+      "currentBadge": "huidig",
+      "itemCount": "{count, plural, one {# item} other {# items}}",
+      "relativeTime": {
+        "justNow": "zojuist",
+        "minutes": "{count}m geleden",
+        "hours": "{count}u geleden",
+        "days": "{count}d geleden"
+      }
+    },
     "device": {
       "sync": {
         "resolveConflict": "Synchronisatieconflict oplossen",
@@ -660,6 +670,15 @@
       }
     },
     "account": {
+      "aria": {
+        "resolveVersionConflictFor": "Versieconflict oplossen voor {title}",
+        "retrySyncFor": "Synchronisatie opnieuw proberen voor {title}",
+        "syncPendingChangesFor": "Wachtende wijzigingen synchroniseren voor {title}"
+      },
+      "meta": {
+        "accountCopyWaitingToSync": "{itemLabel} · accountkopie wacht op synchronisatie",
+        "accountCopySynced": "{itemLabel} · accountkopie gesynchroniseerd {relativeTime}"
+      },
       "status": {
         "loadingProjects": "Accountprojecten laden...",
         "syncing": "Synchroniseren",

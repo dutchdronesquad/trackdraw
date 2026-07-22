@@ -26,6 +26,8 @@ import {
   DesktopActionTooltip,
   EmptyState,
   formatRelativeTime,
+  getDisplayTitle,
+  getEditableTitle,
   itemLabel,
   ProjectAvatar,
 } from "./shared";
@@ -112,7 +114,7 @@ export function ProjectManagerDeviceTab({
 
   function startRename(p: ProjectMeta) {
     setRenamingId(p.id);
-    setRenameValue(p.title || "");
+    setRenameValue(getEditableTitle(p.title));
   }
 
   function commitRename(id: string) {
@@ -163,8 +165,6 @@ export function ProjectManagerDeviceTab({
         : mobileActionIsSynced
           ? t("projectManager.device.sync.updateDescription")
           : t("projectManager.device.sync.description");
-  const projectFallback = t("projectManager.device.fallback.project");
-
   function ProjectCard({ p }: { p: ProjectMeta }) {
     const isCurrent = p.id === activeDesignId;
     const isRenaming = renamingId === p.id;
@@ -178,11 +178,14 @@ export function ProjectManagerDeviceTab({
     const hasConflict = syncMeta?.status === "conflict";
     const hasSyncFailure = syncMeta?.status === "failed";
     const hasPendingChanges = syncMeta?.status === "pending";
-    const projectTitle = p.title || projectFallback;
-    const itemCountLabel = itemLabel(p.shapeCount);
+    const projectTitle = getDisplayTitle(
+      p.title,
+      t("projectManager.device.fallback.untitled")
+    );
+    const itemCountLabel = itemLabel(p.shapeCount, t);
     const fallbackLine = syncMeta?.fallbackSavedAt
       ? t("projectManager.device.sync.latestLocalCopySaved", {
-          relativeTime: formatRelativeTime(syncMeta.fallbackSavedAt),
+          relativeTime: formatRelativeTime(syncMeta.fallbackSavedAt, t),
         })
       : null;
     const syncLabel = isSyncing
@@ -217,7 +220,7 @@ export function ProjectManagerDeviceTab({
           : isSynced && syncMeta?.lastSyncedAt
             ? t("projectManager.device.meta.localCopySynced", {
                 itemLabel: itemCountLabel,
-                relativeTime: formatRelativeTime(syncMeta.lastSyncedAt),
+                relativeTime: formatRelativeTime(syncMeta.lastSyncedAt, t),
               })
             : isSynced
               ? t("projectManager.device.meta.localCopy", {
@@ -225,7 +228,7 @@ export function ProjectManagerDeviceTab({
                 })
               : t("projectManager.device.meta.onlyOnThisDevice", {
                   itemLabel: itemCountLabel,
-                  relativeTime: formatRelativeTime(p.updatedAt),
+                  relativeTime: formatRelativeTime(p.updatedAt, t),
                 });
 
     return (
@@ -245,7 +248,7 @@ export function ProjectManagerDeviceTab({
             : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
         )}
       >
-        <ProjectAvatar id={p.id} title={p.title || "?"} />
+        <ProjectAvatar id={p.id} title={projectTitle} />
         <div className="min-w-0 flex-1">
           {isRenaming ? (
             <input
@@ -262,7 +265,7 @@ export function ProjectManagerDeviceTab({
           ) : (
             <>
               <p className="text-foreground truncate text-sm font-medium">
-                {p.title || t("projectManager.device.fallback.untitled")}
+                {projectTitle}
               </p>
               {!isRenaming && !isConfirming ? (
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -685,14 +688,14 @@ export function ProjectManagerDeviceTab({
             {mobileActionProject ? (
               <div className="pb-5">
                 <MobileDrawerHeader
-                  title={
-                    mobileActionProject.title ||
+                  title={getDisplayTitle(
+                    mobileActionProject.title,
                     t("projectManager.device.fallback.untitled")
-                  }
+                  )}
                   subtitle={t(
                     "projectManager.device.meta.onThisDeviceSubtitle",
                     {
-                      itemLabel: itemLabel(mobileActionProject.shapeCount),
+                      itemLabel: itemLabel(mobileActionProject.shapeCount, t),
                     }
                   )}
                   className="bg-background"

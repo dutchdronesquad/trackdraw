@@ -8,6 +8,7 @@ import {
   CurrentBadge,
   EmptyState,
   formatRelativeTime,
+  getDisplayTitle,
   itemLabel,
   ProjectAvatar,
   ProjectIdCopyRow,
@@ -107,9 +108,13 @@ export function ProjectManagerAccountTab({
         const hasSyncFailure = syncMeta?.status === "failed";
         const hasPendingChanges = syncMeta?.status === "pending";
         const lastSyncedAt = syncMeta?.lastSyncedAt ?? proj.updatedAt;
+        const projectTitle = getDisplayTitle(
+          proj.title,
+          t("projectManager.account.fallback.untitled")
+        );
         const fallbackLine = syncMeta?.fallbackSavedAt
           ? t("projectManager.account.messages.localCopySavedAfterFailure", {
-              relativeTime: formatRelativeTime(syncMeta.fallbackSavedAt),
+              relativeTime: formatRelativeTime(syncMeta.fallbackSavedAt, t),
             })
           : null;
         const metaLine = hasConflict
@@ -120,8 +125,13 @@ export function ProjectManagerAccountTab({
               syncMeta?.error ??
               t("projectManager.account.messages.syncError"))
             : hasPendingChanges
-              ? `${itemLabel(proj.shapeCount)} · account copy waiting to sync`
-              : `${itemLabel(proj.shapeCount)} · account copy synced ${formatRelativeTime(lastSyncedAt)}`;
+              ? t("projectManager.account.meta.accountCopyWaitingToSync", {
+                  itemLabel: itemLabel(proj.shapeCount, t),
+                })
+              : t("projectManager.account.meta.accountCopySynced", {
+                  itemLabel: itemLabel(proj.shapeCount, t),
+                  relativeTime: formatRelativeTime(lastSyncedAt, t),
+                });
 
         return (
           <div
@@ -141,10 +151,10 @@ export function ProjectManagerAccountTab({
                 : "border-border/60 bg-background/70 hover:bg-muted/40 cursor-pointer"
             )}
           >
-            <ProjectAvatar id={proj.id} title={proj.title || "?"} />
+            <ProjectAvatar id={proj.id} title={projectTitle} />
             <div className="min-w-0 flex-1">
               <p className="text-foreground truncate text-sm font-medium">
-                {proj.title || t("projectManager.account.fallback.untitled")}
+                {projectTitle}
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
                 {isCurrent ? <CurrentBadge /> : null}
@@ -205,10 +215,22 @@ export function ProjectManagerAccountTab({
                   className="text-muted-foreground hover:text-foreground hover:bg-muted flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors"
                   aria-label={
                     hasConflict
-                      ? `Resolve version conflict for ${proj.title || "project"}`
+                      ? t(
+                          "projectManager.account.aria.resolveVersionConflictFor",
+                          {
+                            title: projectTitle,
+                          }
+                        )
                       : hasSyncFailure
-                        ? `Retry sync for ${proj.title || "project"}`
-                        : `Sync pending changes for ${proj.title || "project"}`
+                        ? t("projectManager.account.aria.retrySyncFor", {
+                            title: projectTitle,
+                          })
+                        : t(
+                            "projectManager.account.aria.syncPendingChangesFor",
+                            {
+                              title: projectTitle,
+                            }
+                          )
                   }
                   title={
                     hasConflict

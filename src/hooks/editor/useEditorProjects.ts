@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   createRestorePoint,
   deleteProject,
@@ -40,20 +41,32 @@ function toLocalSaveError(error: unknown) {
   return new Error("Could not save local project data.");
 }
 
-function getSharedEditableCopyTitle(title: string) {
+function getSharedEditableCopyTitle(
+  title: string,
+  tShell: (
+    key: string,
+    values?: Record<string, string | number | Date>
+  ) => string
+) {
   const trimmed = title.trim();
-  if (!trimmed) return "Untitled track copy";
+  if (!trimmed) return tShell("untitledTrackCopy");
   if (/^copy of /i.test(trimmed)) return trimmed;
-  return `Copy of ${trimmed}`;
+  return tShell("copyOfTitle", { title: trimmed });
 }
 
-function createSharedEditableCopy(design: TrackDesign): TrackDesign {
+function createSharedEditableCopy(
+  design: TrackDesign,
+  tShell: (
+    key: string,
+    values?: Record<string, string | number | Date>
+  ) => string
+): TrackDesign {
   const timestamp = nowIso();
 
   return {
     ...design,
     id: nanoid(),
-    title: getSharedEditableCopyTitle(design.title),
+    title: getSharedEditableCopyTitle(design.title, tShell),
     createdAt: timestamp,
     updatedAt: timestamp,
   };
@@ -76,65 +89,71 @@ export function useEditorProjects({
   replaceDesign: (design: TrackDesign) => void;
   onSeedTokenImported?: () => void;
 }) {
+  const tShell = useTranslations("editor.shell");
   const [projects, setProjects] = useState<ProjectMeta[]>([]);
   const [restorePoints, setRestorePoints] = useState<RestorePointMeta[]>([]);
   const [activeRestorePointId, setActiveRestorePointId] = useState<
     string | null
   >(null);
-  const [saveStatusLabel, setSaveStatusLabel] = useState("Saving locally…");
+  const [saveStatusLabel, setSaveStatusLabel] = useState(
+    tShell("savingLocally")
+  );
   const [lastSnapshotLabel, setLastSnapshotLabel] = useState<string | null>(
     null
   );
   const [initialized, setInitialized] = useState(false);
 
-  const saveDesignLocally = useCallback((targetDesign: TrackDesign) => {
-    const startedAt = performance.now();
-    const draftResult = saveLocalDraft(targetDesign);
-    const projectResult = saveProjectWithResult(targetDesign);
+  const saveDesignLocally = useCallback(
+    (targetDesign: TrackDesign) => {
+      const startedAt = performance.now();
+      const draftResult = saveLocalDraft(targetDesign);
+      const projectResult = saveProjectWithResult(targetDesign);
 
-    if (!draftResult.ok || !projectResult.ok) {
-      throw toLocalSaveError(draftResult.error ?? projectResult.error);
-    }
+      if (!draftResult.ok || !projectResult.ok) {
+        throw toLocalSaveError(draftResult.error ?? projectResult.error);
+      }
 
-    setProjects(listProjects());
-    recordPerfSample("autosave:localStorage", performance.now() - startedAt);
-    setSaveStatusLabel(`Saved locally at ${formatLocalSaveTime()}`);
-  }, []);
+      setProjects(listProjects());
+      recordPerfSample("autosave:localStorage", performance.now() - startedAt);
+      setSaveStatusLabel(
+        tShell("savedLocallyAt", { time: formatLocalSaveTime() })
+      );
+    },
+    [tShell]
+  );
 
   const reportLocalSaveFailure = useCallback(
     (error: unknown, onRecovered?: () => void) => {
       const localSaveError = toLocalSaveError(error);
 
-      setSaveStatusLabel("Local autosave failed");
+      setSaveStatusLabel(tShell("localAutosaveFailed"));
       console.error("[TrackDraw local autosave]", localSaveError);
-      toast.error("Local autosave failed", {
-        description:
-          "The latest edits are still on the canvas, but TrackDraw could not save a local copy. Retry now, or export a JSON backup before leaving this browser.",
+      toast.error(tShell("localAutosaveFailed"), {
+        description: tShell("localAutosaveFailedDescription"),
         action: {
-          label: "Retry",
+          label: tShell("retry"),
           onClick: () => {
             try {
               saveDesignLocally(useEditor.getState().track.design);
               onRecovered?.();
-              toast.success("Local autosave recovered", {
-                description: "The latest local copy was saved.",
+              toast.success(tShell("localAutosaveRecovered"), {
+                description: tShell("latestLocalCopySaved"),
               });
             } catch (retryError) {
-              setSaveStatusLabel("Local autosave failed");
+              setSaveStatusLabel(tShell("localAutosaveFailed"));
               console.error(
                 "[TrackDraw local autosave retry]",
                 toLocalSaveError(retryError)
               );
-              toast.error("Local autosave still failing", {
-                description:
-                  "Export a JSON backup before making more changes if browser storage keeps failing.",
+              toast.error(tShell("localAutosaveStillFailing"), {
+                description: tShell("localAutosaveStillFailingDescription"),
               });
             }
           },
         },
       });
     },
-    [saveDesignLocally]
+    [saveDesignLocally, tShell]
   );
 
   // Load persisted design on mount
@@ -145,7 +164,7 @@ export function useEditorProjects({
     if (seedToken) {
       const shared = decodeDesign(seedToken);
       if (shared) {
-        const editableCopy = createSharedEditableCopy(shared);
+        const editableCopy = createSharedEditableCopy(shared, tShell);
         replaceDesign(editableCopy);
         try {
           const startedAt = performance.now();
@@ -162,7 +181,7 @@ export function useEditorProjects({
           );
           onSeedTokenImported?.();
           // oxlint-disable-next-line react/react-compiler -- report the completed import
-          setSaveStatusLabel("Editable copy created");
+          setSaveStatusLabel(tShell("editableCopyCreated"));
         } catch (error) {
           reportLocalSaveFailure(error, onSeedTokenImported);
         } finally {
@@ -181,15 +200,15 @@ export function useEditorProjects({
       const draft = loadLocalDraft();
       if (draft) {
         replaceDesign(draft);
-        setSaveStatusLabel("Restored from local draft");
+        setSaveStatusLabel(tShell("restoredFromLocalDraft"));
         setProjects(listProjects());
         setRestorePoints(listRestorePointsForProject(draft.id));
         setInitialized(true);
         return;
       }
-      setSaveStatusLabel("Fresh local project");
+      setSaveStatusLabel(tShell("freshLocalProject"));
     } catch {
-      setSaveStatusLabel("Fresh local project");
+      setSaveStatusLabel(tShell("freshLocalProject"));
     }
     setProjects(listProjects());
     setRestorePoints(listRestorePointsForProject(design.id));
@@ -223,6 +242,7 @@ export function useEditorProjects({
     readOnly,
     reportLocalSaveFailure,
     saveDesignLocally,
+    tShell,
   ]);
 
   // Periodic restore points — every 5 min if the design changed
@@ -250,13 +270,13 @@ export function useEditorProjects({
       hour: "2-digit",
       minute: "2-digit",
     }).format(new Date());
-    const nextSnapshotLabel = `Snapshot saved at ${time}`;
+    const nextSnapshotLabel = tShell("snapshotSavedAt", { time });
     setSaveStatusLabel(nextSnapshotLabel);
     setLastSnapshotLabel(nextSnapshotLabel);
-    toast.success("Snapshot saved", {
-      description: `Restore point created at ${time}`,
+    toast.success(tShell("snapshotSaved"), {
+      description: tShell("restorePointCreatedAt", { time }),
     });
-  }, [design]);
+  }, [design, tShell]);
 
   const handleOpenProject = useCallback(
     (id: string) => {
@@ -272,9 +292,9 @@ export function useEditorProjects({
       setProjects(listProjects());
       setRestorePoints(listRestorePointsForProject(loaded.id));
       setActiveRestorePointId(null);
-      setSaveStatusLabel("Project opened");
+      setSaveStatusLabel(tShell("projectOpened"));
     },
-    [design, replaceDesign]
+    [design, replaceDesign, tShell]
   );
 
   const handleDeleteProject = useCallback(
@@ -318,9 +338,9 @@ export function useEditorProjects({
       replaceDesign(loaded);
       setRestorePoints(listRestorePointsForProject(loaded.id));
       setActiveRestorePointId(id);
-      setSaveStatusLabel("Restored from snapshot");
+      setSaveStatusLabel(tShell("restoredFromSnapshot"));
     },
-    [replaceDesign]
+    [replaceDesign, tShell]
   );
 
   const handleDeleteRestorePoint = useCallback(

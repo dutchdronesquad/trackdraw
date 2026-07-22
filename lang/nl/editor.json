@@ -228,7 +228,24 @@
       }
     },
     "starterLayouts": {
-      "label": "Startlayouts"
+      "label": "Startlayouts",
+      "layouts": {
+        "open-practice": {
+          "name": "Open practice",
+          "title": "Open Practice Layout",
+          "description": "Open flow with a start area and room to build your own lap."
+        },
+        "compact-race-start": {
+          "name": "Compact race start",
+          "title": "Compact Race Start",
+          "description": "Tight opening with an immediate gate line and early turn."
+        },
+        "technical-ladder-line": {
+          "name": "Technical ladder line",
+          "title": "Technical Ladder Line",
+          "description": "First gate, two ladders, and a follow-up gate for quick rhythm."
+        }
+      }
     },
     "guided": {
       "label": "Begeleide start",
@@ -426,6 +443,26 @@
   "shell": {
     "untitledTrack": "Naamloze track",
     "untitledFallback": "Naamloos",
+    "untitledTrackCopy": "Kopie van naamloze track",
+    "copyOfTitle": "Kopie van {title}",
+    "savingLocally": "Lokaal opslaan…",
+    "savedLocallyAt": "Lokaal opgeslagen om {time}",
+    "localAutosaveFailed": "Lokale automatische opslag mislukt",
+    "localAutosaveFailedDescription": "De nieuwste wijzigingen staan nog op het canvas, maar TrackDraw kon geen lokale kopie opslaan. Probeer het nu opnieuw of exporteer een JSON-back-up voordat je deze browser verlaat.",
+    "retry": "Opnieuw proberen",
+    "localAutosaveRecovered": "Lokale automatische opslag hersteld",
+    "latestLocalCopySaved": "De nieuwste lokale kopie is opgeslagen.",
+    "localAutosaveStillFailing": "Lokale automatische opslag blijft mislukken",
+    "localAutosaveStillFailingDescription": "Exporteer een JSON-back-up voordat je meer wijzigingen maakt als browseropslag blijft falen.",
+    "editableCopyCreated": "Bewerkbare kopie gemaakt",
+    "restoredFromLocalDraft": "Hersteld vanuit lokaal concept",
+    "freshLocalProject": "Nieuw lokaal project",
+    "editing": "Bezig met bewerken…",
+    "snapshotSaved": "Snapshot opgeslagen",
+    "snapshotSavedAt": "Snapshot opgeslagen om {time}",
+    "restorePointCreatedAt": "Herstelpunt aangemaakt om {time}",
+    "projectOpened": "Project geopend",
+    "restoredFromSnapshot": "Hersteld vanuit snapshot",
     "exportFailed": "Exporteren mislukt",
     "exportFailedDescription": "{message} Probeer opnieuw, of open Exporteren en download daar een project-JSON-back-up.",
     "exportFailedNoProjectDescription": "TrackDraw kon dit lokale project niet laden. Open het eerst of kies een ander opgeslagen project.",

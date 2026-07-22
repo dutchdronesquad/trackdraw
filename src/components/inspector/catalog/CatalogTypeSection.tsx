@@ -8,12 +8,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  getTrackElementCatalogDimensionsLabel,
+  getTrackElementCatalogName,
   type TrackElementCatalogEntry,
   type TrackElementCatalogId,
   type TrackElementCatalogIdentity,
 } from "@/lib/track/elements/catalog";
 import { Row, Section } from "@/components/inspector/shared";
 import { useTranslations } from "next-intl";
+import type { Translate } from "@/lib/track/items/registry";
 
 interface CatalogTypeSectionProps {
   activeEntryId: TrackElementCatalogId;
@@ -34,6 +37,7 @@ export function CatalogTypeSection({
 }: CatalogTypeSectionProps) {
   const t = useTranslations("inspector");
   const tCommon = useTranslations("common");
+  const tShapes = useTranslations("shapes") as unknown as Translate;
   return (
     <Section title={t("catalog.sectionTitle")} defaultOpen>
       <Row label={tCommon("labels.type")}>
@@ -52,7 +56,7 @@ export function CatalogTypeSection({
                 value={entry.id}
                 className="text-xs lg:text-[11px]"
               >
-                {entry.name}
+                {getTrackElementCatalogName(entry, tShapes)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -79,7 +83,10 @@ export function CatalogTypeSection({
       {catalogIdentity ? (
         <Row label={t("catalog.sizeLabel")}>
           <span className="text-foreground text-[12px]">
-            {catalogIdentity.snapshot.dimensionsLabel}
+            {getTrackElementCatalogDimensionsLabel(
+              catalogIdentity.elementId,
+              tShapes
+            )}
           </span>
         </Row>
       ) : null}

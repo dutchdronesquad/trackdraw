@@ -177,6 +177,7 @@
     },
     "meta": {
       "itemsCount": "{count} Elemente",
+      "grid": "Raster {grid}",
       "buildable": "baubar",
       "shortItems": "{count, plural, one {1 Element fehlt} other {{count} Elemente fehlen}}",
       "stockCovered": "Bestand gedeckt",

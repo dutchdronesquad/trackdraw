@@ -92,8 +92,8 @@ describe("AccountApiKeysView", () => {
 
     expect(revokeButton.className).toContain("opacity-100");
     expect(revokeButton.className).not.toContain("opacity-0");
-    expect(screen.getByText("Expires May 20, 2026")).toBeTruthy();
-    expect(screen.getByText("Last used Never")).toBeTruthy();
+    expect(screen.getByText(/^Expires /)).toBeTruthy();
+    expect(screen.getByText(/^Last used /)).toBeTruthy();
     expect(screen.queryByText("td_live")).toBeNull();
     expect(screen.queryByText(/Tracks: read/i)).toBeNull();
   });

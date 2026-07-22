@@ -10,23 +10,46 @@ import {
   TooltipTrigger,
 } from "@/components/AppTooltip";
 
-export function formatRelativeTime(iso: string): string {
+type DialogsTranslate = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
+
+export function formatRelativeTime(iso: string, t: DialogsTranslate): string {
   try {
     const diff = Date.now() - new Date(iso).getTime();
     const minutes = Math.floor(diff / 60_000);
-    if (minutes < 1) return "just now";
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 1) return t("projectManager.shared.relativeTime.justNow");
+    if (minutes < 60) {
+      return t("projectManager.shared.relativeTime.minutes", {
+        count: minutes,
+      });
+    }
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) {
+      return t("projectManager.shared.relativeTime.hours", { count: hours });
+    }
     const days = Math.floor(hours / 24);
-    return `${days}d ago`;
+    return t("projectManager.shared.relativeTime.days", { count: days });
   } catch {
     return "";
   }
 }
 
-export function itemLabel(count: number): string {
-  return count === 1 ? "1 item" : `${count} items`;
+export function itemLabel(count: number, t: DialogsTranslate): string {
+  return t("projectManager.shared.itemCount", { count });
+}
+
+export function getDisplayTitle(
+  title: string | null | undefined,
+  untitledLabel: string
+): string {
+  const trimmed = title?.trim() ?? "";
+  return trimmed || untitledLabel;
+}
+
+export function getEditableTitle(title: string | null | undefined): string {
+  return title?.trim() ?? "";
 }
 
 const AVATAR_COLORS = [
@@ -91,10 +114,11 @@ export function EmptyState({
   );
 }
 
-export function CurrentBadge({ label = "current" }: { label?: string }) {
+export function CurrentBadge({ label }: { label?: string }) {
+  const t = useTranslations("dialogs");
   return (
     <span className="bg-muted text-foreground/75 inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-wide">
-      {label}
+      {label ?? t("projectManager.shared.currentBadge")}
     </span>
   );
 }
