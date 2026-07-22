@@ -2,6 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "main": "./custom-worker.ts",
   "minify": true,
+  "upload_source_maps": true,
   "name": "trackdraw",
   "compatibility_date": "2026-03-27",
   "compatibility_flags": ["nodejs_compat"],
@@ -41,6 +42,7 @@
   },
   "env": {
     "dev": {
+      "minify": false,
       "name": "trackdraw-dev",
       "observability": {
         "enabled": true,
