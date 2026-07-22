@@ -63,10 +63,7 @@ export function getStateVariant(
   return "outline";
 }
 
-export function getStateLabel(
-  state: GalleryState,
-  tCommon: Translate
-) {
+export function getStateLabel(state: GalleryState, tCommon: Translate) {
   switch (state) {
     case "listed":
       return tCommon("status.listed");
