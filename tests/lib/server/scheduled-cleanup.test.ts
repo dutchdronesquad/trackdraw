@@ -165,4 +165,41 @@ describe("scheduled cleanup", () => {
       "sensitive rejection value"
     );
   });
+
+  it("normalizes, bounds, and defaults Error messages before logging", async () => {
+    const logger = createLogger();
+    const tasks: ScheduledCleanupTask[] = [
+      {
+        name: "shares",
+        run: vi.fn(async () => {
+          throw new Error(`  D1 cleanup failed\n\t${"x".repeat(250)}  `);
+        }),
+      },
+      {
+        name: "api_keys",
+        run: vi.fn(async () => {
+          throw new Error("  \n\t  ");
+        }),
+      },
+    ];
+
+    await expect(
+      runScheduledCleanup(scheduledContext, tasks, {
+        logger,
+        now: () => 100,
+      })
+    ).rejects.toBeInstanceOf(ScheduledCleanupError);
+
+    const taskLogs = logger.error.mock.calls
+      .map(parseLogCall)
+      .filter((entry) => entry.event === "scheduled_cleanup_task");
+    const normalizedMessage = String(taskLogs[0].error_message);
+    expect(normalizedMessage).toHaveLength(200);
+    expect(normalizedMessage).toMatch(/^D1 cleanup failed x+$/);
+    expect(normalizedMessage).not.toMatch(/[\r\n\t]/);
+    expect(taskLogs[1]).toMatchObject({
+      task: "api_keys",
+      error_message: "Cleanup task failed without an error message",
+    });
+  });
 });

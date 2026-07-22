@@ -25,6 +25,9 @@ type ScheduledCleanupContext = {
 
 type ScheduledCleanupLogger = Pick<Console, "error" | "log">;
 
+const MAX_ERROR_MESSAGE_LENGTH = 200;
+const EMPTY_ERROR_MESSAGE = "Cleanup task failed without an error message";
+
 type ScheduledCleanupTaskSuccess = {
   event: "scheduled_cleanup_task";
   message: "Scheduled cleanup task completed";
@@ -110,9 +113,12 @@ function getDeletedRows(result: unknown) {
 
 function getErrorDetails(error: unknown) {
   if (error instanceof Error) {
+    const normalizedMessage = error.message.replace(/\s+/g, " ").trim();
     return {
       error_name: error.name,
-      error_message: error.message,
+      error_message:
+        normalizedMessage.slice(0, MAX_ERROR_MESSAGE_LENGTH) ||
+        EMPTY_ERROR_MESSAGE,
     };
   }
 
