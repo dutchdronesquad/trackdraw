@@ -84,6 +84,18 @@ describe("dashboard metrics", () => {
     expect(String(mocks.prepare.mock.calls[1][0])).toContain(
       "not exists (\n            select 1 from product_events"
     );
+    expect(String(mocks.prepare.mock.calls[1][0])).toContain(
+      "strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')"
+    );
+    expect(String(mocks.prepare.mock.calls[2][0])).not.toMatch(
+      /(updated_at|published_at|created_at|lastRequest)\s*>\s*datetime\(/
+    );
+    expect(String(mocks.prepare.mock.calls[5][0])).toContain(
+      "expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"
+    );
+    expect(String(mocks.prepare.mock.calls[5][0])).not.toContain(
+      "expires_at > datetime('now')"
+    );
   });
 
   it("builds activation, content, usage, and retention insights", async () => {
@@ -211,6 +223,14 @@ describe("dashboard metrics", () => {
     expect(String(mocks.prepare.mock.calls[10][0])).toContain(
       "pe.event_type = 'editor.session_started'"
     );
+    const productEventQueries = mocks.prepare.mock.calls
+      .map(([query]) => String(query))
+      .filter((query) => query.includes("product_events"))
+      .join("\n");
+    expect(productEventQueries).toContain(
+      "strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')"
+    );
+    expect(productEventQueries).not.toMatch(/created_at\s*[<>]=?\s*datetime\(/);
   });
 
   it("uses calendar month buckets in overview stats and tolerates incomplete recent user rows", async () => {

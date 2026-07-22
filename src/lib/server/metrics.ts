@@ -171,7 +171,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         `
         select
           count(*) as total,
-          sum(case when createdAt > datetime('now', '-7 days') then 1 else 0 end) as new_this_week,
+          sum(case when createdAt > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-7 days') then 1 else 0 end) as new_this_week,
           sum(case when createdAt >= date('now', 'start of month') then 1 else 0 end) as new_this_month
         from users
       `
@@ -191,22 +191,22 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
           and not exists (
             select 1 from shares s
             where s.owner_user_id = u.id
-              and s.published_at > datetime('now', '-30 days')
+              and s.published_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           )
           and not exists (
             select 1 from layout_presets lp
             where lp.owner_user_id = u.id
-              and lp.updated_at > datetime('now', '-30 days')
+              and lp.updated_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           )
           and not exists (
             select 1 from product_events pe
             where pe.user_id = u.id
-              and pe.created_at > datetime('now', '-30 days')
+              and pe.created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           )
           and not exists (
             select 1 from apikey ak
             where ak.referenceId = u.id
-              and ak.lastRequest > datetime('now', '-30 days')
+              and ak.lastRequest > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           )
       `
       )
@@ -220,23 +220,23 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         where exists (
           select 1 from projects p
           where p.owner_user_id = u.id
-            and p.updated_at > datetime('now', '-30 days')
+            and p.updated_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         ) or exists (
           select 1 from shares s
           where s.owner_user_id = u.id
-            and s.published_at > datetime('now', '-30 days')
+            and s.published_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         ) or exists (
           select 1 from layout_presets lp
           where lp.owner_user_id = u.id
-            and lp.updated_at > datetime('now', '-30 days')
+            and lp.updated_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         ) or exists (
           select 1 from product_events pe
           where pe.user_id = u.id
-            and pe.created_at > datetime('now', '-30 days')
+            and pe.created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         ) or exists (
           select 1 from apikey ak
           where ak.referenceId = u.id
-            and ak.lastRequest > datetime('now', '-30 days')
+            and ak.lastRequest > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         )
       `
       )
@@ -275,8 +275,8 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         `
         select
           count(*) as total,
-          sum(case when revoked_at is null and (expires_at is null or expires_at > datetime('now')) then 1 else 0 end) as total_active,
-          sum(case when revoked_at is null and expires_at is not null and expires_at <= datetime('now') then 1 else 0 end) as expired,
+          sum(case when revoked_at is null and (expires_at is null or expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) then 1 else 0 end) as total_active,
+          sum(case when revoked_at is null and expires_at is not null and expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ', 'now') then 1 else 0 end) as expired,
           sum(case when revoked_at is not null then 1 else 0 end) as revoked
         from shares
         where owner_user_id is not null
@@ -298,7 +298,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         from (
           select owner_user_id, count(*) as cnt
           from shares
-          where revoked_at is null and (expires_at is null or expires_at > datetime('now')) and owner_user_id is not null
+          where revoked_at is null and (expires_at is null or expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) and owner_user_id is not null
           group by owner_user_id
         )
       `
@@ -371,7 +371,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         left join (
           select owner_user_id, count(*) as cnt
           from shares
-          where revoked_at is null and (expires_at is null or expires_at > datetime('now')) and owner_user_id is not null
+          where revoked_at is null and (expires_at is null or expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) and owner_user_id is not null
           group by owner_user_id
         ) s on s.owner_user_id = u.id
         left join (
@@ -511,14 +511,14 @@ export async function getProductInsights(): Promise<ProductInsights> {
         `
           select
             event_type,
-            sum(case when created_at > datetime('now', '-30 days') then 1 else 0 end) as count,
+            sum(case when created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days') then 1 else 0 end) as count,
             sum(case
-              when created_at > datetime('now', '-60 days')
-                and created_at <= datetime('now', '-30 days')
+              when created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-60 days')
+                and created_at <= strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
               then 1 else 0
             end) as previous_count
           from product_events
-          where created_at > datetime('now', '-60 days')
+          where created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-60 days')
           group by event_type
         `
       )
@@ -544,7 +544,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             count(*) as count
           from product_events
           where event_type = 'export.completed'
-            and created_at > datetime('now', '-30 days')
+            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           group by format
           order by count desc, format
         `
@@ -558,7 +558,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             sum(coalesce(json_extract(metadata_json, '$.count'), 1)) as count
           from product_events
           where event_type = 'editor.element_placed'
-            and created_at > datetime('now', '-30 days')
+            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           group by kind
           order by count desc, kind
         `
@@ -572,7 +572,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             count(*) as count
           from product_events
           where event_type = 'share.viewed'
-            and created_at > datetime('now', '-30 days')
+            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
           group by surface
           order by count desc, surface
         `
@@ -586,7 +586,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             coalesce(round(avg(cast(json_extract(metadata_json, '$.shapeCount') as real)), 1), 0) as avg_shapes
           from product_events
           where event_type = 'project.imported'
-            and created_at > datetime('now', '-30 days')
+            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         `
       )
       .first<{ imported_shapes: number; avg_shapes: number }>(),
@@ -598,7 +598,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
             count(distinct case when user_id is not null then session_id end) as account_sessions
           from product_events
           where event_type = 'editor.session_started'
-            and created_at > datetime('now', '-30 days')
+            and created_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         `
       )
       .first<{ anonymous_sessions: number; account_sessions: number }>(),
@@ -607,7 +607,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
         `
           select count(*) as keys_used
           from apikey
-          where lastRequest > datetime('now', '-30 days')
+          where lastRequest > strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')
         `
       )
       .first<{ keys_used: number }>(),
@@ -621,15 +621,15 @@ export async function getProductInsights(): Promise<ProductInsights> {
               select 1 from product_events pe
               where pe.user_id = u.id
                 and pe.event_type = 'editor.session_started'
-                and pe.created_at >= datetime(u.createdAt, '+1 day')
-                and pe.created_at < datetime(u.createdAt, '+8 days')
+                and pe.created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+1 day')
+                and pe.created_at < strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+8 days')
             ) then 1 else 0 end) as retained7d,
             sum(case when exists (
               select 1 from product_events pe
               where pe.user_id = u.id
                 and pe.event_type = 'editor.session_started'
-                and pe.created_at >= datetime(u.createdAt, '+1 day')
-                and pe.created_at < datetime(u.createdAt, '+31 days')
+                and pe.created_at >= strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+1 day')
+                and pe.created_at < strftime('%Y-%m-%dT%H:%M:%fZ', u.createdAt, '+31 days')
             ) then 1 else 0 end) as retained30d
           from users u
           where u.createdAt >= date('now', 'start of month', '-5 months')
@@ -757,9 +757,9 @@ export async function getOverviewStats(): Promise<OverviewStats> {
             count(*) as count,
             coalesce(sum(case when created_at >= date('now', 'start of month') then 1 else 0 end), 0) as new_this_month,
             coalesce(sum(case when created_at >= date('now', 'start of month', '-1 month') and created_at < date('now', 'start of month') then 1 else 0 end), 0) as new_last_month
-           from shares
-           where revoked_at is null
-             and (expires_at is null or expires_at > datetime('now'))
+          from shares
+          where revoked_at is null
+             and (expires_at is null or expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
              and owner_user_id is not null`
         )
         .first<{
