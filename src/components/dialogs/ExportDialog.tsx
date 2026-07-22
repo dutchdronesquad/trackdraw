@@ -29,9 +29,10 @@ import {
 import { toast } from "sonner";
 import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPreview3D";
 import { useTheme } from "@/hooks/useTheme";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Translate } from "@/lib/editor/tool-registry";
 import { trackProductEvent } from "@/lib/product-events";
+import { defaultLocale, isValidLocale } from "@/lib/i18n/locales";
 
 export interface ExportDialogProps {
   open: boolean;
@@ -479,6 +480,8 @@ export default function ExportDialog({
   onRequest3DView,
   projectId = null,
 }: ExportDialogProps) {
+  const resolvedLocale = useLocale();
+  const locale = isValidLocale(resolvedLocale) ? resolvedLocale : defaultLocale;
   const t = useTranslations("dialogs");
   const tExportPdf = useTranslations("exportPdf") as unknown as Translate;
   const tSetupEstimate = useTranslations(
@@ -802,6 +805,7 @@ export default function ExportDialog({
               { t: tExportPdf, tSetup: tSetupEstimate, tShapes },
               {
                 includeObstacleNumbers,
+                locale,
                 preset: "race-day",
                 shareUrl,
                 unitSystem,

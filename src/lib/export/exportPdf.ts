@@ -1,5 +1,6 @@
 import type Konva from "konva";
 import { jsPDF } from "@/lib/vendor/jspdf";
+import type { SupportedLocale } from "@/lib/i18n/locales";
 import {
   getRequiredInventoryCounts,
   inventoryKinds,
@@ -16,8 +17,10 @@ import {
   type Export2DOptions,
   type ExportTheme,
 } from "./exportSvg";
+import { configurePdfFont, setPdfFont } from "./pdf-font";
 
 export type ExportPdfOptions = Export2DOptions & {
+  locale?: SupportedLocale;
   shareUrl?: string | null;
 };
 
@@ -34,6 +37,23 @@ const BORDER: [number, number, number] = [215, 223, 235];
 const PANEL: [number, number, number] = [245, 248, 252];
 const WARN: [number, number, number] = [180, 83, 9];
 const BRAND_LOGO_ASPECT = 1027 / 200;
+
+function formatPdfDate(locale: SupportedLocale | undefined) {
+  const dateLocale =
+    locale === "zh"
+      ? "zh-CN"
+      : locale === "nl"
+        ? "nl-NL"
+        : locale === "de"
+          ? "de-DE"
+          : "en-GB";
+
+  return new Date().toLocaleDateString(dateLocale, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 async function loadSvgAsPng(
   svgUrl: string,
@@ -114,7 +134,7 @@ function drawPageFooter(
   pdf.setLineWidth(0.25);
   pdf.line(margin, footerY - 3.5, pageW - margin, footerY - 3.5);
 
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(7);
   pdf.setTextColor(...MUTED);
   pdf.text(t("footer.brand", { pageLabel }), margin, footerY);
@@ -149,7 +169,7 @@ function drawSectionTitle(
   y: number,
   w: number
 ) {
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(9);
   pdf.setTextColor(...MUTED);
   pdf.text(title.toUpperCase(), x, y);
@@ -182,11 +202,11 @@ function drawInfoCard(
   pdf.setDrawColor(...BORDER);
   pdf.setLineWidth(0.25);
   pdf.roundedRect(x, y, w, h, 3, 3, "FD");
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(7);
   pdf.setTextColor(...MUTED);
   pdf.text(label.toUpperCase(), x + 4, y + 6);
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(13);
   pdf.setTextColor(...(tone === "warn" ? WARN : INK));
   pdf.text(value, x + 4, y + 14);
@@ -253,7 +273,7 @@ function drawSharedViewBlock(
   pdf.setLineWidth(0.25);
   pdf.roundedRect(x, y, w, h, 3, 3, "FD");
 
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(...MUTED);
   pdf.text(t("sharedView.title"), x + 4, y + 6.5);
@@ -266,11 +286,11 @@ function drawSharedViewBlock(
         x: x + w - qrSize - 4,
         y: y + 5,
       });
-      pdf.setFont("helvetica", "bold");
+      setPdfFont(pdf, "bold");
       pdf.setFontSize(11);
       pdf.setTextColor(...INK);
       pdf.text(t("sharedView.scanToOpen"), x + 4, y + 14);
-      pdf.setFont("helvetica", "normal");
+      setPdfFont(pdf, "normal");
       pdf.setFontSize(7.2);
       pdf.setTextColor(...MUTED);
       const lines = pdf.splitTextToSize(
@@ -284,11 +304,11 @@ function drawSharedViewBlock(
     }
   }
 
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(10);
   pdf.setTextColor(...INK);
   pdf.text(t("sharedView.noShare"), x + 4, y + 14);
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(7.5);
   pdf.setTextColor(...MUTED);
   const lines = pdf.splitTextToSize(t("sharedView.noShareDescription"), w - 8);
@@ -369,18 +389,18 @@ function drawRacePackCover(
   }
 
   y += 24;
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(26);
   pdf.setTextColor(...INK);
   pdf.text(t("cover.title"), margin, y);
 
   y += 9;
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(18);
   pdf.text(design.title.trim() || t("untitledTrack"), margin, y);
 
   y += 7;
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(10);
   pdf.setTextColor(...MUTED);
   pdf.text(
@@ -422,7 +442,7 @@ function drawRacePackCover(
   });
 
   y += 31;
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(9.5);
   pdf.setTextColor(...MUTED);
   const intro = pdf.splitTextToSize(t("cover.intro"), pageW - margin * 2);
@@ -442,7 +462,7 @@ function drawRacePackCover(
     t("cover.contentsItem2"),
     t("cover.contentsItem3"),
   ];
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(10.5);
   pdf.setTextColor(...INK);
   contents.forEach((line) => {
@@ -453,7 +473,7 @@ function drawRacePackCover(
   y += 8;
   drawSectionTitle(pdf, t("cover.summaryTitle"), margin, y, pageW - margin * 2);
   y += 10;
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(10);
   pdf.setTextColor(...MUTED);
   const summary =
@@ -494,12 +514,12 @@ function drawRacePackMapPage(
   const contentW = pageW - margin * 2;
   const contentH = pageH - margin * 2 - headerH - footerReserve;
 
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(18);
   pdf.setTextColor(...INK);
   pdf.text(t("mapPage.title"), margin, margin + 4);
 
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(9.5);
   pdf.setTextColor(...MUTED);
   pdf.text(design.title.trim() || t("untitledTrack"), margin, margin + 11);
@@ -520,7 +540,7 @@ function drawRacePackMapPage(
   pdf.roundedRect(imgX - 4, imgY - 4, imgW + 8, imgH + 8, 3, 3, "FD");
   pdf.addImage(mapDataUrl, "PNG", imgX, imgY, imgW, imgH);
 
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(8.2);
   pdf.setTextColor(...MUTED);
   const racePackWidthLabel = formatMeasurement(
@@ -573,13 +593,13 @@ function drawRacePackBuildSheet(
     drawSmallPageLogo(pdf, logoDataUrl);
     y = 18;
 
-    pdf.setFont("helvetica", "bold");
+    setPdfFont(pdf, "bold");
     pdf.setFontSize(20);
     pdf.setTextColor(...INK);
     pdf.text(t("buildSheet.title"), margin, y);
 
     y += 8;
-    pdf.setFont("helvetica", "normal");
+    setPdfFont(pdf, "normal");
     pdf.setFontSize(9.5);
     pdf.setTextColor(...MUTED);
     pdf.text(
@@ -604,7 +624,7 @@ function drawRacePackBuildSheet(
   drawSectionTitle(pdf, t("buildSheet.materialListTitle"), margin, y, contentW);
   y += 10;
 
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(...MUTED);
   pdf.text(t("buildSheet.obstacleColumn"), margin, y);
@@ -615,7 +635,7 @@ function drawRacePackBuildSheet(
   pdf.text(t("buildSheet.missingColumn"), margin + 148, y, { align: "right" });
   y += 5;
 
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(8.5);
   context.inventoryComparison.forEach((item) => {
     ensurePageSpace(7, t("buildSheet.materialListTitle"));
@@ -632,7 +652,7 @@ function drawRacePackBuildSheet(
   drawSectionTitle(pdf, t("buildSheet.timingPointsTitle"), margin, y, contentW);
   y += 10;
 
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(8.5);
   if (context.timingMarkers.length) {
     context.timingMarkers.forEach((item) => {
@@ -642,12 +662,12 @@ function drawRacePackBuildSheet(
       const detail = `${timingRoleLabels[item.marker.role]} · ${item.shape.name?.trim() || item.shape.kind} · ${formatMeasurement(item.shape.x, context.unitSystem, { precision: 1 })}, ${formatMeasurement(item.shape.y, context.unitSystem, { precision: 1 })}`;
       ensurePageSpace(12, t("buildSheet.timingPointsTitle"));
       pdf.setTextColor(...INK);
-      pdf.setFont("helvetica", "bold");
+      setPdfFont(pdf, "bold");
       pdf.text(item.badgeText, margin, y);
       pdf.text(title, margin + 16, y);
       y += 4.5;
       pdf.setTextColor(...MUTED);
-      pdf.setFont("helvetica", "normal");
+      setPdfFont(pdf, "normal");
       pdf.text(detail, margin + 16, y);
       y += 6;
     });
@@ -668,7 +688,7 @@ function drawRacePackBuildSheet(
   );
   y += 10;
 
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(8.8);
   pdf.setTextColor(...INK);
   const sequenceIntro = pdf.splitTextToSize(
@@ -710,9 +730,9 @@ function drawRacePackBuildSheet(
       ensurePageSpace(blockHeight, t("buildSheet.setupSequenceTitle"));
 
       pdf.setTextColor(...INK);
-      pdf.setFont("helvetica", "bold");
+      setPdfFont(pdf, "bold");
       pdf.text(`${index + 1}.`, margin, y);
-      pdf.setFont("helvetica", "bold");
+      setPdfFont(pdf, "bold");
       pdf.text(title, margin + 10, y);
       pdf.text(
         t("buildSheet.minutesSuffix", { minutes: item.estimatedMinutes }),
@@ -741,7 +761,7 @@ function drawRacePackBuildSheet(
   y += 8;
   drawSectionTitle(pdf, t("buildSheet.notesTitle"), margin, y, contentW);
   y += 10;
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(8.5);
   pdf.setTextColor(...MUTED);
   const notes = [
@@ -767,11 +787,8 @@ async function exportRacePackPdf(
 ) {
   const { t } = translate;
   const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-  const dateText = new Date().toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  await configurePdfFont(pdf, options?.locale);
+  const dateText = formatPdfDate(options?.locale);
   const logoDataUrl = await loadBrandLogo();
   const mapDataUrl = await renderDesignPngDataUrl(design, theme, options);
   if (!mapDataUrl) {
@@ -830,12 +847,13 @@ async function exportStandardPdf(
   filename: string,
   theme: ExportTheme,
   translate: ExportPdfTranslate,
-  options?: Export2DOptions
+  options?: ExportPdfOptions
 ) {
   const { t } = translate;
   const { width, height } = design.field;
   const orientation = width >= height ? "landscape" : "portrait";
   const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" });
+  await configurePdfFont(pdf, options?.locale);
   setPageBackground(pdf);
 
   const pageW = pdf.internal.pageSize.getWidth();
@@ -863,7 +881,7 @@ async function exportStandardPdf(
   pdf.roundedRect(imgX - 4, imgY - 4, imgW + 8, imgH + 8, 3, 3, "FD");
   pdf.addImage(dataUrl, "PNG", imgX, imgY, imgW, imgH);
 
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(7.5);
   pdf.setTextColor(...MUTED);
   const standardWidthLabel = formatMeasurement(
@@ -888,17 +906,13 @@ async function exportStandardPdf(
   pdf.setFillColor(...PANEL);
   pdf.setDrawColor(...BORDER);
   pdf.roundedRect(margin, footerY, availW, footerH, 2.5, 2.5, "FD");
-  const dateText = new Date().toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const dateText = formatPdfDate(options?.locale);
   const midY = footerY + footerH / 2 + 1.2;
-  pdf.setFont("helvetica", "bold");
+  setPdfFont(pdf, "bold");
   pdf.setFontSize(8);
   pdf.setTextColor(...MUTED);
   pdf.text(design.title.trim() || t("untitledTrack"), margin + 5, midY);
-  pdf.setFont("helvetica", "normal");
+  setPdfFont(pdf, "normal");
   pdf.setFontSize(7);
   pdf.text(
     formatFieldSize(width, height, options?.unitSystem ?? "metric"),

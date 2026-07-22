@@ -6,10 +6,13 @@ import { designToSvg } from "@/lib/export/exportSvg";
 
 const pdfMock = vi.hoisted(() => ({
   instances: [] as Array<{
+    addFileToVFSCalls: unknown[][];
+    addFontCalls: unknown[][];
     addImageCalls: unknown[][];
     pages: number;
     rectCalls: unknown[][];
     savedFilenames: string[];
+    setFontCalls: unknown[][];
     textCalls: unknown[][];
   }>,
 }));
@@ -23,10 +26,13 @@ vi.mock("@/lib/export/exportSvg", () => ({
 
 vi.mock("@/lib/vendor/jspdf", () => {
   class MockPdf {
+    addFileToVFSCalls: unknown[][] = [];
+    addFontCalls: unknown[][] = [];
     addImageCalls: unknown[][] = [];
     pages = 1;
     rectCalls: unknown[][] = [];
     savedFilenames: string[] = [];
+    setFontCalls: unknown[][] = [];
     textCalls: unknown[][] = [];
     internal = {
       pageSize: {
@@ -35,6 +41,12 @@ vi.mock("@/lib/vendor/jspdf", () => {
       },
     };
 
+    addFileToVFS(...args: unknown[]) {
+      this.addFileToVFSCalls.push(args);
+    }
+    addFont(...args: unknown[]) {
+      this.addFontCalls.push(args);
+    }
     addImage(...args: unknown[]) {
       this.addImageCalls.push(args);
     }
@@ -54,7 +66,9 @@ vi.mock("@/lib/vendor/jspdf", () => {
     }
     setDrawColor() {}
     setFillColor() {}
-    setFont() {}
+    setFont(...args: unknown[]) {
+      this.setFontCalls.push(args);
+    }
     setFontSize() {}
     setLineWidth() {}
     setPage() {}
@@ -85,11 +99,17 @@ import {
 } from "../../helpers/shapes-translate";
 import enExportPdf from "@lang/en/exportPdf.json";
 import enSetupEstimate from "@lang/en/setupEstimate.json";
+import zhExportPdf from "@lang/zh/exportPdf.json";
 
 const translate = {
   t: createTestTranslate(enExportPdf),
   tSetup: createTestTranslate(enSetupEstimate),
   tShapes: shapesTranslate,
+};
+
+const chineseTranslate = {
+  ...translate,
+  t: createTestTranslate(zhExportPdf),
 };
 
 const inventory = {
@@ -168,6 +188,7 @@ describe("exportPdf", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
@@ -206,6 +227,43 @@ describe("exportPdf", () => {
       pdf.textCalls.some((call) => call.includes("Standard PDF Smoke"))
     ).toBe(true);
     expect(pdf.textCalls.some((call) => call.includes("60 x 40 m"))).toBe(true);
+  });
+
+  it("registers and uses Noto Sans SC for Simplified Chinese PDFs", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-22T12:00:00.000Z"));
+    const design = createDefaultDesign();
+    design.title = "上海竞速赛道";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(new Uint8Array([0, 1, 0, 0])))
+    );
+
+    await exportPdf(
+      null as never,
+      design,
+      "chinese-track-map.pdf",
+      "light",
+      chineseTranslate,
+      { locale: "zh" }
+    );
+
+    const pdf = pdfMock.instances[0];
+    expect(pdf.addFileToVFSCalls).toHaveLength(1);
+    expect(pdf.addFontCalls).toContainEqual([
+      "NotoSansSC-VF.ttf",
+      "NotoSansSC",
+      "normal",
+      400,
+      "Identity-H",
+    ]);
+    expect(pdf.setFontCalls).toContainEqual(["NotoSansSC", "normal"]);
+    expect(pdf.textCalls.some((call) => call.includes("上海竞速赛道"))).toBe(
+      true
+    );
+    expect(pdf.textCalls.some((call) => call.includes("2026年7月22日"))).toBe(
+      true
+    );
   });
 
   it("passes dense practical layouts through Race Pack PDF rendering", async () => {
