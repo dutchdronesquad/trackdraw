@@ -37,6 +37,7 @@ export default async function PrivacyPage() {
             t("privacy.s2Item3"),
             t("privacy.s2Item4"),
             t("privacy.s2Item5"),
+            t("privacy.s2Item6"),
           ],
         },
       ],

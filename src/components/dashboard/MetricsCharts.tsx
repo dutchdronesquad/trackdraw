@@ -2,7 +2,7 @@
 
 import { forwardRef, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { CalendarIcon } from "lucide-react";
+import { ArrowRight, CalendarIcon, Search } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import {
   Area,
@@ -12,6 +12,7 @@ import {
   Cell,
   ComposedChart,
   Label,
+  Line,
   Pie,
   PieChart,
   XAxis,
@@ -48,7 +49,11 @@ import {
   type GrowthRange,
   type GrowthTimeline,
 } from "@/lib/metrics-growth";
-import type { AdminMetrics, GrowthByRange } from "@/lib/server/metrics";
+import type {
+  AdminMetrics,
+  GrowthByRange,
+  ProductInsights,
+} from "@/lib/server/metrics";
 import { cn } from "@/lib/utils";
 
 // --- User population donut with center label ---
@@ -169,89 +174,6 @@ export function UserPopulationChart({
         </Pie>
         <ChartLegend content={<ChartLegendContent nameKey="name" />} />
       </PieChart>
-    </ChartContainer>
-  );
-}
-
-// --- Content overview bar ---
-
-export function ContentOverviewChart({
-  projects,
-  shares,
-  presets,
-}: {
-  projects: AdminMetrics["projects"];
-  shares: AdminMetrics["shares"];
-  presets: AdminMetrics["presets"];
-}) {
-  const t = useTranslations("dashboard.metrics.contentOverview");
-  const contentConfig = {
-    count: { label: t("count") },
-    projects: { label: t("projects"), color: "var(--chart-1)" },
-    shares: { label: t("shares"), color: "var(--chart-4)" },
-    presets: { label: t("presets"), color: "var(--chart-3)" },
-  } satisfies ChartConfig;
-
-  const data = [
-    { key: "projects", count: projects.active, fill: "var(--chart-1)" },
-    { key: "shares", count: shares.totalActive, fill: "var(--chart-4)" },
-    { key: "presets", count: presets.total, fill: "var(--chart-3)" },
-  ];
-
-  return (
-    <ChartContainer config={contentConfig} className="h-48 w-full sm:h-52">
-      <BarChart accessibilityLayer data={data} margin={{ left: 4, right: 4 }}>
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="key"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          tick={{ fontSize: 11 }}
-          tickFormatter={(value) =>
-            contentConfig[value as keyof typeof contentConfig]?.label ?? value
-          }
-        />
-        <YAxis
-          tickLine={false}
-          axisLine={false}
-          tick={{ fontSize: 11 }}
-          allowDecimals={false}
-          width={24}
-        />
-        <ChartTooltip
-          cursor={false}
-          content={({ active, payload, label }) => {
-            if (!active || !payload?.length) return null;
-            const count = payload[0]?.value ?? 0;
-            const categoryLabel =
-              contentConfig[label as keyof typeof contentConfig]?.label ??
-              String(label);
-            const fill = (payload[0]?.payload as { fill?: string })?.fill;
-            return (
-              <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
-                <div className="flex items-center gap-1.5">
-                  {fill ? (
-                    <span
-                      className="size-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: fill }}
-                    />
-                  ) : null}
-                  <span className="text-muted-foreground">{categoryLabel}</span>
-                </div>
-                <p className="mt-1 font-semibold tabular-nums">
-                  {String(count)}
-                </p>
-              </div>
-            );
-          }}
-        />
-        <Bar dataKey="count" radius={4}>
-          {data.map((d) => (
-            <Cell key={d.key} fill={d.fill} />
-          ))}
-        </Bar>
-      </BarChart>
     </ChartContainer>
   );
 }
@@ -433,26 +355,28 @@ function UserGrowthSummary({ growthData }: { growthData: GrowthData }) {
   }, null);
 
   return (
-    <div className="grid grid-cols-3 items-start border-t pt-3">
-      <div className="min-w-0 pr-2 text-left">
-        <p className="text-muted-foreground truncate text-[11px] sm:text-xs">
+    <div className="divide-y border-t sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:pt-3">
+      <div className="flex min-w-0 items-center justify-between gap-3 py-3 sm:block sm:py-0 sm:pr-3 sm:text-left">
+        <p className="text-muted-foreground text-xs leading-snug">
           {t("summary.newInRange")}
         </p>
-        <p className="text-sm font-semibold tabular-nums">+{totalNewUsers}</p>
+        <p className="shrink-0 text-sm font-semibold tabular-nums">
+          +{totalNewUsers}
+        </p>
       </div>
-      <div className="min-w-0 px-2 text-center">
-        <p className="text-muted-foreground truncate text-[11px] sm:text-xs">
+      <div className="flex min-w-0 items-center justify-between gap-3 py-3 sm:block sm:px-3 sm:py-0 sm:text-center">
+        <p className="text-muted-foreground text-xs leading-snug">
           {t("summary.avgPerPeriod", { period: periodName })}
         </p>
-        <p className="text-sm font-semibold tabular-nums">
+        <p className="shrink-0 text-sm font-semibold tabular-nums">
           {averagePerPeriod.toLocaleString()}
         </p>
       </div>
-      <div className="min-w-0 pl-2 text-right">
-        <p className="text-muted-foreground truncate text-[11px] sm:text-xs">
+      <div className="flex min-w-0 items-center justify-between gap-3 py-3 sm:block sm:py-0 sm:pl-3 sm:text-right">
+        <p className="text-muted-foreground text-xs leading-snug">
           {t("summary.strongestPeriod", { period: periodName })}
         </p>
-        <p className="truncate text-sm font-semibold tabular-nums">
+        <p className="shrink-0 text-sm font-semibold tabular-nums sm:truncate">
           {strongestPeriod
             ? t("summary.strongestValue", {
                 label: strongestPeriod.label,
@@ -860,13 +784,11 @@ export function UserGrowthCard({
         : t("newThisDay");
 
   return (
-    <div className="bg-card min-w-0 rounded-xl border p-3 sm:p-4">
+    <div className="bg-card min-w-0 rounded-xl border p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-0.5">
-          <p className="text-sm font-medium">{t("title")}</p>
-          <p className="text-muted-foreground hidden text-xs sm:block">
-            {t("description")}
-          </p>
+          <h3 className="text-sm font-semibold">{t("title")}</h3>
+          <p className="text-muted-foreground text-xs">{t("description")}</p>
         </div>
         <div className="shrink-0">
           <UserGrowthRangePicker
@@ -888,6 +810,853 @@ export function UserGrowthCard({
         />
         <UserGrowthSummary growthData={growthData} />
       </div>
+    </div>
+  );
+}
+
+// --- Activation, content health, distributions, usage, and retention ---
+
+function formatMonth(period: string) {
+  const date = new Date(`${period}-01T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return period;
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    year: "2-digit",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+export function ActivationFunnel({
+  activation,
+}: {
+  activation: ProductInsights["activation"];
+}) {
+  const t = useTranslations("dashboard.metrics.activation");
+  const max = Math.max(activation.registered, 1);
+  const rows = [
+    { key: "registered", value: activation.registered },
+    { key: "createdProject", value: activation.createdProject },
+    { key: "createdShare", value: activation.createdShare },
+    { key: "publishedToGallery", value: activation.publishedToGallery },
+  ] as const;
+
+  return (
+    <div className="space-y-3 py-1">
+      {rows.map((row, index) => {
+        const pct = Math.round((row.value / max) * 100);
+        return (
+          <div key={row.key} className="space-y-1.5">
+            <div className="flex items-center justify-between gap-3 text-xs">
+              <span className="text-muted-foreground">
+                {index + 1}. {t(row.key)}
+              </span>
+              <span className="font-semibold tabular-nums">
+                {row.value}{" "}
+                <span className="text-muted-foreground">({pct}%)</span>
+              </span>
+            </div>
+            <div className="bg-muted h-2 overflow-hidden rounded-full">
+              <div
+                className="h-full rounded-full bg-sky-500 transition-[width]"
+                style={{ width: `${pct}%`, opacity: 1 - index * 0.14 }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function ContentGrowthChart({
+  data,
+}: {
+  data: ProductInsights["contentGrowth"];
+}) {
+  const t = useTranslations("dashboard.metrics.contentGrowth");
+  const config = {
+    projects: { label: t("projects"), color: "var(--chart-1)" },
+    shares: { label: t("shares"), color: "var(--chart-4)" },
+    presets: { label: t("presets"), color: "var(--chart-2)" },
+  } satisfies ChartConfig;
+  const chartData = data.map((row) => ({
+    ...row,
+    label: formatMonth(row.period),
+  }));
+
+  if (chartData.length === 0) {
+    return (
+      <div className="text-muted-foreground flex h-52 items-center justify-center text-sm">
+        {t("noData")}
+      </div>
+    );
+  }
+
+  return (
+    <ChartContainer config={config} className="h-56 w-full">
+      <ComposedChart
+        accessibilityLayer
+        data={chartData}
+        margin={{ left: 4, right: 4, top: 4 }}
+      >
+        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+        <XAxis
+          dataKey="label"
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 10 }}
+          interval="preserveStartEnd"
+          minTickGap={18}
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 10 }}
+          allowDecimals={false}
+          width={30}
+        />
+        <ChartTooltip
+          cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
+        />
+        <ChartLegend content={<ChartLegendContent />} />
+        <Line
+          type="monotone"
+          dataKey="projects"
+          stroke="var(--color-projects)"
+          strokeWidth={2}
+          dot={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="shares"
+          stroke="var(--color-shares)"
+          strokeWidth={2}
+          dot={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="presets"
+          stroke="var(--color-presets)"
+          strokeWidth={2}
+          dot={false}
+        />
+      </ComposedChart>
+    </ChartContainer>
+  );
+}
+
+function HealthRows({
+  rows,
+  total,
+}: {
+  rows: Array<{ label: string; value: number; color: string }>;
+  total: number;
+}) {
+  const max = Math.max(total, 1);
+  return (
+    <div className="space-y-2.5">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="grid grid-cols-[7rem_1fr_auto] items-center gap-2 text-xs"
+        >
+          <span className="text-muted-foreground truncate">{row.label}</span>
+          <div className="bg-muted h-1.5 overflow-hidden rounded-full">
+            <div
+              className={`h-full rounded-full ${row.color}`}
+              style={{ width: `${Math.round((row.value / max) * 100)}%` }}
+            />
+          </div>
+          <span className="w-7 text-right font-semibold tabular-nums">
+            {row.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SharingHealth({
+  shares,
+  gallery,
+}: {
+  shares: AdminMetrics["shares"];
+  gallery: AdminMetrics["gallery"];
+}) {
+  const t = useTranslations("dashboard.metrics.health");
+  return (
+    <div className="grid gap-5 py-1 sm:grid-cols-2">
+      <section>
+        <p className="mb-3 text-xs font-semibold">{t("sharesTitle")}</p>
+        <HealthRows
+          total={shares.total}
+          rows={[
+            {
+              label: t("active"),
+              value: shares.totalActive,
+              color: "bg-emerald-500",
+            },
+            {
+              label: t("expired"),
+              value: shares.expired,
+              color: "bg-amber-500",
+            },
+            {
+              label: t("revoked"),
+              value: shares.revoked,
+              color: "bg-rose-500",
+            },
+          ]}
+        />
+      </section>
+      <section>
+        <p className="mb-3 text-xs font-semibold">{t("galleryTitle")}</p>
+        <HealthRows
+          total={gallery.total}
+          rows={[
+            { label: t("listed"), value: gallery.listed, color: "bg-sky-500" },
+            {
+              label: t("featured"),
+              value: gallery.featured,
+              color: "bg-violet-500",
+            },
+            {
+              label: t("hidden"),
+              value: gallery.hidden,
+              color: "bg-amber-500",
+            },
+            {
+              label: t("missingPreview"),
+              value: gallery.missingPreview,
+              color: "bg-rose-500",
+            },
+          ]}
+        />
+      </section>
+    </div>
+  );
+}
+
+function percentile(values: number[], fraction: number) {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)] ?? 0;
+}
+
+export function DistributionSummary({
+  userDistribution,
+}: {
+  userDistribution: AdminMetrics["userDistribution"];
+}) {
+  const t = useTranslations("dashboard.metrics.distribution");
+  const resources = [
+    { key: "projects", index: 0 },
+    { key: "shares", index: 1 },
+    { key: "presets", index: 2 },
+  ] as const;
+  const summaries = resources.map((resource) => {
+    const all = userDistribution.map((row) => row[resource.index]);
+    const active = all.filter((value) => value > 0);
+    return {
+      ...resource,
+      median: percentile(active, 0.5),
+      p75: percentile(active, 0.75),
+      p90: percentile(active, 0.9),
+      zeroPct:
+        all.length > 0
+          ? Math.round(
+              (all.filter((value) => value === 0).length / all.length) * 100
+            )
+          : 0,
+    };
+  });
+
+  return (
+    <>
+      <div className="divide-y sm:hidden">
+        {summaries.map((summary) => (
+          <div key={summary.key} className="py-3 first:pt-0 last:pb-0">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-semibold">{t(summary.key)}</p>
+              <p className="text-muted-foreground text-xs tabular-nums">
+                {t("without")}: {summary.zeroPct}%
+              </p>
+            </div>
+            <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
+              <div className="bg-muted/50 rounded-md px-2 py-2">
+                <dt className="text-muted-foreground text-[11px]">
+                  {t("median")}
+                </dt>
+                <dd className="mt-0.5 font-semibold tabular-nums">
+                  {summary.median}
+                </dd>
+              </div>
+              <div className="bg-muted/50 rounded-md px-2 py-2">
+                <dt className="text-muted-foreground text-[11px]">
+                  {t("p75")}
+                </dt>
+                <dd className="mt-0.5 font-semibold tabular-nums">
+                  {summary.p75}
+                </dd>
+              </div>
+              <div className="bg-muted/50 rounded-md px-2 py-2">
+                <dt className="text-muted-foreground text-[11px]">
+                  {t("p90")}
+                </dt>
+                <dd className="mt-0.5 font-semibold tabular-nums">
+                  {summary.p90}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto sm:block">
+        <table className="w-full min-w-[34rem] text-sm">
+          <thead>
+            <tr className="text-muted-foreground border-b text-left text-xs">
+              <th scope="col" className="py-2 pr-3 font-medium">
+                {t("resource")}
+              </th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">
+                {t("median")}
+              </th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">
+                {t("p75")}
+              </th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">
+                {t("p90")}
+              </th>
+              <th scope="col" className="py-2 pl-3 text-right font-medium">
+                {t("without")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {summaries.map((summary) => (
+              <tr
+                key={summary.key}
+                className="hover:bg-muted/35 border-b transition-colors last:border-0"
+              >
+                <td className="py-2.5 pr-3 font-medium">{t(summary.key)}</td>
+                <td className="px-3 py-2.5 text-right tabular-nums">
+                  {summary.median}
+                </td>
+                <td className="px-3 py-2.5 text-right tabular-nums">
+                  {summary.p75}
+                </td>
+                <td className="px-3 py-2.5 text-right tabular-nums">
+                  {summary.p90}
+                </td>
+                <td className="text-muted-foreground py-2.5 pl-3 text-right tabular-nums">
+                  {summary.zeroPct}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function eventCount(usage: ProductInsights["usage"], eventType: string) {
+  return (
+    usage.eventTypes30d.find((row) => row.eventType === eventType)?.count ?? 0
+  );
+}
+
+function previousEventCount(
+  usage: ProductInsights["usage"],
+  eventType: string
+) {
+  return (
+    usage.eventTypesPrevious30d.find((row) => row.eventType === eventType)
+      ?.count ?? 0
+  );
+}
+
+function hasComparisonBaseline(usage: ProductInsights["usage"]) {
+  return usage.trackingDays >= 60;
+}
+
+export function MetricsFocusBanner({
+  metrics,
+  insights,
+}: {
+  metrics: AdminMetrics;
+  insights: ProductInsights;
+}) {
+  const t = useTranslations("dashboard.metrics.focus");
+  const usage = insights.usage;
+  const daysTracked = usage.trackingDays;
+  const baselineReady = hasComparisonBaseline(usage);
+  const movementCandidates = [
+    {
+      key: "editor",
+      eventType: "editor.session_started",
+      current: eventCount(usage, "editor.session_started"),
+      href: "#editor-behavior",
+    },
+    {
+      key: "exports",
+      eventType: "export.completed",
+      current: usage.exports30d,
+      href: "#export-usage",
+    },
+    {
+      key: "views",
+      eventType: "share.viewed",
+      current: usage.shareViews30d,
+      href: "#share-viewing",
+    },
+  ] as const;
+  const strongestMovement = movementCandidates
+    .map((candidate) => {
+      const previous = previousEventCount(usage, candidate.eventType);
+      const delta =
+        previous > 0
+          ? Math.round(((candidate.current - previous) / previous) * 100)
+          : 0;
+      return { ...candidate, previous, delta };
+    })
+    .filter((candidate) => candidate.previous > 0)
+    .sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))[0];
+
+  const hasPreviewIssue = metrics.gallery.missingPreview > 0;
+  const focus = hasPreviewIssue
+    ? {
+        tone: "warning" as const,
+        title: t("preview.title"),
+        value: t("preview.value", {
+          count: metrics.gallery.missingPreview,
+          total: metrics.gallery.total,
+        }),
+        detail: t("preview.detail"),
+        question: t("preview.question"),
+        href: "#sharing-health",
+        link: t("preview.link"),
+      }
+    : baselineReady && strongestMovement
+      ? {
+          tone: "neutral" as const,
+          title: t("movement.title", {
+            metric: t(`metrics.${strongestMovement.key}`),
+          }),
+          value: t("movement.value", {
+            change: `${strongestMovement.delta > 0 ? "+" : ""}${strongestMovement.delta}`,
+          }),
+          detail: t("movement.detail", {
+            current: strongestMovement.current,
+            previous: strongestMovement.previous,
+          }),
+          question: t(`movement.questions.${strongestMovement.key}`),
+          href: strongestMovement.href,
+          link: t("movement.link"),
+        }
+      : {
+          tone: "building" as const,
+          title: t("baseline.title"),
+          value: t("baseline.value", { days: Math.min(daysTracked, 60) }),
+          detail: t("baseline.detail"),
+          question: t("baseline.question"),
+          href: "#product-use",
+          link: t("baseline.link"),
+        };
+
+  return (
+    <section
+      aria-labelledby="metrics-focus-title"
+      className={cn(
+        "flex flex-col gap-4 rounded-xl border border-l-4 px-4 py-5 sm:flex-row sm:items-center sm:px-5",
+        focus.tone === "warning"
+          ? "border-border border-l-amber-500 bg-amber-500/8"
+          : focus.tone === "building"
+            ? "border-border border-l-muted-foreground/40 bg-muted/35"
+            : "border-border border-l-sky-500 bg-sky-500/6"
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-8 shrink-0 items-center justify-center",
+          focus.tone === "warning"
+            ? "text-amber-700 dark:text-amber-300"
+            : "text-sky-700 dark:text-sky-300"
+        )}
+        aria-hidden="true"
+      >
+        <Search className="size-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
+          {t("eyebrow")}
+        </p>
+        <div className="mt-0.5 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
+          <h2
+            id="metrics-focus-title"
+            className="text-base font-semibold sm:text-lg"
+          >
+            {focus.title}
+          </h2>
+          <span className="text-xl font-bold tabular-nums">{focus.value}</span>
+        </div>
+        <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
+          {focus.detail}
+        </p>
+        <p className="mt-3 border-t pt-3 text-sm leading-relaxed">
+          <span className="font-semibold">{t("nextCheck")}</span>{" "}
+          {focus.question}
+        </p>
+      </div>
+      <a
+        href={focus.href}
+        className="inline-flex w-full shrink-0 items-center justify-between gap-2 text-sm font-semibold underline-offset-4 hover:underline sm:w-auto sm:justify-start"
+      >
+        {focus.link}
+        <ArrowRight className="size-3.5" />
+      </a>
+    </section>
+  );
+}
+
+function UsageComparison({
+  usage,
+  current,
+  eventType,
+}: {
+  usage: ProductInsights["usage"];
+  current: number;
+  eventType: string;
+}) {
+  const t = useTranslations("dashboard.metrics.comparison");
+  if (!hasComparisonBaseline(usage)) {
+    return (
+      <span className="text-muted-foreground text-[11px]">{t("building")}</span>
+    );
+  }
+  const previous = previousEventCount(usage, eventType);
+  if (previous === 0) return null;
+  const delta = Math.round(((current - previous) / previous) * 100);
+  return (
+    <span className="text-muted-foreground text-[11px] tabular-nums">
+      {t(delta === 0 ? "flat" : delta > 0 ? "changeUp" : "changeDown", {
+        pct: Math.abs(delta),
+      })}
+    </span>
+  );
+}
+
+function UsageBreakdownRows({
+  rows,
+  total,
+  emptyLabel,
+}: {
+  rows: Array<{ key: string; label: string; count: number }>;
+  total: number;
+  emptyLabel: string;
+}) {
+  if (total === 0) {
+    return (
+      <div className="text-muted-foreground flex min-h-40 items-center justify-center px-4 text-center text-sm">
+        {emptyLabel}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2.5 py-1">
+      {rows.map((row) => {
+        const pct = Math.round((row.count / total) * 100);
+        return (
+          <div key={row.key} className="space-y-1">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-foreground min-w-0 leading-snug">
+                {row.label}
+              </span>
+              <span className="font-semibold tabular-nums">
+                {row.count}{" "}
+                <span className="text-muted-foreground font-normal">
+                  ({pct}%)
+                </span>
+              </span>
+            </div>
+            <div className="bg-muted h-2 overflow-hidden rounded-full">
+              <div
+                className="h-full rounded-full bg-sky-500"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function ExportUsageBreakdown({
+  usage,
+}: {
+  usage: ProductInsights["usage"];
+}) {
+  const t = useTranslations("dashboard.metrics.exportUsage");
+  const knownFormats = [
+    "png",
+    "svg",
+    "render3d",
+    "racePack",
+    "json",
+    "webm",
+    "velocidrone",
+  ] as const;
+  const counts = new Map(
+    usage.exportFormats30d.map((row) => [row.format, row.count])
+  );
+  const rows = knownFormats
+    .map((format) => ({
+      key: format,
+      label: t(`formats.${format}`),
+      count: counts.get(format) ?? 0,
+    }))
+    .filter((row) => row.count > 0);
+  const knownFormatSet = new Set<string>(knownFormats);
+  const extras = usage.exportFormats30d
+    .filter((row) => !knownFormatSet.has(row.format))
+    .map((row) => ({ key: row.format, label: row.format, count: row.count }));
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-end justify-between gap-3 border-b pb-3">
+        <span className="text-muted-foreground text-xs">{t("summary")}</span>
+        <div className="text-right">
+          <p className="text-xl font-bold tabular-nums">{usage.exports30d}</p>
+          <UsageComparison
+            usage={usage}
+            current={usage.exports30d}
+            eventType="export.completed"
+          />
+        </div>
+      </div>
+      <UsageBreakdownRows
+        rows={[...rows, ...extras]}
+        total={usage.exports30d}
+        emptyLabel={t("noData")}
+      />
+    </div>
+  );
+}
+
+export function ShareUsageBreakdown({
+  usage,
+}: {
+  usage: ProductInsights["usage"];
+}) {
+  const t = useTranslations("dashboard.metrics.shareUsage");
+  const counts = new Map(
+    usage.shareSurfaces30d.map((row) => [row.surface, row.count])
+  );
+  const knownSurfaces = ["share", "embed"] as const;
+  const rows = knownSurfaces.map((surface) => ({
+    key: surface,
+    label: t(`surfaces.${surface}`),
+    count: counts.get(surface) ?? 0,
+  }));
+  const knownSurfaceSet = new Set<string>(knownSurfaces);
+  const extras = usage.shareSurfaces30d
+    .filter((row) => !knownSurfaceSet.has(row.surface))
+    .map((row) => ({ key: row.surface, label: row.surface, count: row.count }));
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-end justify-between gap-3 border-b pb-3">
+        <span className="text-muted-foreground text-xs">{t("summary")}</span>
+        <div className="text-right">
+          <p className="text-xl font-bold tabular-nums">
+            {usage.shareViews30d}
+          </p>
+          <UsageComparison
+            usage={usage}
+            current={usage.shareViews30d}
+            eventType="share.viewed"
+          />
+        </div>
+      </div>
+      <UsageBreakdownRows
+        rows={[...rows, ...extras]}
+        total={usage.shareViews30d}
+        emptyLabel={t("noData")}
+      />
+    </div>
+  );
+}
+
+function formatEventKind(kind: string) {
+  return kind
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+export function EditorUsageBreakdown({
+  usage,
+}: {
+  usage: ProductInsights["usage"];
+}) {
+  const t = useTranslations("dashboard.metrics.editorUsage");
+  const editorStarts = eventCount(usage, "editor.session_started");
+  const primaryStats = [
+    ["sessions", editorStarts],
+    ["accountSessions", usage.accountSessions30d],
+    ["anonymousSessions", usage.anonymousSessions30d],
+    ["preview3d", usage.preview3dOpens30d],
+    ["imports", usage.imports30d],
+    ["placed", usage.elementPlacements30d],
+  ] as const;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-muted-foreground text-sm">{t("sessions")}</p>
+          <div className="mt-1 flex items-end gap-3">
+            <p className="text-3xl leading-none font-bold tabular-nums">
+              {editorStarts}
+            </p>
+            <UsageComparison
+              usage={usage}
+              current={editorStarts}
+              eventType="editor.session_started"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-6 sm:min-w-64">
+          {primaryStats.slice(1, 3).map(([key, value]) => (
+            <div key={key}>
+              <p className="text-muted-foreground text-xs">{t(key)}</p>
+              <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="grid sm:grid-cols-3 sm:divide-x">
+        {primaryStats.slice(3).map(([key, value]) => (
+          <div
+            key={key}
+            className="flex items-center justify-between border-b py-3 last:border-b-0 sm:block sm:border-b-0 sm:px-4 sm:py-1 sm:first:pl-0 sm:last:pr-0"
+          >
+            <p className="text-muted-foreground text-sm">{t(key)}</p>
+            <p className="font-semibold tabular-nums sm:mt-1 sm:text-xl">
+              {value}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-3 border-y py-3">
+        <div>
+          <p className="text-muted-foreground text-xs">{t("importedShapes")}</p>
+          <p className="mt-0.5 font-semibold tabular-nums">
+            {usage.importedShapes30d}
+          </p>
+        </div>
+        <div>
+          <p className="text-muted-foreground text-xs">{t("avgImport")}</p>
+          <p className="mt-0.5 font-semibold tabular-nums">
+            {usage.avgShapesPerImport30d}
+          </p>
+        </div>
+      </div>
+      {usage.elementTypes30d.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-muted-foreground text-xs">{t("topTypes")}</p>
+          <div className="flex flex-wrap gap-2">
+            {usage.elementTypes30d.slice(0, 8).map((row) => (
+              <span
+                key={row.kind}
+                className="bg-muted rounded-md px-2 py-1 text-xs"
+              >
+                {formatEventKind(row.kind)} · {row.count}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="text-muted-foreground py-5 text-center text-sm">
+          {t("noData")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function RetentionCohorts({
+  retention,
+}: {
+  retention: ProductInsights["retention"];
+}) {
+  const t = useTranslations("dashboard.metrics.retention");
+  if (retention.length === 0) {
+    return (
+      <div className="text-muted-foreground flex h-40 items-center justify-center text-sm">
+        {t("noData")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs sm:text-sm">
+        <thead>
+          <tr className="text-muted-foreground border-b text-left text-xs">
+            <th scope="col" className="py-2 pr-2 font-medium sm:pr-3">
+              {t("cohort")}
+            </th>
+            <th
+              scope="col"
+              className="px-2 py-2 text-right font-medium sm:px-3"
+            >
+              {t("users")}
+            </th>
+            <th
+              scope="col"
+              className="px-2 py-2 text-right font-medium sm:px-3"
+            >
+              {t("day7")}
+            </th>
+            <th
+              scope="col"
+              className="py-2 pl-2 text-right font-medium sm:pl-3"
+            >
+              {t("day30")}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {retention.map((row) => (
+            <tr
+              key={row.cohort}
+              className="hover:bg-muted/35 border-b transition-colors last:border-0"
+            >
+              <td className="py-2.5 pr-3 font-medium">
+                {formatMonth(row.cohort)}
+              </td>
+              <td className="px-3 py-2.5 text-right tabular-nums">
+                {row.users}
+              </td>
+              <td className="px-3 py-2.5 text-right tabular-nums">
+                {row.users > 0
+                  ? Math.round((row.retained7d / row.users) * 100)
+                  : 0}
+                %
+              </td>
+              <td className="py-2.5 pl-3 text-right tabular-nums">
+                {row.users > 0
+                  ? Math.round((row.retained30d / row.users) * 100)
+                  : 0}
+                %
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -940,7 +1709,7 @@ function ResourceCard({
   const pct = totalUsers > 0 ? Math.round((affected / totalUsers) * 100) : 0;
 
   return (
-    <div className="bg-card space-y-3 rounded-xl border p-3 sm:p-4">
+    <div className="bg-card space-y-4 rounded-xl border p-4">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium">{title}</p>
         <span
@@ -967,19 +1736,19 @@ function ResourceCard({
             dataKey="label"
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 9 }}
+            tick={{ fontSize: 10 }}
             tickMargin={4}
             label={{
               value: t("perUserAxis", { title }),
               position: "insideBottom",
               offset: -12,
-              style: { fontSize: 9, fill: "var(--muted-foreground)" },
+              style: { fontSize: 10, fill: "var(--muted-foreground)" },
             }}
           />
           <YAxis
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 9 }}
+            tick={{ fontSize: 10 }}
             allowDecimals={false}
             width={28}
             label={{
@@ -987,7 +1756,7 @@ function ResourceCard({
               angle: -90,
               position: "insideLeft",
               offset: 8,
-              style: { fontSize: 9, fill: "var(--muted-foreground)" },
+              style: { fontSize: 10, fill: "var(--muted-foreground)" },
             }}
           />
           <ChartTooltip
@@ -1045,10 +1814,10 @@ function ResourceCard({
               const n = parseInt(e.target.value, 10);
               if (!isNaN(n) && n >= 0) onLimitChange(n);
             }}
-            className="w-14 rounded-md border px-1.5 py-1 text-center text-xs tabular-nums"
+            className="h-9 w-16 rounded-md border px-2 text-center text-sm tabular-nums"
           />
         </div>
-        <p className="text-muted-foreground hidden text-[10px] sm:block">
+        <p className="text-muted-foreground text-xs leading-relaxed">
           {t("freeLimit", { limit })}{" "}
           <span className="text-rose-600 dark:text-rose-400">{t("red")}</span>{" "}
           {t("exceedIt")}
@@ -1108,7 +1877,7 @@ export function PlanLimitSimulator({
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         <ResourceCard
           title={t("projects")}
           counts={projCounts}
@@ -1134,8 +1903,8 @@ export function PlanLimitSimulator({
 
       <div className="flex flex-col gap-3 rounded-xl border px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
         <div className="min-w-0">
-          <p className="text-sm font-medium">{t("totalImpact")}</p>
-          <p className="text-muted-foreground mt-0.5 hidden text-xs sm:block">
+          <p className="text-sm font-semibold">{t("totalImpact")}</p>
+          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
             {t("totalImpactDescription")}
           </p>
         </div>

@@ -13,6 +13,7 @@ import { Upload, FileJson, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import type { TrackDesign } from "@/lib/types";
 import { useTranslations } from "next-intl";
+import { trackProductEvent } from "@/lib/product-events";
 
 interface ImportDialogProps {
   open: boolean;
@@ -127,6 +128,10 @@ export default function ImportDialog({
     if (!parsed) return;
     onBeforeConfirm?.();
     replaceDesign(parsed.design);
+    trackProductEvent("project.imported", {
+      projectId: parsed.design.id,
+      metadata: { shapeCount: parsed.shapeCount },
+    });
     onOpenChange(false);
     reset();
   };

@@ -89,6 +89,7 @@ export default async function ShareTokenPage({
         ) : null}
         <ShareViewer
           design={resolvedShare.design}
+          shareToken={token}
           studioSeedToken={resolvedShare.studioSeedToken}
           initialTab={parseEditorView(resolvedSearchParams?.view) ?? "2d"}
         />

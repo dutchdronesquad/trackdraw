@@ -2,6 +2,7 @@
 import { default as handler } from "./.open-next/worker.js";
 import { cleanupExpiredApiKeys } from "./src/lib/server/api-key-retention";
 import { getEarlyWorkerResponse } from "./src/lib/server/request-guards";
+import { cleanupExpiredProductEvents } from "./src/lib/server/product-event-retention";
 import { cleanupExpiredShares } from "./src/lib/server/share-retention";
 
 type D1PreparedStatement = {
@@ -42,7 +43,11 @@ const worker = {
     ctx: WorkerExecutionContext
   ) {
     ctx.waitUntil(
-      Promise.all([cleanupExpiredShares(env.DB), cleanupExpiredApiKeys(env.DB)])
+      Promise.all([
+        cleanupExpiredShares(env.DB),
+        cleanupExpiredApiKeys(env.DB),
+        cleanupExpiredProductEvents(env.DB),
+      ])
     );
   },
 };

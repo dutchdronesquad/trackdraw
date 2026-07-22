@@ -661,7 +661,7 @@ Suggested first slices:
 
 #### Usage Analytics And Event Tracking (`Account-backed`)
 
-TrackDraw has Tier 1 internal metrics covering user population, content health, weekly growth, and plan limit simulation. Tier 2 requires a lightweight event log to answer questions that cannot be derived from the existing tables.
+TrackDraw now has Tier 1 internal metrics plus a privacy-safe Tier 2 event log for editor sessions, share views, exports, 3D preview use, imports, and element placement. The admin dashboard is organized from product pulse and one contextual focus banner through account journey, editor/export/share use, growth, operational health, and plan decisions. Period movements only appear after two complete 30-day tracking windows, and creator retention counts return visits to the editor from fully tracked mature cohorts.
 
 Supporting research document:
 
@@ -673,12 +673,18 @@ Why:
 - These signals are useful for understanding real usage patterns over time
 - A single narrow `events` table is enough for the first slice without requiring external analytics tooling
 
-Focus:
+Shipped first slice:
 
 - Add a `product_events` table separate from the existing `audit_events` table (audit events are identity-sensitive and actor-linked; product events can be anonymous and have a different retention lifecycle)
 - Schema: narrow, privacy-safe — event name, nullable session ID, nullable user ID, nullable project ID, nullable share token, timestamp. No IP addresses, no fingerprinting, purgeable per user on account deletion
-- Instrument the highest-value events first: `share.viewed`, `export.completed`, `editor.3d_opened`, `editor.element_placed`, `project.imported`
+- Instrument the highest-value events first: `editor.session_started`, `share.viewed`, `export.completed`, `editor.3d_opened`, `editor.element_placed`, `project.imported`
 - Surface aggregate event data in the existing admin Metrics page alongside Tier 1 query metrics
+- Purge account-linked events on account deletion and all raw events after 180 days
+
+Possible follow-ups:
+
+- Dead-share detection and guest-to-account conversion
+- Longer-lived anonymous aggregate rollups without retaining raw events
 
 Important boundary:
 

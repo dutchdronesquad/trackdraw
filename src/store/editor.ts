@@ -47,6 +47,7 @@ import {
   getShapeGroupId,
 } from "@/lib/track/shape-groups";
 import { buildCatalogTypePatch } from "@/lib/editor/catalog-type-patch";
+import { trackProductEvent } from "@/lib/product-events";
 
 export type { EditorTool } from "@/lib/editor/tool-registry";
 
@@ -172,16 +173,22 @@ export const useEditor = create<EditorState>()(
 
       addShape: (s) => {
         const id = nanoid();
+        const projectId = useEditor.getState().track.design.id;
         set((draft) => {
           const nextShape: Shape = { ...s, id };
           addShapeRecord(draft.track.design, nextShape);
           touchTrackDesign(draft);
+        });
+        trackProductEvent("editor.element_placed", {
+          projectId,
+          metadata: { kind: s.kind, count: 1 },
         });
         return id;
       },
 
       addShapes: (shapes) => {
         const ids = shapes.map(() => nanoid());
+        const projectId = useEditor.getState().track.design.id;
         set((draft) => {
           const nextShapes: Shape[] = shapes.map((shape, index) => ({
             ...shape,
@@ -192,6 +199,16 @@ export const useEditor = create<EditorState>()(
           );
           touchTrackDesign(draft);
         });
+        const countsByKind = new Map<string, number>();
+        for (const shape of shapes) {
+          countsByKind.set(shape.kind, (countsByKind.get(shape.kind) ?? 0) + 1);
+        }
+        for (const [kind, count] of countsByKind) {
+          trackProductEvent("editor.element_placed", {
+            projectId,
+            metadata: { kind, count },
+          });
+        }
         return ids;
       },
 

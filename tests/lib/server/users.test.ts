@@ -314,13 +314,15 @@ describe("unbanUser", () => {
 });
 
 describe("deleteUserAccount", () => {
-  it("deletes shares (which cascades gallery entries), api keys, and projects before deleting the user row", async () => {
+  it("deletes shares, API keys, product events, and projects before deleting the user row", async () => {
     mocks.deleteSharesOwnedByUser.mockResolvedValue(undefined);
     const apiKeyStatement = createD1Statement();
+    const productEventsStatement = createD1Statement();
     const projectsStatement = createD1Statement();
     const usersStatement = createD1Statement();
     installD1Statements(mocks.prepare, [
       apiKeyStatement,
+      productEventsStatement,
       projectsStatement,
       usersStatement,
     ]);
@@ -331,6 +333,9 @@ describe("deleteUserAccount", () => {
     expect(apiKeyStatement.sql).toContain("delete from apikey");
     expect(apiKeyStatement.bind).toHaveBeenCalledWith("user-4");
     expect(apiKeyStatement.run).toHaveBeenCalledOnce();
+    expect(productEventsStatement.sql).toContain("delete from product_events");
+    expect(productEventsStatement.bind).toHaveBeenCalledWith("user-4");
+    expect(productEventsStatement.run).toHaveBeenCalledOnce();
     expect(projectsStatement.sql).toContain("delete from projects");
     expect(projectsStatement.bind).toHaveBeenCalledWith("user-4");
     expect(usersStatement.sql).toContain("delete from users");
@@ -341,6 +346,7 @@ describe("deleteUserAccount", () => {
   it("does not issue a raw gallery_entries delete (relies on deleteGalleryEntry for preview-image cleanup)", async () => {
     mocks.deleteSharesOwnedByUser.mockResolvedValue(undefined);
     installD1Statements(mocks.prepare, [
+      createD1Statement(),
       createD1Statement(),
       createD1Statement(),
       createD1Statement(),

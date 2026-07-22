@@ -275,6 +275,16 @@ export async function deleteUserAccount(userId: string): Promise<void> {
   await db
     .prepare(
       `
+        delete from product_events
+        where user_id = ?
+      `
+    )
+    .bind(userId)
+    .run();
+
+  await db
+    .prepare(
+      `
         delete from projects
         where owner_user_id = ?
       `

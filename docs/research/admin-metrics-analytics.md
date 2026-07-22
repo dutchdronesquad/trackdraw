@@ -113,10 +113,12 @@ Not all metrics are equally easy to build. They fall into two tiers:
 **Tier 1 — database queries only (no new instrumentation):**
 Everything that can be answered from the existing `projects`, `shares`, `users`, `layout_presets`, and `apikey` tables. This includes all count/distribution/limit simulation metrics and most growth and health metrics.
 
-Shipped: user population cohorts, content overview, weekly new user growth, projects/shares/presets per user averages and maximums, gallery health, and plan limit simulation across three thresholds. These are displayed in the admin Metrics page.
+Shipped: user population cohorts, activation funnel, consolidated content totals and monthly content growth, user growth, plain-language account usage distributions, share and gallery health, privacy-safe product usage, retention cohorts, and plan limit simulation across three thresholds. The admin Metrics page also covers every tracked event type through focused export, share, and editor behavior breakdowns.
+
+**Dashboard interpretation principle:** show each raw count once, then use the rest of the page to add context. A single focus banner surfaces a factual operational issue first, or the largest 30-day movement once two complete comparison windows exist. The underlying account journey, editor, export, sharing, growth, operational, and planning sections remain visible for verification. Movements are investigation prompts rather than causal claims, and early totals are not labelled as trends while the baseline is still building.
 
 **Tier 2 — requires event tracking:**
-Metrics about what happens inside the editor (element usage, export format, 3D preview, import vs. scratch) and on public pages (share link views, guest-to-account conversion). These require a lightweight event log.
+Metrics about what happens inside the editor and on public pages require a lightweight event log. The first slice is shipped for editor sessions, exports, 3D preview opens, imports, element placement, and public share views. More detailed guest-to-account conversion remains a possible later extension.
 
 ### Tier 2: Event Tracking Design
 
@@ -127,11 +129,12 @@ The recommended approach is a single `product_events` table in D1 with a narrow,
 ```sql
 create table product_events (
   id          text primary key,
-  event       text not null,         -- e.g. "share.viewed", "export.pdf", "editor.3d_opened"
+  event_type  text not null,         -- e.g. "share.viewed", "export.completed", "editor.3d_opened"
   session_id  text,                  -- anonymous session token, not user-identifiable
   user_id     text,                  -- nullable; only set when a signed-in user triggers the event
   project_id  text,                  -- nullable; the relevant project if applicable
   share_token text,                  -- nullable; for share-related events
+  metadata_json text,                -- bounded scalar metadata, such as export format
   created_at  text not null
 );
 ```
@@ -140,21 +143,22 @@ Keep it narrow: no IP addresses, no user-agent strings, no geolocation. Session 
 
 **Event catalog — first slice:**
 
-| Event                   | Trigger                              | Key fields                               |
-| ----------------------- | ------------------------------------ | ---------------------------------------- |
-| `share.viewed`          | Public share page load               | `share_token`                            |
-| `export.completed`      | PDF/PNG/SVG/JSON export finishes     | `project_id`, format in event name       |
-| `editor.3d_opened`      | 3D preview first opened in a session | `project_id`                             |
-| `editor.element_placed` | Element placed on canvas             | `project_id`, element type in event name |
-| `project.imported`      | JSON import completes                | `user_id` (if signed in)                 |
+| Event                    | Trigger                              | Key fields                                     |
+| ------------------------ | ------------------------------------ | ---------------------------------------------- |
+| `share.viewed`           | Public share or embed load           | `share_token`, surface metadata                |
+| `export.completed`       | An export finishes                   | `project_id`, format metadata                  |
+| `editor.3d_opened`       | 3D preview first opened in a session | `project_id`                                   |
+| `editor.element_placed`  | One or more elements added           | `project_id`, kind and count metadata          |
+| `project.imported`       | JSON import completes                | `user_id` when signed in, imported shape count |
+| `editor.session_started` | Editor opened in a browser session   | `session_id`, `user_id` when signed in         |
 
 **Metrics unlocked by Tier 2:**
 
-- Share link view counts and dead link detection (shares with zero views after 30 days)
-- Export format distribution (which of PDF/PNG/SVG/JSON is most used)
+- Share and embed view counts
+- Export format distribution across PNG, SVG, 3D render, Race Pack, project JSON, WebM, and Velocidrone
 - 3D preview adoption (how many users ever open it)
 - Most-placed element types across all projects
-- Import vs. from-scratch ratio
+- Imported shape volume and average import size
 
 **Privacy boundary:**
 
@@ -193,6 +197,6 @@ Avoid Google Analytics: requires a consent banner, adds GDPR complexity, and is 
 
 ## Open Questions
 
-- What is the right retention window for raw events? 90 days of raw data with monthly rollup aggregates is a reasonable starting point.
-- Should `editor.element_placed` fire once per element type per session (cheaper) or once per actual placement (more accurate)?
-- Should `share.viewed` deduplicate repeat views from the same session, or count all page loads?
+- Raw product events are retained for 180 days, which supports recent retention cohorts while keeping the dataset bounded.
+- `editor.element_placed` records actual placement counts, grouping bulk insertions by element kind.
+- `share.viewed` is deduplicated per share token and browser session across share and embed surfaces.

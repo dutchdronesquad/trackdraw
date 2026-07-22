@@ -3,7 +3,7 @@
 import type React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ShareViewer from "@/app/share/ShareViewer";
 import { createDefaultDesign } from "@/lib/track/design";
 
@@ -52,8 +52,16 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("ShareViewer", () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 204 }))
+    );
+  });
+
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
   });
 
   it("opens stored shares in read-only mode with an editable Studio copy link", () => {
@@ -65,6 +73,7 @@ describe("ShareViewer", () => {
       <ShareViewer
         design={design}
         initialTab="2d"
+        shareToken="share-token"
         studioSeedToken="seed-token"
       />
     );
@@ -101,6 +110,7 @@ describe("ShareViewer", () => {
       <ShareViewer
         design={design}
         initialTab="2d"
+        shareToken="share-token"
         studioSeedToken="seed-token"
       />
     );

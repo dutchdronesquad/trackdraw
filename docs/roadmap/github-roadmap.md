@@ -154,14 +154,14 @@ The next TrackDraw priority is generated flightpath validation first, Simplified
   - [ ] Threaded comments follow-up
         Consider richer review threads only if simple notes prove useful.
 
-- [ ] Usage analytics and event tracking (`Account-backed`)
+- [x] Usage analytics and event tracking (`Account-backed`)
       TrackDraw has Tier 1 internal metrics derived from existing tables. Tier 2 requires a lightweight `product_events` table to track share views, export format usage, and editor interactions. This table is kept separate from `audit_events` — audit events are identity-linked and security-sensitive, product events can be anonymous and have a different retention lifecycle. Research document: `docs/research/admin-metrics-analytics.md`.
-  - [ ] `product_events` table and schema
+  - [x] `product_events` table and schema
         Add a narrow D1 table with event name, nullable session ID, nullable user ID, nullable project/share reference, and timestamp. No IP addresses or device fingerprints. Purgeable per user on account deletion.
-  - [ ] First event instrumentation
+  - [x] First event instrumentation
         Instrument the highest-value events: `share.viewed` (public share page), `export.completed` (PDF/PNG/SVG/JSON), `editor.3d_opened` (first open per session), `editor.element_placed` (element type), `project.imported`.
-  - [ ] Tier 2 metrics in admin dashboard
-        Surface aggregate event data alongside existing Tier 1 query metrics in the admin Metrics page: share view counts, dead link detection, export format distribution, 3D preview adoption rate.
+  - [x] Tier 2 metrics in admin dashboard
+        Surface aggregate event data alongside existing Tier 1 query metrics in the admin Metrics page: share views, export format distribution, 3D preview use, element placement, anonymous/account sessions, and creator retention cohorts. Organize the page around product pulse, one baseline-aware focus banner, usage context, operational health, and plan decisions. Dead-link detection remains a possible follow-up.
 
 - [ ] Desktop and mobile wrapper evaluation (`Research`)
       Evaluate whether Electron or Capacitor would materially improve local project handling, native file workflows, or offline resilience.

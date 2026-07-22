@@ -29,6 +29,7 @@ export default async function EmbedTokenPage({
     return (
       <EmbedViewer
         design={resolvedShare.share.design}
+        shareToken={token}
         initialTab={parseEditorView(resolvedSearchParams?.view) ?? "2d"}
       />
     );

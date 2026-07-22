@@ -23,6 +23,7 @@ TrackDraw uses Cloudflare D1 for persisted share storage.
 - development should use a separate D1 database binding under `env.dev`
 - local preview uses Wrangler's local D1 state for the development environment
 - a scheduled Worker cleanup removes expired or revoked shares after a retention window
+- the same scheduled cleanup removes raw, privacy-safe product events after 180 days
 
 ## Local development requirements
 
@@ -246,6 +247,8 @@ Production migrations are intentionally explicit:
 ```bash
 npm run migrate:up:production
 ```
+
+Migration `0012_product_events.sql` adds the product analytics event store used by the admin metrics dashboard. Apply it before deploying code that records product events or queries activation, usage, and retention metrics.
 
 ## Validation flow
 

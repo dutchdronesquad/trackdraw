@@ -11,6 +11,7 @@ import { getShareTitle } from "@/lib/share";
 import { parseEditorView, type EditorView } from "@/lib/editor/view";
 import { ArrowRight, Eye } from "lucide-react";
 import type { TrackDesign } from "@/lib/types";
+import { trackProductEvent } from "@/lib/product-events";
 
 const EditorShell = dynamic(
   () => import("@/components/editor/viewer/EditorShell"),
@@ -22,10 +23,12 @@ const EditorShell = dynamic(
 
 export default function ShareViewer({
   design,
+  shareToken,
   studioSeedToken,
   initialTab = "2d",
 }: {
   design: TrackDesign;
+  shareToken: string;
   studioSeedToken: string;
   initialTab?: EditorView;
 }) {
@@ -51,6 +54,14 @@ export default function ShareViewer({
   useEffect(() => {
     replaceDesign(design);
   }, [design, replaceDesign]);
+
+  useEffect(() => {
+    trackProductEvent(
+      "share.viewed",
+      { shareToken, metadata: { surface: "share" } },
+      { oncePerSession: `share-view:${shareToken}` }
+    );
+  }, [shareToken]);
 
   return (
     <div className="relative h-dvh">

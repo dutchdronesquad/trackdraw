@@ -122,43 +122,198 @@
   },
   "metrics": {
     "kpi": {
-      "totalUsers": {
-        "label": "Total users",
-        "sub": "+{count} this month"
-      },
-      "activeUsers30d": {
-        "label": "Active users (30d)",
+      "activeAccounts": {
+        "label": "Active accounts",
         "sub": "{pct}% of total"
       },
-      "projects": {
-        "label": "Projects",
-        "sub": "non-archived · {archived} archived"
+      "editorStarts": {
+        "label": "Editor starts",
+        "sub": "{account} signed-in · {anonymous} anonymous sessions"
       },
-      "activeShares": {
-        "label": "Active shares",
-        "sub": "{revoked} revoked"
+      "exports": {
+        "label": "Completed exports",
+        "sub": "{formats} formats used"
       },
-      "activeApiKeys": {
-        "label": "Active API keys",
-        "sub": "{total} total"
+      "viewingSessions": {
+        "label": "Public viewing sessions",
+        "sub": "{share} share page · {embed} embed"
       }
+    },
+    "sections": {
+      "pulse": {
+        "title": "Product pulse",
+        "description": "The main usage signals recorded during the last 30 days."
+      },
+      "journey": {
+        "title": "Account journey",
+        "description": "How registered accounts progress and whether creators return to the editor."
+      },
+      "value": {
+        "title": "How TrackDraw is used",
+        "description": "Creating a track, producing an output, and viewing shared work during the last 30 days."
+      },
+      "growth": {
+        "title": "Growth and audience",
+        "description": "How the account base and account-backed content develop over time."
+      },
+      "operations": {
+        "title": "Operational health",
+        "description": "Current inventory and lifecycle issues that may require administration."
+      },
+      "planning": {
+        "title": "Product and plan decisions",
+        "description": "Account-level resource distribution and the impact of possible plan limits."
+      }
+    },
+    "focus": {
+      "eyebrow": "Focus this period",
+      "nextCheck": "Next check:",
+      "preview": {
+        "title": "Gallery previews need attention",
+        "value": "{count} of {total}",
+        "detail": "These gallery entries currently have no usable preview image, which can directly weaken gallery browsing.",
+        "question": "Check whether preview generation failed or the stored media is no longer available.",
+        "link": "View sharing health"
+      },
+      "movement": {
+        "title": "Largest movement: {metric}",
+        "value": "{change}%",
+        "detail": "{current} in the last 30 days, compared with {previous} in the previous 30 days.",
+        "link": "View the underlying usage",
+        "questions": {
+          "editor": "Compare this movement with active accounts and completed outputs before treating it as a change in creator demand.",
+          "exports": "Check editor starts and the format mix to distinguish reach from repeated exporting.",
+          "views": "Check the share-versus-embed mix and active share count before interpreting the change."
+        }
+      },
+      "metrics": {
+        "editor": "editor starts",
+        "exports": "completed exports",
+        "views": "public viewing sessions"
+      },
+      "baseline": {
+        "title": "A reliable comparison is still being built",
+        "value": "{days}/60 days",
+        "detail": "The focus banner needs two complete 30-day windows before it can highlight a period-over-period movement.",
+        "question": "Use the detailed usage sections for context, but avoid treating early totals as a trend.",
+        "link": "Review current usage"
+      }
+    },
+    "comparison": {
+      "building": "30-day comparison is building",
+      "flat": "No change vs previous 30d",
+      "changeUp": "Up {pct}% vs previous 30d",
+      "changeDown": "Down {pct}% vs previous 30d"
+    },
+    "inventory": {
+      "title": "Platform inventory",
+      "description": "Current account-backed resources and API access.",
+      "projects": "Projects",
+      "shares": "Shares",
+      "presets": "Presets",
+      "apiKeys": "API keys",
+      "activeArchived": "{active} active · {archived} archived",
+      "activeInactive": "{active} active · {inactive} expired or revoked",
+      "averagePerUser": "{average} average per user",
+      "usedActive": "{used} used in 30d · {active} active"
     },
     "userPopulation": {
       "title": "User population",
-      "description": "Active = updated a project in the last 30 days. Dormant = has projects but inactive. Never created = registered but no projects.",
+      "description": "Active = used the editor, sharing, presets, or API in the last 30 days. Dormant = has projects but is inactive. Never created = inactive and has no projects.",
       "noUsers": "No users yet",
       "active": "Active (30d)",
       "dormant": "Dormant",
       "neverCreated": "Never created",
       "usersUnit": "users"
     },
-    "contentOverview": {
-      "title": "Content overview",
-      "description": "Active projects, active share links, and saved presets across all users.",
-      "count": "Count",
-      "projects": "Active projects",
-      "shares": "Active shares",
-      "presets": "Presets"
+    "activation": {
+      "title": "Account progression",
+      "description": "Lifetime account milestones. These totals show reach, not a time-bound conversion funnel.",
+      "registered": "Registered",
+      "createdProject": "Created a project",
+      "createdShare": "Created a share",
+      "publishedToGallery": "Published to gallery"
+    },
+    "health": {
+      "title": "Sharing and gallery health",
+      "description": "Current share lifecycle and public gallery readiness.",
+      "sharesTitle": "Share lifecycle",
+      "galleryTitle": "Gallery entries",
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked",
+      "listed": "Listed",
+      "featured": "Featured",
+      "hidden": "Hidden",
+      "missingPreview": "Missing preview"
+    },
+    "contentGrowth": {
+      "title": "Content growth",
+      "description": "New account-backed projects, shares, and presets created per month.",
+      "projects": "Projects",
+      "shares": "Shares",
+      "presets": "Presets",
+      "noData": "No content data yet"
+    },
+    "distribution": {
+      "title": "Account distribution",
+      "description": "For accounts that use each resource, the columns show the number that 50%, 75%, and 90% stay at or below. The last column includes all accounts.",
+      "resource": "Resource",
+      "projects": "Projects",
+      "shares": "Shares",
+      "presets": "Presets",
+      "median": "50% use at most",
+      "p75": "75% use at most",
+      "p90": "90% use at most",
+      "without": "Accounts without"
+    },
+    "exportUsage": {
+      "title": "Export usage",
+      "description": "Completed exports by format during the last 30 days.",
+      "summary": "Completed exports",
+      "noData": "No completed exports have been tracked in the last 30 days.",
+      "formats": {
+        "png": "2D image (PNG)",
+        "svg": "Vector map (SVG)",
+        "render3d": "3D image (PNG)",
+        "racePack": "Race Pack (PDF)",
+        "json": "Project file (JSON)",
+        "webm": "Cinematic FPV (WebM)",
+        "velocidrone": "Velocidrone track"
+      }
+    },
+    "shareUsage": {
+      "title": "Share viewing",
+      "description": "Tracked public viewing sessions by surface during the last 30 days.",
+      "summary": "Viewing sessions",
+      "noData": "No public viewing sessions have been tracked in the last 30 days.",
+      "surfaces": {
+        "share": "Share page",
+        "embed": "Embedded viewer"
+      }
+    },
+    "editorUsage": {
+      "title": "Editor behavior",
+      "description": "Editor sessions, feature use, and track content activity during the last 30 days.",
+      "sessions": "Editor starts",
+      "accountSessions": "Signed-in sessions",
+      "anonymousSessions": "Anonymous sessions",
+      "preview3d": "3D previews",
+      "imports": "Imports",
+      "placed": "Elements placed",
+      "importedShapes": "Shapes imported",
+      "avgImport": "Avg. per import",
+      "topTypes": "Most placed element types",
+      "noData": "No element placements have been tracked in the last 30 days."
+    },
+    "retention": {
+      "title": "Creator retention cohorts",
+      "description": "Accounts returning to the editor within 7 or 30 days after registration. Only fully tracked, mature cohorts are included.",
+      "cohort": "Cohort",
+      "users": "Users",
+      "day7": "7-day",
+      "day30": "30-day",
+      "noData": "Retention data will appear after product events have accumulated."
     },
     "userGrowth": {
       "title": "User growth",

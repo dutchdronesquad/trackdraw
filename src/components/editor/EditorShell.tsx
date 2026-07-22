@@ -53,6 +53,7 @@ import {
   hasLockedSelection,
   showLockedSelectionActionBlockedToast,
 } from "@/components/canvas/editor/useTrackCanvasShortcuts";
+import { trackProductEvent } from "@/lib/product-events";
 
 const Header = dynamic(() => import("./Header"), { ssr: false });
 const SharedHeader = dynamic(() => import("./viewer/Header"), { ssr: false });
@@ -209,6 +210,22 @@ export default function EditorShell({
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
 
+  useEffect(() => {
+    if (readOnly) return;
+    trackProductEvent(
+      "editor.session_started",
+      { projectId: design.id },
+      { oncePerSession: `editor-session:${design.id}` }
+    );
+    if (initialTab === "3d") {
+      trackProductEvent(
+        "editor.3d_opened",
+        { projectId: design.id },
+        { oncePerSession: `editor-3d:${design.id}` }
+      );
+    }
+  }, [design.id, initialTab, readOnly]);
+
   const {
     shareOpen,
     setShareOpen,
@@ -332,6 +349,13 @@ export default function EditorShell({
 
   const handleTabChange = useCallback(
     (nextTab: EditorView) => {
+      if (nextTab === "3d" && tab !== "3d") {
+        trackProductEvent(
+          "editor.3d_opened",
+          { projectId: design.id },
+          { oncePerSession: `editor-3d:${design.id}` }
+        );
+      }
       if (tab === "3d" || nextTab === "3d") {
         setHasVisited3D(true);
       }
@@ -342,7 +366,7 @@ export default function EditorShell({
       const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
       router.replace(nextUrl, { scroll: false });
     },
-    [pathname, router, searchParams, setTab, tab]
+    [design.id, pathname, router, searchParams, setTab, tab]
   );
 
   const setActiveEditorTool = useCallback(
