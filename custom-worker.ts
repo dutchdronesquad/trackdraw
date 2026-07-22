@@ -1,9 +1,10 @@
 // @ts-ignore `.open-next/worker.js` is generated at build time
 import { default as handler } from "./.open-next/worker.js";
-import { cleanupExpiredApiKeys } from "./src/lib/server/api-key-retention";
 import { getEarlyWorkerResponse } from "./src/lib/server/request-guards";
-import { cleanupExpiredProductEvents } from "./src/lib/server/product-event-retention";
-import { cleanupExpiredShares } from "./src/lib/server/share-retention";
+import {
+  createScheduledCleanupTasks,
+  runScheduledCleanup,
+} from "./src/lib/server/scheduled-cleanup";
 
 type D1PreparedStatement = {
   bind(...values: unknown[]): D1PreparedStatement;
@@ -37,18 +38,8 @@ const worker = {
     return handler.fetch(request, env, ctx);
   },
 
-  async scheduled(
-    _controller: ScheduledController,
-    env: WorkerEnv,
-    ctx: WorkerExecutionContext
-  ) {
-    ctx.waitUntil(
-      Promise.all([
-        cleanupExpiredShares(env.DB),
-        cleanupExpiredApiKeys(env.DB),
-        cleanupExpiredProductEvents(env.DB),
-      ])
-    );
+  async scheduled(controller: ScheduledController, env: WorkerEnv) {
+    await runScheduledCleanup(controller, createScheduledCleanupTasks(env.DB));
   },
 };
 

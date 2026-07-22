@@ -35,7 +35,7 @@ The next TrackDraw priority is generated flightpath validation first, the remain
         Compare CPU time and `exceededCpu` rates with the pre-deployment baseline after the static public shell reaches production, grouped by route family. OpenNext's safe App Router path still invokes the lightweight routing/cache-interception layer, so invocation count alone is not expected to drop.
   - [ ] Observability baseline and operational thresholds
         Define structured fields, sampling, route-family dashboards or queries, deployment-version correlation, alert thresholds, and notification ownership. Keep tokens, API keys, session data, email addresses, and project payloads out of telemetry.
-  - [ ] Scheduled cleanup isolation and reporting
+  - [x] Scheduled cleanup isolation and reporting
         Ensure share, API-key, and product-event retention tasks complete independently, remain idempotent, emit a structured result per task, and have focused coverage for partial failures so one rejection cannot cut short the other cleanup work.
 
 - [ ] D1 recovery posture (`Research`)
