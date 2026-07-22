@@ -96,6 +96,7 @@ vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
     shape: Shape;
   }) => (
     <button
+      aria-label={`Select ${shape.id}`}
       data-selected={String(isSelected)}
       data-shape-id={shape.id}
       data-testid={`shape-3d-${shape.id}`}
@@ -128,6 +129,7 @@ vi.mock("@/components/canvas/preview3d/shared-scene", () => ({
     theme: { gridCell: string; gridSection: string };
   }) => (
     <button
+      aria-label="Preview grid"
       data-field={`${field.width}x${field.height}@${field.gridStep}`}
       data-grid-cell={theme.gridCell}
       data-grid-section={theme.gridSection}

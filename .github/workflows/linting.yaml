@@ -11,8 +11,8 @@ env:
   DEFAULT_NODE: 24
 
 jobs:
-  eslint:
-    name: ESLint
+  oxlint:
+    name: Oxlint
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code from GitHub
@@ -23,7 +23,7 @@ jobs:
           node-version: ${{ env.DEFAULT_NODE }}
       - name: 🏗 Install dependencies
         run: npm ci
-      - name: 🚀 Run ESLint
+      - name: 🚀 Run Oxlint
         run: npm run lint
 
   prettier:

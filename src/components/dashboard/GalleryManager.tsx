@@ -167,10 +167,13 @@ function InspectSection({
   );
 }
 
+// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardGalleryManager({
   currentUserRole,
   initialEntries,
 }: DashboardGalleryManagerProps) {
+  "use no memo";
+
   const t = useTranslations("dashboard.gallery");
   const tCommon = useTranslations("common");
   const [entries, setEntries] = useState(initialEntries);
@@ -331,7 +334,6 @@ export default function DashboardGalleryManager({
     [selectedGalleryStates, selectedShareLifecycles]
   );
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: entries,
     columns,

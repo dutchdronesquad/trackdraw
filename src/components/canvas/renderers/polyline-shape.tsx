@@ -55,6 +55,19 @@ export interface PolylineShapeContentProps {
   zmin: number;
 }
 
+function startAnimationLoop(
+  frameRef: { current: number | null },
+  renderFrame: () => boolean
+) {
+  function tick() {
+    if (renderFrame()) {
+      frameRef.current = window.requestAnimationFrame(tick);
+    }
+  }
+
+  frameRef.current = window.requestAnimationFrame(tick);
+}
+
 export function PolylineShapeContent({
   allowInteraction,
   designPpm,
@@ -337,15 +350,14 @@ export function PolylineShapeContent({
         session.latestClient = nextClient;
       };
 
-      const tick = () => {
+      startAnimationLoop(dragFrameRef, () => {
         applyWaypointDragFrame();
         if (waypointDragSessionRef.current) {
-          dragFrameRef.current = window.requestAnimationFrame(tick);
-        } else {
-          dragFrameRef.current = null;
+          return true;
         }
-      };
-      dragFrameRef.current = window.requestAnimationFrame(tick);
+        dragFrameRef.current = null;
+        return false;
+      });
 
       const handleMouseMove = (event: MouseEvent) => {
         updateLatestClient({ x: event.clientX, y: event.clientY });

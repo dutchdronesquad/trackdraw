@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -19,6 +19,12 @@ import {
   isDevAuthShimEnabled,
   markMagicLinkRequested,
 } from "@/lib/auth-client";
+
+const subscribeToPlatformCapabilities = () => () => {};
+
+function getPasskeySupport() {
+  return typeof PublicKeyCredential !== "undefined";
+}
 
 function getLoginCallbackURL() {
   if (typeof window === "undefined") {
@@ -52,24 +58,17 @@ export default function LoginPage() {
   const [passkeyPending, setPasskeyPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
-  const [passkeySupported, setPasskeySupported] = useState<boolean | null>(
-    null
+  const passkeySupported = useSyncExternalStore(
+    subscribeToPlatformCapabilities,
+    getPasskeySupport,
+    () => null
   );
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
+    if (passkeySupported) {
+      void authClient.preloadPasskeyAutoFill().catch(() => {});
     }
-
-    if (typeof PublicKeyCredential === "undefined") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPasskeySupported(false);
-      return;
-    }
-
-    setPasskeySupported(true);
-    void authClient.preloadPasskeyAutoFill().catch(() => {});
-  }, []);
+  }, [passkeySupported]);
 
   const handleMagicLinkSignIn = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

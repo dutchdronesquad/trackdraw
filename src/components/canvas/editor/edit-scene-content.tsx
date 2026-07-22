@@ -183,13 +183,11 @@ export function LadderElevationHandle3D({
   const [hovered, setHovered] = useState(false);
   const guideGroupRef = useRef<THREE.Group>(null);
   const ladderVisual = getLadderVisualSpec(shape);
-  const renderedHeight = Math.max(
-    getLadderRenderedHeight(
-      shape,
-      ladderVisual?.variant === "panel-frame" ? ladderVisual : null
-    ),
-    1
+  const ladderRenderedHeight = getLadderRenderedHeight(
+    shape,
+    ladderVisual?.variant === "panel-frame" ? ladderVisual : null
   );
+  const renderedHeight = Math.max(ladderRenderedHeight, 1);
   const guideHeight = renderedHeight + 0.65;
   const handleY = renderedHeight + 0.42;
   const gripRadius = isMobile

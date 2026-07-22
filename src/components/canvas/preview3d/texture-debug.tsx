@@ -188,6 +188,13 @@ export function useOverrideVersion() {
   );
 }
 
+export function withTextureOverrideVersion<T>(
+  value: T,
+  _overrideVersion: number
+): T {
+  return value;
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function snapToEdgeIndex(rotation: number): number {

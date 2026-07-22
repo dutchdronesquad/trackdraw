@@ -73,9 +73,12 @@ type DashboardApiKeysManagerProps = {
   initialKeys: AdminApiKey[];
 };
 
+// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardApiKeysManager({
   initialKeys,
 }: DashboardApiKeysManagerProps) {
+  "use no memo";
+
   const t = useTranslations("dashboard.apiKeys");
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -94,7 +97,6 @@ export default function DashboardApiKeysManager({
     [selectedStatuses]
   );
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: initialKeys,
     columns,

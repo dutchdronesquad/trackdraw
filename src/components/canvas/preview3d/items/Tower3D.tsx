@@ -17,6 +17,7 @@ import {
   getEffectiveRotation,
   registerPanel,
   useOverrideVersion,
+  withTextureOverrideVersion,
 } from "@/components/canvas/preview3d/texture-debug";
 import {
   getPanelFrameGateLayout,
@@ -143,72 +144,73 @@ function TowerPanelFrameTexturePlanes({
           mapping.bottom.flipY
         )
       : null;
-    return {
-      left: {
-        texture: cloneTextureForPanel(mapping.left.texture, {
-          rotation: getEffectiveRotation(
-            catalogId,
-            "left",
-            mapping.left.rotation
-          ),
-          ...leftFlips,
-        }),
-        rotation: mapping.left.rotation,
-        source: mapping.left.source,
-        flipX: mapping.left.flipX,
-        flipY: mapping.left.flipY,
+    return withTextureOverrideVersion(
+      {
+        left: {
+          texture: cloneTextureForPanel(mapping.left.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "left",
+              mapping.left.rotation
+            ),
+            ...leftFlips,
+          }),
+          rotation: mapping.left.rotation,
+          source: mapping.left.source,
+          flipX: mapping.left.flipX,
+          flipY: mapping.left.flipY,
+        },
+        right: {
+          texture: cloneTextureForPanel(mapping.right.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "right",
+              mapping.right.rotation
+            ),
+            ...rightFlips,
+          }),
+          rotation: mapping.right.rotation,
+          source: mapping.right.source,
+          flipX: mapping.right.flipX,
+          flipY: mapping.right.flipY,
+        },
+        top:
+          mapping.top && topFlips
+            ? {
+                texture: cloneTextureForPanel(mapping.top.texture, {
+                  rotation: getEffectiveRotation(
+                    catalogId,
+                    "top",
+                    mapping.top.rotation
+                  ),
+                  ...topFlips,
+                }),
+                rotation: mapping.top.rotation,
+                source: mapping.top.source,
+                flipX: mapping.top.flipX,
+                flipY: mapping.top.flipY,
+              }
+            : null,
+        bottom:
+          mapping.bottom && bottomFlips
+            ? {
+                texture: cloneTextureForPanel(mapping.bottom.texture, {
+                  rotation: getEffectiveRotation(
+                    catalogId,
+                    "bottom",
+                    mapping.bottom.rotation
+                  ),
+                  ...bottomFlips,
+                }),
+                rotation: mapping.bottom.rotation,
+                source: mapping.bottom.source,
+                flipX: mapping.bottom.flipX,
+                flipY: mapping.bottom.flipY,
+              }
+            : null,
       },
-      right: {
-        texture: cloneTextureForPanel(mapping.right.texture, {
-          rotation: getEffectiveRotation(
-            catalogId,
-            "right",
-            mapping.right.rotation
-          ),
-          ...rightFlips,
-        }),
-        rotation: mapping.right.rotation,
-        source: mapping.right.source,
-        flipX: mapping.right.flipX,
-        flipY: mapping.right.flipY,
-      },
-      top:
-        mapping.top && topFlips
-          ? {
-              texture: cloneTextureForPanel(mapping.top.texture, {
-                rotation: getEffectiveRotation(
-                  catalogId,
-                  "top",
-                  mapping.top.rotation
-                ),
-                ...topFlips,
-              }),
-              rotation: mapping.top.rotation,
-              source: mapping.top.source,
-              flipX: mapping.top.flipX,
-              flipY: mapping.top.flipY,
-            }
-          : null,
-      bottom:
-        mapping.bottom && bottomFlips
-          ? {
-              texture: cloneTextureForPanel(mapping.bottom.texture, {
-                rotation: getEffectiveRotation(
-                  catalogId,
-                  "bottom",
-                  mapping.bottom.rotation
-                ),
-                ...bottomFlips,
-              }),
-              rotation: mapping.bottom.rotation,
-              source: mapping.bottom.source,
-              flipX: mapping.bottom.flipX,
-              flipY: mapping.bottom.flipY,
-            }
-          : null,
-    };
-    // overrideVersion is intentionally included to trigger re-clone on cycle
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      overrideVersion
+    );
   }, [
     leftTexture,
     rightTexture,
@@ -254,7 +256,7 @@ function TowerPanelFrameTexturePlanes({
         panelTextures.bottom.flipY,
         panelTextures.bottom.rotation
       );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [catalogId]);
 
   return (

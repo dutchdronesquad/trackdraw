@@ -95,7 +95,9 @@ function parseGlb(buffer, filePath) {
     offset = chunkEnd;
 
     if (chunkType === JSON_CHUNK_TYPE) {
-      gltfJson = JSON.parse(chunk.toString("utf8").replace(/[\u0000 ]+$/u, ""));
+      gltfJson = JSON.parse(
+        chunk.toString("utf8").replaceAll("\u0000", "").trimEnd()
+      );
     } else if (chunkType === BIN_CHUNK_TYPE) {
       binChunk = chunk;
     }

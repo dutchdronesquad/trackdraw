@@ -109,10 +109,13 @@ type UserContextData = {
   recentEvents: AuditEvent[];
 };
 
+// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardUsersManager({
   currentUserId,
   initialUsers,
 }: DashboardUsersManagerProps) {
+  "use no memo";
+
   const t = useTranslations("dashboard.users");
   const [users, setUsers] = useState(initialUsers);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
@@ -419,7 +422,6 @@ export default function DashboardUsersManager({
     [selectedRoles]
   );
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: users,
     columns,

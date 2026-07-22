@@ -56,7 +56,7 @@ export function useLocationSearch({
 }) {
   const searchPanelRef = useRef<HTMLDivElement | null>(null);
   const locationSearchAbortRef = useRef<AbortController | null>(null);
-  const [locationQuery, setLocationQuery] = useState("");
+  const [locationQuery, setLocationQueryState] = useState("");
   const [locationResults, setLocationResults] = useState<
     LocationSearchResult[]
   >([]);
@@ -122,6 +122,25 @@ export function useLocationSearch({
     [centerRef]
   );
 
+  const setLocationQuery = useCallback((value: string) => {
+    locationSearchAbortRef.current?.abort();
+    setLocationQueryState(value);
+    setLocationSearchError(null);
+
+    const query = value.trim();
+    if (
+      !query ||
+      query.length < LOCATION_SEARCH_MIN_LENGTH ||
+      parseCoordinateQuery(query)
+    ) {
+      setLocationResults([]);
+      setLocationSearchPending(false);
+      return;
+    }
+
+    setLocationSearchPending(true);
+  }, []);
+
   useEffect(() => {
     if (!locationSearchError && locationResults.length === 0) return;
 
@@ -145,10 +164,6 @@ export function useLocationSearch({
     locationSearchAbortRef.current?.abort();
 
     if (!query) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLocationResults([]);
-      setLocationSearchError(null);
-      setLocationSearchPending(false);
       return;
     }
 
@@ -156,23 +171,15 @@ export function useLocationSearch({
 
     const coordinateLocation = parseCoordinateQuery(query);
     if (coordinateLocation) {
-      setLocationResults([]);
-      setLocationSearchError(null);
-      setLocationSearchPending(false);
       return;
     }
 
     if (query.length < LOCATION_SEARCH_MIN_LENGTH) {
-      setLocationResults([]);
-      setLocationSearchError(null);
-      setLocationSearchPending(false);
       return;
     }
 
     const controller = new AbortController();
     locationSearchAbortRef.current = controller;
-    setLocationSearchError(null);
-    setLocationSearchPending(true);
 
     const timeout = window.setTimeout(() => {
       void searchLocations(query, controller.signal)
@@ -234,10 +241,12 @@ export function useLocationSearch({
   };
 
   const selectLocationResult = (result: LocationSearchResult) => {
-    setLocationQuery(result.address);
+    locationSearchAbortRef.current?.abort();
+    setLocationQueryState(result.address);
     setSelectedLocationLabel(result.address);
     setLocationResults([]);
     setLocationSearchError(null);
+    setLocationSearchPending(false);
     jumpToLocation({ lat: result.lat, lng: result.lng });
 
     const activeElement = document.activeElement;

@@ -106,6 +106,19 @@ interface TrackCanvasInteractionsParams {
   >;
 }
 
+function startAnimationLoop(
+  frameRef: { current: number | null },
+  renderFrame: () => boolean
+) {
+  function tick() {
+    if (renderFrame()) {
+      frameRef.current = requestAnimationFrame(tick);
+    }
+  }
+
+  frameRef.current = requestAnimationFrame(tick);
+}
+
 export function useTrackCanvasInteractions({
   activeTool,
   activePresetId,
@@ -324,13 +337,13 @@ export function useTrackCanvasInteractions({
       wheelPointerRef.current = pointer;
 
       if (!wheelAnimFrameRef.current) {
-        const animate = () => {
+        startAnimationLoop(wheelAnimFrameRef, () => {
           const s = stageRef.current;
           const target = wheelTargetScaleRef.current;
           const ptr = wheelPointerRef.current;
           if (!s || target === null || !ptr) {
             wheelAnimFrameRef.current = null;
-            return;
+            return false;
           }
           const current = s.scaleX();
           const next = current + (target - current) * 0.1;
@@ -350,11 +363,10 @@ export function useTrackCanvasInteractions({
             wheelTargetScaleRef.current = null;
             wheelPointerRef.current = null;
             wheelAnimFrameRef.current = null;
-          } else {
-            wheelAnimFrameRef.current = requestAnimationFrame(animate);
+            return false;
           }
-        };
-        wheelAnimFrameRef.current = requestAnimationFrame(animate);
+          return true;
+        });
       }
     },
     [

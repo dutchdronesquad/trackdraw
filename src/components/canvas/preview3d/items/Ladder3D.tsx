@@ -6,6 +6,7 @@ import {
   getEffectiveRotation,
   registerPanel,
   useOverrideVersion,
+  withTextureOverrideVersion,
 } from "@/components/canvas/preview3d/texture-debug";
 import {
   Suspense,
@@ -103,54 +104,56 @@ function PanelFrameLadderSectionTexturePlanes({
           mapping.top.flipY
         )
       : null;
-    return {
-      left: {
-        texture: cloneTextureForPanel(mapping.left.texture, {
-          rotation: getEffectiveRotation(
-            catalogId,
-            "left",
-            mapping.left.rotation
-          ),
-          ...leftFlips,
-        }),
-        rotation: mapping.left.rotation,
-        source: mapping.left.source,
-        flipX: mapping.left.flipX,
-        flipY: mapping.left.flipY,
+    return withTextureOverrideVersion(
+      {
+        left: {
+          texture: cloneTextureForPanel(mapping.left.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "left",
+              mapping.left.rotation
+            ),
+            ...leftFlips,
+          }),
+          rotation: mapping.left.rotation,
+          source: mapping.left.source,
+          flipX: mapping.left.flipX,
+          flipY: mapping.left.flipY,
+        },
+        right: {
+          texture: cloneTextureForPanel(mapping.right.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "right",
+              mapping.right.rotation
+            ),
+            ...rightFlips,
+          }),
+          rotation: mapping.right.rotation,
+          source: mapping.right.source,
+          flipX: mapping.right.flipX,
+          flipY: mapping.right.flipY,
+        },
+        top:
+          mapping.top && topFlips
+            ? {
+                texture: cloneTextureForPanel(mapping.top.texture, {
+                  rotation: getEffectiveRotation(
+                    catalogId,
+                    "top",
+                    mapping.top.rotation
+                  ),
+                  ...topFlips,
+                }),
+                rotation: mapping.top.rotation,
+                source: mapping.top.source,
+                flipX: mapping.top.flipX,
+                flipY: mapping.top.flipY,
+              }
+            : null,
       },
-      right: {
-        texture: cloneTextureForPanel(mapping.right.texture, {
-          rotation: getEffectiveRotation(
-            catalogId,
-            "right",
-            mapping.right.rotation
-          ),
-          ...rightFlips,
-        }),
-        rotation: mapping.right.rotation,
-        source: mapping.right.source,
-        flipX: mapping.right.flipX,
-        flipY: mapping.right.flipY,
-      },
-      top:
-        mapping.top && topFlips
-          ? {
-              texture: cloneTextureForPanel(mapping.top.texture, {
-                rotation: getEffectiveRotation(
-                  catalogId,
-                  "top",
-                  mapping.top.rotation
-                ),
-                ...topFlips,
-              }),
-              rotation: mapping.top.rotation,
-              source: mapping.top.source,
-              flipX: mapping.top.flipX,
-              flipY: mapping.top.flipY,
-            }
-          : null,
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      overrideVersion
+    );
   }, [
     leftTexture,
     rightTexture,
@@ -187,7 +190,7 @@ function PanelFrameLadderSectionTexturePlanes({
         panelTextures.top.flipY,
         panelTextures.top.rotation
       );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [catalogId]);
 
   return (

@@ -58,10 +58,13 @@ function getOwnerFilterValue(share: DashboardShare): ShareOwnerFilterValue {
   return share.ownerUserId ? "account" : "anonymous";
 }
 
+// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardSharesManager({
   currentUserRole,
   initialShares,
 }: DashboardSharesManagerProps) {
+  "use no memo";
+
   const t = useTranslations("dashboard.shares");
   const tCommon = useTranslations("common");
   const [shares, setShares] = useState(initialShares);
@@ -220,7 +223,6 @@ export default function DashboardSharesManager({
     [selectedLifecycles, selectedOwners, selectedTypes]
   );
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: shares,
     columns,

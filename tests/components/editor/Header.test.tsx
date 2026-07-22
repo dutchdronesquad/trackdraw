@@ -29,7 +29,7 @@ vi.mock("next/image", () => ({
     blurDataURL?: string;
     placeholder?: string;
   }) => (
-    // eslint-disable-next-line @next/next/no-img-element
+    // oxlint-disable-next-line nextjs/no-img-element
     <img {...props} alt={props.alt ?? ""} />
   ),
 }));

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { memo, useCallback, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   MultiInspectorView,
@@ -81,34 +74,33 @@ function Inspector({
       : null
   );
   const count = selectedShapes.length;
-  const [panelOverride, setPanelOverride] = useState<
-    "project" | "layout" | "selection" | null
-  >(null);
-  const hasObservedSelectionRef = useRef(false);
-  const [saveAsPresetOpen, setSaveAsPresetOpen] = useState(false);
+  const [panelState, setPanelState] = useState<{
+    panel: "project" | "layout" | "selection" | null;
+    selection: string[];
+  }>(() => ({ panel: null, selection }));
+  const panelOverride =
+    panelState.selection === selection
+      ? panelState.panel
+      : selection.length > 0
+        ? "selection"
+        : null;
+  const setPanelOverride = useCallback(
+    (panel: "project" | "layout" | "selection") => {
+      setPanelState({ panel, selection });
+    },
+    [selection]
+  );
+  const [saveAsPresetManuallyOpen, setSaveAsPresetManuallyOpen] =
+    useState(false);
   const { addUserPreset, canSavePresets } = useAccountPresetSync();
   const { pending: savePresetPending, reset: resetSavePresetTrigger } =
     useSavePresetTrigger();
-
-  useEffect(() => {
-    if (savePresetPending && canSavePresets) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSaveAsPresetOpen(true);
-      resetSavePresetTrigger();
-    }
-  }, [savePresetPending, canSavePresets, resetSavePresetTrigger]);
-
-  useEffect(() => {
-    if (!hasObservedSelectionRef.current) {
-      hasObservedSelectionRef.current = true;
-      return;
-    }
-
-    if (selection.length > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPanelOverride("selection");
-    }
-  }, [selection]);
+  const saveAsPresetOpen =
+    saveAsPresetManuallyOpen || (savePresetPending && canSavePresets);
+  const closeSaveAsPreset = useCallback(() => {
+    setSaveAsPresetManuallyOpen(false);
+    if (savePresetPending) resetSavePresetTrigger();
+  }, [resetSavePresetTrigger, savePresetPending]);
 
   const selectAndOpenSelectionPanel = useCallback(
     (ids: string[]) => {
@@ -117,16 +109,16 @@ function Inspector({
         setPanelOverride("selection");
       }
     },
-    [setSelection]
+    [setPanelOverride, setSelection]
   );
 
   const handleSaveAsPreset = useCallback(
     (name: string) => {
-      setSaveAsPresetOpen(false);
+      closeSaveAsPreset();
       const preset = shapesToPreset(selectedShapes, name, "");
       addUserPreset(preset);
     },
-    [selectedShapes, addUserPreset]
+    [addUserPreset, closeSaveAsPreset, selectedShapes]
   );
   const selectionDisabled = count === 0;
   const defaultPanel = selectionDisabled ? "project" : "selection";
@@ -166,7 +158,7 @@ function Inspector({
         ungroupSelection={ungroupSelection}
         updateShapesCatalogType={updateShapesCatalogType}
         onSaveAsPreset={
-          canSavePresets ? () => setSaveAsPresetOpen(true) : undefined
+          canSavePresets ? () => setSaveAsPresetManuallyOpen(true) : undefined
         }
       />
     );
@@ -297,7 +289,7 @@ function Inspector({
         shapeCount={selectedShapes.filter((s) => s.kind !== "polyline").length}
         pathCount={selectedShapes.filter((s) => s.kind === "polyline").length}
         onSave={handleSaveAsPreset}
-        onCancel={() => setSaveAsPresetOpen(false)}
+        onCancel={closeSaveAsPreset}
       />
     </div>
   );

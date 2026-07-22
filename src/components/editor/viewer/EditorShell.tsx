@@ -21,6 +21,7 @@ import type {
 } from "@/components/canvas/editor/TrackPreview3D";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
+import { useSyncedEditorView } from "@/hooks/editor/useSyncedEditorView";
 import type { EditorView } from "@/lib/editor/view";
 import { useEditor } from "@/store/editor";
 import { selectHasPath } from "@/store/selectors";
@@ -90,7 +91,7 @@ export default function EditorShell({
   const searchParams = useSearchParams();
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
-  const [tab, setTab] = useState<"2d" | "3d">(initialTab);
+  const [tab, setTab] = useSyncedEditorView(initialTab);
   const [hasVisited3D, setHasVisited3D] = useState(initialTab === "3d");
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
   const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
@@ -99,11 +100,6 @@ export default function EditorShell({
   const [pendingFlyThroughStart, setPendingFlyThroughStart] = useState(false);
   const [mobileFlyModeActive, setMobileFlyModeActive] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTab(initialTab);
-  }, [initialTab]);
 
   useEffect(() => {
     if (hasVisited3D) return;
@@ -133,15 +129,11 @@ export default function EditorShell({
     return () => window.cancelAnimationFrame(frameId);
   }, [pendingFlyThroughStart, tab]);
 
-  useEffect(() => {
-    if (tab === "3d") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setHasVisited3D(true);
-    }
-  }, [tab]);
-
   const handleTabChange = useCallback(
     (nextTab: EditorView) => {
+      if (tab === "3d" || nextTab === "3d") {
+        setHasVisited3D(true);
+      }
       setTab(nextTab);
       const params = new URLSearchParams(searchParams.toString());
       params.set("view", nextTab);
@@ -149,7 +141,7 @@ export default function EditorShell({
       const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
       router.replace(nextUrl, { scroll: false });
     },
-    [pathname, router, searchParams]
+    [pathname, router, searchParams, setTab, tab]
   );
 
   return (

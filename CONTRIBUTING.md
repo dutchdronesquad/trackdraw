@@ -135,6 +135,8 @@ npm run migrate:up:dev
 npm run migrate:up:production
 ```
 
+`npm run lint` runs Oxlint, including its React Compiler checks.
+
 ## Validation
 
 Run these after non-trivial code changes when the environment allows it:

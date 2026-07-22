@@ -215,7 +215,7 @@ export default function ShareDialog({
 
   const [activeTab, setActiveTab] = useState<Tab>("share");
   const [share, setShare] = useState<ActiveShare | null>(null);
-  const [loadDone, setLoadDone] = useState(false);
+  const [loadDone, setLoadDone] = useState(existingShareMode);
   const [publishedDesignToken, setPublishedDesignToken] = useState<
     string | null
   >(null);
@@ -292,19 +292,20 @@ export default function ShareDialog({
 
   const busy = publishing || revoking || galleryUpdating;
 
+  const openGalleryForm = () => {
+    setConfirmRemoveFromGallery(false);
+    setGalleryTitleInput(share?.galleryTitle || design.title.trim());
+    setGalleryDescriptionInput(
+      share?.galleryDescription || design.description?.trim() || ""
+    );
+    setGalleryPreviewDataUrl(null);
+    setShowGalleryForm(true);
+  };
+
   useEffect(() => {
     if (!open) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShare(null);
-    setLoadDone(false);
-    setPublishedDesignToken(null);
-    setShowGalleryForm(false);
-    setConfirmRemoveFromGallery(false);
-    setGalleryPreviewDataUrl(null);
-
     if (existingShareMode) {
-      setLoadDone(true);
       return;
     }
 
@@ -390,17 +391,6 @@ export default function ShareDialog({
     currentView,
     currentDesignToken,
   ]);
-
-  useEffect(() => {
-    if (!showGalleryForm) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setGalleryTitleInput(share?.galleryTitle || design.title.trim());
-    setGalleryDescriptionInput(
-      share?.galleryDescription || design.description?.trim() || ""
-    );
-    setGalleryPreviewDataUrl(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showGalleryForm]);
 
   const doPublish = async (force = false): Promise<string> => {
     setPublishing(true);
@@ -1554,10 +1544,7 @@ export default function ShareDialog({
                       </dl>
                       <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2">
                         <Button
-                          onClick={() => {
-                            setConfirmRemoveFromGallery(false);
-                            setShowGalleryForm(true);
-                          }}
+                          onClick={openGalleryForm}
                           disabled={busy}
                           className={shareDialogButtonClassName}
                         >
@@ -1641,10 +1628,7 @@ export default function ShareDialog({
                       ) : null}
                       <div className="border-border/60 flex border-t pt-3 min-[520px]:justify-end">
                         <Button
-                          onClick={() => {
-                            setConfirmRemoveFromGallery(false);
-                            setShowGalleryForm(true);
-                          }}
+                          onClick={openGalleryForm}
                           disabled={busy || shareNeedsRefresh}
                           className={cn(
                             shareDialogButtonClassName,

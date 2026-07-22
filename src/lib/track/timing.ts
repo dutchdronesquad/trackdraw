@@ -63,7 +63,7 @@ export function getShapeTimingMarker(shape: Shape): ShapeTimingMarker | null {
 
 export function normalizeShapeTimingMeta(shape: Shape): Shape {
   const currentTiming = normalizeTimingMarker(shape.meta?.timing);
-  const nextMeta = { ...(shape.meta ?? {}) };
+  const nextMeta = { ...shape.meta };
   const { meta: _meta, ...shapeWithoutMeta } = shape;
 
   if (currentTiming && isTimingMarkerShape(shape)) {
@@ -84,7 +84,7 @@ export function getTimingMarkerMeta(
   meta: Shape["meta"],
   marker: ShapeTimingMarker | null
 ) {
-  const nextMeta = { ...(meta ?? {}) };
+  const nextMeta = { ...meta };
   const normalizedMarker = normalizeTimingMarker(marker);
   if (normalizedMarker) {
     nextMeta.timing = normalizedMarker;

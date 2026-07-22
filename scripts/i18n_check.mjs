@@ -11,7 +11,7 @@
  * Usage: node scripts/i18n_check.mjs
  * Exits non-zero if any issue is found, so it can be wired into CI.
  */
-import { readFileSync, readdirSync, writeFileSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 

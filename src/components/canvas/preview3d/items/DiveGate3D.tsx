@@ -6,6 +6,7 @@ import {
   getEffectiveRotation,
   registerPanel,
   useOverrideVersion,
+  withTextureOverrideVersion,
 } from "@/components/canvas/preview3d/texture-debug";
 import {
   useCallback,
@@ -138,65 +139,67 @@ function ArchDiveGate3D({
       mapping.bottom.flipX,
       mapping.bottom.flipY
     );
-    return {
-      left: {
-        texture: cloneTextureForPanel(mapping.left.texture, {
-          rotation: getEffectiveRotation(
-            catalogId,
-            "left",
-            mapping.left.rotation
-          ),
-          ...leftFlips,
-        }),
-        rotation: mapping.left.rotation,
-        source: mapping.left.source,
-        flipX: mapping.left.flipX,
-        flipY: mapping.left.flipY,
+    return withTextureOverrideVersion(
+      {
+        left: {
+          texture: cloneTextureForPanel(mapping.left.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "left",
+              mapping.left.rotation
+            ),
+            ...leftFlips,
+          }),
+          rotation: mapping.left.rotation,
+          source: mapping.left.source,
+          flipX: mapping.left.flipX,
+          flipY: mapping.left.flipY,
+        },
+        right: {
+          texture: cloneTextureForPanel(mapping.right.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "right",
+              mapping.right.rotation
+            ),
+            ...rightFlips,
+          }),
+          rotation: mapping.right.rotation,
+          source: mapping.right.source,
+          flipX: mapping.right.flipX,
+          flipY: mapping.right.flipY,
+        },
+        top: {
+          texture: cloneTextureForPanel(mapping.top.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "top",
+              mapping.top.rotation
+            ),
+            ...topFlips,
+          }),
+          rotation: mapping.top.rotation,
+          source: mapping.top.source,
+          flipX: mapping.top.flipX,
+          flipY: mapping.top.flipY,
+        },
+        bottom: {
+          texture: cloneTextureForPanel(mapping.bottom.texture, {
+            rotation: getEffectiveRotation(
+              catalogId,
+              "bottom",
+              mapping.bottom.rotation
+            ),
+            ...bottomFlips,
+          }),
+          rotation: mapping.bottom.rotation,
+          source: mapping.bottom.source,
+          flipX: mapping.bottom.flipX,
+          flipY: mapping.bottom.flipY,
+        },
       },
-      right: {
-        texture: cloneTextureForPanel(mapping.right.texture, {
-          rotation: getEffectiveRotation(
-            catalogId,
-            "right",
-            mapping.right.rotation
-          ),
-          ...rightFlips,
-        }),
-        rotation: mapping.right.rotation,
-        source: mapping.right.source,
-        flipX: mapping.right.flipX,
-        flipY: mapping.right.flipY,
-      },
-      top: {
-        texture: cloneTextureForPanel(mapping.top.texture, {
-          rotation: getEffectiveRotation(
-            catalogId,
-            "top",
-            mapping.top.rotation
-          ),
-          ...topFlips,
-        }),
-        rotation: mapping.top.rotation,
-        source: mapping.top.source,
-        flipX: mapping.top.flipX,
-        flipY: mapping.top.flipY,
-      },
-      bottom: {
-        texture: cloneTextureForPanel(mapping.bottom.texture, {
-          rotation: getEffectiveRotation(
-            catalogId,
-            "bottom",
-            mapping.bottom.rotation
-          ),
-          ...bottomFlips,
-        }),
-        rotation: mapping.bottom.rotation,
-        source: mapping.bottom.source,
-        flipX: mapping.bottom.flipX,
-        flipY: mapping.bottom.flipY,
-      },
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      overrideVersion
+    );
   }, [sideTexture, topTexture, visual.banner, overrideVersion, catalogId]);
 
   useEffect(() => {
@@ -233,7 +236,7 @@ function ArchDiveGate3D({
       panelTextures.bottom.flipY,
       panelTextures.bottom.rotation
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [catalogId]);
 
   const layout = getMultiGpDiveGateArchLayout(shape);
@@ -461,37 +464,37 @@ function LaunchGate3D({
     }
   }
   const overrideVersion = useOverrideVersion();
-  const panelTextures = useMemo(
-    () => {
-      const mapping = resolveLaunchGateBannerTextureMapping(visual.banner, {
-        side: sideTexture,
-        top: topTexture,
-      });
-      const frontFlips = getEffectiveFlips(
-        catalogId,
-        "front",
-        mapping.front.flipX,
-        mapping.front.flipY
-      );
-      const rearFlips = getEffectiveFlips(
-        catalogId,
-        "rear",
-        mapping.rear.flipX,
-        mapping.rear.flipY
-      );
-      const leftFlips = getEffectiveFlips(
-        catalogId,
-        "left",
-        mapping.left.flipX,
-        mapping.left.flipY
-      );
-      const rightFlips = getEffectiveFlips(
-        catalogId,
-        "right",
-        mapping.right.flipX,
-        mapping.right.flipY
-      );
-      return {
+  const panelTextures = useMemo(() => {
+    const mapping = resolveLaunchGateBannerTextureMapping(visual.banner, {
+      side: sideTexture,
+      top: topTexture,
+    });
+    const frontFlips = getEffectiveFlips(
+      catalogId,
+      "front",
+      mapping.front.flipX,
+      mapping.front.flipY
+    );
+    const rearFlips = getEffectiveFlips(
+      catalogId,
+      "rear",
+      mapping.rear.flipX,
+      mapping.rear.flipY
+    );
+    const leftFlips = getEffectiveFlips(
+      catalogId,
+      "left",
+      mapping.left.flipX,
+      mapping.left.flipY
+    );
+    const rightFlips = getEffectiveFlips(
+      catalogId,
+      "right",
+      mapping.right.flipX,
+      mapping.right.flipY
+    );
+    return withTextureOverrideVersion(
+      {
         front: {
           texture: cloneTextureForPanel(mapping.front.texture, {
             rotation: getEffectiveRotation(
@@ -548,11 +551,10 @@ function LaunchGate3D({
           flipX: mapping.right.flipX,
           flipY: mapping.right.flipY,
         },
-      };
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sideTexture, topTexture, visual.banner, overrideVersion, catalogId]
-  );
+      },
+      overrideVersion
+    );
+  }, [sideTexture, topTexture, visual.banner, overrideVersion, catalogId]);
   const layout = getMultiGpLaunchGateLayout(shape);
 
   const launchGroupRef = useRef<THREE.Group>(null);
@@ -660,7 +662,7 @@ function LaunchGate3D({
       panelTextures.right.flipY,
       panelTextures.right.rotation
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [catalogId]);
 
   return (

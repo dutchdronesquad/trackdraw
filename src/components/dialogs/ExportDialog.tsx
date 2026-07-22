@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   SidebarDialog,
   type SidebarDialogNavItem,
@@ -493,14 +493,22 @@ export default function ExportDialog({
   );
   const webmToastIdRef = useRef<string | number | null>(null);
   const [webmStartedAt, setWebmStartedAt] = useState<number | null>(null);
-  const [exportTheme, setExportTheme] = useState<Theme>("dark");
+  const [exportThemeSelection, setExportThemeSelection] = useState(() => ({
+    sourceTheme: currentTheme,
+    theme: currentTheme,
+  }));
+  const exportTheme =
+    exportThemeSelection.sourceTheme === currentTheme
+      ? exportThemeSelection.theme
+      : currentTheme;
+  const setExportTheme = useCallback(
+    (theme: Theme) => {
+      setExportThemeSelection({ sourceTheme: currentTheme, theme });
+    },
+    [currentTheme]
+  );
   const [includeObstacleNumbers, setIncludeObstacleNumbers] = useState(true);
   const [canvasReady, setCanvasReady] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setExportTheme(currentTheme);
-  }, [currentTheme]);
 
   useEffect(() => {
     if (!open) return;

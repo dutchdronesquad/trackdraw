@@ -31,7 +31,7 @@ vi.mock("next/image", () => ({
     fill?: boolean;
     unoptimized?: boolean;
   }) => (
-    // eslint-disable-next-line @next/next/no-img-element
+    // oxlint-disable-next-line nextjs/no-img-element
     <img alt={alt} {...props} />
   ),
 }));

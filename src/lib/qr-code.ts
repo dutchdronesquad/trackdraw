@@ -55,7 +55,7 @@ function gfMultiply(x: number, y: number) {
 }
 
 function reedSolomonDivisor(degree: number) {
-  const result = new Array(degree).fill(0) as number[];
+  const result = Array.from({ length: degree }, () => 0);
   result[degree - 1] = 1;
 
   let root = 1;
@@ -72,7 +72,7 @@ function reedSolomonDivisor(degree: number) {
 
 function reedSolomonRemainder(data: number[], degree: number) {
   const divisor = reedSolomonDivisor(degree);
-  const result = new Array(degree).fill(0) as number[];
+  const result = Array.from({ length: degree }, () => 0);
 
   for (const value of data) {
     const factor = value ^ result.shift()!;

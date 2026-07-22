@@ -34,10 +34,13 @@ type AuditEventsTableProps = {
   initialCategories?: AuditEventCategory[];
 };
 
+// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardAuditEventsTable({
   events,
   initialCategories = [],
 }: AuditEventsTableProps) {
+  "use no memo";
+
   const t: Translate = useTranslations("dashboard.audit");
   const unknownUserLabel = t("fallback.unknownUser");
   const [globalFilter, setGlobalFilter] = useState("");
@@ -68,7 +71,6 @@ export default function DashboardAuditEventsTable({
     [selectedActors, selectedCategories, selectedEventTypes]
   );
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: events,
     columns,

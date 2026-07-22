@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { Reorder, useDragControls } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -282,12 +282,16 @@ export function ItemOverviewList({
   const [query, setQuery] = useState("");
   const [viewFilter, setViewFilter] = useState<ViewFilter>("all");
   const listShapes = useMemo(() => getListableTrackItems(shapes), [shapes]);
-  const [localOrder, setLocalOrder] = useState<Shape[]>(listShapes);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLocalOrder(listShapes);
-  }, [listShapes]);
+  const [localOrderState, setLocalOrderState] = useState(() => ({
+    order: listShapes,
+    source: listShapes,
+  }));
+  const localOrder =
+    localOrderState.source === listShapes ? localOrderState.order : listShapes;
+  const setLocalOrder = useCallback(
+    (order: Shape[]) => setLocalOrderState({ order, source: listShapes }),
+    [listShapes]
+  );
 
   const VIEW_FILTERS: { value: ViewFilter; label: string }[] = [
     { value: "all", label: t("listPanel.filterAll") },

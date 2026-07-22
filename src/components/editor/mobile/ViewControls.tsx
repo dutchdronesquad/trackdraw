@@ -44,6 +44,7 @@ function ToggleRow({
   return (
     <button
       type="button"
+      aria-label={title}
       onClick={onClick}
       className={cn(
         "border-border/50 bg-muted/18 mt-2.5 flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors",
@@ -153,6 +154,7 @@ export function ViewControls({
             {onToggleSnapEnabled && (
               <button
                 type="button"
+                aria-label={t("controls.snap.label")}
                 onClick={onToggleSnapEnabled}
                 className={cn(
                   "border-border/50 bg-muted/18 mt-2.5 flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors",

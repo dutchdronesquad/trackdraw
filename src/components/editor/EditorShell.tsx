@@ -29,6 +29,7 @@ import {
   useDeveloperModeShortcut,
 } from "@/hooks/account/useDeveloperMode";
 import { useUndoRedo } from "@/hooks/editor/useUndoRedo";
+import { useSyncedEditorView } from "@/hooks/editor/useSyncedEditorView";
 import { usePerfMetric } from "@/hooks/usePerfMetric";
 import { useEditorProjects } from "@/hooks/editor/useEditorProjects";
 import { useCompleteProfile } from "@/hooks/account/useCompleteProfile";
@@ -178,7 +179,7 @@ export default function EditorShell({
   const searchParams = useSearchParams();
   const canvasRef = useRef<TrackCanvasHandle>(null);
   const preview3DRef = useRef<TrackPreview3DHandle>(null);
-  const [tab, setTab] = useState<EditorView>(initialTab);
+  const [tab, setTab] = useSyncedEditorView(initialTab);
   const [hasVisited3D, setHasVisited3D] = useState(initialTab === "3d");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
     null
@@ -266,12 +267,6 @@ export default function EditorShell({
     onSeedTokenImported: handleSeedTokenImported,
   });
 
-  // Sync tab when initialTab prop changes (e.g. ShareViewer navigates ?view=3d via Link)
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTab(initialTab);
-  }, [initialTab]);
-
   const {
     accountProjects,
     accountProjectsLoading,
@@ -337,6 +332,9 @@ export default function EditorShell({
 
   const handleTabChange = useCallback(
     (nextTab: EditorView) => {
+      if (tab === "3d" || nextTab === "3d") {
+        setHasVisited3D(true);
+      }
       setTab(nextTab);
       const params = new URLSearchParams(searchParams.toString());
       params.set("view", nextTab);
@@ -344,7 +342,7 @@ export default function EditorShell({
       const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
       router.replace(nextUrl, { scroll: false });
     },
-    [pathname, router, searchParams]
+    [pathname, router, searchParams, setTab, tab]
   );
 
   const setActiveEditorTool = useCallback(
@@ -402,7 +400,7 @@ export default function EditorShell({
   // Keep the mobile inspector closed until explicitly opened from the mobile UI.
   useEffect(() => {
     if (selection.length === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      // oxlint-disable-next-line react/react-compiler -- close mobile UI after deselection
       setMobileInspectorOpen(false);
       setMobileMultiSelectEnabled(false);
     }
@@ -410,7 +408,7 @@ export default function EditorShell({
 
   useEffect(() => {
     if (activeTool === "polyline" || mobileDraftPathState.active) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // oxlint-disable-next-line react/react-compiler -- close the path builder after tool changes
     setMobilePathBuilderPinnedOpen(false);
   }, [activeTool, mobileDraftPathState.active]);
 
@@ -450,13 +448,6 @@ export default function EditorShell({
     frameId = window.requestAnimationFrame(tryStart);
     return () => window.cancelAnimationFrame(frameId);
   }, [pendingFlyThroughStart, tab]);
-
-  useEffect(() => {
-    if (tab === "3d") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setHasVisited3D(true);
-    }
-  }, [tab]);
 
   const handleMobileMultiSelectStart = useCallback(
     (shapeId: string) => {

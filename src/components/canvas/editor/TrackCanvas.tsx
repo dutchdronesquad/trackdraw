@@ -814,6 +814,7 @@ const TrackCanvas = memo(
         effectiveVertexSel,
         readOnly,
         segmentSel,
+        setContextMenu,
         setSelection,
         shapeById,
         t,

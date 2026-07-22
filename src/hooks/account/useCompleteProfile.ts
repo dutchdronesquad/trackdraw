@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { authClient, type AuthUser } from "@/lib/auth-client";
 
 export function useCompleteProfile({
@@ -10,42 +10,26 @@ export function useCompleteProfile({
   readOnly: boolean;
   authUser: AuthUser | null;
 }) {
-  const [completeProfileOpen, setCompleteProfileOpen] = useState(false);
-  const [completeProfileDismissed, setCompleteProfileDismissed] =
-    useState(false);
-
-  useEffect(() => {
-    if (readOnly || !authUser?.id) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCompleteProfileOpen(false);
-      setCompleteProfileDismissed(false);
-      return;
-    }
-
-    if (authUser.name?.trim()) {
-      setCompleteProfileOpen(false);
-      setCompleteProfileDismissed(false);
-      return;
-    }
-
-    if (!completeProfileDismissed) {
-      setCompleteProfileOpen(true);
-    }
-  }, [authUser?.id, authUser?.name, completeProfileDismissed, readOnly]);
+  const promptUserId =
+    !readOnly && authUser?.id && !authUser.name?.trim() ? authUser.id : null;
+  const [dismissedUserId, setDismissedUserId] = useState<string | null>(null);
+  const completeProfileOpen =
+    promptUserId !== null && dismissedUserId !== promptUserId;
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      setCompleteProfileOpen(open);
-      if (!open && authUser && !authUser.name?.trim()) {
-        setCompleteProfileDismissed(true);
+      if (open) {
+        setDismissedUserId(null);
+      } else if (promptUserId) {
+        setDismissedUserId(promptUserId);
       }
     },
-    [authUser]
+    [promptUserId]
   );
 
   const handleSave = useCallback(async (name: string) => {
     await authClient.updateProfileName(name);
-    setCompleteProfileDismissed(false);
+    setDismissedUserId(null);
   }, []);
 
   return {

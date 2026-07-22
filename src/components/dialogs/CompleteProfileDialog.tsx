@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -29,17 +29,6 @@ export default function CompleteProfileDialog({
   const [name, setName] = useState(currentName ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setName(currentName ?? "");
-    setSaving(false);
-    setError(null);
-  }, [currentName, open]);
 
   const handleSave = async () => {
     const normalizedName = name.trim();

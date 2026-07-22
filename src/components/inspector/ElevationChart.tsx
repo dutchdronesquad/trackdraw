@@ -432,6 +432,9 @@ function RouteWarningDetails({
               <button
                 key={`${segment.kind}-${segment.segmentIndex}`}
                 type="button"
+                aria-label={t("jumpToSegment", {
+                  segment: segment.segmentIndex + 1,
+                })}
                 onClick={() => onJumpToSegment(segment.segmentIndex)}
                 className={cn(
                   "border-border/60 hover:bg-muted/60 focus-visible:ring-ring/40 flex min-h-10 cursor-pointer items-center gap-2 rounded border px-2.5 py-2 text-left text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none",

@@ -161,7 +161,7 @@ export function useEditorProjects({
             performance.now() - startedAt
           );
           onSeedTokenImported?.();
-          // eslint-disable-next-line react-hooks/set-state-in-effect
+          // oxlint-disable-next-line react/react-compiler -- report the completed import
           setSaveStatusLabel("Editable copy created");
         } catch (error) {
           reportLocalSaveFailure(error, onSeedTokenImported);
@@ -194,7 +194,7 @@ export function useEditorProjects({
     setProjects(listProjects());
     setRestorePoints(listRestorePointsForProject(design.id));
     setInitialized(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
 
   // Debounce full-design serialization so interactive edits do not fight local
@@ -202,8 +202,6 @@ export function useEditorProjects({
   useEffect(() => {
     if (readOnly) return;
     if (historyPaused || interactionSessionDepth > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSaveStatusLabel("Editing…");
       return;
     }
 
@@ -354,7 +352,10 @@ export function useEditorProjects({
     setRestorePoints,
     activeRestorePointId,
     setActiveRestorePointId,
-    saveStatusLabel,
+    saveStatusLabel:
+      historyPaused || interactionSessionDepth > 0
+        ? "Editing…"
+        : saveStatusLabel,
     lastSnapshotLabel,
     setSaveStatusLabel,
     initialized,

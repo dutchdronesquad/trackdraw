@@ -411,7 +411,7 @@ export const useEditor = create<EditorState>()(
             const groupId = getShapeGroupId(shape);
             if (!groupId || !selectedGroupIds.has(groupId)) continue;
 
-            const nextMeta = { ...(shape.meta ?? {}) };
+            const nextMeta = { ...shape.meta };
             if (name.trim().length > 0) {
               nextMeta.groupName = name;
             } else {

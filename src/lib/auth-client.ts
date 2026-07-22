@@ -373,53 +373,46 @@ function useDevSession() {
 
 function useResolvedAuthSession(): SessionHookResult {
   const authSession = betterAuthClient.useSession();
-  const [resolvedRole, setResolvedRole] = useState<AccountRole | null>(null);
-  const [rolePending, setRolePending] = useState(false);
-  const [roleError, setRoleError] = useState<Error | null>(null);
+  const [roleResolution, setRoleResolution] = useState<{
+    error: Error | null;
+    role: AccountRole | null;
+    userId: string;
+  } | null>(null);
 
   const userId = authSession.data?.user?.id ?? null;
+  const cachedRole =
+    userId && resolvedRoleCache?.userId === userId
+      ? resolvedRoleCache.role
+      : null;
+  const currentResolution =
+    userId && roleResolution?.userId === userId ? roleResolution : null;
+  const resolvedRole = cachedRole ?? currentResolution?.role ?? null;
+  const roleError = currentResolution?.error ?? null;
+  const rolePending = Boolean(userId && !resolvedRole && !roleError);
 
   useEffect(() => {
-    if (!userId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setResolvedRole(null);
-      setRolePending(false);
-      setRoleError(null);
-      return;
-    }
-
-    if (resolvedRoleCache?.userId === userId) {
-      setResolvedRole(resolvedRoleCache.role);
-      setRolePending(false);
-      setRoleError(null);
-      return;
-    }
+    if (!userId || resolvedRoleCache?.userId === userId) return;
 
     const currentUserId = userId;
     let cancelled = false;
 
     async function resolveRole() {
-      setRolePending(true);
-      setRoleError(null);
-
       try {
         const role = await resolveSessionRole(currentUserId);
 
         if (!cancelled) {
-          setResolvedRole(role);
+          setRoleResolution({ error: null, role, userId: currentUserId });
         }
       } catch (caughtError) {
         if (!cancelled) {
-          setRoleError(
-            caughtError instanceof Error
-              ? caughtError
-              : new Error("Failed to resolve account role")
-          );
-          setResolvedRole(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setRolePending(false);
+          setRoleResolution({
+            error:
+              caughtError instanceof Error
+                ? caughtError
+                : new Error("Failed to resolve account role"),
+            role: null,
+            userId: currentUserId,
+          });
         }
       }
     }

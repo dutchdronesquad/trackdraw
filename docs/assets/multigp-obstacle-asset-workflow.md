@@ -121,7 +121,7 @@ After replacing the GLB or textures:
 6. Run:
 
 ```bash
-npx eslint src/lib/track/elements/catalog.ts src/lib/track/render3d-layout.ts src/components/canvas/trackPreview3DSharedSceneContent.tsx src/lib/export/exportFlythrough.ts
+npx oxlint src/lib/track/elements/catalog.ts src/lib/track/render3d-layout.ts src/components/canvas/trackPreview3DSharedSceneContent.tsx src/lib/export/exportFlythrough.ts
 npx tsc --noEmit --pretty false
 npm run build
 ```

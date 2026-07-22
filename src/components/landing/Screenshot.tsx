@@ -47,7 +47,7 @@ export function Screenshot({
             <div className="absolute top-30 -right-2.5 h-16 w-0.5 rounded-r-lg bg-slate-700/90 dark:bg-slate-600/80" />
 
             <div className="overflow-hidden rounded-[1.9rem] bg-black">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {/* oxlint-disable-next-line nextjs/no-img-element */}
               <img
                 src={src}
                 alt={alt}
@@ -60,7 +60,7 @@ export function Screenshot({
         <div
           className={`overflow-hidden rounded-2xl border border-white/10 shadow-[0_24px_60px_rgba(0,0,0,0.4)] ring-1 ring-white/5 transition-shadow duration-300 hover:shadow-[0_32px_72px_rgba(0,0,0,0.5)] ${frameClassName}`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* oxlint-disable-next-line nextjs/no-img-element */}
           <img
             src={src}
             alt={alt}
