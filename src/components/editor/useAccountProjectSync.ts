@@ -33,7 +33,7 @@ export type AccountShareItem = {
   expiresAt: string | null;
   projectId: string | null;
   shareType: "temporary" | "published";
-  galleryState: "unlisted" | "listed" | "featured" | "hidden" | null;
+  galleryState: "listed" | "featured" | "hidden" | null;
   galleryTitle: string | null;
   galleryDescription: string | null;
 };

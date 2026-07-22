@@ -55,14 +55,14 @@ const GalleryPreviewRenderer = dynamic(
   { ssr: false }
 );
 
-type GalleryState = "unlisted" | "listed" | "featured" | "hidden";
+type GalleryState = "listed" | "featured" | "hidden";
 
 type ActiveShare = {
   url: string;
   shareToken: string;
   shareType: "temporary" | "published";
   expiresInDays: 7 | 30 | 90 | null;
-  galleryState: GalleryState;
+  galleryState: GalleryState | null;
   galleryTitle: string;
   galleryDescription: string;
 };
@@ -88,9 +88,11 @@ function inferExpiryDays(expiresAt: string | null): 7 | 30 | 90 | null {
   return days <= 7 ? 7 : days <= 30 ? 30 : 90;
 }
 
-function parseGalleryState(raw: string | null | undefined): GalleryState {
+function parseGalleryState(
+  raw: string | null | undefined
+): GalleryState | null {
   if (raw === "listed" || raw === "featured" || raw === "hidden") return raw;
-  return "unlisted";
+  return null;
 }
 
 type AnonShare = {
@@ -363,7 +365,7 @@ export default function ShareDialog({
               shareToken: stored.shareToken,
               shareType: "temporary",
               expiresInDays: stored.expiresInDays,
-              galleryState: "unlisted",
+              galleryState: null,
               galleryTitle: "",
               galleryDescription: "",
             });
@@ -439,7 +441,7 @@ export default function ShareDialog({
         shareToken: data.share.token,
         shareType: data.share.shareType,
         expiresInDays: expiry,
-        galleryState: "unlisted",
+        galleryState: null,
         galleryTitle: design.title.trim(),
         galleryDescription: design.description?.trim() ?? "",
       };

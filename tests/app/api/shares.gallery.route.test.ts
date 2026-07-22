@@ -92,12 +92,14 @@ describe("owner share gallery API route", () => {
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
     vi.mocked(isResourceOwner).mockReturnValue(true);
     vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue(entry);
-    vi.mocked(getGalleryEntryByShareToken).mockResolvedValue({
-      ...entry,
-      galleryState: "listed",
-      galleryTitle: "Public title",
-      galleryDescription: "Public description",
-    });
+    vi.mocked(getGalleryEntryByShareToken)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({
+        ...entry,
+        galleryState: "listed",
+        galleryTitle: "Public title",
+        galleryDescription: "Public description",
+      });
   });
 
   it("lists an owned active share and uploads the generated preview", async () => {
@@ -141,6 +143,7 @@ describe("owner share gallery API route", () => {
       previewImage: "gallery/previews/entry-1.webp",
     });
     expect(moveGalleryEntryToListed).toHaveBeenCalledWith(share.token);
+    expect(getOrCreateGalleryEntryForShare).toHaveBeenCalledWith(share);
   });
 
   it("blocks share revocation before ownership checks when the request is not trusted", async () => {
@@ -196,10 +199,12 @@ describe("owner share gallery API route", () => {
   });
 
   it("blocks owners from changing a hidden gallery entry", async () => {
-    vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue({
-      ...entry,
-      galleryState: "hidden",
-    });
+    vi.mocked(getGalleryEntryByShareToken)
+      .mockReset()
+      .mockResolvedValue({
+        ...entry,
+        galleryState: "hidden",
+      });
 
     const response = (await PATCH(
       patchRequest({
@@ -217,6 +222,7 @@ describe("owner share gallery API route", () => {
         "This track is hidden from the gallery and cannot be changed by the owner",
     });
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
+    expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
   });
 
   it("requires an account display name before listing in the gallery", async () => {
@@ -241,13 +247,16 @@ describe("owner share gallery API route", () => {
     });
     expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
+    expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
   });
 
   it("updates metadata only for listed or featured entries", async () => {
-    vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue({
-      ...entry,
-      galleryState: "listed",
-    });
+    vi.mocked(getGalleryEntryByShareToken)
+      .mockReset()
+      .mockResolvedValue({
+        ...entry,
+        galleryState: "listed",
+      });
 
     const response = (await PATCH(
       patchRequest({
@@ -265,13 +274,16 @@ describe("owner share gallery API route", () => {
       description: "Updated public description",
     });
     expect(moveGalleryEntryToListed).not.toHaveBeenCalled();
+    expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
   });
 
   it("rejects metadata updates while an entry is still unlisted", async () => {
-    vi.mocked(getOrCreateGalleryEntryForShare).mockResolvedValue({
-      ...entry,
-      galleryState: "unlisted",
-    });
+    vi.mocked(getGalleryEntryByShareToken)
+      .mockReset()
+      .mockResolvedValue({
+        ...entry,
+        galleryState: "unlisted",
+      });
 
     const response = (await PATCH(
       patchRequest({
@@ -288,9 +300,15 @@ describe("owner share gallery API route", () => {
       error: "Only listed gallery items can update their metadata",
     });
     expect(updateGalleryEntryMetadata).not.toHaveBeenCalled();
+    expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
   });
 
   it("removes a gallery entry without revoking the share", async () => {
+    vi.mocked(getGalleryEntryByShareToken)
+      .mockReset()
+      .mockResolvedValueOnce(entry)
+      .mockResolvedValueOnce(null);
+
     const response = (await PATCH(
       patchRequest({ action: "unlist" }),
       context()
@@ -298,5 +316,6 @@ describe("owner share gallery API route", () => {
 
     expect(response.status).toBe(200);
     expect(deleteGalleryEntry).toHaveBeenCalledWith(share.token);
+    expect(getOrCreateGalleryEntryForShare).not.toHaveBeenCalled();
   });
 });

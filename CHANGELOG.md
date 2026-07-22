@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Clearer gallery membership
+
+Ordinary share links are now kept separate from gallery entries. Gallery dashboards and metrics count only listed, featured, or moderated tracks, while removing a track from the gallery continues to leave its share link available.
+
 ## [1.14.0]
 
 ### Simplified Chinese and more complete translations

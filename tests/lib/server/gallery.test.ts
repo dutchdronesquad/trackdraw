@@ -32,7 +32,6 @@ import {
   moveGalleryEntryToFeatured,
   moveGalleryEntryToHidden,
   moveGalleryEntryToListed,
-  moveGalleryEntryToUnlisted,
   setGalleryEntryPreviewImage,
   updateGalleryEntryMetadata,
 } from "@/lib/server/gallery";
@@ -120,24 +119,18 @@ describe("gallery server helpers", () => {
     );
   });
 
-  it("updates only gallery state when entries are hidden or unlisted", async () => {
+  it("updates moderation state when entries are hidden", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
     const hiddenStatement = createStatement();
-    const unlistedStatement = createStatement();
-    installStatements([hiddenStatement, unlistedStatement]);
+    installStatements([hiddenStatement]);
 
     await moveGalleryEntryToHidden("share-1");
-    await moveGalleryEntryToUnlisted("share-2");
 
     expect(hiddenStatement.bind).toHaveBeenCalledWith(
       "2026-04-25T12:00:00.000Z",
       "2026-04-25T12:00:00.000Z",
       "share-1"
-    );
-    expect(unlistedStatement.bind).toHaveBeenCalledWith(
-      "2026-04-25T12:00:00.000Z",
-      "share-2"
     );
   });
 
@@ -179,8 +172,8 @@ describe("gallery server helpers", () => {
       listed: 3,
       featured: 2,
       hidden: 1,
-      unlisted: 0,
     });
+    expect(statement.sql).toContain("where gallery_state <> 'unlisted'");
   });
 
   it("returns null from getGalleryEntryByShareToken when no row is found", async () => {
@@ -220,12 +213,12 @@ describe("gallery server helpers", () => {
     });
   });
 
-  it("returns all rows from listGalleryEntriesForDashboard", async () => {
+  it("returns managed gallery rows from listGalleryEntriesForDashboard", async () => {
     const dashboardRow = {
       id: "entry-d",
       share_token: "tok-d",
       owner_user_id: "owner-2",
-      gallery_state: "unlisted",
+      gallery_state: "hidden",
       gallery_title: "Dashboard Track",
       gallery_description: "",
       gallery_preview_image: null,
@@ -248,13 +241,16 @@ describe("gallery server helpers", () => {
     expect(entries).toHaveLength(1);
     expect(entries[0]).toMatchObject({
       id: "entry-d",
-      galleryState: "unlisted",
+      galleryState: "hidden",
       ownerName: "Alice",
       ownerEmail: "alice@example.com",
       fieldWidth: 40.5,
       fieldHeight: 20.0,
       shapeCount: 12,
     });
+    expect(mocks.prepare).toHaveBeenCalledWith(
+      expect.stringContaining("g.gallery_state <> 'unlisted'")
+    );
   });
 
   it("listGalleryEntriesForDashboard passes the state filter when provided", async () => {
@@ -265,12 +261,13 @@ describe("gallery server helpers", () => {
     expect(stmt.bind).toHaveBeenCalledWith("listed", 500);
   });
 
-  it("listGalleryEntriesForDashboard queries all states when state='all'", async () => {
+  it("listGalleryEntriesForDashboard excludes staging rows when state='all'", async () => {
     const stmt = createStatement({ all: { results: [] } });
     installStatements([stmt]);
 
     await listGalleryEntriesForDashboard({ state: "all" });
     expect(stmt.bind).toHaveBeenCalledWith(500);
+    expect(stmt.sql).toContain("g.gallery_state <> 'unlisted'");
   });
 
   it("creates an unlisted gallery entry via INSERT RETURNING", async () => {

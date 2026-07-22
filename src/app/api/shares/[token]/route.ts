@@ -151,16 +151,9 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
     }
 
     const body = updateGalleryStateSchema.parse(await request.json());
-    const entry = await getOrCreateGalleryEntryForShare(authorized.share);
+    const existingEntry = await getGalleryEntryByShareToken(authorized.token);
 
-    if (!entry) {
-      return NextResponse.json(
-        { ok: false, error: "Gallery entry unavailable for this share" },
-        { status: 400 }
-      );
-    }
-
-    if (entry.galleryState === "hidden") {
+    if (existingEntry?.galleryState === "hidden") {
       return NextResponse.json(
         {
           ok: false,
@@ -179,6 +172,17 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
             error:
               "Set a display name on your account before listing in the gallery",
           },
+          { status: 400 }
+        );
+      }
+
+      const entry =
+        existingEntry ??
+        (await getOrCreateGalleryEntryForShare(authorized.share));
+
+      if (!entry) {
+        return NextResponse.json(
+          { ok: false, error: "Gallery entry unavailable for this share" },
           { status: 400 }
         );
       }
@@ -206,8 +210,8 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
       await moveGalleryEntryToListed(authorized.token);
     } else if (body.action === "update") {
       if (
-        entry.galleryState !== "listed" &&
-        entry.galleryState !== "featured"
+        existingEntry?.galleryState !== "listed" &&
+        existingEntry?.galleryState !== "featured"
       ) {
         return NextResponse.json(
           {
@@ -223,7 +227,7 @@ export async function PATCH(request: Request, context: ShareTokenRouteContext) {
         title: body.title,
         description: body.description,
       });
-    } else {
+    } else if (existingEntry) {
       await deleteGalleryEntry(authorized.token);
     }
 

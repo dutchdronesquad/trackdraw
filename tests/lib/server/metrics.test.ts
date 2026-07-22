@@ -91,6 +91,7 @@ describe("dashboard metrics", () => {
       "or exists (\n          select 1 from apikey"
     );
     const shareTotalsQuery = queryContaining("as total_active");
+    const galleryTotalsQuery = queryContaining("as missing_preview");
     const apiKeysQuery = queryContaining(
       "sum(case when enabled = 1 and (expiresAt is null"
     );
@@ -112,6 +113,7 @@ describe("dashboard metrics", () => {
       "expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"
     );
     expect(shareTotalsQuery).not.toContain("expires_at > datetime('now')");
+    expect(galleryTotalsQuery).toContain("gallery_state <> 'unlisted'");
     expect(apiKeysQuery).toContain(
       "expiresAt > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"
     );
@@ -187,6 +189,9 @@ describe("dashboard metrics", () => {
       createdShare: 8,
       publishedToGallery: 3,
     });
+    expect(String(mocks.prepare.mock.calls[0][0])).toContain(
+      "g.gallery_state <> 'unlisted'"
+    );
     expect(insights.contentGrowth).toHaveLength(2);
     expect(insights.usage).toMatchObject({
       totalEvents30d: 33,

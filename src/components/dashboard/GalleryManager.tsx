@@ -75,7 +75,6 @@ const stateFilterValues: GalleryState[] = [
   "listed",
   "featured",
   "hidden",
-  "unlisted",
 ];
 const shareFilterValues: ShareLifecycleState[] = [
   "active",
@@ -366,7 +365,10 @@ export default function DashboardGalleryManager({
     table.getColumn("shareLifecycle")?.getFacetedRowModel().rows ?? [];
   const stateFilterOptions = stateFilterValues.map((value) => ({
     value,
-    label: t(`stateValues.${value}`),
+    label: getStateLabel(
+      value,
+      tCommon as unknown as Translate
+    ),
     count: stateFacetRows.filter((row) => row.original.galleryState === value)
       .length,
   }));
@@ -457,7 +459,6 @@ export default function DashboardGalleryManager({
                     >
                       {getStateLabel(
                         inspectCandidate.galleryState,
-                        t as unknown as Translate,
                         tCommon as unknown as Translate
                       )}
                     </Badge>
