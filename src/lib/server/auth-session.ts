@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getSessionCookie } from "better-auth/cookies";
 import { parseAccountRole, type AccountRole } from "@/lib/account/roles";
 import { getDatabase } from "@/lib/server/db";
 
@@ -21,38 +22,8 @@ type SessionUserRow = {
   bannedAt: string | null;
 };
 
-const SESSION_COOKIE_NAMES = [
-  "__Secure-better-auth.session_token",
-  "better-auth.session_token",
-];
-
 function getAuthSecret() {
   return process.env.BETTER_AUTH_SECRET ?? process.env.AUTH_SECRET ?? null;
-}
-
-function parseCookieHeader(cookieHeader: string | null) {
-  if (!cookieHeader) {
-    return new Map<string, string>();
-  }
-
-  const cookieMap = new Map<string, string>();
-
-  for (const pair of cookieHeader.split("; ")) {
-    const [name, ...valueParts] = pair.split("=");
-    if (!name || valueParts.length === 0) {
-      continue;
-    }
-
-    const rawValue = valueParts.join("=");
-
-    try {
-      cookieMap.set(name, decodeURIComponent(rawValue));
-    } catch {
-      cookieMap.set(name, rawValue);
-    }
-  }
-
-  return cookieMap;
 }
 
 async function importHmacKey(secret: string) {
@@ -110,21 +81,10 @@ async function readSessionTokenFromHeaders(requestHeaders: Headers) {
     return null;
   }
 
-  const cookies = parseCookieHeader(requestHeaders.get("cookie"));
-
-  for (const cookieName of SESSION_COOKIE_NAMES) {
-    const cookieValue = cookies.get(cookieName);
-    if (!cookieValue) {
-      continue;
-    }
-
-    const token = await verifySignedCookieValue(cookieValue, secret);
-    if (token) {
-      return token;
-    }
-  }
-
-  return null;
+  const cookieValue = getSessionCookie(requestHeaders);
+  return cookieValue
+    ? await verifySignedCookieValue(cookieValue, secret)
+    : null;
 }
 
 export async function getCurrentUserFromHeaders(

@@ -95,6 +95,37 @@ describe("auth session resolver", () => {
     });
   });
 
+  it("loads a session when cookie pairs have no whitespace separator", async () => {
+    vi.stubEnv("BETTER_AUTH_SECRET", "test-secret");
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-09T12:00:00.000Z"));
+    const statement = createD1Statement({
+      first: {
+        id: "user-1",
+        email: "pilot@example.com",
+        name: "Race Director",
+        image: null,
+        role: "admin",
+        expiresAt: "2026-06-09T13:00:00.000Z",
+        bannedAt: null,
+      },
+    });
+    installD1Statements(mocks.prepare, [statement]);
+    const sessionCookie = await signedSessionCookie(
+      "session-token",
+      "test-secret"
+    );
+
+    const user = await getCurrentUserFromHeaders(
+      new Headers({
+        cookie: `theme=dark;${sessionCookie}`,
+      })
+    );
+
+    expect(statement.bind).toHaveBeenCalledWith("session-token");
+    expect(user?.id).toBe("user-1");
+  });
+
   it("rejects banned users after loading the session row", async () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "test-secret");
     vi.useFakeTimers();
