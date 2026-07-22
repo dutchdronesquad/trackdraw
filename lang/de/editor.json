@@ -231,19 +231,19 @@
       "label": "Starter-Layouts",
       "layouts": {
         "open-practice": {
-          "name": "Open practice",
-          "title": "Open Practice Layout",
-          "description": "Open flow with a start area and room to build your own lap."
+          "name": "Offenes Training",
+          "title": "Layout für offenes Training",
+          "description": "Offener Streckenverlauf mit einem Startbereich und Platz, um deine eigene Runde zu gestalten."
         },
         "compact-race-start": {
-          "name": "Compact race start",
-          "title": "Compact Race Start",
-          "description": "Tight opening with an immediate gate line and early turn."
+          "name": "Kompakter Rennstart",
+          "title": "Kompakter Rennstart",
+          "description": "Enger Auftakt mit direkt folgender Gate-Linie und einer frühen Kurve."
         },
         "technical-ladder-line": {
-          "name": "Technical ladder line",
-          "title": "Technical Ladder Line",
-          "description": "First gate, two ladders, and a follow-up gate for quick rhythm."
+          "name": "Technische Ladder-Linie",
+          "title": "Technische Ladder-Linie",
+          "description": "Erstes Gate, zwei Ladders und ein anschließendes Gate für einen schnellen Rhythmus."
         }
       }
     },

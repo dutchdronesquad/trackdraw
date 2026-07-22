@@ -231,19 +231,19 @@
       "label": "Startlayouts",
       "layouts": {
         "open-practice": {
-          "name": "Open practice",
-          "title": "Open Practice Layout",
-          "description": "Open flow with a start area and room to build your own lap."
+          "name": "Vrije training",
+          "title": "Layout voor vrije training",
+          "description": "Open baanindeling met een startgebied en ruimte om je eigen ronde te ontwerpen."
         },
         "compact-race-start": {
-          "name": "Compact race start",
-          "title": "Compact Race Start",
-          "description": "Tight opening with an immediate gate line and early turn."
+          "name": "Compacte racestart",
+          "title": "Compacte racestart",
+          "description": "Krappe opening met direct een lijn van gates en een vroege bocht."
         },
         "technical-ladder-line": {
-          "name": "Technical ladder line",
-          "title": "Technical Ladder Line",
-          "description": "First gate, two ladders, and a follow-up gate for quick rhythm."
+          "name": "Technische ladderlijn",
+          "title": "Technische ladderlijn",
+          "description": "Eerste gate, twee ladders en een opvolgende gate voor een snel ritme."
         }
       }
     },
