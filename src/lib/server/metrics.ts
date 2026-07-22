@@ -349,7 +349,7 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         `
         select
           count(*) as total,
-          sum(case when enabled = 1 and (expiresAt is null or datetime(expiresAt) > datetime('now')) then 1 else 0 end) as active
+          sum(case when enabled = 1 and (expiresAt is null or expiresAt > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) then 1 else 0 end) as active
         from apikey
       `
       )

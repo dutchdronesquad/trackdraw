@@ -77,25 +77,45 @@ describe("dashboard metrics", () => {
     expect(metrics.shares.total).toBe(9);
     expect(metrics.shares.expired).toBe(1);
     expect(metrics.gallery.missingPreview).toBe(1);
-    expect(String(mocks.prepare.mock.calls[0][0])).toContain(
-      "createdAt >= date('now', 'start of month')"
-    );
-    expect(String(mocks.prepare.mock.calls[0][0])).not.toContain("-30 days");
-    expect(String(mocks.prepare.mock.calls[1][0])).toContain(
+    const queries = mocks.prepare.mock.calls.map(([query]) => String(query));
+    const queryContaining = (fragment: string) => {
+      const query = queries.find((candidate) => candidate.includes(fragment));
+      expect(query).toBeDefined();
+      return query ?? "";
+    };
+    const userTotalsQuery = queryContaining("new_this_week");
+    const dormantUsersQuery = queryContaining(
       "not exists (\n            select 1 from product_events"
     );
-    expect(String(mocks.prepare.mock.calls[1][0])).toContain(
+    const activeUsersQuery = queryContaining(
+      "or exists (\n          select 1 from apikey"
+    );
+    const shareTotalsQuery = queryContaining("as total_active");
+    const apiKeysQuery = queryContaining(
+      "sum(case when enabled = 1 and (expiresAt is null"
+    );
+
+    expect(userTotalsQuery).toContain(
+      "createdAt >= date('now', 'start of month')"
+    );
+    expect(userTotalsQuery).not.toContain("-30 days");
+    expect(dormantUsersQuery).toContain(
+      "not exists (\n            select 1 from product_events"
+    );
+    expect(dormantUsersQuery).toContain(
       "strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')"
     );
-    expect(String(mocks.prepare.mock.calls[2][0])).not.toMatch(
+    expect(activeUsersQuery).not.toMatch(
       /(updated_at|published_at|created_at|lastRequest)\s*>\s*datetime\(/
     );
-    expect(String(mocks.prepare.mock.calls[5][0])).toContain(
+    expect(shareTotalsQuery).toContain(
       "expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"
     );
-    expect(String(mocks.prepare.mock.calls[5][0])).not.toContain(
-      "expires_at > datetime('now')"
+    expect(shareTotalsQuery).not.toContain("expires_at > datetime('now')");
+    expect(apiKeysQuery).toContain(
+      "expiresAt > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"
     );
+    expect(apiKeysQuery).not.toContain("datetime(expiresAt)");
   });
 
   it("builds activation, content, usage, and retention insights", async () => {
