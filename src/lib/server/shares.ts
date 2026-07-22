@@ -124,6 +124,12 @@ function parseShareType(value: string | null): ShareType {
   return value === "published" ? "published" : "temporary";
 }
 
+function parseGalleryMembershipState(value: string | null) {
+  if (!value) return null;
+  const state = parseGalleryState(value);
+  return state === "unlisted" ? null : state;
+}
+
 function mapShareRow(row: ShareRow): StoredShare {
   const rawDesign =
     typeof row.design_json === "string"
@@ -152,6 +158,8 @@ function mapShareRow(row: ShareRow): StoredShare {
 }
 
 function mapUserShareRow(row: UserShareRow): UserShare {
+  const galleryState = parseGalleryMembershipState(row.gallery_state);
+
   return {
     token: row.token,
     title: row.title ?? "Untitled track",
@@ -160,9 +168,9 @@ function mapUserShareRow(row: UserShareRow): UserShare {
     expiresAt: row.expires_at,
     projectId: row.project_id,
     shareType: parseShareType(row.share_type),
-    galleryState: parseGalleryState(row.gallery_state),
-    galleryTitle: row.gallery_title,
-    galleryDescription: row.gallery_description,
+    galleryState,
+    galleryTitle: galleryState ? row.gallery_title : null,
+    galleryDescription: galleryState ? row.gallery_description : null,
   };
 }
 
@@ -223,7 +231,7 @@ export type UserShare = {
   expiresAt: string | null;
   projectId: string | null;
   shareType: ShareType;
-  galleryState: "unlisted" | "listed" | "featured" | "hidden" | null;
+  galleryState: "listed" | "featured" | "hidden" | null;
   galleryTitle: string | null;
   galleryDescription: string | null;
 };
@@ -377,7 +385,7 @@ export type DashboardShare = {
   ownerUserId: string | null;
   ownerName: string | null;
   ownerEmail: string | null;
-  galleryState: GalleryState | null;
+  galleryState: Exclude<GalleryState, "unlisted"> | null;
 };
 
 function mapDashboardShareRow(row: DashboardShareRow): DashboardShare {
@@ -391,9 +399,7 @@ function mapDashboardShareRow(row: DashboardShareRow): DashboardShare {
     ownerUserId: row.owner_user_id,
     ownerName: row.owner_name,
     ownerEmail: row.owner_email,
-    galleryState: row.gallery_state
-      ? parseGalleryState(row.gallery_state)
-      : null,
+    galleryState: parseGalleryMembershipState(row.gallery_state),
   };
 }
 
@@ -541,7 +547,6 @@ export async function createShare(
         shareType: "published",
       };
 
-      await getOrCreateGalleryEntryForShare(share);
       return share;
     }
   }
@@ -614,15 +619,6 @@ export async function createShare(
         projectId,
         shareType,
       };
-
-      if (ownerUserId) {
-        await createUnlistedGalleryEntry({
-          shareToken: token,
-          ownerUserId,
-          title,
-          description,
-        });
-      }
 
       return share;
     } catch (error) {

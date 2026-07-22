@@ -176,7 +176,7 @@ describe("shares API route", () => {
       expiresAt: null,
       projectId: "project-1",
       shareType: "published",
-      galleryState: "unlisted",
+      galleryState: null,
       galleryTitle: null,
       galleryDescription: null,
     };

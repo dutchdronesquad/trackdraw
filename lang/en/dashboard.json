@@ -54,7 +54,7 @@
       },
       "gallery": {
         "label": "Public gallery",
-        "sub": "{featured} featured · {unlisted} private"
+        "sub": "{featured} featured · {hidden} hidden"
       },
       "comparison": {
         "vsPrevMonth": "vs prev month"
@@ -611,10 +611,6 @@
       "state": "State",
       "share": "Share"
     },
-    "stateValues": {
-      "unlisted": "Unlisted (regular shares)",
-      "unlistedBadge": "Unlisted"
-    },
     "shareValues": {
       "active": "Active",
       "expired": "Expired",
@@ -759,9 +755,6 @@
     "ownerValues": {
       "anonymous": "Anonymous",
       "account": "Account owner"
-    },
-    "galleryValues": {
-      "unlisted": "Private"
     },
     "table": {
       "track": "Track",

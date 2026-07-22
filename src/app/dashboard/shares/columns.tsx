@@ -25,7 +25,6 @@ import {
   TooltipTrigger,
 } from "@/components/AppTooltip";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
-import type { GalleryState } from "@/lib/server/gallery";
 import type { DashboardShare } from "@/lib/server/shares";
 
 export type ShareLifecycleState = "active" | "expired" | "revoked";
@@ -61,7 +60,7 @@ function getLifecycleVariant(
 }
 
 function getGalleryStateVariant(
-  state: GalleryState
+  state: NonNullable<DashboardShare["galleryState"]>
 ): "default" | "muted" | "outline" {
   if (state === "featured") return "default";
   if (state === "hidden") return "muted";
@@ -69,11 +68,9 @@ function getGalleryStateVariant(
 }
 
 function getGalleryStateLabel(
-  state: GalleryState,
-  t: Translate,
+  state: NonNullable<DashboardShare["galleryState"]>,
   tCommon: Translate
 ) {
-  if (state === "unlisted") return t("galleryValues.unlisted");
   return tCommon(`status.${state}`);
 }
 
@@ -288,7 +285,7 @@ export function getSharesColumns({
       cell: ({ row }) =>
         row.original.galleryState ? (
           <Badge variant={getGalleryStateVariant(row.original.galleryState)}>
-            {getGalleryStateLabel(row.original.galleryState, t, tCommon)}
+            {getGalleryStateLabel(row.original.galleryState, tCommon)}
           </Badge>
         ) : (
           <span className="text-muted-foreground text-xs">

@@ -120,7 +120,6 @@ export type GalleryOverviewStats = {
   listed: number;
   featured: number;
   hidden: number;
-  unlisted: number;
 };
 
 export function isPublicGalleryState(
@@ -240,7 +239,7 @@ export async function listGalleryEntriesForDashboard(options?: {
   let bindings: (string | number)[];
 
   if (state === "all") {
-    whereClause = "1 = 1";
+    whereClause = "g.gallery_state <> 'unlisted'";
     bindings = [];
   } else if (state === "public") {
     whereClause = "g.gallery_state in ('featured', 'listed')";
@@ -307,6 +306,7 @@ export const getGalleryOverviewStats = cache(
         `
         select gallery_state, count(*) as count
         from gallery_entries
+        where gallery_state <> 'unlisted'
         group by gallery_state
       `
       )
@@ -318,11 +318,11 @@ export const getGalleryOverviewStats = cache(
       listed: 0,
       featured: 0,
       hidden: 0,
-      unlisted: 0,
     };
 
     for (const row of result.results) {
       const state = parseGalleryState(row.gallery_state);
+      if (state === "unlisted") continue;
       const count = Number(row.count ?? 0);
 
       stats[state] += count;
@@ -434,25 +434,6 @@ export async function createUnlistedGalleryEntry(params: {
     .first<GalleryEntryRow>();
 
   return row ? mapGalleryEntryRow(row) : null;
-}
-
-export async function moveGalleryEntryToUnlisted(shareToken: string) {
-  const db = await getDatabase();
-  const now = new Date().toISOString();
-
-  await db
-    .prepare(
-      `
-        update gallery_entries
-        set
-          gallery_state = 'unlisted',
-          moderation_hidden_at = null,
-          updated_at = ?
-        where share_token = ?
-      `
-    )
-    .bind(now, shareToken)
-    .run();
 }
 
 export async function deleteGalleryEntry(shareToken: string) {

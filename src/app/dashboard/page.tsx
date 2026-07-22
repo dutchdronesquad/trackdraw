@@ -453,7 +453,7 @@ export default async function DashboardPage() {
               value={galleryStats.public}
               sub={t("kpi.gallery.sub", {
                 featured: galleryStats.featured,
-                unlisted: galleryStats.unlisted,
+                hidden: galleryStats.hidden,
               })}
               icon={ImageIcon}
               accent="bg-sky-500"

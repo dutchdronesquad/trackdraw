@@ -202,4 +202,21 @@ describe("DashboardGalleryManager", () => {
     expect(screen.getByText("Page 2 of 2")).toBeTruthy();
     expect(screen.getByText("Track 11")).toBeTruthy();
   });
+
+  it("uses translated gallery state labels in the state facet", async () => {
+    const user = userEvent.setup();
+    render(
+      <DashboardGalleryManager
+        currentUserRole="moderator"
+        initialEntries={[entry]}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: /State/ }));
+
+    expect(screen.getAllByText("Listed").length).toBeGreaterThan(0);
+    expect(screen.getByText("Featured")).toBeTruthy();
+    expect(screen.getByText("Hidden")).toBeTruthy();
+    expect(screen.queryByText("Unlisted (regular shares)")).toBeNull();
+  });
 });

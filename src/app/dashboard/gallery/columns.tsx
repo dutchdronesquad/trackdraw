@@ -63,11 +63,7 @@ export function getStateVariant(
   return "outline";
 }
 
-export function getStateLabel(
-  state: GalleryState,
-  t: Translate,
-  tCommon: Translate
-) {
+export function getStateLabel(state: GalleryState, tCommon: Translate) {
   switch (state) {
     case "listed":
       return tCommon("status.listed");
@@ -76,7 +72,7 @@ export function getStateLabel(
     case "hidden":
       return tCommon("status.hidden");
     default:
-      return t("stateValues.unlistedBadge");
+      return tCommon("status.pending");
   }
 }
 
@@ -332,7 +328,7 @@ export function getGalleryColumns({
       meta: { className: "w-28" },
       cell: ({ row }) => (
         <Badge variant={getStateVariant(row.original.galleryState)}>
-          {getStateLabel(row.original.galleryState, t, tCommon)}
+          {getStateLabel(row.original.galleryState, tCommon)}
         </Badge>
       ),
     },

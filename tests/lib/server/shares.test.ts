@@ -308,7 +308,7 @@ describe("share server helpers", () => {
     expect(mocks.createUnlistedGalleryEntry).not.toHaveBeenCalled();
   });
 
-  it("creates account shares as published links without expiry", async () => {
+  it("creates account shares without creating gallery entries", async () => {
     const insertStatement = createStatement();
     installStatements([insertStatement]);
 
@@ -324,12 +324,7 @@ describe("share server helpers", () => {
     expect(bindArgs.at(-3)).toBe("user-1");
     expect(bindArgs.at(-2)).toBeNull();
     expect(bindArgs.at(-1)).toBe("published");
-    expect(mocks.createUnlistedGalleryEntry).toHaveBeenCalledWith(
-      expect.objectContaining({
-        shareToken: share.token,
-        ownerUserId: "user-1",
-      })
-    );
+    expect(mocks.createUnlistedGalleryEntry).not.toHaveBeenCalled();
   });
 
   it("updates and reuses the active published share for an account project", async () => {
@@ -340,13 +335,6 @@ describe("share server helpers", () => {
     });
     const updateStatement = createStatement();
     installStatements([selectStatement, updateStatement]);
-    mocks.getGalleryEntryByShareToken.mockResolvedValue({
-      id: "entry-1",
-      shareToken: "existing-token",
-      ownerUserId: "user-1",
-      galleryState: "unlisted",
-    });
-
     const share = await createShare(design, {
       ownerUserId: "user-1",
       projectId: "project-1",
@@ -370,5 +358,38 @@ describe("share server helpers", () => {
     expect(share.shareType).toBe("published");
     expect(share.expiresAt).toBeNull();
     expect(mocks.createUnlistedGalleryEntry).not.toHaveBeenCalled();
+  });
+
+  it("exposes absent and staging gallery rows as no gallery membership", async () => {
+    const row = {
+      token: "tok-user",
+      title: "My share",
+      shape_count: 4,
+      created_at: "2026-04-01T00:00:00.000Z",
+      expires_at: null,
+      project_id: "proj-1",
+      share_type: "published",
+      gallery_state: null,
+      gallery_title: null,
+      gallery_description: null,
+    };
+    const stmt = createD1AllStatement([
+      row,
+      { ...row, token: "tok-staging", gallery_state: "unlisted" },
+    ]);
+    mocks.prepare.mockReturnValue(stmt);
+
+    const result = await getSharesByUserId("user-1");
+
+    expect(
+      result.map((share) => ({
+        galleryState: share.galleryState,
+        galleryTitle: share.galleryTitle,
+        galleryDescription: share.galleryDescription,
+      }))
+    ).toEqual([
+      { galleryState: null, galleryTitle: null, galleryDescription: null },
+      { galleryState: null, galleryTitle: null, galleryDescription: null },
+    ]);
   });
 });

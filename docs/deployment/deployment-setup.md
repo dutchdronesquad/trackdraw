@@ -257,6 +257,8 @@ npm run migrate:up:production
 
 Migration `0012_product_events.sql` adds the product analytics event store used by the admin metrics dashboard. Apply it before deploying code that records product events or queries activation, usage, and retention metrics.
 
+Migration `0013_cleanup_unlisted_gallery_entries.sql` removes legacy gallery rows that were created automatically for ordinary account shares. It leaves the underlying shares and any gallery rows with preview media untouched.
+
 ## Validation flow
 
 Typical local workflow:
