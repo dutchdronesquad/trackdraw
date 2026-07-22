@@ -149,6 +149,30 @@ Maintenance focus:
 - Add regression tests when a fix affects selection, transforms, route editing, export generation, project recovery, sharing, or larger layouts
 - Treat future reliability work as targeted support-driven slices rather than a broad redesign track
 
+#### Static Public App Shell for Workers Free (`No account required`)
+
+Reduce avoidable OpenNext invocations so TrackDraw remains practical on the Workers Free CPU budget without making account-backed or published data static.
+
+Why:
+
+- The root layout currently reads theme and locale state from cookies and request headers, which makes otherwise static routes execute through the Worker
+- Workers Free has a narrow per-request CPU budget that is easy for Next.js server rendering and authentication work to exceed during bursts
+- The landing page, Studio shell, and legal pages do not require request-time database or account data and should be eligible for static asset delivery
+
+Focus:
+
+- Remove request-time theme and locale resolution from the root layout while preserving the saved language and theme after client initialization
+- Pre-render `/`, the `/studio` shell, `/privacy`, and `/terms` so Cloudflare Static Assets can serve them without invoking OpenNext
+- Keep `/gallery`, `/share/[token]`, `/embed/[token]`, dashboard/account surfaces, auth handlers, and API routes dynamic
+- Prevent theme flashes, locale hydration mismatches, accessibility regressions, or route changes while moving preference initialization client-side
+- Confirm production build output marks the intended routes as static and measure Worker invocation and `exceededCpu` rates before and after deployment
+
+Important boundary:
+
+- Do not introduce locale-prefixed routes or break canonical share and embed URLs
+- Do not make editing, local persistence, import/export, or anonymous Studio use depend on an account
+- Do not cache account-backed, gallery, share, embed, auth, or API responses as static assets
+
 #### Regional Measurement Units
 
 International users should be able to work in familiar Metric or Imperial measurement presets without TrackDraw changing its internal geometry model.

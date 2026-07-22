@@ -29,6 +29,9 @@ The next TrackDraw priority is generated flightpath validation first, Simplified
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
       Validate real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
 
+- [ ] Static public app shell for Workers Free (`No account required`)
+      Move theme and locale preference initialization out of the request-time root layout so `/`, the `/studio` shell, `/privacy`, and `/terms` can be served as static assets. Keep gallery, share/embed, dashboard/account, auth, and API surfaces dynamic; preserve canonical routes, anonymous Studio use, theme stability, locale behavior, and hydration correctness. Validate the resulting static route output and compare Worker invocation and `exceededCpu` rates before and after deployment.
+
 - [ ] Translation management workflow (`Research`)
       Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle.
   - [ ] Hosted versus self-hosted decision
