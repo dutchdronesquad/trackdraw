@@ -15,6 +15,14 @@ TrackDraw uses a split runtime setup:
 - GitHub Actions uses the GitHub Environment `cf-dev` for the development deploy from `main`
 - GitHub Actions uses the GitHub Environment `cf-prod` for the production deploy on `release.published`
 
+### Static public shell
+
+The production build must pre-render `/`, `/studio`, `/privacy`, and `/terms`. OpenNext cache interception reads these four prerenders from the read-only Workers Static Assets incremental cache without loading `NextServer` or executing page rendering. The lightweight Worker routing layer is still invoked for page URLs; this distinction matters when interpreting invocation metrics. Their initial HTML uses the English catalog; a client provider loads the saved or browser locale from `/locales/{locale}/{namespace}.json` after hydration. Theme preference is applied by an inline bootstrap in the document head before the page paints.
+
+Do not move request-time auth, database, gallery, share, or embed reads into this shell. `/gallery`, `/share/[token]`, `/embed/[token]`, dashboard/account pages, auth handlers, and API routes must remain dynamic.
+
+Validate the boundary with `npm run build` or `npx opennextjs-cloudflare build`. Next.js should mark the four public shell routes with `○` and the protected/data-backed routes with `ƒ`. `open-next.config.ts` deliberately filters the read-only Static Assets cache to `/index`, `/studio`, `/privacy`, and `/terms`; do not broaden it to account-backed or revalidated routes. After deployment, compare CPU time and `exceededCpu` events with the pre-deployment baseline, and confirm cache interception avoids `NextServer` work on these paths. Worker invocation count alone will not fall because page requests still cross the routing layer.
+
 ## Database split
 
 TrackDraw uses Cloudflare D1 for persisted share storage.
@@ -165,13 +173,12 @@ Rule settings:
   ```text
   not cf.client.bot
   and (
-    http.request.uri.path eq "/studio"
-    or http.request.uri.path eq "/gallery"
+    http.request.uri.path eq "/gallery"
     or starts_with(http.request.uri.path, "/share/")
     or starts_with(http.request.uri.path, "/embed/")
   )
   ```
-- Scope: covers Studio, gallery, shared tracks, and embeds. Add new route families here only when they render user/content-heavy pages.
+- Scope: covers the dynamic gallery, shared tracks, and embeds. Studio is served as a static asset and does not need a Worker CPU rate limit. Add new route families here only when they render user/content-heavy pages.
 - Characteristics: use `IP`.
 - Threshold: `120 requests` per `10 seconds`.
 - Action: `Block`.
@@ -216,7 +223,7 @@ Gallery previews use the same public media host. For gallery opt-in to upload pr
 
 Translation catalogs are generated into `public/locales/` by `npm run i18n:sync-assets`. The directory is ignored by git and is refreshed inside the production build script. Preview and deploy run the OpenNext build step, which calls `npm run build` and therefore uses the same generated assets. Local dev and tests can read directly from `lang/{locale}` and do not need generated assets.
 
-OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. The Worker keeps only the namespace list and loading logic in code; `en`, `nl`, `de`, and future contributor languages are loaded per namespace from static assets. This keeps translation catalogs from becoming static imports in the Worker script.
+OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, and future contributor languages are loaded per namespace from static assets. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle.
 
 `dashboard` and `legal` remain English-only and are intentionally generated only under `public/locales/en/`.
 

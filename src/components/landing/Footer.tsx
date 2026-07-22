@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Bug, Coffee, FileText, Flag, Heart, ShieldCheck } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -17,8 +19,8 @@ function GithubIcon({ className }: { className?: string }) {
 }
 import VersionTag from "@/components/VersionTag";
 
-export async function Footer() {
-  const t = await getTranslations("landing");
+export function Footer() {
+  const t = useTranslations("landing");
   return (
     <footer className="border-border bg-muted/20 border-t">
       <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">

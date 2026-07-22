@@ -1,25 +1,27 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import {
   DEFAULT_OG_IMAGE_ALT,
   DEFAULT_SOCIAL_IMAGE,
   DEFAULT_SOCIAL_IMAGE_HEIGHT,
   DEFAULT_SOCIAL_IMAGE_WIDTH,
 } from "@/lib/seo";
-import LanguageProvider from "@/i18n/LanguageProvider";
+import StaticLanguageProvider from "@/i18n/StaticLanguageProvider";
+import { getStaticLandingMetadata } from "@/i18n/static-catalogs";
+
+export const dynamic = "force-static";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("landing.metadata");
+  const metadata = await getStaticLandingMetadata();
 
   return {
-    title: t("studioTitle"),
-    description: t("studioDescription"),
+    title: metadata.studioTitle,
+    description: metadata.studioDescription,
     alternates: {
       canonical: "/studio",
     },
     openGraph: {
-      title: t("studioSocialTitle"),
-      description: t("studioSocialDescription"),
+      title: metadata.studioSocialTitle,
+      description: metadata.studioSocialDescription,
       url: "/studio",
       images: [
         {
@@ -31,8 +33,8 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
     },
     twitter: {
-      title: t("studioSocialTitle"),
-      description: t("studioSocialDescription"),
+      title: metadata.studioSocialTitle,
+      description: metadata.studioSocialDescription,
       images: [DEFAULT_SOCIAL_IMAGE],
     },
     robots: {
@@ -48,7 +50,7 @@ export default function StudioLayout({
   children: React.ReactNode;
 }) {
   return (
-    <LanguageProvider
+    <StaticLanguageProvider
       namespaces={[
         "common",
         "dialogs",
@@ -62,6 +64,6 @@ export default function StudioLayout({
       <div style={{ "--radius": "0.375rem" } as React.CSSProperties}>
         {children}
       </div>
-    </LanguageProvider>
+    </StaticLanguageProvider>
   );
 }

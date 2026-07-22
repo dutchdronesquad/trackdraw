@@ -167,11 +167,53 @@ Focus:
 - Prevent theme flashes, locale hydration mismatches, accessibility regressions, or route changes while moving preference initialization client-side
 - Confirm production build output marks the intended routes as static and measure Worker invocation and `exceededCpu` rates before and after deployment
 
+Current shipped foundation:
+
+- The root layout no longer reads request cookies or headers for theme and locale initialization
+- `/`, `/studio`, `/privacy`, and `/terms` use explicit static route boundaries and build as pre-rendered content served through a route-filtered Static Assets cache interceptor
+- Saved theme is applied before first paint, while saved or browser locale catalogs load from static assets after hydration
+- Gallery, share/embed, dashboard/account, auth, and API surfaces remain dynamically rendered
+- Post-deployment CPU time and `exceededCpu` comparison remains an operational verification step; OpenNext still invokes its lightweight routing layer for App Router page requests
+
 Important boundary:
 
 - Do not introduce locale-prefixed routes or break canonical share and embed URLs
 - Do not make editing, local persistence, import/export, or anonymous Studio use depend on an account
 - Do not cache account-backed, gallery, share, embed, auth, or API responses as static assets
+
+#### Production Observability and Operational Resilience
+
+Make production failures visible and keep scheduled maintenance reliable before adding more operational complexity.
+
+Why:
+
+- Workers observability and source maps are enabled, but production does not yet have an explicit sampling, tracing, alerting, or route-family monitoring baseline
+- Static shell verification needs to compare CPU time and `exceededCpu` behavior rather than treating invocation count alone as the success metric
+- Share, API-key, and product-event retention run in one scheduled event, so each cleanup needs an independently visible outcome and one failure must not cut short the remaining work
+- D1 Time Travel and the current Cloudflare security configuration are useful foundations, but TrackDraw does not yet have a verified recovery posture or a version-controlled security baseline
+
+Implementation focus:
+
+- Define a privacy-safe observability baseline for static routes, dynamic public routes, auth/account surfaces, API traffic, D1/R2 operations, and scheduled events
+- Use sampled Workers logs and traces deliberately within the available plan budget, with structured fields that support route-family, status, CPU, latency, dependency, and deployment-version analysis
+- Establish actionable thresholds and a notification path for unexpected 5xx responses, Worker exceptions, `exceededCpu`, D1/R2 failures, authentication email failures, and repeated scheduled-task failures
+- Harden scheduled cleanup execution so each retention task completes independently, reports a structured result, remains idempotent, and has focused partial-failure coverage
+- Keep the post-deployment static-shell CPU comparison as the first production measurement under this track
+
+Research follow-up:
+
+- Investigate the D1 recovery posture: confirm the production storage backend and Time Travel window, define realistic RPO/RTO targets, decide whether pre-migration bookmarks or longer-lived exports are useful, and document a safe non-production restore drill before relying on recovery during an incident
+- Audit the effective Cloudflare and application security configuration, including WAF and rate-limit rules, TLS settings, response headers, and which settings currently live only in the dashboard
+- Evaluate a version-controlled, route-aware header policy covering CSP rollout, HSTS, `X-Content-Type-Options`, Referrer Policy, and Permissions Policy without breaking `/embed/[token]`, authentication, locale assets, map references, or other intentional external resources
+- Decide which Cloudflare settings should move to infrastructure-as-code and which should remain documented operator configuration
+
+Important boundary:
+
+- Do not add release-time lint, type, or browser-E2E gates under this track; existing merge validation remains the quality gate for `main`
+- Do not make automatic Worker rollback a priority unless operational evidence shows that it would materially improve recovery
+- Do not log share tokens, API keys, session identifiers, email addresses, design payloads, or other sensitive user data
+- Do not automate destructive D1 restores; recovery must remain an explicit operator action with a verified restore point and runbook
+- Do not apply a global framing policy that breaks the account-backed embed surface
 
 #### Regional Measurement Units
 
