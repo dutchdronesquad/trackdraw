@@ -94,6 +94,23 @@ describe("track surface texture", () => {
     texture.dispose();
   });
 
+  it("keeps checker boundaries aligned with the centred grid after a field resize", () => {
+    const texture = createTrackSurfaceTexture({
+      baseColor: "#d0d8e4",
+      checkerColor: "#c2ccd7",
+      gridStep: 1,
+      width: 63,
+      height: 47,
+    });
+
+    expect(texture.repeat.x).toBeCloseTo(6.3);
+    expect(texture.repeat.y).toBeCloseTo(4.7);
+    expect(texture.offset.x + texture.repeat.x / 2).toBeCloseTo(0);
+    expect(texture.offset.y + texture.repeat.y / 2).toBeCloseTo(0);
+
+    texture.dispose();
+  });
+
   it("keeps all surface rings clickable and disposes owned GPU resources", () => {
     const geometryDispose = vi.spyOn(THREE.BufferGeometry.prototype, "dispose");
     const textureDispose = vi.spyOn(THREE.Texture.prototype, "dispose");

@@ -212,7 +212,9 @@ describe("DashboardGalleryManager", () => {
       />
     );
 
-    await user.click(screen.getByRole("button", { name: /State/ }));
+    const stateFilter = screen.getByRole("button", { name: "State" });
+    expect(stateFilter.textContent).not.toContain("selected");
+    await user.click(stateFilter);
 
     expect(screen.getAllByText("Listed").length).toBeGreaterThan(0);
     expect(screen.getByText("Featured")).toBeTruthy();

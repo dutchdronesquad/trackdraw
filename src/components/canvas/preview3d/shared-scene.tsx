@@ -90,6 +90,7 @@ export function createTrackSurfaceTexture({
   texture.minFilter = THREE.LinearMipmapLinearFilter;
   const checkerTileSize = gridStep * 10;
   texture.repeat.set(width / checkerTileSize, height / checkerTileSize);
+  texture.offset.set(-texture.repeat.x / 2, -texture.repeat.y / 2);
   texture.needsUpdate = true;
   return texture;
 }
