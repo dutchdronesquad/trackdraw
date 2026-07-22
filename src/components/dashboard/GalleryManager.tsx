@@ -179,7 +179,7 @@ export default function DashboardGalleryManager({
   );
   const [selectedGalleryStates, setSelectedGalleryStates] = useState<
     GalleryState[]
-  >(["listed", "featured", "hidden"]);
+  >([]);
   const [selectedShareLifecycles, setSelectedShareLifecycles] = useState<
     ShareLifecycleState[]
   >([]);
