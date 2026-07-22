@@ -6,13 +6,23 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
-### Reliable Simplified Chinese PDF export
+## [1.14.0]
 
-Chinese PDF and Race Pack exports now embed the required characters instead of falling back to a font without Chinese glyphs. Export dates also follow the selected product language.
+### Simplified Chinese and more complete translations
 
-### Faster public app shell
+TrackDraw can now be used in Simplified Chinese alongside English, Dutch, and German. Starter layouts, catalog-backed obstacle names and dimensions, project metadata, and local save states now follow the selected language more consistently across all four languages. Chinese PDF and Race Pack exports now embed the required characters and format dates for the selected language instead of falling back to a font without Chinese glyphs.
 
-The landing page, anonymous Studio shell, privacy policy, and terms are now pre-rendered and served from a read-only static asset cache without starting a Next.js page render. Saved theme and language preferences still apply in the browser, while gallery, shared tracks, embeds, account pages, and APIs remain dynamic.
+### Clearer 3D track surface
+
+The 3D preview now separates the field from its surroundings with a clearer field edge, checker pattern, and grid. Camera movement stays above the track surface, and the improved ground treatment is shared across Studio, read-only views, gallery previews, and fly-through video exports.
+
+### Smoother mobile Studio
+
+Studio drawers now drag from a dedicated handle, keep scrolling contained inside the panel, and use lighter transitions. This reduces intermittent stutter while inspecting or adjusting a track on mobile.
+
+### Faster public pages
+
+The landing page, anonymous Studio shell, privacy policy, and terms now load as pre-rendered pages. Saved theme and language preferences still apply, while gallery, shared tracks, embeds, and account features continue to load their current data dynamically.
 
 ## [1.13.0]
 

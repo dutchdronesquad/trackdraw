@@ -44,43 +44,21 @@
   <img alt="TrackDraw editor showcase" src="https://raw.githubusercontent.com/dutchdronesquad/trackdraw/main/public/assets/social-preview-1920x1080.png" width="800">
 </p>
 
-## Project status
+## Plan, validate, and hand off
 
-TrackDraw covers the core workflow across desktop, shared read-only viewing, and practical mobile use. It is built around layout design first, then route review, then race-day handoff through export and sharing.
+TrackDraw keeps the full race-planning workflow in one design:
 
-See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw/discussions/106) for the current roadmap assessment.
+- **Design on the real venue.** Work at real-world scale in Metric or Imperial units, place MultiGP-style or custom obstacles, and align the layout with a satellite map when needed.
+- **Validate before race day.** Review an editable race line in 2D, 3D, elevation, and FPV fly-through views, and catch route or inventory problems before loading the van.
+- **Hand off one clear plan.** Publish a read-only link or export a Race Pack with the course map, obstacle numbering, material requirements, stock status, and setup guidance.
 
-## What you can do
+## Start without an account
 
-- 🏁 **Design layouts to scale** - place obstacles on a real-scale canvas with Metric or Imperial measurements that map cleanly to the real world
-- 🚩 **Use official obstacle types** - place MultiGP-style gates, ladders, towers, flags, hurdles, and barriers with real dimensions, or keep using custom-sized TrackDraw elements
-- 🗺️ **Line up with real venues** - add an editor-only satellite map reference, search or choose the field center, and align it with rotation and opacity controls
-- ⚡ **Start and iterate faster** - use obstacle presets, selection grouping, starter layouts, and generated race-line drafts from ordered obstacles to get from blank canvas to a workable draft quickly
-- 💾 **Manage projects safely** - keep multiple local projects, reopen older layouts, rename or export them, and roll back through restore points and snapshots
-- 🎥 **Review route flow** - use the live 3D preview, interactive Elevation Profile, warning markers, floating ladder placement controls, and cinematic FPV fly-through review to check how the layout reads before race day
-- 📋 **Prepare a race-day handoff** - export a dedicated Race Pack PDF with map, numbering, material list, stock status, setup sequence, and initial build guidance
-- 📦 **Check buildability early** - compare the current layout against available obstacle stock before the gear leaves the van
-- 🔗 **Share and export cleanly** - publish a read-only link, browse community gallery tracks, or export visuals, Race Pack PDFs, cinematic FPV WebM videos, 3D screenshots, simulator drafts, and JSON project files from the same design
+Open the Studio and work immediately. Projects are stored in the browser, can be restored to earlier versions, and can be imported, exported, and temporarily shared without signing in. An account adds cross-device sync, durable published links, gallery publishing, embeds, and share management.
 
-### With an account
+TrackDraw is available in English, Dutch, German, and Simplified Chinese, with an independent choice of Metric or Imperial units. The editor supports desktop and mobile, while shared designs open in a dedicated read-only view.
 
-- 🖼️ **Publish gallery tracks** - opt published shares into the public gallery so visitors can discover them and open the canonical read-only share view
-- 🌐 **Embed published tracks** - copy iframe embed code for account-published tracks so clubs and event sites can show a live read-only layout
-- 💾 **Sync projects across devices** - keep account-backed work accessible from another browser or device while local-first editing stays available without signing in
-- 🔐 **Manage your account and shares** - use a passkey or email magic link, update your profile, change your account email safely, and manage or revoke published shares from the Projects dialog
-
-### Experimental
-
-- 🧪 **Velocidrone draft export** - generate an experimental `.trk` export as a starting point for simulator testing
-
-## How it works
-
-1. **Start from scratch or from a head start** with a blank canvas, a preset, or a starter layout.
-2. **Build the course visually** by placing obstacles, adjusting them in the inspector, grouping sections that belong together, and optionally generating an editable first-pass race line from the ordered obstacle list.
-3. **Review how the layout will ride** with the live 3D preview, interactive Elevation Profile, route warnings, floating ladder placement, and route-flow checks before race day.
-4. **Turn the design into a handoff** by saving it locally, syncing it to your account, publishing a read-only share link, listing it in the gallery, or exporting the assets you need, including Race Pack documents and cinematic FPV video.
-
-TrackDraw works without an account. You can create, manage, temporarily share, recover, import, and export projects in the browser, while signing in adds continuity across devices, durable published links, gallery publishing, and embeds.
+TrackDraw is actively developed. See the [public roadmap discussion](https://github.com/dutchdronesquad/trackdraw/discussions/106) for current priorities and progress.
 
 ## Credits and sources
 

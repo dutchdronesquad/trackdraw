@@ -22,20 +22,17 @@ Labels used below:
 
 ## Current Priority
 
-The next TrackDraw priority is generated flightpath validation first, Simplified Chinese product integration and translation management tooling second, and focused 3D item controls third. Selective race-day workflow depth can follow once those are stable. Keep larger account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
+The next TrackDraw priority is generated flightpath validation first, the remaining locale-aware PNG/SVG export work and translation management tooling second, and focused 3D item controls third. Selective race-day workflow depth can follow once those are stable. Keep larger account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
 
 ## Follow-up
 
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
       Validate real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
 
-- [x] Static public app shell for Workers Free (`No account required`)
-      Theme and locale preference initialization now runs client-side without request-time root layout state. Production and OpenNext builds mark `/`, `/studio`, `/privacy`, and `/terms` as static while gallery, share/embed, dashboard/account, auth, and API surfaces remain dynamic. Canonical routes, anonymous Studio use, early theme application, and saved locale restoration remain intact.
-  - [ ] Post-deployment Worker CPU verification
-        Compare CPU time and `exceededCpu` rates with the pre-deployment baseline after this shell reaches production, grouped by route family. OpenNext's safe App Router path still invokes the lightweight routing/cache-interception layer, so invocation count alone is not expected to drop.
-
 - [ ] Production observability and scheduled-maintenance hardening
       Establish a privacy-safe production baseline across route families and background work without adding duplicate release validation. Use deliberate Workers log/trace sampling, actionable thresholds, and a practical notification path for 5xx responses, exceptions, `exceededCpu`, D1/R2 failures, authentication email failures, and repeated scheduled-task failures.
+  - [ ] Post-deployment Worker CPU verification
+        Compare CPU time and `exceededCpu` rates with the pre-deployment baseline after the static public shell reaches production, grouped by route family. OpenNext's safe App Router path still invokes the lightweight routing/cache-interception layer, so invocation count alone is not expected to drop.
   - [ ] Observability baseline and operational thresholds
         Define structured fields, sampling, route-family dashboards or queries, deployment-version correlation, alert thresholds, and notification ownership. Keep tokens, API keys, session data, email addresses, and project payloads out of telemetry.
   - [ ] Scheduled cleanup isolation and reporting
@@ -60,28 +57,19 @@ The next TrackDraw priority is generated flightpath validation first, Simplified
   - [ ] Translator guidance
         Document the language-leader model, suggestion-first contributor flow, FPV terminology, placeholders/ICU syntax, compact UI label expectations, and the `dashboard`/`legal` English-only boundary before inviting broader contributor translation work.
 
-- [ ] Simplified Chinese product-integration follow-up (`No account required`)
-      Finish the product integration left outside the locale-only merge in [#583](https://github.com/dutchdronesquad/trackdraw/pull/583). Use the earlier combined work in [#556](https://github.com/dutchdronesquad/trackdraw/pull/556) as reference, but reimplement each slice against current `main` instead of reviving or cherry-picking that PR.
-  - [ ] Reliable CJK PDF export
-        Bundle a documented, licensed CJK-capable font for lazy PDF-only loading, pass the active locale into PDF generation, clear failed font-load promises so export can retry, and validate actual jsPDF font registration/output rather than only mocking method calls.
+- [ ] Simplified Chinese export and integration follow-up (`No account required`)
+      Finish the export and supporting locale work left after the Simplified Chinese product-language rollout. Use the earlier combined work in [#556](https://github.com/dutchdronesquad/trackdraw/pull/556) as reference, but reimplement each slice against current `main` instead of reviving or cherry-picking that PR.
   - [ ] Locale-aware visual exports
-        Pass the active locale and localized untitled-track fallback through PNG, SVG, and PDF callers so dates and fallback copy follow the selected language.
-  - [ ] Catalog entry localization
-        Localize catalog-backed element names and dimension labels in placement controls, inspectors, and shape labels while retaining safe snapshot/default fallbacks for existing projects. Add deliberate entries for every supported locale instead of permanent English placeholders.
-  - [ ] Starter-layout localization
-        Localize starter-layout names, descriptions, and generated project titles across the starter flow and new-project dialog without changing stored geometry or coupling language to measurement units.
+        Pass the active locale and localized untitled-track fallback through PNG and SVG callers so dates and fallback copy follow the selected language.
   - [ ] Supporting locale cleanup
         Format public-gallery dates with the active locale and extend API docs title/document-language selection to every supported locale.
   - [ ] Focused localization regression coverage
-        Cover font-load retry behavior, real PDF font handling, locale propagation through export callers, catalog translation completeness, and starter-layout copy across supported locales.
+        Cover locale propagation and localized fallback copy through the remaining PNG/SVG export callers, plus gallery and API-document locale handling.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.
   - [ ] 3D transform gizmo and edit mode toolbar
         Draft PVA: [3D Transform Controls PVA](../pva/3d-transform-controls-pva.md). Prototype selected-item move and rotate controls with orbit-friendly camera behavior only where the interaction is predictable across 2D and 3D. Do not add dimension handles until move/rotate are accepted.
-
-- [x] Mobile Studio drawer smoothness pass (`No account required`)
-      Reduced intermittent drawer stutter without changing the mobile workflow: Studio bottom drawers now keep drag work on a dedicated handle, contain momentum scrolling inside the drawer, avoid animating a full-screen backdrop blur, and keep expensive inspector callbacks stable. Added regression coverage for the specialized mobile drawer shell while leaving the shared drawer UI primitive stock.
 
 - [ ] Path editing UX (`No account required`)
       Make drawing and adjusting a path feel more natural, especially for curved layouts where the current waypoint model forces extra points to avoid sharp corners.
@@ -172,15 +160,6 @@ The next TrackDraw priority is generated flightpath validation first, Simplified
   - [ ] Threaded comments follow-up
         Consider richer review threads only if simple notes prove useful.
 
-- [x] Usage analytics and event tracking (`Account-backed`)
-      TrackDraw has Tier 1 internal metrics derived from existing tables. Tier 2 requires a lightweight `product_events` table to track share views, export format usage, and editor interactions. This table is kept separate from `audit_events` — audit events are identity-linked and security-sensitive, product events can be anonymous and have a different retention lifecycle. Research document: `docs/research/admin-metrics-analytics.md`.
-  - [x] `product_events` table and schema
-        Add a narrow D1 table with event name, nullable session ID, nullable user ID, nullable project/share reference, and timestamp. No IP addresses or device fingerprints. Purgeable per user on account deletion.
-  - [x] First event instrumentation
-        Instrument the highest-value events: `share.viewed` (public share page), `export.completed` (PDF/PNG/SVG/JSON), `editor.3d_opened` (first open per session), `editor.element_placed` (element type), `project.imported`.
-  - [x] Tier 2 metrics in admin dashboard
-        Surface aggregate event data alongside existing Tier 1 query metrics in the admin Metrics page: share views, export format distribution, 3D preview use, element placement, anonymous/account sessions, and creator retention cohorts. Organize the page around product pulse, one baseline-aware focus banner, usage context, operational health, and plan decisions. Dead-link detection remains a possible follow-up.
-
 - [ ] Desktop and mobile wrapper evaluation (`Research`)
       Evaluate whether Electron or Capacitor would materially improve local project handling, native file workflows, or offline resilience.
   - [ ] Product-problem validation
@@ -189,6 +168,28 @@ The next TrackDraw priority is generated flightpath validation first, Simplified
         Decide whether a wrapper should load the hosted app or require its own runtime.
   - [ ] Platform recommendation
         Recommend web-first, Electron, Capacitor, or no wrapper for now.
+
+## v1.14.0 Archive
+
+<details>
+<summary>Completed release work to archive with v1.14.0</summary>
+
+- [x] Simplified Chinese product language (`No account required`)
+      Added Simplified Chinese as TrackDraw's fourth product language alongside English, Dutch, and German. Localized starter layouts, catalog-backed obstacle names and dimensions, project metadata, and local save-state copy now follow the selected language more consistently across all four languages. Chinese PDF and Race Pack exports use locale-aware dates and a lazy-loaded, licensed Noto Sans SC font with retry-safe loading and real jsPDF coverage; locale-aware PNG/SVG follow-up remains active.
+
+- [x] Clearer 3D track surface (`No account required`)
+      Added a bounded field surface with a checker pattern, visible border, grid hierarchy, and surrounding terrain. Camera movement stays above the surface, and the shared treatment is used in Studio, read-only views, gallery previews, and fly-through video exports.
+
+- [x] Mobile Studio drawer smoothness (`No account required`)
+      Reduced intermittent drawer stutter through dedicated-handle dragging, contained momentum scrolling, lighter overlays, and stable inspector callbacks without changing the mobile workflow.
+
+- [x] Static public app shell (`No account required`)
+      Pre-rendered the landing page, anonymous Studio shell, privacy page, and terms page while preserving saved browser theme and language preferences. Dynamic gallery, share/embed, account, authentication, and API surfaces remain uncached.
+
+- [x] Product metrics and dashboard operations (`Account-backed`)
+      Added a separate, retention-limited product-event layer without IP addresses or device fingerprinting, deeper range/trend/retention metrics, paginated dashboard data tables, and clearer share-management controls. Research document: `docs/research/admin-metrics-analytics.md`.
+
+</details>
 
 ## v1.13.0 Archive
 
