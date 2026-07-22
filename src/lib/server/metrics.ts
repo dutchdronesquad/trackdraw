@@ -329,10 +329,10 @@ export async function getAdminMetrics(): Promise<AdminMetrics> {
         `
         select
           count(*) as total,
-          sum(case when gallery_state = 'listed' then 1 else 0 end) as listed,
-          sum(case when gallery_state = 'featured' then 1 else 0 end) as featured,
-          sum(case when gallery_state = 'hidden' then 1 else 0 end) as hidden,
-          sum(case when gallery_preview_image is null or trim(gallery_preview_image) = '' then 1 else 0 end) as missing_preview
+          coalesce(sum(case when gallery_state = 'listed' then 1 else 0 end), 0) as listed,
+          coalesce(sum(case when gallery_state = 'featured' then 1 else 0 end), 0) as featured,
+          coalesce(sum(case when gallery_state = 'hidden' then 1 else 0 end), 0) as hidden,
+          coalesce(sum(case when gallery_preview_image is null or trim(gallery_preview_image) = '' then 1 else 0 end), 0) as missing_preview
         from gallery_entries
         where gallery_state <> 'unlisted'
       `

@@ -114,6 +114,7 @@ describe("dashboard metrics", () => {
     );
     expect(shareTotalsQuery).not.toContain("expires_at > datetime('now')");
     expect(galleryTotalsQuery).toContain("gallery_state <> 'unlisted'");
+    expect(galleryTotalsQuery.match(/coalesce\(sum\(/g)).toHaveLength(4);
     expect(apiKeysQuery).toContain(
       "expiresAt > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"
     );
