@@ -303,15 +303,20 @@ The Worker runs a daily cron cleanup and removes:
 - revoked shares
 - shares that have been expired for more than 30 days
 - API keys that have been expired for more than 90 days
+- raw product events that are older than 180 days
+
+The three retention owners run concurrently and settle independently. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
+
+If one task fails, the remaining tasks still finish and report their results. The scheduled handler rejects only after all tasks have settled so Cloudflare records the cron invocation as failed. Retrying the cleanup is safe: every retention query is a threshold-based `DELETE`, and a repeated run with no eligible rows reports success with `deleted_rows: 0`.
 
 The cron schedule is configured in `wrangler.jsonc`. To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
 
 ```bash
 npx wrangler dev --env dev --test-scheduled
-curl "http://localhost:8787/__scheduled?cron=*+*+*+*+*"
+curl "http://localhost:8787/cdn-cgi/handler/scheduled?cron=17+3+*+*+*&format=json"
 ```
 
-Cloudflare documents `--test-scheduled` and the local `__scheduled` route for scheduled handler testing:
+Cloudflare documents scheduled handler testing and cron triggers here:
 
-- https://developers.cloudflare.com/workers/runtime-apis/scheduled-event/
+- https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/
 - https://developers.cloudflare.com/workers/configuration/cron-triggers/
