@@ -15,10 +15,15 @@ export default function ThemeBootstrap() {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
 
     const syncTheme = () => {
+      let storedThemeValue: string | null = null;
       try {
-        const storedTheme = parseThemePreference(
-          localStorage.getItem(THEME_STORAGE_KEY)
-        );
+        storedThemeValue = localStorage.getItem(THEME_STORAGE_KEY);
+      } catch {
+        // Continue with the cookie or system preference.
+      }
+
+      try {
+        const storedTheme = parseThemePreference(storedThemeValue);
         const cookieTheme = parseThemePreference(
           document.cookie
             .split("; ")
@@ -33,7 +38,11 @@ export default function ThemeBootstrap() {
           resolvedTheme === "dark"
         );
         document.documentElement.style.colorScheme = resolvedTheme;
-        localStorage.setItem(THEME_STORAGE_KEY, theme);
+        try {
+          localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch {
+          // The DOM and cookie still preserve the selected theme.
+        }
         document.cookie = `${THEME_COOKIE}=${theme}; Max-Age=${THEME_COOKIE_MAX_AGE}; Path=/; SameSite=Lax`;
         document.cookie = `${RESOLVED_THEME_COOKIE}=${resolvedTheme}; Max-Age=${THEME_COOKIE_MAX_AGE}; Path=/; SameSite=Lax`;
       } catch {

@@ -29,8 +29,23 @@ The next TrackDraw priority is generated flightpath validation first, Simplified
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
       Validate real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
 
-- [ ] Static public app shell for Workers Free (`No account required`)
-      Move theme and locale preference initialization out of the request-time root layout so `/`, the `/studio` shell, `/privacy`, and `/terms` can be served as static assets. Keep gallery, share/embed, dashboard/account, auth, and API surfaces dynamic; preserve canonical routes, anonymous Studio use, theme stability, locale behavior, and hydration correctness. Validate the resulting static route output and compare Worker invocation and `exceededCpu` rates before and after deployment.
+- [x] Static public app shell for Workers Free (`No account required`)
+      Theme and locale preference initialization now runs client-side without request-time root layout state. Production and OpenNext builds mark `/`, `/studio`, `/privacy`, and `/terms` as static while gallery, share/embed, dashboard/account, auth, and API surfaces remain dynamic. Canonical routes, anonymous Studio use, early theme application, and saved locale restoration remain intact.
+  - [ ] Post-deployment Worker CPU verification
+        Compare CPU time and `exceededCpu` rates with the pre-deployment baseline after this shell reaches production, grouped by route family. OpenNext's safe App Router path still invokes the lightweight routing/cache-interception layer, so invocation count alone is not expected to drop.
+
+- [ ] Production observability and scheduled-maintenance hardening
+      Establish a privacy-safe production baseline across route families and background work without adding duplicate release validation. Use deliberate Workers log/trace sampling, actionable thresholds, and a practical notification path for 5xx responses, exceptions, `exceededCpu`, D1/R2 failures, authentication email failures, and repeated scheduled-task failures.
+  - [ ] Observability baseline and operational thresholds
+        Define structured fields, sampling, route-family dashboards or queries, deployment-version correlation, alert thresholds, and notification ownership. Keep tokens, API keys, session data, email addresses, and project payloads out of telemetry.
+  - [ ] Scheduled cleanup isolation and reporting
+        Ensure share, API-key, and product-event retention tasks complete independently, remain idempotent, emit a structured result per task, and have focused coverage for partial failures so one rejection cannot cut short the other cleanup work.
+
+- [ ] D1 recovery posture (`Research`)
+      Confirm the production storage backend and Time Travel window, define realistic RPO/RTO targets, evaluate pre-migration bookmarks and longer-lived exports, and document a safe non-production restore drill. Keep production restores explicit and operator-controlled rather than automatic.
+
+- [ ] Version-controlled security posture (`Research`)
+      Inventory the effective Cloudflare dashboard and application configuration for WAF, rate limits, TLS, and response headers. Evaluate route-aware CSP, HSTS, `X-Content-Type-Options`, Referrer Policy, Permissions Policy, and infrastructure-as-code without breaking embeds, authentication, locale assets, map references, or intentional external resources.
 
 - [ ] Translation management workflow (`Research`)
       Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle.
