@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Bug, Coffee, FileText, Flag, Heart, Pencil, ScrollText, ShieldCheck } from "lucide-react";
+import {
+  Bug,
+  Coffee,
+  FileText,
+  Flag,
+  Heart,
+  Pencil,
+  ScrollText,
+  ShieldCheck,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 function GithubIcon({ className }: { className?: string }) {
