@@ -19,7 +19,7 @@ import {
 } from "node:fs";
 import { extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import ts from "typescript";
+import { parse } from "@babel/parser";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const scanRoots = [join(root, "src/app"), join(root, "src/components")];
@@ -241,61 +241,68 @@ function buildBaseline(issues) {
 }
 
 function attributeName(name) {
-  if (ts.isIdentifier(name)) return name.text;
-  if (ts.isJsxNamespacedName(name)) {
-    return `${name.namespace.text}:${name.name.text}`;
+  if (name.type === "JSXIdentifier") return name.name;
+  if (name.type === "JSXNamespacedName") {
+    return `${name.namespace.name}:${name.name.name}`;
   }
-  return name.getText();
-}
-
-function propertyName(name) {
-  if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text;
   return undefined;
 }
 
-function isInsideMetadataContext(node) {
-  let current = node.parent;
-  while (current) {
+function propertyName(name) {
+  if (name.type === "Identifier") return name.name;
+  if (name.type === "StringLiteral") return name.value;
+  return undefined;
+}
+
+function isInsideMetadataContext(ancestors) {
+  for (let index = ancestors.length - 1; index >= 0; index -= 1) {
+    const current = ancestors[index];
     if (
-      ts.isVariableDeclaration(current) &&
-      ts.isIdentifier(current.name) &&
-      current.name.text === "metadata"
+      current.type === "VariableDeclarator" &&
+      current.id.type === "Identifier" &&
+      current.id.name === "metadata"
     ) {
       return true;
     }
     if (
-      ts.isFunctionDeclaration(current) &&
-      current.name?.text === "generateMetadata"
+      current.type === "FunctionDeclaration" &&
+      current.id?.name === "generateMetadata"
     ) {
       return true;
     }
-    current = current.parent;
   }
   return false;
 }
 
-function metadataPropertyName(node) {
-  if (!ts.isStringLiteral(node) && !ts.isNoSubstitutionTemplateLiteral(node)) {
+function isStaticString(node) {
+  return (
+    node.type === "StringLiteral" ||
+    (node.type === "TemplateLiteral" && node.expressions.length === 0)
+  );
+}
+
+function stringValue(node) {
+  if (node.type === "StringLiteral") return node.value;
+  return node.quasis[0]?.value.cooked ?? node.quasis[0]?.value.raw ?? "";
+}
+
+function metadataPropertyName(node, parent) {
+  if (!isStaticString(node)) return undefined;
+  if (parent?.type !== "ObjectProperty" || parent.value !== node) {
     return undefined;
   }
-  if (!ts.isPropertyAssignment(node.parent)) return undefined;
-  if (node.parent.initializer !== node) return undefined;
-  const name = propertyName(node.parent.name);
+  const name = propertyName(parent.key);
   return name && metadataProperties.has(name) ? name : undefined;
 }
 
-function lineOf(sourceFile, pos) {
-  return sourceFile.getLineAndCharacterOfPosition(pos).line + 1;
-}
-
-function addIssue(issues, file, sourceFile, node, kind, text) {
+function addIssue(issues, file, node, kind, text) {
   const normalized = normalizeText(text);
   if (!isHumanText(normalized)) return;
   if (isAllowed(file, normalized)) return;
 
   issues.push({
     file: relative(root, file),
-    line: lineOf(sourceFile, node.getStart(sourceFile)),
+    line: node.loc?.start.line ?? 1,
     kind,
     text: normalized,
   });
@@ -303,66 +310,72 @@ function addIssue(issues, file, sourceFile, node, kind, text) {
 
 function scanFile(file) {
   const content = readFileSync(file, "utf8");
-  const sourceFile = ts.createSourceFile(
-    file,
-    content,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-  );
+  const sourceFile = parse(content, {
+    sourceFilename: file,
+    sourceType: "unambiguous",
+    plugins: ["typescript", "jsx"],
+  });
   const issues = [];
+  const ancestors = [];
 
   function visit(node) {
-    if (ts.isJsxText(node)) {
-      addIssue(issues, file, sourceFile, node, "JSX text", node.getText());
-    } else if (ts.isJsxExpression(node) && node.expression) {
-      if (
-        ts.isStringLiteral(node.expression) ||
-        ts.isNoSubstitutionTemplateLiteral(node.expression)
-      ) {
+    if (node.type === "JSXText") {
+      addIssue(
+        issues,
+        file,
+        node,
+        "JSX text",
+        content.slice(node.start, node.end)
+      );
+    } else if (node.type === "JSXExpressionContainer") {
+      if (isStaticString(node.expression)) {
         addIssue(
           issues,
           file,
-          sourceFile,
           node.expression,
           "JSX string expression",
-          node.expression.text
+          stringValue(node.expression)
         );
       }
-    } else if (ts.isJsxAttribute(node)) {
+    } else if (node.type === "JSXAttribute") {
       const name = attributeName(node.name);
       if (
+        name &&
         userFacingAttributes.has(name) &&
-        node.initializer &&
-        ts.isStringLiteral(node.initializer)
+        node.value?.type === "StringLiteral"
       ) {
         addIssue(
           issues,
           file,
-          sourceFile,
-          node.initializer,
+          node.value,
           `JSX prop ${name}`,
-          node.initializer.text
+          node.value.value
         );
       }
-    } else if (
-      (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) &&
-      isInsideMetadataContext(node)
-    ) {
-      const name = metadataPropertyName(node);
+    } else if (isStaticString(node) && isInsideMetadataContext(ancestors)) {
+      const name = metadataPropertyName(node, ancestors.at(-1));
       if (name) {
         addIssue(
           issues,
           file,
-          sourceFile,
           node,
           `metadata property ${name}`,
-          node.text
+          stringValue(node)
         );
       }
     }
 
-    ts.forEachChild(node, visit);
+    ancestors.push(node);
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) {
+          if (child && typeof child.type === "string") visit(child);
+        }
+      } else if (value && typeof value.type === "string") {
+        visit(value);
+      }
+    }
+    ancestors.pop();
   }
 
   visit(sourceFile);
