@@ -22,7 +22,7 @@ Labels used below:
 
 ## Current Priority
 
-The next TrackDraw priority is generated flightpath validation first, the remaining locale-aware PNG/SVG export work and translation management tooling second, and focused 3D item controls third. Selective race-day workflow depth can follow once those are stable. Keep larger account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
+The next TrackDraw priority is generated flightpath validation first, translation management tooling second, and focused 3D item controls third. Selective race-day workflow depth can follow once those are stable. Keep larger account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
 
 ## Follow-up
 
@@ -45,26 +45,26 @@ The next TrackDraw priority is generated flightpath validation first, the remain
       Inventory the effective Cloudflare dashboard and application configuration for WAF, rate limits, TLS, and response headers. Evaluate route-aware CSP, HSTS, `X-Content-Type-Options`, Referrer Policy, Permissions Policy, and infrastructure-as-code without breaking embeds, authentication, locale assets, map references, or intentional external resources.
 
 - [ ] Translation management workflow (`Research`)
-      Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle.
-  - [ ] Hosted versus self-hosted decision
-        Compare Crowdin plan eligibility/costs, especially if TrackDraw gains paid plans, against the operational ownership of self-hosted Weblate.
+      Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle. Research document: `docs/research/translation-management-weblate.md`.
+  - [x] Hosted versus self-hosted decision
+        Selected self-hosted Weblate as the preferred direction after weighing its infrastructure ownership against hosted plan eligibility, cost, and control. Revisit hosted tooling if operating Weblate proves disproportionate.
   - [ ] Weblate prototype if self-hosting remains preferred
         Stand up a private/staging Weblate instance, import only translatable namespaces, and validate one namespace end to end before committing to full migration.
-  - [ ] Production deployment plan if Weblate is chosen
-        Design a production-worthy Weblate deployment with pinned containers, TLS/reverse-proxy setup, SMTP, access control, backups, restore testing, monitoring, upgrade/rollback process, and a no-direct-push-to-main security boundary.
+  - [x] Production deployment plan if Weblate is chosen
+        Documented a production-worthy separate Docker Compose stack with pinned containers, TLS/reverse-proxy setup, SMTP, access control, backups, restore testing, monitoring, upgrade/rollback process, and a no-direct-push-to-main security boundary.
   - [ ] Repository sync workflow
         Prototype source upload and translation pull requests through GitHub Actions while preserving normal code review and existing locale validation checks.
   - [ ] Translator guidance
         Document the language-leader model, suggestion-first contributor flow, FPV terminology, placeholders/ICU syntax, compact UI label expectations, and the `dashboard`/`legal` English-only boundary before inviting broader contributor translation work.
 
-- [ ] Simplified Chinese export and integration follow-up (`No account required`)
-      Finish the export and supporting locale work left after the Simplified Chinese product-language rollout. Use the earlier combined work in [#556](https://github.com/dutchdronesquad/trackdraw/pull/556) as reference, but reimplement each slice against current `main` instead of reviving or cherry-picking that PR.
-  - [ ] Locale-aware visual exports
-        Pass the active locale and localized untitled-track fallback through PNG and SVG callers so dates and fallback copy follow the selected language.
-  - [ ] Supporting locale cleanup
-        Format public-gallery dates with the active locale and extend API docs title/document-language selection to every supported locale.
-  - [ ] Focused localization regression coverage
-        Cover locale propagation and localized fallback copy through the remaining PNG/SVG export callers, plus gallery and API-document locale handling.
+- [x] Simplified Chinese export and integration follow-up (`No account required`)
+      Finished the export and supporting locale work left after the Simplified Chinese product-language rollout, reimplemented against current `main` with the earlier combined work in [#556](https://github.com/dutchdronesquad/trackdraw/pull/556) used only as reference.
+  - [x] Locale-aware visual exports
+        PNG and SVG callers pass the active locale and localized untitled-track fallback so dates and fallback copy follow the selected language.
+  - [x] Supporting locale cleanup
+        Public-gallery dates use the active locale, and API Docs select the title and document language for every supported locale.
+  - [x] Focused localization regression coverage
+        Added coverage for locale propagation and localized fallback copy through PNG/SVG export callers, gallery dates, and API-document locale handling.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.

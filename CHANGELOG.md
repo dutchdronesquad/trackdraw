@@ -6,9 +6,9 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
-### Clearer gallery membership
+### Locale-aware visual exports and integrations
 
-Ordinary share links are now kept separate from gallery entries. Gallery dashboards and metrics count only listed, featured, or moderated tracks, while removing a track from the gallery continues to leave its share link available.
+PNG and SVG exports now use the selected language for footer dates and untitled-track copy. Public gallery dates and API Docs language metadata also follow all four supported languages, including Simplified Chinese.
 
 ## [1.14.0]
 

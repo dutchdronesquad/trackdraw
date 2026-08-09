@@ -71,6 +71,7 @@ function createDesign() {
 
 describe("exportSvg", () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -85,6 +86,26 @@ describe("exportSvg", () => {
     expect(svg).toContain(`A &lt; B &amp; C`);
     expect(svg).toContain(`<svg xmlns="http://www.w3.org/2000/svg"`);
     expect(svg).toContain(`60×40 m`);
+  });
+
+  it("uses the requested locale and localized untitled-track fallback", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-13T10:00:00.000Z"));
+    const design = createDesign();
+    design.title = "";
+
+    const svg = designToSvg(design, "dark", {
+      locale: "zh",
+      titleFallback: "未命名赛道",
+    });
+    const localizedDate = new Intl.DateTimeFormat("zh", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+
+    expect(svg).toContain("未命名赛道");
+    expect(svg).toContain(localizedDate);
   });
 
   it("can omit obstacle numbers when requested", () => {
