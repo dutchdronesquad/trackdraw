@@ -60,7 +60,7 @@ export async function configurePdfFont(
   pdf: jsPDF,
   locale: SupportedLocale | undefined
 ) {
-  if (locale !== "zh") return;
+  if (locale !== "zh-CN") return;
   registerCjkPdfFont(pdf, await loadCjkPdfFontBinary());
 }
 

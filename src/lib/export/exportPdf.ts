@@ -40,8 +40,8 @@ const BRAND_LOGO_ASPECT = 1027 / 200;
 
 function formatPdfDate(locale: SupportedLocale | undefined) {
   const dateLocale =
-    locale === "zh"
-      ? "zh-CN"
+    locale === "zh-CN"
+      ? locale
       : locale === "nl"
         ? "nl-NL"
         : locale === "de"

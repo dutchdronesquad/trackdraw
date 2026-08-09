@@ -12,7 +12,7 @@ The Layout inspector now brings route, timing, numbering, and configured invento
 
 ### Locale-aware visual exports and integrations
 
-PNG and SVG exports now use the selected language for footer dates and untitled-track copy. Public gallery dates and API Docs language metadata also follow all four supported languages, including Simplified Chinese.
+PNG and SVG exports now use the selected language for footer dates and untitled-track copy. Public gallery dates and API Docs language metadata also follow all four supported languages, including Simplified Chinese. Simplified Chinese now uses the standard `zh-CN` locale identifier while existing `zh` preferences continue to work and migrate automatically.
 
 ## [1.14.0]
 

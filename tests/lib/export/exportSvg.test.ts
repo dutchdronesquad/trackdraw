@@ -101,10 +101,10 @@ describe("exportSvg", () => {
     design.title = "";
 
     const svg = designToSvg(design, "dark", {
-      locale: "zh",
+      locale: "zh-CN",
       titleFallback: "未命名赛道",
     });
-    const localizedDate = new Intl.DateTimeFormat("zh", {
+    const localizedDate = new Intl.DateTimeFormat("zh-CN", {
       day: "2-digit",
       month: "short",
       year: "numeric",

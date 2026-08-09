@@ -99,7 +99,7 @@ import {
 } from "../../helpers/shapes-translate";
 import enExportPdf from "@lang/en/exportPdf.json";
 import enSetupEstimate from "@lang/en/setupEstimate.json";
-import zhExportPdf from "@lang/zh/exportPdf.json";
+import zhExportPdf from "@lang/zh-CN/exportPdf.json";
 
 const translate = {
   t: createTestTranslate(enExportPdf),
@@ -245,7 +245,7 @@ describe("exportPdf", () => {
       "chinese-track-map.pdf",
       "light",
       chineseTranslate,
-      { locale: "zh" }
+      { locale: "zh-CN" }
     );
 
     const pdf = pdfMock.instances[0];
