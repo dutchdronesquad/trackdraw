@@ -5,6 +5,7 @@ import { ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
 import type { AdminApiKey } from "@/lib/server/api-keys";
 
 export type ApiKeyStatus = "active" | "expired" | "disabled";
@@ -69,7 +70,7 @@ type GetApiKeysColumnsParams = {
 
 export function getApiKeysColumns({
   t,
-}: GetApiKeysColumnsParams): ColumnDef<AdminApiKey>[] {
+}: GetApiKeysColumnsParams): ColumnDef<DataTableFeatures, AdminApiKey>[] {
   return [
     {
       id: "key",

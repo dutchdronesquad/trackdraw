@@ -5,6 +5,7 @@ import { ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
 import type { AdminUser } from "@/lib/account/admin-users";
 import { getAccountRoleLabel, type AccountRole } from "@/lib/account/roles";
 
@@ -50,7 +51,7 @@ type GetUsersColumnsParams = {
 export function getUsersColumns({
   t,
   currentUserId,
-}: GetUsersColumnsParams): ColumnDef<AdminUser>[] {
+}: GetUsersColumnsParams): ColumnDef<DataTableFeatures, AdminUser>[] {
   return [
     {
       id: "user",

@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/AppTooltip";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
 import type { DashboardShare } from "@/lib/server/shares";
 
 export type ShareLifecycleState = "active" | "expired" | "revoked";
@@ -166,7 +167,7 @@ export function getSharesColumns({
   onCopyLink,
   onRevokeCandidate,
   onPurgeCandidate,
-}: GetSharesColumnsParams): ColumnDef<DashboardShare>[] {
+}: GetSharesColumnsParams): ColumnDef<DataTableFeatures, DashboardShare>[] {
   return [
     {
       id: "track",

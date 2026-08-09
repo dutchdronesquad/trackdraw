@@ -3,16 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { type SortingState, useTable } from "@tanstack/react-table";
 import {
   Ban,
   ChevronDown,
@@ -46,6 +37,7 @@ import type { UserContextStats } from "@/lib/server/users";
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
+import { dataTableFeatures } from "@/components/data-table/tableFeatures";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -109,13 +101,10 @@ type UserContextData = {
   recentEvents: AuditEvent[];
 };
 
-// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardUsersManager({
   currentUserId,
   initialUsers,
 }: DashboardUsersManagerProps) {
-  "use no memo";
-
   const t = useTranslations("dashboard.users");
   const [users, setUsers] = useState(initialUsers);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
@@ -143,18 +132,15 @@ export default function DashboardUsersManager({
   );
   const [deleteStats, setDeleteStats] = useState<UserContextStats | null>(null);
   const [deleteStatsLoading, setDeleteStatsLoading] = useState(false);
+  const deleteCandidateId = deleteCandidate?.id ?? null;
+  const inspectCandidateId = inspectCandidate?.id ?? null;
 
   useEffect(() => {
-    if (!deleteCandidate) {
-      setDeleteStats(null);
-      return;
-    }
+    if (!deleteCandidateId) return;
 
     let cancelled = false;
-    setDeleteStatsLoading(true);
-    setDeleteStats(null);
 
-    fetch(`/api/dashboard/users/${encodeURIComponent(deleteCandidate.id)}`)
+    fetch(`/api/dashboard/users/${encodeURIComponent(deleteCandidateId)}`)
       .then(async (res) => {
         const payload = (await res.json()) as {
           ok: boolean;
@@ -180,19 +166,14 @@ export default function DashboardUsersManager({
     return () => {
       cancelled = true;
     };
-  }, [deleteCandidate, t]);
+  }, [deleteCandidateId, t]);
 
   useEffect(() => {
-    if (!inspectCandidate) {
-      setInspectData(null);
-      return;
-    }
+    if (!inspectCandidateId) return;
 
     let cancelled = false;
-    setInspectLoading(true);
-    setInspectData(null);
 
-    fetch(`/api/dashboard/users/${encodeURIComponent(inspectCandidate.id)}`)
+    fetch(`/api/dashboard/users/${encodeURIComponent(inspectCandidateId)}`)
       .then(async (res) => {
         const payload = (await res.json()) as {
           ok: boolean;
@@ -222,7 +203,33 @@ export default function DashboardUsersManager({
     return () => {
       cancelled = true;
     };
-  }, [inspectCandidate, t]);
+  }, [inspectCandidateId, t]);
+
+  const openInspectCandidate = (candidate: AdminUser) => {
+    setInspectData(null);
+    setInspectLoading(true);
+    setInspectCandidate(candidate);
+  };
+
+  const closeInspectCandidate = () => {
+    setInspectCandidate(null);
+    setInspectData(null);
+    setInspectLoading(false);
+  };
+
+  const openDeleteCandidate = (candidate: AdminUser) => {
+    setDeleteConfirmValue("");
+    setDeleteStats(null);
+    setDeleteStatsLoading(true);
+    setDeleteCandidate(candidate);
+  };
+
+  const closeDeleteCandidate = () => {
+    setDeleteCandidate(null);
+    setDeleteConfirmValue("");
+    setDeleteStats(null);
+    setDeleteStatsLoading(false);
+  };
 
   const copyToClipboard = async (value: string, label: string) => {
     try {
@@ -391,9 +398,8 @@ export default function DashboardUsersManager({
       }
 
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      setDeleteCandidate(null);
-      setDeleteConfirmValue("");
-      setInspectCandidate((prev) => (prev?.id === user.id ? null : prev));
+      closeDeleteCandidate();
+      if (inspectCandidate?.id === user.id) closeInspectCandidate();
       toast.success(
         t("deleteDialog.deleteSuccess", {
           name: getUserLabel(user, t("fallback.unnamedUser")),
@@ -422,7 +428,8 @@ export default function DashboardUsersManager({
     [selectedRoles]
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data: users,
     columns,
     state: {
@@ -443,12 +450,6 @@ export default function DashboardUsersManager({
         (user.email?.toLowerCase().includes(q) ?? false)
       );
     },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
   const filteredRowCount = table.getFilteredRowModel().rows.length;
   const roleCounts = table.getColumn("role")?.getFacetedUniqueValues();
@@ -477,7 +478,7 @@ export default function DashboardUsersManager({
         table={table}
         columnsLength={columns.length}
         emptyMessage={t("empty.default")}
-        onRowClick={(row) => setInspectCandidate(row.original)}
+        onRowClick={(row) => openInspectCandidate(row.original)}
         pagination={{
           summary: (
             <p className="text-muted-foreground text-xs">
@@ -493,7 +494,7 @@ export default function DashboardUsersManager({
       <Sheet
         open={inspectCandidate !== null}
         onOpenChange={(open) => {
-          if (!open) setInspectCandidate(null);
+          if (!open) closeInspectCandidate();
         }}
       >
         <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-sm">
@@ -771,10 +772,9 @@ export default function DashboardUsersManager({
                             size="sm"
                             variant="outline"
                             className="text-destructive hover:bg-destructive/10 hover:text-destructive h-7 cursor-pointer gap-1.5 rounded-md px-2.5 text-xs shadow-none"
-                            onClick={() => {
-                              setDeleteConfirmValue("");
-                              setDeleteCandidate(inspectCandidate);
-                            }}
+                            onClick={() =>
+                              openDeleteCandidate(inspectCandidate)
+                            }
                           >
                             <Trash2 className="size-3.5" />
                             {t("panel.actions.delete")}
@@ -934,10 +934,7 @@ export default function DashboardUsersManager({
       <Dialog
         open={deleteCandidate !== null}
         onOpenChange={(open) => {
-          if (!open) {
-            setDeleteCandidate(null);
-            setDeleteConfirmValue("");
-          }
+          if (!open) closeDeleteCandidate();
         }}
       >
         <DialogContent>
