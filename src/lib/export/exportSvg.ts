@@ -158,8 +158,26 @@ function obstacleNumbersToSvg(
 export type ExportTheme = "dark" | "light";
 export interface Export2DOptions {
   includeObstacleNumbers?: boolean;
+  locale?: string;
   preset?: "standard" | "race-day";
+  titleFallback?: string;
   unitSystem?: MeasurementUnitSystem;
+}
+
+function formatExportDate(locale?: string) {
+  try {
+    return new Intl.DateTimeFormat(locale || "en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+  } catch {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
+  }
 }
 
 export function designToSvg(
@@ -240,17 +258,14 @@ export function designToSvg(
     options?.includeObstacleNumbers === false
       ? ""
       : obstacleNumbersToSvg(design, shapes, ppm, theme, shapeBoundsCache);
-  const titleText = design.title.trim() || "Untitled Track";
+  const titleText =
+    design.title.trim() || options?.titleFallback || "Untitled Track";
   const sizeText = formatCompactFieldSize(
     width,
     height,
     options?.unitSystem ?? "metric"
   );
-  const dateText = new Date().toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const dateText = formatExportDate(options?.locale);
 
   const FOOTER = 26;
   const fBase = H - 8; // text baseline inside footer

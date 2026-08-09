@@ -761,6 +761,8 @@ export default function ExportDialog({
           () =>
             exportPngFile(design, filenameFor(format), exportTheme, 3, {
               includeObstacleNumbers,
+              locale,
+              titleFallback: tExportPdf("untitledTrack"),
               unitSystem,
             }),
           { eventFormat: formatId }
@@ -771,6 +773,8 @@ export default function ExportDialog({
           () =>
             exportSvgFile(design, filenameFor(format), exportTheme, {
               includeObstacleNumbers,
+              locale,
+              titleFallback: tExportPdf("untitledTrack"),
               unitSystem,
             }),
           { eventFormat: formatId }

@@ -1,3 +1,9 @@
+import {
+  getLocaleFromAcceptLanguage,
+  isValidLocale,
+  type SupportedLocale,
+} from "@/lib/i18n/locales";
+
 const CONFIGURATION = JSON.stringify({
   url: "/api/v1/openapi.json",
   theme: "default",
@@ -12,33 +18,29 @@ const CONFIGURATION = JSON.stringify({
   showOperationId: true,
 });
 
-const titles = {
+const titles: Record<SupportedLocale, string> = {
   en: "TrackDraw API Docs",
   nl: "TrackDraw API-documentatie",
-} as const;
+  de: "TrackDraw API-Dokumentation",
+  zh: "TrackDraw API 文档",
+};
 
-function getLocaleFromRequest(request: Request): keyof typeof titles {
+function getLocaleFromRequest(request: Request): SupportedLocale {
   const cookie = request.headers.get("cookie") ?? "";
-  const match = cookie.match(/(?:^|;\s*)trackdraw-locale=(en|nl)(?:;|$)/);
-  if (match?.[1] === "nl") return "nl";
-  if (match?.[1] === "en") return "en";
+  const cookieLocale = cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith("trackdraw-locale="))
+    ?.slice("trackdraw-locale=".length);
 
-  const acceptLanguage = request.headers.get("accept-language") ?? "";
-  return acceptLanguage
-    .split(",")
-    .map((part) => {
-      const [locale = "", quality = "q=1"] = part.trim().split(";");
-      const q = Number(quality.trim().replace(/^q=/, ""));
-      return { locale: locale.toLowerCase().split("-")[0], q };
-    })
-    .sort((a, b) => b.q - a.q)
-    .find((entry) => entry.locale === "nl" || entry.locale === "en")?.locale ===
-    "nl"
-    ? "nl"
-    : "en";
+  if (isValidLocale(cookieLocale)) {
+    return cookieLocale;
+  }
+
+  return getLocaleFromAcceptLanguage(request.headers.get("accept-language"));
 }
 
-function renderHtml(locale: keyof typeof titles) {
+function renderHtml(locale: SupportedLocale) {
   return `<!doctype html>
 <html lang="${locale}">
   <head>

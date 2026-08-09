@@ -3,6 +3,8 @@
 import type React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { NextIntlClientProvider } from "next-intl";
+import * as zh from "@lang/zh";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import PublicGalleryGrid from "@/components/gallery/PublicGalleryGrid";
 import type { PublicGalleryEntry } from "@/lib/server/gallery";
@@ -139,5 +141,27 @@ describe("PublicGalleryGrid", () => {
 
     expect(screen.queryByAltText("Fallback preview")).toBeNull();
     expect(screen.getByText("Fallback preview")).toBeTruthy();
+  });
+
+  it("formats publication dates with the active locale", () => {
+    const publishedAt = "2026-01-15T10:00:00.000Z";
+    const localizedDate = new Intl.DateTimeFormat("zh", {
+      dateStyle: "medium",
+    }).format(new Date(publishedAt));
+
+    render(
+      <PublicGalleryGrid
+        entries={[galleryEntry({ galleryPublishedAt: publishedAt })]}
+      />,
+      {
+        wrapper: ({ children }) => (
+          <NextIntlClientProvider locale="zh" messages={{ ...zh }}>
+            {children}
+          </NextIntlClientProvider>
+        ),
+      }
+    );
+
+    expect(screen.getByText(`发布于 ${localizedDate}`)).toBeTruthy();
   });
 });

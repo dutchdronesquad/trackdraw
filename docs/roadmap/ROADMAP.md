@@ -25,7 +25,7 @@ TrackDraw is now strong in these areas:
 After v1.14.0, the next product focus should stay deliberately narrow:
 
 1. Generated flightpath validation: test real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid.
-2. Translation follow-up: finish the remaining locale-aware PNG/SVG export work, then decide whether hosted Crowdin or self-hosted Weblate is the right contributor workflow while keeping locale catalogs out of the Worker bundle.
+2. Translation follow-up: run a bounded Crowdin Free pilot, retain Weblate as the self-hosted fallback, and keep locale catalogs out of the Worker bundle.
 3. Focused 3D item controls: add direct 3D move/rotate controls only where they are predictable across desktop, mobile, undo/redo, and lock state.
 
 Race-day workflow depth, account lifecycle depth, custom banner textures, share version history, gallery collections, billing, and community features should stay behind those priorities unless a concrete support issue or release risk forces them forward.
@@ -236,25 +236,20 @@ Current shipped foundation:
 - English remains the stable fallback baseline, with route-scoped message loading and a centralized i18n catalog policy
 - Locale JSON is generated into OpenNext static assets for production builds so additional languages do not become full static catalog imports in the Cloudflare Worker script
 - Locale parity/unresolved-key validation and hardcoded-copy scanning run in CI so new UI copy is intentionally cataloged or explicitly allowlisted
+- PNG/SVG footer dates and untitled-track fallbacks, public-gallery dates, and API Docs titles/document language follow all four supported locales
 
 Maintenance focus:
 
 - Keep new product copy behind typed message catalogs instead of reopening hardcoded-copy debt
 - Treat translation management and Worker package size as a near-term operational track now that TrackDraw has four shipped languages and additional contributor languages are expected
-- Compare hosted Crowdin and self-hosted Weblate before accepting a larger volume of contributor translations, using the existing `lang/{locale}/{namespace}.json` layout and normal pull-request review for translatable namespaces
-- If Weblate is chosen, design it as production infrastructure before inviting contributors: pinned containers, TLS/reverse proxy, SMTP, access control, backups, restore testing, monitoring, and upgrade/rollback process
-- If Crowdin is chosen, verify plan eligibility and hosted-word costs before relying on the open-source or free plan, especially if TrackDraw gains paid plans
+- Pilot Crowdin Free before selecting a platform; the current ten namespaces and three target languages are estimated at 25,731 hosted words, while Weblate remains the self-hosted fallback
+- Do not depend on Crowdin's open-source grant: confirm the actual workspace quota and reassess licensing if TrackDraw introduces related paid products or services
+- Prototype one translatable namespace end to end before committing to a migration, using the existing `lang/{locale}/{namespace}.json` layout and normal pull-request review
+- If Weblate becomes necessary, use an ephemeral pilot before operating a separate production stack; a permanent ACC environment is not initially required
 - Keep `dashboard` and `legal` English-only regardless of the translation-management tool
 - Keep generated locale asset loading in place so each language does not automatically add a full catalog set to the Cloudflare Worker bundle
 - Add future languages only when there is enough user demand and maintenance capacity to review FPV terminology, compact UI labels, and export/PDF/Race Pack copy
 - Continue checking translated UI on desktop and mobile, especially tight inspector panels, buttons, dialogs, share pages, and exported PDFs/Race Packs
-
-Simplified Chinese export and integration follow-up:
-
-- Treat the locale and message catalogs merged through [#583](https://github.com/dutchdronesquad/trackdraw/pull/583) as the baseline; use [#556](https://github.com/dutchdronesquad/trackdraw/pull/556) as implementation research rather than reviving or cherry-picking the old combined PR
-- Pass the active locale and localized untitled-track fallback through PNG and SVG export paths so export dates and fallback copy match the selected product language
-- Use locale-aware date formatting in the public gallery and extend the API docs title and document language handling to every supported locale
-- Add focused regression coverage for locale propagation and localized fallback copy through the remaining PNG/SVG export callers, plus gallery and API-document locale handling
 
 Important boundary:
 

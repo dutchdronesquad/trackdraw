@@ -3,6 +3,8 @@
 import React from "react";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { NextIntlClientProvider } from "next-intl";
+import * as zh from "@lang/zh";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ExportDialog from "@/components/dialogs/ExportDialog";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
@@ -12,6 +14,8 @@ const mocks = vi.hoisted(() => ({
   downloadJsonFile: vi.fn(),
   exportFlythrough: vi.fn(),
   exportPdf: vi.fn(),
+  exportPng: vi.fn(),
+  exportSvg: vi.fn(),
   toastError: vi.fn(),
   toastLoading: vi.fn(),
   toastSuccess: vi.fn(),
@@ -69,6 +73,14 @@ vi.mock("@/lib/export/exportPdf", () => ({
   exportPdf: mocks.exportPdf,
 }));
 
+vi.mock("@/lib/export/exportPng", () => ({
+  exportPng: mocks.exportPng,
+}));
+
+vi.mock("@/lib/export/exportSvg", () => ({
+  exportSvg: mocks.exportSvg,
+}));
+
 vi.mock("@/lib/export/exportFlythrough", () => ({
   exportFlythrough: mocks.exportFlythrough,
 }));
@@ -113,6 +125,8 @@ describe("ExportDialog mobile workflow", () => {
     mocks.downloadJsonFile.mockReset();
     mocks.exportFlythrough.mockReset();
     mocks.exportPdf.mockReset();
+    mocks.exportPng.mockReset();
+    mocks.exportSvg.mockReset();
     mocks.toastError.mockReset();
     mocks.toastLoading.mockReset();
     mocks.toastSuccess.mockReset();
@@ -178,6 +192,56 @@ describe("ExportDialog mobile workflow", () => {
       await screen.findByRole("button", { name: "Export Race Pack" })
     ).toBeTruthy();
     expect(screen.getByText("Route numbers")).toBeTruthy();
+  });
+
+  it("passes the active locale and localized title fallback to PNG and SVG exports", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ExportDialog
+        activeTab="3d"
+        canvasRef={React.createRef()}
+        onOpenChange={vi.fn()}
+        open
+      />,
+      {
+        wrapper: ({ children }) => (
+          <NextIntlClientProvider locale="zh" messages={{ ...zh }}>
+            {children}
+          </NextIntlClientProvider>
+        ),
+      }
+    );
+
+    await user.click(screen.getByRole("button", { name: /导出.*图片/ }));
+
+    await waitFor(() =>
+      expect(mocks.exportPng).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.stringMatching(/\.png$/),
+        "dark",
+        3,
+        expect.objectContaining({
+          locale: "zh",
+          titleFallback: "未命名赛道",
+        })
+      )
+    );
+
+    await user.click(screen.getByRole("button", { name: /^矢量图 SVG$/ }));
+    await user.click(screen.getByRole("button", { name: /导出.*矢量图/ }));
+
+    await waitFor(() =>
+      expect(mocks.exportSvg).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.stringMatching(/\.svg$/),
+        "dark",
+        expect.objectContaining({
+          locale: "zh",
+          titleFallback: "未命名赛道",
+        })
+      )
+    );
   });
 
   it("uses sidebar navigation to select export-specific settings", async () => {
