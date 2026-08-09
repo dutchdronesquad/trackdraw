@@ -26,7 +26,9 @@ export function resolveSupportedLocale(
   if (
     tag === "zh" ||
     tag === "zh-cn" ||
+    tag.startsWith("zh-cn-") ||
     tag === "zh-sg" ||
+    tag.startsWith("zh-sg-") ||
     tag === "zh-hans" ||
     tag.startsWith("zh-hans-")
   ) {

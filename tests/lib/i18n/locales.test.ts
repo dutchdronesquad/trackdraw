@@ -12,13 +12,20 @@ describe("locale resolution", () => {
     expect(supportedLocales).not.toContain("zh");
   });
 
-  it.each(["zh", "zh-CN", "zh_CN", "zh-Hans", "zh-Hans-CN", "zh-SG"])(
-    "normalizes the Simplified Chinese alias %s",
-    (locale) => {
-      expect(resolveSupportedLocale(locale)).toBe("zh-CN");
-      expect(normalizeLocale(locale)).toBe("zh-CN");
-    }
-  );
+  it.each([
+    "zh",
+    "zh-CN",
+    "zh_CN",
+    "zh-CN-u-ca-chinese",
+    "zh-CN-x-private",
+    "zh-Hans",
+    "zh-Hans-CN",
+    "zh-SG",
+    "zh-SG-u-nu-hanidec",
+  ])("normalizes the Simplified Chinese alias %s", (locale) => {
+    expect(resolveSupportedLocale(locale)).toBe("zh-CN");
+    expect(normalizeLocale(locale)).toBe("zh-CN");
+  });
 
   it("does not map explicit Traditional Chinese locales to Simplified Chinese", () => {
     expect(resolveSupportedLocale("zh-TW")).toBeUndefined();
