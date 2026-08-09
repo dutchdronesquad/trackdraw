@@ -3,8 +3,8 @@
  * Conservative hardcoded UI-copy scan.
  *
  * This complements scripts/i18n_check.mjs. The normal i18n check validates
- * catalog parity and translation-key usage; this scan catches newly introduced
- * literal JSX text and common user-facing string props.
+ * catalog integrity, English fallback safety, and translation-key usage; this
+ * scan catches newly introduced literal JSX text and common user-facing props.
  *
  * Keep this check intentionally narrow and allowlisted. A noisy hardcoded-copy
  * scanner gets ignored quickly, so false positives should be resolved either by

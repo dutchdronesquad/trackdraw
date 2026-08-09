@@ -103,21 +103,16 @@ If a contributor leaves, remove them from platform teams or disable the account.
 - Keep route structure unchanged; translation management must not introduce locale-prefixed URLs.
 - Keep `dashboard` and `legal` English-only. They can remain in the repo for fallback/source use, but they should stay out of contributor translation workflows.
 - Keep all translation changes reviewable as normal pull requests.
-- Preserve CI checks for locale parity, unresolved keys, and intentional hardcoded-copy exceptions.
+- Preserve CI checks for catalog integrity, unresolved English keys, placeholders, and intentional hardcoded-copy exceptions. Missing target keys are allowed only because build and runtime catalogs provide a tested English fallback.
 - Support external contributors without requiring direct repository write access.
 - Add new languages only when there is an owner for terminology review, compact UI labels, and export/PDF/Race Pack copy.
 - Prevent translation growth from making the Cloudflare Worker package grow linearly with every added language.
 
-## Recommended pilot
+## Selected pilot
 
-1. Create a Crowdin Free workspace and verify the displayed hosted-word allowance before import.
-2. Import only the ten translatable English namespaces and the existing `nl`, `de`, and `zh-CN` catalogs.
-3. Prove one namespace end to end, preferably `common`: source update, translator suggestion, language review, export, pull request, and existing locale validation.
-4. Keep GitHub pull requests and CI as the release gate; do not grant the platform a direct push path to `main`.
-5. Apply for Crowdin's open-source license in parallel, with the current and anticipated commercial model disclosed.
-6. Document FPV terminology, compact-label expectations, placeholders/ICU syntax, and the English-only boundary.
-7. Reassess when hosted words approach 45,000–50,000, a sixth target language is planned, or Crowdin permissions/integration are insufficient.
-8. Prototype Weblate only if that reassessment shows a concrete reason to accept self-hosting overhead.
+TrackDraw will run a reversible three-month Crowdin pilot from 2026-08-10 through 2026-11-10, shifting the end date if external activation happens later. Crowdin owns `nl`, `de`, and `zh-CN` editing during the pilot; English remains in GitHub. The repository retains all catalogs and production keeps using generated Static Assets.
+
+The setup, update cycle, evaluation criteria, and rollback are documented in `docs/research/crowdin-pilot.md`. The first external step is a one-namespace `common.json` round trip before enabling all ten namespaces.
 
 ## Risks and decisions
 
@@ -137,4 +132,4 @@ If a contributor leaves, remove them from platform teams or disable the account.
 
 ## Status
 
-Research complete enough to start a bounded pilot; the final platform decision remains open. No external workspace, infrastructure, or sync workflow has been created yet.
+Crowdin is selected for a bounded three-month pilot; the permanent platform decision remains open until the evaluation. Repository fallback and synchronization foundations are in place, while external project activation and the initial catalog import remain operator steps.

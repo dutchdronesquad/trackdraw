@@ -4,7 +4,7 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "npm run i18n:sync-assets && next dev --turbopack",
     "build": "npm run i18n:sync-assets && next build",
     "analyze": "next experimental-analyze",
     "start": "next start",

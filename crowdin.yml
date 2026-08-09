@@ -1,0 +1,9 @@
+preserve_hierarchy: true
+
+files:
+  - source: /lang/en/*.json
+    translation: /lang/%locale%/%original_file_name%
+    ignore:
+      - /lang/en/dashboard.json
+      - /lang/en/legal.json
+    update_option: update_as_unapproved

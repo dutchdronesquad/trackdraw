@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * Translation completeness audit.
+ * Translation integrity audit.
  *
- * 1. Compares every locale's message files against the `en` baseline and
- *    reports missing/extra keys per namespace.
+ * 1. Compares every locale's message files against the `en` baseline. Missing
+ *    target keys are allowed and use the English runtime fallback; extra keys,
+ *    empty values, and placeholder mismatches remain errors.
  * 2. Scans src/** for `useTranslations("namespace")` bindings and the keys
  *    called through them, flagging any key that doesn't resolve in the `en`
  *    catalog (the same class of bug as a runtime MISSING_MESSAGE error).
@@ -12,10 +13,12 @@
  * Exits non-zero if any issue is found, so it can be wired into CI.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative, extname } from "node:path";
+import { join, relative, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = fileURLToPath(new URL("..", import.meta.url));
+const root = process.env.TRACKDRAW_I18N_ROOT
+  ? resolve(process.env.TRACKDRAW_I18N_ROOT)
+  : fileURLToPath(new URL("..", import.meta.url));
 const langDir = join(root, "lang");
 const srcDir = join(root, "src");
 const baseLocale = "en";
@@ -47,7 +50,7 @@ function flatten(obj, prefix = "") {
   const out = {};
   for (const [key, value] of Object.entries(obj)) {
     const path = prefix ? `${prefix}.${key}` : key;
-    if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    if (value !== null && typeof value === "object") {
       Object.assign(out, flatten(value, path));
     } else {
       out[path] = value;
@@ -66,9 +69,24 @@ function resolvePath(obj, dottedPath) {
     );
 }
 
-// ── Part 1: locale parity ──────────────────────────────────────────────
+function extractPlaceholders(message) {
+  if (typeof message !== "string") return new Set();
+  return new Set(
+    [...message.matchAll(/\{([A-Za-z][\w]*)\s*(?:,|\})/g)].map(
+      (match) => match[1]
+    )
+  );
+}
 
-function checkLocaleParity() {
+function hasSameValues(left, right) {
+  return (
+    left.size === right.size && [...left].every((value) => right.has(value))
+  );
+}
+
+// ── Part 1: locale integrity ───────────────────────────────────────────
+
+function checkLocaleIntegrity() {
   const locales = listLocales();
   const otherLocales = locales.filter((l) => l !== baseLocale);
   const baseNamespaces = listNamespaces(baseLocale);
@@ -76,6 +94,7 @@ function checkLocaleParity() {
     (namespace) => !englishOnlyNamespaces.has(namespace)
   );
   let problems = 0;
+  let fallbacks = 0;
 
   for (const namespace of localizedBaseNamespaces) {
     const baseMessages = flatten(loadNamespace(baseLocale, namespace));
@@ -87,7 +106,7 @@ function checkLocaleParity() {
         localeMessages = flatten(loadNamespace(locale, namespace));
       } catch {
         console.log(`\n[${locale}] missing namespace file: ${namespace}.json`);
-        problems += baseKeys.size;
+        problems += 1;
         continue;
       }
       const localeKeys = new Set(Object.keys(localeMessages));
@@ -97,12 +116,12 @@ function checkLocaleParity() {
 
       if (missing.length > 0) {
         console.log(
-          `\n[${locale}/${namespace}.json] missing ${missing.length} key(s) present in ${baseLocale}:`
+          `\n[${locale}/${namespace}.json] uses the ${baseLocale} fallback for ${missing.length} missing key(s):`
         );
         for (const key of missing) {
           console.log(`  - ${key}  (en: ${JSON.stringify(baseMessages[key])})`);
         }
-        problems += missing.length;
+        fallbacks += missing.length;
       }
       if (extra.length > 0) {
         console.log(
@@ -112,6 +131,30 @@ function checkLocaleParity() {
           console.log(`  - ${key}`);
         }
         problems += extra.length;
+      }
+
+      for (const key of [...baseKeys].filter((k) => localeKeys.has(k))) {
+        const baseValue = baseMessages[key];
+        const localeValue = localeMessages[key];
+        if (
+          typeof localeValue !== "string" ||
+          localeValue.trim().length === 0
+        ) {
+          console.log(
+            `\n[${locale}/${namespace}.json] ${key} must contain a non-empty translated string.`
+          );
+          problems += 1;
+          continue;
+        }
+
+        const basePlaceholders = extractPlaceholders(baseValue);
+        const localePlaceholders = extractPlaceholders(localeValue);
+        if (!hasSameValues(basePlaceholders, localePlaceholders)) {
+          console.log(
+            `\n[${locale}/${namespace}.json] ${key} has different placeholders (en: ${[...basePlaceholders].join(", ") || "none"}; ${locale}: ${[...localePlaceholders].join(", ") || "none"}).`
+          );
+          problems += 1;
+        }
       }
     }
   }
@@ -130,7 +173,7 @@ function checkLocaleParity() {
     }
   }
 
-  return problems;
+  return { problems, fallbacks };
 }
 
 // ── Part 2: usage scan against en catalog ──────────────────────────────
@@ -253,12 +296,12 @@ function checkUsages() {
   return problems;
 }
 
-const parityProblems = checkLocaleParity();
+const { problems: integrityProblems, fallbacks } = checkLocaleIntegrity();
 const usageProblems = checkUsages();
 
-const total = parityProblems + usageProblems;
+const total = integrityProblems + usageProblems;
 console.log(
-  `\n${total === 0 ? "✓" : "✗"} i18n check: ${parityProblems} locale-parity issue(s), ${usageProblems} unresolved-key usage(s).`
+  `\n${total === 0 ? "✓" : "✗"} i18n check: ${integrityProblems} locale-integrity issue(s), ${fallbacks} English fallback(s), ${usageProblems} unresolved-key usage(s).`
 );
 
 process.exit(total === 0 ? 0 : 1);
