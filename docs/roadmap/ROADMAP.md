@@ -28,6 +28,8 @@ After v1.14.0, the next product focus should stay deliberately narrow:
 2. Translation follow-up: run a bounded Crowdin Free pilot, retain Weblate as the self-hosted fallback, and keep locale catalogs out of the Worker bundle.
 3. Focused 3D item controls: add direct 3D move/rotate controls only where they are predictable across desktop, mobile, undo/redo, and lock state.
 
+Track Preflight and a leaner inspector hierarchy should follow as one focused usability slice once generated-route warning behavior is trustworthy enough to reuse. Preflight should consolidate existing signals rather than introduce another validation system or a broad race-day mode.
+
 Race-day workflow depth, account lifecycle depth, custom banner textures, share version history, gallery collections, billing, and community features should stay behind those priorities unless a concrete support issue or release risk forces them forward.
 
 Lower-priority follow-up such as share version history, gallery collections, Velocidrone export stabilization, AR, and build mode should stay parked until there is clearer need.
@@ -148,6 +150,50 @@ Maintenance focus:
 - Keep import/export, autosave, share publish/read, read-only viewing, account sync, and mobile editor flows covered when touching nearby code
 - Add regression tests when a fix affects selection, transforms, route editing, export generation, project recovery, sharing, or larger layouts
 - Treat future reliability work as targeted support-driven slices rather than a broad redesign track
+
+#### Track Preflight And Inspector Focus (`No account required`)
+
+Bring existing route, numbering, timing, and inventory signals into one compact layout-review summary while reducing repeated inspector chrome.
+
+Why:
+
+- Route warnings, obstacle numbering, overlay preparation, and inventory buildability already expose useful signals, but users currently have to discover them in separate inspector and integration surfaces
+- Project, Layout, and Selection views repeat context, status metadata, and route analysis, which makes the inspector feel heavier than the underlying tasks require
+- A shared summary can make the final design-to-handoff review clearer without creating a separate race-day product or changing local-first editing
+
+First slice:
+
+- Add a pure preflight report that composes existing route-numbering, route-warning, timing/overlay, and inventory reports into stable issue categories and target references
+- Show a compact summary at the top of the Layout inspector with `Incomplete`, `Review`, or `Ready` states and expandable issue groups
+- Let actionable issues select the relevant track item or Race Line and direct waypoint-based warnings back to route review
+- Treat timing and inventory as opt-in checks: an untouched timing setup or all-zero default inventory must not make every ordinary design look incomplete
+- Keep preflight advisory. Do not block sharing or export, and define `Ready` as no known active-check issues rather than a claim that a track is safe or race-ready
+- Use the summary to replace repeated Layout lead pills and status cards instead of adding another large inspector section
+
+Current shipped foundation:
+
+- A pure preflight report composes route numbering, route-review warnings, timing readiness, and configured inventory shortages without introducing new thresholds
+- The Layout inspector shows an advisory `Incomplete`, `Review`, or `Ready` summary; actionable issues select the related obstacle or Race Line
+- Route generation remains available as a focused action while its former status cards are consolidated into Preflight
+- Project and Layout leads no longer repeat nearby values, render density is under Advanced, and the item list avoids nested card chrome and hides filters for small layouts
+- Elevation analysis is limited to Layout and selected Race Line contexts, inactive mobile timing is collapsed, and generic mobile selection actions are no longer duplicated inside the drawer
+- Inspector numeric fields inherit accessible labels, common actions have visible focus, tabs support arrow-key navigation, and item selection/removal use separate controls
+
+Inspector focus:
+
+- Show elevation analysis only in route-relevant contexts instead of as a permanent footer across Project, Layout, single-selection, and multi-selection views
+- Remove repeated lead metadata where the same title, position, buildability, or numbering state appears again immediately below
+- Make disclosure task-driven: keep common fields prominent, collapse inactive timing and advanced placement details on mobile, and move render density behind advanced settings
+- Flatten the placed-items list so search and filters appear when useful without wrapping the list in additional card-like chrome
+- Fix inspector field labeling, visible focus, and keyboard tab behavior as part of the cleanup rather than treating accessibility as a separate polish pass
+- Preserve automatic Selection context, locked/read-only behavior, undo/redo boundaries, mobile touch targets, and the existing Project/Layout/Selection model during the first slice
+
+Important boundary:
+
+- Reuse existing validators and thresholds; do not duplicate route-analysis logic in React inspector components
+- Keep generated-route warnings in the generation workflow until real-layout validation and threshold tuning are complete
+- Exclude out-of-field geometry checks, per-format export runtime readiness, and gallery/share metadata readiness from the first slice because they do not yet share the same domain semantics
+- Do not expand this slice into simulation, AR, build mode, new persistence, or a broad inspector redesign
 
 #### Production Observability and Operational Resilience
 
@@ -342,6 +388,7 @@ Feature tracks:
 
 - Collapsible inspector workspace: continue refining the shipped desktop collapse rail only if real usage shows friction around selection context or repeated resizing
 - Persistent sidebar density: keep local-only collapse preferences for editor chrome where that improves repeated editing
+- Inspector hierarchy cleanup: follow the Track Preflight slice above so repeated summaries, route analysis, disclosure defaults, and accessibility fundamentals are improved as one coherent pass rather than separate cosmetic changes
 
 Important boundary:
 

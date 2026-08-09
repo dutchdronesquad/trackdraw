@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
 };
 
 if (process.env.NODE_ENV === "development" && !process.env.VERCEL) {
-  initOpenNextCloudflareForDev();
+  initOpenNextCloudflareForDev({ environment: "dev" });
 }
 
 export default withNextIntl(nextConfig);

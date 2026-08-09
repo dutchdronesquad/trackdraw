@@ -4,6 +4,45 @@
     "layout": "Layout",
     "selection": "Selection"
   },
+  "preflight": {
+    "title": "Preflight",
+    "status": {
+      "incomplete": {
+        "title": "Incomplete",
+        "description": "Add track items to start the layout review."
+      },
+      "review": {
+        "title": "Review",
+        "description": "{count, plural, one {1 known item needs attention.} other {{count} known items need attention.}}"
+      },
+      "ready": {
+        "title": "Ready",
+        "description": "No known issues in the active checks."
+      }
+    },
+    "categories": {
+      "route": "Route",
+      "timing": "Timing",
+      "inventory": "Inventory"
+    },
+    "checkInactive": "off",
+    "openIssue": "Open",
+    "emptyDetails": "Preflight starts when the layout contains track items.",
+    "noIssues": "The active checks have no known issues.",
+    "issues": {
+      "missingRoute": "Add a Race Line for the placed route obstacles.",
+      "noRouteMatches": "The route obstacles do not sit close enough to the Race Line.",
+      "offRoute": "{name} is outside the Race Line tolerance.",
+      "timingMissingRoute": "Timing needs one usable Race Line.",
+      "multipleRoutes": "Timing found multiple usable Race Lines.",
+      "missingStartFinish": "Add one start/finish timing marker.",
+      "duplicateStartFinish": "Keep only one start/finish timing marker.",
+      "missingSplitId": "A split timing marker is missing its ID.",
+      "duplicateTimingId": "Timing marker IDs must be unique.",
+      "timingPointOffRoute": "A timing marker sits too far from the Race Line.",
+      "inventoryShortage": "{kind}: {count} missing from inventory."
+    }
+  },
   "emptyState": {
     "title": "No selection",
     "body": "Select one or more items on the canvas to edit object properties here."
@@ -144,7 +183,8 @@
     "sections": {
       "routeNumbering": "Route numbering",
       "inventory": "Inventory",
-      "field": "Field"
+      "field": "Field",
+      "advanced": "Advanced"
     },
     "field": {
       "unitsLabel": "Units",

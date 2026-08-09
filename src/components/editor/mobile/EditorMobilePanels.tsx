@@ -719,11 +719,6 @@ export function EditorMobilePanels({
             if (!open) onCloseInspector();
           }}
           title={t("inspector.title")}
-          subtitle={
-            selectedCount === 0
-              ? t("inspector.subtitles.empty")
-              : t("inspector.subtitles.selected")
-          }
           contentClassName="h-[82dvh] max-h-[92dvh] min-h-[72dvh] overscroll-contain"
           bodyClassName="bg-card min-h-0 touch-pan-y overscroll-y-contain [-webkit-overflow-scrolling:touch] p-0"
           repositionInputs

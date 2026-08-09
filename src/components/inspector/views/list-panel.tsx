@@ -147,9 +147,9 @@ function ItemRow({
 }) {
   const dragControls = useDragControls();
   const rowClassName =
-    "group/item hover:bg-brand-primary/8 focus-visible:ring-brand-primary/20 relative grid w-full grid-cols-[32px_minmax(0,1fr)_48px_28px] items-center gap-3 px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:outline-hidden";
+    "group/item hover:bg-brand-primary/8 relative grid w-full grid-cols-[minmax(0,1fr)_40px] items-stretch text-left transition-colors";
 
-  const content = (
+  const selectionContent = (
     <>
       <span className="bg-brand-primary absolute top-1.5 bottom-1.5 left-0 w-0.5 rounded-r-full opacity-0 transition-opacity group-hover/item:opacity-100" />
       <div className="flex min-w-0 items-center">
@@ -196,14 +196,26 @@ function ItemRow({
           –
         </span>
       )}
-      <div className="flex items-center justify-end opacity-100 transition-opacity lg:opacity-0 lg:group-hover/item:opacity-100">
+    </>
+  );
+
+  const rowContent = (
+    <>
+      <button
+        type="button"
+        onClick={() => setSelection([shape.id])}
+        className="focus-visible:ring-brand-primary/20 grid min-w-0 grid-cols-[32px_minmax(0,1fr)_48px] items-center gap-3 px-3 py-2 text-left focus-visible:ring-2 focus-visible:outline-hidden"
+      >
+        {selectionContent}
+      </button>
+      <div className="flex items-center justify-center opacity-100 transition-opacity lg:opacity-0 lg:group-focus-within/item:opacity-100 lg:group-hover/item:opacity-100">
         <button
           type="button"
           title={removeItemTitle}
+          aria-label={removeItemTitle}
           disabled={shape.locked}
-          className="text-muted-foreground/55 hover:bg-brand-primary/10 hover:text-brand-primary flex size-5 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-35"
-          onClick={(event) => {
-            event.stopPropagation();
+          className="text-muted-foreground/55 hover:bg-brand-primary/10 hover:text-brand-primary focus-visible:ring-brand-primary/30 flex size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-35"
+          onClick={() => {
             if (shape.locked) return;
             removeShapes([shape.id]);
             setHoveredShapeId(null);
@@ -223,40 +235,22 @@ function ItemRow({
         dragListener={false}
         dragControls={dragControls}
         onDragEnd={() => onDragEnd(shape.id)}
-        role="button"
-        tabIndex={0}
-        onClick={() => setSelection([shape.id])}
         className={rowClassName}
         onMouseEnter={() => setHoveredShapeId(shape.id)}
         onMouseLeave={() => setHoveredShapeId(null)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            setSelection([shape.id]);
-          }
-        }}
       >
-        {content}
+        {rowContent}
       </Reorder.Item>
     );
   }
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={() => setSelection([shape.id])}
       className={rowClassName}
       onMouseEnter={() => setHoveredShapeId(shape.id)}
       onMouseLeave={() => setHoveredShapeId(null)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          setSelection([shape.id]);
-        }
-      }}
     >
-      {content}
+      {rowContent}
     </div>
   );
 }
@@ -352,6 +346,7 @@ export function ItemOverviewList({
   }, [listShapes, viewFilter, normalizedQuery, tShapes]);
 
   const isDraggable = filteredShapes.length === listShapes.length;
+  const showFilters = listShapes.length > 8 || query.length > 0;
   const routeStatusOff = t("listPanel.routeStatus.off");
   const removeItemTitle = t("actions.removeItem");
 
@@ -368,59 +363,60 @@ export function ItemOverviewList({
       <div
         className={cn("space-y-2.5", grow && "flex min-h-0 flex-1 flex-col")}
       >
-        <div className="flex shrink-0 items-center gap-2">
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("listPanel.filterPlaceholder")}
-            className="bg-background border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-1 lg:h-7 lg:px-2"
-          />
-          <MetaPill>
-            {filteredShapes.length}/{listShapes.length}
-          </MetaPill>
-        </div>
+        {showFilters ? (
+          <>
+            <div className="flex shrink-0 items-center gap-2">
+              <Input
+                aria-label={t("listPanel.filterPlaceholder")}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t("listPanel.filterPlaceholder")}
+                className="bg-background border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-1 lg:h-7 lg:px-2"
+              />
+              <MetaPill>
+                {filteredShapes.length}/{listShapes.length}
+              </MetaPill>
+            </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          {VIEW_FILTERS.map(({ value, label }) => {
-            const count =
-              value === "obstacles" ? obstacleCount : listShapes.length;
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setViewFilter(value)}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
-                  viewFilter === value
-                    ? "bg-brand-primary/12 text-brand-primary"
-                    : "text-muted-foreground/65 hover:text-foreground/80 hover:bg-muted/40"
-                )}
-              >
-                {label}
-                <span
-                  className={cn(
-                    "rounded px-1 font-mono text-[10px]",
-                    viewFilter === value
-                      ? "bg-brand-primary/15 text-brand-primary"
-                      : "bg-muted/60 text-muted-foreground/55"
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+            <div className="flex shrink-0 items-center gap-1">
+              {VIEW_FILTERS.map(({ value, label }) => {
+                const count =
+                  value === "obstacles" ? obstacleCount : listShapes.length;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setViewFilter(value)}
+                    className={cn(
+                      "focus-visible:ring-ring/40 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden",
+                      viewFilter === value
+                        ? "bg-brand-primary/12 text-brand-primary"
+                        : "text-muted-foreground/65 hover:text-foreground/80 hover:bg-muted/40"
+                    )}
+                  >
+                    {label}
+                    <span
+                      className={cn(
+                        "rounded px-1 font-mono text-[10px]",
+                        viewFilter === value
+                          ? "bg-brand-primary/15 text-brand-primary"
+                          : "bg-muted/60 text-muted-foreground/55"
+                      )}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : null}
 
-        <ListPanel
-          title={t("listPanel.placedItemsTitle")}
-          subtitle={t("listPanel.placedItemsSubtitle")}
-          grow={grow}
-          meta={
-            <span className="text-muted-foreground/65 text-[11px]">
-              {listShapes.length}
-            </span>
-          }
+        <div
+          className={cn(
+            "border-border/25 overflow-hidden border-y",
+            grow && "flex min-h-0 flex-1 flex-col"
+          )}
         >
           <div className="border-border/15 grid shrink-0 grid-cols-[32px_minmax(0,1fr)_48px_28px] items-center gap-3 border-b px-3 py-1.5">
             <span className="text-muted-foreground/55 text-[10px] font-medium tracking-[0.08em] uppercase">
@@ -503,7 +499,7 @@ export function ItemOverviewList({
               </div>
             )}
           </div>
-        </ListPanel>
+        </div>
       </div>
     </Section>
   );

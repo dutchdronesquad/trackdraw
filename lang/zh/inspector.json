@@ -4,6 +4,41 @@
     "layout": "布局",
     "selection": "选择"
   },
+  "preflight": {
+    "title": "预检",
+    "status": {
+      "incomplete": {
+        "title": "未完成",
+        "description": "添加赛道元素后即可开始布局检查。"
+      },
+      "review": {
+        "title": "需要检查",
+        "description": "有 {count} 个已知项目需要处理。"
+      },
+      "ready": {
+        "title": "就绪",
+        "description": "当前启用的检查中没有已知问题。"
+      }
+    },
+    "categories": { "route": "路线", "timing": "计时", "inventory": "库存" },
+    "checkInactive": "关闭",
+    "openIssue": "打开",
+    "emptyDetails": "布局包含赛道元素后，预检才会开始。",
+    "noIssues": "当前启用的检查没有已知问题。",
+    "issues": {
+      "missingRoute": "请为已放置的路线障碍添加比赛线路。",
+      "noRouteMatches": "路线障碍距离比赛线路过远。",
+      "offRoute": "{name} 超出了比赛线路容差。",
+      "timingMissingRoute": "计时需要一条可用的比赛线路。",
+      "multipleRoutes": "计时发现了多条可用的比赛线路。",
+      "missingStartFinish": "请添加一个起终点计时标记。",
+      "duplicateStartFinish": "只能保留一个起终点计时标记。",
+      "missingSplitId": "分段计时标记缺少 ID。",
+      "duplicateTimingId": "计时标记 ID 必须唯一。",
+      "timingPointOffRoute": "计时标记距离比赛线路过远。",
+      "inventoryShortage": "{kind}：库存缺少 {count} 个。"
+    }
+  },
   "emptyState": {
     "title": "当前未选择内容",
     "body": "在画布上选择一个或多个项目后，就能在这里编辑它们的属性。"
@@ -144,7 +179,8 @@
     "sections": {
       "routeNumbering": "路径编号",
       "inventory": "库存",
-      "field": "场地"
+      "field": "场地",
+      "advanced": "高级"
     },
     "field": {
       "unitsLabel": "单位",

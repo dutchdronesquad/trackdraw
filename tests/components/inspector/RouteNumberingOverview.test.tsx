@@ -115,6 +115,24 @@ describe("RouteNumberingOverview generate race line action", () => {
     expect(mocks.toastError).not.toHaveBeenCalled();
   });
 
+  it("opens preflight issues and selects their related track items", async () => {
+    const user = userEvent.setup();
+    const gates = [gate("gate-1", 0, 0), gate("gate-2", 10, 0)];
+    const design = designWithGates(gates);
+    const setSelection = vi.fn();
+
+    renderProjectLayoutInspector(design, gates, { setSelection });
+
+    await user.click(screen.getByRole("button", { name: /Review Preflight/ }));
+    await user.click(
+      screen.getByRole("button", {
+        name: /Add a Race Line for the placed route obstacles/,
+      })
+    );
+
+    expect(setSelection).toHaveBeenCalledWith(["gate-1", "gate-2"]);
+  });
+
   it("still generates a race line but surfaces a warning when only one obstacle is placed", async () => {
     const user = userEvent.setup();
     const gates = [gate("gate-1", 0, 0)];

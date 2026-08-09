@@ -17,26 +17,32 @@ type EditorHintsState = {
   resetGuidedHints: () => void;
 };
 
-// Access localStorage lazily so the reference is re-evaluated on each call.
-// This ensures test mocks installed after module load are picked up correctly.
+// Access window.localStorage lazily so server evaluation stays storage-free and
+// test/browser storage installed after module load is picked up correctly.
 const safeLocalStorageBackend = {
   getItem: (name: string): string | null => {
+    if (typeof window === "undefined") return null;
+
     try {
-      return localStorage.getItem(name);
+      return window.localStorage.getItem(name);
     } catch {
       return null;
     }
   },
   setItem: (name: string, value: string) => {
+    if (typeof window === "undefined") return;
+
     try {
-      localStorage.setItem(name, value);
+      window.localStorage.setItem(name, value);
     } catch {
       /* storage unavailable */
     }
   },
   removeItem: (name: string) => {
+    if (typeof window === "undefined") return;
+
     try {
-      localStorage.removeItem(name);
+      window.localStorage.removeItem(name);
     } catch {
       /* storage unavailable */
     }

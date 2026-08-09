@@ -1,7 +1,6 @@
 "use client";
 
 import { type Dispatch, type SetStateAction } from "react";
-import ElevationChart from "@/components/inspector/ElevationChart";
 import { Input } from "@/components/ui/input";
 import { getShapeKindLabel, type Translate } from "@/lib/track/items/registry";
 import {
@@ -35,12 +34,7 @@ import {
   Section,
   useInspectorInputBatch,
 } from "@/components/inspector/shared";
-import {
-  InspectorFooterDesktop,
-  InspectorFooterMobile,
-  InspectorLead,
-  InspectorScrollBody,
-} from "./layout";
+import { InspectorLead, InspectorScrollBody } from "./layout";
 import { useTranslations } from "next-intl";
 
 export interface MultiInspectorViewProps {
@@ -348,14 +342,8 @@ export function MultiInspectorView({
               </Row>
             </Section>
           )}
-          <InspectorFooterMobile>
-            <ElevationChart />
-          </InspectorFooterMobile>
         </div>
       </InspectorScrollBody>
-      <InspectorFooterDesktop>
-        <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
-      </InspectorFooterDesktop>
     </div>
   );
 }

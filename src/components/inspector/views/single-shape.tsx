@@ -197,7 +197,7 @@ export function SingleInspectorView({
     catalogIdentity !== null && catalogEntry?.editable?.color === false;
   const canSetTimingMarker = isTimingMarkerShape(shape);
   const secondarySectionDefaultOpen = !mobileInline;
-  const timingSectionDefaultOpen = !mobileInline || canSetTimingMarker;
+  const timingSectionDefaultOpen = !mobileInline || Boolean(timingMarker);
   const timingRoleOptions: Array<{
     label: string;
     role: TimingRole | "none";
@@ -227,7 +227,6 @@ export function SingleInspectorView({
             })}
             meta={[
               shapeKindLabel,
-              `${fmt(anchorPosition.x)}, ${fmt(anchorPosition.y)}`,
               ...(timingMarker
                 ? [
                     timingMarker.role === "start_finish"
@@ -244,59 +243,63 @@ export function SingleInspectorView({
             ]}
           />
           <div className="space-y-2.5">
-            <div className="grid grid-cols-3 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setShapesLocked([shape.id], !shape.locked)}
-                title={
-                  shape.locked
-                    ? tCommon("actions.unlock")
-                    : tCommon("actions.lock")
-                }
-                aria-label={
-                  shape.locked
-                    ? tCommon("actions.unlock")
-                    : tCommon("actions.lock")
-                }
-                className={`${actionBtnClass} min-w-0`}
-              >
-                {shape.locked ? (
-                  <Lock className="size-3 shrink-0 text-amber-400" />
-                ) : (
-                  <LockOpen className="size-3 shrink-0" />
-                )}
-                <span className="truncate">
-                  {shape.locked
-                    ? t("actions.unlockShort")
-                    : t("actions.lockShort")}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => duplicateShapes([shape.id])}
-                title={tCommon("actions.duplicate")}
-                aria-label={tCommon("actions.duplicate")}
-                disabled={shape.locked}
-                className={`${actionBtnClass} min-w-0`}
-              >
-                <Copy className="size-3 shrink-0" />
-                <span className="truncate">{t("actions.duplicateShort")}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  removeShapes([shape.id]);
-                  setSelection([]);
-                }}
-                title={tCommon("actions.delete")}
-                aria-label={tCommon("actions.delete")}
-                disabled={shape.locked}
-                className={`${inspectorActionBtnDangerClass} min-w-0`}
-              >
-                <Trash2 className="size-3 shrink-0" />
-                <span className="truncate">{t("actions.deleteShort")}</span>
-              </button>
-            </div>
+            {!mobileInline ? (
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setShapesLocked([shape.id], !shape.locked)}
+                  title={
+                    shape.locked
+                      ? tCommon("actions.unlock")
+                      : tCommon("actions.lock")
+                  }
+                  aria-label={
+                    shape.locked
+                      ? tCommon("actions.unlock")
+                      : tCommon("actions.lock")
+                  }
+                  className={`${actionBtnClass} min-w-0`}
+                >
+                  {shape.locked ? (
+                    <Lock className="size-3 shrink-0 text-amber-400" />
+                  ) : (
+                    <LockOpen className="size-3 shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {shape.locked
+                      ? t("actions.unlockShort")
+                      : t("actions.lockShort")}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => duplicateShapes([shape.id])}
+                  title={tCommon("actions.duplicate")}
+                  aria-label={tCommon("actions.duplicate")}
+                  disabled={shape.locked}
+                  className={`${actionBtnClass} min-w-0`}
+                >
+                  <Copy className="size-3 shrink-0" />
+                  <span className="truncate">
+                    {t("actions.duplicateShort")}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeShapes([shape.id]);
+                    setSelection([]);
+                  }}
+                  title={tCommon("actions.delete")}
+                  aria-label={tCommon("actions.delete")}
+                  disabled={shape.locked}
+                  className={`${inspectorActionBtnDangerClass} min-w-0`}
+                >
+                  <Trash2 className="size-3 shrink-0" />
+                  <span className="truncate">{t("actions.deleteShort")}</span>
+                </button>
+              </div>
+            ) : null}
             {showPathActions ? (
               <div className="grid grid-cols-2 gap-1.5">
                 {onResumeSelectedPath ? (
@@ -458,6 +461,7 @@ export function SingleInspectorView({
           <Section title={t("transform.sectionTitle")}>
             <Row label={tCommon("labels.name")}>
               <Input
+                aria-label={tCommon("labels.name")}
                 value={shape.name ?? ""}
                 onFocus={startBatch}
                 onBlur={finishBatch}
@@ -473,7 +477,7 @@ export function SingleInspectorView({
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
-                className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
+                className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 text-[11px] shadow-none focus-visible:ring-2 lg:h-7 lg:px-2"
               />
             </Row>
             <Row label={t("transform.positionLabel")}>
@@ -483,6 +487,7 @@ export function SingleInspectorView({
                     X ({unitLabel})
                   </span>
                   <MeasurementNum
+                    ariaLabel={`X (${unitLabel})`}
                     valueMeters={fmt(anchorPosition.x)}
                     unitSystem={unitSystem}
                     onChange={(value) => updateShape(shape.id, { x: value })}
@@ -493,6 +498,7 @@ export function SingleInspectorView({
                     Y ({unitLabel})
                   </span>
                   <MeasurementNum
+                    ariaLabel={`Y (${unitLabel})`}
                     valueMeters={fmt(anchorPosition.y)}
                     unitSystem={unitSystem}
                     onChange={(value) => updateShape(shape.id, { y: value })}
@@ -663,9 +669,11 @@ export function SingleInspectorView({
           )}
         </div>
       </InspectorScrollBody>
-      <InspectorFooterDesktop>
-        <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
-      </InspectorFooterDesktop>
+      {shape.kind === "polyline" ? (
+        <InspectorFooterDesktop>
+          <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
+        </InspectorFooterDesktop>
+      ) : null}
     </div>
   );
 }

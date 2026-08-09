@@ -1,18 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  MapPinned,
-  Route,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
+import { Eye, EyeOff, MapPinned, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import ElevationChart from "@/components/inspector/ElevationChart";
+import { PreflightSummary } from "@/components/inspector/PreflightSummary";
 import { MeasurementUnitToggle } from "@/components/MeasurementUnitToggle";
 import { MapReferenceDialog } from "@/components/map-reference/MapReferenceDialog";
 import { Input } from "@/components/ui/input";
@@ -24,6 +16,7 @@ import {
   normalizeInventoryProfile,
 } from "@/lib/planning/inventory";
 import { getObstacleNumberingReport } from "@/lib/track/obstacleNumbering";
+import { getTrackPreflightReport } from "@/lib/track/preflight";
 import {
   generateRaceLineDraft,
   isGeneratedRaceLine,
@@ -46,11 +39,9 @@ import {
   useInspectorInputBatch,
 } from "@/components/inspector/shared";
 import { useMeasurementUnitSystem } from "@/hooks/useMeasurementUnitSystem";
-import { formatFieldSize, formatMeasurement } from "@/lib/track/units";
 import {
   InspectorFooterDesktop,
   InspectorFooterMobile,
-  InspectorLead,
   InspectorScrollBody,
   useIsDesktopInspector,
 } from "./layout";
@@ -60,12 +51,6 @@ import {
   ItemOverviewList,
 } from "./list-panel";
 import { useTranslations } from "next-intl";
-
-function getShapeDisplayName(shape: Shape, index: number, t: Translate) {
-  return (
-    shape.name?.trim() || `${getShapeKindLabel(shape.kind, t)} ${index + 1}`
-  );
-}
 
 function MapReferenceSection({
   design,
@@ -100,6 +85,7 @@ function MapReferenceSection({
               <div className="flex min-w-0 items-center gap-2">
                 <input
                   type="range"
+                  aria-label={t("layout.mapReference.fields.opacity")}
                   min={0.05}
                   max={1}
                   step={0.05}
@@ -261,62 +247,13 @@ function RouteNumberingOverview({
   setSelection: (ids: string[]) => void;
 }) {
   const t = useTranslations("inspector");
-  const tShapes = useTranslations("shapes") as unknown as Translate;
   const report = useMemo(() => getObstacleNumberingReport(design), [design]);
-  const shapeOrder = useMemo(
-    () => new Map(shapes.map((shape, index) => [shape.id, index] as const)),
-    [shapes]
-  );
-  const issueNames = report.issues.slice(0, 3).map((issue) => {
-    const shape = shapes[shapeOrder.get(issue.shapeId) ?? -1];
-    return shape
-      ? getShapeDisplayName(shape, shapeOrder.get(shape.id) ?? 0, tShapes)
-      : issue.shapeId;
-  });
-  const extraIssueCount = Math.max(0, report.unmappedObstacleCount - 3);
-  const isClear =
-    report.status === "ready" ||
-    report.status === "empty" ||
-    report.status === "no-numbered-obstacles";
-  const hasExistingRaceLine = Boolean(report.primaryPolylineId);
   const generatedRaceLine = shapes.find(isGeneratedRaceLine) ?? null;
   const hasGeneratedRaceLine = Boolean(generatedRaceLine);
   const hasWarnings =
     report.status === "partial" ||
     report.status === "no-route-matches" ||
     report.status === "missing-route";
-  const statusLabel =
-    report.status === "ready"
-      ? t("routeNumbering.status.ready")
-      : report.status === "partial"
-        ? t("routeNumbering.status.partial")
-        : report.status === "no-route-matches"
-          ? t("routeNumbering.status.noRouteMatches")
-          : report.status === "missing-route"
-            ? t("routeNumbering.status.missingRoute")
-            : report.status === "no-numbered-obstacles"
-              ? t("routeNumbering.status.noNumberedObstacles")
-              : t("routeNumbering.status.empty");
-  const message =
-    report.status === "ready"
-      ? t("routeNumbering.messages.ready", {
-          count: report.mappedObstacleCount,
-        })
-      : report.status === "partial"
-        ? t("routeNumbering.messages.partial", {
-            mapped: report.mappedObstacleCount,
-            total: report.totalNumberedObstacleCount,
-          })
-        : report.status === "no-route-matches"
-          ? t("routeNumbering.messages.noRouteMatches", {
-              count: report.totalNumberedObstacleCount,
-            })
-          : report.status === "missing-route"
-            ? t("routeNumbering.messages.missingRoute")
-            : report.status === "no-numbered-obstacles"
-              ? t("routeNumbering.messages.noNumberedObstacles")
-              : t("routeNumbering.messages.empty");
-
   const canGenerate =
     report.status === "missing-route" ||
     report.status === "ready" ||
@@ -345,119 +282,27 @@ function RouteNumberingOverview({
     );
   }
 
+  if (!canGenerate) return null;
+
   return (
     <Section title={t("layout.sections.routeNumbering")}>
-      <div className="space-y-3">
-        <div
-          className={cn(
-            "rounded-md border px-2.5 py-2",
-            hasWarnings
-              ? "border-amber-500/25 bg-amber-500/8"
-              : isClear
-                ? "border-emerald-500/20 bg-emerald-500/8"
-                : "border-border/40 bg-muted/25"
-          )}
-        >
-          <div className="flex items-start gap-2">
-            <span
-              className={cn(
-                "mt-0.5 inline-flex size-5 shrink-0 items-center justify-center rounded-sm",
-                hasWarnings
-                  ? "bg-amber-500/12 text-amber-600"
-                  : isClear
-                    ? "bg-emerald-500/12 text-emerald-600"
-                    : "bg-muted text-muted-foreground"
-              )}
-              aria-hidden="true"
-            >
-              {hasWarnings ? (
-                <AlertTriangle className="size-3" />
-              ) : isClear ? (
-                <CheckCircle2 className="size-3" />
-              ) : (
-                <Route className="size-3" />
-              )}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <p
-                  className={cn(
-                    "text-[12px] font-semibold",
-                    hasWarnings
-                      ? "text-amber-600"
-                      : isClear
-                        ? "text-emerald-600"
-                        : "text-foreground"
-                  )}
-                >
-                  {statusLabel}
-                </p>
-                {hasExistingRaceLine ? (
-                  <span className="border-border/45 bg-background/65 text-muted-foreground inline-flex items-center rounded-sm border px-1.5 py-px text-[10px] font-medium">
-                    {t("routeNumbering.meta.raceLine")}
-                  </span>
-                ) : null}
-                {message ? (
-                  <span className="text-muted-foreground/80 text-[11px] leading-snug">
-                    {message}
-                  </span>
-                ) : null}
-              </div>
-              {issueNames.length > 0 ? (
-                <p className="mt-1 text-[10px] leading-snug text-amber-600/85">
-                  {t("routeNumbering.issues.offRoutePrefix", {
-                    names: issueNames.join(", "),
-                  })}
-                  {extraIssueCount > 0
-                    ? t("routeNumbering.issues.moreSuffix", {
-                        count: extraIssueCount,
-                      })
-                    : ""}
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
-            <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {t("routeNumbering.meta.numbered")}
-            </p>
-            <p className="text-foreground text-[12px] font-semibold">
-              {report.mappedObstacleCount}/{report.totalNumberedObstacleCount}
-            </p>
-          </div>
-          <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
-            <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {t("routeNumbering.meta.issues")}
-            </p>
-            <p className="text-foreground text-[12px] font-semibold">
-              {report.issueCount}
-            </p>
-          </div>
-        </div>
-
-        {canGenerate ? (
-          <button
-            type="button"
-            onClick={handleGenerateRaceLine}
-            className={cn(
-              "inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors lg:h-8 lg:text-[11px]",
-              hasWarnings
-                ? "border-amber-500/25 bg-amber-500/10 text-amber-700 hover:bg-amber-500/16 dark:text-amber-400"
-                : "border-emerald-500/25 bg-emerald-500/8 text-emerald-700 hover:bg-emerald-500/14 dark:text-emerald-400"
-            )}
-          >
-            <Sparkles className="size-4 lg:size-3" />
-            <span>
-              {hasGeneratedRaceLine
-                ? t("routeNumbering.generate.regenerateButton")
-                : t("routeNumbering.generate.button")}
-            </span>
-          </button>
-        ) : null}
-      </div>
+      <button
+        type="button"
+        onClick={handleGenerateRaceLine}
+        className={cn(
+          "focus-visible:ring-ring/40 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:h-8 lg:text-[11px]",
+          hasWarnings
+            ? "border-amber-500/25 bg-amber-500/10 text-amber-700 hover:bg-amber-500/16 dark:text-amber-400"
+            : "border-emerald-500/25 bg-emerald-500/8 text-emerald-700 hover:bg-emerald-500/14 dark:text-emerald-400"
+        )}
+      >
+        <Sparkles className="size-4 lg:size-3" />
+        <span>
+          {hasGeneratedRaceLine
+            ? t("routeNumbering.generate.regenerateButton")
+            : t("routeNumbering.generate.button")}
+        </span>
+      </button>
     </Section>
   );
 }
@@ -507,16 +352,14 @@ export function ProjectLayoutInspectorView({
   const fieldUnitLabel = unitSystem === "imperial" ? "ft" : "m";
   const isDesktop = useIsDesktopInspector();
   const inventory = normalizeInventoryProfile(design.inventory);
+  const inventoryActive = inventoryKinds.some((kind) => inventory[kind] > 0);
   const inventoryComparison = getInventoryComparison(design, tShapes);
-  const totalMissing = inventoryComparison.reduce(
-    (sum, item) => sum + item.missing,
-    0
-  );
-  const kindsMissing = inventoryComparison.filter(
-    (item) => item.missing > 0
-  ).length;
   const obstacleNumberingReport = useMemo(
     () => getObstacleNumberingReport(design),
+    [design]
+  );
+  const preflightReport = useMemo(
+    () => getTrackPreflightReport(design),
     [design]
   );
   const trackItemShapes = useMemo(
@@ -539,34 +382,6 @@ export function ProjectLayoutInspectorView({
   const inventoryContent = (
     <Section title={t("layout.sections.inventory")}>
       <div className="space-y-3">
-        <div className="grid grid-cols-3 gap-2">
-          <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
-            <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {tCommon("labels.status")}
-            </p>
-            <p className="text-foreground text-[12px] font-semibold">
-              {totalMissing === 0
-                ? t("layout.inventory.status.buildable")
-                : t("layout.inventory.status.short")}
-            </p>
-          </div>
-          <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
-            <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {t("layout.inventory.labels.missing")}
-            </p>
-            <p className="text-foreground text-[12px] font-semibold">
-              {totalMissing}
-            </p>
-          </div>
-          <div className="border-border/40 bg-muted/25 rounded-md border px-2.5 py-2">
-            <p className="text-muted-foreground/70 text-[9px] tracking-[0.12em] uppercase">
-              {t("layout.inventory.labels.types")}
-            </p>
-            <p className="text-foreground text-[12px] font-semibold">
-              {kindsMissing}
-            </p>
-          </div>
-        </div>
         <p className="text-muted-foreground/70 text-[11px] leading-relaxed">
           {t("layout.inventory.description")}
         </p>
@@ -575,7 +390,7 @@ export function ProjectLayoutInspectorView({
             const comparison = inventoryComparison.find(
               (item) => item.kind === kind
             );
-            const missing = comparison?.missing ?? 0;
+            const missing = inventoryActive ? (comparison?.missing ?? 0) : 0;
             return (
               <Row key={kind} label={getShapeKindLabel(kind, tShapes)}>
                 <div className="flex min-w-0 items-center gap-2">
@@ -596,12 +411,16 @@ export function ProjectLayoutInspectorView({
                     className={
                       missing > 0
                         ? "shrink-0 rounded-md border border-amber-500/25 bg-amber-500/10 px-2 py-1 font-mono text-[10px] font-medium text-amber-500"
-                        : "shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/8 px-2 py-1 font-mono text-[10px] font-medium text-emerald-500"
+                        : inventoryActive
+                          ? "shrink-0 rounded-md border border-emerald-500/20 bg-emerald-500/8 px-2 py-1 font-mono text-[10px] font-medium text-emerald-500"
+                          : "border-border/35 bg-muted/25 text-muted-foreground/55 shrink-0 rounded-md border px-2 py-1 font-mono text-[10px] font-medium"
                     }
                   >
                     {missing > 0
                       ? `-${missing}`
-                      : t("layout.inventory.stockOk")}
+                      : inventoryActive
+                        ? t("layout.inventory.stockOk")
+                        : "—"}
                   </span>
                 </div>
               </Row>
@@ -614,24 +433,12 @@ export function ProjectLayoutInspectorView({
 
   const projectContent = (
     <>
-      <InspectorLead
-        title={design.title.trim() || t("layout.project.titlePlaceholder")}
-        subtitle={t("layout.project.subtitle")}
-        meta={[
-          t("layout.meta.itemsCount", { count: shapes.length }),
-          formatFieldSize(design.field.width, design.field.height, unitSystem),
-          t("layout.meta.grid", {
-            grid: formatMeasurement(design.field.gridStep, unitSystem, {
-              precision: 1,
-            }),
-          }),
-        ]}
-      />
       <div>
         <p className="text-muted-foreground/70 mb-1.5 text-[11px] font-medium tracking-[0.08em] uppercase">
           {tCommon("labels.title")}
         </p>
         <Input
+          aria-label={tCommon("labels.title")}
           value={design.title}
           onFocus={startBatch}
           onBlur={finishBatch}
@@ -642,7 +449,7 @@ export function ProjectLayoutInspectorView({
           }}
           onChange={(event) => updateDesignMeta({ title: event.target.value })}
           placeholder={t("layout.project.titlePlaceholder")}
-          className="bg-muted/40 border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-8 rounded-md px-2.5 text-sm shadow-none focus-visible:ring-1 lg:h-7 lg:px-2 lg:text-[11px]"
+          className="bg-muted/40 border-border/40 focus-visible:border-border/80 focus-visible:ring-ring/20 h-11 rounded-lg px-3 text-base shadow-none focus-visible:ring-1 lg:h-9 lg:rounded-md lg:px-2.5 lg:text-sm"
         />
       </div>
       <Section title={t("layout.sections.field")}>
@@ -673,6 +480,8 @@ export function ProjectLayoutInspectorView({
             minMeters={0.5}
           />
         </Row>
+      </Section>
+      <Section title={t("layout.sections.advanced")} defaultOpen={false}>
         <Row label={t("layout.field.renderScaleLabel")}>
           <div
             className="flex min-w-0 items-center gap-2"
@@ -701,26 +510,10 @@ export function ProjectLayoutInspectorView({
 
   const layoutContent = (
     <>
-      <InspectorLead
-        title={t("layout.overview.title")}
-        subtitle={t("layout.overview.subtitle")}
-        meta={[
-          t("layout.meta.itemsCount", { count: trackItemShapes.length }),
-          totalMissing === 0
-            ? t("layout.meta.buildable")
-            : t("layout.meta.shortItems", { count: totalMissing }),
-          kindsMissing > 0
-            ? t("layout.meta.typesShort", { count: kindsMissing })
-            : t("layout.meta.stockCovered"),
-          obstacleNumberingReport.status === "ready"
-            ? t("layout.meta.numbered", {
-                count: obstacleNumberingReport.mappedObstacleCount,
-              })
-            : obstacleNumberingReport.status === "no-numbered-obstacles" ||
-                obstacleNumberingReport.status === "empty"
-              ? t("layout.meta.numberingIdle")
-              : t("layout.meta.numberingNeedsReview"),
-        ]}
+      <PreflightSummary
+        report={preflightReport}
+        shapes={shapes}
+        setSelection={setSelection}
       />
       <div className="space-y-4">
         <MapReferenceSection
@@ -770,9 +563,11 @@ export function ProjectLayoutInspectorView({
             {panel === "project" ? projectContent : layoutContent}
           </div>
         </InspectorScrollBody>
-        <InspectorFooterDesktop>
-          <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
-        </InspectorFooterDesktop>
+        {panel === "layout" ? (
+          <InspectorFooterDesktop>
+            <ElevationChart className="lg:mx-0 lg:border-t-0 lg:px-3" />
+          </InspectorFooterDesktop>
+        ) : null}
       </div>
     );
   }
@@ -782,9 +577,11 @@ export function ProjectLayoutInspectorView({
       <InspectorScrollBody mobileInline={mobileInline}>
         <div className="space-y-5 px-4 py-4 pb-[max(env(safe-area-inset-bottom),1rem)]">
           {panel === "project" ? projectContent : layoutContent}
-          <InspectorFooterMobile>
-            <ElevationChart />
-          </InspectorFooterMobile>
+          {panel === "layout" ? (
+            <InspectorFooterMobile>
+              <ElevationChart />
+            </InspectorFooterMobile>
+          ) : null}
         </div>
       </InspectorScrollBody>
     </div>

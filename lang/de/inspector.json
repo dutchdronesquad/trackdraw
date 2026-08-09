@@ -4,6 +4,45 @@
     "layout": "Layout",
     "selection": "Auswahl"
   },
+  "preflight": {
+    "title": "Vorprüfung",
+    "status": {
+      "incomplete": {
+        "title": "Unvollständig",
+        "description": "Füge Streckenelemente hinzu, um die Prüfung zu starten."
+      },
+      "review": {
+        "title": "Prüfen",
+        "description": "{count, plural, one {1 bekannter Punkt benötigt Aufmerksamkeit.} other {{count} bekannte Punkte benötigen Aufmerksamkeit.}}"
+      },
+      "ready": {
+        "title": "Bereit",
+        "description": "Keine bekannten Probleme in den aktiven Prüfungen."
+      }
+    },
+    "categories": {
+      "route": "Route",
+      "timing": "Zeitnahme",
+      "inventory": "Inventar"
+    },
+    "checkInactive": "aus",
+    "openIssue": "Öffnen",
+    "emptyDetails": "Die Vorprüfung startet, sobald die Strecke Elemente enthält.",
+    "noIssues": "Die aktiven Prüfungen haben keine bekannten Probleme.",
+    "issues": {
+      "missingRoute": "Füge eine Race Line für die platzierten Streckenhindernisse hinzu.",
+      "noRouteMatches": "Die Streckenhindernisse liegen nicht nah genug an der Race Line.",
+      "offRoute": "{name} liegt außerhalb der Toleranz der Race Line.",
+      "timingMissingRoute": "Die Zeitnahme benötigt genau eine nutzbare Race Line.",
+      "multipleRoutes": "Die Zeitnahme hat mehrere nutzbare Race Lines gefunden.",
+      "missingStartFinish": "Füge eine Start/Ziel-Zeitmarkierung hinzu.",
+      "duplicateStartFinish": "Behalte nur eine Start/Ziel-Zeitmarkierung.",
+      "missingSplitId": "Einer Split-Zeitmarkierung fehlt die ID.",
+      "duplicateTimingId": "IDs von Zeitmarkierungen müssen eindeutig sein.",
+      "timingPointOffRoute": "Eine Zeitmarkierung liegt zu weit von der Race Line entfernt.",
+      "inventoryShortage": "{kind}: {count} fehlt im Inventar."
+    }
+  },
   "emptyState": {
     "title": "Keine Auswahl",
     "body": "Wähle ein oder mehrere Elemente auf dem Canvas aus, um hier Objekteigenschaften zu bearbeiten."
@@ -144,7 +183,8 @@
     "sections": {
       "routeNumbering": "Routennummerierung",
       "inventory": "Inventar",
-      "field": "Feld"
+      "field": "Feld",
+      "advanced": "Erweitert"
     },
     "field": {
       "unitsLabel": "Einheiten",

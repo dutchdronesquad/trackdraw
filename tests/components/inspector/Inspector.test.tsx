@@ -62,4 +62,23 @@ describe("Inspector tab switching", () => {
         .getAttribute("aria-selected")
     ).toBe("true");
   });
+
+  it("moves between available tabs with arrow keys", () => {
+    const gateId = useEditor.getState().addShape(gateDraft());
+    act(() => {
+      useEditor.getState().setSelection([gateId]);
+    });
+    render(<Inspector mobileInline />);
+
+    const layoutTab = screen.getByRole("tab", { name: "Layout" });
+    const selectionTab = screen.getByRole("tab", { name: "Selection" });
+
+    selectionTab.focus();
+    fireEvent.keyDown(selectionTab, { key: "ArrowLeft" });
+
+    expect(layoutTab.getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(layoutTab);
+    expect(layoutTab.tabIndex).toBe(0);
+    expect(selectionTab.tabIndex).toBe(-1);
+  });
 });
