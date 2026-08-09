@@ -601,14 +601,17 @@ export function buildVelocidronePayload({
 }
 
 export async function encryptVelocidroneTrk(plaintext: string) {
-  const CryptoJS = (await import("crypto-js")).default;
-  const key = CryptoJS.enc.Utf8.parse(VELOCIDRONE_KEY);
-  const encrypted = CryptoJS.AES.encrypt(plaintext, key, {
-    mode: CryptoJS.mode.ECB,
-    padding: CryptoJS.pad.Pkcs7,
-  });
+  const { ecb } = await import("@noble/ciphers/aes.js");
+  const textEncoder = new TextEncoder();
+  const key = textEncoder.encode(VELOCIDRONE_KEY);
+  const encrypted = ecb(key).encrypt(textEncoder.encode(plaintext));
+  let binary = "";
 
-  return encrypted.ciphertext.toString(CryptoJS.enc.Base64);
+  for (let offset = 0; offset < encrypted.length; offset += 0x8000) {
+    binary += String.fromCharCode(...encrypted.subarray(offset, offset + 0x8000));
+  }
+
+  return btoa(binary);
 }
 
 function downloadTextFile(contents: string, filename: string) {
