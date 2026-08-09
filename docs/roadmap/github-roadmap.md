@@ -52,13 +52,15 @@ The next TrackDraw priority is generated flightpath validation first, translatio
   - [ ] Hosted versus self-hosted decision
         Run a bounded Crowdin Free pilot first; retain self-hosted Weblate as the fallback. Decide only after validating quota, permissions, repository sync, contributor review, licensing, and ongoing operational cost.
   - [ ] Crowdin Free pilot
-        Confirm the workspace quota, import only the ten translatable namespaces with `nl`/`de`/`zh`, and validate one namespace end to end. Apply separately for the open-source grant without depending on eligibility.
+        Run the reversible pilot through 2026-11-10, shifting the end date if activation happens later. Import only the ten translatable namespaces with `nl`/`de`/`zh-CN`, validate `common.json` end to end first, and apply separately for the open-source grant without depending on eligibility.
+  - [x] Reversible pilot foundation
+        Added repository-owned Crowdin mapping, recursive English fallback for partial target catalogs and generated Static Assets, integrity checks for stale keys, empty values, and placeholders, plus a documented three-month evaluation and rollback path.
   - [x] Worker bundle impact measured
         A fresh dry run measured 2,116.79 KiB gzip. Locale JSON remains in Cloudflare Static Assets rather than the Worker handler, so changing translation platforms would not materially shrink the Worker bundle.
   - [x] Weblate production requirements researched
         If self-hosting becomes necessary, use an ephemeral pilot before a separate production stack with TLS, SMTP, restricted access, persistent storage, off-host backups, restore testing, monitoring, and deliberate upgrades. A permanent ACC environment is not initially required.
   - [ ] Repository sync workflow
-        Prototype source upload and translation pull requests through GitHub Actions while preserving normal code review and existing locale validation checks.
+        Activate the GitHub integration against `main`, import existing translations once, and validate Crowdin's service-branch pull request through normal code review and existing locale integrity checks.
   - [ ] Translator guidance
         Document the language-leader model, suggestion-first contributor flow, FPV terminology, placeholders/ICU syntax, compact UI label expectations, and the `dashboard`/`legal` English-only boundary before inviting broader contributor translation work.
 

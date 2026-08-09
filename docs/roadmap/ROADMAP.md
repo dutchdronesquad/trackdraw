@@ -17,7 +17,7 @@ TrackDraw is now strong in these areas:
 - Account-backed REST API with API key management and a live race overlay data endpoint
 - Catalog-backed official MultiGP obstacles including gates, ladders, flags, dive gate, launch gate, and a barrier category for hurdles, banners, fencing, and nets
 - Account-backed user presets where users save and reuse named canvas selections across devices
-- English, Dutch, German, and Simplified Chinese multilingual product experience with explicit language choice, route-scoped message loading, generated locale assets, and CI checks for catalog parity and new hardcoded UI copy
+- English, Dutch, German, and Simplified Chinese multilingual product experience with explicit language choice, route-scoped message loading, generated locale assets, English fallback for temporarily incomplete Crowdin catalogs, and CI checks for catalog integrity and new hardcoded UI copy
 - Protected magic-link account handoff that avoids automatic email scanner sign-ins while keeping the sign-in flow simple
 - Optional generated race-line drafting from ordered obstacles, with warnings for layouts that need manual attention
 - Interactive elevation profile review with waypoint, obstacle, timing, and warning markers linked back to the canvas
@@ -271,7 +271,7 @@ Current shipped foundation:
 - Dashboard and legal surfaces remain English-only
 - English remains the stable fallback baseline, with route-scoped message loading and a centralized i18n catalog policy
 - Locale JSON is generated into OpenNext static assets for production builds so additional languages do not become full static catalog imports in the Cloudflare Worker script
-- Locale parity/unresolved-key validation and hardcoded-copy scanning run in CI so new UI copy is intentionally cataloged or explicitly allowlisted
+- Catalog-integrity/unresolved-key validation and hardcoded-copy scanning run in CI so new UI copy is intentionally cataloged or explicitly allowlisted; missing Crowdin target keys use the tested English fallback
 - PNG/SVG footer dates and untitled-track fallbacks, public-gallery dates, and API Docs titles/document language follow all four supported locales
 
 Maintenance focus:
@@ -292,10 +292,10 @@ Important boundary:
 - Do not block regional measurement support on full i18n; units can ship first as a smaller, lower-risk slice
 - Do not infer units only from language, because English users can prefer Metric and non-English users can work with Imperial venue expectations
 - Do not translate dashboard or legal pages unless that product/legal boundary is deliberately changed later
-- Do not let translation tooling bypass CI locale checks, unresolved-key checks, or source review through pull requests
+- Do not let translation tooling bypass CI catalog-integrity checks, unresolved-key checks, or source review through pull requests
 - Do not accept linear Worker bundle growth as an unavoidable cost of adding languages
 - Do not bundle a Chinese font for the regular UI; keep the additional font scoped and lazy-loaded for document export where browser/system font fallback is unavailable
-- Do not add Chinese-only catalog keys without matching English, Dutch, and German entries; keep locale parity intact and translate those values deliberately instead of using permanent English placeholders
+- Do not add target-only catalog keys without an English source key. Target catalogs may temporarily lag during the pilot, but Crowdin-owned translations should replace English fallbacks deliberately rather than leaving them permanent
 
 #### Track Element Catalog
 

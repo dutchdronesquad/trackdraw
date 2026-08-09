@@ -137,6 +137,19 @@ npm run migrate:up:production
 
 `npm run lint` runs Oxlint, including its React Compiler checks.
 
+## Translation Workflow
+
+During the Crowdin pilot, English source copy remains in `lang/en/` and normal feature pull requests. Dutch, German, and Simplified Chinese are maintained in Crowdin and return through localization pull requests; do not edit those target catalogs directly outside a production emergency.
+
+New English keys do not need placeholder copies in every target catalog. Missing target messages safely fall back to English in local server catalogs and generated locale assets. Run these checks when changing product copy:
+
+```bash
+npm run i18n:check
+npm run i18n:scan-hardcoded
+```
+
+The integrity check allows missing target keys but still rejects missing namespace files, stale extra keys, empty target values, and placeholder mismatches. `dashboard` and `legal` remain English-only and are excluded from Crowdin. See [the Crowdin pilot runbook](docs/research/crowdin-pilot.md) for ownership, synchronization, and rollback.
+
 ## Validation
 
 Run these after non-trivial code changes when the environment allows it:

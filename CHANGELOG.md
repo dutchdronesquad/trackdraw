@@ -14,6 +14,8 @@ The Layout inspector now brings route, timing, numbering, and configured invento
 
 PNG and SVG exports now use the selected language for footer dates and untitled-track copy. Public gallery dates and API Docs language metadata also follow all four supported languages, including Simplified Chinese. Simplified Chinese now uses the standard `zh-CN` locale identifier while existing `zh` preferences continue to work and migrate automatically.
 
+Translation updates can now arrive independently through the Crowdin pilot. Temporarily untranslated messages safely use English instead of blocking a release or showing missing copy.
+
 ## [1.14.0]
 
 ### Simplified Chinese and more complete translations

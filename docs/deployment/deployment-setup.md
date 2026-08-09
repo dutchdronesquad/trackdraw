@@ -221,7 +221,9 @@ Gallery previews use the same public media host. For gallery opt-in to upload pr
 
 ### Locale catalog assets
 
-Translation catalogs are generated into `public/locales/` by `npm run i18n:sync-assets`. The directory is ignored by git and is refreshed inside the production build script. Preview and deploy run the OpenNext build step, which calls `npm run build` and therefore uses the same generated assets. Local dev and tests can read directly from `lang/{locale}` and do not need generated assets.
+Translation catalogs are generated into `public/locales/` by `npm run i18n:sync-assets`. The directory is ignored by git and is refreshed before local development and inside the production build script. Preview and deploy run the OpenNext build step, which calls `npm run build` and therefore uses the same generated assets.
+
+During the Crowdin pilot, target catalogs may temporarily omit new English keys. Asset generation recursively merges each target over English, including nested objects and arrays, so missing or empty translations use English until Crowdin returns an approved value. Local server-side catalog reads apply the same fallback before rendering.
 
 OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, and future contributor languages are loaded per namespace from static assets. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle.
 
