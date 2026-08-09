@@ -12,7 +12,7 @@ Measured on 2026-08-09, those ten namespaces contain:
 
 - 1,627 source strings;
 - approximately 8,577 English source words;
-- approximately 25,731 hosted words in Crowdin for three target languages (`nl`, `de`, and `zh`), because Crowdin calculates hosted words as source words multiplied by target languages.
+- approximately 25,731 hosted words in Crowdin for three target languages (`nl`, `de`, and `zh-CN`), because Crowdin calculates hosted words as source words multiplied by target languages.
 
 Excluding `dashboard` and `legal` saves approximately 3,177 source words, or 9,531 hosted words with three targets. Counts are planning estimates; Crowdin's import and dashboard remain authoritative.
 
@@ -78,7 +78,7 @@ This access model applies regardless of platform:
 - Do not allow direct pushes from contributors to GitHub or `main`.
 - Do not give normal translators platform API tokens, GitHub tokens, repository access, source-string edit permissions, or project administration rights.
 - Assign a language leader for every supported non-English language. This person owns terminology consistency, reviews contributor suggestions, and decides when a translation is ready to ship.
-- Add contributors to language-scoped teams, for example a Chinese translator team limited to `zh` and translatable components only.
+- Add contributors to language-scoped teams, for example a Chinese translator team limited to `zh-CN` and translatable components only.
 - Start new contributors with suggestion-only access where possible. They can propose translations without directly changing the accepted translation state.
 - Promote contributors to limited Translate access only after trust is established and the language leader has review capacity.
 - Give Review permissions only to maintainers or language leaders who can approve strings for their language.
@@ -111,7 +111,7 @@ If a contributor leaves, remove them from platform teams or disable the account.
 ## Recommended pilot
 
 1. Create a Crowdin Free workspace and verify the displayed hosted-word allowance before import.
-2. Import only the ten translatable English namespaces and the existing `nl`, `de`, and `zh` catalogs.
+2. Import only the ten translatable English namespaces and the existing `nl`, `de`, and `zh-CN` catalogs.
 3. Prove one namespace end to end, preferably `common`: source update, translator suggestion, language review, export, pull request, and existing locale validation.
 4. Keep GitHub pull requests and CI as the release gate; do not grant the platform a direct push path to `main`.
 5. Apply for Crowdin's open-source license in parallel, with the current and anticipated commercial model disclosed.

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import {
   defaultLocale,
-  isValidLocale,
+  normalizeLocale,
   type SupportedLocale,
 } from "@/lib/i18n/locales";
 import { useLocaleStore } from "@/store/locale";
@@ -56,7 +56,7 @@ export default function ClientLanguageProvider({
     () => useLocaleStore.getState().locale,
     () => defaultLocale
   );
-  const requestedLocale = isValidLocale(rawLocale) ? rawLocale : defaultLocale;
+  const requestedLocale = normalizeLocale(rawLocale);
   const [activeCatalog, setActiveCatalog] = useState({
     locale: defaultLocale,
     messages: initialMessages,

@@ -6,7 +6,7 @@ const expectedTitles: Record<SupportedLocale, string> = {
   en: "TrackDraw API Docs",
   nl: "TrackDraw API-documentatie",
   de: "TrackDraw API-Dokumentation",
-  zh: "TrackDraw API 文档",
+  "zh-CN": "TrackDraw API 文档",
 };
 
 describe("GET /api/docs", () => {
@@ -38,6 +38,18 @@ describe("GET /api/docs", () => {
 
     expect(html).toContain('<html lang="de">');
     expect(html).toContain("<title>TrackDraw API-Dokumentation</title>");
+  });
+
+  it("migrates the legacy zh cookie to zh-CN", async () => {
+    const response = GET(
+      new Request("https://trackdraw.test/api/docs", {
+        headers: { cookie: "trackdraw-locale=zh" },
+      })
+    );
+    const html = await response.text();
+
+    expect(html).toContain('<html lang="zh-CN">');
+    expect(html).toContain("<title>TrackDraw API 文档</title>");
   });
 
   it("falls back to English for unsupported locale preferences", async () => {

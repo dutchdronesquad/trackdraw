@@ -4,7 +4,7 @@ import React from "react";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import * as zh from "@lang/zh";
+import * as zhCN from "@lang/zh-CN";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ExportDialog from "@/components/dialogs/ExportDialog";
 import type { TrackCanvasHandle } from "@/components/canvas/editor/TrackCanvas";
@@ -206,7 +206,7 @@ describe("ExportDialog mobile workflow", () => {
       />,
       {
         wrapper: ({ children }) => (
-          <NextIntlClientProvider locale="zh" messages={{ ...zh }}>
+          <NextIntlClientProvider locale="zh-CN" messages={{ ...zhCN }}>
             {children}
           </NextIntlClientProvider>
         ),
@@ -222,7 +222,7 @@ describe("ExportDialog mobile workflow", () => {
         "dark",
         3,
         expect.objectContaining({
-          locale: "zh",
+          locale: "zh-CN",
           titleFallback: "未命名赛道",
         })
       )
@@ -237,7 +237,7 @@ describe("ExportDialog mobile workflow", () => {
         expect.stringMatching(/\.svg$/),
         "dark",
         expect.objectContaining({
-          locale: "zh",
+          locale: "zh-CN",
           titleFallback: "未命名赛道",
         })
       )

@@ -9,6 +9,7 @@ import {
   LOCALE_COOKIE,
   LOCALE_COOKIE_MAX_AGE,
   LOCALE_STORAGE_KEY,
+  normalizeLocale,
   type SupportedLocale,
 } from "@/lib/i18n/locales";
 
@@ -23,10 +24,6 @@ function writeCookie(locale: SupportedLocale) {
   } catch {
     // storage unavailable
   }
-}
-
-function normalizeLocale(locale: unknown): SupportedLocale {
-  return isValidLocale(locale) ? locale : defaultLocale;
 }
 
 const localeStorageBackend = {

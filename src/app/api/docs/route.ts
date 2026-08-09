@@ -1,6 +1,6 @@
 import {
   getLocaleFromAcceptLanguage,
-  isValidLocale,
+  resolveSupportedLocale,
   type SupportedLocale,
 } from "@/lib/i18n/locales";
 
@@ -22,7 +22,7 @@ const titles: Record<SupportedLocale, string> = {
   en: "TrackDraw API Docs",
   nl: "TrackDraw API-documentatie",
   de: "TrackDraw API-Dokumentation",
-  zh: "TrackDraw API 文档",
+  "zh-CN": "TrackDraw API 文档",
 };
 
 function getLocaleFromRequest(request: Request): SupportedLocale {
@@ -33,9 +33,8 @@ function getLocaleFromRequest(request: Request): SupportedLocale {
     .find((part) => part.startsWith("trackdraw-locale="))
     ?.slice("trackdraw-locale=".length);
 
-  if (isValidLocale(cookieLocale)) {
-    return cookieLocale;
-  }
+  const resolvedCookieLocale = resolveSupportedLocale(cookieLocale);
+  if (resolvedCookieLocale) return resolvedCookieLocale;
 
   return getLocaleFromAcceptLanguage(request.headers.get("accept-language"));
 }

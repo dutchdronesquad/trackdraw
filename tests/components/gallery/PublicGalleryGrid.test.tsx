@@ -4,7 +4,7 @@ import type React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import * as zh from "@lang/zh";
+import * as zhCN from "@lang/zh-CN";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import PublicGalleryGrid from "@/components/gallery/PublicGalleryGrid";
 import type { PublicGalleryEntry } from "@/lib/server/gallery";
@@ -145,7 +145,7 @@ describe("PublicGalleryGrid", () => {
 
   it("formats publication dates with the active locale", () => {
     const publishedAt = "2026-01-15T10:00:00.000Z";
-    const localizedDate = new Intl.DateTimeFormat("zh", {
+    const localizedDate = new Intl.DateTimeFormat("zh-CN", {
       dateStyle: "medium",
     }).format(new Date(publishedAt));
 
@@ -155,7 +155,7 @@ describe("PublicGalleryGrid", () => {
       />,
       {
         wrapper: ({ children }) => (
-          <NextIntlClientProvider locale="zh" messages={{ ...zh }}>
+          <NextIntlClientProvider locale="zh-CN" messages={{ ...zhCN }}>
             {children}
           </NextIntlClientProvider>
         ),
