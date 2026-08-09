@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ThemeBootstrap from "@/components/ThemeBootstrap";
+import { MotionProvider } from "@/components/motion/MotionProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
@@ -79,7 +80,9 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeBootstrap />
-        <TooltipProvider delayDuration={500}>{children}</TooltipProvider>
+        <MotionProvider>
+          <TooltipProvider delayDuration={500}>{children}</TooltipProvider>
+        </MotionProvider>
         <Toaster position="bottom-right" richColors />
       </body>
     </html>

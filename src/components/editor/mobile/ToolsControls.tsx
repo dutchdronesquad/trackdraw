@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, stagger } from "framer-motion";
 import { Check, Redo2, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getMobileToolEntries } from "@/components/editor/tool-icons";
@@ -167,8 +167,9 @@ export function ToolsControls({
                             hidden: {},
                             visible: {
                               transition: {
-                                staggerChildren: 0.045,
-                                delayChildren: 0.06,
+                                delayChildren: stagger(0.045, {
+                                  startDelay: 0.06,
+                                }),
                               },
                             },
                           }}
