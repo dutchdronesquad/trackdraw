@@ -25,7 +25,7 @@ TrackDraw is now strong in these areas:
 After v1.14.0, the next product focus should stay deliberately narrow:
 
 1. Generated flightpath validation: test real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid.
-2. Translation follow-up: prototype the recommended self-hosted Weblate contributor workflow while keeping locale catalogs out of the Worker bundle.
+2. Translation follow-up: run a bounded Crowdin Free pilot, retain Weblate as the self-hosted fallback, and keep locale catalogs out of the Worker bundle.
 3. Focused 3D item controls: add direct 3D move/rotate controls only where they are predictable across desktop, mobile, undo/redo, and lock state.
 
 Race-day workflow depth, account lifecycle depth, custom banner textures, share version history, gallery collections, billing, and community features should stay behind those priorities unless a concrete support issue or release risk forces them forward.
@@ -242,9 +242,10 @@ Maintenance focus:
 
 - Keep new product copy behind typed message catalogs instead of reopening hardcoded-copy debt
 - Treat translation management and Worker package size as a near-term operational track now that TrackDraw has four shipped languages and additional contributor languages are expected
-- Use self-hosted Weblate as the preferred contributor-management direction, with hosted tooling left as a fallback if infrastructure ownership proves disproportionate
-- Treat Weblate as production infrastructure before inviting contributors: use the documented separate, pinned stack with TLS/reverse proxy, SMTP, restricted access, backups, restore testing, monitoring, and an upgrade/rollback process
-- Prototype one translatable namespace end to end before committing to the full Weblate migration, using the existing `lang/{locale}/{namespace}.json` layout and normal pull-request review
+- Pilot Crowdin Free before selecting a platform; the current ten namespaces and three target languages are estimated at 25,731 hosted words, while Weblate remains the self-hosted fallback
+- Do not depend on Crowdin's open-source grant: confirm the actual workspace quota and reassess licensing if TrackDraw introduces related paid products or services
+- Prototype one translatable namespace end to end before committing to a migration, using the existing `lang/{locale}/{namespace}.json` layout and normal pull-request review
+- If Weblate becomes necessary, use an ephemeral pilot before operating a separate production stack; a permanent ACC environment is not initially required
 - Keep `dashboard` and `legal` English-only regardless of the translation-management tool
 - Keep generated locale asset loading in place so each language does not automatically add a full catalog set to the Cloudflare Worker bundle
 - Add future languages only when there is enough user demand and maintenance capacity to review FPV terminology, compact UI labels, and export/PDF/Race Pack copy

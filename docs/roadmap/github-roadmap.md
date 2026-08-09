@@ -45,13 +45,15 @@ The next TrackDraw priority is generated flightpath validation first, translatio
       Inventory the effective Cloudflare dashboard and application configuration for WAF, rate limits, TLS, and response headers. Evaluate route-aware CSP, HSTS, `X-Content-Type-Options`, Referrer Policy, Permissions Policy, and infrastructure-as-code without breaking embeds, authentication, locale assets, map references, or intentional external resources.
 
 - [ ] Translation management workflow (`Research`)
-      Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle. Research document: `docs/research/translation-management-weblate.md`.
-  - [x] Hosted versus self-hosted decision
-        Selected self-hosted Weblate as the preferred direction after weighing its infrastructure ownership against hosted plan eligibility, cost, and control. Revisit hosted tooling if operating Weblate proves disproportionate.
-  - [ ] Weblate prototype if self-hosting remains preferred
-        Stand up a private/staging Weblate instance, import only translatable namespaces, and validate one namespace end to end before committing to full migration.
-  - [x] Production deployment plan if Weblate is chosen
-        Documented a production-worthy separate Docker Compose stack with pinned containers, TLS/reverse-proxy setup, SMTP, access control, backups, restore testing, monitoring, upgrade/rollback process, and a no-direct-push-to-main security boundary.
+      Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle. Research document: `docs/research/translation-management.md`.
+  - [ ] Hosted versus self-hosted decision
+        Run a bounded Crowdin Free pilot first; retain self-hosted Weblate as the fallback. Decide only after validating quota, permissions, repository sync, contributor review, licensing, and ongoing operational cost.
+  - [ ] Crowdin Free pilot
+        Confirm the workspace quota, import only the ten translatable namespaces with `nl`/`de`/`zh`, and validate one namespace end to end. Apply separately for the open-source grant without depending on eligibility.
+  - [x] Worker bundle impact measured
+        A fresh dry run measured 2,116.79 KiB gzip. Locale JSON remains in Cloudflare Static Assets rather than the Worker handler, so changing translation platforms would not materially shrink the Worker bundle.
+  - [x] Weblate production requirements researched
+        If self-hosting becomes necessary, use an ephemeral pilot before a separate production stack with TLS, SMTP, restricted access, persistent storage, off-host backups, restore testing, monitoring, and deliberate upgrades. A permanent ACC environment is not initially required.
   - [ ] Repository sync workflow
         Prototype source upload and translation pull requests through GitHub Actions while preserving normal code review and existing locale validation checks.
   - [ ] Translator guidance
