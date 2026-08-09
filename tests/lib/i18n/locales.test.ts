@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getCatalogDirectory,
   getLocaleFromAcceptLanguage,
   normalizeLocale,
   resolveSupportedLocale,
@@ -7,6 +8,19 @@ import {
 } from "@/lib/i18n/locales";
 
 describe("locale resolution", () => {
+  it("maps product locales to regional catalog directories", () => {
+    expect(
+      Object.fromEntries(
+        supportedLocales.map((locale) => [locale, getCatalogDirectory(locale)])
+      )
+    ).toEqual({
+      en: "en-US",
+      nl: "nl-NL",
+      de: "de-DE",
+      "zh-CN": "zh-CN",
+    });
+  });
+
   it("uses zh-CN as the canonical Simplified Chinese locale", () => {
     expect(supportedLocales).toContain("zh-CN");
     expect(supportedLocales).not.toContain("zh");

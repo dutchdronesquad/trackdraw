@@ -17,17 +17,17 @@ const root = process.env.TRACKDRAW_I18N_ROOT
   : fileURLToPath(new URL("..", import.meta.url));
 const langDir = join(root, "lang");
 const outDir = join(root, "public", "locales");
-const sourceLocale = "en";
 const i18nPolicy = JSON.parse(
   readFileSync(join(langDir, "i18n-policy.json"), "utf8")
 );
+const sourceLocale = "en";
+const catalogDirectories = Object.entries(i18nPolicy.catalogDirectories ?? {});
+const sourceCatalogDirectory = i18nPolicy.catalogDirectories?.[sourceLocale];
 const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
 function listLocales() {
-  return readdirSync(langDir).filter(
-    (name) =>
-      /^[a-z]{2}(?:-[A-Z]{2})?$/.test(name) &&
-      statSync(join(langDir, name)).isDirectory()
+  return catalogDirectories.filter(([, directory]) =>
+    statSync(join(langDir, directory)).isDirectory()
   );
 }
 
@@ -74,8 +74,8 @@ function loadNamespace(locale, namespace) {
 
 rmSync(outDir, { recursive: true, force: true });
 
-for (const locale of listLocales()) {
-  const namespaces = listNamespaces(sourceLocale).filter(
+for (const [locale, catalogDirectory] of listLocales()) {
+  const namespaces = listNamespaces(sourceCatalogDirectory).filter(
     (namespace) =>
       locale === sourceLocale || !englishOnlyNamespaces.has(namespace)
   );
@@ -85,14 +85,17 @@ for (const locale of listLocales()) {
   for (const namespace of namespaces) {
     const destination = join(localeOutDir, `${namespace}.json`);
     if (locale === sourceLocale) {
-      copyFileSync(join(langDir, locale, `${namespace}.json`), destination);
+      copyFileSync(
+        join(langDir, catalogDirectory, `${namespace}.json`),
+        destination
+      );
       continue;
     }
 
-    const fallbackMessages = loadNamespace(sourceLocale, namespace);
+    const fallbackMessages = loadNamespace(sourceCatalogDirectory, namespace);
     let translatedMessages;
     try {
-      translatedMessages = loadNamespace(locale, namespace);
+      translatedMessages = loadNamespace(catalogDirectory, namespace);
     } catch {
       translatedMessages = undefined;
     }

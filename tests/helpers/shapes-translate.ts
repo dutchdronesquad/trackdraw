@@ -1,4 +1,4 @@
-import en from "@lang/en/shapes.json";
+import en from "@lang/en-US/shapes.json";
 
 /**
  * Minimal English-only translator factory for tests that exercise
@@ -137,7 +137,7 @@ export function createTestTranslate(messages: object) {
 }
 
 /**
- * Mirrors lang/en/shapes.json; the `shapes` namespace doesn't use plural
+ * Mirrors lang/en-US/shapes.json; the `shapes` namespace doesn't use plural
  * syntax.
  */
 export const shapesTranslate = createTestTranslate(en);

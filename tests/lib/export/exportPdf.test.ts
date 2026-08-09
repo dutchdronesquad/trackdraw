@@ -97,8 +97,8 @@ import {
   createTestTranslate,
   shapesTranslate,
 } from "../../helpers/shapes-translate";
-import enExportPdf from "@lang/en/exportPdf.json";
-import enSetupEstimate from "@lang/en/setupEstimate.json";
+import enExportPdf from "@lang/en-US/exportPdf.json";
+import enSetupEstimate from "@lang/en-US/setupEstimate.json";
 import zhExportPdf from "@lang/zh-CN/exportPdf.json";
 
 const translate = {

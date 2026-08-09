@@ -103,7 +103,7 @@ Phase 1 — architecture + editor pilot:
 1. Install next-intl, add `src/lib/i18n/locales.ts`
 2. `src/store/locale.ts` Zustand persist store
 3. `src/i18n/request.ts` server locale/message resolver + `NextIntlClientProvider` in root layout
-4. `lang/en/editor.json` covering Toolbar and StatusBar strings
+4. `lang/en-US/editor.json` covering Toolbar and StatusBar strings
 5. Convert `Toolbar.tsx` and `StatusBar.tsx` to `useTranslations('editor')`
 6. Language picker stub in account menu
 
@@ -151,7 +151,7 @@ The follow-up implementation translated the user-facing strings found in the rev
 
 - `npm run i18n:check` passes.
 - `npm run i18n:scan-hardcoded` passes with the current baseline.
-- Checked key counts and identical key shape across all `lang/en/*.json` and `lang/nl/*.json`.
+- Checked key counts and identical key shape across all `lang/en-US/*.json` and `lang/nl-NL/*.json`.
 - Searched TS/TSX for direct visible text in translated surfaces.
 - Reviewed selected NL strings for terminology, spelling, grammar, and placeholder consistency.
 
@@ -184,9 +184,9 @@ Resolution: fixed in `dialogs.account.security` and `dialogs.account.apiKeys`, w
 
 #### P1 - Account deletion confirmation copy was inconsistent
 
-In `lang/nl/dialogs.json`, the visible danger-zone prompt and placeholder correctly used `DELETE`, but the validation error told Dutch users to type `VERWIJDEREN`. The actual code checks `deleteConfirmation.trim().toUpperCase() !== "DELETE"` in `AccountDialog/DangerView.tsx`.
+In `lang/nl-NL/dialogs.json`, the visible danger-zone prompt and placeholder correctly used `DELETE`, but the validation error told Dutch users to type `VERWIJDEREN`. The actual code checks `deleteConfirmation.trim().toUpperCase() !== "DELETE"` in `AccountDialog/DangerView.tsx`.
 
-Resolution: fixed in `lang/nl/dialogs.json`.
+Resolution: fixed in `lang/nl-NL/dialogs.json`.
 
 #### P2 - Canvas/editor controls still had hardcoded English
 

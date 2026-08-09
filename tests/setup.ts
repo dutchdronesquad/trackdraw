@@ -2,7 +2,7 @@ import { createElement, type ReactElement, type ReactNode } from "react";
 import { vi } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 import { createTranslator } from "use-intl/core";
-import * as en from "@lang/en";
+import * as en from "@lang/en-US";
 
 const messages = { ...en };
 

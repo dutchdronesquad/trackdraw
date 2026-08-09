@@ -5,7 +5,7 @@ import {
   createTestTranslate,
   shapesTranslate,
 } from "../../helpers/shapes-translate";
-import en from "@lang/en/setupEstimate.json";
+import en from "@lang/en-US/setupEstimate.json";
 
 const setupEstimateTranslate = createTestTranslate(en);
 

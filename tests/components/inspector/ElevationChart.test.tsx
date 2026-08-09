@@ -6,7 +6,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ElevationChart from "@/components/inspector/ElevationChart";
 import { useEditor } from "@/store/editor";
-import inspectorMessages from "@lang/en/inspector.json";
+import inspectorMessages from "@lang/en-US/inspector.json";
 import {
   gateDraft,
   polylineDraft,

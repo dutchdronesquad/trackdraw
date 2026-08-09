@@ -26,18 +26,22 @@ function runScript(name: "i18n_check.mjs" | "i18n_sync_assets.mjs") {
 describe("Crowdin pilot catalog scripts", () => {
   beforeEach(() => {
     fixtureRoot = mkdtempSync(join(tmpdir(), "trackdraw-i18n-pilot-"));
-    mkdirSync(join(fixtureRoot, "lang", "en"), { recursive: true });
-    mkdirSync(join(fixtureRoot, "lang", "nl"), { recursive: true });
+    mkdirSync(join(fixtureRoot, "lang", "en-US"), { recursive: true });
+    mkdirSync(join(fixtureRoot, "lang", "nl-NL"), { recursive: true });
     mkdirSync(join(fixtureRoot, "src"), { recursive: true });
     writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
+      catalogDirectories: {
+        en: "en-US",
+        nl: "nl-NL",
+      },
       englishOnlyNamespaces: [],
     });
-    writeJson(join(fixtureRoot, "lang", "en", "common.json"), {
+    writeJson(join(fixtureRoot, "lang", "en-US", "common.json"), {
       nested: { translated: "Source", missing: "Fallback" },
       bullets: ["One", "Two"],
       greeting: "Hello {name}",
     });
-    writeJson(join(fixtureRoot, "lang", "nl", "common.json"), {
+    writeJson(join(fixtureRoot, "lang", "nl-NL", "common.json"), {
       nested: { translated: "Vertaald" },
       bullets: ["Eén"],
       greeting: "Hallo {name}",
@@ -78,7 +82,7 @@ describe("Crowdin pilot catalog scripts", () => {
   });
 
   it("still rejects placeholder mismatches", () => {
-    writeJson(join(fixtureRoot, "lang", "nl", "common.json"), {
+    writeJson(join(fixtureRoot, "lang", "nl-NL", "common.json"), {
       greeting: "Hallo",
     });
 

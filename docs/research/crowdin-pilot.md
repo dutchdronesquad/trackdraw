@@ -12,19 +12,19 @@ The pilot stays reversible. Translation JSON remains versioned in Git, productio
 
 ## Ownership during the pilot
 
-| Content                                        | Source of truth                                     |
-| ---------------------------------------------- | --------------------------------------------------- |
-| `lang/en/**` product source copy               | GitHub feature pull requests                        |
-| `lang/nl/**`, `lang/de/**`, `lang/zh-CN/**`    | Crowdin                                             |
-| `lang/en/dashboard.json`, `lang/en/legal.json` | GitHub; excluded from Crowdin                       |
-| Production locale assets                       | Generated from the merged Git catalogs during build |
+| Content                                              | Source of truth                                     |
+| ---------------------------------------------------- | --------------------------------------------------- |
+| `lang/en-US/**` product source copy                  | GitHub feature pull requests                        |
+| `lang/nl-NL/**`, `lang/de-DE/**`, `lang/zh-CN/**`    | Crowdin                                             |
+| `lang/en-US/dashboard.json`, `lang/en-US/legal.json` | GitHub; excluded from Crowdin                       |
+| Production locale assets                             | Generated from the merged Git catalogs during build |
 
 Do not edit target-language JSON directly during the pilot, except for a production emergency that is immediately reconciled back into Crowdin.
 
 ## Initial Crowdin setup
 
 1. Create a public, file-based project with English as source and Dutch, German, and Chinese Simplified (`zh-CN`) as targets.
-2. Enable moderated project joining and require 2FA for managers.
+2. On the ordinary Free plan, keep moderated joining and project-enforced 2FA disabled because those controls are unavailable. Ask maintainers to enable account-level 2FA voluntarily; enable the project controls if the open-source request is approved.
 3. Connect `dutchdronesquad/trackdraw` and synchronize only `main` using the repository `crowdin.yml`.
 4. Import existing translations once. Enable source-matching translations because FPV and product terms may intentionally remain English. Approve the imported baseline only after a quick catalog review.
 5. Disable continuous translation import from Git and leave source pushes from Crowdin disabled.
