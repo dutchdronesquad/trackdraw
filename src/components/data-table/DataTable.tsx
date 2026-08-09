@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  flexRender,
+  type ReactTable as TanStackReactTable,
   type Row,
-  type Table as ReactTable,
+  type RowData,
 } from "@tanstack/react-table";
 import type { ComponentProps, ReactNode } from "react";
 import {
@@ -23,6 +23,7 @@ import {
   getDataTableColumnClassName,
 } from "./DataTableLayout";
 import DataTablePagination from "./DataTablePagination";
+import type { DataTableFeatures } from "./tableFeatures";
 
 type DataTableFrameProps = ComponentProps<"div"> & {
   minWidthClassName?: string;
@@ -30,17 +31,17 @@ type DataTableFrameProps = ComponentProps<"div"> & {
   tableProps?: Omit<ComponentProps<typeof UiTable>, "className">;
 };
 
-type DataTableProps<TData> = {
-  table: ReactTable<TData>;
-  rows?: Row<TData>[];
+type DataTableProps<TData extends RowData> = {
+  table: TanStackReactTable<DataTableFeatures, TData>;
+  rows?: Row<DataTableFeatures, TData>[];
   emptyMessage: ReactNode;
   columnsLength?: number;
   minWidthClassName?: string;
   wrapperClassName?: string;
   tableClassName?: string;
   emptyClassName?: string;
-  onRowClick?: (row: Row<TData>) => void;
-  getRowAriaLabel?: (row: Row<TData>) => string;
+  onRowClick?: (row: Row<DataTableFeatures, TData>) => void;
+  getRowAriaLabel?: (row: Row<DataTableFeatures, TData>) => string;
   pagination?: {
     summary?: ReactNode;
     pageSizeOptions?: number[];
@@ -110,7 +111,7 @@ export function DataTableEmptyState({
   );
 }
 
-export default function DataTable<TData>({
+export default function DataTable<TData extends RowData>({
   table,
   rows = table.getRowModel().rows,
   emptyMessage,
@@ -141,12 +142,9 @@ export default function DataTable<TData>({
                     "header"
                   )}
                 >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                  {header.isPlaceholder ? null : (
+                    <table.FlexRender header={header} />
+                  )}
                 </DataTableHeaderCell>
               ))}
             </TableRow>
@@ -180,7 +178,7 @@ export default function DataTable<TData>({
                       "cell"
                     )}
                   >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <table.FlexRender cell={cell} />
                   </DataTableBodyCell>
                 ))}
               </TableRow>

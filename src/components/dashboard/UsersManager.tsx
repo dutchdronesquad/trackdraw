@@ -3,16 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { type SortingState, useTable } from "@tanstack/react-table";
 import {
   Ban,
   ChevronDown,
@@ -46,6 +37,7 @@ import type { UserContextStats } from "@/lib/server/users";
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
+import { dataTableFeatures } from "@/components/data-table/tableFeatures";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -109,13 +101,10 @@ type UserContextData = {
   recentEvents: AuditEvent[];
 };
 
-// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardUsersManager({
   currentUserId,
   initialUsers,
 }: DashboardUsersManagerProps) {
-  "use no memo";
-
   const t = useTranslations("dashboard.users");
   const [users, setUsers] = useState(initialUsers);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
@@ -146,12 +135,15 @@ export default function DashboardUsersManager({
 
   useEffect(() => {
     if (!deleteCandidate) {
+      // oxlint-disable-next-line react/react-compiler -- Clear data when the dialog closes.
       setDeleteStats(null);
       return;
     }
 
     let cancelled = false;
+    // oxlint-disable-next-line react/react-compiler -- Reset the async request state for a new candidate.
     setDeleteStatsLoading(true);
+    // oxlint-disable-next-line react/react-compiler -- Prevent stale stats while the next request loads.
     setDeleteStats(null);
 
     fetch(`/api/dashboard/users/${encodeURIComponent(deleteCandidate.id)}`)
@@ -184,12 +176,15 @@ export default function DashboardUsersManager({
 
   useEffect(() => {
     if (!inspectCandidate) {
+      // oxlint-disable-next-line react/react-compiler -- Clear data when the sheet closes.
       setInspectData(null);
       return;
     }
 
     let cancelled = false;
+    // oxlint-disable-next-line react/react-compiler -- Reset the async request state for a new candidate.
     setInspectLoading(true);
+    // oxlint-disable-next-line react/react-compiler -- Prevent stale details while the next request loads.
     setInspectData(null);
 
     fetch(`/api/dashboard/users/${encodeURIComponent(inspectCandidate.id)}`)
@@ -422,7 +417,8 @@ export default function DashboardUsersManager({
     [selectedRoles]
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data: users,
     columns,
     state: {
@@ -443,12 +439,6 @@ export default function DashboardUsersManager({
         (user.email?.toLowerCase().includes(q) ?? false)
       );
     },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
   const filteredRowCount = table.getFilteredRowModel().rows.length;
   const roleCounts = table.getColumn("role")?.getFacetedUniqueValues();

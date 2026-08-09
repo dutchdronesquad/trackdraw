@@ -5,6 +5,7 @@ import { ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
 import { getAccountRoleLabel, parseAccountRole } from "@/lib/account/roles";
 
 export type AuditEventActor = {
@@ -285,7 +286,7 @@ type GetAuditColumnsParams = {
 export function getAuditColumns({
   t,
   unknownUserLabel,
-}: GetAuditColumnsParams): ColumnDef<DashboardAuditEvent>[] {
+}: GetAuditColumnsParams): ColumnDef<DataTableFeatures, DashboardAuditEvent>[] {
   const getSortAriaLabel = (label: string) =>
     t("aria.sort", { label: label.toLowerCase() });
 
@@ -309,7 +310,7 @@ export function getAuditColumns({
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
-      sortingFn: (rowA, rowB) =>
+      sortFn: (rowA, rowB) =>
         compareText(
           getEventTitle(rowA.original.eventType, t),
           getEventTitle(rowB.original.eventType, t),
@@ -378,7 +379,7 @@ export function getAuditColumns({
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
-      sortingFn: (rowA, rowB) =>
+      sortFn: (rowA, rowB) =>
         compareText(
           getUserLabel(rowA.original.actor, unknownUserLabel),
           getUserLabel(rowB.original.actor, unknownUserLabel),
@@ -414,7 +415,7 @@ export function getAuditColumns({
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
-      sortingFn: (rowA, rowB) =>
+      sortFn: (rowA, rowB) =>
         compareText(
           getUserLabel(rowA.original.target, unknownUserLabel),
           getUserLabel(rowB.original.target, unknownUserLabel),
@@ -450,7 +451,7 @@ export function getAuditColumns({
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
-      sortingFn: (rowA, rowB) =>
+      sortFn: (rowA, rowB) =>
         compareText(
           getEntityDisplay(rowA.original, t).label,
           getEntityDisplay(rowB.original, t).label,
@@ -489,7 +490,7 @@ export function getAuditColumns({
           <ArrowUpDown className="text-muted-foreground ml-1 size-3.5" />
         </Button>
       ),
-      sortingFn: (rowA, rowB) =>
+      sortFn: (rowA, rowB) =>
         new Date(rowA.original.createdAt).getTime() -
         new Date(rowB.original.createdAt).getTime(),
       cell: ({ row }) => (

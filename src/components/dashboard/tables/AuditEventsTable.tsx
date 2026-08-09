@@ -2,15 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { type SortingState, useTable } from "@tanstack/react-table";
 import {
   categoryFilterValues,
   eventMatchesSearch,
@@ -26,6 +18,7 @@ import {
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
+import { dataTableFeatures } from "@/components/data-table/tableFeatures";
 
 export type { AuditEventCategory };
 
@@ -34,13 +27,10 @@ type AuditEventsTableProps = {
   initialCategories?: AuditEventCategory[];
 };
 
-// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardAuditEventsTable({
   events,
   initialCategories = [],
 }: AuditEventsTableProps) {
-  "use no memo";
-
   const t: Translate = useTranslations("dashboard.audit");
   const unknownUserLabel = t("fallback.unknownUser");
   const [globalFilter, setGlobalFilter] = useState("");
@@ -71,7 +61,8 @@ export default function DashboardAuditEventsTable({
     [selectedActors, selectedCategories, selectedEventTypes]
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data: events,
     columns,
     state: {
@@ -92,11 +83,6 @@ export default function DashboardAuditEventsTable({
         t,
         unknownUserLabel
       ),
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
 
   const categoryFacetRows =

@@ -2,15 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { type SortingState, useTable } from "@tanstack/react-table";
 import { Clock3, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -33,6 +25,7 @@ import {
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
+import { dataTableFeatures } from "@/components/data-table/tableFeatures";
 import type { AccountRole } from "@/lib/account/roles";
 import type { DashboardShare } from "@/lib/server/shares";
 
@@ -58,13 +51,10 @@ function getOwnerFilterValue(share: DashboardShare): ShareOwnerFilterValue {
   return share.ownerUserId ? "account" : "anonymous";
 }
 
-// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardSharesManager({
   currentUserRole,
   initialShares,
 }: DashboardSharesManagerProps) {
-  "use no memo";
-
   const t = useTranslations("dashboard.shares");
   const tCommon = useTranslations("common");
   const [shares, setShares] = useState(initialShares);
@@ -223,7 +213,8 @@ export default function DashboardSharesManager({
     [selectedLifecycles, selectedOwners, selectedTypes]
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data: shares,
     columns,
     state: { globalFilter, sorting, columnFilters },
@@ -243,11 +234,6 @@ export default function DashboardSharesManager({
           .includes(q)
       );
     },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;

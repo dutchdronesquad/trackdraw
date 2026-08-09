@@ -2,16 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { type SortingState, useTable } from "@tanstack/react-table";
 import { KeyRound } from "lucide-react";
 import {
   formatDate,
@@ -37,6 +28,7 @@ import {
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
+import { dataTableFeatures } from "@/components/data-table/tableFeatures";
 import type { AdminApiKey } from "@/lib/server/api-keys";
 
 const statusFilterValues: ApiKeyStatus[] = ["active", "expired", "disabled"];
@@ -73,12 +65,9 @@ type DashboardApiKeysManagerProps = {
   initialKeys: AdminApiKey[];
 };
 
-// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardApiKeysManager({
   initialKeys,
 }: DashboardApiKeysManagerProps) {
-  "use no memo";
-
   const t = useTranslations("dashboard.apiKeys");
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -97,7 +86,8 @@ export default function DashboardApiKeysManager({
     [selectedStatuses]
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data: initialKeys,
     columns,
     state: { globalFilter, sorting, columnFilters },
@@ -116,12 +106,6 @@ export default function DashboardApiKeysManager({
         key.ownerUserId.toLowerCase().includes(q)
       );
     },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;

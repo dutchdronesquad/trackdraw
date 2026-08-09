@@ -4,15 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import {
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  type SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { type SortingState, useTable } from "@tanstack/react-table";
 import {
   AlertCircle,
   CheckCircle2,
@@ -56,6 +48,7 @@ import {
 import DataTable from "@/components/data-table/DataTable";
 import DataTableFacetFilter from "@/components/data-table/DataTableFacetFilter";
 import DataTableToolbar from "@/components/data-table/DataTableToolbar";
+import { dataTableFeatures } from "@/components/data-table/tableFeatures";
 import type { AccountRole } from "@/lib/account/roles";
 import type {
   DashboardGalleryEntry,
@@ -162,13 +155,10 @@ function InspectSection({
   );
 }
 
-// oxlint-disable-next-line react/react-compiler -- TanStack Table opts out of compiler memoization
 export default function DashboardGalleryManager({
   currentUserRole,
   initialEntries,
 }: DashboardGalleryManagerProps) {
-  "use no memo";
-
   const t = useTranslations("dashboard.gallery");
   const tCommon = useTranslations("common");
   const [entries, setEntries] = useState(initialEntries);
@@ -329,7 +319,8 @@ export default function DashboardGalleryManager({
     [selectedGalleryStates, selectedShareLifecycles]
   );
 
-  const table = useReactTable({
+  const table = useTable({
+    features: dataTableFeatures,
     data: entries,
     columns,
     state: { globalFilter, sorting, columnFilters },
@@ -347,11 +338,6 @@ export default function DashboardGalleryManager({
         getOwnerLabel(entry).toLowerCase().includes(q)
       );
     },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;

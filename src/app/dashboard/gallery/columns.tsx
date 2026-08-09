@@ -26,6 +26,7 @@ import {
   TooltipTrigger,
 } from "@/components/AppTooltip";
 import { dataTableSortButtonClassName } from "@/components/data-table/DataTableLayout";
+import type { DataTableFeatures } from "@/components/data-table/tableFeatures";
 import { getSiteMediaUrl } from "@/lib/seo";
 import type { DashboardGalleryEntry, GalleryState } from "@/lib/server/gallery";
 import { formatFieldSize as formatMeasurementFieldSize } from "@/lib/track/units";
@@ -277,7 +278,10 @@ export function getGalleryColumns({
   canManageGallery,
   onUpdateEntry,
   onDeleteCandidate,
-}: GetGalleryColumnsParams): ColumnDef<DashboardGalleryEntry>[] {
+}: GetGalleryColumnsParams): ColumnDef<
+  DataTableFeatures,
+  DashboardGalleryEntry
+>[] {
   return [
     {
       id: "track",
