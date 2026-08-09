@@ -45,7 +45,12 @@ describe("Crowdin pilot catalog scripts", () => {
   });
 
   afterEach(() => {
-    rmSync(fixtureRoot, { recursive: true, force: true });
+    const rootToRemove = fixtureRoot;
+    fixtureRoot = "";
+
+    if (rootToRemove) {
+      rmSync(rootToRemove, { recursive: true, force: true });
+    }
   });
 
   it("generates complete assets by merging target messages over English", () => {
