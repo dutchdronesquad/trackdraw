@@ -47,12 +47,6 @@ The next TrackDraw priority is generated flightpath validation first, translatio
   - [x] Scheduled cleanup isolation and reporting
         Ensure share, API-key, and product-event retention tasks complete independently, remain idempotent, emit a structured result per task, and have focused coverage for partial failures so one rejection cannot cut short the other cleanup work.
 
-- [ ] D1 recovery posture (`Research`)
-      Confirm the production storage backend and Time Travel window, define realistic RPO/RTO targets, evaluate pre-migration bookmarks and longer-lived exports, and document a safe non-production restore drill. Keep production restores explicit and operator-controlled rather than automatic.
-
-- [ ] Version-controlled security posture (`Research`)
-      Inventory the effective Cloudflare dashboard and application configuration for WAF, rate limits, TLS, and response headers. Evaluate route-aware CSP, HSTS, `X-Content-Type-Options`, Referrer Policy, Permissions Policy, and infrastructure-as-code without breaking embeds, authentication, locale assets, map references, or intentional external resources.
-
 - [ ] Translation management workflow (`Research`)
       Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle. Research document: `docs/research/translation-management.md`.
   - [ ] Hosted versus self-hosted decision
