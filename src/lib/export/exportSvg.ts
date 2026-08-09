@@ -166,7 +166,7 @@ export interface Export2DOptions {
 
 function formatExportDate(locale?: string) {
   try {
-    return new Intl.DateTimeFormat(locale, {
+    return new Intl.DateTimeFormat(locale || "en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",

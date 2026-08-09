@@ -80,12 +80,18 @@ describe("exportSvg", () => {
     vi.setSystemTime(new Date("2026-04-13T10:00:00.000Z"));
 
     const svg = designToSvg(createDesign(), "dark");
+    const defaultDate = new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date());
 
     expect(svg).toContain(`<?xml version="1.0" encoding="UTF-8"?>`);
     expect(svg).toContain(`Club &lt;Race&gt; &amp; &quot;Fun&quot;`);
     expect(svg).toContain(`A &lt; B &amp; C`);
     expect(svg).toContain(`<svg xmlns="http://www.w3.org/2000/svg"`);
     expect(svg).toContain(`60×40 m`);
+    expect(svg).toContain(defaultDate);
   });
 
   it("uses the requested locale and localized untitled-track fallback", () => {
