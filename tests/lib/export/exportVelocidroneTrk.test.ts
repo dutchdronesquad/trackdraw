@@ -123,8 +123,7 @@ describe("exportVelocidroneTrk", () => {
     const encryptedB = await encryptVelocidroneTrk(plaintext);
 
     expect(encryptedA).toBe(encryptedB);
-    expect(encryptedA).not.toBe(plaintext);
-    expect(encryptedA.length).toBeGreaterThan(0);
+    expect(encryptedA).toBe("K99+rP+S7OhqHH+X5QMhnw==");
   });
 
   it("throws when the design is invalid for Velocidrone export", () => {
