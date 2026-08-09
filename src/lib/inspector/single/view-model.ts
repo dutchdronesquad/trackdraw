@@ -3,13 +3,13 @@ import { getShapeGroupId, getShapeGroupName } from "@/lib/track/shape-groups";
 import type { Shape } from "@/lib/types";
 
 export const inspectorActionBtnClass =
-  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
 
 export const inspectorActionBtnPrimaryClass =
-  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/25 bg-primary/8 px-2.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/25 bg-primary/8 px-2.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/12 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
 
 export const inspectorActionBtnDangerClass =
-  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/6 px-2.5 text-[11px] font-medium text-red-500 transition-colors hover:bg-red-500/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
+  "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/6 px-2.5 text-[11px] font-medium text-red-500 transition-colors hover:bg-red-500/12 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8";
 
 function finiteOrZero(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
@@ -40,10 +40,8 @@ export function getSingleInspectorViewModel(shape: Shape, t: Translate) {
   const shapeKindLabel = getShapeKindLabel(shape.kind, t);
 
   return {
-    actionBtnClass:
-      "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/45 bg-background/80 px-2.5 text-[11px] font-medium text-foreground/82 transition-colors hover:bg-muted/35 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8",
-    actionBtnPrimaryClass:
-      "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/25 bg-primary/8 px-2.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/12 disabled:cursor-not-allowed disabled:opacity-40 lg:h-8",
+    actionBtnClass: inspectorActionBtnClass,
+    actionBtnPrimaryClass: inspectorActionBtnPrimaryClass,
     anchorPosition: getShapeAnchorPosition(shape),
     defaultColor: shape.color ?? "#3b82f6",
     groupId,

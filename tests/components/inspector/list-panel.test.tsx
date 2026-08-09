@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeReorderBeforeId,
   getListableTrackItems,
+  shouldShowItemFilters,
 } from "@/components/inspector/views/list-panel";
 import type { Shape } from "@/lib/types";
 
@@ -48,5 +49,15 @@ describe("getListableTrackItems", () => {
     const flag = { id: "flag-1", kind: "flag" } as Shape;
 
     expect(getListableTrackItems([gate, route, flag])).toEqual([gate, flag]);
+  });
+});
+
+describe("shouldShowItemFilters", () => {
+  it("keeps controls visible while an item filter is active", () => {
+    expect(shouldShowItemFilters(4, "", "obstacles")).toBe(true);
+  });
+
+  it("hides inactive controls for a short unfiltered list", () => {
+    expect(shouldShowItemFilters(4, "", "all")).toBe(false);
   });
 });

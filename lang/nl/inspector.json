@@ -4,6 +4,45 @@
     "layout": "Indeling",
     "selection": "Selectie"
   },
+  "preflight": {
+    "title": "Preflight",
+    "status": {
+      "incomplete": {
+        "title": "Onvolledig",
+        "description": "Voeg trackitems toe om de indeling te controleren."
+      },
+      "review": {
+        "title": "Controleren",
+        "description": "{count, plural, one {1 bekend aandachtspunt.} other {{count} bekende aandachtspunten.}}"
+      },
+      "ready": {
+        "title": "Gereed",
+        "description": "Geen bekende problemen in de actieve controles."
+      }
+    },
+    "categories": {
+      "route": "Route",
+      "timing": "Timing",
+      "inventory": "Inventaris"
+    },
+    "checkInactive": "uit",
+    "openIssue": "Open",
+    "emptyDetails": "Preflight start zodra de indeling trackitems bevat.",
+    "noIssues": "De actieve controles hebben geen bekende problemen.",
+    "issues": {
+      "missingRoute": "Voeg een race line toe voor de geplaatste route-obstakels.",
+      "noRouteMatches": "De route-obstakels liggen niet dicht genoeg bij de race line.",
+      "offRoute": "{name} ligt buiten de tolerantie van de race line.",
+      "timingMissingRoute": "Timing heeft één bruikbare race line nodig.",
+      "multipleRoutes": "Timing heeft meerdere bruikbare race lines gevonden.",
+      "missingStartFinish": "Voeg één start/finish-timingmarkering toe.",
+      "duplicateStartFinish": "Behoud slechts één start/finish-timingmarkering.",
+      "missingSplitId": "Een split-timingmarkering mist een ID.",
+      "duplicateTimingId": "Timingmarkering-ID's moeten uniek zijn.",
+      "timingPointOffRoute": "Een timingmarkering ligt te ver van de race line.",
+      "inventoryShortage": "{kind}: {count} ontbreekt in de inventaris."
+    }
+  },
   "emptyState": {
     "title": "Geen selectie",
     "body": "Selecteer een of meer items op het canvas om hun eigenschappen te bewerken."
@@ -144,7 +183,8 @@
     "sections": {
       "routeNumbering": "Routenummering",
       "inventory": "Inventaris",
-      "field": "Veld"
+      "field": "Veld",
+      "advanced": "Geavanceerd"
     },
     "field": {
       "unitsLabel": "Eenheden",

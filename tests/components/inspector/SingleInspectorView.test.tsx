@@ -105,7 +105,7 @@ describe("SingleInspectorView race timing controls", () => {
     expect(screen.queryByRole("button", { name: "Split" })).toBeNull();
   });
 
-  it("keeps mobile secondary sections collapsed while transform and race timing stay open", () => {
+  it("keeps inactive mobile secondary sections collapsed while transform stays open", () => {
     renderSingleInspector(gate, { mobileInline: true });
 
     expect(
@@ -119,13 +119,11 @@ describe("SingleInspectorView race timing controls", () => {
         .getByRole("button", { name: "Transform" })
         .getAttribute("aria-expanded")
     ).toBe("true");
-    // Race timing stays open on mobile for any shape that supports it,
-    // so clearing the role mid-interaction does not collapse the section.
     expect(
       screen
         .getByRole("button", { name: "Race timing" })
         .getAttribute("aria-expanded")
-    ).toBe("true");
+    ).toBe("false");
   });
 
   it("keeps grouped shape details collapsed on mobile", () => {
@@ -170,7 +168,7 @@ describe("SingleInspectorView race timing controls", () => {
     ).toBe("true");
   });
 
-  it("keeps race timing section open on mobile after clearing the timing role", async () => {
+  it("collapses race timing on mobile after clearing the timing role", async () => {
     const shapeWithMarker: GateShape = {
       ...gate,
       meta: { timing: { role: "start_finish" } },
@@ -205,12 +203,11 @@ describe("SingleInspectorView race timing controls", () => {
     // Simulate the store updating after the user sets role to "Off"
     rerender(<SingleInspectorView {...props} shape={gate} />);
 
-    // The section must stay open — closing mid-interaction was the bug
     expect(
       screen
         .getByRole("button", { name: "Race timing" })
         .getAttribute("aria-expanded")
-    ).toBe("true");
+    ).toBe("false");
   });
 
   it("explains locked shape interaction limits", () => {

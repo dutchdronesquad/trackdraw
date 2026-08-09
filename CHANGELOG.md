@@ -6,6 +6,10 @@ This changelog is intentionally concise. GitHub Releases and Release Drafter can
 
 ## [Unreleased]
 
+### Track preflight and a leaner inspector
+
+The Layout inspector now brings route, timing, numbering, and configured inventory checks together in one advisory Preflight summary. Issues open the related obstacle or Race Line, while sharing and export remain available. Repeated status cards and project details have been reduced, route analysis appears only where it is relevant, and the mobile inspector keeps inactive timing and duplicate quick actions out of the way.
+
 ### Locale-aware visual exports and integrations
 
 PNG and SVG exports now use the selected language for footer dates and untitled-track copy. Public gallery dates and API Docs language metadata also follow all four supported languages, including Simplified Chinese.

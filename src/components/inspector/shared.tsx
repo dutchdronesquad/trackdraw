@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { createContext, useContext, useEffect, useId, useState } from "react";
 import type { ReactNode } from "react";
 import { useHistorySession } from "@/hooks/account/useHistorySession";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,8 @@ export const fmt = (value: number | null | undefined) =>
   Number(
     (typeof value === "number" && Number.isFinite(value) ? value : 0).toFixed(2)
   );
+
+const RowLabelContext = createContext<string | undefined>(undefined);
 
 export function useInspectorInputBatch() {
   const { beginInteraction, endInteraction, pauseHistory, resumeHistory } =
@@ -73,12 +75,21 @@ export function Row({
   label: string;
   children: ReactNode;
 }) {
+  const labelId = useId();
+
   return (
     <div className="flex min-h-9 items-center gap-3 py-1 lg:min-h-8 lg:py-0.5">
-      <span className="text-muted-foreground/85 w-19.5 shrink-0 text-[11px] tracking-[0.02em] lg:w-22">
+      <span
+        id={labelId}
+        className="text-muted-foreground/85 w-19.5 shrink-0 text-[11px] tracking-[0.02em] lg:w-22"
+      >
         {label}
       </span>
-      <div className="min-w-0 flex-1">{children}</div>
+      <RowLabelContext.Provider value={label}>
+        <div aria-labelledby={labelId} className="min-w-0 flex-1">
+          {children}
+        </div>
+      </RowLabelContext.Provider>
     </div>
   );
 }
@@ -153,14 +164,17 @@ export function Num({
   step = 0.1,
   min,
   max,
+  ariaLabel,
 }: {
   value: number;
   onChange: (value: number) => void;
   step?: number;
   min?: number;
   max?: number;
+  ariaLabel?: string;
 }) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
+  const rowLabel = useContext(RowLabelContext);
 
   return (
     <Input
@@ -168,6 +182,7 @@ export function Num({
       step={step}
       min={min}
       max={max}
+      aria-label={ariaLabel ?? rowLabel}
       value={value}
       onFocus={startBatch}
       onBlur={finishBatch}
@@ -177,7 +192,7 @@ export function Num({
         }
       }}
       onChange={(event) => onChange(+event.target.value)}
-      className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
+      className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-2 lg:h-7 lg:px-2"
     />
   );
 }
@@ -188,14 +203,17 @@ export function MeasurementNum({
   onChange,
   minMeters,
   maxMeters,
+  ariaLabel,
 }: {
   valueMeters: number;
   unitSystem: MeasurementUnitSystem;
   onChange: (valueMeters: number) => void;
   minMeters?: number;
   maxMeters?: number;
+  ariaLabel?: string;
 }) {
   const { startBatch, finishBatch } = useInspectorInputBatch();
+  const rowLabel = useContext(RowLabelContext);
   const [draft, setDraft] = useState<string | null>(null);
   const displayValue =
     draft ?? formatMeasurementInputValue(valueMeters, unitSystem);
@@ -222,6 +240,7 @@ export function MeasurementNum({
     <Input
       type="text"
       inputMode="decimal"
+      aria-label={ariaLabel ?? rowLabel}
       value={displayValue}
       onFocus={() => {
         setDraft(displayValue);
@@ -237,7 +256,7 @@ export function MeasurementNum({
         }
       }}
       onChange={(event) => setDraft(event.target.value)}
-      className="bg-background border-border/50 focus-visible:border-border/80 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-0 lg:h-7 lg:px-2"
+      className="bg-background border-border/50 focus-visible:border-ring focus-visible:ring-ring/35 h-8 rounded-md px-2.5 font-mono text-[11px] shadow-none focus-visible:ring-2 lg:h-7 lg:px-2"
     />
   );
 }
@@ -261,7 +280,7 @@ export function IconBtn({
       onClick={onClick}
       title={title}
       aria-label={title}
-      className={`inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-2.5 text-[11px] font-medium transition-colors lg:h-7 lg:px-2 ${
+      className={`focus-visible:ring-ring/40 inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-2.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden lg:h-7 lg:px-2 ${
         danger
           ? "border-red-500/20 bg-red-500/6 text-red-500 hover:bg-red-500/12"
           : "border-border/50 bg-background text-foreground/82 hover:bg-muted/35"

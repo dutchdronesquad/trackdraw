@@ -22,12 +22,21 @@ Labels used below:
 
 ## Current Priority
 
-The next TrackDraw priority is generated flightpath validation first, translation management tooling second, and focused 3D item controls third. Selective race-day workflow depth can follow once those are stable. Keep larger account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
+The next TrackDraw priority is generated flightpath validation first, translation management tooling second, and focused 3D item controls third. Track Preflight and a leaner inspector hierarchy can follow as one focused usability slice once generated-route warning behavior is trustworthy enough to reuse. Keep larger account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
 
 ## Follow-up
 
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
       Validate real layouts and tune warnings, route anchor heights, and unclear sequence feedback before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
+
+- [x] Track Preflight and inspector focus (`No account required`)
+      Bring existing route, numbering, timing, and inventory signals into one compact advisory summary at the top of the Layout inspector. Use `Incomplete`, `Review`, and `Ready` without a score or safety claim, make issues jump to the relevant item or route context, and keep sharing and export non-blocking.
+  - [x] Pure preflight report
+        Compose the existing route-numbering, route-warning, timing/overlay, and inventory reports into stable issue categories and target references. Treat timing and inventory as opt-in checks, and keep generated-route, bounds, export-runtime, and share-metadata validation outside the first slice.
+  - [x] Lean inspector hierarchy
+        Replace repeated lead pills and status cards with the preflight summary, show elevation analysis only in route-relevant contexts, collapse inactive timing and advanced placement details on mobile, flatten the placed-items list, and move render density behind advanced settings.
+  - [x] Inspector accessibility fundamentals
+        Give inspector fields programmatic labels, restore visible focus, and make the Project/Layout/Selection tabs follow the expected keyboard pattern while preserving automatic Selection context and mobile touch behavior.
 
 - [ ] Production observability and scheduled-maintenance hardening
       Establish a privacy-safe production baseline across route families and background work without adding duplicate release validation. Use deliberate Workers log/trace sampling, actionable thresholds, and a practical notification path for 5xx responses, exceptions, `exceededCpu`, D1/R2 failures, authentication email failures, and repeated scheduled-task failures.

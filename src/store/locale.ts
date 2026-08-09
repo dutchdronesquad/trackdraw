@@ -31,8 +31,10 @@ function normalizeLocale(locale: unknown): SupportedLocale {
 
 const localeStorageBackend = {
   getItem: (name: string): string | null => {
+    if (typeof window === "undefined") return null;
+
     try {
-      const raw = localStorage.getItem(name);
+      const raw = window.localStorage.getItem(name);
       if (!raw) return null;
 
       const parsed: unknown = JSON.parse(raw);
@@ -56,15 +58,19 @@ const localeStorageBackend = {
     }
   },
   setItem: (name: string, value: string) => {
+    if (typeof window === "undefined") return;
+
     try {
-      localStorage.setItem(name, value);
+      window.localStorage.setItem(name, value);
     } catch {
       /* storage unavailable */
     }
   },
   removeItem: (name: string) => {
+    if (typeof window === "undefined") return;
+
     try {
-      localStorage.removeItem(name);
+      window.localStorage.removeItem(name);
     } catch {
       /* storage unavailable */
     }

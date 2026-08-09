@@ -1,6 +1,13 @@
 "use client";
 
-import { memo, useCallback, useState, type ReactNode } from "react";
+import {
+  memo,
+  useCallback,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { motion } from "framer-motion";
 import {
   MultiInspectorView,
@@ -27,6 +34,8 @@ export interface InspectorProps {
   onResumeSelectedPath?: (shapeId: string) => void;
   mobileInline?: boolean;
 }
+
+type InspectorPanel = "project" | "layout" | "selection";
 
 function Inspector({
   headerAction,
@@ -75,7 +84,7 @@ function Inspector({
   );
   const count = selectedShapes.length;
   const [panelState, setPanelState] = useState<{
-    panel: "project" | "layout" | "selection" | null;
+    panel: InspectorPanel | null;
     selection: string[];
   }>(() => ({ panel: null, selection }));
   const panelOverride =
@@ -85,7 +94,7 @@ function Inspector({
         ? "selection"
         : null;
   const setPanelOverride = useCallback(
-    (panel: "project" | "layout" | "selection") => {
+    (panel: InspectorPanel) => {
       setPanelState({ panel, selection });
     },
     [selection]
@@ -129,6 +138,49 @@ function Inspector({
   const activeTabIndicatorLayoutId = mobileInline
     ? "inspector-active-tab-mobile"
     : "inspector-active-tab-desktop";
+  const tabRefs = useRef<Record<InspectorPanel, HTMLButtonElement | null>>({
+    project: null,
+    layout: null,
+    selection: null,
+  });
+  const tabItems: Array<{ id: InspectorPanel; label: string }> = [
+    { id: "project", label: tCommon("labels.project") },
+    { id: "layout", label: t("tabs.layout") },
+    { id: "selection", label: t("tabs.selection") },
+  ];
+  const handleTabKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentPanel: InspectorPanel
+  ) => {
+    if (
+      event.key !== "ArrowLeft" &&
+      event.key !== "ArrowRight" &&
+      event.key !== "Home" &&
+      event.key !== "End"
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    const enabledPanels = tabItems
+      .map((item) => item.id)
+      .filter((item) => item !== "selection" || !selectionDisabled);
+    const currentIndex = enabledPanels.indexOf(currentPanel);
+    const nextPanel =
+      event.key === "Home"
+        ? enabledPanels[0]
+        : event.key === "End"
+          ? enabledPanels.at(-1)
+          : event.key === "ArrowRight"
+            ? enabledPanels[(currentIndex + 1) % enabledPanels.length]
+            : enabledPanels[
+                (currentIndex - 1 + enabledPanels.length) % enabledPanels.length
+              ];
+
+    if (!nextPanel) return;
+    setPanelOverride(nextPanel);
+    tabRefs.current[nextPanel]?.focus();
+  };
 
   let selectionView = (
     <div className="flex h-full items-center justify-center px-6 text-center">
@@ -207,22 +259,25 @@ function Inspector({
             aria-label={t("tabs.ariaLabel")}
             className="flex min-w-0 items-center gap-5"
           >
-            {[
-              { id: "project" as const, label: tCommon("labels.project") },
-              { id: "layout" as const, label: t("tabs.layout") },
-              { id: "selection" as const, label: t("tabs.selection") },
-            ].map((item) => (
+            {tabItems.map((item) => (
               <button
                 key={item.id}
+                ref={(node) => {
+                  tabRefs.current[item.id] = node;
+                }}
                 type="button"
                 role="tab"
                 aria-selected={panel === item.id}
-                aria-controls={`inspector-panel-${item.id}`}
+                aria-controls={
+                  panel === item.id ? `inspector-panel-${item.id}` : undefined
+                }
                 id={`inspector-tab-${item.id}`}
+                tabIndex={panel === item.id ? 0 : -1}
                 disabled={item.id === "selection" && selectionDisabled}
                 onClick={() => setPanelOverride(item.id)}
+                onKeyDown={(event) => handleTabKeyDown(event, item.id)}
                 className={cn(
-                  "group relative -mb-px min-h-11 px-1 py-2.5 text-sm font-semibold transition-colors",
+                  "group focus-visible:ring-ring/40 relative -mb-px min-h-11 rounded-sm px-1 py-2.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-hidden",
                   panel === item.id
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground active:text-foreground",
