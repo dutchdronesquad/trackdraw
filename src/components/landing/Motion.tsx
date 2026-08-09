@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useInView } from "framer-motion";
+import { motion, stagger, useInView } from "framer-motion";
 
 export function Reveal({
   children,
@@ -43,7 +43,7 @@ export function RevealStagger({
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       variants={{
-        visible: { transition: { staggerChildren: 0.07 } },
+        visible: { transition: { delayChildren: stagger(0.07) } },
         hidden: {},
       }}
     >
