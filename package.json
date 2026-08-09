@@ -81,7 +81,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
-    "@babel/parser": "^7.29.0",
+    "@babel/parser": "^8.0.0",
     "@opennextjs/cloudflare": "^1.18.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/react": "^16.3.2",
