@@ -91,6 +91,14 @@ function getShapeDisplayName(shape: Shape, t: Translate): string {
 
 type ViewFilter = "all" | "obstacles";
 
+export function shouldShowItemFilters(
+  itemCount: number,
+  query: string,
+  viewFilter: ViewFilter
+) {
+  return itemCount > 8 || query.length > 0 || viewFilter !== "all";
+}
+
 export function getListableTrackItems(shapes: Shape[]): Shape[] {
   return shapes.filter((shape) => shape.kind !== "polyline");
 }
@@ -346,7 +354,11 @@ export function ItemOverviewList({
   }, [listShapes, viewFilter, normalizedQuery, tShapes]);
 
   const isDraggable = filteredShapes.length === listShapes.length;
-  const showFilters = listShapes.length > 8 || query.length > 0;
+  const showFilters = shouldShowItemFilters(
+    listShapes.length,
+    query,
+    viewFilter
+  );
   const routeStatusOff = t("listPanel.routeStatus.off");
   const removeItemTitle = t("actions.removeItem");
 

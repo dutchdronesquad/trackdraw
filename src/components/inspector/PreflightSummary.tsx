@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -103,7 +103,10 @@ export function PreflightSummary({
   const t = useTranslations("inspector");
   const tShapes = useTranslations("shapes") as unknown as Translate;
   const [open, setOpen] = useState(false);
-  const shapesById = new Map(shapes.map((shape) => [shape.id, shape]));
+  const shapesById = useMemo(
+    () => new Map(shapes.map((shape) => [shape.id, shape])),
+    [shapes]
+  );
   const issueCount = report.issues.length;
   const title = t(`preflight.status.${report.status}.title`);
   const description =

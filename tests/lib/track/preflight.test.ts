@@ -83,6 +83,20 @@ describe("getTrackPreflightReport", () => {
     );
   });
 
+  it("reports a missing route when only a one-point polyline draft exists", () => {
+    const report = getTrackPreflightReport(
+      withShapes([gate("gate-1", 5), route([{ x: 5, y: 5 }])])
+    );
+
+    expect(report.status).toBe("review");
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        category: "route",
+        type: "missing-route",
+      })
+    );
+  });
+
   it("only activates timing checks after a timing marker is configured", () => {
     const withoutTiming = getTrackPreflightReport(
       withShapes([gate("gate-1", 5)])

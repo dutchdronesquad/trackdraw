@@ -81,8 +81,7 @@ function getRouteIssues(design: TrackDesign): TrackPreflightIssue[] {
 
   if (
     numbering.status === "missing-route" &&
-    numbering.totalNumberedObstacleCount > 0 &&
-    routes.length === 0
+    numbering.totalNumberedObstacleCount > 0
   ) {
     issues.push({
       category: "route",
