@@ -1,384 +1,384 @@
 {
   "tabs": {
-    "ariaLabel": "Inspector panels",
-    "layout": "Layout",
-    "selection": "Selection"
+    "ariaLabel": "检查器面板",
+    "layout": "布局",
+    "selection": "选择"
   },
   "preflight": {
-    "title": "Preflight",
+    "title": "预检",
     "status": {
       "incomplete": {
-        "title": "Incomplete",
-        "description": "Add track items to start the layout review."
+        "title": "未完成",
+        "description": "添加赛道元素后即可开始布局检查。"
       },
       "review": {
-        "title": "Review",
+        "title": "需要检查",
         "description": "{count, plural, one {1 known item needs attention.} other {{count} known items need attention.}}"
       },
       "ready": {
-        "title": "Ready",
-        "description": "No known issues in the active checks."
+        "title": "就绪",
+        "description": "当前启用的检查中没有已知问题。"
       }
     },
     "categories": {
-      "route": "Route",
-      "timing": "Timing",
-      "inventory": "Inventory"
+      "route": "路线",
+      "timing": "计时",
+      "inventory": "库存"
     },
-    "checkInactive": "off",
-    "openIssue": "Open",
-    "emptyDetails": "Preflight starts when the layout contains track items.",
-    "noIssues": "The active checks have no known issues.",
+    "checkInactive": "关闭",
+    "openIssue": "打开",
+    "emptyDetails": "布局包含赛道元素后，预检才会开始。",
+    "noIssues": "当前启用的检查没有已知问题。",
     "issues": {
-      "missingRoute": "Add a Race Line for the placed route obstacles.",
-      "noRouteMatches": "The route obstacles do not sit close enough to the Race Line.",
-      "offRoute": "{name} is outside the Race Line tolerance.",
-      "timingMissingRoute": "Timing needs one usable Race Line.",
-      "multipleRoutes": "Timing found multiple usable Race Lines.",
-      "missingStartFinish": "Add one start/finish timing marker.",
-      "duplicateStartFinish": "Keep only one start/finish timing marker.",
-      "missingSplitId": "A split timing marker is missing its ID.",
-      "duplicateTimingId": "Timing marker IDs must be unique.",
-      "timingPointOffRoute": "A timing marker sits too far from the Race Line.",
-      "inventoryShortage": "{kind}: {count} missing from inventory."
+      "missingRoute": "请为已放置的路线障碍添加比赛线路。",
+      "noRouteMatches": "路线障碍距离比赛线路过远。",
+      "offRoute": "{name} 超出了比赛线路容差。",
+      "timingMissingRoute": "计时需要一条可用的比赛线路。",
+      "multipleRoutes": "计时发现了多条可用的比赛线路。",
+      "missingStartFinish": "请添加一个起终点计时标记。",
+      "duplicateStartFinish": "只能保留一个起终点计时标记。",
+      "missingSplitId": "分段计时标记缺少 ID。",
+      "duplicateTimingId": "计时标记 ID 必须唯一。",
+      "timingPointOffRoute": "计时标记距离比赛线路过远。",
+      "inventoryShortage": "{kind}：库存缺少 {count} 个。"
     }
   },
   "emptyState": {
-    "title": "No selection",
-    "body": "Select one or more items on the canvas to edit object properties here."
+    "title": "当前未选择内容",
+    "body": "在画布上选择一个或多个项目后，就能在这里编辑它们的属性。"
   },
   "actions": {
-    "group": "Group",
-    "continueEditing": "Continue",
-    "connectEnds": "Connect",
-    "deleteShort": "Delete",
-    "duplicateShort": "Duplicate",
-    "ungroup": "Ungroup",
-    "groupSelection": "Group selection",
-    "ungroupSelection": "Ungroup selection",
-    "lockShort": "Lock",
-    "unlockShort": "Unlock",
-    "savePreset": "Save as preset",
-    "joinPaths": "Join paths",
-    "remove": "Remove",
-    "removeItem": "Remove item"
+    "group": "分组",
+    "continueEditing": "继续",
+    "connectEnds": "连接",
+    "deleteShort": "删除",
+    "duplicateShort": "复制",
+    "ungroup": "取消分组",
+    "groupSelection": "选中项分组",
+    "ungroupSelection": "取消选中项分组",
+    "lockShort": "锁定",
+    "unlockShort": "解锁",
+    "savePreset": "保存为预设",
+    "joinPaths": "合并路径",
+    "remove": "移除",
+    "removeItem": "移除项目"
   },
   "hints": {
-    "locked": "Locked on the canvas. Unlock before moving, resizing, or continuing path edits."
+    "locked": "当前项目已在画布上锁定。解锁后才能移动、缩放或继续编辑路径。"
   },
   "group": {
-    "sectionTitle": "Group",
-    "nameLabel": "Group name",
-    "namePlaceholder": "Optional group name"
+    "sectionTitle": "分组",
+    "nameLabel": "分组名称",
+    "namePlaceholder": "可选分组名称"
   },
   "raceTiming": {
-    "sectionTitle": "Race timing",
-    "ariaLabel": "Timing role",
-    "splitIdLabel": "Split ID",
+    "sectionTitle": "计时",
+    "ariaLabel": "计时角色",
+    "splitIdLabel": "分段 ID",
     "splitIdPlaceholder": "split-1",
-    "roleStart": "Start",
-    "roleSplit": "Split",
-    "metaTimingStart": "timing: start",
-    "metaTimingSplit": "timing: {id}",
-    "metaGrouped": "grouped",
-    "metaLocked": "locked",
-    "metaEditable": "editable"
+    "roleStart": "起点",
+    "roleSplit": "分段",
+    "metaTimingStart": "计时：起点",
+    "metaTimingSplit": "计时：{id}",
+    "metaGrouped": "已分组",
+    "metaLocked": "已锁定",
+    "metaEditable": "可编辑"
   },
   "transform": {
-    "sectionTitle": "Transform",
-    "positionLabel": "Position",
-    "rotationLabel": "Rotation (deg)",
-    "colorLabel": "Color",
-    "pickColorAriaLabel": "Pick color",
-    "editingSubtitle": "Editing {kind} properties and placement."
+    "sectionTitle": "变换",
+    "positionLabel": "位置",
+    "rotationLabel": "旋转（度）",
+    "colorLabel": "颜色",
+    "pickColorAriaLabel": "选择颜色",
+    "editingSubtitle": "正在编辑 {kind} 的属性和摆放。"
   },
   "ladder": {
-    "sectionTitle": "Ladder"
+    "sectionTitle": "目字门"
   },
   "tower": {
-    "sectionTitle": "Tower"
+    "sectionTitle": "日字门"
   },
   "catalog": {
-    "sectionTitle": "Catalog",
-    "sourceLabel": "Source",
-    "sizeLabel": "Size",
-    "officialBadge": "Official"
+    "sectionTitle": "目录",
+    "sourceLabel": "来源",
+    "sizeLabel": "尺寸",
+    "officialBadge": "官方"
   },
   "dimensions": {
-    "widthLabel": "Width ({unit})",
-    "heightLabel": "Height ({unit})",
-    "gridLabel": "Grid ({unit})",
-    "thicknessLabel": "Thickness ({unit})",
-    "radiusLabel": "Radius ({unit})",
-    "poleHeightLabel": "Pole height ({unit})",
-    "tiltLabel": "Tilt (deg)",
-    "gatesLabel": "Gates",
-    "elevationLabel": "Elevation ({unit})",
-    "levelsLabel": "Levels",
-    "sizeLabel": "Size ({unit})",
-    "openingHeightLabel": "Opening height ({unit})"
+    "widthLabel": "宽度（{unit}）",
+    "heightLabel": "高度（{unit}）",
+    "gridLabel": "网格（{unit}）",
+    "thicknessLabel": "厚度（{unit}）",
+    "radiusLabel": "半径（{unit}）",
+    "poleHeightLabel": "杆高（{unit}）",
+    "tiltLabel": "倾角（度）",
+    "gatesLabel": "门数",
+    "elevationLabel": "高度（{unit}）",
+    "levelsLabel": "层数",
+    "sizeLabel": "尺寸（{unit}）",
+    "openingHeightLabel": "开口高度（{unit}）"
   },
   "label": {
-    "sectionTitle": "Label",
-    "textLabel": "Text",
-    "fontSizeLabel": "Font size (px)",
-    "threeDModeLabel": "3D mode",
-    "floatOption": "Float (billboard)",
-    "groundOption": "Project on ground"
+    "sectionTitle": "标注",
+    "textLabel": "文本",
+    "fontSizeLabel": "字号（px）",
+    "threeDModeLabel": "3D 模式",
+    "floatOption": "悬浮（看板）",
+    "groundOption": "投射到地面"
   },
   "multiSelection": {
-    "sectionTitle": "Selection",
-    "mixedTypesPlaceholder": "Mixed types",
+    "sectionTitle": "选择",
+    "mixedTypesPlaceholder": "混合类型",
     "titleSelected": "{count, plural, one {1 item selected} other {{count} items selected}}",
-    "subtitle": "Bulk actions are available here. Open a single item from the canvas when you need detailed editing.",
+    "subtitle": "这里可以做批量操作。需要精细编辑时，请回到画布选中单个项目。",
     "groupCountMeta": "{count, plural, one {1 group} other {{count} groups}}",
-    "joinAvailableMeta": "join available",
-    "saveSectionLabel": "Save section",
-    "lockedItemsNote": "Locked items stay unchanged."
+    "joinAvailableMeta": "可合并",
+    "saveSectionLabel": "保存片段",
+    "lockedItemsNote": "已锁定的项目不会被改动。"
   },
   "polyline": {
-    "sectionTitle": "Race Line",
-    "flowLabel": "Flow",
-    "directionLabel": "Direction",
-    "waypointsTitle": "Waypoints",
-    "waypointsSubtitle": "Adjust each point and its elevation.",
-    "elevationColumn": "elev",
-    "editColumn": "edit",
-    "insertPointAfter": "Insert point after",
-    "removePoint": "Remove point",
-    "addPoint": "Add point"
+    "sectionTitle": "路径",
+    "flowLabel": "流向",
+    "directionLabel": "方向",
+    "waypointsTitle": "路径点",
+    "waypointsSubtitle": "调整每个点及其高度。",
+    "elevationColumn": "高",
+    "editColumn": "编",
+    "insertPointAfter": "在后面插入点",
+    "removePoint": "移除点",
+    "addPoint": "添加点"
   },
   "listPanel": {
-    "panelTitle": "Track items",
-    "placedItemsTitle": "Placed items",
-    "placedItemsSubtitle": "Select an item from the list.",
-    "filterPlaceholder": "Filter items",
-    "filterAll": "All",
-    "filterObstacles": "Obstacles",
-    "itemColumn": "Item",
-    "pathColumn": "Path",
-    "noItemsMatchFilter": "No items match this filter.",
+    "panelTitle": "赛道项目",
+    "placedItemsTitle": "已放置项目",
+    "placedItemsSubtitle": "从列表中选择一个项目。",
+    "filterPlaceholder": "筛选项目",
+    "filterAll": "全部",
+    "filterObstacles": "障碍",
+    "itemColumn": "项目",
+    "pathColumn": "路径",
+    "noItemsMatchFilter": "没有项目匹配当前筛选。",
     "routeStatus": {
-      "off": "off"
+      "off": "关"
     }
   },
   "layout": {
     "mapReference": {
-      "title": "Map reference",
+      "title": "地图参考",
       "fields": {
-        "opacity": "Opacity",
-        "rotation": "Rotation"
+        "opacity": "透明度",
+        "rotation": "旋转"
       },
       "actions": {
-        "removeTitle": "Remove map reference",
-        "editTitle": "Edit map reference",
-        "addTitle": "Add map reference",
-        "edit": "Edit",
-        "add": "Add map",
-        "showTitle": "Show map reference",
-        "hideTitle": "Hide map reference",
-        "show": "Show"
+        "removeTitle": "移除地图参考",
+        "editTitle": "编辑地图参考",
+        "addTitle": "添加地图参考",
+        "edit": "编辑",
+        "add": "添加地图",
+        "showTitle": "显示地图参考",
+        "hideTitle": "隐藏地图参考",
+        "show": "显示"
       }
     },
     "sections": {
-      "routeNumbering": "Route numbering",
-      "inventory": "Inventory",
-      "field": "Field",
-      "advanced": "Advanced"
+      "routeNumbering": "路径编号",
+      "inventory": "库存",
+      "field": "场地",
+      "advanced": "高级"
     },
     "field": {
-      "unitsLabel": "Units",
-      "renderScaleLabel": "Render scale",
-      "renderScaleTooltip": "Internal canvas density in pixels per meter",
-      "pxPerMeterAriaLabel": "pixels per meter, internal canvas scale"
+      "unitsLabel": "单位",
+      "renderScaleLabel": "显示比例",
+      "renderScaleTooltip": "画布内部密度，单位为每米像素数",
+      "pxPerMeterAriaLabel": "每米像素数，画布内部比例"
     },
     "project": {
-      "titlePlaceholder": "Untitled Track",
-      "subtitle": "Tune the project title, field setup, and available obstacle stock."
+      "titlePlaceholder": "未命名赛道",
+      "subtitle": "调整项目标题、场地设置和可用障碍库存。"
     },
     "overview": {
-      "title": "Current layout",
-      "subtitle": "Review placed items, route numbering, and buildability for the current layout.",
-      "emptyTitle": "No items placed yet",
-      "emptyDescription": "Add a few objects on the canvas to review the layout and compare it against your inventory."
+      "title": "当前布局",
+      "subtitle": "查看当前布局的已放置项目、路径编号和可布场性。",
+      "emptyTitle": "还没有放置任何项目",
+      "emptyDescription": "先在画布上放几个障碍，再回来检查布局并和你的库存做对照。"
     },
     "inventory": {
       "status": {
-        "buildable": "Buildable",
-        "short": "Short"
+        "buildable": "可布场",
+        "short": "库存不足"
       },
       "labels": {
-        "missing": "Missing",
-        "types": "Types"
+        "missing": "缺口",
+        "types": "类型"
       },
-      "description": "TrackDraw compares the current layout against the obstacle stock saved in this project.",
-      "needCountSuffix": "need {count}",
-      "stockOk": "ok"
+      "description": "TrackDraw 会把当前布局和这个项目里保存的障碍库存做对比。",
+      "needCountSuffix": "需求 {count}",
+      "stockOk": "足够"
     },
     "meta": {
-      "itemsCount": "{count} items",
-      "grid": "grid {grid}",
-      "buildable": "buildable",
+      "itemsCount": "{count} 个项目",
+      "grid": "网格 {grid}",
+      "buildable": "可布场",
       "shortItems": "{count, plural, one {short 1 item} other {short {count} items}}",
-      "stockCovered": "stock covered",
+      "stockCovered": "库存已覆盖",
       "typesShort": "{count, plural, one {1 type short} other {{count} types short}}",
-      "numbered": "{count} numbered",
-      "numberingIdle": "numbering idle",
-      "numberingNeedsReview": "numbering needs review"
+      "numbered": "已编号 {count}",
+      "numberingIdle": "编号未生成",
+      "numberingNeedsReview": "编号需复核"
     }
   },
   "routeNumbering": {
     "status": {
-      "ready": "Ready",
-      "partial": "Needs review",
-      "noRouteMatches": "No matches",
-      "missingRoute": "Missing route",
-      "noNumberedObstacles": "No route obstacles",
-      "empty": "Empty"
+      "ready": "就绪",
+      "partial": "需复核",
+      "noRouteMatches": "无匹配",
+      "missingRoute": "缺少路径",
+      "noNumberedObstacles": "无路径障碍",
+      "empty": "空"
     },
     "messages": {
       "ready": "{count, plural, one {1 route obstacle numbered.} other {{count} route obstacles numbered.}}",
-      "partial": "{mapped} of {total} route obstacles are numbered.",
+      "partial": "{mapped} / {total} 个路径障碍已编号。",
       "noRouteMatches": "{count, plural, one {1 route obstacle found, but none sit close enough to the race line.} other {{count} route obstacles found, but none sit close enough to the race line.}}",
-      "missingRoute": "Supported obstacles are ready for a race line.",
-      "noNumberedObstacles": "Gates, ladders, and dive gates will appear in route numbering.",
-      "empty": "Add route obstacles first."
+      "missingRoute": "支持的障碍已经准备好，可以生成比赛路径。",
+      "noNumberedObstacles": "穿越门、目字门和重力门会出现在路径编号里。",
+      "empty": "添加路径障碍和路径后即可生成编号。"
     },
     "issues": {
-      "offRoutePrefix": "Off route: {names}",
-      "moreSuffix": " +{count} more"
+      "offRoutePrefix": "偏离路径：{names}",
+      "moreSuffix": " 另有 {count} 个"
     },
     "meta": {
-      "numbered": "Numbered",
-      "issues": "Issues",
-      "raceLine": "Race line"
+      "numbered": "已编号",
+      "issues": "问题",
+      "raceLine": "比赛路径"
     },
     "generate": {
-      "button": "Generate race line",
-      "regenerateButton": "Regenerate race line",
-      "success": "Race line generated.",
+      "button": "生成比赛路径",
+      "regenerateButton": "重新生成比赛路径",
+      "success": "比赛路径已生成。",
       "errors": {
-        "noObstacles": "Couldn't generate a race line — add at least two supported obstacles (gates, ladders, or dive gates) first."
+        "noObstacles": "无法生成比赛路径——请先添加至少两个受支持的障碍（穿越门、目字门或重力门）。"
       },
       "warnings": {
-        "unsupportedShapes": "{count, plural, one {1 obstacle isn't supported yet and was skipped.} other {{count} obstacles aren't supported yet and were skipped.}}",
-        "tooFewObstacles": "Add more supported obstacles for a more useful race line.",
-        "closeObstacles": "{count, plural, one {1 pair of obstacles is very close together — check the generated path.} other {{count} pairs of obstacles are very close together — check the generated path.}}"
+        "unsupportedShapes": "{count, plural, one {有 1 个障碍暂不支持，已跳过。} other {有 {count} 个障碍暂不支持，已跳过。}}",
+        "tooFewObstacles": "再添加一些受支持的障碍，生成的比赛路径会更有参考价值。",
+        "closeObstacles": "{count, plural, one {有 1 对障碍距离非常近，请检查生成的路径。} other {有 {count} 对障碍距离非常近，请检查生成的路径。}}"
       }
     }
   },
   "elevationChart": {
-    "noRouteSelected": "No race line selected",
-    "title": "Elevation Profile",
-    "subtitle": "Route height, colored warning sections, and route-review notes.",
-    "openDetailsAria": "Open elevation details",
-    "detailsTooltip": "Elevation details",
-    "chartAriaLabel": "Elevation profile chart",
-    "routeDistance": "{distance} route",
-    "elevationRange": "{min}-{max} elevation",
-    "moreCount": "+{count} more",
-    "maneuversHeading": "Maneuvers",
-    "maneuverDetected": "Detected {maneuver} near {range}",
-    "apexSuffix": ", apex {index}",
-    "waypointSingle": "waypoint {index}",
-    "waypointRange": "waypoints {start}-{end}",
-    "waypointMarkerAria": "Select waypoint {index} in elevation profile",
-    "warningMarkerAria": "Jump to {warning} segment {segment}",
-    "timingMarkerAria": "Select timing marker {label} in elevation profile",
-    "obstacleMarkerAria": "Select obstacle {index} in elevation profile",
-    "routeReviewHeading": "Route Review",
-    "warningSegmentsHeading": "Warning segments",
-    "jumpToSegment": "Jump to segment {segment}",
-    "noWarnings": "No route warnings for this path.",
-    "normal": "Normal",
-    "timingMarkersLegend": "Timing",
-    "obstacleMarkersLegend": "Obstacles",
-    "warningMarkersLegend": "Warnings",
+    "noRouteSelected": "未选择路径",
+    "title": "高度剖面",
+    "subtitle": "路径高度、着色警告区段和线路审阅提示。",
+    "openDetailsAria": "打开高度详情",
+    "detailsTooltip": "高度详情",
+    "chartAriaLabel": "高度剖面图",
+    "routeDistance": "{distance} 路径",
+    "elevationRange": "高度 {min}-{max}",
+    "moreCount": "另有 {count} 个",
+    "maneuversHeading": "动作识别",
+    "maneuverDetected": "在 {range} 附近检测到 {maneuver}",
+    "apexSuffix": "，顶点 {index}",
+    "waypointSingle": "路径点 {index}",
+    "waypointRange": "路径点 {start}-{end}",
+    "waypointMarkerAria": "在高度剖面中选中路径点 {index}",
+    "warningMarkerAria": "跳转到 {warning} 的第 {segment} 段",
+    "timingMarkerAria": "在高度剖面中选中计时点 {label}",
+    "obstacleMarkerAria": "在高度剖面中选中障碍 {index}",
+    "routeReviewHeading": "路径审阅",
+    "warningSegmentsHeading": "警告区段",
+    "jumpToSegment": "跳转到第 {segment} 段",
+    "noWarnings": "这条路径当前没有路径警告。",
+    "normal": "正常",
+    "timingMarkersLegend": "计时",
+    "obstacleMarkersLegend": "障碍",
+    "warningMarkersLegend": "警告",
     "maneuvers": {
       "powerloop": "Powerloop",
       "split-s": "Split-S"
     },
     "warnings": {
       "stub": {
-        "summary": "Path needs at least 2 waypoints to form a route",
-        "shortLabel": "Incomplete route",
-        "title": "Route is incomplete",
-        "problem": "The path needs at least two waypoints before TrackDraw can review it as a route.",
-        "fix": "Add another waypoint or finish drawing the race line."
+        "summary": "路径至少需要 2 个路径点才能形成路径",
+        "shortLabel": "路线不完整",
+        "title": "路径还没画完整",
+        "problem": "路径至少需要两个路径点，TrackDraw 才能把它当成完整路径来审阅。",
+        "fix": "再添加一个路径点，或先把当前路径画完。"
       },
       "flat": {
-        "summary": "No elevation set - 3D preview will be flat",
-        "shortLabel": "Flat elevation",
-        "title": "No elevation has been set",
-        "problem": "All waypoints are still at 0 m, so the 3D preview and elevation chart stay flat.",
-        "fix": "Set waypoint elevations in the inspector or 3D view if the route should climb or drop."
+        "summary": "还没设置高度，3D 预览会保持平面",
+        "shortLabel": "高度平直",
+        "title": "还没有设置高度",
+        "problem": "所有路径点目前都还是 0 米，所以 3D 预览和高度剖面都会保持平的。",
+        "fix": "如果这条线路需要爬升或下落，请在检查器或 3D 视图里设置路径点高度。"
       },
       "steep": {
-        "summary": "{count, plural, one {Steep grade near waypoint {first}} other {Steep grade at {count} segments}}",
-        "shortLabel": "Steep grade",
-        "title": "Grade changes too quickly",
-        "problem": "One section climbs or drops sharply over a short distance, which can make the 3D line feel abrupt.",
-        "fix": "Spread the height change across more distance or add an intermediate waypoint."
+        "summary": "{count, plural, one {路径点 {first} 附近坡度过大} other {{count} 段坡度过大}}",
+        "shortLabel": "坡度过大",
+        "title": "高度变化过于突然",
+        "problem": "有一段线路在很短距离内急升或急降，会让 3D 线路显得很突兀。",
+        "fix": "把高度变化拉长，或增加一个中间路径点。"
       },
       "hairpin": {
-        "summary": "{count, plural, one {Tight turn at waypoint {first}} other {{count} tight turns}}",
-        "shortLabel": "Tight turn",
-        "title": "Turn is very tight",
-        "problem": "A waypoint creates a sharp reversal that may be hard to fly cleanly at speed.",
-        "fix": "Move the waypoint outward or add more room before and after the turn."
+        "summary": "{count, plural, one {路径点 {first} 处转向过急} other {{count} 个急转}}",
+        "shortLabel": "急转",
+        "title": "转向过于紧凑",
+        "problem": "某个路径点形成了近乎折返的急转，高速飞行时可能很难顺畅通过。",
+        "fix": "把路径点往外挪，或在转弯前后留出更多空间。"
       },
       "close-points": {
-        "summary": "{count, plural, one {Close waypoints near {first}} other {{count} closely spaced waypoints}}",
-        "shortLabel": "Close points",
-        "title": "Waypoints are too close",
-        "problem": "Two waypoints are so close together that they create a tiny route segment.",
-        "fix": "Delete one of the points or move it farther away from its neighbor."
+        "summary": "{count, plural, one {路径点 {first} 附近点距过近} other {{count} 处路径点间距过近}}",
+        "shortLabel": "点距过近",
+        "title": "路径点之间太近",
+        "problem": "两个路径点距离太近，导致中间出现极短的路径段。",
+        "fix": "删除其中一个点，或把它移远一些。"
       },
       "spacing-shift": {
-        "summary": "{count, plural, one {Abrupt spacing shift near waypoint {first}} other {{count} abrupt spacing shifts}}",
-        "shortLabel": "Spacing shift",
-        "title": "Gate rhythm changes abruptly",
-        "problem": "The distance before and after a waypoint changes suddenly, which can make the route feel uneven.",
-        "fix": "Reposition nearby waypoints so the spacing changes more gradually."
+        "summary": "{count, plural, one {路径点 {first} 附近节奏突变} other {{count} 处节奏突变}}",
+        "shortLabel": "节奏突变",
+        "title": "门距节奏变化过猛",
+        "problem": "某个路径点前后的距离变化太突然，会让整条线路节奏不均匀。",
+        "fix": "调整附近路径点，让间距变化更平滑。"
       },
       "rhythm-break": {
-        "summary": "{count, plural, one {Short correction segment near waypoint {first}} other {{count} short correction segments}}",
-        "shortLabel": "Short correction",
-        "title": "Short correction breaks the flow",
-        "problem": "A short middle segment interrupts longer surrounding sections and can create an awkward wobble.",
-        "fix": "Smooth the correction by moving the point, deleting it, or adding a gentler transition."
+        "summary": "{count, plural, one {路径点 {first} 附近有短修正段} other {{count} 段短修正}}",
+        "shortLabel": "短修正",
+        "title": "短修正打断流畅度",
+        "problem": "较长线路中夹了一个很短的中间线段，容易产生别扭的小摆动。",
+        "fix": "移动这个点、删除它，或加一个更平顺的过渡点。"
       }
     }
   },
   "mapReference": {
-    "title": "Map reference",
-    "subtitle": "Choose the field center and align the field footprint.",
-    "searchPlaceholder": "Search place or paste coordinates",
-    "searching": "Searching",
-    "enterHint": "Enter",
-    "zoomLabel": "Zoom {zoom}",
-    "zoomIn": "Zoom in",
-    "zoomOut": "Zoom out",
-    "resetRotation": "Reset rotation",
-    "rotateLeft15": "Rotate left 15 degrees",
-    "rotateLeft1": "Rotate left 1 degree",
-    "rotateRight1": "Rotate right 1 degree",
-    "rotateRight15": "Rotate right 15 degrees",
-    "latitude": "Latitude",
-    "longitude": "Longitude",
-    "rotation": "Rotation",
-    "rotationValue": "{deg} deg",
-    "view": "View",
-    "out": "Out",
-    "in": "In",
-    "previewZoom": "Preview zoom {zoom}",
-    "center": "Center",
-    "useLocation": "Use location",
-    "locating": "Locating",
-    "saveMap": "Save map",
-    "locationUnavailable": "Location is unavailable in this browser.",
-    "locationPermissionDenied": "Location permission was denied.",
-    "locationTimeout": "Location lookup timed out.",
-    "locationError": "Could not determine your location."
+    "title": "地图参考",
+    "subtitle": "选择场地中心并对齐场地轮廓。",
+    "searchPlaceholder": "搜索地点或粘贴坐标",
+    "searching": "搜索中",
+    "enterHint": "回车",
+    "zoomLabel": "缩放 {zoom}",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "resetRotation": "重置旋转",
+    "rotateLeft15": "向左旋转 15 度",
+    "rotateLeft1": "向左旋转 1 度",
+    "rotateRight1": "向右旋转 1 度",
+    "rotateRight15": "向右旋转 15 度",
+    "latitude": "纬度",
+    "longitude": "经度",
+    "rotation": "旋转",
+    "rotationValue": "{deg} 度",
+    "view": "视图",
+    "out": "缩小",
+    "in": "放大",
+    "previewZoom": "预览缩放 {zoom}",
+    "center": "居中",
+    "useLocation": "使用当前位置",
+    "locating": "正在定位",
+    "saveMap": "保存地图",
+    "locationUnavailable": "当前浏览器不支持定位。",
+    "locationPermissionDenied": "定位权限被拒绝。",
+    "locationTimeout": "定位超时。",
+    "locationError": "无法确定你的位置。"
   }
 }
