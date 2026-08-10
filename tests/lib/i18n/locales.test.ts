@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  getCatalogDirectory,
+  getLocaleDirectory,
   getLocaleFromAcceptLanguage,
   normalizeLocale,
   resolveSupportedLocale,
@@ -8,10 +8,10 @@ import {
 } from "@/lib/i18n/locales";
 
 describe("locale resolution", () => {
-  it("maps product locales to regional catalog directories", () => {
+  it("maps product locales to regional locale directories", () => {
     expect(
       Object.fromEntries(
-        supportedLocales.map((locale) => [locale, getCatalogDirectory(locale)])
+        supportedLocales.map((locale) => [locale, getLocaleDirectory(locale)])
       )
     ).toEqual({
       en: "en-US",

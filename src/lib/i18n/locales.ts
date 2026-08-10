@@ -4,8 +4,8 @@ export const supportedLocales = ["en", "nl", "de", "zh-CN"] as const;
 export type SupportedLocale = (typeof supportedLocales)[number];
 
 export const defaultLocale: SupportedLocale = "en";
-const catalogDirectories: Record<SupportedLocale, string> =
-  i18nPolicy.catalogDirectories;
+const localeDirectories: Record<SupportedLocale, string> =
+  i18nPolicy.localeDirectories;
 export const LOCALE_COOKIE = "trackdraw-locale";
 export const LOCALE_STORAGE_KEY = "trackdraw.locale";
 export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -14,8 +14,8 @@ export function isValidLocale(value: unknown): value is SupportedLocale {
   return supportedLocales.includes(value as SupportedLocale);
 }
 
-export function getCatalogDirectory(locale: SupportedLocale): string {
-  return catalogDirectories[locale];
+export function getLocaleDirectory(locale: SupportedLocale): string {
+  return localeDirectories[locale];
 }
 
 export function resolveSupportedLocale(

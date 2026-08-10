@@ -25,23 +25,23 @@ const baseLocale = "en";
 const i18nPolicy = JSON.parse(
   readFileSync(join(langDir, "i18n-policy.json"), "utf8")
 );
-const catalogDirectories = i18nPolicy.catalogDirectories ?? {};
+const localeDirectories = i18nPolicy.localeDirectories ?? {};
 const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
 function listLocales() {
-  return Object.keys(catalogDirectories).filter((locale) =>
-    statSync(join(langDir, catalogDirectories[locale])).isDirectory()
+  return Object.keys(localeDirectories).filter((locale) =>
+    statSync(join(langDir, localeDirectories[locale])).isDirectory()
   );
 }
 
 function listNamespaces(locale) {
-  return readdirSync(join(langDir, catalogDirectories[locale]))
+  return readdirSync(join(langDir, localeDirectories[locale]))
     .filter((name) => name.endsWith(".json"))
     .map((name) => name.replace(/\.json$/, ""));
 }
 
 function loadNamespace(locale, namespace) {
-  const path = join(langDir, catalogDirectories[locale], `${namespace}.json`);
+  const path = join(langDir, localeDirectories[locale], `${namespace}.json`);
   return JSON.parse(readFileSync(path, "utf8"));
 }
 

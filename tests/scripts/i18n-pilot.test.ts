@@ -30,7 +30,7 @@ describe("Crowdin pilot catalog scripts", () => {
     mkdirSync(join(fixtureRoot, "lang", "nl-NL"), { recursive: true });
     mkdirSync(join(fixtureRoot, "src"), { recursive: true });
     writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
-      catalogDirectories: {
+      localeDirectories: {
         en: "en-US",
         nl: "nl-NL",
       },
@@ -63,7 +63,7 @@ describe("Crowdin pilot catalog scripts", () => {
 
     const generated = JSON.parse(
       readFileSync(
-        join(fixtureRoot, "public", "locales", "nl", "common.json"),
+        join(fixtureRoot, "public", "locales", "nl-NL", "common.json"),
         "utf8"
       )
     );

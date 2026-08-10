@@ -139,7 +139,7 @@ npm run migrate:up:production
 
 ## Translation Workflow
 
-During the Crowdin pilot, English source copy remains in `lang/en-US/` and normal feature pull requests. Dutch (`lang/nl-NL/`), German (`lang/de-DE/`), and Simplified Chinese (`lang/zh-CN/`) are maintained in Crowdin and return through localization pull requests; do not edit those target catalogs directly outside a production emergency. Product locale identifiers and generated asset paths remain the shorter `en`, `nl`, `de`, and `zh-CN` values.
+During the Crowdin pilot, English source copy remains in `lang/en-US/` and normal feature pull requests. Dutch (`lang/nl-NL/`), German (`lang/de-DE/`), and Simplified Chinese (`lang/zh-CN/`) are maintained in Crowdin and return through localization pull requests; do not edit those target catalogs directly outside a production emergency. Generated locale assets use the same regional directory names. Product locale identifiers stored by the frontend remain the shorter `en`, `nl`, `de`, and `zh-CN` values.
 
 New English keys do not need placeholder copies in every target catalog. Missing target messages safely fall back to English in local server catalogs and generated locale assets. Run these checks when changing product copy:
 

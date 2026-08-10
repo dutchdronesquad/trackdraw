@@ -21,12 +21,12 @@ const i18nPolicy = JSON.parse(
   readFileSync(join(langDir, "i18n-policy.json"), "utf8")
 );
 const sourceLocale = "en";
-const catalogDirectories = Object.entries(i18nPolicy.catalogDirectories ?? {});
-const sourceCatalogDirectory = i18nPolicy.catalogDirectories?.[sourceLocale];
+const localeDirectories = Object.entries(i18nPolicy.localeDirectories ?? {});
+const sourceLocaleDirectory = i18nPolicy.localeDirectories?.[sourceLocale];
 const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
 function listLocales() {
-  return catalogDirectories.filter(([, directory]) =>
+  return localeDirectories.filter(([, directory]) =>
     statSync(join(langDir, directory)).isDirectory()
   );
 }
@@ -74,28 +74,28 @@ function loadNamespace(locale, namespace) {
 
 rmSync(outDir, { recursive: true, force: true });
 
-for (const [locale, catalogDirectory] of listLocales()) {
-  const namespaces = listNamespaces(sourceCatalogDirectory).filter(
+for (const [locale, localeDirectory] of listLocales()) {
+  const namespaces = listNamespaces(sourceLocaleDirectory).filter(
     (namespace) =>
       locale === sourceLocale || !englishOnlyNamespaces.has(namespace)
   );
-  const localeOutDir = join(outDir, locale);
+  const localeOutDir = join(outDir, localeDirectory);
   mkdirSync(localeOutDir, { recursive: true });
 
   for (const namespace of namespaces) {
     const destination = join(localeOutDir, `${namespace}.json`);
     if (locale === sourceLocale) {
       copyFileSync(
-        join(langDir, catalogDirectory, `${namespace}.json`),
+        join(langDir, localeDirectory, `${namespace}.json`),
         destination
       );
       continue;
     }
 
-    const fallbackMessages = loadNamespace(sourceCatalogDirectory, namespace);
+    const fallbackMessages = loadNamespace(sourceLocaleDirectory, namespace);
     let translatedMessages;
     try {
-      translatedMessages = loadNamespace(catalogDirectory, namespace);
+      translatedMessages = loadNamespace(localeDirectory, namespace);
     } catch {
       translatedMessages = undefined;
     }

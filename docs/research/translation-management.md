@@ -6,7 +6,7 @@ This document records the current comparison, but deliberately does not make an 
 
 ## Current repository scope
 
-The source remains `lang/en-US/{namespace}.json`. The ten translatable namespaces are `common`, `dialogs`, `editor`, `exportPdf`, `inspector`, `landing`, `login`, `setupEstimate`, `shapes`, and `share`. Target catalogs use Crowdin-compatible regional directories: `nl-NL`, `de-DE`, and `zh-CN`. Product locale identifiers and generated asset paths remain `en`, `nl`, `de`, and `zh-CN`. `dashboard` and `legal` remain English-only.
+The source remains `lang/en-US/{namespace}.json`. The ten translatable namespaces are `common`, `dialogs`, `editor`, `exportPdf`, `inspector`, `landing`, `login`, `setupEstimate`, `shapes`, and `share`. Target catalogs and generated locale assets use Crowdin-compatible regional directories: `nl-NL`, `de-DE`, and `zh-CN`. Frontend product locale identifiers remain `en`, `nl`, `de`, and `zh-CN`. `dashboard` and `legal` remain English-only.
 
 Measured on 2026-08-09, those ten namespaces contain:
 

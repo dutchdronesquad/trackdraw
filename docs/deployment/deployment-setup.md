@@ -225,9 +225,9 @@ Translation catalogs are generated into `public/locales/` by `npm run i18n:sync-
 
 During the Crowdin pilot, target catalogs may temporarily omit new English keys. Asset generation recursively merges each target over English, including nested objects and arrays, so missing or empty translations use English until Crowdin returns an approved value. Local server-side catalog reads apply the same fallback before rendering.
 
-OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, and future contributor languages are loaded per namespace from static assets. Source catalogs use regional directory names (`en-US`, `nl-NL`, `de-DE`, and `zh-CN`), while generated asset paths retain the stable product locale identifiers. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle.
+OpenNext serves these generated locale JSON files through the existing `ASSETS` binding. Dynamic routes keep only the namespace list and loading logic in Worker code; `en`, `nl`, `de`, and future contributor languages are loaded per namespace from static assets. Source catalogs and generated assets use the same regional directory names (`en-US`, `nl-NL`, `de-DE`, and `zh-CN`), while frontend product locale identifiers remain stable. `StaticLanguageProvider` reads English namespaces from disk during prerender instead of importing catalogs into the shared dynamic root or Worker bundle.
 
-`dashboard` and `legal` remain English-only and are intentionally generated only under `public/locales/en/`.
+`dashboard` and `legal` remain English-only and are intentionally generated only under `public/locales/en-US/`.
 
 ## Mail deliverability
 
