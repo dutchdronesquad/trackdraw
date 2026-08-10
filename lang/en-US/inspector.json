@@ -314,35 +314,35 @@
         "fix": "Set waypoint elevations in the inspector or 3D view if the route should climb or drop."
       },
       "steep": {
-        "summary": "{count, plural, one {Steep grade near waypoint {first}} other {Steep grade at {count} segments}}",
+        "summary": "{count, plural, one {Steep grade near waypoint {first}} other {Steep grade at {count} segments, starting near waypoint {first}}}",
         "shortLabel": "Steep grade",
         "title": "Grade changes too quickly",
         "problem": "One section climbs or drops sharply over a short distance, which can make the 3D line feel abrupt.",
         "fix": "Spread the height change across more distance or add an intermediate waypoint."
       },
       "hairpin": {
-        "summary": "{count, plural, one {Tight turn at waypoint {first}} other {{count} tight turns}}",
+        "summary": "{count, plural, one {Tight turn at waypoint {first}} other {{count} tight turns, starting at waypoint {first}}}",
         "shortLabel": "Tight turn",
         "title": "Turn is very tight",
         "problem": "A waypoint creates a sharp reversal that may be hard to fly cleanly at speed.",
         "fix": "Move the waypoint outward or add more room before and after the turn."
       },
       "close-points": {
-        "summary": "{count, plural, one {Close waypoints near {first}} other {{count} closely spaced waypoints}}",
+        "summary": "{count, plural, one {Close waypoints near {first}} other {{count} closely spaced waypoints near {first}}}",
         "shortLabel": "Close points",
         "title": "Waypoints are too close",
         "problem": "Two waypoints are so close together that they create a tiny route segment.",
         "fix": "Delete one of the points or move it farther away from its neighbor."
       },
       "spacing-shift": {
-        "summary": "{count, plural, one {Abrupt spacing shift near waypoint {first}} other {{count} abrupt spacing shifts}}",
+        "summary": "{count, plural, one {Abrupt spacing shift near waypoint {first}} other {{count} abrupt spacing shifts, starting near waypoint {first}}}",
         "shortLabel": "Spacing shift",
         "title": "Gate rhythm changes abruptly",
         "problem": "The distance before and after a waypoint changes suddenly, which can make the route feel uneven.",
         "fix": "Reposition nearby waypoints so the spacing changes more gradually."
       },
       "rhythm-break": {
-        "summary": "{count, plural, one {Short correction segment near waypoint {first}} other {{count} short correction segments}}",
+        "summary": "{count, plural, one {Short correction segment near waypoint {first}} other {{count} short correction segments, starting near waypoint {first}}}",
         "shortLabel": "Short correction",
         "title": "Short correction breaks the flow",
         "problem": "A short middle segment interrupts longer surrounding sections and can create an awkward wobble.",
