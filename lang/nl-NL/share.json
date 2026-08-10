@@ -15,7 +15,7 @@
   "expired": {
     "heading": "Deze deellink is verlopen",
     "description": "Tijdelijke TrackDraw-deellinks verlopen na de gekozen duur bij het aanmaken. Account-gepubliceerde projectlinks blijven actief totdat de eigenaar ze intrekt. Vraag de verzender om een nieuwe link te publiceren als je deze lay-out nog nodig hebt.",
-    "step1": "Vraag de verzender om de track opnieuw te publiceren, of stuur een account-gepubliceerde link voor langduriger alleen-lezen toegang.",
+    "step1": "Deze TrackDraw-embed hoort niet bij een actieve gepubliceerde accountlink.",
     "step2": "Vraag om een JSON-export als de lay-out een langduriger overdracht nodig heeft."
   },
   "notFound": {

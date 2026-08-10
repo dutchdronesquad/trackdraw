@@ -14,7 +14,7 @@
   },
   "conesTrackWalk": {
     "label": "Kegelplatzierung beim Track Walk (optional)",
-    "note": "Kegel können während des Track Walks der Piloten platziert werden, um einen separaten Durchgang zu vermeiden. Wenn du sie lieber früher setzt, plane vor Ort etwas zusätzliche Zeit ein."
+    "note": "Kegel können während des Track-Walks der Piloten platziert werden, um einen separaten Durchgang zu vermeiden. Wenn du sie lieber früher setzt, plane vor Ort etwas zusätzliche Zeit ein."
   },
   "crewUnloadStage": {
     "label": "Ausrüstung entladen und bereitstellen",

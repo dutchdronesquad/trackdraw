@@ -31,7 +31,7 @@
     "contentsItem3": "3. Opbouwvolgorde en race day-notities",
     "summaryTitle": "Samenvatting",
     "summaryShortage": "{count, plural, one {Deze indeling overschrijdt momenteel de beschikbare voorraad in 1 obstakeltype.} other {Deze indeling overschrijdt momenteel de beschikbare voorraad in {count} obstakeltypes.}} Verhelp tekorten voordat je dit pack als definitieve bouwreferentie gebruikt.",
-    "summaryBuildable": "Deze indeling is momenteel bouwbaar met het opgeslagen voorraadprofiel. Gebruik de volgende pagina's als referentie voor opbouw en overdracht op race day."
+    "summaryBuildable": "Deze indeling is momenteel bouwbaar met het opgeslagen voorraadprofiel. Gebruik de volgende pagina's als referentie voor opbouw en overdracht op de racedag."
   },
   "mapPage": {
     "title": "Trackkaart",
@@ -48,7 +48,7 @@
     "availableColumn": "Beschikbaar",
     "missingColumn": "Ontbreekt",
     "timingPointsTitle": "Timingpunten",
-    "noTimingPoints": "Er zijn nog geen timingpunten toegewezen. Markeer een gate als start/finish of split in de inspector voor de overdracht op race day.",
+    "noTimingPoints": "Er zijn nog geen timingpunten toegewezen. Markeer een gate als start/finish of split in de inspector voor de overdracht op de racedag.",
     "setupSequenceTitle": "Opbouwvolgorde",
     "setupIntro": "Geschatte opbouwinspanning: ongeveer {min}-{max} minuten. Algemene complexiteit: {complexity}. {summary}",
     "crewStepLabel": "Crewstap",
@@ -57,7 +57,7 @@
     "minutesSuffix": "{minutes} min",
     "noSetupSequenceNumbering": "Er is nog geen opbouwvolgorde beschikbaar. Voeg een route toe en plaats wat obstakels om een nuttiger pack te genereren.",
     "noSetupSequenceHidden": "Nummering is verborgen in deze export. Schakel obstakelnummers in als je wilt dat de opbouwvolgorde routereferenties volgt.",
-    "notesTitle": "Race day-notities",
+    "notesTitle": "Racedagnotities",
     "note1": "Gebruik de kaartpagina als plaatsingsreferentie tijdens opbouw en pilotenbriefing.",
     "note2": "Behandel de voorraadcheck als de bron van waarheid voordat je de indeling definitief maakt voor de bouw.",
     "note3": "Veranker het parcours eerst en zet daarna obstakels met hogere inspanning zoals Dive Gates en Ladders vast voor de standaard gate-ronde.",

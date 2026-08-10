@@ -10,7 +10,7 @@
   },
   "contextMenu": {
     "quickActions": "快捷操作",
-    "selectedCount": "已选择 {count} 项",
+    "selectedCount": "{count, plural, one {已选择 1 项} other {已选择 {count} 项}}",
     "segmentSelected": "已选择线段",
     "waypointSelected": "已选择路径点",
     "addWaypoint": "添加路径点",
@@ -267,8 +267,8 @@
   "saveAsPresetDialog": {
     "title": "保存为预设",
     "subtitle": "给当前选择起个名字，之后就能从预设选择器里再次放置。",
-    "shapeCount": "{count} 个图形",
-    "pathsExcluded": "将排除 {count} 条路径——预设只会记录非路径图形。",
+    "shapeCount": "{count, plural, one {# 个图形} other {# 个图形}}",
+    "pathsExcluded": "{count, plural, one {将排除 1 条路径} other {将排除 # 条路径}}——预设只会记录非路径图形。",
     "presetNameLabel": "预设名称",
     "presetNamePlaceholder": "例如：计时门组合",
     "savePreset": "保存预设"

@@ -147,7 +147,7 @@
     "shared": {
       "loading": "Account laden...",
       "signInTitle": "Meld je aan om je account te beheren",
-      "signInBody": "Gebruik je e-mailadres voor cloudgekoppelde accountinstellingen en profielgegevens."
+      "signInBody": "Gebruik je e-mailadres voor toegang tot cloudgebaseerde accountinstellingen en profielgegevens."
     },
     "errors": {
       "loadPasskeysFailed": "Passkeys konden niet worden geladen.",
@@ -212,7 +212,7 @@
       "exported": "Geëxporteerd"
     },
     "readiness": {
-      "open3d": "Open de 3D-weergave voordat je deze render exporteert.",
+      "open3d": "Open de 3D-weergave voordat je deze afbeelding exporteert.",
       "canvasNotReady": "Het 2D-canvas wordt nog geladen; probeer het zo opnieuw.",
       "emptyRacePack": "Voeg minstens één item toe aan de track voordat je een Race Pack exporteert.",
       "missingRaceLine": "Voeg een race line toe voordat je een cinematic FPV-video exporteert.",
@@ -341,7 +341,7 @@
       },
       "embed": {
         "title": "Embed",
-        "description": "Kopieer iframe-code voor een accountgepubliceerde track die actief blijft totdat ingetrokken."
+        "description": "Kopieer iframe-code voor een gepubliceerde accounttrack die actief blijft totdat deze wordt ingetrokken."
       },
       "actions": {
         "descriptionExisting": "Gebruik de huidige gepubliceerde link in andere apps of open hem in een nieuw tabblad.",
@@ -383,7 +383,7 @@
       "iframeTitle": "TrackDraw track embed",
       "code": {
         "title": "Embedcode",
-        "description": "Accountgepubliceerde tracks kunnen worden ingesloten op club- of eventsites.",
+        "description": "Gepubliceerde accounttracks kunnen worden ingesloten op websites van clubs of evenementen.",
         "label": "Iframe-code",
         "selectedViewDescription": "Inclusief de geselecteerde startweergave.",
         "copy": "Code kopiëren"
@@ -393,7 +393,7 @@
       },
       "publish": {
         "title": "Publiceer voor embedden",
-        "description": "Embeds gebruiken de duurzame accountgepubliceerde link, dus maak de gepubliceerde link aan voordat je iframe-code kopieert.",
+        "description": "Embeds gebruiken de blijvende gepubliceerde accountlink. Maak daarom eerst de gepubliceerde link aan voordat je iframe-code kopieert.",
         "action": "Gepubliceerde link aanmaken"
       },
       "temporary": {
@@ -401,7 +401,7 @@
         "description": "Meld je aan en publiceer deze track vanuit je account om een duurzame embed te maken."
       },
       "refresh": {
-        "message": "Werk eerst de gepubliceerde link bij zodat de embed het nieuwste ontwerp gebruikt.",
+        "message": "Werk eerst de gepubliceerde link bij zodat de ingesloten weergave het nieuwste ontwerp gebruikt.",
         "action": "Link bijwerken"
       },
       "initialView": {
@@ -541,7 +541,7 @@
       "galleryUpdateFailed": "Galerijgegevens konden niet worden bijgewerkt",
       "galleryUpdateFailedDescription": "De gepubliceerde galerijkaart is niet gewijzigd. Controleer titel en beschrijving en probeer opnieuw.",
       "unableToReadLink": "Huidige deellink kon niet worden gelezen",
-      "unableToReadLinkDescription": "Herlaad deze deelpagina, of open de link via Project Manager als dit een accountgepubliceerde share is."
+      "unableToReadLinkDescription": "Herlaad deze deelpagina, of open de link via Project Manager als dit een gepubliceerde accountlink is."
     },
     "success": {
       "linkUpdated": "Link bijgewerkt",
@@ -637,7 +637,7 @@
         "confirmRenameTitle": "Hernoemen bevestigen",
         "more": "Meer acties",
         "newProject": "Nieuw project",
-        "newProjectDescription": "Start een nieuwe track of gebruik een starter layout.",
+        "newProjectDescription": "Start een nieuwe track of gebruik een starterindeling.",
         "cleanUpLocal": "Lokale kopieën opruimen",
         "cleanUpLocalDescription": "Verwijder oudere kopieën alleen van dit apparaat.",
         "renameDescription": "Geef dit project een duidelijkere naam.",
@@ -654,7 +654,7 @@
         "permanentlyDescription": "Dit verwijdert alleen het lokale project uit deze browser.",
         "localProjectActionDescription": "Verwijder dit lokale project van het apparaat.",
         "removeLocalProjectsTitle": "{count, plural, one {# lokaal project verwijderen?} other {# lokale projecten verwijderen?}}",
-        "accountSyncedCopiesStayAvailable": "Account-gesynchroniseerde kopieën blijven beschikbaar in je account."
+        "accountSyncedCopiesStayAvailable": "Met het account gesynchroniseerde kopieën blijven beschikbaar in je account."
       },
       "groups": {
         "localCopiesLinkedToAccount": "Lokale kopieën gekoppeld aan account",
@@ -744,7 +744,7 @@
       },
       "empty": {
         "noShares": "Geen actieve gedeelde items",
-        "description": "Accountgepubliceerde links blijven actief totdat ze worden ingetrokken. Tijdelijke anonieme links verlopen automatisch en worden hier niet beheerd."
+        "description": "Gepubliceerde accountlinks blijven actief totdat ze worden ingetrokken. Tijdelijke anonieme links verlopen automatisch en worden hier niet beheerd."
       },
       "lifetime": {
         "published": "alleen-lezen gepubliceerde link, live tot intrekking",
@@ -806,7 +806,7 @@
     "dialogSubtitle": "Beschikbare toetsenbord- en canvassneltoetsen in de studio.",
     "sectionTools": "Gereedschappen",
     "sectionSelection": "Selectie",
-    "sectionPathEditing": "Path editing",
+    "sectionPathEditing": "Path bewerken",
     "sectionCanvas": "Canvas",
     "shortcuts": {
       "duplicateItems": "Geselecteerde items dupliceren",

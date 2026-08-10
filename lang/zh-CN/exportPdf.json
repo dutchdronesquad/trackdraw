@@ -30,7 +30,7 @@
     "contentsItem2": "2. 物料清单、库存核对与计时点",
     "contentsItem3": "3. 布场顺序与比赛日备注",
     "summaryTitle": "概要",
-    "summaryShortage": "{count, plural, one {当前布局在 1 类障碍上超出可用库存。} other {当前布局在 {count} 类障碍上超出可用库存。}} 在把这份布场清单作为最终参考前，请先补齐缺口。",
+    "summaryShortage": "{count, plural, other {当前布局在 {count} 类障碍上超出可用库存。}} 在把这份布场清单作为最终参考前，请先补齐缺口。",
     "summaryBuildable": "当前布局可由已保存的器材库存完成布场。以下页面可直接作为比赛日布场和交接参考。"
   },
   "mapPage": {

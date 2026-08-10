@@ -62,8 +62,8 @@
   },
   "versionTag": {
     "tooltip": {
-      "openReleaseNotes": "Release notes openen op GitHub",
-      "openReleaseNotesForCommit": "commit {sha} · Release notes openen op GitHub"
+      "openReleaseNotes": "Releasenotes openen op GitHub",
+      "openReleaseNotesForCommit": "commit {sha} · Releasenotes openen op GitHub"
     }
   },
   "runtimeError": {

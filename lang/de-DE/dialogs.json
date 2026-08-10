@@ -654,7 +654,7 @@
         "permanentlyDescription": "Dies entfernt nur das lokale Projekt aus diesem Browser.",
         "localProjectActionDescription": "Dieses lokale Projekt vom Gerät entfernen.",
         "removeLocalProjectsTitle": "{count, plural, one {# lokales Projekt entfernen} other {# lokale Projekte entfernen}}?",
-        "accountSyncedCopiesStayAvailable": "Kontosynchronisierte Kopien bleiben in deinem Konto verfügbar."
+        "accountSyncedCopiesStayAvailable": "Mit dem Konto synchronisierte Kopien bleiben in deinem Konto verfügbar."
       },
       "groups": {
         "localCopiesLinkedToAccount": "Lokale Kopien mit Konto verknüpft",

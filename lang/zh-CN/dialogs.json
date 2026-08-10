@@ -36,7 +36,7 @@
         "description": "更改会立即生效"
       },
       "status": {
-        "saving": "正在保存..."
+        "saving": "正在保存……"
       },
       "fallback": {
         "noAccountEmail": "TrackDraw 账户"
@@ -49,16 +49,16 @@
         "placeholder": "name@example.com",
         "changeDescription": "保存后，我们会先向你当前邮箱发送确认邮件。确认后，你再去验证新的邮箱地址。",
         "change": "更换邮箱",
-        "saving": "正在保存..."
+        "saving": "正在保存……"
       },
       "passkeys": {
         "title": "通行密钥",
         "description": "在支持的设备上添加通行密钥，登录会更快。",
         "add": "添加通行密钥",
-        "adding": "正在添加...",
+        "adding": "正在添加……",
         "devAuthUnavailable": "在 `npm run dev` 下无法使用通行密钥。请用 `npm run preview` 在本地测试真实认证流程。",
         "unsupportedBrowser": "当前浏览器这里没有暴露 WebAuthn，所以这台设备暂时不能设置通行密钥。",
-        "loading": "正在加载通行密钥...",
+        "loading": "正在加载通行密钥……",
         "addedDate": "添加于 {date}",
         "status": {
           "synced": "已同步"
@@ -78,7 +78,7 @@
           "remove": "移除通行密钥"
         },
         "actions": {
-          "removing": "正在移除...",
+          "removing": "正在移除……",
           "removeTooltip": "从账户移除",
           "saveName": "保存名称"
         },
@@ -110,7 +110,7 @@
         "descriptionPrefix": "供受信任集成使用的只读密钥。",
         "docsLink": "API 文档",
         "refreshAriaLabel": "刷新 API 密钥",
-        "loading": "正在加载 API 密钥..."
+        "loading": "正在加载 API 密钥……"
       },
       "empty": {
         "title": "还没有 API 密钥",
@@ -129,7 +129,7 @@
         "ariaLabel": "撤销 {name}",
         "warningExpiring": "撤销后这个密钥会立即失效。",
         "warningNonExpiring": "使用这个密钥的集成会失去只读访问权限。",
-        "revoking": "正在撤销...",
+        "revoking": "正在撤销……",
         "action": "撤销"
       }
     },
@@ -140,12 +140,12 @@
         "placeholder": "DELETE"
       },
       "actions": {
-        "deleting": "正在删除...",
+        "deleting": "正在删除……",
         "deleteAccount": "删除账户"
       }
     },
     "shared": {
-      "loading": "正在加载账户...",
+      "loading": "正在加载账户……",
       "signInTitle": "登录后管理账户",
       "signInBody": "使用邮箱登录，即可访问云端账户设置和个人资料。"
     },
@@ -303,7 +303,7 @@
     "toastInvalidProject": "请选择一个从 TrackDraw 导出的 JSON 项目文件。",
     "toastReadFailed": "TrackDraw 无法读取所选文件。请重试或换一个备份文件。",
     "untitledProject": "未命名项目",
-    "objectCount": "{count} 个对象",
+    "objectCount": "{count, plural, one {# 个对象} other {# 个对象}}",
     "replaceWarning": "当前项目会被替换。如果你想保留一份不依赖本地自动保存的手动恢复点，请先导出 JSON 备份。",
     "replaceProject": "替换项目",
     "backupFirst": "先备份当前项目"
@@ -477,7 +477,7 @@
         "refreshShareFirst": "请先更新共享链接，这样图库使用的才是最新快照。"
       },
       "preview": {
-        "generating": "正在生成预览图...",
+        "generating": "正在生成预览图……",
         "ready": "预览图已就绪"
       },
       "card": {
@@ -510,7 +510,7 @@
         "withoutPathDescription": "共享链接会以只读审阅页打开。如果你希望审阅者使用模拟飞行和高度审阅，请先补一条路径。"
       },
       "nativeShare": {
-        "title": "通过以下方式分享...",
+        "title": "通过以下方式分享……",
         "description": "发送到应用或联系人"
       },
       "openInTab": {
@@ -584,7 +584,7 @@
     },
     "shared": {
       "currentBadge": "当前",
-      "itemCount": "{count} 个项目",
+      "itemCount": "{count, plural, one {# 个项目} other {# 个项目}}",
       "relativeTime": {
         "justNow": "刚刚",
         "minutes": "{count} 分钟前",
@@ -653,7 +653,7 @@
         "permanently": "永久删除？",
         "permanentlyDescription": "这只会把本地项目从当前浏览器中移除。",
         "localProjectActionDescription": "把这个本地项目从当前设备删除。",
-        "removeLocalProjectsTitle": "删除 {count} 个本地项目？",
+        "removeLocalProjectsTitle": "删除 {count, plural, one {# 个本地项目} other {# 个本地项目}}？",
         "accountSyncedCopiesStayAvailable": "已同步到账户的副本仍然会保留在你的账户中。"
       },
       "groups": {
@@ -680,7 +680,7 @@
         "accountCopySynced": "{itemLabel} · 账户副本已于 {relativeTime} 同步"
       },
       "status": {
-        "loadingProjects": "正在加载账户项目...",
+        "loadingProjects": "正在加载账户项目……",
         "syncing": "同步中",
         "reviewNeeded": "需复核",
         "failed": "同步失败",
@@ -734,10 +734,10 @@
     },
     "shares": {
       "status": {
-        "loadingPublishedShares": "正在加载已发布共享...",
+        "loadingPublishedShares": "正在加载已发布共享……",
         "published": "已发布",
         "expired": "已过期",
-        "expiresInDays": "剩余 {days} 天"
+        "expiresInDays": "{days, plural, one {剩余 1 天} other {剩余 # 天}}"
       },
       "messages": {
         "readOnlyReviewLinks": "共享内容都是只读审阅链接。如果对方需要可编辑备份，请导出 JSON。"
