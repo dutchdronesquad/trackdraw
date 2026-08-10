@@ -314,35 +314,35 @@
         "fix": "Stel waypoint-hoogtes in via de inspector of 3D-weergave als de route moet klimmen of dalen."
       },
       "steep": {
-        "summary": "{count, plural, one {Steile helling nabij waypoint {first}} other {Steile helling bij {count} segmenten}}",
+        "summary": "{count, plural, one {Steile helling nabij waypoint {first}} other {Steile helling bij {count} segmenten, vanaf waypoint {first}}}",
         "shortLabel": "Steile helling",
         "title": "Helling verandert te snel",
         "problem": "Een sectie klimt of daalt scherp over een korte afstand, wat de 3D-lijn abrupt kan laten aanvoelen.",
         "fix": "Spreid de hoogteverandering over meer afstand of voeg een tussenliggend waypoint toe."
       },
       "hairpin": {
-        "summary": "{count, plural, one {Scherpe bocht bij waypoint {first}} other {{count} scherpe bochten}}",
+        "summary": "{count, plural, one {Scherpe bocht bij waypoint {first}} other {{count} scherpe bochten, vanaf waypoint {first}}}",
         "shortLabel": "Scherpe bocht",
         "title": "Bocht is erg scherp",
         "problem": "Een waypoint creëert een scherpe ombuiging die mogelijk moeilijk schoon te vliegen is op snelheid.",
         "fix": "Verplaats het waypoint naar buiten of voeg meer ruimte toe voor en na de bocht."
       },
       "close-points": {
-        "summary": "{count, plural, one {Waypoints te dicht bij elkaar nabij {first}} other {{count} dicht opeenstaande waypoints}}",
+        "summary": "{count, plural, one {Waypoints te dicht bij elkaar nabij {first}} other {{count} dicht opeenstaande waypoints nabij {first}}}",
         "shortLabel": "Dichte waypoints",
         "title": "Waypoints staan te dicht bij elkaar",
         "problem": "Twee waypoints staan zo dicht bij elkaar dat ze een heel klein routesegment vormen.",
         "fix": "Verwijder een van de waypoints of verplaats het verder van zijn buur."
       },
       "spacing-shift": {
-        "summary": "{count, plural, one {Abrupte afstandswijziging nabij waypoint {first}} other {{count} abrupte afstandswijzigingen}}",
+        "summary": "{count, plural, one {Abrupte afstandswijziging nabij waypoint {first}} other {{count} abrupte afstandswijzigingen, vanaf waypoint {first}}}",
         "shortLabel": "Afstandswijziging",
         "title": "Gate-ritme verandert abrupt",
         "problem": "De afstand voor en na een waypoint verandert plotseling, wat de route ongelijk kan laten aanvoelen.",
         "fix": "Verplaats nabijgelegen waypoints zodat de afstand geleidelijker verandert."
       },
       "rhythm-break": {
-        "summary": "{count, plural, one {Korte correctie nabij waypoint {first}} other {{count} korte correctiesegmenten}}",
+        "summary": "{count, plural, one {Korte correctie nabij waypoint {first}} other {{count} korte correctiesegmenten, vanaf waypoint {first}}}",
         "shortLabel": "Korte correctie",
         "title": "Korte correctie verstoort de flow",
         "problem": "Een kort tussensegment onderbreekt langere omliggende secties en kan een onhandige zwabber veroorzaken.",
