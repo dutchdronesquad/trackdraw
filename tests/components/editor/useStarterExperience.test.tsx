@@ -3,7 +3,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
-import * as en from "@lang/en";
+import * as en from "@lang/en-US";
 import { useStarterExperience } from "@/components/editor/useStarterExperience";
 import { AccountProjectSyncConflictError } from "@/components/editor/useAccountProjectSync";
 import { createDefaultDesign } from "@/lib/track/design";

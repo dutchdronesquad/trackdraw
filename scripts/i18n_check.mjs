@@ -2,11 +2,11 @@
 /**
  * Translation integrity audit.
  *
- * 1. Compares every locale's message files against the `en` baseline. Missing
+ * 1. Compares every locale's message files against the `en-US` baseline. Missing
  *    target keys are allowed and use the English runtime fallback; extra keys,
  *    empty values, and placeholder mismatches remain errors.
  * 2. Scans src/** for `useTranslations("namespace")` bindings and the keys
- *    called through them, flagging any key that doesn't resolve in the `en`
+ *    called through them, flagging any key that doesn't resolve in the `en-US`
  *    catalog (the same class of bug as a runtime MISSING_MESSAGE error).
  *
  * Usage: node scripts/i18n_check.mjs
@@ -27,22 +27,62 @@ const i18nPolicy = JSON.parse(
 );
 const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
+function validateLocaleDirectories() {
+  const directories = i18nPolicy.localeDirectories;
+  if (
+    directories === null ||
+    typeof directories !== "object" ||
+    Array.isArray(directories)
+  ) {
+    throw new Error(
+      "Invalid i18n policy: localeDirectories must be an object."
+    );
+  }
+
+  if (
+    typeof directories[baseLocale] !== "string" ||
+    directories[baseLocale].trim().length === 0
+  ) {
+    throw new Error(
+      `Invalid i18n policy: localeDirectories.${baseLocale} must name the source locale directory.`
+    );
+  }
+
+  for (const [locale, directory] of Object.entries(directories)) {
+    if (typeof directory !== "string" || directory.trim().length === 0) {
+      throw new Error(
+        `Invalid i18n policy: localeDirectories.${locale} must be a non-empty string.`
+      );
+    }
+
+    try {
+      if (statSync(join(langDir, directory)).isDirectory()) continue;
+    } catch {
+      // Report the invalid policy with locale context below.
+    }
+
+    throw new Error(
+      `Invalid i18n policy: directory "${directory}" for locale "${locale}" does not exist or is not a directory.`
+    );
+  }
+
+  return directories;
+}
+
+const localeDirectories = validateLocaleDirectories();
+
 function listLocales() {
-  return readdirSync(langDir).filter(
-    (name) =>
-      /^[a-z]{2}(?:-[A-Z]{2})?$/.test(name) &&
-      statSync(join(langDir, name)).isDirectory()
-  );
+  return Object.keys(localeDirectories);
 }
 
 function listNamespaces(locale) {
-  return readdirSync(join(langDir, locale))
+  return readdirSync(join(langDir, localeDirectories[locale]))
     .filter((name) => name.endsWith(".json"))
     .map((name) => name.replace(/\.json$/, ""));
 }
 
 function loadNamespace(locale, namespace) {
-  const path = join(langDir, locale, `${namespace}.json`);
+  const path = join(langDir, localeDirectories[locale], `${namespace}.json`);
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
@@ -159,7 +199,7 @@ function checkLocaleIntegrity() {
     }
   }
 
-  // namespace files that exist in a locale but not in en
+  // namespace files that exist in a locale but not in the English catalog
   for (const locale of otherLocales) {
     const localeNamespaces = listNamespaces(locale);
     const extraNamespaces = localeNamespaces.filter(
@@ -176,7 +216,7 @@ function checkLocaleIntegrity() {
   return { problems, fallbacks };
 }
 
-// ── Part 2: usage scan against en catalog ──────────────────────────────
+// ── Part 2: usage scan against English catalog ─────────────────────────
 
 function walkFiles(dir, out = []) {
   for (const entry of readdirSync(dir)) {

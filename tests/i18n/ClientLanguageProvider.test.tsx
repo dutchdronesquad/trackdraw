@@ -84,7 +84,7 @@ describe("ClientLanguageProvider", () => {
       expect(document.documentElement.lang).toBe("nl");
     });
 
-    expect(fetchMock).toHaveBeenCalledWith("/locales/nl/common.json");
+    expect(fetchMock).toHaveBeenCalledWith("/locales/nl-NL/common.json");
   });
 
   it("keeps English-only namespaces while loading translated assets", async () => {
@@ -123,6 +123,6 @@ describe("ClientLanguageProvider", () => {
 
     expect(screen.getByText("Legal")).toBeTruthy();
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledWith("/locales/nl/common.json");
+    expect(fetchMock).toHaveBeenCalledWith("/locales/nl-NL/common.json");
   });
 });

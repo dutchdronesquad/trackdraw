@@ -1,3 +1,9 @@
 {
+  "localeDirectories": {
+    "en": "en-US",
+    "nl": "nl-NL",
+    "de": "de-DE",
+    "zh-CN": "zh-CN"
+  },
   "englishOnlyNamespaces": ["dashboard", "legal"]
 }

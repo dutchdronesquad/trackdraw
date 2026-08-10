@@ -24,8 +24,8 @@ async function readEnglishNamespace(namespace: MessageNamespace) {
     import("node:path"),
   ]);
   const candidatePaths = [
-    join(process.cwd(), "public", "locales", "en", `${namespace}.json`),
-    join(process.cwd(), "lang", "en", `${namespace}.json`),
+    join(process.cwd(), "public", "locales", "en-US", `${namespace}.json`),
+    join(process.cwd(), "lang", "en-US", `${namespace}.json`),
   ];
 
   for (const candidatePath of candidatePaths) {

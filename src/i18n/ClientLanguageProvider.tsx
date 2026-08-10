@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import {
   defaultLocale,
+  getLocaleDirectory,
   normalizeLocale,
   type SupportedLocale,
 } from "@/lib/i18n/locales";
@@ -33,7 +34,9 @@ async function loadMessages(
         return [namespace, initialMessages[namespace]] as const;
       }
 
-      const response = await fetch(`/locales/${locale}/${namespace}.json`);
+      const response = await fetch(
+        `/locales/${getLocaleDirectory(locale)}/${namespace}.json`
+      );
       if (!response.ok) {
         throw new Error(
           `Could not load ${namespace} messages for locale ${locale}.`

@@ -1,7 +1,11 @@
 import "server-only";
 
 import i18nPolicy from "@lang/i18n-policy.json";
-import { defaultLocale, type SupportedLocale } from "@/lib/i18n/locales";
+import {
+  defaultLocale,
+  getLocaleDirectory,
+  type SupportedLocale,
+} from "@/lib/i18n/locales";
 import { mergeMessagesWithFallback } from "@/lib/i18n/merge-messages";
 
 const catalogNamespaces = [
@@ -103,12 +107,16 @@ async function readNamespaceFromSourceFile(
   locale: SupportedLocale,
   namespace: MessageNamespace
 ) {
-  const messages = await readJsonFile(["lang", locale, `${namespace}.json`]);
+  const messages = await readJsonFile([
+    "lang",
+    getLocaleDirectory(locale),
+    `${namespace}.json`,
+  ]);
   if (locale === defaultLocale || messages === undefined) return messages;
 
   const fallbackMessages = await readJsonFile([
     "lang",
-    defaultLocale,
+    getLocaleDirectory(defaultLocale),
     `${namespace}.json`,
   ]);
   return fallbackMessages === undefined
@@ -120,7 +128,7 @@ async function readNamespaceAsset(
   locale: SupportedLocale,
   namespace: MessageNamespace
 ) {
-  const assetPath = `locales/${locale}/${namespace}.json`;
+  const assetPath = `locales/${getLocaleDirectory(locale)}/${namespace}.json`;
   return (
     (await readNamespaceFromCloudflareAssets(assetPath)) ??
     (await readNamespaceFromSourceFile(locale, namespace)) ??

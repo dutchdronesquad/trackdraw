@@ -26,18 +26,22 @@ function runScript(name: "i18n_check.mjs" | "i18n_sync_assets.mjs") {
 describe("Crowdin pilot catalog scripts", () => {
   beforeEach(() => {
     fixtureRoot = mkdtempSync(join(tmpdir(), "trackdraw-i18n-pilot-"));
-    mkdirSync(join(fixtureRoot, "lang", "en"), { recursive: true });
-    mkdirSync(join(fixtureRoot, "lang", "nl"), { recursive: true });
+    mkdirSync(join(fixtureRoot, "lang", "en-US"), { recursive: true });
+    mkdirSync(join(fixtureRoot, "lang", "nl-NL"), { recursive: true });
     mkdirSync(join(fixtureRoot, "src"), { recursive: true });
     writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
+      localeDirectories: {
+        en: "en-US",
+        nl: "nl-NL",
+      },
       englishOnlyNamespaces: [],
     });
-    writeJson(join(fixtureRoot, "lang", "en", "common.json"), {
+    writeJson(join(fixtureRoot, "lang", "en-US", "common.json"), {
       nested: { translated: "Source", missing: "Fallback" },
       bullets: ["One", "Two"],
       greeting: "Hello {name}",
     });
-    writeJson(join(fixtureRoot, "lang", "nl", "common.json"), {
+    writeJson(join(fixtureRoot, "lang", "nl-NL", "common.json"), {
       nested: { translated: "Vertaald" },
       bullets: ["Eén"],
       greeting: "Hallo {name}",
@@ -59,7 +63,7 @@ describe("Crowdin pilot catalog scripts", () => {
 
     const generated = JSON.parse(
       readFileSync(
-        join(fixtureRoot, "public", "locales", "nl", "common.json"),
+        join(fixtureRoot, "public", "locales", "nl-NL", "common.json"),
         "utf8"
       )
     );
@@ -78,7 +82,7 @@ describe("Crowdin pilot catalog scripts", () => {
   });
 
   it("still rejects placeholder mismatches", () => {
-    writeJson(join(fixtureRoot, "lang", "nl", "common.json"), {
+    writeJson(join(fixtureRoot, "lang", "nl-NL", "common.json"), {
       greeting: "Hallo",
     });
 
@@ -86,4 +90,40 @@ describe("Crowdin pilot catalog scripts", () => {
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("greeting has different placeholders");
   });
+
+  it.each(["i18n_check.mjs", "i18n_sync_assets.mjs"] as const)(
+    "reports a missing English locale mapping in %s",
+    (script) => {
+      writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
+        localeDirectories: { nl: "nl-NL" },
+        englishOnlyNamespaces: [],
+      });
+
+      const result = runScript(script);
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("localeDirectories.en");
+    }
+  );
+
+  it.each(["i18n_check.mjs", "i18n_sync_assets.mjs"] as const)(
+    "reports a missing mapped locale directory in %s",
+    (script) => {
+      writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
+        localeDirectories: {
+          en: "en-US",
+          nl: "nl-NL",
+          de: "de-DE",
+        },
+        englishOnlyNamespaces: [],
+      });
+
+      const result = runScript(script);
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(
+        'directory "de-DE" for locale "de" does not exist'
+      );
+    }
+  );
 });
