@@ -1,62 +1,62 @@
 {
   "metadata": {
-    "title": "Sign in",
-    "description": "Sign in to TrackDraw with a one-time magic link."
+    "title": "Inloggen",
+    "description": "Log in bij TrackDraw met een eenmalige magic link."
   },
-  "goHome": "Go to homepage",
-  "backToStudio": "Back to Studio",
-  "pageTitle": "TrackDraw account",
-  "heading": "Pick up your TrackDraw work wherever you are.",
-  "description": "Access your layouts across devices, keep shared tracks tied to your account, and jump back in with a simple email link.",
+  "goHome": "Naar homepage",
+  "backToStudio": "Terug naar Studio",
+  "pageTitle": "TrackDraw-account",
+  "heading": "Pak je TrackDraw-werk op waar je ook bent.",
+  "description": "Toegang tot je lay-outs op alle apparaten, houd gedeelde banen gekoppeld aan je account en ga verder met een eenvoudige e-maillink.",
   "featureDevices": {
-    "title": "Across devices",
-    "description": "Pick work back up on another device without changing the editor flow."
+    "title": "Op alle apparaten",
+    "description": "Pak werk weer op een ander apparaat op zonder de editorflow te veranderen."
   },
   "featureOwnership": {
-    "title": "Ownership",
-    "description": "Give shared layouts and future account features a clear home."
+    "title": "Eigenaarschap",
+    "description": "Geef gedeelde lay-outs en toekomstige accountfuncties een duidelijke thuis."
   },
   "featureMagicLink": {
-    "title": "Magic link fallback",
-    "description": "Use a passkey when available, or fall back to a sign-in link sent to your email."
+    "title": "Magic link als alternatief",
+    "description": "Gebruik een passkey indien beschikbaar, of val terug op een inloglink verzonden naar je e-mail."
   },
   "signIn": {
-    "title": "Sign in",
-    "description": "Sign in with a passkey on this device, or use your email to receive a magic link without a password.",
-    "checkInboxTitle": "Check your inbox",
-    "checkInboxBody": "Your one-time sign-in link was sent to {email}. Open it on this device, or another one, to continue. If it does not show up soon, check your spam folder.",
-    "howItWorksTitle": "How magic link sign-in works",
-    "howItWorksBody": "Each email contains a one-time sign-in link. No password setup, just open the link and TrackDraw signs you in.",
-    "useDifferentEmail": "Use a different email",
-    "openingPasskey": "Opening passkey…",
-    "signInPasskey": "Sign in with passkey",
-    "or": "or",
-    "emailLabel": "Email",
-    "emailPlaceholder": "you@example.com",
-    "sendingLink": "Sending link…",
-    "sendLink": "Email me a sign-in link",
-    "noPasskeySupport": "This browser does not currently support passkeys here, so use the magic link fallback.",
-    "passkeyNotFound": "We couldn't match that passkey to your TrackDraw account. Try another passkey or use your email sign-in link.",
-    "passkeyFailed": "Failed to sign in with passkey.",
-    "checkEmail": "Check your email for a sign-in link."
+    "title": "Inloggen",
+    "description": "Log in met een passkey op dit apparaat, of gebruik je e-mail om een magic link te ontvangen zonder wachtwoord.",
+    "checkInboxTitle": "Controleer je inbox",
+    "checkInboxBody": "Je eenmalige inloglink is verzonden naar {email}. Open hem op dit apparaat of een ander apparaat om verder te gaan. Als hij niet snel verschijnt, controleer dan je spammap.",
+    "howItWorksTitle": "Hoe inloggen met een magic link werkt",
+    "howItWorksBody": "Elke e-mail bevat een eenmalige inloglink. Geen wachtwoordinstellingen, open gewoon de link en TrackDraw logt je in.",
+    "useDifferentEmail": "Ander e-mailadres gebruiken",
+    "openingPasskey": "Passkey openen…",
+    "signInPasskey": "Inloggen met passkey",
+    "or": "of",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "jij@voorbeeld.nl",
+    "sendingLink": "Link versturen…",
+    "sendLink": "Stuur mij een inloglink",
+    "noPasskeySupport": "Deze browser ondersteunt hier momenteel geen passkeys, gebruik de magic link als alternatief.",
+    "passkeyNotFound": "We konden die passkey niet koppelen aan je TrackDraw-account. Probeer een andere passkey of gebruik je e-mailinloglink.",
+    "passkeyFailed": "Inloggen met passkey mislukt.",
+    "checkEmail": "Controleer je e-mail voor een inloglink."
   },
   "magicLinkVerify": {
-    "eyebrow": "Secure sign-in",
-    "secureSession": "Protected magic-link handoff",
-    "needsNewLink": "Fresh link needed",
-    "autoTitle": "Signing you in",
-    "autoDescription": "TrackDraw is opening your workspace with the sign-in link from your email.",
+    "eyebrow": "Veilig inloggen",
+    "secureSession": "Beschermde magic-link overdracht",
+    "needsNewLink": "Nieuwe link nodig",
+    "autoTitle": "Je wordt ingelogd",
+    "autoDescription": "TrackDraw opent je werkruimte met de inloglink uit je e-mail.",
     "title": "Open TrackDraw",
-    "description": "Continue from this browser to finish signing in. This protects your one-time link from automatic email security checks.",
-    "statusEmail": "Email link received",
-    "statusVerify": "Verifying your sign-in link",
-    "statusStudio": "Opening your workspace",
-    "continue": "Continue to TrackDraw",
-    "continuing": "Continuing...",
-    "requestNewLink": "Request a new link",
-    "backToLogin": "Back to login",
-    "invalidTitle": "This sign-in link is incomplete",
-    "invalidDescription": "Request a new sign-in link and open it from the latest TrackDraw email.",
-    "failed": "This sign-in link could not be used. Request a new link and try again."
+    "description": "Ga verder vanuit deze browser om het inloggen af te ronden. Zo blijft je eenmalige link beschermd tegen automatische e-mailcontroles.",
+    "statusEmail": "E-maillink ontvangen",
+    "statusVerify": "Je inloglink controleren",
+    "statusStudio": "Je werkruimte openen",
+    "continue": "Verder naar TrackDraw",
+    "continuing": "Doorgaan...",
+    "requestNewLink": "Nieuwe link aanvragen",
+    "backToLogin": "Terug naar inloggen",
+    "invalidTitle": "Deze inloglink is niet compleet",
+    "invalidDescription": "Vraag een nieuwe inloglink aan en open de nieuwste TrackDraw-mail.",
+    "failed": "Deze inloglink kon niet worden gebruikt. Vraag een nieuwe link aan en probeer het opnieuw."
   }
 }
