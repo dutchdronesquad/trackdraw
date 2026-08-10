@@ -2,845 +2,845 @@
   "account": {
     "dialog": {
       "eyebrow": "Studio",
-      "mobileSubtitle": "Verwalte dein TrackDraw-Konto."
+      "mobileSubtitle": "Manage your TrackDraw account."
     },
     "nav": {
-      "security": "Sicherheit",
-      "apiKeys": "API-Keys",
-      "danger": "Gefahrenzone"
+      "security": "Security",
+      "apiKeys": "API keys",
+      "danger": "Danger zone"
     },
     "panels": {
       "profile": {
-        "title": "Dein Profil",
-        "description": "Verwalte den Namen, der in deinem TrackDraw-Konto angezeigt wird."
+        "title": "Your profile",
+        "description": "Manage the name shown across your TrackDraw account."
       },
       "security": {
-        "title": "Sicherheit",
-        "description": "Verwalte Anmeldemethoden, Konto-E-Mail und Passkeys für dein TrackDraw-Konto."
+        "title": "Security",
+        "description": "Manage sign-in methods, account email, and passkeys for your TrackDraw account."
       },
       "apiKeys": {
-        "title": "API-Keys",
-        "description": "Erstelle und widerrufe ablaufende Keys für externe TrackDraw-Integrationen."
+        "title": "API keys",
+        "description": "Create and revoke expiring keys for external TrackDraw integrations."
       },
       "danger": {
-        "title": "Gefahrenzone",
-        "description": "Destruktive und irreversible Kontoaktionen."
+        "title": "Danger zone",
+        "description": "Destructive and irreversible account actions."
       }
     },
     "profile": {
       "displayName": {
-        "label": "Anzeigename",
-        "placeholder": "Dein Name"
+        "label": "Display name",
+        "placeholder": "Your name"
       },
       "language": {
-        "description": "Änderungen werden sofort übernommen"
+        "description": "Changes apply immediately"
       },
       "status": {
-        "saving": "Speichert..."
+        "saving": "Saving..."
       },
       "fallback": {
-        "noAccountEmail": "TrackDraw-Konto"
+        "noAccountEmail": "TrackDraw account"
       }
     },
     "security": {
       "email": {
-        "address": "E-Mail-Adresse",
-        "newEmail": "Neue E-Mail",
+        "address": "Email address",
+        "newEmail": "New email",
         "placeholder": "name@example.com",
-        "changeDescription": "Nach dem Speichern senden wir zuerst eine Bestätigung an deine aktuelle E-Mail-Adresse. Nach der Bestätigung verifizierst du die neue Adresse.",
-        "change": "E-Mail ändern",
-        "saving": "Speichert..."
+        "changeDescription": "After saving, we will send a confirmation to your current email address first. Once confirmed, you will verify the new one.",
+        "change": "Change email",
+        "saving": "Saving..."
       },
       "passkeys": {
         "title": "Passkeys",
-        "description": "Füge einen Passkey für schnelleres Anmelden auf unterstützten Geräten hinzu.",
-        "add": "Passkey hinzufügen",
-        "adding": "Wird hinzugefügt...",
-        "devAuthUnavailable": "Passkeys sind in `npm run dev` nicht verfügbar. Nutze `npm run preview`, um den echten Auth-Flow lokal zu testen.",
-        "unsupportedBrowser": "Dieser Browser stellt hier derzeit kein WebAuthn bereit, daher ist Passkey-Einrichtung auf diesem Gerät nicht verfügbar.",
-        "loading": "Passkeys werden geladen...",
-        "addedDate": "Hinzugefügt {date}",
+        "description": "Add a passkey for faster sign-in on supported devices.",
+        "add": "Add passkey",
+        "adding": "Adding...",
+        "devAuthUnavailable": "Passkeys are not available in `npm run dev`. Use `npm run preview` to test the real auth flow locally.",
+        "unsupportedBrowser": "This browser does not currently expose WebAuthn here, so passkey setup is unavailable on this device.",
+        "loading": "Loading passkeys...",
+        "addedDate": "Added {date}",
         "status": {
-          "synced": "synchronisiert"
+          "synced": "synced"
         },
         "reauth": {
-          "title": "Melde dich erneut an, um fortzufahren",
-          "description": "Passkey-Einrichtung erfordert eine aktuelle Anmeldung. Für normale Arbeit kannst du angemeldet bleiben, aber diese Sicherheitsaktion braucht Bestätigung.",
-          "action": "Erneut anmelden"
+          "title": "Sign in again to continue",
+          "description": "Passkey setup requires a recent sign-in. You can stay signed in for normal work, but this security action needs confirmation.",
+          "action": "Sign in again"
         },
         "empty": {
-          "title": "Noch keine Passkeys",
-          "description": "Füge einen hinzu, um dich auf deinen vertrauenswürdigen Geräten schneller anzumelden."
+          "title": "No passkeys yet",
+          "description": "Add one to make sign-in quicker on your trusted devices."
         },
         "aria": {
-          "rename": "Passkey umbenennen",
-          "removing": "Passkey wird entfernt",
-          "remove": "Passkey entfernen"
+          "rename": "Rename passkey",
+          "removing": "Removing passkey",
+          "remove": "Remove passkey"
         },
         "actions": {
-          "removing": "Wird entfernt...",
-          "removeTooltip": "Aus Konto entfernen",
-          "saveName": "Namen speichern"
+          "removing": "Removing...",
+          "removeTooltip": "Remove from account",
+          "saveName": "Save name"
         },
         "fields": {
-          "namePlaceholder": "Passkey-Name"
+          "namePlaceholder": "Passkey name"
         },
         "fallback": {
-          "unnamed": "Unbenannter Passkey"
+          "unnamed": "Unnamed passkey"
         },
         "rename": {
-          "description": "Dies ändert nur, wie der Passkey in deinem TrackDraw-Konto bezeichnet wird."
+          "description": "This only changes how the passkey is labeled in your TrackDraw account."
         }
       }
     },
     "apiKeys": {
       "form": {
-        "keyNameLabel": "Key-Name",
-        "expiryDays": "{days} Tage",
-        "expiryYear": "1 Jahr",
-        "namePlaceholder": "Overlay-Integration",
-        "create": "Erstellen"
+        "keyNameLabel": "Key name",
+        "expiryDays": "{days} days",
+        "expiryYear": "1 year",
+        "namePlaceholder": "Overlay integration",
+        "create": "Create"
       },
       "created": {
-        "title": "API-Key erstellt",
-        "description": "Dieses Secret wird nur einmal angezeigt. Speichere es, bevor du diesen Dialog schließt."
+        "title": "API key created",
+        "description": "This secret is shown once. Store it before closing this dialog."
       },
       "active": {
-        "title": "Aktive API-Keys",
-        "descriptionPrefix": "Schreibgeschützte Keys für vertrauenswürdige Integrationen.",
-        "docsLink": "API-Doku",
-        "refreshAriaLabel": "API-Keys aktualisieren",
-        "loading": "API-Keys werden geladen..."
+        "title": "Active API keys",
+        "descriptionPrefix": "Read-only keys for trusted integrations.",
+        "docsLink": "API docs",
+        "refreshAriaLabel": "Refresh API keys",
+        "loading": "Loading API keys..."
       },
       "empty": {
-        "title": "Noch keine API-Keys",
-        "description": "Erstelle einen, wenn eine vertrauenswürdige Integration schreibgeschützten Zugriff auf deine Kontoprojekte braucht."
+        "title": "No API keys yet",
+        "description": "Create one when a trusted integration needs read-only access to your account projects."
       },
       "fallback": {
-        "unnamed": "Unbenannter API-Key"
+        "unnamed": "Unnamed API key"
       },
       "meta": {
-        "expiresOn": "Läuft ab {date}",
-        "lastUsed": "Zuletzt verwendet {date}"
+        "expiresOn": "Expires {date}",
+        "lastUsed": "Last used {date}"
       },
       "revoke": {
-        "confirmTitle": "API-Key widerrufen?",
-        "tooltip": "Widerrufen",
-        "ariaLabel": "{name} widerrufen",
-        "warningExpiring": "Dieser Key funktioniert nicht mehr.",
-        "warningNonExpiring": "Integrationen, die diesen Key verwenden, verlieren schreibgeschützten Zugriff.",
-        "revoking": "Wird widerrufen...",
-        "action": "Widerrufen"
+        "confirmTitle": "Revoke API key?",
+        "tooltip": "Revoke",
+        "ariaLabel": "Revoke {name}",
+        "warningExpiring": "This key stops working.",
+        "warningNonExpiring": "Integrations using this key lose read-only access.",
+        "revoking": "Revoking...",
+        "action": "Revoke"
       }
     },
     "danger": {
-      "description": "Das Löschen deines Kontos entfernt Kontoprojekte, veröffentlichte Links, API-Keys und andere kontobasierte Daten. Exportiere alles Kontobasierte, das du behalten möchtest, bevor du fortfährst.",
+      "description": "Deleting your account removes account projects, published links, API keys, and other account-backed data. Export anything account-backed that you want to keep before continuing.",
       "confirm": {
-        "label": "Zum Bestätigen DELETE eingeben",
+        "label": "Type DELETE to confirm",
         "placeholder": "DELETE"
       },
       "actions": {
-        "deleting": "Wird gelöscht...",
-        "deleteAccount": "Konto löschen"
+        "deleting": "Deleting...",
+        "deleteAccount": "Delete account"
       }
     },
     "shared": {
-      "loading": "Konto wird geladen...",
-      "signInTitle": "Anmelden, um dein Konto zu verwalten",
-      "signInBody": "Nutze deine E-Mail, um auf cloudbasierte Kontoeinstellungen und Profildetails zuzugreifen."
+      "loading": "Loading account...",
+      "signInTitle": "Sign in to manage your account",
+      "signInBody": "Use your email to access cloud-backed account settings and profile details."
     },
     "errors": {
-      "loadPasskeysFailed": "Passkeys konnten nicht geladen werden.",
-      "loadApiKeysFailed": "API-Keys konnten nicht geladen werden.",
-      "profileNameRequired": "Bitte gib den Namen ein, den TrackDraw anzeigen soll.",
-      "profileUpdateFailed": "Profil konnte nicht aktualisiert werden.",
-      "deleteConfirmRequired": "Gib DELETE ein, um die Kontolöschung zu bestätigen.",
-      "deleteFailed": "Konto konnte nicht gelöscht werden.",
-      "emailRequired": "Bitte gib die E-Mail ein, die du für TrackDraw verwenden möchtest.",
-      "emailSame": "Gib eine andere E-Mail-Adresse ein, um sie zu ändern.",
-      "emailChangeFailed": "E-Mail konnte nicht geändert werden.",
-      "passkeyAddFailed": "Passkey konnte nicht hinzugefügt werden.",
-      "passkeyNameRequired": "Bitte gib vor dem Speichern einen Passkey-Namen ein.",
-      "passkeyRenameFailed": "Passkey konnte nicht umbenannt werden.",
-      "passkeyRemoveFailed": "Passkey konnte nicht entfernt werden.",
-      "apiKeyNameRequired": "Gib einen Namen für diesen API-Key ein.",
-      "apiKeyCreateFailed": "API-Key konnte nicht erstellt werden.",
-      "apiKeyRevokeFailed": "API-Key konnte nicht widerrufen werden."
+      "loadPasskeysFailed": "Failed to load passkeys.",
+      "loadApiKeysFailed": "Failed to load API keys.",
+      "profileNameRequired": "Please enter the name you want TrackDraw to show.",
+      "profileUpdateFailed": "Failed to update your profile.",
+      "deleteConfirmRequired": "Type DELETE to confirm account deletion.",
+      "deleteFailed": "Failed to delete your account.",
+      "emailRequired": "Please enter the email you want to use for TrackDraw.",
+      "emailSame": "Enter a different email address to change it.",
+      "emailChangeFailed": "Failed to change your email.",
+      "passkeyAddFailed": "Failed to add passkey.",
+      "passkeyNameRequired": "Please enter a passkey name before saving.",
+      "passkeyRenameFailed": "Failed to rename passkey.",
+      "passkeyRemoveFailed": "Failed to remove passkey.",
+      "apiKeyNameRequired": "Enter a name for this API key.",
+      "apiKeyCreateFailed": "Failed to create API key.",
+      "apiKeyRevokeFailed": "Failed to revoke API key."
     },
     "success": {
-      "profileUpdated": "Profil aktualisiert",
-      "passkeyAdded": "Passkey hinzugefügt. Du kannst ihn unten umbenennen oder entfernen.",
-      "passkeyRenamed": "Passkey umbenannt",
-      "apiKeyCreated": "API-Key erstellt",
-      "apiKeyCopied": "API-Key kopiert",
-      "apiKeyRevoked": "API-Key widerrufen"
+      "profileUpdated": "Profile updated",
+      "passkeyAdded": "Passkey added. You can rename or remove it below.",
+      "passkeyRenamed": "Passkey renamed",
+      "apiKeyCreated": "API key created",
+      "apiKeyCopied": "API key copied",
+      "apiKeyRevoked": "API key revoked"
     }
   },
   "export": {
     "dialog": {
       "title": "Export",
-      "subtitle": "Exportiere den aktuellen Track als visuelle Assets, Projekt-Übergabedateien oder simulatorbereite Ausgaben."
+      "subtitle": "Export the current track as visual assets, project handoff files, or simulator-ready outputs."
     },
     "fields": {
       "filename": {
-        "label": "Dateiname"
+        "label": "Filename"
       }
     },
     "theme": {
-      "label": "Design",
-      "dark": "Dunkel",
-      "light": "Hell"
+      "label": "Theme",
+      "dark": "Dark",
+      "light": "Light"
     },
     "routeNumbers": {
-      "label": "Routennummern",
-      "hint": "In 2D-Exporten",
-      "enable": "Routennummern im Export aktivieren",
-      "disable": "Routennummern im Export deaktivieren",
-      "enableMobile": "Routennummern aktivieren",
-      "disableMobile": "Routennummern deaktivieren"
+      "label": "Route numbers",
+      "hint": "In 2D exports",
+      "enable": "Enable route numbers in export",
+      "disable": "Disable route numbers in export",
+      "enableMobile": "Enable route numbers",
+      "disableMobile": "Disable route numbers"
     },
     "actions": {
-      "switchTo3dView": "Zur 3D-Ansicht wechseln",
-      "openRequiredView": "Erforderliche Ansicht öffnen"
+      "switchTo3dView": "Switch to 3D view",
+      "openRequiredView": "Open required view"
     },
     "aria": {
-      "exportFormat": "{label} exportieren"
+      "exportFormat": "Export {label}"
     },
     "messages": {
-      "view3dUnavailable": "3D-Ansicht nicht verfügbar — öffne zuerst den 3D-Tab",
-      "canvasNotReady": "Canvas ist nicht bereit",
-      "exported": "Exportiert"
+      "view3dUnavailable": "3D view not available — open the 3D tab first",
+      "canvasNotReady": "Canvas not ready",
+      "exported": "Exported"
     },
     "readiness": {
-      "open3d": "Öffne die 3D-Ansicht, bevor du diesen Render exportierst.",
-      "canvasNotReady": "Das 2D-Canvas lädt noch; versuche es gleich erneut.",
-      "emptyRacePack": "Füge mindestens ein Element zur Strecke hinzu, bevor du ein Race Pack exportierst.",
-      "missingRaceLine": "Füge eine Race Line hinzu, bevor du ein Cinematic-FPV-Video exportierst.",
-      "emptyVelocidrone": "Füge mindestens ein Element zur Strecke hinzu, bevor du eine Velocidrone-Datei exportierst.",
-      "experimentalSimulator": "Manche TrackDraw-Elemente können in Velocidrone anders importiert werden."
+      "open3d": "Open the 3D view before exporting this render.",
+      "canvasNotReady": "The 2D canvas is still loading; try again in a moment.",
+      "emptyRacePack": "Add at least one item to the track before exporting a Race Pack.",
+      "missingRaceLine": "Add a race line before exporting a cinematic FPV video.",
+      "emptyVelocidrone": "Add at least one item to the track before exporting a Velocidrone file.",
+      "experimentalSimulator": "Some TrackDraw items may import differently in Velocidrone."
     },
     "webm": {
-      "renderingBackground": "Cinematic FPV rendert im Hintergrund…",
-      "renderingProgress": "Cinematic FPV wird gerendert… {status}",
-      "ready": "Cinematic-FPV-Export bereit",
-      "progressLabel": "Fly-through wird gerendert… Video {duration}"
+      "renderingBackground": "Cinematic FPV is rendering in the background…",
+      "renderingProgress": "Rendering cinematic FPV… {status}",
+      "ready": "Cinematic FPV export ready",
+      "progressLabel": "Rendering fly-through… video {duration}"
     },
     "categories": {
       "visuals": {
-        "title": "Visuell"
+        "title": "Visuals"
       },
       "raceDay": {
         "title": "Race Day"
       },
       "projectData": {
-        "title": "Projektdaten"
+        "title": "Project Data"
       },
       "motion": {
         "title": "Video"
       },
       "simulatorLab": {
-        "title": "Experimentell"
+        "title": "Experimental"
       }
     },
     "formats": {
       "image": {
-        "label": "Bild",
-        "descriptionFull": "Hochauflösende 2D-Karte für Druck, Slides, Chat oder schnelle Review.",
-        "descriptionShort": "Hochauflösende 2D-Karte für Druck, Chat oder Review."
+        "label": "Image",
+        "descriptionFull": "High-res 2D map for print, slides, chat, or quick review.",
+        "descriptionShort": "High-res 2D map for print, chat, or review."
       },
       "vector": {
-        "label": "Vektor",
-        "descriptionFull": "Skalierbare Grafik für Bearbeitung in Illustrator, Figma oder Inkscape.",
-        "descriptionShort": "Skalierbare Grafik für Illustrator, Figma oder Inkscape."
+        "label": "Vector",
+        "descriptionFull": "Scalable artwork for Illustrator, Figma, or Inkscape edits.",
+        "descriptionShort": "Scalable artwork for Illustrator, Figma, or Inkscape."
       },
       "render3d": {
-        "label": "3D-Render",
-        "descriptionFull": "Screenshot der aktuellen 3D-Kameraansicht für visuelle Review.",
-        "descriptionShort": "Aktueller 3D-Kamera-Screenshot für visuelle Review."
+        "label": "3D Render",
+        "descriptionFull": "Screenshot of the current 3D camera view for visual review.",
+        "descriptionShort": "Current 3D camera screenshot for visual review."
       },
       "projectFile": {
-        "label": "Projektdatei",
-        "descriptionFull": "Bearbeitbares Backup zum Wiederöffnen, Teilen oder Archivieren in TrackDraw.",
-        "descriptionShort": "Bearbeitbares Backup zum Wiederöffnen oder Archivieren in TrackDraw."
+        "label": "Project File",
+        "descriptionFull": "Editable backup for reopening, sharing, or archiving in TrackDraw.",
+        "descriptionShort": "Editable backup for reopening or archiving in TrackDraw."
       },
       "racePack": {
         "label": "Race Pack",
-        "descriptionFull": "Aufbau-Übergabe für den Renntag mit Karte, Material, Ablauf und QR.",
-        "descriptionShort": "Aufbau-PDF mit Karte, Material, Ablauf und QR."
+        "descriptionFull": "Race-day setup handoff with map, materials, sequence, and QR.",
+        "descriptionShort": "Setup PDF with map, materials, sequence, and QR."
       },
       "cinematicFpv": {
         "label": "Cinematic FPV",
-        "descriptionFull": "Ein-Runden-Routenvideo zum Prüfen des Flows oder Teilen der Runde.",
-        "descriptionShort": "Ein-Runden-Routenvideo zum Prüfen des Flows."
+        "descriptionFull": "One-loop route video for reviewing the flow or sharing the lap.",
+        "descriptionShort": "One-loop route video for reviewing the flow."
       },
       "velocidrone": {
         "label": "Velocidrone",
-        "descriptionFull": "Experimentelle Velocidrone-Trackdatei zum Testen im Simulator; prüfe das Layout nach dem Import.",
-        "descriptionShort": "Experimentelle Datei zum Testen; nach Import prüfen."
+        "descriptionFull": "Experimental Velocidrone track file for testing in the simulator; check the layout after import.",
+        "descriptionShort": "Experimental file for testing; check after import."
       }
     },
     "errors": {
-      "exportFailed": "Export fehlgeschlagen",
-      "exportFailedDescription": "{message} Versuche es erneut, wechsle das Exportformat oder exportiere die Projekt-JSON als manuelles Backup."
+      "exportFailed": "Export failed",
+      "exportFailedDescription": "{message} Try again, switch export format, or export the project JSON as a manual backup."
     }
   },
   "import": {
-    "dialogTitle": "Projekt öffnen",
-    "dialogSubtitle": "Importiere ein TrackDraw-Projekt aus einer JSON-Datei.",
-    "dropFile": "Datei hier ablegen",
-    "browseFile": "oder klicken zum Durchsuchen",
-    "errorInvalidJson": "Ungültige JSON-Datei.",
-    "errorInvalidJsonHelp": "Ungültige JSON-Datei. Wähle einen vollständigen .json-Export aus TrackDraw und versuche es erneut.",
-    "errorInvalidProject": "Das sieht nicht wie ein TrackDraw-Projekt aus.",
-    "errorInvalidProjectHelp": "Das sieht nicht wie ein TrackDraw-Projekt aus. Wähle eine JSON-Projektdatei, die aus TrackDraw exportiert wurde.",
-    "errorUnsupportedFile": "Nur TrackDraw-JSON-Projektdateien werden unterstützt.",
-    "errorUnsupportedFileHelp": "Nur TrackDraw-JSON-Projektdateien werden unterstützt. Wähle ein aus TrackDraw exportiertes .json-Backup.",
-    "errorReadFailed": "TrackDraw konnte diese Datei nicht lesen.",
-    "errorReadFailedHelp": "TrackDraw konnte diese Datei nicht lesen. Versuche es erneut oder wähle ein anderes Backup.",
-    "toastImportFailed": "Import fehlgeschlagen",
-    "toastUnsupportedFile": "Wähle eine aus TrackDraw exportierte .json-Datei.",
-    "toastInvalidJson": "TrackDraw konnte diese JSON-Datei nicht lesen. Prüfe die Datei und versuche es erneut.",
-    "toastInvalidProject": "Wähle eine aus TrackDraw exportierte JSON-Projektdatei.",
-    "toastReadFailed": "TrackDraw konnte die ausgewählte Datei nicht lesen. Versuche es erneut oder wähle ein anderes Backup.",
-    "untitledProject": "Unbenanntes Projekt",
-    "objectCount": "{count, plural, one {# Objekt} other {# Objekte}}",
-    "replaceWarning": "Das aktuelle Projekt wird ersetzt. Exportiere zuerst ein JSON-Backup, wenn du außerhalb des lokalen Autosaves einen manuellen Wiederherstellungspunkt möchtest.",
-    "replaceProject": "Projekt ersetzen",
-    "backupFirst": "Aktuelles Projekt zuerst sichern"
+    "dialogTitle": "Open Project",
+    "dialogSubtitle": "Import a TrackDraw project from a JSON file.",
+    "dropFile": "Drop a file here",
+    "browseFile": "or click to browse",
+    "errorInvalidJson": "Invalid JSON file.",
+    "errorInvalidJsonHelp": "Invalid JSON file. Choose a complete .json export from TrackDraw and try again.",
+    "errorInvalidProject": "This does not look like a TrackDraw project.",
+    "errorInvalidProjectHelp": "This does not look like a TrackDraw project. Choose a JSON project file exported from TrackDraw.",
+    "errorUnsupportedFile": "Only TrackDraw JSON project files are supported.",
+    "errorUnsupportedFileHelp": "Only TrackDraw JSON project files are supported. Choose a .json backup exported from TrackDraw.",
+    "errorReadFailed": "TrackDraw could not read this file.",
+    "errorReadFailedHelp": "TrackDraw could not read this file. Try again or choose another backup.",
+    "toastImportFailed": "Import failed",
+    "toastUnsupportedFile": "Choose a .json file exported from TrackDraw.",
+    "toastInvalidJson": "TrackDraw could not read this JSON file. Check the file and try again.",
+    "toastInvalidProject": "Choose a JSON project file exported from TrackDraw.",
+    "toastReadFailed": "TrackDraw could not read the selected file. Try again or choose another backup.",
+    "untitledProject": "Untitled project",
+    "objectCount": "{count, plural, one {# object} other {# objects}}",
+    "replaceWarning": "The current project will be replaced. Export a JSON backup first if you want a manual restore point outside local autosave.",
+    "replaceProject": "Replace project",
+    "backupFirst": "Back up current project first"
   },
   "share": {
     "dialog": {
       "eyebrow": "Studio",
-      "existingEyebrow": "Geteilter Track",
-      "title": "Teilen",
-      "mobileSubtitle": "Teile einen schreibgeschützten Review-Link für diesen Track"
+      "existingEyebrow": "Shared track",
+      "title": "Share",
+      "mobileSubtitle": "Share a read-only review link for this track"
     },
     "nav": {
-      "shareLink": "Share-Link",
-      "share": "Teilen",
+      "shareLink": "Share link",
+      "share": "Share",
       "embed": "Embed",
-      "gallery": "Galerie"
+      "gallery": "Gallery"
     },
     "currentLink": {
-      "title": "Aktueller geteilter Link",
-      "readOnlyReviewOn": "Schreibgeschützte {view}-Review auf {hostname}"
+      "title": "Current shared link",
+      "readOnlyReviewOn": "Read-only {view} review on {hostname}"
     },
     "content": {
       "share": {
-        "title": "Share-Link",
+        "title": "Share link",
         "description": {
-          "existing": "Kopiere oder sende diesen veröffentlichten schreibgeschützten Link erneut, oder öffne Studio, um eine eigene bearbeitbare Kopie zu erstellen.",
-          "account": "Erstelle oder aktualisiere den dauerhaften schreibgeschützten Link für dieses Kontoprojekt.",
-          "separate": "Erstelle einen separaten dauerhaften schreibgeschützten Link für diese bearbeitbare Kopie oder den lokalen Track.",
-          "anonymous": "Erstelle einen temporären schreibgeschützten Snapshot-Link und steuere, wie lange er aktiv bleibt."
+          "existing": "Copy or resend this published read-only link, or open Studio to make your own editable copy.",
+          "account": "Create or update the durable read-only link for this account project.",
+          "separate": "Create a separate durable read-only link for this editable copy or local track.",
+          "anonymous": "Create a temporary read-only snapshot link and control how long it stays active."
         }
       },
       "gallery": {
-        "title": "Galerie-Sichtbarkeit",
-        "description": "Verwalte, wie dieser veröffentlichte Link in der öffentlichen Galerie erscheint."
+        "title": "Gallery visibility",
+        "description": "Manage how this published link appears in the public gallery."
       },
       "embed": {
         "title": "Embed",
-        "description": "Kopiere iframe-Code für einen über ein Konto veröffentlichten Track, der bis zum Widerruf aktiv bleibt."
+        "description": "Copy iframe code for an account-published track that stays live until revoked."
       },
       "actions": {
-        "descriptionExisting": "Nutze den aktuellen veröffentlichten Link in anderen Apps oder öffne ihn in einem neuen Tab erneut.",
-        "description": "Öffne, sende, widerrufe oder exportiere diese Freigabe, ohne den Track selbst zu ändern."
+        "descriptionExisting": "Use the current published link in other apps or reopen it in a new tab.",
+        "description": "Open, resend, revoke, or export this share without changing the track itself."
       }
     },
     "link": {
       "expiry": {
-        "days": "{days} Tage",
-        "label": "Link läuft ab nach",
-        "description": "Temporäre Snapshots bleiben verfügbar, bis sie ablaufen."
+        "days": "{days} days",
+        "label": "Link expires after",
+        "description": "Temporary snapshots stay available until they expire."
       },
       "titles": {
-        "savedProject": "Link zum gespeicherten Projekt",
-        "newShare": "Neuer Share-Link",
-        "separatePublished": "Separater veröffentlichter Link",
-        "temporary": "Temporärer Link",
-        "noSavedProject": "Noch kein gespeicherter Projektlink",
-        "noSeparate": "Noch kein separater Link",
-        "noTemporary": "Noch kein temporärer Link"
+        "savedProject": "Saved project link",
+        "newShare": "New share link",
+        "separatePublished": "Separate published link",
+        "temporary": "Temporary link",
+        "noSavedProject": "No saved project link yet",
+        "noSeparate": "No separate link yet",
+        "noTemporary": "No temporary link yet"
       },
       "descriptions": {
-        "savedProject": "Dieses gespeicherte Kontoprojekt nutzt einen dauerhaften schreibgeschützten Link. Aktualisieren behält dieselbe URL mit dem neuesten Design.",
-        "newShare": "Diese bearbeitbare Kopie erhält ihren eigenen dauerhaften schreibgeschützten Link. Sie aktualisiert keinen veröffentlichten Link eines anderen Projekts.",
-        "createSavedProject": "Erstelle eine dauerhafte URL für dieses Kontoprojekt. Zukünftige Updates können denselben Link behalten.",
-        "createSeparate": "Erstelle eine dauerhafte URL für diese Kopie, ohne frühere Freigaben zu ändern.",
-        "createTemporary": "Wähle, wann er abläuft, und erstelle einen schreibgeschützten Snapshot."
+        "savedProject": "This saved account project uses one durable read-only link. Updating it keeps the same URL with the latest design.",
+        "newShare": "This editable copy gets its own durable read-only link. It will not update another project's published link.",
+        "createSavedProject": "Create one durable URL for this account project. Future updates can keep the same link.",
+        "createSeparate": "Create a durable URL for this copy without changing any earlier share.",
+        "createTemporary": "Choose when it expires and create a read-only snapshot."
       },
       "lifetime": {
-        "published": "Veröffentlichter Link auf {hostname}, aktiv bis zum Widerruf",
-        "temporary": "Schreibgeschützter Snapshot auf {hostname}, läuft in {days} Tagen ab"
+        "published": "Published link on {hostname}, stays live until revoked",
+        "temporary": "Read-only snapshot on {hostname}, expires in {days} days"
       },
       "warnings": {
-        "outdatedDesign": "Dieser Link spiegelt nicht mehr das neueste Design wider.",
-        "outdatedExpiry": "Dieser Link spiegelt nicht mehr die neueste Ablauf-Auswahl wider."
+        "outdatedDesign": "This link no longer reflects the latest design.",
+        "outdatedExpiry": "This link no longer reflects the latest expiry selection."
       }
     },
     "embed": {
-      "iframeTitle": "TrackDraw Track Embed",
+      "iframeTitle": "TrackDraw track embed",
       "code": {
-        "title": "Embed-Code",
-        "description": "Über Konten veröffentlichte Tracks können auf Club- oder Event-Websites eingebettet werden.",
-        "label": "Iframe-Code",
-        "selectedViewDescription": "Enthält die ausgewählte Startansicht.",
-        "copy": "Code kopieren"
+        "title": "Embed code",
+        "description": "Account-published tracks can be embedded on club or event sites.",
+        "label": "Iframe code",
+        "selectedViewDescription": "Includes the selected initial view.",
+        "copy": "Copy code"
       },
       "state": {
-        "loading": "Embed-Status wird geladen…"
+        "loading": "Loading embed state…"
       },
       "publish": {
-        "title": "Vor dem Einbetten veröffentlichen",
-        "description": "Embeds nutzen den dauerhaften über das Konto veröffentlichten Link. Erstelle daher den veröffentlichten Link, bevor du iframe-Code kopierst.",
-        "action": "Veröffentlichten Link erstellen"
+        "title": "Publish before embedding",
+        "description": "Embeds use the durable account-published link, so create the published link before copying iframe code.",
+        "action": "Create published link"
       },
       "temporary": {
-        "title": "Temporäre Links können nicht eingebettet werden",
-        "description": "Melde dich an und veröffentliche diesen Track über dein Konto, um ein dauerhaftes Embed zu erstellen."
+        "title": "Temporary links cannot be embedded",
+        "description": "Sign in and publish this track from your account to create a durable embed."
       },
       "refresh": {
-        "message": "Aktualisiere zuerst den veröffentlichten Link, damit das Embed das neueste Design nutzt.",
-        "action": "Link aktualisieren"
+        "message": "Update the published link first so the embed uses the latest design.",
+        "action": "Update link"
       },
       "initialView": {
-        "label": "Startansicht",
+        "label": "Initial view",
         "options": {
           "layout2d": {
-            "label": "2D-Layout",
-            "description": "Als flachen Feldplan öffnen"
+            "label": "2D layout",
+            "description": "Open as the flat field plan"
           },
           "preview3d": {
-            "label": "3D-Vorschau",
-            "description": "In der Orbit-Review öffnen"
+            "label": "3D preview",
+            "description": "Open in the orbit review"
           }
         }
       }
     },
     "gallery": {
       "status": {
-        "loading": "Aktueller Status wird geladen",
-        "featured": "In Galerie hervorgehoben",
-        "listed": "In Galerie gelistet",
-        "hiddenByModeration": "Durch Moderation ausgeblendet",
-        "linkOnly": "Nur Link",
-        "noPublishedLink": "Kein veröffentlichter Link",
-        "checking": "Prüfen",
-        "noLink": "Kein Link",
-        "expiresInDays": "Läuft in {days} Tagen ab",
-        "noExpiry": "Kein Ablauf"
+        "loading": "Loading current state",
+        "featured": "Featured in gallery",
+        "listed": "Listed in gallery",
+        "hiddenByModeration": "Hidden by moderation",
+        "linkOnly": "Link only",
+        "noPublishedLink": "No published link",
+        "checking": "Checking",
+        "noLink": "No link",
+        "expiresInDays": "Expires in {days} days",
+        "noExpiry": "No expiry"
       },
       "descriptions": {
-        "checking": "Aktueller Galerie-Status wird geprüft.",
-        "featured": "In der öffentlichen Galerie sichtbar und oben angepinnt.",
-        "listed": "In der öffentlichen Galerie sichtbar.",
-        "hidden": "Durch Moderation ausgeblendet. Der direkte Link funktioniert weiterhin, bis er widerrufen wird.",
-        "linkOnly": "Nur Share-Link. Nicht in der öffentlichen Galerie sichtbar.",
-        "noLink": "Erstelle zuerst einen Share-Link."
+        "checking": "Checking the current gallery status.",
+        "featured": "Visible in the public gallery and pinned near the top.",
+        "listed": "Visible in the public gallery.",
+        "hidden": "Hidden by moderation. The direct link still works until it is revoked.",
+        "linkOnly": "Share link only. Not visible in the public gallery.",
+        "noLink": "Create a share link first."
       },
       "labels": {
-        "visibility": "Sichtbarkeit",
-        "shareLink": "Share-Link",
-        "author": "Autor"
+        "visibility": "Visibility",
+        "shareLink": "Share link",
+        "author": "Author"
       },
       "publishFirst": {
-        "title": "Vor dem Listen veröffentlichen",
-        "description": "Die Galerie nutzt den aktuellen veröffentlichten Snapshot. Daher ist ein Share-Link erforderlich, bevor dieser Track gelistet werden kann.",
-        "action": "Zuerst Share-Link erstellen"
+        "title": "Publish before listing",
+        "description": "The gallery uses the current published snapshot, so a share link is required before this track can be listed.",
+        "action": "Create share link first"
       },
       "moderation": {
-        "title": "Moderationssperre",
-        "description": "Dieser Track ist durch Moderation aus der Galerie ausgeblendet. Der direkte Share-Link kann weiter funktionieren, bis er widerrufen wird."
+        "title": "Moderation lock",
+        "description": "This track is hidden from the gallery by moderation. The direct share link can still work until it is revoked."
       },
       "details": {
-        "title": "Galeriedetails",
-        "description": "Aktualisiere Titel und Beschreibung, die auf der öffentlichen Galerie-Karte angezeigt werden.",
-        "edit": "Details bearbeiten"
+        "title": "Gallery details",
+        "description": "Update the title and description shown on the public gallery card.",
+        "edit": "Edit details"
       },
       "list": {
-        "title": "In Galerie listen",
-        "description": "Füge Titel, Beschreibung und generierte Vorschau für öffentliches Browsen hinzu.",
-        "add": "Zur Galerie hinzufügen",
-        "readyTitle": "Bereit zum Listen",
-        "readyDescription": "Füge diesen veröffentlichten Snapshot mit eigenem Titel, Beschreibung und Vorschau zur öffentlichen Galerie hinzu."
+        "title": "List in gallery",
+        "description": "Add a title, description and generated preview for public browsing.",
+        "add": "Add to gallery",
+        "readyTitle": "Ready to list",
+        "readyDescription": "Add this published snapshot to the public gallery with its own title, description and preview."
       },
       "fields": {
-        "titlePlaceholder": "Track-Titel",
-        "descriptionPlaceholder": "Kurze Beschreibung für die Galerie-Karte"
+        "titlePlaceholder": "Track title",
+        "descriptionPlaceholder": "Short description for the gallery card"
       },
       "validation": {
-        "titleRequired": "Füge vor dem Speichern einen Titel hinzu.",
-        "descriptionLength": "Verwende {min}-{max} Zeichen für die Beschreibung.",
-        "displayNameRequired": "Lege zuerst einen Anzeigenamen für dein Konto fest.",
-        "noMetadataChanges": "Aktualisiere Titel oder Beschreibung, um Änderungen zu speichern.",
-        "refreshShareFirst": "Aktualisiere zuerst den Share-Link, damit die Galerie den neuesten Snapshot nutzt."
+        "titleRequired": "Add a title before saving.",
+        "descriptionLength": "Use {min}-{max} characters for the description.",
+        "displayNameRequired": "Set an account display name first.",
+        "noMetadataChanges": "Update the title or description to save changes.",
+        "refreshShareFirst": "Update the share link first so the gallery uses the latest snapshot."
       },
       "preview": {
-        "generating": "Vorschau wird generiert...",
-        "ready": "Vorschau bereit"
+        "generating": "Generating preview...",
+        "ready": "Preview ready"
       },
       "card": {
-        "title": "Galerie-Karte",
-        "description": "Prüfe oder aktualisiere öffentlichen Titel und Beschreibung für diesen Track.",
-        "untitled": "Unbenannt",
-        "noDescription": "Keine Galerie-Beschreibung gesetzt.",
-        "viewGallery": "Galerie ansehen"
+        "title": "Gallery card",
+        "description": "Review or update the public title and description for this track.",
+        "untitled": "Untitled",
+        "noDescription": "No gallery description set.",
+        "viewGallery": "View gallery"
       },
       "remove": {
-        "confirm": "Aus der öffentlichen Galerie entfernen? Der Share-Link selbst funktioniert weiter, bis er widerrufen wird.",
-        "action": "Aus Galerie entfernen"
+        "confirm": "Remove from the public gallery? The share link itself will continue to work until it is revoked.",
+        "action": "Remove from gallery"
       },
       "fallback": {
-        "noDisplayName": "kein Anzeigename gesetzt"
+        "noDisplayName": "no display name set"
       }
     },
     "actions": {
       "primary": {
-        "updateLink": "Link aktualisieren",
-        "copyLink": "Link kopieren",
-        "createLink": "Link erstellen",
-        "createNewLink": "Neuen Link erstellen"
+        "updateLink": "Update link",
+        "copyLink": "Copy link",
+        "createLink": "Create link",
+        "createNewLink": "Create new link"
       },
-      "copyLink": "Link kopieren",
-      "revoke": "Widerrufen",
+      "copyLink": "Copy link",
+      "revoke": "Revoke",
       "share": {
-        "existingDescription": "Diese Seite ist bereits der veröffentlichte schreibgeschützte Review-Link. Teile sie unverändert oder öffne Studio, wenn du eine bearbeitbare Kopie möchtest.",
-        "withPathDescription": "Geteilte Links öffnen als schreibgeschützte Review-Seiten. Dieser Link öffnet direkt in der {view}-Review und die Route ist für Fly-through bereit.",
-        "withoutPathDescription": "Geteilte Links öffnen als schreibgeschützte Review-Seiten. Füge zuerst einen Pfad hinzu, wenn Reviewer Fly-through und Höhenprüfung nutzen sollen."
+        "existingDescription": "This page is already the published read-only review link. Share it as-is, or open Studio if you want an editable copy.",
+        "withPathDescription": "Shared links open as read-only review pages. This link opens straight into {view} review, and the route is ready for fly-through.",
+        "withoutPathDescription": "Shared links open as read-only review pages. Add a path first if you want reviewers to use fly-through and elevation review."
       },
       "nativeShare": {
-        "title": "Teilen über...",
-        "description": "An Apps oder Kontakte senden"
+        "title": "Share via...",
+        "description": "Send to apps or contacts"
       },
       "openInTab": {
-        "label": "In Tab öffnen",
-        "reopenCurrent": "Aktuellen geteilten Link in neuem Tab erneut öffnen",
-        "previewLink": "Share-Link in neuem Fenster ansehen"
+        "label": "Open in tab",
+        "reopenCurrent": "Reopen the current shared link in a new tab",
+        "previewLink": "Preview the share link in a new window"
       },
       "exportJson": {
-        "label": "Stattdessen JSON exportieren",
-        "description": "Bearbeitbares Backup zum Wiederöffnen in TrackDraw"
+        "label": "Export JSON instead",
+        "description": "Editable backup for reopening in TrackDraw"
       }
     },
     "errors": {
-      "createFailed": "Share-Link konnte nicht erstellt werden",
-      "createFailedDescription": "TrackDraw konnte den aktuellen Snapshot nicht veröffentlichen. Prüfe deine Verbindung und versuche es erneut; exportiere JSON, wenn du den Track jetzt weitergeben musst.",
-      "copyFailed": "Link konnte nicht kopiert werden",
-      "copyFailedDescription": "Der Link ist möglicherweise noch im Feld verfügbar. Markiere ihn und kopiere manuell, wenn der Browser den Clipboard-Zugriff blockiert.",
-      "nativeShareFailed": "Teilen konnte nicht geöffnet werden",
-      "nativeShareFailedDescription": "Dieser Browser konnte das System-Teilen nicht öffnen. Kopiere stattdessen den Link.",
-      "revokeFailed": "Link konnte nicht widerrufen werden",
-      "revokeFailedDescription": "Der Link ist möglicherweise noch aktiv. Versuche es erneut in diesem Dialog oder im Freigaben-Tab des Projektmanagers.",
-      "embedCopyFailed": "Embed-Code konnte nicht kopiert werden",
-      "embedCopyFailedDescription": "Der Embed-Code ist weiterhin sichtbar. Markiere ihn und kopiere manuell, wenn der Browser den Clipboard-Zugriff blockiert.",
-      "galleryListFailed": "Konnte nicht in Galerie gelistet werden",
-      "galleryListFailedDescription": "Der Share-Link wurde nicht zur öffentlichen Galerie hinzugefügt. Prüfe Titel, Beschreibung, Vorschau und Verbindung, bevor du es erneut versuchst.",
-      "galleryRemoveFailed": "Konnte nicht aus Galerie entfernt werden",
-      "galleryRemoveFailedDescription": "Der Galerieeintrag ist möglicherweise noch sichtbar. Versuche es erneut oder widerrufe den Share-Link, wenn er nicht mehr erreichbar sein darf.",
-      "galleryUpdateFailed": "Galeriedetails konnten nicht aktualisiert werden",
-      "galleryUpdateFailedDescription": "Die veröffentlichte Galerie-Karte wurde nicht geändert. Prüfe Titel und Beschreibung und versuche es erneut.",
-      "unableToReadLink": "Aktueller Share-Link konnte nicht gelesen werden",
-      "unableToReadLinkDescription": "Lade diese Share-Seite neu oder öffne den Link über den Projektmanager, wenn es eine über das Konto veröffentlichte Freigabe ist."
+      "createFailed": "Could not create share link",
+      "createFailedDescription": "TrackDraw could not publish the current snapshot. Check your connection and try again; export JSON if you need to hand it off now.",
+      "copyFailed": "Could not copy link",
+      "copyFailedDescription": "The link may still be available in the field. Select it and copy manually if the browser blocks clipboard access.",
+      "nativeShareFailed": "Could not open sharing",
+      "nativeShareFailedDescription": "This browser could not open the system share sheet. Copy the link instead.",
+      "revokeFailed": "Could not revoke link",
+      "revokeFailedDescription": "The link may still be active. Try again from this dialog or the Project Manager shares tab.",
+      "embedCopyFailed": "Could not copy embed code",
+      "embedCopyFailedDescription": "The embed code is still visible. Select it and copy manually if the browser blocks clipboard access.",
+      "galleryListFailed": "Could not list in gallery",
+      "galleryListFailedDescription": "The share link was not added to the public gallery. Check the title, description, preview, and connection before trying again.",
+      "galleryRemoveFailed": "Could not remove from gallery",
+      "galleryRemoveFailedDescription": "The gallery entry may still be visible. Try again, or revoke the share link if it must stop being accessible.",
+      "galleryUpdateFailed": "Could not update gallery details",
+      "galleryUpdateFailedDescription": "The published gallery card was not changed. Check the title and description, then try again.",
+      "unableToReadLink": "Unable to read the current share link",
+      "unableToReadLinkDescription": "Reload this share page, or open the link from Project Manager if it is an account-published share."
     },
     "success": {
-      "linkUpdated": "Link aktualisiert",
-      "linkCreated": "Link erstellt",
-      "linkCopied": "Link kopiert",
-      "embedCopied": "Embed-Code kopiert",
-      "galleryListed": "Track in Galerie gelistet",
-      "galleryUpdated": "Galeriedetails aktualisiert",
-      "linkRevoked": "Link widerrufen"
+      "linkUpdated": "Link updated",
+      "linkCreated": "Link created",
+      "linkCopied": "Link copied",
+      "embedCopied": "Embed code copied",
+      "galleryListed": "Track listed in gallery",
+      "galleryUpdated": "Gallery details updated",
+      "linkRevoked": "Link revoked"
     }
   },
   "projectManager": {
     "dialog": {
       "eyebrow": "Studio",
-      "title": "Projekte",
-      "mobileSubtitle": "Öffnen, umbenennen, synchronisieren oder wiederherstellen."
+      "title": "Projects",
+      "mobileSubtitle": "Open, rename, sync or restore."
     },
     "nav": {
-      "thisDevice": "Dieses Gerät",
-      "shares": "Freigaben",
+      "thisDevice": "This device",
+      "shares": "Shares",
       "snapshots": "Snapshots"
     },
     "panels": {
       "device": {
-        "label": "Auf diesem Gerät",
-        "description": "Lokale Kopien, die auf diesem Gerät gespeichert sind. Synchronisierte Projekte können auch unter Konto erscheinen."
+        "label": "On this device",
+        "description": "Local copies saved on this device. Synced projects can also appear in Account."
       },
       "account": {
-        "label": "Kontoprojekte",
-        "description": "Kontokopien, die auf deinen angemeldeten Geräten verfügbar sind. Öffne eines hier, um diesen Browser zu aktualisieren."
+        "label": "Account projects",
+        "description": "Account copies available on your signed-in devices. Open one here to refresh this browser."
       },
       "snapshots": {
         "label": "Snapshots",
-        "description": "Frühere gespeicherte Zustände des aktuellen Projekts. Stelle einen beliebigen Punkt wieder her, um Änderungen zurückzusetzen."
+        "description": "Earlier saved states of the current project. Restore any point to roll back changes."
       },
       "shares": {
-        "label": "Veröffentlichte Freigaben",
-        "description": "Aktive Share-Links, die über dein Konto veröffentlicht wurden. Kopiere, öffne oder widerrufe sie hier."
+        "label": "Published shares",
+        "description": "Active share links published from your account. Copy, open or revoke them here."
       }
     },
     "shared": {
-      "currentBadge": "aktuell",
-      "itemCount": "{count, plural, one {# Element} other {# Elemente}}",
+      "currentBadge": "current",
+      "itemCount": "{count, plural, one {# item} other {# items}}",
       "relativeTime": {
-        "justNow": "gerade eben",
-        "minutes": "vor {count} Min.",
-        "hours": "vor {count} Std.",
-        "days": "vor {count} Tg."
+        "justNow": "just now",
+        "minutes": "{count}m ago",
+        "hours": "{count}h ago",
+        "days": "{count}d ago"
       }
     },
     "device": {
       "sync": {
-        "resolveConflict": "Synchronisierungskonflikt lösen",
-        "retry": "Synchronisierung erneut versuchen",
-        "updateAccountCopy": "Kontokopie aktualisieren",
-        "syncToAccount": "Mit Konto synchronisieren",
-        "conflictDescription": "Dieses Projekt wurde auf einem anderen Gerät geändert. Prüfe die Version, bevor du fortfährst.",
-        "failedDescription": "Die letzte Synchronisierung ist fehlgeschlagen. Versuche, die neueste lokale Version erneut zu senden.",
-        "pendingDescription": "Übertrage die neuesten lokalen Änderungen in dein Konto.",
-        "updateDescription": "Ersetze die synchronisierte Kontokopie durch diese Geräteversion.",
-        "description": "Mache dieses Projekt auf deinen angemeldeten Geräten verfügbar.",
-        "localChangesWaiting": "Lokale Änderungen warten auf Synchronisierung",
-        "latestLocalCopySaved": "Neueste lokale Kopie gespeichert {relativeTime}",
-        "changedOnAnotherDevice": "Dieses Projekt wurde auf einem anderen Gerät geändert",
-        "couldNotSyncProject": "Dieses Projekt konnte nicht synchronisiert werden",
-        "resolveVersionConflict": "Versionskonflikt lösen"
+        "resolveConflict": "Resolve sync conflict",
+        "retry": "Retry sync",
+        "updateAccountCopy": "Update account copy",
+        "syncToAccount": "Sync to account",
+        "conflictDescription": "This project changed on another device. Review the version before continuing.",
+        "failedDescription": "The last sync failed. Try sending the latest local version again.",
+        "pendingDescription": "Push the latest local changes to your account.",
+        "updateDescription": "Replace the synced account copy with this device version.",
+        "description": "Make this project available on your signed-in devices.",
+        "localChangesWaiting": "Local changes are waiting to sync",
+        "latestLocalCopySaved": "Latest local copy saved {relativeTime}",
+        "changedOnAnotherDevice": "This project changed on another device",
+        "couldNotSyncProject": "Could not sync this project",
+        "resolveVersionConflict": "Resolve version conflict"
       },
       "status": {
-        "syncing": "Synchronisiert",
-        "reviewNeeded": "Prüfung nötig",
-        "failed": "Synchronisierung fehlgeschlagen",
-        "synced": "Synchronisiert",
-        "localOnly": "Nur lokal"
+        "syncing": "Syncing",
+        "reviewNeeded": "Review needed",
+        "failed": "Sync failed",
+        "synced": "Synced",
+        "localOnly": "Local only"
       },
       "meta": {
-        "localCopyWaitingToSync": "{itemLabel} · lokale Kopie wartet auf Synchronisierung",
-        "localCopySynced": "{itemLabel} · lokale Kopie synchronisiert {relativeTime}",
-        "localCopy": "{itemLabel} · lokale Kopie",
-        "onlyOnThisDevice": "{itemLabel} · nur auf diesem Gerät · {relativeTime}",
-        "onThisDeviceSubtitle": "{itemLabel} auf diesem Gerät"
+        "localCopyWaitingToSync": "{itemLabel} · local copy waiting to sync",
+        "localCopySynced": "{itemLabel} · local copy synced {relativeTime}",
+        "localCopy": "{itemLabel} · local copy",
+        "onlyOnThisDevice": "{itemLabel} · only on this device · {relativeTime}",
+        "onThisDeviceSubtitle": "{itemLabel} on this device"
       },
       "aria": {
-        "resolveVersionConflictFor": "Versionskonflikt für {title} lösen",
-        "retrySyncFor": "Synchronisierung für {title} erneut versuchen",
-        "updateAccountCopyFor": "Kontokopie für {title} aktualisieren",
-        "syncProjectToAccount": "{title} mit Konto synchronisieren",
-        "exportProjectAsJson": "{title} als JSON exportieren",
-        "manageProject": "{title} verwalten",
-        "renameProject": "{title} umbenennen",
-        "deleteProject": "{title} löschen"
+        "resolveVersionConflictFor": "Resolve version conflict for {title}",
+        "retrySyncFor": "Retry sync for {title}",
+        "updateAccountCopyFor": "Update account copy for {title}",
+        "syncProjectToAccount": "Sync {title} to account",
+        "exportProjectAsJson": "Export {title} as JSON",
+        "manageProject": "Manage {title}",
+        "renameProject": "Rename {title}",
+        "deleteProject": "Delete {title}"
       },
       "actions": {
-        "confirmRenameTitle": "Umbenennen bestätigen",
-        "more": "Weitere Aktionen",
-        "newProject": "Neues Projekt",
-        "newProjectDescription": "Starte einen frischen Track oder nutze ein Starter-Layout.",
-        "cleanUpLocal": "Lokal aufräumen",
-        "cleanUpLocalDescription": "Ältere Kopien nur von diesem Gerät entfernen.",
-        "renameDescription": "Gib diesem Projekt einen klareren Namen.",
-        "openBadge": "offen"
+        "confirmRenameTitle": "Confirm rename",
+        "more": "More actions",
+        "newProject": "New project",
+        "newProjectDescription": "Start a fresh track or use a starter layout.",
+        "cleanUpLocal": "Clean up local",
+        "cleanUpLocalDescription": "Remove older copies from this device only.",
+        "renameDescription": "Give this project a clearer name.",
+        "openBadge": "open"
       },
       "export": {
-        "json": "JSON exportieren",
-        "jsonDescription": "Dieses Projekt als wiederverwendbare TrackDraw-Datei herunterladen."
+        "json": "Export JSON",
+        "jsonDescription": "Download this project as a reusable TrackDraw file."
       },
       "delete": {
-        "localProject": "Lokales Projekt löschen?",
-        "localProjectDescription": "Entfernt diese lokale Kopie.",
-        "permanently": "Dauerhaft löschen?",
-        "permanentlyDescription": "Dies entfernt nur das lokale Projekt aus diesem Browser.",
-        "localProjectActionDescription": "Dieses lokale Projekt vom Gerät entfernen.",
-        "removeLocalProjectsTitle": "{count, plural, one {# lokales Projekt entfernen} other {# lokale Projekte entfernen}}?",
-        "accountSyncedCopiesStayAvailable": "Kontosynchronisierte Kopien bleiben in deinem Konto verfügbar."
+        "localProject": "Delete local project?",
+        "localProjectDescription": "Removes this local copy.",
+        "permanently": "Delete permanently?",
+        "permanentlyDescription": "This only removes the local project from this browser.",
+        "localProjectActionDescription": "Remove this local project from the device.",
+        "removeLocalProjectsTitle": "Remove {count, plural, one {# local project} other {# local projects}}?",
+        "accountSyncedCopiesStayAvailable": "Account-synced copies stay available in your account."
       },
       "groups": {
-        "localCopiesLinkedToAccount": "Lokale Kopien mit Konto verknüpft",
-        "onlyOnThisDevice": "Nur auf diesem Gerät"
+        "localCopiesLinkedToAccount": "Local copies linked to account",
+        "onlyOnThisDevice": "Only on this device"
       },
       "empty": {
-        "noProjects": "Keine gespeicherten Projekte",
-        "noProjectsDescription": "Projekte, die du speicherst, erscheinen hier."
+        "noProjects": "No saved projects",
+        "noProjectsDescription": "Projects you save will appear here."
       },
       "fallback": {
-        "project": "Projekt",
-        "untitled": "Unbenannt"
+        "project": "project",
+        "untitled": "Untitled"
       }
     },
     "account": {
       "aria": {
-        "resolveVersionConflictFor": "Versionskonflikt für {title} lösen",
-        "retrySyncFor": "Synchronisierung für {title} erneut versuchen",
-        "syncPendingChangesFor": "Ausstehende Änderungen für {title} synchronisieren"
+        "resolveVersionConflictFor": "Resolve version conflict for {title}",
+        "retrySyncFor": "Retry sync for {title}",
+        "syncPendingChangesFor": "Sync pending changes for {title}"
       },
       "meta": {
-        "accountCopyWaitingToSync": "{itemLabel} · Kontokopie wartet auf Synchronisierung",
-        "accountCopySynced": "{itemLabel} · Kontokopie synchronisiert {relativeTime}"
+        "accountCopyWaitingToSync": "{itemLabel} · account copy waiting to sync",
+        "accountCopySynced": "{itemLabel} · account copy synced {relativeTime}"
       },
       "status": {
-        "loadingProjects": "Kontoprojekte werden geladen...",
-        "syncing": "Synchronisiert",
-        "reviewNeeded": "Prüfung nötig",
-        "failed": "Synchronisierung fehlgeschlagen",
-        "synced": "Synchronisiert"
+        "loadingProjects": "Loading account projects...",
+        "syncing": "Syncing",
+        "reviewNeeded": "Review needed",
+        "failed": "Sync failed",
+        "synced": "Synced"
       },
       "empty": {
-        "noProjects": "Keine Kontoprojekte",
-        "description": "Synchronisiere ein Projekt, um es geräteübergreifend verfügbar zu machen."
+        "noProjects": "No account projects",
+        "description": "Sync a project to make it available across devices."
       },
       "messages": {
-        "loadFailed": "Kontoprojekte konnten nicht geladen werden",
-        "loadFailedDescription": "Lokale Projekte auf diesem Gerät bleiben verfügbar. Prüfe deine Verbindung oder melde dich erneut an und öffne danach den Projektmanager erneut.",
-        "conflictWarning": "Dieses Projekt wurde auf einem anderen Gerät geändert, während du abgemeldet warst",
-        "syncError": "Neueste Änderungen konnten nicht synchronisiert werden",
-        "localCopySavedAfterFailure": "Neueste lokale Kopie gespeichert {relativeTime}",
-        "resolveConflictFirst": "Löse zuerst den Versionskonflikt"
+        "loadFailed": "Could not load account projects",
+        "loadFailedDescription": "Local projects on this device remain available. Check your connection or sign in again, then reopen Project Manager.",
+        "conflictWarning": "This project changed on another device while you were signed out",
+        "syncError": "Could not sync the latest changes",
+        "localCopySavedAfterFailure": "Latest local copy saved {relativeTime}",
+        "resolveConflictFirst": "Resolve the version conflict first"
       },
       "actions": {
-        "retrySync": "Synchronisierung erneut versuchen",
-        "syncPendingChanges": "Ausstehende Änderungen synchronisieren"
+        "retrySync": "Retry sync",
+        "syncPendingChanges": "Sync pending changes"
       },
       "fallback": {
-        "untitled": "Unbenannt"
+        "untitled": "Untitled"
       }
     },
     "restore": {
       "empty": {
-        "noSnapshots": "Noch keine Snapshots",
-        "description": "Snapshots werden automatisch erstellt, wenn du ein Projekt öffnest oder ersetzt.",
-        "desktopDescription": "Drücke <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> oder nutze den Speicherbutton im Header."
+        "noSnapshots": "No snapshots yet",
+        "description": "Snapshots are created automatically when you open or replace a project.",
+        "desktopDescription": "Press <kbdMeta>⌘S</kbdMeta> / <kbdCtrl>Ctrl S</kbdCtrl> or use the save button in the header."
       },
       "actions": {
-        "restoreTitle": "Diesen Snapshot wiederherstellen",
-        "deleteTitle": "Snapshot löschen",
-        "restore": "Wiederherstellen"
+        "restoreTitle": "Restore this snapshot",
+        "deleteTitle": "Delete snapshot",
+        "restore": "Restore"
       },
       "aria": {
-        "restoreSnapshot": "{title} wiederherstellen",
-        "deleteSnapshot": "{title} löschen"
+        "restoreSnapshot": "Restore {title}",
+        "deleteSnapshot": "Delete {title}"
       },
       "confirm": {
-        "restoreSnapshot": "Diesen Snapshot wiederherstellen?"
+        "restoreSnapshot": "Restore this snapshot?"
       },
       "status": {
-        "active": "aktiv"
+        "active": "active"
       },
       "fallback": {
-        "snapshot": "Snapshot",
-        "untitled": "Unbenannt"
+        "snapshot": "snapshot",
+        "untitled": "Untitled"
       }
     },
     "shares": {
       "status": {
-        "loadingPublishedShares": "Veröffentlichte Freigaben werden geladen...",
-        "published": "veröffentlicht",
-        "expired": "abgelaufen",
-        "expiresInDays": "{days, plural, one {1 Tag übrig} other {# Tage übrig}}"
+        "loadingPublishedShares": "Loading published shares...",
+        "published": "published",
+        "expired": "expired",
+        "expiresInDays": "{days, plural, one {1 day left} other {# days left}}"
       },
       "messages": {
-        "readOnlyReviewLinks": "Freigaben sind schreibgeschützte Review-Links. Exportiere JSON, wenn jemand ein bearbeitbares TrackDraw-Backup braucht."
+        "readOnlyReviewLinks": "Shares are read-only review links. Export JSON when someone needs an editable TrackDraw backup."
       },
       "empty": {
-        "noShares": "Keine aktiven Freigaben",
-        "description": "Über Konten veröffentlichte Links bleiben aktiv, bis sie widerrufen werden. Temporäre anonyme Links laufen automatisch ab und werden hier nicht verwaltet."
+        "noShares": "No active shares",
+        "description": "Account-published links stay live until revoked. Temporary anonymous links expire automatically and are not managed here."
       },
       "lifetime": {
-        "published": "schreibgeschützter veröffentlichter Link, aktiv bis zum Widerruf",
-        "temporary": "schreibgeschützter temporärer Link, {expiresIn}"
+        "published": "read-only published link, live until revoked",
+        "temporary": "read-only temporary link, {expiresIn}"
       },
       "actions": {
-        "copyLink": "Link kopieren",
-        "openTab": "In neuem Tab öffnen",
-        "revokeLink": "Link widerrufen"
+        "copyLink": "Copy link",
+        "openTab": "Open in new tab",
+        "revokeLink": "Revoke link"
       },
       "aria": {
-        "copyLink": "Share-Link kopieren",
-        "openTab": "Share-Link öffnen",
-        "revokeLink": "Share-Link widerrufen"
+        "copyLink": "Copy share link",
+        "openTab": "Open share link",
+        "revokeLink": "Revoke share link"
       },
       "confirm": {
-        "revokeLink": "Diesen Link widerrufen?"
+        "revokeLink": "Revoke this link?"
       }
     },
     "projectIdCopy": {
-      "success": "Projekt-ID kopiert",
-      "failed": "Projekt-ID konnte aus diesem Browser nicht kopiert werden.",
-      "label": "API-Projekt-ID",
-      "ariaLabel": "API-Projekt-ID kopieren",
-      "action": "Kopieren"
+      "success": "Project ID copied",
+      "failed": "Could not copy the project ID from this browser.",
+      "label": "API project ID",
+      "ariaLabel": "Copy API project ID",
+      "action": "Copy"
     }
   },
   "completeProfile": {
-    "title": "Namen hinzufügen",
-    "subtitle": "Gib deinem Konto einen klaren Anzeigenamen für Cloud-Projekte und geteilte Layouts.",
-    "displayNameLabel": "Anzeigename",
-    "namePlaceholder": "Dein Name",
-    "description": "Das ist der Name, den TrackDraw für Cloud-Projekte und geteilte Layouts anzeigt.",
-    "descriptionWithEmail": "Das ist der Name, den TrackDraw für Cloud-Projekte und geteilte Layouts auf {email} anzeigt.",
-    "skip": "Überspringen",
-    "save": "Namen speichern",
-    "saving": "Speichert…",
-    "nameRequired": "Bitte gib den Namen ein, den TrackDraw anzeigen soll.",
-    "updateFailed": "Kontoname konnte nicht aktualisiert werden.",
-    "success": "Profil aktualisiert"
+    "title": "Add your name",
+    "subtitle": "Give your account a clear display name for cloud projects and sharing.",
+    "displayNameLabel": "Display name",
+    "namePlaceholder": "Your name",
+    "description": "This is the name TrackDraw will show for cloud projects and shared layouts.",
+    "descriptionWithEmail": "This is the name TrackDraw will show for cloud projects and shared layouts on {email}.",
+    "skip": "Skip",
+    "save": "Save name",
+    "saving": "Saving…",
+    "nameRequired": "Please enter the name you want TrackDraw to show.",
+    "updateFailed": "Failed to update your account name.",
+    "success": "Profile updated"
   },
   "newProject": {
-    "title": "Neues Projekt",
-    "closeAriaLabel": "Schließen",
-    "subtitle": "Starte mit einem leeren Canvas oder wähle ein Starter-Layout.",
-    "desktopSubtitle": "Starte mit einem leeren Canvas oder wähle ein Starter-Layout.",
+    "title": "New project",
+    "closeAriaLabel": "Close",
+    "subtitle": "Start a blank canvas or pick a starter layout to build on.",
+    "desktopSubtitle": "Start a blank canvas or pick a starter layout to build on.",
     "studioLabel": "Studio",
-    "blankCanvasLabel": "Leeres Canvas",
-    "starterLayoutsLabel": "Starter-Layouts",
-    "saveWarningTitle": "Speichere zuerst deinen aktuellen Track",
-    "saveWarningBody": "Ein neues Projekt ersetzt den Inhalt des Canvas. Exportiere oder sichere zuerst, wenn du ihn behalten möchtest.",
-    "startFreshTitle": "Mit leerem Canvas starten",
-    "startFreshBody": "Feld leeren und den Track von Grund auf bauen.",
-    "exportFirstTitle": "Aktuelles Projekt sichern",
-    "exportFirstBody": "Speichere eine Kopie des aktuellen Tracks, bevor du einen neuen startest."
+    "blankCanvasLabel": "Blank canvas",
+    "starterLayoutsLabel": "Starter layouts",
+    "saveWarningTitle": "Save your current track first",
+    "saveWarningBody": "Starting a new project replaces what's on the canvas. Export or back up first if you want to keep it.",
+    "startFreshTitle": "Start from a blank canvas",
+    "startFreshBody": "Clear the field and build your track from scratch.",
+    "exportFirstTitle": "Back up the current project",
+    "exportFirstBody": "Save a copy of the current track before starting a new one."
   },
   "keyboardShortcuts": {
-    "dialogTitle": "Tastenkürzel",
-    "dialogSubtitle": "Verfügbare Tastatur- und Canvas-Kürzel im Studio.",
-    "sectionTools": "Werkzeuge",
-    "sectionSelection": "Auswahl",
-    "sectionPathEditing": "Pfadbearbeitung",
+    "dialogTitle": "Keyboard Shortcuts",
+    "dialogSubtitle": "Available keyboard and canvas shortcuts in the studio.",
+    "sectionTools": "Tools",
+    "sectionSelection": "Selection",
+    "sectionPathEditing": "Path Editing",
     "sectionCanvas": "Canvas",
     "shortcuts": {
-      "duplicateItems": "Ausgewählte Elemente duplizieren",
-      "copyItems": "Ausgewählte Elemente kopieren",
-      "pasteItems": "Kopierte Elemente einfügen",
-      "rotateLeft": "Ausgewählte Elemente nach links drehen",
-      "rotateRight": "Ausgewählte Elemente nach rechts drehen",
-      "mouseRotateSnap": "Mausrotation mit Snap",
-      "mouseRotateFine": "Feine Mausrotation",
-      "keyRotateFine": "Feine Tastenrotation",
-      "deleteItems": "Ausgewählte Elemente löschen",
-      "nudgeItems": "Ausgewählte Elemente verschieben",
-      "fineNudge": "Fein verschieben",
-      "finishPath": "Pfad abschließen",
-      "removeLastPoint": "Letzten Entwurfspunkt entfernen",
-      "deletePathPoint": "Ausgewählten Pfadpunkt löschen",
-      "cancelDraft": "Aktuellen Entwurf abbrechen",
-      "fitView": "Ansicht ans Feld anpassen",
-      "clearSelection": "Auswahl aufheben",
-      "panView": "Ansicht verschieben",
-      "bypassSnap": "Snap vorübergehend umgehen",
-      "zoom": "Zoomen",
-      "saveSnapshot": "Snapshot speichern"
+      "duplicateItems": "Duplicate selected items",
+      "copyItems": "Copy selected items",
+      "pasteItems": "Paste copied items",
+      "rotateLeft": "Rotate selected items left",
+      "rotateRight": "Rotate selected items right",
+      "mouseRotateSnap": "Mouse rotate snap",
+      "mouseRotateFine": "Fine mouse rotate",
+      "keyRotateFine": "Fine key rotate",
+      "deleteItems": "Delete selected items",
+      "nudgeItems": "Nudge selected items",
+      "fineNudge": "Fine nudge",
+      "finishPath": "Finish path",
+      "removeLastPoint": "Remove last draft point",
+      "deletePathPoint": "Delete selected path point",
+      "cancelDraft": "Cancel current draft",
+      "fitView": "Fit view to field",
+      "clearSelection": "Clear selection",
+      "panView": "Pan view",
+      "bypassSnap": "Temporarily bypass snap",
+      "zoom": "Zoom",
+      "saveSnapshot": "Save snapshot"
     }
   },
   "versionConflict": {
-    "title": "Projektversion auswählen",
-    "subtitle": "Wähle die Version, die du auf diesem Gerät weiterverwenden möchtest.",
-    "thisProject": "Dieses Projekt",
-    "body": "wurde auf einem anderen Gerät geändert, während du abgemeldet warst. Wähle, welche Version du auf diesem Gerät weiterverwenden möchtest.",
-    "localVersion": "Version dieses Geräts",
-    "cloudVersion": "Kontoversion",
-    "lastChanged": "Zuletzt geändert {date}",
-    "keepLocal": "Version dieses Geräts behalten",
-    "useCloud": "Kontoversion verwenden"
+    "title": "Choose a project version",
+    "subtitle": "Pick the version you want to keep using on this device.",
+    "thisProject": "This project",
+    "body": "changed on another device while you were signed out. Choose which version you want to keep using on this device.",
+    "localVersion": "This device version",
+    "cloudVersion": "Account version",
+    "lastChanged": "Last changed {date}",
+    "keepLocal": "Keep this device version",
+    "useCloud": "Use account version"
   }
 }
