@@ -32,11 +32,12 @@ jobs:
         with:
           upload_sources: true
           upload_translations: false
-          download_translations: true
+          download_translations: ${{ github.event_name == 'workflow_dispatch' }}
           skip_untranslated_strings: true
+          push_translations: ${{ github.event_name == 'workflow_dispatch' }}
           localization_branch_name: l10n_crowdin
           crowdin_branch_name: main
-          create_pull_request: true
+          create_pull_request: ${{ github.event_name == 'workflow_dispatch' }}
           pull_request_base_branch_name: main
           pull_request_title: "chore(i18n): sync Crowdin translations"
           pull_request_body: >-
