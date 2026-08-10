@@ -53,7 +53,7 @@
     "dragDiveGateMobile": "Sleep ring om te draaien · oranje puck om te kantelen",
     "dragDiveGateDesktop": "Sleep ring om te draaien · sleep oranje puck om te kantelen",
     "dragRing": "Sleep ring om te draaien",
-    "orbitHint": "Orbit om te inspecteren · scroll om te zoomen · middelslepen om te pannen",
+    "orbitHint": "Draai om te inspecteren · scrol om te zoomen · sleep met de middelste muisknop om te pannen",
     "drawRoute": "Teken de route in 2D om fly-through in te schakelen"
   },
   "statusBar": {

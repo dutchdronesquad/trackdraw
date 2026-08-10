@@ -35,7 +35,7 @@
     "view": "视图"
   },
   "dataTable": {
-    "filterPlaceholder": "筛选{title}...",
+    "filterPlaceholder": "筛选{title}……",
     "noResults": "未找到结果。",
     "selectedCount": "已选择 {count} 项",
     "clearFilters": "清除筛选",

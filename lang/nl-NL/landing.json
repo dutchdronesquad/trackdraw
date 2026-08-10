@@ -2,12 +2,12 @@
   "metadata": {
     "homeTitle": "TrackDraw · Drone Race Track Builder",
     "homeSocialTitle": "TrackDraw | Drone Race Track Builder",
-    "homeDescription": "TrackDraw is een drone race track builder voor FPV-raceorganisatoren. Ontwerp tracks op schaal, beoordeel trackflow in 3D en deel alleen-lezen racedaglay-outs.",
-    "homeSocialDescription": "Gebruik TrackDraw als drone race track builder om FPV-lay-outs op schaal te plannen, trackflow in 3D te beoordelen en alleen-lezen racedagplannen te delen.",
+    "homeDescription": "TrackDraw is een ontwerptool voor FPV-raceorganisatoren. Ontwerp tracks op schaal, beoordeel de route in 3D en deel alleen-lezen racedagindelingen.",
+    "homeSocialDescription": "Gebruik TrackDraw om tracks op schaal te plannen, de route in 3D te beoordelen en alleen-lezen racedagplannen te delen.",
     "studioTitle": "Drone Race Track Builder",
     "studioSocialTitle": "TrackDraw | Drone Race Track Builder",
-    "studioDescription": "Open de TrackDraw drone race track builder om FPV-lay-outs op schaal te ontwerpen, gates en obstakels toe te voegen en trackflow in 3D te previewen.",
-    "studioSocialDescription": "Ontwerp FPV drone race tracks op schaal, voeg gates en obstakels toe en preview trackflow in 3D."
+    "studioDescription": "Open TrackDraw om tracks op schaal te ontwerpen, gates en obstakels toe te voegen en de route vooraf in 3D te bekijken.",
+    "studioSocialDescription": "Ontwerp tracks op schaal, voeg gates en obstakels toe en bekijk de route vooraf in 3D."
   },
   "header": {
     "homeAriaLabel": "Home",
@@ -33,7 +33,7 @@
     "eyebrow": "Gemaakt voor FPV-raceorganisatoren",
     "headingLine1": "Racedag begint",
     "headingLine2": "met een plan.",
-    "description": "TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren. Teken op schaal in 2D, check de flow in 3D en deel een alleen-lezen plan met piloten en crew.",
+    "description": "TrackDraw is een browsergebaseerde ontwerptool voor FPV-raceorganisatoren. Teken op schaal in 2D, beoordeel de route in 3D, deel een alleen-lezen indeling met piloten en crew en gebruik het plan op desktop of mobiel.",
     "ctaStudio": "Studio openen",
     "ctaFeatures": "Bekijk de functies",
     "feature1": "Officiële obstakelcatalogus",
@@ -41,7 +41,7 @@
     "feature3": "3D-preview en flythrough",
     "feature4": "Race Pack PDF en SVG",
     "videoAlt": "TrackDraw drone race track builder demo",
-    "videoDescription": "Een korte productdemo die laat zien hoe TrackDraw FPV-raceorganisatoren helpt bij het ontwerpen van een drone race track-lay-out, beoordelen in 3D en delen met piloten en crew."
+    "videoDescription": "Een korte productdemo die laat zien hoe TrackDraw FPV-raceorganisatoren helpt een track te ontwerpen, deze in 3D te beoordelen en met piloten en crew te delen."
   },
   "features": {
     "sectionTitle": "Functies",
@@ -53,7 +53,7 @@
     },
     "obstacleCatalog": {
       "title": "Officiële obstakelcatalogus",
-      "description": "Plaats officiële MultiGP-obstakels met echte afmetingen en nauwkeurige 3D-rendering."
+      "description": "Plaats officiële MultiGP-obstakels (poorten, vlaggen, ladders, horden en barrières) met echte afmetingen en nauwkeurige 3D-rendering."
     },
     "preview3d": {
       "title": "Realistische 3D-preview",
@@ -80,7 +80,7 @@
       "title": "2D-lay-out",
       "subtitle": "Bouw de track op een veld dat overeenkomt met de realiteit.",
       "description": "Begin met de veldafmetingen en plaats herkenbare elementen. Zo wordt de eerste versie direct bruikbaar, niet alleen een ruwe schets.",
-      "screenshotAlt": "TrackDraw 2D-layouteditor met obstacle library en trackplan",
+      "screenshotAlt": "TrackDraw 2D-layouteditor met obstakelbibliotheek en trackplan",
       "bullets": [
         "Veldafmetingen op ware schaal",
         "Gates, flags, cones, startpads en grotere elementen",
@@ -128,7 +128,7 @@
     "items": [
       {
         "question": "Is TrackDraw een drone race track builder?",
-        "answer": "Ja. TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren die schaalnauwkeurige lay-outs, 3D-review, delen en exporteren in één workflow nodig hebben."
+        "answer": "Ja. TrackDraw is een browsergebaseerde ontwerptool voor FPV-raceorganisatoren die nauwkeurige schaalindelingen, 3D-beoordeling, delen en exporteren in één werkwijze nodig hebben."
       },
       {
         "question": "Wat is de beste manier om een FPV-racetrack te plannen?",
@@ -136,7 +136,7 @@
       },
       {
         "question": "Kunnen piloten de lay-out bekijken zonder een account?",
-        "answer": "Ja. Deellinks openen in alleen-lezen modus op elk apparaat, geen account of app vereist. Stuur hem naar piloten, judges of crew en iedereen ziet dezelfde gepubliceerde versie."
+        "answer": "Ja. Deellinks openen op elk apparaat in alleen-lezenmodus, zonder account of app. Stuur de link naar piloten, juryleden of crew; iedereen ziet dezelfde gepubliceerde versie."
       },
       {
         "question": "Werkt het op een tablet op de locatie?",
@@ -144,7 +144,7 @@
       },
       {
         "question": "Welke exportformaten zijn beschikbaar?",
-        "answer": "PDF, PNG, SVG, JSON en een cinematic FPV-video-export. Dat dekt gedrukte race-briefings, deelbare visuals, herbruikbare projectbestanden en een visuele routereview."
+        "answer": "PDF, PNG, SVG, JSON en een filmische FPV-video-export. Daarmee maak je gedrukte racebriefings, deelbare beelden, herbruikbare projectbestanden en een visuele routebeoordeling."
       },
       {
         "question": "Heb ik een account nodig om te beginnen?",
@@ -185,11 +185,11 @@
       "shareLinks": "Deellinks",
       "temporaryLinks": "Tijdelijke links",
       "publishedLinks": "Gepubliceerd totdat ingetrokken",
-      "shareLinksNote": "Gastdeellinks zijn tijdelijk. Account-gepubliceerde links blijven actief totdat ze worden ingetrokken en kunnen ook worden ingesloten.",
+      "shareLinksNote": "Gastdeellinks zijn tijdelijk. Gepubliceerde accountlinks blijven actief totdat ze worden ingetrokken en kunnen ook worden ingesloten.",
       "embeds": "Website-embeds",
       "embedsDetail": "Insluiten op elke website via iframe",
       "gallery": "Galerij publiceren",
-      "cloudProjects": "Cloud-gesynchroniseerde projecten",
+      "cloudProjects": "Cloudprojecten",
       "cloudProjectsDetail": "Projecten synchroniseren met je account zodat je verder kunt op elk apparaat — van desktop thuis tot mobiel op de locatie.",
       "sections": "Tracksecties",
       "sectionsDetail": "Sla elke canvasselectie op als een benoemde preset en plaats hem opnieuw vanuit de presetpicker. Synchroniseert met je account op alle apparaten.",
@@ -234,7 +234,7 @@
   "gallery": {
     "pageTitle": "FPV Drone Race Track Galerij",
     "metaTitle": "TrackDraw | FPV Drone Race Track Galerij",
-    "metaDescription": "Blader door FPV drone race track-ontwerpen gedeeld door de TrackDraw-community.",
+    "metaDescription": "Bekijk tracks die door de TrackDraw-community zijn gedeeld.",
     "sectionLabel": "Galerij",
     "headingLine1": "Ontdek lay-outs die",
     "headingLine2": "je volgende trackontwerp vormgeven.",
@@ -261,7 +261,7 @@
     "logoAriaLabel": "TrackDraw",
     "badge": "Fout 404",
     "heading": "Deze pagina is van de track afgeraakt",
-    "description": "De pagina die je zocht bestaat niet, is mogelijk verplaatst, of nam een verkeerde afslag bij de gate. De laatste track of route zou dichtbij moeten zijn.",
+    "description": "De opgevraagde pagina bestaat niet, is mogelijk verplaatst of heeft een verkeerde afslag bij de gate genomen. De nieuwste track of route is waarschijnlijk vlakbij.",
     "whatToTry": "Wat te proberen",
     "step1": "Ga terug naar de studio en open de laatste track.",
     "step2": "Ga naar home als je hier via een oude bookmark terechtkwam.",

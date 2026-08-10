@@ -10,7 +10,7 @@
   },
   "flagsFinalPass": {
     "label": "Laatste ronde met flags",
-    "note": "Maak het veld af met flag-markeringen en een laatste zichtbaarheidscontrole zodra de genummerde obstakellijn staat."
+    "note": "Maak het veld af met flag-markeringen en controleer tot slot de zichtbaarheid zodra de genummerde obstakellijn staat."
   },
   "conesTrackWalk": {
     "label": "Cones plaatsen tijdens track walk (optioneel)",
@@ -21,13 +21,13 @@
     "note": "Laad het voertuig uit, sorteer ankers en hardware, en leg de kit klaar zodat framevoorbereiding de plaatsing op het veld later niet vertraagt."
   },
   "crewPreassemble": {
-    "label": "Frames en soft goods voor-monteren",
-    "noteWithSoftGoods": "Bereid PVC gate-frames en beach flags voor voordat je items het veld op brengt, zodat de plaatsingsronde gericht kan blijven op de spacing.",
-    "noteWithoutSoftGoods": "Bereid PVC gate-frames voor voordat je items het veld op brengt, zodat de plaatsingsronde gericht kan blijven op de spacing."
+    "label": "Frames en zachte materialen vooraf monteren",
+    "noteWithSoftGoods": "Bereid PVC gate-frames en beach flags voor voordat je de items het veld op brengt, zodat je je tijdens het plaatsen op de onderlinge afstand kunt richten.",
+    "noteWithoutSoftGoods": "Bereid de PVC gate-frames voor voordat je de items het veld op brengt, zodat je je tijdens het plaatsen op de onderlinge afstand kunt richten."
   },
   "crewRiggingCheck": {
     "label": "Rigging- en ankercontrole",
-    "note": "Controleer ankerpunten, bovenliggende lijnen en het vrije-ruimteplan voordat je zwaardere structuren tilt of ophangt."
+    "note": "Controleer ankerpunten, bovenliggende lijnen en het plan voor vrije ruimte voordat je zwaardere constructies tilt of ophangt."
   },
   "obstacleNoteWithNumber": "{note} Gebruik obstakel #{number} op de kaart als plaatsingsreferentie.",
   "summaryHeavy": "{count, plural, one {1 obstakel met hogere inspanning moet worden geplaatst en vastgezet voor de standaard gate-ronde.} other {{count} obstakels met hogere inspanning moeten worden geplaatst en vastgezet voor de standaard gate-ronde.}} De timing gaat uit van een typische crew van 2-3 personen en kan toenemen bij bovenliggende rigging of lange draagafstanden.",
