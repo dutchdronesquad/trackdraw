@@ -239,7 +239,7 @@
     "messages": {
       "ready": "{count, plural, one {1 route-obstakel genummerd.} other {{count} route-obstakels genummerd.}}",
       "partial": "{mapped} van {total} route-obstakels zijn genummerd.",
-      "noRouteMatches": "{count, plural, one {1 route-obstakel gevonden, maar geen ligt dicht genoeg bij de race line.} other {{count} route-obstakels gevonden, maar geen ligt dicht genoeg bij de race line.}}",
+      "noRouteMatches": "{count, plural, one {1 route-obstakel gevonden, maar het ligt niet dicht genoeg bij de race line.} other {{count} route-obstakels gevonden, maar geen ervan ligt dicht genoeg bij de race line.}}",
       "missingRoute": "Ondersteunde obstakels zijn klaar voor een race line.",
       "noNumberedObstacles": "Gates, ladders en dive gates verschijnen in de routenummering.",
       "empty": "Voeg eerst route-obstakels toe."
@@ -328,7 +328,7 @@
         "fix": "Verplaats het waypoint naar buiten of voeg meer ruimte toe voor en na de bocht."
       },
       "close-points": {
-        "summary": "{count, plural, one {Waypoints te dicht bij elkaar nabij {first}} other {{count} dicht opeenstaande waypoints}}",
+        "summary": "{count, plural, one {Waypoints te dicht bij elkaar nabij {first}} other {{count} waypoints te dicht bij elkaar}}",
         "shortLabel": "Dichte waypoints",
         "title": "Waypoints staan te dicht bij elkaar",
         "problem": "Twee waypoints staan zo dicht bij elkaar dat ze een heel klein routesegment vormen.",
