@@ -112,7 +112,7 @@ If a contributor leaves, remove them from platform teams or disable the account.
 
 TrackDraw will run a reversible three-month Crowdin pilot from 2026-08-10 through 2026-11-10, shifting the end date if external activation happens later. Crowdin owns `nl`, `de`, and `zh-CN` editing during the pilot; English remains in GitHub. The repository retains all catalogs and production keeps using generated Static Assets.
 
-The setup, update cycle, evaluation criteria, and rollback are documented in `docs/research/crowdin-pilot.md`. The first external step is a one-namespace `common.json` round trip before enabling all ten namespaces.
+The setup, update cycle, evaluation criteria, and rollback are documented in `docs/research/crowdin-pilot.md`. The initial repository round trip exposed two integration concerns: native synchronization attributed commits to the authorizing maintainer and exported untranslated ICU messages as English target text. The repository-owned GitHub Action avoids personal commit attribution and skips untranslated target strings so the existing runtime fallback remains responsible for temporary English copy.
 
 ## Risks and decisions
 
@@ -132,4 +132,4 @@ The setup, update cycle, evaluation criteria, and rollback are documented in `do
 
 ## Status
 
-Crowdin is selected for a bounded three-month pilot; the permanent platform decision remains open until the evaluation. Repository fallback and synchronization foundations are in place, while external project activation and the initial catalog import remain operator steps.
+Crowdin is selected for a bounded three-month pilot; the permanent platform decision remains open until the evaluation. The project and initial repository round trip are active. Repository fallback and GitHub Action synchronization are in place, while registering Action secrets, disabling the native integration, and completing the bot-authored round trip remain operator steps.

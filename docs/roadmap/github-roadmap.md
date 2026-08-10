@@ -60,7 +60,7 @@ The next TrackDraw priority is generated flightpath validation first, translatio
   - [x] Weblate production requirements researched
         If self-hosting becomes necessary, use an ephemeral pilot before a separate production stack with TLS, SMTP, restricted access, persistent storage, off-host backups, restore testing, monitoring, and deliberate upgrades. A permanent ACC environment is not initially required.
   - [ ] Repository sync workflow
-        Activate the GitHub integration against `main`, import existing translations once, and validate Crowdin's service-branch pull request through normal code review and existing locale integrity checks.
+        The initial native-integration round trip exposed personal commit attribution and untranslated ICU source text in target catalogs. Migrate synchronization to the repository-owned Crowdin GitHub Action, export only translated strings, and validate its bot-authored localization pull request through normal code review and existing locale integrity checks.
   - [ ] Translator guidance
         Document the language-leader model, suggestion-first contributor flow, FPV terminology, placeholders/ICU syntax, compact UI label expectations, and the `dashboard`/`legal` English-only boundary before inviting broader contributor translation work.
 
