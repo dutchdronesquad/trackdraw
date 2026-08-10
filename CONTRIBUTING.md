@@ -150,6 +150,8 @@ npm run i18n:scan-hardcoded
 
 The integrity check allows missing target keys but still rejects missing namespace files, stale extra keys, empty target values, and placeholder mismatches. `dashboard` and `legal` remain English-only and are excluded from Crowdin. See [the Crowdin pilot runbook](docs/research/crowdin-pilot.md) for ownership, synchronization, and rollback.
 
+The repository-owned `Crowdin` GitHub Action uploads changed English sources after they reach `main`. Maintainers can also run it manually to open or update the translation pull request. It exports only translated target strings, uses the repository-scoped GitHub token, and attributes generated commits to `Crowdin Bot` rather than the maintainer who configured Crowdin.
+
 ## Validation
 
 Run these after non-trivial code changes when the environment allows it:
