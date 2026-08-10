@@ -2,29 +2,29 @@
   "kindLabels": {
     "gate": "Gate",
     "tower": "Tower",
-    "flag": "Flagge",
-    "cone": "Kegel",
+    "flag": "Flag",
+    "cone": "Cone",
     "label": "Label",
-    "polyline": "Rennlinie",
-    "startfinish": "Start / Ziel",
+    "polyline": "Race Line",
+    "startfinish": "Start / Finish",
     "ladder": "Ladder",
     "divegate": "Dive Gate",
-    "barrier": "Barriere"
+    "barrier": "Barrier"
   },
   "toolLabels": {
-    "select": "Auswählen",
-    "grab": "Verschieben",
+    "select": "Select",
+    "grab": "Grab",
     "preset": "Presets",
     "gate": "Gate",
     "tower": "Tower",
-    "flag": "Flagge",
-    "cone": "Kegel",
+    "flag": "Flag",
+    "cone": "Cone",
     "label": "Label",
-    "polyline": "Pfad",
-    "startfinish": "Startpads",
+    "polyline": "Path",
+    "startfinish": "Start Pads",
     "ladder": "Ladder",
     "divegate": "Dive Gate",
-    "barrier": "Barriere"
+    "barrier": "Barrier"
   },
   "toolGroups": {
     "track": "Track",
@@ -33,114 +33,114 @@
   "toolMobileLabels": {
     "startfinish": "Start",
     "divegate": "Dive",
-    "barrier": "Barriere"
+    "barrier": "Barrier"
   },
   "mobileStatus": {
     "multiSelect": "Multi",
-    "tool": "Werkzeug",
-    "itemsCount": "{count} Elemente"
+    "tool": "Tool",
+    "itemsCount": "{count} items"
   },
   "canvas": {
-    "selectionCount": "{count} Elemente",
-    "selectionFallback": "Auswahl",
-    "frontLabel": "Vorne"
+    "selectionCount": "{count} items",
+    "selectionFallback": "Selection",
+    "frontLabel": "Front"
   },
   "catalogEntries": {
     "trackdraw-generic-gate": {
       "name": "TrackDraw Gate",
-      "size": "2 × 2 m"
+      "size": "2 x 2 m"
     },
     "multigp-standard-gate-5x5": {
       "name": "MultiGP Standard Gate 5x5",
-      "size": "5 ft × 5 ft"
+      "size": "5 ft x 5 ft"
     },
     "multigp-championship-gate-7x6": {
       "name": "MultiGP Championship Gate 7x6",
-      "size": "7 ft × 6 ft"
+      "size": "7 ft x 6 ft"
     },
     "trackdraw-generic-tower": {
       "name": "TrackDraw Tower",
-      "size": "2 × 2 m, erhöht"
+      "size": "2 x 2 m, elevated"
     },
     "multigp-tower-5x5": {
       "name": "MultiGP Tower 5x5",
-      "size": "5 ft × 5 ft, um 5 ft erhöht"
+      "size": "5 ft x 5 ft, elevated 5 ft"
     },
     "multigp-tower-7x6": {
       "name": "MultiGP Tower 7x6",
-      "size": "7 ft × 6 ft, um 6 ft erhöht"
+      "size": "7 ft x 6 ft, elevated 6 ft"
     },
     "multigp-double-gate-tower-5x5": {
       "name": "MultiGP Double Gate Tower 5x5",
-      "size": "5 ft breit, 2 Öffnungen à 5 ft"
+      "size": "5 ft wide, 2 x 5 ft openings"
     },
     "multigp-double-gate-tower-7x6": {
       "name": "MultiGP Double Gate Tower 7x6",
-      "size": "7 ft breit, 2 Öffnungen à 6 ft"
+      "size": "7 ft wide, 2 x 6 ft openings"
     },
     "trackdraw-generic-flag": {
-      "name": "TrackDraw Flagge",
-      "size": "0,25 m Radius, 3,5 m hoher Mast"
+      "name": "TrackDraw Flag",
+      "size": "0.25 m radius, 3.5 m pole"
     },
     "multigp-corner-flag": {
       "name": "MultiGP Corner Flag",
       "size": "10 ft"
     },
     "trackdraw-generic-cone": {
-      "name": "TrackDraw Kegel",
-      "size": "0,2 m Radius"
+      "name": "TrackDraw Cone",
+      "size": "0.2 m radius"
     },
     "trackdraw-generic-label": {
       "name": "TrackDraw Label",
-      "size": "Textbeschriftung"
+      "size": "Text label"
     },
     "trackdraw-generic-start-finish": {
-      "name": "TrackDraw Start / Ziel",
-      "size": "3 m breit"
+      "name": "TrackDraw Start / Finish",
+      "size": "3 m wide"
     },
     "trackdraw-generic-ladder": {
       "name": "TrackDraw Ladder",
-      "size": "2 × 6 m, 3 Sprossen"
+      "size": "2 x 6 m, 3 rungs"
     },
     "multigp-standard-ladder-5x5": {
       "name": "MultiGP Standard Ladder 5x5",
-      "size": "5 ft breit, 3 Abschnitte à 5 ft"
+      "size": "5 ft wide, 3 × 5 ft sections"
     },
     "multigp-championship-ladder-7x6": {
       "name": "MultiGP Championship Ladder 7x6",
-      "size": "7 ft breit, 3 Öffnungen à 6 ft"
+      "size": "7 ft wide, 3 × 6 ft openings"
     },
     "multigp-topless-ladder-7x6": {
       "name": "MultiGP Topless Ladder 7x6",
-      "size": "7 ft breit, 3 × 6 ft ohne oberen Querholm"
+      "size": "7 ft wide, 3 x 6 ft topless"
     },
     "trackdraw-generic-dive-gate": {
       "name": "TrackDraw Dive Gate",
-      "size": "2,8 m quadratisch"
+      "size": "2.8 m square"
     },
     "multigp-dive-gate-7x6": {
       "name": "MultiGP Dive Gate 7x6",
-      "size": "7 ft × 6 ft"
+      "size": "7 ft x 6 ft"
     },
     "multigp-launch-gate-7x6": {
       "name": "MultiGP Launch Gate 7x6",
-      "size": "7 ft × 6 ft"
+      "size": "7 ft x 6 ft"
     },
     "trackdraw-generic-banner": {
       "name": "TrackDraw Banner",
       "size": "3 × 2 m"
     },
     "trackdraw-generic-fence": {
-      "name": "TrackDraw Zaun",
-      "size": "3 × 1,2 m"
+      "name": "TrackDraw Fence",
+      "size": "3 × 1.2 m"
     },
     "trackdraw-generic-net": {
-      "name": "TrackDraw Netz",
+      "name": "TrackDraw Net",
       "size": "3 × 2 m"
     },
     "multigp-hurdle": {
       "name": "MultiGP Hurdle",
-      "size": "10 ft breit, 5 ft hoch"
+      "size": "10 ft wide, 5 ft tall"
     }
   }
 }
