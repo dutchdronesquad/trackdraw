@@ -31,9 +31,19 @@ Do not edit target-language JSON directly during the pilot, except for a product
 6. Import existing translations once. Enable source-matching translations because FPV and product terms may intentionally remain English. Approve the imported baseline only after a quick catalog review.
 7. Keep repository translation upload disabled after the one-time import. Crowdin remains the source of truth for target catalogs.
 8. Confirm that Crowdin recognizes nested JSON, ICU plurals, and placeholders before inviting translators.
-9. Disable the native Crowdin GitHub integration, close its open localization pull request, and delete its `l10n_main` service branch. The Action uses `l10n_crowdin` instead.
+9. Pause the native Crowdin GitHub integration by clearing its sync schedule before merging the Action workflow. Keep the connection available for rollback until the first Action-generated pull request succeeds.
 
 Never commit a Crowdin API token or project credential. The Action reads both values from GitHub Actions secrets through the environment variable references in `crowdin.yml`.
+
+## QA settings during the pilot
+
+Keep QA checks enabled, but distinguish runtime-breaking syntax from linguistic review:
+
+- set **Variables mismatch**, **ICU syntax**, and **Tags mismatch** to **Error**;
+- set **Spelling mistakes**, punctuation, capitalization, and length checks to **Warning** so a false positive cannot block an otherwise valid translation;
+- leave untranslated strings untranslated instead of saving the English source as a target translation.
+
+An `ISSUES FOUND` or `Spellcheck failed` language indicator means at least one suggestion has an unresolved QA finding; it does not mean the complete language import failed. Open the issue count for that language and review a sample before changing project-wide settings. Add legitimate product names, FPV terminology, acronyms, and retained English technical terms to **Settings > QA Checks > Spellcheck Ignore list**. Glossary terms are not added to this ignore list automatically.
 
 ## Normal update cycle
 
@@ -49,6 +59,16 @@ Never commit a Crowdin API token or project credential. The Action reads both va
 During the pilot, prefer one intentional localization pull request per week or release over hourly repository churn.
 
 The Action exports with `skip_untranslated_strings` enabled. Crowdin therefore omits untranslated target keys instead of copying English ICU source messages into target catalogs. TrackDraw's tested runtime fallback supplies English until a real translation is available. The Action's commit message deliberately does not contain `[ci skip]`, so localization pull requests remain subject to the normal repository checks. GitHub may require a maintainer to approve workflows initiated by `github-actions[bot]`.
+
+## Native integration cutover
+
+1. Add both Action secrets and allow GitHub Actions to create pull requests.
+2. Pause the native integration's sync schedule in Crowdin.
+3. Merge the repository Action workflow.
+4. Close the native integration's localization pull request without merging it and delete `l10n_main` from GitHub.
+5. Manually run the `Crowdin` workflow from the GitHub Actions tab.
+6. Review the bot-authored `l10n_crowdin` pull request and wait for the normal TrackDraw checks.
+7. After that round trip succeeds, remove the native GitHub integration from Crowdin. Do not remove the Crowdin project, its files, translations, translation memory, or glossary.
 
 ## Runtime fallback
 
