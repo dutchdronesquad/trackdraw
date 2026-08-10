@@ -1,90 +1,90 @@
 {
   "actions": {
-    "cancel": "Abbrechen",
-    "close": "Schließen",
-    "copy": "Kopieren",
-    "delete": "Löschen",
-    "duplicate": "Duplizieren",
-    "hide": "Ausblenden",
-    "lock": "Sperren",
-    "remove": "Entfernen",
-    "rename": "Umbenennen",
-    "reset": "Zurücksetzen",
-    "save": "Speichern",
-    "saveChanges": "Änderungen speichern",
-    "select": "Auswählen",
-    "undo": "Rückgängig",
-    "unlock": "Entsperren"
+    "cancel": "Cancel",
+    "close": "Close",
+    "copy": "Copy",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "hide": "Hide",
+    "lock": "Lock",
+    "remove": "Remove",
+    "rename": "Rename",
+    "reset": "Reset",
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "select": "Select",
+    "undo": "Undo",
+    "unlock": "Unlock"
   },
   "labels": {
-    "account": "Konto",
-    "actions": "Aktionen",
+    "account": "Account",
+    "actions": "Actions",
     "dashboard": "Dashboard",
-    "description": "Beschreibung",
-    "expires": "Läuft ab",
-    "language": "Sprache",
+    "description": "Description",
+    "expires": "Expires",
+    "language": "Language",
     "name": "Name",
-    "owner": "Besitzer",
-    "profile": "Profil",
-    "project": "Projekt",
-    "role": "Rolle",
+    "owner": "Owner",
+    "profile": "Profile",
+    "project": "Project",
+    "role": "Role",
     "status": "Status",
-    "theme": "Design",
-    "title": "Titel",
-    "type": "Typ",
-    "view": "Ansicht"
+    "theme": "Theme",
+    "title": "Title",
+    "type": "Type",
+    "view": "View"
   },
   "dataTable": {
-    "filterPlaceholder": "{title} filtern...",
-    "noResults": "Keine Ergebnisse gefunden.",
-    "selectedCount": "{count} ausgewählt",
-    "clearFilters": "Filter löschen",
-    "rowsPerPage": "Zeilen pro Seite",
-    "page": "Seite {current} von {total}",
-    "previousPage": "Vorherige Seite",
-    "nextPage": "Nächste Seite"
+    "filterPlaceholder": "Filter {title}...",
+    "noResults": "No results found.",
+    "selectedCount": "{count} selected",
+    "clearFilters": "Clear filters",
+    "rowsPerPage": "Rows per page",
+    "page": "Page {current} of {total}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   },
   "measurementUnit": {
-    "metric": "Metrisch",
+    "metric": "Metric",
     "imperial": "Imperial",
-    "presetAriaLabel": "Maßeinheiten-Voreinstellung: {current}. Zu {next} wechseln.",
-    "presetLabel": "Maßeinheiten-Voreinstellung: {current}",
-    "description": "Angezeigte Entfernungen und kompatible Eingaben umschalten."
+    "presetAriaLabel": "Measurement preset: {current}. Switch to {next}.",
+    "presetLabel": "Measurement preset: {current}",
+    "description": "Switch displayed distances and compatible inputs."
   },
   "themeToggle": {
     "labels": {
-      "light": "Hell",
-      "dark": "Dunkel",
+      "light": "Light",
+      "dark": "Dark",
       "system": "System"
     },
-    "ariaLabel": "Design: {theme}",
-    "tooltip": "Aktuell: {current}. Klicken für {next}."
+    "ariaLabel": "Theme: {theme}",
+    "tooltip": "Current: {current}. Click for {next}."
   },
   "versionTag": {
     "tooltip": {
-      "openReleaseNotes": "Release Notes auf GitHub öffnen",
-      "openReleaseNotesForCommit": "Commit {sha} · Release Notes auf GitHub öffnen"
+      "openReleaseNotes": "Open release notes on GitHub",
+      "openReleaseNotesForCommit": "commit {sha} · Open release notes on GitHub"
     }
   },
   "runtimeError": {
-    "badge": "Laufzeitfehler",
-    "title": "TrackDraw ist in dieser Ansicht abgestürzt.",
-    "description": "Der aktuelle Bildschirm konnte nicht weiter gerendert werden. Deine lokalen Projektdaten sind normalerweise weiterhin in diesem Browser gespeichert, aber schließe den Tab erst, nachdem du die Wiederherstellung versucht hast.",
-    "tryAgain": "Erneut versuchen",
-    "openStudio": "Studio öffnen",
-    "nextStep": "Wenn das weiter passiert, öffne Studio erneut und exportiere ein JSON-Backup, bevor du größere Änderungen machst."
+    "badge": "Runtime error",
+    "title": "TrackDraw hit a problem.",
+    "description": "The current screen stopped rendering. Your local project data is usually still stored in this browser, but avoid closing the tab until you have tried to recover.",
+    "tryAgain": "Try again",
+    "openStudio": "Open Studio",
+    "nextStep": "If this keeps happening, reopen Studio and export a JSON backup before continuing with major edits."
   },
   "status": {
-    "active": "Aktiv",
-    "expired": "Abgelaufen",
-    "featured": "Hervorgehoben",
-    "hidden": "Ausgeblendet",
-    "listed": "Gelistet",
-    "loading": "Lädt",
-    "off": "Aus",
-    "on": "Ein",
-    "pending": "Ausstehend",
-    "published": "Veröffentlicht",
-    "revoked": "Widerrufen"
+    "active": "Active",
+    "expired": "Expired",
+    "featured": "Featured",
+    "hidden": "Hidden",
+    "listed": "Listed",
+    "loading": "Loading",
+    "off": "Off",
+    "on": "On",
+    "pending": "Pending",
+    "published": "Published",
+    "revoked": "Revoked"
   }
 }
