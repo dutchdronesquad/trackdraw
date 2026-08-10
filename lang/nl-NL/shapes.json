@@ -12,8 +12,8 @@
     "barrier": "Barrier"
   },
   "toolLabels": {
-    "select": "Selecteren",
-    "grab": "Verplaatsen",
+    "select": "Select",
+    "grab": "Grab",
     "preset": "Presets",
     "gate": "Gate",
     "tower": "Tower",
@@ -21,7 +21,7 @@
     "cone": "Cone",
     "label": "Label",
     "polyline": "Path",
-    "startfinish": "Startpads",
+    "startfinish": "Start Pads",
     "ladder": "Ladder",
     "divegate": "Dive Gate",
     "barrier": "Barrier"
@@ -42,97 +42,97 @@
   },
   "canvas": {
     "selectionCount": "{count} items",
-    "selectionFallback": "Selectie",
-    "frontLabel": "Voor"
+    "selectionFallback": "Selection",
+    "frontLabel": "Front"
   },
   "catalogEntries": {
     "trackdraw-generic-gate": {
       "name": "TrackDraw Gate",
-      "size": "2 × 2 m"
+      "size": "2 x 2 m"
     },
     "multigp-standard-gate-5x5": {
       "name": "MultiGP Standard Gate 5x5",
-      "size": "5 ft × 5 ft"
+      "size": "5 ft x 5 ft"
     },
     "multigp-championship-gate-7x6": {
       "name": "MultiGP Championship Gate 7x6",
-      "size": "7 ft × 6 ft"
+      "size": "7 ft x 6 ft"
     },
     "trackdraw-generic-tower": {
       "name": "TrackDraw Tower",
-      "size": "2 × 2 m, verhoogd"
+      "size": "2 x 2 m, elevated"
     },
     "multigp-tower-5x5": {
       "name": "MultiGP Tower 5x5",
-      "size": "5 ft × 5 ft, 5 ft verhoogd"
+      "size": "5 ft x 5 ft, elevated 5 ft"
     },
     "multigp-tower-7x6": {
       "name": "MultiGP Tower 7x6",
-      "size": "7 ft × 6 ft, 6 ft verhoogd"
+      "size": "7 ft x 6 ft, elevated 6 ft"
     },
     "multigp-double-gate-tower-5x5": {
       "name": "MultiGP Double Gate Tower 5x5",
-      "size": "5 ft breed, 2 openingen van 5 ft"
+      "size": "5 ft wide, 2 x 5 ft openings"
     },
     "multigp-double-gate-tower-7x6": {
       "name": "MultiGP Double Gate Tower 7x6",
-      "size": "7 ft breed, 2 openingen van 6 ft"
+      "size": "7 ft wide, 2 x 6 ft openings"
     },
     "trackdraw-generic-flag": {
-      "name": "TrackDraw Vlag",
-      "size": "0,25 m straal, paal van 3,5 m"
+      "name": "TrackDraw Flag",
+      "size": "0.25 m radius, 3.5 m pole"
     },
     "multigp-corner-flag": {
       "name": "MultiGP Corner Flag",
       "size": "10 ft"
     },
     "trackdraw-generic-cone": {
-      "name": "TrackDraw Pion",
-      "size": "0,2 m straal"
+      "name": "TrackDraw Cone",
+      "size": "0.2 m radius"
     },
     "trackdraw-generic-label": {
       "name": "TrackDraw Label",
-      "size": "Tekstlabel"
+      "size": "Text label"
     },
     "trackdraw-generic-start-finish": {
       "name": "TrackDraw Start / Finish",
-      "size": "3 m breed"
+      "size": "3 m wide"
     },
     "trackdraw-generic-ladder": {
       "name": "TrackDraw Ladder",
-      "size": "2 × 6 m, 3 sporten"
+      "size": "2 x 6 m, 3 rungs"
     },
     "multigp-standard-ladder-5x5": {
       "name": "MultiGP Standard Ladder 5x5",
-      "size": "5 ft breed, 3 secties van 5 ft"
+      "size": "5 ft wide, 3 × 5 ft sections"
     },
     "multigp-championship-ladder-7x6": {
       "name": "MultiGP Championship Ladder 7x6",
-      "size": "7 ft breed, 3 openingen van 6 ft"
+      "size": "7 ft wide, 3 × 6 ft openings"
     },
     "multigp-topless-ladder-7x6": {
       "name": "MultiGP Topless Ladder 7x6",
-      "size": "7 ft breed, 3 × 6 ft zonder bovenbalk"
+      "size": "7 ft wide, 3 x 6 ft topless"
     },
     "trackdraw-generic-dive-gate": {
       "name": "TrackDraw Dive Gate",
-      "size": "2,8 m vierkant"
+      "size": "2.8 m square"
     },
     "multigp-dive-gate-7x6": {
       "name": "MultiGP Dive Gate 7x6",
-      "size": "7 ft × 6 ft"
+      "size": "7 ft x 6 ft"
     },
     "multigp-launch-gate-7x6": {
       "name": "MultiGP Launch Gate 7x6",
-      "size": "7 ft × 6 ft"
+      "size": "7 ft x 6 ft"
     },
     "trackdraw-generic-banner": {
       "name": "TrackDraw Banner",
       "size": "3 × 2 m"
     },
     "trackdraw-generic-fence": {
-      "name": "TrackDraw Hek",
-      "size": "3 × 1,2 m"
+      "name": "TrackDraw Fence",
+      "size": "3 × 1.2 m"
     },
     "trackdraw-generic-net": {
       "name": "TrackDraw Net",
@@ -140,7 +140,7 @@
     },
     "multigp-hurdle": {
       "name": "MultiGP Hurdle",
-      "size": "10 ft breed, 5 ft hoog"
+      "size": "10 ft wide, 5 ft tall"
     }
   }
 }
