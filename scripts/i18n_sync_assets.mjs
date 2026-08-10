@@ -21,15 +21,53 @@ const i18nPolicy = JSON.parse(
   readFileSync(join(langDir, "i18n-policy.json"), "utf8")
 );
 const sourceLocale = "en";
-const localeDirectories = Object.entries(i18nPolicy.localeDirectories ?? {});
-const sourceLocaleDirectory = i18nPolicy.localeDirectories?.[sourceLocale];
 const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
-function listLocales() {
-  return localeDirectories.filter(([, directory]) =>
-    statSync(join(langDir, directory)).isDirectory()
-  );
+function validateLocaleDirectories() {
+  const directories = i18nPolicy.localeDirectories;
+  if (
+    directories === null ||
+    typeof directories !== "object" ||
+    Array.isArray(directories)
+  ) {
+    throw new Error(
+      "Invalid i18n policy: localeDirectories must be an object."
+    );
+  }
+
+  if (
+    typeof directories[sourceLocale] !== "string" ||
+    directories[sourceLocale].trim().length === 0
+  ) {
+    throw new Error(
+      `Invalid i18n policy: localeDirectories.${sourceLocale} must name the source locale directory.`
+    );
+  }
+
+  const entries = Object.entries(directories);
+  for (const [locale, directory] of entries) {
+    if (typeof directory !== "string" || directory.trim().length === 0) {
+      throw new Error(
+        `Invalid i18n policy: localeDirectories.${locale} must be a non-empty string.`
+      );
+    }
+
+    try {
+      if (statSync(join(langDir, directory)).isDirectory()) continue;
+    } catch {
+      // Report the invalid policy with locale context below.
+    }
+
+    throw new Error(
+      `Invalid i18n policy: directory "${directory}" for locale "${locale}" does not exist or is not a directory.`
+    );
+  }
+
+  return entries;
 }
+
+const localeDirectories = validateLocaleDirectories();
+const sourceLocaleDirectory = i18nPolicy.localeDirectories[sourceLocale];
 
 function listNamespaces(locale) {
   return readdirSync(join(langDir, locale))
@@ -74,7 +112,7 @@ function loadNamespace(locale, namespace) {
 
 rmSync(outDir, { recursive: true, force: true });
 
-for (const [locale, localeDirectory] of listLocales()) {
+for (const [locale, localeDirectory] of localeDirectories) {
   const namespaces = listNamespaces(sourceLocaleDirectory).filter(
     (namespace) =>
       locale === sourceLocale || !englishOnlyNamespaces.has(namespace)

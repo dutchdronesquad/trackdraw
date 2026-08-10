@@ -90,4 +90,40 @@ describe("Crowdin pilot catalog scripts", () => {
     expect(result.status).toBe(1);
     expect(result.stdout).toContain("greeting has different placeholders");
   });
+
+  it.each(["i18n_check.mjs", "i18n_sync_assets.mjs"] as const)(
+    "reports a missing English locale mapping in %s",
+    (script) => {
+      writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
+        localeDirectories: { nl: "nl-NL" },
+        englishOnlyNamespaces: [],
+      });
+
+      const result = runScript(script);
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("localeDirectories.en");
+    }
+  );
+
+  it.each(["i18n_check.mjs", "i18n_sync_assets.mjs"] as const)(
+    "reports a missing mapped locale directory in %s",
+    (script) => {
+      writeJson(join(fixtureRoot, "lang", "i18n-policy.json"), {
+        localeDirectories: {
+          en: "en-US",
+          nl: "nl-NL",
+          de: "de-DE",
+        },
+        englishOnlyNamespaces: [],
+      });
+
+      const result = runScript(script);
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain(
+        'directory "de-DE" for locale "de" does not exist'
+      );
+    }
+  );
 });

@@ -25,13 +25,54 @@ const baseLocale = "en";
 const i18nPolicy = JSON.parse(
   readFileSync(join(langDir, "i18n-policy.json"), "utf8")
 );
-const localeDirectories = i18nPolicy.localeDirectories ?? {};
 const englishOnlyNamespaces = new Set(i18nPolicy.englishOnlyNamespaces ?? []);
 
+function validateLocaleDirectories() {
+  const directories = i18nPolicy.localeDirectories;
+  if (
+    directories === null ||
+    typeof directories !== "object" ||
+    Array.isArray(directories)
+  ) {
+    throw new Error(
+      "Invalid i18n policy: localeDirectories must be an object."
+    );
+  }
+
+  if (
+    typeof directories[baseLocale] !== "string" ||
+    directories[baseLocale].trim().length === 0
+  ) {
+    throw new Error(
+      `Invalid i18n policy: localeDirectories.${baseLocale} must name the source locale directory.`
+    );
+  }
+
+  for (const [locale, directory] of Object.entries(directories)) {
+    if (typeof directory !== "string" || directory.trim().length === 0) {
+      throw new Error(
+        `Invalid i18n policy: localeDirectories.${locale} must be a non-empty string.`
+      );
+    }
+
+    try {
+      if (statSync(join(langDir, directory)).isDirectory()) continue;
+    } catch {
+      // Report the invalid policy with locale context below.
+    }
+
+    throw new Error(
+      `Invalid i18n policy: directory "${directory}" for locale "${locale}" does not exist or is not a directory.`
+    );
+  }
+
+  return directories;
+}
+
+const localeDirectories = validateLocaleDirectories();
+
 function listLocales() {
-  return Object.keys(localeDirectories).filter((locale) =>
-    statSync(join(langDir, localeDirectories[locale])).isDirectory()
-  );
+  return Object.keys(localeDirectories);
 }
 
 function listNamespaces(locale) {
