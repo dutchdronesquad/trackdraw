@@ -1,146 +1,146 @@
 {
   "kindLabels": {
-    "gate": "穿越门",
-    "tower": "日字门",
-    "flag": "标旗",
-    "cone": "锥桶",
-    "label": "标注",
-    "polyline": "路径",
-    "startfinish": "起终点",
-    "ladder": "目字门",
-    "divegate": "重力门",
-    "barrier": "围挡"
+    "gate": "Gate",
+    "tower": "Tower",
+    "flag": "Flag",
+    "cone": "Cone",
+    "label": "Label",
+    "polyline": "Race Line",
+    "startfinish": "Start / Finish",
+    "ladder": "Ladder",
+    "divegate": "Dive Gate",
+    "barrier": "Barrier"
   },
   "toolLabels": {
-    "select": "选择",
-    "grab": "拖移",
-    "preset": "预设",
-    "gate": "穿越门",
-    "tower": "日字门",
-    "flag": "标旗",
-    "cone": "锥桶",
-    "label": "标注",
-    "polyline": "路径",
-    "startfinish": "起飞区",
-    "ladder": "目字门",
-    "divegate": "重力门",
-    "barrier": "围挡"
+    "select": "Select",
+    "grab": "Grab",
+    "preset": "Presets",
+    "gate": "Gate",
+    "tower": "Tower",
+    "flag": "Flag",
+    "cone": "Cone",
+    "label": "Label",
+    "polyline": "Path",
+    "startfinish": "Start Pads",
+    "ladder": "Ladder",
+    "divegate": "Dive Gate",
+    "barrier": "Barrier"
   },
   "toolGroups": {
-    "track": "赛道",
-    "extra": "附加"
+    "track": "Track",
+    "extra": "Extra"
   },
   "toolMobileLabels": {
-    "startfinish": "起飞",
-    "divegate": "重力门",
-    "barrier": "围挡"
+    "startfinish": "Start",
+    "divegate": "Dive",
+    "barrier": "Barrier"
   },
   "mobileStatus": {
-    "multiSelect": "多选",
-    "tool": "工具",
-    "itemsCount": "{count} 个项目"
+    "multiSelect": "Multi",
+    "tool": "Tool",
+    "itemsCount": "{count} items"
   },
   "canvas": {
-    "selectionCount": "{count} 个项目",
-    "selectionFallback": "选择",
-    "frontLabel": "前方"
+    "selectionCount": "{count} items",
+    "selectionFallback": "Selection",
+    "frontLabel": "Front"
   },
   "catalogEntries": {
     "trackdraw-generic-gate": {
-      "name": "TrackDraw 穿越门",
-      "size": "2 × 2 米"
+      "name": "TrackDraw Gate",
+      "size": "2 x 2 m"
     },
     "multigp-standard-gate-5x5": {
-      "name": "MultiGP 标准穿越门 5x5",
-      "size": "5 英尺 × 5 英尺"
+      "name": "MultiGP Standard Gate 5x5",
+      "size": "5 ft x 5 ft"
     },
     "multigp-championship-gate-7x6": {
-      "name": "MultiGP 锦标赛穿越门 7x6",
-      "size": "7 英尺 × 6 英尺"
+      "name": "MultiGP Championship Gate 7x6",
+      "size": "7 ft x 6 ft"
     },
     "trackdraw-generic-tower": {
-      "name": "TrackDraw 日字门",
-      "size": "2 × 2 米，抬高"
+      "name": "TrackDraw Tower",
+      "size": "2 x 2 m, elevated"
     },
     "multigp-tower-5x5": {
-      "name": "MultiGP 日字门 5x5",
-      "size": "5 英尺 × 5 英尺，抬高 5 英尺"
+      "name": "MultiGP Tower 5x5",
+      "size": "5 ft x 5 ft, elevated 5 ft"
     },
     "multigp-tower-7x6": {
-      "name": "MultiGP 日字门 7x6",
-      "size": "7 英尺 × 6 英尺，抬高 6 英尺"
+      "name": "MultiGP Tower 7x6",
+      "size": "7 ft x 6 ft, elevated 6 ft"
     },
     "multigp-double-gate-tower-5x5": {
-      "name": "MultiGP 双层日字门 5x5",
-      "size": "5 英尺宽，2 个 5 英尺开口"
+      "name": "MultiGP Double Gate Tower 5x5",
+      "size": "5 ft wide, 2 x 5 ft openings"
     },
     "multigp-double-gate-tower-7x6": {
-      "name": "MultiGP 双层日字门 7x6",
-      "size": "7 英尺宽，2 个 6 英尺开口"
+      "name": "MultiGP Double Gate Tower 7x6",
+      "size": "7 ft wide, 2 x 6 ft openings"
     },
     "trackdraw-generic-flag": {
-      "name": "TrackDraw 标旗",
-      "size": "半径 0.25 米，杆高 3.5 米"
+      "name": "TrackDraw Flag",
+      "size": "0.25 m radius, 3.5 m pole"
     },
     "multigp-corner-flag": {
-      "name": "MultiGP 角旗",
-      "size": "10 英尺"
+      "name": "MultiGP Corner Flag",
+      "size": "10 ft"
     },
     "trackdraw-generic-cone": {
-      "name": "TrackDraw 锥桶",
-      "size": "半径 0.2 米"
+      "name": "TrackDraw Cone",
+      "size": "0.2 m radius"
     },
     "trackdraw-generic-label": {
-      "name": "TrackDraw 标注",
-      "size": "文本标注"
+      "name": "TrackDraw Label",
+      "size": "Text label"
     },
     "trackdraw-generic-start-finish": {
-      "name": "TrackDraw 起终点",
-      "size": "3 米宽"
+      "name": "TrackDraw Start / Finish",
+      "size": "3 m wide"
     },
     "trackdraw-generic-ladder": {
-      "name": "TrackDraw 目字门",
-      "size": "2 × 6 米，3 层"
+      "name": "TrackDraw Ladder",
+      "size": "2 x 6 m, 3 rungs"
     },
     "multigp-standard-ladder-5x5": {
-      "name": "MultiGP 标准目字门 5x5",
-      "size": "5 英尺宽，3 段，每段 5 英尺"
+      "name": "MultiGP Standard Ladder 5x5",
+      "size": "5 ft wide, 3 × 5 ft sections"
     },
     "multigp-championship-ladder-7x6": {
-      "name": "MultiGP 锦标赛目字门 7x6",
-      "size": "7 英尺宽，3 个 6 英尺开口"
+      "name": "MultiGP Championship Ladder 7x6",
+      "size": "7 ft wide, 3 × 6 ft openings"
     },
     "multigp-topless-ladder-7x6": {
-      "name": "MultiGP 无顶目字门 7x6",
-      "size": "7 英尺宽，3 个 6 英尺无顶开口"
+      "name": "MultiGP Topless Ladder 7x6",
+      "size": "7 ft wide, 3 x 6 ft topless"
     },
     "trackdraw-generic-dive-gate": {
-      "name": "TrackDraw 重力门",
-      "size": "2.8 米方形"
+      "name": "TrackDraw Dive Gate",
+      "size": "2.8 m square"
     },
     "multigp-dive-gate-7x6": {
-      "name": "MultiGP 重力门 7x6",
-      "size": "7 英尺 × 6 英尺"
+      "name": "MultiGP Dive Gate 7x6",
+      "size": "7 ft x 6 ft"
     },
     "multigp-launch-gate-7x6": {
-      "name": "MultiGP 发射门 7x6",
-      "size": "7 英尺 × 6 英尺"
+      "name": "MultiGP Launch Gate 7x6",
+      "size": "7 ft x 6 ft"
     },
     "trackdraw-generic-banner": {
-      "name": "TrackDraw 横幅围挡",
-      "size": "3 × 2 米"
+      "name": "TrackDraw Banner",
+      "size": "3 × 2 m"
     },
     "trackdraw-generic-fence": {
-      "name": "TrackDraw 栅栏围挡",
-      "size": "3 × 1.2 米"
+      "name": "TrackDraw Fence",
+      "size": "3 × 1.2 m"
     },
     "trackdraw-generic-net": {
-      "name": "TrackDraw 网围挡",
-      "size": "3 × 2 米"
+      "name": "TrackDraw Net",
+      "size": "3 × 2 m"
     },
     "multigp-hurdle": {
-      "name": "MultiGP 跨栏",
-      "size": "10 英尺宽，5 英尺高"
+      "name": "MultiGP Hurdle",
+      "size": "10 ft wide, 5 ft tall"
     }
   }
 }
