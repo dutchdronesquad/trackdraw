@@ -214,15 +214,22 @@
     "communityTitle": "社区",
     "github": "GitHub",
     "dutchDroneSquad": "Dutch Drone Squad",
+    "translate": "协助翻译",
     "facebook": "Facebook",
     "instagram": "Instagram",
     "reportIssue": "反馈问题",
     "supportTitle": "支持项目",
     "githubSponsors": "GitHub Sponsors",
     "kofi": "Ko-fi",
-    "copyright": "© {year} Dutch Drone Squad。开源项目。",
+    "copyright": "© {year} <organization>Dutch Drone Squad</organization>。开源项目。",
     "madeWithPre": "用",
     "madeWithPost": "为 FPV 社区打造"
+  },
+  "translationCta": {
+    "eyebrow": "社区翻译",
+    "title": "帮助 TrackDraw 支持更多语言",
+    "description": "你熟悉其他语言吗？欢迎加入 Crowdin 翻译项目，帮助更多 FPV 俱乐部和赛事组织者使用 TrackDraw。",
+    "action": "前往 Crowdin 翻译"
   },
   "gallery": {
     "pageTitle": "FPV 穿越机竞速赛道图库",

@@ -6,8 +6,8 @@ import {
   Bug,
   Coffee,
   FileText,
-  Flag,
   Heart,
+  Languages,
   Pencil,
   ScrollText,
   ShieldCheck,
@@ -173,13 +173,13 @@ export function Footer() {
                 </li>
                 <li>
                   <a
-                    href="https://dutchdronesquad.nl"
+                    href="https://crowdin.com/project/trackdraw"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
-                    <Flag className="size-4 shrink-0" />
-                    {t("footer.dutchDroneSquad")}
+                    <Languages className="size-4 shrink-0" />
+                    {t("footer.translate")}
                   </a>
                 </li>
                 <li>
@@ -241,7 +241,21 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="border-border text-muted-foreground flex flex-col items-center justify-between gap-3 border-t pt-6 text-sm sm:flex-row">
-          <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
+          <p>
+            {t.rich("footer.copyright", {
+              year: new Date().getFullYear(),
+              organization: (chunks) => (
+                <a
+                  href="https://dutchdronesquad.nl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground underline-offset-4 transition-colors hover:underline"
+                >
+                  {chunks}
+                </a>
+              ),
+            })}
+          </p>
           <p className="flex items-center gap-1.5">
             {t("footer.madeWithPre")}{" "}
             <Heart className="size-3.5 shrink-0 fill-current text-red-500" />{" "}
