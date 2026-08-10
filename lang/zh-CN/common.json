@@ -1,90 +1,90 @@
 {
   "actions": {
-    "cancel": "取消",
-    "close": "关闭",
-    "copy": "复制",
-    "delete": "删除",
-    "duplicate": "复制",
-    "hide": "隐藏",
-    "lock": "锁定",
-    "remove": "移除",
-    "rename": "重命名",
-    "reset": "重置",
-    "save": "保存",
-    "saveChanges": "保存更改",
-    "select": "选择",
-    "undo": "撤销",
-    "unlock": "解锁"
+    "cancel": "Cancel",
+    "close": "Close",
+    "copy": "Copy",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "hide": "Hide",
+    "lock": "Lock",
+    "remove": "Remove",
+    "rename": "Rename",
+    "reset": "Reset",
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "select": "Select",
+    "undo": "Undo",
+    "unlock": "Unlock"
   },
   "labels": {
-    "account": "账户",
-    "actions": "操作",
-    "dashboard": "后台",
-    "description": "描述",
-    "expires": "过期时间",
-    "language": "语言",
-    "name": "名称",
-    "owner": "所有者",
-    "profile": "个人资料",
-    "project": "项目",
-    "role": "角色",
-    "status": "状态",
-    "theme": "主题",
-    "title": "标题",
-    "type": "类型",
-    "view": "视图"
+    "account": "Account",
+    "actions": "Actions",
+    "dashboard": "Dashboard",
+    "description": "Description",
+    "expires": "Expires",
+    "language": "Language",
+    "name": "Name",
+    "owner": "Owner",
+    "profile": "Profile",
+    "project": "Project",
+    "role": "Role",
+    "status": "Status",
+    "theme": "Theme",
+    "title": "Title",
+    "type": "Type",
+    "view": "View"
   },
   "dataTable": {
-    "filterPlaceholder": "筛选{title}...",
-    "noResults": "未找到结果。",
-    "selectedCount": "已选择 {count} 项",
-    "clearFilters": "清除筛选",
-    "rowsPerPage": "每页行数",
-    "page": "第 {current} 页，共 {total} 页",
-    "previousPage": "上一页",
-    "nextPage": "下一页"
+    "filterPlaceholder": "Filter {title}...",
+    "noResults": "No results found.",
+    "selectedCount": "{count} selected",
+    "clearFilters": "Clear filters",
+    "rowsPerPage": "Rows per page",
+    "page": "Page {current} of {total}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   },
   "measurementUnit": {
-    "metric": "公制",
-    "imperial": "英制",
-    "presetAriaLabel": "单位预设：当前 {current}。切换到 {next}。",
-    "presetLabel": "单位预设：{current}",
-    "description": "切换显示距离和兼容输入。"
+    "metric": "Metric",
+    "imperial": "Imperial",
+    "presetAriaLabel": "Measurement preset: {current}. Switch to {next}.",
+    "presetLabel": "Measurement preset: {current}",
+    "description": "Switch displayed distances and compatible inputs."
   },
   "themeToggle": {
     "labels": {
-      "light": "浅色",
-      "dark": "深色",
-      "system": "跟随系统"
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
     },
-    "ariaLabel": "主题：{theme}",
-    "tooltip": "当前：{current}。点击切换到 {next}。"
+    "ariaLabel": "Theme: {theme}",
+    "tooltip": "Current: {current}. Click for {next}."
   },
   "versionTag": {
     "tooltip": {
-      "openReleaseNotes": "在 GitHub 打开更新说明",
-      "openReleaseNotesForCommit": "提交 {sha} · 在 GitHub 打开更新说明"
+      "openReleaseNotes": "Open release notes on GitHub",
+      "openReleaseNotesForCommit": "commit {sha} · Open release notes on GitHub"
     }
   },
   "runtimeError": {
-    "badge": "运行时错误",
-    "title": "TrackDraw 遇到了一个问题。",
-    "description": "当前页面已停止渲染。你的本地项目数据通常仍保存在这个浏览器里，但在尝试恢复前请先不要关闭这个标签页。",
-    "tryAgain": "重试",
-    "openStudio": "打开 Studio",
-    "nextStep": "如果问题持续出现，请重新打开 Studio，并在继续进行较大改动前先导出一份 JSON 备份。"
+    "badge": "Runtime error",
+    "title": "TrackDraw hit a problem.",
+    "description": "The current screen stopped rendering. Your local project data is usually still stored in this browser, but avoid closing the tab until you have tried to recover.",
+    "tryAgain": "Try again",
+    "openStudio": "Open Studio",
+    "nextStep": "If this keeps happening, reopen Studio and export a JSON backup before continuing with major edits."
   },
   "status": {
-    "active": "生效中",
-    "expired": "已过期",
-    "featured": "精选",
-    "hidden": "已隐藏",
-    "listed": "已展示",
-    "loading": "加载中",
-    "off": "关闭",
-    "on": "开启",
-    "pending": "等待中",
-    "published": "已发布",
-    "revoked": "已撤销"
+    "active": "Active",
+    "expired": "Expired",
+    "featured": "Featured",
+    "hidden": "Hidden",
+    "listed": "Listed",
+    "loading": "Loading",
+    "off": "Off",
+    "on": "On",
+    "pending": "Pending",
+    "published": "Published",
+    "revoked": "Revoked"
   }
 }
