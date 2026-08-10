@@ -1,90 +1,90 @@
 {
   "actions": {
-    "cancel": "Annuleren",
-    "close": "Sluiten",
-    "copy": "Kopiëren",
-    "delete": "Verwijderen",
-    "duplicate": "Dupliceren",
-    "hide": "Verbergen",
-    "lock": "Vergrendelen",
-    "remove": "Verwijderen",
-    "rename": "Hernoemen",
-    "reset": "Herstellen",
-    "save": "Opslaan",
-    "saveChanges": "Wijzigingen opslaan",
-    "select": "Selecteren",
-    "undo": "Ongedaan maken",
-    "unlock": "Ontgrendelen"
+    "cancel": "Cancel",
+    "close": "Close",
+    "copy": "Copy",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "hide": "Hide",
+    "lock": "Lock",
+    "remove": "Remove",
+    "rename": "Rename",
+    "reset": "Reset",
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "select": "Select",
+    "undo": "Undo",
+    "unlock": "Unlock"
   },
   "labels": {
     "account": "Account",
-    "actions": "Acties",
+    "actions": "Actions",
     "dashboard": "Dashboard",
-    "description": "Beschrijving",
-    "expires": "Verloopt",
-    "language": "Taal",
-    "name": "Naam",
-    "owner": "Eigenaar",
-    "profile": "Profiel",
+    "description": "Description",
+    "expires": "Expires",
+    "language": "Language",
+    "name": "Name",
+    "owner": "Owner",
+    "profile": "Profile",
     "project": "Project",
-    "role": "Rol",
+    "role": "Role",
     "status": "Status",
-    "theme": "Thema",
-    "title": "Titel",
+    "theme": "Theme",
+    "title": "Title",
     "type": "Type",
-    "view": "Weergave"
+    "view": "View"
   },
   "dataTable": {
     "filterPlaceholder": "Filter {title}...",
-    "noResults": "Geen resultaten gevonden.",
-    "selectedCount": "{count} geselecteerd",
-    "clearFilters": "Filters wissen",
-    "rowsPerPage": "Rijen per pagina",
-    "page": "Pagina {current} van {total}",
-    "previousPage": "Vorige pagina",
-    "nextPage": "Volgende pagina"
+    "noResults": "No results found.",
+    "selectedCount": "{count} selected",
+    "clearFilters": "Clear filters",
+    "rowsPerPage": "Rows per page",
+    "page": "Page {current} of {total}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   },
   "measurementUnit": {
-    "metric": "Metrisch",
+    "metric": "Metric",
     "imperial": "Imperial",
-    "presetAriaLabel": "Meetpreset: {current}. Wissel naar {next}.",
-    "presetLabel": "Meetpreset: {current}",
-    "description": "Wissel weergegeven afstanden en compatibele invoer."
+    "presetAriaLabel": "Measurement preset: {current}. Switch to {next}.",
+    "presetLabel": "Measurement preset: {current}",
+    "description": "Switch displayed distances and compatible inputs."
   },
   "themeToggle": {
     "labels": {
-      "light": "Licht",
-      "dark": "Donker",
-      "system": "Systeem"
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
     },
-    "ariaLabel": "Thema: {theme}",
-    "tooltip": "Huidig: {current}. Klik voor {next}."
+    "ariaLabel": "Theme: {theme}",
+    "tooltip": "Current: {current}. Click for {next}."
   },
   "versionTag": {
     "tooltip": {
-      "openReleaseNotes": "Release notes openen op GitHub",
-      "openReleaseNotesForCommit": "commit {sha} · Release notes openen op GitHub"
+      "openReleaseNotes": "Open release notes on GitHub",
+      "openReleaseNotesForCommit": "commit {sha} · Open release notes on GitHub"
     }
   },
   "runtimeError": {
-    "badge": "Runtimefout",
-    "title": "TrackDraw liep vast op deze weergave.",
-    "description": "Het huidige scherm kon niet verder renderen. Je lokale projectdata staat meestal nog in deze browser, maar sluit het tabblad niet voordat je herstel hebt geprobeerd.",
-    "tryAgain": "Opnieuw proberen",
-    "openStudio": "Studio openen",
-    "nextStep": "Als dit blijft gebeuren, open Studio opnieuw en exporteer een JSON-back-up voordat je grote wijzigingen maakt."
+    "badge": "Runtime error",
+    "title": "TrackDraw hit a problem.",
+    "description": "The current screen stopped rendering. Your local project data is usually still stored in this browser, but avoid closing the tab until you have tried to recover.",
+    "tryAgain": "Try again",
+    "openStudio": "Open Studio",
+    "nextStep": "If this keeps happening, reopen Studio and export a JSON backup before continuing with major edits."
   },
   "status": {
-    "active": "Actief",
-    "expired": "Verlopen",
-    "featured": "Uitgelicht",
-    "hidden": "Verborgen",
-    "listed": "Vermeld",
-    "loading": "Laden",
-    "off": "Uit",
-    "on": "Aan",
-    "pending": "In wachtrij",
-    "published": "Gepubliceerd",
-    "revoked": "Ingetrokken"
+    "active": "Active",
+    "expired": "Expired",
+    "featured": "Featured",
+    "hidden": "Hidden",
+    "listed": "Listed",
+    "loading": "Loading",
+    "off": "Off",
+    "on": "On",
+    "pending": "Pending",
+    "published": "Published",
+    "revoked": "Revoked"
   }
 }
