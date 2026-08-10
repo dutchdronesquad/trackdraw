@@ -27,6 +27,7 @@ import {
   Route,
   Share2,
   FileText,
+  Languages,
 } from "lucide-react";
 import { Screenshot } from "@/components/landing/Screenshot";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
@@ -555,6 +556,34 @@ export default function Home() {
               </h2>
             </Reveal>
             <FaqAccordion items={faq} />
+          </div>
+        </section>
+
+        <section className="border-border/40 border-t">
+          <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-6 py-12 sm:flex-row sm:items-center sm:justify-between sm:py-14">
+            <Reveal className="max-w-2xl">
+              <div className="text-brand-primary mb-3 flex items-center gap-2 text-sm font-medium">
+                <Languages className="size-4" />
+                {t("translationCta.eyebrow")}
+              </div>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {t("translationCta.title")}
+              </h2>
+              <p className="text-muted-foreground mt-3 text-sm leading-7 sm:text-base">
+                {t("translationCta.description")}
+              </p>
+            </Reveal>
+            <Reveal>
+              <a
+                href="https://crowdin.com/project/trackdraw"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-brand-primary text-primary-foreground hover:bg-brand-primary/90 inline-flex shrink-0 items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors"
+              >
+                {t("translationCta.action")}
+                <ArrowRight className="size-4" />
+              </a>
+            </Reveal>
           </div>
         </section>
       </main>

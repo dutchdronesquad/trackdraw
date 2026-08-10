@@ -214,15 +214,22 @@
     "communityTitle": "Community",
     "github": "GitHub",
     "dutchDroneSquad": "Dutch Drone Squad",
+    "translate": "Help met vertalen",
     "facebook": "Facebook",
     "instagram": "Instagram",
     "reportIssue": "Probleem melden",
     "supportTitle": "Ondersteuning",
     "githubSponsors": "GitHub Sponsors",
     "kofi": "Ko-fi",
-    "copyright": "© {year} Dutch Drone Squad. Open source project.",
+    "copyright": "© {year} <organization>Dutch Drone Squad</organization>. Open source project.",
     "madeWithPre": "Gemaakt met",
     "madeWithPost": "voor de FPV-community"
+  },
+  "translationCta": {
+    "eyebrow": "Vertalen met de community",
+    "title": "Help TrackDraw beschikbaar te maken in meer talen",
+    "description": "Spreek je een andere taal? Doe mee via Crowdin en help meer FPV-clubs en raceorganisatoren TrackDraw te gebruiken.",
+    "action": "Vertalen via Crowdin"
   },
   "gallery": {
     "pageTitle": "FPV Drone Race Track Galerij",
