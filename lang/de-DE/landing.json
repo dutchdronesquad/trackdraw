@@ -2,7 +2,7 @@
   "metadata": {
     "homeTitle": "TrackDraw · Drone Race Track Builder",
     "homeSocialTitle": "TrackDraw | Drone Race Track Builder",
-    "homeDescription": "TrackDraw ist ein Drone-Race-Track-Builder für FPV-Renndirektoren. Entwirf Tracks maßstabsgetreu, prüfe den Trackflow in 3D und teile schreibgeschützte Layouts für den Renntag.",
+    "homeDescription": "TrackDraw ist ein Drone-Race-Track-Builder für FPV-Rennveranstalter. Entwirf Tracks maßstabsgetreu, prüfe den Trackflow in 3D und teile schreibgeschützte Layouts für den Renntag.",
     "homeSocialDescription": "Nutze TrackDraw als Drone-Race-Track-Builder, um FPV-Layouts maßstabsgetreu zu planen, den Trackflow in 3D zu prüfen und schreibgeschützte Pläne für den Renntag zu teilen.",
     "studioTitle": "Drone Race Track Builder",
     "studioSocialTitle": "TrackDraw | Drone Race Track Builder",
@@ -30,10 +30,10 @@
     "openStudio": "Studio öffnen"
   },
   "hero": {
-    "eyebrow": "Gebaut für FPV-Renndirektoren",
+    "eyebrow": "Für FPV-Rennveranstalter entwickelt",
     "headingLine1": "Renntag startet",
     "headingLine2": "mit einem Plan.",
-    "description": "TrackDraw ist ein browserbasierter Drone-Race-Track-Builder für FPV-Renndirektoren. Zeichne maßstabsgetreu in 2D, prüfe den Flow in 3D und teile einen schreibgeschützten Plan mit Piloten und Crew.",
+    "description": "TrackDraw ist ein browserbasierter Drone-Race-Track-Builder für FPV-Rennveranstalter. Zeichne maßstabsgetreu in 2D, prüfe den Flow in 3D und teile einen schreibgeschützten Plan mit Piloten und Crew.",
     "ctaStudio": "Studio öffnen",
     "ctaFeatures": "Funktionen ansehen",
     "feature1": "Offizieller Hinderniskatalog",
@@ -41,12 +41,12 @@
     "feature3": "3D-Vorschau und Flythrough",
     "feature4": "Race Pack PDF und SVG",
     "videoAlt": "TrackDraw Drone Race Track Builder Demo",
-    "videoDescription": "Eine kurze Produktdemo, die zeigt, wie TrackDraw FPV-Renndirektoren hilft, ein Drone-Race-Track-Layout zu bauen, es in 3D zu prüfen und mit Piloten und Crew zu teilen."
+    "videoDescription": "Eine kurze Produktdemo, die zeigt, wie TrackDraw FPV-Rennveranstaltern hilft, ein Drone-Race-Track-Layout zu bauen, es in 3D zu prüfen und mit Piloten und Crew zu teilen."
   },
   "features": {
     "sectionTitle": "Funktionen",
     "sectionHeading": "Entwerfen, prüfen und teilen.",
-    "sectionDescription": "TrackDraw hilft FPV-Renndirektoren, Tracks mit realen Feldmaßen, passenden Hindernissen und einem Workflow bis zum Pilotenbriefing zu planen.",
+    "sectionDescription": "TrackDraw hilft FPV-Rennveranstaltern, Tracks mit realen Feldmaßen, passenden Hindernissen und einem Workflow bis zum Pilotenbriefing zu planen.",
     "trueToScale": {
       "title": "Maßstabsgetreues Canvas",
       "description": "Lege die Feldgröße fest, platziere Elemente maßstabsgetreu und arbeite auf einem Raster für die Location."
@@ -128,7 +128,7 @@
     "items": [
       {
         "question": "Ist TrackDraw ein Drone Race Track Builder?",
-        "answer": "Ja. TrackDraw ist ein browserbasierter Drone Race Track Builder für FPV-Renndirektoren, die maßstabsgetreue Layouts, 3D-Review, Teilen und Export in einem Workflow brauchen."
+        "answer": "Ja. TrackDraw ist ein browserbasierter Drone Race Track Builder für FPV-Rennveranstalter, die maßstabsgetreue Layouts, 3D-Review, Teilen und Export in einem Workflow brauchen."
       },
       {
         "question": "Wie plant man einen FPV-Racetrack am besten?",
@@ -136,7 +136,7 @@
       },
       {
         "question": "Können Piloten das Layout ohne Konto ansehen?",
-        "answer": "Ja. Share-Links öffnen auf jedem Gerät im schreibgeschützten Modus, ohne Konto oder App. Sende den Link an Piloten, Judges oder Crew und alle sehen dieselbe veröffentlichte Version."
+        "answer": "Ja. Share-Links öffnen auf jedem Gerät im schreibgeschützten Modus, ohne Konto oder App. Sende den Link an Piloten, Rennleitung oder Crew; alle sehen dieselbe veröffentlichte Version."
       },
       {
         "question": "Funktioniert es auf einem Tablet an der Location?",
@@ -204,7 +204,7 @@
     }
   },
   "footer": {
-    "tagline": "Browserbasierter Track-Designer für FPV-Renndirektoren. Maßstabsgetreu zeichnen, in 3D prüfen, Link teilen und mobil schnell ändern.",
+    "tagline": "Browserbasierter Track-Designer für FPV-Rennveranstalter. Maßstabsgetreu zeichnen, in 3D prüfen, Link teilen und mobil schnell ändern.",
     "productTitle": "Produkt",
     "openStudio": "Studio öffnen",
     "releaseNotes": "Release Notes",
