@@ -1,502 +1,502 @@
 {
   "toolbar": {
-    "homepageLabel": "Go to homepage",
-    "projects": "Projects",
-    "projectsTooltip": "Manage projects",
-    "import": "Import",
-    "importTooltip": "Import JSON",
-    "export": "Export",
-    "exportTooltip": "Export track"
+    "homepageLabel": "返回首页",
+    "projects": "项目",
+    "projectsTooltip": "管理项目",
+    "import": "导入",
+    "importTooltip": "导入 JSON",
+    "export": "导出",
+    "exportTooltip": "导出赛道"
   },
   "contextMenu": {
-    "quickActions": "Quick actions",
+    "quickActions": "快捷操作",
     "selectedCount": "{count, plural, one {1 selected} other {{count} selected}}",
-    "segmentSelected": "Segment selected",
-    "waypointSelected": "Waypoint selected",
-    "addWaypoint": "Add waypoint",
-    "deleteWaypoint": "Delete waypoint",
-    "arrange": "Arrange",
-    "bringForward": "Bring forward",
-    "sendBackward": "Send backward",
-    "rotate": "Rotate",
-    "rotateLeft": "Rotate left",
-    "rotateRight": "Rotate right"
+    "segmentSelected": "已选择线段",
+    "waypointSelected": "已选择路径点",
+    "addWaypoint": "添加路径点",
+    "deleteWaypoint": "删除路径点",
+    "arrange": "排列",
+    "bringForward": "上移一层",
+    "sendBackward": "下移一层",
+    "rotate": "旋转",
+    "rotateLeft": "向左旋转",
+    "rotateRight": "向右旋转"
   },
   "canvasOverlay": {
-    "pathEditing": "Path editing",
-    "addPoints": "Add points",
-    "finish": "finish",
-    "cancel": "cancel",
-    "connectEnds": "Click to connect ends",
-    "grid": "Grid {grid}",
-    "snapOn": "Snap on: grid, objects, routes",
-    "snapOff": "Snap off: free placement",
-    "midClick": "Mid-click",
-    "rightClick": "Right-click",
-    "pan": "pan",
-    "menu": "menu",
-    "bypass": "bypass",
-    "fitToWindow": "Fit to window",
-    "viewerPanZoom": "Drag to pan, wheel to zoom"
+    "pathEditing": "路径编辑",
+    "addPoints": "添加点",
+    "finish": "完成",
+    "cancel": "取消",
+    "connectEnds": "点击连接首尾",
+    "grid": "网格 {grid}",
+    "snapOn": "吸附开：网格、物件、路线",
+    "snapOff": "吸附关：自由摆放",
+    "midClick": "中键",
+    "rightClick": "右键",
+    "pan": "平移",
+    "menu": "菜单",
+    "bypass": "临时绕过",
+    "fitToWindow": "适应窗口",
+    "viewerPanZoom": "拖动画布平移，滚轮缩放"
   },
   "preview3dOverlay": {
-    "pause": "Pause",
-    "play": "Play",
-    "speed": "Speed",
-    "toggleFpv": "Toggle FPV camera behavior",
-    "on": "On",
-    "off": "Off",
-    "exit": "Exit",
-    "flyThrough": "Fly-Through",
-    "dragWaypointMobile": "Drag a waypoint grip up or down to adjust elevation",
-    "dragWaypointDesktop": "Drag waypoint handles up or down to adjust elevation",
-    "dragDiveGateMobile": "Drag ring to rotate · orange puck to tilt",
-    "dragDiveGateDesktop": "Drag ring to rotate · drag orange puck to tilt",
-    "dragRing": "Drag ring to rotate",
-    "orbitHint": "Orbit to inspect · scroll to zoom · middle-drag to pan",
-    "drawRoute": "Draw the route in 2D to enable fly-through"
+    "pause": "暂停",
+    "play": "播放",
+    "speed": "速度",
+    "toggleFpv": "切换 FPV 相机行为",
+    "on": "开",
+    "off": "关",
+    "exit": "退出",
+    "flyThrough": "模拟飞行",
+    "dragWaypointMobile": "上下拖动路径点控制点来调整高度",
+    "dragWaypointDesktop": "上下拖动路径点控制柄来调整高度",
+    "dragDiveGateMobile": "拖动圆环旋转 · 拖动橙色控制点调倾角",
+    "dragDiveGateDesktop": "拖动圆环旋转 · 拖动橙色控制点调倾角",
+    "dragRing": "拖动圆环旋转",
+    "orbitHint": "拖拽环绕查看 · 滚轮缩放 · 中键拖动平移",
+    "drawRoute": "先在 2D 里画出路径，才能启用模拟飞行"
   },
   "statusBar": {
-    "snapActive": "Snap",
-    "snapOn": "Snap On",
-    "snapOff": "Snap Off",
-    "snapIsOn": "Snap is on",
-    "snapIsOff": "Snap is off",
-    "snapOnDescription": "Points and drags lock to nearby grid positions, objects, and route points. Hold Alt while placing or dragging to bypass it once.",
-    "snapOffDescription": "Placement and dragging stay freeform until you turn snap back on.",
-    "selected": "{count} selected",
-    "grouped": "Grouped",
-    "groupNamed": "Group: {name}",
-    "groups": "{count} groups",
-    "devOn": "Dev On",
-    "dev": "Dev"
+    "snapActive": "吸附",
+    "snapOn": "吸附开",
+    "snapOff": "吸附关",
+    "snapIsOn": "吸附已开启",
+    "snapIsOff": "吸附已关闭",
+    "snapOnDescription": "拖拽和摆放会锁到附近网格、物件和路径点。放置或拖动时按住 Alt 可临时绕过一次。",
+    "snapOffDescription": "摆放和拖动保持自由状态，直到你重新开启吸附。",
+    "selected": "已选 {count} 项",
+    "grouped": "已分组",
+    "groupNamed": "分组：{name}",
+    "groups": "{count} 个分组",
+    "devOn": "开发模式 开",
+    "dev": "开发模式"
   },
   "accountMenu": {
-    "checkingAuth": "Checking auth…",
-    "signIn": "Sign in",
-    "signedIn": "Signed in",
-    "noDisplayName": "No display name set",
-    "trackdrawAccount": "TrackDraw account",
-    "profile": "Profile",
-    "dashboard": "Dashboard",
-    "signOut": "Sign out",
-    "signingOut": "Signing out…"
+    "checkingAuth": "正在检查登录状态…",
+    "signIn": "登录",
+    "signedIn": "已登录",
+    "noDisplayName": "未设置显示名",
+    "trackdrawAccount": "TrackDraw 账户",
+    "profile": "个人资料",
+    "dashboard": "后台",
+    "signOut": "退出登录",
+    "signingOut": "正在退出…"
   },
   "common": {
-    "canvas2d": "2D canvas",
-    "preview3d": "3D preview"
+    "canvas2d": "2D 画布",
+    "preview3d": "3D 预览"
   },
   "elementPlacementControl": {
-    "official": "Official",
-    "typeLabel": "{tool} type"
+    "official": "官方",
+    "typeLabel": "{tool} 类型"
   },
   "header": {
-    "untitledTitle": "Untitled",
-    "statusFailed": "Failed",
-    "statusPending": "Pending",
-    "statusSyncing": "Syncing",
-    "statusSynced": "Synced",
-    "expandSidebar": "Expand sidebar",
-    "collapseSidebar": "Collapse sidebar",
-    "sharedReviewBadge": "Shared review",
-    "makeEditableCopy": "Make editable copy",
-    "undo": "Undo",
-    "redo": "Redo",
-    "saveSnapshot": "Save snapshot",
-    "keyboardShortcuts": "Keyboard shortcuts",
-    "retrySync": "Retry account sync ({status})",
-    "share": "Share",
-    "export": "Export",
-    "openAppMenu": "Open app menu",
-    "hideObstacleNumbers": "Hide obstacle numbers",
-    "showObstacleNumbers": "Show obstacle numbers"
+    "untitledTitle": "未命名",
+    "statusFailed": "失败",
+    "statusPending": "等待中",
+    "statusSyncing": "同步中",
+    "statusSynced": "已同步",
+    "expandSidebar": "展开侧边栏",
+    "collapseSidebar": "收起侧边栏",
+    "sharedReviewBadge": "共享审阅",
+    "makeEditableCopy": "创建可编辑副本",
+    "undo": "撤销",
+    "redo": "重做",
+    "saveSnapshot": "保存快照",
+    "keyboardShortcuts": "快捷键",
+    "retrySync": "重试账户同步 ({status})",
+    "share": "分享",
+    "export": "导出",
+    "openAppMenu": "打开应用菜单",
+    "hideObstacleNumbers": "隐藏障碍编号",
+    "showObstacleNumbers": "显示障碍编号"
   },
   "sharedHeader": {
-    "embedLabel": "Embed",
-    "sharedPreviewLabel": "Shared preview"
+    "embedLabel": "嵌入",
+    "sharedPreviewLabel": "共享预览"
   },
   "mobileAppMenu": {
-    "openAppMenu": "Open app menu",
+    "openAppMenu": "打开应用菜单",
     "title": "TrackDraw",
-    "subtitle": "Projects, sharing, account and app settings",
-    "signIn": "Sign in",
-    "yourAccount": "Your TrackDraw account",
-    "trackdrawAccount": "TrackDraw account",
-    "projectsSection": "Projects",
-    "projectsLabel": "Projects",
-    "projectsDescription": "Open and manage saved projects",
-    "accountSection": "Account",
-    "profileLabel": "Profile",
-    "profileDescription": "Manage profile, security and API keys",
-    "dashboardLabel": "Dashboard",
-    "dashboardDescription": "Open moderation and admin tools",
-    "shareSection": "Share and transfer",
-    "shareLabel": "Share",
-    "shareDescription": "Publish a read-only link for this track",
-    "importLabel": "Import",
-    "importDescription": "Bring in a JSON project file",
-    "exportLabel": "Export",
-    "exportDescription": "Download PNG, PDF, SVG or JSON",
-    "themeLabel": "Theme",
-    "themeDescription": "Switch light, dark or system",
-    "signOut": "Sign out",
-    "signingOut": "Signing out…"
+    "subtitle": "项目、分享、账户和应用设置",
+    "signIn": "登录",
+    "yourAccount": "你的 TrackDraw 账户",
+    "trackdrawAccount": "TrackDraw 账户",
+    "projectsSection": "项目",
+    "projectsLabel": "项目",
+    "projectsDescription": "打开并管理已保存项目",
+    "accountSection": "账户",
+    "profileLabel": "个人资料",
+    "profileDescription": "管理个人资料、安全设置和 API 密钥",
+    "dashboardLabel": "后台",
+    "dashboardDescription": "打开审核和管理工具",
+    "shareSection": "分享与传输",
+    "shareLabel": "分享",
+    "shareDescription": "发布这条赛道的只读链接",
+    "importLabel": "导入",
+    "importDescription": "导入 JSON 项目文件",
+    "exportLabel": "导出",
+    "exportDescription": "下载 PNG、PDF、SVG 或 JSON",
+    "themeLabel": "主题",
+    "themeDescription": "切换浅色、深色或跟随系统",
+    "signOut": "退出登录",
+    "signingOut": "正在退出…"
   },
   "layoutPresetPicker": {
-    "itemsCount": "{count} items",
-    "renamePresetTooltip": "Rename preset",
-    "deletePresetTooltip": "Delete preset",
-    "signInTitle": "Sign in to use presets",
-    "signInDescription": "Presets are saved to your account so they're always available across all your devices.",
-    "noPresetsTitle": "No presets yet",
-    "noPresetsDescription": "Select multiple shapes on the canvas and use <strong>Save preset</strong> in the inspector to add your first preset here.",
-    "comingSoonTitle": "Coming soon",
-    "comingSoonDescription": "Community-shared presets will appear here. Save your own presets and share them with the TrackDraw community.",
-    "myPresetsNav": "My Presets",
-    "storeNav": "Store",
-    "soonBadge": "Soon",
-    "mobileTitle": "Presets",
-    "mobileSubtitle": "Choose a preset, then tap once on the canvas to place it.",
-    "placeFlowTitle": "Place flow",
-    "placeFlowDescription": "Select a preset here, then tap the canvas. The result expands immediately into ordinary editable shapes.",
-    "desktopTitle": "Layout presets",
-    "desktopSubtitle": "Choose a preset, place it on the canvas, then edit the inserted shapes normally.",
-    "tipText": "Select shapes on the canvas, then use <strong>Save preset</strong> in the inspector to add your own."
+    "itemsCount": "{count} 个项目",
+    "renamePresetTooltip": "重命名预设",
+    "deletePresetTooltip": "删除预设",
+    "signInTitle": "登录后使用预设",
+    "signInDescription": "预设会保存到你的账户中，这样你在所有设备上都能直接使用。",
+    "noPresetsTitle": "还没有预设",
+    "noPresetsDescription": "在画布上选中多个图形，然后在检查器里使用 <strong>保存为预设</strong>，就能把第一个预设加到这里。",
+    "comingSoonTitle": "即将推出",
+    "comingSoonDescription": "社区共享预设会显示在这里。先保存你自己的预设，之后也可以分享给 TrackDraw 社区。",
+    "myPresetsNav": "我的预设",
+    "storeNav": "商店",
+    "soonBadge": "即将推出",
+    "mobileTitle": "预设",
+    "mobileSubtitle": "先选一个预设，再在画布上点一下即可放置。",
+    "placeFlowTitle": "放置流程",
+    "placeFlowDescription": "在这里选择预设后点一下画布，结果会立即展开成普通可编辑图形。",
+    "desktopTitle": "布局预设",
+    "desktopSubtitle": "选择一个预设放到画布上，然后像普通图形一样继续编辑。",
+    "tipText": "在画布上选中图形，然后在检查器里使用 <strong>保存为预设</strong> 添加你自己的预设。"
   },
   "starterOverlay": {
     "dialog": {
-      "title": "Welcome to TrackDraw",
-      "mobileSubtitle": "Place a few gates, draw the route, check 3D, then share when the track is ready.",
+      "title": "欢迎使用 TrackDraw",
+      "mobileSubtitle": "先摆几个门，画出路径，看看 3D，赛道准备好后再分享。",
       "studioEyebrow": "Studio",
-      "desktopDescription": "Design the layout in 2D, review elevation in 3D, and share a read-only link when the track is ready.",
-      "dismissAria": "Dismiss starter dialog"
+      "desktopDescription": "先在 2D 里搭好布局，再到 3D 检查高度，赛道准备好后再分享只读链接。",
+      "dismissAria": "关闭新手引导"
     },
     "hints": {
       "gate": {
-        "badge": "Guided",
-        "title": "Place your first gate",
-        "description": "Tap or click on the canvas to drop the first gate. Add a few gates before switching to Path.",
-        "action": "Got it",
-        "dismiss": "Dismiss gate placement hint"
+        "badge": "引导",
+        "title": "先放第一个门",
+        "description": "在画布上点一下就能放下第一个穿越门。先摆几个门，再切到路径工具。",
+        "action": "知道了",
+        "dismiss": "关闭穿越门摆放提示"
       },
       "path": {
-        "badge": "Guided",
-        "title": "Next, draw the route",
-        "description": "Place a few gates first, then switch to Path and trace the lap through them. Finish the route before checking 3D.",
-        "action": "Start path",
-        "dismiss": "Dismiss path onboarding hint"
+        "badge": "引导",
+        "title": "接下来画路径",
+        "description": "先摆几个门，再切到路径工具，把一圈线路串起来。画完路径后再去看 3D。",
+        "action": "开始画路径",
+        "dismiss": "关闭路径引导提示"
       },
       "preview3d": {
-        "badge": "Preview",
-        "title": "3D works best after the route",
-        "description": "Obstacle placement already previews here, but the route is what makes elevation and fly-through review useful.",
-        "action": "Draw path in 2D",
-        "dismiss": "Dismiss 3D preview onboarding hint"
+        "badge": "预览",
+        "title": "先有路径，3D 才更有用",
+        "description": "这里已经能预览障碍摆放，但真正让高度和模拟飞行审阅有意义的，还是路径本身。",
+        "action": "去 2D 画路径",
+        "dismiss": "关闭 3D 预览引导提示"
       },
       "review3d": {
-        "badge": "Guided",
-        "title": "Now review it in 3D",
-        "description": "Orbit around the route, check elevation and spacing, then share or export once the layout feels right.",
-        "action": "Share or export next",
-        "dismiss": "Dismiss 3D review hint"
+        "badge": "引导",
+        "title": "现在去 3D 看看",
+        "description": "绕着路径看看高度和门距，感觉顺了以后再去分享或导出。",
+        "action": "下一步去分享或导出",
+        "dismiss": "关闭 3D 审阅提示"
       },
       "postPath": {
-        "badge": "Next step",
-        "title": "Route ready — check it in 3D",
-        "description": "Switch to the 3D tab now to review the route before refining more obstacle placement.",
-        "action": "Switch to 3D",
-        "dismiss": "Dismiss post-path 3D nudge"
+        "badge": "下一步",
+        "title": "路径已就绪，去 3D 检查",
+        "description": "现在切到 3D 标签页，先检查这条线路，再继续细调障碍摆放。",
+        "action": "切换到 3D",
+        "dismiss": "关闭路径完成后的 3D 提示"
       }
     }
   },
   "starterFlow": {
     "intro": {
-      "goodFirstSteps": "Good first steps"
+      "goodFirstSteps": "推荐的起步方式"
     },
     "steps": {
       "step1": {
-        "title": "Place a few gates and obstacles",
-        "description": "Start small so the course structure appears quickly."
+        "title": "先摆几个门和障碍",
+        "description": "先从小布局开始，让赛道骨架尽快出现。"
       },
       "step2": {
-        "title": "Draw the race path through them",
-        "description": "The path usually makes the layout click faster than obstacle tweaking alone."
+        "title": "再把比赛路径画出来",
+        "description": "很多时候，先把路径画出来，比单纯调障碍位置更快看出问题。"
       },
       "step3": {
-        "title": "Check 3D, then export or share",
-        "description": "Review the route early and send a read-only link when it is ready."
+        "title": "检查 3D，然后导出或分享",
+        "description": "尽早检查路径，准备好后再发出只读链接。"
       }
     },
     "starterLayouts": {
-      "label": "Starter layouts",
+      "label": "起始布局",
       "layouts": {
         "open-practice": {
-          "name": "Open practice",
-          "title": "Open Practice Layout",
-          "description": "Open flow with a start area and room to build your own lap."
+          "name": "开放练习",
+          "title": "开放练习布局",
+          "description": "开阔流线，带起飞区，并预留足够空间让你自行延展整圈线路。"
         },
         "compact-race-start": {
-          "name": "Compact race start",
-          "title": "Compact Race Start",
-          "description": "Tight opening with an immediate gate line and early turn."
+          "name": "紧凑竞速起跑",
+          "title": "紧凑竞速起跑布局",
+          "description": "开局更紧凑，前方立刻进入门组，并很早就需要转向。"
         },
         "technical-ladder-line": {
-          "name": "Technical ladder line",
-          "title": "Technical Ladder Line",
-          "description": "First gate, two ladders, and a follow-up gate for quick rhythm."
+          "name": "技术目字门线路",
+          "title": "技术目字门线路布局",
+          "description": "首门后接两个目字门，再接后续穿越门，适合快速检查节奏感。"
         }
       }
     },
     "guided": {
-      "label": "Guided start",
-      "title": "Start with guidance",
-      "descriptionDesktop": "Open an empty field with `Gate` selected so you can block out the course first. Draw the path once the first obstacles are down.",
-      "descriptionMobile": "Open an empty field with Gate selected. Draw the path once the first obstacles are down."
+      "label": "引导式开始",
+      "title": "按引导开始",
+      "descriptionDesktop": "打开一个空场地，并默认选中 `Gate`，先把赛道框架摆出来。等第一批障碍落位后，再去画路径。",
+      "descriptionMobile": "打开空场地并默认选中 Gate。第一批障碍落位后再去画路径。"
     },
     "empty": {
-      "label": "Empty start",
-      "continue": "Continue with empty canvas",
-      "description": "Skip the guided start and open the empty studio instead."
+      "label": "空白开始",
+      "continue": "以空白画布继续",
+      "description": "跳过引导，直接进入空白 Studio。"
     },
     "shortcuts": {
-      "gate": "places gates",
-      "path": "starts the route",
-      "finish": "finishes the path"
+      "gate": "放置穿越门",
+      "path": "开始画路径",
+      "finish": "完成路径"
     }
   },
   "saveAsPresetDialog": {
-    "title": "Save as preset",
-    "subtitle": "Give your selection a name so you can place it again from the preset picker.",
+    "title": "保存为预设",
+    "subtitle": "给当前选择起个名字，之后就能从预设选择器里再次放置。",
     "shapeCount": "{count, plural, one {# shape} other {# shapes}}",
     "pathsExcluded": "{count, plural, one {1 path will be excluded} other {# paths will be excluded}} — presets only capture non-path shapes.",
-    "presetNameLabel": "Preset name",
-    "presetNamePlaceholder": "e.g. Timing gate setup",
-    "savePreset": "Save preset"
+    "presetNameLabel": "预设名称",
+    "presetNamePlaceholder": "例如：计时门组合",
+    "savePreset": "保存预设"
   },
   "mobilePanels": {
     "viewControls": {
       "mode": {
-        "current": "Current mode",
-        "viewModeLabel": "View mode"
+        "current": "当前模式",
+        "viewModeLabel": "视图模式"
       },
       "controls": {
         "fitToField": {
-          "label": "Fit to field",
-          "description": "Center the current design in view"
+          "label": "适应场地",
+          "description": "将当前设计居中显示"
         },
         "snap": {
-          "label": "Snap",
-          "description": "Lock to nearby grid positions and objects"
+          "label": "吸附",
+          "description": "吸附到附近网格和物件"
         },
         "rulers": {
-          "label": "Rulers",
-          "description": "Show top and left guides on mobile"
+          "label": "标尺",
+          "description": "在移动端显示上侧和左侧辅助标尺"
         },
         "obstacleNumbers": {
-          "label": "Obstacle numbers",
-          "description": "Show path numbers on route obstacles"
+          "label": "障碍编号",
+          "description": "在路径障碍上显示路径编号"
         },
         "flyThrough": {
-          "label": "Fly-through",
+          "label": "模拟飞行",
           "descriptions": {
-            "available": "Start the race-line preview camera",
-            "readOnly": "No route in this shared track",
-            "draw": "Draw a path in 2D first to enable this"
+            "available": "启动路径预览相机",
+            "readOnly": "这条共享赛道没有路径",
+            "draw": "先在 2D 里画出路径后才能启用"
           }
         },
         "gizmo": {
-          "label": "Gizmo",
-          "description": "Show the axis helper in 3D preview"
+          "label": "坐标轴",
+          "description": "在 3D 预览中显示坐标轴辅助器"
         }
       },
       "readOnly": {
-        "review3dWithPath": "Read-only 3D review with fly-through available for this shared track.",
-        "review3dNoPath": "Read-only 3D review for this shared track. No route is available for fly-through.",
-        "review2dWithPath": "Read-only 2D review for this shared track. Switch to 3D to use fly-through.",
-        "review2dNoPath": "Read-only 2D review for this shared track."
+        "review3dWithPath": "当前共享赛道为只读 3D 审阅，且可用模拟飞行。",
+        "review3dNoPath": "当前共享赛道为只读 3D 审阅，但没有路径可用于模拟飞行。",
+        "review2dWithPath": "当前共享赛道为只读 2D 审阅。切到 3D 后可使用模拟飞行。",
+        "review2dNoPath": "当前共享赛道为只读 2D 审阅。"
       },
       "share": {
-        "sectionLabel": "Share",
-        "editableCopy": "Editable copy",
-        "shareButton": "Share"
+        "sectionLabel": "分享",
+        "editableCopy": "可编辑副本",
+        "shareButton": "分享"
       }
     },
     "multiSelect": {
       "header": {
-        "title": "Multi-select",
-        "lockedHint": "Locked selection. Unlock before moving or resizing.",
-        "tapHint": "Tap items to add or remove them."
+        "title": "多选",
+        "lockedHint": "当前选择已锁定。先解锁后才能移动或缩放。",
+        "tapHint": "点按项目可将其加入或移出选择。"
       },
       "fields": {
-        "groupNamePlaceholder": "Group name"
+        "groupNamePlaceholder": "分组名称"
       },
       "actions": {
-        "duplicate": "Duplicate",
-        "lock": "Lock",
-        "unlock": "Unlock",
-        "delete": "Delete",
-        "ungroup": "Ungroup",
-        "group": "Group"
+        "duplicate": "复制",
+        "lock": "锁定",
+        "unlock": "解锁",
+        "delete": "删除",
+        "ungroup": "取消分组",
+        "group": "分组"
       }
     },
     "pathBuilder": {
       "header": {
-        "title": "Path builder"
+        "title": "路径绘制"
       },
       "status": {
-        "loopConnected": "Loop connected · {count} points · {length}",
-        "pointsCount": "{count} points · {length}",
-        "tapToStart": "Tap the canvas to place the first point"
+        "loopConnected": "闭环已连接 · {count} 个点 · {length}",
+        "pointsCount": "{count} 个点 · {length}",
+        "tapToStart": "点按画布放置第一个点"
       },
       "actions": {
-        "undo": "Undo",
-        "connectEnds": "Connect ends",
-        "finish": "Finish",
-        "cancel": "Cancel"
+        "undo": "撤销",
+        "connectEnds": "连接首尾",
+        "finish": "完成",
+        "cancel": "取消"
       }
     },
     "editorPanels": {
       "quickActions": {
-        "title": "Quick actions",
-        "adjustTitle": "Adjust",
+        "title": "快捷操作",
+        "adjustTitle": "微调",
         "hints": {
-          "addPoint": "Add point on selected segment",
-          "deleteWaypoint": "Delete selected waypoint",
-          "resume": "Resume or adjust this path",
-          "selectionStep": "{label} · {step} step",
-          "selectionFallback": "Selection"
+          "addPoint": "在线段上添加点",
+          "deleteWaypoint": "删除选中的路径点",
+          "resume": "继续编辑或调整这条路径",
+          "selectionStep": "{label} · 步进 {step}",
+          "selectionFallback": "选择"
         },
         "actions": {
-          "addPoint": "Add point",
-          "editPath": "Edit path",
-          "duplicate": "Duplicate",
-          "lock": "Lock",
-          "unlock": "Unlock",
-          "delete": "Delete",
-          "deletePoint": "Delete point",
-          "adjust": "Adjust",
-          "back": "Back"
+          "addPoint": "添加点",
+          "editPath": "编辑路径",
+          "duplicate": "复制",
+          "lock": "锁定",
+          "unlock": "解锁",
+          "delete": "删除",
+          "deletePoint": "删除点",
+          "adjust": "微调",
+          "back": "返回"
         },
         "adjust": {
-          "step": "Step",
-          "left": "Left",
-          "up": "Up",
-          "down": "Down",
-          "right": "Right"
+          "step": "步进",
+          "left": "左",
+          "up": "上",
+          "down": "下",
+          "right": "右"
         }
       },
       "nav": {
-        "exit": "Exit",
-        "select": "Select",
-        "tools": "Tools",
-        "inspect": "Inspect",
-        "view": "View",
-        "review": "Review",
-        "share": "Share",
-        "editCopy": "Edit copy",
-        "preview": "Preview"
+        "exit": "退出",
+        "select": "选择",
+        "tools": "工具",
+        "inspect": "检查",
+        "view": "视图",
+        "review": "审阅",
+        "share": "分享",
+        "editCopy": "编辑副本",
+        "preview": "预览"
       },
       "inspector": {
-        "designSettingsHint": "Design settings",
-        "title": "Inspector",
+        "designSettingsHint": "设计设置",
+        "title": "检查器",
         "subtitles": {
-          "empty": "Design settings and placed items",
-          "selected": "Selection properties and editing"
+          "empty": "设计设置和已放置项目",
+          "selected": "当前选择的属性与编辑"
         }
       },
       "tools": {
-        "title": "Tools",
+        "title": "工具",
         "sections": {
-          "items": "Track items",
-          "tools": "Canvas tools"
+          "items": "赛道项目",
+          "tools": "画布工具"
         },
         "toolDescriptions": {
-          "startfinish": "Mark launch or timing pads",
-          "cone": "Place course markers",
-          "label": "Add notes on the canvas",
-          "polyline": "Draw or edit the race line"
+          "startfinish": "标记起飞区或计时起终点",
+          "cone": "放置赛道标记物",
+          "label": "在画布上添加备注",
+          "polyline": "绘制或编辑比赛路径"
         },
         "subtitles": {
-          "preview3d": "Project actions for the current 3D session",
-          "canvas2d": "Drawing and editing tools"
+          "preview3d": "当前 3D 会话的项目操作",
+          "canvas2d": "绘制与编辑工具"
         }
       },
       "view": {
-        "title": "View",
-        "subtitle": "Canvas mode, guides and viewport controls"
+        "title": "视图",
+        "subtitle": "画布模式、辅助线和视口控制"
       }
     }
   },
   "viewModeSwitch": {
-    "ariaLabel": "View mode",
+    "ariaLabel": "视图模式",
     "canvas2dShort": "2D",
     "preview3dShort": "3D",
-    "canvas2dDrawer": "2D Canvas",
-    "preview3dDrawer": "3D Preview"
+    "canvas2dDrawer": "2D 画布",
+    "preview3dDrawer": "3D 预览"
   },
   "desktopInspectorPanel": {
-    "ariaLabel": "Inspector",
-    "expandTooltip": "Expand inspector",
-    "collapseTooltip": "Collapse inspector",
-    "verticalLabel": "Inspector"
+    "ariaLabel": "检查器",
+    "expandTooltip": "展开检查器",
+    "collapseTooltip": "收起检查器",
+    "verticalLabel": "检查器"
   },
   "shell": {
-    "untitledTrack": "Untitled track",
-    "untitledFallback": "Untitled",
-    "untitledTrackCopy": "Untitled track copy",
-    "copyOfTitle": "Copy of {title}",
-    "savingLocally": "Saving locally…",
-    "savedLocallyAt": "Saved locally at {time}",
-    "localAutosaveFailed": "Local autosave failed",
-    "localAutosaveFailedDescription": "The latest edits are still on the canvas, but TrackDraw could not save a local copy. Retry now, or export a JSON backup before leaving this browser.",
-    "retry": "Retry",
-    "localAutosaveRecovered": "Local autosave recovered",
-    "latestLocalCopySaved": "The latest local copy was saved.",
-    "localAutosaveStillFailing": "Local autosave still failing",
-    "localAutosaveStillFailingDescription": "Export a JSON backup before making more changes if browser storage keeps failing.",
-    "editableCopyCreated": "Editable copy created",
-    "restoredFromLocalDraft": "Restored from local draft",
-    "freshLocalProject": "Fresh local project",
-    "editing": "Editing…",
-    "snapshotSaved": "Snapshot saved",
-    "snapshotSavedAt": "Snapshot saved at {time}",
-    "restorePointCreatedAt": "Restore point created at {time}",
-    "projectOpened": "Project opened",
-    "restoredFromSnapshot": "Restored from snapshot",
-    "exportFailed": "Export failed",
-    "exportFailedDescription": "{message} Try again, or open Export and download a project JSON backup from there.",
-    "exportFailedNoProjectDescription": "TrackDraw could not load this local project. Open it first or choose another saved project.",
-    "exportSuccess": "Project JSON exported",
-    "embeddedTrack": "Embedded track",
-    "sharedPreview": "Shared preview",
-    "loading3d": "Loading 3D…"
+    "untitledTrack": "未命名赛道",
+    "untitledFallback": "未命名",
+    "untitledTrackCopy": "未命名赛道副本",
+    "copyOfTitle": "{title} 的副本",
+    "savingLocally": "正在保存到本机…",
+    "savedLocallyAt": "{time} 已保存到本机",
+    "localAutosaveFailed": "本机自动保存失败",
+    "localAutosaveFailedDescription": "最新改动还保留在画布上，但 TrackDraw 无法保存本地副本。请立即重试，或在离开当前浏览器前导出一份 JSON 备份。",
+    "retry": "重试",
+    "localAutosaveRecovered": "本机自动保存已恢复",
+    "latestLocalCopySaved": "最新本地副本已保存。",
+    "localAutosaveStillFailing": "本机自动保存仍然失败",
+    "localAutosaveStillFailingDescription": "如果浏览器存储持续失败，请先导出一份 JSON 备份，再继续修改。",
+    "editableCopyCreated": "已创建可编辑副本",
+    "restoredFromLocalDraft": "已从本地草稿恢复",
+    "freshLocalProject": "新的本地项目",
+    "editing": "编辑中…",
+    "snapshotSaved": "快照已保存",
+    "snapshotSavedAt": "{time} 已保存快照",
+    "restorePointCreatedAt": "{time} 已创建恢复点",
+    "projectOpened": "项目已打开",
+    "restoredFromSnapshot": "已从快照恢复",
+    "exportFailed": "导出失败",
+    "exportFailedDescription": "{message} 请重试，或打开导出面板，从那里下载项目 JSON 备份。",
+    "exportFailedNoProjectDescription": "TrackDraw 无法加载这个本地项目。请先打开它，或改选另一个已保存项目。",
+    "exportSuccess": "项目 JSON 已导出",
+    "embeddedTrack": "嵌入赛道",
+    "sharedPreview": "共享预览",
+    "loading3d": "正在加载 3D…"
   },
   "languagePicker": {
-    "ariaLabel": "Language"
+    "ariaLabel": "语言"
   },
   "performanceHud": {
-    "title": "Developer HUD",
-    "summary": "Tool {tool} · {count} selected",
-    "reset": "Reset",
-    "close": "Close",
+    "title": "开发模式 HUD",
+    "summary": "工具 {tool} · 已选 {count} 项",
+    "reset": "重置",
+    "close": "关闭",
     "metrics": {
-      "canvas2d": "2D Canvas",
-      "preview3d": "3D View",
-      "inspector": "Inspector",
-      "autosave": "Autosave"
+      "canvas2d": "2D 画布",
+      "preview3d": "3D 视图",
+      "inspector": "检查器",
+      "autosave": "自动保存"
     },
     "levels": {
-      "noData": "No data",
-      "heavy": "Heavy",
-      "busy": "Busy",
-      "ok": "OK"
+      "noData": "无数据",
+      "heavy": "负载高",
+      "busy": "繁忙",
+      "ok": "正常"
     }
   },
   "textureDebug": {
-    "title": "Texture Debug",
-    "copyConfig": "Copy config",
-    "copied": "Copied",
-    "noPanels": "No panels registered yet",
-    "flip": "flip"
+    "title": "贴图调试",
+    "copyConfig": "复制配置",
+    "copied": "已复制",
+    "noPanels": "还没有注册任何面板",
+    "flip": "翻转"
   }
 }
