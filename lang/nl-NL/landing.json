@@ -2,268 +2,268 @@
   "metadata": {
     "homeTitle": "TrackDraw · Drone Race Track Builder",
     "homeSocialTitle": "TrackDraw | Drone Race Track Builder",
-    "homeDescription": "TrackDraw is a drone race track builder for FPV race directors. Design tracks to scale, review track flow in 3D, and share read-only race-day layouts.",
-    "homeSocialDescription": "Use TrackDraw as a drone race track builder to plan FPV layouts to scale, review track flow in 3D, and share read-only race-day plans.",
+    "homeDescription": "TrackDraw is een drone race track builder voor FPV-raceorganisatoren. Ontwerp tracks op schaal, beoordeel trackflow in 3D en deel alleen-lezen racedaglay-outs.",
+    "homeSocialDescription": "Gebruik TrackDraw als drone race track builder om FPV-lay-outs op schaal te plannen, trackflow in 3D te beoordelen en alleen-lezen racedagplannen te delen.",
     "studioTitle": "Drone Race Track Builder",
     "studioSocialTitle": "TrackDraw | Drone Race Track Builder",
-    "studioDescription": "Open the TrackDraw drone race track builder to design FPV layouts to scale, add gates and obstacles, and preview track flow in 3D.",
-    "studioSocialDescription": "Design FPV drone race tracks to scale, add gates and obstacles, and preview track flow in 3D."
+    "studioDescription": "Open de TrackDraw drone race track builder om FPV-lay-outs op schaal te ontwerpen, gates en obstakels toe te voegen en trackflow in 3D te previewen.",
+    "studioSocialDescription": "Ontwerp FPV drone race tracks op schaal, voeg gates en obstakels toe en preview trackflow in 3D."
   },
   "header": {
     "homeAriaLabel": "Home",
-    "homeTooltip": "Back to the main landing page",
-    "featuresNav": "Features",
-    "featuresTooltip": "Jump to the product overview",
-    "galleryNav": "Gallery",
-    "galleryTooltip": "Browse public community layouts",
-    "pricingNav": "Pricing",
-    "pricingTooltip": "See plans and pricing",
+    "homeTooltip": "Terug naar de hoofdpagina",
+    "featuresNav": "Functies",
+    "featuresTooltip": "Naar het productoverzicht",
+    "galleryNav": "Galerij",
+    "galleryTooltip": "Bekijk publieke community-layouts",
+    "pricingNav": "Prijzen",
+    "pricingTooltip": "Zie plannen en prijzen",
     "faqNav": "FAQ",
-    "faqTooltip": "Read common questions and answers",
+    "faqTooltip": "Veelgestelde vragen en antwoorden",
     "logoAriaLabel": "TrackDraw",
-    "siteNavAriaLabel": "Homepage, gallery and public site sections",
-    "mobileNavAriaLabel": "Navigate",
-    "themeAriaLabel": "Theme",
-    "themeTooltip": "Switch the public site theme.",
-    "languageAriaLabel": "Language",
-    "languageTooltip": "Switch the site language.",
-    "openStudio": "Open Studio"
+    "siteNavAriaLabel": "Homepage, galerij en publieke secties",
+    "mobileNavAriaLabel": "Navigeren",
+    "themeAriaLabel": "Thema",
+    "themeTooltip": "Wissel het thema van de publieke site.",
+    "languageAriaLabel": "Taal",
+    "languageTooltip": "Wissel de taal van de site.",
+    "openStudio": "Studio openen"
   },
   "hero": {
-    "eyebrow": "Built for FPV race directors",
-    "headingLine1": "Race day starts",
-    "headingLine2": "with a plan.",
-    "description": "TrackDraw is a browser-based drone race track builder for FPV race directors. Draw to scale in 2D, review the flow in 3D, share a read-only layout with pilots and crew, and keep the plan usable from desktop or mobile.",
-    "ctaStudio": "Open Studio",
-    "ctaFeatures": "See the features",
-    "feature1": "Official obstacle catalog",
-    "feature2": "Track sections",
-    "feature3": "3D preview and flythrough",
-    "feature4": "Race Pack PDF and SVG",
+    "eyebrow": "Gemaakt voor FPV-raceorganisatoren",
+    "headingLine1": "Racedag begint",
+    "headingLine2": "met een plan.",
+    "description": "TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren. Teken op schaal in 2D, check de flow in 3D en deel een alleen-lezen plan met piloten en crew.",
+    "ctaStudio": "Studio openen",
+    "ctaFeatures": "Bekijk de functies",
+    "feature1": "Officiële obstakelcatalogus",
+    "feature2": "Tracksecties",
+    "feature3": "3D-preview en flythrough",
+    "feature4": "Race Pack PDF en SVG",
     "videoAlt": "TrackDraw drone race track builder demo",
-    "videoDescription": "A quick product demo showing how TrackDraw helps FPV race directors build a drone race track layout, review it in 3D, and share it with pilots and crew."
+    "videoDescription": "Een korte productdemo die laat zien hoe TrackDraw FPV-raceorganisatoren helpt bij het ontwerpen van een drone race track-lay-out, beoordelen in 3D en delen met piloten en crew."
   },
   "features": {
-    "sectionTitle": "Features",
-    "sectionHeading": "Design, review, and share.",
-    "sectionDescription": "TrackDraw gives FPV race directors a practical way to design tracks properly: real field dimensions, the right obstacle set, and one workflow that carries the same plan from layout to review to team hand-off.",
+    "sectionTitle": "Functies",
+    "sectionHeading": "Ontwerp, controleer en deel.",
+    "sectionDescription": "TrackDraw helpt FPV-raceorganisatoren tracks strak te plannen met echte veldafmetingen, de juiste obstakels en één workflow van lay-out tot pilot briefing.",
     "trueToScale": {
-      "title": "True-to-scale canvas",
-      "description": "Set the field size, place elements to scale, and work on a grid that matches the real venue."
+      "title": "Canvas op ware schaal",
+      "description": "Stel de veldgrootte in, plaats elementen op schaal en werk op een raster dat bij de locatie past."
     },
     "obstacleCatalog": {
-      "title": "Official obstacle catalog",
-      "description": "Place official MultiGP obstacles (gates, flags, ladders, hurdles, and barriers) with real dimensions and accurate 3D rendering."
+      "title": "Officiële obstakelcatalogus",
+      "description": "Plaats officiële MultiGP-obstakels met echte afmetingen en nauwkeurige 3D-rendering."
     },
     "preview3d": {
-      "title": "Realistic 3D preview",
-      "description": "Orbit in 3D, add elevation to the race line, review maneuver curves, and fly through the route to catch flow problems before build day."
+      "title": "Realistische 3D-preview",
+      "description": "Bekijk de track in 3D, voeg hoogte toe aan de race line en ontdek flowproblemen voor de bouwdag."
     },
     "shareLinks": {
-      "title": "Shared review links",
-      "description": "Share a read-only layout with pilots and crew. Guest links are temporary; account-published links can stay live until revoked."
+      "title": "Gedeelde reviewlinks",
+      "description": "Deel een alleen-lezen lay-out met piloten en crew. Gastlinks zijn tijdelijk; accountlinks blijven actief."
     },
     "sections": {
-      "title": "Track sections",
-      "description": "Save any canvas selection as a named section and place it again with one click. Sections sync with your account across devices."
+      "title": "Tracksecties",
+      "description": "Sla canvasselecties op als secties en plaats ze opnieuw met één klik. Ze synchroniseren met je account."
     },
     "export": {
-      "title": "Race Pack and export",
-      "description": "Generate a pilot briefing PDF with obstacle layout, route map, and setup notes. Also export SVG, PNG, and JSON from the same design."
+      "title": "Race Pack en export",
+      "description": "Genereer een pilot briefing-PDF met obstakels, routekaart en opstelnotities. Exporteer ook SVG, PNG en JSON."
     }
   },
   "workflow": {
-    "sectionEyebrow": "In depth",
-    "sectionHeading": "From first layout to team hand-off.",
-    "sectionDescription": "The tool works best as a sequence: map the drone race track in 2D, check it in 3D, make practical edits when reality changes, then hand the same plan to pilots and crew.",
+    "sectionEyebrow": "Verdieping",
+    "sectionHeading": "Van eerste lay-out tot pilot briefing.",
+    "sectionDescription": "Breng de drone race track in 2D in kaart, controleer de flow in 3D, pas snel aan als de locatie verandert en deel hetzelfde plan met piloten, crew en organisatie.",
     "layout": {
-      "title": "2D Layout",
-      "subtitle": "Build the track on a field that matches reality.",
-      "description": "Start with the field dimensions, then place the elements crews already recognize. That makes the first version of the plan useful immediately, instead of just being a rough sketch.",
-      "screenshotAlt": "TrackDraw 2D layout editor with obstacle library and track plan",
+      "title": "2D-lay-out",
+      "subtitle": "Bouw de track op een veld dat overeenkomt met de realiteit.",
+      "description": "Begin met de veldafmetingen en plaats herkenbare elementen. Zo wordt de eerste versie direct bruikbaar, niet alleen een ruwe schets.",
+      "screenshotAlt": "TrackDraw 2D-layouteditor met obstacle library en trackplan",
       "bullets": [
-        "Scale-accurate field dimensions",
-        "Gates, flags, cones, start pads and larger features",
-        "Race line and labels for briefing clarity"
+        "Veldafmetingen op ware schaal",
+        "Gates, flags, cones, startpads en grotere elementen",
+        "Race line en labels voor briefingduidelijkheid"
       ]
     },
     "fineTune": {
-      "title": "Fine-Tune",
-      "subtitle": "Keep editing when the venue forces a change.",
-      "description": "A good plan changes cleanly. Inspector controls and mobile-friendly editing make it possible to adjust object properties, reposition items and keep the design usable even when the real venue refuses to stay static.",
-      "screenshotAlt": "TrackDraw mobile editor with settings panel open",
+      "title": "Verfijnen",
+      "subtitle": "Blijf bewerken wanneer de locatie een wijziging vereist.",
+      "description": "Een goed plan past mee. Inspector-controls en mobiel bewerken laten je eigenschappen aanpassen, items verplaatsen en het ontwerp bruikbaar houden als de locatie verandert.",
+      "screenshotAlt": "TrackDraw mobiele editor met instellingenpaneel geopend",
       "bullets": [
-        "Inspector controls for dimensions, rotation and color",
-        "Touch-friendly editing on phones and tablets",
-        "Fast adjustments without leaving the main plan"
+        "Inspector-bedieningselementen voor afmetingen, rotatie en kleur",
+        "Touch-vriendelijk bewerken op telefoons en tablets",
+        "Snelle aanpassingen zonder het hoofdplan te verlaten"
       ]
     },
     "preview": {
-      "title": "3D Preview",
-      "subtitle": "Walk the track before you build it.",
-      "description": "One click switches from the flat 2D plan to a live 3D scene. Assign elevation to each waypoint on the race line to model the full vertical profile. Catch dangerous approaches before a single peg is in the ground.",
-      "screenshotAlt": "TrackDraw 3D preview showing track flow and elevation",
+      "title": "3D-preview",
+      "subtitle": "Loop door de track voor je hem bouwt.",
+      "description": "Schakel met één klik van 2D naar live 3D. Geef waypoints hoogte op de race line en ontdek riskante aanvliegroutes voordat er iets in de grond staat.",
+      "screenshotAlt": "TrackDraw 3D-preview met track flow en hoogte",
       "bullets": [
-        "Live 3D rendered directly from your 2D design",
-        "Per-waypoint altitude on the race line",
-        "Elevation graph in the inspector panel"
+        "Live 3D rechtstreeks gerenderd vanuit je 2D-ontwerp",
+        "Hoogte per waypoint op de race line",
+        "Hoogtegrafiek in het inspectorpaneel"
       ]
     },
     "handOff": {
-      "title": "Hand-Off",
-      "subtitle": "Give pilots and crew the same current version.",
-      "description": "A plan only matters if other people can open it. Shared read-only links and exports turn the layout into something pilots can review, crew can print and organizers can reuse later.",
-      "screenshotAlt": "TrackDraw read-only shared view open on mobile",
-      "gallery": "Browse the gallery for inspiration",
+      "title": "Overdracht",
+      "subtitle": "Geef piloten en crew dezelfde actuele versie.",
+      "description": "Een plan werkt pas als iedereen het kan openen. Alleen-lezen links en exports geven piloten, crew en organisatie dezelfde actuele versie.",
+      "screenshotAlt": "TrackDraw alleen-lezen gedeelde weergave geopend op mobiel",
+      "gallery": "Bekijk de galerij voor inspiratie",
       "bullets": [
-        "Read-only links that open on any device",
-        "PDF, PNG and SVG for briefing and print workflows",
-        "JSON export to archive and reuse layouts later"
+        "Alleen-lezen links die op elk apparaat openen",
+        "PDF, PNG en SVG voor briefing- en afdrukworkflows",
+        "JSON-export om lay-outs te archiveren en later opnieuw te gebruiken"
       ]
     }
   },
   "faq": {
     "sectionTitle": "FAQ",
-    "sectionHeading": "Good to know.",
+    "sectionHeading": "Goed om te weten.",
     "items": [
       {
-        "question": "Is TrackDraw a drone race track builder?",
-        "answer": "Yes. TrackDraw is a browser-based drone race track builder for FPV race directors who need scale-accurate layouts, 3D review, sharing, and export in one workflow."
+        "question": "Is TrackDraw een drone race track builder?",
+        "answer": "Ja. TrackDraw is een browsergebaseerde drone race track builder voor FPV-raceorganisatoren die schaalnauwkeurige lay-outs, 3D-review, delen en exporteren in één workflow nodig hebben."
       },
       {
-        "question": "What is the best way to plan an FPV race track?",
-        "answer": "Start with the field dimensions, place the obstacles you actually have, then review the route in 3D before sharing or exporting the plan. TrackDraw is built around that exact sequence."
+        "question": "Wat is de beste manier om een FPV-racetrack te plannen?",
+        "answer": "Begin met de veldafmetingen, plaats de obstakels die je daadwerkelijk hebt, en bekijk de route dan in 3D voor je het plan deelt of exporteert. TrackDraw is gebouwd rond precies die volgorde."
       },
       {
-        "question": "Can pilots review the layout without an account?",
-        "answer": "Yes. Share links open in read-only mode on any device, no account or app needed. Send it to pilots, judges, or crew and everyone sees the same published version."
+        "question": "Kunnen piloten de lay-out bekijken zonder een account?",
+        "answer": "Ja. Deellinks openen in alleen-lezen modus op elk apparaat, geen account of app vereist. Stuur hem naar piloten, judges of crew en iedereen ziet dezelfde gepubliceerde versie."
       },
       {
-        "question": "Does it work on a tablet at the venue?",
-        "answer": "Yes. The editor is touch-friendly, so quick adjustments on a phone or tablet are practical when the real venue forces a change."
+        "question": "Werkt het op een tablet op de locatie?",
+        "answer": "Ja. De editor is touch-vriendelijk, dus snelle aanpassingen op een telefoon of tablet zijn praktisch wanneer de echte locatie een wijziging vereist."
       },
       {
-        "question": "What export formats are available?",
-        "answer": "PDF, PNG, SVG, JSON, and a cinematic FPV video export. That covers printed race briefs, shareable visuals, reusable project files, and motion-led route review."
+        "question": "Welke exportformaten zijn beschikbaar?",
+        "answer": "PDF, PNG, SVG, JSON en een cinematic FPV-video-export. Dat dekt gedrukte race-briefings, deelbare visuals, herbruikbare projectbestanden en een visuele routereview."
       },
       {
-        "question": "Do I need an account to get started?",
-        "answer": "No. Open the studio and start designing right away. Creating an account adds cloud storage, durable published links, gallery publishing, and embeds."
+        "question": "Heb ik een account nodig om te beginnen?",
+        "answer": "Nee. Open de studio en begin meteen met ontwerpen. Een account aanmaken voegt cloudopslag, duurzame gepubliceerde links, galerijpublicatie en embeds toe."
       },
       {
-        "question": "Can I reuse a layout for a future event?",
-        "answer": "Yes. Save parts of a layout as named presets and place them again in one click. To reuse a full project, export it as JSON and import it at the start of a new event."
+        "question": "Kan ik een lay-out hergebruiken voor een toekomstig evenement?",
+        "answer": "Ja. Sla delen van een lay-out op als benoemde presets en plaats ze opnieuw met één klik. Om een volledig project te hergebruiken, exporteer het als JSON en importeer het aan het begin van een nieuw evenement."
       },
       {
-        "question": "Can TrackDraw help catch route problems before race day?",
-        "answer": "Yes. The 3D preview and route review warnings help surface uneven spacing, rhythm breaks, and alignment issues before you share the layout or start building it."
+        "question": "Kan TrackDraw helpen routeproblemen te ontdekken voor de racedag?",
+        "answer": "Ja. De 3D-preview en routebeoordelingswaarschuwingen helpen ongelijkmatige afstanden, ritmeproblemen en uitlijningsproblemen op te sporen voordat je de lay-out deelt of begint met bouwen."
       }
     ]
   },
   "pricing": {
-    "sectionEyebrow": "Plans",
-    "sectionHeading": "Start now, sign up when you need more.",
-    "sectionDescription": "Both current options are free. Guest mode keeps the core editor open without setup; accounts add durable publishing, embeds, gallery listing, and project continuity across devices.",
+    "sectionEyebrow": "Plannen",
+    "sectionHeading": "Begin nu, meld je aan wanneer je meer nodig hebt.",
+    "sectionDescription": "Beide opties zijn gratis. Gastmodus houdt de kerneditor direct beschikbaar; accounts voegen publicatie, embeds, galerij en synchronisatie toe.",
     "guest": {
-      "badge": "No sign-up",
-      "name": "Guest",
-      "price": "Free",
-      "description": "Best for quick drafts, one-off temporary review links, and local export without creating an account.",
-      "cta": "Open Studio"
+      "badge": "Geen aanmelding",
+      "name": "Gast",
+      "price": "Gratis",
+      "description": "Ideaal voor snelle concepten, eenmalige tijdelijke reviewlinks en lokale export zonder een account aan te maken.",
+      "cta": "Studio openen"
     },
     "account": {
-      "badge": "With account",
+      "badge": "Met account",
       "name": "Account",
-      "price": "Free",
-      "description": "Best for durable published links, embeds, gallery, track sections, REST API access, and cross-device project continuity.",
-      "cta": "Create account"
+      "price": "Gratis",
+      "description": "Ideaal voor blijvende links, embeds, galerijpublicatie, tracksecties, REST API en synchronisatie.",
+      "cta": "Account aanmaken"
     },
     "features": {
-      "fullDesigner": "Full track designer",
-      "preview2d3d": "2D & 3D preview",
-      "export": "PDF, SVG, PNG & JSON export",
-      "shareLinks": "Share links",
-      "temporaryLinks": "Temporary links",
-      "publishedLinks": "Published until revoked",
-      "shareLinksNote": "Guest share links are temporary. Account-published links stay live until revoked and can also be embedded.",
-      "embeds": "Website embeds",
-      "embedsDetail": "Embed on any website via iframe",
-      "gallery": "Gallery publishing",
-      "cloudProjects": "Cloud-synced projects",
-      "cloudProjectsDetail": "Projects sync with your account so you can continue on any device — from desktop at home to mobile at the venue.",
-      "sections": "Track sections",
-      "sectionsDetail": "Save any canvas selection as a named preset and place it again from the preset picker. Syncs with your account across devices.",
-      "api": "REST API access",
-      "apiDetail": "Bearer-authenticated, API key management"
+      "fullDesigner": "Volledige track designer",
+      "preview2d3d": "2D & 3D-preview",
+      "export": "PDF, SVG, PNG & JSON-export",
+      "shareLinks": "Deellinks",
+      "temporaryLinks": "Tijdelijke links",
+      "publishedLinks": "Gepubliceerd totdat ingetrokken",
+      "shareLinksNote": "Gastdeellinks zijn tijdelijk. Account-gepubliceerde links blijven actief totdat ze worden ingetrokken en kunnen ook worden ingesloten.",
+      "embeds": "Website-embeds",
+      "embedsDetail": "Insluiten op elke website via iframe",
+      "gallery": "Galerij publiceren",
+      "cloudProjects": "Cloud-gesynchroniseerde projecten",
+      "cloudProjectsDetail": "Projecten synchroniseren met je account zodat je verder kunt op elk apparaat — van desktop thuis tot mobiel op de locatie.",
+      "sections": "Tracksecties",
+      "sectionsDetail": "Sla elke canvasselectie op als een benoemde preset en plaats hem opnieuw vanuit de presetpicker. Synchroniseert met je account op alle apparaten.",
+      "api": "REST API-toegang",
+      "apiDetail": "Bearer-authenticatie, API-sleutelbeheer"
     },
     "categories": {
-      "design": "Design",
-      "sharing": "Sharing",
-      "projects": "Projects",
-      "integration": "Integration"
+      "design": "Ontwerpen",
+      "sharing": "Delen",
+      "projects": "Projecten",
+      "integration": "Integratie"
     }
   },
   "footer": {
-    "tagline": "Browser-based track designer for FPV race directors. Draw to scale, preview in 3D, share a read-only link, and keep quick edits moving on mobile.",
+    "tagline": "Browsergebaseerde track designer voor FPV-raceorganisatoren. Teken op schaal, preview in 3D, deel een alleen-lezen link en bewerk snel op mobiel.",
     "productTitle": "Product",
-    "openStudio": "Open Studio",
-    "releaseNotes": "Release notes",
-    "legalTitle": "Legal",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service",
+    "openStudio": "Studio openen",
+    "releaseNotes": "Releasenotes",
+    "legalTitle": "Juridisch",
+    "privacy": "Privacybeleid",
+    "terms": "Gebruiksvoorwaarden",
     "communityTitle": "Community",
     "github": "GitHub",
     "dutchDroneSquad": "Dutch Drone Squad",
     "facebook": "Facebook",
     "instagram": "Instagram",
-    "reportIssue": "Report an issue",
-    "supportTitle": "Support",
+    "reportIssue": "Probleem melden",
+    "supportTitle": "Ondersteuning",
     "githubSponsors": "GitHub Sponsors",
     "kofi": "Ko-fi",
     "copyright": "© {year} Dutch Drone Squad. Open source project.",
-    "madeWithPre": "Made with",
-    "madeWithPost": "for the FPV community"
+    "madeWithPre": "Gemaakt met",
+    "madeWithPost": "voor de FPV-community"
   },
   "gallery": {
-    "pageTitle": "FPV Drone Race Track Gallery",
-    "metaTitle": "TrackDraw | FPV Drone Race Track Gallery",
-    "metaDescription": "Browse FPV drone race track designs shared by the TrackDraw community.",
-    "sectionLabel": "Gallery",
-    "headingLine1": "Discover layouts that shape",
-    "headingLine2": "your next track design.",
-    "description": "Browse public TrackDraw layouts shared by the community for inspiration. Featured tracks surface the strongest examples first, with recent community uploads right below.",
+    "pageTitle": "FPV Drone Race Track Galerij",
+    "metaTitle": "TrackDraw | FPV Drone Race Track Galerij",
+    "metaDescription": "Blader door FPV drone race track-ontwerpen gedeeld door de TrackDraw-community.",
+    "sectionLabel": "Galerij",
+    "headingLine1": "Ontdek lay-outs die",
+    "headingLine2": "je volgende trackontwerp vormgeven.",
+    "description": "Blader door publieke TrackDraw-lay-outs uit de community. Uitgelichte tracks staan bovenaan, met recente uploads direct daarna.",
     "grid": {
-      "recentlyAdded": "Recently added",
-      "fieldSizeNotSet": "Field size not set",
-      "unknownPilot": "TrackDraw pilot",
-      "featuredBadge": "Featured",
-      "byOwner": "by {owner}",
-      "obstacleCount": "{count} obstacles",
-      "published": "Published {date}",
-      "open": "Open",
-      "emptyTitle": "No tracks yet.",
-      "emptyDescription": "Gallery listings will appear here once TrackDraw pilots choose to share them publicly.",
-      "featuredHeading": "Featured",
-      "featuredSubtitle": "Hand-picked layouts at the top of the gallery.",
+      "recentlyAdded": "Recent toegevoegd",
+      "fieldSizeNotSet": "Veldgrootte niet ingesteld",
+      "unknownPilot": "TrackDraw-piloot",
+      "featuredBadge": "Uitgelicht",
+      "byOwner": "door {owner}",
+      "obstacleCount": "{count} obstakels",
+      "published": "Gepubliceerd op {date}",
+      "open": "Openen",
+      "emptyTitle": "Nog geen tracks.",
+      "emptyDescription": "Galerijvermeldingen verschijnen hier zodra TrackDraw-piloten ervoor kiezen ze publiekelijk te delen.",
+      "featuredHeading": "Uitgelicht",
+      "featuredSubtitle": "Handmatig geselecteerde lay-outs boven in de galerij.",
       "recentHeading": "Recent",
-      "recentSubtitle": "Newly listed layouts from the community.",
-      "loadMore": "Load more"
+      "recentSubtitle": "Nieuw vermelde lay-outs van de community.",
+      "loadMore": "Meer laden"
     }
   },
   "notFound": {
     "logoAriaLabel": "TrackDraw",
-    "badge": "Error 404",
-    "heading": "This page drifted off the course",
-    "description": "The page you requested does not exist, may have moved, or may have taken a wrong turn at the gate. The latest track or route should be close by.",
-    "whatToTry": "What To Try",
-    "step1": "Jump back to the studio and open the latest track.",
-    "step2": "Return home if you came here from an old bookmark.",
-    "step3": "Try the latest route again if the page moved recently.",
-    "goHome": "Go Home",
+    "badge": "Fout 404",
+    "heading": "Deze pagina is van de track afgeraakt",
+    "description": "De pagina die je zocht bestaat niet, is mogelijk verplaatst, of nam een verkeerde afslag bij de gate. De laatste track of route zou dichtbij moeten zijn.",
+    "whatToTry": "Wat te proberen",
+    "step1": "Ga terug naar de studio en open de laatste track.",
+    "step2": "Ga naar home als je hier via een oude bookmark terechtkwam.",
+    "step3": "Probeer de route opnieuw als de pagina recent is verplaatst.",
+    "goHome": "Naar home",
     "openStudio": "Open Studio"
   },
   "screenshotPlaceholder": {
-    "label": "Screenshot Placeholder",
-    "plannedAsset": "Planned Asset"
+    "label": "Screenshot-placeholder",
+    "plannedAsset": "Geplande asset"
   }
 }
