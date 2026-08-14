@@ -245,88 +245,77 @@ function UserGrowthComboChart({
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <p className="mb-2 text-sm font-medium">{t("cumulativeTitle")}</p>
-        <ChartContainer config={growthComboConfig} className="h-40 w-full">
-          <ComposedChart
-            accessibilityLayer
-            data={data}
-            margin={{ left: 4, right: 4, top: 4, bottom: 0 }}
-          >
-            <defs>
-              <linearGradient id="growthAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="0%"
-                  stopColor="var(--color-totalUsers)"
-                  stopOpacity={0.2}
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--color-totalUsers)"
-                  stopOpacity={0.02}
-                />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis dataKey="label" hide />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 12 }}
-              allowDecimals={false}
-              width={36}
-            />
-            <ChartTooltip
-              cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
-            />
-            <Area
-              type="monotone"
-              dataKey="totalUsers"
-              stroke="var(--color-totalUsers)"
-              strokeWidth={2}
-              fill="url(#growthAreaGrad)"
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 0 }}
-            />
-          </ComposedChart>
-        </ChartContainer>
-      </div>
-      <div>
-        <p className="mb-2 text-sm font-medium">{t("newTitle")}</p>
-        <ChartContainer config={growthComboConfig} className="h-36 w-full">
-          <ComposedChart
-            accessibilityLayer
-            data={data}
-            margin={{ left: 4, right: 4, top: 4, bottom: 0 }}
-          >
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tick={{ fontSize: 12 }}
-              interval="preserveStartEnd"
-              minTickGap={12}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 12 }}
-              allowDecimals={false}
-              width={36}
-            />
-            <ChartTooltip cursor={false} />
-            <Bar
-              dataKey="newUsers"
-              fill="var(--color-newUsers)"
-              radius={[3, 3, 0, 0]}
-              maxBarSize={28}
-            />
-          </ComposedChart>
-        </ChartContainer>
-      </div>
+    <div className="space-y-3">
+      <ChartContainer config={growthComboConfig} className="h-64 w-full">
+        <ComposedChart
+          accessibilityLayer
+          data={data}
+          margin={{ left: 4, right: 4, top: 4, bottom: 0 }}
+        >
+          <defs>
+            <linearGradient id="growthAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop
+                offset="0%"
+                stopColor="var(--color-totalUsers)"
+                stopOpacity={0.2}
+              />
+              <stop
+                offset="100%"
+                stopColor="var(--color-totalUsers)"
+                stopOpacity={0.02}
+              />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" />
+          <XAxis
+            dataKey="label"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tick={{ fontSize: 12 }}
+            interval="preserveStartEnd"
+            minTickGap={12}
+          />
+          <YAxis
+            yAxisId="total"
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 12 }}
+            allowDecimals={false}
+            width={36}
+          />
+          <YAxis
+            yAxisId="new"
+            orientation="right"
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 12 }}
+            allowDecimals={false}
+            width={36}
+          />
+          <ChartTooltip
+            cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
+          />
+          <ChartLegend content={<ChartLegendContent />} />
+          <Area
+            yAxisId="total"
+            type="monotone"
+            dataKey="totalUsers"
+            stroke="var(--color-totalUsers)"
+            strokeWidth={2}
+            fill="url(#growthAreaGrad)"
+            dot={false}
+            activeDot={{ r: 4, strokeWidth: 0 }}
+          />
+          <Bar
+            yAxisId="new"
+            dataKey="newUsers"
+            fill="var(--color-newUsers)"
+            radius={[3, 3, 0, 0]}
+            maxBarSize={28}
+          />
+        </ComposedChart>
+      </ChartContainer>
       <DataTableDisclosure
         label={t("viewData")}
         columns={[t("periodColumn"), t("totalUsers"), newUsersLabel]}
@@ -758,9 +747,11 @@ function UserGrowthRangePicker({
 export function UserGrowthCard({
   growthByRange,
   growthTimeline,
+  bare = false,
 }: {
   growthByRange: GrowthByRange;
   growthTimeline: GrowthTimeline;
+  bare?: boolean;
 }) {
   const t = useTranslations("dashboard.metrics.userGrowth");
   const [range, setRange] = useState<GrowthRange>("3m");
@@ -783,8 +774,8 @@ export function UserGrowthCard({
         ? t("newThisWeek")
         : t("newThisDay");
 
-  return (
-    <div className="bg-card min-w-0 rounded-xl border p-4 sm:p-5">
+  const content = (
+    <>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-0.5">
           <h3 className="text-sm font-semibold">{t("title")}</h3>
@@ -812,6 +803,14 @@ export function UserGrowthCard({
         />
         <UserGrowthSummary growthData={growthData} />
       </div>
+    </>
+  );
+
+  if (bare) return content;
+
+  return (
+    <div className="bg-card min-w-0 rounded-xl border p-4 sm:p-5">
+      {content}
     </div>
   );
 }
@@ -976,6 +975,48 @@ export function ContentGrowthChart({
   );
 }
 
+export function GrowthTabs({
+  growthByRange,
+  growthTimeline,
+  contentGrowth,
+}: {
+  growthByRange: GrowthByRange;
+  growthTimeline: GrowthTimeline;
+  contentGrowth: ProductInsights["contentGrowth"];
+}) {
+  const t = useTranslations("dashboard.metrics");
+
+  return (
+    <Tabs
+      defaultValue="users"
+      className="bg-card min-w-0 rounded-xl border p-4 sm:p-5"
+    >
+      <TabsList aria-label={t("growthTabs.label")}>
+        <TabsTrigger value="users">{t("growthTabs.users")}</TabsTrigger>
+        <TabsTrigger value="content">{t("growthTabs.content")}</TabsTrigger>
+      </TabsList>
+      <TabsContent value="users" className="mt-4">
+        <UserGrowthCard
+          growthByRange={growthByRange}
+          growthTimeline={growthTimeline}
+          bare
+        />
+      </TabsContent>
+      <TabsContent value="content" className="mt-4">
+        <div className="space-y-0.5">
+          <h3 className="text-sm font-semibold">{t("contentGrowth.title")}</h3>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            {t("contentGrowth.description")}
+          </p>
+        </div>
+        <div className="pt-3">
+          <ContentGrowthChart data={contentGrowth} />
+        </div>
+      </TabsContent>
+    </Tabs>
+  );
+}
+
 function HealthRows({
   rows,
   total,
@@ -992,7 +1033,10 @@ function HealthRows({
           className="grid grid-cols-[7rem_1fr_auto] items-center gap-2 text-sm"
         >
           <span className="text-muted-foreground truncate">{row.label}</span>
-          <div className="bg-muted h-1.5 overflow-hidden rounded-full">
+          <div
+            className="bg-muted h-1.5 overflow-hidden rounded-full"
+            aria-hidden="true"
+          >
             <div
               className={`h-full rounded-full ${row.color}`}
               style={{ width: `${Math.round((row.value / max) * 100)}%` }}
@@ -1205,157 +1249,38 @@ function hasComparisonBaseline(usage: ProductInsights["usage"]) {
   return usage.trackingDays >= 60;
 }
 
-export function MetricsFocusBanner({
-  metrics,
-  insights,
-}: {
-  metrics: AdminMetrics;
-  insights: ProductInsights;
-}) {
+export function MetricsFocusBanner({ metrics }: { metrics: AdminMetrics }) {
   const t = useTranslations("dashboard.metrics.focus");
-  const usage = insights.usage;
-  const daysTracked = usage.trackingDays;
-  const baselineReady = hasComparisonBaseline(usage);
-  const movementCandidates = [
-    {
-      key: "editor",
-      eventType: "editor.session_started",
-      current: eventCount(usage, "editor.session_started"),
-      href: "#product-use",
-    },
-    {
-      key: "exports",
-      eventType: "export.completed",
-      current: usage.exports30d,
-      href: "#product-use",
-    },
-    {
-      key: "views",
-      eventType: "share.viewed",
-      current: usage.shareViews30d,
-      href: "#product-use",
-    },
-  ] as const;
-  const strongestMovement = movementCandidates
-    .map((candidate) => {
-      const previous = previousEventCount(usage, candidate.eventType);
-      const delta =
-        previous > 0
-          ? Math.round(((candidate.current - previous) / previous) * 100)
-          : 0;
-      return { ...candidate, previous, delta };
-    })
-    .filter((candidate) => candidate.previous > 0)
-    .sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))[0];
-
-  const focusItems: Array<{
-    tone: "warning" | "building" | "neutral";
-    category: string;
-    title: string;
-    value: string;
-    detail: string;
-    href: string;
-    link: string;
-  }> = [];
-
-  if (metrics.gallery.missingPreview > 0) {
-    focusItems.push({
-      tone: "warning" as const,
-      category: t("categories.operations"),
-      title: t("preview.title"),
-      value: t("preview.value", {
-        count: metrics.gallery.missingPreview,
-        total: metrics.gallery.total,
-      }),
-      detail: t("preview.detail"),
-      href: "#sharing-health",
-      link: t("preview.link"),
-    });
-  }
-
-  if (baselineReady && strongestMovement) {
-    focusItems.push({
-      tone: "neutral",
-      category: t("categories.product"),
-      title: t("movement.title", {
-        metric: t(`metrics.${strongestMovement.key}`),
-      }),
-      value: t("movement.value", {
-        change: `${strongestMovement.delta > 0 ? "+" : ""}${strongestMovement.delta}`,
-      }),
-      detail: t("movement.detail", {
-        current: strongestMovement.current,
-        previous: strongestMovement.previous,
-      }),
-      href: strongestMovement.href,
-      link: t("movement.link"),
-    });
-  } else {
-    focusItems.push({
-      tone: "building",
-      category: t("categories.measurement"),
-      title: t("baseline.title"),
-      value: t("baseline.value", { days: Math.min(daysTracked, 60) }),
-      detail: t("baseline.detail"),
-      href: "#product-use",
-      link: t("baseline.link"),
-    });
-  }
+  if (metrics.gallery.missingPreview === 0) return null;
 
   return (
-    <section aria-labelledby="metrics-focus-title" className="space-y-3">
-      <h2
-        id="metrics-focus-title"
-        className="text-base font-semibold sm:text-lg"
-      >
-        {t("eyebrow")}
-      </h2>
-      <div className="grid gap-3 lg:grid-cols-2">
-        {focusItems.slice(0, 3).map((focus) => (
-          <article
-            key={focus.title}
-            className={cn(
-              "flex min-w-0 flex-col gap-3 rounded-xl border border-l-4 p-4",
-              focus.tone === "warning"
-                ? "border-border border-l-amber-500 bg-amber-500/8"
-                : focus.tone === "building"
-                  ? "border-border border-l-muted-foreground/40 bg-muted/35"
-                  : "border-border border-l-sky-500 bg-sky-500/6"
-            )}
-          >
-            <div className="flex items-start gap-3">
-              <Search
-                className={cn(
-                  "mt-0.5 size-5 shrink-0",
-                  focus.tone === "warning"
-                    ? "text-amber-700 dark:text-amber-300"
-                    : "text-sky-700 dark:text-sky-300"
-                )}
-                aria-hidden="true"
-              />
-              <div className="min-w-0">
-                <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                  {focus.category}
-                </p>
-                <h3 className="text-sm font-semibold">{focus.title}</h3>
-                <p className="mt-0.5 text-xl font-bold tabular-nums">
-                  {focus.value}
-                </p>
-                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  {focus.detail}
-                </p>
-              </div>
-            </div>
-            <a
-              href={focus.href}
-              className="mt-auto inline-flex items-center gap-2 self-start text-sm font-semibold underline-offset-4 hover:underline"
-            >
-              {focus.link}
-              <ArrowRight className="size-3.5" aria-hidden="true" />
-            </a>
-          </article>
-        ))}
+    <section
+      aria-labelledby="metrics-focus-title"
+      className="flex flex-col gap-3 rounded-xl border border-l-4 border-l-amber-500 bg-amber-500/8 p-4 sm:flex-row sm:items-center"
+    >
+      <Search
+        className="size-5 shrink-0 text-amber-700 dark:text-amber-300"
+        aria-hidden="true"
+      />
+      <div className="min-w-0 flex-1">
+        <h2 id="metrics-focus-title" className="text-sm font-semibold">
+          {t("preview.title")}:{" "}
+          {t("preview.value", {
+            count: metrics.gallery.missingPreview,
+            total: metrics.gallery.total,
+          })}
+        </h2>
+        <p className="text-muted-foreground mt-0.5 text-sm leading-relaxed">
+          {t("preview.detail")}
+        </p>
       </div>
+      <a
+        href="#sharing-health"
+        className="inline-flex shrink-0 items-center gap-2 self-start text-sm font-semibold underline-offset-4 hover:underline sm:self-center"
+      >
+        {t("preview.link")}
+        <ArrowRight className="size-3.5" aria-hidden="true" />
+      </a>
     </section>
   );
 }
@@ -1421,7 +1346,10 @@ function UsageBreakdownRows({
                 </span>
               </span>
             </div>
-            <div className="bg-muted h-2 overflow-hidden rounded-full">
+            <div
+              className="bg-muted h-2 overflow-hidden rounded-full"
+              aria-hidden="true"
+            >
               <div
                 className="h-full rounded-full bg-sky-500"
                 style={{ width: `${pct}%` }}
@@ -1548,21 +1476,25 @@ export function EmbedReachTable({
 
   return (
     <div className="space-y-4">
-      <dl className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-lg border p-3">
+      <dl className="grid border-y sm:grid-cols-2 sm:divide-x">
+        <div className="py-3 sm:pr-4">
           <dt className="text-muted-foreground text-sm">{t("knownSites")}</dt>
           <dd className="mt-1 text-xl font-semibold tabular-nums">
             {usage.embedReferrerSummary30d.hostnames}
           </dd>
         </div>
-        <div className="rounded-lg border p-3">
+        <div className="border-t py-3 sm:border-t-0 sm:pl-4">
           <dt className="text-muted-foreground text-sm">{t("knownViews")}</dt>
           <dd className="mt-1 text-xl font-semibold tabular-nums">
             {knownViews}
           </dd>
         </div>
       </dl>
-      <div className="overflow-x-auto">
+      <div
+        role="region"
+        aria-label={t("tableLabel")}
+        className="overflow-x-auto"
+      >
         <table className="w-full min-w-[54rem] text-sm">
           <thead>
             <tr className="text-muted-foreground border-b text-left">
@@ -1609,7 +1541,7 @@ export function EmbedReachTable({
                   <td className="px-3 py-3">
                     <a
                       href={`/share/${referrer.shareToken}`}
-                      className="underline-offset-4 hover:underline"
+                      className="decoration-muted-foreground/50 underline underline-offset-4 hover:decoration-current"
                     >
                       {referrer.shareTitle}
                     </a>
@@ -1681,7 +1613,25 @@ export function UsageTabs({ usage }: { usage: ProductInsights["usage"] }) {
       label: t("usageTabs.sharing"),
       title: t("shareUsage.title"),
       description: t("shareUsage.description"),
-      content: <ShareUsageBreakdown usage={usage} />,
+      content: (
+        <div className="space-y-6">
+          <ShareUsageBreakdown usage={usage} />
+          <section
+            aria-labelledby="embed-reach-title"
+            className="space-y-1 border-t pt-5"
+          >
+            <h4 id="embed-reach-title" className="text-sm font-semibold">
+              {t("embedReach.title")}
+            </h4>
+            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
+              {t("embedReach.description")}
+            </p>
+            <div className="pt-3">
+              <EmbedReachTable usage={usage} />
+            </div>
+          </section>
+        </div>
+      ),
     },
   ];
 

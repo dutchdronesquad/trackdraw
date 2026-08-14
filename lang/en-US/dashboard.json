@@ -343,11 +343,17 @@
       "exports": "Exports",
       "sharing": "Sharing"
     },
+    "growthTabs": {
+      "label": "Growth metric views",
+      "users": "Users",
+      "content": "Content"
+    },
     "embedReach": {
       "title": "Embed reach",
       "description": "Websites that generated enough embedded viewing activity to pass the privacy threshold during the last 30 days.",
       "knownSites": "Detected websites",
       "knownViews": "Views from detected websites",
+      "tableLabel": "Detected embed websites",
       "website": "Website",
       "track": "Track",
       "views": "Views",

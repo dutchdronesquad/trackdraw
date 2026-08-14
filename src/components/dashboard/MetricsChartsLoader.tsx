@@ -12,6 +12,11 @@ export const UserGrowthCard = dynamic(
   { ssr: false }
 );
 
+export const GrowthTabs = dynamic(
+  () => import("./MetricsCharts").then((m) => m.GrowthTabs),
+  { ssr: false }
+);
+
 export const ActivationFunnel = dynamic(
   () => import("./MetricsCharts").then((m) => m.ActivationFunnel),
   { ssr: false }

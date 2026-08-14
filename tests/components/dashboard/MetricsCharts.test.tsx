@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   ActivationFunnel,
   EmbedReachTable,
+  GrowthTabs,
   PlanLimitSimulator,
   UsageTabs,
   UserGrowthCard,
@@ -35,7 +36,7 @@ describe("UserGrowthCard", () => {
 
   it("opens the desktop range popover from its custom trigger", async () => {
     const user = userEvent.setup();
-    render(
+    const { container } = render(
       <UserGrowthCard
         growthByRange={growthByRange}
         growthTimeline={{
@@ -53,6 +54,7 @@ describe("UserGrowthCard", () => {
     expect(desktopTrigger).toBeTruthy();
     expect(desktopTrigger?.className).toContain("hover:bg-muted");
     expect(desktopTrigger?.className).not.toContain("hover:bg-accent");
+    expect(container.querySelectorAll("[data-chart]")).toHaveLength(1);
 
     await user.click(desktopTrigger!);
 
@@ -129,6 +131,31 @@ describe("metrics decision views", () => {
     ).toBe("true");
     await user.click(screen.getByRole("tab", { name: "Sharing" }));
     expect(screen.getByText("Viewing sessions")).toBeTruthy();
+    expect(screen.getByText("events.example.org")).toBeTruthy();
+    expect(
+      screen.getByRole("region", { name: "Detected embed websites" })
+    ).toBeTruthy();
+  });
+
+  it("keeps user and content growth in one switchable panel", async () => {
+    const user = userEvent.setup();
+    render(
+      <GrowthTabs
+        growthByRange={growthByRange}
+        growthTimeline={{
+          dailyGrowth: [{ date: "2026-07-01", users: 2 }],
+          totalUsers: 12,
+          today: "2026-07-09",
+        }}
+        contentGrowth={[
+          { period: "2026-07", projects: 3, shares: 2, presets: 1 },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole("tab", { name: "Users" })).toBeTruthy();
+    await user.click(screen.getByRole("tab", { name: "Content" }));
+    expect(screen.getByText("Content growth")).toBeTruthy();
   });
 
   it("presents thresholded embed reach as a labelled data table", () => {
