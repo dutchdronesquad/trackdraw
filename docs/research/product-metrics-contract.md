@@ -143,7 +143,7 @@ Interpretation rules:
 
 ### Raw retention
 
-Raw v1 product events are retained for at most **180 days** from `occurred_at`, matching the current scheduled cleanup policy. Every row should carry `expires_at = occurred_at + 180 days`; scheduled cleanup must delete expired rows and alert on failure.
+Raw v1 product events are retained for at most **180 days** from `occurred_at`, matching the current scheduled cleanup policy. Every row must carry `expires_at = occurred_at + 180 days`; scheduled cleanup must delete expired rows and alert on failure.
 
 Deletion from active storage is not always immediate deletion from recovery copies. The private operations runbook must record the applicable recovery window and ensure that a restore cannot permanently reintroduce expired or erased product events. Infrastructure-specific recovery procedures do not belong in this public repository.
 

@@ -127,7 +127,7 @@ Metrics about what happens inside the editor and on public pages require a light
 
 TrackDraw already has an `audit_events` table used for account security and moderation trails (role changes, key lifecycle, share revocations). Product analytics events should go in a **separate `product_events` table** rather than reusing `audit_events`. Reasons: audit events are always actor-linked and identity-sensitive, while product events may be session-scoped pseudonymous or account-linked; mixing them pollutes the audit dashboard with high-volume signal noise; and product events have a different retention and pruning lifecycle.
 
-The recommended approach is a single `product_events` table in D1 with a narrow, privacy-safe schema:
+The earlier first-slice implementation introduced a single `product_events` table in D1 with the narrow schema below. This is an implementation snapshot, not the v1 contract; [`product-metrics-contract.md`](./product-metrics-contract.md) defines the required logical envelope and closed per-event schemas.
 
 ```sql
 create table product_events (
