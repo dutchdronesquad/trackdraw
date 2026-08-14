@@ -81,28 +81,36 @@ function HeadlineCard({
     <Link
       href={metric.drilldown}
       prefetch={false}
-      className="bg-card hover:border-foreground/20 focus-visible:ring-ring group flex min-w-0 flex-col rounded-xl border p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      className="hover:bg-muted/40 focus-visible:ring-ring group flex min-w-0 items-center gap-3 rounded-lg border p-3 transition-colors focus-visible:ring-2 focus-visible:outline-none"
       aria-label={t("kpis.openDrilldown", {
         metric: t(`kpis.${metric.id}.label`),
       })}
     >
-      <div className="flex items-start justify-between gap-3">
-        <span className="bg-muted text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg">
-          <Icon className="size-4" aria-hidden="true" />
-        </span>
-        <span className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-[10px] font-medium tracking-wide uppercase">
-          {t(`quality.${metric.quality}`)}
-        </span>
-      </div>
-      <div className="mt-3 min-w-0">
-        <p className="text-muted-foreground text-xs font-medium">
-          {t(`kpis.${metric.id}.label`)}
-        </p>
-        <p className="mt-0.5 text-3xl font-semibold tracking-tight tabular-nums">
+      <span className="bg-muted text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg">
+        <Icon className="size-4" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <p className="truncate text-xs font-medium">
+            {t(`kpis.${metric.id}.label`)}
+          </p>
+          <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium tracking-wide uppercase">
+            {t(`quality.${metric.quality}`)}
+          </span>
+        </div>
+        <p className="mt-0.5 text-xl font-semibold tracking-tight tabular-nums">
           {currentDisplay}
         </p>
+        <p className="text-muted-foreground mt-0.5 truncate text-[11px]">
+          {metric.comparisonReady
+            ? t("kpis.previousCompact", { value: previousDisplay })
+            : t("kpis.comparisonBuilding")}
+          {metric.live
+            ? ` · ${t("kpis.liveCompact", { value: liveDisplay })}`
+            : ""}
+        </p>
         {metric.current?.denominator != null ? (
-          <p className="text-muted-foreground mt-1 text-xs tabular-nums">
+          <p className="text-muted-foreground text-[11px] tabular-nums">
             {t("kpis.rateCounts", {
               numerator: number.format(metric.current.numerator),
               denominator: number.format(metric.current.denominator),
@@ -110,35 +118,16 @@ function HeadlineCard({
           </p>
         ) : null}
       </div>
-      <dl className="mt-4 space-y-1.5 border-t pt-3 text-xs">
-        <div className="flex items-start justify-between gap-3">
-          <dt className="text-muted-foreground">{t("kpis.previousPeriod")}</dt>
-          <dd className="text-right font-medium tabular-nums">
-            {metric.comparisonReady
-              ? previousDisplay
-              : t("kpis.comparisonBuilding")}
-          </dd>
-        </div>
-        <div className="flex items-start justify-between gap-3">
-          <dt className="text-muted-foreground">{t("kpis.liveContext")}</dt>
-          <dd className="text-right font-medium tabular-nums">
-            {metric.live ? liveDisplay : t("kpis.latestMatureCohort")}
-          </dd>
-        </div>
-      </dl>
-      <p className="text-muted-foreground mt-3 text-[11px] leading-relaxed">
+      <ArrowRight
+        className="text-muted-foreground size-3.5 shrink-0 transition-transform group-hover:translate-x-0.5"
+        aria-hidden="true"
+      />
+      <span className="sr-only">
         {t("kpis.contractMeta", {
           id: metric.id,
           window: metric.windowDays,
           date: measuredSince,
         })}
-      </p>
-      <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium">
-        {t("kpis.drilldown")}
-        <ArrowRight
-          className="size-3 transition-transform group-hover:translate-x-0.5"
-          aria-hidden="true"
-        />
       </span>
     </Link>
   );
@@ -216,21 +205,24 @@ export default async function DailyCockpit({
     (operation) => operation.count > 0
   );
   const clearOperationCount = operations.length - actionableOperations.length;
-  const hasHeadlineData = data.headlines.some(
-    (metric) => metric.current !== null || metric.live !== null
-  );
-
   return (
-    <main className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-6 p-3 pt-0 sm:p-4 sm:pt-0">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          {t("liveStamp", { time: liveTime })}
+    <section aria-labelledby="daily-focus" className="space-y-3">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 id="daily-focus" className="text-base font-semibold">
+            {t("title")}
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {t("description")}
+          </p>
+        </div>
+        <p className="text-muted-foreground shrink-0 text-xs">
+          {t("updatedAt", { time: liveTime })}
         </p>
-      </header>
+      </div>
 
       {data.warning ? (
-        <section aria-labelledby="cockpit-signal" className="space-y-3">
+        <div aria-labelledby="cockpit-signal">
           <h2 id="cockpit-signal" className="sr-only">
             {t("warning.sectionTitle")}
           </h2>
@@ -263,91 +255,25 @@ export default async function DailyCockpit({
               </p>
             </div>
           </div>
-        </section>
+        </div>
       ) : null}
 
-      <section aria-labelledby="cockpit-operations" className="space-y-3">
-        <div>
-          <h2 id="cockpit-operations" className="text-base font-semibold">
-            {t("operations.title")}
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t("operations.description")}
-          </p>
-        </div>
-        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-          {actionableOperations.map((operation) => {
-            const Icon = operation.icon;
-            return (
-              <Link
-                key={operation.key}
-                href={operation.href}
-                prefetch={false}
-                className="bg-card focus-visible:ring-ring group flex items-start gap-3 rounded-xl border border-amber-500/25 p-4 transition-colors hover:border-amber-500/40 focus-visible:ring-2 focus-visible:outline-none"
-              >
-                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
-                  <Icon className="size-4" aria-hidden="true" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p className="text-sm font-semibold">
-                      {t(`operations.${operation.key}.label`)}
-                    </p>
-                    <span className="text-lg font-semibold tabular-nums">
-                      {number.format(operation.count)}
-                    </span>
-                  </div>
-                  <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                    {operation.detail}
-                  </p>
-                  <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium">
-                    {operation.action}
-                    <ArrowRight
-                      className="size-3 transition-transform group-hover:translate-x-0.5"
-                      aria-hidden="true"
-                    />
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-          {clearOperationCount > 0 ? (
-            <div
-              className={`bg-muted/35 flex items-start gap-3 rounded-xl border border-dashed p-4 ${actionableOperations.length === 0 ? "sm:col-span-2" : ""}`}
-            >
-              <span className="bg-background text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg border">
-                <ShieldCheck className="size-4" aria-hidden="true" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">
-                  {actionableOperations.length === 0
-                    ? t("operations.allClear")
-                    : t("operations.clearSummary", {
-                        count: clearOperationCount,
-                      })}
-                </p>
-                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                  {t("operations.clearDetail")}
-                </p>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section aria-labelledby="cockpit-headlines" className="space-y-3">
-        <div>
-          <h2 id="cockpit-headlines" className="text-base font-semibold">
-            {t("headlines.title")}
-          </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t("headlines.description")}
-          </p>
-        </div>
-        {hasHeadlineData ? (
-          <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)]">
+        <section
+          aria-labelledby="cockpit-headlines"
+          className="bg-card rounded-xl border p-4"
+        >
+          <div className="mb-3">
+            <h3 id="cockpit-headlines" className="text-sm font-semibold">
+              {t("headlines.title")}
+            </h3>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              {t("headlines.description")}
+            </p>
+          </div>
+          <div className="grid min-w-0 gap-2 sm:grid-cols-2">
             {data.headlines.map((metric, index) => (
-              <Reveal key={metric.id} delay={index * 0.04}>
+              <Reveal key={metric.id} delay={index * 0.03}>
                 <HeadlineCard
                   metric={metric}
                   number={number}
@@ -358,38 +284,78 @@ export default async function DailyCockpit({
               </Reveal>
             ))}
           </div>
-        ) : (
-          <div className="bg-card flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-start">
-            <span className="bg-muted text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg">
-              <RefreshCcw className="size-4" aria-hidden="true" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">
-                {t("headlines.buildingTitle")}
-              </p>
-              <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                {t("headlines.buildingDetail")}
-              </p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                {data.headlines.map((metric) => (
-                  <Link
-                    key={metric.id}
-                    href={metric.drilldown}
-                    prefetch={false}
-                    className="hover:bg-muted focus-visible:ring-ring group flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    {t(`kpis.${metric.id}.label`)}
-                    <ArrowRight
-                      className="text-muted-foreground size-3 shrink-0 transition-transform group-hover:translate-x-0.5"
-                      aria-hidden="true"
-                    />
-                  </Link>
-                ))}
-              </div>
-            </div>
+        </section>
+
+        <section
+          aria-labelledby="cockpit-operations"
+          className="bg-card rounded-xl border p-4"
+        >
+          <div className="mb-3">
+            <h3 id="cockpit-operations" className="text-sm font-semibold">
+              {t("operations.title")}
+            </h3>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              {t("operations.description")}
+            </p>
           </div>
-        )}
-      </section>
-    </main>
+          <div className="space-y-2">
+            {actionableOperations.map((operation) => {
+              const Icon = operation.icon;
+              return (
+                <Link
+                  key={operation.key}
+                  href={operation.href}
+                  prefetch={false}
+                  className="focus-visible:ring-ring group flex items-start gap-3 rounded-lg border border-amber-500/25 p-3 transition-colors hover:border-amber-500/40 focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                    <Icon className="size-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-sm font-semibold">
+                        {t(`operations.${operation.key}.label`)}
+                      </p>
+                      <span className="text-lg font-semibold tabular-nums">
+                        {number.format(operation.count)}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                      {operation.detail}
+                    </p>
+                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium">
+                      {operation.action}
+                      <ArrowRight
+                        className="size-3 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+            {clearOperationCount > 0 ? (
+              <div className="bg-muted/35 flex items-start gap-3 rounded-lg border border-dashed p-3">
+                <span className="bg-background text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg border">
+                  <ShieldCheck className="size-4" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">
+                    {actionableOperations.length === 0
+                      ? t("operations.allClear")
+                      : t("operations.clearSummary", {
+                          count: clearOperationCount,
+                        })}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                    {t("operations.clearDetail")}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      </div>
+    </section>
   );
 }

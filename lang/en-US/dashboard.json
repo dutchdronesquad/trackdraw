@@ -39,7 +39,9 @@
     "emailPreview": "Email Preview"
   },
   "cockpit": {
-    "title": "Daily management cockpit",
+    "title": "Daily focus",
+    "description": "Product movement and operational work, kept in context with the platform overview.",
+    "updatedAt": "Updated {time}",
     "liveStamp": "Live context through {time} (Europe/Amsterdam). Headline comparisons use complete UTC periods.",
     "notAvailable": "not available",
     "headlines": {
@@ -64,8 +66,10 @@
       "openDrilldown": "Open analytical context for {metric}",
       "rateCounts": "{numerator} of {denominator}",
       "previousPeriod": "Previous period",
+      "previousCompact": "Previous {value}",
       "comparisonBuilding": "Comparison building",
       "liveContext": "Live window incl. today",
+      "liveCompact": "Live {value}",
       "latestMatureCohort": "Latest mature cohort",
       "contractMeta": "{id} · {window}-day window · measured since {date} · owner: Product",
       "drilldown": "View analytical context"

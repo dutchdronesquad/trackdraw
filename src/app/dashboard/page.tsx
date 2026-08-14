@@ -378,29 +378,23 @@ export default async function DashboardPage() {
     notFound();
   }
 
-  if (hasCapability(actor.role, "admin.metrics.read")) {
-    const [cockpit, tPages] = await Promise.all([
-      getDailyCockpit(),
-      getTranslations("dashboard.pages"),
-    ]);
-    return (
-      <>
-        <DashboardSiteHeader title={tPages("overview")} />
-        <DailyCockpit data={cockpit} />
-      </>
-    );
-  }
-
   const canReadAudit = hasCapability(actor.role, "audit.read");
   const canReadUsers = hasCapability(actor.role, "admin.users.read");
+  const canReadMetrics = hasCapability(actor.role, "admin.metrics.read");
 
-  const [overviewStats, galleryStats, recentAuditEvents, recentGalleryEntries] =
-    await Promise.all([
-      getOverviewStats(),
-      getGalleryOverviewStats(),
-      canReadAudit ? listAuditEvents({ limit: 6 }) : Promise.resolve([]),
-      listGalleryEntriesForDashboard({ state: "public", limit: 6 }),
-    ]);
+  const [
+    overviewStats,
+    galleryStats,
+    recentAuditEvents,
+    recentGalleryEntries,
+    cockpit,
+  ] = await Promise.all([
+    getOverviewStats(),
+    getGalleryOverviewStats(),
+    canReadAudit ? listAuditEvents({ limit: 6 }) : Promise.resolve([]),
+    listGalleryEntriesForDashboard({ state: "public", limit: 6 }),
+    canReadMetrics ? getDailyCockpit() : Promise.resolve(null),
+  ]);
 
   const t = await getTranslations("dashboard.overview");
   const tPages = await getTranslations("dashboard.pages");
@@ -476,6 +470,8 @@ export default async function DashboardPage() {
             />
           </Reveal>
         </div>
+
+        {cockpit ? <DailyCockpit data={cockpit} /> : null}
 
         {/* Activity + Sign-ups (admin only) + Gallery */}
         <div
