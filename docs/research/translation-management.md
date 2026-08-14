@@ -73,7 +73,7 @@ Keep that architecture. Do not use Crowdin's runtime CDN merely to remove reposi
 
 This access model applies regardless of platform:
 
-- Start with a private Crowdin project/pilot while the workflow is being proven.
+- For the current Crowdin pilot, use the public, file-based project defined in the pilot runbook. If a future platform evaluation needs a private proof, keep it temporary and update the runbook before changing contributor access.
 - Use language-scoped permissions and suggestion/review roles where the selected plan supports them.
 - Do not allow direct pushes from contributors to GitHub or `main`.
 - Do not give normal translators platform API tokens, GitHub tokens, repository access, source-string edit permissions, or project administration rights.
