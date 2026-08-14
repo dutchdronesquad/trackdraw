@@ -16,6 +16,11 @@ import {
 } from "@/lib/projects";
 import { isDevAuthShimEnabled } from "@/lib/auth-client";
 import type { TrackDesign } from "@/lib/types";
+import {
+  classifyProductOperationFailure,
+  trackProductEvent,
+  type ProductEventFailureCategory,
+} from "@/lib/product-events";
 
 export type AccountProjectListItem = {
   id: string;
@@ -517,6 +522,7 @@ export function useAccountProjectSync({
         },
       }));
 
+      let failureCategory: ProductEventFailureCategory = "network";
       try {
         const response = await fetch("/api/projects", {
           method: "POST",
@@ -529,6 +535,7 @@ export function useAccountProjectSync({
             baseDesignUpdatedAt,
           }),
         });
+        failureCategory = classifyProductOperationFailure(response);
 
         const payload = (await response.json()) as {
           ok: boolean;
@@ -602,6 +609,16 @@ export function useAccountProjectSync({
           });
         }
       } catch (error) {
+        trackProductEvent("operation.failed", {
+          projectId: targetDesign.id,
+          properties: {
+            operation: "project_save",
+            category: isAccountProjectSyncConflictError(error)
+              ? "conflict"
+              : failureCategory,
+            surface: "editor",
+          },
+        });
         if (!isAccountProjectSyncConflictError(error)) {
           const fallbackSavedAt = saveLocalSyncFallback(targetDesign);
           markProjectSyncFailed(

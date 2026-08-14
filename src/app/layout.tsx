@@ -17,6 +17,7 @@ import {
   getSiteUrl,
 } from "@/lib/seo";
 import { THEME_BOOTSTRAP_SCRIPT } from "@/lib/theme";
+import { ProductAnalyticsLifecycle } from "@/components/ProductAnalyticsLifecycle";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -80,6 +81,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThemeBootstrap />
+        <ProductAnalyticsLifecycle />
         <MotionProvider>
           <TooltipProvider delayDuration={500}>{children}</TooltipProvider>
         </MotionProvider>

@@ -31,7 +31,10 @@ import type { TrackPreview3DHandle } from "@/components/canvas/editor/TrackPrevi
 import { useTheme } from "@/hooks/useTheme";
 import { useLocale, useTranslations } from "next-intl";
 import type { Translate } from "@/lib/editor/tool-registry";
-import { trackProductEvent } from "@/lib/product-events";
+import {
+  trackProductEvent,
+  type ProductEventExportFormat,
+} from "@/lib/product-events";
 import { defaultLocale, isValidLocale } from "@/lib/i18n/locales";
 
 export interface ExportDialogProps {
@@ -49,6 +52,14 @@ type ExportCategoryId =
   "visuals" | "raceDay" | "projectData" | "motion" | "simulatorLab";
 type ExportFormatId =
   "png" | "svg" | "render3d" | "racePack" | "json" | "webm" | "velocidrone";
+
+function getProductEventExportFormat(
+  format: ExportFormatId
+): ProductEventExportFormat {
+  if (format === "render3d") return "render_3d";
+  if (format === "racePack") return "race_pack";
+  return format;
+}
 
 type ExportFormat = {
   id: ExportFormatId;
@@ -578,8 +589,10 @@ export default function ExportDialog({
       const result = await fn();
       if (options?.eventFormat) {
         trackProductEvent("export.completed", {
-          projectId,
-          metadata: { format: options.eventFormat },
+          projectId: design.id,
+          properties: {
+            format: getProductEventExportFormat(options.eventFormat),
+          },
         });
       }
       const warningText =
@@ -600,6 +613,20 @@ export default function ExportDialog({
         onOpenChange(false);
       }
     } catch (err) {
+      trackProductEvent("operation.failed", {
+        projectId: design.id,
+        properties: {
+          operation: "export",
+          category:
+            options?.eventFormat === "png" ||
+            options?.eventFormat === "svg" ||
+            options?.eventFormat === "render3d" ||
+            options?.eventFormat === "webm"
+              ? "rendering"
+              : "unknown",
+          surface: "editor",
+        },
+      });
       const message = err instanceof Error ? err.message : String(err);
       const description = t("export.errors.exportFailedDescription", {
         message,

@@ -260,6 +260,18 @@ export async function unbanUser(userId: string): Promise<AdminUser | null> {
 export async function deleteUserAccount(userId: string): Promise<void> {
   const db = await getDatabase();
 
+  await db
+    .prepare(
+      `
+        delete from product_events
+        where user_id = ?
+          or project_id in (select id from projects where owner_user_id = ?)
+          or share_token in (select token from shares where owner_user_id = ?)
+      `
+    )
+    .bind(userId, userId, userId)
+    .run();
+
   await deleteSharesOwnedByUser(userId);
 
   await db
@@ -267,16 +279,6 @@ export async function deleteUserAccount(userId: string): Promise<void> {
       `
         delete from apikey
         where referenceId = ?
-      `
-    )
-    .bind(userId)
-    .run();
-
-  await db
-    .prepare(
-      `
-        delete from product_events
-        where user_id = ?
       `
     )
     .bind(userId)

@@ -6,6 +6,7 @@
     },
     "nav": {
       "security": "Security",
+      "privacy": "Privacy",
       "apiKeys": "API keys",
       "danger": "Danger zone"
     },
@@ -17,6 +18,10 @@
       "security": {
         "title": "Security",
         "description": "Manage sign-in methods, account email, and passkeys for your TrackDraw account."
+      },
+      "privacy": {
+        "title": "Privacy",
+        "description": "Manage optional product analytics for your TrackDraw account."
       },
       "apiKeys": {
         "title": "API keys",

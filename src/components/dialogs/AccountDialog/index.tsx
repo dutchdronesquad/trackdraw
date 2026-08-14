@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Braces, ShieldCheck, ShieldAlert, UserRound } from "lucide-react";
+import {
+  Braces,
+  ChartNoAxesColumn,
+  ShieldCheck,
+  ShieldAlert,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { authClient, type AuthPasskey } from "@/lib/auth-client";
@@ -11,6 +17,7 @@ import { AccountApiKeysView } from "./ApiKeysView";
 import { AccountDangerView } from "./DangerView";
 import { AccountProfileView } from "./ProfileView";
 import { AccountSecurityView } from "./SecurityView";
+import { ProductAnalyticsControl } from "@/components/ProductAnalyticsControl";
 import type {
   AccountApiKey,
   AccountDialogProps,
@@ -540,6 +547,8 @@ export default function AccountDialog({
     />
   );
 
+  const privacyContent = <ProductAnalyticsControl embedded />;
+
   const apiKeysContent = (
     <AccountApiKeysView
       isPending={isPending}
@@ -574,6 +583,11 @@ export default function AccountDialog({
       icon: <ShieldCheck className="size-4" />,
     },
     {
+      id: "privacy" as AccountDialogView,
+      label: t("account.nav.privacy"),
+      icon: <ChartNoAxesColumn className="size-4" />,
+    },
+    {
       id: "apiKeys" as AccountDialogView,
       label: t("account.nav.apiKeys"),
       icon: <Braces className="size-4" />,
@@ -599,6 +613,11 @@ export default function AccountDialog({
       title: t("account.panels.security.title"),
       description: t("account.panels.security.description"),
       content: securityContent,
+    },
+    privacy: {
+      title: t("account.panels.privacy.title"),
+      description: t("account.panels.privacy.description"),
+      content: privacyContent,
     },
     apiKeys: {
       title: t("account.panels.apiKeys.title"),

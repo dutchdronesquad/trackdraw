@@ -151,6 +151,15 @@ function touchTrackDesign(state: EditorState) {
   state.track.design.updatedAt = nowIso();
 }
 
+function trackMeaningfulEdit(
+  editType: import("@/lib/product-events").ProductEventEditType
+) {
+  trackProductEvent("editor.meaningful_edit_completed", {
+    projectId: useEditor.getState().track.design.id,
+    properties: { edit_type: editType },
+  });
+}
+
 function clearPolylineEditSelections(state: EditorState, ids: string[]) {
   const idSet = new Set(ids);
   if (
@@ -181,8 +190,9 @@ export const useEditor = create<EditorState>()(
         });
         trackProductEvent("editor.element_placed", {
           projectId,
-          metadata: { kind: s.kind, count: 1 },
+          properties: { kind: s.kind, count: 1 },
         });
+        trackMeaningfulEdit("place");
         return id;
       },
 
@@ -199,28 +209,36 @@ export const useEditor = create<EditorState>()(
           );
           touchTrackDesign(draft);
         });
-        const countsByKind = new Map<string, number>();
+        const countsByKind = new Map<Shape["kind"], number>();
         for (const shape of shapes) {
           countsByKind.set(shape.kind, (countsByKind.get(shape.kind) ?? 0) + 1);
         }
         for (const [kind, count] of countsByKind) {
-          trackProductEvent("editor.element_placed", {
-            projectId,
-            metadata: { kind, count },
-          });
+          for (let remaining = count; remaining > 0; remaining -= 500) {
+            trackProductEvent("editor.element_placed", {
+              projectId,
+              properties: { kind, count: Math.min(remaining, 500) },
+            });
+          }
         }
+        if (ids.length > 0) trackMeaningfulEdit("place");
         return ids;
       },
 
-      updateShape: (id, patch) =>
+      updateShape: (id, patch) => {
+        let changed = false;
         set((draft) => {
           const shape = draft.track.design.shapeById[id];
           if (!shape || shape.locked) return;
           if (!applyShapePatch(shape, patch)) return;
           touchTrackDesign(draft);
-        }),
+          changed = true;
+        });
+        if (changed) trackMeaningfulEdit("transform");
+      },
 
-      updateShapes: (ids, patch) =>
+      updateShapes: (ids, patch) => {
+        let committed = false;
         set((draft) => {
           let changed = false;
 
@@ -234,8 +252,11 @@ export const useEditor = create<EditorState>()(
 
           if (changed) {
             touchTrackDesign(draft);
+            committed = true;
           }
-        }),
+        });
+        if (committed) trackMeaningfulEdit("transform");
+      },
 
       updateShapesCatalogType: (ids, entryId) =>
         set((draft) => {
@@ -272,14 +293,18 @@ export const useEditor = create<EditorState>()(
           }
         }),
 
-      setPolylinePoints: (id, points) =>
+      setPolylinePoints: (id, points) => {
+        let changed = false;
         set((draft) => {
           const shape = draft.track.design.shapeById[id];
           if (shape?.locked || !setPolylinePoints(shape, points)) {
             return;
           }
           touchTrackDesign(draft);
-        }),
+          changed = true;
+        });
+        if (changed) trackMeaningfulEdit("route");
+      },
 
       updatePolylinePoint: (id, index, patch) =>
         set((draft) => {
@@ -340,7 +365,8 @@ export const useEditor = create<EditorState>()(
           }
         }),
 
-      removeShapes: (ids) =>
+      removeShapes: (ids) => {
+        let changed = false;
         set((draft) => {
           const removedIds = new Set<string>();
           const targetShapes = ids
@@ -359,7 +385,10 @@ export const useEditor = create<EditorState>()(
             (id) => !removedIds.has(id)
           );
           touchTrackDesign(draft);
-        }),
+          changed = true;
+        });
+        if (changed) trackMeaningfulEdit("delete");
+      },
 
       nudgeShapes: (ids, dx, dy) =>
         set((draft) => {
@@ -580,17 +609,21 @@ export const useEditor = create<EditorState>()(
           draft.ui.panOffset = offset;
         }),
 
-      updateField: (patch) =>
+      updateField: (patch) => {
         set((draft) => {
           Object.assign(draft.track.design.field, patch);
           touchTrackDesign(draft);
-        }),
+        });
+        trackMeaningfulEdit("layout");
+      },
 
-      updateDesignMeta: (patch) =>
+      updateDesignMeta: (patch) => {
         set((draft) => {
           Object.assign(draft.track.design, patch);
           touchTrackDesign(draft);
-        }),
+        });
+        trackMeaningfulEdit("settings");
+      },
 
       setMapReference: (reference) =>
         set((draft) => {

@@ -96,6 +96,7 @@ export default function TermsPage() {
                   link: (chunks) => (
                     <Link
                       href="/privacy"
+                      prefetch={false}
                       className="text-brand-primary hover:text-brand-primary/85 font-medium transition-colors"
                     >
                       {chunks}

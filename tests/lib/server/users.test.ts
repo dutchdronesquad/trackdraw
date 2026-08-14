@@ -316,13 +316,13 @@ describe("unbanUser", () => {
 describe("deleteUserAccount", () => {
   it("deletes shares, API keys, product events, and projects before deleting the user row", async () => {
     mocks.deleteSharesOwnedByUser.mockResolvedValue(undefined);
-    const apiKeyStatement = createD1Statement();
     const productEventsStatement = createD1Statement();
+    const apiKeyStatement = createD1Statement();
     const projectsStatement = createD1Statement();
     const usersStatement = createD1Statement();
     installD1Statements(mocks.prepare, [
-      apiKeyStatement,
       productEventsStatement,
+      apiKeyStatement,
       projectsStatement,
       usersStatement,
     ]);
@@ -334,7 +334,11 @@ describe("deleteUserAccount", () => {
     expect(apiKeyStatement.bind).toHaveBeenCalledWith("user-4");
     expect(apiKeyStatement.run).toHaveBeenCalledOnce();
     expect(productEventsStatement.sql).toContain("delete from product_events");
-    expect(productEventsStatement.bind).toHaveBeenCalledWith("user-4");
+    expect(productEventsStatement.bind).toHaveBeenCalledWith(
+      "user-4",
+      "user-4",
+      "user-4"
+    );
     expect(productEventsStatement.run).toHaveBeenCalledOnce();
     expect(projectsStatement.sql).toContain("delete from projects");
     expect(projectsStatement.bind).toHaveBeenCalledWith("user-4");

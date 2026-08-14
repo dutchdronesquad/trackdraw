@@ -28,6 +28,14 @@ function reportImportError(message: string, description: string) {
   toast.error(message, { description });
 }
 
+function trackImportFailure(
+  category: "validation" | "unsupported" | "storage"
+) {
+  trackProductEvent("operation.failed", {
+    properties: { operation: "import", category, surface: "editor" },
+  });
+}
+
 export default function ImportDialog({
   open,
   onOpenChange,
@@ -56,6 +64,7 @@ export default function ImportDialog({
       try {
         data = JSON.parse(text);
       } catch {
+        trackImportFailure("validation");
         setError(t("import.errorInvalidJsonHelp"));
         setParsed(null);
         reportImportError(
@@ -76,6 +85,7 @@ export default function ImportDialog({
         });
         setError(null);
       } catch {
+        trackImportFailure("validation");
         setError(t("import.errorInvalidProjectHelp"));
         setParsed(null);
         reportImportError(
@@ -90,6 +100,7 @@ export default function ImportDialog({
   const handleFile = useCallback(
     (file: File) => {
       if (!file.name.endsWith(".json")) {
+        trackImportFailure("unsupported");
         setError(t("import.errorUnsupportedFileHelp"));
         setParsed(null);
         toast.error(t("import.toastImportFailed"), {
@@ -98,6 +109,7 @@ export default function ImportDialog({
         return;
       }
       file.text().then(tryParse, () => {
+        trackImportFailure("storage");
         setError(t("import.errorReadFailedHelp"));
         setParsed(null);
         toast.error(t("import.toastImportFailed"), {
@@ -130,7 +142,11 @@ export default function ImportDialog({
     replaceDesign(parsed.design);
     trackProductEvent("project.imported", {
       projectId: parsed.design.id,
-      metadata: { shapeCount: parsed.shapeCount },
+      properties: { shape_count: parsed.shapeCount },
+    });
+    trackProductEvent("editor.meaningful_edit_completed", {
+      projectId: parsed.design.id,
+      properties: { edit_type: "import" },
     });
     onOpenChange(false);
     reset();

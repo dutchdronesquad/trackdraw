@@ -15,13 +15,14 @@ import {
 type Props = {
   /** Called once with the PNG data URL after the scene has rendered. */
   onCapture: (dataUrl: string) => void;
+  onFailure?: () => void;
 };
 
 /**
  * Renders the current track design in a hidden offscreen canvas at a fixed
  * isometric angle and fires onCapture with the PNG data URL. Unmount to stop.
  */
-export function GalleryPreviewRenderer({ onCapture }: Props) {
+export function GalleryPreviewRenderer({ onCapture, onFailure }: Props) {
   const field = useEditor((s) => s.track.design.field);
   const shapes = useEditor(selectDesignShapes);
   const primaryPolylineId = useEditor(
@@ -59,12 +60,12 @@ export function GalleryPreviewRenderer({ onCapture }: Props) {
           try {
             onCapture(fn());
           } catch {
-            /* Silently ignore — the listing action will surface the error. */
+            onFailure?.();
           }
         });
       });
     },
-    [onCapture]
+    [onCapture, onFailure]
   );
 
   return (
