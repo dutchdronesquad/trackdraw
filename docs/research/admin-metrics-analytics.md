@@ -1,5 +1,8 @@
 # Admin Metrics And Analytics
 
+> [!IMPORTANT]
+> [`product-metrics-contract.md`](./product-metrics-contract.md) is the normative source of truth for product-event names, schemas, identity boundaries, and metric definitions. This document records the earlier implementation research and shipped first slice; where it conflicts with the versioned contract, the contract wins.
+
 ## Summary
 
 TrackDraw needs internal visibility into how the product is actually used. This serves two purposes: informing pricing and plan limits before introducing a paid tier, and giving ongoing insight into product health, user growth, and feature adoption.
@@ -122,15 +125,15 @@ Metrics about what happens inside the editor and on public pages require a light
 
 ### Tier 2: Event Tracking Design
 
-TrackDraw already has an `audit_events` table used for account security and moderation trails (role changes, key lifecycle, share revocations). Product analytics events should go in a **separate `product_events` table** rather than reusing `audit_events`. Reasons: audit events are always actor-linked and identity-sensitive, product events can be fully anonymous; mixing them pollutes the audit dashboard with high-volume signal noise; and product events have a different retention and pruning lifecycle.
+TrackDraw already has an `audit_events` table used for account security and moderation trails (role changes, key lifecycle, share revocations). Product analytics events should go in a **separate `product_events` table** rather than reusing `audit_events`. Reasons: audit events are always actor-linked and identity-sensitive, while product events may be session-scoped pseudonymous or account-linked; mixing them pollutes the audit dashboard with high-volume signal noise; and product events have a different retention and pruning lifecycle.
 
-The recommended approach is a single `product_events` table in D1 with a narrow, privacy-safe schema:
+The earlier first-slice implementation introduced a single `product_events` table in D1 with the narrow schema below. This is an implementation snapshot, not the v1 contract; [`product-metrics-contract.md`](./product-metrics-contract.md) defines the required logical envelope and closed per-event schemas.
 
 ```sql
 create table product_events (
   id          text primary key,
   event_type  text not null,         -- e.g. "share.viewed", "export.completed", "editor.3d_opened"
-  session_id  text,                  -- anonymous session token, not user-identifiable
+  session_id  text,                  -- ephemeral pseudonymous browser-session token
   user_id     text,                  -- nullable; only set when a signed-in user triggers the event
   project_id  text,                  -- nullable; the relevant project if applicable
   share_token text,                  -- nullable; for share-related events
@@ -139,9 +142,9 @@ create table product_events (
 );
 ```
 
-Keep it narrow: no IP addresses, no user-agent strings, no geolocation. Session IDs should be ephemeral, not linked to a persistent identity. The goal is aggregate product signals, not individual tracking.
+Keep it narrow: no IP addresses, no user-agent strings, no geolocation. Session IDs should be ephemeral and must not persistently link pre-authentication activity to an account. They remain pseudonymous while TrackDraw can single out a session. The goal is aggregate product signals, not individual tracking.
 
-**Event catalog — first slice:**
+**Existing instrumentation snapshot — first slice (non-normative):**
 
 | Event                    | Trigger                              | Key fields                                     |
 | ------------------------ | ------------------------------------ | ---------------------------------------------- |
@@ -176,7 +179,7 @@ Web analytics cover visitor traffic, geographic origin, referral sources, and pa
 TrackDraw already runs on Cloudflare. Cloudflare Web Analytics is:
 
 - Free
-- Privacy-friendly: no cookies, no fingerprinting, no GDPR consent banner required
+- Privacy-oriented defaults: no cookies and no fingerprinting; the controller must still assess the configured processing and applicable consent rules
 - Integrated directly in the Cloudflare dashboard
 - Zero infrastructure to maintain
 
@@ -184,9 +187,9 @@ This is the right starting point. It covers country distribution, referral sourc
 
 ### Alternative: Plausible or Fathom
 
-If more detail is needed later (custom events, funnels, goal tracking), Plausible or Fathom are privacy-friendly paid options (~€9-19/month). Both are GDPR-compliant without consent banners.
+If more detail is needed later (custom events, funnels, goal tracking), external analytics products can be evaluated separately. A vendor's privacy or compliance claim does not by itself determine TrackDraw's GDPR legal basis or whether Dutch device-storage rules require consent.
 
-Avoid Google Analytics: requires a consent banner, adds GDPR complexity, and is disproportionate for a small product.
+Do not add a third-party analytics product until its exact configuration, recipients, transfers, storage behavior, legal basis, and consent requirements have been assessed against the normative product metrics contract.
 
 ### What Web Analytics Should Answer
 
