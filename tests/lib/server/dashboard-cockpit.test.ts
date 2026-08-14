@@ -4,6 +4,8 @@ vi.mock("server-only", () => ({}));
 
 const mocks = vi.hoisted(() => ({
   prepare: vi.fn(),
+  getMeasurementStates: vi.fn(),
+  getMetricSeries: vi.fn(),
   statements: [] as Array<{
     sql: string;
     bind: ReturnType<typeof vi.fn>;
@@ -15,14 +17,18 @@ vi.mock("@/lib/server/db", () => ({
 }));
 
 vi.mock("@/lib/server/product-metric-aggregates", () => ({
-  getProductMetricMeasurementStates: vi.fn(async () => []),
-  getProductMetricSeries: vi.fn(async () => []),
+  getProductMetricMeasurementStates: mocks.getMeasurementStates,
+  getProductMetricSeries: mocks.getMetricSeries,
 }));
 
 import { getDailyCockpit } from "@/lib/server/dashboard-cockpit";
 
 beforeEach(() => {
   mocks.prepare.mockReset();
+  mocks.getMeasurementStates.mockReset();
+  mocks.getMeasurementStates.mockResolvedValue([]);
+  mocks.getMetricSeries.mockReset();
+  mocks.getMetricSeries.mockResolvedValue([]);
   mocks.statements.length = 0;
   mocks.prepare.mockImplementation((sql: string) => {
     const statement = {
@@ -52,5 +58,34 @@ describe("daily cockpit server data", () => {
       "2026-07-15T12:34:56.000Z",
       "2026-08-14T12:34:56.000Z"
     );
+  });
+
+  it("does not report unavailable measurement checks as clear", async () => {
+    const cockpit = await getDailyCockpit(new Date("2026-08-14T12:34:56.000Z"));
+
+    expect(cockpit.operations.availability).toEqual({
+      failures: false,
+      pipeline: false,
+    });
+    expect(cockpit.operations.analyticsPipelineGaps).toBe(0);
+  });
+
+  it("reports pipeline availability separately from building metrics", async () => {
+    mocks.getMeasurementStates.mockResolvedValue([
+      {
+        metric_id: "MTR-001",
+        contract_version: "1.0.0",
+        measured_since: "2026-08-14",
+        completeness_state: "building",
+        last_aggregated_day: null,
+        last_success_at: null,
+      },
+    ]);
+
+    const cockpit = await getDailyCockpit(new Date("2026-08-14T12:34:56.000Z"));
+
+    expect(cockpit.operations.availability.pipeline).toBe(true);
+    expect(cockpit.operations.buildingMetrics).toBe(1);
+    expect(cockpit.operations.analyticsPipelineGaps).toBe(0);
   });
 });

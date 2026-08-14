@@ -23,6 +23,10 @@ export type DailyCockpitOperations = {
   expiredApiKeys: number;
   analyticsPipelineGaps: number;
   buildingMetrics: number;
+  availability: {
+    failures: boolean;
+    pipeline: boolean;
+  };
 };
 
 export type DailyCockpitHeadlineMetric = CockpitHeadlineMetric & {
@@ -172,11 +176,16 @@ export async function getDailyCockpit(
   });
   const failureRows = series["MTR-010"] ?? [];
   const lastCompleteDay = addUtcDays(today, -1);
+  const failureMetricsAvailable = latestCompleteRows(failureRows).length > 0;
+  const pipelineAvailable = states.length > 0;
+  const warningSeries = failureMetricsAvailable
+    ? series
+    : { ...series, "MTR-010": [] };
 
   return {
     generatedAt: now.toISOString(),
     headlines,
-    warning: selectReliableProductWarning(series, builtHeadlines),
+    warning: selectReliableProductWarning(warningSeries, headlines),
     operations: {
       missingGalleryPreviews: Number(previewRow?.count ?? 0),
       exportFailures: failureCount(failureRows, "export"),
@@ -191,6 +200,10 @@ export async function getDailyCockpit(
           state.completeness_state === "building" ||
           state.completeness_state === "not_started"
       ).length,
+      availability: {
+        failures: failureMetricsAvailable,
+        pipeline: pipelineAvailable,
+      },
     },
   };
 }
