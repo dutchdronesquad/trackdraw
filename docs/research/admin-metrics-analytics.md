@@ -115,7 +115,7 @@ Everything that can be answered from the existing `projects`, `shares`, `users`,
 
 Shipped: user population cohorts, activation funnel, consolidated content totals and monthly content growth, user growth, plain-language account usage distributions, share and gallery health, privacy-safe product usage, retention cohorts, and plan limit simulation across three thresholds. The admin Metrics page also covers every tracked event type through focused export, share, and editor behavior breakdowns.
 
-**Dashboard interpretation principle:** show each raw count once, then use the rest of the page to add context. A single focus banner surfaces a factual operational issue first, or the largest 30-day movement once two complete comparison windows exist. The underlying account journey, editor, export, sharing, growth, operational, and planning sections remain visible for verification. Movements are investigation prompts rather than causal claims, and early totals are not labelled as trends while the baseline is still building.
+**Dashboard interpretation principle:** show each raw count once, then use the rest of the page to add context. A short needs-attention area surfaces up to three factual operational issues or 30-day movements once two complete comparison windows exist. The overview keeps creator journey, usage, embed reach, growth, and operational exceptions close at hand; detailed account distributions and plan-limit simulations live on the dedicated plan-decisions page. Movements are investigation prompts rather than causal claims, and early totals are not labelled as trends while the baseline is still building.
 
 **Tier 2 — requires event tracking:**
 Metrics about what happens inside the editor and on public pages require a lightweight event log. The first slice is shipped for editor sessions, exports, 3D preview opens, imports, element placement, and public share views. More detailed guest-to-account conversion remains a possible later extension.
@@ -200,3 +200,11 @@ Avoid Google Analytics: requires a consent banner, adds GDPR complexity, and is 
 - Raw product events are retained for 180 days, which supports recent retention cohorts while keeping the dataset bounded.
 - `editor.element_placed` records actual placement counts, grouping bulk insertions by element kind.
 - `share.viewed` is deduplicated per share token and browser session across share and embed surfaces.
+
+### Embed placement sources
+
+Embed placement measurement uses a separate aggregate from raw product events. The browser reduces the embedding page referrer to a validated public hostname before sending it. TrackDraw rejects full URLs, paths, query parameters, IP-address hosts, local hosts, and TrackDraw-owned hosts.
+
+The server increments one daily counter per published share and hostname. These rows contain no user ID, browser-session ID, IP address, user agent, or device data. Publishers see a hostname only after at least three detected views, limited to the last 30 days. Daily rows expire after 90 days and cascade-delete with the published share.
+
+Do not merge historical Cloudflare HTTP Analytics into these counters automatically. Cloudflare may provide a short, plan-dependent window grouped by embed path and referrer hostname, but those sampled request totals are not equivalent to TrackDraw's browser-session-deduplicated counts. Any one-off historical reconstruction must remain visibly labelled as an estimate and separate from first-party aggregates.

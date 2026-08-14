@@ -47,6 +47,16 @@ export const ShareUsageBreakdown = dynamic(
   { ssr: false }
 );
 
+export const EmbedReachTable = dynamic(
+  () => import("./MetricsCharts").then((m) => m.EmbedReachTable),
+  { ssr: false }
+);
+
+export const UsageTabs = dynamic(
+  () => import("./MetricsCharts").then((m) => m.UsageTabs),
+  { ssr: false }
+);
+
 export const EditorUsageBreakdown = dynamic(
   () => import("./MetricsCharts").then((m) => m.EditorUsageBreakdown),
   { ssr: false }

@@ -1,22 +1,19 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Activity, Download, Eye, Users } from "lucide-react";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import {
   ActivationFunnel,
   ContentGrowthChart,
-  DistributionSummary,
-  EditorUsageBreakdown,
-  ExportUsageBreakdown,
+  EmbedReachTable,
   MetricsFocusBanner,
-  PlanLimitSimulator,
   RetentionCohorts,
-  ShareUsageBreakdown,
   SharingHealth,
+  UsageTabs,
   UserGrowthCard,
-  UserPopulationChart,
 } from "@/components/dashboard/MetricsChartsLoader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
@@ -55,7 +52,7 @@ function KpiCard({
   iconTone,
 }: KpiCardProps) {
   return (
-    <div className="bg-card min-w-0 overflow-hidden rounded-xl border">
+    <dl className="bg-card min-w-0 overflow-hidden rounded-xl border">
       <div className={`h-1 ${accent}`} />
       <div className="flex items-start gap-3 p-4">
         <span
@@ -65,20 +62,20 @@ function KpiCard({
           <Icon className="size-4" />
         </span>
         <div className="min-w-0">
-          <p className="text-muted-foreground min-h-8 text-xs leading-snug font-medium sm:min-h-0">
+          <dt className="text-muted-foreground min-h-8 text-sm leading-snug font-medium sm:min-h-0">
             {label}
-          </p>
-          <p className="text-2xl leading-tight font-bold tabular-nums">
+          </dt>
+          <dd className="text-2xl leading-tight font-bold tabular-nums">
             {value}
-          </p>
+          </dd>
           {sub ? (
-            <p className="text-muted-foreground mt-1 text-xs leading-snug">
+            <dd className="text-muted-foreground mt-1 text-sm leading-snug">
               {sub}
-            </p>
+            </dd>
           ) : null}
         </div>
       </div>
-    </div>
+    </dl>
   );
 }
 
@@ -100,23 +97,23 @@ function ChartCard({
   id,
 }: ChartCardProps) {
   return (
-    <div
+    <figure
       id={id}
       className={`bg-card min-w-0 rounded-xl border p-4 sm:p-5 ${className ?? ""}`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-0.5">
+        <figcaption className="min-w-0 space-y-1">
           <h3 className="text-sm font-semibold">{title}</h3>
           {description ? (
-            <p className="text-muted-foreground max-w-3xl text-xs leading-relaxed">
+            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
               {description}
             </p>
           ) : null}
-        </div>
+        </figcaption>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
       <div className="pt-4">{children}</div>
-    </div>
+    </figure>
   );
 }
 
@@ -147,17 +144,17 @@ function OperationalSummary({
   rows: Array<{ label: string; value: number; detail: string }>;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
+    <dl className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
       {rows.map((row) => (
         <div key={row.label} className="border-b py-3">
-          <p className="text-muted-foreground text-sm">{row.label}</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums">{row.value}</p>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+          <dt className="text-muted-foreground text-sm">{row.label}</dt>
+          <dd className="mt-1 text-2xl font-bold tabular-nums">{row.value}</dd>
+          <dd className="text-muted-foreground mt-1 text-sm leading-relaxed">
             {row.detail}
-          </p>
+          </dd>
         </div>
       ))}
-    </div>
+    </dl>
   );
 }
 
@@ -179,19 +176,37 @@ export default async function DashboardMetricsPage() {
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
   const tMetrics = await getTranslations("dashboard.metrics");
-  const editorStarts =
-    insights.usage.eventTypes30d.find(
-      (row) => row.eventType === "editor.session_started"
-    )?.count ?? 0;
-  const usedExportFormats = insights.usage.exportFormats30d.filter(
-    (row) => row.count > 0
-  ).length;
+  const locale = await getLocale();
+  const lastUpdated = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date());
   const sharePageViews =
     insights.usage.shareSurfaces30d.find((row) => row.surface === "share")
       ?.count ?? 0;
   const embedViews =
     insights.usage.shareSurfaces30d.find((row) => row.surface === "embed")
       ?.count ?? 0;
+  const activationRate =
+    insights.activation.registered > 0
+      ? Math.round(
+          (insights.activation.createdProject /
+            insights.activation.registered) *
+            100
+        )
+      : 0;
+  const matureRetentionUsers = insights.retention.reduce(
+    (total, cohort) => total + cohort.users,
+    0
+  );
+  const retainedThirtyDays = insights.retention.reduce(
+    (total, cohort) => total + cohort.retained30d,
+    0
+  );
+  const retentionThirtyDayRate =
+    matureRetentionUsers > 0
+      ? Math.round((retainedThirtyDays / matureRetentionUsers) * 100)
+      : 0;
 
   return (
     <>
@@ -199,8 +214,80 @@ export default async function DashboardMetricsPage() {
         parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.metrics")}
       />
-      <div className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-8 p-3 pt-0 sm:gap-10 sm:p-4 sm:pt-0">
-        <section className="space-y-4" aria-labelledby="product-pulse-title">
+      <main className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-8 p-3 pt-0 sm:gap-10 sm:p-4 sm:pt-0">
+        <header className="space-y-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {t("pages.metrics")}
+            </h1>
+            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
+              {tMetrics("overview.description")}
+            </p>
+          </div>
+          <dl className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            <div className="flex gap-1.5">
+              <dt className="font-medium">
+                {tMetrics("overview.periodLabel")}
+              </dt>
+              <dd>{tMetrics("overview.periodValue")}</dd>
+            </div>
+            <div className="flex gap-1.5">
+              <dt className="font-medium">
+                {tMetrics("overview.compareLabel")}
+              </dt>
+              <dd>{tMetrics("overview.compareValue")}</dd>
+            </div>
+            <div className="flex gap-1.5">
+              <dt className="font-medium">
+                {tMetrics("overview.definitionsLabel")}
+              </dt>
+              <dd>{tMetrics("overview.definitionsValue")}</dd>
+            </div>
+            <div className="flex gap-1.5">
+              <dt className="font-medium">
+                {tMetrics("overview.updatedLabel")}
+              </dt>
+              <dd>
+                <time dateTime={new Date().toISOString()}>{lastUpdated}</time>
+              </dd>
+            </div>
+          </dl>
+        </header>
+
+        <nav
+          aria-label={tMetrics("navigation.label")}
+          className="bg-background/95 sticky top-0 z-20 -mx-3 overflow-x-auto border-y px-3 py-2 backdrop-blur sm:-mx-4 sm:px-4"
+        >
+          <div className="flex min-w-max items-center gap-1">
+            {[
+              ["#overview", tMetrics("navigation.overview")],
+              ["#journey", tMetrics("navigation.journey")],
+              ["#product-use", tMetrics("navigation.usage")],
+              ["#growth", tMetrics("navigation.growth")],
+              ["#operations", tMetrics("navigation.health")],
+            ].map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                className="hover:bg-muted focus-visible:ring-ring rounded-md px-3 py-1.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+              >
+                {label}
+              </a>
+            ))}
+            <Link
+              href="/dashboard/metrics/planning"
+              className="hover:bg-muted focus-visible:ring-ring rounded-md px-3 py-1.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+            >
+              {tMetrics("navigation.planning")}
+            </Link>
+          </div>
+        </nav>
+
+        <section
+          id="overview"
+          className="scroll-mt-24 space-y-4"
+          aria-labelledby="product-pulse-title"
+        >
           <SectionHeading
             id="product-pulse-title"
             title={tMetrics("sections.pulse.title")}
@@ -225,30 +312,32 @@ export default async function DashboardMetricsPage() {
               iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             />
             <KpiCard
-              label={tMetrics("kpi.editorStarts.label")}
-              value={editorStarts}
-              sub={tMetrics("kpi.editorStarts.sub", {
-                account: insights.usage.accountSessions30d,
-                anonymous: insights.usage.anonymousSessions30d,
+              label={tMetrics("kpi.activation.label")}
+              value={`${activationRate}%`}
+              sub={tMetrics("kpi.activation.sub", {
+                activated: insights.activation.createdProject,
+                registered: insights.activation.registered,
               })}
               icon={Activity}
               accent="bg-sky-500"
               iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
             />
             <KpiCard
-              label={tMetrics("kpi.exports.label")}
-              value={insights.usage.exports30d}
-              sub={tMetrics("kpi.exports.sub", {
-                formats: usedExportFormats,
+              label={tMetrics("kpi.retention.label")}
+              value={
+                matureRetentionUsers > 0 ? `${retentionThirtyDayRate}%` : "—"
+              }
+              sub={tMetrics("kpi.retention.sub", {
+                cohorts: insights.retention.length,
               })}
               icon={Download}
               accent="bg-violet-500"
               iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
             />
             <KpiCard
-              label={tMetrics("kpi.viewingSessions.label")}
+              label={tMetrics("kpi.publishedReach.label")}
               value={insights.usage.shareViews30d}
-              sub={tMetrics("kpi.viewingSessions.sub", {
+              sub={tMetrics("kpi.publishedReach.sub", {
                 share: sharePageViews,
                 embed: embedViews,
               })}
@@ -263,9 +352,11 @@ export default async function DashboardMetricsPage() {
 
         <section
           id="journey"
+          aria-labelledby="journey-title"
           className="scroll-mt-24 space-y-4 border-t pt-6 sm:pt-8"
         >
           <SectionHeading
+            id="journey-title"
             title={tMetrics("sections.journey.title")}
             description={tMetrics("sections.journey.description")}
           />
@@ -288,45 +379,33 @@ export default async function DashboardMetricsPage() {
 
         <section
           id="product-use"
+          aria-labelledby="product-use-title"
           className="scroll-mt-24 space-y-4 border-t pt-6 sm:pt-8"
         >
           <SectionHeading
+            id="product-use-title"
             title={tMetrics("sections.value.title")}
             description={tMetrics("sections.value.description")}
           />
-          <div className="grid min-w-0 gap-4 lg:grid-cols-12">
+          <div className="space-y-4">
+            <UsageTabs usage={insights.usage} />
             <ChartCard
-              id="editor-behavior"
-              title={tMetrics("editorUsage.title")}
-              description={tMetrics("editorUsage.description")}
-              className="lg:col-span-7"
+              id="embed-reach"
+              title={tMetrics("embedReach.title")}
+              description={tMetrics("embedReach.description")}
             >
-              <EditorUsageBreakdown usage={insights.usage} />
+              <EmbedReachTable usage={insights.usage} />
             </ChartCard>
-            <div className="space-y-4 lg:col-span-5">
-              <ChartCard
-                id="export-usage"
-                title={tMetrics("exportUsage.title")}
-                description={tMetrics("exportUsage.description")}
-              >
-                <ExportUsageBreakdown usage={insights.usage} />
-              </ChartCard>
-              <ChartCard
-                id="share-viewing"
-                title={tMetrics("shareUsage.title")}
-                description={tMetrics("shareUsage.description")}
-              >
-                <ShareUsageBreakdown usage={insights.usage} />
-              </ChartCard>
-            </div>
           </div>
         </section>
 
         <section
           id="growth"
+          aria-labelledby="growth-title"
           className="scroll-mt-24 space-y-4 border-t pt-6 sm:pt-8"
         >
           <SectionHeading
+            id="growth-title"
             title={tMetrics("sections.growth.title")}
             description={tMetrics("sections.growth.description")}
           />
@@ -334,35 +413,36 @@ export default async function DashboardMetricsPage() {
             growthByRange={growthByRange}
             growthTimeline={growthTimeline}
           />
-          <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
-            <ChartCard
-              title={tMetrics("contentGrowth.title")}
-              description={tMetrics("contentGrowth.description")}
-            >
-              <ContentGrowthChart data={insights.contentGrowth} />
-            </ChartCard>
-            <ChartCard
-              title={tMetrics("userPopulation.title")}
-              description={tMetrics("userPopulation.description")}
-            >
-              <UserPopulationChart users={metrics.users} />
-            </ChartCard>
-          </div>
+          <ChartCard
+            title={tMetrics("contentGrowth.title")}
+            description={tMetrics("contentGrowth.description")}
+          >
+            <ContentGrowthChart data={insights.contentGrowth} />
+          </ChartCard>
         </section>
 
         <section
           id="operations"
+          aria-labelledby="operations-title"
           className="scroll-mt-24 space-y-4 border-t pt-6 sm:pt-8"
         >
           <SectionHeading
+            id="operations-title"
             title={tMetrics("sections.operations.title")}
             description={tMetrics("sections.operations.description")}
           />
-          <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
-            <ChartCard
-              title={tMetrics("inventory.title")}
-              description={tMetrics("inventory.description")}
-            >
+          <ChartCard
+            id="sharing-health"
+            title={tMetrics("health.title")}
+            description={tMetrics("health.description")}
+          >
+            <SharingHealth shares={metrics.shares} gallery={metrics.gallery} />
+          </ChartCard>
+          <details className="bg-card rounded-xl border p-4 sm:p-5">
+            <summary className="cursor-pointer text-sm font-semibold">
+              {tMetrics("inventory.showDetails")}
+            </summary>
+            <div className="pt-4">
               <OperationalSummary
                 rows={[
                   {
@@ -398,47 +478,10 @@ export default async function DashboardMetricsPage() {
                   },
                 ]}
               />
-            </ChartCard>
-            <ChartCard
-              id="sharing-health"
-              title={tMetrics("health.title")}
-              description={tMetrics("health.description")}
-            >
-              <SharingHealth
-                shares={metrics.shares}
-                gallery={metrics.gallery}
-              />
-            </ChartCard>
-          </div>
-        </section>
-
-        <section
-          id="planning"
-          className="scroll-mt-24 space-y-4 border-t pt-6 pb-4 sm:pt-8"
-        >
-          <SectionHeading
-            title={tMetrics("sections.planning.title")}
-            description={tMetrics("sections.planning.description")}
-          />
-          <ChartCard
-            title={tMetrics("distribution.title")}
-            description={tMetrics("distribution.description")}
-          >
-            <DistributionSummary userDistribution={metrics.userDistribution} />
-          </ChartCard>
-          <div className="space-y-4">
-            <div className="max-w-3xl">
-              <h3 className="text-sm font-semibold">
-                {tMetrics("planLimit.title")}
-              </h3>
-              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                {tMetrics("planLimit.description")}
-              </p>
             </div>
-            <PlanLimitSimulator userDistribution={metrics.userDistribution} />
-          </div>
+          </details>
         </section>
-      </div>
+      </main>
     </>
   );
 }

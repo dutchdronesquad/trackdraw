@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useMemo, useRef, useState } from "react";
+import { forwardRef, useId, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowRight, CalendarIcon, Search } from "lucide-react";
 import type { DateRange } from "react-day-picker";
@@ -11,10 +11,7 @@ import {
   CartesianGrid,
   Cell,
   ComposedChart,
-  Label,
   Line,
-  Pie,
-  PieChart,
   XAxis,
   YAxis,
 } from "recharts";
@@ -38,6 +35,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   buildCustomGrowthData,
   formatCalendarDateKey,
@@ -56,6 +54,61 @@ import type {
 } from "@/lib/server/metrics";
 import { cn } from "@/lib/utils";
 
+function DataTableDisclosure({
+  label,
+  columns,
+  rows,
+}: {
+  label: string;
+  columns: string[];
+  rows: Array<Array<string | number>>;
+}) {
+  return (
+    <details className="border-t pt-3">
+      <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-medium">
+        {label}
+      </summary>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full min-w-max text-sm">
+          <thead>
+            <tr className="text-muted-foreground border-b text-left">
+              {columns.map((column, index) => (
+                <th
+                  key={column}
+                  scope="col"
+                  className={cn(
+                    "px-3 py-2 font-medium first:pl-0 last:pr-0",
+                    index > 0 && "text-right"
+                  )}
+                >
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex} className="border-b last:border-0">
+                {row.map((value, columnIndex) => (
+                  <td
+                    key={columnIndex}
+                    className={cn(
+                      "px-3 py-2 tabular-nums first:pl-0 last:pr-0",
+                      columnIndex > 0 && "text-right"
+                    )}
+                  >
+                    {value}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  );
+}
+
 // --- User population donut with center label ---
 
 export function UserPopulationChart({
@@ -64,12 +117,6 @@ export function UserPopulationChart({
   users: AdminMetrics["users"];
 }) {
   const t = useTranslations("dashboard.metrics.userPopulation");
-  const populationConfig = {
-    active: { label: t("active"), color: "var(--chart-2)" },
-    dormant: { label: t("dormant"), color: "var(--chart-3)" },
-    neverCreated: { label: t("neverCreated"), color: "var(--chart-5)" },
-  } satisfies ChartConfig;
-
   const dormant = Math.max(
     0,
     users.total - users.activeLastThirtyDays - users.neverCreatedProject
@@ -78,12 +125,19 @@ export function UserPopulationChart({
   const data = [
     {
       name: "active",
+      label: t("active"),
       value: users.activeLastThirtyDays,
       fill: "var(--chart-2)",
     },
-    { name: "dormant", value: dormant, fill: "var(--chart-3)" },
+    {
+      name: "dormant",
+      label: t("dormant"),
+      value: dormant,
+      fill: "var(--chart-3)",
+    },
     {
       name: "neverCreated",
+      label: t("neverCreated"),
       value: users.neverCreatedProject,
       fill: "var(--chart-5)",
     },
@@ -98,91 +152,52 @@ export function UserPopulationChart({
   }
 
   return (
-    <ChartContainer
-      config={populationConfig}
-      className="mx-auto h-48 w-full max-w-[16rem] sm:h-52 sm:max-w-xs"
-    >
-      <PieChart>
-        <ChartTooltip
-          cursor={false}
-          content={({ active, payload }) => {
-            if (!active || !payload?.length) return null;
-            const item = payload[0];
-            const label =
-              populationConfig[item.name as keyof typeof populationConfig]
-                ?.label ?? String(item.name);
-            const pct =
-              users.total > 0
-                ? Math.round((Number(item.value) / users.total) * 100)
-                : 0;
-            return (
-              <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className="size-2 shrink-0 rounded-full"
-                    style={{ backgroundColor: item.payload.fill }}
-                  />
-                  <span className="text-muted-foreground">{label}</span>
-                </div>
-                <p className="mt-1 font-semibold tabular-nums">
-                  {String(item.value)}{" "}
-                  <span className="text-muted-foreground font-normal">
-                    ({pct}%)
-                  </span>
-                </p>
-              </div>
-            );
-          }}
-        />
-        <Pie
-          data={data}
-          dataKey="value"
-          nameKey="name"
-          innerRadius={56}
-          outerRadius={80}
-          strokeWidth={4}
-        >
-          <Label
-            content={({ viewBox }) => {
-              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                return (
-                  <text
-                    x={viewBox.cx}
-                    y={viewBox.cy}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) - 14}
-                      className="fill-foreground text-2xl font-bold"
-                    >
-                      {users.total}
-                    </tspan>
-                    <tspan
-                      x={viewBox.cx}
-                      y={(viewBox.cy || 0) + 4}
-                      className="fill-muted-foreground text-xs"
-                    >
-                      {t("usersUnit")}
-                    </tspan>
-                  </text>
-                );
-              }
+    <div className="space-y-4">
+      <div
+        className="bg-muted flex h-4 overflow-hidden rounded-full"
+        role="img"
+        aria-label={data
+          .map(
+            (item) =>
+              `${item.label}: ${item.value} (${Math.round((item.value / users.total) * 100)}%)`
+          )
+          .join(", ")}
+      >
+        {data.map((item) => (
+          <span
+            key={item.name}
+            style={{
+              width: `${(item.value / users.total) * 100}%`,
+              backgroundColor: item.fill,
             }}
           />
-        </Pie>
-        <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-      </PieChart>
-    </ChartContainer>
+        ))}
+      </div>
+      <dl className="grid gap-3 sm:grid-cols-3">
+        {data.map((item) => (
+          <div key={item.name} className="rounded-lg border p-3">
+            <dt className="flex items-center gap-2 text-sm font-medium">
+              <span
+                className="size-2.5 rounded-sm"
+                style={{ backgroundColor: item.fill }}
+                aria-hidden="true"
+              />
+              {item.label}
+            </dt>
+            <dd className="mt-1 text-lg font-semibold tabular-nums">
+              {item.value}{" "}
+              <span className="text-muted-foreground text-sm font-normal">
+                ({Math.round((item.value / users.total) * 100)}%)
+              </span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 
-// --- User growth area chart ---
-
-// --- Combined user growth chart ---
-// Cumulative total as area (primary), weekly new users as bars (secondary, same axis).
-// Both share one Y-axis; bars are naturally small relative to cumulative total.
+// --- User growth charts ---
 
 const GROWTH_RANGE_VALUES: GrowthPresetRange[] = [
   "3m",
@@ -230,109 +245,94 @@ function UserGrowthComboChart({
   }
 
   return (
-    <ChartContainer config={growthComboConfig} className="h-48 w-full sm:h-52">
-      <ComposedChart
-        accessibilityLayer
-        data={data}
-        margin={{ left: 4, right: 4, top: 4, bottom: 0 }}
-      >
-        <defs>
-          <linearGradient id="growthAreaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop
-              offset="0%"
-              stopColor="var(--color-totalUsers)"
-              stopOpacity={0.2}
+    <div className="space-y-4">
+      <div>
+        <p className="mb-2 text-sm font-medium">{t("cumulativeTitle")}</p>
+        <ChartContainer config={growthComboConfig} className="h-40 w-full">
+          <ComposedChart
+            accessibilityLayer
+            data={data}
+            margin={{ left: 4, right: 4, top: 4, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id="growthAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor="var(--color-totalUsers)"
+                  stopOpacity={0.2}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="var(--color-totalUsers)"
+                  stopOpacity={0.02}
+                />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis dataKey="label" hide />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 12 }}
+              allowDecimals={false}
+              width={36}
             />
-            <stop
-              offset="100%"
-              stopColor="var(--color-totalUsers)"
-              stopOpacity={0.02}
+            <ChartTooltip
+              cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
             />
-          </linearGradient>
-        </defs>
-        <CartesianGrid vertical={false} strokeDasharray="3 3" />
-        <XAxis
-          dataKey="label"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          tick={{ fontSize: 10 }}
-          interval="preserveStartEnd"
-          minTickGap={10}
-        />
-        <YAxis
-          tickLine={false}
-          axisLine={false}
-          tick={{ fontSize: 10 }}
-          allowDecimals={false}
-          width={32}
-        />
-        <ChartTooltip
-          cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
-          content={({ active, payload, label }) => {
-            if (!active || !payload?.length) return null;
-            const total = payload.find((p) => p.dataKey === "totalUsers");
-            const newW = payload.find((p) => p.dataKey === "newUsers");
-            return (
-              <div className="bg-card border-border/50 min-w-36 rounded-lg border px-3 py-2 text-xs shadow-xl">
-                <p className="text-muted-foreground mb-2 border-b pb-1.5 font-medium">
-                  {label}
-                </p>
-                {total != null && (
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className="size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: "var(--chart-1)" }}
-                      />
-                      <span className="text-muted-foreground">
-                        {t("totalUsers")}
-                      </span>
-                    </div>
-                    <span className="font-semibold tabular-nums">
-                      {Number(total.value).toLocaleString()}
-                    </span>
-                  </div>
-                )}
-                {newW != null && (
-                  <div className="mt-1 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className="size-2 shrink-0 rounded-sm opacity-70"
-                        style={{ backgroundColor: "var(--chart-2)" }}
-                      />
-                      <span className="text-muted-foreground">
-                        {newUsersLabel}
-                      </span>
-                    </div>
-                    <span className="font-semibold tabular-nums">
-                      +{newW.value}
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          }}
-        />
-        <ChartLegend content={<ChartLegendContent />} />
-        <Area
-          type="monotone"
-          dataKey="totalUsers"
-          stroke="var(--color-totalUsers)"
-          strokeWidth={2}
-          fill="url(#growthAreaGrad)"
-          dot={false}
-          activeDot={{ r: 4, strokeWidth: 0 }}
-        />
-        <Bar
-          dataKey="newUsers"
-          fill="var(--color-newUsers)"
-          fillOpacity={0.45}
-          radius={[2, 2, 0, 0]}
-          maxBarSize={24}
-        />
-      </ComposedChart>
-    </ChartContainer>
+            <Area
+              type="monotone"
+              dataKey="totalUsers"
+              stroke="var(--color-totalUsers)"
+              strokeWidth={2}
+              fill="url(#growthAreaGrad)"
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0 }}
+            />
+          </ComposedChart>
+        </ChartContainer>
+      </div>
+      <div>
+        <p className="mb-2 text-sm font-medium">{t("newTitle")}</p>
+        <ChartContainer config={growthComboConfig} className="h-36 w-full">
+          <ComposedChart
+            accessibilityLayer
+            data={data}
+            margin={{ left: 4, right: 4, top: 4, bottom: 0 }}
+          >
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tick={{ fontSize: 12 }}
+              interval="preserveStartEnd"
+              minTickGap={12}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 12 }}
+              allowDecimals={false}
+              width={36}
+            />
+            <ChartTooltip cursor={false} />
+            <Bar
+              dataKey="newUsers"
+              fill="var(--color-newUsers)"
+              radius={[3, 3, 0, 0]}
+              maxBarSize={28}
+            />
+          </ComposedChart>
+        </ChartContainer>
+      </div>
+      <DataTableDisclosure
+        label={t("viewData")}
+        columns={[t("periodColumn"), t("totalUsers"), newUsersLabel]}
+        rows={data.map((row) => [row.label, row.totalUsers, row.newUsers])}
+      />
+    </div>
   );
 }
 
@@ -357,7 +357,7 @@ function UserGrowthSummary({ growthData }: { growthData: GrowthData }) {
   return (
     <div className="divide-y border-t sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:pt-3">
       <div className="flex min-w-0 items-center justify-between gap-3 py-3 sm:block sm:py-0 sm:pr-3 sm:text-left">
-        <p className="text-muted-foreground text-xs leading-snug">
+        <p className="text-muted-foreground text-sm leading-snug">
           {t("summary.newInRange")}
         </p>
         <p className="shrink-0 text-sm font-semibold tabular-nums">
@@ -365,7 +365,7 @@ function UserGrowthSummary({ growthData }: { growthData: GrowthData }) {
         </p>
       </div>
       <div className="flex min-w-0 items-center justify-between gap-3 py-3 sm:block sm:px-3 sm:py-0 sm:text-center">
-        <p className="text-muted-foreground text-xs leading-snug">
+        <p className="text-muted-foreground text-sm leading-snug">
           {t("summary.avgPerPeriod", { period: periodName })}
         </p>
         <p className="shrink-0 text-sm font-semibold tabular-nums">
@@ -373,7 +373,7 @@ function UserGrowthSummary({ growthData }: { growthData: GrowthData }) {
         </p>
       </div>
       <div className="flex min-w-0 items-center justify-between gap-3 py-3 sm:block sm:py-0 sm:pl-3 sm:text-right">
-        <p className="text-muted-foreground text-xs leading-snug">
+        <p className="text-muted-foreground text-sm leading-snug">
           {t("summary.strongestPeriod", { period: periodName })}
         </p>
         <p className="shrink-0 text-sm font-semibold tabular-nums sm:truncate">
@@ -450,10 +450,10 @@ const RangePickerTrigger = forwardRef<
     >
       <CalendarIcon className="text-muted-foreground size-4 shrink-0" />
       <span className="min-w-0 flex-1">
-        <span className="text-muted-foreground block text-[10px] leading-none font-medium uppercase">
+        <span className="text-muted-foreground block text-xs leading-none font-medium uppercase">
           {t("picker.range")}
         </span>
-        <span className="block truncate text-xs leading-snug">{label}</span>
+        <span className="block truncate text-sm leading-snug">{label}</span>
       </span>
     </Button>
   );
@@ -503,7 +503,7 @@ function RangePickerContent({
     return (
       <div className="bg-card flex max-h-[calc(90dvh-3.5rem)] flex-col">
         <div className="border-border/60 border-b px-4 pt-2 pb-3">
-          <p className="text-muted-foreground mb-2 text-[11px] font-medium">
+          <p className="text-muted-foreground mb-2 text-xs font-medium">
             {t("picker.presets")}
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -788,7 +788,9 @@ export function UserGrowthCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-0.5">
           <h3 className="text-sm font-semibold">{t("title")}</h3>
-          <p className="text-muted-foreground text-xs">{t("description")}</p>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            {t("description")}
+          </p>
         </div>
         <div className="shrink-0">
           <UserGrowthRangePicker
@@ -843,22 +845,36 @@ export function ActivationFunnel({
   return (
     <div className="space-y-3 py-1">
       {rows.map((row, index) => {
-        const pct = Math.round((row.value / max) * 100);
+        const totalPct = Math.round((row.value / max) * 100);
+        const previousValue = index > 0 ? rows[index - 1].value : row.value;
+        const stepPct =
+          previousValue > 0 ? Math.round((row.value / previousValue) * 100) : 0;
         return (
           <div key={row.key} className="space-y-1.5">
-            <div className="flex items-center justify-between gap-3 text-xs">
-              <span className="text-muted-foreground">
+            <div className="flex items-start justify-between gap-3 text-sm">
+              <span className="text-muted-foreground leading-snug">
                 {index + 1}. {t(row.key)}
               </span>
-              <span className="font-semibold tabular-nums">
-                {row.value}{" "}
-                <span className="text-muted-foreground">({pct}%)</span>
+              <span className="shrink-0 text-right font-semibold tabular-nums">
+                {row.value}
+                <span className="text-muted-foreground block text-xs font-normal">
+                  {index === 0
+                    ? t("baseline")
+                    : t("conversion", { step: stepPct, total: totalPct })}
+                </span>
               </span>
             </div>
-            <div className="bg-muted h-2 overflow-hidden rounded-full">
+            <div
+              className="bg-muted h-2 overflow-hidden rounded-full"
+              role="progressbar"
+              aria-label={t(row.key)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={totalPct}
+            >
               <div
                 className="h-full rounded-full bg-sky-500 transition-[width]"
-                style={{ width: `${pct}%`, opacity: 1 - index * 0.14 }}
+                style={{ width: `${totalPct}%`, opacity: 1 - index * 0.14 }}
               />
             </div>
           </div>
@@ -893,55 +909,70 @@ export function ContentGrowthChart({
   }
 
   return (
-    <ChartContainer config={config} className="h-56 w-full">
-      <ComposedChart
-        accessibilityLayer
-        data={chartData}
-        margin={{ left: 4, right: 4, top: 4 }}
-      >
-        <CartesianGrid vertical={false} strokeDasharray="3 3" />
-        <XAxis
-          dataKey="label"
-          tickLine={false}
-          axisLine={false}
-          tick={{ fontSize: 10 }}
-          interval="preserveStartEnd"
-          minTickGap={18}
-        />
-        <YAxis
-          tickLine={false}
-          axisLine={false}
-          tick={{ fontSize: 10 }}
-          allowDecimals={false}
-          width={30}
-        />
-        <ChartTooltip
-          cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
-        />
-        <ChartLegend content={<ChartLegendContent />} />
-        <Line
-          type="monotone"
-          dataKey="projects"
-          stroke="var(--color-projects)"
-          strokeWidth={2}
-          dot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="shares"
-          stroke="var(--color-shares)"
-          strokeWidth={2}
-          dot={false}
-        />
-        <Line
-          type="monotone"
-          dataKey="presets"
-          stroke="var(--color-presets)"
-          strokeWidth={2}
-          dot={false}
-        />
-      </ComposedChart>
-    </ChartContainer>
+    <div className="space-y-3">
+      <ChartContainer config={config} className="h-56 w-full">
+        <ComposedChart
+          accessibilityLayer
+          data={chartData}
+          margin={{ left: 4, right: 4, top: 4 }}
+        >
+          <CartesianGrid vertical={false} strokeDasharray="3 3" />
+          <XAxis
+            dataKey="label"
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 12 }}
+            interval="preserveStartEnd"
+            minTickGap={18}
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 12 }}
+            allowDecimals={false}
+            width={30}
+          />
+          <ChartTooltip
+            cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
+          />
+          <ChartLegend content={<ChartLegendContent />} />
+          <Line
+            type="monotone"
+            dataKey="projects"
+            stroke="var(--color-projects)"
+            strokeWidth={2}
+            strokeDasharray="0"
+            dot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="shares"
+            stroke="var(--color-shares)"
+            strokeWidth={2}
+            strokeDasharray="6 4"
+            dot={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="presets"
+            stroke="var(--color-presets)"
+            strokeWidth={2}
+            strokeDasharray="2 4"
+            dot={{ r: 2 }}
+          />
+        </ComposedChart>
+      </ChartContainer>
+      <DataTableDisclosure
+        label={t("viewData")}
+        columns={[t("period"), t("projects"), t("shares"), t("presets")]}
+        rows={chartData.map((row) => [
+          row.label,
+          row.projects,
+          row.shares,
+          row.presets,
+        ])}
+      />
+    </div>
   );
 }
 
@@ -958,7 +989,7 @@ function HealthRows({
       {rows.map((row) => (
         <div
           key={row.label}
-          className="grid grid-cols-[7rem_1fr_auto] items-center gap-2 text-xs"
+          className="grid grid-cols-[7rem_1fr_auto] items-center gap-2 text-sm"
         >
           <span className="text-muted-foreground truncate">{row.label}</span>
           <div className="bg-muted h-1.5 overflow-hidden rounded-full">
@@ -987,7 +1018,7 @@ export function SharingHealth({
   return (
     <div className="grid gap-5 py-1 sm:grid-cols-2">
       <section>
-        <p className="mb-3 text-xs font-semibold">{t("sharesTitle")}</p>
+        <p className="mb-3 text-sm font-semibold">{t("sharesTitle")}</p>
         <HealthRows
           total={shares.total}
           rows={[
@@ -1010,7 +1041,7 @@ export function SharingHealth({
         />
       </section>
       <section>
-        <p className="mb-3 text-xs font-semibold">{t("galleryTitle")}</p>
+        <p className="mb-3 text-sm font-semibold">{t("galleryTitle")}</p>
         <HealthRows
           total={gallery.total}
           rows={[
@@ -1084,25 +1115,19 @@ export function DistributionSummary({
             </div>
             <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
               <div className="bg-muted/50 rounded-md px-2 py-2">
-                <dt className="text-muted-foreground text-[11px]">
-                  {t("median")}
-                </dt>
+                <dt className="text-muted-foreground text-xs">{t("median")}</dt>
                 <dd className="mt-0.5 font-semibold tabular-nums">
                   {summary.median}
                 </dd>
               </div>
               <div className="bg-muted/50 rounded-md px-2 py-2">
-                <dt className="text-muted-foreground text-[11px]">
-                  {t("p75")}
-                </dt>
+                <dt className="text-muted-foreground text-xs">{t("p75")}</dt>
                 <dd className="mt-0.5 font-semibold tabular-nums">
                   {summary.p75}
                 </dd>
               </div>
               <div className="bg-muted/50 rounded-md px-2 py-2">
-                <dt className="text-muted-foreground text-[11px]">
-                  {t("p90")}
-                </dt>
+                <dt className="text-muted-foreground text-xs">{t("p90")}</dt>
                 <dd className="mt-0.5 font-semibold tabular-nums">
                   {summary.p90}
                 </dd>
@@ -1196,19 +1221,19 @@ export function MetricsFocusBanner({
       key: "editor",
       eventType: "editor.session_started",
       current: eventCount(usage, "editor.session_started"),
-      href: "#editor-behavior",
+      href: "#product-use",
     },
     {
       key: "exports",
       eventType: "export.completed",
       current: usage.exports30d,
-      href: "#export-usage",
+      href: "#product-use",
     },
     {
       key: "views",
       eventType: "share.viewed",
       current: usage.shareViews30d,
-      href: "#share-viewing",
+      href: "#product-use",
     },
   ] as const;
   const strongestMovement = movementCandidates
@@ -1223,98 +1248,114 @@ export function MetricsFocusBanner({
     .filter((candidate) => candidate.previous > 0)
     .sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))[0];
 
-  const hasPreviewIssue = metrics.gallery.missingPreview > 0;
-  const focus = hasPreviewIssue
-    ? {
-        tone: "warning" as const,
-        title: t("preview.title"),
-        value: t("preview.value", {
-          count: metrics.gallery.missingPreview,
-          total: metrics.gallery.total,
-        }),
-        detail: t("preview.detail"),
-        question: t("preview.question"),
-        href: "#sharing-health",
-        link: t("preview.link"),
-      }
-    : baselineReady && strongestMovement
-      ? {
-          tone: "neutral" as const,
-          title: t("movement.title", {
-            metric: t(`metrics.${strongestMovement.key}`),
-          }),
-          value: t("movement.value", {
-            change: `${strongestMovement.delta > 0 ? "+" : ""}${strongestMovement.delta}`,
-          }),
-          detail: t("movement.detail", {
-            current: strongestMovement.current,
-            previous: strongestMovement.previous,
-          }),
-          question: t(`movement.questions.${strongestMovement.key}`),
-          href: strongestMovement.href,
-          link: t("movement.link"),
-        }
-      : {
-          tone: "building" as const,
-          title: t("baseline.title"),
-          value: t("baseline.value", { days: Math.min(daysTracked, 60) }),
-          detail: t("baseline.detail"),
-          question: t("baseline.question"),
-          href: "#product-use",
-          link: t("baseline.link"),
-        };
+  const focusItems: Array<{
+    tone: "warning" | "building" | "neutral";
+    category: string;
+    title: string;
+    value: string;
+    detail: string;
+    href: string;
+    link: string;
+  }> = [];
+
+  if (metrics.gallery.missingPreview > 0) {
+    focusItems.push({
+      tone: "warning" as const,
+      category: t("categories.operations"),
+      title: t("preview.title"),
+      value: t("preview.value", {
+        count: metrics.gallery.missingPreview,
+        total: metrics.gallery.total,
+      }),
+      detail: t("preview.detail"),
+      href: "#sharing-health",
+      link: t("preview.link"),
+    });
+  }
+
+  if (baselineReady && strongestMovement) {
+    focusItems.push({
+      tone: "neutral",
+      category: t("categories.product"),
+      title: t("movement.title", {
+        metric: t(`metrics.${strongestMovement.key}`),
+      }),
+      value: t("movement.value", {
+        change: `${strongestMovement.delta > 0 ? "+" : ""}${strongestMovement.delta}`,
+      }),
+      detail: t("movement.detail", {
+        current: strongestMovement.current,
+        previous: strongestMovement.previous,
+      }),
+      href: strongestMovement.href,
+      link: t("movement.link"),
+    });
+  } else {
+    focusItems.push({
+      tone: "building",
+      category: t("categories.measurement"),
+      title: t("baseline.title"),
+      value: t("baseline.value", { days: Math.min(daysTracked, 60) }),
+      detail: t("baseline.detail"),
+      href: "#product-use",
+      link: t("baseline.link"),
+    });
+  }
 
   return (
-    <section
-      aria-labelledby="metrics-focus-title"
-      className={cn(
-        "flex flex-col gap-4 rounded-xl border border-l-4 px-4 py-5 sm:flex-row sm:items-center sm:px-5",
-        focus.tone === "warning"
-          ? "border-border border-l-amber-500 bg-amber-500/8"
-          : focus.tone === "building"
-            ? "border-border border-l-muted-foreground/40 bg-muted/35"
-            : "border-border border-l-sky-500 bg-sky-500/6"
-      )}
-    >
-      <span
-        className={cn(
-          "flex size-8 shrink-0 items-center justify-center",
-          focus.tone === "warning"
-            ? "text-amber-700 dark:text-amber-300"
-            : "text-sky-700 dark:text-sky-300"
-        )}
-        aria-hidden="true"
+    <section aria-labelledby="metrics-focus-title" className="space-y-3">
+      <h2
+        id="metrics-focus-title"
+        className="text-base font-semibold sm:text-lg"
       >
-        <Search className="size-5" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
-          {t("eyebrow")}
-        </p>
-        <div className="mt-0.5 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
-          <h2
-            id="metrics-focus-title"
-            className="text-base font-semibold sm:text-lg"
+        {t("eyebrow")}
+      </h2>
+      <div className="grid gap-3 lg:grid-cols-2">
+        {focusItems.slice(0, 3).map((focus) => (
+          <article
+            key={focus.title}
+            className={cn(
+              "flex min-w-0 flex-col gap-3 rounded-xl border border-l-4 p-4",
+              focus.tone === "warning"
+                ? "border-border border-l-amber-500 bg-amber-500/8"
+                : focus.tone === "building"
+                  ? "border-border border-l-muted-foreground/40 bg-muted/35"
+                  : "border-border border-l-sky-500 bg-sky-500/6"
+            )}
           >
-            {focus.title}
-          </h2>
-          <span className="text-xl font-bold tabular-nums">{focus.value}</span>
-        </div>
-        <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
-          {focus.detail}
-        </p>
-        <p className="mt-3 border-t pt-3 text-sm leading-relaxed">
-          <span className="font-semibold">{t("nextCheck")}</span>{" "}
-          {focus.question}
-        </p>
+            <div className="flex items-start gap-3">
+              <Search
+                className={cn(
+                  "mt-0.5 size-5 shrink-0",
+                  focus.tone === "warning"
+                    ? "text-amber-700 dark:text-amber-300"
+                    : "text-sky-700 dark:text-sky-300"
+                )}
+                aria-hidden="true"
+              />
+              <div className="min-w-0">
+                <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                  {focus.category}
+                </p>
+                <h3 className="text-sm font-semibold">{focus.title}</h3>
+                <p className="mt-0.5 text-xl font-bold tabular-nums">
+                  {focus.value}
+                </p>
+                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                  {focus.detail}
+                </p>
+              </div>
+            </div>
+            <a
+              href={focus.href}
+              className="mt-auto inline-flex items-center gap-2 self-start text-sm font-semibold underline-offset-4 hover:underline"
+            >
+              {focus.link}
+              <ArrowRight className="size-3.5" aria-hidden="true" />
+            </a>
+          </article>
+        ))}
       </div>
-      <a
-        href={focus.href}
-        className="inline-flex w-full shrink-0 items-center justify-between gap-2 text-sm font-semibold underline-offset-4 hover:underline sm:w-auto sm:justify-start"
-      >
-        {focus.link}
-        <ArrowRight className="size-3.5" />
-      </a>
     </section>
   );
 }
@@ -1331,14 +1372,14 @@ function UsageComparison({
   const t = useTranslations("dashboard.metrics.comparison");
   if (!hasComparisonBaseline(usage)) {
     return (
-      <span className="text-muted-foreground text-[11px]">{t("building")}</span>
+      <span className="text-muted-foreground text-xs">{t("building")}</span>
     );
   }
   const previous = previousEventCount(usage, eventType);
   if (previous === 0) return null;
   const delta = Math.round(((current - previous) / previous) * 100);
   return (
-    <span className="text-muted-foreground text-[11px] tabular-nums">
+    <span className="text-muted-foreground text-xs tabular-nums">
       {t(delta === 0 ? "flat" : delta > 0 ? "changeUp" : "changeDown", {
         pct: Math.abs(delta),
       })}
@@ -1426,7 +1467,7 @@ export function ExportUsageBreakdown({
   return (
     <div className="space-y-3">
       <div className="flex items-end justify-between gap-3 border-b pb-3">
-        <span className="text-muted-foreground text-xs">{t("summary")}</span>
+        <span className="text-muted-foreground text-sm">{t("summary")}</span>
         <div className="text-right">
           <p className="text-xl font-bold tabular-nums">{usage.exports30d}</p>
           <UsageComparison
@@ -1468,7 +1509,7 @@ export function ShareUsageBreakdown({
   return (
     <div className="space-y-3">
       <div className="flex items-end justify-between gap-3 border-b pb-3">
-        <span className="text-muted-foreground text-xs">{t("summary")}</span>
+        <span className="text-muted-foreground text-sm">{t("summary")}</span>
         <div className="text-right">
           <p className="text-xl font-bold tabular-nums">
             {usage.shareViews30d}
@@ -1486,6 +1527,187 @@ export function ShareUsageBreakdown({
         emptyLabel={t("noData")}
       />
     </div>
+  );
+}
+
+export function EmbedReachTable({
+  usage,
+}: {
+  usage: ProductInsights["usage"];
+}) {
+  const t = useTranslations("dashboard.metrics.embedReach");
+  const knownViews = usage.embedReferrers30d.reduce(
+    (total, referrer) => total + referrer.views,
+    0
+  );
+
+  if (usage.embedReferrers30d.length === 0) {
+    return (
+      <div className="text-muted-foreground flex min-h-32 items-center justify-center px-4 text-center text-sm">
+        {t("empty")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <dl className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-lg border p-3">
+          <dt className="text-muted-foreground text-sm">{t("knownSites")}</dt>
+          <dd className="mt-1 text-xl font-semibold tabular-nums">
+            {new Set(usage.embedReferrers30d.map((row) => row.hostname)).size}
+          </dd>
+        </div>
+        <div className="rounded-lg border p-3">
+          <dt className="text-muted-foreground text-sm">{t("knownViews")}</dt>
+          <dd className="mt-1 text-xl font-semibold tabular-nums">
+            {knownViews}
+          </dd>
+        </div>
+      </dl>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[54rem] text-sm">
+          <thead>
+            <tr className="text-muted-foreground border-b text-left">
+              <th scope="col" className="py-2 pr-3 font-medium">
+                {t("website")}
+              </th>
+              <th scope="col" className="px-3 py-2 font-medium">
+                {t("track")}
+              </th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">
+                {t("views")}
+              </th>
+              <th scope="col" className="py-2 pl-3 text-right font-medium">
+                {t("share")}
+              </th>
+              <th scope="col" className="py-2 pl-3 text-right font-medium">
+                {t("trend")}
+              </th>
+              <th scope="col" className="py-2 pl-3 text-right font-medium">
+                {t("lastSeen")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {usage.embedReferrers30d.map((referrer) => {
+              const share =
+                knownViews > 0
+                  ? Math.round((referrer.views / knownViews) * 100)
+                  : 0;
+              const change =
+                referrer.previousViews > 0
+                  ? Math.round(
+                      ((referrer.views - referrer.previousViews) /
+                        referrer.previousViews) *
+                        100
+                    )
+                  : null;
+              return (
+                <tr
+                  key={`${referrer.shareToken}:${referrer.hostname}`}
+                  className="hover:bg-muted/35 border-b last:border-0"
+                >
+                  <td className="py-3 pr-3 font-medium">{referrer.hostname}</td>
+                  <td className="px-3 py-3">
+                    <a
+                      href={`/share/${referrer.shareToken}`}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {referrer.shareTitle}
+                    </a>
+                  </td>
+                  <td className="px-3 py-3 text-right font-semibold tabular-nums">
+                    {referrer.views}
+                  </td>
+                  <td className="py-3 pl-3 text-right tabular-nums">
+                    {share}%
+                  </td>
+                  <td className="py-3 pl-3 text-right tabular-nums">
+                    {change == null
+                      ? t("newTrend")
+                      : change === 0
+                        ? t("flatTrend")
+                        : t(change > 0 ? "upTrend" : "downTrend", {
+                            pct: Math.abs(change),
+                          })}
+                  </td>
+                  <td className="py-3 pl-3 text-right tabular-nums">
+                    <time dateTime={referrer.lastSeen}>
+                      {new Intl.DateTimeFormat(undefined, {
+                        day: "numeric",
+                        month: "short",
+                        timeZone: "UTC",
+                      }).format(new Date(`${referrer.lastSeen}T00:00:00Z`))}
+                    </time>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        {t("privacyNote")}
+      </p>
+    </div>
+  );
+}
+
+export function UsageTabs({ usage }: { usage: ProductInsights["usage"] }) {
+  const t = useTranslations("dashboard.metrics");
+  const tabs = [
+    {
+      value: "editor",
+      label: t("usageTabs.editor"),
+      title: t("editorUsage.title"),
+      description: t("editorUsage.description"),
+      content: <EditorUsageBreakdown usage={usage} />,
+    },
+    {
+      value: "exports",
+      label: t("usageTabs.exports"),
+      title: t("exportUsage.title"),
+      description: t("exportUsage.description"),
+      content: <ExportUsageBreakdown usage={usage} />,
+    },
+    {
+      value: "sharing",
+      label: t("usageTabs.sharing"),
+      title: t("shareUsage.title"),
+      description: t("shareUsage.description"),
+      content: <ShareUsageBreakdown usage={usage} />,
+    },
+  ];
+
+  return (
+    <Tabs defaultValue="editor" className="min-w-0">
+      <div className="overflow-x-auto pb-1">
+        <TabsList aria-label={t("usageTabs.label")} className="min-w-max">
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
+      {tabs.map((tab) => (
+        <TabsContent
+          key={tab.value}
+          value={tab.value}
+          id={`${tab.value}-usage`}
+          className="bg-card mt-3 rounded-xl border p-4 sm:p-5"
+        >
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold">{tab.title}</h3>
+            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
+              {tab.description}
+            </p>
+          </div>
+          <div className="pt-4">{tab.content}</div>
+        </TabsContent>
+      ))}
+    </Tabs>
   );
 }
 
@@ -1531,7 +1753,7 @@ export function EditorUsageBreakdown({
         <div className="grid grid-cols-2 gap-6 sm:min-w-64">
           {primaryStats.slice(1, 3).map(([key, value]) => (
             <div key={key}>
-              <p className="text-muted-foreground text-xs">{t(key)}</p>
+              <p className="text-muted-foreground text-sm">{t(key)}</p>
               <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
             </div>
           ))}
@@ -1552,13 +1774,13 @@ export function EditorUsageBreakdown({
       </div>
       <div className="grid grid-cols-2 gap-3 border-y py-3">
         <div>
-          <p className="text-muted-foreground text-xs">{t("importedShapes")}</p>
+          <p className="text-muted-foreground text-sm">{t("importedShapes")}</p>
           <p className="mt-0.5 font-semibold tabular-nums">
             {usage.importedShapes30d}
           </p>
         </div>
         <div>
-          <p className="text-muted-foreground text-xs">{t("avgImport")}</p>
+          <p className="text-muted-foreground text-sm">{t("avgImport")}</p>
           <p className="mt-0.5 font-semibold tabular-nums">
             {usage.avgShapesPerImport30d}
           </p>
@@ -1566,7 +1788,7 @@ export function EditorUsageBreakdown({
       </div>
       {usage.elementTypes30d.length > 0 ? (
         <div className="space-y-2">
-          <p className="text-muted-foreground text-xs">{t("topTypes")}</p>
+          <p className="text-muted-foreground text-sm">{t("topTypes")}</p>
           <div className="flex flex-wrap gap-2">
             {usage.elementTypes30d.slice(0, 8).map((row) => (
               <span
@@ -1603,9 +1825,9 @@ export function RetentionCohorts({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-xs sm:text-sm">
+      <table className="w-full text-sm">
         <thead>
-          <tr className="text-muted-foreground border-b text-left text-xs">
+          <tr className="text-muted-foreground border-b text-left text-sm">
             <th scope="col" className="py-2 pr-2 font-medium sm:pr-3">
               {t("cohort")}
             </th>
@@ -1697,6 +1919,11 @@ function ResourceCard({
   onLimitChange: (v: number) => void;
 }) {
   const t = useTranslations("dashboard.metrics.planLimit");
+  const inputId = useId();
+  const rangeId = `${inputId}-range`;
+  const numberId = `${inputId}-number`;
+  const resultId = `${inputId}-result`;
+  const descriptionId = `${inputId}-description`;
   const distConfig = { users: { label: t("usersAxis") } } satisfies ChartConfig;
   const histogram = useMemo(
     () => buildHistogram(counts).filter((entry) => entry.bucket !== 0),
@@ -1709,11 +1936,17 @@ function ResourceCard({
   const pct = totalUsers > 0 ? Math.round((affected / totalUsers) * 100) : 0;
 
   return (
-    <div className="bg-card space-y-4 rounded-xl border p-4">
+    <fieldset className="bg-card min-w-0 space-y-4 rounded-xl border p-4">
+      <legend className="sr-only">
+        {t("fieldsetLegend", { resource: title })}
+      </legend>
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium">{title}</p>
         <span
-          className={`shrink-0 text-right text-xs font-semibold tabular-nums ${
+          id={resultId}
+          role="status"
+          aria-live="polite"
+          className={`shrink-0 text-right text-sm font-semibold tabular-nums ${
             affected > 0
               ? "text-rose-600 dark:text-rose-400"
               : "text-muted-foreground"
@@ -1727,6 +1960,7 @@ function ResourceCard({
 
       <ChartContainer config={distConfig} className="h-36 w-full">
         <BarChart
+          accessibilityLayer
           data={histogram}
           margin={{ left: 0, right: 0, top: 2, bottom: 18 }}
           barCategoryGap="12%"
@@ -1736,19 +1970,19 @@ function ResourceCard({
             dataKey="label"
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 10 }}
+            tick={{ fontSize: 12 }}
             tickMargin={4}
             label={{
               value: t("perUserAxis", { title }),
               position: "insideBottom",
               offset: -12,
-              style: { fontSize: 10, fill: "var(--muted-foreground)" },
+              style: { fontSize: 12, fill: "var(--muted-foreground)" },
             }}
           />
           <YAxis
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 10 }}
+            tick={{ fontSize: 12 }}
             allowDecimals={false}
             width={28}
             label={{
@@ -1756,7 +1990,7 @@ function ResourceCard({
               angle: -90,
               position: "insideLeft",
               offset: 8,
-              style: { fontSize: 10, fill: "var(--muted-foreground)" },
+              style: { fontSize: 12, fill: "var(--muted-foreground)" },
             }}
           />
           <ChartTooltip
@@ -1789,6 +2023,9 @@ function ResourceCard({
                 key={entry.bucket}
                 fill={entry.bucket > limit ? AFFECTED_COLOR : SAFE_COLOR}
                 fillOpacity={entry.bucket > limit ? 0.75 : 0.6}
+                stroke={entry.bucket > limit ? "var(--foreground)" : "none"}
+                strokeWidth={entry.bucket > limit ? 1.5 : 0}
+                strokeDasharray={entry.bucket > limit ? "3 2" : undefined}
               />
             ))}
           </Bar>
@@ -1797,19 +2034,29 @@ function ResourceCard({
 
       <div className="space-y-1">
         <div className="flex items-center gap-2">
+          <label htmlFor={rangeId} className="sr-only">
+            {t("rangeLabel", { resource: title })}
+          </label>
           <input
+            id={rangeId}
             type="range"
             min={0}
             max={SLIDER_MAX}
             value={Math.min(limit, SLIDER_MAX)}
+            aria-describedby={`${resultId} ${descriptionId}`}
             onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
             className="accent-foreground h-1.5 flex-1 cursor-pointer"
           />
+          <label htmlFor={numberId} className="sr-only">
+            {t("numberLabel", { resource: title })}
+          </label>
           <input
+            id={numberId}
             type="number"
             min={0}
             max={999}
             value={limit}
+            aria-describedby={`${resultId} ${descriptionId}`}
             onChange={(e) => {
               const n = parseInt(e.target.value, 10);
               if (!isNaN(n) && n >= 0) onLimitChange(n);
@@ -1817,13 +2064,19 @@ function ResourceCard({
             className="h-9 w-16 rounded-md border px-2 text-center text-sm tabular-nums"
           />
         </div>
-        <p className="text-muted-foreground text-xs leading-relaxed">
-          {t("freeLimit", { limit })}{" "}
-          <span className="text-rose-600 dark:text-rose-400">{t("red")}</span>{" "}
-          {t("exceedIt")}
+        <p
+          id={descriptionId}
+          className="text-muted-foreground text-sm leading-relaxed"
+        >
+          {t("limitExplanation", { limit })}
         </p>
       </div>
-    </div>
+      <DataTableDisclosure
+        label={t("viewData")}
+        columns={[t("resourceCount", { resource: title }), t("usersAxis")]}
+        rows={histogram.map((entry) => [entry.label, entry.users])}
+      />
+    </fieldset>
   );
 }
 
@@ -1904,7 +2157,7 @@ export function PlanLimitSimulator({
       <div className="flex flex-col gap-3 rounded-xl border px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
         <div className="min-w-0">
           <p className="text-sm font-semibold">{t("totalImpact")}</p>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
             {t("totalImpactDescription")}
           </p>
         </div>
@@ -1918,7 +2171,7 @@ export function PlanLimitSimulator({
           >
             {anyAffected}
           </p>
-          <p className="text-muted-foreground text-xs tabular-nums">
+          <p className="text-muted-foreground text-sm tabular-nums">
             {t("pctOfUsers", { pct: anyPct, total: totalUsers })}
             {excludedCount > 0
               ? t("excludedAccounts", { count: excludedCount })

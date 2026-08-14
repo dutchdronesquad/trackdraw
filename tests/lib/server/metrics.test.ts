@@ -165,6 +165,16 @@ describe("dashboard metrics", () => {
         { surface: "share", count: 5 },
         { surface: "embed", count: 2 },
       ]),
+      createD1AllStatement([
+        {
+          share_token: "share-token",
+          share_title: "Race day layout",
+          referrer_hostname: "events.example.org",
+          views: 7,
+          previous_views: 4,
+          last_seen: "2026-07-20",
+        },
+      ]),
       createD1Statement({
         first: { imported_shapes: 24, avg_shapes: 12 },
       }),
@@ -234,6 +244,16 @@ describe("dashboard metrics", () => {
         { surface: "share", count: 5 },
         { surface: "embed", count: 2 },
       ],
+      embedReferrers30d: [
+        {
+          shareToken: "share-token",
+          shareTitle: "Race day layout",
+          hostname: "events.example.org",
+          views: 7,
+          previousViews: 4,
+          lastSeen: "2026-07-20",
+        },
+      ],
       importedShapes30d: 24,
       avgShapesPerImport30d: 12,
     });
@@ -243,10 +263,10 @@ describe("dashboard metrics", () => {
       retained7d: 6,
       retained30d: 4,
     });
-    expect(String(mocks.prepare.mock.calls[8][0])).toContain(
+    expect(String(mocks.prepare.mock.calls[9][0])).toContain(
       "event_type = 'editor.session_started'"
     );
-    expect(String(mocks.prepare.mock.calls[10][0])).toContain(
+    expect(String(mocks.prepare.mock.calls[11][0])).toContain(
       "pe.event_type = 'editor.session_started'"
     );
     const productEventQueries = mocks.prepare.mock.calls

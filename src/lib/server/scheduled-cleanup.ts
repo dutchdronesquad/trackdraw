@@ -1,4 +1,5 @@
 import { cleanupExpiredApiKeys } from "@/lib/server/api-key-retention";
+import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrers";
 import { cleanupExpiredProductEvents } from "@/lib/server/product-event-retention";
 import { cleanupExpiredShares } from "@/lib/server/share-retention";
 
@@ -11,7 +12,8 @@ type CleanupDatabase = {
   prepare(query: string): CleanupPreparedStatement;
 };
 
-export type ScheduledCleanupTaskName = "shares" | "api_keys" | "product_events";
+export type ScheduledCleanupTaskName =
+  "shares" | "api_keys" | "product_events" | "embed_referrers";
 
 export type ScheduledCleanupTask = {
   name: ScheduledCleanupTaskName;
@@ -87,6 +89,10 @@ export function createScheduledCleanupTasks(
     {
       name: "product_events",
       run: () => cleanupExpiredProductEvents(db),
+    },
+    {
+      name: "embed_referrers",
+      run: () => cleanupExpiredEmbedReferrers(db),
     },
   ];
 }

@@ -16,6 +16,10 @@ import {
 import { getShareDescription, getShareTitle } from "@/lib/share";
 import type { SerializedTrackDesign, TrackDesign } from "@/lib/types";
 import { getDatabase } from "@/lib/server/db";
+import {
+  getEmbedReferrersByOwner,
+  type EmbedReferrerSummary,
+} from "@/lib/server/embed-referrers";
 
 const createShareToken = customAlphabet(
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -157,7 +161,10 @@ function mapShareRow(row: ShareRow): StoredShare {
   };
 }
 
-function mapUserShareRow(row: UserShareRow): UserShare {
+function mapUserShareRow(
+  row: UserShareRow,
+  embedReferrers30d: EmbedReferrerSummary[] = []
+): UserShare {
   const galleryState = parseGalleryMembershipState(row.gallery_state);
 
   return {
@@ -171,6 +178,7 @@ function mapUserShareRow(row: UserShareRow): UserShare {
     galleryState,
     galleryTitle: galleryState ? row.gallery_title : null,
     galleryDescription: galleryState ? row.gallery_description : null,
+    embedReferrers30d,
   };
 }
 
@@ -234,6 +242,7 @@ export type UserShare = {
   galleryState: "listed" | "featured" | "hidden" | null;
   galleryTitle: string | null;
   galleryDescription: string | null;
+  embedReferrers30d: EmbedReferrerSummary[];
 };
 
 export async function getSharesByUserId(
@@ -259,7 +268,13 @@ export async function getSharesByUserId(
     .bind(userId, now, limit)
     .all<UserShareRow>();
 
-  return (rows.results ?? []).map(mapUserShareRow);
+  const shareRows = rows.results ?? [];
+  if (shareRows.length === 0) return [];
+
+  const referrersByShare = await getEmbedReferrersByOwner(userId);
+  return shareRows.map((row) =>
+    mapUserShareRow(row, (referrersByShare.get(row.token) ?? []).slice(0, 5))
+  );
 }
 
 export async function getShareByProjectIdForUser(

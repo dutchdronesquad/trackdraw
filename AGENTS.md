@@ -157,6 +157,7 @@ When product surfaces, account features, sharing mechanisms, or data flows mater
 When updating `CHANGELOG.md`, write for users first:
 
 - Document shipped or release-bound user-facing changes.
+- Do not add internal dashboard, admin, analytics, operational tooling, or other staff-only changes unless they materially change the experience of TrackDraw users outside those internal surfaces.
 - Keep entries compact and product-facing.
 - Group small related changes into one stronger theme.
 - Avoid dependency bumps, refactors, or internal cleanup unless they have a clear user-visible effect.

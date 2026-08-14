@@ -23,6 +23,7 @@ import {
   type GrowthTimeline,
 } from "@/lib/metrics-growth";
 import { getDatabase } from "@/lib/server/db";
+import { EMBED_REFERRER_DISCLOSURE_THRESHOLD } from "@/lib/server/embed-referrers";
 
 export type {
   GrowthBucket,
@@ -105,6 +106,14 @@ export type ProductUsageMetrics = {
   exportFormats30d: Array<{ format: string; count: number }>;
   elementTypes30d: Array<{ kind: string; count: number }>;
   shareSurfaces30d: Array<{ surface: string; count: number }>;
+  embedReferrers30d: Array<{
+    shareToken: string;
+    shareTitle: string;
+    hostname: string;
+    views: number;
+    previousViews: number;
+    lastSeen: string;
+  }>;
   importedShapes30d: number;
   avgShapesPerImport30d: number;
 };
@@ -452,6 +461,7 @@ export async function getProductInsights(): Promise<ProductInsights> {
     exportFormatsResult,
     elementTypesResult,
     shareSurfacesResult,
+    embedReferrersResult,
     importStatsRow,
     sessionRow,
     apiUsageRow,
@@ -586,6 +596,33 @@ export async function getProductInsights(): Promise<ProductInsights> {
       .prepare(
         `
           select
+            r.share_token,
+            coalesce(s.title, 'Untitled track') as share_title,
+            r.referrer_hostname,
+            sum(case when r.viewed_on >= date('now', '-29 days') then r.view_count else 0 end) as views,
+            sum(case when r.viewed_on between date('now', '-59 days') and date('now', '-30 days') then r.view_count else 0 end) as previous_views,
+            max(case when r.viewed_on >= date('now', '-29 days') then r.viewed_on end) as last_seen
+          from embed_referrer_daily r
+          inner join shares s on s.token = r.share_token
+          where r.viewed_on >= date('now', '-59 days')
+          group by r.share_token, share_title, r.referrer_hostname
+          having sum(case when r.viewed_on >= date('now', '-29 days') then r.view_count else 0 end) >= ${EMBED_REFERRER_DISCLOSURE_THRESHOLD}
+          order by views desc, r.referrer_hostname, share_title
+          limit 10
+        `
+      )
+      .all<{
+        share_token: string;
+        share_title: string;
+        referrer_hostname: string;
+        views: number;
+        previous_views: number;
+        last_seen: string;
+      }>(),
+    db
+      .prepare(
+        `
+          select
             coalesce(sum(cast(json_extract(metadata_json, '$.shapeCount') as integer)), 0) as imported_shapes,
             coalesce(round(avg(cast(json_extract(metadata_json, '$.shapeCount') as real)), 1), 0) as avg_shapes
           from product_events
@@ -692,6 +729,14 @@ export async function getProductInsights(): Promise<ProductInsights> {
       exportFormats30d: exportFormatsResult.results,
       elementTypes30d: elementTypesResult.results,
       shareSurfaces30d: shareSurfacesResult.results,
+      embedReferrers30d: embedReferrersResult.results.map((row) => ({
+        shareToken: row.share_token,
+        shareTitle: row.share_title,
+        hostname: row.referrer_hostname,
+        views: row.views,
+        previousViews: row.previous_views,
+        lastSeen: row.last_seen,
+      })),
       importedShapes30d: importStatsRow?.imported_shapes ?? 0,
       avgShapesPerImport30d: importStatsRow?.avg_shapes ?? 0,
     },

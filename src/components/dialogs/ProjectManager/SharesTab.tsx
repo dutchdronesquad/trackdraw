@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Ban, Check, Copy, ExternalLink, Link2 } from "lucide-react";
+import { Ban, Check, Copy, ExternalLink, Globe2, Link2 } from "lucide-react";
 import type { AccountShareItem } from "@/components/editor/useAccountProjectSync";
 import { useTranslations } from "next-intl";
 import {
@@ -104,6 +104,27 @@ export function ProjectManagerSharesTab({
               <p className="text-muted-foreground mt-0.5 text-[11px]">
                 {itemLabel(share.shapeCount, t)} · {lifetimeLabel}
               </p>
+              {share.shareType === "published" &&
+              share.embedReferrers30d.length > 0 ? (
+                <div className="mt-2 flex items-start gap-1.5">
+                  <Globe2 className="text-muted-foreground mt-0.5 size-3 shrink-0" />
+                  <div className="min-w-0 text-[10px] leading-4">
+                    <p className="text-muted-foreground font-medium">
+                      {t("projectManager.shares.referrers.label")}
+                    </p>
+                    <p className="text-muted-foreground/80 truncate">
+                      {share.embedReferrers30d
+                        .map((referrer) =>
+                          t("projectManager.shares.referrers.item", {
+                            hostname: referrer.hostname,
+                            views: referrer.views,
+                          })
+                        )
+                        .join(" · ")}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </div>
             <div
               className="flex shrink-0 items-center gap-0.5"

@@ -137,7 +137,38 @@
       "viewingSessions": {
         "label": "Public viewing sessions",
         "sub": "{share} share page · {embed} embed"
+      },
+      "activation": {
+        "label": "Creator activation · lifetime",
+        "sub": "{activated} of {registered} accounts created a project"
+      },
+      "retention": {
+        "label": "30-day creator retention · mature cohorts",
+        "sub": "Across {cohorts} mature cohorts"
+      },
+      "publishedReach": {
+        "label": "Published reach · 30 days",
+        "sub": "{share} share page · {embed} embed"
       }
+    },
+    "overview": {
+      "description": "A decision-focused view of creator progress, published reach, and product health.",
+      "periodLabel": "Primary period:",
+      "periodValue": "last 30 days",
+      "compareLabel": "Comparison:",
+      "compareValue": "previous 30 days when available",
+      "definitionsLabel": "Scope:",
+      "definitionsValue": "lifetime metrics are labelled separately",
+      "updatedLabel": "Updated:"
+    },
+    "navigation": {
+      "label": "Metrics sections",
+      "overview": "Overview",
+      "journey": "Journey",
+      "usage": "Usage & reach",
+      "growth": "Growth",
+      "health": "Health",
+      "planning": "Plan decisions"
     },
     "sections": {
       "pulse": {
@@ -166,8 +197,13 @@
       }
     },
     "focus": {
-      "eyebrow": "Focus this period",
+      "eyebrow": "Needs attention",
       "nextCheck": "Next check:",
+      "categories": {
+        "product": "Product",
+        "operations": "Operations",
+        "measurement": "Measurement"
+      },
       "preview": {
         "title": "Gallery previews need attention",
         "value": "{count} of {total}",
@@ -215,7 +251,8 @@
       "activeArchived": "{active} active · {archived} archived",
       "activeInactive": "{active} active · {inactive} expired or revoked",
       "averagePerUser": "{average} average per user",
-      "usedActive": "{used} used in 30d · {active} active"
+      "usedActive": "{used} used in 30d · {active} active",
+      "showDetails": "Show full platform inventory"
     },
     "userPopulation": {
       "title": "User population",
@@ -232,7 +269,9 @@
       "registered": "Registered",
       "createdProject": "Created a project",
       "createdShare": "Created a share",
-      "publishedToGallery": "Published to gallery"
+      "publishedToGallery": "Published to gallery",
+      "baseline": "Starting cohort",
+      "conversion": "{step}% from previous · {total}% overall"
     },
     "health": {
       "title": "Sharing and gallery health",
@@ -253,7 +292,9 @@
       "projects": "Projects",
       "shares": "Shares",
       "presets": "Presets",
-      "noData": "No content data yet"
+      "noData": "No content data yet",
+      "viewData": "View content growth data",
+      "period": "Period"
     },
     "distribution": {
       "title": "Account distribution",
@@ -290,7 +331,35 @@
       "surfaces": {
         "share": "Share page",
         "embed": "Embedded viewer"
+      },
+      "referrers": {
+        "title": "Detected embed sites · last 30 days",
+        "empty": "No website hostname has reached the privacy threshold yet."
       }
+    },
+    "usageTabs": {
+      "label": "Usage metric views",
+      "editor": "Editor",
+      "exports": "Exports",
+      "sharing": "Sharing"
+    },
+    "embedReach": {
+      "title": "Embed reach",
+      "description": "Websites that generated enough embedded viewing activity to pass the privacy threshold during the last 30 days.",
+      "knownSites": "Detected websites",
+      "knownViews": "Views from detected websites",
+      "website": "Website",
+      "track": "Track",
+      "views": "Views",
+      "share": "Share of detected views",
+      "trend": "vs previous 30 days",
+      "lastSeen": "Last seen",
+      "newTrend": "New",
+      "flatTrend": "No change",
+      "upTrend": "Up {pct}%",
+      "downTrend": "Down {pct}%",
+      "empty": "No website hostname has reached the privacy threshold yet.",
+      "privacyNote": "Only hostnames meeting the disclosure threshold are shown. Full URLs, visitor identities, and individual browsing histories are not stored."
     },
     "editorUsage": {
       "title": "Editor behavior",
@@ -317,7 +386,11 @@
     },
     "userGrowth": {
       "title": "User growth",
-      "description": "Cumulative user count (area) and new registrations per selected period (bars).",
+      "description": "Cumulative users and new registrations shown on separate, aligned scales.",
+      "cumulativeTitle": "Cumulative users",
+      "newTitle": "New registrations",
+      "viewData": "View user growth data",
+      "periodColumn": "Period",
       "totalUsers": "Total users",
       "newThisDay": "New this day",
       "newThisWeek": "New this week",
@@ -361,7 +434,7 @@
     },
     "planLimit": {
       "title": "Plan limit simulation",
-      "description": "Each chart shows how usage is distributed across all users. Drag the slider (or type a number) to set a free-plan cap and instantly see how many users would exceed it — the red bars are the ones that get cut off.",
+      "description": "Set a proposed free-plan limit for each resource. Highlighted, outlined bars show accounts above that limit; this simulation does not change any account.",
       "projects": "Projects",
       "shareLinks": "Share links",
       "presets": "Presets",
@@ -379,7 +452,19 @@
       "totalImpactDescription": "Unique users affected by at least one of the limits above",
       "pctOfUsers": "{pct}% of {total} users with content",
       "excludedAccounts": " · {count} empty accounts excluded",
-      "noData": "No user data yet"
+      "noData": "No user data yet",
+      "fieldsetLegend": "{resource} free-plan limit simulation",
+      "rangeLabel": "{resource} free-plan limit slider",
+      "numberLabel": "{resource} free-plan limit value",
+      "limitExplanation": "Proposed free limit: {limit}. Outlined bars represent accounts above this limit.",
+      "viewData": "View distribution data",
+      "resourceCount": "{resource} per account"
+    },
+    "planningPage": {
+      "metadataTitle": "Metrics plan decisions",
+      "back": "Back to metrics overview",
+      "title": "Product and plan decisions",
+      "description": "Explore account-level resource distribution and model possible free-plan limits without changing product behavior."
     }
   },
   "users": {

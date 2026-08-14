@@ -261,6 +261,8 @@ Migration `0012_product_events.sql` adds the product analytics event store used 
 
 Migration `0013_cleanup_unlisted_gallery_entries.sql` removes legacy gallery rows that were created automatically for ordinary account shares. It leaves the underlying shares and any gallery rows with preview media untouched.
 
+Migration `0014_embed_referrer_daily.sql` adds privacy-minimized daily embed-source aggregates. Apply it before deploying embed referrer collection or returning embed-source summaries from the account shares API. The scheduled cleanup removes these aggregates after 90 days.
+
 ## Validation flow
 
 Typical local workflow:

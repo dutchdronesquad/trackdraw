@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   createUnlistedGalleryEntry: vi.fn(),
   deleteGalleryEntry: vi.fn(),
   getGalleryEntryByShareToken: vi.fn(),
+  getEmbedReferrersByOwner: vi.fn(),
 }));
 
 vi.mock("@/lib/server/db", () => ({
@@ -38,6 +39,10 @@ vi.mock("@/lib/server/gallery", () => ({
     }
     return "unlisted";
   },
+}));
+
+vi.mock("@/lib/server/embed-referrers", () => ({
+  getEmbedReferrersByOwner: mocks.getEmbedReferrersByOwner,
 }));
 
 import {
@@ -129,6 +134,7 @@ describe("resolveStoredShare", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
     mocks.prepare.mockReset();
+    mocks.getEmbedReferrersByOwner.mockReset().mockResolvedValue(new Map());
   });
 
   it("returns missing when no share row exists", async () => {
@@ -273,7 +279,33 @@ describe("getSharesByUserId", () => {
       projectId: "proj-1",
       shareType: "published",
       galleryState: "listed",
+      embedReferrers30d: [],
     });
+  });
+
+  it("adds thresholded embed referrers to the matching owned share", async () => {
+    const row = {
+      token: "tok-user",
+      title: "My share",
+      shape_count: 4,
+      created_at: "2026-04-01T00:00:00.000Z",
+      expires_at: null,
+      project_id: "proj-1",
+      share_type: "published",
+      gallery_state: null,
+      gallery_title: null,
+      gallery_description: null,
+    };
+    mocks.prepare.mockReturnValue(createD1AllStatement([row]));
+    mocks.getEmbedReferrersByOwner.mockResolvedValue(
+      new Map([["tok-user", [{ hostname: "events.example.org", views: 7 }]]])
+    );
+
+    const result = await getSharesByUserId("user-1");
+
+    expect(result[0].embedReferrers30d).toEqual([
+      { hostname: "events.example.org", views: 7 },
+    ]);
   });
 });
 

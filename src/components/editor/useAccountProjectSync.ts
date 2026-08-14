@@ -36,6 +36,7 @@ export type AccountShareItem = {
   galleryState: "listed" | "featured" | "hidden" | null;
   galleryTitle: string | null;
   galleryDescription: string | null;
+  embedReferrers30d: Array<{ hostname: string; views: number }>;
 };
 
 export type ProjectSyncMeta = {

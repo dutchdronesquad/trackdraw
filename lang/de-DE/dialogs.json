@@ -750,6 +750,10 @@
         "published": "schreibgeschützter veröffentlichter Link, aktiv bis zum Widerruf",
         "temporary": "schreibgeschützter temporärer Link, {expiresIn}"
       },
+      "referrers": {
+        "label": "Erkannte Embed-Websites · letzte 30 Tage",
+        "item": "{hostname} ({views})"
+      },
       "actions": {
         "copyLink": "Link kopieren",
         "openTab": "In neuem Tab öffnen",

@@ -20,6 +20,7 @@ function createShare(
     galleryState: null,
     galleryTitle: null,
     galleryDescription: null,
+    embedReferrers30d: [],
     ...overrides,
   };
 }
@@ -134,5 +135,26 @@ describe("ProjectManagerSharesTab", () => {
       expect(button.className).toContain("md:opacity-0");
       expect(button.className).toContain("md:group-hover:opacity-100");
     }
+  });
+
+  it("shows only the already-thresholded embed websites returned by the API", () => {
+    render(
+      <TooltipProvider>
+        <ProjectManagerSharesTab
+          accountProjectTitleById={{}}
+          loading={false}
+          shares={[
+            createShare({
+              embedReferrers30d: [{ hostname: "events.example.org", views: 7 }],
+            }),
+          ]}
+        />
+      </TooltipProvider>
+    );
+
+    expect(
+      screen.getByText("Detected embed sites · last 30 days")
+    ).toBeTruthy();
+    expect(screen.getByText("events.example.org (7)")).toBeTruthy();
   });
 });
