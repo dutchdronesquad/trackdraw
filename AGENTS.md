@@ -40,6 +40,18 @@ Use `README.md` for the product overview and `CONTRIBUTING.md` for setup, comman
 - When fixing lint or type errors, match the exact reported file and symbol before editing.
 - Do not revert unrelated dirty work. Work with existing changes unless the user explicitly asks for a revert.
 
+## Localization And Crowdin
+
+- English product copy in `lang/en-US/**` is the source of truth and belongs in normal feature pull requests.
+- Do not edit `lang/nl-NL/**`, `lang/de-DE/**`, or `lang/zh-CN/**` in a feature pull request, even when you can generate plausible translations. Crowdin owns those target catalogs.
+- Do not copy new English keys into target catalogs as placeholders. Missing target keys intentionally use the tested English runtime fallback.
+- After English reaches `main`, the Crowdin workflow uploads it automatically. Crowdin then supplies initial AI/machine translations; those translations return through the `l10n_crowdin` localization pull request.
+- Human translations and corrections in Crowdin take precedence over generated translations. Do not overwrite them from the repository.
+- Direct target-catalog edits are allowed only in a production emergency or an explicitly requested one-time reconciliation. Reconcile such changes back into Crowdin immediately instead of creating a second source of truth.
+- If a working tree already contains agent-generated target translations, do not silently keep, discard, or regenerate them. Flag them for reconciliation with Crowdin and keep subsequent feature work English-only.
+- A new English key does not require target-key parity, but every translatable namespace file must still exist for every supported target locale.
+- Run `npm run i18n:check` and `npm run i18n:scan-hardcoded` when changing product copy. See `CONTRIBUTING.md` and `docs/research/crowdin-pilot.md` for the synchronization and review workflow.
+
 ## Ownership Map
 
 - `src/app`: route entry points and page-level metadata
