@@ -23,18 +23,18 @@ import type {
 
 const METRIC_IDS = ["MTR-001", "MTR-004", "MTR-005", "MTR-006"] as const;
 
-const METRIC_ICONS: Record<(typeof METRIC_IDS)[number], LucideIcon> = {
-  "MTR-001": Users,
-  "MTR-004": Activity,
-  "MTR-005": RefreshCcw,
-  "MTR-006": Eye,
-};
-
 const METRIC_WINDOWS: Record<(typeof METRIC_IDS)[number], number> = {
   "MTR-001": 7,
   "MTR-004": 7,
   "MTR-005": 30,
   "MTR-006": 7,
+};
+
+const METRIC_ICONS: Record<(typeof METRIC_IDS)[number], LucideIcon> = {
+  "MTR-001": Users,
+  "MTR-004": Activity,
+  "MTR-005": RefreshCcw,
+  "MTR-006": Eye,
 };
 
 const METRIC_DRILLDOWNS: Record<(typeof METRIC_IDS)[number], string> = {
@@ -112,7 +112,7 @@ function MetricCell({
     : null;
   const measuredSince = metric?.measuredSince
     ? date.format(new Date(`${metric.measuredSince}T00:00:00.000Z`))
-    : t("notAvailable");
+    : null;
   const stateLabel = !metric
     ? t("quality.unavailable")
     : currentDisplay
@@ -160,19 +160,13 @@ function MetricCell({
               : ""}
           </span>
         ) : null}
-        <span className="text-muted-foreground mt-2 block text-xs leading-relaxed">
-          {t("kpis.meta", {
-            id,
-            window: METRIC_WINDOWS[id],
-            owner: t("kpis.owner"),
-          })}
-          <br />
-          {t("kpis.measurement", {
-            date: measuredSince,
-            quality: metric
-              ? t(`quality.${metric.quality}`)
-              : t("quality.unavailable"),
-          })}
+        <span className="text-muted-foreground mt-2 block text-xs">
+          {measuredSince
+            ? t("kpis.windowSince", {
+                window: METRIC_WINDOWS[id],
+                date: measuredSince,
+              })
+            : t("kpis.window", { window: METRIC_WINDOWS[id] })}
         </span>
       </span>
     </Link>
