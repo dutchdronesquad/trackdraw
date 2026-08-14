@@ -122,6 +122,7 @@ function GalleryCard({
   return (
     <Link
       href={`/share/${entry.shareToken}`}
+      prefetch={false}
       className="group border-border/55 bg-background/72 hover:border-border relative flex h-full flex-col overflow-hidden rounded-[1.35rem] border shadow-[0_16px_34px_rgba(15,23,42,0.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_56px_rgba(15,23,42,0.12)]"
     >
       <div className="pointer-events-none absolute inset-x-6 top-0 h-20 rounded-full bg-[radial-gradient(circle,rgba(var(--brand-primary-rgb),0.16),transparent_70%)] opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />

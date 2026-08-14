@@ -83,6 +83,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
     return (
       <Link
         href="/login"
+        prefetch={false}
         className={cn(
           buttonVariants({ variant: "ghost", size: "sm" }),
           collapsed
@@ -171,6 +172,7 @@ export default function AccountMenu({ collapsed = false }: AccountMenuProps) {
           {canAccessDashboard(user) ? (
             <Link
               href="/dashboard"
+              prefetch={false}
               onClick={() => setMenuOpen(false)}
               className={accountMenuItemClassName}
             >

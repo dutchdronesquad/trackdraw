@@ -245,6 +245,7 @@ export function ViewControls({
           <div className="grid grid-cols-2 gap-2">
             <Link
               href={studioHref}
+              prefetch={false}
               className="border-border/50 bg-muted/18 text-muted-foreground hover:bg-muted/28 hover:text-foreground flex min-h-12 items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 transition-all"
             >
               <ArrowRight className="size-4" />

@@ -48,6 +48,7 @@ export default function EmbedViewer({
       <EditorShell initialTab={initialTab} embedMode existingShareMode />
       <Link
         href="/privacy"
+        prefetch={false}
         target="_blank"
         rel="noopener noreferrer"
         className="border-border/60 bg-background/80 text-muted-foreground hover:text-foreground absolute right-2 bottom-2 z-30 rounded-md border px-2 py-1 text-[10px] shadow-sm backdrop-blur-sm transition-colors"

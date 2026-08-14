@@ -89,6 +89,7 @@ export default function MobilePanels({
           {!embedMode ? (
             <Link
               href={studioHref}
+              prefetch={false}
               className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2 text-[11px] font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white"
             >
               <ArrowRight className="size-3.5" />

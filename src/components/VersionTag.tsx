@@ -31,6 +31,7 @@ export default function VersionTag({ className }: { className?: string }) {
       <TooltipTrigger asChild>
         <Link
           href={releaseHref}
+          prefetch={false}
           target="_blank"
           rel="noreferrer"
           className={cn(

@@ -112,6 +112,13 @@ Use the right pattern for the complexity of the state being persisted:
 
 When adding new persistent client state, default to Zustand `persist` if any of the following apply: the state is an object or array, more than one component subscribes to it, or it needs to be reactive across the app.
 
+## Link Prefetching
+
+- Keep the default Next.js prefetch behavior for stable, low-cardinality primary navigation where warming the destination materially improves the next interaction.
+- Set `prefetch={false}` for links in frequently updating editor/viewer shells, repeated or data-driven lists, dialogs, and links that open another tab. These surfaces can otherwise create unnecessary or repeated production-preview requests.
+- Use native anchors for same-page hash navigation instead of `next/link`.
+- Recheck production-preview request logs when adding a persistent app-shell link or a large collection of links.
+
 ## Design Schema
 
 `TrackDesign.version` is currently `2`. `normalizeDesign` auto-migrates version 1 designs by shifting gate and ladder rotations by `-180°` so the visual result is unchanged. Always create new designs with `version: 2`.

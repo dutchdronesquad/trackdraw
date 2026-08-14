@@ -199,6 +199,7 @@ export default function Header({
           {readOnly && (
             <Link
               href="/"
+              prefetch={false}
               aria-label={tToolbar("homepageLabel")}
               className="hidden shrink-0 items-center rounded-xs opacity-90 transition-opacity hover:opacity-100 lg:flex"
             >
@@ -239,6 +240,7 @@ export default function Header({
         <div className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center lg:hidden">
           <Link
             href="/"
+            prefetch={false}
             aria-label={tToolbar("homepageLabel")}
             className="flex items-center rounded-xs opacity-90 transition-opacity hover:opacity-100"
           >
@@ -312,6 +314,7 @@ export default function Header({
               <div className="bg-border/80 mx-1 hidden h-4 w-px sm:block" />
               <Link
                 href={studioHref}
+                prefetch={false}
                 className="text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 items-center gap-1.5 rounded-md px-2 text-xs transition-colors sm:inline-flex sm:h-7 sm:px-2.5"
               >
                 {t("makeEditableCopy")}
