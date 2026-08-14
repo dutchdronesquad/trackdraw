@@ -154,10 +154,17 @@ function touchTrackDesign(state: EditorState) {
 function trackMeaningfulEdit(
   editType: import("@/lib/product-events").ProductEventEditType
 ) {
-  trackProductEvent("editor.meaningful_edit_completed", {
-    projectId: useEditor.getState().track.design.id,
-    properties: { edit_type: editType },
-  });
+  const projectId = useEditor.getState().track.design.id;
+  trackProductEvent(
+    "editor.meaningful_edit_completed",
+    {
+      projectId,
+      properties: { edit_type: editType },
+    },
+    {
+      oncePerSession: `meaningful-edit:${projectId}:${editType}`,
+    }
+  );
 }
 
 function clearPolylineEditSelections(state: EditorState, ids: string[]) {

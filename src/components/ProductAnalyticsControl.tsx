@@ -65,6 +65,10 @@ export function ProductAnalyticsControl({
       });
       if (!response.ok) throw new Error("preference update failed");
     } catch {
+      if (nextEnabled) {
+        setEnabled(false);
+        setProductAnalyticsDisabled(true);
+      }
       setError(t("productAnalytics.error"));
     } finally {
       setSaving(false);

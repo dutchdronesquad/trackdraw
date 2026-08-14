@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
-import landing from "../../../lang/en-US/landing.json";
+import landing from "@lang/en-US/landing.json";
 
 vi.mock("next/link", () => ({
   default: ({
