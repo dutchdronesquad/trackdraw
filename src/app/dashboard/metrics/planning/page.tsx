@@ -44,6 +44,7 @@ export default async function MetricsPlanningPage() {
         <header className="space-y-3">
           <Link
             href="/dashboard/metrics"
+            prefetch={false}
             className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex items-center gap-2 rounded-sm text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />

@@ -276,6 +276,7 @@ export default async function DashboardMetricsPage() {
             ))}
             <Link
               href="/dashboard/metrics/planning"
+              prefetch={false}
               className="hover:bg-muted focus-visible:ring-ring rounded-md px-3 py-1.5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
             >
               {tMetrics("navigation.planning")}

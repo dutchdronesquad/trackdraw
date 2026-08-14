@@ -90,6 +90,7 @@ export default async function DashboardEmailPreviewPage({
                 <Link
                   key={item.key}
                   href={`/dashboard/email-preview?template=${item.key}`}
+                  prefetch={false}
                   className={cn(
                     "block rounded-lg border px-3 py-3 transition-colors",
                     item.key === activeKey
