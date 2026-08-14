@@ -74,6 +74,15 @@
     "openStudio": "Open Studio",
     "nextStep": "If this keeps happening, reopen Studio and export a JSON backup before continuing with major edits."
   },
+  "productAnalytics": {
+    "title": "Product analytics",
+    "description": "Control privacy-safe product measurement. Disabling it stops future events and asks TrackDraw to delete events linked to this browser session and, when signed in, your account, projects, and shares.",
+    "preferenceTitle": "Share privacy-safe usage data",
+    "preferenceDescription": "Helps improve editor journeys and reliability. Track content, full URLs, IP addresses, and advertising profiles are never included.",
+    "saving": "Saving…",
+    "toggleLabel": "Share privacy-safe product analytics",
+    "error": "Future collection is disabled in this browser, but TrackDraw could not confirm deletion of existing events. Please try again."
+  },
   "status": {
     "active": "Active",
     "expired": "Expired",

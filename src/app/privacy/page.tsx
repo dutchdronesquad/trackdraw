@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Footer } from "@/components/landing/Footer";
 import { PublicSiteHeader } from "@/components/landing/PublicSiteHeader";
+import { ProductAnalyticsControl } from "@/components/ProductAnalyticsControl";
 
 export default function PrivacyPage() {
   const t = useTranslations("legal");
@@ -116,11 +117,14 @@ export default function PrivacyPage() {
                 </p>
               </section>
 
+              <ProductAnalyticsControl />
+
               <p className="text-muted-foreground text-sm leading-7">
                 {t.rich("privacy.seeTerms", {
                   link: (chunks) => (
                     <Link
                       href="/terms"
+                      prefetch={false}
                       className="text-brand-primary hover:text-brand-primary/85 font-medium transition-colors"
                     >
                       {chunks}

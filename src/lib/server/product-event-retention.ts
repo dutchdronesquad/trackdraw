@@ -15,7 +15,11 @@ export async function cleanupExpiredProductEvents(
     .prepare(
       `
         delete from product_events
-        where created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-${days} days')
+        where expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+          or (
+            expires_at is null
+            and created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-${days} days')
+          )
       `
     )
     .run();

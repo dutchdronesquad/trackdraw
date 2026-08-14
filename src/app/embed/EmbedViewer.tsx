@@ -38,7 +38,7 @@ export default function EmbedViewer({
     trackEmbedReferrer(shareToken);
     trackProductEvent(
       "share.viewed",
-      { shareToken, metadata: { surface: "embed" } },
+      { shareToken, properties: { surface: "embed" } },
       { oncePerSession: `share-view:${shareToken}` }
     );
   }, [shareToken]);

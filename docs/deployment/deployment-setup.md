@@ -263,6 +263,8 @@ Migration `0013_cleanup_unlisted_gallery_entries.sql` removes legacy gallery row
 
 Migration `0014_embed_referrer_daily.sql` adds privacy-minimized daily embed-source aggregates. Apply it before deploying embed referrer collection or returning embed-source summaries from the account shares API. The scheduled cleanup removes these aggregates after 90 days.
 
+Migration `0015_product_metrics_contract.sql` upgrades product events to contract version `1.0.0`, adds per-row expiry, database deduplication for session-scoped events, and the signed-in product-analytics objection preference. Apply it before deploying the versioned `/api/product-events` endpoint or its preference route.
+
 ## Validation flow
 
 Typical local workflow:
@@ -307,7 +309,7 @@ The Worker runs a daily cron cleanup and removes:
 - revoked shares
 - shares that have been expired for more than 30 days
 - API keys that have been expired for more than 90 days
-- raw product events that are older than 180 days
+- raw product events whose per-row 180-day expiry has passed (with a legacy created-at fallback)
 
 The three retention owners run concurrently and settle independently. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
 

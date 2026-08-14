@@ -92,6 +92,7 @@ describe("auth session resolver", () => {
       name: "Race Director",
       image: "https://example.com/avatar.jpg",
       role: "user",
+      productAnalyticsEnabled: true,
     });
   });
 

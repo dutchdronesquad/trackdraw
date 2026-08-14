@@ -138,6 +138,7 @@ export function Footer() {
                 <li>
                   <Link
                     href="/privacy"
+                    prefetch={false}
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <ShieldCheck className="size-4 shrink-0" />
@@ -147,6 +148,7 @@ export function Footer() {
                 <li>
                   <Link
                     href="/terms"
+                    prefetch={false}
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <FileText className="size-4 shrink-0" />

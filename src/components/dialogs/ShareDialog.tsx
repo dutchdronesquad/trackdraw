@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -46,6 +46,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  classifyProductOperationFailure,
+  trackProductEvent,
+  type ProductEventFailureCategory,
+} from "@/lib/product-events";
 
 const GalleryPreviewRenderer = dynamic(
   () =>
@@ -294,6 +299,17 @@ export default function ShareDialog({
 
   const busy = publishing || revoking || galleryUpdating;
 
+  const handleGalleryPreviewFailure = useCallback(() => {
+    trackProductEvent("operation.failed", {
+      projectId: design.id,
+      properties: {
+        operation: "gallery_publish",
+        category: "rendering",
+        surface: "gallery",
+      },
+    });
+  }, [design.id]);
+
   const openGalleryForm = () => {
     setConfirmRemoveFromGallery(false);
     setGalleryTitleInput(share?.galleryTitle || design.title.trim());
@@ -396,6 +412,7 @@ export default function ShareDialog({
 
   const doPublish = async (force = false): Promise<string> => {
     setPublishing(true);
+    let failureCategory: ProductEventFailureCategory = "network";
     try {
       const res = await fetch("/api/shares", {
         method: "POST",
@@ -407,6 +424,7 @@ export default function ShareDialog({
           ...(projectId ? { projectId } : {}),
         }),
       });
+      failureCategory = classifyProductOperationFailure(res);
       const data = (await res.json()) as
         | {
             ok: true;
@@ -458,7 +476,22 @@ export default function ShareDialog({
       }
 
       onSharePublished?.();
+      trackProductEvent("share.created", {
+        projectId: design.id,
+        shareToken: data.share.token,
+        properties: { share_type: data.share.shareType },
+      });
       return url;
+    } catch (error) {
+      trackProductEvent("operation.failed", {
+        projectId: design.id,
+        properties: {
+          operation: "share_create",
+          category: failureCategory,
+          surface: "editor",
+        },
+      });
+      throw error;
     } finally {
       setPublishing(false);
     }
@@ -568,6 +601,7 @@ export default function ShareDialog({
 
   const handleListInGallery = async () => {
     if (!share || !galleryPreviewDataUrl) return;
+    let failureCategory: ProductEventFailureCategory = "rendering";
     try {
       const webpDataUrl = await convertPngToWebp(galleryPreviewDataUrl);
 
@@ -585,6 +619,7 @@ export default function ShareDialog({
           }),
         }
       );
+      failureCategory = classifyProductOperationFailure(res);
       const data = (await res.json()) as
         | {
             ok: true;
@@ -608,8 +643,21 @@ export default function ShareDialog({
           data.share.galleryDescription ?? galleryDescriptionInput.trim(),
       });
       setShowGalleryForm(false);
+      trackProductEvent("publication.gallery_published", {
+        projectId: design.id,
+        shareToken: share.shareToken,
+      });
       toast.success(t("share.success.galleryListed"));
     } catch {
+      trackProductEvent("operation.failed", {
+        projectId: design.id,
+        shareToken: share.shareToken,
+        properties: {
+          operation: "gallery_publish",
+          category: failureCategory,
+          surface: "gallery",
+        },
+      });
       toast.error(t("share.errors.galleryListFailed"), {
         description: t("share.errors.galleryListFailedDescription"),
       });
@@ -909,7 +957,10 @@ export default function ShareDialog({
   return (
     <>
       {isAccountProjectShare && showGalleryForm && !isGalleryVisible && (
-        <GalleryPreviewRenderer onCapture={setGalleryPreviewDataUrl} />
+        <GalleryPreviewRenderer
+          onCapture={setGalleryPreviewDataUrl}
+          onFailure={handleGalleryPreviewFailure}
+        />
       )}
 
       <SidebarDialog

@@ -10,6 +10,7 @@ export type CurrentUser = {
   name: string | null;
   image: string | null;
   role: AccountRole;
+  productAnalyticsEnabled?: boolean;
 };
 
 type SessionUserRow = {
@@ -20,6 +21,7 @@ type SessionUserRow = {
   role: string | null;
   expiresAt: string;
   bannedAt: string | null;
+  productAnalyticsEnabled: number | null;
 };
 
 function getAuthSecret() {
@@ -106,6 +108,7 @@ export async function getCurrentUserFromHeaders(
           u.image,
           u.role,
           u.banned_at as bannedAt,
+          u.product_analytics_enabled as productAnalyticsEnabled,
           s.expiresAt
         from sessions s
         inner join users u on u.id = s.userId
@@ -134,5 +137,6 @@ export async function getCurrentUserFromHeaders(
     name: row.name,
     image: row.image,
     role: parseAccountRole(row.role),
+    productAnalyticsEnabled: row.productAnalyticsEnabled !== 0,
   };
 }

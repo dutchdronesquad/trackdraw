@@ -58,7 +58,7 @@ export default function ShareViewer({
   useEffect(() => {
     trackProductEvent(
       "share.viewed",
-      { shareToken, metadata: { surface: "share" } },
+      { shareToken, properties: { surface: "share" } },
       { oncePerSession: `share-view:${shareToken}` }
     );
   }, [shareToken]);

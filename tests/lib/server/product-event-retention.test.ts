@@ -12,6 +12,7 @@ describe("product event retention", () => {
     );
 
     expect(String(prepare.mock.calls[0][0])).toContain("product_events");
+    expect(String(prepare.mock.calls[0][0])).toContain("expires_at <=");
     expect(String(prepare.mock.calls[0][0])).toContain("-180 days");
     expect(run).toHaveBeenCalledOnce();
   });

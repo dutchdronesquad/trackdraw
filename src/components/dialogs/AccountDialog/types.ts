@@ -5,7 +5,8 @@ export type AccountDialogProps = {
   mobile?: boolean;
 };
 
-export type AccountDialogView = "profile" | "security" | "apiKeys" | "danger";
+export type AccountDialogView =
+  "profile" | "security" | "privacy" | "apiKeys" | "danger";
 
 export type AccountApiKey = {
   id: string;
