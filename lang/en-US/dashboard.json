@@ -44,7 +44,9 @@
     "notAvailable": "not available",
     "headlines": {
       "title": "Product headlines",
-      "description": "A compact view of creation, useful outcomes, returning creators, and published reach. Open any metric for analytical context."
+      "description": "Creation, useful outcomes, returning creators, and published reach without duplicating the analytical dashboard.",
+      "buildingTitle": "Product comparisons are building",
+      "buildingDetail": "Headline values will appear after complete measurement periods are available. The analytical drilldowns remain available while history builds."
     },
     "kpis": {
       "MTR-001": {
@@ -87,6 +89,9 @@
     "operations": {
       "title": "Operational actions",
       "description": "Current work that can be verified from TrackDraw's own operational and privacy-safe metric data.",
+      "allClear": "No operational action needed",
+      "clearSummary": "{count, plural, one {# other check is clear} other {# other checks are clear}}",
+      "clearDetail": "Healthy checks stay compact so current work remains easy to spot.",
       "previews": {
         "label": "Gallery previews",
         "detail": "Published gallery entries without a stored preview image.",

@@ -212,6 +212,13 @@ export default async function DailyCockpit({
       action: t("operations.pipeline.action"),
     },
   ] as const;
+  const actionableOperations = operations.filter(
+    (operation) => operation.count > 0
+  );
+  const clearOperationCount = operations.length - actionableOperations.length;
+  const hasHeadlineData = data.headlines.some(
+    (metric) => metric.current !== null || metric.live !== null
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-6 p-3 pt-0 sm:p-4 sm:pt-0">
@@ -222,35 +229,11 @@ export default async function DailyCockpit({
         </p>
       </header>
 
-      <section aria-labelledby="cockpit-headlines" className="space-y-3">
-        <div>
-          <h2 id="cockpit-headlines" className="text-base font-semibold">
-            {t("headlines.title")}
+      {data.warning ? (
+        <section aria-labelledby="cockpit-signal" className="space-y-3">
+          <h2 id="cockpit-signal" className="sr-only">
+            {t("warning.sectionTitle")}
           </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t("headlines.description")}
-          </p>
-        </div>
-        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {data.headlines.map((metric, index) => (
-            <Reveal key={metric.id} delay={index * 0.04}>
-              <HeadlineCard
-                metric={metric}
-                number={number}
-                percent={percent}
-                date={date}
-                t={t}
-              />
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section aria-labelledby="cockpit-signal" className="space-y-3">
-        <h2 id="cockpit-signal" className="sr-only">
-          {t("warning.sectionTitle")}
-        </h2>
-        {data.warning ? (
           <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
             <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
               <TriangleAlert className="size-4" aria-hidden="true" />
@@ -280,20 +263,8 @@ export default async function DailyCockpit({
               </p>
             </div>
           </div>
-        ) : (
-          <div className="bg-card flex items-start gap-3 rounded-xl border p-4">
-            <span className="bg-muted text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg">
-              <ShieldCheck className="size-4" aria-hidden="true" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold">{t("warning.noneTitle")}</p>
-              <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-                {t("warning.noneDetail")}
-              </p>
-            </div>
-          </div>
-        )}
-      </section>
+        </section>
+      ) : null}
 
       <section aria-labelledby="cockpit-operations" className="space-y-3">
         <div>
@@ -305,16 +276,16 @@ export default async function DailyCockpit({
           </p>
         </div>
         <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-          {operations.map((operation) => {
+          {actionableOperations.map((operation) => {
             const Icon = operation.icon;
             return (
               <Link
                 key={operation.key}
                 href={operation.href}
                 prefetch={false}
-                className="bg-card hover:border-foreground/20 focus-visible:ring-ring group flex items-start gap-3 rounded-xl border p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                className="bg-card focus-visible:ring-ring group flex items-start gap-3 rounded-xl border border-amber-500/25 p-4 transition-colors hover:border-amber-500/40 focus-visible:ring-2 focus-visible:outline-none"
               >
-                <span className="bg-muted text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg">
+                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300">
                   <Icon className="size-4" aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -340,7 +311,84 @@ export default async function DailyCockpit({
               </Link>
             );
           })}
+          {clearOperationCount > 0 ? (
+            <div
+              className={`bg-muted/35 flex items-start gap-3 rounded-xl border border-dashed p-4 ${actionableOperations.length === 0 ? "sm:col-span-2" : ""}`}
+            >
+              <span className="bg-background text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg border">
+                <ShieldCheck className="size-4" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">
+                  {actionableOperations.length === 0
+                    ? t("operations.allClear")
+                    : t("operations.clearSummary", {
+                        count: clearOperationCount,
+                      })}
+                </p>
+                <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                  {t("operations.clearDetail")}
+                </p>
+              </div>
+            </div>
+          ) : null}
         </div>
+      </section>
+
+      <section aria-labelledby="cockpit-headlines" className="space-y-3">
+        <div>
+          <h2 id="cockpit-headlines" className="text-base font-semibold">
+            {t("headlines.title")}
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {t("headlines.description")}
+          </p>
+        </div>
+        {hasHeadlineData ? (
+          <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {data.headlines.map((metric, index) => (
+              <Reveal key={metric.id} delay={index * 0.04}>
+                <HeadlineCard
+                  metric={metric}
+                  number={number}
+                  percent={percent}
+                  date={date}
+                  t={t}
+                />
+              </Reveal>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-card flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-start">
+            <span className="bg-muted text-muted-foreground inline-flex size-9 shrink-0 items-center justify-center rounded-lg">
+              <RefreshCcw className="size-4" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">
+                {t("headlines.buildingTitle")}
+              </p>
+              <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                {t("headlines.buildingDetail")}
+              </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                {data.headlines.map((metric) => (
+                  <Link
+                    key={metric.id}
+                    href={metric.drilldown}
+                    prefetch={false}
+                    className="hover:bg-muted focus-visible:ring-ring group flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    {t(`kpis.${metric.id}.label`)}
+                    <ArrowRight
+                      className="text-muted-foreground size-3 shrink-0 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </main>
   );
