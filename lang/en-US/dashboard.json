@@ -38,6 +38,79 @@
     "sharesIntro": "Every share link, public or private. View, copy, revoke, or permanently delete share access.",
     "emailPreview": "Email Preview"
   },
+  "cockpit": {
+    "title": "Daily management cockpit",
+    "liveStamp": "Live context through {time} (Europe/Amsterdam). Headline comparisons use complete UTC periods.",
+    "notAvailable": "not available",
+    "headlines": {
+      "title": "Product headlines",
+      "description": "A compact view of creation, useful outcomes, returning creators, and published reach. Open any metric for analytical context."
+    },
+    "kpis": {
+      "MTR-001": {
+        "label": "Active creators"
+      },
+      "MTR-004": {
+        "label": "Valuable-session rate"
+      },
+      "MTR-005": {
+        "label": "30-day returning creators"
+      },
+      "MTR-006": {
+        "label": "Published browser sessions"
+      },
+      "openDrilldown": "Open analytical context for {metric}",
+      "rateCounts": "{numerator} of {denominator}",
+      "previousPeriod": "Previous period",
+      "comparisonBuilding": "Comparison building",
+      "liveContext": "Live window incl. today",
+      "latestMatureCohort": "Latest mature cohort",
+      "contractMeta": "{id} · {window}-day window · measured since {date} · owner: Product",
+      "drilldown": "View analytical context"
+    },
+    "quality": {
+      "not_started": "Not started",
+      "building": "Building",
+      "low_volume": "Low volume",
+      "healthy": "Healthy",
+      "degraded": "Degraded",
+      "invalid": "Invalid"
+    },
+    "warning": {
+      "sectionTitle": "Product signal",
+      "title": "Reliable product warning",
+      "detail": "{metric} is {current}, compared with a historical median of {baseline}. This signal has complete coverage, sufficient volume, and eight healthy comparison periods.",
+      "noneTitle": "No reliable product warning",
+      "noneDetail": "Immature, incomplete, and low-volume movement is deliberately suppressed. Counts remain visible above while trustworthy comparison history builds.",
+      "operationFallback": "Categorized operation failure rate"
+    },
+    "operations": {
+      "title": "Operational actions",
+      "description": "Current work that can be verified from TrackDraw's own operational and privacy-safe metric data.",
+      "previews": {
+        "label": "Gallery previews",
+        "detail": "Published gallery entries without a stored preview image.",
+        "action": "Review gallery entries"
+      },
+      "failures": {
+        "label": "Publication and export failures",
+        "detail": "{export} export · {publication} gallery publication failures in the latest complete 7-day window.",
+        "action": "Review operational metrics",
+        "exportLabel": "Export failure rate",
+        "publicationLabel": "Gallery publication failure rate"
+      },
+      "apiKeys": {
+        "label": "API keys to review",
+        "detail": "{unused} active keys unused after 30 days · {expired} enabled but expired.",
+        "action": "Review API keys"
+      },
+      "pipeline": {
+        "label": "Analytics pipeline gaps",
+        "detail": "{building} metric series are still building and are not treated as incidents.",
+        "action": "Review measurement health"
+      }
+    }
+  },
   "overview": {
     "kpi": {
       "totalUsers": {

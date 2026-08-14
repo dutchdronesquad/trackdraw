@@ -19,6 +19,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Reveal, RevealListItem } from "@/components/motion/Reveal";
+import DailyCockpit from "@/components/dashboard/DailyCockpit";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
@@ -29,6 +30,7 @@ import {
   type DashboardGalleryEntry,
 } from "@/lib/server/gallery";
 import { getOverviewStats, type RecentUser } from "@/lib/server/metrics";
+import { getDailyCockpit } from "@/lib/server/dashboard-cockpit";
 
 // --- Helpers ---
 
@@ -374,6 +376,19 @@ export default async function DashboardPage() {
 
   if (!actor || !hasCapability(actor.role, "dashboard.overview.read")) {
     notFound();
+  }
+
+  if (hasCapability(actor.role, "admin.metrics.read")) {
+    const [cockpit, tPages] = await Promise.all([
+      getDailyCockpit(),
+      getTranslations("dashboard.pages"),
+    ]);
+    return (
+      <>
+        <DashboardSiteHeader title={tPages("overview")} />
+        <DailyCockpit data={cockpit} />
+      </>
+    );
   }
 
   const canReadAudit = hasCapability(actor.role, "audit.read");

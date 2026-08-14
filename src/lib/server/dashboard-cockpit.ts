@@ -1,0 +1,192 @@
+import "server-only";
+
+import {
+  buildCockpitHeadlineMetrics,
+  selectReliableProductWarning,
+  type CockpitHeadlineMetric,
+  type ReliableProductWarning,
+} from "@/lib/dashboard-cockpit";
+import { getDatabase } from "@/lib/server/db";
+import {
+  getProductMetricMeasurementStates,
+  getProductMetricSeries,
+  type ProductMetricDailyRow,
+  type ProductMetricId,
+  type ProductMetricMeasurementState,
+} from "@/lib/server/product-metric-aggregates";
+
+export type DailyCockpitOperations = {
+  missingGalleryPreviews: number;
+  exportFailures: number;
+  publicationFailures: number;
+  unusedApiKeys: number;
+  expiredApiKeys: number;
+  analyticsPipelineGaps: number;
+  buildingMetrics: number;
+};
+
+export type DailyCockpitHeadlineMetric = CockpitHeadlineMetric & {
+  measuredSince: string | null;
+};
+
+export type DailyCockpitData = {
+  generatedAt: string;
+  headlines: DailyCockpitHeadlineMetric[];
+  warning: ReliableProductWarning | null;
+  operations: DailyCockpitOperations;
+};
+
+const SERIES_RANGES: ReadonlyArray<{
+  metricId: ProductMetricId;
+  historyDays: number;
+}> = [
+  { metricId: "MTR-001", historyDays: 70 },
+  { metricId: "MTR-004", historyDays: 70 },
+  { metricId: "MTR-005", historyDays: 260 },
+  { metricId: "MTR-006", historyDays: 70 },
+  { metricId: "MTR-010", historyDays: 70 },
+];
+
+function utcDay(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addUtcDays(day: string, amount: number) {
+  const date = new Date(`${day}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + amount);
+  return utcDay(date);
+}
+
+function latestCompleteRows(rows: ProductMetricDailyRow[]) {
+  const day = rows
+    .filter((row) => row.completeness_state === "complete")
+    .sort((left, right) =>
+      right.day_utc.localeCompare(left.day_utc)
+    )[0]?.day_utc;
+  return day ? rows.filter((row) => row.day_utc === day) : [];
+}
+
+function failureCount(rows: ProductMetricDailyRow[], operation: string) {
+  return latestCompleteRows(rows)
+    .filter((row) => row.dimension.startsWith(`${operation}:`))
+    .reduce((total, row) => total + row.numerator, 0);
+}
+
+function hasPipelineGap(
+  state: ProductMetricMeasurementState,
+  lastCompleteDay: string
+) {
+  if (
+    state.completeness_state === "invalid" ||
+    state.completeness_state === "incomplete"
+  ) {
+    return true;
+  }
+  if (state.measured_since > lastCompleteDay) return false;
+  return state.last_aggregated_day !== lastCompleteDay;
+}
+
+export async function getDailyCockpit(
+  now = new Date()
+): Promise<DailyCockpitData> {
+  const db = await getDatabase();
+  const today = utcDay(now);
+  const toExclusive = addUtcDays(today, 1);
+
+  const [seriesPairs, states, previewRow, apiKeyRow] = await Promise.all([
+    Promise.all(
+      SERIES_RANGES.map(
+        async ({ metricId, historyDays }) =>
+          [
+            metricId,
+            await getProductMetricSeries(
+              db,
+              metricId,
+              addUtcDays(today, -historyDays),
+              toExclusive,
+              now
+            ),
+          ] as const
+      )
+    ),
+    getProductMetricMeasurementStates(db),
+    db
+      .prepare(
+        `select count(*) as count
+         from gallery_entries
+         where gallery_state in ('listed', 'featured')
+           and (gallery_preview_image is null or trim(gallery_preview_image) = '')`
+      )
+      .first<{ count: number }>(),
+    db
+      .prepare(
+        `select
+           coalesce(sum(case
+             when enabled = 1
+               and (expiresAt is null or expiresAt > ?)
+               and lastRequest is null
+               and createdAt <= ?
+             then 1 else 0 end), 0) as unused,
+           coalesce(sum(case
+             when enabled = 1 and expiresAt is not null and expiresAt <= ?
+             then 1 else 0 end), 0) as expired
+         from apikey`
+      )
+      .bind(now.toISOString(), addUtcDays(today, -30), now.toISOString())
+      .first<{ unused: number; expired: number }>(),
+  ]);
+
+  const series = Object.fromEntries(seriesPairs) as Partial<
+    Record<ProductMetricId, ProductMetricDailyRow[]>
+  >;
+  const builtHeadlines = buildCockpitHeadlineMetrics(series, now);
+  const headlines = builtHeadlines.map((headline) => {
+    const state = states.find((entry) => entry.metric_id === headline.id);
+    if (state?.completeness_state === "invalid") {
+      return {
+        ...headline,
+        current: null,
+        previous: null,
+        comparisonReady: false,
+        quality: "invalid" as const,
+        measuredSince: state.measured_since,
+      };
+    }
+    if (state?.completeness_state === "incomplete") {
+      return {
+        ...headline,
+        previous: null,
+        comparisonReady: false,
+        quality: "degraded" as const,
+        measuredSince: state.measured_since,
+      };
+    }
+    return {
+      ...headline,
+      measuredSince: state?.measured_since ?? null,
+    };
+  });
+  const failureRows = series["MTR-010"] ?? [];
+  const lastCompleteDay = addUtcDays(today, -1);
+
+  return {
+    generatedAt: now.toISOString(),
+    headlines,
+    warning: selectReliableProductWarning(series, builtHeadlines),
+    operations: {
+      missingGalleryPreviews: Number(previewRow?.count ?? 0),
+      exportFailures: failureCount(failureRows, "export"),
+      publicationFailures: failureCount(failureRows, "gallery_publish"),
+      unusedApiKeys: Number(apiKeyRow?.unused ?? 0),
+      expiredApiKeys: Number(apiKeyRow?.expired ?? 0),
+      analyticsPipelineGaps: states.filter((state) =>
+        hasPipelineGap(state, lastCompleteDay)
+      ).length,
+      buildingMetrics: states.filter(
+        (state) =>
+          state.completeness_state === "building" ||
+          state.completeness_state === "not_started"
+      ).length,
+    },
+  };
+}
