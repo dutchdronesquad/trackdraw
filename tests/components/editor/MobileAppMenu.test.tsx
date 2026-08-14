@@ -71,6 +71,7 @@ function renderMenu() {
   const props: React.ComponentProps<typeof MobileAppMenu> = {
     defaultOpen: true,
     onExport: vi.fn(),
+    onFeedback: vi.fn(),
     onImport: vi.fn(),
     onOpenProjects: vi.fn(),
     onShare: vi.fn(),
@@ -94,6 +95,7 @@ describe("MobileAppMenu", () => {
       /Share.*Publish a read-only link/,
       /Import.*Bring in a JSON project file/,
       /Export.*Download PNG, PDF, SVG or JSON/,
+      /Feedback & support.*Report a problem, share an idea or ask for help/,
     ]) {
       expect(screen.getByRole("button", { name }).className).toContain(
         "min-h-14"
@@ -131,6 +133,7 @@ describe("MobileAppMenu", () => {
     const user = userEvent.setup();
     const props = {
       onExport: vi.fn(),
+      onFeedback: vi.fn(),
       onImport: vi.fn(),
       onMenuOpenChange: vi.fn(),
       onOpenProjects: vi.fn(),
@@ -149,6 +152,10 @@ describe("MobileAppMenu", () => {
       [/Share.*Publish a read-only link/, props.onShare],
       [/Import.*Bring in a JSON project file/, props.onImport],
       [/Export.*Download PNG, PDF, SVG or JSON/, props.onExport],
+      [
+        /Feedback & support.*Report a problem, share an idea or ask for help/,
+        props.onFeedback,
+      ],
     ] as const) {
       render(<MobileAppMenu {...props} defaultOpen />);
       await user.click(screen.getByRole("button", { name }));

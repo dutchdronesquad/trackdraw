@@ -51,6 +51,7 @@ function renderMobilePanels(
     onSetMobileObstacleNumbersEnabled: vi.fn(),
     onSetMobileRulersEnabled: vi.fn(),
     onShare: vi.fn(),
+    onFeedback: vi.fn(),
     onStartFlyThrough: vi.fn(),
     onTabChange: vi.fn(),
     onSetReadOnlyMenuOpen: vi.fn(),

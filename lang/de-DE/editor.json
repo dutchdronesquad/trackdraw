@@ -107,6 +107,7 @@
     "retrySync": "Kontosynchronisierung erneut versuchen ({status})",
     "share": "Teilen",
     "export": "Exportieren",
+    "feedbackSupport": "Feedback und Hilfe",
     "openAppMenu": "App-Menü öffnen",
     "hideObstacleNumbers": "Hindernisnummern ausblenden",
     "showObstacleNumbers": "Hindernisnummern anzeigen"
@@ -137,6 +138,9 @@
     "importDescription": "Eine JSON-Projektdatei einlesen",
     "exportLabel": "Exportieren",
     "exportDescription": "PNG, PDF, SVG oder JSON herunterladen",
+    "supportSection": "Hilfe",
+    "feedbackLabel": "Feedback und Hilfe",
+    "feedbackDescription": "Problem melden, Idee teilen oder Hilfe anfordern",
     "themeLabel": "Design",
     "themeDescription": "Hell, dunkel oder System wechseln",
     "signOut": "Abmelden",
@@ -319,6 +323,11 @@
         "sectionLabel": "Teilen",
         "editableCopy": "Bearbeitbare Kopie",
         "shareButton": "Teilen"
+      },
+      "support": {
+        "sectionLabel": "Hilfe",
+        "label": "Feedback und Hilfe",
+        "description": "Problem melden, Idee teilen oder Hilfe anfordern"
       }
     },
     "multiSelect": {

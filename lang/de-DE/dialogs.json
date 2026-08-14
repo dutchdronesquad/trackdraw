@@ -1,4 +1,43 @@
 {
+  "feedback": {
+    "title": "Feedback und Hilfe",
+    "subtitle": "Wähle den passenden Weg für dein Anliegen.",
+    "formSubtitle": "Prüfe genau, was gesendet wird, bevor GitHub geöffnet wird.",
+    "back": "Anderen Weg wählen",
+    "privateLater": "GitHub-Meldungen sind öffentlich und erfordern ein GitHub-Konto. Privates Feedback in TrackDraw folgt später; vorerst kannst du die Meldung kopieren.",
+    "titleLabel": "Kurzer Titel",
+    "detailsLabel": "Details",
+    "stepsLabel": "Schritte zum Reproduzieren (optional)",
+    "stepsPlaceholder": "1. Öffnen…\n2. Auswählen…\n3. Das Problem tritt auf…",
+    "contextLabel": "Grobe Produktinformationen einschließen",
+    "contextDescription": "Version {version}, {routeFamily}, {browser}, {device}. Keine Projekt-, Freigabe-, Konto- oder Designdaten.",
+    "previewLabel": "Vorschau der öffentlichen Meldung",
+    "previewEmpty": "Füge einen Titel und Details hinzu.",
+    "publicWarning": "GitHub-Issues sind öffentlich. Prüfe die Vorschau und entferne alles, was du nicht veröffentlichen möchtest.",
+    "copy": "Meldung kopieren",
+    "copied": "Kopiert",
+    "openGitHub": "Auf GitHub prüfen",
+    "categories": {
+      "bug": {
+        "title": "Problem melden",
+        "description": "Etwas ist defekt, unklar oder verhält sich unerwartet.",
+        "titlePlaceholder": "Was ist schiefgelaufen?",
+        "detailsPlaceholder": "Was hast du erwartet und was ist stattdessen passiert?"
+      },
+      "idea": {
+        "title": "Idee teilen",
+        "description": "Schlage eine Verbesserung oder neue Möglichkeit vor.",
+        "titlePlaceholder": "Fasse deine Idee zusammen",
+        "detailsPlaceholder": "Welches Problem würde dies lösen und wann würdest du es nutzen?"
+      },
+      "question": {
+        "title": "Hilfe anfordern",
+        "description": "Frage nach einem Ablauf oder etwas, das du nicht findest.",
+        "titlePlaceholder": "Wobei brauchst du Hilfe?",
+        "detailsPlaceholder": "Beschreibe dein Ziel und wo du nicht weiterkommst."
+      }
+    }
+  },
   "account": {
     "dialog": {
       "eyebrow": "Studio",
@@ -746,15 +785,15 @@
         "noShares": "Keine aktiven Freigaben",
         "description": "Über Konten veröffentlichte Links bleiben aktiv, bis sie widerrufen werden. Temporäre anonyme Links laufen automatisch ab und werden hier nicht verwaltet."
       },
-      "lifetime": {
-        "published": "schreibgeschützter veröffentlichter Link, aktiv bis zum Widerruf",
-        "temporary": "schreibgeschützter temporärer Link, {expiresIn}"
-      },
-      "referrers": {
-        "label": "Erkannte Embed-Websites · letzte 30 Tage",
-        "item": "{hostname} ({views})"
-      },
-      "actions": {
+    "lifetime": {
+      "published": "schreibgeschützter veröffentlichter Link, aktiv bis zum Widerruf",
+      "temporary": "schreibgeschützter temporärer Link, {expiresIn}"
+    },
+    "referrers": {
+      "label": "Erkannte Embed-Websites · letzte 30 Tage",
+      "item": "{hostname} ({views})"
+    },
+    "actions": {
         "copyLink": "Link kopieren",
         "openTab": "In neuem Tab öffnen",
         "revokeLink": "Link widerrufen"

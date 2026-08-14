@@ -57,6 +57,10 @@ import { trackProductEvent } from "@/lib/product-events";
 
 const Header = dynamic(() => import("./Header"), { ssr: false });
 const SharedHeader = dynamic(() => import("./viewer/Header"), { ssr: false });
+const FeedbackDialog = dynamic(
+  () => import("@/components/dialogs/FeedbackDialog"),
+  { ssr: false }
+);
 const Toolbar = dynamic(() => import("./Toolbar"), { ssr: false });
 const PerformanceHud = dynamic(() => import("./PerformanceHud"), {
   ssr: false,
@@ -190,6 +194,7 @@ export default function EditorShell({
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [mobileViewOpen, setMobileViewOpen] = useState(false);
   const [readOnlyMenuOpen, setReadOnlyMenuOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [mobileRulersEnabled, setMobileRulersEnabled] = useState(false);
   const [mobileGizmoEnabled, setMobileGizmoEnabled] = useState(!readOnly);
   const [showObstacleNumbers, setShowObstacleNumbers] = useState(readOnly);
@@ -584,6 +589,9 @@ export default function EditorShell({
               onToggleObstacleNumbers={() =>
                 setShowObstacleNumbers((current) => !current)
               }
+              onFeedback={() => {
+                setFeedbackOpen(true);
+              }}
             />
           ) : (
             <Header
@@ -905,6 +913,10 @@ export default function EditorShell({
               setShareOpen(true);
               setReadOnlyMenuOpen(false);
             }}
+            onFeedback={() => {
+              setReadOnlyMenuOpen(false);
+              setFeedbackOpen(true);
+            }}
             onStartFlyThrough={() => {
               handleTabChange("3d");
               setPendingFlyThroughStart(true);
@@ -1007,6 +1019,8 @@ export default function EditorShell({
           onOpenCloudConflictVersion={handleOpenCloudConflictVersion}
           onKeepLocalConflictCopy={handleKeepLocalConflictCopy}
         />
+
+        <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
 
         {developerModeEnabled ? <PerformanceHud /> : null}
       </div>

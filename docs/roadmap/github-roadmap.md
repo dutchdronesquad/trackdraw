@@ -47,6 +47,19 @@ The next TrackDraw priority is generated flightpath validation first, translatio
   - [x] Scheduled cleanup isolation and reporting
         Ensure share, API-key, and product-event retention tasks complete independently, remain idempotent, emit a structured result per task, and have focused coverage for partial failures so one rejection cannot cut short the other cleanup work.
 
+- [ ] Product feedback and GitHub issue handoff (`No account required`, `Account-backed`)
+      Add one recognizable `Feedback & support` entry for anonymous and signed-in users. Keep ideas and private problem reports lightweight, and send technical users to a previewable, prefilled public GitHub issue flow without exposing project or identity data.
+  - [x] Feedback entry and routing
+        Studio and read-only/share viewers now expose a consistent desktop and mobile entry with problem, idea, and question routes without requiring a TrackDraw account. Users can review and copy a report or continue to GitHub; private submission remains the separate item below.
+  - [x] Privacy-safe GitHub handoff
+        Prefill only a removable title, category, TrackDraw version, route family, browser, and device context. Warn that GitHub issues are public and never include project data, share tokens, API keys, email addresses, or report text without the user's review.
+  - [ ] Private feedback submission
+        Provide a small in-product alternative for people without GitHub, with explicit opt-in contact details, clear success and retry/copy states, abuse protection, rate limiting, retention, and privacy-safe dashboard triage.
+  - [ ] Feedback funnel measurement
+        Define closed, versioned product-event schemas before measuring coarse steps such as entry opened, route selected, GitHub handoff started, and private submission completed. Keep report bodies out of product analytics and do not use the legacy free-form metadata model.
+  - [ ] Operator follow-up
+        Let operators label, close, or link private reports to a public GitHub issue without automatically publishing user text. Keep screenshots and diagnostic attachments out until upload, privacy, retention, and deletion rules are defined.
+
 - [ ] Translation management workflow (`Research`)
       Evaluate hosted Crowdin versus self-hosted Weblate so TrackDraw can keep English, Dutch, German, Simplified Chinese, and upcoming contributor languages manageable without forcing translators to edit JSON by hand. Keep `dashboard` and `legal` English-only, preserve PR-based review, and keep locale catalogs out of the Worker bundle. Research document: `docs/research/translation-management.md`.
   - [ ] Hosted versus self-hosted decision

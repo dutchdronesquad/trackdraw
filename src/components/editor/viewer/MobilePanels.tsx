@@ -19,6 +19,7 @@ export interface MobilePanelsProps {
   onSetMobileObstacleNumbersEnabled: (enabled: boolean) => void;
   onSetMobileRulersEnabled: (enabled: boolean) => void;
   onShare: () => void;
+  onFeedback: () => void;
   onStartFlyThrough: () => void;
   onTabChange: (tab: "2d" | "3d") => void;
   onSetReadOnlyMenuOpen: (open: boolean) => void;
@@ -40,6 +41,7 @@ export default function MobilePanels({
   onSetMobileObstacleNumbersEnabled,
   onSetMobileRulersEnabled,
   onShare,
+  onFeedback,
   onStartFlyThrough,
   onTabChange,
   onSetReadOnlyMenuOpen,
@@ -117,6 +119,7 @@ export default function MobilePanels({
           onSetMobileObstacleNumbersEnabled={onSetMobileObstacleNumbersEnabled}
           onSetMobileRulersEnabled={onSetMobileRulersEnabled}
           onShare={onShare}
+          onFeedback={onFeedback}
           onStartFlyThrough={onStartFlyThrough}
           onTabChange={onTabChange}
           saveStatusLabel={saveStatusLabel}

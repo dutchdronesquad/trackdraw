@@ -25,6 +25,7 @@ import {
   Keyboard,
   LoaderCircle,
   Menu,
+  MessageCircle,
   PanelLeftClose,
   PanelLeftOpen,
   Save,
@@ -48,6 +49,11 @@ const AccountDialog = dynamic(
   {
     ssr: false,
   }
+);
+
+const FeedbackDialog = dynamic(
+  () => import("@/components/dialogs/FeedbackDialog"),
+  { ssr: false }
 );
 
 const ThemeToggle = dynamic(
@@ -137,6 +143,7 @@ export default function Header({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [showMobileAppMenu, setShowMobileAppMenu] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [manualAccountOpen, setManualAccountOpen] = useState(false);
   const [manualAccountInitialView, setManualAccountInitialView] =
     useState<AccountDialogView>("profile");
@@ -181,6 +188,10 @@ export default function Header({
           ? t("statusSyncing")
           : t("statusSynced");
   const canRetryStatus = statusTone === "error" && Boolean(onRetrySync);
+
+  const openFeedback = () => {
+    setFeedbackOpen(true);
+  };
   const headerActionClass =
     "text-muted-foreground hover:bg-muted hover:text-foreground hidden h-8 cursor-pointer gap-1.5 px-2 text-xs lg:inline-flex lg:h-7 lg:px-2.5";
 
@@ -466,6 +477,17 @@ export default function Header({
             <span>{t("share")}</span>
           </button>
 
+          <Tooltip>
+            <TooltipTrigger
+              onClick={openFeedback}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 items-center justify-center rounded-md transition-colors lg:flex"
+              aria-label={t("feedbackSupport")}
+            >
+              <MessageCircle className="size-3.5" />
+            </TooltipTrigger>
+            <TooltipContent>{t("feedbackSupport")}</TooltipContent>
+          </Tooltip>
+
           {!readOnly && onImport && onExport && onOpenProjectManager ? (
             showMobileAppMenu ? (
               <MobileAppMenu
@@ -484,6 +506,7 @@ export default function Header({
                 onImport={onImport}
                 onExport={onExport}
                 onShare={onShare}
+                onFeedback={openFeedback}
               />
             ) : (
               <button
@@ -516,6 +539,7 @@ export default function Header({
         initialView={accountInitialView}
         mobile
       />
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </>
   );
 }

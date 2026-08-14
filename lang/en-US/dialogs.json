@@ -1,4 +1,43 @@
 {
+  "feedback": {
+    "title": "Feedback & support",
+    "subtitle": "Choose the route that best matches what you want to share.",
+    "formSubtitle": "Review exactly what will be sent before opening GitHub.",
+    "back": "Choose another route",
+    "privateLater": "GitHub reports are public and require a GitHub account. Private in-product submission will follow in a later slice; for now you can copy your report instead.",
+    "titleLabel": "Short title",
+    "detailsLabel": "Details",
+    "stepsLabel": "Steps to reproduce (optional)",
+    "stepsPlaceholder": "1. Open…\n2. Select…\n3. The problem appears…",
+    "contextLabel": "Include coarse product context",
+    "contextDescription": "Version {version}, {routeFamily}, {browser}, {device}. No project, share, account, or design data.",
+    "previewLabel": "Public report preview",
+    "previewEmpty": "Add a title and details to prepare the report.",
+    "publicWarning": "GitHub issues are public. Review the preview and remove anything you do not want to publish.",
+    "copy": "Copy report",
+    "copied": "Copied",
+    "openGitHub": "Review on GitHub",
+    "categories": {
+      "bug": {
+        "title": "Report a problem",
+        "description": "Something is broken, confusing, or behaving unexpectedly.",
+        "titlePlaceholder": "What went wrong?",
+        "detailsPlaceholder": "What did you expect, and what happened instead?"
+      },
+      "idea": {
+        "title": "Share an idea",
+        "description": "Suggest an improvement or a new way TrackDraw could help.",
+        "titlePlaceholder": "Summarize your idea",
+        "detailsPlaceholder": "What problem would this solve, and when would you use it?"
+      },
+      "question": {
+        "title": "Ask for help",
+        "description": "Ask about a workflow or something you cannot find.",
+        "titlePlaceholder": "What do you need help with?",
+        "detailsPlaceholder": "Describe what you are trying to do and where you get stuck."
+      }
+    }
+  },
   "account": {
     "dialog": {
       "eyebrow": "Studio",
@@ -751,15 +790,15 @@
         "noShares": "No active shares",
         "description": "Account-published links stay live until revoked. Temporary anonymous links expire automatically and are not managed here."
       },
-      "lifetime": {
-        "published": "read-only published link, live until revoked",
-        "temporary": "read-only temporary link, {expiresIn}"
-      },
-      "referrers": {
-        "label": "Detected embed sites · last 30 days",
-        "item": "{hostname} ({views})"
-      },
-      "actions": {
+    "lifetime": {
+      "published": "read-only published link, live until revoked",
+      "temporary": "read-only temporary link, {expiresIn}"
+    },
+    "referrers": {
+      "label": "Detected embed sites · last 30 days",
+      "item": "{hostname} ({views})"
+    },
+    "actions": {
         "copyLink": "Copy link",
         "openTab": "Open in new tab",
         "revokeLink": "Revoke link"
