@@ -48,6 +48,14 @@ describe("product metric aggregates", () => {
     expect(aggregate.sql).toContain(
       "datetime((select end_at from bounds), '+30 days')"
     );
+    const primaryMetricRows = aggregate.sql.match(
+      /metric_rows_primary[\s\S]*?metric_rows_secondary/
+    )?.[0];
+    const secondaryMetricRows = aggregate.sql.match(
+      /metric_rows_secondary[\s\S]*?metric_rows as/
+    )?.[0];
+    expect(primaryMetricRows?.match(/union all/g)).toHaveLength(4);
+    expect(secondaryMetricRows?.match(/union all/g)).toHaveLength(4);
     expect(aggregate.sql).not.toContain("project_id as");
     expect(aggregate.bind).toHaveBeenCalledWith(
       "2026-08-13",
