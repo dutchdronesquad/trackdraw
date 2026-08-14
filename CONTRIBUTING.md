@@ -141,6 +141,8 @@ npm run migrate:up:production
 
 During the Crowdin pilot, English source copy remains in `lang/en-US/` and normal feature pull requests. Dutch (`lang/nl-NL/`), German (`lang/de-DE/`), and Simplified Chinese (`lang/zh-CN/`) are maintained in Crowdin and return through localization pull requests; do not edit those target catalogs directly outside a production emergency. Generated locale assets use the same regional directory names. Product locale identifiers stored by the frontend remain the shorter `en`, `nl`, `de`, and `zh-CN` values.
 
+This applies to AI-assisted feature work too: coding agents should add or change only the English source messages. Crowdin automatically creates the initial AI/machine translations for newly uploaded source strings. A dedicated translator is not required for every update; a maintainer can release generated translations after Crowdin QA and a lightweight review, and human contributors can improve them later. Keeping generation inside Crowdin preserves its glossary, translation memory, QA history, and human corrections.
+
 New English keys do not need placeholder copies in every target catalog. Missing target messages safely fall back to English in local server catalogs and generated locale assets. Run these checks when changing product copy:
 
 ```bash
@@ -150,7 +152,9 @@ npm run i18n:scan-hardcoded
 
 The integrity check allows missing target keys but still rejects missing namespace files, stale extra keys, empty target values, and placeholder mismatches. `dashboard` and `legal` remain English-only and are excluded from Crowdin. See [the Crowdin pilot runbook](docs/research/crowdin-pilot.md) for ownership, synchronization, and rollback.
 
-The repository-owned `Crowdin` GitHub Action uploads changed English sources after they reach `main`. Maintainers can also run it manually to open or update the translation pull request. It exports only translated target strings, uses the repository-scoped GitHub token, and attributes generated commits to `Crowdin Bot` rather than the maintainer who configured Crowdin.
+The repository-owned `Crowdin` GitHub Action uploads changed English sources after they reach `main`. The Crowdin project should auto-translate newly uploaded, untranslated content without replacing existing human translations, as described in the pilot runbook. Maintainers can run the workflow manually, preferably once per week or before a release, to open or update the translation pull request. It exports only translated target strings, uses the repository-scoped GitHub token, and attributes generated commits to `Crowdin Bot` rather than the maintainer who configured Crowdin.
+
+If target catalogs were edited locally by mistake, do not merge them as an independent translation source. Either discard those target-only edits or perform an explicit one-time import and review in Crowdin, then resume the normal Crowdin-owned flow.
 
 ## Validation
 
