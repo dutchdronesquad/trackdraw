@@ -53,6 +53,7 @@ function MenuRow({
   return (
     <MenuLink
       href={href}
+      prefetch={href === "/" ? false : undefined}
       onClick={onClick}
       className={cn(
         "hover:bg-muted/70 flex items-center gap-3 px-3 py-2.5 transition-colors",
@@ -220,6 +221,7 @@ export function PublicSiteHeader({
               <NavLink
                 key={item.key}
                 href={href}
+                prefetch={href === "/" ? false : undefined}
                 className={cn(
                   "hover:text-foreground transition-colors",
                   isActive && "text-foreground"
