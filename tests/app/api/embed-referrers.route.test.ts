@@ -53,6 +53,19 @@ describe("embed referrer API", () => {
     }
   );
 
+  it("rejects malformed JSON as a bad request", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/embed-referrers", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(mocks.recordEmbedReferrer).not.toHaveBeenCalled();
+  });
+
   it("rejects untrusted requests", async () => {
     mocks.isTrustedRequest.mockReturnValue(false);
     const response = await POST(

@@ -17,8 +17,18 @@ export async function POST(request: Request) {
     );
   }
 
+  let body: unknown;
   try {
-    const input = embedReferrerSchema.parse(await request.json());
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "Invalid embed referrer" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const input = embedReferrerSchema.parse(body);
     const hostname = normalizeEmbedReferrerHostname(input.hostname);
     if (!hostname) {
       return NextResponse.json(

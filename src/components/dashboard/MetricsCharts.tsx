@@ -1536,10 +1536,7 @@ export function EmbedReachTable({
   usage: ProductInsights["usage"];
 }) {
   const t = useTranslations("dashboard.metrics.embedReach");
-  const knownViews = usage.embedReferrers30d.reduce(
-    (total, referrer) => total + referrer.views,
-    0
-  );
+  const knownViews = usage.embedReferrerSummary30d.views;
 
   if (usage.embedReferrers30d.length === 0) {
     return (
@@ -1555,7 +1552,7 @@ export function EmbedReachTable({
         <div className="rounded-lg border p-3">
           <dt className="text-muted-foreground text-sm">{t("knownSites")}</dt>
           <dd className="mt-1 text-xl font-semibold tabular-nums">
-            {new Set(usage.embedReferrers30d.map((row) => row.hostname)).size}
+            {usage.embedReferrerSummary30d.hostnames}
           </dd>
         </div>
         <div className="rounded-lg border p-3">
@@ -1647,6 +1644,14 @@ export function EmbedReachTable({
           </tbody>
         </table>
       </div>
+      {usage.embedReferrerSummary30d.rows > usage.embedReferrers30d.length && (
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          {t("showingTop", {
+            shown: usage.embedReferrers30d.length,
+            total: usage.embedReferrerSummary30d.rows,
+          })}
+        </p>
+      )}
       <p className="text-muted-foreground text-sm leading-relaxed">
         {t("privacyNote")}
       </p>

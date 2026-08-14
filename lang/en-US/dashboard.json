@@ -359,6 +359,7 @@
       "upTrend": "Up {pct}%",
       "downTrend": "Down {pct}%",
       "empty": "No website hostname has reached the privacy threshold yet.",
+      "showingTop": "Showing the top {shown} of {total} qualifying track and website combinations.",
       "privacyNote": "Only hostnames meeting the disclosure threshold are shown. Full URLs, visitor identities, and individual browsing histories are not stored."
     },
     "editorUsage": {

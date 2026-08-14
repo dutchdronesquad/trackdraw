@@ -245,6 +245,7 @@ describe("getSharesByUserId", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-25T12:00:00.000Z"));
     mocks.prepare.mockReset();
+    mocks.getEmbedReferrersByOwner.mockReset().mockResolvedValue(new Map());
   });
 
   it("returns an empty list when no shares exist for the user", async () => {
@@ -281,6 +282,31 @@ describe("getSharesByUserId", () => {
       galleryState: "listed",
       embedReferrers30d: [],
     });
+  });
+
+  it("skips referrer aggregation when the user only has temporary shares", async () => {
+    const row = {
+      token: "tok-temporary",
+      title: "Temporary share",
+      shape_count: 4,
+      created_at: "2026-04-01T00:00:00.000Z",
+      expires_at: "2026-05-01T00:00:00.000Z",
+      project_id: null,
+      share_type: "temporary",
+      gallery_state: null,
+      gallery_title: null,
+      gallery_description: null,
+    };
+    mocks.prepare.mockReturnValue(createD1AllStatement([row]));
+
+    const result = await getSharesByUserId("user-1");
+
+    expect(result[0]).toMatchObject({
+      token: "tok-temporary",
+      shareType: "temporary",
+      embedReferrers30d: [],
+    });
+    expect(mocks.getEmbedReferrersByOwner).not.toHaveBeenCalled();
   });
 
   it("adds thresholded embed referrers to the matching owned share", async () => {

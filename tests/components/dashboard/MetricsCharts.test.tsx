@@ -91,6 +91,11 @@ const usage = {
       lastSeen: "2026-07-20",
     },
   ],
+  embedReferrerSummary30d: {
+    hostnames: 2,
+    views: 10,
+    rows: 2,
+  },
   importedShapes30d: 4,
   avgShapesPerImport30d: 4,
 } satisfies ProductInsights["usage"];
@@ -135,6 +140,14 @@ describe("metrics decision views", () => {
     ).toBeTruthy();
     expect(screen.getByText("events.example.org")).toBeTruthy();
     expect(screen.getByText("Up 75%")).toBeTruthy();
+    expect(screen.getByText("2")).toBeTruthy();
+    expect(screen.getByText("10")).toBeTruthy();
+    expect(screen.getByText("70%")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Showing the top 1 of 2 qualifying track and website combinations."
+      )
+    ).toBeTruthy();
     expect(
       screen.getByRole("link", { name: "Race day layout" }).getAttribute("href")
     ).toBe("/share/race-layout");

@@ -270,6 +270,9 @@ export async function getSharesByUserId(
 
   const shareRows = rows.results ?? [];
   if (shareRows.length === 0) return [];
+  if (!shareRows.some((row) => row.share_type === "published")) {
+    return shareRows.map((row) => mapUserShareRow(row));
+  }
 
   const referrersByShare = await getEmbedReferrersByOwner(userId);
   return shareRows.map((row) =>

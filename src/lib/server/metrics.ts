@@ -114,6 +114,11 @@ export type ProductUsageMetrics = {
     previousViews: number;
     lastSeen: string;
   }>;
+  embedReferrerSummary30d: {
+    hostnames: number;
+    views: number;
+    rows: number;
+  };
   importedShapes30d: number;
   avgShapesPerImport30d: number;
 };
@@ -595,19 +600,27 @@ export async function getProductInsights(): Promise<ProductInsights> {
     db
       .prepare(
         `
+          with thresholded as (
+            select
+              r.share_token,
+              coalesce(s.title, 'Untitled track') as share_title,
+              r.referrer_hostname,
+              sum(case when r.viewed_on >= date('now', '-29 days') then r.view_count else 0 end) as views,
+              sum(case when r.viewed_on between date('now', '-59 days') and date('now', '-30 days') then r.view_count else 0 end) as previous_views,
+              max(case when r.viewed_on >= date('now', '-29 days') then r.viewed_on end) as last_seen
+            from embed_referrer_daily r
+            inner join shares s on s.token = r.share_token
+            where r.viewed_on >= date('now', '-59 days')
+            group by r.share_token, share_title, r.referrer_hostname
+            having sum(case when r.viewed_on >= date('now', '-29 days') then r.view_count else 0 end) >= ${EMBED_REFERRER_DISCLOSURE_THRESHOLD}
+          )
           select
-            r.share_token,
-            coalesce(s.title, 'Untitled track') as share_title,
-            r.referrer_hostname,
-            sum(case when r.viewed_on >= date('now', '-29 days') then r.view_count else 0 end) as views,
-            sum(case when r.viewed_on between date('now', '-59 days') and date('now', '-30 days') then r.view_count else 0 end) as previous_views,
-            max(case when r.viewed_on >= date('now', '-29 days') then r.viewed_on end) as last_seen
-          from embed_referrer_daily r
-          inner join shares s on s.token = r.share_token
-          where r.viewed_on >= date('now', '-59 days')
-          group by r.share_token, share_title, r.referrer_hostname
-          having sum(case when r.viewed_on >= date('now', '-29 days') then r.view_count else 0 end) >= ${EMBED_REFERRER_DISCLOSURE_THRESHOLD}
-          order by views desc, r.referrer_hostname, share_title
+            thresholded.*,
+            (select count(distinct referrer_hostname) from thresholded) as detected_hostnames,
+            (select coalesce(sum(views), 0) from thresholded) as detected_views,
+            (select count(*) from thresholded) as detected_rows
+          from thresholded
+          order by views desc, referrer_hostname, share_title
           limit 10
         `
       )
@@ -618,6 +631,9 @@ export async function getProductInsights(): Promise<ProductInsights> {
         views: number;
         previous_views: number;
         last_seen: string;
+        detected_hostnames: number;
+        detected_views: number;
+        detected_rows: number;
       }>(),
     db
       .prepare(
@@ -737,6 +753,11 @@ export async function getProductInsights(): Promise<ProductInsights> {
         previousViews: row.previous_views,
         lastSeen: row.last_seen,
       })),
+      embedReferrerSummary30d: {
+        hostnames: embedReferrersResult.results[0]?.detected_hostnames ?? 0,
+        views: embedReferrersResult.results[0]?.detected_views ?? 0,
+        rows: embedReferrersResult.results[0]?.detected_rows ?? 0,
+      },
       importedShapes30d: importStatsRow?.imported_shapes ?? 0,
       avgShapesPerImport30d: importStatsRow?.avg_shapes ?? 0,
     },
