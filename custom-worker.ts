@@ -8,6 +8,8 @@ import {
 
 type D1PreparedStatement = {
   bind(...values: unknown[]): D1PreparedStatement;
+  first<T>(): Promise<T | null>;
+  all<T>(): Promise<{ results: T[] }>;
   run<T = unknown>(): Promise<T>;
 };
 

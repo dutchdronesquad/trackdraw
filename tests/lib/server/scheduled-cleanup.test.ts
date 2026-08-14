@@ -124,6 +124,8 @@ describe("scheduled cleanup", () => {
     const run = vi.fn(async () => ({ meta: { changes: 0 } }));
     const statement = {
       bind: vi.fn(() => statement),
+      first: vi.fn(async () => null),
+      all: vi.fn(async () => ({ results: [] })),
       run,
     };
     const prepare = vi.fn(() => statement);
@@ -139,7 +141,7 @@ describe("scheduled cleanup", () => {
       "embed_referrers",
     ]);
     await Promise.all(tasks.map((task) => task.run()));
-    expect(run).toHaveBeenCalledTimes(4);
+    expect(run).toHaveBeenCalledTimes(6);
   });
 
   it("uses a privacy-safe fallback for non-Error rejections", async () => {
@@ -167,6 +169,68 @@ describe("scheduled cleanup", () => {
     expect(JSON.stringify(errorLogs)).not.toContain(
       "sensitive rejection value"
     );
+  });
+
+  it("does not expire raw events while metric backfill is incomplete", async () => {
+    const run = vi.fn(async () => ({}));
+    const refreshStatement = {
+      bind: vi.fn(() => refreshStatement),
+      first: vi.fn(async () => null),
+      all: vi.fn(async () => ({ results: [] })),
+      run,
+    };
+    const stateStatement = {
+      bind: vi.fn(() => stateStatement),
+      first: vi.fn(async () => ({
+        measured_since: "2026-01-01",
+        last_aggregated_day: "2026-06-30",
+      })),
+      all: vi.fn(async () => ({ results: [] })),
+      run,
+    };
+    const statements = [
+      refreshStatement,
+      stateStatement,
+      ...Array.from({ length: 7 }, () => ({
+        bind: vi.fn(function (this: unknown) {
+          return this;
+        }),
+        first: vi.fn(async () => null),
+        all: vi.fn(async () => ({ results: [] })),
+        run,
+      })),
+      {
+        bind: vi.fn(function (this: unknown) {
+          return this;
+        }),
+        first: vi.fn(async () => null),
+        all: vi.fn(async () => ({ results: [] })),
+        run,
+      },
+      {
+        bind: vi.fn(function (this: unknown) {
+          return this;
+        }),
+        first: vi.fn(async () => null),
+        all: vi.fn(async () => ({ results: [] })),
+        run,
+      },
+    ];
+    const prepare = vi.fn(() => {
+      const statement = statements.shift();
+      if (!statement) throw new Error("Raw retention should not run");
+      return statement;
+    });
+    const productEventsTask = createScheduledCleanupTasks({
+      prepare,
+    } as Parameters<typeof createScheduledCleanupTasks>[0]).find(
+      (task) => task.name === "product_events"
+    );
+
+    await expect(productEventsTask?.run()).rejects.toThrow(
+      "complete UTC day(s) left to backfill"
+    );
+    expect(statements).toHaveLength(0);
   });
 
   it("normalizes, bounds, and defaults Error messages before logging", async () => {

@@ -86,4 +86,8 @@ export async function deleteProductEventsForUser(userId: string) {
     )
     .bind(userId, userId, userId)
     .run();
+  await db
+    .prepare("delete from product_metric_creator_activations where user_id = ?")
+    .bind(userId)
+    .run();
 }
