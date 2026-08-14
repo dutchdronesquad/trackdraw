@@ -1,5 +1,3 @@
-import "server-only";
-
 const CONTRACT_VERSION = "1.0.0";
 const AGGREGATE_RETENTION_MONTHS = 24;
 const MAX_BACKFILL_DAYS_PER_RUN = 7;
