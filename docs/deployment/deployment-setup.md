@@ -265,6 +265,8 @@ Migration `0014_embed_referrer_daily.sql` adds privacy-minimized daily embed-sou
 
 Migration `0015_product_metrics_contract.sql` upgrades product events to contract version `1.0.0`, adds per-row expiry, database deduplication for session-scoped events, and the signed-in product-analytics objection preference. Apply it before deploying the versioned `/api/product-events` endpoint or its preference route.
 
+Migration `0016_product_metric_daily_aggregates.sql` adds identifier-free UTC daily snapshots of each metric's contract-defined 7- or 28-day window, stored measurement coverage, and the minimal signed-in creator activation timestamp required by the finalized 30-day `MTR-005` cohort. Apply it before deploying scheduled metric aggregation. The migration starts measurement conservatively on the next complete UTC day; it never converts older projects, shares, users, or legacy event rows into invented product events.
+
 ## Validation flow
 
 Typical local workflow:
@@ -310,10 +312,11 @@ The Worker runs a daily cron cleanup and removes:
 - shares that have been expired for more than 30 days
 - API keys that have been expired for more than 90 days
 - raw product events whose per-row 180-day expiry has passed (with a legacy created-at fallback)
+- privacy-minimized daily product metric aggregates older than 24 months
 
-The three retention owners run concurrently and settle independently. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
+The four retention owners run concurrently and settle independently. Within the product-event task, daily aggregation completes before expired raw events are deleted. If aggregation fails or still has recoverable backfill work, raw-event deletion is skipped for that run so a retry cannot lose an unaggregated period. Each task emits one privacy-safe JSON log with `event: "scheduled_cleanup_task"`, its `task`, `status`, `deleted_rows`, `duration_ms`, `cron`, and `scheduled_at`. Product-event success logs also report the bounded aggregation health: aggregated days and rows, last complete day, remaining or unrecoverable backfill days, and aggregate rows deleted. A gap older than raw retention marks metric coverage invalid instead of silently inventing or comparing missing history. Failures additionally include the error name and a single-line, length-limited message, but never a share token, API key, session identifier, email address, or event payload. A final `scheduled_cleanup_summary` log reports the task counts and total deleted rows.
 
-If one task fails, the remaining tasks still finish and report their results. The scheduled handler rejects only after all tasks have settled so Cloudflare records the cron invocation as failed. Retrying the cleanup is safe: every retention query is a threshold-based `DELETE`, and a repeated run with no eligible rows reports success with `deleted_rows: 0`.
+If one task fails, the remaining tasks still finish and report their results. The scheduled handler rejects only after all tasks have settled so Cloudflare records the cron invocation as failed. Retrying is safe: metric rows use deterministic keys with upserts, and every retention query is a threshold-based `DELETE`. Aggregation catches up at no more than seven complete UTC days per invocation and the query helper combines stored daily snapshots with only today's small live raw-event window.
 
 The cron schedule is configured in `wrangler.jsonc`. To test the scheduled cleanup locally, run Wrangler with scheduled testing enabled and hit the scheduled route manually.
 

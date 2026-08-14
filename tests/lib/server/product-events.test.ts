@@ -57,9 +57,12 @@ describe("product events", () => {
 
   it("deletes every account-linkable event before account ownership disappears", async () => {
     const statement = createD1Statement({ run: {} });
+    const activationStatement = createD1Statement({ run: {} });
+    let call = 0;
     mocks.prepare.mockImplementation((sql: string) => {
-      statement.sql = sql;
-      return statement;
+      const target = call++ === 0 ? statement : activationStatement;
+      target.sql = sql;
+      return target;
     });
 
     await deleteProductEventsForUser("user-1");
@@ -67,6 +70,10 @@ describe("product events", () => {
     expect(statement.sql).toContain("project_id in");
     expect(statement.sql).toContain("share_token in");
     expect(statement.bind).toHaveBeenCalledWith("user-1", "user-1", "user-1");
+    expect(activationStatement.sql).toContain(
+      "product_metric_creator_activations"
+    );
+    expect(activationStatement.bind).toHaveBeenCalledWith("user-1");
   });
 
   it("removes an anonymous session and persists a signed-in objection", async () => {

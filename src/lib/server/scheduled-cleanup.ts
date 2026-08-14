@@ -1,10 +1,13 @@
 import { cleanupExpiredApiKeys } from "@/lib/server/api-key-retention";
 import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrer-retention";
 import { cleanupExpiredProductEvents } from "@/lib/server/product-event-retention";
+import { runProductMetricMaintenance } from "@/lib/server/product-metric-aggregates";
 import { cleanupExpiredShares } from "@/lib/server/share-retention";
 
 type CleanupPreparedStatement = {
   bind(...values: unknown[]): CleanupPreparedStatement;
+  first<T>(): Promise<T | null>;
+  all<T>(): Promise<{ results: T[] }>;
   run<T = unknown>(): Promise<T>;
 };
 
@@ -39,6 +42,14 @@ type ScheduledCleanupTaskSuccess = {
   duration_ms: number;
   cron: string;
   scheduled_at: string;
+  aggregation_health?: {
+    aggregated_days: number;
+    aggregate_rows: number;
+    last_aggregated_day: string | null;
+    remaining_backfill_days: number;
+    unrecoverable_backfill_days: number;
+    deleted_rows: number;
+  };
 };
 
 type ScheduledCleanupTaskFailure = {
@@ -88,7 +99,29 @@ export function createScheduledCleanupTasks(
     { name: "api_keys", run: () => cleanupExpiredApiKeys(db) },
     {
       name: "product_events",
-      run: () => cleanupExpiredProductEvents(db),
+      run: async () => {
+        // Aggregate first so an extended outage cannot race raw-event expiry.
+        // A failed aggregation deliberately prevents raw deletion on this run.
+        const aggregateResult = await runProductMetricMaintenance(db);
+        if (aggregateResult.health.unrecoverable_backfill_days > 0) {
+          throw new Error(
+            `Product metric aggregation cannot reconstruct ${aggregateResult.health.unrecoverable_backfill_days} expired UTC day(s)`
+          );
+        }
+        if (aggregateResult.health.remaining_backfill_days > 0) {
+          throw new Error(
+            `Product metric aggregation has ${aggregateResult.health.remaining_backfill_days} complete UTC day(s) left to backfill`
+          );
+        }
+        const cleanupResult = await cleanupExpiredProductEvents(db);
+        const rawDeletedRows = getDeletedRows(cleanupResult) ?? 0;
+        return {
+          meta: {
+            changes: rawDeletedRows + aggregateResult.health.deleted_rows,
+          },
+          health: aggregateResult.health,
+        };
+      },
     },
     {
       name: "embed_referrers",
@@ -115,6 +148,19 @@ function getDeletedRows(result: unknown) {
   return typeof meta.changes === "number" && Number.isInteger(meta.changes)
     ? meta.changes
     : null;
+}
+
+function getAggregationHealth(result: unknown) {
+  if (typeof result !== "object" || result === null || !("health" in result)) {
+    return {};
+  }
+
+  const { health } = result;
+  if (typeof health !== "object" || health === null) return {};
+  return {
+    aggregation_health:
+      health as ScheduledCleanupTaskSuccess["aggregation_health"],
+  };
 }
 
 function getErrorDetails(error: unknown) {
@@ -161,6 +207,7 @@ export async function runScheduledCleanup(
           duration_ms: Math.max(0, now() - startedAt),
           cron: context.cron,
           scheduled_at: scheduledAt,
+          ...getAggregationHealth(result),
         };
       } catch (error) {
         return {
