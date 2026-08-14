@@ -69,7 +69,11 @@ vi.mock("framer-motion", () => ({
 }));
 
 vi.mock("@/components/editor/MobileAppMenu", () => ({
-  default: () => <div data-testid="mobile-app-menu" />,
+  default: ({ onFeedback }: { onFeedback: () => void }) => (
+    <button type="button" onClick={onFeedback}>
+      Mobile feedback
+    </button>
+  ),
 }));
 
 vi.mock("@/components/ThemeToggle", () => ({
@@ -208,5 +212,28 @@ describe("Header", () => {
     );
 
     expect(onRetrySync).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps feedback out of the desktop header and available in the mobile menu", async () => {
+    const user = userEvent.setup();
+    const onFeedback = vi.fn();
+    render(
+      <Header
+        tab="2d"
+        onTabChange={vi.fn()}
+        onShare={vi.fn()}
+        onImport={vi.fn()}
+        onExport={vi.fn()}
+        onOpenProjectManager={vi.fn()}
+        onFeedback={onFeedback}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: "Feedback" })).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Open app menu" }));
+    await user.click(screen.getByRole("button", { name: "Mobile feedback" }));
+
+    expect(onFeedback).toHaveBeenCalledTimes(1);
   });
 });

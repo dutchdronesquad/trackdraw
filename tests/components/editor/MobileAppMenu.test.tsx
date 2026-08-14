@@ -95,7 +95,7 @@ describe("MobileAppMenu", () => {
       /Share.*Publish a read-only link/,
       /Import.*Bring in a JSON project file/,
       /Export.*Download PNG, PDF, SVG or JSON/,
-      /Feedback & support.*Report a problem, share an idea or ask for help/,
+      /Feedback.*Report a problem, share an idea or ask a question/,
     ]) {
       expect(screen.getByRole("button", { name }).className).toContain(
         "min-h-14"
@@ -153,7 +153,7 @@ describe("MobileAppMenu", () => {
       [/Import.*Bring in a JSON project file/, props.onImport],
       [/Export.*Download PNG, PDF, SVG or JSON/, props.onExport],
       [
-        /Feedback & support.*Report a problem, share an idea or ask for help/,
+        /Feedback.*Report a problem, share an idea or ask a question/,
         props.onFeedback,
       ],
     ] as const) {

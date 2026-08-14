@@ -1,43 +1,4 @@
 {
-  "feedback": {
-    "title": "反馈与支持",
-    "subtitle": "请选择最符合你要分享内容的方式。",
-    "formSubtitle": "打开 GitHub 前，请检查将要发送的全部内容。",
-    "back": "选择其他方式",
-    "privateLater": "GitHub 报告是公开的，并需要 GitHub 帐户。TrackDraw 内的私密反馈将在后续推出；目前可以先复制报告。",
-    "titleLabel": "简短标题",
-    "detailsLabel": "详细信息",
-    "stepsLabel": "重现步骤（可选）",
-    "stepsPlaceholder": "1. 打开…\n2. 选择…\n3. 问题出现…",
-    "contextLabel": "包含粗略的产品环境信息",
-    "contextDescription": "版本 {version}、{routeFamily}、{browser}、{device}。不包含项目、分享、帐户或设计数据。",
-    "previewLabel": "公开报告预览",
-    "previewEmpty": "添加标题和详细信息以准备报告。",
-    "publicWarning": "GitHub Issue 是公开的。请检查预览，并删除不希望公开的任何内容。",
-    "copy": "复制报告",
-    "copied": "已复制",
-    "openGitHub": "在 GitHub 上检查",
-    "categories": {
-      "bug": {
-        "title": "报告问题",
-        "description": "某项功能损坏、不清楚或行为异常。",
-        "titlePlaceholder": "哪里出了问题？",
-        "detailsPlaceholder": "你原本期待什么？实际发生了什么？"
-      },
-      "idea": {
-        "title": "分享想法",
-        "description": "建议改进或 TrackDraw 可以提供的新功能。",
-        "titlePlaceholder": "概述你的想法",
-        "detailsPlaceholder": "这会解决什么问题？你会在什么时候使用？"
-      },
-      "question": {
-        "title": "寻求帮助",
-        "description": "询问某个流程或你找不到的功能。",
-        "titlePlaceholder": "你需要哪方面的帮助？",
-        "detailsPlaceholder": "描述你想完成的事情以及卡住的位置。"
-      }
-    }
-  },
   "account": {
     "dialog": {
       "eyebrow": "Studio",
@@ -785,15 +746,15 @@
         "noShares": "还没有有效共享",
         "description": "账户发布链接会一直保留到你撤销为止。匿名临时链接会自动过期，也不会在这里管理。"
       },
-    "lifetime": {
-      "published": "只读发布链接，会一直有效直到撤销",
-      "temporary": "只读临时链接，{expiresIn}"
-    },
-    "referrers": {
-      "label": "检测到的嵌入网站 · 最近 30 天",
-      "item": "{hostname}（{views}）"
-    },
-    "actions": {
+      "lifetime": {
+        "published": "只读发布链接，会一直有效直到撤销",
+        "temporary": "只读临时链接，{expiresIn}"
+      },
+      "referrers": {
+        "label": "检测到的嵌入网站 · 最近 30 天",
+        "item": "{hostname}（{views}）"
+      },
+      "actions": {
         "copyLink": "复制链接",
         "openTab": "在新标签页打开",
         "revokeLink": "撤销链接"

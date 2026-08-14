@@ -221,7 +221,7 @@ Important boundary:
 
 #### Product Feedback And GitHub Issue Handoff (`No account required`, `Account-backed`)
 
-Give signed-in and anonymous users one clear way to share an idea, ask for help, or report a problem without turning TrackDraw into a community or ticketing platform.
+Give signed-in and anonymous users one clear way to share an idea, ask a question, or report a problem without turning TrackDraw into a community or ticketing platform.
 
 Why now:
 
@@ -231,7 +231,7 @@ Why now:
 
 First slice:
 
-- Add one consistent `Feedback & support` entry across desktop and mobile navigation, with choices for an idea, a problem, or a GitHub issue
+- Add one consistent `Feedback` entry across desktop and mobile navigation, with choices for an idea, a problem, or a question
 - Keep the in-product form usable without a TrackDraw account; let signed-in users optionally include contact details or account context with explicit consent
 - Send technical issue reports to the repository's GitHub issue form with a preview of prefilled title, category, TrackDraw version, route family, browser, and device context before leaving TrackDraw
 - Warn that GitHub issues are public, never prefill project content, share tokens, API keys, email addresses, or design data, and let the user remove diagnostic context before continuing
@@ -241,7 +241,7 @@ First slice:
 
 Current shipped foundation:
 
-- Studio and read-only/share viewers expose the same `Feedback & support` entry on desktop and mobile, with routes for a problem, idea, or question
+- Studio and read-only/share viewers expose the same `Feedback` entry on desktop and mobile, with routes for a problem, idea, or question
 - The GitHub handoff shows the complete public report before leaving TrackDraw and lets the user remove coarse version, surface, browser, and device context
 - The handoff never derives project content, share tokens, account details, or design data
 - Users can copy the reviewed report instead of continuing to GitHub; private in-product submission remains a separate follow-up with its own storage, moderation, abuse, and retention requirements

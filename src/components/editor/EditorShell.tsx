@@ -573,6 +573,7 @@ export default function EditorShell({
             onExport={() => setExportOpen(true)}
             onOpenProjectManager={() => setProjectManagerOpen(true)}
             onOpenPresets={openPresetPicker}
+            onFeedback={() => setFeedbackOpen(true)}
             collapsed={sidebarCollapsed}
             onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
           />
@@ -603,6 +604,7 @@ export default function EditorShell({
               onOpenProjectManager={() => setProjectManagerOpen(true)}
               onSaveSnapshot={() => void handleManualSave()}
               onOpenShortcuts={() => setShortcutsOpen(true)}
+              onFeedback={() => setFeedbackOpen(true)}
               readOnly={false}
               hideTabsOnMobile
               collapsed={sidebarCollapsed}

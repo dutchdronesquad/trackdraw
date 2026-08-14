@@ -1,43 +1,4 @@
 {
-  "feedback": {
-    "title": "Feedback en ondersteuning",
-    "subtitle": "Kies de route die het beste past bij wat je wilt delen.",
-    "formSubtitle": "Bekijk precies wat wordt verstuurd voordat GitHub wordt geopend.",
-    "back": "Andere route kiezen",
-    "privateLater": "GitHub-meldingen zijn openbaar en vereisen een GitHub-account. Privéfeedback in TrackDraw volgt in een latere fase; voorlopig kun je je melding kopiëren.",
-    "titleLabel": "Korte titel",
-    "detailsLabel": "Details",
-    "stepsLabel": "Stappen om te reproduceren (optioneel)",
-    "stepsPlaceholder": "1. Open…\n2. Selecteer…\n3. Het probleem verschijnt…",
-    "contextLabel": "Globale productcontext toevoegen",
-    "contextDescription": "Versie {version}, {routeFamily}, {browser}, {device}. Geen project-, share-, account- of ontwerpdata.",
-    "previewLabel": "Voorbeeld van openbare melding",
-    "previewEmpty": "Voeg een titel en details toe om de melding voor te bereiden.",
-    "publicWarning": "GitHub-issues zijn openbaar. Controleer het voorbeeld en verwijder alles wat je niet wilt publiceren.",
-    "copy": "Melding kopiëren",
-    "copied": "Gekopieerd",
-    "openGitHub": "Controleren op GitHub",
-    "categories": {
-      "bug": {
-        "title": "Een probleem melden",
-        "description": "Iets werkt niet, is onduidelijk of gedraagt zich onverwacht.",
-        "titlePlaceholder": "Wat ging er mis?",
-        "detailsPlaceholder": "Wat verwachtte je en wat gebeurde er in plaats daarvan?"
-      },
-      "idea": {
-        "title": "Een idee delen",
-        "description": "Stel een verbetering of een nieuwe mogelijkheid voor.",
-        "titlePlaceholder": "Vat je idee samen",
-        "detailsPlaceholder": "Welk probleem lost dit op en wanneer zou je het gebruiken?"
-      },
-      "question": {
-        "title": "Hulp vragen",
-        "description": "Stel een vraag over een werkwijze of iets dat je niet kunt vinden.",
-        "titlePlaceholder": "Waar heb je hulp bij nodig?",
-        "detailsPlaceholder": "Beschrijf wat je probeert te doen en waar je vastloopt."
-      }
-    }
-  },
   "account": {
     "dialog": {
       "eyebrow": "Studio",
@@ -785,15 +746,15 @@
         "noShares": "Geen actieve gedeelde items",
         "description": "Gepubliceerde accountlinks blijven actief totdat ze worden ingetrokken. Tijdelijke anonieme links verlopen automatisch en worden hier niet beheerd."
       },
-    "lifetime": {
-      "published": "alleen-lezen gepubliceerde link, live tot intrekking",
-      "temporary": "alleen-lezen tijdelijke link, {expiresIn}"
-    },
-    "referrers": {
-      "label": "Gedetecteerde embedwebsites · laatste 30 dagen",
-      "item": "{hostname} ({views})"
-    },
-    "actions": {
+      "lifetime": {
+        "published": "alleen-lezen gepubliceerde link, live tot intrekking",
+        "temporary": "alleen-lezen tijdelijke link, {expiresIn}"
+      },
+      "referrers": {
+        "label": "Gedetecteerde embedwebsites · laatste 30 dagen",
+        "item": "{hostname} ({views})"
+      },
+      "actions": {
         "copyLink": "Link kopiëren",
         "openTab": "Openen in nieuw tabblad",
         "revokeLink": "Link intrekken"

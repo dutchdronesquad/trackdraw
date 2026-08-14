@@ -29,7 +29,7 @@ import { useEditor } from "@/store/editor";
 import { useSessionActions, useUiActions } from "@/store/actions";
 import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
-import { Download, FolderOpen, Import } from "lucide-react";
+import { CircleHelp, Download, FolderOpen, Import } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Translate } from "@/lib/editor/tool-registry";
 
@@ -71,6 +71,7 @@ interface ToolbarProps {
   onExport: () => void;
   onOpenProjectManager: () => void;
   onOpenPresets: () => void;
+  onFeedback: () => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
 }
@@ -99,6 +100,7 @@ export default function Toolbar({
   onExport,
   onOpenProjectManager,
   onOpenPresets,
+  onFeedback,
   collapsed,
 }: ToolbarProps) {
   const t = useTranslations("editor");
@@ -183,6 +185,7 @@ export default function Toolbar({
           <Tooltip>
             <TooltipTrigger
               onClick={onClick}
+              aria-label={label}
               className="text-sidebar-foreground/90 hover:border-border/80 hover:bg-muted hover:text-foreground flex h-9 w-full items-center justify-center rounded-xl border border-transparent transition-colors"
             >
               {icon}
@@ -358,6 +361,13 @@ export default function Toolbar({
               tooltip: t("toolbar.exportTooltip"),
               icon: <Download className="size-3.5" />,
               onClick: onExport,
+            })}
+            {renderFooterAction({
+              key: "feedback",
+              label: t("toolbar.feedbackSupport"),
+              tooltip: t("toolbar.feedbackSupport"),
+              icon: <CircleHelp className="size-3.5" />,
+              onClick: onFeedback,
             })}
           </SidebarMenu>
           <div className="border-border/70 mt-3 border-t pt-3">

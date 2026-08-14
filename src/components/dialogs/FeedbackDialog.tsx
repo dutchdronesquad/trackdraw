@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
-  ArrowLeft,
   Bug,
   Check,
+  ChevronDown,
   Copy,
   ExternalLink,
   HelpCircle,
@@ -16,6 +16,7 @@ import { DesktopModal } from "@/components/DesktopModal";
 import { MobileDrawer } from "@/components/MobileDrawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   buildFeedbackIssueBody,
@@ -30,6 +31,8 @@ type FeedbackDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
+type CopyStatus = "idle" | "copied" | "failed";
+
 const categoryIcons = {
   bug: Bug,
   idea: Lightbulb,
@@ -43,12 +46,15 @@ export default function FeedbackDialog({
   const t = useTranslations("dialogs.feedback");
   const pathname = usePathname();
   const isMobile = useIsMobile();
-  const [category, setCategory] = useState<FeedbackCategory | null>(null);
+  const [category, setCategory] = useState<FeedbackCategory>("bug");
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [steps, setSteps] = useState("");
+  const [stepsOpen, setStepsOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [includeContext, setIncludeContext] = useState(true);
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<CopyStatus>("idle");
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const diagnostics = useMemo(
     () =>
@@ -60,43 +66,59 @@ export default function FeedbackDialog({
     [isMobile, pathname]
   );
 
-  const issueInput = category
-    ? {
-        category,
-        title,
-        details,
-        steps,
-        diagnostics: includeContext ? diagnostics : undefined,
-      }
-    : null;
-  const preview = issueInput ? buildFeedbackIssueBody(issueInput) : "";
+  const issueInput = {
+    category,
+    title,
+    details,
+    steps: category === "bug" ? steps : "",
+    diagnostics: includeContext ? diagnostics : undefined,
+  };
+  const preview = buildFeedbackIssueBody(issueInput);
   const canContinue = Boolean(title.trim() && details.trim());
+
+  useEffect(() => {
+    if (!open) return;
+
+    const focusTarget = window.requestAnimationFrame(() => {
+      titleInputRef.current?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(focusTarget);
+  }, [open]);
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
-      setCategory(null);
+      setCategory("bug");
       setTitle("");
       setDetails("");
       setSteps("");
+      setStepsOpen(false);
+      setPreviewOpen(false);
       setIncludeContext(true);
-      setCopied(false);
+      setCopyStatus("idle");
     }
     onOpenChange(nextOpen);
   };
 
-  const selectCategory = (nextCategory: FeedbackCategory) => {
-    setCategory(nextCategory);
-  };
-
   const copyReport = async () => {
-    if (!issueInput || !canContinue) return;
-    await navigator.clipboard.writeText(`${title.trim()}\n\n${preview}`);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+    if (!canContinue) return;
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard API unavailable");
+      }
+      await navigator.clipboard.writeText(`${title.trim()}\n\n${preview}`);
+      setCopyStatus("copied");
+    } catch {
+      setPreviewOpen(true);
+      setCopyStatus("failed");
+    }
+
+    window.setTimeout(() => setCopyStatus("idle"), 3000);
   };
 
   const openGitHub = () => {
-    if (!issueInput || !canContinue) return;
+    if (!canContinue) return;
     window.open(
       buildFeedbackIssueUrl(issueInput),
       "_blank",
@@ -104,53 +126,46 @@ export default function FeedbackDialog({
     );
   };
 
-  const categoryPicker = (
-    <div className="space-y-2">
-      {(["bug", "idea", "question"] as const).map((item) => {
-        const Icon = categoryIcons[item];
-        return (
-          <button
-            key={item}
-            type="button"
-            onClick={() => selectCategory(item)}
-            className="border-border/60 hover:bg-muted/45 flex min-h-16 w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors"
-          >
-            <span className="bg-muted text-foreground flex size-9 shrink-0 items-center justify-center rounded-xl">
-              <Icon className="size-4" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-medium">
-                {t(`categories.${item}.title`)}
-              </span>
-              <span className="text-muted-foreground mt-0.5 block text-xs leading-relaxed">
-                {t(`categories.${item}.description`)}
-              </span>
-            </span>
-          </button>
-        );
-      })}
-      <p className="text-muted-foreground px-1 pt-1 text-xs leading-relaxed">
-        {t("privateLater")}
-      </p>
-    </div>
-  );
-
-  const form = category ? (
+  const content = (
     <div className="space-y-4">
-      <button
-        type="button"
-        onClick={() => setCategory(null)}
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs transition-colors"
-      >
-        <ArrowLeft className="size-3.5" />
-        {t("back")}
-      </button>
+      <fieldset>
+        <legend className="sr-only">{t("categoryLabel")}</legend>
+        <div className="bg-muted/45 grid grid-cols-3 gap-1 rounded-lg p-1">
+          {(["bug", "idea", "question"] as const).map((item) => {
+            const Icon = categoryIcons[item];
+            const selected = item === category;
+
+            return (
+              <label
+                key={item}
+                className={cn(
+                  "text-muted-foreground hover:text-foreground focus-within:ring-ring flex min-h-9 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors focus-within:ring-2",
+                  selected &&
+                    "bg-background text-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/8"
+                )}
+              >
+                <input
+                  type="radio"
+                  name="feedback-category"
+                  value={item}
+                  checked={selected}
+                  onChange={() => setCategory(item)}
+                  className="sr-only"
+                />
+                <Icon className="size-3.5" />
+                <span>{t(`categories.${item}.shortTitle`)}</span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
 
       <div className="space-y-1.5">
         <label htmlFor="feedback-title" className="text-xs font-medium">
           {t("titleLabel")}
         </label>
         <Input
+          ref={titleInputRef}
           id="feedback-title"
           value={title}
           maxLength={160}
@@ -169,92 +184,138 @@ export default function FeedbackDialog({
           maxLength={4000}
           onChange={(event) => setDetails(event.target.value)}
           placeholder={t(`categories.${category}.detailsPlaceholder`)}
-          className="border-input placeholder:text-muted-foreground focus-visible:ring-ring min-h-28 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+          className="border-input placeholder:text-muted-foreground focus-visible:ring-ring min-h-24 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
         />
       </div>
 
       {category === "bug" ? (
-        <div className="space-y-1.5">
-          <label htmlFor="feedback-steps" className="text-xs font-medium">
-            {t("stepsLabel")}
-          </label>
-          <textarea
-            id="feedback-steps"
-            value={steps}
-            maxLength={2500}
-            onChange={(event) => setSteps(event.target.value)}
-            placeholder={t("stepsPlaceholder")}
-            className="border-input placeholder:text-muted-foreground focus-visible:ring-ring min-h-20 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-          />
+        <div className="space-y-2">
+          <button
+            type="button"
+            aria-expanded={stepsOpen}
+            onClick={() => setStepsOpen((current) => !current)}
+            className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs font-medium transition-colors"
+          >
+            <ChevronDown
+              className={cn(
+                "size-3.5 transition-transform",
+                stepsOpen && "rotate-180"
+              )}
+            />
+            {stepsOpen ? t("hideSteps") : t("addSteps")}
+          </button>
+          {stepsOpen ? (
+            <div className="space-y-1.5">
+              <label htmlFor="feedback-steps" className="sr-only">
+                {t("stepsLabel")}
+              </label>
+              <textarea
+                id="feedback-steps"
+                value={steps}
+                maxLength={2500}
+                onChange={(event) => setSteps(event.target.value)}
+                placeholder={t("stepsPlaceholder")}
+                className="border-input placeholder:text-muted-foreground focus-visible:ring-ring min-h-20 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+              />
+            </div>
+          ) : null}
         </div>
       ) : null}
 
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={includeContext}
-        onClick={() => setIncludeContext((current) => !current)}
-        className="border-border/60 bg-muted/20 flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left"
-      >
-        <span
-          className={cn(
-            "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm border",
-            includeContext
-              ? "bg-primary text-primary-foreground border-primary"
-              : "border-border bg-background"
-          )}
-        >
-          {includeContext ? <Check className="size-3" /> : null}
-        </span>
-        <span>
+      <div className="flex items-start justify-between gap-4 py-1">
+        <span className="min-w-0">
           <span className="block text-xs font-medium">{t("contextLabel")}</span>
-          <span className="text-muted-foreground mt-0.5 block text-[11px] leading-relaxed">
+          <span
+            id="feedback-context-description"
+            className="text-muted-foreground mt-0.5 block text-[11px] leading-relaxed"
+          >
             {t("contextDescription", diagnostics)}
           </span>
         </span>
-      </button>
-
-      <div className="space-y-1.5">
-        <p className="text-xs font-medium">{t("previewLabel")}</p>
-        <pre className="border-border/60 bg-muted/20 text-muted-foreground max-h-44 overflow-auto rounded-xl border p-3 font-sans text-[11px] leading-relaxed whitespace-pre-wrap">
-          {preview || t("previewEmpty")}
-        </pre>
+        <Switch
+          checked={includeContext}
+          onCheckedChange={setIncludeContext}
+          aria-label={t("contextLabel")}
+          aria-describedby="feedback-context-description"
+        />
       </div>
 
-      <div className="border-border/60 border-t pt-4">
-        <p className="text-muted-foreground mb-3 text-xs leading-relaxed">
-          {t("publicWarning")}
-        </p>
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void copyReport()}
-            disabled={!canContinue}
-          >
-            {copied ? <Check /> : <Copy />}
-            {copied ? t("copied") : t("copy")}
-          </Button>
-          <Button type="button" onClick={openGitHub} disabled={!canContinue}>
-            <ExternalLink />
-            {t("openGitHub")}
-          </Button>
-        </div>
+      <div className="border-border/60 border-t pt-3">
+        <button
+          type="button"
+          aria-expanded={previewOpen}
+          onClick={() => setPreviewOpen((current) => !current)}
+          className="text-muted-foreground hover:text-foreground flex w-full items-center justify-between gap-3 text-left text-xs font-medium transition-colors"
+        >
+          <span>{previewOpen ? t("hidePreview") : t("previewLabel")}</span>
+          <ChevronDown
+            className={cn(
+              "size-3.5 transition-transform",
+              previewOpen && "rotate-180"
+            )}
+          />
+        </button>
+        {previewOpen ? (
+          <pre className="border-border/60 bg-muted/20 text-muted-foreground mt-2 max-h-36 overflow-auto rounded-lg border p-3 font-sans text-[11px] leading-relaxed whitespace-pre-wrap">
+            {canContinue ? preview : t("previewEmpty")}
+          </pre>
+        ) : null}
       </div>
     </div>
-  ) : null;
+  );
 
-  const content = category ? form : categoryPicker;
-  const subtitle = category ? t("formSubtitle") : t("subtitle");
+  const footer = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="max-w-xs">
+        <p className="text-muted-foreground text-[11px] leading-relaxed">
+          {t("publicWarning")}
+        </p>
+        {copyStatus !== "idle" ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className={cn(
+              "mt-1 text-[11px] leading-relaxed",
+              copyStatus === "failed"
+                ? "text-destructive"
+                : "text-muted-foreground"
+            )}
+          >
+            {copyStatus === "copied" ? t("copiedStatus") : t("copyFailed")}
+          </p>
+        ) : null}
+      </div>
+      <div className="flex shrink-0 justify-end gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => void copyReport()}
+          disabled={!canContinue}
+        >
+          {copyStatus === "copied" ? <Check /> : <Copy />}
+          {copyStatus === "copied" ? t("copied") : t("copy")}
+        </Button>
+        <Button type="button" onClick={openGitHub} disabled={!canContinue}>
+          <ExternalLink />
+          {t("openGitHub")}
+        </Button>
+      </div>
+    </div>
+  );
 
   return isMobile ? (
     <MobileDrawer
       open={open}
       onOpenChange={handleOpenChange}
       title={t("title")}
-      subtitle={subtitle}
+      subtitle={t("subtitle")}
       repositionInputs
-      bodyClassName="pb-8"
+      bodyClassName="pb-4"
+      footerContent={
+        <div className="border-border/60 bg-card border-t px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          {footer}
+        </div>
+      }
     >
       {content}
     </MobileDrawer>
@@ -263,11 +324,12 @@ export default function FeedbackDialog({
       open={open}
       onOpenChange={handleOpenChange}
       title={t("title")}
-      subtitle={subtitle}
-      maxWidth="max-w-xl"
+      subtitle={t("subtitle")}
+      maxWidth="max-w-lg"
       panelClassName="max-h-[90vh] overflow-y-auto"
     >
       {content}
+      <div className="border-border/60 mt-4 border-t pt-4">{footer}</div>
     </DesktopModal>
   );
 }

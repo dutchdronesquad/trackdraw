@@ -6,7 +6,8 @@
     "import": "Import",
     "importTooltip": "Import JSON",
     "export": "Export",
-    "exportTooltip": "Export track"
+    "exportTooltip": "Export track",
+    "feedbackSupport": "Feedback"
   },
   "contextMenu": {
     "quickActions": "Quick actions",
@@ -107,7 +108,7 @@
     "retrySync": "Retry account sync ({status})",
     "share": "Share",
     "export": "Export",
-    "feedbackSupport": "Feedback & support",
+    "feedbackSupport": "Feedback",
     "openAppMenu": "Open app menu",
     "hideObstacleNumbers": "Hide obstacle numbers",
     "showObstacleNumbers": "Show obstacle numbers"
@@ -139,8 +140,8 @@
     "exportLabel": "Export",
     "exportDescription": "Download PNG, PDF, SVG or JSON",
     "supportSection": "Support",
-    "feedbackLabel": "Feedback & support",
-    "feedbackDescription": "Report a problem, share an idea or ask for help",
+    "feedbackLabel": "Feedback",
+    "feedbackDescription": "Report a problem, share an idea or ask a question",
     "themeLabel": "Theme",
     "themeDescription": "Switch light, dark or system",
     "signOut": "Sign out",
@@ -326,8 +327,8 @@
       },
       "support": {
         "sectionLabel": "Support",
-        "label": "Feedback & support",
-        "description": "Report a problem, share an idea or ask for help"
+        "label": "Feedback",
+        "description": "Report a problem, share an idea or ask a question"
       }
     },
     "multiSelect": {
@@ -402,6 +403,7 @@
         "view": "View",
         "review": "Review",
         "share": "Share",
+        "feedback": "Feedback",
         "editCopy": "Edit copy",
         "preview": "Preview"
       },

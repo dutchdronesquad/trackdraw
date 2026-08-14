@@ -48,7 +48,7 @@ The next TrackDraw priority is generated flightpath validation first, translatio
         Ensure share, API-key, and product-event retention tasks complete independently, remain idempotent, emit a structured result per task, and have focused coverage for partial failures so one rejection cannot cut short the other cleanup work.
 
 - [ ] Product feedback and GitHub issue handoff (`No account required`, `Account-backed`)
-      Add one recognizable `Feedback & support` entry for anonymous and signed-in users. Keep ideas and private problem reports lightweight, and send technical users to a previewable, prefilled public GitHub issue flow without exposing project or identity data.
+      Add one recognizable `Feedback` entry for anonymous and signed-in users. Keep ideas and private problem reports lightweight, and send technical users to a previewable, prefilled public GitHub issue flow without exposing project or identity data.
   - [x] Feedback entry and routing
         Studio and read-only/share viewers now expose a consistent desktop and mobile entry with problem, idea, and question routes without requiring a TrackDraw account. Users can review and copy a report or continue to GitHub; private submission remains the separate item below.
   - [x] Privacy-safe GitHub handoff

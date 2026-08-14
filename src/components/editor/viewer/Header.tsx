@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Hash, MessageCircle, Tag } from "lucide-react";
+import { CircleHelp, Hash, Tag } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   Tooltip,
@@ -160,10 +160,10 @@ export default function Header({
         <Tooltip>
           <TooltipTrigger
             onClick={onFeedback}
-            className="text-muted-foreground hover:text-foreground hover:bg-muted hidden size-7 items-center justify-center rounded-md transition-colors lg:flex"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring hidden size-7 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none lg:flex"
             aria-label={t("header.feedbackSupport")}
           >
-            <MessageCircle className="size-3.5" />
+            <CircleHelp className="size-3.5" />
           </TooltipTrigger>
           <TooltipContent>{t("header.feedbackSupport")}</TooltipContent>
         </Tooltip>

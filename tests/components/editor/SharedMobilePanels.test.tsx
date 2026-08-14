@@ -103,6 +103,17 @@ describe("shared MobilePanels", () => {
     expect(screen.queryByRole("button", { name: "View" })).toBeNull();
   });
 
+  it("opens feedback directly from the shared mobile toolbar", async () => {
+    const user = userEvent.setup();
+    const onFeedback = vi.fn();
+
+    renderMobilePanels({ onFeedback });
+
+    await user.click(screen.getByRole("button", { name: "Feedback" }));
+
+    expect(onFeedback).toHaveBeenCalledTimes(1);
+  });
+
   it("hides share actions inside the embed view drawer", () => {
     renderMobilePanels({
       embedMode: true,

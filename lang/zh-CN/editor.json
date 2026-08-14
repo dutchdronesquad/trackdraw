@@ -107,7 +107,6 @@
     "retrySync": "重试账户同步 ({status})",
     "share": "分享",
     "export": "导出",
-    "feedbackSupport": "反馈与支持",
     "openAppMenu": "打开应用菜单",
     "hideObstacleNumbers": "隐藏障碍编号",
     "showObstacleNumbers": "显示障碍编号"
@@ -138,9 +137,6 @@
     "importDescription": "导入 JSON 项目文件",
     "exportLabel": "导出",
     "exportDescription": "下载 PNG、PDF、SVG 或 JSON",
-    "supportSection": "支持",
-    "feedbackLabel": "反馈与支持",
-    "feedbackDescription": "报告问题、分享想法或寻求帮助",
     "themeLabel": "主题",
     "themeDescription": "切换浅色、深色或跟随系统",
     "signOut": "退出登录",
@@ -323,11 +319,6 @@
         "sectionLabel": "分享",
         "editableCopy": "可编辑副本",
         "shareButton": "分享"
-      },
-      "support": {
-        "sectionLabel": "支持",
-        "label": "反馈与支持",
-        "description": "报告问题、分享想法或寻求帮助"
       }
     },
     "multiSelect": {
