@@ -1,5 +1,5 @@
 import { cleanupExpiredApiKeys } from "@/lib/server/api-key-retention";
-import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrers";
+import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrer-retention";
 import { cleanupExpiredProductEvents } from "@/lib/server/product-event-retention";
 import { cleanupExpiredShares } from "@/lib/server/share-retention";
 

@@ -1,8 +1,6 @@
 import "server-only";
 
 import { getDatabase } from "@/lib/server/db";
-
-export const EMBED_REFERRER_RETENTION_DAYS = 90;
 export const EMBED_REFERRER_DISCLOSURE_THRESHOLD = 3;
 
 export type EmbedReferrerSummary = {
@@ -81,21 +79,4 @@ export async function getEmbedReferrersByOwner(ownerUserId: string, days = 30) {
     summaries.set(row.share_token, current);
   }
   return summaries;
-}
-
-export async function cleanupExpiredEmbedReferrers(
-  db: {
-    prepare(query: string): { run<T = unknown>(): Promise<T> };
-  },
-  retentionDays = EMBED_REFERRER_RETENTION_DAYS
-) {
-  const days = Math.max(31, Math.trunc(retentionDays));
-  return db
-    .prepare(
-      `
-        delete from embed_referrer_daily
-        where viewed_on < date('now', '-${days} days')
-      `
-    )
-    .run();
 }

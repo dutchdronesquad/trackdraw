@@ -10,10 +10,10 @@ vi.mock("@/lib/server/db", () => ({
 }));
 
 import {
-  cleanupExpiredEmbedReferrers,
   getEmbedReferrersByOwner,
   recordEmbedReferrer,
 } from "@/lib/server/embed-referrers";
+import { cleanupExpiredEmbedReferrers } from "@/lib/server/embed-referrer-retention";
 
 beforeEach(() => {
   mocks.prepare.mockReset();
