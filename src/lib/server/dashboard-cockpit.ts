@@ -46,6 +46,7 @@ const SERIES_RANGES: ReadonlyArray<{
   { metricId: "MTR-006", historyDays: 70 },
   { metricId: "MTR-010", historyDays: 70 },
 ];
+const UNUSED_API_KEY_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 function utcDay(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -92,6 +93,9 @@ export async function getDailyCockpit(
   const db = await getDatabase();
   const today = utcDay(now);
   const toExclusive = addUtcDays(today, 1);
+  const unusedApiKeyCutoff = new Date(
+    now.getTime() - UNUSED_API_KEY_AGE_MS
+  ).toISOString();
 
   const [seriesPairs, states, previewRow, apiKeyRow] = await Promise.all([
     Promise.all(
@@ -132,7 +136,7 @@ export async function getDailyCockpit(
              then 1 else 0 end), 0) as expired
          from apikey`
       )
-      .bind(now.toISOString(), addUtcDays(today, -30), now.toISOString())
+      .bind(now.toISOString(), unusedApiKeyCutoff, now.toISOString())
       .first<{ unused: number; expired: number }>(),
   ]);
 
