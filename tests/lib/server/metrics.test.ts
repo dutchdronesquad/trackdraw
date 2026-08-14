@@ -165,6 +165,19 @@ describe("dashboard metrics", () => {
         { surface: "share", count: 5 },
         { surface: "embed", count: 2 },
       ]),
+      createD1AllStatement([
+        {
+          share_token: "share-token",
+          share_title: "Race day layout",
+          referrer_hostname: "events.example.org",
+          views: 7,
+          previous_views: 4,
+          last_seen: "2026-07-20",
+          detected_hostnames: 3,
+          detected_views: 20,
+          detected_rows: 5,
+        },
+      ]),
       createD1Statement({
         first: { imported_shapes: 24, avg_shapes: 12 },
       }),
@@ -234,6 +247,21 @@ describe("dashboard metrics", () => {
         { surface: "share", count: 5 },
         { surface: "embed", count: 2 },
       ],
+      embedReferrers30d: [
+        {
+          shareToken: "share-token",
+          shareTitle: "Race day layout",
+          hostname: "events.example.org",
+          views: 7,
+          previousViews: 4,
+          lastSeen: "2026-07-20",
+        },
+      ],
+      embedReferrerSummary30d: {
+        hostnames: 3,
+        views: 20,
+        rows: 5,
+      },
       importedShapes30d: 24,
       avgShapesPerImport30d: 12,
     });
@@ -243,10 +271,10 @@ describe("dashboard metrics", () => {
       retained7d: 6,
       retained30d: 4,
     });
-    expect(String(mocks.prepare.mock.calls[8][0])).toContain(
+    expect(String(mocks.prepare.mock.calls[9][0])).toContain(
       "event_type = 'editor.session_started'"
     );
-    expect(String(mocks.prepare.mock.calls[10][0])).toContain(
+    expect(String(mocks.prepare.mock.calls[11][0])).toContain(
       "pe.event_type = 'editor.session_started'"
     );
     const productEventQueries = mocks.prepare.mock.calls
@@ -257,6 +285,9 @@ describe("dashboard metrics", () => {
       "strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-30 days')"
     );
     expect(productEventQueries).not.toMatch(/created_at\s*[<>]=?\s*datetime\(/);
+    const embedReferrerQuery = String(mocks.prepare.mock.calls[7][0]);
+    expect(embedReferrerQuery).toContain("count(distinct referrer_hostname)");
+    expect(embedReferrerQuery).toContain("limit 10");
   });
 
   it("uses calendar month buckets in overview stats and tolerates incomplete recent user rows", async () => {

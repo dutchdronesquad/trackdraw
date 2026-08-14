@@ -279,6 +279,7 @@ export default function Home() {
               >
                 <Link
                   href="/studio"
+                  prefetch={false}
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-6 text-sm font-medium text-white shadow-lg shadow-[#1E93DB]/25 transition hover:brightness-110"
                 >
                   {t("hero.ctaStudio")} <ArrowRight className="size-3.5" />

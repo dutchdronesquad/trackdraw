@@ -750,6 +750,10 @@
         "published": "alleen-lezen gepubliceerde link, live tot intrekking",
         "temporary": "alleen-lezen tijdelijke link, {expiresIn}"
       },
+      "referrers": {
+        "label": "Gedetecteerde embedwebsites · laatste 30 dagen",
+        "item": "{hostname} ({views})"
+      },
       "actions": {
         "copyLink": "Link kopiëren",
         "openTab": "Openen in nieuw tabblad",

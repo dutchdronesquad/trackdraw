@@ -242,6 +242,7 @@ export function AccountApiKeysView({
               {t("account.apiKeys.active.descriptionPrefix")}{" "}
               <Link
                 href="/api/docs"
+                prefetch={false}
                 target="_blank"
                 rel="noreferrer"
                 className="text-foreground inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"

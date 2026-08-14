@@ -277,6 +277,7 @@ export function PricingSection() {
                   </p>
                   <Link
                     href={plan.href}
+                    prefetch={false}
                     className={
                       plan.highlighted
                         ? "mt-5 inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-5 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/25 transition hover:brightness-110"

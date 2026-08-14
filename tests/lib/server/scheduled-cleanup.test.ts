@@ -6,6 +6,8 @@ import {
   type ScheduledCleanupTask,
 } from "@/lib/server/scheduled-cleanup";
 
+vi.mock("server-only", () => ({}));
+
 const scheduledContext = {
   cron: "17 3 * * *",
   scheduledTime: Date.UTC(2026, 6, 23, 3, 17),
@@ -134,9 +136,10 @@ describe("scheduled cleanup", () => {
       "shares",
       "api_keys",
       "product_events",
+      "embed_referrers",
     ]);
     await Promise.all(tasks.map((task) => task.run()));
-    expect(run).toHaveBeenCalledTimes(3);
+    expect(run).toHaveBeenCalledTimes(4);
   });
 
   it("uses a privacy-safe fallback for non-Error rejections", async () => {

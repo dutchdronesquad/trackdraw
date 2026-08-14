@@ -242,6 +242,7 @@ export default function MobileAppMenu({
                 ) : (
                   <Link
                     href="/login"
+                    prefetch={false}
                     onClick={() => setMenuOpen(false)}
                     className="hover:bg-muted/70 flex min-h-14 items-center gap-3 rounded-xl px-2 py-2 transition-colors"
                   >
@@ -281,6 +282,7 @@ export default function MobileAppMenu({
                     {canAccessDashboard(user) ? (
                       <Link
                         href="/dashboard"
+                        prefetch={false}
                         onClick={() => setMenuOpen(false)}
                         className="hover:bg-muted/70 flex min-h-14 w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors"
                       >

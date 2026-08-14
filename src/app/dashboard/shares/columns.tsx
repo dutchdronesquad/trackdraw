@@ -354,6 +354,7 @@ export function getSharesColumns({
                     >
                       <Link
                         href={`/share/${share.token}`}
+                        prefetch={false}
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`${t("actions.open")} ${share.title}`}
@@ -420,6 +421,7 @@ export function getSharesColumns({
                     <DropdownMenuItem asChild>
                       <Link
                         href={`/share/${share.token}`}
+                        prefetch={false}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

@@ -750,6 +750,10 @@
         "published": "read-only published link, live until revoked",
         "temporary": "read-only temporary link, {expiresIn}"
       },
+      "referrers": {
+        "label": "Detected embed sites · last 30 days",
+        "item": "{hostname} ({views})"
+      },
       "actions": {
         "copyLink": "Copy link",
         "openTab": "Open in new tab",

@@ -84,12 +84,14 @@ export default function ShareViewer({
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`${pathname}?view=${alternateView}`}
+                  prefetch={false}
                   className="border-border bg-background hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors"
                 >
                   {t("openView", { view: alternateViewLabel })}
                 </Link>
                 <Link
                   href={studioHref}
+                  prefetch={false}
                   className="border-border bg-background hover:bg-muted text-foreground inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium transition-colors"
                 >
                   {t("makeEditableCopy")}

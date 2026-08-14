@@ -474,6 +474,7 @@ export default async function DashboardPage() {
               {canReadAudit && (
                 <Link
                   href="/dashboard/audit"
+                  prefetch={false}
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                 >
                   {t("actions.viewAll")}
@@ -497,6 +498,7 @@ export default async function DashboardPage() {
                 </div>
                 <Link
                   href="/dashboard/users"
+                  prefetch={false}
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors"
                 >
                   {t("actions.viewAll")}
@@ -519,6 +521,7 @@ export default async function DashboardPage() {
               <p className="text-sm font-medium">{t("sections.gallery")}</p>
               <Link
                 href="/dashboard/gallery"
+                prefetch={false}
                 className="text-muted-foreground hover:text-foreground text-xs transition-colors"
               >
                 {t("actions.viewAll")}

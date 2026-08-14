@@ -825,7 +825,7 @@ export default function DashboardUsersManager({
 
               <div className="border-t px-6 py-4">
                 <Button asChild variant="outline" className="w-full" size="sm">
-                  <Link href="/dashboard/audit">
+                  <Link href="/dashboard/audit" prefetch={false}>
                     <ExternalLink className="size-3.5" />
                     {t("panel.actions.viewFullAuditTrail")}
                   </Link>

@@ -179,6 +179,7 @@ describe("shares API route", () => {
       galleryState: null,
       galleryTitle: null,
       galleryDescription: null,
+      embedReferrers30d: [],
     };
     vi.mocked(getCurrentUserFromHeaders).mockResolvedValue(testUser);
     vi.mocked(getShareByProjectIdForUser).mockResolvedValue(share);

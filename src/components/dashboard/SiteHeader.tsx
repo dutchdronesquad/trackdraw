@@ -42,7 +42,9 @@ export default function DashboardSiteHeader({
               <>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink asChild>
-                    <Link href={parent.href}>{parent.label}</Link>
+                    <Link href={parent.href} prefetch={false}>
+                      {parent.label}
+                    </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
@@ -52,7 +54,9 @@ export default function DashboardSiteHeader({
               <>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink asChild>
-                    <Link href="/dashboard">{tCommon("labels.dashboard")}</Link>
+                    <Link href="/dashboard" prefetch={false}>
+                      {tCommon("labels.dashboard")}
+                    </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />

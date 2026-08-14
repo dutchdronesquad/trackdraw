@@ -137,6 +137,7 @@ export default function LoginPage() {
         <header className="flex items-center justify-between">
           <Link
             href="/"
+            prefetch={false}
             className="flex items-center rounded-sm opacity-90 transition-opacity hover:opacity-100"
             aria-label={t("goHome")}
           >
@@ -164,6 +165,7 @@ export default function LoginPage() {
 
           <Link
             href="/studio"
+            prefetch={false}
             className="text-muted-foreground hover:text-foreground text-sm transition-colors"
           >
             {t("backToStudio")}

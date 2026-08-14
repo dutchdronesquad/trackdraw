@@ -216,6 +216,7 @@ export default function Toolbar({
         <SidebarHeader className="border-border/60 flex h-11 items-center justify-center border-b px-3 py-0">
           <Link
             href="/"
+            prefetch={false}
             className="flex items-center justify-center rounded-md opacity-90 transition-opacity hover:opacity-100"
             aria-label={t("toolbar.homepageLabel")}
           >

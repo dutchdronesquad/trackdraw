@@ -562,6 +562,7 @@ export default function DashboardGalleryManager({
                             getEmbedAvailable(inspectCandidate) ? (
                               <Link
                                 href={`/embed/${inspectCandidate.shareToken}`}
+                                prefetch={false}
                                 className="flex items-center gap-1 text-sm hover:underline"
                               >
                                 <Link2 className="size-3.5 shrink-0" />
@@ -703,7 +704,10 @@ export default function DashboardGalleryManager({
                     {t("inspect.copyLink")}
                   </Button>
                   <Button asChild>
-                    <Link href={`/share/${inspectCandidate.shareToken}`}>
+                    <Link
+                      href={`/share/${inspectCandidate.shareToken}`}
+                      prefetch={false}
+                    >
                       <ExternalLink className="size-4" />
                       {t("inspect.openShare")}
                     </Link>

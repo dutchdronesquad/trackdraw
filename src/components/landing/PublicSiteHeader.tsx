@@ -48,9 +48,12 @@ function MenuRow({
   isLast: boolean;
   onClick: () => void;
 }) {
+  const MenuLink = href.includes("#") ? "a" : Link;
+
   return (
-    <Link
+    <MenuLink
       href={href}
+      prefetch={href === "/" ? false : undefined}
       onClick={onClick}
       className={cn(
         "hover:bg-muted/70 flex items-center gap-3 px-3 py-2.5 transition-colors",
@@ -76,7 +79,7 @@ function MenuRow({
           {description}
         </span>
       </span>
-    </Link>
+    </MenuLink>
   );
 }
 
@@ -198,6 +201,7 @@ export function PublicSiteHeader({
       <nav className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
         <Link
           href="/"
+          prefetch={false}
           aria-label={t("header.logoAriaLabel")}
           className="flex items-center"
         >
@@ -211,18 +215,20 @@ export function PublicSiteHeader({
             const isActive =
               (currentPage === "home" && item.key === "home") ||
               (currentPage === "gallery" && item.key === "gallery");
+            const NavLink = href.includes("#") ? "a" : Link;
 
             return (
-              <Link
+              <NavLink
                 key={item.key}
                 href={href}
+                prefetch={href === "/" ? false : undefined}
                 className={cn(
                   "hover:text-foreground transition-colors",
                   isActive && "text-foreground"
                 )}
               >
                 {item.label}
-              </Link>
+              </NavLink>
             );
           })}
         </div>
@@ -237,6 +243,7 @@ export function PublicSiteHeader({
             </div>
             <Link
               href="/studio"
+              prefetch={false}
               className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/30 transition hover:brightness-110"
             >
               {t("header.openStudio")} <ArrowRight className="size-3.5" />
@@ -320,6 +327,7 @@ export function PublicSiteHeader({
 
                     <Link
                       href="/studio"
+                      prefetch={false}
                       onClick={() => setOpenMobileMenu(false)}
                       className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#1E93DB] px-4 text-sm font-medium text-white shadow-md shadow-[#1E93DB]/25 transition hover:brightness-110"
                     >

@@ -64,6 +64,7 @@ export default async function EmbedUnavailable({
               {shareHref ? (
                 <Link
                   href={shareHref}
+                  prefetch={false}
                   target="_blank"
                   className="border-border text-foreground hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3 text-xs font-medium transition-colors"
                 >
@@ -72,6 +73,7 @@ export default async function EmbedUnavailable({
               ) : null}
               <Link
                 href="/login"
+                prefetch={false}
                 target="_blank"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center rounded-lg px-3 text-xs font-medium transition-colors"
               >
@@ -79,6 +81,7 @@ export default async function EmbedUnavailable({
               </Link>
               <Link
                 href="/"
+                prefetch={false}
                 target="_blank"
                 className="border-border text-foreground hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3 text-xs font-medium transition-colors"
               >

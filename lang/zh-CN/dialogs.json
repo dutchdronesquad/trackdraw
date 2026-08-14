@@ -750,6 +750,10 @@
         "published": "只读发布链接，会一直有效直到撤销",
         "temporary": "只读临时链接，{expiresIn}"
       },
+      "referrers": {
+        "label": "检测到的嵌入网站 · 最近 30 天",
+        "item": "{hostname}（{views}）"
+      },
       "actions": {
         "copyLink": "复制链接",
         "openTab": "在新标签页打开",

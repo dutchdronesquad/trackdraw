@@ -194,7 +194,11 @@ function NavMenuItem({
         )}
         asChild
       >
-        <Link href={item.href} aria-current={isActive ? "page" : undefined}>
+        <Link
+          href={item.href}
+          prefetch={false}
+          aria-current={isActive ? "page" : undefined}
+        >
           <Icon />
           <span>{label}</span>
         </Link>
@@ -262,7 +266,7 @@ export default function DashboardAppSidebar({
               asChild
               className="hover:bg-transparent active:bg-transparent"
             >
-              <Link href="/dashboard">
+              <Link href="/dashboard" prefetch={false}>
                 <div className="flex flex-1 items-center group-data-[collapsible=icon]:justify-center">
                   <span className="relative block h-8 w-42 group-data-[collapsible=icon]:hidden">
                     <Image
@@ -337,7 +341,7 @@ export default function DashboardAppSidebar({
                   className="hover:bg-muted/80 hover:text-foreground"
                   asChild
                 >
-                  <Link href={item.href}>
+                  <Link href={item.href} prefetch={false}>
                     <Icon className="group-data-[collapsible=icon]:size-4.5" />
                     <span>{label}</span>
                   </Link>

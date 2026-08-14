@@ -139,6 +139,7 @@ export function MagicLinkConfirm() {
         <header className="flex items-center justify-between">
           <Link
             href="/"
+            prefetch={false}
             className="flex items-center rounded-sm opacity-90 transition-opacity hover:opacity-100"
             aria-label={t("goHome")}
           >
@@ -166,6 +167,7 @@ export function MagicLinkConfirm() {
 
           <Link
             href="/login"
+            prefetch={false}
             className="text-muted-foreground hover:text-foreground text-sm transition-colors"
           >
             {t("magicLinkVerify.backToLogin")}
@@ -276,7 +278,7 @@ export function MagicLinkConfirm() {
                   className="h-11 w-full"
                   asChild
                 >
-                  <Link href="/login">
+                  <Link href="/login" prefetch={false}>
                     <MailCheck className="size-4" />
                     {t("magicLinkVerify.requestNewLink")}
                   </Link>

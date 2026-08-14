@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
-import { Activity, Download, Eye, Users } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { Activity, Eye, Users } from "lucide-react";
 import DashboardSiteHeader from "@/components/dashboard/SiteHeader";
 import {
   ActivationFunnel,
-  ContentGrowthChart,
-  DistributionSummary,
-  EditorUsageBreakdown,
-  ExportUsageBreakdown,
+  GrowthTabs,
   MetricsFocusBanner,
-  PlanLimitSimulator,
   RetentionCohorts,
-  ShareUsageBreakdown,
   SharingHealth,
-  UserGrowthCard,
-  UserPopulationChart,
+  UsageTabs,
 } from "@/components/dashboard/MetricsChartsLoader";
 import { getCurrentUserFromHeaders } from "@/lib/server/auth-session";
 import { hasCapability } from "@/lib/server/authorization";
@@ -42,43 +37,31 @@ type KpiCardProps = {
   value: number | string;
   sub?: string;
   icon: typeof Users;
-  accent: string;
-  iconTone: string;
 };
 
-function KpiCard({
-  label,
-  value,
-  sub,
-  icon: Icon,
-  accent,
-  iconTone,
-}: KpiCardProps) {
+function KpiCard({ label, value, sub, icon: Icon }: KpiCardProps) {
   return (
-    <div className="bg-card min-w-0 overflow-hidden rounded-xl border">
-      <div className={`h-1 ${accent}`} />
-      <div className="flex items-start gap-3 p-4">
-        <span
-          className={`mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-lg ${iconTone}`}
-          aria-hidden="true"
-        >
-          <Icon className="size-4" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-muted-foreground min-h-8 text-xs leading-snug font-medium sm:min-h-0">
-            {label}
-          </p>
-          <p className="text-2xl leading-tight font-bold tabular-nums">
-            {value}
-          </p>
-          {sub ? (
-            <p className="text-muted-foreground mt-1 text-xs leading-snug">
-              {sub}
-            </p>
-          ) : null}
-        </div>
+    <dl className="bg-card flex min-w-0 items-start gap-3 rounded-xl border p-4">
+      <span
+        className="bg-muted text-muted-foreground mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-lg"
+        aria-hidden="true"
+      >
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-muted-foreground text-sm leading-snug font-medium">
+          {label}
+        </dt>
+        <dd className="text-2xl leading-tight font-bold tabular-nums">
+          {value}
+        </dd>
+        {sub ? (
+          <dd className="text-muted-foreground mt-1 text-sm leading-snug">
+            {sub}
+          </dd>
+        ) : null}
       </div>
-    </div>
+    </dl>
   );
 }
 
@@ -100,23 +83,23 @@ function ChartCard({
   id,
 }: ChartCardProps) {
   return (
-    <div
+    <figure
       id={id}
       className={`bg-card min-w-0 rounded-xl border p-4 sm:p-5 ${className ?? ""}`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-0.5">
+        <figcaption className="min-w-0 space-y-1">
           <h3 className="text-sm font-semibold">{title}</h3>
           {description ? (
-            <p className="text-muted-foreground max-w-3xl text-xs leading-relaxed">
+            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
               {description}
             </p>
           ) : null}
-        </div>
+        </figcaption>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
       <div className="pt-4">{children}</div>
-    </div>
+    </figure>
   );
 }
 
@@ -147,17 +130,17 @@ function OperationalSummary({
   rows: Array<{ label: string; value: number; detail: string }>;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
+    <dl className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
       {rows.map((row) => (
         <div key={row.label} className="border-b py-3">
-          <p className="text-muted-foreground text-sm">{row.label}</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums">{row.value}</p>
-          <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+          <dt className="text-muted-foreground text-sm">{row.label}</dt>
+          <dd className="mt-1 text-2xl font-bold tabular-nums">{row.value}</dd>
+          <dd className="text-muted-foreground mt-1 text-sm leading-relaxed">
             {row.detail}
-          </p>
+          </dd>
         </div>
       ))}
-    </div>
+    </dl>
   );
 }
 
@@ -179,34 +162,66 @@ export default async function DashboardMetricsPage() {
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
   const tMetrics = await getTranslations("dashboard.metrics");
+  const locale = await getLocale();
+  const lastUpdated = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date());
   const editorStarts =
     insights.usage.eventTypes30d.find(
       (row) => row.eventType === "editor.session_started"
     )?.count ?? 0;
-  const usedExportFormats = insights.usage.exportFormats30d.filter(
-    (row) => row.count > 0
-  ).length;
   const sharePageViews =
     insights.usage.shareSurfaces30d.find((row) => row.surface === "share")
       ?.count ?? 0;
   const embedViews =
     insights.usage.shareSurfaces30d.find((row) => row.surface === "embed")
       ?.count ?? 0;
-
   return (
     <>
       <DashboardSiteHeader
         parent={{ label: tCommon("labels.dashboard"), href: "/dashboard" }}
         title={t("pages.metrics")}
       />
-      <div className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-8 p-3 pt-0 sm:gap-10 sm:p-4 sm:pt-0">
-        <section className="space-y-4" aria-labelledby="product-pulse-title">
+      <main className="mx-auto flex w-full max-w-[1600px] min-w-0 flex-1 flex-col gap-6 p-3 pt-0 sm:gap-8 sm:p-4 sm:pt-0">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {t("pages.metrics")}
+            </h1>
+            <dl className="text-muted-foreground flex flex-wrap gap-x-2 text-sm">
+              <div className="flex gap-1.5">
+                <dt className="sr-only">{tMetrics("overview.periodLabel")}</dt>
+                <dd>{tMetrics("overview.periodValue")}</dd>
+              </div>
+              <div className="flex gap-2 before:content-['·']">
+                <dt>{tMetrics("overview.updatedLabel")}</dt>
+                <dd>
+                  <time dateTime={new Date().toISOString()}>{lastUpdated}</time>
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <Link
+            href="/dashboard/metrics/planning"
+            prefetch={false}
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring self-start rounded-sm text-sm font-medium underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:outline-none sm:self-auto"
+          >
+            {tMetrics("navigation.planning")}
+          </Link>
+        </header>
+
+        <section
+          id="overview"
+          className="scroll-mt-24 space-y-4"
+          aria-labelledby="product-pulse-title"
+        >
           <SectionHeading
             id="product-pulse-title"
             title={tMetrics("sections.pulse.title")}
             description={tMetrics("sections.pulse.description")}
           />
-          <div className="grid min-w-0 grid-cols-1 gap-3 min-[460px]:grid-cols-2 xl:grid-cols-4">
+          <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
             <KpiCard
               label={tMetrics("kpi.activeAccounts.label")}
               value={metrics.users.activeLastThirtyDays}
@@ -221,8 +236,6 @@ export default async function DashboardMetricsPage() {
                     : 0,
               })}
               icon={Users}
-              accent="bg-emerald-500"
-              iconTone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
             />
             <KpiCard
               label={tMetrics("kpi.editorStarts.label")}
@@ -232,18 +245,6 @@ export default async function DashboardMetricsPage() {
                 anonymous: insights.usage.anonymousSessions30d,
               })}
               icon={Activity}
-              accent="bg-sky-500"
-              iconTone="bg-sky-500/10 text-sky-600 dark:text-sky-400"
-            />
-            <KpiCard
-              label={tMetrics("kpi.exports.label")}
-              value={insights.usage.exports30d}
-              sub={tMetrics("kpi.exports.sub", {
-                formats: usedExportFormats,
-              })}
-              icon={Download}
-              accent="bg-violet-500"
-              iconTone="bg-violet-500/10 text-violet-600 dark:text-violet-400"
             />
             <KpiCard
               label={tMetrics("kpi.viewingSessions.label")}
@@ -253,19 +254,19 @@ export default async function DashboardMetricsPage() {
                 embed: embedViews,
               })}
               icon={Eye}
-              accent="bg-orange-500"
-              iconTone="bg-orange-500/10 text-orange-600 dark:text-orange-400"
             />
           </div>
         </section>
 
-        <MetricsFocusBanner metrics={metrics} insights={insights} />
+        <MetricsFocusBanner metrics={metrics} />
 
         <section
           id="journey"
+          aria-labelledby="journey-title"
           className="scroll-mt-24 space-y-4 border-t pt-6 sm:pt-8"
         >
           <SectionHeading
+            id="journey-title"
             title={tMetrics("sections.journey.title")}
             description={tMetrics("sections.journey.description")}
           />
@@ -288,81 +289,56 @@ export default async function DashboardMetricsPage() {
 
         <section
           id="product-use"
+          aria-labelledby="product-use-title"
           className="scroll-mt-24 space-y-4 border-t pt-6 sm:pt-8"
         >
           <SectionHeading
+            id="product-use-title"
             title={tMetrics("sections.value.title")}
             description={tMetrics("sections.value.description")}
           />
-          <div className="grid min-w-0 gap-4 lg:grid-cols-12">
-            <ChartCard
-              id="editor-behavior"
-              title={tMetrics("editorUsage.title")}
-              description={tMetrics("editorUsage.description")}
-              className="lg:col-span-7"
-            >
-              <EditorUsageBreakdown usage={insights.usage} />
-            </ChartCard>
-            <div className="space-y-4 lg:col-span-5">
-              <ChartCard
-                id="export-usage"
-                title={tMetrics("exportUsage.title")}
-                description={tMetrics("exportUsage.description")}
-              >
-                <ExportUsageBreakdown usage={insights.usage} />
-              </ChartCard>
-              <ChartCard
-                id="share-viewing"
-                title={tMetrics("shareUsage.title")}
-                description={tMetrics("shareUsage.description")}
-              >
-                <ShareUsageBreakdown usage={insights.usage} />
-              </ChartCard>
-            </div>
-          </div>
+          <UsageTabs usage={insights.usage} />
         </section>
 
         <section
           id="growth"
+          aria-labelledby="growth-title"
           className="scroll-mt-24 space-y-4 border-t pt-6 sm:pt-8"
         >
           <SectionHeading
+            id="growth-title"
             title={tMetrics("sections.growth.title")}
             description={tMetrics("sections.growth.description")}
           />
-          <UserGrowthCard
+          <GrowthTabs
             growthByRange={growthByRange}
             growthTimeline={growthTimeline}
+            contentGrowth={insights.contentGrowth}
           />
-          <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
-            <ChartCard
-              title={tMetrics("contentGrowth.title")}
-              description={tMetrics("contentGrowth.description")}
-            >
-              <ContentGrowthChart data={insights.contentGrowth} />
-            </ChartCard>
-            <ChartCard
-              title={tMetrics("userPopulation.title")}
-              description={tMetrics("userPopulation.description")}
-            >
-              <UserPopulationChart users={metrics.users} />
-            </ChartCard>
-          </div>
         </section>
 
         <section
           id="operations"
+          aria-labelledby="operations-title"
           className="scroll-mt-24 space-y-4 border-t pt-6 sm:pt-8"
         >
           <SectionHeading
+            id="operations-title"
             title={tMetrics("sections.operations.title")}
             description={tMetrics("sections.operations.description")}
           />
-          <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
-            <ChartCard
-              title={tMetrics("inventory.title")}
-              description={tMetrics("inventory.description")}
-            >
+          <ChartCard
+            id="sharing-health"
+            title={tMetrics("health.title")}
+            description={tMetrics("health.description")}
+          >
+            <SharingHealth shares={metrics.shares} gallery={metrics.gallery} />
+          </ChartCard>
+          <details className="bg-card rounded-xl border p-4 sm:p-5">
+            <summary className="cursor-pointer text-sm font-semibold">
+              {tMetrics("inventory.showDetails")}
+            </summary>
+            <div className="pt-4">
               <OperationalSummary
                 rows={[
                   {
@@ -398,47 +374,10 @@ export default async function DashboardMetricsPage() {
                   },
                 ]}
               />
-            </ChartCard>
-            <ChartCard
-              id="sharing-health"
-              title={tMetrics("health.title")}
-              description={tMetrics("health.description")}
-            >
-              <SharingHealth
-                shares={metrics.shares}
-                gallery={metrics.gallery}
-              />
-            </ChartCard>
-          </div>
-        </section>
-
-        <section
-          id="planning"
-          className="scroll-mt-24 space-y-4 border-t pt-6 pb-4 sm:pt-8"
-        >
-          <SectionHeading
-            title={tMetrics("sections.planning.title")}
-            description={tMetrics("sections.planning.description")}
-          />
-          <ChartCard
-            title={tMetrics("distribution.title")}
-            description={tMetrics("distribution.description")}
-          >
-            <DistributionSummary userDistribution={metrics.userDistribution} />
-          </ChartCard>
-          <div className="space-y-4">
-            <div className="max-w-3xl">
-              <h3 className="text-sm font-semibold">
-                {tMetrics("planLimit.title")}
-              </h3>
-              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                {tMetrics("planLimit.description")}
-              </p>
             </div>
-            <PlanLimitSimulator userDistribution={metrics.userDistribution} />
-          </div>
+          </details>
         </section>
-      </div>
+      </main>
     </>
   );
 }

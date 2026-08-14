@@ -12,6 +12,11 @@ export const UserGrowthCard = dynamic(
   { ssr: false }
 );
 
+export const GrowthTabs = dynamic(
+  () => import("./MetricsCharts").then((m) => m.GrowthTabs),
+  { ssr: false }
+);
+
 export const ActivationFunnel = dynamic(
   () => import("./MetricsCharts").then((m) => m.ActivationFunnel),
   { ssr: false }
@@ -44,6 +49,16 @@ export const ExportUsageBreakdown = dynamic(
 
 export const ShareUsageBreakdown = dynamic(
   () => import("./MetricsCharts").then((m) => m.ShareUsageBreakdown),
+  { ssr: false }
+);
+
+export const EmbedReachTable = dynamic(
+  () => import("./MetricsCharts").then((m) => m.EmbedReachTable),
+  { ssr: false }
+);
+
+export const UsageTabs = dynamic(
+  () => import("./MetricsCharts").then((m) => m.UsageTabs),
   { ssr: false }
 );
 

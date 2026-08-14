@@ -98,6 +98,7 @@ export function Footer() {
                 <li>
                   <Link
                     href="/studio"
+                    prefetch={false}
                     className="text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
                   >
                     <Pencil className="size-4 shrink-0" />

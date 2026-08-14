@@ -1557,7 +1557,7 @@ export default function ShareDialog({
                           className={shareDialogButtonClassName}
                           asChild
                         >
-                          <Link href="/gallery">
+                          <Link href="/gallery" prefetch={false}>
                             {t("share.gallery.card.viewGallery")}
                           </Link>
                         </Button>
