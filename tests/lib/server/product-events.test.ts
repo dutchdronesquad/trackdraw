@@ -76,6 +76,21 @@ describe("product events", () => {
     expect(activationStatement.bind).toHaveBeenCalledWith("user-1");
   });
 
+  it("does not start derived-fact deletion when raw event deletion fails", async () => {
+    const eventStatement = createD1Statement();
+    eventStatement.run.mockRejectedValue(new Error("D1 event deletion failed"));
+    const activationStatement = createD1Statement({ run: {} });
+    mocks.prepare
+      .mockReturnValueOnce(eventStatement)
+      .mockReturnValueOnce(activationStatement);
+
+    await expect(deleteProductEventsForUser("user-1")).rejects.toThrow(
+      "D1 event deletion failed"
+    );
+
+    expect(activationStatement.run).not.toHaveBeenCalled();
+  });
+
   it("removes an anonymous session and persists a signed-in objection", async () => {
     const sessionStatement = createD1Statement({ run: {} });
     const preferenceStatement = createD1Statement({ run: {} });

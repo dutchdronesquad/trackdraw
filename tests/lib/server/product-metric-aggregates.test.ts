@@ -42,12 +42,19 @@ describe("product metric aggregates", () => {
     expect(aggregate.sql).toContain(
       "on conflict(metric_id, day_utc, dimension) do update"
     );
+    expect(aggregate.sql).toContain(
+      "when bounds.is_complete_day = 0 then 'incomplete'"
+    );
+    expect(aggregate.sql).toContain(
+      "datetime((select end_at from bounds), '+30 days')"
+    );
     expect(aggregate.sql).not.toContain("project_id as");
     expect(aggregate.bind).toHaveBeenCalledWith(
       "2026-08-13",
       "2026-08-13T00:00:00.000Z",
       "2026-08-14T00:00:00.000Z",
-      "2026-08-14T03:17:00.000Z"
+      "2026-08-14T03:17:00.000Z",
+      1
     );
     expect(result.health).toEqual({
       aggregated_days: 1,
@@ -163,6 +170,7 @@ describe("product metric aggregates", () => {
       "2026-08-14T00:00:00.000Z",
       "2026-08-14T12:00:00.000Z",
       "2026-08-14T12:00:00.000Z",
+      0,
       "MTR-001"
     );
     expect(rows.map((row) => row.numerator)).toEqual([4, 2]);

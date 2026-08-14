@@ -75,23 +75,19 @@ export async function setProductAnalyticsPreference(
 
 export async function deleteProductEventsForUser(userId: string) {
   const db = await getDatabase();
-  await Promise.all([
-    db
-      .prepare(
-        `
+  await db
+    .prepare(
+      `
     delete from product_events
     where user_id = ?
       or project_id in (select id from projects where owner_user_id = ?)
       or share_token in (select token from shares where owner_user_id = ?)
   `
-      )
-      .bind(userId, userId, userId)
-      .run(),
-    db
-      .prepare(
-        "delete from product_metric_creator_activations where user_id = ?"
-      )
-      .bind(userId)
-      .run(),
-  ]);
+    )
+    .bind(userId, userId, userId)
+    .run();
+  await db
+    .prepare("delete from product_metric_creator_activations where user_id = ?")
+    .bind(userId)
+    .run();
 }

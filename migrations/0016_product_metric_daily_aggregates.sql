@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS product_metric_daily_aggregates (
   window_days INTEGER NOT NULL CHECK (window_days IN (7, 28, 30)),
   numerator INTEGER NOT NULL CHECK (numerator >= 0),
   denominator INTEGER CHECK (denominator IS NULL OR denominator >= 0),
-  sample_size INTEGER NOT NULL CHECK (sample_size >= 0),
+  sample_size INTEGER CHECK (sample_size IS NULL OR sample_size >= 0),
   completeness_state TEXT NOT NULL
     CHECK (completeness_state IN ('complete', 'incomplete')),
   quality_status TEXT NOT NULL

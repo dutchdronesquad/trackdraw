@@ -34,7 +34,7 @@ export type ProductMetricDailyRow = {
   window_days: 7 | 28 | 30;
   numerator: number;
   denominator: number | null;
-  sample_size: number;
+  sample_size: number | null;
   completeness_state: "complete" | "incomplete";
   quality_status:
     "building" | "low_volume" | "healthy" | "degraded" | "invalid";
@@ -75,7 +75,7 @@ function daysBetween(from: string, toExclusive: string) {
 const DAILY_METRIC_CTES = `
 with
   bounds as (
-    select ? as day_utc, ? as start_at, ? as end_at, ? as updated_at
+    select ? as day_utc, ? as start_at, ? as end_at, ? as updated_at, ? as is_complete_day
   ),
   events28 as (
     select *
@@ -212,30 +212,36 @@ with
     select 'MTR-004', '', 7, (select count(*) from valuable_sessions7), (select count(*) from editor_sessions7), (select count(*) from editor_sessions7)
     union all
     select 'MTR-005', '', 30,
-      count(*),
-      (select count(*) from product_metric_creator_activations a, bounds
-       where a.activated_at >= bounds.start_at and a.activated_at < bounds.end_at),
-      (select count(*) from product_metric_creator_activations a, bounds
-       where a.activated_at >= bounds.start_at and a.activated_at < bounds.end_at)
-    from product_metric_creator_activations activation, bounds
-    where activation.activated_at >= bounds.start_at
-      and activation.activated_at < bounds.end_at
-      and datetime(bounds.end_at, '+30 days') <= bounds.updated_at
-      and exists (
-        select 1 from product_events return_event
-        where return_event.contract_version = '${CONTRACT_VERSION}'
-          and return_event.user_id = activation.user_id
-          and return_event.event_type = 'editor.session_started'
-          and return_event.created_at >= datetime(activation.activated_at, '+1 day')
-          and return_event.created_at < datetime(activation.activated_at, '+31 days')
-          and return_event.session_id <> (
-            select first_edit.session_id from product_events first_edit
-            where first_edit.contract_version = '${CONTRACT_VERSION}'
-              and first_edit.user_id = activation.user_id
-              and first_edit.event_type = 'editor.meaningful_edit_completed'
-            order by first_edit.created_at limit 1
-          )
-      )
+      case when datetime((select end_at from bounds), '+30 days') <= (select updated_at from bounds) then
+        (select count(*)
+         from product_metric_creator_activations activation, bounds
+         where activation.activated_at >= bounds.start_at
+           and activation.activated_at < bounds.end_at
+           and exists (
+             select 1 from product_events return_event
+             where return_event.contract_version = '${CONTRACT_VERSION}'
+               and return_event.user_id = activation.user_id
+               and return_event.event_type = 'editor.session_started'
+               and return_event.created_at >= datetime(activation.activated_at, '+1 day')
+               and return_event.created_at < datetime(activation.activated_at, '+31 days')
+               and return_event.session_id <> (
+                 select first_edit.session_id from product_events first_edit
+                 where first_edit.contract_version = '${CONTRACT_VERSION}'
+                   and first_edit.user_id = activation.user_id
+                   and first_edit.event_type = 'editor.meaningful_edit_completed'
+                 order by first_edit.created_at limit 1
+               )
+           ))
+        else 0
+      end,
+      case when datetime((select end_at from bounds), '+30 days') <= (select updated_at from bounds) then
+        (select count(*) from product_metric_creator_activations a, bounds
+         where a.activated_at >= bounds.start_at and a.activated_at < bounds.end_at)
+      end,
+      case when datetime((select end_at from bounds), '+30 days') <= (select updated_at from bounds) then
+        (select count(*) from product_metric_creator_activations a, bounds
+         where a.activated_at >= bounds.start_at and a.activated_at < bounds.end_at)
+      end
     union all
     select 'MTR-006', '', 7, count(distinct session_id), null, count(distinct session_id)
     from events7
@@ -285,9 +291,17 @@ with
       metric_rows.window_days,
       cast(coalesce(metric_rows.numerator, 0) as integer) as numerator,
       cast(metric_rows.denominator as integer) as denominator,
-      cast(coalesce(metric_rows.quality_volume, 0) as integer) as sample_size,
-      'complete' as completeness_state,
+      cast(metric_rows.quality_volume as integer) as sample_size,
       case
+        when bounds.is_complete_day = 0 then 'incomplete'
+        when metric_rows.metric_id = 'MTR-005'
+          and datetime(bounds.end_at, '+30 days') > bounds.updated_at then 'incomplete'
+        else 'complete'
+      end as completeness_state,
+      case
+        when bounds.is_complete_day = 0 then 'building'
+        when metric_rows.metric_id = 'MTR-005'
+          and datetime(bounds.end_at, '+30 days') > bounds.updated_at then 'building'
         when julianday(bounds.day_utc) - julianday(state.measured_since) < 28 then 'building'
         else 'healthy'
       end as quality_status,
@@ -304,6 +318,7 @@ function bindDailyStatement(
   day: string,
   endAt: string,
   updatedAt: string,
+  isCompleteDay: boolean,
   ...values: unknown[]
 ) {
   return statement.bind(
@@ -311,6 +326,7 @@ function bindDailyStatement(
     `${day}T00:00:00.000Z`,
     endAt,
     updatedAt,
+    isCompleteDay ? 1 : 0,
     ...values
   );
 }
@@ -362,7 +378,8 @@ async function aggregateDay(
     statement,
     day,
     `${addUtcDays(day, 1)}T00:00:00.000Z`,
-    updatedAt
+    updatedAt,
+    true
   ).run<{
     meta?: { changes?: number };
   }>();
@@ -544,6 +561,7 @@ export async function getProductMetricSeries(
     today,
     now.toISOString(),
     now.toISOString(),
+    false,
     metricId
   ).all<ProductMetricDailyRow>();
 
