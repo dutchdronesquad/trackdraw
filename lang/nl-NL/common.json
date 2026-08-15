@@ -74,6 +74,15 @@
     "openStudio": "Studio openen",
     "nextStep": "Als dit blijft gebeuren, open Studio opnieuw en exporteer een JSON-back-up voordat je grote wijzigingen maakt."
   },
+  "productAnalytics": {
+    "title": "Productanalyse",
+    "description": "Beheer privacyvriendelijke productmetingen. Als je dit uitschakelt, stopt TrackDraw met het verzamelen van nieuwe gebeurtenissen en vraagt het om gebeurtenissen te verwijderen die aan deze browsersessie zijn gekoppeld en, wanneer je bent ingelogd, aan je account, projecten en gedeelde links.",
+    "preferenceTitle": "Privacyvriendelijke gebruiksgegevens delen",
+    "preferenceDescription": "Helpt editorflows en betrouwbaarheid te verbeteren. Trackinhoud, volledige URL's, IP-adressen en advertentieprofielen worden nooit opgenomen.",
+    "saving": "Opslaan…",
+    "toggleLabel": "Privacyvriendelijke productanalyse delen",
+    "error": "Toekomstige verzameling is in deze browser uitgeschakeld, maar TrackDraw kon niet bevestigen dat bestaande gebeurtenissen zijn verwijderd. Probeer het opnieuw."
+  },
   "status": {
     "active": "Actief",
     "expired": "Verlopen",

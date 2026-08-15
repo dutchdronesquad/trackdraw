@@ -74,6 +74,15 @@
     "openStudio": "Studio öffnen",
     "nextStep": "Wenn das weiter passiert, öffne Studio erneut und exportiere ein JSON-Backup, bevor du größere Änderungen machst."
   },
+  "productAnalytics": {
+    "title": "Produktanalyse",
+    "description": "Verwalte datenschutzfreundliche Produktmessungen. Wenn du sie deaktivierst, erfasst TrackDraw keine neuen Ereignisse mehr und fordert die Löschung von Ereignissen an, die mit dieser Browsersitzung und, wenn du angemeldet bist, mit deinem Konto, deinen Projekten und Freigaben verknüpft sind.",
+    "preferenceTitle": "Datenschutzfreundliche Nutzungsdaten teilen",
+    "preferenceDescription": "Hilft, Abläufe im Editor und die Zuverlässigkeit zu verbessern. Streckeninhalte, vollständige URLs, IP-Adressen und Werbeprofile werden niemals erfasst.",
+    "saving": "Wird gespeichert…",
+    "toggleLabel": "Datenschutzfreundliche Produktanalysedaten teilen",
+    "error": "Die zukünftige Erfassung ist in diesem Browser deaktiviert, aber TrackDraw konnte die Löschung vorhandener Ereignisse nicht bestätigen. Bitte versuche es erneut."
+  },
   "status": {
     "active": "Aktiv",
     "expired": "Abgelaufen",

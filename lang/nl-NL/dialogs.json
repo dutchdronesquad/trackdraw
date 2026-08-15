@@ -1,4 +1,49 @@
 {
+  "feedback": {
+    "title": "Feedback delen",
+    "subtitle": "Deel een probleem, idee of vraag. Controleer alles voordat GitHub wordt geopend.",
+    "categoryLabel": "Type feedback",
+    "titleLabel": "Korte titel",
+    "detailsLabel": "Details",
+    "stepsLabel": "Stappen om het probleem te reproduceren (optioneel)",
+    "addSteps": "Reproductiestappen toevoegen",
+    "hideSteps": "Reproductiestappen verbergen",
+    "stepsPlaceholder": "1. Open…\n2. Selecteer…\n3. Het probleem verschijnt…",
+    "contextLabel": "App-context toevoegen",
+    "contextDescription": "Alleen versie {version}, onderdeel {routeFamily}, browser {browser} en apparaat {device}.",
+    "previewLabel": "Voorbeeld van GitHub-melding",
+    "hidePreview": "Voorbeeld van GitHub-melding verbergen",
+    "previewEmpty": "Voeg een titel en details toe om de melding voor te bereiden.",
+    "publicWarning": "Je melding wordt openbaar op GitHub. TrackDraw voegt nooit project-, account- of ontwerpgegevens toe.",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd",
+    "copiedStatus": "Melding gekopieerd.",
+    "copyFailed": "Kopiëren is niet gelukt. Het voorbeeld is geopend, zodat je het handmatig kunt kopiëren.",
+    "openGitHub": "Controleren op GitHub",
+    "categories": {
+      "bug": {
+        "shortTitle": "Probleem",
+        "title": "Een probleem melden",
+        "description": "Iets werkt niet, is onduidelijk of gedraagt zich onverwacht.",
+        "titlePlaceholder": "Wat ging er mis?",
+        "detailsPlaceholder": "Wat verwachtte je en wat gebeurde er in plaats daarvan?"
+      },
+      "idea": {
+        "shortTitle": "Idee",
+        "title": "Een idee delen",
+        "description": "Stel een verbetering of een nieuwe manier voor waarop TrackDraw kan helpen.",
+        "titlePlaceholder": "Vat je idee samen",
+        "detailsPlaceholder": "Welk probleem zou dit oplossen en wanneer zou je het gebruiken?"
+      },
+      "question": {
+        "shortTitle": "Vraag",
+        "title": "Een vraag stellen",
+        "description": "Stel een vraag over een workflow of iets wat je niet kunt vinden.",
+        "titlePlaceholder": "Wat wil je graag weten?",
+        "detailsPlaceholder": "Beschrijf wat je probeert te doen en waar je vastloopt."
+      }
+    }
+  },
   "account": {
     "dialog": {
       "eyebrow": "Studio",
@@ -6,6 +51,7 @@
     },
     "nav": {
       "security": "Beveiliging",
+      "privacy": "Privacy",
       "apiKeys": "API-sleutels",
       "danger": "Gevaarzone"
     },
@@ -17,6 +63,10 @@
       "security": {
         "title": "Beveiliging",
         "description": "Beheer aanmeldmethoden, e-mailadres en passkeys voor je TrackDraw-account."
+      },
+      "privacy": {
+        "title": "Privacy",
+        "description": "Beheer optionele productanalyse voor je TrackDraw-account."
       },
       "apiKeys": {
         "title": "API-sleutels",

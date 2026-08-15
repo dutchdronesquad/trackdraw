@@ -6,7 +6,8 @@
     "import": "导入",
     "importTooltip": "导入 JSON",
     "export": "导出",
-    "exportTooltip": "导出赛道"
+    "exportTooltip": "导出赛道",
+    "feedbackSupport": "反馈"
   },
   "contextMenu": {
     "quickActions": "快捷操作",
@@ -107,6 +108,7 @@
     "retrySync": "重试账户同步 ({status})",
     "share": "分享",
     "export": "导出",
+    "feedbackSupport": "反馈",
     "openAppMenu": "打开应用菜单",
     "hideObstacleNumbers": "隐藏障碍编号",
     "showObstacleNumbers": "显示障碍编号"
@@ -137,6 +139,9 @@
     "importDescription": "导入 JSON 项目文件",
     "exportLabel": "导出",
     "exportDescription": "下载 PNG、PDF、SVG 或 JSON",
+    "supportSection": "支持",
+    "feedbackLabel": "反馈",
+    "feedbackDescription": "反馈问题、分享想法或提出疑问",
     "themeLabel": "主题",
     "themeDescription": "切换浅色、深色或跟随系统",
     "signOut": "退出登录",
@@ -319,6 +324,11 @@
         "sectionLabel": "分享",
         "editableCopy": "可编辑副本",
         "shareButton": "分享"
+      },
+      "support": {
+        "sectionLabel": "支持",
+        "label": "反馈",
+        "description": "反馈问题、分享想法或提出疑问"
       }
     },
     "multiSelect": {
@@ -393,6 +403,7 @@
         "view": "视图",
         "review": "审阅",
         "share": "分享",
+        "feedback": "反馈",
         "editCopy": "编辑副本",
         "preview": "预览"
       },

@@ -6,7 +6,8 @@
     "import": "Importeren",
     "importTooltip": "JSON importeren",
     "export": "Exporteren",
-    "exportTooltip": "Track exporteren"
+    "exportTooltip": "Track exporteren",
+    "feedbackSupport": "Feedback"
   },
   "contextMenu": {
     "quickActions": "Snelle acties",
@@ -107,6 +108,7 @@
     "retrySync": "Accountsync opnieuw proberen ({status})",
     "share": "Delen",
     "export": "Exporteren",
+    "feedbackSupport": "Feedback",
     "openAppMenu": "App-menu openen",
     "hideObstacleNumbers": "Obstakelnummers verbergen",
     "showObstacleNumbers": "Obstakelnummers tonen"
@@ -137,6 +139,9 @@
     "importDescription": "Importeer een JSON-projectbestand",
     "exportLabel": "Exporteren",
     "exportDescription": "Download PNG, PDF, SVG of JSON",
+    "supportSection": "Ondersteuning",
+    "feedbackLabel": "Feedback",
+    "feedbackDescription": "Meld een probleem, deel een idee of stel een vraag",
     "themeLabel": "Thema",
     "themeDescription": "Wissel tussen licht, donker of systeem",
     "signOut": "Uitloggen",
@@ -319,6 +324,11 @@
         "sectionLabel": "Delen",
         "editableCopy": "Bewerkbare kopie",
         "shareButton": "Delen"
+      },
+      "support": {
+        "sectionLabel": "Ondersteuning",
+        "label": "Feedback",
+        "description": "Meld een probleem, deel een idee of stel een vraag"
       }
     },
     "multiSelect": {
@@ -393,6 +403,7 @@
         "view": "Weergave",
         "review": "Review",
         "share": "Delen",
+        "feedback": "Feedback",
         "editCopy": "Kopie bewerken",
         "preview": "Preview"
       },

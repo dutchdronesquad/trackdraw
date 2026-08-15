@@ -74,6 +74,15 @@
     "openStudio": "打开 Studio",
     "nextStep": "如果问题持续出现，请重新打开 Studio，并在继续进行较大改动前先导出一份 JSON 备份。"
   },
+  "productAnalytics": {
+    "title": "产品分析",
+    "description": "管理注重隐私的产品数据统计。关闭后，TrackDraw 将停止收集后续事件，并请求删除与当前浏览器会话相关的事件；登录后，还会请求删除与你的账户、项目和分享链接相关的事件。",
+    "preferenceTitle": "共享注重隐私保护的使用数据",
+    "preferenceDescription": "帮助改进编辑器流程和可靠性。绝不会包含赛道内容、完整 URL、IP 地址或广告画像。",
+    "saving": "正在保存…",
+    "toggleLabel": "共享注重隐私保护的产品分析数据",
+    "error": "此浏览器已停止后续数据收集，但 TrackDraw 无法确认现有事件已被删除。请重试。"
+  },
   "status": {
     "active": "生效中",
     "expired": "已过期",

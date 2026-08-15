@@ -1,4 +1,49 @@
 {
+  "feedback": {
+    "title": "Feedback teilen",
+    "subtitle": "Melde ein Problem, teile eine Idee oder stelle eine Frage. Prüfe alles, bevor GitHub geöffnet wird.",
+    "categoryLabel": "Feedback-Typ",
+    "titleLabel": "Kurzer Titel",
+    "detailsLabel": "Details",
+    "stepsLabel": "Schritte zum Reproduzieren (optional)",
+    "addSteps": "Reproduktionsschritte hinzufügen",
+    "hideSteps": "Reproduktionsschritte ausblenden",
+    "stepsPlaceholder": "1. Öffne…\n2. Wähle…\n3. Das Problem tritt auf…",
+    "contextLabel": "App-Kontext hinzufügen",
+    "contextDescription": "Nur Version {version}, Bereich {routeFamily}, Browser {browser} und Gerät {device}.",
+    "previewLabel": "Vorschau des GitHub-Berichts",
+    "hidePreview": "Vorschau des GitHub-Berichts ausblenden",
+    "previewEmpty": "Füge einen Titel und Details hinzu, um den Bericht vorzubereiten.",
+    "publicWarning": "Dein Bericht wird auf GitHub öffentlich sein. TrackDraw fügt niemals Projekt-, Konto- oder Designdaten hinzu.",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "copiedStatus": "Bericht kopiert.",
+    "copyFailed": "Kopieren fehlgeschlagen. Die Vorschau ist geöffnet, damit du den Bericht manuell kopieren kannst.",
+    "openGitHub": "Auf GitHub prüfen",
+    "categories": {
+      "bug": {
+        "shortTitle": "Problem",
+        "title": "Ein Problem melden",
+        "description": "Etwas funktioniert nicht, ist unklar oder verhält sich unerwartet.",
+        "titlePlaceholder": "Was ist schiefgelaufen?",
+        "detailsPlaceholder": "Was hast du erwartet und was ist stattdessen passiert?"
+      },
+      "idea": {
+        "shortTitle": "Idee",
+        "title": "Eine Idee teilen",
+        "description": "Schlage eine Verbesserung oder eine neue Möglichkeit vor, wie TrackDraw helfen könnte.",
+        "titlePlaceholder": "Fasse deine Idee zusammen",
+        "detailsPlaceholder": "Welches Problem würde das lösen und wann würdest du es verwenden?"
+      },
+      "question": {
+        "shortTitle": "Frage",
+        "title": "Eine Frage stellen",
+        "description": "Stelle eine Frage zu einem Ablauf oder zu etwas, das du nicht finden kannst.",
+        "titlePlaceholder": "Was möchtest du wissen?",
+        "detailsPlaceholder": "Beschreibe, was du tun möchtest und an welcher Stelle du nicht weiterkommst."
+      }
+    }
+  },
   "account": {
     "dialog": {
       "eyebrow": "Studio",
@@ -6,6 +51,7 @@
     },
     "nav": {
       "security": "Sicherheit",
+      "privacy": "Datenschutz",
       "apiKeys": "API-Keys",
       "danger": "Gefahrenzone"
     },
@@ -17,6 +63,10 @@
       "security": {
         "title": "Sicherheit",
         "description": "Verwalte Anmeldemethoden, Konto-E-Mail und Passkeys für dein TrackDraw-Konto."
+      },
+      "privacy": {
+        "title": "Datenschutz",
+        "description": "Verwalte die optionale Produktanalyse für dein TrackDraw-Konto."
       },
       "apiKeys": {
         "title": "API-Keys",

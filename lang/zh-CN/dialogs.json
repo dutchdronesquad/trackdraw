@@ -1,4 +1,49 @@
 {
+  "feedback": {
+    "title": "分享反馈",
+    "subtitle": "反馈问题、分享想法或提出疑问。打开 GitHub 前，你可以检查全部内容。",
+    "categoryLabel": "反馈类型",
+    "titleLabel": "简短标题",
+    "detailsLabel": "详细信息",
+    "stepsLabel": "复现步骤（可选）",
+    "addSteps": "添加复现步骤",
+    "hideSteps": "隐藏复现步骤",
+    "stepsPlaceholder": "1. 打开…\n2. 选择…\n3. 问题出现…",
+    "contextLabel": "包含应用信息",
+    "contextDescription": "仅包含版本 {version}、页面类别 {routeFamily}、浏览器 {browser} 和设备 {device}。",
+    "previewLabel": "预览 GitHub 报告",
+    "hidePreview": "隐藏 GitHub 报告预览",
+    "previewEmpty": "添加标题和详细信息以准备报告。",
+    "publicWarning": "你的报告将在 GitHub 上公开。TrackDraw 绝不会添加项目、账户或设计数据。",
+    "copy": "复制",
+    "copied": "已复制",
+    "copiedStatus": "报告已复制。",
+    "copyFailed": "无法复制。预览已展开，你可以手动复制。",
+    "openGitHub": "前往 GitHub 检查",
+    "categories": {
+      "bug": {
+        "shortTitle": "问题",
+        "title": "反馈问题",
+        "description": "某些内容无法正常工作、令人困惑或出现异常行为。",
+        "titlePlaceholder": "哪里出了问题？",
+        "detailsPlaceholder": "你原本期望什么，实际又发生了什么？"
+      },
+      "idea": {
+        "shortTitle": "想法",
+        "title": "分享想法",
+        "description": "建议一项改进，或提出 TrackDraw 可以提供帮助的新方式。",
+        "titlePlaceholder": "概括你的想法",
+        "detailsPlaceholder": "它能解决什么问题，你会在什么时候使用它？"
+      },
+      "question": {
+        "shortTitle": "疑问",
+        "title": "提出疑问",
+        "description": "询问某个操作流程，或了解你找不到的内容。",
+        "titlePlaceholder": "你想了解什么？",
+        "detailsPlaceholder": "描述你想完成的操作以及遇到困难的位置。"
+      }
+    }
+  },
   "account": {
     "dialog": {
       "eyebrow": "Studio",
@@ -6,6 +51,7 @@
     },
     "nav": {
       "security": "安全",
+      "privacy": "隐私",
       "apiKeys": "API 密钥",
       "danger": "危险操作"
     },
@@ -17,6 +63,10 @@
       "security": {
         "title": "安全",
         "description": "管理 TrackDraw 账户的登录方式、账户邮箱和通行密钥。"
+      },
+      "privacy": {
+        "title": "隐私",
+        "description": "管理 TrackDraw 账户可选的产品分析设置。"
       },
       "apiKeys": {
         "title": "API 密钥",
