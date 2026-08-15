@@ -4,7 +4,7 @@ All notable shipped changes to TrackDraw should be documented in this file.
 
 This changelog is intentionally concise. GitHub Releases and Release Drafter can continue to carry the fuller change list.
 
-## [Unreleased]
+## [1.15.0]
 
 ### Easier feedback and community links
 
