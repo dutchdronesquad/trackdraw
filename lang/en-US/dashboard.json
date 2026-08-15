@@ -1,6 +1,7 @@
 {
   "sidebar": {
     "logoAlt": "TrackDraw",
+    "insightsGroup": "Insights",
     "adminGroup": "Admin",
     "nav": {
       "overview": "Overview",
@@ -10,7 +11,7 @@
       "apiKeys": "API Keys",
       "audit": "Audit",
       "metrics": "Metrics",
-      "planDecisions": "Plan decisions",
+      "plansAndLimits": "Plans & limits",
       "emailPreview": "Email Preview",
       "openStudio": "Open Studio",
       "publicSite": "Public Site"
@@ -265,6 +266,7 @@
         "label": "Metrics analysis views",
         "overview": "Overview",
         "acquisition": "Acquisition",
+        "content": "Content",
         "editor": "Editor",
         "exports": "Exports",
         "sharing": "Sharing",
@@ -283,12 +285,6 @@
         "change": "Change",
         "quality": "Quality",
         "window": "Window"
-      },
-      "explore": {
-        "label": "Explore more views:",
-        "acquisition": "Acquisition sources",
-        "content": "Content growth",
-        "retention": "Retention cohorts"
       },
       "metrics": {
         "MTR-001": {
@@ -455,8 +451,8 @@
         "description": "Current inventory and lifecycle issues that may require administration."
       },
       "planning": {
-        "title": "Product and plan decisions",
-        "description": "Account-level resource distribution and the impact of possible plan limits."
+        "title": "Plans and limits",
+        "description": "Account-level resource distribution, possible free-plan limits, and cost coverage."
       }
     },
     "focus": {
@@ -757,8 +753,8 @@
       "limitExplanation": "Proposed free limit: {limit}. Outlined bars represent accounts above this limit.",
       "viewData": "View distribution data",
       "resourceCount": "{resource} per account",
-      "scenarioTitle": "Scenario impact",
-      "scenarioDescription": "Updates as candidate limits and assumptions change.",
+      "scenarioTitle": "Free-plan impact",
+      "scenarioDescription": "See how many existing accounts are close to or above the candidate limits.",
       "accountsNearOrAbove": "Accounts near or above a limit",
       "nearOrAboveDetail": "{pct}% of accounts with content · {near} near · {above} above",
       "monthlyInfrastructureCost": "Monthly infrastructure cost",
@@ -768,15 +764,15 @@
       "costPerActiveCreatorContext": "{cost} per active creator",
       "derivedCostSource": "Derived from {source} and the observed 30-day active-creator count.",
       "missingCostSource": "Add a source before using this estimate in a decision.",
-      "pricingTitle": "Paid plan calculator",
-      "pricingDescription": "Enter one monthly cost and two assumptions.",
+      "pricingTitle": "Cost coverage estimate",
+      "pricingDescription": "Estimate what a future paid plan would need to charge to cover infrastructure costs. This is not a recommended selling price.",
       "paidAdoption": "Paid adoption",
-      "targetMargin": "Target gross margin",
-      "priceFloor": "Cost-based price floor",
-      "pricingContext": "{paid} expected paid creators · {breakEven} break-even",
+      "costBuffer": "Cost buffer",
+      "priceFloor": "Estimated cost-covering price",
+      "pricingContext": "{paid} expected paid creators · {breakEven} base cost per paid account",
       "enterMonthlyCost": "Enter a monthly cost to calculate a price.",
       "perMonthExTax": "per month · excluding tax",
-      "pricingAssumption": "Assumption: one paid account per paying creator and the paid plan recovers all entered infrastructure costs. Tax, payment fees, support, market demand, and willingness to pay are excluded.",
+      "pricingAssumption": "Assumption: one paid account per paying creator. The estimate only covers the entered infrastructure cost plus the optional buffer; tax, payment fees, support, market demand, and willingness to pay are excluded.",
       "behaviorAdvanced": "Advanced assumptions",
       "behaviorAssumption": "Manual directional range; it is not inferred from current usage and is not a forecast.",
       "lower": "Lower bound",
@@ -791,9 +787,9 @@
       "churn": "Churn · unavailable"
     },
     "planningPage": {
-      "metadataTitle": "Metrics plan decisions",
-      "title": "Product and plan decisions",
-      "description": "Explore account-level resource distribution and model possible free-plan limits without changing product behavior.",
+      "metadataTitle": "Plans and limits",
+      "title": "Plans & limits",
+      "description": "Explore fair free-plan limits and estimate what a future paid plan would need to cover TrackDraw's running costs.",
       "observedBaseline": "Observed planning baseline",
       "activeCreators": "active creators",
       "accountsWithContent": "accounts with content",

@@ -53,7 +53,7 @@ describe("DashboardAppSidebar", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows plan decisions as a distinct metrics destination", () => {
+  it("shows plans and limits as a distinct insights destination", () => {
     currentPath = "/dashboard/metrics/planning";
     render(
       <SidebarProvider>
@@ -70,7 +70,7 @@ describe("DashboardAppSidebar", () => {
 
     const metricsLink = screen.getByRole("link", { name: "Metrics" });
     const planningLink = screen.getByRole("link", {
-      name: "Plan decisions",
+      name: "Plans & limits",
     });
 
     expect(metricsLink.getAttribute("href")).toBe("/dashboard/metrics");
@@ -79,5 +79,6 @@ describe("DashboardAppSidebar", () => {
       "/dashboard/metrics/planning"
     );
     expect(planningLink.getAttribute("aria-current")).toBe("page");
+    expect(screen.getByText("Insights")).toBeTruthy();
   });
 });

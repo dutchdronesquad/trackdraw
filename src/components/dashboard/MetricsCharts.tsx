@@ -49,7 +49,7 @@ import {
   type GrowthTimeline,
 } from "@/lib/metrics-growth";
 import {
-  calculateCostBasedPrice,
+  calculateCostCoverageEstimate,
   calculateCostPerActiveCreator,
   calculateCreatorRange,
   calculatePlanLimitImpact,
@@ -222,6 +222,74 @@ function addCalendarMonths(date: Date, months: number): Date {
   return new Date(date.getFullYear(), date.getMonth() + months, 1);
 }
 
+type UserGrowthTooltipPayload = {
+  color?: string;
+  dataKey?: string | number;
+  value?: number | string;
+};
+
+function UserGrowthTooltip({
+  active,
+  label,
+  newUsersLabel,
+  payload,
+}: {
+  active?: boolean;
+  label?: string | number;
+  newUsersLabel: string;
+  payload?: UserGrowthTooltipPayload[];
+}) {
+  const t = useTranslations("dashboard.metrics.userGrowth");
+  const locale = useLocale();
+
+  if (!active || !payload?.length) return null;
+
+  const valueFor = (key: "totalUsers" | "newUsers") =>
+    payload.find((item) => item.dataKey === key)?.value;
+  const formatValue = (value: number | string | undefined) =>
+    typeof value === "number"
+      ? new Intl.NumberFormat(locale).format(value)
+      : String(value ?? "—");
+  const newUsersValue = valueFor("newUsers");
+  const rows = [
+    {
+      key: "totalUsers" as const,
+      label: t("totalUsers"),
+      value: formatValue(valueFor("totalUsers")),
+    },
+    {
+      key: "newUsers" as const,
+      label: newUsersLabel,
+      value:
+        newUsersValue === undefined ? "—" : `+${formatValue(newUsersValue)}`,
+    },
+  ];
+
+  return (
+    <div className="bg-popover/95 min-w-44 rounded-lg border px-3 py-2.5 text-xs shadow-lg backdrop-blur-sm">
+      <p className="text-foreground mb-2 font-semibold">{label}</p>
+      <div className="space-y-1.5">
+        {rows.map((row) => (
+          <div
+            key={row.key}
+            className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2"
+          >
+            <span
+              className="size-2 rounded-full"
+              style={{ backgroundColor: `var(--color-${row.key})` }}
+              aria-hidden="true"
+            />
+            <span className="text-muted-foreground">{row.label}</span>
+            <span className="text-foreground pl-3 font-mono font-semibold tabular-nums">
+              {row.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function UserGrowthComboChart({
   growthData,
   newUsersLabel,
@@ -307,6 +375,7 @@ function UserGrowthComboChart({
           />
           <ChartTooltip
             cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
+            content={<UserGrowthTooltip newUsersLabel={newUsersLabel} />}
           />
           <ChartLegend content={<ChartLegendContent />} />
           <Area
@@ -2158,7 +2227,7 @@ function ResourceCard({
               onLimitChange(n);
             }
           }}
-          className="h-9 w-full rounded-md border bg-transparent px-2 text-sm tabular-nums"
+          className="h-11 w-full rounded-md border bg-transparent px-3 text-base tabular-nums md:h-9 md:px-2 md:text-sm"
         />
         <label htmlFor={rangeId} className="sr-only">
           {t("rangeLabel", { resource: title })}
@@ -2171,7 +2240,7 @@ function ResourceCard({
           value={limit}
           aria-describedby={`${resultId} ${descriptionId}`}
           onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
-          className="accent-foreground h-1.5 w-full cursor-pointer"
+          className="accent-foreground h-11 w-full cursor-pointer md:h-9"
         />
       </div>
 
@@ -2221,7 +2290,7 @@ export function PlanLimitSimulator({
   const [costSource, setCostSource] = useState("");
   const [pricingAssumptions, setPricingAssumptions] = useState({
     paidAdoption: "5",
-    targetMargin: "70",
+    costBuffer: "0",
   });
   const [behaviorRange, setBehaviorRange] = useState({
     lower: "0",
@@ -2255,11 +2324,11 @@ export function PlanLimitSimulator({
     monthlyCost,
     activeCreators
   );
-  const costBasedPrice = calculateCostBasedPrice(
+  const costCoverageEstimate = calculateCostCoverageEstimate(
     monthlyCost,
     activeCreators,
     Number(pricingAssumptions.paidAdoption),
-    Number(pricingAssumptions.targetMargin)
+    Number(pricingAssumptions.costBuffer)
   );
   const creatorRange = calculateCreatorRange(
     activeCreators,
@@ -2389,7 +2458,7 @@ export function PlanLimitSimulator({
                   step="0.01"
                   value={monthlyCostInput}
                   onChange={(event) => setMonthlyCostInput(event.target.value)}
-                  className="h-9 w-full rounded-md border bg-transparent pr-2 pl-6 text-sm tabular-nums"
+                  className="h-11 w-full rounded-md border bg-transparent pr-3 pl-7 text-base tabular-nums sm:h-9 sm:pr-2 sm:pl-6 sm:text-sm"
                 />
               </span>
             </label>
@@ -2400,8 +2469,8 @@ export function PlanLimitSimulator({
                   })
                 : t("enterMonthlyCost")}
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              {(["paidAdoption", "targetMargin"] as const).map((key) => (
+            <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+              {(["paidAdoption", "costBuffer"] as const).map((key) => (
                 <label key={key} className="space-y-1 text-xs">
                   <span className="text-muted-foreground">{t(key)}</span>
                   <span className="relative block">
@@ -2409,7 +2478,7 @@ export function PlanLimitSimulator({
                       type="number"
                       aria-label={t(key)}
                       min={key === "paidAdoption" ? 0.1 : 0}
-                      max={key === "paidAdoption" ? 100 : 99}
+                      max={100}
                       step="0.5"
                       value={pricingAssumptions[key]}
                       onChange={(event) =>
@@ -2418,7 +2487,7 @@ export function PlanLimitSimulator({
                           [key]: event.target.value,
                         }))
                       }
-                      className="h-9 w-full rounded-md border bg-transparent pr-6 pl-2 text-sm tabular-nums"
+                      className="h-11 w-full rounded-md border bg-transparent pr-7 pl-3 text-base tabular-nums sm:h-9 sm:pr-6 sm:pl-2 sm:text-sm"
                     />
                     <span className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2">
                       %
@@ -2430,18 +2499,20 @@ export function PlanLimitSimulator({
             <div className="bg-muted/45 rounded-lg p-3">
               <p className="text-muted-foreground text-xs">{t("priceFloor")}</p>
               <p className="mt-0.5 text-2xl font-bold tabular-nums">
-                {costBasedPrice
-                  ? formatCurrency(costBasedPrice.priceFloorPerPaidCreator)
+                {costCoverageEstimate
+                  ? formatCurrency(
+                      costCoverageEstimate.costCoveringPricePerPaidCreator
+                    )
                   : t("notAvailable")}
               </p>
               <p className="text-muted-foreground mt-1 text-xs tabular-nums">
-                {costBasedPrice
+                {costCoverageEstimate
                   ? t("pricingContext", {
                       paid: new Intl.NumberFormat(locale, {
                         maximumFractionDigits: 1,
-                      }).format(costBasedPrice.expectedPaidCreators),
+                      }).format(costCoverageEstimate.expectedPaidCreators),
                       breakEven: formatCurrency(
-                        costBasedPrice.breakEvenPerPaidCreator
+                        costCoverageEstimate.breakEvenPerPaidCreator
                       ),
                     })
                   : t("enterMonthlyCost")}
@@ -2458,7 +2529,7 @@ export function PlanLimitSimulator({
                 value={costSource}
                 onChange={(event) => setCostSource(event.target.value)}
                 placeholder={t("costSourcePlaceholder")}
-                className="h-9 w-full rounded-md border bg-transparent px-2 text-sm"
+                className="h-11 w-full rounded-md border bg-transparent px-3 text-base sm:h-9 sm:px-2 sm:text-sm"
               />
             </label>
             <p className="text-muted-foreground text-xs leading-relaxed">
@@ -2479,7 +2550,7 @@ export function PlanLimitSimulator({
               <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                 {t("behaviorAssumption")}
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
                 {(["lower", "upper"] as const).map((key) => (
                   <label key={key} className="space-y-1 text-xs">
                     <span className="text-muted-foreground">{t(key)}</span>
@@ -2495,7 +2566,7 @@ export function PlanLimitSimulator({
                             [key]: event.target.value,
                           }))
                         }
-                        className="h-9 w-full rounded-md border bg-transparent pr-6 pl-2 text-sm tabular-nums"
+                        className="h-11 w-full rounded-md border bg-transparent pr-7 pl-3 text-base tabular-nums sm:h-9 sm:pr-6 sm:pl-2 sm:text-sm"
                       />
                       <span className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2">
                         %
