@@ -135,10 +135,15 @@ export function calculateCreatorRange(
   lowerChangePct: number,
   upperChangePct: number
 ): [number, number] {
-  const low = Math.min(lowerChangePct, upperChangePct);
-  const high = Math.max(lowerChangePct, upperChangePct);
+  const normalizedCreators = Number.isFinite(activeCreators)
+    ? Math.max(0, activeCreators)
+    : 0;
+  const normalizedLower = Number.isFinite(lowerChangePct) ? lowerChangePct : 0;
+  const normalizedUpper = Number.isFinite(upperChangePct) ? upperChangePct : 0;
+  const low = Math.min(normalizedLower, normalizedUpper);
+  const high = Math.max(normalizedLower, normalizedUpper);
   return [
-    Math.max(0, Math.round(activeCreators * (1 + low / 100))),
-    Math.max(0, Math.round(activeCreators * (1 + high / 100))),
+    Math.max(0, Math.round(normalizedCreators * (1 + low / 100))),
+    Math.max(0, Math.round(normalizedCreators * (1 + high / 100))),
   ];
 }

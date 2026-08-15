@@ -2,7 +2,15 @@
 
 import type React from "react";
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import DashboardAppSidebar from "@/components/dashboard/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
@@ -40,6 +48,10 @@ describe("DashboardAppSidebar", () => {
   });
 
   afterEach(cleanup);
+
+  afterAll(() => {
+    vi.unstubAllGlobals();
+  });
 
   it("shows plan decisions as a distinct metrics destination", () => {
     currentPath = "/dashboard/metrics/planning";

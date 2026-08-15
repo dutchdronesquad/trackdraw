@@ -2002,8 +2002,8 @@ export function RetentionCohorts({
 
 // --- Plan limit simulator ---
 
-const MAX_SHOWN = 12;
-const SLIDER_MAX = 20;
+const CANDIDATE_LIMIT_MAX = 20;
+const HISTOGRAM_OVERFLOW_BUCKET = CANDIDATE_LIMIT_MAX + 1;
 
 const SAFE_COLOR = "var(--chart-1)";
 const AFFECTED_COLOR = "hsl(0 72% 51%)";
@@ -2011,12 +2011,15 @@ const AFFECTED_COLOR = "hsl(0 72% 51%)";
 type DistRow = [number, number, number];
 
 function buildHistogram(counts: number[]) {
-  const freq: number[] = Array(MAX_SHOWN + 1).fill(0);
+  const freq: number[] = Array(HISTOGRAM_OVERFLOW_BUCKET + 1).fill(0);
   for (const c of counts) {
-    freq[Math.min(c, MAX_SHOWN)]++;
+    freq[Math.min(c, HISTOGRAM_OVERFLOW_BUCKET)]++;
   }
   return freq.map((users, bucket) => ({
-    label: bucket === MAX_SHOWN ? `${MAX_SHOWN}+` : String(bucket),
+    label:
+      bucket === HISTOGRAM_OVERFLOW_BUCKET
+        ? `${HISTOGRAM_OVERFLOW_BUCKET}+`
+        : String(bucket),
     bucket,
     users,
   }));
@@ -2102,7 +2105,9 @@ function ResourceCard({
                 if (!active || !payload?.length) return null;
                 const count = Number(payload[0]?.value ?? 0);
                 const qualifier =
-                  label === `${MAX_SHOWN}+` ? "" : t("withExactly");
+                  label === `${HISTOGRAM_OVERFLOW_BUCKET}+`
+                    ? ""
+                    : t("withExactly");
                 return (
                   <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
                     <p className="text-foreground font-semibold tabular-nums">
@@ -2144,12 +2149,14 @@ function ResourceCard({
           type="number"
           aria-label={t("numberLabel", { resource: title })}
           min={0}
-          max={999}
+          max={CANDIDATE_LIMIT_MAX}
           value={limit}
           aria-describedby={`${resultId} ${descriptionId}`}
           onChange={(e) => {
             const n = parseInt(e.target.value, 10);
-            if (!isNaN(n) && n >= 0) onLimitChange(n);
+            if (!isNaN(n) && n >= 0 && n <= CANDIDATE_LIMIT_MAX) {
+              onLimitChange(n);
+            }
           }}
           className="h-9 w-full rounded-md border bg-transparent px-2 text-sm tabular-nums"
         />
@@ -2160,8 +2167,8 @@ function ResourceCard({
           id={rangeId}
           type="range"
           min={0}
-          max={SLIDER_MAX}
-          value={Math.min(limit, SLIDER_MAX)}
+          max={CANDIDATE_LIMIT_MAX}
+          value={limit}
           aria-describedby={`${resultId} ${descriptionId}`}
           onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
           className="accent-foreground h-1.5 w-full cursor-pointer"

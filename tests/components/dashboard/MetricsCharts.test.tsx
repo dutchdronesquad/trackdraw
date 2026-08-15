@@ -1,6 +1,12 @@
 // @vitest-environment happy-dom
 
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -233,6 +239,7 @@ describe("metrics decision views", () => {
         userDistribution={[
           [1, 2, 3],
           [6, 7, 8],
+          [25, 1, 1],
         ]}
       />
     );
@@ -245,6 +252,13 @@ describe("metrics decision views", () => {
         name: "Projects free-plan limit value",
       })
     ).toBeTruthy();
+    const projectLimit = screen.getByRole("spinbutton", {
+      name: "Projects free-plan limit value",
+    });
+    expect(projectLimit.getAttribute("max")).toBe("20");
+    fireEvent.change(projectLimit, { target: { value: "999" } });
+    expect((projectLimit as HTMLInputElement).value).toBe("5");
+    expect(screen.getAllByText("21+")).toHaveLength(3);
     expect(screen.getByText("Scenario impact")).toBeTruthy();
     expect(screen.getByText("Commercial signals")).toBeTruthy();
   });

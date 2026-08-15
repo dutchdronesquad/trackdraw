@@ -66,5 +66,11 @@ describe("planning metric helpers", () => {
 
   it("normalizes behavioral bounds into a projected creator range", () => {
     expect(calculateCreatorRange(200, 5, -10)).toEqual([180, 210]);
+    expect(
+      calculateCreatorRange(200, Number.NaN, Number.POSITIVE_INFINITY)
+    ).toEqual([200, 200]);
+    expect(calculateCreatorRange(Number.POSITIVE_INFINITY, -10, 10)).toEqual([
+      0, 0,
+    ]);
   });
 });
