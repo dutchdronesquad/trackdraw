@@ -48,6 +48,12 @@ import {
   type GrowthRange,
   type GrowthTimeline,
 } from "@/lib/metrics-growth";
+import {
+  calculateCostBasedPrice,
+  calculateCostPerActiveCreator,
+  calculateCreatorRange,
+  calculatePlanLimitImpact,
+} from "@/lib/metrics-planning";
 import type {
   AdminMetrics,
   GrowthByRange,
@@ -1999,7 +2005,7 @@ export function RetentionCohorts({
 const MAX_SHOWN = 12;
 const SLIDER_MAX = 20;
 
-const SAFE_COLOR = "var(--chart-2)";
+const SAFE_COLOR = "var(--chart-1)";
 const AFFECTED_COLOR = "hsl(0 72% 51%)";
 
 type DistRow = [number, number, number];
@@ -2021,12 +2027,16 @@ function ResourceCard({
   counts,
   limit,
   totalUsers,
+  near,
+  above,
   onLimitChange,
 }: {
   title: string;
   counts: number[];
   limit: number;
   totalUsers: number;
+  near: number;
+  above: number;
   onLimitChange: (v: number) => void;
 }) {
   const t = useTranslations("dashboard.metrics.planLimit");
@@ -2040,172 +2050,182 @@ function ResourceCard({
     () => buildHistogram(counts).filter((entry) => entry.bucket !== 0),
     [counts]
   );
-  const affected = useMemo(
-    () => counts.filter((c) => c > limit).length,
-    [counts, limit]
-  );
-  const pct = totalUsers > 0 ? Math.round((affected / totalUsers) * 100) : 0;
+  const pct = totalUsers > 0 ? Math.round((above / totalUsers) * 100) : 0;
 
   return (
-    <fieldset className="bg-card min-w-0 space-y-4 rounded-xl border p-4">
+    <fieldset className="grid min-w-0 gap-4 border-t p-4 first:border-t-0 md:grid-cols-[8rem_minmax(14rem,1fr)_8rem_8rem] md:items-center">
       <legend className="sr-only">
         {t("fieldsetLegend", { resource: title })}
       </legend>
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium">{title}</p>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold">{title}</p>
+        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+          {t("observedDistribution")}
+        </p>
+        <span className="mt-2 inline-flex rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[0.65rem] font-medium text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+          {t("observed")}
+        </span>
+      </div>
+
+      <div className="min-w-0">
+        <ChartContainer config={distConfig} className="h-32 w-full">
+          <BarChart
+            accessibilityLayer
+            data={histogram}
+            margin={{ left: 0, right: 0, top: 2, bottom: 18 }}
+            barCategoryGap="12%"
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 11 }}
+              tickMargin={4}
+              label={{
+                value: t("perUserAxis", { title }),
+                position: "insideBottom",
+                offset: -12,
+                style: { fontSize: 11, fill: "var(--muted-foreground)" },
+              }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 11 }}
+              allowDecimals={false}
+              width={28}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                const count = Number(payload[0]?.value ?? 0);
+                const qualifier =
+                  label === `${MAX_SHOWN}+` ? "" : t("withExactly");
+                return (
+                  <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
+                    <p className="text-foreground font-semibold tabular-nums">
+                      {t("usersCount", { count })}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {t("withCount", {
+                        qualifier,
+                        count: String(label ?? ""),
+                        resource: title.toLowerCase(),
+                      })}
+                    </p>
+                  </div>
+                );
+              }}
+            />
+            <Bar dataKey="users" radius={[3, 3, 0, 0]}>
+              {histogram.map((entry) => (
+                <Cell
+                  key={entry.bucket}
+                  fill={entry.bucket > limit ? AFFECTED_COLOR : SAFE_COLOR}
+                  fillOpacity={entry.bucket > limit ? 0.72 : 0.68}
+                  stroke={entry.bucket > limit ? "var(--foreground)" : "none"}
+                  strokeWidth={entry.bucket > limit ? 1.5 : 0}
+                  strokeDasharray={entry.bucket > limit ? "3 2" : undefined}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ChartContainer>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor={numberId} className="text-muted-foreground text-xs">
+          {t("candidateLimit")}
+        </label>
+        <input
+          id={numberId}
+          type="number"
+          aria-label={t("numberLabel", { resource: title })}
+          min={0}
+          max={999}
+          value={limit}
+          aria-describedby={`${resultId} ${descriptionId}`}
+          onChange={(e) => {
+            const n = parseInt(e.target.value, 10);
+            if (!isNaN(n) && n >= 0) onLimitChange(n);
+          }}
+          className="h-9 w-full rounded-md border bg-transparent px-2 text-sm tabular-nums"
+        />
+        <label htmlFor={rangeId} className="sr-only">
+          {t("rangeLabel", { resource: title })}
+        </label>
+        <input
+          id={rangeId}
+          type="range"
+          min={0}
+          max={SLIDER_MAX}
+          value={Math.min(limit, SLIDER_MAX)}
+          aria-describedby={`${resultId} ${descriptionId}`}
+          onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
+          className="accent-foreground h-1.5 w-full cursor-pointer"
+        />
+      </div>
+
+      <div>
         <span
           id={resultId}
           role="status"
           aria-live="polite"
-          className={`shrink-0 text-right text-sm font-semibold tabular-nums ${
-            affected > 0
+          className={`text-xl font-bold tabular-nums ${
+            above > 0
               ? "text-rose-600 dark:text-rose-400"
               : "text-muted-foreground"
           }`}
         >
-          {t("affected", { affected, total: totalUsers })}
-          <br />
-          <span className="font-normal">{t("pctAffected", { pct })}</span>
+          {above}
         </span>
-      </div>
-
-      <ChartContainer config={distConfig} className="h-36 w-full">
-        <BarChart
-          accessibilityLayer
-          data={histogram}
-          margin={{ left: 0, right: 0, top: 2, bottom: 18 }}
-          barCategoryGap="12%"
-        >
-          <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey="label"
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 12 }}
-            tickMargin={4}
-            label={{
-              value: t("perUserAxis", { title }),
-              position: "insideBottom",
-              offset: -12,
-              style: { fontSize: 12, fill: "var(--muted-foreground)" },
-            }}
-          />
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 12 }}
-            allowDecimals={false}
-            width={28}
-            label={{
-              value: t("usersAxis"),
-              angle: -90,
-              position: "insideLeft",
-              offset: 8,
-              style: { fontSize: 12, fill: "var(--muted-foreground)" },
-            }}
-          />
-          <ChartTooltip
-            cursor={false}
-            content={({ active, payload, label }) => {
-              if (!active || !payload?.length) return null;
-              const count = Number(payload[0]?.value ?? 0);
-              const qualifier =
-                label === `${MAX_SHOWN}+` ? "" : t("withExactly");
-              const resource = title.toLowerCase();
-              return (
-                <div className="bg-card border-border/50 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl">
-                  <p className="text-foreground font-semibold tabular-nums">
-                    {t("usersCount", { count })}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {t("withCount", {
-                      qualifier,
-                      count: String(label ?? ""),
-                      resource,
-                    })}
-                  </p>
-                </div>
-              );
-            }}
-          />
-          <Bar dataKey="users" radius={[3, 3, 0, 0]}>
-            {histogram.map((entry) => (
-              <Cell
-                key={entry.bucket}
-                fill={entry.bucket > limit ? AFFECTED_COLOR : SAFE_COLOR}
-                fillOpacity={entry.bucket > limit ? 0.75 : 0.6}
-                stroke={entry.bucket > limit ? "var(--foreground)" : "none"}
-                strokeWidth={entry.bucket > limit ? 1.5 : 0}
-                strokeDasharray={entry.bucket > limit ? "3 2" : undefined}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ChartContainer>
-
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <label htmlFor={rangeId} className="sr-only">
-            {t("rangeLabel", { resource: title })}
-          </label>
-          <input
-            id={rangeId}
-            type="range"
-            min={0}
-            max={SLIDER_MAX}
-            value={Math.min(limit, SLIDER_MAX)}
-            aria-describedby={`${resultId} ${descriptionId}`}
-            onChange={(e) => onLimitChange(parseInt(e.target.value, 10))}
-            className="accent-foreground h-1.5 flex-1 cursor-pointer"
-          />
-          <label htmlFor={numberId} className="sr-only">
-            {t("numberLabel", { resource: title })}
-          </label>
-          <input
-            id={numberId}
-            type="number"
-            min={0}
-            max={999}
-            value={limit}
-            aria-describedby={`${resultId} ${descriptionId}`}
-            onChange={(e) => {
-              const n = parseInt(e.target.value, 10);
-              if (!isNaN(n) && n >= 0) onLimitChange(n);
-            }}
-            className="h-9 w-16 rounded-md border px-2 text-center text-sm tabular-nums"
-          />
-        </div>
-        <p
-          id={descriptionId}
-          className="text-muted-foreground text-sm leading-relaxed"
-        >
-          {t("limitExplanation", { limit })}
+        <p className="text-muted-foreground text-xs">
+          {t("aboveLimit", { pct })}
         </p>
+        <p className="mt-1 text-xs tabular-nums">{t("nearLimit", { near })}</p>
       </div>
-      <DataTableDisclosure
-        label={t("viewData")}
-        columns={[t("resourceCount", { resource: title }), t("usersAxis")]}
-        rows={histogram.map((entry) => [entry.label, entry.users])}
-      />
+      <p id={descriptionId} className="sr-only">
+        {t("limitExplanation", { limit })}
+      </p>
+      <div className="md:col-span-4">
+        <DataTableDisclosure
+          label={t("viewData")}
+          columns={[t("resourceCount", { resource: title }), t("usersAxis")]}
+          rows={histogram.map((entry) => [entry.label, entry.users])}
+        />
+      </div>
     </fieldset>
   );
 }
 
 export function PlanLimitSimulator({
   userDistribution,
+  activeCreators,
 }: {
   userDistribution: DistRow[];
+  activeCreators: number;
 }) {
   const t = useTranslations("dashboard.metrics.planLimit");
+  const locale = useLocale();
   const [limits, setLimits] = useState({ projects: 5, shares: 5, presets: 5 });
+  const [monthlyCostInput, setMonthlyCostInput] = useState("");
+  const [costSource, setCostSource] = useState("");
+  const [pricingAssumptions, setPricingAssumptions] = useState({
+    paidAdoption: "5",
+    targetMargin: "70",
+  });
+  const [behaviorRange, setBehaviorRange] = useState({
+    lower: "0",
+    upper: "0",
+  });
 
   const activeDistribution = useMemo(
     () => userDistribution.filter(([p, s, pr]) => p > 0 || s > 0 || pr > 0),
     [userDistribution]
   );
   const totalUsers = activeDistribution.length;
-  const excludedCount = userDistribution.length - totalUsers;
-
   const projCounts = useMemo(
     () => activeDistribution.map((r) => r[0]),
     [activeDistribution]
@@ -2219,17 +2239,34 @@ export function PlanLimitSimulator({
     [activeDistribution]
   );
 
-  const anyAffected = useMemo(
-    () =>
-      activeDistribution.filter(
-        ([p, s, pr]) =>
-          p > limits.projects || s > limits.shares || pr > limits.presets
-      ).length,
-    [activeDistribution, limits]
+  const impact = useMemo(
+    () => calculatePlanLimitImpact(userDistribution, limits),
+    [limits, userDistribution]
   );
-
-  const anyPct =
-    totalUsers > 0 ? Math.round((anyAffected / totalUsers) * 100) : 0;
+  const monthlyCost = Math.max(0, Number(monthlyCostInput) || 0);
+  const costPerCreator = calculateCostPerActiveCreator(
+    monthlyCost,
+    activeCreators
+  );
+  const costBasedPrice = calculateCostBasedPrice(
+    monthlyCost,
+    activeCreators,
+    Number(pricingAssumptions.paidAdoption),
+    Number(pricingAssumptions.targetMargin)
+  );
+  const creatorRange = calculateCreatorRange(
+    activeCreators,
+    Number(behaviorRange.lower) || 0,
+    Number(behaviorRange.upper) || 0
+  );
+  const impactPct =
+    totalUsers > 0 ? Math.round((impact.nearOrAboveAny / totalUsers) * 100) : 0;
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 2,
+    }).format(value);
 
   if (userDistribution.length === 0) {
     return (
@@ -2240,56 +2277,253 @@ export function PlanLimitSimulator({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="grid gap-4 lg:grid-cols-3">
-        <ResourceCard
-          title={t("projects")}
-          counts={projCounts}
-          limit={limits.projects}
-          totalUsers={totalUsers}
-          onLimitChange={(v) => setLimits((prev) => ({ ...prev, projects: v }))}
-        />
-        <ResourceCard
-          title={t("shareLinks")}
-          counts={shareCounts}
-          limit={limits.shares}
-          totalUsers={totalUsers}
-          onLimitChange={(v) => setLimits((prev) => ({ ...prev, shares: v }))}
-        />
-        <ResourceCard
-          title={t("presets")}
-          counts={presetCounts}
-          limit={limits.presets}
-          totalUsers={totalUsers}
-          onLimitChange={(v) => setLimits((prev) => ({ ...prev, presets: v }))}
-        />
+    <div className="space-y-4">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <section className="bg-card min-w-0 overflow-hidden rounded-xl border">
+          <div className="flex flex-col gap-2 border-b p-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold">{t("title")}</h2>
+                <span className="rounded-md border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-[0.65rem] font-medium text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
+                  {t("simulated")}
+                </span>
+              </div>
+              <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+                {t("simulationAssumption")}
+              </p>
+            </div>
+            <p className="text-muted-foreground shrink-0 text-xs">
+              {t("distributionSource")}
+            </p>
+          </div>
+          <ResourceCard
+            title={t("projects")}
+            counts={projCounts}
+            limit={limits.projects}
+            totalUsers={totalUsers}
+            near={impact.resources.projects.near}
+            above={impact.resources.projects.above}
+            onLimitChange={(v) =>
+              setLimits((prev) => ({ ...prev, projects: v }))
+            }
+          />
+          <ResourceCard
+            title={t("shareLinks")}
+            counts={shareCounts}
+            limit={limits.shares}
+            totalUsers={totalUsers}
+            near={impact.resources.shares.near}
+            above={impact.resources.shares.above}
+            onLimitChange={(v) => setLimits((prev) => ({ ...prev, shares: v }))}
+          />
+          <ResourceCard
+            title={t("presets")}
+            counts={presetCounts}
+            limit={limits.presets}
+            totalUsers={totalUsers}
+            near={impact.resources.presets.near}
+            above={impact.resources.presets.above}
+            onLimitChange={(v) =>
+              setLimits((prev) => ({ ...prev, presets: v }))
+            }
+          />
+          <div className="text-muted-foreground flex flex-wrap gap-x-5 gap-y-1 border-t px-4 py-3 text-xs">
+            <span>{t("nearDefinition")}</span>
+            <span>{t("emptyExcluded", { count: impact.emptyAccounts })}</span>
+          </div>
+        </section>
+
+        <aside className="bg-card overflow-hidden rounded-xl border border-dashed border-sky-400/70">
+          <div className="border-b p-4">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-base font-semibold">{t("scenarioTitle")}</h2>
+              <span className="rounded-md border border-sky-300 bg-sky-50 px-1.5 py-0.5 text-[0.65rem] font-medium text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
+                {t("simulated")}
+              </span>
+            </div>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {t("scenarioDescription")}
+            </p>
+          </div>
+
+          <div className="space-y-1 p-4">
+            <p className="text-sm font-semibold">{t("accountsNearOrAbove")}</p>
+            <p className="text-3xl font-bold tabular-nums">
+              {impact.nearOrAboveAny}
+            </p>
+            <p className="text-muted-foreground text-sm tabular-nums">
+              {t("nearOrAboveDetail", {
+                pct: impactPct,
+                near: impact.nearAny,
+                above: impact.aboveAny,
+              })}
+            </p>
+          </div>
+
+          <div className="space-y-3 border-t p-4">
+            <div>
+              <p className="text-sm font-semibold">{t("pricingTitle")}</p>
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                {t("pricingDescription")}
+              </p>
+            </div>
+            <label className="block space-y-1 text-xs">
+              <span className="text-muted-foreground">
+                {t("monthlyInfrastructureCost")}
+              </span>
+              <span className="relative block">
+                <span className="text-muted-foreground absolute top-1/2 left-2 -translate-y-1/2">
+                  €
+                </span>
+                <input
+                  type="number"
+                  aria-label={t("monthlyInfrastructureCost")}
+                  min={0}
+                  step="0.01"
+                  value={monthlyCostInput}
+                  onChange={(event) => setMonthlyCostInput(event.target.value)}
+                  className="h-9 w-full rounded-md border bg-transparent pr-2 pl-6 text-sm tabular-nums"
+                />
+              </span>
+            </label>
+            <p className="text-muted-foreground -mt-1 text-xs tabular-nums">
+              {costPerCreator !== null
+                ? t("costPerActiveCreatorContext", {
+                    cost: formatCurrency(costPerCreator),
+                  })
+                : t("enterMonthlyCost")}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {(["paidAdoption", "targetMargin"] as const).map((key) => (
+                <label key={key} className="space-y-1 text-xs">
+                  <span className="text-muted-foreground">{t(key)}</span>
+                  <span className="relative block">
+                    <input
+                      type="number"
+                      aria-label={t(key)}
+                      min={key === "paidAdoption" ? 0.1 : 0}
+                      max={key === "paidAdoption" ? 100 : 99}
+                      step="0.5"
+                      value={pricingAssumptions[key]}
+                      onChange={(event) =>
+                        setPricingAssumptions((previous) => ({
+                          ...previous,
+                          [key]: event.target.value,
+                        }))
+                      }
+                      className="h-9 w-full rounded-md border bg-transparent pr-6 pl-2 text-sm tabular-nums"
+                    />
+                    <span className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2">
+                      %
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div className="bg-muted/45 rounded-lg p-3">
+              <p className="text-muted-foreground text-xs">{t("priceFloor")}</p>
+              <p className="mt-0.5 text-2xl font-bold tabular-nums">
+                {costBasedPrice
+                  ? formatCurrency(costBasedPrice.priceFloorPerPaidCreator)
+                  : t("notAvailable")}
+              </p>
+              <p className="text-muted-foreground mt-1 text-xs tabular-nums">
+                {costBasedPrice
+                  ? t("pricingContext", {
+                      paid: new Intl.NumberFormat(locale, {
+                        maximumFractionDigits: 1,
+                      }).format(costBasedPrice.expectedPaidCreators),
+                      breakEven: formatCurrency(
+                        costBasedPrice.breakEvenPerPaidCreator
+                      ),
+                    })
+                  : t("enterMonthlyCost")}
+              </p>
+              <p className="text-muted-foreground mt-1 text-[0.65rem]">
+                {t("perMonthExTax")}
+              </p>
+            </div>
+            <label className="block space-y-1 text-xs">
+              <span className="text-muted-foreground">{t("costSource")}</span>
+              <input
+                type="text"
+                aria-label={t("costSource")}
+                value={costSource}
+                onChange={(event) => setCostSource(event.target.value)}
+                placeholder={t("costSourcePlaceholder")}
+                className="h-9 w-full rounded-md border bg-transparent px-2 text-sm"
+              />
+            </label>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              {costSource.trim()
+                ? t("derivedCostSource", { source: costSource.trim() })
+                : t("missingCostSource")}
+            </p>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              {t("pricingAssumption")}
+            </p>
+          </div>
+
+          <details className="group border-t p-4">
+            <summary className="cursor-pointer text-sm font-semibold">
+              {t("behaviorAdvanced")}
+            </summary>
+            <div className="mt-3 space-y-3">
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                {t("behaviorAssumption")}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {(["lower", "upper"] as const).map((key) => (
+                  <label key={key} className="space-y-1 text-xs">
+                    <span className="text-muted-foreground">{t(key)}</span>
+                    <span className="relative block">
+                      <input
+                        type="number"
+                        aria-label={t(key)}
+                        step="0.5"
+                        value={behaviorRange[key]}
+                        onChange={(event) =>
+                          setBehaviorRange((previous) => ({
+                            ...previous,
+                            [key]: event.target.value,
+                          }))
+                        }
+                        className="h-9 w-full rounded-md border bg-transparent pr-6 pl-2 text-sm tabular-nums"
+                      />
+                      <span className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2">
+                        %
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-sm font-semibold tabular-nums">
+                {t("creatorRange", {
+                  lower: creatorRange[0],
+                  upper: creatorRange[1],
+                })}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {t("directionalOnly")}
+              </p>
+            </div>
+          </details>
+        </aside>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-xl border px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold">{t("totalImpact")}</p>
-          <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-            {t("totalImpactDescription")}
+      <section className="flex flex-col gap-3 rounded-xl border border-dashed px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 className="text-sm font-semibold">{t("commercialTitle")}</h2>
+          <p className="text-muted-foreground mt-1 text-xs">
+            {t("commercialDescription")}
           </p>
         </div>
-        <div className="text-left sm:text-right">
-          <p
-            className={`text-xl font-bold tabular-nums ${
-              anyAffected > 0
-                ? "text-rose-600 dark:text-rose-400"
-                : "text-muted-foreground"
-            }`}
-          >
-            {anyAffected}
-          </p>
-          <p className="text-muted-foreground text-sm tabular-nums">
-            {t("pctOfUsers", { pct: anyPct, total: totalUsers })}
-            {excludedCount > 0
-              ? t("excludedAccounts", { count: excludedCount })
-              : ""}
-          </p>
+        <div className="text-muted-foreground grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
+          {["conversion", "upgrades", "downgrades", "churn"].map((key) => (
+            <span key={key}>{t(key)}</span>
+          ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

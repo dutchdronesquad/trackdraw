@@ -1,16 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  Activity,
-  BookOpen,
-  Circle,
-  Compass,
-  Download,
-  RefreshCcw,
-} from "lucide-react";
+import { Activity, Circle, Compass, Download, RefreshCcw } from "lucide-react";
 import {
   ContentGrowthChart,
   EditorUsageBreakdown,
@@ -535,14 +527,6 @@ export default function MetricsWorkspace({
               ))}
             </TabsList>
           </div>
-          <Link
-            href="/dashboard/metrics/planning"
-            prefetch={false}
-            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring mb-2 hidden shrink-0 items-center gap-1.5 rounded-sm text-xs font-medium focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
-          >
-            <BookOpen className="size-3.5" aria-hidden="true" />
-            {t("views.about")}
-          </Link>
         </div>
 
         <TabsContent value="overview" className="mt-3 space-y-3">

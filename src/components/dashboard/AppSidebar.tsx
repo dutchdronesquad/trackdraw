@@ -14,6 +14,7 @@ import {
   Link2,
   Mail,
   PenLine,
+  SlidersHorizontal,
   Users,
 } from "lucide-react";
 import DashboardNavUser from "@/components/dashboard/NavUser";
@@ -36,7 +37,7 @@ import {
 import type { DashboardModule } from "@/lib/server/authorization";
 import { cn } from "@/lib/utils";
 
-type SidebarNavKey = DashboardModule | "email-preview";
+type SidebarNavKey = DashboardModule | "email-preview" | "metrics-planning";
 
 type DashboardAppSidebarProps = {
   currentUser: {
@@ -141,6 +142,14 @@ const adminNavItems: NavItem[] = [
     href: "/dashboard/metrics",
     icon: BarChart2,
     activePrefix: "/dashboard/metrics",
+    exact: true,
+  },
+  {
+    key: "metrics-planning",
+    titleKey: "planDecisions",
+    href: "/dashboard/metrics/planning",
+    icon: SlidersHorizontal,
+    activePrefix: "/dashboard/metrics/planning",
   },
   {
     key: "email-preview",
@@ -249,7 +258,9 @@ export default function DashboardAppSidebar({
 
   const filteredAdminItems = adminNavItems.filter((item) => {
     if (item.key === "users") return visibleModules.includes("users");
-    if (item.key === "metrics") return visibleModules.includes("metrics");
+    if (item.key === "metrics" || item.key === "metrics-planning") {
+      return visibleModules.includes("metrics");
+    }
     if (item.key === "audit") return visibleModules.includes("audit");
     if (item.key === "api-keys") return visibleModules.includes("api-keys");
     if (item.key === "email-preview") return currentUser.role === "admin";
