@@ -6,7 +6,8 @@
     "import": "Importieren",
     "importTooltip": "JSON importieren",
     "export": "Exportieren",
-    "exportTooltip": "Track exportieren"
+    "exportTooltip": "Track exportieren",
+    "feedbackSupport": "Feedback"
   },
   "contextMenu": {
     "quickActions": "Schnellaktionen",
@@ -107,6 +108,7 @@
     "retrySync": "Kontosynchronisierung erneut versuchen ({status})",
     "share": "Teilen",
     "export": "Exportieren",
+    "feedbackSupport": "Feedback",
     "openAppMenu": "App-Menü öffnen",
     "hideObstacleNumbers": "Hindernisnummern ausblenden",
     "showObstacleNumbers": "Hindernisnummern anzeigen"
@@ -137,6 +139,9 @@
     "importDescription": "Eine JSON-Projektdatei einlesen",
     "exportLabel": "Exportieren",
     "exportDescription": "PNG, PDF, SVG oder JSON herunterladen",
+    "supportSection": "Support",
+    "feedbackLabel": "Feedback",
+    "feedbackDescription": "Melde ein Problem, teile eine Idee oder stelle eine Frage",
     "themeLabel": "Design",
     "themeDescription": "Hell, dunkel oder System wechseln",
     "signOut": "Abmelden",
@@ -319,6 +324,11 @@
         "sectionLabel": "Teilen",
         "editableCopy": "Bearbeitbare Kopie",
         "shareButton": "Teilen"
+      },
+      "support": {
+        "sectionLabel": "Support",
+        "label": "Feedback",
+        "description": "Melde ein Problem, teile eine Idee oder stelle eine Frage"
       }
     },
     "multiSelect": {
@@ -393,6 +403,7 @@
         "view": "Ansicht",
         "review": "Review",
         "share": "Teilen",
+        "feedback": "Feedback",
         "editCopy": "Kopie bearbeiten",
         "preview": "Vorschau"
       },
