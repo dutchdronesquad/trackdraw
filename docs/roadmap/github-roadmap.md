@@ -22,21 +22,12 @@ Labels used below:
 
 ## Current Priority
 
-The next TrackDraw priority is generated flightpath validation first, translation management tooling second, and focused 3D item controls third. Track Preflight and a leaner inspector hierarchy can follow as one focused usability slice once generated-route warning behavior is trustworthy enough to reuse. Keep larger account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
+The next TrackDraw priority is generated flightpath validation first, completion of the bounded Crowdin pilot second, and focused 3D item controls third. Keep larger account, community, billing, and platform expansion behind those unless a specific support or release risk forces it forward.
 
 ## Follow-up
 
 - [ ] Generated flightpath validation follow-up (`Research`, `No account required`)
       Validate real layouts and tune warnings, route anchor heights, unclear sequence feedback, and lightweight density, spacing, and rhythm cues before treating generated routes as more than a first-pass drafting aid. Research document: `docs/research/generated-flightpath-assistance.md`.
-
-- [x] Track Preflight and inspector focus (`No account required`)
-      Bring existing route, numbering, timing, and inventory signals into one compact advisory summary at the top of the Layout inspector. Use `Incomplete`, `Review`, and `Ready` without a score or safety claim, make issues jump to the relevant item or route context, and keep sharing and export non-blocking.
-  - [x] Pure preflight report
-        Compose the existing route-numbering, route-warning, timing/overlay, and inventory reports into stable issue categories and target references. Treat timing and inventory as opt-in checks, and keep generated-route, bounds, export-runtime, and share-metadata validation outside the first slice.
-  - [x] Lean inspector hierarchy
-        Replace repeated lead pills and status cards with the preflight summary, show elevation analysis only in route-relevant contexts, collapse inactive timing and advanced placement details on mobile, flatten the placed-items list, and move render density behind advanced settings.
-  - [x] Inspector accessibility fundamentals
-        Give inspector fields programmatic labels, restore visible focus, and make the Project/Layout/Selection tabs follow the expected keyboard pattern while preserving automatic Selection context and mobile touch behavior.
 
 - [ ] Faster editor actions and safe project variants (`No account required`, `Account-backed`)
       Reduce repeated navigation and precision work without adding more permanent header controls. Keep each improvement independently shippable and reuse existing editor and project actions rather than introducing parallel state or workflows.
@@ -53,15 +44,8 @@ The next TrackDraw priority is generated flightpath validation first, translatio
         Compare CPU time and `exceededCpu` rates with the pre-deployment baseline after the static public shell reaches production, grouped by route family. OpenNext's safe App Router path still invokes the lightweight routing/cache-interception layer, so invocation count alone is not expected to drop.
   - [ ] Observability baseline and operational thresholds
         Define structured fields, sampling, route-family dashboards or queries, deployment-version correlation, alert thresholds, and notification ownership. Keep tokens, API keys, session data, email addresses, and project payloads out of telemetry.
-  - [x] Scheduled cleanup isolation and reporting
-        Ensure share, API-key, and product-event retention tasks complete independently, remain idempotent, emit a structured result per task, and have focused coverage for partial failures so one rejection cannot cut short the other cleanup work.
-
-- [ ] Product feedback and GitHub issue handoff (`No account required`, `Account-backed`)
-      Add one recognizable `Feedback` entry for anonymous and signed-in users. Keep ideas and private problem reports lightweight, and send technical users to a previewable, prefilled public GitHub issue flow without exposing project or identity data.
-  - [x] Feedback entry and routing
-        Studio and read-only/share viewers now expose a consistent desktop and mobile entry with problem, idea, and question routes without requiring a TrackDraw account. Users can review and copy a report or continue to GitHub; private submission remains the separate item below.
-  - [x] Privacy-safe GitHub handoff
-        Prefill only a removable title, category, TrackDraw version, route family, browser, and device context. Warn that GitHub issues are public and never include project data, share tokens, API keys, email addresses, or report text without the user's review.
+- [ ] Private feedback follow-up (`No account required`, `Account-backed`)
+      Decide whether TrackDraw should operate a private alternative now that the privacy-safe public GitHub handoff ships in v1.15.0.
   - [ ] Private feedback submission
         Provide a small in-product alternative for people without GitHub, with explicit opt-in contact details, clear success and retry/copy states, abuse protection, rate limiting, retention, and privacy-safe dashboard triage.
   - [ ] Feedback funnel measurement
@@ -75,25 +59,6 @@ The next TrackDraw priority is generated flightpath validation first, translatio
         Run a bounded Crowdin Free pilot first; retain self-hosted Weblate as the fallback. Decide only after validating quota, permissions, repository sync, contributor review, licensing, and ongoing operational cost.
   - [ ] Crowdin Free pilot
         Run the reversible no-cost pilot through 2026-11-10, shifting the end date if activation happens later. Import only the ten translatable namespaces with `nl`/`de`/`zh-CN`, reuse only previously approved perfect Translation Memory matches, leave paid Crowdin AI/MT disabled, and allow reviewable maintainer-seeded translations to enter only through Crowdin when contributor coverage lags. Validate `common.json` end to end first, and apply separately for the open-source grant without depending on eligibility.
-  - [x] Reversible pilot foundation
-        Added repository-owned Crowdin mapping, recursive English fallback for partial target catalogs and generated Static Assets, integrity checks for stale keys, empty values, and placeholders, plus a documented three-month evaluation and rollback path.
-  - [x] Worker bundle impact measured
-        A fresh dry run measured 2,116.79 KiB gzip. Locale JSON remains in Cloudflare Static Assets rather than the Worker handler, so changing translation platforms would not materially shrink the Worker bundle.
-  - [x] Weblate production requirements researched
-        If self-hosting becomes necessary, use an ephemeral pilot before a separate production stack with TLS, SMTP, restricted access, persistent storage, off-host backups, restore testing, monitoring, and deliberate upgrades. A permanent ACC environment is not initially required.
-  - [x] Repository sync workflow
-        Migrated synchronization to the repository-owned Crowdin GitHub Action, which exports only translated strings and attributes generated commits to Crowdin Bot. The first bot-authored `l10n_crowdin` pull request completed normal code review and locale integrity checks in [#699](https://github.com/dutchdronesquad/trackdraw/pull/699).
-  - [x] Translator guidance
-        Documented the language-leader model, suggestion-first contributor flow, FPV terminology, placeholders/ICU syntax, compact UI label expectations, and the `dashboard`/`legal` English-only boundary. The public contribution path now directs translators to Crowdin through [#700](https://github.com/dutchdronesquad/trackdraw/pull/700).
-
-- [x] Simplified Chinese export and integration follow-up (`No account required`)
-      Finished the export and supporting locale work left after the Simplified Chinese product-language rollout, reimplemented against current `main` with the earlier combined work in [#556](https://github.com/dutchdronesquad/trackdraw/pull/556) used only as reference.
-  - [x] Locale-aware visual exports
-        PNG and SVG callers pass the active locale and localized untitled-track fallback so dates and fallback copy follow the selected language.
-  - [x] Supporting locale cleanup
-        Public-gallery dates use the active locale, and API Docs select the title and document language for every supported locale.
-  - [x] Focused localization regression coverage
-        Added coverage for locale propagation and localized fallback copy through PNG/SVG export callers, gallery dates, and API-document locale handling.
 
 - [ ] Focused 3D item controls (`No account required`)
       Add direct 3D controls for common obstacle edits where they are faster than inspector-only editing and still respect lock state, undo/redo, and mobile constraints.
@@ -128,6 +93,36 @@ The next TrackDraw priority is generated flightpath validation first, translatio
         Surface the estimate only where it helps race-day setup, such as timing/overlay preparation notes, and avoid presenting it as a guaranteed race result prediction.
   - [ ] Validation against real heats
         Compare the first-lap estimate with actual RotorHazard lap data across a few real tracks before relying on it as the preferred baseline.
+
+## v1.15.0 Archive
+
+<details>
+<summary>Completed release work to archive with v1.15.0</summary>
+
+- [x] Track Preflight and inspector focus (`No account required`)
+      Added one advisory Layout summary for route numbering, route review, timing, and configured inventory. Issues open the relevant item or Race Line, sharing and export remain non-blocking, and the inspector uses a leaner hierarchy with stronger keyboard and field accessibility.
+
+- [x] Feedback and community links (`No account required`, `Account-backed`)
+      Added a consistent desktop and mobile `Feedback` entry across Studio and read-only/share viewers. Users review and control the complete public GitHub report or copy it without exposing project, share, account, or design data. The homepage footer now also links to Facebook and Instagram while keeping direct GitHub issue reporting.
+
+- [x] Community translation workflow
+      Opened Dutch, German, and Simplified Chinese contributions through Crowdin with repository-owned synchronization, English fallback, integrity checks, contributor guidance, and a public homepage entry. The cost-free pilot uses approved perfect Translation Memory matches and reviewable maintainer-seeded imports; the final platform decision remains active.
+  - [x] Reversible pilot foundation
+        Added repository-owned Crowdin mapping, recursive fallback for partial catalogs, generated Static Assets, integrity checks, and a documented evaluation and rollback path.
+  - [x] Worker bundle impact measured
+        Measured 2,116.79 KiB gzip with locale JSON outside the Worker handler in Cloudflare Static Assets.
+  - [x] Weblate production requirements researched
+        Documented the production requirements for a self-hosted fallback without committing to a permanent environment.
+  - [x] Repository sync and translator guidance
+        Verified the Crowdin Bot pull-request workflow and documented suggestions, terminology, placeholders, compact UI copy, and the English-only `dashboard`/`legal` boundary.
+
+- [x] Simplified Chinese export and integration follow-up (`No account required`)
+      Completed locale propagation and regression coverage for PNG/SVG dates and fallback copy, public-gallery dates, and API-document language metadata.
+
+- [x] Scheduled maintenance isolation
+      Ensured share, API-key, and product-event retention tasks complete independently, remain idempotent, emit structured results, and retain focused partial-failure coverage. Broader production observability remains active.
+
+</details>
 
 ## v1.14.0 Archive
 

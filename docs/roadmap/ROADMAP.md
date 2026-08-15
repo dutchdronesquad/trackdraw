@@ -21,14 +21,15 @@ TrackDraw is now strong in these areas:
 - Protected magic-link account handoff that avoids automatic email scanner sign-ins while keeping the sign-in flow simple
 - Optional generated race-line drafting from ordered obstacles, with warnings for layouts that need manual attention
 - Interactive elevation profile review with waypoint, obstacle, timing, and warning markers linked back to the canvas
+- Advisory Track Preflight that brings route, numbering, timing, and configured inventory signals into one compact Layout summary
+- Privacy-safe feedback handoff for problems, ideas, and questions, with a reviewed public GitHub report or copy fallback
+- Community translation contributions through Crowdin, backed by English fallback and repository-reviewed localization pull requests
 
-After v1.14.0, the next product focus should stay deliberately narrow:
+After v1.15.0, the next product focus should stay deliberately narrow:
 
 1. Generated flightpath validation: test real layouts and tune warnings, route anchor heights, unclear sequence feedback, and lightweight density, spacing, and rhythm cues before treating generated routes as more than a first-pass drafting aid.
-2. Translation follow-up: run a bounded Crowdin Free pilot, retain Weblate as the self-hosted fallback, and keep locale catalogs out of the Worker bundle.
+2. Translation follow-up: complete the bounded Crowdin Free pilot, retain Weblate as the self-hosted fallback, and make the hosted-versus-self-hosted decision from measured cost and maintenance evidence.
 3. Focused 3D item controls: add direct 3D move/rotate controls only where they are predictable across desktop, mobile, undo/redo, and lock state.
-
-Track Preflight and a leaner inspector hierarchy should follow as one focused usability slice once generated-route warning behavior is trustworthy enough to reuse. Preflight should consolidate existing signals rather than introduce another validation system or a broad race-day mode.
 
 Race-day workflow depth, account lifecycle depth, custom banner textures, and billing should stay behind those priorities unless a concrete support issue or release risk forces them forward.
 
@@ -177,50 +178,6 @@ Important boundary:
 - Do not expand project duplication into branching, merging, side-by-side comparison, or share version history in the first slice
 - Keep the three slices independently testable and shippable
 
-#### Track Preflight And Inspector Focus (`No account required`)
-
-Bring existing route, numbering, timing, and inventory signals into one compact layout-review summary while reducing repeated inspector chrome.
-
-Why:
-
-- Route warnings, obstacle numbering, overlay preparation, and inventory buildability already expose useful signals, but users currently have to discover them in separate inspector and integration surfaces
-- Project, Layout, and Selection views repeat context, status metadata, and route analysis, which makes the inspector feel heavier than the underlying tasks require
-- A shared summary can make the final design-to-handoff review clearer without creating a separate race-day product or changing local-first editing
-
-First slice:
-
-- Add a pure preflight report that composes existing route-numbering, route-warning, timing/overlay, and inventory reports into stable issue categories and target references
-- Show a compact summary at the top of the Layout inspector with `Incomplete`, `Review`, or `Ready` states and expandable issue groups
-- Let actionable issues select the relevant track item or Race Line and direct waypoint-based warnings back to route review
-- Treat timing and inventory as opt-in checks: an untouched timing setup or all-zero default inventory must not make every ordinary design look incomplete
-- Keep preflight advisory. Do not block sharing or export, and define `Ready` as no known active-check issues rather than a claim that a track is safe or race-ready
-- Use the summary to replace repeated Layout lead pills and status cards instead of adding another large inspector section
-
-Current shipped foundation:
-
-- A pure preflight report composes route numbering, route-review warnings, timing readiness, and configured inventory shortages without introducing new thresholds
-- The Layout inspector shows an advisory `Incomplete`, `Review`, or `Ready` summary; actionable issues select the related obstacle or Race Line
-- Route generation remains available as a focused action while its former status cards are consolidated into Preflight
-- Project and Layout leads no longer repeat nearby values, render density is under Advanced, and the item list avoids nested card chrome and hides filters for small layouts
-- Elevation analysis is limited to Layout and selected Race Line contexts, inactive mobile timing is collapsed, and generic mobile selection actions are no longer duplicated inside the drawer
-- Inspector numeric fields inherit accessible labels, common actions have visible focus, tabs support arrow-key navigation, and item selection/removal use separate controls
-
-Inspector focus:
-
-- Show elevation analysis only in route-relevant contexts instead of as a permanent footer across Project, Layout, single-selection, and multi-selection views
-- Remove repeated lead metadata where the same title, position, buildability, or numbering state appears again immediately below
-- Make disclosure task-driven: keep common fields prominent, collapse inactive timing and advanced placement details on mobile, and move render density behind advanced settings
-- Flatten the placed-items list so search and filters appear when useful without wrapping the list in additional card-like chrome
-- Fix inspector field labeling, visible focus, and keyboard tab behavior as part of the cleanup rather than treating accessibility as a separate polish pass
-- Preserve automatic Selection context, locked/read-only behavior, undo/redo boundaries, mobile touch targets, and the existing Project/Layout/Selection model during the first slice
-
-Important boundary:
-
-- Reuse existing validators and thresholds; do not duplicate route-analysis logic in React inspector components
-- Keep generated-route warnings in the generation workflow until real-layout validation and threshold tuning are complete
-- Exclude out-of-field geometry checks, per-format export runtime readiness, and gallery/share metadata readiness from the first slice because they do not yet share the same domain semantics
-- Do not expand this slice into simulation, new persistence, or a broad inspector redesign
-
 #### Production Observability and Operational Resilience
 
 Make production failures visible and keep scheduled maintenance reliable before adding more operational complexity.
@@ -236,7 +193,6 @@ Implementation focus:
 - Define a privacy-safe observability baseline for static routes, dynamic public routes, auth/account surfaces, API traffic, D1/R2 operations, and scheduled events
 - Use sampled Workers logs and traces deliberately within the available plan budget, with structured fields that support route-family, status, CPU, latency, dependency, and deployment-version analysis
 - Establish actionable thresholds and a notification path for unexpected 5xx responses, Worker exceptions, `exceededCpu`, D1/R2 failures, authentication email failures, and repeated scheduled-task failures
-- Harden scheduled cleanup execution so each retention task completes independently, reports a structured result, remains idempotent, and has focused partial-failure coverage
 - Keep the post-deployment static-shell CPU comparison as the first production measurement under this track
 
 Important boundary:
@@ -245,35 +201,15 @@ Important boundary:
 - Do not make automatic Worker rollback a priority unless operational evidence shows that it would materially improve recovery
 - Do not log share tokens, API keys, session identifiers, email addresses, design payloads, or other sensitive user data
 
-#### Product Feedback And GitHub Issue Handoff (`No account required`, `Account-backed`)
+#### Private Feedback Follow-up (`No account required`, `Account-backed`)
 
-Give signed-in and anonymous users one clear way to share an idea, ask a question, or report a problem without turning TrackDraw into a community or ticketing platform.
+The privacy-safe public GitHub handoff ships in v1.15.0. The remaining product question is whether TrackDraw should also operate a private feedback channel for people who do not want to use GitHub.
 
-Why now:
+Focus:
 
-- The combination of an early account base and substantial anonymous use is enough to make support signals useful, while the current product has no consistent place to leave them
-- Bug reports are more actionable when the user can include safe product context at the moment the problem occurs
-- Technical users should be able to reach the public GitHub issue flow directly, while people without a GitHub account still need a lightweight in-product option
-
-First slice:
-
-- Add one consistent `Feedback` entry across desktop and mobile navigation, with choices for an idea, a problem, or a question
-- Keep the in-product form usable without a TrackDraw account; let signed-in users optionally include contact details or account context with explicit consent
-- Send technical issue reports to the repository's GitHub issue form with a preview of prefilled title, category, TrackDraw version, route family, browser, and device context before leaving TrackDraw
-- Warn that GitHub issues are public, never prefill project content, share tokens, API keys, email addresses, or design data, and let the user remove diagnostic context before continuing
-- Provide a small private feedback form for users who do not want to use GitHub, with a clear success state and a retry/copy fallback when submission fails
-- Add basic abuse protection, rate limiting, retention, and privacy-safe dashboard triage for private submissions without requiring identity
-- Define closed, versioned product-event schemas before tracking coarse funnel events such as feedback entry opened, route chosen, handoff started, and private submission completed; never record the report body in product analytics
-
-Current shipped foundation:
-
-- Studio and read-only/share viewers expose the same `Feedback` entry on desktop and mobile, with routes for a problem, idea, or question
-- The GitHub handoff shows the complete public report before leaving TrackDraw and lets the user remove coarse version, surface, browser, and device context
-- The handoff never derives project content, share tokens, account details, or design data
-- Users can copy the reviewed report instead of continuing to GitHub; private in-product submission remains a separate follow-up with its own storage, moderation, abuse, and retention requirements
-
-Later follow-up:
-
+- Provide a small private feedback form with explicit opt-in contact details, a clear success state, and retry/copy fallback
+- Add abuse protection, rate limiting, retention, deletion, and privacy-safe dashboard triage without requiring identity
+- Define closed, versioned product-event schemas before measuring entry, route, handoff, and private-submission steps; never record report bodies in product analytics
 - Let operators label, close, or link a private report to a public GitHub issue without automatically publishing the user's text
 - Add optional screenshot or diagnostic attachment support only after upload limits, sensitive-data review, retention, and deletion behavior are defined
 - Use recurring report themes to drive targeted reliability work instead of adding voting, public comments, or a broad support console
@@ -346,7 +282,6 @@ Maintenance focus:
 - Pilot Crowdin Free before selecting a platform; the current ten namespaces and three target languages are estimated at 25,731 hosted words, while Weblate remains the self-hosted fallback
 - Keep the pilot cost-free: automatically reuse only previously approved perfect Translation Memory matches, leave paid Crowdin AI and machine translation disabled, and use contributors, reviewable maintainer-seeded Crowdin imports, plus English fallback for remaining strings
 - Do not depend on Crowdin's open-source grant: confirm the actual workspace quota and reassess licensing if TrackDraw introduces related paid products or services
-- Prototype one translatable namespace end to end before committing to a migration, using the existing `lang/{locale}/{namespace}.json` layout and normal pull-request review
 - If Weblate becomes necessary, use an ephemeral pilot before operating a separate production stack; a permanent ACC environment is not initially required
 - Keep `dashboard` and `legal` English-only regardless of the translation-management tool
 - Keep generated locale asset loading in place so each language does not automatically add a full catalog set to the Cloudflare Worker bundle
@@ -444,7 +379,7 @@ Feature tracks:
 
 - Collapsible inspector workspace: continue refining the shipped desktop collapse rail only if real usage shows friction around selection context or repeated resizing
 - Persistent sidebar density: keep local-only collapse preferences for editor chrome where that improves repeated editing
-- Inspector hierarchy cleanup: follow the Track Preflight slice above so repeated summaries, route analysis, disclosure defaults, and accessibility fundamentals are improved as one coherent pass rather than separate cosmetic changes
+- Inspector hierarchy follow-up: preserve the v1.15.0 Preflight and accessibility cleanup, and only revisit remaining chrome when real usage identifies a concrete problem
 
 Important boundary:
 
@@ -727,6 +662,39 @@ Likely account-backed follow-up:
 - Version history for account-backed published shares
 - Operator-controlled gallery visibility through feature, hide, restore, and delete actions
 - Shared venue or club records, including shared inventory profiles
+
+## v1.15.0 Archive
+
+<details>
+<summary>Completed release work to archive with v1.15.0</summary>
+
+### Track Preflight And Inspector Focus (`No account required`)
+
+Added one compact advisory Layout summary that composes existing route numbering, route-review, timing, and configured inventory signals without introducing new thresholds or blocking sharing and export. Issues can open the relevant obstacle or Race Line, while untouched timing and inventory remain opt-in rather than making ordinary designs look incomplete.
+
+The inspector now avoids repeated status chrome, limits elevation analysis to route-relevant contexts, keeps advanced and inactive mobile controls out of the primary flow, and improves field labels, visible focus, keyboard tabs, and item action separation.
+
+### Feedback And Community Links (`No account required`, `Account-backed`)
+
+Added a consistent `Feedback` entry across Studio and read-only/share viewers on desktop and mobile. Users can classify a problem, idea, or question, review the complete public report, remove coarse app context, copy it, or continue to GitHub without TrackDraw collecting project, share, account, or design data.
+
+The homepage footer also links to TrackDraw's Facebook and Instagram presence while retaining the direct GitHub issue route. Private in-product submission remains an active follow-up with separate storage, moderation, abuse, and retention requirements.
+
+### Community Translation Workflow
+
+Opened Dutch, German, and Simplified Chinese translations to community contributions through Crowdin. Repository-owned synchronization, English fallback for partial catalogs, catalog integrity checks, contributor guidance, and the public homepage entry keep translation changes reviewable without requiring contributors to edit JSON.
+
+The no-cost pilot uses approved perfect Translation Memory matches and reviewable maintainer-seeded imports while paid AI and machine translation remain disabled. The longer-term hosted-versus-self-hosted decision remains active until the bounded pilot is complete.
+
+### Simplified Chinese Export And Integration Follow-up (`No account required`)
+
+Completed the remaining locale propagation for PNG and SVG dates and fallback copy, public-gallery dates, and API documentation language metadata, with focused regression coverage across all four supported locales.
+
+### Scheduled Maintenance Isolation
+
+Hardened scheduled share, API-key, and product-event retention so each task completes independently, remains idempotent, reports a structured result, and has focused partial-failure coverage. Broader production observability and alerting remain active follow-up work.
+
+</details>
 
 ## v1.14.0 Archive
 
